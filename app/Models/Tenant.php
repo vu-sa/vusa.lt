@@ -22,6 +22,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $fullname
  * @property string $shortname
  * @property string $alias
+ * @property bool $goals_enabled
  * @property string|null $phone
  * @property string|null $email
  * @property string|null $address
@@ -62,6 +63,7 @@ class Tenant extends Model
     {
         return [
             'type' => TenantType::class,
+            'goals_enabled' => 'boolean',
         ];
     }
 

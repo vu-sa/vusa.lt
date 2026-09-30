@@ -8,6 +8,7 @@ use App\Models\Document;
 use App\Models\Duty;
 use App\Models\EventType;
 use App\Models\Form;
+use App\Models\Goal;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Navigation;
@@ -32,6 +33,7 @@ use App\Models\Type;
 use App\Models\User;
 use App\Settings\FormSettings;
 use App\Support\AuthorityCacheExpiry;
+use App\Support\Experiments\GoalsExperiment;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -43,7 +45,7 @@ use Illuminate\Support\Facades\Cache;
 class AdminNavigationCatalog
 {
     /** Bump the suffix when the payload shape or a gate changes, so a deploy never serves the old menu from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v6-';
+    public const string CACHE_PREFIX = 'admin-navigation-v7-';
 
     private const int CACHE_TTL = 1800;
 
@@ -55,7 +57,18 @@ class AdminNavigationCatalog
      */
     public function for(User $user): array
     {
-        return Cache::remember(self::CACHE_PREFIX.$user->id, fn () => AuthorityCacheExpiry::for($user, self::CACHE_TTL), fn () => $this->resolve($user));
+        $key = self::CACHE_PREFIX.$user->id;
+        $tenantIds = GoalsExperiment::enabledTenantIds();
+        $cached = Cache::get($key);
+
+        if (is_array($cached) && ($cached['goalsTenantIds'] ?? null) === $tenantIds) {
+            return $cached['payload'];
+        }
+
+        $payload = $this->resolve($user);
+        Cache::put($key, ['goalsTenantIds' => $tenantIds, 'payload' => $payload], AuthorityCacheExpiry::for($user, self::CACHE_TTL));
+
+        return $payload;
     }
 
     /**
@@ -181,15 +194,19 @@ class AdminNavigationCatalog
                 // Also in Svetainė for its managers; the shell keeps whichever workspace is active.
                 new Section('dokumentai', 'shell.sections.dokumentai', 'documents.index', [], 'document', Visibility::can('viewAny', Document::class), descriptionKey: 'shell.section_descriptions.dokumentai'),
                 new Section('problemos', 'shell.sections.problemos', 'problems.index', [], 'problem', Visibility::can('viewAny', Problem::class), descriptionKey: 'shell.section_descriptions.problemos'),
+                new Section('tikslai', 'shell.sections.tikslai', 'goals.index', [], 'goal', Visibility::can('viewAny', Goal::class), descriptionKey: 'shell.section_descriptions.tikslai'),
                 new Section('pareigybiu_laikotarpiai', 'shell.sections.pareigybiu_laikotarpiai', 'dutiables.timeline', [], 'dutiable', Visibility::can('viewAny', Duty::class), descriptionKey: 'shell.section_descriptions.pareigybiu_laikotarpiai'),
                 // The whole organisation's graph: not widened with the `.own` index (InstitutionPolicy::viewAny).
                 new Section('institucijos_grafas', 'shell.sections.institucijos_grafas', 'institutionGraph', [], 'institution', Visibility::permission('institutions.read.padalinys'), descriptionKey: 'shell.section_descriptions.institucijos_grafas'),
+                // Every member browses problems; only those who edit them everywhere manage the shared taxonomy.
+                new Section('problemu_kategorijos', 'shell.sections.problemu_kategorijos', 'problemCategories.index', [], null, Visibility::permission('problems.update.*'), descriptionKey: 'shell.section_descriptions.problemu_kategorijos'),
             ],
             createActions: [
                 CreateAction::screen('new_meeting', 'shell.actions.new_meeting.title', 'shell.actions.new_meeting.description', 'meeting', 'meeting.institution', Visibility::can('create', Meeting::class)),
                 CreateAction::screen('no_meeting', 'shell.actions.no_meeting.title', 'shell.actions.no_meeting.description', 'meeting', 'checkin.institution', Visibility::can('create', Meeting::class)),
                 CreateAction::screen('complete_meeting', 'shell.actions.complete_meeting.title', 'shell.actions.complete_meeting.description', 'meeting', 'meeting.pick', Visibility::can('create', Meeting::class)),
                 CreateAction::route('new_problem', 'shell.actions.new_problem.title', 'shell.actions.new_problem.description', 'problem', 'problems.create', Visibility::can('create', Problem::class)),
+                CreateAction::route('new_goal', 'shell.actions.new_goal.title', 'shell.actions.new_goal.description', 'goal', 'goals.create', Visibility::can('create', Goal::class)),
             ],
         );
     }

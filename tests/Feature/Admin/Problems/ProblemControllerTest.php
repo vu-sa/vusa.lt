@@ -235,3 +235,151 @@ describe('html sanitization', function (): void {
             ->toContain('src="/uploads/a.png"');
     });
 });
+
+describe('editing from the list', function (): void {
+    // `problems.update.padalinys` is tenant-scoped, so the list asks per row instead of `auth.can`.
+    test('offers edit only on problems the reader may edit', function (): void {
+        $canUpdate = fn ($items) => collect($items)->mapWithKeys(fn ($item) => [$item['id'] => $item['can_update']]);
+
+        asUser($this->coordinator)->get(route('problems.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('data', fn ($data) => $canUpdate($data)[$this->problem->id] === true
+                && $canUpdate($data)[$this->otherTenantProblem->id] === false));
+
+        $items = asUser($this->coordinator)->getJson(route('api.v1.admin.problems.index'))->assertOk()->json('data.items');
+
+        expect($canUpdate($items)[$this->problem->id])->toBeTrue()
+            ->and($canUpdate($items)[$this->otherTenantProblem->id])->toBeFalse();
+    });
+
+    test('narrows the list to problems assigned to a person', function (): void {
+        $this->problem->update(['responsible_user_id' => $this->coordinator->id]);
+
+        asUser($this->coordinator)
+            ->get(route('problems.index', ['filters' => json_encode(['responsible_user_id' => [$this->coordinator->id]])]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('data', fn ($data) => collect($data)->pluck('id')->all() === [$this->problem->id]));
+    });
+});
+
+describe('status and resolved date', function (): void {
+    test('marking a problem resolved stamps the date and reopening clears it', function (): void {
+        asUser($this->coordinator)->patch(route('problems.updateStatus', $this->problem), ['status' => 'resolved'])->assertRedirect();
+
+        expect($this->problem->fresh()->resolved_at?->toDateString())->toBe(now()->toDateString())
+            ->and($this->problem->fresh()->isResolved())->toBeTrue();
+
+        asUser($this->coordinator)->patch(route('problems.updateStatus', $this->problem), ['status' => 'in_progress'])->assertRedirect();
+
+        expect($this->problem->fresh()->resolved_at)->toBeNull();
+    });
+
+    test('the form keeps the resolved date in step with the status', function (): void {
+        $payload = [
+            'title' => ['lt' => 'Problema', 'en' => 'Problem'],
+            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
+            'tenant_id' => $this->tenant->id,
+            'occurred_at' => now()->subWeek()->toDateString(),
+        ];
+
+        asUser($this->coordinator)->patch(route('problems.update', $this->problem), [...$payload, 'status' => 'resolved'])
+            ->assertSessionHasNoErrors();
+
+        expect($this->problem->fresh()->resolved_at)->not->toBeNull();
+
+        asUser($this->coordinator)->patch(route('problems.update', $this->problem), [
+            ...$payload,
+            'status' => 'open',
+            'resolved_at' => now()->toDateString(),
+        ])->assertSessionHasNoErrors();
+
+        expect($this->problem->fresh()->resolved_at)->toBeNull();
+    });
+
+    test('rejects a resolved date before the problem occurred', function (): void {
+        asUser($this->coordinator)->patch(route('problems.update', $this->problem), [
+            'title' => ['lt' => 'Problema', 'en' => 'Problem'],
+            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
+            'tenant_id' => $this->tenant->id,
+            'occurred_at' => now()->toDateString(),
+            'resolved_at' => now()->subWeek()->toDateString(),
+            'status' => 'resolved',
+        ])->assertSessionHasErrors('resolved_at');
+    });
+
+    test('another padalinys cannot change the status', function (): void {
+        asUser($this->coordinator)->patch(route('problems.updateStatus', $this->otherTenantProblem), ['status' => 'resolved'])
+            ->assertForbidden();
+
+        expect($this->otherTenantProblem->fresh()->status)->toBe('open');
+    });
+});
+
+describe('creating', function (): void {
+    test('records the author as its creator', function (): void {
+        asUser($this->coordinator)->post(route('problems.store'), [
+            'title' => ['lt' => 'Autoriaus problema', 'en' => 'Author problem'],
+            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
+            'tenant_id' => $this->tenant->id,
+            'occurred_at' => now()->toDateString(),
+            'status' => 'open',
+        ])->assertSessionHasNoErrors();
+
+        expect(Problem::query()->whereJsonContainsLocale('title', 'lt', 'Autoriaus problema')->sole()->created_by)
+            ->toBe($this->coordinator->id);
+    });
+
+    test('cannot link another padalinys\' institution', function (): void {
+        $foreign = Institution::factory()->create(['tenant_id' => $this->otherTenant->id]);
+
+        asUser($this->coordinator)->post(route('problems.store'), [
+            'title' => ['lt' => 'Problema', 'en' => 'Problem'],
+            'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
+            'tenant_id' => $this->tenant->id,
+            'occurred_at' => now()->toDateString(),
+            'status' => 'open',
+            'institutions' => [$foreign->id],
+        ])->assertSessionHasErrors('institutions.0');
+    });
+
+    test('opened from an institution, starts in its padalinys and already linked to it', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $foreign = Institution::factory()->create(['tenant_id' => $this->otherTenant->id]);
+
+        asUser($this->coordinator)->get(route('problems.create', ['institution' => $institution->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('problem.tenant_id', $this->tenant->id)
+                ->where('problem.institutions', [$institution->id])
+                ->where('institutions.0.id', $institution->id));
+
+        // An institution the user may not write problems for prefills nothing.
+        asUser($this->coordinator)->get(route('problems.create', ['institution' => $foreign->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('problem', null)->where('institutions', []));
+    });
+});
+
+describe('deleting', function (): void {
+    test('a representative cannot delete, a coordinator deletes and restores in their padalinys only', function (): void {
+        $representative = makeTenantUserWithRole('Studentų atstovas', $this->tenant);
+
+        asUser($representative)->delete(route('problems.destroy', $this->problem))->assertForbidden();
+        asUser($this->coordinator)->delete(route('problems.destroy', $this->otherTenantProblem))->assertForbidden();
+
+        asUser($this->coordinator)->delete(route('problems.destroy', $this->problem))->assertRedirect();
+        expect($this->problem->fresh()->trashed())->toBeTrue();
+
+        asUser($this->coordinator)->patch(route('problems.restore', $this->problem))->assertRedirect();
+        expect($this->problem->fresh()->trashed())->toBeFalse();
+    });
+
+    test('no seeded role deletes permanently', function (): void {
+        $this->problem->delete();
+
+        asUser($this->coordinator)->delete(route('problems.forceDelete', $this->problem))->assertForbidden();
+
+        expect(Problem::withTrashed()->find($this->problem->id))->not->toBeNull();
+    });
+});

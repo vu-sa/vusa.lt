@@ -27,6 +27,24 @@ Kategorijų galimybės kol kas ribotos:
 
 Kategorijas gali kurti tik pagrindinis administratorius.
 
+## Turinio redagavimas {#turinio-redagavimas}
+
+Puslapio formoje atverk **Redaguoti turinį**. Blokų pasirinkimo lange pasirink kategoriją arba
+ieškok pagal pavadinimą. Kompiuteryje bloką įterpia jo eilutė; telefone pirmiausia pamatysi
+peržiūrą, tada spausk **Pridėti šį bloką**. Peržiūros variantus gali pakeisti prieš įterpdamas.
+
+Nuotraukų tinklelyje ir galerijoje paveikslėlį gali pakeisti paspaudęs jo peržiūrą. Kiekvienos
+nuotraukos meniu gali pakeisti vietą sąraše, nustatyti fokusavimo tašką ar pašalinti nuotrauką.
+Galerijos nustatymuose pasirink stulpelių skaičių, tarpus ir ar įjungti pilno dydžio peržiūrą.
+Telefone nuotraukos nustatymai atsidaro tame pačiame redaktoriuje; grįžimo mygtukas parveda
+prie nuotraukų.
+
+Tvarkaraščio eilutes gali įrašyti ranka arba importuoti iš posėdžio. Importas nukopijuoja
+dabartinę darbotvarkę į puslapio turinį; vėlesni posėdžio pakeitimai tvarkaraščio nekeičia.
+Socialinio įrašo bloke įklijuok Facebook arba Instagram nuorodą; redaktorius parodys, ar ją
+atpažino, ir pateiks peržiūrą.
+Teksto laukelio bloke atsakymus gali peržiūrėti, eksportuoti arba po patvirtinimo ištrinti.
+
 ## Kas ką gali {#teises}
 
 Padalinio svetainės tekstus atnaujina rolę **Padalinio puslapių redaktorius** turinčios pareigybės:

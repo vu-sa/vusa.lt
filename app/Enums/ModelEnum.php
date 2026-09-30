@@ -26,6 +26,7 @@ enum ModelEnum: string
     case EVENT_TYPE = 'event_type';
     case FILE = 'file';
     case FORM = 'form';
+    case GOAL = 'goal';
     case INSTITUTION = 'institution';
     case MEETING = 'meeting';
     case NAVIGATION = 'navigation';
@@ -98,6 +99,7 @@ enum ModelEnum: string
             'studySets' => ['padalinys', '*'],
             'quickLinks' => ['padalinys', '*'],
             'problems' => ['padalinys', '*'],
+            'goals' => ['padalinys', '*'],
 
             // Special case: institutions allow "own" scope only for read operations
             // This is handled in the InstitutionPolicy and a special case in the seeder

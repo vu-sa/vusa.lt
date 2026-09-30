@@ -6,6 +6,7 @@ last_reviewed: 2026-09-27
 tests:
   - tests/Feature/Admin/Reservations/ResourceCategoryControllerTest.php
   - tests/Feature/Api/Admin/ResourceCategoryApiControllerTest.php
+  - tests/Browser/ReservationPagesTest.php
 ---
 
 # Kategorijos
@@ -14,19 +15,24 @@ Kategorijos grupuoja išteklius pagal paskirtį, pavyzdžiui, „Garso technika�
 tvarkomos adresu `/mano/resourceCategories`. Kategorija priskiriama kuriant arba redaguojant
 išteklių. Išteklių sąraše pagal ją galima filtruoti.
 
+<DocScreenshot name="resource-categories" alt="Išteklių kategorijų sąrašas su pavadinimais, aprašymais ir veiksmais" caption="Kategorijos kuriamos ir redaguojamos tiesiai sąraše." />
+
 ## Kaip tai veikia
 
 - Kategorijos yra **bendros visai organizacijai**: jos neturi padalinio, todėl MIF sukurta
   kategorija matoma ir FSF.
 - Kategorijai galima parinkti **ikonėlę**. Ji rodoma šalia išteklių visų išteklių sąraše.
-- Kategorija neturi atskiro puslapio: ji kuriama ir redaguojama tiesiai sąraše, šoniniame lange.
-- Sąrašo eilutėje ir lentelėje galima atverti redagavimą arba ištrynimo patvirtinimą, jei turi
-  atitinkamą teisę.
+
+## Veiksmai
+
+Kategorija neturi atskiro puslapio: ji kuriama ir redaguojama tiesiai sąraše, šoniniame lange.
+Sąrašo eilutėje ir lentelėje galima atverti redagavimą arba ištrynimo patvirtinimą, jei turi
+atitinkamą teisę.
 
 ## Kas ką gali {#teises}
 
 Kategorijas mato ir tvarko
-[išteklių administratoriai](/rezervacijos/#isteklu-administratorius). Kadangi kategorijos bendros,
+[išteklių administratoriai](/rezervacijos/#istekliu-administratorius). Kadangi kategorijos bendros,
 bet kurio padalinio administratorius gali sukurti ar pervadinti kategoriją, kurią naudoja ir kiti.
 Prieš trindamas kategoriją, pasitark su kitais padaliniais.
 

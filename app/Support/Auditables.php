@@ -8,6 +8,7 @@ use App\Models\Calendar;
 use App\Models\ContentPart;
 use App\Models\Document;
 use App\Models\Duty;
+use App\Models\Goal;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Navigation;
@@ -16,6 +17,7 @@ use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
 use App\Models\Reservation;
+use App\Models\Step;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
@@ -43,6 +45,7 @@ class Auditables
         'institution' => Institution::class,
         'duty' => Duty::class,
         'problem' => Problem::class,
+        'goal' => Goal::class,
         'reservation' => Reservation::class,
         'news' => News::class,
         'page' => Page::class,
@@ -66,6 +69,8 @@ class Auditables
         // News/Page/Tenant's feed, but ContentPart has no policy of its own
         // and is never requestable as a root -- see App\Support\ActivityRoots.
         'contentPart' => ContentPart::class,
+        // Goals pilot: a step rolls up into its goal, or its problem when it has no goal.
+        'step' => Step::class,
     ];
 
     /**

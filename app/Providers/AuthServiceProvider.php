@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Actions\ResolveForbiddenExplanation;
 use App\Enums\ModelEnum;
 use App\Models\FileableFile;
+use App\Models\Goal;
 use App\Models\InstitutionCheckIn;
 use App\Models\User;
 use App\Policies\FileableFilePolicy;
@@ -39,7 +40,12 @@ class AuthServiceProvider extends ServiceProvider
 
         // Implicitly grant "Super Admin" role all permissions
         // This works in the app by using gate-related functions like auth()->user->can() and @can()
-        Gate::before(function (User $user, $ability) {
+        Gate::before(function (User $user, $ability, array $arguments) {
+            // Goal policies enforce tenant enrollment even for super admins.
+            if (($arguments[0] ?? null) === Goal::class || ($arguments[0] ?? null) instanceof Goal) {
+                return null;
+            }
+
             if ($user->isSuperAdmin()) {
                 return true;
             }

@@ -50,6 +50,7 @@ final class LocalizedRouteSlugs
         'contactsString' => ['lt' => 'kontaktai', 'en' => 'contacts'],
         'studentRepsString' => ['lt' => 'studentu-atstovai', 'en' => 'student-representatives'],
         'contactCategoryString' => ['lt' => 'kategorija', 'en' => 'category'],
+        'goalsString' => ['lt' => 'tikslai', 'en' => 'goals'],
     ];
 
     /**

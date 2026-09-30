@@ -90,7 +90,7 @@ skydelyje (stalčiuje) iškart pateikiama pasirinkto daikto informacija:
 
 ::: warning Redaguoti = tvarkyti rezervacijas
 Išteklio redagavimo teisė ir padaro žmogų
-[išteklių administratoriumi](/rezervacijos/#isteklu-administratorius): jis gauna tvirtinimo
+[išteklių administratoriumi](/rezervacijos/#istekliu-administratorius): jis gauna tvirtinimo
 užduotis ir sprendžia padalinio daiktų rezervacijas. Skirk rolę tik tiems, kas iš tikrųjų tvarko
 daiktus.
 :::

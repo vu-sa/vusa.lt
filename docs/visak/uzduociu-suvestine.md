@@ -49,7 +49,7 @@ užduotys**.
 
 | Rolė | Ką mato suvestinėje |
 |---|---|
-| Centrinio biuro studentų atstovų koordinatorius | Visų padalinių posėdžių ir institucijų užduotis. Rezervacijų užduočių nemato – jas tvarko [išteklių administratoriai](/rezervacijos/#isteklu-administratorius) |
+| Centrinio biuro studentų atstovų koordinatorius | Visų padalinių posėdžių ir institucijų užduotis. Rezervacijų užduočių nemato – jas tvarko [išteklių administratoriai](/rezervacijos/#istekliu-administratorius) |
 | Studentų atstovų koordinatorius, Studentų atstovas | Suvestinė neprieinama. Savo užduotis mato [Mano → Užduotys](/mano/uzduotys) |
 | Kiti nariai | Suvestinė neprieinama, skiltis nerodoma |
 

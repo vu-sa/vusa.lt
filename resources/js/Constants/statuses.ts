@@ -27,7 +27,7 @@ import {
   TriangleAlert,
 } from 'lucide-vue-next';
 
-import { InstitutionActivityStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
+import { GoalStatus, InstitutionActivityStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
 
 export type StatusRole = 'neutral' | 'info' | 'progress' | 'attention' | 'success' | 'danger';
 
@@ -146,6 +146,15 @@ export const problemStatuses: Record<ProblemStatus, StatusPresentation> = {
   open: status('Atvira', 'attention', CircleDot),
   in_progress: status('Vykdoma', 'progress', LoaderCircle),
   resolved: status('Išspręsta', 'success', CircleCheck),
+};
+
+/** Goals pilot. Uppercase tags like the publishing statuses: a goal's status is what a plan is read by. */
+export const goalStatuses: Record<GoalStatus, StatusPresentation> = {
+  [GoalStatus.Planned]: status('Planuojamas', 'info', CalendarClock, true),
+  [GoalStatus.InProgress]: status('Vykdomas', 'progress', LoaderCircle, true),
+  [GoalStatus.Achieved]: status('Pasiektas', 'success', CircleCheck, true),
+  [GoalStatus.NotAchieved]: status('Nepasiektas', 'danger', CircleX, true),
+  [GoalStatus.Dropped]: status('Atsisakyta', 'neutral', CircleSlash, true),
 };
 
 export const supportRequestStatuses: Record<SupportRequestStatus, StatusPresentation> = {

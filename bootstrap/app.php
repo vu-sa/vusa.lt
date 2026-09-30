@@ -2,6 +2,7 @@
 
 use App\Actions\ResolveForbiddenExplanation;
 use App\Http\Middleware\BlockRobotsOnStagingDomains;
+use App\Http\Middleware\EnsureGoalsExperiment;
 use App\Http\Middleware\ExtendPWASession;
 use App\Http\Middleware\GetNavigationForPublic;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -114,6 +115,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'locale' => SetLocale::class,
             'tenant.permission' => TenantPermission::class,
+            'experiment.goals' => EnsureGoalsExperiment::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

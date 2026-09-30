@@ -1,6 +1,5 @@
 ---
 title: Teisės ir rolės
-coverage: ignore
 last_reviewed: 2026-09-27
 tests:
   - tests/Feature/Permissions/BaselineAccessTest.php
@@ -16,11 +15,6 @@ Teisės suteikia galimybę matyti ir tvarkyti tam tikrus įrašus. Jos niekada n
 tiesiogiai kasdieniame darbe: teisės sudedamos į **roles**, rolės priskiriamos **pareigybėms**, o
 naudotojas teises gauna eidamas pareigybę.
 
-::: warning Rašoma
-Šis puslapis dar rašomas. Kai bus baigtas, jame bus skyriai **Kaip tai veikia**, **Veiksmai**,
-**Kas ką gali** ir **Pranešimai ir automatizavimas**, kaip [Rezervacijų](/rezervacijos/rezervacijos) skyriuje.
-:::
-
 ## Ką gali kiekvienas narys {#bazine-prieiga}
 
 Kai kas nepriklauso nuo rolių: tai gali kiekvienas prisijungęs narys, net neturėdamas nė vienos
@@ -35,10 +29,10 @@ kiekvienos įrašų rūšies parašyta, ką visi nariai jau gali, o tokios teis�
 | Problemos | Matyti visų padalinių problemas |
 | Ištekliai | Matyti visus išteklius |
 | Pareigybės | Matyti savo dabartines ir buvusias pareigybes |
-| Užduotys | Matyti ir atlikti tau priskirtas užduotis (bet ne jas ištrinti; `tasks.delete.own` nė vienai rolei nepriskiriama) |
+| Užduotys | Matyti ir atlikti tau priskirtas užduotis (bet ne jas ištrinti; savų užduočių trynimo teisė nė vienai rolei nepriskiriama) |
 | Komentarai | Komentuoti visur, kur matai įrašą; redaguoti ir trinti savo komentarus. Kitų komentarus trina redaguojantys įrašą arba rolė su komentarų trynimo teise |
 
-## Rolės
+## Rolės {#roles}
 
 Kasdieniame darbe užtenka žinoti roles. Kiekviena rolė – tai vienos atsakomybės teisių rinkinys:
 
@@ -46,12 +40,12 @@ Kasdieniame darbe užtenka žinoti roles. Kiekviena rolė – tai vienos atsakom
 |---|---|---|---|
 | **Studentų atstovas** | Automatiškai – pareigybėms su tipu „Studentų atstovas“ | Fiksuoti savo institucijų posėdžius, kelti problemas | [ViSAK](/visak/) |
 | **Problemų redaktorius** | Automatiškai – pareigybėms su tipu „Koordinatorius (-ė)“ | Kelti ir tvarkyti padalinio problemas | [Problemos](/visak/problemos) |
-| **Išteklių administratorius** | Padalinio pirmininkui ir administratoriui | Tvarkyti padalinio daiktus ir jų rezervacijas | [Rezervacijos](/rezervacijos/#isteklu-administratorius) |
+| **Išteklių administratorius** | Padalinio pirmininkui ir administratoriui | Tvarkyti padalinio daiktus ir jų rezervacijas | [Rezervacijos](/rezervacijos/#istekliu-administratorius) |
 | **Padalinio puslapių redaktorius** | Tiems, kas atnaujina padalinio svetainės tekstus | Redaguoti esamus padalinio puslapius | [Puslapiai](/svetaine/puslapiai) |
 
 Rolės, kurių pavadinime yra **„Centrinio biuro“**, leidžia tą patį visuose padaliniuose.
 
-### Rolės pagal pareigybės tipą
+### Rolės pagal pareigybės tipą {#roles-pagal-pareigybes-tipa}
 
 Rolė gali būti susieta su **pareigybės tipu**. Tada ją automatiškai gauna kiekviena to tipo
 pareigybė: susiejant rolę su tipu – visos esamos, vėliau – kiekviena, kuriai tipas priskiriamas.
@@ -63,7 +57,7 @@ priskirti (pvz., koordinatorius – studentų atstovų tipą), arba super admini
 apsaugo nuo teisių išsidalijimo per tipus.
 :::
 
-## Teisės formatas
+## Teisės formatas {#teises-formatas}
 
 Rolės sudarytos iš **teisių**. Tikslias kiekvieno puslapio teises rasi jo pabaigoje, skyriuje **Techninė informacija**. Kiekviena teisė užrašoma `{išteklius}.{veiksmas}.{apimtis}`, pavyzdžiui, `news.update.padalinys`.
 
@@ -73,7 +67,7 @@ Rolės sudarytos iš **teisių**. Tikslias kiekvieno puslapio teises rasi jo pab
 | Veiksmas | `read`, `create`, `update`, `delete`, `forceDelete` |
 | Apimtis | `own` – tik su tavo pareigybe tiesiogiai susiję įrašai; `padalinys` – tavo padalinio įrašai; `*` – visi įrašai |
 
-## Kaip sistema nusprendžia
+## Kaip sistema nusprendžia {#kaip-sistema-nusprendzia}
 
 1. **Super administratorius** gali viską.
    Kiekvienam nariui galioja ir [bazinė prieiga](#bazine-prieiga).
@@ -89,3 +83,10 @@ puslapis „Prieiga uždrausta“.
 :::
 
 Kiekviename puslapyje skyrius **Kas ką gali** aprašo, kurios rolės ką leidžia.
+
+## Techninė informacija {#technine-informacija}
+
+- Bazinę prieigą be rolių užtikrina `BaselineAccess` taisyklės ir `ModelPolicy` patikros, testuojamos `BaselineAccessTest`.
+- Rolių ir leidimų matricą, jų priskyrimą pareigybėms ir tipams valdo `RoleController`, tikrina `RoleControllerTest` ir `RolePermissionForms.component.test.ts`.
+- Leidimų lentelės atvaizdavimą ir būsenas tikrina `PermissionTable.component.test.ts`.
+- Standartinius modelių leidimus ir jų formatus generuoja `ModelPermissionSeeder`, testuojamas `ModelPermissionSeederTest`.

@@ -9,6 +9,7 @@ use App\Models\AgendaItemNote;
 use App\Models\Comment;
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\Problem;
 use App\Models\Tenant;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTranslations;
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\Pivot;
@@ -145,6 +147,11 @@ class AgendaItem extends Pivot implements Commentable
     public function note(): HasOne
     {
         return $this->hasOne(AgendaItemNote::class, 'agenda_item_id', 'id');
+    }
+
+    public function problems(): BelongsToMany
+    {
+        return $this->belongsToMany(Problem::class, 'agenda_item_problem', 'agenda_item_id', 'problem_id')->withTimestamps();
     }
 
     public function institutions()

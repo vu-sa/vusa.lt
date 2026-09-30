@@ -47,6 +47,11 @@ final class BuildProblemIndexQuery
             $query->whereIn('created_by', (array) $creatorValues);
         }
 
+        $responsibleValues = $request->input('responsible_user_id') ?? ($filters['responsible_user_id'] ?? null);
+        if (! empty($responsibleValues)) {
+            $query->whereIn('responsible_user_id', (array) $responsibleValues);
+        }
+
         return $query;
     }
 }

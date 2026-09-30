@@ -57,5 +57,8 @@ it('keeps the duty responsibilities readable across admin widths and themes', fu
         }
     }
 
+    $page->resize(1440, 900);
+    docsScreenshot($page, 'duty-responsibilities', selector: '[data-slot="duty-responsibilities"]');
+
     $page->assertNoJavaScriptErrors();
 });

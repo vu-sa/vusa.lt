@@ -27,11 +27,6 @@ Mano VU SA sudaro **darbo sritys** (Mano, ViSAK, Rezervacijos, Svetainė, Organi
 Kiekviena sritis turi skiltis. Viršutinė juosta leidžia perjungti sritis, o mygtukas **+ Sukurti**
 atveria langą su visais tau leidžiamais kūrimo veiksmais.
 
-::: warning Rašoma
-Šis puslapis dar rašomas. Kai bus baigtas, jame bus skyriai **Kaip tai veikia**, **Veiksmai**,
-**Kas ką gali** ir **Pranešimai ir automatizavimas**, kaip [Rezervacijų](/rezervacijos/rezervacijos) skyriuje.
-:::
-
 <DocScreenshot name="action-window" narrow alt="Langas „Ką norėtum padaryti?“, atidaromas mygtuku „+ Sukurti“" caption="Mygtukas „+ Sukurti“ viršutinėje juostoje atveria šį langą." />
 
 ::: info Ko nematai – to neturi
@@ -60,12 +55,12 @@ Kuriant narį ar pareigybę, perspėjimas apie galimą dublikatą parodo sutapim
 
 Platforma turi bendrų mechanizmų, kurie vienodai veikia visose darbo srityse ir moduliuose:
 
-### Šiukšlinė ir atstatymas (Soft Deletes) {#siukšline}
+### Šiukšlinė ir atstatymas (Soft Deletes) {#siuksline}
 
 Turinio ir konfigūracijos įrašai (naujienos, puslapiai, baneriai, kalendoriaus renginiai, failai, ištekliai) palaiko laikiną ištrynimą:
 - Ištrintas įrašas nepašalinamas iš duomenų bazės iš karto – jis perkeliamas į **šiukšlinę** (atitinkamo sąrašo rodinys su `?showDeleted=true`).
 - Naudotojai, turintys įrašo trynimo teisę, gali jį **atkurti** mygtuku „Atkurti“.
-- Visiškas pašalinimas („Ištrinti visam laikui“) reikalauja atskiros teisės (pvz., `resources.forceDelete`, `news.forceDelete`), apsaugančios nuo netyčinio duomenų praradimo.
+- Visiškas pašalinimas („Ištrinti visam laikui“) reikalauja super administratoriaus teisės, apsaugančios nuo netyčinio duomenų praradimo.
 - **Operaciniai įrašai** (pvz., **rezervacijos**) į šiukšlinę nekeliami: juos ištrynus, įrašas iš karto negrįžtamai pašalinamas kartu su susijusiais tarpiniais duomenimis.
 
 ### Daugiakalbiškumas ir vertimai {#vertimai}
@@ -138,5 +133,5 @@ Būseną visada rodyk per `StatusBadge`, o ne savo spalvomis.
 - Stačiakampius kampus, šriftą ir fokuso apvadą naršyklėje tikrina `AdminDesignSurfaceTest`, šviesią
   temą pagal nutylėjimą – `DefaultThemeTest`, prieinamumo nustatymus – `AdminAccessibilityTest`,
   telefono juostą ir sparčiuosius klavišus – `AdminShellTest`, langą **+ Sukurti** – `ActionWindowTest`.
-- Laikiną ištrynimą (`SoftDeletes`) ir jo elgseną sąrašuose tikrina `SoftDeletableResourcesTest`.
+- Laikiną ištrynimą (`SoftDeletes`) ir jo elgseną sąrašuose tikrina `SoftDeletableResourcesTest`; visiškas ištrynimas reikalauja `*.forceDelete` teisės, kurią turi tik super administratorius.
 - Daugiakalbių laukų elgseną (Spatie `HasTranslations`, `toFullArray()` administravimo formose ir `toArray()` lokalizuotai peržiūrai) bei vertimų vientisumą užtikrina `TranslatableExpectationsTest` ir `TranslationIntegrityTest`.

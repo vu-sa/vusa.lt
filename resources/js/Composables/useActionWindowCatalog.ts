@@ -26,6 +26,7 @@ import {
   MessageSquareWarning,
   PencilLine,
   Settings2,
+  Target,
   UserCog,
   type LucideIcon,
 } from 'lucide-vue-next';
@@ -139,6 +140,14 @@ export function buildPersonas(): ActionWindowPersona[] {
           icon: FileText,
           requiresPermission: can => !!can.create.news,
           target: { kind: 'route', route: 'news.create' },
+        },
+        {
+          // Goals pilot: the server catalog only lists it inside the pilot.
+          key: 'new_goal',
+          title: $t('shell.actions.new_goal.title'),
+          icon: Target,
+          requiresPermission: can => !!can.create.goal,
+          target: { kind: 'route', route: 'goals.create' },
         },
         {
           key: 'duty_update',

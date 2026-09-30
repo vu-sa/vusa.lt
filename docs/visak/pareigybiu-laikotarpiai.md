@@ -76,7 +76,7 @@ pareigybės laikotarpį** (telefone – iš apačios). Joje:
 *Ex officio* laikotarpio (žr. [Ex officio pareigos](#ex-officio)) datų formoje keisti negalima, o
 užbaigti ar ištrinti jo nesiūloma.
 
-## Kaip veikia tvarkyklė
+## Kaip tai veikia
 
 <DocScreenshot name="dutiable-timeline" alt="Laikotarpių tvarkyklė: kairėje pareigybės ir nariai, per vidurį laikotarpių juostos ant kadencijų fono, dešinėje pažymėtas įrašas ir pasiūlymai" caption="Tamsios juostos – dabartinės pareigos, pilkos – pasibaigusios, fone – kadencijos." href="/mano/dutiables/timeline" />
 

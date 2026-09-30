@@ -25,6 +25,7 @@ export const LOCALIZED_ROUTE_SLUGS: Record<string, Record<string, string>> = {
   contactsString: { lt: 'kontaktai', en: 'contacts' },
   studentRepsString: { lt: 'studentu-atstovai', en: 'student-representatives' },
   contactCategoryString: { lt: 'kategorija', en: 'category' },
+  goalsString: { lt: 'tikslai', en: 'goals' },
 };
 
 /** Which localized parameters each route declares, so no unrelated slug lands in the query string. */
@@ -47,6 +48,8 @@ export const ROUTE_SLUG_PARAMETERS: Record<string, string[]> = {
   'contacts.dutyType': ['contactsString'],
   'contacts.studentRepresentatives': ['contactsString', 'studentRepsString'],
   'contacts.category': ['contactsString', 'contactCategoryString'],
+  'publicGoals.index': ['goalsString'],
+  'publicGoals.show': ['goalsString'],
 };
 
 /** The slug a parameter takes in a locale, falling back to Lithuanian. */

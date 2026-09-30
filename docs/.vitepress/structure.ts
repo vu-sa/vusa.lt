@@ -60,6 +60,7 @@ export const guide: GuideChapter[] = [
       { text: 'Darbotvarkės klausimai', link: '/visak/darbotvarkes-klausimai' },
       { text: 'Institucijos', link: '/visak/institucijos' },
       { text: 'Problemos', link: '/visak/problemos' },
+      { text: 'Tikslai (bandomoji)', link: '/visak/tikslai' },
       { text: 'Dokumentai', link: '/visak/dokumentai' },
       { text: 'Laikotarpių tvarkyklė', link: '/visak/pareigybiu-laikotarpiai' },
       { text: 'Institucijų grafas', link: '/visak/instituciju-grafas' },

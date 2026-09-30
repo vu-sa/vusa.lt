@@ -230,12 +230,19 @@ describe('per-persona visibility', function (): void {
             ->not->toContain('institucijos_grafas');
     });
 
+    test('problem categories are managed only by those who edit problems in every padalinys', function (): void {
+        $keysFor = fn (User $user): array => collect(collect($this->catalog->for($user)['workspaces'])->firstWhere('key', 'atstovavimas')['sections'] ?? [])->pluck('key')->all();
+
+        expect($keysFor(makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant)))->toContain('problemos')->not->toContain('problemu_kategorijos')
+            ->and($keysFor(makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant)))->toContain('problemu_kategorijos');
+    });
+
     test('a super admin sees every workspace and every section', function (): void {
         $user = makeAdminUser($this->tenant);
 
         expect(catalogSummary($this->catalog, $user))->toEqual([
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
-            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas'],
+            'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas', 'problemu_kategorijos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'navigacija', 'greitosios_nuorodos', 'renginiu_tipai', 'zymos', 'failai', 'dokumentai', 'studiju_rinkiniai'],
             'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'padaliniai', 'studiju_programos', 'formos'],
@@ -285,6 +292,9 @@ describe('per-persona visibility', function (): void {
 
 describe('route-coverage guard', function (): void {
     test('every admin index or landing route is in the catalog or excluded', function (): void {
+        // Route coverage includes the pilot section when a tenant participates.
+        $this->tenant->update(['goals_enabled' => true]);
+
         $indexRouteNames = collect(Route::getRoutes()->getRoutes())
             ->filter(fn ($route) => in_array('GET', $route->methods(), true))
             ->filter(fn ($route) => str_starts_with($route->uri(), 'mano'))
@@ -325,6 +335,8 @@ describe('route-coverage guard', function (): void {
 
 describe('route resolution', function (): void {
     test('every admin route belongs to a workspace or is deliberately workspace-less', function (): void {
+        $this->tenant->update(['goals_enabled' => true]);
+
         $workspaces = $this->catalog->for(makeAdminUser($this->tenant))['workspaces'];
 
         $unresolved = adminGetRouteNames()
@@ -399,9 +411,10 @@ describe('caching', function (): void {
 
         $this->catalog->for($user);
 
-        // Prove the second call reads the cache rather than recomputing: overwrite the cached
-        // value directly and confirm `for()` returns the overwritten value.
-        Cache::put(AdminNavigationCatalog::CACHE_PREFIX.$user->id, ['workspaces' => ['sentinel']], 1800);
+        $key = AdminNavigationCatalog::CACHE_PREFIX.$user->id;
+        $cached = Cache::get($key);
+        $cached['payload'] = ['workspaces' => ['sentinel']];
+        Cache::put($key, $cached, 1800);
 
         expect($this->catalog->for($user))->toBe(['workspaces' => ['sentinel']]);
     });

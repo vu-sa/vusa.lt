@@ -5,6 +5,7 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
+use App\Models\Problem;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
@@ -196,6 +197,24 @@ describe('authorized access', function (): void {
                 ->where('can.recordMeeting', true)
                 ->where('can.reportActivity', true)
                 ->loadDeferredProps('institutionPanels', fn ($panels) => $panels->where('management', null)));
+    });
+
+    test('the problems tab lists the institution\'s problems, unresolved first, after the first paint', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $resolved = Problem::factory()->resolved()->create(['tenant_id' => $this->tenant->id, 'occurred_at' => now()->subDay()]);
+        $open = Problem::factory()->create(['tenant_id' => $this->tenant->id, 'occurred_at' => now()->subMonth()]);
+        Problem::factory()->create(['tenant_id' => $this->tenant->id]);
+        $institution->problems()->attach([$resolved->id, $open->id]);
+
+        asUser($this->admin)->get(route('institutions.show', $institution))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('institution.problems_count', 2)
+                ->missing('problems')
+                ->loadDeferredProps('institutionPanels', fn ($panels) => $panels
+                    ->where('problems.0.id', $open->id)
+                    ->where('problems.1.id', $resolved->id)
+                    ->has('problems', 2)));
     });
 
     test('the record no longer sends the retired administrators alias', function (): void {

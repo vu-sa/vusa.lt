@@ -71,14 +71,34 @@
     </template>
 
     <template #veiksmai>
-      <div class="max-w-3xl space-y-4">
+      <!-- Goals pilot: steps are the record of what was done; the older free text stays above as a summary. -->
+      <div v-if="goalsExperiment" class="space-y-8">
+        <!-- eslint-disable-next-line vue/no-v-html -->
+        <div v-if="hasStepsTaken" class="prose prose-zinc dark:prose-invert max-w-3xl text-sm" v-html="localizedStepsTaken" />
+        <Deferred data="goalLinks">
+          <template #fallback>
+            <div class="space-y-2">
+              <div class="h-11 animate-pulse bg-muted" />
+              <div class="h-11 animate-pulse bg-muted" />
+            </div>
+          </template>
+          <ProblemStepsPanel
+            v-if="goalLinks"
+            :problem-id="problem.id"
+            :steps="goalLinks.steps"
+            :goals="goalLinks.goals"
+            :can-update="canUpdate"
+          />
+        </Deferred>
+      </div>
+      <div v-else class="max-w-3xl space-y-4">
         <!-- eslint-disable-next-line vue/no-v-html -->
         <div v-if="hasStepsTaken" class="prose prose-zinc dark:prose-invert max-w-none text-sm" v-html="localizedStepsTaken" />
         <EmptyState
           v-else
           :icon="List"
           :title="$t('Žingsniai dar neaprašyti')"
-          :description="$t('Aprašykite veiksmus, kurie jau buvo atlikti bandant išspręsti šią problemą.')"
+          :description="$t('Aprašyk veiksmus, kurie jau buvo atlikti bandant išspręsti šią problemą.')"
           :action-label="canUpdate ? $t('Pridėti žingsnius') : undefined"
           @action="router.visit(route('problems.edit', problem.id))"
         />
@@ -93,7 +113,7 @@
           v-else
           :icon="Lightbulb"
           :title="$t('Problema dar neišspręsta')"
-          :description="$t('Kai problema bus išspręsta, aprašykite sprendimą čia.')"
+          :description="$t('Kai problema bus išspręsta, aprašyk sprendimą čia.')"
           :action-label="canUpdate ? $t('Pridėti sprendimą') : undefined"
           @action="router.visit(route('problems.edit', problem.id))"
         />
@@ -125,6 +145,38 @@
       </div>
     </template>
 
+    <template #posedziai>
+      <ul class="max-w-3xl divide-y divide-border border-y border-border" data-testid="problem-agenda-items">
+        <li v-for="item in agendaItems" :key="item.id">
+          <Link
+            :href="route('agendaItems.show', item.id)"
+            class="flex min-h-11 items-center gap-4 px-2 py-3 transition-colors hover:bg-accent sm:px-3"
+          >
+            <span class="w-24 shrink-0 text-sm tabular-nums text-muted-foreground">
+              {{ item.start_time ? formatDate(new Date(item.start_time)) : '—' }}
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="block truncate text-sm font-medium text-foreground">{{ item.title }}</span>
+              <span v-if="item.institutions.length" class="block truncate text-xs text-muted-foreground">{{ item.institutions.join(', ') }}</span>
+            </span>
+            <ChevronRight class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </Link>
+        </li>
+      </ul>
+    </template>
+
+    <template v-if="goalsExperiment" #tikslai>
+      <Deferred data="goalLinks">
+        <template #fallback>
+          <div class="h-11 animate-pulse bg-muted" />
+        </template>
+        <LinkedGoalList v-if="goalLinks?.goals.length" :goals="goalLinks.goals" />
+        <p v-else class="text-sm text-muted-foreground">
+          {{ $t('goals.problem_panel.no_goals') }}
+        </p>
+      </Deferred>
+    </template>
+
     <template #activity>
       <RecordActivity commentable-type="problem" :commentable-id="problem.id" />
     </template>
@@ -133,7 +185,7 @@
   <ConfirmDialog
     v-model:open="showDeleteDialog"
     :title="$t('Šalinti problemą?')"
-    :description="$t('Ar tikrai norite ištrinti šią problemą? Problema bus perkelta į šiukšlinę.')"
+    :description="$t('Problema bus perkelta į šiukšlinę.')"
     :confirm-label="$t('Šalinti')"
     destructive
     @confirm="handleDelete"
@@ -141,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { Link, router } from '@inertiajs/vue3';
+import { Deferred, Link, router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import {
   Building2,
@@ -163,15 +215,24 @@ import { Button } from '@/Components/ui/button';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { problemStatuses, type ProblemStatus } from '@/Constants/statuses';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
+import LinkedGoalList from '@/Features/Admin/Goals/LinkedGoalList.vue';
+import ProblemStepsPanel from '@/Features/Admin/Goals/ProblemStepsPanel.vue';
+import type { ProblemGoalLinks } from '@/Features/Admin/Goals/types';
 import { ModelEnum } from '@/Types/enums';
 import { formatDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
   problem: App.Entities.Problem;
+  /** Where representatives raised the problem, limited to meetings the reader may open. */
+  agendaItems?: { id: string; title: string; meeting_id: string; start_time: string | null; institutions: string[] }[];
   canUpdate: boolean;
   canDelete: boolean;
+  /** Goals pilot: set only inside it, with `goalLinks` deferred. */
+  goalsExperiment?: boolean;
+  goalLinks?: ProblemGoalLinks;
 }>();
 
+const agendaItems = computed(() => props.agendaItems ?? []);
 const showDeleteDialog = ref(false);
 const statusChanging = ref(false);
 const currentSection = ref('aprasymas');
@@ -222,9 +283,11 @@ const recordFacts = computed<RecordFact[]>(() => [
 
 const tabs = computed<RecordPageSection[]>(() => [
   { value: 'aprasymas', label: $t('Aprašymas') },
-  { value: 'veiksmai', label: $t('Atlikti žingsniai'), count: hasStepsTaken.value ? 1 : 0 },
+  { value: 'veiksmai', label: $t('Atlikti žingsniai'), count: props.goalLinks ? props.goalLinks.steps.length : hasStepsTaken.value ? 1 : 0 },
   { value: 'sprendimas', label: $t('Sprendimas'), count: hasSolution.value ? 1 : 0 },
+  ...(agendaItems.value.length ? [{ value: 'posedziai', label: $t('Svarstyta posėdžiuose'), count: agendaItems.value.length }] : []),
   ...(props.problem.institutions?.length ? [{ value: 'institucijos', label: $tChoice('entities.institution.model', 2), count: props.problem.institutions.length }] : []),
+  ...(props.goalsExperiment ? [{ value: 'tikslai', label: $t('goals.problem_panel.goals'), count: props.goalLinks?.goals.length }] : []),
 ]);
 
 const allStatusDefinitions = [

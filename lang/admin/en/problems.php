@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'categories' => [
+        'in_use' => '{1} The category is used by :count problem and cannot be deleted.|[2,*] The category is used by :count problems and cannot be deleted.',
+    ],
+    'linked' => 'Problem linked.',
+    'unlinked' => 'Problem unlinked.',
     'form' => [
         'instructions' => 'Fields marked with an asterisk (*) are required; you can skip the rest.',
     ],
@@ -10,7 +15,7 @@ return [
         'tenant' => 'The unit where the problem was registered. The institutions list is filtered by it.',
         'status' => 'Open — not yet addressed; In progress — currently being solved; Resolved — completed.',
         'occurred_at' => 'The date the problem occurred or was noticed.',
-        'resolved_at' => 'Fill in only once the problem has been resolved.',
+        'resolved_at' => 'When marked as resolved without a date, today is used.',
         'responsible_user' => 'The person responsible for solving the problem. Search by name.',
         'categories' => 'Pick one or more categories — each option shows a description to help you choose.',
         'institutions' => 'Institutions (e.g. faculty council, SPC) the problem relates to.',
@@ -26,6 +31,6 @@ return [
         'resolved_at_after' => 'The resolved date must be after or equal to the occurred date.',
         'status_in' => 'The selected status is invalid.',
         'categories_exist' => 'One or more selected categories are invalid.',
-        'institutions_exist' => 'One or more selected institutions are invalid.',
+        'institutions_in_tenant' => 'Only institutions of this unit can be linked.',
     ],
 ];

@@ -143,6 +143,12 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
             ->whereIn('contactCategoryString', LocalizedRouteSlugs::accepted('contactCategoryString'))
             ->name('contacts.category');
 
+        // Goals pilot — App\Support\Experiments\GoalsExperiment; the controller 404s outside the pilot.
+        Route::get('{goalsString}', [Public\GoalController::class, 'index'])->name('publicGoals.index')
+            ->whereIn('goalsString', LocalizedRouteSlugs::accepted('goalsString'));
+        Route::get('{goalsString}/{goal}', [Public\GoalController::class, 'show'])->name('publicGoals.show')
+            ->whereIn('goalsString', LocalizedRouteSlugs::accepted('goalsString'));
+
         Route::get('{newsString}/{news}', [Public\NewsController::class, 'news'])
             ->whereIn('newsString', ['naujiena', 'news'])
             ->name('news');

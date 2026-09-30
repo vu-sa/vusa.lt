@@ -164,6 +164,8 @@ Route::post('calendar/{calendar}/duplicate', [CalendarController::class, 'duplic
 Route::delete('calendar/{calendar}/public-urls/{publicUrl}', [CalendarController::class, 'destroyPublicUrl'])->name('calendar.publicUrls.destroy');
 Route::resource('agendaItems', AgendaItemController::class)->except(['create']);
 Route::post('agendaItems/reorder', [AgendaItemController::class, 'reorder'])->name('agendaItems.reorder');
+Route::post('agendaItems/{agendaItem}/problems', [AgendaItemProblemController::class, 'store'])->name('agendaItems.problems.store');
+Route::delete('agendaItems/{agendaItem}/problems/{problem}', [AgendaItemProblemController::class, 'destroy'])->name('agendaItems.problems.destroy');
 Route::resource('votes', VoteController::class)->except(['index', 'create', 'show', 'edit']);
 Route::post('votes/{vote}/set-main', [VoteController::class, 'setMain'])->name('votes.setMain');
 Route::resource('meetings', MeetingController::class)->except(['create']);
@@ -269,6 +271,25 @@ Route::resource('forms', FormController::class);
 
 Route::patch('problems/{problem}/status', [ProblemController::class, 'updateStatus'])->name('problems.updateStatus');
 Route::resource('problems', ProblemController::class);
+Route::resource('problemCategories', ProblemCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
+
+// Goals pilot — App\Support\Experiments\GoalsExperiment. A 404 outside the pilot.
+Route::middleware('experiment.goals')->group(function (): void {
+    Route::resource('goals', GoalController::class);
+    Route::post('goals/{goal}/problems', [GoalController::class, 'linkProblem'])->name('goals.problems.link');
+    Route::post('agendaItems/{agendaItem}/goals', [AgendaItemGoalController::class, 'store'])->name('agendaItems.goals.store');
+    Route::delete('agendaItems/{agendaItem}/goals/{goal}', [AgendaItemGoalController::class, 'destroy'])->name('agendaItems.goals.destroy');
+    Route::delete('goals/{goal}/problems/{problem}', [GoalController::class, 'unlinkProblem'])->name('goals.problems.unlink');
+
+    Route::scopeBindings()->group(function (): void {
+        Route::post('goals/{goal}/steps', [StepController::class, 'storeForGoal'])->name('goals.steps.store');
+        Route::patch('goals/{goal}/steps/{step}', [StepController::class, 'updateForGoal'])->name('goals.steps.update');
+        Route::delete('goals/{goal}/steps/{step}', [StepController::class, 'destroyForGoal'])->name('goals.steps.destroy');
+        Route::post('problems/{problem}/steps', [StepController::class, 'storeForProblem'])->name('problems.steps.store');
+        Route::patch('problems/{problem}/steps/{step}', [StepController::class, 'updateForProblem'])->name('problems.steps.update');
+        Route::delete('problems/{problem}/steps/{step}', [StepController::class, 'destroyForProblem'])->name('problems.steps.destroy');
+    });
+});
 
 Route::resource('types', TypeController::class);
 Route::put('types/{type}/models', [TypeController::class, 'syncModels'])->name('types.models.sync');

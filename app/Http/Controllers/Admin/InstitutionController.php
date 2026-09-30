@@ -14,6 +14,7 @@ use App\Http\Requests\ReorderDutiesRequest;
 use App\Http\Requests\StoreInstitutionRequest;
 use App\Http\Requests\UpdateInstitutionRequest;
 use App\Http\Resources\InstitutionMeetingResource;
+use App\Http\Resources\ProblemSummaryResource;
 use App\Http\Resources\TaskResource;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
@@ -22,6 +23,7 @@ use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
+use App\Models\Problem;
 use App\Models\StudyProgram;
 use App\Models\Task;
 use App\Models\Type;
@@ -119,7 +121,7 @@ class InstitutionController extends AdminController
         $readOnly = ! Gate::allows('view', $institution);
 
         $institution->load('tenant:id,shortname', 'types', 'duties.current_users', 'checkIns')
-            ->loadCount(['comments' => fn ($query) => $query->notErased(), 'duties', 'meetings', 'tasks', 'tasksFromMeetings']);
+            ->loadCount(['comments' => fn ($query) => $query->notErased(), 'duties', 'meetings', 'problems', 'tasks', 'tasksFromMeetings']);
         $showsMeetings = ! $readOnly || $institution->has_public_meetings;
 
         $institution->append(['has_public_meetings', 'meeting_periodicity_days', 'governance_scope']);
@@ -193,6 +195,7 @@ class InstitutionController extends AdminController
                 'comments_count' => $institution->comments_count,
                 'duties_count' => $institution->duties_count,
                 'meetings_count' => $institution->meetings_count,
+                'problems_count' => $institution->problems_count,
                 'tasks_count' => $tasksCount + $tasksFromMeetingsCount,
                 'related_institutions_count' => RelationshipService::getRelatedInstitutionsCached($institution)->count(),
                 'managers' => $managers,
@@ -243,6 +246,14 @@ class InstitutionController extends AdminController
                     ->sortByDesc('created_at')
                     ->values()
             )->resolve(), 'institutionPanels'),
+            // Problems are a knowledge base every member reads, so the public face shows them too.
+            'problems' => Inertia::defer(fn () => ProblemSummaryResource::collection(
+                $institution->problems()
+                    ->with(['tenant:id,shortname', 'responsibleUser:id,name'])
+                    ->orderByRaw("status = 'resolved'")
+                    ->orderByDesc('occurred_at')
+                    ->get()
+            )->resolve(), 'institutionPanels'),
             'relatedInstitutions' => $readOnly ? [] : Inertia::defer(fn () => RelationshipService::getRelatedInstitutionsCached($institution)
                 ->map(fn (array $item) => [
                     'id' => $item['institution']->id,
@@ -258,6 +269,7 @@ class InstitutionController extends AdminController
                 'update' => $user?->can('update', $institution) ?? false,
                 'delete' => $user?->can('delete', $institution) ?? false,
                 'recordMeeting' => ! $readOnly && ($user?->can('createFor', [Meeting::class, $institution]) ?? false),
+                'createProblem' => $user?->can('create', Problem::class) ?? false,
                 'reportActivity' => ! $readOnly && ($user?->can('create', [InstitutionCheckIn::class, $institution]) ?? false),
             ],
             // Terms and secretary rosters are associations, edited on the record rather than in the

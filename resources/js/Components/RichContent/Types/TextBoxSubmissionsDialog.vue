@@ -23,6 +23,7 @@
 
     <DialogContent
       class="top-auto bottom-0 left-0 flex h-[92dvh] w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden p-0 md:top-1/2 md:bottom-auto md:left-1/2 md:h-[min(85vh,46rem)] md:w-[min(96vw,42rem)] md:-translate-x-1/2 md:-translate-y-1/2 sm:max-w-none"
+      :style="isMobile ? { top: 'auto', bottom: '0', left: '0', translate: 'none' } : undefined"
       :show-close-button="false"
     >
       <!-- Modal header -->
@@ -53,6 +54,7 @@
             <a
               :href="exportUrl"
               target="_blank"
+              rel="noopener"
               :class="buttonVariants({ variant: 'outline', size: 'sm' })"
             >
               <Download class="size-4" />
@@ -173,8 +175,8 @@
             @update:page="goToPage"
           >
             <PaginationContent v-slot="{ items }" class="flex items-center justify-center gap-1">
-              <PaginationFirst />
-              <PaginationPrevious />
+              <PaginationFirst :aria-label="$t('rich-content.first_page')" />
+              <PaginationPrevious :aria-label="$t('rich-content.previous_page')" />
               <template v-for="item in items" :key="item.type === 'page' ? item.value : item.type">
                 <PaginationItem v-if="item.type === 'page'" :value="item.value" as-child>
                   <button
@@ -190,8 +192,8 @@
                 </PaginationItem>
                 <PaginationEllipsis v-else :key="item.type" :index="item.index" />
               </template>
-              <PaginationNext />
-              <PaginationLast />
+              <PaginationNext :aria-label="$t('rich-content.next_page')" />
+              <PaginationLast :aria-label="$t('rich-content.last_page')" />
             </PaginationContent>
           </Pagination>
         </div>
@@ -229,6 +231,7 @@ import { useToasts } from '@/Composables/useToasts';
 import type { ApiResponse } from '@/Types/api.d';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { Button, buttonVariants } from '@/Components/ui/button';
+import { useIsMobile } from '@/Composables/useIsMobile';
 import {
   Dialog,
   DialogContent,
@@ -272,6 +275,7 @@ const props = defineProps<{
 }>();
 
 const toasts = useToasts();
+const isMobile = useIsMobile();
 
 const open = ref(false);
 const currentPage = ref(1);

@@ -162,7 +162,7 @@ tik jos ištekliai.
 ## Kas ką gali {#teises}
 
 Čia svarbios dvi rolės: rezervacijos **teikėjas** ir
-[išteklių administratorius](/rezervacijos/#isteklu-administratorius).
+[išteklių administratorius](/rezervacijos/#istekliu-administratorius).
 
 | Veiksmas | Bet kuris narys | Teikėjas | Išteklių administratorius |
 |---|---|---|---|

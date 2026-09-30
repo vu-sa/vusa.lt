@@ -27,6 +27,7 @@ import Notebook24Regular from '~icons/fluent/notebook24-regular';
 import DocumentSettings20Regular from '~icons/fluent/document-settings20-regular';
 import Person24Regular from '~icons/fluent/person24-regular';
 import Alert24Regular from '~icons/fluent/alert24-regular';
+import Target24Regular from '~icons/fluent/target24-regular';
 import DocumentBulletList24Filled from '~icons/fluent/document-bullet-list24-filled';
 import ImageArrowBack24Filled from '~icons/fluent/image-arrow-back24-filled';
 import CalendarLtr24Filled from '~icons/fluent/calendar-ltr24-filled';
@@ -53,6 +54,7 @@ import Notebook24Filled from '~icons/fluent/notebook24-filled';
 import DocumentSettings20Filled from '~icons/fluent/document-settings20-filled';
 import Person24Filled from '~icons/fluent/person24-filled';
 import Alert24Filled from '~icons/fluent/alert24-filled';
+import Target24Filled from '~icons/fluent/target24-filled';
 
 // =============================================================================
 // TREE-SHAKABLE EXPORTS - Clean, concise naming
@@ -68,6 +70,7 @@ export const DutyIcon = PuzzlePiece24Regular;
 export const EventTypeIcon = TextBulletListSquare24Regular;
 export const FileIcon = DocumentMultiple24Regular;
 export const FormIcon = DocumentBulletList24Regular;
+export const GoalIcon = Target24Regular;
 export const InstitutionIcon = PeopleTeam24Regular;
 export const MeetingIcon = DeviceMeetingRoomRemote24Regular;
 export const NavigationIcon = Navigation24Regular;
@@ -103,6 +106,7 @@ export const DutyIconFilled = PuzzlePiece24Filled;
 export const EventTypeIconFilled = TextBulletListSquare24Filled;
 export const FileIconFilled = DocumentMultiple24Filled;
 export const FormIconFilled = DocumentBulletList24Filled;
+export const GoalIconFilled = Target24Filled;
 export const InstitutionIconFilled = PeopleTeam24Filled;
 export const MeetingIconFilled = DeviceMeetingRoomRemote24Filled;
 export const NavigationIconFilled = Navigation24Filled;

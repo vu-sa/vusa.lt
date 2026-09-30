@@ -1,23 +1,21 @@
 <template>
   <div v-if="modelValue && options" class="flex flex-col gap-4">
     <div class="space-y-2">
-      <label for="social-embed-url" class="text-sm font-medium text-foreground">
+      <label :for="urlId" class="text-sm font-medium text-foreground">
         {{ $t('Facebook arba Instagram įrašo nuoroda') }}
       </label>
       <Input
-        id="social-embed-url"
+        :id="urlId"
         v-model="modelValue.url"
         type="url"
         variant="surface"
         placeholder="https://www.facebook.com/... arba https://www.instagram.com/p/..."
-        @input="detectPlatform"
       />
       <p class="text-xs text-muted-foreground">
         {{ $t('Įklijuokite Facebook arba Instagram įrašo nuorodą') }}
       </p>
     </div>
 
-    <!-- Platform detection indicator -->
     <div v-if="detectedPlatform" class="flex items-center gap-2 text-sm">
       <div class="flex items-center gap-1.5 border border-border bg-secondary px-2.5 py-1 text-foreground">
         <component :is="platformIcon" class="h-4 w-4" />
@@ -31,18 +29,16 @@
       </span>
     </div>
 
-    <!-- Options -->
     <div class="flex min-h-11 items-center gap-2">
       <Checkbox
-        id="showCaption"
+        :id="captionId"
         v-model="options.showCaption"
       />
-      <label for="showCaption" class="text-sm text-foreground">
+      <label :for="captionId" class="text-sm text-foreground">
         {{ $t('Rodyti įrašo aprašymą') }}
       </label>
     </div>
 
-    <!-- Live preview -->
     <div v-if="isValidUrl && detectedPlatform" class="mt-4 space-y-2">
       <p class="text-sm font-medium text-foreground">
         {{ $t('Peržiūra') }}
@@ -56,7 +52,6 @@
       </div>
     </div>
 
-    <!-- Help text -->
     <div class="border-l border-border bg-secondary/50 p-3">
       <p class="text-xs text-muted-foreground">
         <strong>{{ $t('Kaip gauti nuorodą') }}:</strong><br>
@@ -72,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue';
+import { computed, defineAsyncComponent, useId, watch } from 'vue';
 import { CircleCheck, TriangleAlert } from 'lucide-vue-next';
 
 import { Checkbox } from '@/Components/ui/checkbox';
@@ -82,48 +77,41 @@ import FacebookIcon from '~icons/simple-icons/facebook';
 import InstagramIcon from '~icons/simple-icons/instagram';
 
 const SocialEmbedPreview = defineAsyncComponent(() => import('./SocialEmbedPreview.vue'));
+const urlId = useId();
+const captionId = useId();
 
 const modelValue = defineModel<SocialEmbed['json_content']>();
 
 const options = defineModel<SocialEmbed['options']>('options');
 
-// URL patterns for platform detection
-// Facebook URLs can be in many formats:
-// - https://www.facebook.com/username/posts/pfbid...
-// - https://www.facebook.com/photo/?fbid=...
-// - https://www.facebook.com/permalink.php?story_fbid=...
-// - https://fb.watch/...
-// All patterns are anchored at start (^) with scheme (https?://) and domain to prevent injection attacks
+// Anchor supported hosts to reject lookalike domains.
 const FACEBOOK_PATTERNS = [
-  /^https?:\/\/(?:www\.)?facebook\.com\/[\w.-]+\/posts\/[\w]+/i, // username/posts/id or pfbid
-  /^https?:\/\/(?:www\.)?facebook\.com\/photo\/?\?fbid=/i, // photo?fbid=
-  /^https?:\/\/(?:www\.)?facebook\.com\/[\w.-]+\/photos\//i, // username/photos/
-  /^https?:\/\/(?:www\.)?facebook\.com\/[\w.-]+\/videos\//i, // username/videos/
-  /^https?:\/\/(?:www\.)?facebook\.com\/permalink\.php/i, // permalink.php
-  /^https?:\/\/(?:www\.)?facebook\.com\/watch\//i, // watch/
-  /^https?:\/\/(?:www\.)?facebook\.com\/reel\//i, // reel/
-  /^https?:\/\/(?:www\.)?facebook\.com\/share\//i, // share/
-  /^https?:\/\/fb\.watch\/[\w]+/i, // fb.watch short URLs
+  /^https?:\/\/(?:www\.)?facebook\.com\/[\w.-]+\/posts\/[\w]+/i,
+  /^https?:\/\/(?:www\.)?facebook\.com\/photo\/?\?fbid=/i,
+  /^https?:\/\/(?:www\.)?facebook\.com\/[\w.-]+\/photos\//i,
+  /^https?:\/\/(?:www\.)?facebook\.com\/[\w.-]+\/videos\//i,
+  /^https?:\/\/(?:www\.)?facebook\.com\/permalink\.php/i,
+  /^https?:\/\/(?:www\.)?facebook\.com\/watch\//i,
+  /^https?:\/\/(?:www\.)?facebook\.com\/reel\//i,
+  /^https?:\/\/(?:www\.)?facebook\.com\/share\//i,
+  /^https?:\/\/fb\.watch\/[\w]+/i,
 ];
 
 const INSTAGRAM_PATTERNS = [
-  /^https?:\/\/(?:www\.)?instagram\.com\/p\/[\w-]+/i, // posts
-  /^https?:\/\/(?:www\.)?instagram\.com\/reel\/[\w-]+/i, // reels
-  /^https?:\/\/(?:www\.)?instagram\.com\/tv\/[\w-]+/i, // IGTV
-  /^https?:\/\/instagr\.am\/p\/[\w-]+/i, // short URL posts
+  /^https?:\/\/(?:www\.)?instagram\.com\/p\/[\w-]+/i,
+  /^https?:\/\/(?:www\.)?instagram\.com\/reel\/[\w-]+/i,
+  /^https?:\/\/(?:www\.)?instagram\.com\/tv\/[\w-]+/i,
+  /^https?:\/\/instagr\.am\/p\/[\w-]+/i,
 ];
 
-// Detect platform from URL
 const detectedPlatform = computed(() => {
   if (!modelValue.value?.url) return null;
 
   const { url } = modelValue.value;
 
-  // Check Facebook patterns (all anchored at start with scheme)
   if (FACEBOOK_PATTERNS.some(pattern => pattern.test(url))) {
     return 'facebook';
   }
-  // Also accept any facebook.com URL with a path longer than just /
   if (/^https?:\/\/(?:www\.)?facebook\.com\/\S+/.test(url)) {
     return 'facebook';
   }
@@ -135,7 +123,6 @@ const detectedPlatform = computed(() => {
   return null;
 });
 
-// Check if URL is valid
 const isValidUrl = computed(() => {
   if (!modelValue.value?.url) return false;
   try {
@@ -159,10 +146,9 @@ const platformLabel = computed(() => {
   return '';
 });
 
-// Update platform in model when URL changes
-function detectPlatform() {
+watch(detectedPlatform, (platform) => {
   if (modelValue.value) {
-    modelValue.value.platform = detectedPlatform.value;
+    modelValue.value.platform = platform;
   }
-}
+});
 </script>

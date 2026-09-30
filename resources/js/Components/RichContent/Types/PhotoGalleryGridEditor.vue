@@ -16,15 +16,15 @@
       <div class="space-y-3">
         <div class="space-y-2">
           <span class="text-sm text-foreground">{{ $t('rich-content.columns') }}</span>
-          <FormSegmentedControl v-model="options.columns" :options="columnOptions" :aria-label="$t('rich-content.columns')" />
+          <FormSegmentedControl v-model="columnsChoice" :options="columnOptions" :aria-label="$t('rich-content.columns')" />
         </div>
         <div class="space-y-2">
           <span class="text-sm text-foreground">{{ $t('rich-content.gap_size') }}</span>
-          <FormSegmentedControl v-model="options.gap" :options="gapOptions" :aria-label="$t('rich-content.gap_size')" />
+          <FormSegmentedControl v-model="gapChoice" :options="gapOptions" :aria-label="$t('rich-content.gap_size')" />
         </div>
         <div class="flex min-h-11 items-center gap-3">
-          <Switch id="gallery-lightbox" v-model="options.showLightbox" />
-          <label for="gallery-lightbox" class="text-sm text-foreground">
+          <Switch :id="lightboxId" v-model="options.showLightbox" />
+          <label :for="lightboxId" class="text-sm text-foreground">
             {{ $t('rich-content.enable_lightbox') }}
           </label>
         </div>
@@ -51,8 +51,6 @@
       </RCImageTileGrid>
     </Field>
 
-    <!-- Per-image height + decorations — kept in a dialog rather than the hover menu
-         (decorations are a small form, not a one-click toggle). -->
     </template>
     <Dialog v-if="!isMobile" v-model:open="showTileSettings">
       <DialogContent class="max-h-[85vh] max-w-lg overflow-y-auto">
@@ -66,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, useId } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowLeft, Settings2 } from 'lucide-vue-next';
 
@@ -88,9 +86,18 @@ const options = defineModel<PhotoGalleryGrid['options']>('options', {
 });
 const json_content = defineModel<PhotoGalleryGrid['json_content']>({ default: () => [] });
 const isMobile = useIsMobile();
+const lightboxId = useId();
 
 const columnOptions = computed(() => (['2', '3', '4'] as const).map(value => ({ value, label: value })));
 const gapOptions = computed(() => (['small', 'medium', 'large'] as const).map(value => ({ value, label: $t(`rich-content.${value}`) })));
+const columnsChoice = computed({
+  get: () => options.value?.columns ?? '4',
+  set: (value: '2' | '3' | '4') => { options.value!.columns = value; },
+});
+const gapChoice = computed({
+  get: () => options.value?.gap ?? 'medium',
+  set: (value: 'small' | 'medium' | 'large') => { options.value!.gap = value; },
+});
 
 function createImage(): PhotoGalleryGrid['json_content'][number] {
   return {
@@ -101,7 +108,6 @@ function createImage(): PhotoGalleryGrid['json_content'][number] {
   };
 }
 
-// Per-image settings dialog, opened from RCImageTileGrid's hover menu.
 const showTileSettings = ref(false);
 const tileSettingsIndex = ref<number | null>(null);
 const activeImage = computed(() => (tileSettingsIndex.value !== null ? json_content.value?.[tileSettingsIndex.value] : null));

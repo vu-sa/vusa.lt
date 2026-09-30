@@ -25,8 +25,8 @@ teisę matyti puslapius.
 | Greitosios nuorodos | `/mano/quickLinks` |
 | Renginių tipai | `/mano/eventTypes` |
 | Žymos | `/mano/tags` |
-| Failai | `/mano/files` (reikia `files.read.padalinys`) |
-| Dokumentai | `/mano/documents` (reikia `documents.read.padalinys`) |
+| Failai | `/mano/files` |
+| Dokumentai | `/mano/documents` |
 | Studijų rinkiniai | `/mano/studySets` |
 
 Mygtukas **+ Sukurti** šioje srityje siūlo **Nauja naujiena**.

@@ -129,6 +129,27 @@
       </Deferred>
     </template>
 
+    <template #problems>
+      <Deferred data="problems">
+        <template #fallback>
+          <div class="space-y-3">
+            <div v-for="n in 2" :key="n" class="h-12 animate-pulse border border-border bg-secondary/60" />
+          </div>
+        </template>
+        <div class="space-y-4" data-testid="institution-problems">
+          <div v-if="can.createProblem" class="flex justify-end">
+            <Button as-child variant="outline" size="sm" voice="sentence">
+              <Link :href="route('problems.create', { institution: institution.id })">
+                <Plus aria-hidden="true" />
+                {{ $t('Nauja problema') }}
+              </Link>
+            </Button>
+          </div>
+          <ProblemSummaryList :problems="problems ?? []" />
+        </div>
+      </Deferred>
+    </template>
+
     <template #files>
       <FileableFilesPanel
         :fileable="{ id: institution.id, type: 'Institution' }"
@@ -198,7 +219,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
-import { Deferred, router, usePage } from '@inertiajs/vue3';
+import { Deferred, Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   Bell,
@@ -210,6 +231,7 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
+  Plus,
 } from 'lucide-vue-next';
 
 import { CadenceSection } from '@/Components/Cadences';
@@ -223,6 +245,8 @@ import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
+import ProblemSummaryList, { type ProblemSummary } from '@/Components/Problems/ProblemSummaryList.vue';
+import { Button } from '@/Components/ui/button';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { enterInstitution } from '@/Composables/useRecordTrail';
@@ -252,9 +276,11 @@ import type { DutyWithUsers, UserWithPivot } from '@/Components/AdminForms/DutyC
 const props = defineProps<{
   institution: InstitutionPageData & { tenant?: { id: number; shortname: string } | null };
   overview: InstitutionOverviewData;
-  can: { update: boolean; delete: boolean; recordMeeting: boolean; reportActivity: boolean };
+  can: { update: boolean; delete: boolean; recordMeeting: boolean; reportActivity: boolean; createProblem?: boolean };
   duties?: InstitutionPageDuty[];
   meetings?: InstitutionPageMeeting[];
+  /** Deferred (`institutionPanels`). */
+  problems?: ProblemSummary[];
   tasks?: InstitutionPageTask[];
   relatedInstitutions?: InstitutionPageRelatedInstitution[];
   /** Deferred (`files`). */
@@ -291,6 +317,10 @@ const { currentTab: currentSection } = useShowPageData({
   defaultTab: 'overview',
 });
 
+const problemsTab = computed<RecordPageSection[]>(() => (props.institution.problems_count ?? 0) > 0
+  ? [{ value: 'problems', label: $t('Problemos'), count: props.institution.problems_count }]
+  : []);
+
 /** Dropped rather than disabled when there is nothing to show — a tab that cannot be opened is worse than none. */
 const tabs = computed<RecordPageSection[]>(() => {
   // A reader outside the institution gets its public face; meetings only where they are public.
@@ -301,6 +331,7 @@ const tabs = computed<RecordPageSection[]>(() => {
       ...(props.institution.has_public_meetings
         ? [{ value: 'meetings', label: $t('Posėdžiai'), count: props.institution.meetings_count }]
         : []),
+      ...problemsTab.value,
     ];
   }
 
@@ -312,6 +343,7 @@ const tabs = computed<RecordPageSection[]>(() => {
     ...(props.institution.related_institutions_count > 0
       ? [{ value: 'related', label: $t('Ryšiai'), count: props.institution.related_institutions_count }]
       : []),
+    ...problemsTab.value,
     { value: 'files', label: $t('Failai') },
     { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.tasks ?? []) },
   ];

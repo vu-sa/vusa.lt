@@ -54,6 +54,12 @@ tarptautinių organų atstovams koordinatorius nerodomas.
 posėdžių užduotys. **Koordinatorius** padeda visiems padalinio atstovams, bet jų užduočių negauna.
 :::
 
+### Problema {#problema}
+
+**Problema** – studentams aktualus trukdis, užregistruotas bendroje visų padalinių žinių bazėje. Ją
+galima susieti su institucijomis ir darbotvarkės klausimais, kuriuose ji svarstyta, o išsprendus –
+aprašyti sprendimą. Plačiau – [Problemos](/visak/problemos).
+
 ## Kas mato šią sritį
 
 Sritis rodoma, jei matai bent vieną jos skiltį. Abi apžvalgos atsiveria **visiems** nariams, o
@@ -68,9 +74,11 @@ kitos skiltys – pagal rolę.
 | Posėdžiai | `/mano/meetings` | Visi – viešus ir savo institucijų posėdžius; kitus – pagal rolę |
 | Darbotvarkės klausimai | `/mano/agendaItems` | Kaip posėdžius |
 | Dokumentai | `/mano/documents` | Turintys teisę matyti dokumentus |
-| Problemos | `/mano/problems` | Turintys teisę matyti problemas |
+| Problemos | `/mano/problems` | Visi |
 | Laikotarpių tvarkyklė | `/mano/dutiables/timeline` | Komunikacijos ir studentų atstovų koordinatoriai |
 | Institucijų grafas | `/mano/institutionGraph` | Turintys teisę matyti padalinio institucijas |
+| Problemų kategorijos | `/mano/problemCategories` | Centrinio biuro koordinatoriai, redaguojantys visų padalinių problemas |
+| Tikslai *(bandomoji)* | `/mano/goals` | Tik bandomųjų padalinių nariai |
 
 Mygtukas **+ Sukurti** šioje srityje siūlo: **Fiksuoti posėdį**, **Posėdžio nebuvo**, **Užbaigti
 posėdį** (reikia teisės kurti posėdžius) ir **Nauja problema** (reikia teisės kurti problemas).
@@ -82,3 +90,12 @@ posėdį** (reikia teisės kurti posėdžius) ir **Nauja problema** (reikia teis
 - [Užduotys](/visak/uzduociu-suvestine) – visų padalinio atstovų užduotys.
 - [Posėdžiai](/visak/posedziai), [Darbotvarkės klausimai](/visak/darbotvarkes-klausimai),
   [Institucijos](/visak/institucijos), [Problemos](/visak/problemos), [Dokumentai](/visak/dokumentai).
+- [Tikslai](/visak/tikslai) – *bandomoji funkcija*: padalinio kadencijos tikslai ir kas jiems padaryta.
+
+## Techninė informacija {#technine-informacija}
+
+- Institucijų valdysenos rūšis ir apimtį nustato `InstitutionScopeResolver`, testuojamas `InstitutionScopeTest`.
+- Koordinatoriaus atranką pagal organą, tipą ar padalinį atlieka `ResponsibilityResolver`, testuojamas `ResponsibilityResolverTest`.
+- Koordinatorių rodymą atstovų ekranuose ir pradžios kortelėse tikrina `CoordinatorOnRepScreensTest`.
+- Pranešimų šablonų generavimą ir koordinatoriaus kontaktų priskyrimą tikrina `MailTemplateRenderTest`.
+- ViSAK skilčių rodymą pagal naudotojo teises navigacijos kataloge tikrina `AdminNavigationCatalogTest`.

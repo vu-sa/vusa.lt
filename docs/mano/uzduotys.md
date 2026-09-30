@@ -4,6 +4,7 @@ area: tasks
 models: [Task]
 last_reviewed: 2026-09-27
 tests:
+  - tests/Browser/VisakOverviewPagesTest.php
   - tests/Feature/Admin/Dashboard/UserTasksTest.php
   - tests/Feature/Tasks/TaskCompletionTest.php
   - tests/Feature/Tasks/TaskDeletionTest.php
@@ -31,6 +32,8 @@ užbaigiamos pačios.
 
 Tavo užduotys pasiekiamos adresu `/mano/tasks` (**Mano → Užduotys**). Tas pats sąrašas visiems
 padalinio atstovams yra ViSAK srityje – žr. [Užduočių suvestinė](/visak/uzduociu-suvestine).
+
+<DocScreenshot name="tasks-index" alt="Užduočių sąrašas: greitieji filtrai Vėluoja, Automatinės ir Atliktos, užduotys su terminais ir pažymėtos užduoties peržiūra" caption="Atstovės užduotys: viena vėluoja, dauguma bus užbaigtos automatiškai." />
 
 ## Kaip tai veikia
 

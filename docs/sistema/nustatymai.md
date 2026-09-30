@@ -10,7 +10,7 @@ tests:
 
 # Nustatymai
 
-Sistemos ir formų nustatymai. Skiltis matoma tik turintiems `manage-settings` leidimą.
+Sistemos ir formų nustatymai. Skiltis matoma tik turintiems nustatymų tvarkymo prieigą (pvz., platformos administratoriams).
 
 Skiltis pasiekiama adresu `/mano/settings`.
 

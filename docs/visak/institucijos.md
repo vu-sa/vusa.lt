@@ -97,6 +97,7 @@ viešumas ir koordinatoriai. Skirtukai:
 | **Posėdžiai** | Visi institucijos posėdžiai |
 | **Kadencijos ir sekretoriai** | Kadencijos ir kiekvienos jų sekretoriai (tik galintiems redaguoti) |
 | **Ryšiai** | Susijusios institucijos (tik jei jų yra, žr. [Ryšiai](/sistema/rysiai)) |
+| **Problemos** | Su institucija susietos problemos, pirmiau neišspręstos (tik jei jų yra, žr. [Problemos](/visak/problemos#posedziai)) |
 | **Failai** | Institucijos SharePoint failai |
 | **Užduotys** | Institucijos ir jos posėdžių užduotys; skaičius rodo neatliktas |
 
@@ -174,7 +175,7 @@ puslapyje (**⋯ → Sekti**) arba sąraše, pažymėjęs kelias institucijas. S
 - Jei redaguoji instituciją, kurios pavadinimas ar trumpinys sutampa su kitos, išsaugoti pavyks tik
   juos pakeitus.
 - **Padalinio** vėliau pakeisti negalima (išskyrus super administratorių).
-- **Ištrinta** institucija patenka į [šiukšlinę](/pagrindai/platforma#siukšline), o jos
+- **Ištrinta** institucija patenka į [šiukšlinę](/pagrindai/platforma#siuksline), o jos
   pareigybės ir posėdžiai lieka. Institucijos, kurioje pats eini pareigas, ištrinti negalima.
 - Iš šiukšlinės instituciją galima **atkurti**. **Galutinai ištrinti** negalima, kol ji turi
   posėdžių, pareigybių ar pranešimų apie veiklą arba yra padalinio pagrindinė institucija.

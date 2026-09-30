@@ -142,6 +142,10 @@ return [
         'model' => '{1} resource|[2,*] resources',
         'gender' => 'm',
     ],
+    'problemCategory' => [
+        'model' => '{1} problem category|[2,*] problem categories',
+        'gender' => 'f',
+    ],
     'resourceCategory' => [
         'model' => '{1} resource category|[2,*] resource categories',
         'gender' => 'f',
@@ -195,6 +199,27 @@ return [
             'in_progress' => 'In progress',
             'resolved' => 'Resolved',
         ],
+    ],
+
+    'goal' => [
+        'model' => '{1} goal|[2,*] goals',
+        'gender' => 'm',
+        'title' => 'goal title',
+        'description' => 'description',
+        'expected_result' => 'expected result',
+        'evaluation' => 'year-end evaluation',
+        'status' => 'status',
+        'is_public' => 'shown on vusa.lt',
+        'cadence' => 'term',
+        'responsible_duty' => 'responsible duty',
+    ],
+
+    'step' => [
+        'model' => '{1} step|[2,*] steps',
+        'gender' => 'm',
+        'title' => 'what was done',
+        'description' => 'details',
+        'happened_on' => 'date',
     ],
 
     'contentPart' => [

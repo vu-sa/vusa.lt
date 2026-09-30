@@ -80,7 +80,7 @@ type GalleryImage = PhotoGalleryGrid['json_content'][number];
 defineProps<{ image: GalleryImage }>();
 const emit = defineEmits<{ (e: 'update:patch', patch: Partial<GalleryImage>): void }>();
 
-function createDecoration(): GalleryImage['decorations'][number] {
+function createDecoration(): NonNullable<GalleryImage['decorations']>[number] {
   return { type: 'line', position: 'top-right', size: 'md' };
 }
 </script>

@@ -2,6 +2,7 @@
 
 use App\Models\Reservation;
 use App\Models\Resource;
+use App\Models\ResourceCategory;
 use App\Models\User;
 use Database\Seeders\DocsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -121,6 +122,28 @@ it('shows the reservation collection with status filters and quick filters', fun
 
     $page->resize(1440, 900);
     docsScreenshot($page, 'reservations-index');
+
+    $page->assertNoJavaScriptErrors();
+});
+
+it('lists the resource categories for their manager', function (): void {
+    foreach ([['Garso technika', 'Kolonėlės, mikrofonai ir pultai'], ['Projektoriai', 'Projektoriai ir ekranai renginiams']] as [$name, $description]) {
+        ResourceCategory::query()->create(['name' => ['lt' => $name, 'en' => $name], 'description' => ['lt' => $description, 'en' => $description]]);
+    }
+
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::RESOURCE_MANAGER_EMAIL));
+    $page->navigate('/mano/resourceCategories');
+    waitForInertiaRender($page, '[data-slot=collection-page]');
+
+    $page->assertSee('Garso technika');
+
+    // The collection mounts as a table and switches to phone rows a frame or two later.
+    $page->resize(390, 844);
+    $page->wait(0.5);
+    expect($page->script('document.documentElement.scrollWidth <= window.innerWidth'))->toBeTrue();
+
+    $page->resize(1440, 900);
+    docsScreenshot($page, 'resource-categories');
 
     $page->assertNoJavaScriptErrors();
 });

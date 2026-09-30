@@ -127,6 +127,7 @@ class DatabaseSeeder extends Seeder
         $this->call(RoleCentralResourceManagerSeeder::class);
         $this->call(RolePageEditorSeeder::class);
         $this->call(RoleProblemEditorSeeder::class);
+        $this->call(ProblemCategorySeeder::class);
         $this->call(RoleDocumentManagerSeeder::class);
 
         foreach ($tenants as $tenant) {

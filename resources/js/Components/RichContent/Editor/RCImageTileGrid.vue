@@ -6,9 +6,9 @@
         {{ $t('rich-content.back_to_images') }}
       </Button>
       <FocalPointPicker
-        v-if="focalPointIndex !== null && modelValue?.[focalPointIndex] && getSrc(modelValue[focalPointIndex])"
-        :image-url="getSrc(modelValue[focalPointIndex])!"
-        :model-value="(modelValue[focalPointIndex] as any).objectPosition ?? null"
+        v-if="focalPointImage && getSrc(focalPointImage)"
+        :image-url="getSrc(focalPointImage)!"
+        :model-value="focalPointImage.objectPosition ?? null"
         @update:model-value="(val: string) => updateAt(focalPointIndex!, { objectPosition: val } as Partial<T>)"
       />
     </div>
@@ -118,9 +118,9 @@
           <DialogTitle>{{ $t('rich-content.set_focal_point') }}</DialogTitle>
         </DialogHeader>
         <FocalPointPicker
-          v-if="focalPointIndex !== null && getSrc(modelValue![focalPointIndex])"
-          :image-url="getSrc(modelValue![focalPointIndex])!"
-          :model-value="(modelValue![focalPointIndex] as any).objectPosition ?? null"
+          v-if="focalPointImage && getSrc(focalPointImage)"
+          :image-url="getSrc(focalPointImage)!"
+          :model-value="focalPointImage.objectPosition ?? null"
           @update:model-value="(val: string) => updateAt(focalPointIndex!, { objectPosition: val } as Partial<T>)"
         />
       </DialogContent>
@@ -129,16 +129,8 @@
 </template>
 
 <script setup lang="ts" generic="T extends Record<string, any>">
-/**
- * Shared thumbnail-grid image editor behind ImageGridEditor and PhotoGalleryGridEditor.
- * Tiles are laid out in the same proportions the display renders, click-to-replace,
- * drag-to-reorder, with inline alt text and a hover menu for focal point + per-type
- * options (colspan for image-grid, height/decorations for photo-gallery) supplied
- * through the `tile-menu` / `tile-footer` slots — so the two editors share one
- * implementation instead of drifting (photo-gallery used to be a completely separate
- * stacked-rows DynamicListInput UI with alt collected twice).
- */
-import { ref, watch } from 'vue';
+/** Shared tile controls keep image grids and galleries in sync. */
+import { computed, ref, watch } from 'vue';
 import { useSortable } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowDown, ArrowLeft, ArrowUp, Ellipsis, GripVertical, ImagePlus, Images, Plus, ScanEye, Trash2 } from 'lucide-vue-next';
@@ -224,6 +216,7 @@ function addImage(imageData: { src: string; alt: string; title: string }) {
 // Focal point dialog
 const showFocalPoint = ref(false);
 const focalPointIndex = ref<number | null>(null);
+const focalPointImage = computed(() => focalPointIndex.value === null ? null : modelValue.value?.[focalPointIndex.value] ?? null);
 function openFocalPoint(index: number) {
   focalPointIndex.value = index;
   showFocalPoint.value = true;

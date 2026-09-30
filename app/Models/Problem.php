@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Contracts\Commentable;
+use App\Models\Pivots\AgendaItem;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
@@ -38,9 +40,11 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property-read Collection<int, Comment> $comments
  * @property-read User|null $createdBy
  * @property-read array $translatable_columns_from
+ * @property-read Collection<int, Goal> $goals
  * @property-read Collection<int, Institution> $institutions
  * @property-read User|null $responsibleUser
  * @property-read Collection<int, Comment> $rootComments
+ * @property-read Collection<int, Step> $steps
  * @property-read Tenant $tenant
  * @property-read mixed $translations
  *
@@ -128,17 +132,52 @@ class Problem extends Model implements Commentable
         return $this->belongsToMany(Institution::class);
     }
 
+    /**
+     * Agenda items where the problem was raised; the representation trail of the problem.
+     */
+    public function agendaItems(): BelongsToMany
+    {
+        return $this->belongsToMany(AgendaItem::class, 'agenda_item_problem', 'problem_id', 'agenda_item_id')->withTimestamps();
+    }
+
+    /**
+     * Goals pilot (App\Support\Experiments\GoalsExperiment): the goals working on this problem.
+     *
+     * @return BelongsToMany<Goal, $this>
+     */
+    public function goals(): BelongsToMany
+    {
+        return $this->belongsToMany(Goal::class)->withTimestamps();
+    }
+
+    /**
+     * Goals pilot: what has been done about the problem.
+     *
+     * @return HasMany<Step, $this>
+     */
+    public function steps(): HasMany
+    {
+        return $this->hasMany(Step::class)->orderByDesc('happened_on')->orderByDesc('created_at');
+    }
+
     public function isResolved(): bool
     {
         return $this->status === 'resolved' && ! is_null($this->resolved_at);
     }
 
-    public function markAsResolved(): void
+    /**
+     * Every write path (form, status bar, seeders) keeps the resolved date in step with the status,
+     * so `isResolved()` and the duration shown on the record never disagree.
+     */
+    protected static function booted(): void
     {
-        $this->update([
-            'status' => 'resolved',
-            'resolved_at' => now(),
-        ]);
+        static::saving(function (Problem $problem): void {
+            if ($problem->status !== 'resolved') {
+                $problem->resolved_at = null;
+            } elseif ($problem->resolved_at === null) {
+                $problem->resolved_at = now();
+            }
+        });
     }
 
     protected function casts(): array

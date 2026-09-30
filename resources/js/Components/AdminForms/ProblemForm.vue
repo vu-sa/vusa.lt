@@ -50,13 +50,13 @@
       :required="!form.description[otherLocale].trim()"
       :error="form.errors[`description.${activeLocale}`]"
     >
-      <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html />
+      <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html data-testid="problem-description-editor" />
     </FormFieldWrapper>
 
     <FormFieldWrapper
       id="problem-steps-taken"
       :label="capitalize($tChoice('entities.problem.steps_taken', 1))"
-      :hint="$t('Aprašykite veiksmus, kurie jau buvo atlikti bandant išspręsti šią problemą.')"
+      :hint="$t('problems.hints.steps_taken')"
       :error="form.errors[`steps_taken.${activeLocale}`]"
     >
       <TiptapEditor :key="activeLocale" v-model="form.steps_taken[activeLocale]" tools="description" html />
@@ -65,7 +65,7 @@
     <FormFieldWrapper
       id="problem-solution"
       :label="capitalize($tChoice('entities.problem.solution', 1))"
-      :hint="$t('Aprašykite problemos sprendimą, jei toks jau rastas. Šis laukas gali būti užpildytas vėliau.')"
+      :hint="$t('problems.hints.solution')"
       :error="form.errors[`solution.${activeLocale}`]"
     >
       <TiptapEditor :key="activeLocale" v-model="form.solution[activeLocale]" tools="description" html />

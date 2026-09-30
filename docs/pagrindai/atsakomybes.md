@@ -8,6 +8,7 @@ tests:
   - tests/Feature/Admin/People/DutyResponsibilityControllerTest.php
   - tests/Feature/Migrations/BackfillStudentRepCoordinationResponsibilitiesTest.php
   - tests/Feature/Admin/Management/InstitutionCheckInTest.php
+  - tests/Browser/DutyResponsibilitiesLayoutTest.php
 ---
 
 # Atsakomybės
@@ -18,7 +19,11 @@ daryti platformoje. Pareigybės puslapio skirtuke **Atsakomybės** šie du dalyk
 Kol kas galima priskirti **studentų atstovų koordinavimą**. Koordinatorius yra dabar pareigybę
 einantis žmogus; pasikeitus žmogui, atsakomybė lieka pareigybei. Ji taikoma tik VU organams.
 
-## Kaip nustatomas koordinatorius
+<DocScreenshot name="duty-responsibilities" alt="Pareigybės skirtukas Atsakomybės: studentų atstovų koordinavimas visam padaliniui ir šalia – pareigybės rolės" caption="Atsakomybės ir rolės pareigybės puslapyje greta." />
+
+## Kaip tai veikia
+
+### Kaip nustatomas koordinatorius {#koordinatorius}
 
 Atsakomybę galima priskirti vienam **VU organui**, jo **tipui** arba visam **padaliniui**. Ieškant
 koordinatoriaus pirmiausia tikrinamas organas, tada jo tipas ir aukštesni tipai, galiausiai
@@ -30,12 +35,18 @@ Institucijos puslapyje parašyta, iš kur parinktas matomas koordinatorius. **Or
 apžvalga** parodo padalinius, kuriuose niekas šiuo metu neina visam padaliniui koordinuoti
 priskirtų pareigų.
 
-## Veiksmai ir teisės {#teises}
+## Veiksmai
+
+Pareigybės puslapio skirtuke **Atsakomybės** spausk **Pridėti atsakomybę** ir pasirink, kam ji
+taikoma: VU organui, jo tipui ar visam padaliniui. **Pašalinti** nuima atsakomybę. Pakeitimai
+įrašomi į veiklos istoriją.
+
+## Kas ką gali {#teises}
 
 **Komunikacijos koordinatorius** ir **Studentų atstovų koordinatorius** gali pridėti ar nuimti
 atsakomybę pareigybei, kurią jiems leidžiama redaguoti. Padalinį ar organą jie gali pasirinkti tik
 savo tvarkomoje srityje; tipą – tik jeigu gali jį redaguoti. Super administratorius gali tvarkyti
-visas pareigybes. Pakeitimai įrašomi į veiklos istoriją.
+visas pareigybes.
 
 Atsakomybė pati nesuteikia bendros prieigos prie institucijų. Koordinatorius gauna su konkrečiu
 organu susijusius studentų atstovų registracijos ir posėdžių pranešimus, gali tvarkyti to organo

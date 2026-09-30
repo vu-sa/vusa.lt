@@ -144,7 +144,7 @@ darbotvarkės gale. Kaip pildyti punktus, aprašyta puslapyje
   [Matomumas](#matomumas)).
 - **Dokumentai** – susieti institucijos (ar kitos to paties padalinio institucijos) dokumentus.
   Atsiejus dokumentas lieka dokumentų naršyklėje.
-- **Ištrinti** – posėdis patenka į [šiukšlinę](/pagrindai/platforma#siukšline) kartu su
+- **Ištrinti** – posėdis patenka į [šiukšlinę](/pagrindai/platforma#siuksline) kartu su
   darbotvarke, balsavimais ir pastabomis. Atkūrus grįžta viskas.
 
 ### Posėdžių sąrašas

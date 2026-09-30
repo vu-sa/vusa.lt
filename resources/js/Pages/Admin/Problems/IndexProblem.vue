@@ -3,7 +3,7 @@
     :source
     collection="problems"
     entity-type="problem"
-    :eyebrow="$t('shell.workspaces.visak.title') + ' · ' + $t('Problemos')"
+    :eyebrow="$t('shell.workspaces.atstovavimas.title') + ' · ' + $t('Problemos')"
     :title="$t('Problemos')"
     :lead="$t('Registruok studentų problemas, sek sprendimo eigą ir koordinuok veiksmus su institucijomis.')"
     default-view="preview"
@@ -213,7 +213,7 @@
                 <ArrowRight class="ml-1.5 size-4" />
               </Link>
             </Button>
-            <Button v-if="canUpdate" as-child variant="outline" size="sm">
+            <Button v-if="item.can_update" as-child variant="outline" size="sm">
               <Link :href="route('problems.edit', item.id)">
                 <Edit class="mr-1.5 size-4" />
                 {{ $t('Redaguoti') }}
@@ -267,7 +267,7 @@ import { problemStatuses, type ProblemStatus } from '@/Constants/statuses';
 import { formatDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
-  data: App.Entities.Problem[];
+  data: ProblemRow[];
   meta: {
     total: number;
     current_page: number;
@@ -286,16 +286,18 @@ const props = defineProps<{
 
 const isDeleted = computed(() => Boolean(props.showDeleted));
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.problem));
-const canUpdate = computed(() => Boolean(usePage().props.auth?.can?.update?.problem));
 const canForceDelete = computed(() => Boolean(usePage().props.auth?.can?.forceDelete?.problem));
 
-const rowActions = (item: App.Entities.Problem): CollectionRowAction[] => isDeleted.value
+/** The server decides per row: editing is scoped to the problem's padalinys. */
+type ProblemRow = App.Entities.Problem & { can_update?: boolean };
+
+const rowActions = (item: ProblemRow): CollectionRowAction[] => isDeleted.value
   ? [
       { key: 'restore', label: $t('Atkurti'), icon: RotateCcw, labelled: true },
       ...(canForceDelete.value ? [{ key: 'forceDelete', label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
     ]
   : [
-      ...(canUpdate.value ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, href: route('problems.edit', item.id) }] : []),
+      ...(item.can_update ? [{ key: 'edit', label: $t('Redaguoti'), icon: Pencil, href: route('problems.edit', item.id) }] : []),
       { key: 'open', label: $t('Atidaryti'), icon: ChevronRight, labelled: true, href: route('problems.show', item.id) },
     ];
 
@@ -363,7 +365,7 @@ const facets = computed<DatabaseFacetDefinition[]>(() => [
     : []),
 ]);
 
-const source = useDatabaseCollectionSource<App.Entities.Problem>({
+const source = useDatabaseCollectionSource<ProblemRow>({
   endpoint: route('api.v1.admin.problems.index'),
   initial: {
     items: props.data,
@@ -399,17 +401,24 @@ const quickFilters = computed<CollectionQuickFilter[]>(() => {
   const statuses = asList(filters.status);
   const tenantIds = asList(filters['tenant.id']);
   const createdBy = asList(filters.created_by);
+  const responsible = asList(filters.responsible_user_id);
 
   const isActiveFilterOn = statuses.length === 2 && statuses.includes('open') && statuses.includes('in_progress');
   const isMineTenantOn = myTenantIds.value.length > 0
     && tenantIds.length === myTenantIds.value.length
     && myTenantIds.value.every(id => tenantIds.includes(String(id)));
   const isCreatedByMeOn = Boolean(userId.value && createdBy.length === 1 && createdBy[0] === String(userId.value));
+  const isAssignedToMeOn = Boolean(userId.value && responsible.length === 1 && responsible[0] === String(userId.value));
 
   return [
     { id: 'active', label: $t('Atviros ir vykdomos'), active: isActiveFilterOn },
     ...(myTenantIds.value.length > 0 ? [{ id: 'mine_tenant', label: $t('Mano padalinio'), active: isMineTenantOn }] : []),
-    ...(userId.value ? [{ id: 'created_by_me', label: $t('Mano sukurtos'), active: isCreatedByMeOn }] : []),
+    ...(userId.value
+      ? [
+          { id: 'assigned_to_me', label: $t('Man priskirtos'), active: isAssignedToMeOn },
+          { id: 'created_by_me', label: $t('Mano sukurtos'), active: isCreatedByMeOn },
+        ]
+      : []),
   ];
 });
 
@@ -421,6 +430,9 @@ function toggleQuickFilter(id: string): void {
   }
   else if (id === 'mine_tenant') {
     source.setFilter('tenant.id', active ? undefined : myTenantIds.value.map(String));
+  }
+  else if (id === 'assigned_to_me') {
+    source.setFilter('responsible_user_id', active || !userId.value ? undefined : [String(userId.value)]);
   }
   else if (id === 'created_by_me') {
     source.setFilter('created_by', active || !userId.value ? undefined : [String(userId.value)]);

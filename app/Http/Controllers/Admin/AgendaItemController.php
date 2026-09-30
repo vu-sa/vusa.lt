@@ -7,15 +7,20 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\ReorderAgendaItemsRequest;
 use App\Http\Requests\StoreAgendaItemsRequest;
 use App\Http\Requests\UpdateAgendaItemRequest;
+use App\Http\Resources\ProblemSummaryResource;
+use App\Models\Goal;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Models\User;
 use App\Models\Vote;
 use App\Services\MeetingCompletionService;
+use App\Support\Experiments\GoalsExperiment;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
 
 class AgendaItemController extends AdminController
@@ -68,7 +73,7 @@ class AgendaItemController extends AdminController
      * Gated on `view` so coordinators and related-institution viewers can read it and join the
      * discussion; `abilities.update` decides whether the outcome controls are live.
      */
-    public function show(AgendaItem $agendaItem, MeetingCompletionService $meetingCompletionService)
+    public function show(Request $request, AgendaItem $agendaItem, MeetingCompletionService $meetingCompletionService)
     {
         $this->handleAuthorization('viewSummary', $agendaItem);
 
@@ -123,6 +128,9 @@ class AgendaItemController extends AdminController
                 'votes' => $agendaItem->votes->map->toFullArray()->all(),
             ],
             'siblingAgendaItems' => $siblingAgendaItems,
+            'problems' => ProblemSummaryResource::collection(
+                $agendaItem->problems()->with(['tenant:id,shortname', 'responsibleUser:id,name'])->orderByDesc('occurred_at')->get()
+            )->resolve(),
             'publicUrl' => $publicUrl,
             'readOnly' => $readOnly,
             'abilities' => [
@@ -131,7 +139,48 @@ class AgendaItemController extends AdminController
             ],
             // VU SA's own bodies have no separate student position to record.
             'requiresStudentPerspective' => $meeting->requiresStudentPerspective(),
+            // Goals pilot: absent outside it, so the page renders exactly as before.
+            ...(GoalsExperiment::enabledForUser($request->user()) ? [
+                'goalsExperiment' => true,
+                'goalLinks' => Inertia::defer(fn (): array => $this->goalLinks($agendaItem, $request->user())),
+            ] : []),
         ]);
+    }
+
+    /**
+     * Goals pilot: the goals this item was logged towards, and those the reader may still add it to.
+     *
+     * @return array{goals: list<array<string, mixed>>, options: list<array<string, mixed>>}
+     */
+    private function goalLinks(AgendaItem $agendaItem, User $user): array
+    {
+        $linked = Goal::query()
+            ->whereHas('tenant', fn ($query) => $query->where('goals_enabled', true))
+            ->whereHas('steps', fn ($query) => $query->where('agenda_item_id', $agendaItem->id))
+            ->with('tenant:id,shortname')
+            ->get();
+
+        $summary = fn (Goal $goal): array => [
+            'id' => $goal->id,
+            'title' => $goal->title,
+            'status' => $goal->status->value,
+            'tenant' => $goal->tenant->shortname,
+            'can_update' => $user->can('update', $goal),
+        ];
+
+        return [
+            'goals' => $linked->map($summary)->values()->all(),
+            'options' => Goal::query()
+                ->whereHas('tenant', fn ($query) => $query->where('goals_enabled', true))
+                ->whereKeyNot($linked->modelKeys())
+                ->with('tenant:id,shortname')
+                ->latest()
+                ->get()
+                ->filter(fn (Goal $goal): bool => $user->can('update', $goal))
+                ->map($summary)
+                ->values()
+                ->all(),
+        ];
     }
 
     /**

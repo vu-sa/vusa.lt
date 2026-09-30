@@ -2,6 +2,7 @@
   <Dialog :open @update:open="$emit('update:open', $event)">
     <DialogContent
       class="top-auto bottom-0 left-0 flex h-[92dvh] w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden border-border p-0 md:top-1/2 md:bottom-auto md:left-1/2 md:h-[min(82vh,46rem)] md:w-[min(96vw,86rem)] md:-translate-x-1/2 md:-translate-y-1/2 sm:max-w-none"
+      :style="isMobile ? { top: 'auto', bottom: '0', left: '0', translate: 'none' } : undefined"
       :show-close-button="false"
     >
       <DialogHeader class="flex flex-row items-center gap-3 border-b border-border px-4 py-3 text-left">
@@ -117,7 +118,7 @@
               <div v-if="previewElement" class="relative h-full overflow-auto">
                 <div
                   class="rc-canvas pointer-events-none origin-top-left"
-                  :style="{ width: `${PREVIEW_WIDTH}px`, transform: `scale(${PREVIEW_SCALE})`, '--rc-measure': '40rem' }"
+                  :style="{ width: `${PREVIEW_WIDTH}px`, transform: `scale(${isMobile ? MOBILE_PREVIEW_SCALE : PREVIEW_SCALE})`, '--rc-measure': '40rem' }"
                 >
                   <BlockPreviewRenderer :element="previewElement" :resolved="previewResolved" />
                 </div>
@@ -190,6 +191,7 @@ import { useIsMobile } from '@/Composables/useIsMobile';
 // close to their real proportions before being scaled down to fit the pane.
 const PREVIEW_WIDTH = 1280;
 const PREVIEW_SCALE = 0.5;
+const MOBILE_PREVIEW_SCALE = 0.25;
 
 const CATEGORY_ORDER: BlockCategory[] = ['text', 'media', 'section', 'embed', 'special'];
 

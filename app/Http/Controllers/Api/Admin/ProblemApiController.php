@@ -33,7 +33,10 @@ class ProblemApiController extends ApiController
         $problems = $query($request)->paginate($request->getPerPage());
 
         return $this->jsonSuccess([
-            'items' => $problems->getCollection()->map(fn (Problem $problem): array => $problem->toFullArray())->values(),
+            'items' => $problems->getCollection()->map(fn (Problem $problem): array => [
+                ...$problem->toFullArray(),
+                'can_update' => $request->user()->can('update', $problem),
+            ])->values(),
             'total' => $problems->total(),
             'per_page' => $problems->perPage(),
             'current_page' => $problems->currentPage(),

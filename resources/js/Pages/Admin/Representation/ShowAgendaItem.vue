@@ -158,6 +158,38 @@
             {{ $t('meetings.item.student_position_empty') }}
           </p>
         </section>
+
+        <section v-if="problems.length || canUpdate" aria-labelledby="agenda-item-problems-title" class="space-y-3" data-testid="agenda-item-problems">
+          <div class="flex items-center justify-between gap-3">
+            <h3 id="agenda-item-problems-title" :class="LABEL_CLASS">
+              {{ $t('Susijusios problemos') }}
+            </h3>
+            <Button
+              v-if="canUpdate"
+              variant="outline"
+              size="sm"
+              voice="sentence"
+              class="pointer-coarse:h-11"
+              data-testid="agenda-item-link-problem"
+              @click="problemSheetOpen = true"
+            >
+              <Link2 class="size-4" aria-hidden="true" />
+              {{ $t('Susieti problemą') }}
+            </Button>
+          </div>
+          <ProblemSummaryList v-if="problems.length" :problems :removable="canUpdate" @remove="unlinkProblem" />
+          <p v-else class="text-sm text-muted-foreground">
+            {{ $t('Jei šiame klausime atstovai kėlė studentų problemą, susiek ją – taip matysis, kur problema svarstyta.') }}
+          </p>
+        </section>
+
+        <!-- Goals pilot: absent outside it. -->
+        <Deferred v-if="goalsExperiment" data="goalLinks">
+          <template #fallback>
+            <div class="h-11 animate-pulse bg-muted" />
+          </template>
+          <AgendaItemGoalsPanel v-if="goalLinks" :agenda-item-id="agendaItem.id" :goal-links />
+        </Deferred>
       </div>
     </template>
 
@@ -180,6 +212,13 @@
       :is-public="meetingIsPublic"
       :can-delete="abilities.delete"
       @delete="deleteOpen = true"
+    />
+
+    <ProblemLinkSheet
+      v-if="canUpdate"
+      v-model:open="problemSheetOpen"
+      :agenda-item-id="agendaItem.id"
+      :linked-ids="problems.map(problem => problem.id)"
     />
 
     <AgendaItemVotesSheetForm
@@ -213,10 +252,10 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
-import { Link, router, useForm } from '@inertiajs/vue3';
+import { Deferred, Link, router, useForm } from '@inertiajs/vue3';
 import { useMediaQuery } from '@vueuse/core';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
-import { Check, CircleDashed, Copy, ExternalLink, Globe, Loader2, NotebookPen, PenLine, Shapes, Trash2 } from 'lucide-vue-next';
+import { Check, CircleDashed, Copy, ExternalLink, Globe, Link2, Loader2, NotebookPen, PenLine, Shapes, Trash2 } from 'lucide-vue-next';
 
 import AgendaItemBody from '@/Components/AgendaItems/AgendaItemBody.vue';
 import AgendaItemNotesSidebar from '@/Components/AgendaItems/AgendaItemNotesSidebar.vue';
@@ -225,6 +264,10 @@ import AgendaItemVotesSheetForm from '@/Components/AgendaItems/AgendaItemVotesSh
 import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';
 import { missingFieldsLabel, type AgendaItemMissingAction } from '@/Components/Meetings/meetingCompletion';
 import { ConfirmDialog } from '@/Components/Patterns';
+import ProblemLinkSheet from '@/Components/Problems/ProblemLinkSheet.vue';
+import AgendaItemGoalsPanel from '@/Features/Admin/Goals/AgendaItemGoalsPanel.vue';
+import type { LinkedGoal } from '@/Features/Admin/Goals/types';
+import ProblemSummaryList, { type ProblemSummary } from '@/Components/Problems/ProblemSummaryList.vue';
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
@@ -269,10 +312,15 @@ const props = withDefaults(defineProps<{
   publicUrl?: string | null;
   abilities?: { update: boolean; delete: boolean };
   requiresStudentPerspective?: boolean;
+  problems?: ProblemSummary[];
   /** A public meeting's item outside the user's reach: no notes or discussion (AgendaItemPolicy::viewSummary). */
   readOnly?: boolean;
+  /** Goals pilot: set only inside it, with `goalLinks` deferred. */
+  goalsExperiment?: boolean;
+  goalLinks?: { goals: LinkedGoal[]; options: LinkedGoal[] };
 }>(), {
   abilities: () => ({ update: false, delete: false }),
+  problems: () => [],
   publicUrl: null,
   requiresStudentPerspective: true,
 });
@@ -290,6 +338,11 @@ const sheetOpen = ref(false);
 const votesSheetOpen = ref(false);
 const notesOpen = ref(false);
 const deleteOpen = ref(false);
+const problemSheetOpen = ref(false);
+
+function unlinkProblem(problem: ProblemSummary): void {
+  router.delete(route('agendaItems.problems.destroy', [props.agendaItem.id, problem.id]), { preserveScroll: true });
+}
 
 /**
  * Offered in the sheet while this item has no start time: the nearest preceding item's end

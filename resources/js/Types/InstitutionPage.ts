@@ -94,6 +94,7 @@ export interface InstitutionPageData {
   comments_count?: number;
   duties_count: number;
   meetings_count: number;
+  problems_count?: number;
   tasks_count: number;
   related_institutions_count: number;
 }

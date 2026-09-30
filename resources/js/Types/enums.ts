@@ -87,6 +87,13 @@ export enum FormOptionSource {
     Tenant = 'tenant',
     Institution = 'institution',
 }
+export enum GoalStatus {
+    Planned = 'planned',
+    InProgress = 'in_progress',
+    Achieved = 'achieved',
+    NotAchieved = 'not_achieved',
+    Dropped = 'dropped',
+}
 export enum InstitutionActivityStatus {
     NoActivity = 'no_activity',
     Healthy = 'healthy',
@@ -121,6 +128,7 @@ export enum ModelEnum {
     EVENT_TYPE = 'event_type',
     FILE = 'file',
     FORM = 'form',
+    GOAL = 'goal',
     INSTITUTION = 'institution',
     MEETING = 'meeting',
     NAVIGATION = 'navigation',

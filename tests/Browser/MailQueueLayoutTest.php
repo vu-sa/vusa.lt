@@ -17,7 +17,7 @@ it('keeps a populated mail queue within phone and desktop viewports', function (
         'user_id' => $recipient->id,
         'notification_class' => TaskAssignedNotification::class,
         'category' => NotificationCategory::Task->value,
-        'data' => ['title' => 'Pending task', 'body' => 'Review the task', 'url' => '/mano'],
+        'data' => ['title' => 'Nauja užduotis', 'body' => 'Užpildyk darbotvarkės klausimų informaciją', 'url' => '/mano'],
     ]);
 
     $page = loginAsAdmin($admin);
@@ -31,10 +31,18 @@ it('keeps a populated mail queue within phone and desktop viewports', function (
 
         foreach ([390, 820, 1180, 1440] as $width) {
             $page->resize($width, 900);
-            $page->script('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))');
+
+            // The collection switches from table to phone rows a few frames after a resize.
+            for ($attempt = 0; $attempt < 20 && $page->script('document.documentElement.scrollWidth') > $width; $attempt++) {
+                $page->wait(0.1);
+            }
+
             expect($page->script('document.documentElement.scrollWidth'))->toBeLessThanOrEqual($width);
         }
     }
+
+    $page->resize(1440, 900);
+    docsScreenshot($page, 'mail-queue');
 
     $page->assertNoJavaScriptErrors();
 });

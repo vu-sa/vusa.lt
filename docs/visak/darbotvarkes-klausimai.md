@@ -4,6 +4,7 @@ area: agendaItems
 models: [AgendaItem, Vote]
 last_reviewed: 2026-09-27
 tests:
+  - tests/Feature/Admin/Problems/AgendaItemProblemControllerTest.php
   - tests/Feature/Admin/Calendar/AgendaItemControllerTest.php
   - tests/Feature/Admin/Calendar/AgendaItemNoteTest.php
   - tests/Feature/Admin/Discussions/AgendaItemPageAccessTest.php
@@ -142,6 +143,13 @@ darbotvarkės gale. Tvarką keisk posėdžio darbotvarkėje (**Keisti tvarką**)
 Klausimas ištrinamas **negrįžtamai** – jis nepatenka į šiukšlinę. Ištrynus posėdį, jo klausimai
 išsaugomi kartu su juo šiukšlinėje.
 
+### Susijusios problemos {#problemos}
+
+Skiltyje **Susijusios problemos** klausimą susieji su [problema](/visak/problemos), kurią atstovai
+jame kėlė: spausk **Susieti problemą** ir pasirink iš atvirų ar vykdomų problemų. Problemai kartu
+priskiriamos posėdžio institucijos, jei jos yra problemos padalinyje, o problemos puslapyje
+klausimas matomas skirtuke **Svarstyta posėdžiuose**. **Atsieti** panaikina ryšį.
+
 ### Klausimų sąrašas
 
 Sąraše (`/mano/agendaItems`) matyti visų tau prieinamų posėdžių klausimai. Pirmą kartą rodomi tavo
@@ -158,6 +166,7 @@ metai**, **Užpildymo būsena**, **Studentų balsas**, **Sprendimas**, **Palanku
 | Pridėti klausimų | – | – | ✓, savo institucijų | ✓, savo padalinio | ✓ |
 | Keisti tvarką | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓ |
 | Žymėti rezultatą, redaguoti, ištrinti | – | – | ✓, savo institucijų | ✓, savo padalinio | ✓ |
+| Susieti ir atsieti problemas | – | – | ✓, savo institucijų | ✓, savo padalinio | ✓ |
 
 Institucijos narys be rolės klausimo redaguoti negali, nors gali keisti patį posėdį.
 

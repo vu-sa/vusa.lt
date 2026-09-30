@@ -33,7 +33,7 @@ lemia tai, ar esi išteklių administratorius.
 
 Mygtukas **+ Sukurti** šioje srityje siūlo veiksmą **Nauja rezervacija**.
 
-## Išteklių administratorius {#isteklu-administratorius}
+## Išteklių administratorius {#istekliu-administratorius}
 
 Visa sritis sukasi apie vieną rolę – **Išteklių administratorius**. Ją paprastai turi padalinio
 **pirmininko** ir **administratoriaus** pareigybės. Rolė galioja tik **savo padalinyje**: MIF

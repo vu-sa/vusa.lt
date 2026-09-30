@@ -11,6 +11,8 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
+use App\Models\Problem;
+use App\Models\ProblemCategory;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
@@ -43,6 +45,10 @@ class DocsSeeder extends Seeder
     public const COUNCIL_INSTITUTION = 'Chemijos ir geomokslų fakulteto taryba';
 
     public const UNFINISHED_AGENDA_ITEM = 'Bendrabučių vietų skirstymas';
+
+    public const OPEN_PROBLEM = 'Bendrabučių vietos skirstomos per vėlai';
+
+    public const RESOLVED_PROBLEM = 'Laboratorinių darbų tvarkaraštis kirtosi su paskaitomis';
 
     public function run(): void
     {
@@ -92,8 +98,73 @@ class DocsSeeder extends Seeder
         app(PeriodicityGapTaskHandler::class)->findOrCreate($committee, collect([$representative]), now()->addDays(5));
 
         $this->reservations($tenant, $representative);
+        $this->problems($tenant, $representative, $council, $committee);
         $this->dutyTimeline($tenant);
         $this->coordinators($tenant);
+    }
+
+    /**
+     * Open, in-progress and resolved problems, one raised in the council's dormitory item, so the
+     * list, record and institution frames show every status and the meeting link.
+     */
+    private function problems(Tenant $tenant, User $representative, Institution $council, Institution $committee): void
+    {
+        $this->call(ProblemCategorySeeder::class);
+        $category = fn (string $slug): int => ProblemCategory::query()->where('slug', $slug)->value('id');
+
+        $open = Problem::query()->create([
+            'title' => ['lt' => self::OPEN_PROBLEM, 'en' => 'Dormitory places are allocated too late'],
+            'description' => [
+                'lt' => '<p>Pirmakursiai sužino, ar gavo vietą bendrabutyje, tik likus savaitei iki mokslo metų pradžios. Kitų miestų studentams tenka skubiai ieškoti būsto.</p>',
+                'en' => '<p>First-year students learn whether they have a dormitory place only a week before term starts.</p>',
+            ],
+            'steps_taken' => [
+                'lt' => '<p>Surinkome 40 studentų atsiliepimų ir pristatėme juos fakulteto tarybai.</p>',
+                'en' => '<p>Collected feedback from 40 students and presented it to the faculty council.</p>',
+            ],
+            'tenant_id' => $tenant->id,
+            'created_by' => $representative->id,
+            'responsible_user_id' => $representative->id,
+            'occurred_at' => now()->subDays(40),
+            'status' => 'in_progress',
+        ]);
+        $open->categories()->attach([$category('administrative'), $category('processes')]);
+        $open->institutions()->attach($council);
+        $open->agendaItems()->attach(
+            AgendaItem::query()->where('title->lt', self::UNFINISHED_AGENDA_ITEM)->firstOrFail()
+        );
+
+        $resolved = Problem::query()->create([
+            'title' => ['lt' => self::RESOLVED_PROBLEM, 'en' => 'Lab schedule clashed with lectures'],
+            'description' => [
+                'lt' => '<p>Antro kurso chemikų laboratoriniai darbai buvo suplanuoti tuo pačiu metu kaip privaloma paskaita.</p>',
+                'en' => '<p>Second-year chemistry labs were scheduled at the same time as a mandatory lecture.</p>',
+            ],
+            'solution' => [
+                'lt' => '<p>Studijų programos komitetas perkėlė laboratorinius darbus į ketvirtadienio popietę.</p>',
+                'en' => '<p>The study programme committee moved the labs to Thursday afternoon.</p>',
+            ],
+            'tenant_id' => $tenant->id,
+            'created_by' => $representative->id,
+            'occurred_at' => now()->subDays(75),
+            'resolved_at' => now()->subDays(50),
+            'status' => 'resolved',
+        ]);
+        $resolved->categories()->attach($category('processes'));
+        $resolved->institutions()->attach($committee);
+
+        $newProblem = Problem::query()->create([
+            'title' => ['lt' => 'Trūksta informacijos apie pakartotinius egzaminus', 'en' => 'Missing information on exam retakes'],
+            'description' => [
+                'lt' => '<p>Studentai neranda, kur skelbiamos pakartotinių egzaminų datos.</p>',
+                'en' => '<p>Students cannot find where retake dates are announced.</p>',
+            ],
+            'tenant_id' => $tenant->id,
+            'created_by' => $representative->id,
+            'occurred_at' => now()->subDays(6),
+            'status' => 'open',
+        ]);
+        $newProblem->categories()->attach($category('communication'));
     }
 
     /**

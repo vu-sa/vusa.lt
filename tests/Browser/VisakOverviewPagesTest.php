@@ -83,3 +83,17 @@ it('lists the padaliniai tasks for the central coordinator', function (): void {
 
     $page->assertNoJavaScriptErrors();
 });
+
+it('lists a representative\'s own tasks', function (): void {
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL));
+    $page->navigate('/mano/tasks');
+    waitForInertiaRender($page, '[data-slot=collection-page]');
+
+    expectNoRawVisakKeys($page);
+    expectVisakPageFits($page, 'collection-page');
+
+    $page->resize(1440, 900);
+    docsScreenshot($page, 'tasks-index');
+
+    $page->assertNoJavaScriptErrors();
+});
