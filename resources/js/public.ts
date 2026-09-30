@@ -3,13 +3,12 @@ import '../css/app.css';
 import { type DefineComponent, createApp, createSSRApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { createInertiaApp } from '@inertiajs/vue3';
-import { defineAsyncComponent } from 'vue';
 import { i18nVue, loadLanguageAsync } from 'laravel-vue-i18n';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
-const PublicLayout = defineAsyncComponent(
-  () => import('./Layouts/PersistentPublicLayout.vue'),
-);
+// Static, as in ssr.ts: an async wrapper adds a boundary that shifts every `useId()` (reka ids,
+// aria-controls) away from the server-rendered values.
+import PublicLayout from './Layouts/PersistentPublicLayout.vue';
 
 // const metaTitle =
 //  window.document.getElementsByTagName("title")[0]?.innerText || "VU SA";

@@ -36,8 +36,9 @@
     </PopoverContent>
   </Popover>
 
-  <!-- Draggable Audio Player Overlay -->
-  <Teleport to="body">
+  <!-- Draggable Audio Player Overlay. After mount only: SSR drops teleported markup, so
+       hydrating a body teleport eats <body>'s first node. -->
+  <Teleport v-if="mounted" to="body">
     <div
       v-if="audioPlaying"
       ref="playerRef"
@@ -97,6 +98,7 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref, useTemplateRef, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { useMounted } from '@vueuse/core';
 
 import { socialIconButtonClass } from './socialIconButtonClass';
 
@@ -120,6 +122,7 @@ defineProps<{
 const startFM = useTemplateRef<HTMLAudioElement>('startFM');
 
 const audioPlaying = ref(false);
+const mounted = useMounted();
 const loading = ref(false);
 const isPaused = ref(true);
 const volume = ref(0.35);

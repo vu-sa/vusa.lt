@@ -148,7 +148,8 @@ const closedMessage = computed(() => {
 
 const storageKey = computed(() => `text_box_submitted_${props.element.id ?? 'preview'}`);
 
-const storedSubmission = useStorage<string | null>(storageKey, null);
+// Read after mount: the server cannot see localStorage, so the form must hydrate first.
+const storedSubmission = useStorage<string | null>(storageKey, null, undefined, { initOnMounted: true });
 const submitted = computed({
   get: () => storedSubmission.value === '1',
   set: (val: boolean) => {

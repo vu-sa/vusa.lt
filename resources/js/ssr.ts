@@ -7,6 +7,12 @@ import { i18nVue, reset } from 'laravel-vue-i18n';
 import { ZiggyVue, route, type Config } from 'ziggy-js';
 
 import PublicLayout from './Layouts/PersistentPublicLayout.vue';
+import { VILNIUS_TIMEZONE } from './Utils/dateTime';
+
+// Render dates the way visitors' browsers (and Laravel's app.timezone) do; in UTC, anything near
+// midnight landed on the previous day and was rewritten during hydration. Zone-less strings such
+// as the calendar's "Y-m-d H:i" are read as local time, so this beats a `timeZone` on formatters.
+process.env.TZ = VILNIUS_TIMEZONE;
 
 const pages = import.meta.glob<{ default: DefineComponent }>('./Pages/Public/{HomePage,ContentPage,NewsPage}.vue');
 const translations = import.meta.glob<{ default: Record<string, string> }>([

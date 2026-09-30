@@ -1,9 +1,11 @@
 <template>
+  <!-- The title is a stretched link rather than the whole card being one: the social links
+       inside would otherwise be nested <a>s, which the parser splits apart in SSR markup. -->
   <article
-    class="group flex h-full flex-col border border-border bg-card transition-colors duration-200 hover:border-brand"
+    class="group relative flex h-full flex-col border border-border bg-card transition-colors duration-200 hover:border-brand"
     data-slot="institution-card"
   >
-    <SmartLink :href="institutionUrl" class="plain flex flex-1 flex-col">
+    <div class="flex flex-1 flex-col">
       <div class="relative">
         <MediaFrame
           :src="institution.image_url ?? undefined"
@@ -52,13 +54,18 @@
         </div>
 
         <h3 class="text-pretty text-xl font-bold leading-tight text-foreground transition-colors group-hover:text-brand sm:text-2xl">
-          {{ institution.name }}
+          <SmartLink
+            :href="institutionUrl"
+            class="plain outline-none after:absolute after:inset-0 after:content-[''] focus-visible:after:outline-2 focus-visible:after:outline-brand"
+          >
+            {{ institution.name }}
+          </SmartLink>
         </h3>
 
         <div
           v-if="institution.description"
           class="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground"
-          v-html="institution.description"
+          v-html="unwrapLinks(String(institution.description))"
         />
 
         <!-- Spacer: pushes separator to bottom but guarantees a minimum gap -->
@@ -71,8 +78,7 @@
             :href="institution.facebook_url"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex size-9 items-center justify-center border border-border bg-transparent text-muted-foreground transition-colors hover:border-brand hover:text-brand"
-            @click.stop
+            class="relative z-10 inline-flex size-9 items-center justify-center border border-border bg-transparent text-muted-foreground transition-colors hover:border-brand hover:text-brand"
           >
             <span class="sr-only">Facebook</span>
             <ISimpleIconsFacebook class="size-3.5" />
@@ -82,8 +88,7 @@
             :href="institution.instagram_url"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex size-9 items-center justify-center border border-border bg-transparent text-muted-foreground transition-colors hover:border-brand hover:text-brand"
-            @click.stop
+            class="relative z-10 inline-flex size-9 items-center justify-center border border-border bg-transparent text-muted-foreground transition-colors hover:border-brand hover:text-brand"
           >
             <span class="sr-only">Instagram</span>
             <ISimpleIconsInstagram class="size-3.5" />
@@ -99,7 +104,7 @@
           </span>
         </div>
       </div>
-    </SmartLink>
+    </div>
   </article>
 </template>
 
@@ -111,6 +116,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { TenantType } from '@/Types/enums';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { MediaFrame, TagChip } from '@/Components/Public/Base';
+import { unwrapLinks } from '@/Utils/String';
 import IFluentArrowUpRight16Regular from '~icons/fluent/arrow-up-right-16-regular';
 import IFluentBuilding24Regular from '~icons/fluent/building-24-regular';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';

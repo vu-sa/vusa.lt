@@ -554,6 +554,14 @@ export function stripHtmlTags(html: string): string {
 }
 
 /**
+ * Drops `<a>` tags but keeps their text, for rich HTML previewed inside a card that is itself a
+ * link. A nested `<a>` is invalid HTML: the parser restructures SSR markup and hydration re-mounts it.
+ */
+export function unwrapLinks(html: string): string {
+  return html.replace(/<\/?a\b[^>]*>/gi, '');
+}
+
+/**
  * Whether a rich-text value carries any visible text once its markup is removed.
  * Used to decide if an empty-looking block should render at all.
  */

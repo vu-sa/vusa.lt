@@ -79,9 +79,13 @@ export function toInstagramEmbedUrl(rawUrl: string | null | undefined): string {
   }
 }
 
+// Base for relative input only (never a Mixcloud/Spotify URL). Not `window.location`: these run
+// during SSR, where reading it threw and the server rendered a different player than the client.
+const RELATIVE_URL_BASE = 'https://vusa.lt';
+
 export function isMixcloudUrl(url: string): boolean {
   try {
-    const host = new URL(url, window.location.origin).hostname.toLowerCase();
+    const host = new URL(url, RELATIVE_URL_BASE).hostname.toLowerCase();
     return host === 'mixcloud.com' || host === 'www.mixcloud.com' || host === 'player-widget.mixcloud.com';
   }
   catch {
@@ -118,7 +122,7 @@ export function toSpotifyEmbedUrl(url: string, dark: boolean): string {
   const themeParam = dark ? '0' : '1';
 
   try {
-    const parsed = new URL(url, window.location.origin);
+    const parsed = new URL(url, RELATIVE_URL_BASE);
     parsed.searchParams.set('theme', themeParam);
     return parsed.toString();
   }

@@ -1,6 +1,7 @@
 <template>
-  <!-- Floating feedback button positioned at text selection -->
-  <Teleport to="body">
+  <!-- Floating feedback button positioned at text selection. After mount only: SSR drops
+       teleported markup, so hydrating a body teleport eats <body>'s first node. -->
+  <Teleport v-if="mounted" to="body">
     <Transition
       enter-active-class="transition-opacity duration-200"
       leave-active-class="transition-opacity duration-200"
@@ -47,13 +48,14 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { useMousePressed, useTextSelection } from '@vueuse/core';
+import { useMounted, useMousePressed, useTextSelection } from '@vueuse/core';
 
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Spinner } from '@/Components/ui/spinner';
 import { Textarea } from '@/Components/ui/textarea';
 
+const mounted = useMounted();
 const showPopover = ref(false);
 const showModal = ref(false);
 const loading = ref(false);

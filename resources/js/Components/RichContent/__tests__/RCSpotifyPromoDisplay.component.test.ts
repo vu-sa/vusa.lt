@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -52,9 +52,10 @@ describe('RCSpotifyPromoDisplay', () => {
     expect(wrapper.find('iframe').exists()).toBe(false);
   });
 
-  it('renders a Spotify iframe with the light theme param', () => {
+  it('renders a Spotify iframe with the light theme param', async () => {
     darkRef.value = false;
     const wrapper = mountDisplay(makeElement({ url: 'https://open.spotify.com/show/abc' }));
+    await nextTick();
 
     const iframe = wrapper.find('iframe');
     expect(iframe.exists()).toBe(true);
@@ -62,9 +63,10 @@ describe('RCSpotifyPromoDisplay', () => {
     expect(iframe.attributes('title')).toBe('Spotify Embed');
   });
 
-  it('renders a Mixcloud widget iframe instead of the Spotify one for a mixcloud.com URL', () => {
+  it('renders a Mixcloud widget iframe instead of the Spotify one for a mixcloud.com URL', async () => {
     darkRef.value = true;
     const wrapper = mountDisplay(makeElement({ url: 'https://www.mixcloud.com/startfm/tiesiogiai-is-vu-sa/' }));
+    await nextTick();
 
     const iframe = wrapper.find('iframe');
     expect(iframe.attributes('src')).toContain('player-widget.mixcloud.com');

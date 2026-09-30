@@ -2,6 +2,8 @@ import type { AnyExtension } from '@tiptap/core';
 import { StarterKit } from '@tiptap/starter-kit';
 import { TableKit } from '@tiptap/extension-table';
 import { Youtube } from '@tiptap/extension-youtube';
+import { Subscript } from '@tiptap/extension-subscript';
+import { Superscript } from '@tiptap/extension-superscript';
 
 import { AccessibleImage } from '../AccessibleImage';
 import { CustomHeading } from '../CustomHeading';
@@ -25,6 +27,8 @@ export function createRenderExtensions(): AnyExtension[] {
     }),
     TextAlign,
     RCTag,
+    Subscript,
+    Superscript,
     AccessibleImage.configure({
       HTMLAttributes: {
         class: 'w-full',
@@ -37,6 +41,8 @@ export function createRenderExtensions(): AnyExtension[] {
         HTMLAttributes: {
           class: 'rc-table',
         },
+        // Scroll container for resized tables, as App\Tiptap\TiptapEditor::getHTML() adds.
+        renderWrapper: true,
       },
     }),
     Video,

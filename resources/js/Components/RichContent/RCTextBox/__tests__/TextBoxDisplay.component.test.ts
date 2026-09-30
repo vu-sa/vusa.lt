@@ -1,10 +1,12 @@
 import { mount } from '@vue/test-utils';
+import { nextTick } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import TextBoxDisplay from '../../Types/TextBoxDisplay.vue';
 
+import { ssrRoundTrip } from '@/tests/helpers/ssrRoundTrip';
 import type { TextBox } from '@/Types/contentParts';
 
 function makeElement(options: TextBox['options'] = null): TextBox & { id: number } {
@@ -22,6 +24,19 @@ function makeElement(options: TextBox['options'] = null): TextBox & { id: number
 }
 
 describe('TextBoxDisplay', () => {
+  it('hydrates the server-rendered form before showing an earlier submission', async () => {
+    const { container, hydrationWarnings, unmount } = await ssrRoundTrip(TextBoxDisplay, { element: makeElement() }, {
+      beforeHydrate: () => localStorage.setItem('text_box_submitted_1', '1'),
+    });
+
+    expect(hydrationWarnings).toEqual([]);
+    await nextTick();
+    expect(container.querySelector('form')).toBeNull();
+    expect(container.textContent).toContain('rich-content.text_box_success');
+    unmount();
+    localStorage.removeItem('text_box_submitted_1');
+  });
+
   it('renders title and textarea in view mode', () => {
     const wrapper = mount(TextBoxDisplay, {
       props: {

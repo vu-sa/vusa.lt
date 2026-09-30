@@ -35,7 +35,7 @@
       <iframe
         class="block h-[352px] w-full"
         :class="[editable && 'pointer-events-none']"
-        :src="embedUrl"
+        :src="mounted ? embedUrl : undefined"
         frameborder="0"
         allowtransparency="true"
         allow="encrypted-media"
@@ -47,7 +47,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useDark } from '@vueuse/core';
+import { useDark, useMounted } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RCMixcloudEmbed from './RCMixcloudEmbed.vue';
@@ -77,6 +77,9 @@ const isPromo = computed(() => props.element.options?.variant === 'promo');
 const isMixcloud = computed(() => isMixcloudUrl(props.element.json_content.url));
 
 const isDark = useDark();
+// No src until mount: the theme param comes from the visitor's stored preference, so the
+// server can't know it, and setting it after hydration would load the player twice.
+const mounted = useMounted();
 
 const embedUrl = computed(() => toSpotifyEmbedUrl(props.element.json_content.url, isDark.value));
 </script>

@@ -47,7 +47,7 @@
           size === 'featured' ? 'mt-4 line-clamp-3 text-base sm:text-lg' :
           size === 'lg' ? 'mt-3 line-clamp-3' : 'mt-2 line-clamp-2 text-sm',
         ]"
-        v-html="news.short"
+        v-html="unwrapLinks(news.short)"
       />
       <span v-if="size === 'lg' || size === 'featured'" class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand">
         {{ $t('Skaityti daugiau') }} <IFluentArrowUpRight16Regular class="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
@@ -66,6 +66,7 @@ import MediaFrame from '@/Components/Brand/MediaFrame.vue';
 import type { NewsItem } from '@/Types/contentParts';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
+import { unwrapLinks } from '@/Utils/String';
 import IFluentArrowUpRight16Regular from '~icons/fluent/arrow-up-right-16-regular';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 

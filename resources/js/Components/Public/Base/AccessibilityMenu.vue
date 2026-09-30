@@ -5,13 +5,13 @@
         voice="brand"
         variant="ghost"
         size="icon"
-        :class="cn('border border-transparent', !isDefault && 'border-brand text-brand', props.class)"
+        :class="cn('border border-transparent', showActiveCue && 'border-brand text-brand', props.class)"
         :aria-label="$t('accessibility.menu_open')"
         :title="$t('accessibility.menu_title')"
         data-slot="accessibility-menu-trigger"
       >
         <IFluentAccessibility24Regular class="size-4" />
-        <span v-if="!isDefault" class="sr-only">{{ $t('accessibility.preferences_active') }}</span>
+        <span v-if="showActiveCue" class="sr-only">{{ $t('accessibility.preferences_active') }}</span>
       </Button>
     </PopoverTrigger>
 
@@ -22,7 +22,8 @@
 </template>
 
 <script setup lang="ts">
-import type { HTMLAttributes } from 'vue';
+import { computed, type HTMLAttributes } from 'vue';
+import { useMounted } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import AccessibilitySettings from './AccessibilitySettings.vue';
@@ -40,4 +41,7 @@ const props = withDefaults(defineProps<{
 });
 
 const { isDefault } = useAccessibilityPreferences();
+// Stored preferences exist only in the browser; show the cue after hydration so it matches SSR.
+const mounted = useMounted();
+const showActiveCue = computed(() => mounted.value && !isDefault.value);
 </script>

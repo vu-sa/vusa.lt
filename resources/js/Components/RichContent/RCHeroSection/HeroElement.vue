@@ -19,9 +19,9 @@
               </div>
             </slot>
             <slot name="description" :description="element.json_content.description">
-              <p v-if="hasHtmlText(element.json_content.description)" :class="descriptionClass">
+              <div v-if="hasHtmlText(element.json_content.description)" :class="descriptionClass">
                 <span v-html="element.json_content.description" />
-              </p>
+              </div>
             </slot>
           </div>
 
@@ -64,9 +64,9 @@
         </div>
       </slot>
       <slot name="description" :description="element.json_content.description">
-        <p v-if="hasHtmlText(element.json_content.description)" :class="descriptionClass">
+        <div v-if="hasHtmlText(element.json_content.description)" :class="descriptionClass">
           <span v-html="element.json_content.description" />
-        </p>
+        </div>
       </slot>
       <slot name="buttons" :buttons="element.json_content.buttons">
         <HeroButtons :buttons="element.json_content.buttons" :class="buttonsClass" />
@@ -118,9 +118,9 @@
             </div>
           </slot>
           <slot name="description" :description="element.json_content.description">
-            <p v-if="hasHtmlText(element.json_content.description)" :class="descriptionClass">
+            <div v-if="hasHtmlText(element.json_content.description)" :class="descriptionClass">
               <span v-html="element.json_content.description" />
-            </p>
+            </div>
           </slot>
 
           <slot name="buttons" :buttons="element.json_content.buttons">

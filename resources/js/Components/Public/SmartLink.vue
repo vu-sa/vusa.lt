@@ -1,5 +1,5 @@
 <template>
-  <component :is="useInertiaRouter ? Link : 'a'" v-if="href" :href :prefetch="useInertiaRouter ? prefetch : false"
+  <component :is="useInertiaRouter ? Link : 'a'" v-if="href" :href :prefetch="useInertiaRouter ? prefetch : undefined"
     :cache-for="useInertiaRouter ? cacheFor : undefined"
     :target="target ?? (useInertiaRouter ? undefined : '_blank')">
     <slot />
@@ -24,8 +24,10 @@ const page = usePage();
 const useInertiaRouter = computed(() => {
   if (!props.href?.startsWith('http')) return true;
 
-  const current = typeof window === 'undefined'
-    ? new URL(page.url, page.props.app.url)
+  // On the server, `ziggy.location` is the request URL; `app.url` is always the www host, which
+  // made same-tenant links render as new-tab <a>s on subdomains and stay that way after hydration.
+  const current = import.meta.env.SSR
+    ? new URL(page.url, (page.props.ziggy as { location?: string } | undefined)?.location ?? page.props.app.url)
     : new URL(window.location.href);
   const destination = new URL(props.href);
   return destination.origin === current.origin;
