@@ -1,4 +1,5 @@
-import { computed, ref, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useStorage } from '@vueuse/core';
 
 import { useDocsHref } from '@/Composables/useDocsHref';
 
@@ -19,6 +20,7 @@ export function useDocsUpdateIndicator() {
   const lastUpdateDate = ref<string | null>(null);
   const latestVersion = ref<string | null>(null);
   const latestChangelog = ref(DEFAULT_CHANGELOG);
+  const lastSeen = useStorage<string | null>(STORAGE_KEY, null);
 
   const docsBase = useDocsHref();
   const changelogHref = computed(() => `${docsBase.value}/changelog/${latestChangelog.value}`);
@@ -34,8 +36,7 @@ export function useDocsUpdateIndicator() {
       latestVersion.value = meta.latestVersion;
       latestChangelog.value = meta.latestChangelog ?? DEFAULT_CHANGELOG;
 
-      const lastSeen = localStorage.getItem(STORAGE_KEY);
-      if (!lastSeen || lastSeen < meta.lastUpdated) {
+      if (!lastSeen.value || lastSeen.value < meta.lastUpdated) {
         hasNewUpdates.value = true;
       }
     }
@@ -46,7 +47,7 @@ export function useDocsUpdateIndicator() {
 
   function markAsSeen() {
     if (lastUpdateDate.value) {
-      localStorage.setItem(STORAGE_KEY, lastUpdateDate.value);
+      lastSeen.value = lastUpdateDate.value;
       hasNewUpdates.value = false;
     }
   }

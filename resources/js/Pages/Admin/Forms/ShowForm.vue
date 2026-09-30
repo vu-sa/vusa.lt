@@ -144,6 +144,7 @@
 <script setup lang="tsx">
 import { router, usePage } from '@inertiajs/vue3';
 import type { CellContext, ColumnDef, HeaderContext, TableFeatures } from '@tanstack/vue-table';
+import { useClipboard } from '@vueuse/core';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Copy, Download, Edit, ExternalLink, Eye, Inbox, Trash2 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
@@ -278,10 +279,13 @@ function handleRecordAction(key: string): void {
   }
 }
 
+const { copy: copyUrl } = useClipboard({ legacy: true });
+
 function copyPublicLink(): void {
   if (!props.publicUrl) return;
-  navigator.clipboard.writeText(props.publicUrl);
-  toast.success($t('Nuoroda nukopijuota į iškarpinę.'));
+  void copyUrl(props.publicUrl).then(() => {
+    toast.success($t('Nuoroda nukopijuota į iškarpinę.'));
+  });
 }
 
 function openPublicForm(): void {

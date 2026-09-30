@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { translitLithuanian, latinizeId, slugify, generateSlug, getDutyNameGenderVariants, changeDutyNameEndings, stripHtmlTags, hasHtmlText, escapeHtml } from '../String';
+import { translitLithuanian, latinizeId, slugify, generateSlug, getDutyNameGenderVariants, changeDutyNameEndings, stripHtmlTags, hasHtmlText, escapeHtml, camelCase } from '../String';
 
 describe('translitLithuanian', () => {
   it('transliterates all Lithuanian lowercase letters', () => {
@@ -365,3 +365,28 @@ describe('escapeHtml', () => {
     expect(escapeHtml(undefined)).toBe('');
   });
 });
+
+describe('camelCase', () => {
+  it('converts snake_case to camelCase', () => {
+    expect(camelCase('agenda_item')).toBe('agendaItem');
+    expect(camelCase('study_program')).toBe('studyProgram');
+    expect(camelCase('sharepoint_file')).toBe('sharepointFile');
+  });
+
+  it('converts UPPER_CASE to camelCase', () => {
+    expect(camelCase('AGENDA_ITEM')).toBe('agendaItem');
+    expect(camelCase('BANNER')).toBe('banner');
+    expect(camelCase('STUDY_PROGRAM')).toBe('studyProgram');
+  });
+
+  it('converts kebab-case to camelCase', () => {
+    expect(camelCase('quick-link')).toBe('quickLink');
+    expect(camelCase('in-person-meeting')).toBe('inPersonMeeting');
+  });
+
+  it('leaves already camelCase or single words lowercased', () => {
+    expect(camelCase('banner')).toBe('banner');
+    expect(camelCase('user')).toBe('user');
+  });
+});
+

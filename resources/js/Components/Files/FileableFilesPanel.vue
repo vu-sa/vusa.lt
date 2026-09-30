@@ -111,7 +111,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { router, useHttp } from '@inertiajs/vue3';
-import { useDropZone } from '@vueuse/core';
+import { useClipboard, useDropZone } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CircleDashed, FolderOpen, Upload } from 'lucide-vue-next';
 
@@ -175,12 +175,14 @@ const { isOverDropZone } = useDropZone(dropZoneRef, {
   multiple: true,
 });
 
+const { copy: copyUrl } = useClipboard({ legacy: true });
+
 const copyLink = (file: FileableFileItem) => {
   http.post(route('fileableFiles.publicLink', file.id), {
     onSuccess: async (data) => {
       const url = (data as { url?: string } | null)?.url;
       try {
-        await navigator.clipboard.writeText(url ?? '');
+        await copyUrl(url ?? '');
         toasts.success($t('common.link_copied'));
       }
       catch {

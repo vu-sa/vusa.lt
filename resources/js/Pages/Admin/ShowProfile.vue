@@ -279,6 +279,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
+import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   Bell,
@@ -317,31 +318,21 @@ const tutorialResetSuccess = ref(false);
 
 // View transitions / reduced motion preference
 const REDUCE_MOTION_KEY = 'vusa-reduce-motion';
-const reduceMotion = ref(
-  typeof window !== 'undefined'
-    ? localStorage.getItem(REDUCE_MOTION_KEY) === 'true'
-    : false,
-);
+const reduceMotion = useStorage<boolean>(REDUCE_MOTION_KEY, false);
 
 const animationsEnabled = computed({
   get: () => !reduceMotion.value,
   set: (enabled: boolean) => {
     const shouldReduce = !enabled;
     reduceMotion.value = shouldReduce;
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(REDUCE_MOTION_KEY, String(shouldReduce));
-      if (shouldReduce) {
-        document.documentElement.classList.add('reduce-motion');
-      }
-      else {
-        document.documentElement.classList.remove('reduce-motion');
-      }
+    if (typeof document !== 'undefined') {
+      document.documentElement.classList.toggle('reduce-motion', shouldReduce);
     }
   },
 });
 
 // Initialize class on mount
-if (typeof window !== 'undefined' && reduceMotion.value) {
+if (typeof document !== 'undefined' && reduceMotion.value) {
   document.documentElement.classList.add('reduce-motion');
 }
 

@@ -6,6 +6,8 @@
 </template>
 
 <script setup lang="ts">
+import { useClipboard } from '@vueuse/core';
+
 import { Button } from '@/Components/ui/button';
 import type { ButtonVariants } from '@/Components/ui/button';
 import { useToasts } from '@/Composables/useToasts';
@@ -23,14 +25,19 @@ const props = withDefaults(defineProps<{
 });
 
 const toasts = useToasts();
+const { copy, isSupported } = useClipboard({ legacy: true });
 
 const copyToClipboard = async (text: string) => {
-  if (navigator.clipboard) {
-    await navigator.clipboard.writeText(text);
-    toasts.success(props.successText ?? 'Nuoroda nukopijuota į iškarpinę!');
+  if (isSupported.value) {
+    try {
+      await copy(text);
+      toasts.success(props.successText ?? 'Nuoroda nukopijuota į iškarpinę!');
+      return;
+    }
+    catch {
+      // Fall through to error toast
+    }
   }
-  else {
-    toasts.error(props.errorText ?? 'Nepavyko nukopijuoti nuorodos į iškarpinę...');
-  }
+  toasts.error(props.errorText ?? 'Nepavyko nukopijuoti nuorodos į iškarpinę...');
 };
 </script>

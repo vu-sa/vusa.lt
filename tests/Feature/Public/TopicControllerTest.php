@@ -100,3 +100,28 @@ test('a topic page shares the other language URL with the tag alias', function (
             ->where('otherLangURL', LocalizedRouteSlugs::route('topic', ['tag' => $tag->alias], 'lt'))
         );
 });
+
+test('a topic page lists the newest pages first', function (): void {
+    $tag = Tag::factory()->topic()->create();
+
+    $olderPage = Page::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'lang' => 'lt',
+        'is_active' => true,
+        'created_at' => now()->subMonth(),
+    ]);
+    $newerPage = Page::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'lang' => 'lt',
+        'is_active' => true,
+        'created_at' => now()->subDay(),
+    ]);
+    $tag->pages()->attach([$olderPage->id, $newerPage->id]);
+
+    $this->get(route('topic', ['subdomain' => 'www', 'lang' => 'lt', 'tag' => $tag->alias]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $inertia) => $inertia
+            ->where('pages.0.id', $newerPage->id)
+            ->where('pages.1.id', $olderPage->id)
+        );
+});

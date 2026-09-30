@@ -203,6 +203,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
+import { useClipboard } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Briefcase, CalendarRange, Copy, Edit3, KeyRound, Plus, Shield, Trash2 } from 'lucide-vue-next';
 
@@ -434,19 +435,14 @@ const deletePassword = () => router.delete(route('users.deletePassword', props.u
 
 // The server flashes the generated password on the redirect back to this page.
 const generatedPassword = computed(() => (usePage().props.flash as { data?: string } | undefined)?.data ?? null);
-const hasCopied = ref(false);
+const { copy: copyToClipboard, copied: hasCopied } = useClipboard({ legacy: true, copiedDuring: 2000 });
 
 const copyPassword = () => {
   if (!generatedPassword.value) {
     return;
   }
 
-  void navigator.clipboard.writeText(generatedPassword.value).then(() => {
-    hasCopied.value = true;
-    setTimeout(() => {
-      hasCopied.value = false;
-    }, 2000);
-  });
+  void copyToClipboard(generatedPassword.value);
 };
 
 // --- The Priskirti sheet (O21), opened with the person fixed -----------------------------------

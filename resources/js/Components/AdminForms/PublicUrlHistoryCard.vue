@@ -38,7 +38,7 @@
               class="shrink-0 text-muted-foreground hover:text-destructive"
               :aria-label="$t('Ištrinti')"
               data-testid="delete-public-url"
-              @click="deleteWithInertia(props.destroyRoute(row.id))"
+              @click="confirmDelete(props.destroyRoute(row.id))"
             >
               <Trash2 class="size-3.5" />
             </Button>
@@ -52,8 +52,8 @@
 
     <ConfirmDialog
       v-model:open="isOpen"
-      :title
-      :description="message"
+      :title="$t('Ištrinti šį adresą?')"
+      :description="$t('Šis adresas nustos veikti ir nukreipti į dabartinį puslapį. Šio veiksmo negalima atšaukti.')"
       :confirm-label="$t('Ištrinti')"
       destructive
       @confirm="executeDelete"
@@ -62,12 +62,13 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
+import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown, Trash2 } from 'lucide-vue-next';
 
 import { ConfirmDialog } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { useDeleteConfirmation } from '@/Composables/useDeleteConfirmation';
 
 export interface PublicUrlRow {
   id?: number;
@@ -84,8 +85,21 @@ const props = defineProps<{
   destroyRoute: (id: number) => string;
 }>();
 
-const { isOpen, title, message, executeDelete, deleteWithInertia } = useDeleteConfirmation({
-  title: $t('Ištrinti šį adresą?'),
-  message: $t('Šis adresas nustos veikti ir nukreipti į dabartinį puslapį. Šio veiksmo negalima atšaukti.'),
-});
+const isOpen = ref(false);
+const targetDestroyUrl = ref<string | null>(null);
+
+const confirmDelete = (url: string) => {
+  targetDestroyUrl.value = url;
+  isOpen.value = true;
+};
+
+const executeDelete = () => {
+  if (targetDestroyUrl.value) {
+    router.delete(targetDestroyUrl.value, {
+      preserveScroll: true,
+    });
+    isOpen.value = false;
+    targetDestroyUrl.value = null;
+  }
+};
 </script>

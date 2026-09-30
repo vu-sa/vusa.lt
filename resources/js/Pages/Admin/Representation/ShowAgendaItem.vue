@@ -253,10 +253,11 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { Deferred, Link, router, useForm } from '@inertiajs/vue3';
-import { useMediaQuery } from '@vueuse/core';
+import { useClipboard, useMediaQuery } from '@vueuse/core';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { Check, CircleDashed, Copy, ExternalLink, Globe, Link2, Loader2, NotebookPen, PenLine, Shapes, Trash2 } from 'lucide-vue-next';
 
+import { useToasts } from '@/Composables/useToasts';
 import AgendaItemBody from '@/Components/AgendaItems/AgendaItemBody.vue';
 import AgendaItemNotesSidebar from '@/Components/AgendaItems/AgendaItemNotesSidebar.vue';
 import AgendaItemSheetForm from '@/Components/AgendaItems/AgendaItemSheetForm.vue';
@@ -471,12 +472,17 @@ const overflowActions = computed<RecordAction[]>(() => [
   ...(props.abilities.delete ? [{ key: 'delete', label: $t('meetings.item.delete'), icon: Trash2, destructive: true }] : []),
 ]);
 
+const toasts = useToasts();
+const { copy: copyUrl } = useClipboard({ legacy: true });
+
 const handleRecordAction = (action: string) => {
   if (action === 'edit') {
     sheetOpen.value = true;
   }
   else if (action === 'copy-link') {
-    void navigator.clipboard?.writeText(window.location.href);
+    void copyUrl(window.location.href).then(() => {
+      toasts.success($t('common.link_copied'));
+    });
   }
   else if (action === 'delete') {
     deleteOpen.value = true;

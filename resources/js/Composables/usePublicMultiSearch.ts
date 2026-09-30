@@ -15,8 +15,7 @@
 
 import { reactive, ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { useLocalStorage } from '@vueuse/core';
-import { debounce } from 'lodash-es';
+import { useLocalStorage, useDebounceFn } from '@vueuse/core';
 
 import { ErrorUtils } from '@/Shared/Search/services/SearchErrorUtils';
 import { trackEvent } from '@/Plugins/umami';
@@ -337,7 +336,7 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
    * what they fail to find. Only the term and the result count are sent; see the privacy
    * note on the `/privatumas` page.
    */
-  const reportSearch = debounce((term: string, results: number): void => {
+  const reportSearch = useDebounceFn((term: string, results: number): void => {
     if (term === lastReportedTerm) {
       return;
     }
@@ -395,7 +394,7 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
     }
   };
 
-  const debouncedSearch = debounce(performSearch, 300);
+  const debouncedSearch = useDebounceFn(performSearch, 300);
 
   const search = (q: string, immediate = false): void => {
     query.value = q;

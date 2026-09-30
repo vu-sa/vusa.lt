@@ -67,7 +67,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed } from 'vue';
+import { useEventListener } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Download, X } from 'lucide-vue-next';
 
@@ -92,18 +93,10 @@ const previewSrc = computed(() => {
   return route('api.v1.admin.files.thumbnail', { path: props.file.path, w: 1200 });
 });
 
-function handleKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape') {
+useEventListener('keydown', (e: KeyboardEvent) => {
+  if (props.file && e.key === 'Escape') {
     emit('close');
   }
-}
-
-onMounted(() => {
-  window.addEventListener('keydown', handleKeydown);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydown);
 });
 </script>
 

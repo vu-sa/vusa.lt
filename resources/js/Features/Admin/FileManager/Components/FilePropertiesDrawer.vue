@@ -252,7 +252,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
-import { useFetch } from '@vueuse/core';
+import { useClipboard, useFetch } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   Copy,
@@ -488,17 +488,21 @@ async function createPublicPermission() {
   toast.success('Public link created successfully');
 }
 
+const { copy: copyToClipboard } = useClipboard({ legacy: true });
+
 function copyUrl() {
   if (!props.selectedFile) return;
   const url = `${window.location.origin}/uploads/${props.selectedFile.replace(/^public\//, '')}`;
-  navigator.clipboard.writeText(url);
-  toast.success($t('Nuoroda nukopijuota į iškarpinę'));
+  void copyToClipboard(url).then(() => {
+    toast.success($t('Nuoroda nukopijuota į iškarpinę'));
+  });
 }
 
 function copySharePointUrl() {
   if (!publicWebUrl.value) return;
-  navigator.clipboard.writeText(publicWebUrl.value);
-  toast.success($t('Nuoroda nukopijuota į iškarpinę'));
+  void copyToClipboard(publicWebUrl.value).then(() => {
+    toast.success($t('Nuoroda nukopijuota į iškarpinę'));
+  });
 }
 
 function handleDelete() {

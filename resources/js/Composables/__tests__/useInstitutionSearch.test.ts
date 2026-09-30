@@ -8,12 +8,16 @@ import { usePage } from '@inertiajs/vue3';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 // Mock dependencies
-vi.mock('@vueuse/core', () => ({
-  useLocalStorage: vi.fn((key: string, defaultValue: any) => {
-    return { value: { ...defaultValue } };
-  }),
-  useOnline: vi.fn(() => ({ value: true })),
-}));
+vi.mock('@vueuse/core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@vueuse/core')>();
+  return {
+    ...actual,
+    useLocalStorage: vi.fn((key: string, defaultValue: any) => {
+      return { value: { ...defaultValue } };
+    }),
+    useOnline: vi.fn(() => ({ value: true })),
+  };
+});
 
 vi.mock('../useSearchClient', () => ({
   createTypesenseClients: vi.fn(() => ({

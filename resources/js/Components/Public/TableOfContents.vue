@@ -44,7 +44,8 @@
  * `ContentPage.vue` was this component's only caller and no longer renders it below
  * `lg`.
  */
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useEventListener, useThrottleFn } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import IFluentTextBulletListLtr24Regular from '~icons/fluent/text-bullet-list-ltr-24-regular';
@@ -106,12 +107,9 @@ const updateActiveId = () => {
   activeId.value = currentActiveId;
 };
 
-onMounted(() => {
-  window.addEventListener('scroll', updateActiveId, { passive: true });
-  updateActiveId();
-});
+useEventListener(window, 'scroll', useThrottleFn(updateActiveId, 100), { passive: true });
 
-onUnmounted(() => {
-  window.removeEventListener('scroll', updateActiveId);
+onMounted(() => {
+  updateActiveId();
 });
 </script>

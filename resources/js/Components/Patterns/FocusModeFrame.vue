@@ -17,6 +17,7 @@
 
 <script setup lang="ts">
 import { onUnmounted, watch } from 'vue';
+import { useEventListener } from '@vueuse/core';
 
 defineProps<{
   label: string;
@@ -40,6 +41,12 @@ function onKeydown(event: KeyboardEvent): void {
   active.value = false;
 }
 
+useEventListener(document, 'keydown', (event) => {
+  if (active.value) {
+    onKeydown(event);
+  }
+});
+
 function scrollArea(): HTMLElement | null {
   return document.querySelector<HTMLElement>('[data-slot="admin-scroll-area"]');
 }
@@ -49,21 +56,17 @@ watch(active, (isActive) => {
 
   if (isActive) {
     returnFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    document.addEventListener('keydown', onKeydown);
     if (area) area.style.overflow = 'hidden';
 
     return;
   }
 
-  document.removeEventListener('keydown', onKeydown);
   if (area) area.style.overflow = '';
   returnFocus?.focus();
   returnFocus = null;
 });
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', onKeydown);
-
   if (active.value) {
     const area = scrollArea();
     if (area) area.style.overflow = '';

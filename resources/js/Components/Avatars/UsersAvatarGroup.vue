@@ -94,6 +94,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 import { ChevronDown } from 'lucide-vue-next';
 
 import UserPopover from './UserPopover.vue';
@@ -136,17 +137,18 @@ const isClickable = computed(() => {
   return isAdminContext.value && canViewUserProfile.value;
 });
 
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isSmallerThanSm = breakpoints.smaller('sm');
+const isSmallerThanMd = breakpoints.smaller('md');
+
 // Compute the maximum number of users to display, taking into account screen size if limitByScreen is true
 const maxVisibleUsers = computed(() => {
   const defaultMax = props.max ?? 4;
 
   if (!props.limitByScreen) return defaultMax;
 
-  // Check if the screen is small and adjust the max visible users accordingly
-  if (typeof window !== 'undefined') {
-    if (window.innerWidth < 640) return Math.min(defaultMax, 2); // sm
-    if (window.innerWidth < 768) return Math.min(defaultMax, 3); // md
-  }
+  if (isSmallerThanSm.value) return Math.min(defaultMax, 2);
+  if (isSmallerThanMd.value) return Math.min(defaultMax, 3);
 
   return defaultMax;
 });

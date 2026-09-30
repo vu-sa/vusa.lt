@@ -145,7 +145,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
+import { usePreferredReducedMotion } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { asBoolean } from '../booleanish';
@@ -241,16 +242,14 @@ function addSlide(): void {
 let autoplayInterval: ReturnType<typeof setInterval> | null = null;
 let restartTimeout: ReturnType<typeof setTimeout> | null = null;
 
-// jsdom has no matchMedia; Inertia SSR has no window at setup. Resolved in
-// onMounted (client-only), so only the jsdom case needs the guard.
-let reducedMotionQuery: MediaQueryList | null = null;
+const preferredReducedMotion = usePreferredReducedMotion();
 
 const autoplayDelay = () => props.element.options?.autoplayDelay || 8000;
 
 const startCarouselAutoplay = () => {
   if (props.editable) return;
   if (!asBoolean(props.element.options?.autoplay) || !hasMultipleSlides.value || !carouselApi.value) return;
-  if (reducedMotionQuery?.matches) return;
+  if (preferredReducedMotion.value === 'reduce') return;
   if (autoplayInterval) return;
 
   autoplayInterval = setInterval(() => carouselApi.value?.scrollNext(), autoplayDelay());
@@ -304,12 +303,9 @@ watch(() => slides.value.length, (length) => {
   }
 });
 
-onMounted(() => {
-  if (typeof window.matchMedia === 'function') {
-    reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    reducedMotionQuery.addEventListener('change', (event) => {
-      if (event.matches) stopCarouselAutoplay();
-    });
+watch(preferredReducedMotion, (motion) => {
+  if (motion === 'reduce') {
+    stopCarouselAutoplay();
   }
 });
 

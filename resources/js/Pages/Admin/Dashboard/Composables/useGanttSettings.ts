@@ -10,7 +10,8 @@
  * - In parent (ShowAtstovavimas.vue): call provideGanttSettings()
  * - In children (MeetingsGantt.vue, etc.): call useGanttSettings()
  */
-import { ref, provide, inject, watch, type Ref, type InjectionKey } from 'vue';
+import { computed, inject, provide, type InjectionKey, type Ref } from 'vue';
+import { useStorage } from '@vueuse/core';
 
 const STORAGE_KEY = 'gantt-settings';
 
@@ -70,93 +71,67 @@ const DEFAULT_LABEL_WIDTH = 220;
 const MIN_LABEL_WIDTH = 100;
 const MAX_LABEL_WIDTH = 400;
 
-function loadStoredSettings(): Partial<StoredSettings> {
-  if (typeof window === 'undefined') return {};
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : {};
-  }
-  catch {
-    return {};
-  }
-}
+function createGanttSettingsInstance(defaultShowTenantHeaders: boolean = true): GanttSettings {
+  const defaults: StoredSettings = {
+    dayWidthPx: DEFAULT_DAY_WIDTH,
+    labelWidth: DEFAULT_LABEL_WIDTH,
+    detailsExpanded: false,
+    showDutyMembers: true,
+    showTenantHeaders: defaultShowTenantHeaders,
+    centerDateTimestamp: null,
+    verticalScrollPosition: null,
+  };
 
-function saveStoredSettings(settings: StoredSettings) {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-  }
-  catch {
-    // Ignore storage errors
-  }
-}
+  const stored = useStorage<StoredSettings>(
+    STORAGE_KEY,
+    () => ({ ...defaults }),
+    undefined,
+    { mergeDefaults: true, onError: () => {} },
+  );
 
-/**
- * Creates and provides Gantt settings to child components.
- * Call this once in the parent component (e.g., ShowAtstovavimas.vue).
- */
-export function provideGanttSettings(): GanttSettings {
-  const stored = loadStoredSettings();
-
-  const dayWidthPx = ref<number>(clampDayWidth(stored.dayWidthPx));
-  const labelWidth = ref<number>(stored.labelWidth ?? DEFAULT_LABEL_WIDTH);
-  const detailsExpanded = ref<boolean>(stored.detailsExpanded ?? false);
-  const showDutyMembers = ref<boolean>(stored.showDutyMembers ?? true);
-  const showTenantHeaders = ref<boolean>(stored.showTenantHeaders ?? true);
-  const centerDateTimestamp = ref<number | null>(stored.centerDateTimestamp ?? null);
-  const verticalScrollPosition = ref<number | null>(stored.verticalScrollPosition ?? null);
-
-  // Persist settings on change
-  function persistSettings() {
-    saveStoredSettings({
-      dayWidthPx: dayWidthPx.value,
-      labelWidth: labelWidth.value,
-      detailsExpanded: detailsExpanded.value,
-      showDutyMembers: showDutyMembers.value,
-      showTenantHeaders: showTenantHeaders.value,
-      centerDateTimestamp: centerDateTimestamp.value,
-      verticalScrollPosition: verticalScrollPosition.value,
-    });
-  }
-
-  watch([dayWidthPx, labelWidth, detailsExpanded, showDutyMembers, showTenantHeaders, centerDateTimestamp, verticalScrollPosition], () => {
-    persistSettings();
+  const dayWidthPx = computed<number>({
+    get: () => clampDayWidth(stored.value.dayWidthPx),
+    set: (w) => { stored.value.dayWidthPx = clampDayWidth(w); },
   });
 
-  function setDayWidth(width: number) {
-    dayWidthPx.value = Math.max(MIN_DAY_WIDTH, Math.min(MAX_DAY_WIDTH, width));
-  }
+  const labelWidth = computed<number>({
+    get: () => stored.value.labelWidth ?? DEFAULT_LABEL_WIDTH,
+    set: (w) => { stored.value.labelWidth = Math.max(MIN_LABEL_WIDTH, Math.min(MAX_LABEL_WIDTH, w)); },
+  });
 
-  function setLabelWidth(width: number) {
-    labelWidth.value = Math.max(MIN_LABEL_WIDTH, Math.min(MAX_LABEL_WIDTH, width));
-  }
+  const detailsExpanded = computed<boolean>({
+    get: () => stored.value.detailsExpanded ?? false,
+    set: (v) => { stored.value.detailsExpanded = v; },
+  });
 
-  function toggleDetailsExpanded() {
-    detailsExpanded.value = !detailsExpanded.value;
-  }
+  const showDutyMembers = computed<boolean>({
+    get: () => stored.value.showDutyMembers ?? true,
+    set: (v) => { stored.value.showDutyMembers = v; },
+  });
 
-  function setCenterDate(date: Date | null) {
-    centerDateTimestamp.value = date ? date.getTime() : null;
-  }
+  const showTenantHeaders = computed<boolean>({
+    get: () => stored.value.showTenantHeaders ?? defaultShowTenantHeaders,
+    set: (v) => { stored.value.showTenantHeaders = v; },
+  });
 
-  function setVerticalScrollPosition(position: number | null) {
-    verticalScrollPosition.value = position;
-  }
+  const centerDateTimestamp = computed<number | null>({
+    get: () => stored.value.centerDateTimestamp ?? null,
+    set: (v) => { stored.value.centerDateTimestamp = v; },
+  });
+
+  const verticalScrollPosition = computed<number | null>({
+    get: () => stored.value.verticalScrollPosition ?? null,
+    set: (v) => { stored.value.verticalScrollPosition = v; },
+  });
 
   function resetSettings() {
-    dayWidthPx.value = DEFAULT_DAY_WIDTH;
-    labelWidth.value = DEFAULT_LABEL_WIDTH;
-    detailsExpanded.value = false;
-    showDutyMembers.value = true;
-    showTenantHeaders.value = false;
-    centerDateTimestamp.value = null;
-    verticalScrollPosition.value = null;
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(STORAGE_KEY);
-    }
+    stored.value = {
+      ...defaults,
+      showTenantHeaders: false,
+    };
   }
 
-  const settings: GanttSettings = {
+  return {
     dayWidthPx,
     labelWidth,
     detailsExpanded,
@@ -164,14 +139,21 @@ export function provideGanttSettings(): GanttSettings {
     showTenantHeaders,
     centerDateTimestamp,
     verticalScrollPosition,
-    setDayWidth,
-    setLabelWidth,
-    toggleDetailsExpanded,
-    setCenterDate,
-    setVerticalScrollPosition,
+    setDayWidth: (w: number) => { dayWidthPx.value = w; },
+    setLabelWidth: (w: number) => { labelWidth.value = w; },
+    toggleDetailsExpanded: () => { detailsExpanded.value = !detailsExpanded.value; },
+    setCenterDate: (date: Date | null) => { centerDateTimestamp.value = date ? date.getTime() : null; },
+    setVerticalScrollPosition: (pos: number | null) => { verticalScrollPosition.value = pos; },
     resetSettings,
   };
+}
 
+/**
+ * Creates and provides Gantt settings to child components.
+ * Call this once in the parent component (e.g., ShowAtstovavimas.vue).
+ */
+export function provideGanttSettings(): GanttSettings {
+  const settings = createGanttSettingsInstance(true);
   provide(GANTT_SETTINGS_KEY, settings);
 
   return settings;
@@ -187,63 +169,10 @@ export function useGanttSettings(): GanttSettings {
   const settings = inject(GANTT_SETTINGS_KEY);
 
   if (!settings) {
-    // Fallback: create local settings if not provided (useful for standalone usage)
-    // This branch also persists to localStorage for consistency
     if (import.meta.env.DEV) {
       console.warn('useGanttSettings: No provider found, creating local settings with persistence');
     }
-    const stored = loadStoredSettings();
-    const dayWidthPx = ref<number>(clampDayWidth(stored.dayWidthPx));
-    const labelWidth = ref<number>(stored.labelWidth ?? DEFAULT_LABEL_WIDTH);
-    const detailsExpanded = ref<boolean>(stored.detailsExpanded ?? false);
-    const showDutyMembers = ref<boolean>(stored.showDutyMembers ?? true);
-    const showTenantHeaders = ref<boolean>(stored.showTenantHeaders ?? false);
-    const centerDateTimestamp = ref<number | null>(stored.centerDateTimestamp ?? null);
-    const verticalScrollPosition = ref<number | null>(stored.verticalScrollPosition ?? null);
-
-    // Persist settings on change (same as provider branch)
-    function persistFallbackSettings() {
-      saveStoredSettings({
-        dayWidthPx: dayWidthPx.value,
-        labelWidth: labelWidth.value,
-        detailsExpanded: detailsExpanded.value,
-        showDutyMembers: showDutyMembers.value,
-        showTenantHeaders: showTenantHeaders.value,
-        centerDateTimestamp: centerDateTimestamp.value,
-        verticalScrollPosition: verticalScrollPosition.value,
-      });
-    }
-
-    watch([dayWidthPx, labelWidth, detailsExpanded, showDutyMembers, showTenantHeaders, centerDateTimestamp, verticalScrollPosition], () => {
-      persistFallbackSettings();
-    });
-
-    return {
-      dayWidthPx,
-      labelWidth,
-      detailsExpanded,
-      showDutyMembers,
-      showTenantHeaders,
-      centerDateTimestamp,
-      verticalScrollPosition,
-      setDayWidth: (w) => { dayWidthPx.value = Math.max(MIN_DAY_WIDTH, Math.min(MAX_DAY_WIDTH, w)); },
-      setLabelWidth: (w) => { labelWidth.value = Math.max(MIN_LABEL_WIDTH, Math.min(MAX_LABEL_WIDTH, w)); },
-      toggleDetailsExpanded: () => { detailsExpanded.value = !detailsExpanded.value; },
-      setCenterDate: (date: Date | null) => { centerDateTimestamp.value = date ? date.getTime() : null; },
-      setVerticalScrollPosition: (position: number | null) => { verticalScrollPosition.value = position; },
-      resetSettings: () => {
-        dayWidthPx.value = DEFAULT_DAY_WIDTH;
-        labelWidth.value = DEFAULT_LABEL_WIDTH;
-        detailsExpanded.value = false;
-        showDutyMembers.value = true;
-        showTenantHeaders.value = false;
-        centerDateTimestamp.value = null;
-        verticalScrollPosition.value = null;
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem(STORAGE_KEY);
-        }
-      },
-    };
+    return createGanttSettingsInstance(false);
   }
 
   return settings;

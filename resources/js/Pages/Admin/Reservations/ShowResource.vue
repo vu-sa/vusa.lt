@@ -161,6 +161,7 @@
 
 <script setup lang="ts">
 import { Deferred, router } from '@inertiajs/vue3';
+import { useClipboard } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Ban, CalendarClock, CalendarPlus, Check, Clock, Edit3, Link2, PackageCheck, PackageX, Plus, Trash2 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
@@ -324,6 +325,8 @@ const overflowActions = computed<RecordAction[]>(() => {
   return actions;
 });
 
+const { copy: copyUrl } = useClipboard({ legacy: true });
+
 const handleAction = async (key: string) => {
   switch (key) {
     case 'reserve':
@@ -338,7 +341,7 @@ const handleAction = async (key: string) => {
       }
       break;
     case 'copy-link':
-      await navigator.clipboard.writeText(window.location.href);
+      await copyUrl(window.location.href);
       toast.success($t('reservations.resource.link_copied'));
       break;
     case 'delete':

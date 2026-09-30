@@ -10,8 +10,9 @@
  * - In parent (ShowAtstovavimas.vue): call provideTimelineFilters()
  * - In children: call useTimelineFilters() to access shared state
  */
-import { ref, computed, provide, inject, watch, type Ref, type InjectionKey } from 'vue';
+import { computed, inject, provide, ref, watch, type InjectionKey, type Ref } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { useStorage } from '@vueuse/core';
 
 import type { AtstovavimasInstitution, AtstovavimasTenant } from '../types';
 
@@ -125,27 +126,6 @@ export function getInstitutionTenants(
   );
 }
 
-function loadStoredFilters(): Partial<StoredFilters> {
-  if (typeof window === 'undefined') return {};
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : {};
-  }
-  catch {
-    return {};
-  }
-}
-
-function saveStoredFilters(filters: StoredFilters) {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(filters));
-  }
-  catch {
-    // Ignore storage errors
-  }
-}
-
 /**
  * Creates and provides timeline filter state to child components.
  * Call this once in the parent component (e.g., ShowAtstovavimas.vue).
@@ -157,45 +137,50 @@ export function provideTimelineFilters(
 ): TimelineFilters {
   const statsTenants = options.statsTenants ?? availableTenants;
   const defaultGanttTenantIds = options.defaultGanttTenantIds ?? [];
-  const stored = loadStoredFilters();
+  const stored = useStorage<StoredFilters>(
+    STORAGE_KEY,
+    () => ({}),
+    undefined,
+    { flush: 'sync', onError: () => {} },
+  );
 
   // User section filters
   const availableTenantsUser = computed(() => getInstitutionTenants(institutions));
   const userTenantFilter = ref<string[]>(
     normalizeTenantSelection(
-      stored.userTenantFilter ?? [],
+      stored.value.userTenantFilter ?? [],
       availableTenantsUser.value,
       'all',
     ),
   );
-  const showOnlyWithActivityUser = ref(stored.showOnlyWithActivityUser ?? false);
-  const showOnlyWithPublicMeetingsUser = ref(stored.showOnlyWithPublicMeetingsUser ?? false);
-  const hideInternalInstitutionsUser = ref(stored.hideInternalInstitutionsUser ?? false);
-  const showDutyMembersUser = ref(stored.showDutyMembersUser ?? true);
+  const showOnlyWithActivityUser = ref(stored.value.showOnlyWithActivityUser ?? false);
+  const showOnlyWithPublicMeetingsUser = ref(stored.value.showOnlyWithPublicMeetingsUser ?? false);
+  const hideInternalInstitutionsUser = ref(stored.value.hideInternalInstitutionsUser ?? false);
+  const showDutyMembersUser = ref(stored.value.showDutyMembersUser ?? true);
   // Default to false - related institutions are lazy loaded when filter is enabled
-  const showRelatedInstitutionsUser = ref(stored.showRelatedInstitutionsUser ?? false);
+  const showRelatedInstitutionsUser = ref(stored.value.showRelatedInstitutionsUser ?? false);
   // Track if related institutions have been loaded via Inertia lazy
   const relatedInstitutionsLoaded = ref(false);
 
   // Tenant section filters
   const selectedTenantForGantt = ref<string[]>(
-    normalizeTenantSelection(stored.selectedTenantForGantt ?? [], availableTenants, defaultGanttTenantIds),
+    normalizeTenantSelection(stored.value.selectedTenantForGantt ?? [], availableTenants, defaultGanttTenantIds),
   );
   const selectedStatsTenants = ref<string[]>(
-    normalizeTenantSelection(stored.selectedStatsTenants ?? stored.selectedTenantForGantt ?? [], statsTenants),
+    normalizeTenantSelection(stored.value.selectedStatsTenants ?? stored.value.selectedTenantForGantt ?? [], statsTenants),
   );
-  const showOnlyWithActivityTenant = ref(stored.showOnlyWithActivityTenant ?? false);
-  const showOnlyWithPublicMeetingsTenant = ref(stored.showOnlyWithPublicMeetingsTenant ?? false);
-  const hideInternalInstitutionsTenant = ref(stored.hideInternalInstitutionsTenant ?? false);
-  const showDutyMembersTenant = ref(stored.showDutyMembersTenant ?? true);
+  const showOnlyWithActivityTenant = ref(stored.value.showOnlyWithActivityTenant ?? false);
+  const showOnlyWithPublicMeetingsTenant = ref(stored.value.showOnlyWithPublicMeetingsTenant ?? false);
+  const hideInternalInstitutionsTenant = ref(stored.value.hideInternalInstitutionsTenant ?? false);
+  const showDutyMembersTenant = ref(stored.value.showDutyMembersTenant ?? true);
   // Default to false - activity status rings are off by default to keep Gantt clean
-  const showActivityStatusTenant = ref(stored.showActivityStatusTenant ?? false);
+  const showActivityStatusTenant = ref(stored.value.showActivityStatusTenant ?? false);
   // Track if tenant institutions have been loaded via Inertia lazy
   const tenantInstitutionsLoaded = ref(false);
   const tenantInstitutionsLoading = ref(false);
 
   // Shared state
-  const scrollPosition = ref<number>(stored.scrollPosition ?? 0);
+  const scrollPosition = ref<number>(stored.value.scrollPosition ?? 0);
 
   // Computed: current selected tenant for display
   const currentTenant = computed(() =>
@@ -206,7 +191,7 @@ export function provideTimelineFilters(
 
   // Persist filters on change
   function persistFilters() {
-    saveStoredFilters({
+    stored.value = {
       selectedTenantForGantt: selectedTenantForGantt.value,
       selectedStatsTenants: selectedStatsTenants.value,
       userTenantFilter: userTenantFilter.value,
@@ -221,7 +206,7 @@ export function provideTimelineFilters(
       showDutyMembersUser: showDutyMembersUser.value,
       showRelatedInstitutionsUser: showRelatedInstitutionsUser.value,
       scrollPosition: scrollPosition.value,
-    });
+    };
   }
 
   watch([

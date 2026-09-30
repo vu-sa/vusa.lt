@@ -6,8 +6,7 @@
  */
 
 import { ref, computed, watch, onMounted, onUnmounted, shallowRef, nextTick, toValue, type MaybeRefOrGetter } from 'vue';
-import { useUrlSearchParams } from '@vueuse/core';
-import { debounce } from 'lodash-es';
+import { useUrlSearchParams, useDebounceFn } from '@vueuse/core';
 
 import type {
   AdminCollection,
@@ -303,7 +302,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   };
 
   // Debounced search for user typing
-  const debouncedSearch = debounce(() => {
+  const debouncedSearch = useDebounceFn(() => {
     if (status.value === 'idle' || status.value === 'error') {
       performSearch(false);
     }

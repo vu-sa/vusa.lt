@@ -250,7 +250,6 @@ import { Button } from '@/Components/ui/button';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { enterInstitution } from '@/Composables/useRecordTrail';
-import { useShowPageData } from '@/Composables/useShowPageData';
 import { getSuggestedCheckInRange, type TaskDisplayData } from '@/Composables/useTaskPresentation';
 import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
 import { institutionActivityStatuses, type StatusPresentation } from '@/Constants/statuses';
@@ -311,11 +310,7 @@ const RelatedInstitutions = defineAsyncComponent(() => import('@/Components/Caro
 
 // --- Sections ---------------------------------------------------------------------------------
 
-const { currentTab: currentSection } = useShowPageData({
-  tabKey: 'institution',
-  entityId: props.institution.id,
-  defaultTab: 'overview',
-});
+const currentSection = ref('overview');
 
 const problemsTab = computed<RecordPageSection[]>(() => (props.institution.problems_count ?? 0) > 0
   ? [{ value: 'problems', label: $t('Problemos'), count: props.institution.problems_count }]

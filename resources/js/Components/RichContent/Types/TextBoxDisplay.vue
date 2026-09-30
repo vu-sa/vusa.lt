@@ -85,8 +85,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref } from 'vue';
 import { useHttp, usePage } from '@inertiajs/vue3';
+import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
@@ -147,7 +148,13 @@ const closedMessage = computed(() => {
 
 const storageKey = computed(() => `text_box_submitted_${props.element.id ?? 'preview'}`);
 
-const submitted = ref(false);
+const storedSubmission = useStorage<string | null>(storageKey, null);
+const submitted = computed({
+  get: () => storedSubmission.value === '1',
+  set: (val: boolean) => {
+    storedSubmission.value = val ? '1' : null;
+  },
+});
 const errorMessage = ref('');
 
 const http = useHttp({
@@ -157,12 +164,6 @@ const http = useHttp({
 });
 
 const remaining = computed(() => MAX_LENGTH - http.text.length);
-
-onMounted(() => {
-  if (localStorage.getItem(storageKey.value) === '1') {
-    submitted.value = true;
-  }
-});
 
 function updateTitle(val: string): void {
   const currentTitle = props.element.options?.title;
@@ -206,7 +207,6 @@ async function submit(): Promise<void> {
       const response = json as ApiResponse<unknown>;
       if (response.success) {
         submitted.value = true;
-        localStorage.setItem(storageKey.value, '1');
       }
       else {
         errorMessage.value = response.message || 'An error occurred. Please try again.';

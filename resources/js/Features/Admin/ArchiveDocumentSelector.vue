@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-4" data-document-selector>
+  <div ref="containerRef" class="space-y-4" data-document-selector>
     <div class="space-y-2">
       <Label for="document-search">Pasirinkite dokumentą</Label>
 
@@ -81,8 +81,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import { useHttp } from '@inertiajs/vue3';
+import { onClickOutside } from '@vueuse/core';
 import { Search as SearchIcon, X as XIcon } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
@@ -99,9 +100,14 @@ const emit = defineEmits<{
   submit: [url: string];
 }>();
 
+const containerRef = ref<HTMLElement | null>(null);
 const selectedDocument = ref<Document | null>(null);
 const documents = ref<Document[]>([]);
 const showResults = ref(false);
+
+onClickOutside(containerRef, () => {
+  showResults.value = false;
+});
 
 const http = useHttp({
   search: '',
@@ -168,21 +174,7 @@ function handleSubmit() {
   }
 }
 
-// Close dropdown when clicking outside
-function handleClickOutside(event: Event) {
-  const target = event.target as HTMLElement;
-  if (!target.closest('[data-document-selector]')) {
-    showResults.value = false;
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
-});
-
 onUnmounted(() => {
-  // Clean up event listener and timeout
-  document.removeEventListener('click', handleClickOutside);
   if (searchTimeout) {
     clearTimeout(searchTimeout);
   }

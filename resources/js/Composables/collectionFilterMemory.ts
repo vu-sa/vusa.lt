@@ -1,4 +1,5 @@
 import { usePage } from '@inertiajs/vue3';
+import { useStorage } from '@vueuse/core';
 
 /**
  * Collection pages remember their filters and sort per page and per user, so coming back to
@@ -37,6 +38,7 @@ export interface CollectionFilterMemory {
 /** Call during setup: the key (user + page) is fixed then, not when a filter changes later. */
 export function useCollectionFilterMemory(filterKeys: string[], queryKeys: string[] = ['q', 'search']): CollectionFilterMemory {
   const storageKey = `${PREFIX}${currentUserId()}:${window.location.pathname}`;
+  const memory = useStorage<string | null>(storageKey, null, undefined, { flush: 'sync' });
 
   function restore(): { decided: boolean; restored: boolean } {
     const params = new URLSearchParams(window.location.search);
@@ -45,7 +47,7 @@ export function useCollectionFilterMemory(filterKeys: string[], queryKeys: strin
       return { decided: true, restored: false };
     }
 
-    const remembered = localStorage.getItem(storageKey);
+    const remembered = memory.value;
 
     if (remembered === null) {
       return { decided: false, restored: false };
@@ -82,7 +84,7 @@ export function useCollectionFilterMemory(filterKeys: string[], queryKeys: strin
       }
     }
 
-    localStorage.setItem(storageKey, remembered.toString());
+    memory.value = remembered.toString();
   }
 
   return { restore, remember };

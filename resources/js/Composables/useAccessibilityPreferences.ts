@@ -1,4 +1,5 @@
-import { computed, ref, watch } from 'vue';
+import { computed, watch } from 'vue';
+import { useStorage } from '@vueuse/core';
 
 /**
  * Reader preferences for the public site: text size, high contrast, forced link underlines.
@@ -24,51 +25,37 @@ interface AccessibilityPreferences {
   underlineLinks: boolean;
 }
 
-const DEFAULTS: AccessibilityPreferences = {
+const DEFAULTS: AccessibilityPreferences = Object.freeze({
   fontScale: 'm',
   contrast: false,
   underlineLinks: false,
-};
+});
 
-const fontScale = ref<FontScaleKey>(DEFAULTS.fontScale);
-const contrast = ref(DEFAULTS.contrast);
-const underlineLinks = ref(DEFAULTS.underlineLinks);
+const preferences = useStorage<AccessibilityPreferences>(
+  STORAGE_KEY,
+  () => ({ ...DEFAULTS }),
+  undefined,
+  { mergeDefaults: true, onError: () => {} },
+);
 
-let initialised = false;
-
-function readStored(): Partial<AccessibilityPreferences> {
-  if (typeof localStorage === 'undefined') {
-    return {};
-  }
-
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-
-    return raw ? JSON.parse(raw) as Partial<AccessibilityPreferences> : {};
-  }
-  catch {
-    // Private mode, cleared site data, or a value from an older shape. A reader who cannot
-    // persist preferences should still get working controls for this visit.
-    return {};
-  }
+if (typeof preferences.value !== 'object' || preferences.value === null) {
+  preferences.value = { ...DEFAULTS };
 }
 
-function persist(): void {
-  if (typeof localStorage === 'undefined') {
-    return;
-  }
+const fontScale = computed<FontScaleKey>({
+  get: () => (preferences.value.fontScale in FONT_SCALES ? preferences.value.fontScale : DEFAULTS.fontScale),
+  set: (val) => { preferences.value.fontScale = val; },
+});
 
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      fontScale: fontScale.value,
-      contrast: contrast.value,
-      underlineLinks: underlineLinks.value,
-    }));
-  }
-  catch {
-    // Storage full or blocked — the preference still applies for this page view.
-  }
-}
+const contrast = computed<boolean>({
+  get: () => preferences.value.contrast ?? DEFAULTS.contrast,
+  set: (val) => { preferences.value.contrast = val; },
+});
+
+const underlineLinks = computed<boolean>({
+  get: () => preferences.value.underlineLinks ?? DEFAULTS.underlineLinks,
+  set: (val) => { preferences.value.underlineLinks = val; },
+});
 
 function apply(): void {
   if (typeof document === 'undefined') {
@@ -83,35 +70,17 @@ function apply(): void {
   root.classList.toggle('a11y-underline', underlineLinks.value);
 }
 
+apply();
+watch([fontScale, contrast, underlineLinks], apply);
+
 export function useAccessibilityPreferences() {
-  if (!initialised) {
-    initialised = true;
-
-    const stored = readStored();
-
-    if (stored.fontScale && stored.fontScale in FONT_SCALES) {
-      fontScale.value = stored.fontScale;
-    }
-    contrast.value = stored.contrast ?? DEFAULTS.contrast;
-    underlineLinks.value = stored.underlineLinks ?? DEFAULTS.underlineLinks;
-
-    apply();
-
-    watch([fontScale, contrast, underlineLinks], () => {
-      apply();
-      persist();
-    });
-  }
-
   /** Drives the "preferences are active" cue on the trigger button. */
   const isDefault = computed(() => fontScale.value === DEFAULTS.fontScale
     && contrast.value === DEFAULTS.contrast
     && underlineLinks.value === DEFAULTS.underlineLinks);
 
   function reset(): void {
-    fontScale.value = DEFAULTS.fontScale;
-    contrast.value = DEFAULTS.contrast;
-    underlineLinks.value = DEFAULTS.underlineLinks;
+    preferences.value = { ...DEFAULTS };
   }
 
   return { fontScale, contrast, underlineLinks, isDefault, reset };

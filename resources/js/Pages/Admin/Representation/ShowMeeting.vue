@@ -282,11 +282,12 @@
 <script setup lang="tsx">
 import { ref, computed, watch, onMounted, defineAsyncComponent, nextTick } from 'vue';
 import { Deferred, Link, router } from '@inertiajs/vue3';
-import { useStorage } from '@vueuse/core';
+import { useClipboard, useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, CalendarPlus, CalendarX, CircleCheck, CircleDashed, Copy, Edit, Globe, Link2, Plus, Trash2 } from 'lucide-vue-next';
 import { DialogDescription } from 'reka-ui';
 
+import { useToasts } from '@/Composables/useToasts';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import { formatRelativeTime } from '@/Utils/IntlTime';
 import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
@@ -695,6 +696,9 @@ const handleMissingAction = (action: MeetingMissingAction) => {
   }));
 };
 
+const toasts = useToasts();
+const { copy: copyUrl } = useClipboard({ legacy: true });
+
 const handleRecordAction = (action: string) => {
   if (action === 'complete') {
     if (props.completion.missingActions[0]?.type === 'agenda_missing') {
@@ -721,7 +725,9 @@ const handleRecordAction = (action: string) => {
     return;
   }
   if (action === 'copy-link') {
-    void navigator.clipboard?.writeText(window.location.href);
+    void copyUrl(window.location.href).then(() => {
+      toasts.success($t('common.link_copied'));
+    });
     return;
   }
   if (action === 'delete') {

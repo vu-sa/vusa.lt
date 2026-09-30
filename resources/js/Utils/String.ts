@@ -570,3 +570,12 @@ export function escapeHtml(value: unknown): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+
+/**
+ * Convert a string (e.g. kebab-case or snake_case) to camelCase.
+ */
+export const camelCase = (str: string): string => {
+  return str
+    .toLowerCase()
+    .replace(/[-_]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ''));
+};

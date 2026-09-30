@@ -70,12 +70,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, toRaw } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link, router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { useSortable } from '@vueuse/integrations/useSortable';
-import { cloneDeep } from 'lodash-es';
 import { Eye, Pencil, Plus } from 'lucide-vue-next';
 
 import NavigationRootItem from './NavigationRootItem.vue';
@@ -104,10 +103,10 @@ const saveState = ref<'idle' | 'saving' | 'saved' | 'error'>('idle');
 // `preserveState: true` (see below) never overwrites it, so a fresh reference from a
 // *different* Inertia visit (e.g. the language switch) is the only thing that should
 // reset it, which the `lang` watcher below does explicitly.
-const contents = ref<AdminNavigationRoot[]>(cloneDeep(props.roots));
+const contents = ref<AdminNavigationRoot[]>(structuredClone(toRaw(props.roots)));
 
 watch(() => props.lang, () => {
-  contents.value = cloneDeep(props.roots);
+  contents.value = structuredClone(toRaw(props.roots));
 });
 
 // `watchElement: true` rebinds Sortable to the new element whenever the roots list

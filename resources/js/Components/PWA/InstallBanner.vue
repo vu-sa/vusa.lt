@@ -55,6 +55,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useStorage } from '@vueuse/core';
 
 import { Button } from '@/Components/ui/button';
 import { usePWA } from '@/Composables/usePWA';
@@ -67,14 +68,17 @@ const MIN_SESSION_SECONDS = 120; // 2 minutes
 
 const { canInstall, promptInstall, isPWA } = usePWA();
 
-const dismissed = ref(false);
+const promptDismissed = useStorage<string | null>(STORAGE_KEY, null);
+const visitCount = useStorage<number>('pwa_visit_count', 0);
+const sessionDismissed = ref(false);
 const sessionStartTime = ref(Date.now());
-const visitCount = ref(0);
+
+const isDismissed = computed(() => sessionDismissed.value || promptDismissed.value === 'dismissed');
 
 // Check if we should show the banner
 const shouldShow = computed(() => {
   // Never show if already installed, can't install, or dismissed
-  if (isPWA.value || !canInstall.value || dismissed.value) {
+  if (isPWA.value || !canInstall.value || isDismissed.value) {
     return false;
   }
 
@@ -93,47 +97,24 @@ const shouldShow = computed(() => {
 });
 
 const dismiss = () => {
-  dismissed.value = true;
-
-  localStorage.setItem(STORAGE_KEY, 'dismissed');
+  sessionDismissed.value = true;
+  promptDismissed.value = 'dismissed';
 };
 
 const install = async () => {
   const accepted = await promptInstall();
   if (accepted) {
-    dismissed.value = true;
-    localStorage.removeItem(STORAGE_KEY);
+    sessionDismissed.value = true;
+    promptDismissed.value = null;
   }
 };
 
 onMounted(() => {
-  // Check if previously dismissed
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      if (stored === 'dismissed') {
-        dismissed.value = true;
-      }
-    }
-  }
-  catch {
-    // Ignore parse errors
-  }
-
-  // Track visit count
-  try {
-    const visits = parseInt(localStorage.getItem('pwa_visit_count') || '0', 10);
-    visitCount.value = visits + 1;
-    localStorage.setItem('pwa_visit_count', String(visitCount.value));
-  }
-  catch {
-    visitCount.value = 1;
-  }
+  visitCount.value = (Number.isFinite(visitCount.value) ? visitCount.value : 0) + 1;
 
   // Start session timer to trigger reactivity after MIN_SESSION_SECONDS
   setTimeout(() => {
-    // Force reactivity update by touching sessionStartTime
-    sessionStartTime.value = sessionStartTime.value;
+    sessionStartTime.value = Date.now();
   }, MIN_SESSION_SECONDS * 1000);
 });
 </script>

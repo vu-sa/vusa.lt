@@ -1,8 +1,6 @@
-import { camelCase } from 'lodash-es';
-
 import { ModelEnum } from './Types/enums';
 
-import { pluralizeModels } from '@/Utils/String';
+import { camelCase, pluralizeModels } from '@/Utils/String';
 import { entityTypeRegistry } from '@/Constants/entityTypes';
 
 // Models that should be shown in the UI (based on original entities.ts)

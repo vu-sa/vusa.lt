@@ -1,7 +1,4 @@
-import { computed, ref, watch } from 'vue';
-import { useDebounceFn } from '@vueuse/core';
-
-import { useApi } from '@/Composables/useApi';
+import { useDebouncedQuery } from '@/Composables/useDebouncedQuery';
 import type { DutySimilarityMatches } from '@/Components/AdminForms/DuplicateDutyWarning.vue';
 
 const EMPTY_MATCHES: DutySimilarityMatches = {
@@ -25,34 +22,26 @@ export function useDuplicateDutyCheck(
   institutionId: () => string | null | undefined,
   excludeDutyId: () => string | null | undefined = () => null,
 ) {
-  const url = ref('');
+  const { data: matches, isChecking, check } = useDebouncedQuery<DutySimilarityMatches>({
+    url: () => {
+      const currentName = (name() ?? '').trim();
 
-  const { data, isFetching, execute } = useApi<DutySimilarityMatches>(url, {
-    immediate: false,
-    showErrorToast: false,
+      if (currentName.length < 3) {
+        return null;
+      }
+
+      const params = new URLSearchParams({ name: currentName });
+      const currentInstitutionId = institutionId();
+      const currentExcludeDutyId = excludeDutyId();
+      if (currentInstitutionId) params.set('institution_id', currentInstitutionId);
+      if (currentExcludeDutyId) params.set('exclude_id', currentExcludeDutyId);
+
+      return `${route('api.v1.admin.duties.similar')}?${params.toString()}`;
+    },
+    watchSources: [() => name(), () => institutionId()],
+    debounceMs: 500,
+    initialValue: EMPTY_MATCHES,
   });
 
-  const matches = computed<DutySimilarityMatches>(() => (url.value ? data.value ?? EMPTY_MATCHES : EMPTY_MATCHES));
-
-  const run = useDebounceFn(() => {
-    const currentName = (name() ?? '').trim();
-
-    if (currentName.length < 3) {
-      url.value = '';
-      return;
-    }
-
-    const params = new URLSearchParams({ name: currentName });
-    const currentInstitutionId = institutionId();
-    const currentExcludeDutyId = excludeDutyId();
-    if (currentInstitutionId) params.set('institution_id', currentInstitutionId);
-    if (currentExcludeDutyId) params.set('exclude_id', currentExcludeDutyId);
-
-    url.value = `${route('api.v1.admin.duties.similar')}?${params.toString()}`;
-    execute();
-  }, 500);
-
-  watch([() => name(), () => institutionId()], run);
-
-  return { matches, isChecking: isFetching, check: run };
+  return { matches, isChecking, check };
 }
