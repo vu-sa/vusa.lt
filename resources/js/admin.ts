@@ -67,7 +67,7 @@ createInertiaApp({
         fallbackLang: 'en',
         resolve: async (lang: string) => {
           // Load JSON translations (shared between admin/public)
-          const jsonLangs = import.meta.glob('../../lang/*.json');
+          const jsonLangs = import.meta.glob(['../../lang/lt.json', '../../lang/en.json']);
           // Load admin-specific PHP translations (shared + admin combined)
           const phpLangs = import.meta.glob('../../lang/php_admin_*.json');
 
@@ -75,8 +75,10 @@ createInertiaApp({
           const phpPath = `../../lang/php_admin_${lang}.json`;
 
           // Load both translation sources
-          const jsonModule = jsonLangs[jsonPath] ? await jsonLangs[jsonPath]() : { default: {} };
-          const phpModule = phpLangs[phpPath] ? await phpLangs[phpPath]() : { default: {} };
+          const [jsonModule, phpModule] = await Promise.all([
+            jsonLangs[jsonPath] ? jsonLangs[jsonPath]() : { default: {} },
+            phpLangs[phpPath] ? phpLangs[phpPath]() : { default: {} },
+          ]);
 
           // Merge translations: JSON base + PHP compiled
           // Return in { default: {...} } format expected by laravel-vue-i18n

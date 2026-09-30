@@ -322,7 +322,7 @@ watch(isOpen, (opened) => {
       }, 50);
     });
   }
-});
+}, { immediate: true });
 
 // Focus the first result when pressing down arrow in the input
 const focusFirstResult = () => {

@@ -20,7 +20,10 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 use Inertia\Middleware;
+use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -55,6 +58,22 @@ class HandleInertiaRequests extends Middleware
     #[\Override]
     public function handle(Request $request, Closure $next)
     {
+        $ssrEligible = config('inertia.ssr.enabled') && $request->user() === null
+            && $request->routeIs(...config('inertia.ssr.routes'));
+
+        Inertia::disableSsr(! $ssrEligible);
+
+        // Only full page loads are server-rendered; XHR visits already have the client's @routes.
+        if ($ssrEligible && ! $request->header('X-Inertia')) {
+            Inertia::share('ziggy', fn () => [
+                ...(new Ziggy)->filter(collect(Route::getRoutes())->filter(
+                    fn ($route) => ! str_starts_with($route->uri(), 'api/')
+                        && (! str_starts_with($route->uri(), 'mano') || $route->getName() === 'login')
+                )->map->getName()->filter()->all())->toArray(),
+                'location' => $request->url(),
+            ]);
+        }
+
         $this->recordPwaLaunchIfDetected($request);
 
         return parent::handle($request, $next);

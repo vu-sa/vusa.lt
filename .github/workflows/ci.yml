@@ -395,6 +395,17 @@ jobs:
         echo "127.0.0.1 typesense" | sudo tee -a /etc/hosts
         until curl -s http://typesense:8108/health | grep -q '"ok"'; do sleep 1; done
 
+    - name: Start public SSR renderer for hydration tests
+      run: |
+        npm run build:ssr
+        node --max-old-space-size=384 bootstrap/ssr/ssr.js > /tmp/inertia-ssr.log 2>&1 &
+        for attempt in 1 2 3 4 5; do
+          if curl --fail --silent http://127.0.0.1:13714/health; then exit 0; fi
+          sleep 1
+        done
+        cat /tmp/inertia-ssr.log
+        exit 1
+
     # DOCS_SCREENSHOTS also saves the docs' reference frames (tests/Browser/README.md "Docs screenshots").
     - name: Run browser tests
       run: vendor/bin/pest tests/Browser --parallel --compact

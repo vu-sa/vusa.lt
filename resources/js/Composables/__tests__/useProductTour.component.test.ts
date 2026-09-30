@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { mount, flushPromises } from '@vue/test-utils';
 import { defineComponent } from 'vue';
 import { driver, type Config } from 'driver.js';
 
@@ -20,7 +20,7 @@ function anchor(name: string, rendered: boolean): HTMLElement {
   return el;
 }
 
-function startWith(steps: Config['steps']) {
+async function startWith(steps: Config['steps']) {
   const Host = defineComponent({
     setup() {
       const tour = useProductTour({ tourId: 'test-tour-v1', steps: steps! });
@@ -29,6 +29,8 @@ function startWith(steps: Config['steps']) {
     },
   });
   mount(Host);
+  await vi.dynamicImportSettled();
+  await flushPromises();
 
   return vi.mocked(driver).mock.calls.at(-1)?.[0]?.steps ?? [];
 }
@@ -39,19 +41,19 @@ afterEach(() => {
 });
 
 describe('useProductTour anchors', () => {
-  it('highlights the rendered copy of an anchor that exists in both the phone and desktop chrome', () => {
+  it('highlights the rendered copy of an anchor that exists in both the phone and desktop chrome', async () => {
     anchor('search', false);
     const shown = anchor('search', true);
 
-    const steps = startWith([{ element: '[data-tour="search"]', popover: { title: 'Search' } }]);
+    const steps = await startWith([{ element: '[data-tour="search"]', popover: { title: 'Search' } }]);
 
     expect(steps.map(step => step.element)).toEqual([shown]);
   });
 
-  it('skips a step whose anchor is missing or hidden, and keeps one without an anchor', () => {
+  it('skips a step whose anchor is missing or hidden, and keeps one without an anchor', async () => {
     anchor('hidden', false);
 
-    const steps = startWith([
+    const steps = await startWith([
       { popover: { title: 'Welcome' } },
       { element: '[data-tour="hidden"]', popover: { title: 'Hidden' } },
       { element: '[data-tour="missing"]', popover: { title: 'Missing' } },

@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { PublicClientApplication } from '@azure/msal-browser';
+import type { PublicClientApplication } from '@azure/msal-browser';
 import { combine } from '@pnp/core';
 import { usePage } from '@inertiajs/vue3';
 import { ref, watch, nextTick } from 'vue';
@@ -112,8 +112,15 @@ let msalReady: Promise<unknown> | null = null;
 
 function ensureMsal(): Promise<unknown> {
   if (!msalReady) {
-    msalApp = new PublicClientApplication(msalParams);
-    msalReady = msalApp.initialize().then(() => msalApp!.handleRedirectPromise().catch(() => null));
+    msalReady = import('@azure/msal-browser').then(async ({ PublicClientApplication }) => {
+      msalApp = new PublicClientApplication(msalParams);
+      await msalApp.initialize();
+      return msalApp.handleRedirectPromise().catch(() => null);
+    }).catch((error: unknown) => {
+      msalReady = null;
+      msalApp = null;
+      throw error;
+    });
   }
 
   return msalReady;

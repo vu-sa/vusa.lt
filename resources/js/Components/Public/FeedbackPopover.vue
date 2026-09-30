@@ -64,7 +64,7 @@ const mousePressed = useMousePressed();
 const textInQuestion = ref('');
 const feedback = ref('');
 
-const coordinates = ref({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+const coordinates = ref({ x: typeof window === 'undefined' ? 0 : window.innerWidth / 2, y: typeof window === 'undefined' ? 0 : window.innerHeight / 2 });
 
 watch(
   mousePressed.pressed,

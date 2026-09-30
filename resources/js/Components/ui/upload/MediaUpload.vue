@@ -168,7 +168,9 @@
 import { ref, watch, onMounted, computed } from 'vue';
 
 import { cn } from '@/Utils/Shadcn/utils';
-import { Upload, UploadDropzone, type UploadFile } from '@/Components/ui/upload';
+import Upload from './Upload.vue';
+import UploadDropzone from './UploadDropzone.vue';
+import { type UploadFile } from './variants';
 import { Button } from '@/Components/ui/button';
 
 interface Props {

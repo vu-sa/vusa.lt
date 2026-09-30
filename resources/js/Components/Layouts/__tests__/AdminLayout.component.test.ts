@@ -61,12 +61,17 @@ describe('AdminLayout', () => {
     expect(wrapper.find('[data-stub="AdminShell"] [data-testid="page"]').exists()).toBe(true);
   });
 
-  it('keeps the shared overlays outside the shell', () => {
+  it('keeps the shared overlays outside the shell and mounts the palette on demand', async () => {
     const wrapper = mountLayout();
 
-    for (const overlay of ['action-window-stub', 'admin-command-palette-stub', 'toaster-stub']) {
+    for (const overlay of ['action-window-stub', 'toaster-stub']) {
       expect(wrapper.find(overlay).exists()).toBe(true);
     }
+    expect(wrapper.find('admin-command-palette-stub').exists()).toBe(false);
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, cancelable: true }));
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('admin-command-palette-stub').exists()).toBe(true);
+    expect(wrapper.find('[data-stub="AdminShell"] admin-command-palette-stub').exists()).toBe(false);
   });
 
   it('opens the shared keyboard shortcuts dialog with ?', async () => {

@@ -7,10 +7,10 @@
  * computed from document order. Authors can opt into a plain ground and choose only
  * that plain block's vertical padding.
  */
-import { getContentType } from './Types';
+import { getDisplayType } from './Types/display';
 import { BAND_GROUND_CLASS, BAND_PADDING, BAND_PADDING_COMPACT, PLAIN_PADDING_CLASS } from './sectionClasses';
 import type { BandTint, PlainPadding } from './sectionClasses';
-import type { BlockWidth } from './Types';
+import type { BlockWidth } from './Types/display';
 
 export type { BandTint };
 export type BlockPresentation = 'auto' | 'plain';
@@ -37,14 +37,14 @@ const FLOW: BandResolution = { isBand: false, tint: null, bleeds: false, classes
 
 /** Whether this type can ever render as a band, independent of any specific block's options. */
 export function resolveBandRole(type: string, options?: Record<string, unknown> | null): 'flow' | 'band' {
-  const role = getContentType(type).bandRole;
+  const role = getDisplayType(type).bandRole;
   if (!role) return 'flow';
   return typeof role === 'function' ? role(options) : role;
 }
 
 /** A full band with its own vertical rhythm cannot live inside a manual section's band. */
 export function endsSectionWrapping(element: LayoutableElement): boolean {
-  return getContentType(element.type).selfSpaced === true
+  return getDisplayType(element.type).selfSpaced === true
     && resolveBandRole(element.type, element.options) === 'band';
 }
 
@@ -64,7 +64,7 @@ export function resolveBand(element: LayoutableElement, slot: number): BandResol
     return { ...FLOW, classes: paddingClass ? [paddingClass] : [] };
   }
 
-  const contentType = getContentType(element.type);
+  const contentType = getDisplayType(element.type);
   const width = (element.options?.width as BlockWidth | undefined) ?? contentType.defaultWidth;
   const bleeds = width === 'full';
 

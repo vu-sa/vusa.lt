@@ -1,20 +1,26 @@
 <template>
-  <div class="rc-prose tracking-normal" v-html="generateHTMLfromTiptap(json_content)" />
+  <div class="rc-prose tracking-normal" v-html="mounted ? generateHTMLfromTiptap(json_content) : ''" />
 </template>
 
 <script setup lang="ts">
-import { createRenderExtensions, createRenderExtensions as createRenderExtensionsCore } from '../TipTap/extensions/presets';
+import { ref, onMounted } from 'vue';
+
+import { createRenderExtensions as createRenderExtensionsCore } from '../TipTap/extensions/render';
+
+// DOM serialization must wait until the server-rendered markup has hydrated.
+const mounted = ref(typeof document !== 'undefined' && !document.querySelector('#app[data-server-rendered]'));
+onMounted(() => { mounted.value = true; });
 
 defineProps<{
-  json_content: any;
+  json_content: Record<string, unknown>;
 }>();
 </script>
 
 <script lang="ts">
-import { generateHTML as generateHTMLCore } from '@tiptap/vue-3';
+import { generateHTML as generateHTMLCore } from '@tiptap/core';
 
 // Export this function so it can be used in other components
-export const generateHTMLfromTiptap = (json_content: any) => {
+export const generateHTMLfromTiptap = (json_content: Record<string, unknown>) => {
   if (!json_content || Object.keys(json_content).length === 0) {
     return '';
   }

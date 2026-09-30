@@ -78,7 +78,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
 
       - name: Install npm dependencies
@@ -93,6 +93,7 @@ jobs:
           VITE_REVERB_PORT=${{ vars.REVERB_PORT }} \
           VITE_REVERB_SCHEME=${{ vars.REVERB_SCHEME }} \
           npm run build
+          npm run build:ssr
 
       # The images are never committed: the newest CI browser run on the branch uploads them. Not
       # necessarily this commit's run — a push that skips browser tests uploads none. Docs hide any
@@ -141,7 +142,7 @@ jobs:
 
       - name: Package build artifacts
         run: |
-          tar -czf build.tar.gz public/build
+          tar -czf build.tar.gz public/build bootstrap/ssr
           tar -czf vendor.tar.gz vendor
 
       # Two changes from the old inline version, both aimed at the intermittent failures where a run

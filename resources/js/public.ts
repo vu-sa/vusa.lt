@@ -1,10 +1,10 @@
 import '../css/app.css';
 
-import { type DefineComponent, createApp, h } from 'vue';
+import { type DefineComponent, createApp, createSSRApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { defineAsyncComponent } from 'vue';
-import { i18nVue } from 'laravel-vue-i18n';
+import { i18nVue, loadLanguageAsync } from 'laravel-vue-i18n';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 const PublicLayout = defineAsyncComponent(
@@ -48,15 +48,17 @@ createInertiaApp({
       cacheFor: 5 * 60 * 1000, // 5 minutes in milliseconds
     },
   },
-  setup({ App, props, el, plugin }) {
+  async setup({ App, props, el, plugin }) {
     // https://github.com/inertiajs/inertia/discussions/372#discussioncomment-6052940
-    const application = createApp({ render: () => h(App, props) })
+    const hydrating = el.hasAttribute('data-server-rendered');
+    const create = hydrating ? createSSRApp : createApp;
+    const application = create({ render: () => h(App, props) })
       .use(plugin)
       .use(i18nVue, {
         fallbackLang: 'en',
         resolve: async (lang: string) => {
           // Load JSON translations (shared between admin/public)
-          const jsonLangs = import.meta.glob(['../../lang/*.json', '!../../lang/php_admin_*.json']);
+          const jsonLangs = import.meta.glob(['../../lang/lt.json', '../../lang/en.json']);
           // Load public-specific PHP translations (shared + public combined)
           const phpLangs = import.meta.glob('../../lang/php_public_*.json');
 
@@ -64,8 +66,10 @@ createInertiaApp({
           const phpPath = `../../lang/php_public_${lang}.json`;
 
           // Load both translation sources
-          const jsonModule = jsonLangs[jsonPath] ? await jsonLangs[jsonPath]() : { default: {} };
-          const phpModule = phpLangs[phpPath] ? await phpLangs[phpPath]() : { default: {} };
+          const [jsonModule, phpModule] = await Promise.all([
+            jsonLangs[jsonPath] ? jsonLangs[jsonPath]() : { default: {} },
+            phpLangs[phpPath] ? phpLangs[phpPath]() : { default: {} },
+          ]);
 
           // Merge translations: JSON base + PHP compiled
           // Return in { default: {...} } format expected by laravel-vue-i18n
@@ -79,6 +83,9 @@ createInertiaApp({
       })
       .use(ZiggyVue);
 
+    if (hydrating) {
+      await loadLanguageAsync(document.documentElement.lang || 'lt');
+    }
     application.mount(el);
 
     delete el.dataset.page;

@@ -109,13 +109,13 @@ describe('HeroCarouselDisplay', () => {
     expect(button?.classes()).toContain('text-white');
   });
 
-  it('preloads carousel images while keeping high fetch priority for the first slide', () => {
+  it('loads the active carousel image eagerly and leaves other slides lazy', () => {
     const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
 
     const images = wrapper.findAll('img');
     expect(images[0]!.attributes('loading')).toBe('eager');
     expect(images[0]!.attributes('fetchpriority')).toBe('high');
-    expect(images[1]!.attributes('loading')).toBe('eager');
+    expect(images[1]!.attributes('loading')).toBe('lazy');
     expect(images[1]!.attributes('fetchpriority')).toBeUndefined();
   });
 

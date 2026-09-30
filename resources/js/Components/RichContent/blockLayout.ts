@@ -1,4 +1,4 @@
-import { getContentType, type BlockWidth } from './Types';
+import { getDisplayType, type BlockWidth } from './Types/display';
 import { PLAIN_PADDING_CLASS, type VerticalSpacing } from './sectionClasses';
 
 const WIDTH_CLASS: Record<BlockWidth, string> = {
@@ -22,7 +22,7 @@ export interface LayoutableElement {
  * of what the author picked.
  */
 export function blockLayoutClasses(element: LayoutableElement): string[] {
-  const contentType = getContentType(element.type);
+  const contentType = getDisplayType(element.type);
   const width = (element.options?.width as BlockWidth | undefined) ?? contentType.defaultWidth;
   const widthClass = WIDTH_CLASS[width];
   const flushClass = contentType.selfSpaced ? 'rc-flush' : '';

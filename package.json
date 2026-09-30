@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:ssr": "vite build --ssr",
     "test": "vitest --project unit --project component",
     "test:all": "vitest",
     "test:unit": "vitest --project unit",

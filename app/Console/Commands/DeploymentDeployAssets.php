@@ -40,6 +40,7 @@ class DeploymentDeployAssets extends Command
 
             // Extract build artifacts to temporary directory
             $this->deployBuildAssets($tempDir);
+            $this->deploySsrAssets($tempDir);
             $this->deployDocumentation($tempDir);
 
             // Clean up temporary directory and archives
@@ -98,6 +99,29 @@ class DeploymentDeployAssets extends Command
             }
 
             $this->info('Build assets deployed successfully');
+        }
+    }
+
+    private function deploySsrAssets(string $tempDir): void
+    {
+        $source = $tempDir.'/bootstrap/ssr';
+        if (! is_dir($source)) {
+            return;
+        }
+
+        $target = base_path('bootstrap/ssr');
+        $previous = base_path('bootstrap/ssr.old');
+        if (is_dir($previous)) {
+            $this->removeDirectory($previous);
+        }
+        if (is_dir($target) && ! rename($target, $previous)) {
+            throw new \RuntimeException('Failed to back up SSR assets');
+        }
+        if (! rename($source, $target)) {
+            if (is_dir($previous)) {
+                rename($previous, $target);
+            }
+            throw new \RuntimeException('Failed to deploy SSR assets');
         }
     }
 

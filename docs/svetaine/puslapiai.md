@@ -30,6 +30,9 @@ Kategorijas gali kurti tik pagrindinis administratorius.
 
 ## Turinio redagavimas {#turinio-redagavimas}
 
+Skaitytojams redaktorius neįkeliamas. Turėdamas puslapio redagavimo teisę gali atverti turinio
+redaktorių ir toliau keisti tekstą tiesiogiai peržiūroje.
+
 Puslapio formoje atverk **Redaguoti turinį**. Blokų pasirinkimo lange pasirink kategoriją arba
 ieškok pagal pavadinimą. Kompiuteryje bloką įterpia jo eilutė; telefone pirmiausia pamatysi
 peržiūrą, tada spausk **Pridėti šį bloką**. Peržiūros variantus gali pakeisti prieš įterpdamas.

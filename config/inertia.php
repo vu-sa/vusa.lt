@@ -27,7 +27,12 @@ return [
 
         'ensure_bundle_exists' => (bool) env('INERTIA_SSR_ENSURE_BUNDLE_EXISTS', false),
 
-        // 'bundle' => base_path('bootstrap/ssr/ssr.mjs'),
+        'bundle' => base_path('bootstrap/ssr/ssr.js'),
+
+        // The renderer reads the same variable to drop renders Laravel has already abandoned.
+        'timeout' => (int) env('INERTIA_SSR_TIMEOUT', 1),
+
+        'routes' => ['home', 'page', 'news'],
 
         /*
         |--------------------------------------------------------------------------

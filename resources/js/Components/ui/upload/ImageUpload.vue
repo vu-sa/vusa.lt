@@ -229,7 +229,7 @@
   <Dialog v-model:open="showCropperModal">
     <DialogContent class="max-h-[calc(100dvh-2rem)] max-w-5xl gap-0 overflow-y-auto p-0">
       <ImageCropper
-        v-if="cropperImageUrl"
+        v-if="showCropperModal && cropperImageUrl"
         :src="cropperImageUrl"
         @crop="handleCropFinish"
         @cancel="handleCropCancel"
@@ -241,7 +241,7 @@
   <Dialog v-model:open="showFocalPointModal">
     <DialogContent class="max-w-xl">
       <FocalPointPicker
-        v-if="previewUrl"
+        v-if="showFocalPointModal && previewUrl"
         :image-url="previewUrl"
         :model-value="focalPointValue ?? null"
         @update:model-value="(val: string) => { emit('update:focalPointValue', val); }"
@@ -263,16 +263,18 @@
  * - Immediate mode: Files uploaded immediately to server and URL returned
  * - Existing image preview for edit forms
  */
-import { computed, ref, watch, onMounted, nextTick } from 'vue';
+import { computed, defineAsyncComponent, ref, watch, onMounted, nextTick } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { Check, Crop, Crosshair, ImagePlus, Loader2, Plus, RefreshCw, Trash2, Upload as UploadIcon, X } from 'lucide-vue-next';
 
-import FocalPointPicker from './FocalPointPicker.vue';
-import ImageCropper from './ImageCropper.vue';
+const FocalPointPicker = defineAsyncComponent(() => import('./FocalPointPicker.vue'));
+const ImageCropper = defineAsyncComponent(() => import('./ImageCropper.vue'));
 
 import { cn } from '@/Utils/Shadcn/utils';
 import { useImageCompression, type CompressionOptions, type CompressionResult } from '@/Composables/useImageCompression';
-import { Upload, UploadDropzone, type UploadFile } from '@/Components/ui/upload';
+import Upload from './Upload.vue';
+import UploadDropzone from './UploadDropzone.vue';
+import { type UploadFile } from './variants';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';

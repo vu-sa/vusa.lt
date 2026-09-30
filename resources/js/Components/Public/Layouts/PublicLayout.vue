@@ -32,7 +32,7 @@
       </main>
 
       <FadeTransition appear>
-        <ConsentCard v-if="!cookieConsentDecided" />
+        <ConsentCard v-if="mounted && !cookieConsentDecided" />
       </FadeTransition>
     </div>
 
@@ -47,7 +47,7 @@
 /**
  * PublicLayout - Main layout component for public pages
  */
-import { computed, defineAsyncComponent, onMounted, ref, watch, nextTick } from 'vue';
+import { computed, h, defineAsyncComponent, onMounted, ref, watch, nextTick } from 'vue';
 import { useDark } from '@vueuse/core';
 import { usePage, router } from '@inertiajs/vue3';
 
@@ -69,8 +69,7 @@ import 'vue-sonner/style.css';
 const PartnersBanner = defineAsyncComponent({
   loader: () => import('../FullWidth/PartnersBanner.vue'),
   loadingComponent: {
-    components: { Skeleton },
-    template: '<div class="mx-auto mt-8 max-w-7xl px-5 sm:px-6 lg:px-8"><Skeleton class="h-32 rounded-none" /></div>',
+    setup: () => () => h('div', { class: 'mx-auto mt-8 max-w-7xl px-5 sm:px-6 lg:px-8' }, [h(Skeleton, { class: 'h-32 rounded-none' })]),
   },
   delay: 200,
 });

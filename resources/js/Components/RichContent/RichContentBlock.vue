@@ -16,8 +16,8 @@
                for both public pages and the editor's global preview; otherwise the card
                body appears empty even though json_content is present. -->
           <template v-if="element.type === 'shadcn-card'">
-            <RichContentTiptapHTML v-if="!html" :json_content="element.json_content" />
-            <div v-else v-html="element.html" />
+            <div v-if="typeof element.html === 'string'" class="rc-prose" v-html="element.html" />
+            <RichContentTiptapHTML v-else :json_content="element.json_content" />
           </template>
         </component>
       </template>
@@ -45,12 +45,12 @@
  * blocks — nothing about how an individual block renders should differ depending on
  * whether it happens to sit inside a section.
  */
-import { computed } from 'vue';
+import { computed, defineAsyncComponent } from 'vue';
 
 import { blockLayoutClasses } from './blockLayout';
-import { getContentType, getSkeletonForType } from './Types';
+import { getDisplayType, getSkeletonForType } from './Types/display';
 import { getSkeletonComponent } from './skeletonComponents';
-import RichContentTiptapHTML from './RichContentTiptapHTML.vue';
+const RichContentTiptapHTML = defineAsyncComponent(() => import('./RichContentTiptapHTML.vue'));
 import type { BandResolution } from './bandLayout';
 
 import type { NewsItem } from '@/Types/contentParts';
@@ -67,7 +67,7 @@ const props = defineProps<{
   calendarEvents?: Array<Record<string, unknown>>;
 }>();
 
-const displayComponent = computed(() => getContentType(props.element.type).display);
+const displayComponent = computed(() => getDisplayType(props.element.type).display);
 const blockClasses = computed(() => blockLayoutClasses(props.element));
 const skeleton = computed(() => getSkeletonForType(props.element.type));
 const skeletonComponent = computed(() => getSkeletonComponent(props.element.type));

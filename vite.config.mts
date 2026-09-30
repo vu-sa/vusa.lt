@@ -14,7 +14,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 import { codecovVitePlugin } from "@codecov/vite-plugin";
 
-export default defineConfig(({ command }) => {
+export default defineConfig(({ command, isSsrBuild }) => {
   // Define common plugins that will be used in both build and test
   const commonPlugins = [
     vue({
@@ -51,10 +51,10 @@ export default defineConfig(({ command }) => {
 
   // Core plugins needed for both dev and build
   const corePlugins = [
-    laravel([
-      'resources/js/app.ts',
-      'resources/css/app.css',
-    ]),
+    laravel({
+      input: ['resources/js/app.ts', 'resources/css/app.css'],
+      ssr: 'resources/js/ssr.ts',
+    }),
     tailwindcss(),
     ziggy({
       sail: true,
@@ -230,15 +230,16 @@ export default defineConfig(({ command }) => {
       ...corePlugins,
       ...devPlugins,
       ...codecovPlugins,
-      pwaPlugin,
+      ...(!isSsrBuild ? [pwaPlugin] : []),
     ],
     resolve: {
-      alias: {
-        '@': '/resources/js',
-        'vue': 'vue/dist/vue.esm-bundler.js',
-        'ziggy-js': '/vendor/tightenco/ziggy/dist',
-      },
+      alias: [
+        { find: '@', replacement: '/resources/js' },
+        { find: /^vue$/, replacement: 'vue/dist/vue.runtime.esm-bundler.js' },
+        { find: 'ziggy-js', replacement: '/vendor/tightenco/ziggy/dist' },
+      ],
     },
+    ssr: { noExternal: true },
     build: {
       // sourcemap: true,
 

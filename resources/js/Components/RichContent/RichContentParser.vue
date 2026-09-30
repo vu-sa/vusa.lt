@@ -43,7 +43,7 @@
  */
 import { computed } from 'vue';
 
-import { getContentType } from './Types';
+import { getDisplayType } from './Types/display';
 import { blockLayoutClasses } from './blockLayout';
 import { endsSectionWrapping, resolveBandRole, resolveBands, type BandResolution } from './bandLayout';
 import RichContentBlock from './RichContentBlock.vue';
@@ -68,7 +68,7 @@ const props = defineProps<{
  * stringify into the DOM (`resolved="[object Object]"`).
  */
 function resolvedFor(element: models.ContentPart): unknown {
-  if (!getContentType(element.type).serverResolved) return undefined;
+  if (!getDisplayType(element.type).serverResolved) return undefined;
 
   return props.resolved?.[element.id];
 }

@@ -321,3 +321,14 @@ describe('environment template hygiene', function (): void {
         expect($unread)->toBeEmpty();
     });
 });
+
+it('keeps the optional Inertia renderer outside maintenance and skips disabled environments', function (): void {
+    $keys = array_keys(DeploymentRun::STEPS);
+    expect(array_search('ssr', $keys))->toBeGreaterThan(array_search('online', $keys));
+    expect(DeploymentRun::STEPS['ssr'])
+        ->toMatchArray(['command' => 'inertia:stop-ssr', 'critical' => false, 'ssrOnly' => true]);
+    config(['inertia.ssr.enabled' => false]);
+    $this->artisan('deployment:run', ['--dry-run' => true])
+        ->expectsOutputToContain('Restart optional Inertia SSR renderer (SSR disabled)')
+        ->assertSuccessful();
+});

@@ -22,8 +22,8 @@
       <UpdateBanner />
 
       <!-- Command Palette (global Cmd+K / Ctrl+K search) -->
-      <AdminCommandPalette />
-      <KeyboardShortcutsDialog v-model:open="keyboardShortcutsOpen" />
+      <AdminCommandPalette v-if="commandPaletteOpen" />
+      <KeyboardShortcutsDialog v-if="keyboardShortcutsOpen" v-model:open="keyboardShortcutsOpen" />
     </TooltipProvider>
   </div>
 </template>
@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { Head, usePage } from '@inertiajs/vue3';
 import { useDebounceFn, useEventListener, useOnline } from '@vueuse/core';
-import { computed, onMounted, watch, ref, nextTick } from 'vue';
+import { computed, defineAsyncComponent, onMounted, watch, ref, nextTick } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { usePWA } from '@/Composables/usePWA';
@@ -50,9 +50,9 @@ import { createShellFocusProvider } from '@/Composables/useShellFocus';
 import { createCommandPaletteProvider } from '@/Composables/useCommandPalette';
 import { createUIPreferencesProvider } from '@/Composables/useUIPreferences';
 import { createStartFmProvider } from '@/Composables/useStartFm';
-import AdminCommandPalette from '@/Components/CommandPalette/AdminCommandPalette.vue';
+const AdminCommandPalette = defineAsyncComponent(() => import('@/Components/CommandPalette/AdminCommandPalette.vue'));
 import ActionWindow from '@/Components/ActionWindow/ActionWindow.vue';
-import KeyboardShortcutsDialog from '@/Components/KeyboardShortcutsDialog.vue';
+const KeyboardShortcutsDialog = defineAsyncComponent(() => import('@/Components/KeyboardShortcutsDialog.vue'));
 
 const props = defineProps<{
   title?: string;
@@ -87,7 +87,7 @@ createShellFocusProvider();
 
 // Initialize command palette provider for global Cmd+K / Ctrl+K search.
 // Share the recently-visited source so the palette and the preferences stay in sync.
-createCommandPaletteProvider({
+const { isOpen: commandPaletteOpen } = createCommandPaletteProvider({
   recentPages: uiPreferences.recentPages,
   clearRecent: uiPreferences.clearRecent,
 });
