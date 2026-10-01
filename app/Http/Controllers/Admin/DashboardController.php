@@ -15,6 +15,7 @@ use App\Models\Calendar;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\News;
+use App\Models\Task;
 use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -42,101 +43,110 @@ class DashboardController extends AdminController
 
     public function index(ShowAdminHomeRequest $request)
     {
-        $user = User::query()->find(Auth::id()) ?? abort(404);
-        $user->loadMissing('current_duties.institution.tenant.primary_institution');
-        $heroInstitution = $user->current_duties
-            ->map(fn ($duty) => $duty->institution?->tenant?->primary_institution)
-            ->first(fn ($institution) => filled($institution?->image_url));
+        $user = fn () => once(fn () => $request->user());
+        $loadUserDuties = fn () => once(function () use ($user) {
+            $u = $user();
+            $u->loadMissing('current_duties.institution.tenant.primary_institution');
 
-        // Get task statistics for the dashboard
-        $taskStats = [
-            'total' => $user->tasks()->whereNull('completed_at')->count(),
-            'overdue' => $user->tasks()->whereNull('completed_at')->where('due_date', '<', now())->count(),
-            'dueSoon' => $user->tasks()->whereNull('completed_at')
-                ->where('due_date', '>=', now())
-                ->where('due_date', '<=', now()->addDays(7))
-                ->count(),
-        ];
+            return $u;
+        });
+
+        $heroInstitution = fn () => once(fn () => $loadUserDuties()->current_duties
+            ->map(fn ($duty) => $duty->institution?->tenant?->primary_institution)
+            ->first(fn ($institution) => filled($institution?->image_url)));
+
+        // Get task statistics for the dashboard in a single query
+        $taskStats = fn () => once(function () use ($user) {
+            $counts = Task::openTaskCountsFor($user());
+
+            return [
+                'total' => $counts['tasks_count'],
+                'overdue' => $counts['overdue_tasks_count'],
+                'dueSoon' => $counts['due_soon_tasks_count'],
+            ];
+        });
 
         // Get upcoming tasks (due within 14 days or overdue)
-        $upcomingTasks = $user->tasks()
-            ->whereNull('completed_at')
-            ->where(function ($query): void {
-                $query->where('due_date', '<=', now()->addDays(14))
-                    ->orWhere('due_date', '<', now());
-            })
-            ->orderByDesc('due_date')
-            ->with('taskable')
-            ->take(10)
-            ->get()
-            ->map(fn ($task) => [
-                'id' => $task->id,
-                'name' => $task->name,
-                'due_date' => $task->due_date?->toISOString(),
-                'is_overdue' => $task->isOverdue(),
-                'taskable_type' => $task->taskable_type ?? '',
-                'taskable_id' => $task->taskable_id,
-                // What the task is about, so a row can say "Senato posėdis" and link to it.
-                'taskable' => $task->taskable === null ? null : [
-                    'id' => (string) $task->taskable_id,
-                    'name' => $task->taskable->getAttribute('title') ?? $task->taskable->getAttribute('name'),
-                ],
-                'action_type' => $task->action_type?->value,
-                'metadata' => $task->metadata,
-                'progress' => $task->getProgress(),
-                'can_be_manually_completed' => $task->canBeManuallyCompleted(),
-                'icon' => $task->icon,
-                'color' => $task->color,
-            ]);
+        $upcomingTasks = fn () => once(function () use ($user) {
+            return $user()->tasks()
+                ->whereNull('completed_at')
+                ->where(function ($query): void {
+                    $query->where('due_date', '<=', now()->addDays(14))
+                        ->orWhere('due_date', '<', now());
+                })
+                ->orderByDesc('due_date')
+                ->with('taskable')
+                ->take(10)
+                ->get()
+                ->map(fn ($task) => [
+                    'id' => $task->id,
+                    'name' => $task->name,
+                    'due_date' => $task->due_date?->toISOString(),
+                    'is_overdue' => $task->isOverdue(),
+                    'taskable_type' => $task->taskable_type ?? '',
+                    'taskable_id' => $task->taskable_id,
+                    // What the task is about, so a row can say "Senato posėdis" and link to it.
+                    'taskable' => $task->taskable === null ? null : [
+                        'id' => (string) $task->taskable_id,
+                        'name' => $task->taskable->getAttribute('title') ?? $task->taskable->getAttribute('name'),
+                    ],
+                    'action_type' => $task->action_type?->value,
+                    'metadata' => $task->metadata,
+                    'progress' => $task->getProgress(),
+                    'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+                    'icon' => $task->icon,
+                    'color' => $task->color,
+                ]);
+        });
 
-        $userInstitutionIds = $user->current_duties->pluck('institution_id')->filter()->unique();
-        $upcomingMeetings = GetUpcomingMeetingsForUser::execute($user);
+        $upcomingMeetings = fn () => once(fn () => GetUpcomingMeetingsForUser::execute($user()));
 
         // Everything below the attention queue and upcoming meetings is deferred so the first
         // paint stays cheap (U19). One group: these panels are always wanted together.
         $secondary = 'secondary';
-        $canSeeSite = $user->can('viewAny', News::class);
 
         $institutionsNeedingAttention = Inertia::defer(
-            fn () => $this->institutionsNeedingAttention($userInstitutionIds),
+            fn () => $this->institutionsNeedingAttention(
+                $loadUserDuties()->current_duties->pluck('institution_id')->filter()->unique()
+            ),
             $secondary,
         );
 
         $upcomingCalendarEvents = Inertia::defer(
-            fn () => $canSeeSite ? $this->upcomingCalendarEvents() : [],
+            fn () => $user()->can('viewAny', News::class) ? $this->upcomingCalendarEvents() : [],
             $secondary,
         );
 
         $latestNews = Inertia::defer(
-            fn () => $canSeeSite ? $this->latestNews() : [],
+            fn () => $user()->can('viewAny', News::class) ? $this->latestNews() : [],
             $secondary,
         );
 
         $recentlyEdited = Inertia::defer(
-            fn () => GetRecentlyEditedRecords::execute($user)->all(),
+            fn () => GetRecentlyEditedRecords::execute($user())->all(),
             $secondary,
         );
 
         $followedInstitutions = Inertia::defer(
-            fn () => GetFollowedInstitutions::execute($user, self::FOLLOWED_PREVIEW_COUNT),
+            fn () => GetFollowedInstitutions::execute($user(), self::FOLLOWED_PREVIEW_COUNT),
             $secondary,
         );
 
         $coordinator = Inertia::defer(
-            fn () => GetUserCoordinators::execute($user)[0] ?? null,
+            fn () => GetUserCoordinators::execute($user())[0] ?? null,
             $secondary,
         );
 
         return $this->inertiaResponse('Admin/ShowAdminHome', [
-            'accessChanges' => GetRecentAccessChanges::execute($user, self::ACCESS_BAND_DAYS),
-            'actionWindowLaunch' => $request->actionWindowLaunch($user),
-            'taskStats' => $taskStats,
-            'upcomingTasks' => $upcomingTasks,
-            'upcomingMeetings' => $upcomingMeetings['items'],
-            'upcomingMeetingsTotal' => $upcomingMeetings['total'],
-            'heroImage' => $heroInstitution === null ? null : [
-                'url' => $heroInstitution->image_url,
-                'focalPoint' => $heroInstitution->image_focal_point,
+            'accessChanges' => fn () => GetRecentAccessChanges::execute($user(), self::ACCESS_BAND_DAYS),
+            'actionWindowLaunch' => fn () => $request->actionWindowLaunch($user()),
+            'taskStats' => fn () => $taskStats(),
+            'upcomingTasks' => fn () => $upcomingTasks(),
+            'upcomingMeetings' => fn () => $upcomingMeetings()['items'],
+            'upcomingMeetingsTotal' => fn () => $upcomingMeetings()['total'],
+            'heroImage' => fn () => $heroInstitution() === null ? null : [
+                'url' => $heroInstitution()->image_url,
+                'focalPoint' => $heroInstitution()->image_focal_point,
             ],
             'institutionsNeedingAttention' => $institutionsNeedingAttention,
             'upcomingCalendarEvents' => $upcomingCalendarEvents,
@@ -144,8 +154,8 @@ class DashboardController extends AdminController
             'recentlyEdited' => $recentlyEdited,
             'followedInstitutions' => $followedInstitutions,
             'coordinator' => $coordinator,
-            'registrationForms' => $this->registrationForms($user),
-            'reservationDraft' => SerializeReservationCart::summary($user),
+            'registrationForms' => fn () => $this->registrationForms($user()),
+            'reservationDraft' => fn () => SerializeReservationCart::summary($user()),
         ]);
     }
 

@@ -21,7 +21,7 @@ final class BuildCalendarIndexQuery
     public static function execute(IndexCalendarRequest $request, TanstackTableService $tableService): Builder
     {
         $query = (new self)->applyTanstackFilters(
-            Calendar::query()->with(['eventType', 'tenant:id,shortname']),
+            Calendar::query()->with(['eventType', 'tenant:id,shortname', 'media']),
             $request,
             $tableService,
             ['title'],

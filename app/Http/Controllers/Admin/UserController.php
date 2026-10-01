@@ -146,43 +146,54 @@ class UserController extends AdminController
     {
         $this->handleAuthorization('view', $user);
 
-        $user->load([
-            'current_duties.institution.tenant',
-            'current_duties.current_users:id,name,profile_photo_path',
-            'upcoming_duties.institution.tenant',
-            'previous_duties.institution.tenant',
-            'roles',
-            'tasks.taskable',
-            'tasks.users:id,name,email,profile_photo_path',
-        ]);
+        $loadUser = fn () => once(function () use ($user) {
+            $user->loadMissing([
+                'current_duties.institution.tenant',
+                'current_duties.current_users:id,name,profile_photo_path',
+                'upcoming_duties.institution.tenant',
+                'previous_duties.institution.tenant',
+                'roles',
+                'tasks.taskable',
+                'tasks.users:id,name,email,profile_photo_path',
+                'tasks.tenants',
+            ]);
+            $user->append('has_password');
 
-        $user->append('has_password');
+            return $user;
+        });
 
-        $tasks = $user->tasks->sortByDesc('created_at')->values();
-        $taskStats = [
-            'total' => $tasks->count(),
-            'completed' => $tasks->whereNotNull('completed_at')->count(),
-            'pending' => $tasks->whereNull('completed_at')->count(),
-            'overdue' => $tasks->filter(fn ($t) => $t->isOverdue())->count(),
-            'autoCompleting' => $tasks->filter(fn ($t) => ! $t->canBeManuallyCompleted())->count(),
-        ];
+        $tasks = fn () => once(fn () => $loadUser()->tasks->sortByDesc('created_at')->values());
+
+        $taskStats = fn () => once(function () use ($tasks) {
+            $t = $tasks();
+
+            return [
+                'total' => $t->count(),
+                'completed' => $t->whereNotNull('completed_at')->count(),
+                'pending' => $t->whereNull('completed_at')->count(),
+                'overdue' => $t->filter(fn ($item) => $item->isOverdue())->count(),
+                'autoCompleting' => $t->filter(fn ($item) => ! $item->canBeManuallyCompleted())->count(),
+            ];
+        });
+
+        $actor = fn () => once(fn () => request()->user());
 
         return $this->inertiaResponse('Admin/People/ShowUser', [
-            'user' => $user->toFullArray(),
-            'tasks' => TaskResource::collection($tasks)->resolve(),
-            'taskStats' => $taskStats,
+            'user' => fn () => $loadUser()->toFullArray(),
+            'tasks' => fn () => TaskResource::collection($tasks())->resolve(),
+            'taskStats' => fn () => $taskStats(),
             // Per-record, not from `auth.can`, which carries no flat permission names.
-            'can' => [
-                'update' => request()->user()->can('update', $user),
-                'delete' => request()->user()->can('delete', $user),
-                'updateRoles' => request()->user()->isSuperAdmin(),
-                'managePasswords' => request()->user()->isSuperAdmin() && request()->user()->can('update', $user),
+            'can' => fn () => [
+                'update' => (bool) $actor()->can('update', $user),
+                'delete' => (bool) $actor()->can('delete', $user),
+                'updateRoles' => (bool) $actor()->isSuperAdmin(),
+                'managePasswords' => (bool) ($actor()->isSuperAdmin() && $actor()->can('update', $user)),
             ],
             // The Priskirti sheet's programme picker and the roles sheet's options: only someone
             // who may act on them needs them, and neither belongs on the first paint.
-            'assignment' => Inertia::defer(fn () => request()->user()->can('update', $user) ? [
+            'assignment' => Inertia::defer(fn () => $actor()->can('update', $user) ? [
                 'studyPrograms' => StudyProgram::query()->get(['id', 'name', 'degree', 'tenant_id']),
-                'roles' => request()->user()->isSuperAdmin() ? Role::all(['id', 'name']) : [],
+                'roles' => $actor()->isSuperAdmin() ? Role::all(['id', 'name']) : [],
             ] : null, 'userPanels'),
         ]);
     }

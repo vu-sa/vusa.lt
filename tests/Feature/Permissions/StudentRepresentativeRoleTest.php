@@ -95,3 +95,23 @@ test('edits any problem of their padalinys, not only their own, but none elsewhe
 
     expect($colleaguesProblem->fresh()->getTranslation('title', 'lt'))->toBe('Trūksta vietų bendrabutyje');
 });
+
+test('own-scope representative is allowed to update an agenda item from their own institution meeting and denied for another institution', function (): void {
+    $ownMeeting = Meeting::factory()->hasAttached($this->ownInstitution)->create();
+    $otherMeeting = Meeting::factory()->hasAttached($this->otherInstitution)->create();
+
+    $ownItem = AgendaItem::factory()->for($ownMeeting)->create();
+    $otherItem = AgendaItem::factory()->for($otherMeeting)->create();
+
+    asUser($this->representative)
+        ->patch(route('agendaItems.update', $ownItem), ['title' => ['lt' => 'Savo klausimas']])
+        ->assertSessionHasNoErrors();
+
+    asUser($this->representative)
+        ->patch(route('agendaItems.update', $otherItem), ['title' => ['lt' => 'Kito klausimas']])
+        ->assertForbidden();
+
+    expect($ownItem->fresh()->getTranslation('title', 'lt'))->toBe('Savo klausimas')
+        ->and($otherItem->fresh()->getTranslation('title', 'lt'))->not->toBe('Kito klausimas');
+});
+

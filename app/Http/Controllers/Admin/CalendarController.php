@@ -52,7 +52,6 @@ class CalendarController extends AdminController
                     'last_page' => $calendar->lastPage(),
                 ],
             ],
-            'eventTypes' => EventType::query()->orderBy('sort_order')->get(['id', 'slug', 'name']),
             'deletedCount' => $this->scopedTrashedCount(Calendar::query(), 'tenant', 'calendars.read.padalinys'),
         ]);
     }

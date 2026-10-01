@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\EventType;
 use App\Models\Institution;
 use App\Models\Tag;
+use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
@@ -206,16 +207,11 @@ class HandleInertiaRequests extends Middleware
      */
     private function getOpenTaskCounts(User $user): array
     {
-        $counts = $user->tasks()
-            ->whereNull('completed_at')
-            ->toBase()
-            ->selectRaw('count(*) as tasks_count')
-            ->selectRaw('sum(case when due_date < ? then 1 else 0 end) as overdue_tasks_count', [now()])
-            ->first();
+        $counts = Task::openTaskCountsFor($user);
 
         return [
-            'tasks_count' => (int) ($counts->tasks_count ?? 0),
-            'overdue_tasks_count' => (int) ($counts->overdue_tasks_count ?? 0),
+            'tasks_count' => $counts['tasks_count'],
+            'overdue_tasks_count' => $counts['overdue_tasks_count'],
         ];
     }
 

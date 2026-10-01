@@ -118,115 +118,132 @@ class InstitutionController extends AdminController
 
         // An active institution outside the user's reach opens as its public face: overview,
         // members and (public) meetings — no discussion, files, tasks, relations or management.
-        $readOnly = ! Gate::allows('view', $institution);
+        $readOnly = fn () => once(fn () => ! Gate::allows('view', $institution));
 
-        $institution->load('tenant:id,shortname', 'types', 'duties.current_users', 'checkIns')
-            ->loadCount(['comments' => fn ($query) => $query->notErased(), 'duties', 'meetings', 'problems', 'tasks', 'tasksFromMeetings']);
-        $showsMeetings = ! $readOnly || $institution->has_public_meetings;
+        $loadInstitution = fn () => once(function () use ($institution) {
+            $institution->loadMissing('tenant:id,shortname', 'types', 'duties.current_users', 'checkIns', 'meetings:id,start_time')
+                ->loadCount(['comments' => fn ($query) => $query->notErased(), 'duties', 'meetings', 'problems', 'tasks', 'tasksFromMeetings'])
+                ->append(['has_public_meetings', 'meeting_periodicity_days', 'governance_scope']);
 
-        $institution->append(['has_public_meetings', 'meeting_periodicity_days', 'governance_scope']);
-        $activityStatus = $this->activityStatusService->resolve($institution)->toArray();
-        $tasksCount = (int) $institution->getAttribute('tasks_count');
-        $tasksFromMeetingsCount = (int) $institution->getAttribute('tasks_from_meetings_count');
-        $recentComments = $readOnly ? collect() : $institution->comments()
-            ->roots()
-            ->notErased()
-            ->with('user:id,name,profile_photo_path')
-            ->withCount(['replies' => fn ($query) => $query->notErased()])
-            ->latest()
-            ->limit(3)
-            ->get()
-            ->map(fn (Comment $comment) => [
-                'id' => $comment->id,
-                'body' => $comment->body,
-                'kind' => $comment->kind->value,
-                'created_at' => $comment->created_at->toISOString(),
-                'replies_count' => $comment->replies_count,
-                'user' => $comment->user ? [
-                    'id' => $comment->user->id,
-                    'name' => $comment->user->name,
-                    'profile_photo_path' => $comment->user->profile_photo_path,
-                ] : null,
-            ]);
+            return $institution;
+        });
 
-        $overviewMeetings = ! $showsMeetings ? collect() : $institution->meetings()
-            ->withCount('agendaItems')
-            ->with(['agendaItems.votes', 'fileableFiles', 'institutions.types'])
-            ->orderByDesc('start_time')
-            ->limit(3)
-            ->get()
-            ->each->append(['has_report', 'has_protocol']);
+        $showsMeetings = fn () => once(fn () => ! $readOnly() || $loadInstitution()->has_public_meetings);
+        $activityStatus = fn () => once(fn () => $this->activityStatusService->resolve($loadInstitution())->toArray());
 
-        $overviewDuties = $institution->duties
-            ->sortBy('order')
-            ->map(fn (Duty $duty) => [
-                'id' => $duty->id,
-                'name' => $duty->name,
-                'order' => $duty->order,
-                'places_to_occupy' => $duty->places_to_occupy,
-                'current_users' => $duty->current_users,
-            ])
-            ->values();
+        $recentComments = fn () => once(function () use ($institution, $readOnly) {
+            return $readOnly() ? collect() : $institution->comments()
+                ->roots()
+                ->notErased()
+                ->with('user:id,name,profile_photo_path')
+                ->withCount(['replies' => fn ($query) => $query->notErased()])
+                ->latest()
+                ->limit(3)
+                ->get()
+                ->map(fn (Comment $comment) => [
+                    'id' => $comment->id,
+                    'body' => $comment->body,
+                    'kind' => $comment->kind->value,
+                    'created_at' => $comment->created_at->toISOString(),
+                    'replies_count' => $comment->replies_count,
+                    'user' => $comment->user ? [
+                        'id' => $comment->user->id,
+                        'name' => $comment->user->name,
+                        'profile_photo_path' => $comment->user->profile_photo_path,
+                    ] : null,
+                ]);
+        });
+
+        $overviewMeetings = fn () => once(function () use ($institution, $showsMeetings) {
+            return ! $showsMeetings() ? collect() : $institution->meetings()
+                ->withCount('agendaItems')
+                ->with(['agendaItems.votes', 'fileableFiles', 'institutions.types'])
+                ->orderByDesc('start_time')
+                ->limit(3)
+                ->get()
+                ->each->append(['has_report', 'has_protocol']);
+        });
+
+        $overviewDuties = fn () => once(function () use ($loadInstitution) {
+            return $loadInstitution()->duties
+                ->sortBy('order')
+                ->map(fn (Duty $duty) => [
+                    'id' => $duty->id,
+                    'name' => $duty->name,
+                    'order' => $duty->order,
+                    'places_to_occupy' => $duty->places_to_occupy,
+                    'current_users' => $duty->current_users,
+                ])
+                ->values();
+        });
 
         // Get subscription status for the current user
-        $user = request()->user();
+        $user = fn () => once(fn () => request()->user());
+
         // Offered where following is allowed, or to let an existing follower stop.
-        $subscriptionStatus = $user && ($user->can('follow', $institution) || $user->follows($institution)) ? [
-            'is_followed' => $user->follows($institution),
-            'is_muted' => $user->isInstitutionMuted($institution),
-            'is_duty_based' => $user->hasInstitution($institution),
-        ] : null;
+        $subscriptionStatus = fn () => once(function () use ($institution, $user) {
+            $u = $user();
+            if (! $u) {
+                return null;
+            }
 
-        // Inertia::share('layout.navBackground', $institution->image_url ?? null);
+            $isFollowed = $u->follows($institution);
 
-        $managers = $institution->managers();
+            return $isFollowed || $u->can('follow', $institution) ? [
+                'is_followed' => $isFollowed,
+                'is_muted' => $u->isInstitutionMuted($institution),
+                'is_duty_based' => $u->hasInstitution($institution),
+            ] : null;
+        });
+
+        $managers = fn () => once(fn () => $loadInstitution()->managers());
 
         return $this->inertiaResponse('Admin/People/ShowInstitution', [
-            'institution' => [
-                'id' => $institution->id,
-                'name' => $institution->name,
-                'short_name' => $institution->short_name,
-                'description' => $institution->description,
-                'tenant' => $institution->tenant,
-                'types' => $institution->types,
-                'has_public_meetings' => $institution->has_public_meetings,
-                'meeting_periodicity_days' => $institution->meeting_periodicity_days,
-                'governance_scope' => $institution->governance_scope,
-                'comments_count' => $institution->comments_count,
-                'duties_count' => $institution->duties_count,
-                'meetings_count' => $institution->meetings_count,
-                'problems_count' => $institution->problems_count,
-                'tasks_count' => $tasksCount + $tasksFromMeetingsCount,
+            'institution' => fn () => [
+                'id' => $loadInstitution()->id,
+                'name' => $loadInstitution()->name,
+                'short_name' => $loadInstitution()->short_name,
+                'description' => $loadInstitution()->description,
+                'tenant' => $loadInstitution()->tenant,
+                'types' => $loadInstitution()->types,
+                'has_public_meetings' => $loadInstitution()->has_public_meetings,
+                'meeting_periodicity_days' => $loadInstitution()->meeting_periodicity_days,
+                'governance_scope' => $loadInstitution()->governance_scope,
+                'comments_count' => $loadInstitution()->comments_count,
+                'duties_count' => $loadInstitution()->duties_count,
+                'meetings_count' => $loadInstitution()->meetings_count,
+                'problems_count' => $loadInstitution()->problems_count,
+                'tasks_count' => (int) $loadInstitution()->getAttribute('tasks_count') + (int) $loadInstitution()->getAttribute('tasks_from_meetings_count'),
                 'related_institutions_count' => RelationshipService::getRelatedInstitutionsCached($institution)->count(),
-                'managers' => $managers,
-                'managers_source' => $managers->isNotEmpty()
+                'managers' => $managers(),
+                'managers_source' => $managers()->isNotEmpty()
                     ? app(ResponsibilityResolver::class)->sourceFor(Responsibility::StudentRepCoordination, $institution)?->value
                     : null,
-                'secretaries' => $readOnly ? [] : InstitutionSecretaryController::usersPayload(
+                'secretaries' => $readOnly() ? [] : InstitutionSecretaryController::usersPayload(
                     GetInstitutionSecretaries::execute($institution)
                 ),
-                'sharepointPath' => $readOnly ? null : SharepointFileService::pathOrNull($institution),
+                'sharepointPath' => $readOnly() ? null : SharepointFileService::pathOrNull($institution),
             ],
-            'readOnly' => $readOnly,
-            'overview' => [
+            'readOnly' => fn () => $readOnly(),
+            'overview' => fn () => [
                 // The status is read off the meetings, so it is withheld with them.
-                'activity_status' => $showsMeetings ? $activityStatus : null,
-                'current_users' => $institution->duties->pluck('current_users')->flatten()->unique('id')->values(),
-                'duties' => $overviewDuties,
-                'recentMeetings' => InstitutionMeetingResource::collection($overviewMeetings)->resolve(),
-                'meetings_count' => $showsMeetings ? $institution->meetings_count : 0,
+                'activity_status' => $showsMeetings() ? $activityStatus() : null,
+                'current_users' => $loadInstitution()->duties->pluck('current_users')->flatten()->unique('id')->values(),
+                'duties' => $overviewDuties(),
+                'recentMeetings' => InstitutionMeetingResource::collection($overviewMeetings())->resolve(),
+                'meetings_count' => $showsMeetings() ? $loadInstitution()->meetings_count : 0,
                 // Say that meetings exist but are not public, rather than an empty "no meetings".
-                'meetings_hidden' => ! $showsMeetings && $institution->meetings_count > 0,
-                'recentComments' => $recentComments,
+                'meetings_hidden' => ! $showsMeetings() && $loadInstitution()->meetings_count > 0,
+                'recentComments' => $recentComments(),
             ],
-            'files' => $readOnly ? [] : Inertia::defer(fn () => $institution->availableFiles()->orderByDesc('file_date')->get(), 'files'),
-            'typeFiles' => $readOnly ? [] : Inertia::defer(fn () => GetTypeFiles::forFileable($institution), 'files'),
+            'files' => $readOnly() ? [] : Inertia::defer(fn () => $institution->availableFiles()->orderByDesc('file_date')->get(), 'files'),
+            'typeFiles' => $readOnly() ? [] : Inertia::defer(fn () => GetTypeFiles::forFileable($institution), 'files'),
             'duties' => Inertia::defer(fn () => $institution->duties()
                 ->with('current_users')
                 ->orderBy('order')
                 ->get()
                 ->toArray(), 'institutionPanels'),
-            'meetings' => ! $showsMeetings ? [] : Inertia::defer(fn () => InstitutionMeetingResource::collection(
+            'meetings' => ! $showsMeetings() ? [] : Inertia::defer(fn () => InstitutionMeetingResource::collection(
                 $institution->meetings()
                     ->withCount('agendaItems')
                     ->with(['agendaItems.votes', 'fileableFiles', 'institutions.types'])
@@ -234,14 +251,14 @@ class InstitutionController extends AdminController
                     ->get()
                     ->each->append(['has_report', 'has_protocol'])
             )->resolve(), 'institutionPanels'),
-            'tasks' => $readOnly ? [] : Inertia::defer(fn () => TaskResource::collection(
+            'tasks' => $readOnly() ? [] : Inertia::defer(fn () => TaskResource::collection(
                 $institution->tasks()
-                    ->with('users:id,name,email,profile_photo_path', 'taskable')
+                    ->with('users:id,name,email,profile_photo_path', 'taskable', 'tenants')
                     ->get()
                     ->merge(Task::query()
                         ->where('taskable_type', MorphMap::alias(Meeting::class))
                         ->whereIn('taskable_id', $institution->meetings()->select('meetings.id'))
-                        ->with('users:id,name,email,profile_photo_path', 'taskable')
+                        ->with('users:id,name,email,profile_photo_path', 'taskable', 'tenants')
                         ->get())
                     ->sortByDesc('created_at')
                     ->values()
@@ -254,7 +271,7 @@ class InstitutionController extends AdminController
                     ->orderByDesc('occurred_at')
                     ->get()
             )->resolve(), 'institutionPanels'),
-            'relatedInstitutions' => $readOnly ? [] : Inertia::defer(fn () => RelationshipService::getRelatedInstitutionsCached($institution)
+            'relatedInstitutions' => $readOnly() ? [] : Inertia::defer(fn () => RelationshipService::getRelatedInstitutionsCached($institution)
                 ->map(fn (array $item) => [
                     'id' => $item['institution']->id,
                     'name' => $item['institution']->name,
@@ -265,16 +282,16 @@ class InstitutionController extends AdminController
                 ->values()
                 ->all(), 'institutionPanels'),
             // Per-record, not from `auth.can`: `institutions.update.padalinys` is tenant-scoped.
-            'can' => [
-                'update' => $user?->can('update', $institution) ?? false,
-                'delete' => $user?->can('delete', $institution) ?? false,
-                'recordMeeting' => ! $readOnly && ($user?->can('createFor', [Meeting::class, $institution]) ?? false),
-                'createProblem' => $user?->can('create', Problem::class) ?? false,
-                'reportActivity' => ! $readOnly && ($user?->can('create', [InstitutionCheckIn::class, $institution]) ?? false),
+            'can' => fn () => [
+                'update' => (bool) $user()?->can('update', $institution),
+                'delete' => (bool) $user()?->can('delete', $institution),
+                'recordMeeting' => ! $readOnly() && ((bool) $user()?->can('createFor', [Meeting::class, $institution])),
+                'createProblem' => (bool) $user()?->can('create', Problem::class),
+                'reportActivity' => ! $readOnly() && ((bool) $user()?->can('create', [InstitutionCheckIn::class, $institution])),
             ],
             // Terms and secretary rosters are associations, edited on the record rather than in the
             // form (O22, Forms rule 15). Only someone who may update the institution needs them.
-            'management' => Inertia::defer(fn () => $user?->can('update', $institution) ? [
+            'management' => Inertia::defer(fn () => $user()?->can('update', $institution) ? [
                 'cadences' => CadenceController::payload($institution->id),
                 'globalCadences' => CadenceController::payload(globalOnly: true),
                 'cadenceDefaults' => [
@@ -291,7 +308,7 @@ class InstitutionController extends AdminController
                     ->where('tenant_id', $institution->tenant_id)
                     ->get(['id', 'name', 'degree', 'tenant_id']),
             ] : null, 'institutionPanels'),
-            'subscription' => $subscriptionStatus,
+            'subscription' => fn () => $subscriptionStatus(),
         ]);
     }
 

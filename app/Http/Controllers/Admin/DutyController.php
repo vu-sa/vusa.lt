@@ -138,12 +138,11 @@ class DutyController extends AdminController
     {
         $this->handleAuthorization('view', $duty);
 
-        $duty->load('institution.tenant', 'users', 'types');
-
-        $user = request()->user();
+        $loadDuty = fn () => once(fn () => $duty->loadMissing('institution.tenant', 'users', 'types'));
+        $user = fn () => once(fn () => request()->user());
 
         return $this->inertiaResponse('Admin/People/ShowDuty', [
-            'duty' => array_merge($duty->toArray(), [
+            'duty' => fn () => array_merge($loadDuty()->toArray(), [
                 'sharepointPath' => SharepointFileService::pathOrNull($duty),
             ]),
             'files' => Inertia::defer(fn () => $duty->availableFiles()->orderByDesc('file_date')->get(), 'files'),
@@ -151,9 +150,9 @@ class DutyController extends AdminController
 
             // Per-record, not from `auth.can`: `duties.update.padalinys` is tenant-scoped,
             // so a single global boolean would be wrong for every cross-tenant case.
-            'can' => [
-                'update' => $user->can('update', $duty),
-                'managePeople' => $user->can('managePeople', $duty),
+            'can' => fn () => [
+                'update' => (bool) $user()?->can('update', $duty),
+                'managePeople' => (bool) $user()?->can('managePeople', $duty),
             ],
             // Only the "Apie pareigybę" tab and the Priskirti sheet need these.
             'otherDuties' => Inertia::defer(fn () => $duty->institution
@@ -170,9 +169,9 @@ class DutyController extends AdminController
             'responsibilities' => Inertia::defer(fn () => DutyResponsibilityController::payload($duty), 'dutyPanels'),
             // Only the add sheet needs these; loaded when it opens.
             'responsibilityOptions' => Inertia::optional(function () use ($user, $duty): array {
-                abort_unless($user->can('update', $duty), 403);
+                abort_unless($user()?->can('update', $duty), 403);
 
-                return DutyResponsibilityController::options($user);
+                return DutyResponsibilityController::options($user());
             }),
         ]);
     }

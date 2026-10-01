@@ -47,15 +47,17 @@ class AtstovavimasDashboardController extends AdminController
         }
 
         // Get basic user info with duty institution IDs only
-        $user = User::query()->where('id', Auth::id())
-            ->with(['authorization_duties:id,name,institution_id'])
-            ->first();
+        $user = fn () => once(function () use ($request) {
+            $u = $request->user();
+            $u?->loadMissing(['authorization_duties:id,name,institution_id']);
+
+            return $u;
+        });
 
         // Get only user's directly assigned institutions (lightweight, always loaded)
-        $userInstitutions = DutyService::getUserInstitutionsForDashboard();
+        $userInstitutions = fn () => once(function () {
+            $institutions = DutyService::getUserInstitutionsForDashboard();
 
-        // Helper function to append computed attributes to institutions
-        $appendInstitutionAttributes = function ($institutions) {
             $institutions->each(function ($institution): void {
                 $institution->meetings?->each->append(['completion_status', 'has_report', 'has_protocol', 'has_calendar_event']);
                 // VU SA's own bodies are drawn like any other and hidden behind the chart's
@@ -81,20 +83,14 @@ class AtstovavimasDashboardController extends AdminController
             });
 
             return $institutions;
-        };
-
-        $appendInstitutionAttributes($userInstitutions);
-
-        // Quick check if user might have related institutions (without loading them)
-        // This enables the filter UI even when relatedInstitutions is lazy-loaded
-        $mayHaveRelatedInstitutions = $userInstitutions->isNotEmpty();
+        });
 
         return $this->inertiaResponse('Admin/Dashboard/ShowAtstovavimas', [
             // User with institutions - always included, even in partial reloads (ensures check-in data stays fresh)
             'user' => Inertia::always(fn () => [
-                ...$user->toArray(),
-                'authorization_duties' => $user->authorization_duties->map(function ($duty) use ($userInstitutions) {
-                    $institution = $userInstitutions->firstWhere('id', $duty->institution_id);
+                ...$user()->toArray(),
+                'authorization_duties' => $user()->authorization_duties->map(function ($duty) use ($userInstitutions) {
+                    $institution = $userInstitutions()->firstWhere('id', $duty->institution_id);
 
                     return [
                         ...$duty->toArray(),
@@ -103,13 +99,13 @@ class AtstovavimasDashboardController extends AdminController
                 }),
             ]),
             // User's own institutions - always included, even in partial reloads (ensures check-in data stays fresh)
-            'userInstitutions' => Inertia::always($userInstitutions->values()),
+            'userInstitutions' => Inertia::always(fn () => $userInstitutions()->values()),
             // Quick flag to show/hide related institutions filter (lazy data may not be loaded yet)
-            'mayHaveRelatedInstitutions' => $mayHaveRelatedInstitutions,
+            'mayHaveRelatedInstitutions' => fn () => $userInstitutions()->isNotEmpty(),
             // Lazy load relatedInstitutions - only fetched when explicitly requested via Inertia reload
             'relatedInstitutions' => Inertia::optional(function () use ($userInstitutions) {
                 /** @var Collection<int, Institution> $institutionCollection */
-                $institutionCollection = new Collection($userInstitutions->values()->all());
+                $institutionCollection = new Collection($userInstitutions()->values()->all());
                 $relatedInstitutions = RelationshipService::getRelatedInstitutionsForMultiple(
                     $institutionCollection
                 );
@@ -138,19 +134,19 @@ class AtstovavimasDashboardController extends AdminController
 
                 return $relatedInstitutions->values();
             })->once(),
-            'canViewTenantOverview' => Gate::allows('viewAny', Meeting::class),
-            'openTasksCount' => $user->tasks()->whereNull('completed_at')->count(),
+            'canViewTenantOverview' => fn () => Gate::allows('viewAny', Meeting::class),
+            'openTasksCount' => fn () => Task::openTaskCountsFor($user())['tasks_count'],
             // Duty and followed institutions alike; the page narrows it by the tenant selector.
-            'upcomingMeetings' => GetUpcomingMeetingsForUser::execute($user),
+            'upcomingMeetings' => fn () => GetUpcomingMeetingsForUser::execute($user()),
             'followedInstitutions' => Inertia::defer(
-                fn () => GetFollowedInstitutions::execute($user, DashboardController::FOLLOWED_PREVIEW_COUNT),
+                fn () => GetFollowedInstitutions::execute($user(), DashboardController::FOLLOWED_PREVIEW_COUNT),
                 'secondary',
             ),
             // R-g: the human answer to "I'm stuck" belongs on every rep screen, but never on the first paint.
-            'coordinators' => Inertia::defer(fn () => GetUserCoordinators::execute($user), 'secondary'),
+            'coordinators' => Inertia::defer(fn () => GetUserCoordinators::execute($user()), 'secondary'),
             // Reference files kept on the user's duty types ("Studentų atstovai" regulations, templates).
             'referenceDocuments' => Inertia::defer(fn () => GetTypeFiles::forTypes(
-                $user->authorization_duties->load('types')->flatMap(fn ($duty) => $duty->types)->unique('id')->values(),
+                $user()->authorization_duties->load('types')->flatMap(fn ($duty) => $duty->types)->unique('id')->values(),
                 self::REFERENCE_DOCUMENTS_LIMIT,
             ), 'secondary'),
         ]);

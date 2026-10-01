@@ -40,47 +40,45 @@ class ReservationController extends AdminController
     {
         $this->handleAuthorization('viewList', Reservation::class);
 
-        $query = Reservation::query()->with(SerializeReservationsForTable::EAGER_LOADS);
+        $reservations = fn () => once(function () use ($request) {
+            $query = Reservation::query()->with(SerializeReservationsForTable::EAGER_LOADS);
 
-        $query = ApplyReservationIndexFilters::execute($query, $request, $request->user(), $this->authorizer);
+            $query = ApplyReservationIndexFilters::execute($query, $request, $request->user(), $this->authorizer);
 
-        $searchableColumns = ['name', 'description'];
+            $searchableColumns = ['name', 'description'];
 
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-        );
+            $query = $this->applyTanstackFilters(
+                $query,
+                $request,
+                $this->tableService,
+                $searchableColumns,
+            );
 
-        $reservations = $query->paginate($request->getPerPage())
-            ->withQueryString();
+            return $query->paginate($request->getPerPage())
+                ->withQueryString();
+        });
 
-        $allowedTenantIds = $this->authorizer->tenants($request->user(), 'reservations.read.padalinys')->pluck('id');
-        $managesResources = $this->authorizer
+        $managesResources = fn () => once(fn () => $this->authorizer
             ->tenants($request->user(), config('permission.resource_managership_indicating_permission'))
-            ->isNotEmpty();
+            ->isNotEmpty());
 
         return $this->inertiaResponse('Admin/Reservations/IndexReservation', [
-            'reservations' => [
-                'data' => SerializeReservationsForTable::execute($reservations->getCollection(), $request->user(), $this->authorizer),
+            'reservations' => fn () => [
+                'data' => SerializeReservationsForTable::execute($reservations()->getCollection(), $request->user(), $this->authorizer),
                 'meta' => [
-                    'total' => $reservations->total(),
-                    'per_page' => $reservations->perPage(),
-                    'current_page' => $reservations->currentPage(),
-                    'last_page' => $reservations->lastPage(),
-                    'from' => $reservations->firstItem(),
-                    'to' => $reservations->lastItem(),
+                    'total' => $reservations()->total(),
+                    'per_page' => $reservations()->perPage(),
+                    'current_page' => $reservations()->currentPage(),
+                    'last_page' => $reservations()->lastPage(),
+                    'from' => $reservations()->firstItem(),
+                    'to' => $reservations()->lastItem(),
                 ],
             ],
-            'filters' => $request->getFilters(),
-            'sorting' => $request->getSorting(),
-            'managesResources' => $managesResources,
-            'reservationCart' => SerializeReservationCart::execute($request->user()),
-            'onlyOwn' => ! $request->user()->can('viewAny', Reservation::class),
-            'activeReservations' => Reservation::whereHas('resources', function ($query) use ($allowedTenantIds): void {
-                $query->whereIn('resources.tenant_id', $allowedTenantIds);
-            })->with(['resources.tenant', 'users'])->get(),
+            'filters' => fn () => $request->getFilters(),
+            'sorting' => fn () => $request->getSorting(),
+            'managesResources' => fn () => $managesResources(),
+            'reservationCart' => fn () => SerializeReservationCart::execute($request->user()),
+            'onlyOwn' => fn () => ! $request->user()->can('viewAny', Reservation::class),
         ]);
     }
 

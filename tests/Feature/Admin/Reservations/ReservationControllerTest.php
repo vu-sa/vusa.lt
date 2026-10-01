@@ -36,19 +36,33 @@ beforeEach(function (): void {
     $this->reservationManager = User::factory()->hasAttached($this->reservation)->create();
 });
 
-describe('index activeReservations', function (): void {
-    test('indexes and dedupes a reservation spanning multiple resources to a single entry', function (): void {
-        // $this->reservation is attached to 3 resources in beforeEach; the payload
-        // must contain it exactly once (the refactor replaced PHP-side unique()).
+describe('index', function (): void {
+    test('does not return activeReservations on full visit', function (): void {
         asUser($this->admin)->get(route('reservations.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Reservations/IndexReservation')
-                ->has('activeReservations', 1)
-                ->where('activeReservations.0.id', $this->reservation->id)
-                ->has('activeReservations.0.resources')
-                ->has('activeReservations.0.users')
+                ->missing('activeReservations')
+                ->has('reservations.data')
             );
+    });
+
+    test('returns only reservationCart on partial reload', function (): void {
+        $response = asUser($this->admin)
+            ->withHeaders([
+                'X-Inertia' => 'true',
+                'X-Inertia-Version' => (string) app(\App\Http\Middleware\HandleInertiaRequests::class)->version(request()),
+                'X-Inertia-Partial-Component' => 'Admin/Reservations/IndexReservation',
+                'X-Inertia-Partial-Data' => 'reservationCart',
+            ])
+            ->get(route('reservations.index'));
+
+        $response->assertOk()
+            ->assertHeader('X-Inertia', 'true')
+            ->assertJsonPath('component', 'Admin/Reservations/IndexReservation')
+            ->assertJsonStructure(['props' => ['reservationCart']])
+            ->assertJsonMissingPath('props.reservations')
+            ->assertJsonMissingPath('props.activeReservations');
     });
 });
 

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\Authorization\PermissionScope;
 use App\Support\AuthorityCacheExpiry;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -43,6 +44,13 @@ class ModelAuthorizer
      * @var array<string, Collection<int, Duty>>
      */
     private array $duties = [];
+
+    /**
+     * Permissable model IDs for own-scope permissions, keyed "{userId}:{permission}".
+     *
+     * @var array<string, \Illuminate\Support\Collection<int, int|string>>
+     */
+    private array $ownModelIds = [];
 
     /**
      * Resolve what a permission grants this user.
@@ -81,6 +89,56 @@ class ModelAuthorizer
     }
 
     /**
+     * Permissable model IDs directly associated with the granting duties for an own-scope permission.
+     *
+     * @param  Collection<int, Duty>  $duties
+     * @return \Illuminate\Support\Collection<int, int|string>
+     */
+    public function ownModelIds(User $user, string $permission, Collection $duties, string $relation): \Illuminate\Support\Collection
+    {
+        $key = "{$user->id}:{$permission}";
+
+        return $this->ownModelIds[$key] ??= $this->resolveOwnModelIds($duties, $relation);
+    }
+
+    /**
+     * @param  Collection<int, Duty>  $duties
+     * @return \Illuminate\Support\Collection<int, int|string>
+     */
+    private function resolveOwnModelIds(Collection $duties, string $relation): \Illuminate\Support\Collection
+    {
+        if ($relation === 'duties') {
+            return $duties->pluck('id');
+        }
+
+        $ids = collect();
+
+        foreach ($duties as $duty) {
+            if ($duty->relationLoaded($relation)) {
+                $related = $duty->getRelation($relation);
+                if ($related instanceof Model) {
+                    $ids->push($related->getKey());
+                } elseif ($related instanceof Collection || $related instanceof \Illuminate\Support\Collection) {
+                    $ids = $ids->merge($related->pluck('id'));
+                }
+            } elseif (method_exists($duty, $relation)) {
+                $rel = $duty->{$relation}();
+                if ($rel instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
+                    $foreignKey = $rel->getForeignKeyName();
+                    if ($duty->{$foreignKey}) {
+                        $ids->push($duty->{$foreignKey});
+                    }
+                } else {
+                    $qualifiedKey = $rel->getRelated()->getQualifiedKeyName();
+                    $ids = $ids->merge($rel->pluck($qualifiedKey));
+                }
+            }
+        }
+
+        return $ids->unique()->values();
+    }
+
+    /**
      * Reset the cached authorization state for a specific user.
      *
      * @param  User|int|string  $user  User instance or user ID
@@ -104,6 +162,12 @@ class ModelAuthorizer
         foreach (array_keys($this->scopes) as $key) {
             if (str_starts_with($key, "{$userId}:")) {
                 unset($this->scopes[$key]);
+            }
+        }
+
+        foreach (array_keys($this->ownModelIds) as $key) {
+            if (str_starts_with($key, "{$userId}:")) {
+                unset($this->ownModelIds[$key]);
             }
         }
 

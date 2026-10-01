@@ -33,7 +33,7 @@ final class BuildTaskIndexQuery
     {
         $query = self::base($scope, $user, $authorizer);
 
-        $query->with(['taskable', 'users:id,name,email,profile_photo_path']);
+        $query->with(['taskable', 'users:id,name,email,profile_photo_path', 'tenants']);
 
         if ($scope === self::SCOPE_TENANT && $request->filled('tenant')) {
             $tenantIds = collect((array) $request->validated('tenant'))->map(fn ($id) => (int) $id)

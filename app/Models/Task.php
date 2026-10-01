@@ -71,6 +71,32 @@ class Task extends Model
     }
 
     /**
+     * Open, overdue, and due soon task counts for a user in a single aggregate query.
+     *
+     * @return array{tasks_count: int, overdue_tasks_count: int, due_soon_tasks_count: int}
+     */
+    public static function openTaskCountsFor(User $user): array
+    {
+        return once(function () use ($user) {
+            $now = now();
+            $soon = now()->addDays(7);
+            $counts = $user->tasks()
+                ->whereNull('completed_at')
+                ->toBase()
+                ->selectRaw('count(*) as tasks_count')
+                ->selectRaw('sum(case when due_date < ? then 1 else 0 end) as overdue_tasks_count', [$now])
+                ->selectRaw('sum(case when due_date >= ? and due_date <= ? then 1 else 0 end) as due_soon_tasks_count', [$now, $soon])
+                ->first();
+
+            return [
+                'tasks_count' => (int) ($counts->tasks_count ?? 0),
+                'overdue_tasks_count' => (int) ($counts->overdue_tasks_count ?? 0),
+                'due_soon_tasks_count' => (int) ($counts->due_soon_tasks_count ?? 0),
+            ];
+        });
+    }
+
+    /**
      * Scope to incomplete tasks (not yet completed).
      */
     public function scopeIncomplete($query)

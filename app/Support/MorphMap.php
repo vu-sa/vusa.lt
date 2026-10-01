@@ -34,6 +34,7 @@ final class MorphMap
         'comment_poll_vote' => Models\CommentPollVote::class,
         'comment_reaction' => Models\CommentReaction::class,
         'content' => Models\Content::class,
+        'content_editor_draft' => Models\ContentEditorDraft::class,
         'content_part' => Models\ContentPart::class,
         'daily_device_metric' => Models\DailyDeviceMetric::class,
         'document' => Models\Document::class,

@@ -111,7 +111,7 @@ class TaskController extends AdminController
         // through the same scope, so no id outside it can be reached.
         $itemId = $request->validated('item');
         $item = $itemId
-            ? BuildTaskIndexQuery::base($scope, $user, $this->authorizer)->with(['taskable', 'users:id,name,email,profile_photo_path'])->find($itemId)
+            ? BuildTaskIndexQuery::base($scope, $user, $this->authorizer)->with(['taskable', 'users:id,name,email,profile_photo_path', 'tenants'])->find($itemId)
             : null;
 
         return $this->inertiaResponse('Admin/Tasks/IndexTask', [
