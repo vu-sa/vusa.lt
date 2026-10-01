@@ -27,7 +27,7 @@ abstract class TypeAttributesRequest extends FormRequest
     {
         $class = $this->typeClass();
         $type = $this->route('type');
-        $excluded = $type === null ? [] : $type->getDescendantsAndSelf()->modelKeys();
+        $excluded = $type === null ? [] : $type->getDescendantsAndSelf(withTrashed: true)->modelKeys();
 
         $rules = [
             'title.lt' => ['required', 'string'],
@@ -41,7 +41,7 @@ abstract class TypeAttributesRequest extends FormRequest
 
         if ($class === InstitutionType::class) {
             $rules += [
-                'extra_attributes' => ['nullable', 'array:meeting_periodicity_days,governance_scope,enable_sibling_relationships,enable_cross_tenant_sibling_relationships'],
+                'extra_attributes' => ['nullable', 'array'],
                 'extra_attributes.meeting_periodicity_days' => ['nullable', 'integer', 'min:1', 'max:365'],
                 'extra_attributes.governance_scope' => ['nullable', Rule::enum(InstitutionScope::class)],
                 'extra_attributes.enable_sibling_relationships' => ['boolean'],

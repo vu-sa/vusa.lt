@@ -3,9 +3,8 @@
 use App\Enums\InstitutionActivityStatus;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
-use App\Models\Meeting;
 use App\Models\InstitutionType;
-use App\Models\DutyType;
+use App\Models\Meeting;
 use App\Services\InstitutionActivityStatusService;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;

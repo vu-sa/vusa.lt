@@ -1,17 +1,9 @@
 <template>
   <div class="max-w-2xl">
-    <!-- <NTransfer
-          ref="transfer"
-          v-model:value="form.duties"
-          :options="dutyOptions"
-          source-filterable
-          source-filter-placeholder="Ieškoti pareigų..."
-          size="small"
-        ></NTransfer> -->
     <section v-for="entity in entities" :key="entity.key">
       <Alert class="mb-4">
         <AlertTitle class="flex items-center gap-1 text-base">
-          <component :is="entity.icon" width="16" /> <span>{{ entity.title }}</span>
+          <component :is="entity.icon" width="16" /> <span>{{ $t(entity.title) }}</span>
         </AlertTitle>
       </Alert>
       <p v-if="baselineAccess?.[entity.key]" class="mb-3 text-sm text-muted-foreground" data-testid="baseline-access">
@@ -49,7 +41,6 @@ const filterPermissionsFor = (modelType: string) => {
     return permission.name;
   });
 
-  // filter permissions by model type
   const filteredPermissions = permissions.filter((permission) => {
     return permission.includes(modelType);
   });
@@ -57,22 +48,6 @@ const filterPermissionsFor = (modelType: string) => {
   return filteredPermissions;
 };
 
-// create const abilities from PermissionAbilities
-// const abilities = Object.values(PermissionAbilities);
-// const models = Object.values(Models);
-
-// const getPermissions = () => {
-//   const permissions = [];
-//   for (const model of models) {
-//     for (const ability of abilities) {
-//       permissions.push({
-//         name: `${ability}.${pluralizeModels(model)}`,
-//         granted: false,
-//       });
-//     }
-//   }
-//   return permissions;
-// };
 </script>
 
 <style scoped>

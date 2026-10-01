@@ -6,6 +6,7 @@ use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Role;
 use App\Models\Tenant;
+use App\Services\ModelAuthorizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -19,7 +20,7 @@ beforeEach(function (): void {
 test('directory hides every dictionary the user cannot read', function (): void {
     asUser($this->user)->get(route('types.index'))->assertForbidden();
     $this->user->givePermissionTo('institutionTypes.read.*');
-    app(\App\Services\ModelAuthorizer::class)->resetCache($this->user);
+    app(ModelAuthorizer::class)->resetCache($this->user);
     asUser($this->user)->get(route('types.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('Admin/ModelMeta/IndexTypes')
             ->has('destinations', 1)->where('destinations.0.key', 'instituciju_tipai'));
@@ -107,4 +108,14 @@ test('assigned soft-deleted owners block permanent deletion', function (): void 
 test('legacy CRUD and public API routes are retired', function (): void {
     expect(app('router')->has('types.store'))->toBeFalse()
         ->and(app('router')->has('api.v1.types.index'))->toBeFalse();
+});
+
+test('cycle validation traverses soft-deleted intermediate types', function (): void {
+    $root = InstitutionType::factory()->create();
+    $middle = InstitutionType::factory()->create(['parent_id' => $root->id]);
+    $leaf = InstitutionType::factory()->create(['parent_id' => $middle->id]);
+    $middle->delete();
+    asUser($this->admin)->patch(route('institutionTypes.update', $root), [
+        'title' => ['lt' => 'Tipas', 'en' => 'Type'], 'parent_id' => $leaf->id,
+    ])->assertSessionHasErrors('parent_id');
 });

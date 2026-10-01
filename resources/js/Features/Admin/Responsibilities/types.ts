@@ -1,4 +1,4 @@
-export type ResponsibilityScopeValue = 'tenant' | 'type' | 'institution';
+export type ResponsibilityScopeValue = 'tenant' | 'institution_type' | 'institution';
 
 export interface DutyResponsibilityItem {
   id: string;

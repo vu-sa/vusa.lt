@@ -3,8 +3,8 @@
 namespace App\Actions;
 
 use App\Models\Duty;
-use App\Models\Institution;
 use App\Models\DutyType;
+use App\Models\Institution;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;

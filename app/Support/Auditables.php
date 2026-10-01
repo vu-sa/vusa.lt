@@ -8,8 +8,10 @@ use App\Models\Calendar;
 use App\Models\ContentPart;
 use App\Models\Document;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Goal;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Navigation;
 use App\Models\News;
@@ -19,7 +21,6 @@ use App\Models\Problem;
 use App\Models\Reservation;
 use App\Models\Step;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
 use App\Models\User;
 use App\Models\Vote;
 use Illuminate\Database\Eloquent\Model;
@@ -54,7 +55,7 @@ class Auditables
         'banner' => Banner::class,
         'navigation' => Navigation::class,
         'institutionType' => InstitutionType::class,
-        'dutyType' => \App\Models\DutyType::class,
+        'dutyType' => DutyType::class,
         'user' => User::class,
         'tenant' => Tenant::class,
     ];

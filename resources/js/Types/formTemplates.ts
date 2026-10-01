@@ -101,14 +101,12 @@ export const pageTemplate = {
 
 export const typeTemplate: Pick<
   App.Entities.InstitutionType,
-  'title' | 'slug' | 'description' | 'model_type' | 'parent_id' | 'extra_attributes'
+  'title' | 'slug' | 'description' | 'parent_id' | 'extra_attributes'
 > = {
   title: { lt: '', en: '' },
   slug: '',
   description: { lt: '', en: '' },
-  model_type: '',
   parent_id: null,
-  roles: [],
   extra_attributes: {},
 };
 

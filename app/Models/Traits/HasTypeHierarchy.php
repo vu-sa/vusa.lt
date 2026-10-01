@@ -13,6 +13,7 @@ trait HasTypeHierarchy
         return $this->belongsTo(static::class, 'parent_id');
     }
 
+    /** @return HasMany<static, $this> */
     public function descendants(): HasMany
     {
         return $this->hasMany(static::class, 'parent_id');
@@ -28,15 +29,16 @@ trait HasTypeHierarchy
         return $this->parent()->with('recursiveParent');
     }
 
-    public function getDescendantsAndSelf(): Collection
+    /** @return Collection<int, self> */
+    public function getDescendantsAndSelf(bool $withTrashed = false): Collection
     {
-        $result = new Collection([$this]);
+        $result = [$this];
 
-        foreach ($this->descendants as $descendant) {
-            $result = $result->merge($descendant->getDescendantsAndSelf());
+        foreach (($withTrashed ? $this->descendants()->withTrashed()->get() : $this->descendants) as $descendant) {
+            $result = [...$result, ...$descendant->getDescendantsAndSelf($withTrashed)->all()];
         }
 
-        return $result->unique('id')->values();
+        return new Collection($result)->unique('id')->values();
     }
 
     public function getParentsAndSelf(): Collection

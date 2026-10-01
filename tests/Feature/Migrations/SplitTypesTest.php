@@ -2,8 +2,9 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\Permission;
 use App\Models\Role;
-use App\Support\MorphMap;
+use App\Models\Type;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -45,10 +46,16 @@ test('cutover preserves ids metadata grants and history while archiving missing 
     ]);
     DB::table('role_type')->insert(['type_id' => 600, 'role_id' => $role->id]);
     DB::table('role_can_attach_types')->insert(['type_id' => 600, 'role_id' => $role->id]);
-    activity()->performedOn(new \App\Models\Type(['id' => 500]))->log('Historical type');
+    $permission = Permission::create(['name' => 'types.read.*', 'guard_name' => 'web']);
+    $role->givePermissionTo($permission);
+    activity()->performedOn(new Type(['id' => 500]))->log('Historical type');
 
     splitTypesMigration()->up();
 
+    foreach (['institutionTypes', 'dutyTypes'] as $resource) {
+        $permissionId = DB::table('permissions')->where('name', $resource.'.read.*')->value('id');
+        $this->assertDatabaseHas('role_has_permissions', ['role_id' => $role->id, 'permission_id' => $permissionId]);
+    }
     $this->assertDatabaseHas('institution_types', ['id' => 501, 'parent_id' => 500]);
     $this->assertDatabaseHas('duty_types', ['id' => 600, 'extra_attributes' => json_encode(['custom' => 'preserved'])]);
     $this->assertDatabaseHas('institution_institution_type', ['institution_id' => $institution->id, 'institution_type_id' => 500]);

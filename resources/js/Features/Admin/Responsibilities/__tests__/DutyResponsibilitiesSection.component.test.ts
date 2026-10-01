@@ -12,7 +12,7 @@ vi.mock('@/Composables/useFeatureSpotlight', () => ({
 }));
 
 const options: DutyResponsibilityOptions = {
-  responsibilities: [{ value: 'student_rep_coordination', label: 'Studentų atstovų koordinavimas', description: '', scopes: ['tenant', 'type', 'institution'] }],
+  responsibilities: [{ value: 'student_rep_coordination', label: 'Studentų atstovų koordinavimas', description: '', scopes: ['tenant', 'institution_type', 'institution'] }],
   tenants: [{ id: 1, shortname: 'MIF' }],
   types: [{ id: '2', title: 'VU Senatas' }],
   institutions: [{ id: 'inst-1', name: 'Taryba' }],
@@ -102,10 +102,10 @@ describe('DutyResponsibilitiesSection', () => {
     const form = vi.mocked(useForm).mock.results[0]?.value;
 
     await wrapper.get('[data-testid="responsibility-add"]').trigger('click');
-    await wrapper.get('[data-testid="scope-type"]').trigger('click');
+    await wrapper.get('[data-testid="scope-institution_type"]').trigger('click');
     await nextTick();
 
-    expect(form.scope_type).toBe('type');
+    expect(form.scope_type).toBe('institution_type');
     expect(form.scope_id).toBe('');
 
     form.scope_id = '2';

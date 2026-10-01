@@ -12,9 +12,11 @@ const uiModels: (keyof typeof ModelEnum)[] = [
   'DOCUMENT',
   'DUTIABLE',
   'DUTY',
+  'DUTY_TYPE',
   'FILE',
   'FORM',
   'INSTITUTION',
+  'INSTITUTION_TYPE',
   'MEETING',
   'NAVIGATION',
   'NEWS',
@@ -31,7 +33,6 @@ const uiModels: (keyof typeof ModelEnum)[] = [
   'TAG',
   'TASK',
   'TENANT',
-  'TYPE',
   'USER',
 ];
 

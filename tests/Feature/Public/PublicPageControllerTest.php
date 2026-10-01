@@ -3,12 +3,11 @@
 use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;

@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\Duty;
-use App\Models\Meeting;
 use App\Models\DutyType;
+use App\Models\Meeting;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 

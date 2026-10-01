@@ -1,10 +1,9 @@
 <?php
 
+use App\Models\DutyType;
 use App\Models\Problem;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
 use Database\Seeders\RoleProblemEditorSeeder;
 use Database\Seeders\RoleStudentRepresentativeSeeder;

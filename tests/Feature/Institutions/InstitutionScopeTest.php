@@ -3,7 +3,6 @@
 use App\Enums\InstitutionScope;
 use App\Models\Institution;
 use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Services\InstitutionScopeResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

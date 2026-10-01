@@ -39,7 +39,7 @@
         :label="`${$t('forms.fields.description')} (${activeLocale.toUpperCase()})`"
         :error="form.errors[`description.${activeLocale}`]"
       >
-        <TiptapEditor :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html />
+        <TiptapEditor v-if="editorReady" :key="activeLocale" v-model="form.description[activeLocale]" tools="description" html />
       </FormFieldWrapper>
     </FormSection>
 
@@ -120,44 +120,23 @@
       </FormFieldWrapper>
     </template>
 
-    <template v-if="enableDelete && !isCreate" #danger-zone>
-      <Button
-        variant="outline"
-        type="button"
-        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground pointer-coarse:min-h-11"
-        @click="isDeleteDialogOpen = true"
-      >
-        <Trash2 class="size-4" />
-        {{ $t('Šalinti tipą') }}
-      </Button>
-    </template>
   </FormPage>
-
-  <ConfirmDialog
-    v-model:open="isDeleteDialogOpen"
-    :title="$t('Šalinti tipą?')"
-    :description="$t('Tipas bus perkeltas į šiukšlinę.')"
-    :confirm-label="$t('Šalinti')"
-    destructive
-    @confirm="$emit('delete')"
-  />
 </template>
 
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3';
-import { trans as $t } from 'laravel-vue-i18n';
-import { Building2, SlidersHorizontal, Trash2 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { useForm, usePage } from '@inertiajs/vue3';
+import { isLoaded, loadLanguageAsync, trans as $t } from 'laravel-vue-i18n';
+import { Building2, SlidersHorizontal } from 'lucide-vue-next';
+import { computed, onMounted, ref } from 'vue';
 
 import TiptapEditor from '../TipTap/TiptapEditor.vue';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog, FormToggleRow } from '@/Components/Patterns';
+import { FormToggleRow } from '@/Components/Patterns';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
-import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { NumberField } from '@/Components/ui/number-field';
@@ -167,7 +146,6 @@ import { InstitutionScope, ModelEnum } from '@/Types/enums';
 
 defineEmits<{
   (event: 'submit:form', form: unknown): void;
-  (event: 'delete'): void;
 }>();
 
 const props = defineProps<{
@@ -175,15 +153,19 @@ const props = defineProps<{
   type: (App.Entities.InstitutionType | App.Entities.DutyType);
   contentTypes: Array<{ id: number; title: string | { lt?: string; en?: string } | null }>;
   rememberKey?: string;
-  enableDelete?: boolean;
 }>();
 
 const resource = props.typeKind === 'institutionType' ? 'institutionTypes' : 'dutyTypes';
 const entityType = props.typeKind === 'institutionType' ? ModelEnum.INSTITUTION_TYPE : ModelEnum.DUTY_TYPE;
 
 const isCreate = computed(() => Boolean(props.rememberKey));
-const isDeleteDialogOpen = ref(false);
 const activeLocale = ref<'lt' | 'en'>('lt');
+const interfaceLocale = String(usePage().props.app.locale);
+const editorReady = ref(isLoaded(interfaceLocale));
+onMounted(async () => {
+  await loadLanguageAsync(interfaceLocale);
+  editorReady.value = true;
+});
 
 const fieldIds = {
   'title.lt': 'title',
@@ -211,7 +193,6 @@ const initialData = {
 };
 
 const form = props.rememberKey ? useForm(props.rememberKey, initialData) : useForm(initialData);
-
 
 const parentIdString = computed({
   get: () => form.parent_id != null ? String(form.parent_id) : 'none',
@@ -284,7 +265,6 @@ const missingLocaleCounts = computed(() => ({
   lt: [form.title?.lt].filter(value => !value).length,
   en: [form.title?.en].filter(value => !value).length,
 }));
-
 
 const parentTypeOptions = computed(() => {
   return props.contentTypes.filter(

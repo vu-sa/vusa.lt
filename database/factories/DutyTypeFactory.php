@@ -2,11 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Enums\InstitutionScope;
-use App\Models\Duty;
-use App\Models\Institution;
 use App\Models\DutyType;
-use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,7 +15,7 @@ class DutyTypeFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
             'title' => ['lt' => $this->faker->sentence, 'en' => $this->faker->sentence],
@@ -27,5 +23,4 @@ class DutyTypeFactory extends Factory
             'slug' => $this->faker->slug,
         ];
     }
-
 }

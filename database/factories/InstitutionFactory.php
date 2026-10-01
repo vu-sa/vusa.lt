@@ -3,9 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Institution;
-use App\Models\Tenant;
 use App\Models\InstitutionType;
-use App\Support\MorphMap;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

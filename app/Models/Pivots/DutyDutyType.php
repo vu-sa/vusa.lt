@@ -2,16 +2,28 @@
 
 namespace App\Models\Pivots;
 
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Duty;
 use App\Models\DutyType;
 use App\Services\ModelAuthorizer;
 use App\Services\Permissions\PermissionMapBuilder;
-use App\Http\Middleware\HandleInertiaRequests;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Support\Facades\Cache;
 
+/**
+ * @property string $duty_id
+ * @property int $duty_type_id
+ * @property-read Duty|null $duty
+ * @property-read DutyType|null $type
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyDutyType newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyDutyType newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyDutyType query()
+ *
+ * @mixin \Eloquent
+ */
 #[WithoutTimestamps]
 class DutyDutyType extends Pivot
 {

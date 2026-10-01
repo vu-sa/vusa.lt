@@ -104,7 +104,7 @@ return [
         'problemu_kategorijos' => 'Problem categories',
         'rezervacijos' => 'Reservations',
         'istekliai' => 'Resources',
-        'kategorijos' => 'Categories',
+        'kategorijos' => 'Resource categories',
         'puslapiai' => 'Pages',
         'naujienos' => 'News',
         'kalendorius' => 'Calendar',

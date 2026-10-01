@@ -114,7 +114,7 @@ export const guide: GuideChapter[] = [
     index: '/sistema/',
     pages: [
       { text: 'Rolės ir leidimai', link: '/sistema/roles-ir-leidimai' },
-      { text: 'Tipai', link: '/sistema/tipai' },
+      { text: 'Tipai ir kategorijos', link: '/sistema/tipai' },
       { text: 'Ryšiai', link: '/sistema/rysiai' },
       { text: 'Nustatymai', link: '/sistema/nustatymai' },
       { text: 'Sistemos būsena', link: '/sistema/sistemos-busena' },

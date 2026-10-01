@@ -3,6 +3,7 @@
 use App\Models\Calendar;
 use App\Models\Duty;
 use App\Models\DutyResponsibility;
+use App\Models\DutyType;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
@@ -16,11 +17,8 @@ use App\Models\Resource;
 use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
 use App\Settings\FormSettings;
-use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -502,7 +500,7 @@ describe('institutions needing attention', function (): void {
         ]);
 
         $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
         $duty = Duty::factory()
             ->for($institution)

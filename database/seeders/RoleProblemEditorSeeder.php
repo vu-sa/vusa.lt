@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\Role;
 use App\Models\DutyType;
+use App\Models\Role;
 use Illuminate\Database\Seeder;
 
 /**

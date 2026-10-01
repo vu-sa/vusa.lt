@@ -1,11 +1,10 @@
 <?php
 
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;

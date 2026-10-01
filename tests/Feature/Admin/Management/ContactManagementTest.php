@@ -267,9 +267,9 @@ test('contact manager can add type to duty', function (): void {
             ->has('flash.success')
         );
 
-    $this->assertDatabaseHas('institution_institution_type', [
-        'institution_id' => $userDuty->id,
-        'institution_type_id' => $firstTypeId,
+    $this->assertDatabaseHas('duty_duty_type', [
+        'duty_id' => $userDuty->id,
+        'duty_type_id' => $firstTypeId,
     ]);
 
     $this->assertDatabaseHas('model_has_roles', [
@@ -295,9 +295,9 @@ test('contact manager can add type to duty', function (): void {
             ->has('flash.success')
         );
 
-    $this->assertDatabaseMissing('institution_institution_type', [
-        'institution_id' => $userDuty->id,
-        'institution_type_id' => $firstTypeId,
+    $this->assertDatabaseMissing('duty_duty_type', [
+        'duty_id' => $userDuty->id,
+        'duty_type_id' => $firstTypeId,
     ]);
 
     $this->assertDatabaseMissing('model_has_roles', [

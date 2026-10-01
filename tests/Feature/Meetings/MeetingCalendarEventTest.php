@@ -6,10 +6,9 @@ use App\Models\Calendar;
 use App\Models\Document;
 use App\Models\EventType;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 

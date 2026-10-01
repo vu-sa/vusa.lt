@@ -4,8 +4,8 @@ namespace App\Settings;
 
 use App\Enums\TenantType;
 use App\Models\Institution;
-use App\Models\Tenant;
 use App\Models\InstitutionType;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Policies\Traits\HasCommonChecks;
 use App\Services\ModelAuthorizer;

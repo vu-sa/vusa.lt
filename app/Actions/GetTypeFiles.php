@@ -2,10 +2,9 @@
 
 namespace App\Actions;
 
+use App\Models\DutyType;
 use App\Models\FileableFile;
 use App\Models\InstitutionType;
-use App\Models\DutyType;
-use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection as SupportCollection;
@@ -32,7 +31,9 @@ class GetTypeFiles
     }
 
     /**
-     * @param  SupportCollection<int, InstitutionType|DutyType>  $types
+     * @template T of InstitutionType|DutyType
+     *
+     * @param  SupportCollection<int, T>  $types
      * @return Collection<int, FileableFile>
      */
     public static function forTypes(SupportCollection $types, ?int $limit = null): Collection

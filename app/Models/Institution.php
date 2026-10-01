@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use App\Models\Pivots\InstitutionInstitutionType;
 use App\Actions\GetInstitutionManagers;
 use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\Pivots\InstitutionInstitutionType;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasComments;
@@ -31,7 +31,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -64,7 +63,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, InstitutionSecretary> $administratorAssignments
- * @property-read Relationshipable|InstitutionFollow|InstitutionSecretary|null $pivot
+ * @property-read InstitutionInstitutionType|Relationshipable|InstitutionFollow|InstitutionSecretary|null $pivot
  * @property-read Collection<int, User> $administrators
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Cadence> $cadences

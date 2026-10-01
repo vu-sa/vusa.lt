@@ -3,16 +3,14 @@
 use App\Actions\GetRepOutcomeMetrics;
 use App\Enums\VoteValue;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
 use App\Models\Vote;
-use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
@@ -27,7 +25,7 @@ beforeEach(function (): void {
     $this->institution = Institution::factory()->for($tenant)->create();
 
     $repType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-        ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+        ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
     $duty = Duty::factory()->for($this->institution)->hasAttached($repType, [], 'types')->create();
 
     $this->rep = User::factory()->create(['last_action' => now()->subDay()]);

@@ -491,7 +491,7 @@ declare global {
       current_users?: User[]
       previous_users?: User[]
       responsibilities?: DutyResponsibility[]
-      types?: Type[]
+      types?: DutyType[]
       institution?: Institution
       institutions?: Institution
       tenants?: Tenant
@@ -554,6 +554,19 @@ declare global {
       notifications_exists: boolean
     }
 
+    export interface DutyDutyType {
+      // columns
+      duty_id: string
+      duty_type_id: number
+      // relations
+      duty?: Duty
+      type?: DutyType
+      // counts
+      // exists
+      duty_exists: boolean
+      type_exists: boolean
+    }
+
     export interface DutyResponsibility {
       // columns
       id: string
@@ -572,6 +585,68 @@ declare global {
       // exists
       duty_exists: boolean
       activities_as_subject_exists: boolean
+    }
+
+    export interface DutyType {
+      // columns
+      id: number
+      parent_id?: number | null
+      title?: Array<unknown> | null
+      description?: Array<unknown> | null
+      slug?: string | null
+      extra_attributes?: Array<unknown> | null
+      created_at?: string | null
+      updated_at?: string | null
+      deleted_at?: string | null
+      // mutators
+      force_delete_blocked_reason: string
+      has_protocol: boolean
+      has_report: boolean
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      duties?: Duty[]
+      roles?: Role[]
+      fileable_files?: FileableFile[]
+      available_files?: FileableFile[]
+      parent?: DutyType
+      descendants?: DutyType[]
+      recursive_descendants?: DutyType[]
+      recursive_parent?: DutyType
+      activities_as_subject?: Activity[]
+      // counts
+      duties_count: number
+      roles_count: number
+      fileable_files_count: number
+      available_files_count: number
+      descendants_count: number
+      recursive_descendants_count: number
+      activities_as_subject_count: number
+      // exists
+      duties_exists: boolean
+      roles_exists: boolean
+      fileable_files_exists: boolean
+      available_files_exists: boolean
+      parent_exists: boolean
+      descendants_exists: boolean
+      recursive_descendants_exists: boolean
+      recursive_parent_exists: boolean
+      activities_as_subject_exists: boolean
+    }
+
+    export interface DutyTypeRole {
+      // columns
+      role_id: string
+      duty_type_id: number
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      type?: DutyType
+      role?: Role
+      // counts
+      // exists
+      type_exists: boolean
+      role_exists: boolean
     }
 
     export interface EventType {
@@ -787,7 +862,7 @@ declare global {
       // relations
       duties?: Duty[]
       cadences?: Cadence[]
-      types?: Type[]
+      types?: InstitutionType[]
       tenant?: Tenant
       tenants?: Tenant
       documents?: Document[]
@@ -893,6 +968,12 @@ declare global {
       institution_exists: boolean
     }
 
+    export interface InstitutionInstitutionType {
+      // columns
+      institution_id: string
+      institution_type_id: number
+    }
+
     export interface InstitutionNotificationMute {
       // columns
       id: string
@@ -927,6 +1008,56 @@ declare global {
       institution_exists: boolean
       cadence_exists: boolean
       user_exists: boolean
+    }
+
+    export interface InstitutionType {
+      // columns
+      id: number
+      parent_id?: number | null
+      title?: Array<unknown> | null
+      description?: Array<unknown> | null
+      slug?: string | null
+      extra_attributes?: Array<unknown> | null
+      created_at?: string | null
+      updated_at?: string | null
+      deleted_at?: string | null
+      // mutators
+      force_delete_blocked_reason: string
+      has_protocol: boolean
+      has_report: boolean
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      institutions?: Institution[]
+      outgoing_relationships?: Relationship[]
+      incoming_relationships?: Relationship[]
+      fileable_files?: FileableFile[]
+      available_files?: FileableFile[]
+      parent?: InstitutionType
+      descendants?: InstitutionType[]
+      recursive_descendants?: InstitutionType[]
+      recursive_parent?: InstitutionType
+      activities_as_subject?: Activity[]
+      // counts
+      institutions_count: number
+      outgoing_relationships_count: number
+      incoming_relationships_count: number
+      fileable_files_count: number
+      available_files_count: number
+      descendants_count: number
+      recursive_descendants_count: number
+      activities_as_subject_count: number
+      // exists
+      institutions_exists: boolean
+      outgoing_relationships_exists: boolean
+      incoming_relationships_exists: boolean
+      fileable_files_exists: boolean
+      available_files_exists: boolean
+      parent_exists: boolean
+      descendants_exists: boolean
+      recursive_descendants_exists: boolean
+      recursive_parent_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface LecturerReview {
@@ -1275,7 +1406,7 @@ declare global {
       translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
-      types?: Type[]
+      types?: InstitutionType[]
       duties?: Duty[]
       meetings?: Meeting[]
       cadences?: Cadence[]
@@ -1370,7 +1501,6 @@ declare global {
       translations: unknown
       // relations
       institutions?: Institution[]
-      types?: Type[]
       agenda_items?: AgendaItem[]
       calendar_event?: Calendar
       documents?: Document[]
@@ -1384,7 +1514,6 @@ declare global {
       activities_as_subject?: Activity[]
       // counts
       institutions_count: number
-      types_count: number
       agenda_items_count: number
       documents_count: number
       comments_count: number
@@ -1395,7 +1524,6 @@ declare global {
       activities_as_subject_count: number
       // exists
       institutions_exists: boolean
-      types_exists: boolean
       agenda_items_exists: boolean
       calendar_event_exists: boolean
       documents_exists: boolean
@@ -1565,15 +1693,15 @@ declare global {
       // relations
       institutions?: Institution[]
       relationshipables?: Relationshipable[]
-      types?: Type[]
+      institution_types?: InstitutionType[]
       // counts
       institutions_count: number
       relationshipables_count: number
-      types_count: number
+      institution_types_count: number
       // exists
       institutions_exists: boolean
       relationshipables_exists: boolean
-      types_exists: boolean
+      institution_types_exists: boolean
     }
 
     export interface Relationshipable {
@@ -1768,8 +1896,8 @@ declare global {
       duties?: Duty[]
       users_through_duties?: User
       current_users_through_duties?: User
-      attachable_types?: Type[]
-      types?: Type[]
+      attachable_types?: DutyType[]
+      types?: DutyType[]
       permissions?: Permission[]
       users?: User[]
       // counts
@@ -1808,21 +1936,24 @@ declare global {
       id: string
       // relations
       fileables?: SharepointFileable[]
-      types?: Type[]
+      duty_types?: DutyType[]
+      institution_types?: InstitutionType[]
       institutions?: Institution[]
       meetings?: Meeting[]
       comments?: Comment[]
       root_comments?: Comment[]
       // counts
       fileables_count: number
-      types_count: number
+      duty_types_count: number
+      institution_types_count: number
       institutions_count: number
       meetings_count: number
       comments_count: number
       root_comments_count: number
       // exists
       fileables_exists: boolean
-      types_exists: boolean
+      duty_types_exists: boolean
+      institution_types_exists: boolean
       institutions_exists: boolean
       meetings_exists: boolean
       comments_exists: boolean
@@ -1841,13 +1972,11 @@ declare global {
       sharepoint_file?: SharepointFile
       meeting?: Meeting
       institution?: Institution
-      type?: Type
       // counts
       // exists
       sharepoint_file_exists: boolean
       meeting_exists: boolean
       institution_exists: boolean
-      type_exists: boolean
     }
 
     export interface Step {
@@ -2248,45 +2377,20 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // mutators
-      force_delete_blocked_reason: string
-      has_protocol: boolean
-      has_report: boolean
       translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
       institutions?: Institution[]
       duties?: Duty[]
       roles?: Role[]
-      descendants?: Type[]
-      parent?: Type
-      recursive_parent?: Type
-      outgoing_relationships?: Relationship[]
-      incoming_relationships?: Relationship[]
-      fileable_files?: FileableFile[]
-      available_files?: FileableFile[]
-      activities_as_subject?: Activity[]
       // counts
       institutions_count: number
       duties_count: number
       roles_count: number
-      descendants_count: number
-      outgoing_relationships_count: number
-      incoming_relationships_count: number
-      fileable_files_count: number
-      available_files_count: number
-      activities_as_subject_count: number
       // exists
       institutions_exists: boolean
       duties_exists: boolean
       roles_exists: boolean
-      descendants_exists: boolean
-      parent_exists: boolean
-      recursive_parent_exists: boolean
-      outgoing_relationships_exists: boolean
-      incoming_relationships_exists: boolean
-      fileable_files_exists: boolean
-      available_files_exists: boolean
-      activities_as_subject_exists: boolean
     }
 
     export interface Typeable {

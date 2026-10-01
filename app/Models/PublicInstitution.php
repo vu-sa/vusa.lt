@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
@@ -45,7 +44,7 @@ use Laravel\Scout\Searchable;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, InstitutionSecretary> $administratorAssignments
- * @property-read Relationshipable|InstitutionFollow|InstitutionSecretary|null $pivot
+ * @property-read InstitutionInstitutionType|Relationshipable|InstitutionFollow|InstitutionSecretary|null $pivot
  * @property-read Collection<int, User> $administrators
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Cadence> $cadences

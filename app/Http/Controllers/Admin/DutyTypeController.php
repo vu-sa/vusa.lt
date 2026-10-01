@@ -2,29 +2,26 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\ResponsibilityScope;
 use App\Http\Controllers\AdminController;
-use App\Http\Requests\IndexTypeRequest;
 use App\Http\Requests\DutyTypeRequest;
+use App\Http\Requests\IndexTypeRequest;
 use App\Http\Requests\SyncTypeModelsRequest;
 use App\Http\Requests\SyncTypeRolesRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
-use App\Models\DutyResponsibility;
-use App\Models\Role;
+use App\Models\Duty;
 use App\Models\DutyType;
+use App\Models\Role;
 use App\Services\ResourceServices\SharepointFileService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class DutyTypeController extends AdminController
 {
     use HandlesSoftDeletes, HasTanstackTables;
 
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(IndexTypeRequest $request)
+    public function index(IndexTypeRequest $request): Response
     {
         $this->handleAuthorization('viewAny', DutyType::class);
 
@@ -41,10 +38,7 @@ class DutyTypeController extends AdminController
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(): Response
     {
         $this->handleAuthorization('create', DutyType::class);
 
@@ -54,10 +48,7 @@ class DutyTypeController extends AdminController
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(DutyTypeRequest $request)
+    public function store(DutyTypeRequest $request): RedirectResponse
     {
         $type = DutyType::query()->create(
             $request->safe()->only('title', 'description', 'parent_id', 'slug')
@@ -67,33 +58,26 @@ class DutyTypeController extends AdminController
             ->with('success', $this->entityMessage('created', 'dutyType'));
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(DutyType $type)
+    public function show(DutyType $type): Response
     {
         $this->handleAuthorization('view', $type);
 
-        $responsibleDuties = [];
-
-        $relation = 'duties';
         $type->load([
             'parent:id,title',
             'roles:id,name',
-            ...($relation === null ? [] : [$relation => fn ($query) => $query->select('id', 'name')]),
+            'duties' => fn ($query) => $query->select('id', 'name'),
         ]);
 
         return $this->inertiaResponse('Admin/ModelMeta/ShowType', [
             'typeKind' => 'dutyType',
             'contentType' => $type->toFullArray(),
-            'attachedModels' => $relation === null ? [] : $type->{$relation}->map(fn ($model): array => [
+            'attachedModels' => $type->duties->map(fn ($model): array => [
                 'id' => $model->getKey(),
                 'name' => $model->getAttribute('name'),
             ])->values(),
-            'modelOptions' => Inertia::optional(fn () => \App\Models\Duty::query()->select(['id', 'name'])->with('tenants')->orderBy('name')->get()),
+            'modelOptions' => Inertia::optional(fn () => Duty::query()->select(['id', 'name'])->with('tenants')->orderBy('name')->get()),
             'roleOptions' => Inertia::optional(fn () => Role::query()->orderBy('name')->get(['id', 'name'])),
-            // Duties responsible for every institution of this type (e.g. VU Senatas → CB coordinator).
-            'responsibleDuties' => $responsibleDuties,
+            'responsibleDuties' => [],
             'sharepointPath' => SharepointFileService::pathOrNull($type),
             'files' => Inertia::defer(fn () => $type->availableFiles()->orderByDesc('file_date')->get(), 'files'),
             'can' => [
@@ -103,10 +87,7 @@ class DutyTypeController extends AdminController
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(DutyType $type)
+    public function edit(DutyType $type): Response
     {
         $this->handleAuthorization('update', $type);
 
@@ -117,22 +98,16 @@ class DutyTypeController extends AdminController
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(DutyTypeRequest $request, DutyType $type)
+    public function update(DutyTypeRequest $request, DutyType $type): RedirectResponse
     {
-        $type->update($request->safe()->only('title', 'description', 'parent_id'));
+        $type->update($request->safe()->only('title', 'description', 'parent_id', 'slug'));
 
         return back()->with('success', $this->entityMessage('updated', 'dutyType'));
     }
 
     public function syncModels(SyncTypeModelsRequest $request, DutyType $type): RedirectResponse
     {
-        $relation = 'duties';
-        abort_if($relation === null, 403);
-
-        $type->{$relation}()->sync($request->validated('models'));
+        $type->duties()->sync($request->validated('models'));
 
         return back()->with('success', $this->entityMessage('updated', 'dutyType'));
     }
@@ -144,10 +119,7 @@ class DutyTypeController extends AdminController
         return back()->with('success', $this->entityMessage('updated', 'dutyType'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(DutyType $type)
+    public function destroy(DutyType $type): RedirectResponse
     {
         $this->handleAuthorization('delete', $type);
 

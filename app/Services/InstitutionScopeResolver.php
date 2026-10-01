@@ -108,7 +108,7 @@ class InstitutionScopeResolver
     {
         /** @var Collection<int, array{parent_id: int|null, scope: string|null}> $nodes */
         $nodes = InstitutionType::query()
-            
+
             ->withTrashed()
             ->get(['id', 'parent_id', 'extra_attributes'])
             ->mapWithKeys(fn (InstitutionType $type) => [$type->id => [

@@ -16482,20 +16482,20 @@
         },
         {
             "name": "pestphp/pest",
-            "version": "v5.2.1",
+            "version": "v5.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pestphp/pest.git",
-                "reference": "94f4f1ff4835dae2519f8b13f349d1042318e076"
+                "reference": "14a3efd918e11bb8f2b432d6ac8dd016431979fd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pestphp/pest/zipball/94f4f1ff4835dae2519f8b13f349d1042318e076",
-                "reference": "94f4f1ff4835dae2519f8b13f349d1042318e076",
+                "url": "https://api.github.com/repos/pestphp/pest/zipball/14a3efd918e11bb8f2b432d6ac8dd016431979fd",
+                "reference": "14a3efd918e11bb8f2b432d6ac8dd016431979fd",
                 "shasum": ""
             },
             "require": {
-                "brianium/paratest": "^7.24.1",
+                "brianium/paratest": "^7.25.0",
                 "nunomaduro/collision": "^8.9.5",
                 "nunomaduro/termwind": "^2.4.0",
                 "pestphp/pest-plugin": "^5.0.0",
@@ -16503,19 +16503,19 @@
                 "pestphp/pest-plugin-mutate": "^5.0.2",
                 "pestphp/pest-plugin-profanity": "^5.0.0",
                 "php": "^8.4",
-                "phpunit/phpunit": "^13.3.4",
+                "phpunit/phpunit": "^13.3.6",
                 "symfony/process": "^8.1.7"
             },
             "conflict": {
                 "filp/whoops": "<2.18.3",
                 "laravel/boost": "<2.6.0",
-                "phpunit/phpunit": ">13.3.4",
+                "phpunit/phpunit": ">13.3.6",
                 "sebastian/exporter": "<7.0.0",
                 "webmozart/assert": "<1.11.0"
             },
             "require-dev": {
                 "pestphp/pest-dev-tools": "^5.0.0",
-                "pestphp/pest-plugin-browser": "^5.0.1",
+                "pestphp/pest-plugin-browser": "^5.1.0",
                 "pestphp/pest-plugin-phpstan": "^5.2.1",
                 "pestphp/pest-plugin-rector": "^5.0.4",
                 "pestphp/pest-plugin-type-coverage": "^5.0.2",
@@ -16586,7 +16586,7 @@
             ],
             "support": {
                 "issues": "https://github.com/pestphp/pest/issues",
-                "source": "https://github.com/pestphp/pest/tree/v5.2.1"
+                "source": "https://github.com/pestphp/pest/tree/v5.3.0"
             },
             "funding": [
                 {
@@ -16598,7 +16598,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-09-17T11:41:10+00:00"
+            "time": "2026-10-01T16:58:48+00:00"
         },
         {
             "name": "pestphp/pest-plugin",
@@ -16822,16 +16822,16 @@
         },
         {
             "name": "pestphp/pest-plugin-browser",
-            "version": "v5.1.0",
+            "version": "v5.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pestphp/pest-plugin-browser.git",
-                "reference": "60142e7519b582c28303ec44db5d11da9fe908ad"
+                "reference": "309ecc37108cad9c490f620652311e09773a9513"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pestphp/pest-plugin-browser/zipball/60142e7519b582c28303ec44db5d11da9fe908ad",
-                "reference": "60142e7519b582c28303ec44db5d11da9fe908ad",
+                "url": "https://api.github.com/repos/pestphp/pest-plugin-browser/zipball/309ecc37108cad9c490f620652311e09773a9513",
+                "reference": "309ecc37108cad9c490f620652311e09773a9513",
                 "shasum": ""
             },
             "require": {
@@ -16886,7 +16886,7 @@
                 "unit"
             ],
             "support": {
-                "source": "https://github.com/pestphp/pest-plugin-browser/tree/v5.1.0"
+                "source": "https://github.com/pestphp/pest-plugin-browser/tree/v5.1.1"
             },
             "funding": [
                 {
@@ -16902,7 +16902,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2026-10-01T16:54:21+00:00"
+            "time": "2026-10-01T18:08:27+00:00"
         },
         {
             "name": "pestphp/pest-plugin-laravel",
@@ -18087,16 +18087,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "13.3.4",
+            "version": "13.3.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "d19d90cf860efb7e4d96cee8243e06a248578085"
+                "reference": "b7d0ee4ea89121cb963302b8708b1c09d9ebc7d6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/d19d90cf860efb7e4d96cee8243e06a248578085",
-                "reference": "d19d90cf860efb7e4d96cee8243e06a248578085",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/b7d0ee4ea89121cb963302b8708b1c09d9ebc7d6",
+                "reference": "b7d0ee4ea89121cb963302b8708b1c09d9ebc7d6",
                 "shasum": ""
             },
             "require": {
@@ -18110,7 +18110,7 @@
                 "phar-io/manifest": "^2.0.4",
                 "phar-io/version": "^3.2.1",
                 "php": ">=8.4.1",
-                "phpunit/php-code-coverage": "^14.3.3",
+                "phpunit/php-code-coverage": "^14.3.5",
                 "phpunit/php-file-iterator": "^7.0.2",
                 "phpunit/php-invoker": "^7.0.0",
                 "phpunit/php-text-template": "^6.0.0",
@@ -18167,7 +18167,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/13.3.4"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/13.3.6"
             },
             "funding": [
                 {
@@ -18175,7 +18175,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-09-15T07:37:05+00:00"
+            "time": "2026-09-29T12:12:05+00:00"
         },
         {
             "name": "rector/rector",

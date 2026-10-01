@@ -1,15 +1,15 @@
 <?php
 
+use App\Models\DutyType;
 use App\Models\Problem;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\Type;
-use App\Models\DutyType;
-use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Database\Seeders\RoleResourceManagerSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 pest()->use(RefreshDatabase::class);
 
@@ -30,7 +30,10 @@ function typedDutyUser(string $typeSlug): User
 
 beforeEach(function (): void {
     foreach (DutyType::query()->get() as $type) {
-        DB::table('types')->insertOrIgnore($type->getAttributes() + ['model_type' => 'duty']);
+        $row = $type->getAttributes();
+        $row['created_at'] ??= now();
+        $row['updated_at'] ??= now();
+        DB::table('types')->insert($row + ['model_type' => 'duty']);
     }
     Type::query()->whereIn('slug', ['koordinatoriai', 'studentu-atstovai'])->each(fn (Type $type) => $type->roles()->detach());
     Role::query()->whereIn('name', ['Problemų redaktorius', 'Padalinio puslapių redaktorius'])->delete();

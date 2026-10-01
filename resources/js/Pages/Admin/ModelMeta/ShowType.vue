@@ -85,13 +85,17 @@
     <template #files>
       <div class="max-w-4xl">
         <Deferred data="files">
-          <template #fallback><p class="py-6 text-sm text-muted-foreground">{{ $t('Įkeliama…') }}</p></template>
+          <template #fallback>
+            <p class="py-6 text-sm text-muted-foreground">
+              {{ $t('Įkeliama…') }}
+            </p>
+          </template>
           <FileableFilesPanel
-          :fileable="{ id: contentType.id, type: fileableType }"
-          :files
-          :can-upload="can.update && !!sharepointPath"
-          :can-delete="can.update"
-        />
+            :fileable="{ id: contentType.id, type: fileableType }"
+            :files
+            :can-upload="can.update && !!sharepointPath"
+            :can-delete="can.update"
+          />
         </Deferred>
       </div>
     </template>

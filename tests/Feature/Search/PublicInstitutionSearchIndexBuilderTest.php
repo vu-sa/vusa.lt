@@ -2,10 +2,9 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Pivots\Dutiable;
 use App\Models\PublicInstitution;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
 use App\Services\PublicInstitutionSearchIndexBuilder;
 use App\Settings\AtstovavimasSettings;

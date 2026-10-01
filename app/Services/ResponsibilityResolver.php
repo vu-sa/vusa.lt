@@ -7,8 +7,8 @@ use App\Enums\ResponsibilityScope;
 use App\Models\Duty;
 use App\Models\DutyResponsibility;
 use App\Models\Institution;
-use App\Models\Tenant;
 use App\Models\InstitutionType;
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -270,7 +270,7 @@ class ResponsibilityResolver
     private function typeParents(): array
     {
         return $this->typeParents ??= InstitutionType::query()
-            
+
             ->pluck('parent_id', 'id')
             ->mapWithKeys(fn ($parent, $id) => [(int) $id => $parent === null ? null : (int) $parent])
             ->all();

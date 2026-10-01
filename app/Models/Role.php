@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\DutyTypeRole;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,6 +23,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, User> $currentUsersThroughDuties
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, Permission> $permissions
+ * @property-read DutyTypeRole|null $pivot
  * @property-read Collection<int, DutyType> $types
  * @property-read Collection<int, User> $users
  * @property-read Collection<int, User> $usersThroughDuties
@@ -70,6 +72,6 @@ class Role extends SpatieRole
 
     public function types()
     {
-        return $this->belongsToMany(DutyType::class)->using(\App\Models\Pivots\DutyTypeRole::class);
+        return $this->belongsToMany(DutyType::class)->using(DutyTypeRole::class);
     }
 }

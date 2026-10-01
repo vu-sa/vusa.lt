@@ -17,11 +17,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $sharepoint_id
  * @property string $id
  * @property-read Collection<int, Comment> $comments
+ * @property-read Collection<int, DutyType> $dutyTypes
  * @property-read Collection<int, SharepointFileable> $fileables
+ * @property-read Collection<int, InstitutionType> $institutionTypes
  * @property-read Collection<int, Institution> $institutions
  * @property-read Collection<int, Meeting> $meetings
  * @property-read Collection<int, Comment> $rootComments
- * @property-read Collection<int, InstitutionType> $types
  *
  * @method static \Database\Factories\SharepointFileFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFile newModelQuery()

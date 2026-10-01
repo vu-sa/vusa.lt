@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
@@ -95,7 +94,6 @@ class PublicMeeting extends Meeting
     {
         return $this->belongsToMany(Institution::class, 'institution_meeting', 'meeting_id', 'institution_id');
     }
-
 
     /**
      * Override agendaItems relationship to use correct foreign key

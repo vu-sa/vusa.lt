@@ -7,8 +7,8 @@ use App\Enums\Concerns\HasEnumHelpers;
 use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
-use App\Models\Meeting;
 use App\Models\InstitutionType;
+use App\Models\Meeting;
 use Illuminate\Database\Eloquent\Model;
 
 /**

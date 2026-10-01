@@ -4,14 +4,12 @@ use App\Actions\GetInstitutionSecretaries;
 use App\Actions\ResolveTaskAssignees;
 use App\Models\Cadence;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionSecretary;
 use App\Models\Meeting;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
-use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 
@@ -151,7 +149,7 @@ describe('resolving secretaries for a date', function (): void {
 describe('task assignment', function (): void {
     beforeEach(function (): void {
         $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
         $duty = Duty::factory()->for($this->institution)->hasAttached($studentRepType, [], 'types')->create();
 

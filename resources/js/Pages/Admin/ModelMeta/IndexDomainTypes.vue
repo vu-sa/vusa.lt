@@ -14,15 +14,6 @@
     :trash="{ count: deletedCount, active: isTrash }"
     :search-placeholder="$t('Ieškoti tipų')"
   >
-    <template #actions>
-      <Button v-if="canCreate && !isTrash" as-child variant="brand" size="lg">
-        <Link :href="route(`${resource}.create`)">
-          <Plus aria-hidden="true" />
-          {{ $t('Naujas tipas') }}
-        </Link>
-      </Button>
-    </template>
-
     <template #row="{ item }">
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
@@ -43,9 +34,8 @@
 </template>
 
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Plus } from 'lucide-vue-next';
 import { computed, toRef } from 'vue';
 
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
@@ -53,7 +43,6 @@ import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import { Button } from '@/Components/ui/button';
 import { ModelEnum } from '@/Types/enums';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { isTrashView, useLocalCollectionSource } from '@/Composables/useCollectionSource';
@@ -72,7 +61,6 @@ const resource = props.typeKind === 'institutionType' ? 'institutionTypes' : 'du
 const entityType = props.typeKind === 'institutionType' ? ModelEnum.INSTITUTION_TYPE : ModelEnum.DUTY_TYPE;
 const page = usePage();
 const isTrash = isTrashView();
-const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.[props.typeKind]));
 const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.[props.typeKind]));
 
 const titleOf = (type: TypeRow) => getTranslatedValue(type.title) || type.slug || '—';

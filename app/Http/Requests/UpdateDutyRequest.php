@@ -43,7 +43,7 @@ class UpdateDutyRequest extends FormRequest
             'places_to_occupy' => 'required|numeric',
             'contacts_grouping' => 'required|in:none,study_program,tenant',
             'types' => 'nullable|array',
-            'types.*' => ['integer', 'distinct', \App\Rules\SoftDeleteRules::existsLive('duty_types')],
+            'types.*' => ['integer', 'distinct', SoftDeleteRules::existsLive('duty_types')],
             'ex_officio_target_duty_ids' => 'nullable|array',
             'ex_officio_target_duty_ids.*' => ['ulid', 'distinct', SoftDeleteRules::existsLive('duties'), 'not_in:'.$duty->id],
             'assignable_tenants' => 'nullable|array',

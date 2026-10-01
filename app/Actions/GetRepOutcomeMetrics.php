@@ -3,11 +3,11 @@
 namespace App\Actions;
 
 use App\Models\Activity;
+use App\Models\DutyType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
 use App\Models\Task;
-use App\Models\DutyType;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Support\Carbon;

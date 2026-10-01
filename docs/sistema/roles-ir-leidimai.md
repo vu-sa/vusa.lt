@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Rolės ir leidimai
 area: roles
 models: [Role, Permission]
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-02
 tests:
   - tests/Feature/Admin/Permissions/RoleControllerTest.php
   - tests/Feature/Admin/Permissions/PermissionControllerTest.php
@@ -65,6 +65,11 @@ Naujos rolės kuriamos centralizuotai, kai atsiranda nauja darbo sritis:
 
 Rolės puslapyje rodomas teisių tinklelis, sugrupuotas pagal įrašų rūšis (naujienos, posėdžiai,
 rezervacijos, pareigybės ir kt.):
+
+<span id="roles-tipu-leidimai"></span>
+
+Institucijų ir pareigybių tipų leidimai rodomi atskirose grupėse **Institucijų tipai** ir
+**Pareigybių tipai**. Pasirink tos grupės veiksmus, kurios tipus nori leisti tvarkyti.
 
 1. Kiekvienai įrašų rūšiai pasirink leidžiamą veiksmą (skaityti, kurti, redaguoti, trinti) ir jo apimtį.
 2. **Užrakintos teisės**: teisės, kurias pagal [bazinę prieigą](/pagrindai/teises#bazine-prieiga) turi

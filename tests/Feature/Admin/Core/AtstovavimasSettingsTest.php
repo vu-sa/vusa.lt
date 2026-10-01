@@ -1,11 +1,10 @@
 <?php
 
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Settings\AtstovavimasSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;

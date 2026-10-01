@@ -7,7 +7,9 @@ use App\Enums\MeetingType;
 use App\Events\MeetingFullyCreated;
 use App\Models\Cadence;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
@@ -16,7 +18,6 @@ use App\Models\ProblemCategory;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
 use App\Models\User;
 use App\Support\MeetingTitle;
 use App\Tasks\Handlers\PeriodicityGapTaskHandler;
@@ -64,7 +65,7 @@ class DocsSeeder extends Seeder
 
         $committee = $this->institution($tenant, 'Chemijos studijų programos komitetas', 'Chemistry Study Programme Committee', 'Chemijos SPK');
 
-        $representativeType = InstitutionType::query()->where('slug', 'studentu-atstovai')->firstOrFail();
+        $representativeType = DutyType::query()->where('slug', 'studentu-atstovai')->firstOrFail();
 
         // A VU body type, so the institution frame shows its governance scope instead of a dash.
         $council->types()->attach(InstitutionType::query()->where('slug', 'studentu-atstovu-organas')->firstOrFail());

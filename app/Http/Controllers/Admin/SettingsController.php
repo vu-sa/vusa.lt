@@ -12,12 +12,11 @@ use App\Http\Requests\UpdateSettingsAuthorizationRequest;
 use App\Http\Requests\UpdateSiteSettingsRequest;
 use App\Models\Document;
 use App\Models\Form;
-use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Page;
 use App\Models\PublicInstitution;
 use App\Models\PublicMeeting;
 use App\Models\Role;
-use App\Models\InstitutionType;
 use App\Models\User;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\DocumentSettings;
@@ -25,7 +24,6 @@ use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
 use App\Settings\SettingsSettings;
 use App\Settings\SiteSettings;
-use App\Support\MorphMap;
 use Illuminate\Support\Facades\Cache;
 
 class SettingsController extends AdminController
@@ -69,7 +67,7 @@ class SettingsController extends AdminController
             'forms' => Form::all(['id', 'name']),
             'roles' => Role::all(['id', 'name']),
             'institution_types' => InstitutionType::query()
-                
+
                 ->get(['id', 'title', 'slug'])
                 ->map->toArray(),
         ]);
@@ -108,7 +106,7 @@ class SettingsController extends AdminController
             'selected_type_ids' => $meetingSettings->getPublicMeetingInstitutionTypeIds()->toArray(),
             'excluded_type_ids' => $meetingSettings->getExcludedInstitutionTypeIds()->toArray(),
             'available_types' => InstitutionType::query()
-                
+
                 ->get(['id', 'title', 'slug'])
                 ->map->toArray(),
         ]);
@@ -182,7 +180,7 @@ class SettingsController extends AdminController
         return $this->inertiaResponse('Admin/Settings/EditAtstovavimasSettings', [
             'student_rep_root_type_id' => $atstovavimasSettings->student_rep_root_type_id,
             'institution_types' => InstitutionType::query()
-                
+
                 ->get(['id', 'title', 'slug'])
                 ->map->toArray(),
         ]);

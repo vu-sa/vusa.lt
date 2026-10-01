@@ -3,15 +3,13 @@
 use App\Enums\TenantType;
 use App\Mail\FeedbackMail;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
-use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;

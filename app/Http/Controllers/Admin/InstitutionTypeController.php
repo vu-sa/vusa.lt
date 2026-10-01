@@ -7,24 +7,21 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTypeRequest;
 use App\Http\Requests\InstitutionTypeRequest;
 use App\Http\Requests\SyncTypeModelsRequest;
-use App\Http\Requests\SyncTypeRolesRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\DutyResponsibility;
-use App\Models\Role;
+use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Services\ResourceServices\SharepointFileService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class InstitutionTypeController extends AdminController
 {
     use HandlesSoftDeletes, HasTanstackTables;
 
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(IndexTypeRequest $request)
+    public function index(IndexTypeRequest $request): Response
     {
         $this->handleAuthorization('viewAny', InstitutionType::class);
 
@@ -41,10 +38,7 @@ class InstitutionTypeController extends AdminController
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(): Response
     {
         $this->handleAuthorization('create', InstitutionType::class);
 
@@ -54,10 +48,7 @@ class InstitutionTypeController extends AdminController
         ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(InstitutionTypeRequest $request)
+    public function store(InstitutionTypeRequest $request): RedirectResponse
     {
         $type = InstitutionType::query()->create(
             $request->safe()->only('title', 'description', 'parent_id', 'slug', 'extra_attributes')
@@ -67,10 +58,7 @@ class InstitutionTypeController extends AdminController
             ->with('success', $this->entityMessage('created', 'institutionType'));
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(InstitutionType $type)
+    public function show(InstitutionType $type): Response
     {
         $this->handleAuthorization('view', $type);
 
@@ -95,20 +83,19 @@ class InstitutionTypeController extends AdminController
             ];
         }
 
-        $relation = 'institutions';
         $type->load([
             'parent:id,title',
-            ...($relation === null ? [] : [$relation => fn ($query) => $query->select('id', 'name')]),
+            'institutions' => fn ($query) => $query->select('id', 'name'),
         ]);
 
         return $this->inertiaResponse('Admin/ModelMeta/ShowType', [
             'typeKind' => 'institutionType',
             'contentType' => $type->toFullArray(),
-            'attachedModels' => $relation === null ? [] : $type->{$relation}->map(fn ($model): array => [
+            'attachedModels' => $type->institutions->map(fn ($model): array => [
                 'id' => $model->getKey(),
                 'name' => $model->getAttribute('name'),
             ])->values(),
-            'modelOptions' => Inertia::optional(fn () => \App\Models\Institution::query()->select(['id', 'name'])->with('tenants')->orderBy('name')->get()),
+            'modelOptions' => Inertia::optional(fn () => Institution::query()->select(['id', 'name'])->with('tenants')->orderBy('name')->get()),
             // Duties responsible for every institution of this type (e.g. VU Senatas → CB coordinator).
             'responsibleDuties' => $responsibleDuties,
             'sharepointPath' => SharepointFileService::pathOrNull($type),
@@ -120,10 +107,7 @@ class InstitutionTypeController extends AdminController
         ]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(InstitutionType $type)
+    public function edit(InstitutionType $type): Response
     {
         $this->handleAuthorization('update', $type);
 
@@ -134,10 +118,7 @@ class InstitutionTypeController extends AdminController
         ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(InstitutionTypeRequest $request, InstitutionType $type)
+    public function update(InstitutionTypeRequest $request, InstitutionType $type): RedirectResponse
     {
         $type->update($request->safe()->only('title', 'description', 'parent_id', 'slug', 'extra_attributes'));
 
@@ -146,19 +127,12 @@ class InstitutionTypeController extends AdminController
 
     public function syncModels(SyncTypeModelsRequest $request, InstitutionType $type): RedirectResponse
     {
-        $relation = 'institutions';
-        abort_if($relation === null, 403);
-
-        $type->{$relation}()->sync($request->validated('models'));
+        $type->institutions()->sync($request->validated('models'));
 
         return back()->with('success', $this->entityMessage('updated', 'institutionType'));
     }
 
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(InstitutionType $type)
+    public function destroy(InstitutionType $type): RedirectResponse
     {
         $this->handleAuthorization('delete', $type);
 

@@ -3,13 +3,12 @@
 use App\Actions\GetInstitutionRepresentatives;
 use App\Events\MeetingFullyCreated;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
@@ -35,7 +34,7 @@ describe('PeriodicityGapTaskHandler', function (): void {
 
         // Create student rep type and duty
         $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -78,7 +77,7 @@ describe('PeriodicityGapTaskHandler', function (): void {
 
         // Create student rep type and duty
         $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -131,7 +130,7 @@ describe('PeriodicityGapTaskHandler', function (): void {
 
         // Create student rep type and duty
         $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -179,7 +178,7 @@ describe('PeriodicityGapTaskHandler', function (): void {
 
         // Create student rep type and duty
         $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -231,7 +230,7 @@ describe('GetInstitutionRepresentatives', function (): void {
 
         // Create student rep type
         $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
         $duty = Duty::factory()
             ->for($institution)

@@ -2,9 +2,8 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\Tenant;
 use App\Models\InstitutionType;
-use App\Models\DutyType;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

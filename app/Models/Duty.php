@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
-use App\Models\Pivots\DutyDutyType;
 use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
+use App\Models\Pivots\DutyDutyType;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;

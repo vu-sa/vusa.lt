@@ -3,14 +3,12 @@
 use App\Enums\MeetingType;
 use App\Models\AgendaItemNote;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
-use App\Support\MorphMap;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
@@ -96,7 +94,7 @@ describe('agenda item notes API', function (): void {
 
     test('show returns the meeting active student representatives for @mentions', function (): void {
         $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
         $duty = Duty::factory()
             ->for($this->institution)

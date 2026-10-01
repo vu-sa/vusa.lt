@@ -2,13 +2,12 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
 use App\Models\Vote;
 use App\Services\RelationshipService;
@@ -1134,8 +1133,8 @@ describe('getAllRelatedInstitutionsEnriched', function (): void {
 
 describe('getTypeRelationshipGraph', function (): void {
     test('returns type nodes and type-to-type edges with metadata', function (): void {
-        $sourceType = InstitutionType::factory()->create([ 'title' => ['lt' => 'Tipas A', 'en' => 'InstitutionType A']]);
-        $targetType = InstitutionType::factory()->create([ 'title' => ['lt' => 'Tipas B', 'en' => 'InstitutionType B']]);
+        $sourceType = InstitutionType::factory()->create(['title' => ['lt' => 'Tipas A', 'en' => 'InstitutionType A']]);
+        $targetType = InstitutionType::factory()->create(['title' => ['lt' => 'Tipas B', 'en' => 'InstitutionType B']]);
 
         $this->relationship->description = 'Aprašymas';
         $this->relationship->save();

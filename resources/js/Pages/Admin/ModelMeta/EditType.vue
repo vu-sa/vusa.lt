@@ -4,6 +4,7 @@
 
 <script setup lang="ts">
 import type { InertiaForm } from '@inertiajs/vue3';
+
 import TypeForm from '@/Components/AdminForms/TypeForm.vue';
 
 const props = defineProps<{

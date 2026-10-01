@@ -3,11 +3,10 @@
 use App\Enums\MeetingType;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
 use App\Settings\MeetingSettings;
 use Carbon\Carbon;

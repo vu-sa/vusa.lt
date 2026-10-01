@@ -4,12 +4,12 @@ namespace App\Services\ResourceServices;
 
 use App\Enums\SharepointFolderEnum;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\FileableFile;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Traits\HasSharepointFiles;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Services\SharepointGraphService;
 use App\Support\StagingProtection;
 use Illuminate\Database\Eloquent\Model;

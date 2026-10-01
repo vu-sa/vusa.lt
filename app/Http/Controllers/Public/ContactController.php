@@ -5,12 +5,12 @@ namespace App\Http\Controllers\Public;
 use App\Actions\GetPublicMeetingDocuments;
 use App\Enums\TenantType;
 use App\Http\Controllers\PublicController;
+use App\Models\DutyType;
 use App\Models\Form;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
 use App\Services\ContactPresentationService;
 use App\Services\PublicAssetService;
@@ -505,14 +505,7 @@ class ContactController extends PublicController
             }
         }]);
 
-        // Remove descendants without institutions
-        $descendants = $descendants->filter(function ($descendant) {
-            if (! $descendant instanceof InstitutionType) {
-                return false;
-            }
-
-            return $descendant->institutions->count() > 0;
-        })->values();
+        $descendants = $descendants->filter(fn (InstitutionType $descendant): bool => $descendant->institutions->isNotEmpty())->values();
 
         $this->applyPageHead(
             contentTenant: $this->tenant,

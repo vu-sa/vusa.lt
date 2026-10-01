@@ -5,13 +5,13 @@ namespace Tests\Feature\Tasks;
 use App\Enums\InstitutionScope;
 use App\Events\MeetingFullyCreated;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
@@ -35,7 +35,7 @@ trait MeetingTaskTestHelpers
 
         // Create student rep type and duty
         $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -85,7 +85,7 @@ trait MeetingTaskTestHelpers
 
         // Create student rep type and duty
         $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
         $duty = Duty::factory()
             ->for($institution)

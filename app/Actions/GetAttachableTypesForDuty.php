@@ -2,10 +2,8 @@
 
 namespace App\Actions;
 
-use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\User;
-use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 
 class GetAttachableTypesForDuty
@@ -31,7 +29,6 @@ class GetAttachableTypesForDuty
         }
 
         // filter types where model_type is App\Models\Duty
-        
 
         // support collection to eloquent collection
         $types = Collection::make($types);

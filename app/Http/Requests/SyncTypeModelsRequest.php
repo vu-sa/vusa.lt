@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Models\InstitutionType;
 use App\Models\DutyType;
+use App\Models\InstitutionType;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Foundation\Http\FormRequest;
 

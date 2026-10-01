@@ -8,14 +8,12 @@
 
 use App\Actions\GetInstitutionRepresentatives;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
-use App\Support\MorphMap;
 use App\Tasks\Handlers\PeriodicityGapTaskHandler;
 use App\Tasks\Subscribers\InstitutionCheckInTaskSubscriber;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -39,7 +37,7 @@ describe('InstitutionCheckInTaskSubscriber', function (): void {
 
         // Create student rep type and duty
         $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -103,7 +101,7 @@ describe('InstitutionCheckInTaskSubscriber', function (): void {
 
         // Create student rep type and duties for both institutions
         $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
         foreach ([$institution1, $institution2] as $institution) {
             $duty = Duty::factory()

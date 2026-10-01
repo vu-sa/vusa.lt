@@ -363,7 +363,7 @@ const page = usePage();
 
 // Computed refs for lazy-loaded data (reactive when data arrives via router.reload)
 const studyPrograms = computed(() => (page.props.studyPrograms as App.Entities.StudyProgram[] | undefined) ?? []);
-const dutyTypes = computed(() => (page.props.dutyTypes as App.Entities.InstitutionType[] | undefined) ?? []);
+const dutyTypes = computed(() => (page.props.dutyTypes as App.Entities.DutyType[] | undefined) ?? []);
 
 // Reactive institutions list (can be updated when new institution is created)
 const institutionsList = ref([...props.institutions]);

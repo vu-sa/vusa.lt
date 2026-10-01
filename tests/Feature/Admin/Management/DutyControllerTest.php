@@ -1,12 +1,11 @@
 <?php
 
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\News;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -3,14 +3,13 @@
 use App\Events\MeetingFullyCreated;
 use App\Models\Cadence;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionSecretary;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
 use App\Notifications\TaskAssignedNotification;
 use App\Support\MorphMap;
@@ -29,7 +28,7 @@ beforeEach(function (): void {
     $this->cadence = Cadence::factory()->forYear(2025)->create(['institution_id' => $this->institution->id]);
 
     $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-        ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+        ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
     $duty = Duty::factory()->for($this->institution)->hasAttached($studentRepType, [], 'types')->create();
 

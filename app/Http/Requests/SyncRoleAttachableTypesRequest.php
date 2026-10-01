@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class SyncRoleAttachableTypesRequest extends FormRequest
 {
@@ -23,7 +23,7 @@ class SyncRoleAttachableTypesRequest extends FormRequest
     {
         return [
             'attachable_types' => 'present|array',
-            'attachable_types.*' => ['integer', \App\Rules\SoftDeleteRules::existsLive('duty_types')],
+            'attachable_types.*' => ['integer', SoftDeleteRules::existsLive('duty_types')],
         ];
     }
 }

@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\Duty;
-use App\Models\Pivots\Dutiable;
 use App\Models\DutyType;
+use App\Models\Pivots\Dutiable;
 use Illuminate\Support\Collection;
 
 class ContactPresentationService

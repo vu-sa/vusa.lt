@@ -5,7 +5,6 @@ namespace Database\Factories;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionType;
-use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class DutyFactory extends Factory

@@ -133,7 +133,7 @@
         </FormFieldWrapper>
 
         <FormFieldWrapper
-          v-else-if="form.scope_type === 'type'"
+          v-else-if="form.scope_type === 'institution_type'"
           id="scope_type_target"
           :label="$t('responsibilities.sheet.type')"
           :error="form.errors.scope_id"
@@ -218,7 +218,7 @@ const selectedResponsibility = computed(() =>
   props.options?.responsibilities.find(option => option.value === form.responsibility));
 
 const scopeOptions = computed<FormSegmentOption<ResponsibilityScopeValue>[]>(() =>
-  (selectedResponsibility.value?.scopes ?? ['tenant', 'type', 'institution']).map(scope => ({
+  (selectedResponsibility.value?.scopes ?? ['tenant', 'institution_type', 'institution']).map(scope => ({
     value: scope,
     label: $t(`responsibilities.scopes.${scope}`),
   })));

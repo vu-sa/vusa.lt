@@ -1,9 +1,14 @@
 <?php
 
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Services\InstitutionScopeResolver;
+use App\Services\ModelAuthorizer;
+use App\Services\Permissions\PermissionMapBuilder;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -70,6 +75,9 @@ return new class extends Migration
                 }
                 foreach (DB::table($table)->whereIn($kind, ['type', 'App\\Models\\Type'])->get() as $reference) {
                     if (! isset($types[$reference->{$id}])) {
+                        if ($table === 'activity_log') {
+                            continue;
+                        }
                         throw new RuntimeException("Unresolved type reference in {$table}.{$kind}.");
                     }
                     if ($table === 'relationshipables') {
@@ -145,6 +153,7 @@ return new class extends Migration
                         'reason' => 'Owner no longer exists',
                         'archived_at' => now(),
                     ]);
+
                     continue;
                 }
                 DB::table("{$domain}_{$domain}_type")->insert([
@@ -202,6 +211,15 @@ return new class extends Migration
         });
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+        DB::table('users')->select('id')->orderBy('id')->chunk(500, function ($users): void {
+            foreach ($users as $user) {
+                app(ModelAuthorizer::class)->resetCache($user->id);
+                PermissionMapBuilder::forgetCachedMaps($user->id);
+                Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($user->id));
+            }
+        });
+        Cache::forget(HandleInertiaRequests::INSTITUTION_TYPES_CACHE_KEY);
+        app(InstitutionScopeResolver::class)->flush();
     }
 
     /**

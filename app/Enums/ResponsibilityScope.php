@@ -3,8 +3,8 @@
 namespace App\Enums;
 
 use App\Models\Institution;
-use App\Models\Tenant;
 use App\Models\InstitutionType;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Model;
 
 /**

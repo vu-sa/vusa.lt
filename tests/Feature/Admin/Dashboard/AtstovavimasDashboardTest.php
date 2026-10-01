@@ -2,8 +2,10 @@
 
 use App\Models\Cadence;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\FileableFile;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
@@ -16,8 +18,6 @@ use App\Models\Resource;
 use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\InstitutionType;
-use App\Models\DutyType;
 use App\Models\User;
 use App\Services\RelationshipService;
 use App\Support\MorphMap;
@@ -123,7 +123,7 @@ describe('atstovavimas dashboard', function (): void {
 
     test('reference documents of the user\'s duty types, parents included, load with the secondary group', function (): void {
         $parentType = DutyType::factory()->create([]);
-        $dutyType = DutyType::factory()->create([ 'parent_id' => $parentType->id]);
+        $dutyType = DutyType::factory()->create(['parent_id' => $parentType->id]);
         $this->user->current_duties()->first()->types()->attach($dutyType);
         $unrelatedType = DutyType::factory()->create([]);
 
@@ -401,7 +401,7 @@ describe('atstovavimas dashboard periodicity', function (): void {
 
         // Create a duty and assign it to the user
         $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -454,7 +454,7 @@ describe('atstovavimas dashboard periodicity', function (): void {
 
         // Create a duty and assign it to the user
         $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
         $duty = Duty::factory()
             ->for($institution)
