@@ -9,6 +9,10 @@ fi
 
 cd "$CLAUDE_PROJECT_DIR"
 
+# The container runs as root, and Composer skips plugins for root unless told otherwise;
+# without pestphp/pest-plugin, Pest loses --parallel and TIA.
+export COMPOSER_ALLOW_SUPERUSER=1
+
 if [ ! -f .env ]; then
   cp .env.example .env
   sed -i \
@@ -23,10 +27,21 @@ if [ ! -f .env ]; then
 fi
 touch database/database.sqlite
 
-composer install --no-interaction --no-progress --prefer-dist
+# GitHub zipballs are blocked; install from git and seed the dist-only packages.
+php .claude/hooks/seed-composer-dist-cache.php
+composer install --no-interaction --no-progress --prefer-source
 
 if ! grep -q '^APP_KEY=base64:' .env; then
   php artisan key:generate --no-interaction
 fi
 
-npm install --no-audit --no-fund
+# npm ci leaves package-lock.json alone; npm install here (npm 10) rewrites it.
+npm ci --no-audit --no-fund
+
+# Feature tests that render error pages need the Vite manifest.
+npm run build
+
+# Pest TIA resolves the default branch through origin/HEAD, which a fresh clone lacks.
+if ! git symbolic-ref -q refs/remotes/origin/HEAD >/dev/null; then
+  git fetch -q origin main && git remote set-head origin main
+fi
