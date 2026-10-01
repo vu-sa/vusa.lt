@@ -3,18 +3,13 @@ import '../css/app.css';
 import { type DefineComponent, createApp, createSSRApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { createInertiaApp } from '@inertiajs/vue3';
-import { i18nVue, loadLanguageAsync } from 'laravel-vue-i18n';
+import { i18nVue } from 'laravel-vue-i18n';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 // Static, as in ssr.ts: an async wrapper adds a boundary that shifts every `useId()` (reka ids,
 // aria-controls) away from the server-rendered values.
 import PublicLayout from './Layouts/PersistentPublicLayout.vue';
-
-// const metaTitle =
-//  window.document.getElementsByTagName("title")[0]?.innerText || "VU SA";
-//
-/// / get title from appTitle by removing the suffix
-// const pageTitle = metaTitle.replace(" - VU SA", "");
+import { mountTranslatedApp } from './Utils/mountTranslatedApp';
 
 createInertiaApp({
   // Title is owned server-side by Laravel Head (see PublicController::applyPageHead()
@@ -50,10 +45,12 @@ createInertiaApp({
   async setup({ App, props, el, plugin }) {
     // https://github.com/inertiajs/inertia/discussions/372#discussioncomment-6052940
     const hydrating = el.hasAttribute('data-server-rendered');
+    const { locale } = props.initialPage.props.app;
     const create = hydrating ? createSSRApp : createApp;
     const application = create({ render: () => h(App, props) })
       .use(plugin)
       .use(i18nVue, {
+        lang: locale,
         fallbackLang: 'en',
         resolve: async (lang: string) => {
           // Load JSON translations (shared between admin/public)
@@ -82,10 +79,7 @@ createInertiaApp({
       })
       .use(ZiggyVue);
 
-    if (hydrating) {
-      await loadLanguageAsync(document.documentElement.lang || 'lt');
-    }
-    application.mount(el);
+    await mountTranslatedApp(application, el, locale);
 
     delete el.dataset.page;
 

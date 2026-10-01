@@ -12,6 +12,7 @@ use App\Models\Tenant;
 use App\Models\Type;
 use App\Models\User;
 use App\Services\ContactPresentationService;
+use App\Services\PublicAssetService;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\FormSettings;
 use App\Support\MeetingTitle;
@@ -24,9 +25,9 @@ use Inertia\Response;
 
 class ContactController extends PublicController
 {
-    public function __construct(private readonly ContactPresentationService $presentationService)
+    public function __construct(private readonly ContactPresentationService $presentationService, PublicAssetService $publicAssets)
     {
-        parent::__construct();
+        parent::__construct($publicAssets);
     }
 
     public function contacts()

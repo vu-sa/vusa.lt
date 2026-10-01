@@ -31,6 +31,7 @@ it('renders anonymous pilot pages through Inertia SSR with public routes', funct
     Http::assertSent(fn ($request) => str_ends_with($request->url(), '/render')
         && $request['component'] === 'Public/ContentPage'
         && $request['props']['auth'] === null
+        && $request['props']['publicAssets']['logoSrc'] === '/logos/hor/lt/vusa.lin.hor.tams.svg'
         && isset($request['props']['ziggy']['routes']['login'])
         && ! isset($request['props']['ziggy']['routes']['pages.index']));
 });

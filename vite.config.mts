@@ -4,6 +4,7 @@ import Components from 'unplugin-vue-components/vite';
 import Icons from 'unplugin-icons/vite';
 import IconsResolver from 'unplugin-icons/resolver';
 import i18nSplit from './vite-plugins/i18n-split.ts';
+import fluentIcons from './vite-plugins/fluent-icons.ts';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 import vueDevTools from 'vite-plugin-vue-devtools';
@@ -47,6 +48,7 @@ export default defineConfig(({ command, isSsrBuild }) => {
     }),
     Icons(),
     i18nSplit(),
+    ...(!isSsrBuild ? [fluentIcons()] : []),
   ];
 
   // Core plugins needed for both dev and build

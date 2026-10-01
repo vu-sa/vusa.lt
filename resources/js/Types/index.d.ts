@@ -1,3 +1,5 @@
+import type { IconifyIcon } from '@iconify/vue';
+
 import type { LocaleEnum, ModelEnum } from './enums';
 
 import type { NavFooterColumn, NavItem } from '@/Components/Public/Nav/types';
@@ -15,6 +17,10 @@ interface User extends Omit<App.Entities.User, 'tenants'> {
 
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
   alias?: string;
+  publicAssets?: {
+    logoSrc: string;
+    icons?: Record<string, IconifyIcon>;
+  };
   app: {
     env: 'local' | 'production' | 'testing';
     locale: LocaleEnum;

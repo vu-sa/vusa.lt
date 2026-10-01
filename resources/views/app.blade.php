@@ -13,6 +13,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
+    @if ($designSurface === 'public' && isset($page['props']['publicAssets']['logoSrc']))
+        <link rel="preload" as="image" href="{{ $page['props']['publicAssets']['logoSrc'] }}" fetchpriority="high">
+    @endif
+
     {{-- PWA Meta Tags --}}
     <link rel="manifest" href="/build/manifest.webmanifest">
     <meta name="mobile-web-app-capable" content="yes">

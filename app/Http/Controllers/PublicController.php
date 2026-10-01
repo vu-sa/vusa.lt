@@ -7,6 +7,7 @@ use App\Actions\GetPublicEditLink;
 use App\Http\Traits\ResolvesPublicContent;
 use App\Models\QuickLink;
 use App\Models\Tenant;
+use App\Services\PublicAssetService;
 use App\Support\LocalizedRouteSlugs;
 use App\Support\PublicCacheTags;
 use Carbon\CarbonInterface;
@@ -32,15 +33,10 @@ class PublicController extends Controller
 
     protected string $subdomain;
 
-    public function __construct()
+    public function __construct(private readonly PublicAssetService $publicAssets)
     {
-        /**
-         * Every public page requires an 'alias', which is basically the shortname of a tenant.
-         * Alias may decide in the controller, what kind of information is displayed.
-         *  */
         [$alias, $subdomain] = GetAliasSubdomainForPublic::execute();
 
-        // When we have the final alias, get the tenant that will be used in all of the public controllers
         $tenant = Tenant::forAlias($alias);
 
         // An unrecognized Host (e.g. the catch-all {permalink} route matching a request whose
@@ -50,11 +46,12 @@ class PublicController extends Controller
 
         $this->tenant = $tenant;
 
-        // We also need to use the subdomain in the public controllers
         $this->subdomain = $subdomain;
 
         $locale = request()->route('lang');
         $locale = is_string($locale) ? $locale : app()->getLocale();
+
+        Inertia::share('publicAssets.logoSrc', $this->publicAssets->logoSrc($this->tenant->alias, $locale));
 
         // Subdomain and alias won't be different, except when alias = 'vusa', then subdomain = 'www'
         Inertia::share('tenant', $this->tenant->only(['id', 'shortname', 'alias', 'type']) +
@@ -101,6 +98,9 @@ class PublicController extends Controller
                 ->get(['id', 'link', 'text', 'icon', 'is_important']));
 
         Inertia::share('tenant.links', $quickLinks);
+        Inertia::share('publicAssets.icons', fn () => (object) $this->publicAssets->icons(
+            $quickLinks->pluck('icon')->filter()->unique()->values()->all()
+        ));
     }
 
     /**
