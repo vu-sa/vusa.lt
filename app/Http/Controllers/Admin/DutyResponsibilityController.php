@@ -11,7 +11,7 @@ use App\Models\Duty;
 use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Illuminate\Http\RedirectResponse;
@@ -63,7 +63,7 @@ class DutyResponsibilityController extends AdminController
 
         $types = [];
 
-        foreach (Type::query()->forInstitutions()->get()->sortBy('title') as $type) {
+        foreach (InstitutionType::query()->get()->sortBy('title') as $type) {
             if ($user->can('update', $type)) {
                 $types[] = ['id' => (string) $type->id, 'title' => (string) $type->title];
             }
@@ -123,7 +123,7 @@ class DutyResponsibilityController extends AdminController
 
         return match (true) {
             $scope instanceof Tenant => (string) __($scope->shortname),
-            $scope instanceof Type => (string) $scope->title,
+            $scope instanceof InstitutionType => (string) $scope->title,
             $scope instanceof Institution => (string) $scope->name,
             default => null,
         };

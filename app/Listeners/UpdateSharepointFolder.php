@@ -7,7 +7,8 @@ use App\Exceptions\SharepointFolderRenameException;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\SharepointGraphService;
 use App\Support\StagingProtection;
@@ -74,8 +75,8 @@ class UpdateSharepointFolder
             // Institution name is translatable - use Lithuanian version for folder name
             $oldName = $this->getTranslatableValue($original['name'], 'lt');
             $newName = $this->getTranslatableValue($dirty['name'], 'lt');
-        } elseif ($fileable instanceof Type && $fileable->isDirty('title') && isset($original['title'])) {
-            // Type title is translatable - use Lithuanian version for folder name
+        } elseif (($fileable instanceof InstitutionType || $fileable instanceof DutyType) && $fileable->isDirty('title') && isset($original['title'])) {
+            // InstitutionType title is translatable - use Lithuanian version for folder name
             $oldName = $this->getTranslatableValue($original['title'], 'lt');
             $newName = $this->getTranslatableValue($dirty['title'], 'lt');
         } else {
@@ -192,7 +193,7 @@ class UpdateSharepointFolder
                 $temp->getAttributes(),
                 ['start_time' => $original['start_time']]
             ));
-        } elseif ($fileable instanceof Type && $fileable->isDirty('title')) {
+        } elseif (($fileable instanceof InstitutionType || $fileable instanceof DutyType) && $fileable->isDirty('title')) {
             // For translatable models, the original value might be an array (in-memory)
             // or a JSON string (from database). We need to ensure it's stored as JSON
             // so getTranslation() can decode it properly.

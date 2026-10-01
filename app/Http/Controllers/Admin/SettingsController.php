@@ -17,7 +17,7 @@ use App\Models\Page;
 use App\Models\PublicInstitution;
 use App\Models\PublicMeeting;
 use App\Models\Role;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use App\Models\User;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\DocumentSettings;
@@ -68,8 +68,8 @@ class SettingsController extends AdminController
             'student_rep_institution_type_ids' => $formSettings->getStudentRepInstitutionTypeIds()->toArray(),
             'forms' => Form::all(['id', 'name']),
             'roles' => Role::all(['id', 'name']),
-            'institution_types' => Type::query()
-                ->where('model_type', MorphMap::alias(Institution::class))
+            'institution_types' => InstitutionType::query()
+                
                 ->get(['id', 'title', 'slug'])
                 ->map->toArray(),
         ]);
@@ -107,8 +107,8 @@ class SettingsController extends AdminController
         return $this->inertiaResponse('Admin/Settings/EditMeetingSettings', [
             'selected_type_ids' => $meetingSettings->getPublicMeetingInstitutionTypeIds()->toArray(),
             'excluded_type_ids' => $meetingSettings->getExcludedInstitutionTypeIds()->toArray(),
-            'available_types' => Type::query()
-                ->where('model_type', MorphMap::alias(Institution::class))
+            'available_types' => InstitutionType::query()
+                
                 ->get(['id', 'title', 'slug'])
                 ->map->toArray(),
         ]);
@@ -181,8 +181,8 @@ class SettingsController extends AdminController
 
         return $this->inertiaResponse('Admin/Settings/EditAtstovavimasSettings', [
             'student_rep_root_type_id' => $atstovavimasSettings->student_rep_root_type_id,
-            'institution_types' => Type::query()
-                ->where('model_type', MorphMap::alias(Institution::class))
+            'institution_types' => InstitutionType::query()
+                
                 ->get(['id', 'title', 'slug'])
                 ->map->toArray(),
         ]);

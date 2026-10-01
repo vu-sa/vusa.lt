@@ -17,11 +17,12 @@ export enum AllowedFileablesEnum {
     DUTY = 'Duty',
     INSTITUTION = 'Institution',
     MEETING = 'Meeting',
-    TYPE = 'Type',
+    INSTITUTION_TYPE = 'InstitutionType',
+    DUTY_TYPE = 'DutyType',
 }
 export enum AllowedRelationshipablesEnum {
     INSTITUTION = 'INSTITUTION',
-    TYPE = 'TYPE',
+    INSTITUTION_TYPE = 'INSTITUTION_TYPE',
 }
 export enum ApprovalDecision {
     Approved = 'approved',
@@ -125,11 +126,13 @@ export enum ModelEnum {
     DOCUMENT = 'document',
     DUTIABLE = 'dutiable',
     DUTY = 'duty',
+    DUTY_TYPE = 'duty_type',
     EVENT_TYPE = 'event_type',
     FILE = 'file',
     FORM = 'form',
     GOAL = 'goal',
     INSTITUTION = 'institution',
+    INSTITUTION_TYPE = 'institution_type',
     MEETING = 'meeting',
     NAVIGATION = 'navigation',
     NEWS = 'news',
@@ -150,7 +153,6 @@ export enum ModelEnum {
     TAG = 'tag',
     TASK = 'task',
     TENANT = 'tenant',
-    TYPE = 'type',
     USER = 'user',
 }
 export enum NotificationCategory {
@@ -208,7 +210,7 @@ export enum Responsibility {
 }
 export enum ResponsibilityScope {
     Institution = 'institution',
-    Type = 'type',
+    InstitutionType = 'institution_type',
     Tenant = 'tenant',
 }
 export enum SearchableModelEnum {

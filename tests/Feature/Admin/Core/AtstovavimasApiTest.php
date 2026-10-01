@@ -9,7 +9,8 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Models\Vote;
 use App\Services\InstitutionActivityStatusService;
@@ -481,8 +482,7 @@ test('representative activity counts who acted today, this week, this month and 
  */
 describe('internal bodies', function (): void {
     beforeEach(function (): void {
-        $this->internalType = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
+        $this->internalType = InstitutionType::factory()->create([
             'extra_attributes' => ['governance_scope' => 'vusa'],
         ]);
 
@@ -538,7 +538,7 @@ describe('internal bodies', function (): void {
  */
 describe('padaliniai gantt', function (): void {
     beforeEach(function (): void {
-        $this->publicType = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
+        $this->publicType = InstitutionType::factory()->create([]);
 
         $settings = app(MeetingSettings::class);
         $settings->public_meeting_institution_type_ids = [$this->publicType->id];

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\InstitutionInstitutionType;
 use App\Models\Pivots\Relationshipable;
 use App\Services\PublicInstitutionSearchIndexBuilder;
 use App\Support\MorphMap;
@@ -74,7 +75,7 @@ use Laravel\Scout\Searchable;
  * @property-read Tenant|null $tenant
  * @property-read Tenant|null $tenants
  * @property-read mixed $translations
- * @property-read Collection<int, Type> $types
+ * @property-read Collection<int, InstitutionType> $types
  * @property-read Collection<int, User> $users
  * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
@@ -112,9 +113,9 @@ class PublicInstitution extends Institution
      * Laravel would default to 'public_institution' based on model name
      */
     #[\Override]
-    public function types(): MorphToMany
+    public function types(): BelongsToMany
     {
-        return $this->morphToMany(Type::class, 'typeable');
+        return $this->belongsToMany(InstitutionType::class, 'institution_institution_type', 'institution_id', 'institution_type_id')->using(InstitutionInstitutionType::class);
     }
 
     /**

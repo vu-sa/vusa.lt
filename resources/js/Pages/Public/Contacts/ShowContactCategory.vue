@@ -92,7 +92,7 @@ import IFluentArrowRight16Regular from '~icons/fluent/arrow-right-16-regular';
 
 const props = defineProps<{
   institutions: App.Entities.Institution[];
-  type: App.Entities.Type;
+  type: App.Entities.InstitutionType;
 }>();
 
 const page = usePage();

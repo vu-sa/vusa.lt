@@ -8,7 +8,7 @@ use App\Models\Duty;
 use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -103,13 +103,13 @@ class ResponsibilityResolver
         $byScope = $assignments->groupBy('scope_type');
         $idsOf = fn (ResponsibilityScope $scope) => $byScope->get($scope->value, collect())->pluck('scope_id')->all();
 
-        $typeIds = $this->withDescendants(array_map(intval(...), $idsOf(ResponsibilityScope::Type)));
+        $typeIds = $this->withDescendants(array_map(intval(...), $idsOf(ResponsibilityScope::InstitutionType)));
 
         $candidates = Institution::query()
             ->where(fn (Builder $query) => $query
                 ->whereIn('id', $idsOf(ResponsibilityScope::Institution))
                 ->orWhereIn('tenant_id', $idsOf(ResponsibilityScope::Tenant))
-                ->orWhereHas('types', fn (Builder $types) => $types->whereIn('types.id', $typeIds)))
+                ->orWhereHas('types', fn (Builder $types) => $types->whereIn('institution_types.id', $typeIds)))
             ->with('types')
             ->get();
 
@@ -124,7 +124,7 @@ class ResponsibilityResolver
                     ->where('scope_type', ResponsibilityScope::Tenant)
                     ->whereIn('scope_id', $candidates->pluck('tenant_id')->filter()->map(strval(...))))
                 ->orWhere(fn (Builder $scope) => $scope
-                    ->where('scope_type', ResponsibilityScope::Type)
+                    ->where('scope_type', ResponsibilityScope::InstitutionType)
                     ->whereIn('scope_id', array_map(strval(...), array_keys($this->typeParents())))))
             ->get(['duty_id', 'scope_type', 'scope_id'])
             ->groupBy(fn (DutyResponsibility $assignment) => $assignment->scope_type.':'.$assignment->scope_id);
@@ -230,7 +230,7 @@ class ResponsibilityResolver
             $level = array_values(array_diff($level, $seen));
             $seen = [...$seen, ...$level];
 
-            yield [ResponsibilityScope::Type, $level];
+            yield [ResponsibilityScope::InstitutionType, $level];
 
             $level = array_values(array_unique(array_filter(array_map(fn (int $id) => $parents[$id] ?? null, $level))));
         }
@@ -269,8 +269,8 @@ class ResponsibilityResolver
      */
     private function typeParents(): array
     {
-        return $this->typeParents ??= Type::query()
-            ->forInstitutions()
+        return $this->typeParents ??= InstitutionType::query()
+            
             ->pluck('parent_id', 'id')
             ->mapWithKeys(fn ($parent, $id) => [(int) $id => $parent === null ? null : (int) $parent])
             ->all();

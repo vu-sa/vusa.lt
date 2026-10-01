@@ -7,7 +7,8 @@ use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\Problem;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -277,7 +278,7 @@ describe('authorized access', function (): void {
     test('exposes institution type and recent comments for the overview', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
-        $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
+        $type = InstitutionType::factory()->create([]);
         $institution->types()->attach($type);
 
         Comment::factory()->create([
@@ -640,8 +641,7 @@ describe('meeting_periodicity_days', function (): void {
     });
 
     test('accessor returns type periodicity when institution override is null', function (): void {
-        $type = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
+        $type = InstitutionType::factory()->create([
             'extra_attributes' => ['meeting_periodicity_days' => 14],
         ]);
 
@@ -655,12 +655,10 @@ describe('meeting_periodicity_days', function (): void {
     });
 
     test('accessor returns minimum type periodicity when multiple types', function (): void {
-        $type1 = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
+        $type1 = InstitutionType::factory()->create([
             'extra_attributes' => ['meeting_periodicity_days' => 30],
         ]);
-        $type2 = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
+        $type2 = InstitutionType::factory()->create([
             'extra_attributes' => ['meeting_periodicity_days' => 14],
         ]);
 
@@ -675,8 +673,7 @@ describe('meeting_periodicity_days', function (): void {
     });
 
     test('accessor returns default 30 when no override and no type periodicity', function (): void {
-        $type = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
+        $type = InstitutionType::factory()->create([
             'extra_attributes' => [], // No periodicity set
         ]);
 
@@ -714,8 +711,7 @@ describe('meeting_periodicity_days', function (): void {
     });
 
     test('show endpoint returns computed periodicity when override is null', function (): void {
-        $type = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
+        $type = InstitutionType::factory()->create([
             'extra_attributes' => ['meeting_periodicity_days' => 7],
         ]);
 
@@ -735,8 +731,7 @@ describe('meeting_periodicity_days', function (): void {
     });
 
     test('show endpoint states which governance world the body belongs to', function (): void {
-        $type = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
+        $type = InstitutionType::factory()->create([
             'extra_attributes' => ['governance_scope' => 'vusa'],
         ]);
 

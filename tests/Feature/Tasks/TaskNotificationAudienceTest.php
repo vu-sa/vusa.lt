@@ -8,7 +8,8 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskAutoCompletedNotification;
@@ -61,7 +62,7 @@ describe('ResolveTaskAudience', function (): void {
     test('a future holder carries a future meeting task but receives no notification before the term starts', function (): void {
         $futureHolder = User::factory()->create();
         $duty = attachDuty($this->institution, $futureHolder, now()->addMonth()->toDateString(), null);
-        $duty->types()->attach(Type::query()->where('slug', 'studentu-atstovai')->firstOrFail());
+        $duty->types()->attach(DutyType::query()->where('slug', 'studentu-atstovai')->firstOrFail());
 
         $meetingDate = now()->addMonths(2)->toDateTimeString();
         $task = meetingTaskFor($this->institution, [$futureHolder], $meetingDate);

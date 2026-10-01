@@ -8,7 +8,8 @@ use App\Models\Institution;
 use App\Models\Registration;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Settings\FormSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -256,7 +257,7 @@ describe('student rep registration form access', function (): void {
         $user = makeCoordinator($this->tenant);
         $ownInstitution = Institution::factory()->for($this->tenant)->create();
         $senate = Institution::factory()->for($this->tenant)->create();
-        $senateType = Type::factory()->forInstitutions()->create();
+        $senateType = InstitutionType::factory()->withGovernanceScope()->create();
         $senate->types()->attach($senateType);
         DutyResponsibility::factory()->forType($senateType)->create();
 

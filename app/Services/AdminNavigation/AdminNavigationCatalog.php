@@ -29,7 +29,8 @@ use App\Models\SupportRequest;
 use App\Models\Tag;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Settings\FormSettings;
 use App\Support\AuthorityCacheExpiry;
@@ -45,7 +46,7 @@ use Illuminate\Support\Facades\Cache;
 class AdminNavigationCatalog
 {
     /** Bump the suffix when the payload shape or a gate changes, so a deploy never serves the old menu from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v7-';
+    public const string CACHE_PREFIX = 'admin-navigation-v8-';
 
     private const int CACHE_TTL = 1800;
 
@@ -199,7 +200,7 @@ class AdminNavigationCatalog
                 // The whole organisation's graph: not widened with the `.own` index (InstitutionPolicy::viewAny).
                 new Section('institucijos_grafas', 'shell.sections.institucijos_grafas', 'institutionGraph', [], 'institution', Visibility::permission('institutions.read.padalinys'), descriptionKey: 'shell.section_descriptions.institucijos_grafas'),
                 // Every member browses problems; only those who edit them everywhere manage the shared taxonomy.
-                new Section('problemu_kategorijos', 'shell.sections.problemu_kategorijos', 'problemCategories.index', [], null, Visibility::permission('problems.update.*'), descriptionKey: 'shell.section_descriptions.problemu_kategorijos'),
+                new Section('problemu_kategorijos', 'shell.sections.problemu_kategorijos', 'problemCategories.index', [], null, Visibility::permission('problems.update.*'), descriptionKey: 'shell.section_descriptions.problemu_kategorijos', taxonomy: true),
             ],
             createActions: [
                 CreateAction::screen('new_meeting', 'shell.actions.new_meeting.title', 'shell.actions.new_meeting.description', 'meeting', 'meeting.institution', Visibility::can('create', Meeting::class)),
@@ -224,7 +225,7 @@ class AdminNavigationCatalog
                 // ResourceCategory carries no permissions of its own — its policy delegates to
                 // the `resources.*` ability (ResourceCategoryPolicy docblock), so there is no
                 // `resource_category` ModelEnum case and no icon-registry entry for it.
-                new Section('kategorijos', 'shell.sections.kategorijos', 'resourceCategories.index', [], null, Visibility::can('viewAny', ResourceCategory::class), descriptionKey: 'shell.section_descriptions.kategorijos'),
+                new Section('kategorijos', 'shell.sections.kategorijos', 'resourceCategories.index', [], null, Visibility::can('viewAny', ResourceCategory::class), descriptionKey: 'shell.section_descriptions.kategorijos', taxonomy: true),
             ],
             createActions: [
                 CreateAction::route('new_reservation', 'shell.actions.new_reservation.title', 'shell.actions.new_reservation.description', 'reservation', 'reservations.create', Visibility::can('create', Reservation::class)),
@@ -246,7 +247,7 @@ class AdminNavigationCatalog
                 new Section('baneriai', 'shell.sections.baneriai', 'banners.index', [], 'banner', Visibility::can('viewAny', Banner::class), descriptionKey: 'shell.section_descriptions.baneriai'),
                 new Section('navigacija', 'shell.sections.navigacija', 'navigation.index', [], 'navigation', Visibility::can('viewAny', Navigation::class), descriptionKey: 'shell.section_descriptions.navigacija'),
                 new Section('greitosios_nuorodos', 'shell.sections.greitosios_nuorodos', 'quickLinks.index', [], 'quick_link', Visibility::can('viewAny', QuickLink::class), descriptionKey: 'shell.section_descriptions.greitosios_nuorodos'),
-                new Section('renginiu_tipai', 'shell.sections.renginiu_tipai', 'eventTypes.index', [], 'event_type', Visibility::can('viewAny', EventType::class), descriptionKey: 'shell.section_descriptions.renginiu_tipai'),
+                new Section('renginiu_tipai', 'shell.sections.renginiu_tipai', 'eventTypes.index', [], 'event_type', Visibility::can('viewAny', EventType::class), descriptionKey: 'shell.section_descriptions.renginiu_tipai', taxonomy: true),
                 new Section('zymos', 'shell.sections.zymos', 'tags.index', [], 'tag', Visibility::can('viewAny', Tag::class), [CollectionAction::merge(Visibility::can('viewAny', Tag::class))], descriptionKey: 'shell.section_descriptions.zymos'),
                 // `File` is not in `ModelEnum` (its own docblock: "is not a model, but is used
                 // for generating file permissions") and has no `viewAny` policy method — gate on
@@ -355,6 +356,21 @@ class AdminNavigationCatalog
         ];
     }
 
+    /** @return list<array<string, mixed>> */
+    public function taxonomyDestinations(User $user): array
+    {
+        $sections = [];
+        foreach ([$this->sistemaWorkspace(), $this->svetaineWorkspace(), $this->rezervacijosWorkspace(), $this->atstovavimasWorkspace()] as $workspace) {
+            foreach ($workspace->sections as $section) {
+                if ($section->taxonomy && $section->visibility->allows($user)) {
+                    $sections[] = $section->toArray();
+                }
+            }
+        }
+
+        return $sections;
+    }
+
     private function sistemaWorkspace(): Workspace
     {
         return new Workspace(
@@ -364,7 +380,9 @@ class AdminNavigationCatalog
             sections: [
                 new Section('roles', 'shell.sections.roles', 'roles.index', [], 'role', Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.roles'),
                 new Section('leidimai', 'shell.sections.leidimai', 'permissions.index', [], 'permission', Visibility::can('viewAny', Permission::class), descriptionKey: 'shell.section_descriptions.leidimai'),
-                new Section('tipai', 'shell.sections.tipai', 'types.index', [], 'type', Visibility::can('viewAny', Type::class), descriptionKey: 'shell.section_descriptions.tipai'),
+                new Section('tipai', 'shell.sections.tipai', 'types.index', [], null, Visibility::callback(fn (User $user): bool => $this->taxonomyDestinations($user) !== []), matches: ['types.index'], descriptionKey: 'shell.section_descriptions.tipai'),
+                new Section('instituciju_tipai', 'shell.sections.instituciju_tipai', 'institutionTypes.index', [], 'institution_type', Visibility::can('viewAny', InstitutionType::class), descriptionKey: 'shell.section_descriptions.instituciju_tipai', taxonomy: true),
+                new Section('pareigybiu_tipai', 'shell.sections.pareigybiu_tipai', 'dutyTypes.index', [], 'duty_type', Visibility::can('viewAny', DutyType::class), descriptionKey: 'shell.section_descriptions.pareigybiu_tipai', taxonomy: true),
                 new Section('rysiai', 'shell.sections.rysiai', 'relationships.index', [], 'relationship', Visibility::can('viewAny', Relationship::class), descriptionKey: 'shell.section_descriptions.rysiai'),
                 new Section('nustatymai', 'shell.sections.nustatymai', 'settings.index', [], null, Visibility::gate('manage-settings'), descriptionKey: 'shell.section_descriptions.nustatymai'),
                 // Both gate on `viewAny(Role)` in the controller (SystemStatusController,
@@ -377,6 +395,10 @@ class AdminNavigationCatalog
                 new Section('sharepoint_failai', 'shell.sections.sharepoint_failai', 'sharepointFiles.index', [], 'sharepoint_file', Visibility::can('viewAny', SharepointFile::class), matches: ['sharepointFiles.*', 'sharepoint.*'], descriptionKey: 'shell.section_descriptions.sharepoint_failai'),
             ],
             overview: new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.sistema', [], null, Visibility::always()),
+            createActions: [
+                CreateAction::route('new_institution_type', 'shell.actions.new_institution_type.title', 'shell.actions.new_institution_type.description', 'institution_type', 'institutionTypes.create', Visibility::can('create', InstitutionType::class)),
+                CreateAction::route('new_duty_type', 'shell.actions.new_duty_type.title', 'shell.actions.new_duty_type.description', 'duty_type', 'dutyTypes.create', Visibility::can('create', DutyType::class)),
+            ],
         );
     }
 }

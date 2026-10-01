@@ -7,7 +7,7 @@ use App\Enums\ResponsibilityScope;
 use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -69,7 +69,7 @@ class StoreDutyResponsibilityRequest extends FormRequest
             ResponsibilityScope::Tenant => in_array((string) $value, array_map(strval(...), $this->authorizedTenantIds('duties.update.padalinys')), true),
             ResponsibilityScope::Institution => ($institution = Institution::query()->find($value)) !== null
                 && in_array((int) $institution->tenant_id, $this->authorizedTenantIds('duties.update.padalinys'), true),
-            ResponsibilityScope::Type => ($type = Type::query()->forInstitutions()->find($value)) !== null
+            ResponsibilityScope::InstitutionType => ($type = InstitutionType::query()->find($value)) !== null
                 && $this->user()->can('update', $type),
             null => true,
         };

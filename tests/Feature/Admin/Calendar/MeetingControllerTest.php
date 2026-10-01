@@ -10,7 +10,8 @@ use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
@@ -32,8 +33,7 @@ beforeEach(function (): void {
     // Create an institution for testing
     $this->institution = Institution::factory()->for($this->tenant)->create();
 
-    // Create a meeting type using the Type model
-    $this->meetingType = Type::firstOrCreate(['title' => 'Test Meeting Type']);
+    $this->meetingType = InstitutionType::factory()->create();
 
     // Record initial DB counts
     $this->initialMeetingCount = Meeting::count();
@@ -54,7 +54,6 @@ describe('authorization tests', function (): void {
                 ->post(route('meetings.store'), [
                     'start_time' => $startTime,
                     'institution_id' => $this->institution->id,
-                    'type_id' => $this->meetingType->id,
                 ])
                 ->assertStatus(403);
 
@@ -88,7 +87,6 @@ describe('authorization tests', function (): void {
                 ->post(route('meetings.store'), [
                     'start_time' => $startTime,
                     'institution_id' => $this->institution->id,
-                    'type_id' => $this->meetingType->id,
                 ]);
 
             $response->assertStatus(302);
@@ -125,7 +123,6 @@ describe('authorization tests', function (): void {
                 ->post(route('meetings.store'), [
                     'start_time' => $startTime,
                     'institution_id' => $this->institution->id,
-                    'type_id' => $this->meetingType->id,
                 ]);
 
             $meeting = Meeting::latest('id')->first();
@@ -146,7 +143,6 @@ describe('refactored meeting creation', function (): void {
             ->post(route('meetings.store'), [
                 'start_time' => $startTime,
                 'institution_id' => $this->institution->id,
-                'type_id' => $this->meetingType->id,
             ]);
 
         $meeting = Meeting::latest('id')->first();
@@ -182,7 +178,6 @@ describe('refactored meeting creation', function (): void {
             ->post(route('meetings.store'), [
                 'start_time' => $startTime,
                 'institution_id' => $this->institution->id,
-                'type_id' => $this->meetingType->id,
             ]);
 
         $meeting = Meeting::latest('id')->first();
@@ -208,7 +203,6 @@ describe('refactored meeting creation', function (): void {
             ->post(route('meetings.store'), [
                 'start_time' => $startTime,
                 'institution_id' => $this->institution->id,
-                'type_id' => $this->meetingType->id,
             ]);
 
         $meeting = Meeting::latest('id')->first();
@@ -243,7 +237,6 @@ describe('refactored meeting creation', function (): void {
             ->post(route('meetings.store'), [
                 'start_time' => $startTime,
                 'institution_id' => $this->institution->id,
-                'type_id' => $this->meetingType->id,
             ]);
 
         $meeting = Meeting::latest('id')->first();
@@ -292,7 +285,6 @@ describe('end-to-end refactored meeting flow', function (): void {
             ->post(route('meetings.store'), [
                 'start_time' => $startTime,
                 'institution_id' => $this->institution->id,
-                'type_id' => $this->meetingType->id,
             ]);
 
         $meeting = Meeting::latest('id')->first();
@@ -433,7 +425,7 @@ describe('meeting show payload', function (): void {
 
 describe('read-only public meeting record', function (): void {
     beforeEach(function (): void {
-        $publicType = Type::factory()->create();
+        $publicType = InstitutionType::factory()->create();
         app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => [$publicType->id]])->save();
 
         $this->publicInstitution = Institution::factory()->for($this->tenant)->create();
@@ -750,7 +742,7 @@ describe('cross-tenant parent scoping', function (): void {
      */
     test('cannot announce a meeting of a body VU SA only delegates into', function (): void {
         $external = Institution::factory()->for($this->tenant)->create();
-        $external->types()->attach(Type::factory()->forInstitutions(InstitutionScope::University)->create());
+        $external->types()->attach(InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create());
 
         asUser($this->admin)->post(route('meetings.store'), [
             'start_time' => Carbon::now()->addDay()->format('Y-m-d H:i'),
@@ -786,7 +778,7 @@ describe('cross-tenant parent scoping', function (): void {
 
     test('announces a VU SA body\'s meeting as a draft event', function (): void {
         $internal = Institution::factory()->for($this->tenant)->create();
-        $internal->types()->attach(Type::factory()->forInstitutions(InstitutionScope::Vusa)->create());
+        $internal->types()->attach(InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create());
 
         asUser($this->admin)->post(route('meetings.store'), [
             'start_time' => Carbon::now()->addDay()->format('Y-m-d H:i'),

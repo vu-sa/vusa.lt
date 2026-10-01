@@ -15,7 +15,7 @@ import InstitutionForm from '@/Components/AdminForms/InstitutionForm.vue';
 
 defineProps<{
   assignableTenants: Array<App.Entities.Tenant>;
-  institutionTypes: App.Entities.Type[];
+  institutionTypes: App.Entities.InstitutionType[];
 }>();
 
 const institution = {

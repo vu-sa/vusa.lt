@@ -126,7 +126,9 @@ return [
         'formos' => 'Forms',
         'roles' => 'Roles',
         'leidimai' => 'Permissions',
-        'tipai' => 'Types',
+        'tipai' => 'Types and categories',
+        'instituciju_tipai' => 'Institution types',
+        'pareigybiu_tipai' => 'Duty types',
         'rysiai' => 'Relationships',
         'nustatymai' => 'Settings',
         'sistemos_busena' => 'System status',
@@ -173,7 +175,9 @@ return [
         'formos' => 'Forms and their responses',
         'roles' => 'Permission sets for duties',
         'leidimai' => 'Individual system permissions',
-        'tipai' => 'Types of institutions, duties and other records',
+        'tipai' => 'Choose a type or category list',
+        'instituciju_tipai' => 'Institution grouping, representation and relationships',
+        'pareigybiu_tipai' => 'Duty grouping and granted roles',
         'rysiai' => 'Relations between institutions',
         'nustatymai' => 'System and form settings',
         'sistemos_busena' => 'Server, queue and search health',
@@ -184,6 +188,8 @@ return [
     ],
 
     'actions' => [
+        'new_institution_type' => ['title' => 'New institution type', 'description' => 'Institution grouping, representation and relationships'],
+        'new_duty_type' => ['title' => 'New duty type', 'description' => 'Duty grouping and granted roles'],
         'merge' => [
             'title' => 'Merge records',
         ],

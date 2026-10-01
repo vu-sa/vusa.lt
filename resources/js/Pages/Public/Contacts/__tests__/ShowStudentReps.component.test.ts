@@ -27,7 +27,7 @@ const stubs = {
 };
 
 describe('ShowStudentReps', () => {
-  const mockTypes: App.Entities.Type[] = [
+  const mockTypes: App.Entities.InstitutionType[] = [
     {
       id: 1,
       title: 'Tarybos',
@@ -60,7 +60,7 @@ describe('ShowStudentReps', () => {
           ],
         },
       ],
-    } as unknown as App.Entities.Type,
+    } as unknown as App.Entities.InstitutionType,
     {
       id: 2,
       title: 'Komisija',
@@ -80,7 +80,7 @@ describe('ShowStudentReps', () => {
           ],
         },
       ],
-    } as unknown as App.Entities.Type,
+    } as unknown as App.Entities.InstitutionType,
   ];
 
   it('renders title band, statistics and institutions', () => {

@@ -285,7 +285,7 @@ class AtstovavimasDashboardService
         $publicTypeIds = $this->meetingSettings->getPublicMeetingInstitutionTypeIds();
         if ($publicTypeIds->isNotEmpty()) {
             $grant($inSelection()
-                ->whereHas('types', fn (Builder $query) => $query->whereIn('types.id', $publicTypeIds))
+                ->whereHas('types', fn (Builder $query) => $query->whereIn('institution_types.id', $publicTypeIds))
                 ->pluck('institutions.id'), self::PROJECTION_PUBLIC);
         }
 
@@ -704,7 +704,7 @@ class AtstovavimasDashboardService
                     if ($excludedTypeIds->isNotEmpty()) {
                         $institutionQuery->whereDoesntHave(
                             'types',
-                            fn (Builder $typeQuery) => $typeQuery->whereIn('types.id', $excludedTypeIds)
+                            fn (Builder $typeQuery) => $typeQuery->whereIn('institution_types.id', $excludedTypeIds)
                         );
                     }
                 });
@@ -728,7 +728,7 @@ class AtstovavimasDashboardService
                         if ($excludedTypeIds->isNotEmpty()) {
                             $institutionQuery->whereDoesntHave(
                                 'types',
-                                fn (Builder $typeQuery) => $typeQuery->whereIn('types.id', $excludedTypeIds)
+                                fn (Builder $typeQuery) => $typeQuery->whereIn('institution_types.id', $excludedTypeIds)
                             );
                         }
                     })

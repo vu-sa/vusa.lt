@@ -16,7 +16,8 @@ use App\Models\Resource;
 use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Settings\FormSettings;
 use App\Support\MorphMap;
@@ -500,8 +501,8 @@ describe('institutions needing attention', function (): void {
             'alias' => 'attention-test-'.uniqid(),
         ]);
 
-        $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
+        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
 
         $duty = Duty::factory()
             ->for($institution)

@@ -66,6 +66,8 @@ return [
         'model' => '{1} žyma|[2,9] žymos|[10,*] žymų',
         'gender' => 'f',
     ],
+    'institutionType' => ['gender' => 'm', 'model' => '{1} institucijos tipas|[2,9] institucijų tipai|[10,*] institucijų tipų', 'genitive' => 'institucijos tipo', 'accusative' => 'institucijos tipą'],
+    'dutyType' => ['gender' => 'm', 'model' => '{1} pareigybės tipas|[2,9] pareigybių tipai|[10,*] pareigybių tipų', 'genitive' => 'pareigybės tipo', 'accusative' => 'pareigybės tipą'],
     'type' => [
         'model' => '{1} turinio tipas|[2,9] turinio tipai|[10,*] turinio tipų',
         'gender' => 'm',

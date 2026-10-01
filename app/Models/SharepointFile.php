@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read Collection<int, Institution> $institutions
  * @property-read Collection<int, Meeting> $meetings
  * @property-read Collection<int, Comment> $rootComments
- * @property-read Collection<int, Type> $types
+ * @property-read Collection<int, InstitutionType> $types
  *
  * @method static \Database\Factories\SharepointFileFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SharepointFile newModelQuery()
@@ -41,9 +41,14 @@ class SharepointFile extends Model implements Commentable
         return $this->hasMany(SharepointFileable::class, 'sharepoint_file_id', 'id');
     }
 
-    public function types()
+    public function dutyTypes()
     {
-        return $this->morphedByMany(Type::class, 'fileable');
+        return $this->morphedByMany(DutyType::class, 'fileable');
+    }
+
+    public function institutionTypes()
+    {
+        return $this->morphedByMany(InstitutionType::class, 'fileable');
     }
 
     public function institutions()

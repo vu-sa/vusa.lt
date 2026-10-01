@@ -234,7 +234,7 @@ import IFluentPeople16Regular from '~icons/fluent/people-16-regular';
 import IFluentArrowRight16Regular from '~icons/fluent/arrow-right-16-regular';
 
 const props = defineProps<{
-  types: App.Entities.Type[];
+  types: App.Entities.InstitutionType[];
   categoryType?: { id: number; slug: string; title: string; description?: string };
   showAllTenants?: boolean;
 }>();

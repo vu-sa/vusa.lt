@@ -7,7 +7,7 @@ use App\Models\Institution;
 use App\Models\Tag;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use App\Models\User;
 use App\Services\AdminNavigation\AdminNavigationCatalog;
 use App\Services\DeviceMetricService;
@@ -249,12 +249,12 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * @return Collection<int, Type>
+     * @return Collection<int, InstitutionType>
      */
     private function getInstitutionTypesForInertia(): Collection
     {
         return Cache::rememberForever(self::INSTITUTION_TYPES_CACHE_KEY,
-            fn () => Type::where('model_type', MorphMap::alias(Institution::class))->get(['id', 'title', 'slug'])
+            fn () => InstitutionType::query()->get(['id', 'title', 'slug'])
         );
     }
 

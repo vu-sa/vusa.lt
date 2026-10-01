@@ -23,11 +23,13 @@ enum ModelEnum: string
     case DOCUMENT = 'document';
     case DUTIABLE = 'dutiable';
     case DUTY = 'duty';
+    case DUTY_TYPE = 'duty_type';
     case EVENT_TYPE = 'event_type';
     case FILE = 'file';
     case FORM = 'form';
     case GOAL = 'goal';
     case INSTITUTION = 'institution';
+    case INSTITUTION_TYPE = 'institution_type';
     case MEETING = 'meeting';
     case NAVIGATION = 'navigation';
     case NEWS = 'news';
@@ -48,7 +50,6 @@ enum ModelEnum: string
     case TAG = 'tag';
     case TASK = 'task';
     case TENANT = 'tenant';
-    case TYPE = 'type';
     case USER = 'user';
 
     /**
@@ -88,7 +89,8 @@ enum ModelEnum: string
         $scopeRestrictions = [
             // Global/system-wide models that don't belong to users or padaliniai
             'tags' => ['*'],
-            'types' => ['*'],
+            'institutionTypes' => ['*'],
+            'dutyTypes' => ['*'],
             'eventTypes' => ['*'],
             'permissions' => ['*'],
             'roles' => ['*'],

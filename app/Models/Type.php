@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 /**
+ * @deprecated Historical migration snapshot; application code uses InstitutionType or DutyType.
  * @property int $id
  * @property int|null $parent_id
  * @property array|string|null $title

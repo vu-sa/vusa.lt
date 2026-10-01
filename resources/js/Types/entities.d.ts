@@ -80,7 +80,8 @@ declare namespace App.Entities {
   export type Tag = models.Tag;
   export type Task = models.Task;
   export type Tenant = models.Tenant;
-  export type Type = models.Type;
+  export type InstitutionType = models.InstitutionType;
+  export type DutyType = models.DutyType;
   export type Vote = models.Vote;
 
   export type User

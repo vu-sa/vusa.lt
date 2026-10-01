@@ -7,7 +7,8 @@ use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,7 +24,7 @@ pest()->use(RefreshDatabase::class);
  */
 function makePublicMeeting(Tenant $tenant, array $institutionAttributes = [], array $meetingAttributes = []): Meeting
 {
-    $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
+    $type = InstitutionType::factory()->create([]);
 
     $settings = app(MeetingSettings::class);
     $settings->public_meeting_institution_type_ids = [$type->id];

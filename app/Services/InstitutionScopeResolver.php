@@ -4,16 +4,16 @@ namespace App\Services;
 
 use App\Enums\InstitutionScope;
 use App\Models\Institution;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 /**
  * Resolves which governance world an institution belongs to.
  *
- * Scope is declared on a Type as `extra_attributes['governance_scope']` and inherited down
+ * Scope is declared on a InstitutionType as `extra_attributes['governance_scope']` and inherited down
  * `types.parent_id`: the nearest ancestor (self first) carrying a value wins. The whole tree is
- * loaded in a single query and cached — `Type::getParentsAndSelf()` walks `recursiveParent` one
+ * loaded in a single query and cached — `InstitutionType::getParentsAndSelf()` walks `recursiveParent` one
  * query per level, which would N+1 across any meeting or institution listing.
  *
  * Registered as a singleton so the map is built at most once per request.
@@ -65,7 +65,7 @@ class InstitutionScopeResolver
     }
 
     /**
-     * Type ids whose resolved scope is external — the SQL-side counterpart of forInstitution().
+     * InstitutionType ids whose resolved scope is external — the SQL-side counterpart of forInstitution().
      *
      * An institution with none of these (and at least one type) is internal; one with no types
      * at all falls back to DEFAULT, which is external.
@@ -81,7 +81,7 @@ class InstitutionScopeResolver
     }
 
     /**
-     * Drop both the in-process memo and the shared cache. Called whenever a Type changes.
+     * Drop both the in-process memo and the shared cache. Called whenever a InstitutionType changes.
      */
     public function flush(): void
     {
@@ -107,11 +107,11 @@ class InstitutionScopeResolver
     private static function buildMap(): array
     {
         /** @var Collection<int, array{parent_id: int|null, scope: string|null}> $nodes */
-        $nodes = Type::query()
-            ->forInstitutions()
+        $nodes = InstitutionType::query()
+            
             ->withTrashed()
             ->get(['id', 'parent_id', 'extra_attributes'])
-            ->mapWithKeys(fn (Type $type) => [$type->id => [
+            ->mapWithKeys(fn (InstitutionType $type) => [$type->id => [
                 'parent_id' => $type->parent_id,
                 'scope' => self::ownScopeValue($type),
             ]]);
@@ -151,7 +151,7 @@ class InstitutionScopeResolver
         return null;
     }
 
-    private static function ownScopeValue(Type $type): ?string
+    private static function ownScopeValue(InstitutionType $type): ?string
     {
         $value = $type->extra_attributes['governance_scope'] ?? null;
 

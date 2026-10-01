@@ -126,7 +126,9 @@ return [
         'formos' => 'Formos',
         'roles' => 'Rolės',
         'leidimai' => 'Leidimai',
-        'tipai' => 'Tipai',
+        'tipai' => 'Tipai ir kategorijos',
+        'instituciju_tipai' => 'Institucijų tipai',
+        'pareigybiu_tipai' => 'Pareigybių tipai',
         'rysiai' => 'Ryšiai',
         'nustatymai' => 'Nustatymai',
         'sistemos_busena' => 'Sistemos būsena',
@@ -173,7 +175,9 @@ return [
         'formos' => 'Anketos ir jų atsakymai',
         'roles' => 'Teisių rinkiniai pareigybėms',
         'leidimai' => 'Atskiri sistemos leidimai',
-        'tipai' => 'Institucijų, pareigybių ir kitų įrašų tipai',
+        'tipai' => 'Pasirink tipų ar kategorijų sąrašą',
+        'instituciju_tipai' => 'Institucijų grupavimas, atstovavimas ir ryšiai',
+        'pareigybiu_tipai' => 'Pareigybių grupavimas ir suteikiamos rolės',
         'rysiai' => 'Ryšiai tarp institucijų',
         'nustatymai' => 'Sistemos ir formų nustatymai',
         'sistemos_busena' => 'Serverio, eilių ir paieškos būklė',
@@ -184,6 +188,8 @@ return [
     ],
 
     'actions' => [
+        'new_institution_type' => ['title' => 'Naujas institucijos tipas', 'description' => 'Institucijų grupavimas, atstovavimas ir ryšiai'],
+        'new_duty_type' => ['title' => 'Naujas pareigybės tipas', 'description' => 'Pareigybių grupavimas ir suteikiamos rolės'],
         'merge' => [
             'title' => 'Sujungti įrašus',
         ],

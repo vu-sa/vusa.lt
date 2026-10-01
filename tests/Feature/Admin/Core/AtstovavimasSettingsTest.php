@@ -4,7 +4,8 @@ use App\Models\Institution;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Settings\AtstovavimasSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
@@ -23,7 +24,7 @@ beforeEach(function (): void {
 
 describe('student representative root type', function (): void {
     test('a super admin can update it and a regular user cannot', function (): void {
-        $type = Type::query()->forInstitutions()->firstOrFail();
+        $type = InstitutionType::query()->firstOrFail();
 
         asUser($this->user)->post(route('settings.atstovavimas.update'), [
             'student_rep_root_type_id' => $type->id,

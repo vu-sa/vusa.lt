@@ -32,7 +32,7 @@ describe('DutyUserUpdateWizard.vue', () => {
       { id: 1, shortname: 'TF', title: 'Teisės fakultetas' } as unknown as App.Entities.Tenant,
     ],
     institutionTypes: [
-      { id: 1, title: 'Taryba' } as unknown as App.Entities.Type,
+      { id: 1, title: 'Taryba' } as unknown as App.Entities.InstitutionType,
     ],
   };
 

@@ -12,13 +12,13 @@ return [
 
     'scopes' => [
         'tenant' => 'Visas padalinys',
-        'type' => 'Institucijų tipas',
+        'institution_type' => 'Institucijų tipas',
         'institution' => 'Institucija',
     ],
 
     'sources' => [
         'tenant' => 'Priskirta visam padaliniui',
-        'type' => 'Priskirta institucijos tipui',
+        'institution_type' => 'Priskirta institucijos tipui',
         'institution' => 'Priskirta šiai institucijai',
     ],
 
@@ -40,7 +40,7 @@ return [
         'responsibility' => 'Atsakomybė',
         'scope' => 'Kam',
         'tenant' => 'Padalinys',
-        'type' => 'Institucijų tipas',
+        'institution_type' => 'Institucijų tipas',
         'type_placeholder' => 'Pasirinkti tipą',
         'institution' => 'Institucija',
         'institution_pick' => 'Pasirinkti instituciją',

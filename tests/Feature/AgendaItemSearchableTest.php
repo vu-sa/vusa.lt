@@ -6,7 +6,8 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\Vote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -35,10 +36,10 @@ test('agenda item whose meeting is soft-deleted still emits the required tenant 
 });
 
 test('the list filter counts an item complete by the same rule as the meeting and its task', function (): void {
-    $vusaType = Type::factory()->forInstitutions(InstitutionScope::Vusa)->create();
-    $vuType = Type::factory()->forInstitutions(InstitutionScope::University)->create();
+    $vusaType = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create();
+    $vuType = InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create();
 
-    $meetingOf = function (Type $type): Meeting {
+    $meetingOf = function (InstitutionType $type): Meeting {
         $institution = Institution::factory()->for(Tenant::query()->first())->create();
         $institution->types()->attach($type);
         $meeting = Meeting::factory()->create();

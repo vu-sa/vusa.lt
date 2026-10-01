@@ -130,18 +130,6 @@ export interface TutorialProgressData {
 */
 
 /**
- * Types list response
- * Route: GET /api/v1/types
- */
-export interface TypeData {
-  id: number;
-  title: string;
-  slug: string;
-  description?: string;
-  parent_id: number | null;
-}
-
-/**
  * Documents list response
  * Route: GET /api/v1/documents
  */

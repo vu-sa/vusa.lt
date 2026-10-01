@@ -16,7 +16,7 @@ import { router, type InertiaForm } from '@inertiajs/vue3';
 import DutyForm from '@/Components/AdminForms/DutyForm.vue';
 
 const props = defineProps<{
-  dutyTypes: App.Entities.Type[];
+  dutyTypes: App.Entities.DutyType[];
   assignableInstitutions: App.Entities.Institution[];
   assignableUsers?: App.Entities.User[];
   roles: App.Entities.Role[];

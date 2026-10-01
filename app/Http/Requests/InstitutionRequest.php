@@ -45,6 +45,7 @@ class InstitutionRequest extends FormRequest
             'instagram_url' => 'nullable|string',
             'is_active' => 'boolean',
             'types' => 'nullable|array',
+            'types.*' => ['integer', 'distinct', \App\Rules\SoftDeleteRules::existsLive('institution_types')],
             'meeting_periodicity_days' => 'nullable|integer|min:1|max:365',
         ];
     }

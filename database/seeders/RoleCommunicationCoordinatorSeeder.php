@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Role;
-use App\Models\Type;
+use App\Models\DutyType;
 use Illuminate\Database\Seeder;
 
 class RoleCommunicationCoordinatorSeeder extends Seeder
@@ -78,10 +78,10 @@ class RoleCommunicationCoordinatorSeeder extends Seeder
             'problems.delete.padalinys',
         ]);
 
-        $role->attachable_types()->attach(Type::query()->where('slug', 'pirmininkas')->firstOrFail());
+        $role->attachable_types()->attach(DutyType::query()->where('slug', 'pirmininkas')->firstOrFail());
 
-        $role->attachable_types()->attach(Type::query()->where('slug', 'koordinatoriai')->firstOrFail());
+        $role->attachable_types()->attach(DutyType::query()->where('slug', 'koordinatoriai')->firstOrFail());
 
-        $role->attachable_types()->attach(Type::query()->where('slug', 'kuratoriai')->firstOrFail());
+        $role->attachable_types()->attach(DutyType::query()->where('slug', 'kuratoriai')->firstOrFail());
     }
 }

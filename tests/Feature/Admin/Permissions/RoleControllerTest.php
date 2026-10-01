@@ -5,7 +5,8 @@ use App\Models\Institution;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -288,7 +289,6 @@ describe('role permission management', function (): void {
         $this->assertDatabaseHas('model_has_roles', [
             'role_id' => $role->id,
             'model_id' => $duty->id,
-            'model_type' => MorphMap::alias(Duty::class),
         ]);
     });
 
@@ -313,10 +313,9 @@ describe('role permission management', function (): void {
     test('admin can sync attachable types to role', function (): void {
         $role = Role::factory()->create();
 
-        // Create a Type record for Institution
-        $institutionType = Type::create([
+        // Create a DutyType record for Institution
+        $institutionType = InstitutionType::create([
             'title' => ['en' => 'Institution', 'lt' => 'Institucija'],
-            'model_type' => MorphMap::alias(Institution::class),
             'slug' => 'institution',
         ]);
 
@@ -329,9 +328,9 @@ describe('role permission management', function (): void {
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        $this->assertDatabaseHas('role_can_attach_types', [
+        $this->assertDatabaseHas('role_can_attach_duty_types', [
             'role_id' => $role->id,
-            'type_id' => $institutionType->id,
+            'duty_type_id' => $institutionType->id,
         ]);
     });
 

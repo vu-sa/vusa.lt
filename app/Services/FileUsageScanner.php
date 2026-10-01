@@ -14,7 +14,8 @@ use App\Models\Page;
 use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
 use App\Models\TenantHomepageContent;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -130,9 +131,10 @@ class FileUsageScanner
                 $totalFound += $usage['duties']->count();
             }
 
-            if (! isset($usage['types'])) {
-                $usage['types'] = $this->scanTranslatableField(Type::class, 'description', $variantSet, $fileMetadata);
-                $totalFound += $usage['types']->count();
+            if (! isset($usage['institutionTypes'])) {
+                $usage['institutionTypes'] = $this->scanTranslatableField(InstitutionType::class, 'description', $variantSet, $fileMetadata);
+                $usage['dutyTypes'] = $this->scanTranslatableField(DutyType::class, 'description', $variantSet, $fileMetadata);
+                $totalFound += $usage['institutionTypes']->count() + $usage['dutyTypes']->count();
             }
 
             if (! isset($usage['forms'])) {

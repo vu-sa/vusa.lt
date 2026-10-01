@@ -5,7 +5,8 @@ use App\Listeners\UpdateSharepointFolder;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
@@ -121,12 +122,11 @@ describe('UpdateSharepointFolder Listener', function (): void {
     });
 });
 
-describe('Type SharePoint folder renaming', function (): void {
-    test('event is dispatched when existing Type title changes', function (): void {
+describe('InstitutionType SharePoint folder renaming', function (): void {
+    test('event is dispatched when existing InstitutionType title changes', function (): void {
         // Create type first (without faking events for creation)
-        $type = Type::factory()->create([
+        $type = InstitutionType::factory()->create([
             'title' => ['lt' => 'Originalus Pavadinimas', 'en' => 'Original Title'],
-            'model_type' => MorphMap::alias(Institution::class),
         ]);
 
         // Now fake events for the update
@@ -138,11 +138,10 @@ describe('Type SharePoint folder renaming', function (): void {
         Event::assertDispatched(FileableNameUpdated::class, fn ($event) => $event->fileable->is($type));
     });
 
-    test('event is NOT dispatched when Type title does not change', function (): void {
+    test('event is NOT dispatched when InstitutionType title does not change', function (): void {
         // Create type first (without faking events for creation)
-        $type = Type::factory()->create([
+        $type = InstitutionType::factory()->create([
             'title' => ['lt' => 'Originalus Pavadinimas', 'en' => 'Original Title'],
-            'model_type' => MorphMap::alias(Institution::class),
         ]);
 
         // Now fake events for the update
@@ -155,10 +154,9 @@ describe('Type SharePoint folder renaming', function (): void {
         Event::assertNotDispatched(FileableNameUpdated::class);
     });
 
-    test('listener skips when Type old and new titles are the same', function (): void {
-        $type = Type::factory()->create([
+    test('listener skips when InstitutionType old and new titles are the same', function (): void {
+        $type = InstitutionType::factory()->create([
             'title' => ['lt' => 'Same Title', 'en' => 'Same Title EN'],
-            'model_type' => MorphMap::alias(Institution::class),
         ]);
 
         // Set the same Lithuanian title (which is used for folder names)

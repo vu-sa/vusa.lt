@@ -11,7 +11,7 @@ use App\Http\Requests\Relationships\UpdateModelRelationshipRequest;
 use App\Http\Requests\Relationships\UpdateRelationshipRequest;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use App\Services\RelationshipService;
 use App\Support\MorphMap;
 use Illuminate\Support\Facades\DB;
@@ -137,8 +137,8 @@ class RelationshipController extends AdminController
             'bidirectional' => $request->boolean('bidirectional'),
         ];
 
-        // Only add scope for Type-based relationships
-        if ($validated['model_type'] === MorphMap::alias(Type::class)) {
+        // Only add scope for InstitutionType-based relationships
+        if ($validated['model_type'] === MorphMap::alias(InstitutionType::class)) {
             $pivotData['scope'] = $validated['scope'] ?? 'within-tenant';
         }
 
@@ -156,8 +156,8 @@ class RelationshipController extends AdminController
             'bidirectional' => $request->boolean('bidirectional', false),
         ];
 
-        // Only update scope for Type-based relationships
-        if ($relationshipable->relationshipable_type === MorphMap::alias(Type::class) && $request->has('scope')) {
+        // Only update scope for InstitutionType-based relationships
+        if ($relationshipable->relationshipable_type === MorphMap::alias(InstitutionType::class) && $request->has('scope')) {
             $updateData['scope'] = $request->scope;
         }
 

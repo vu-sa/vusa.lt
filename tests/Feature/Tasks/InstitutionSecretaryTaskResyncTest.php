@@ -9,7 +9,8 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Notifications\TaskAssignedNotification;
 use App\Support\MorphMap;
@@ -27,8 +28,8 @@ beforeEach(function (): void {
     $this->institution = Institution::factory()->for($this->tenant)->create();
     $this->cadence = Cadence::factory()->forYear(2025)->create(['institution_id' => $this->institution->id]);
 
-    $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-        ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
+    $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
+        ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
 
     $duty = Duty::factory()->for($this->institution)->hasAttached($studentRepType, [], 'types')->create();
 

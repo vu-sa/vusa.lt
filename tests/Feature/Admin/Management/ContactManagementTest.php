@@ -225,7 +225,7 @@ test('contact manager can add type to duty', function (): void {
         'name' => 'Studentų atstovas',
     ]);
 
-    $this->assertDatabaseHas('types', [
+    $this->assertDatabaseHas('duty_types', [
         'slug' => 'studentu-atstovai',
     ]);
 
@@ -267,10 +267,9 @@ test('contact manager can add type to duty', function (): void {
             ->has('flash.success')
         );
 
-    $this->assertDatabaseHas('typeables', [
-        'typeable_id' => $userDuty->id,
-        'typeable_type' => $userDuty->getMorphClass(),
-        'type_id' => $firstTypeId,
+    $this->assertDatabaseHas('institution_institution_type', [
+        'institution_id' => $userDuty->id,
+        'institution_type_id' => $firstTypeId,
     ]);
 
     $this->assertDatabaseHas('model_has_roles', [
@@ -296,10 +295,9 @@ test('contact manager can add type to duty', function (): void {
             ->has('flash.success')
         );
 
-    $this->assertDatabaseMissing('typeables', [
-        'typeable_id' => $userDuty->id,
-        'typeable_type' => $userDuty->getMorphClass(),
-        'type_id' => $firstTypeId,
+    $this->assertDatabaseMissing('institution_institution_type', [
+        'institution_id' => $userDuty->id,
+        'institution_type_id' => $firstTypeId,
     ]);
 
     $this->assertDatabaseMissing('model_has_roles', [

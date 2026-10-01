@@ -18,11 +18,11 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $guard_name
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Collection<int, Type> $attachable_types
+ * @property-read Collection<int, DutyType> $attachable_types
  * @property-read Collection<int, User> $currentUsersThroughDuties
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, Permission> $permissions
- * @property-read Collection<int, Type> $types
+ * @property-read Collection<int, DutyType> $types
  * @property-read Collection<int, User> $users
  * @property-read Collection<int, User> $usersThroughDuties
  * @property-read int|null $users_through_duties_count
@@ -65,11 +65,11 @@ class Role extends SpatieRole
 
     public function attachable_types(): BelongsToMany
     {
-        return $this->belongsToMany(Type::class, 'role_can_attach_types');
+        return $this->belongsToMany(DutyType::class, 'role_can_attach_duty_types');
     }
 
     public function types()
     {
-        return $this->belongsToMany(Type::class);
+        return $this->belongsToMany(DutyType::class)->using(\App\Models\Pivots\DutyTypeRole::class);
     }
 }

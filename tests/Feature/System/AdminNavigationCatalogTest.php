@@ -213,6 +213,7 @@ describe('per-persona visibility', function (): void {
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
+            'sistema' => ['apzvalga', 'tipai'],
         ]);
     });
 
@@ -244,9 +245,10 @@ describe('per-persona visibility', function (): void {
             'pradzia' => ['apzvalga', 'uzduotys', 'pranesimai'],
             'atstovavimas' => ['apzvalga', 'padaliniu_apzvalga', 'uzduociu_suvestine', 'institucijos', 'posedziai', 'darbotvarkes_klausimai', 'dokumentai', 'problemos', 'pareigybiu_laikotarpiai', 'institucijos_grafas', 'problemu_kategorijos'],
             'rezervacijos' => ['apzvalga', 'rezervacijos', 'istekliai', 'kategorijos'],
+            'sistema' => ['apzvalga', 'tipai'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'navigacija', 'greitosios_nuorodos', 'renginiu_tipai', 'zymos', 'failai', 'dokumentai', 'studiju_rinkiniai'],
             'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'padaliniai', 'studiju_programos', 'formos'],
-            'sistema' => ['apzvalga', 'roles', 'leidimai', 'tipai', 'rysiai', 'nustatymai', 'sistemos_busena', 'laisku_eile', 'rep_metrics', 'pagalbos_uzklausos', 'sharepoint_failai'],
+            'sistema' => ['apzvalga', 'roles', 'leidimai', 'tipai', 'instituciju_tipai', 'pareigybiu_tipai', 'rysiai', 'nustatymai', 'sistemos_busena', 'laisku_eile', 'rep_metrics', 'pagalbos_uzklausos', 'sharepoint_failai'],
         ]);
     });
 

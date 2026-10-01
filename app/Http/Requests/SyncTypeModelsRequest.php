@@ -2,7 +2,8 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -12,17 +13,16 @@ class SyncTypeModelsRequest extends FormRequest
     {
         $type = $this->route('type');
 
-        return $type instanceof Type
-            && $type->typeableRelation() !== null
+        return ($type instanceof InstitutionType || $type instanceof DutyType)
             && ($this->user()?->can('update', $type) ?? false);
     }
 
     public function rules(): array
     {
-        $relation = $this->route('type')?->typeableRelation();
+        $relation = $this->route('type') instanceof InstitutionType ? 'institutions' : 'duties';
 
         return [
-            'models' => ['required', 'array'],
+            'models' => ['present', 'array'],
             'models.*' => ['string', 'distinct', SoftDeleteRules::existsLive($relation)],
         ];
     }

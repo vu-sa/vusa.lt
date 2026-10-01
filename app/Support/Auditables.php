@@ -19,7 +19,7 @@ use App\Models\Problem;
 use App\Models\Reservation;
 use App\Models\Step;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use App\Models\User;
 use App\Models\Vote;
 use Illuminate\Database\Eloquent\Model;
@@ -53,7 +53,8 @@ class Auditables
         'calendar' => Calendar::class,
         'banner' => Banner::class,
         'navigation' => Navigation::class,
-        'type' => Type::class,
+        'institutionType' => InstitutionType::class,
+        'dutyType' => \App\Models\DutyType::class,
         'user' => User::class,
         'tenant' => Tenant::class,
     ];

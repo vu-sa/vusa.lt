@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\InstitutionInstitutionType;
 use App\Actions\GetInstitutionManagers;
 use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
@@ -93,7 +94,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Tenant|null $tenant
  * @property-read Tenant|null $tenants
  * @property-read mixed $translations
- * @property-read Collection<int, Type> $types
+ * @property-read Collection<int, InstitutionType> $types
  * @property-read Collection<int, User> $users
  * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
@@ -157,9 +158,9 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         return $query->whereHas('duties.current_users');
     }
 
-    public function types(): MorphToMany
+    public function types(): BelongsToMany
     {
-        return $this->morphToMany(Type::class, 'typeable');
+        return $this->belongsToMany(InstitutionType::class)->using(InstitutionInstitutionType::class);
     }
 
     public function tenant(): BelongsTo
@@ -359,7 +360,7 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
             'tenant_ids' => $this->tenant_id ? [$this->tenant_id] : [],
             'tenant_shortname' => $this->tenant?->shortname,
             'type_titles' => $this->types
-                ->map(fn (Type $type) => $type->getTranslation('title', 'lt'))
+                ->map(fn (InstitutionType $type) => $type->getTranslation('title', 'lt'))
                 ->filter()
                 ->values()
                 ->all(),

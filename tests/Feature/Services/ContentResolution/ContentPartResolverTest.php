@@ -8,7 +8,8 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Tag;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\ContentResolution\ResolutionContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -523,8 +524,8 @@ describe('NewsBlockResolver / CalendarBlockResolver bridges', function (): void 
 
 describe('InstitutionListResolver', function (): void {
     test('filters institutions by typeSlug', function (): void {
-        $pkpType = Type::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
-        $otherType = Type::factory()->create(['slug' => 'other', 'title' => ['lt' => 'Other', 'en' => 'Other']]);
+        $pkpType = InstitutionType::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
+        $otherType = InstitutionType::factory()->create(['slug' => 'other', 'title' => ['lt' => 'Other', 'en' => 'Other']]);
 
         $pkpInstitution = Institution::factory()->for($this->tenant)->create(['is_active' => true, 'name' => ['lt' => 'PKP Club', 'en' => 'PKP Club']]);
         $pkpInstitution->types()->attach($pkpType);
@@ -543,7 +544,7 @@ describe('InstitutionListResolver', function (): void {
 
     test('filters institutions by tenantScope current vs all', function (): void {
         $otherTenant = Tenant::factory()->create(['alias' => 'othertenant']);
-        $type = Type::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
+        $type = InstitutionType::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
 
         $currentInst = Institution::factory()->for($this->tenant)->create(['is_active' => true, 'name' => ['lt' => 'Current Inst', 'en' => 'Current Inst']]);
         $currentInst->types()->attach($type);
@@ -567,7 +568,7 @@ describe('InstitutionListResolver', function (): void {
     });
 
     test('excludes inactive institutions', function (): void {
-        $type = Type::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
+        $type = InstitutionType::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
 
         $active = Institution::factory()->for($this->tenant)->create(['is_active' => true, 'name' => ['lt' => 'Active', 'en' => 'Active']]);
         $active->types()->attach($type);
@@ -584,7 +585,7 @@ describe('InstitutionListResolver', function (): void {
     });
 
     test('clamps limit to maximum and respects limit option', function (): void {
-        $type = Type::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
+        $type = InstitutionType::factory()->create(['slug' => 'pkp', 'title' => ['lt' => 'PKP', 'en' => 'PKP']]);
 
         for ($i = 0; $i < 5; $i++) {
             $inst = Institution::factory()->for($this->tenant)->create(['is_active' => true, 'name' => ['lt' => "Inst {$i}", 'en' => "Inst {$i}"]]);

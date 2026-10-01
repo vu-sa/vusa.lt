@@ -4,7 +4,7 @@ namespace App\Enums;
 
 use App\Models\Institution;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 enum ResponsibilityScope: string
 {
     case Institution = 'institution';
-    case Type = 'type';
+    case InstitutionType = 'institution_type';
     case Tenant = 'tenant';
 
     /**
@@ -24,7 +24,7 @@ enum ResponsibilityScope: string
     {
         return match ($this) {
             self::Institution => Institution::class,
-            self::Type => Type::class,
+            self::InstitutionType => InstitutionType::class,
             self::Tenant => Tenant::class,
         };
     }

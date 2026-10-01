@@ -8,7 +8,8 @@ use App\Models\FileableFile;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Traits\HasSharepointFiles;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Services\SharepointGraphService;
 use App\Support\StagingProtection;
 use Illuminate\Database\Eloquent\Model;
@@ -53,12 +54,12 @@ class SharepointFileService
 
         $path = SharepointFolderEnum::GENERAL->label();
 
-        if ($fileable instanceof Type) {
+        if ($fileable instanceof InstitutionType || $fileable instanceof DutyType) {
             // model_type / getMorphClass() are morph aliases; the folder names are the model
             // names ("Types/News"), so both are studly-cased back before pluralizing.
-            $typeableType = Str::plural(Str::studly((string) $fileable->model_type));
+            $typeableType = $fileable instanceof InstitutionType ? 'Institutions' : 'Duties';
 
-            $path .= '/'.Str::plural(Str::studly($fileable->getMorphClass()));
+            $path .= '/Types';
             $path .= '/'.$typeableType;
             $path .= '/'.$fileable->title;
         }

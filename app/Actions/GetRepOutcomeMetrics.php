@@ -7,7 +7,7 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
 use App\Models\Task;
-use App\Models\Type;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Support\Carbon;
@@ -211,7 +211,7 @@ class GetRepOutcomeMetrics
      */
     private static function representativeTerms(): array
     {
-        $typeId = Type::query()->where('slug', self::REP_TYPE_SLUG)->value('id');
+        $typeId = DutyType::query()->where('slug', self::REP_TYPE_SLUG)->value('id');
 
         if ($typeId === null) {
             return [];
@@ -219,7 +219,7 @@ class GetRepOutcomeMetrics
 
         return Dutiable::query()
             ->where('dutiable_type', MorphMap::alias(User::class))
-            ->whereHas('duty.types', fn ($types) => $types->where('types.id', $typeId))
+            ->whereHas('duty.types', fn ($types) => $types->where('duty_types.id', $typeId))
             ->with('duty:id,institution_id')
             ->get(['id', 'duty_id', 'dutiable_id', 'start_date', 'end_date'])
             ->groupBy(fn (Dutiable $term): string => (string) $term->duty->institution_id)
@@ -294,7 +294,7 @@ class GetRepOutcomeMetrics
      */
     private static function activeReps(Carbon $now): array
     {
-        $typeId = Type::query()->where('slug', self::REP_TYPE_SLUG)->value('id');
+        $typeId = DutyType::query()->where('slug', self::REP_TYPE_SLUG)->value('id');
 
         if ($typeId === null) {
             return ['total' => 0, 'active' => 0];
@@ -302,7 +302,7 @@ class GetRepOutcomeMetrics
 
         $reps = fn () => User::query()->whereHas('dutiables', fn ($terms) => $terms
             ->activeOn()
-            ->whereHas('duty.types', fn ($types) => $types->where('types.id', $typeId)));
+            ->whereHas('duty.types', fn ($types) => $types->where('duty_types.id', $typeId)));
 
         return [
             'total' => $reps()->count(),

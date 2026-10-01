@@ -12,13 +12,13 @@ return [
 
     'scopes' => [
         'tenant' => 'Whole padalinys',
-        'type' => 'Institution type',
+        'institution_type' => 'Institution type',
         'institution' => 'Institution',
     ],
 
     'sources' => [
         'tenant' => 'Assigned to the whole padalinys',
-        'type' => 'Assigned to the institution type',
+        'institution_type' => 'Assigned to the institution type',
         'institution' => 'Assigned to this institution',
     ],
 
@@ -40,7 +40,7 @@ return [
         'responsibility' => 'Responsibility',
         'scope' => 'For',
         'tenant' => 'Padalinys',
-        'type' => 'Institution type',
+        'institution_type' => 'Institution type',
         'type_placeholder' => 'Choose a type',
         'institution' => 'Institution',
         'institution_pick' => 'Choose an institution',

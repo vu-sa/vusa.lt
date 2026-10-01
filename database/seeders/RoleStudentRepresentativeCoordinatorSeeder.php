@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Role;
-use App\Models\Type;
+use App\Models\DutyType;
 use Illuminate\Database\Seeder;
 
 class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
@@ -51,6 +51,6 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
             'problems.delete.padalinys',
         ]);
 
-        $role->attachable_types()->attach(Type::query()->where('slug', 'studentu-atstovai')->firstOrFail());
+        $role->attachable_types()->attach(DutyType::query()->where('slug', 'studentu-atstovai')->firstOrFail());
     }
 }

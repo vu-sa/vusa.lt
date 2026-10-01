@@ -6,7 +6,8 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Services\MeetingCompletionService;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -16,7 +17,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
 
-    $externalType = Type::factory()->forInstitutions(InstitutionScope::University)->create();
+    $externalType = InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create();
     $this->institution = Institution::factory()->for($this->tenant)->create();
     $this->institution->types()->attach($externalType);
 

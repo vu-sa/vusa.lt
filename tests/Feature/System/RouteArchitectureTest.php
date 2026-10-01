@@ -26,7 +26,7 @@ it('has API v1 routes registered', function (): void {
 });
 
 it('has public API routes', function (): void {
-    expect(Route::has('api.v1.types.index'))->toBeTrue()
+    expect(Route::has('api.v1.types.index'))->toBeFalse()
         ->and(Route::has('api.v1.documents.index'))->toBeTrue()
         ->and(Route::has('api.v1.typesense.config'))->toBeTrue();
 });

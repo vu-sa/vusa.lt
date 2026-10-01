@@ -3,7 +3,8 @@
 namespace App\Actions;
 
 use App\Models\FileableFile;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -24,31 +25,32 @@ class GetTypeFiles
             return new Collection;
         }
 
-        /** @var Collection<int, Type> $types */
+        /** @var Collection<int, InstitutionType|DutyType> $types */
         $types = $fileable->types()->get();
 
         return self::forTypes($types, $limit);
     }
 
     /**
-     * @param  SupportCollection<int, Type>  $types
+     * @param  SupportCollection<int, InstitutionType|DutyType>  $types
      * @return Collection<int, FileableFile>
      */
     public static function forTypes(SupportCollection $types, ?int $limit = null): Collection
     {
-        $typeIds = $types
-            ->flatMap(fn (Type $type) => $type->getParentsAndSelf())
-            ->pluck('id')
-            ->unique()
-            ->values();
+        $byDomain = $types->flatMap(fn (InstitutionType|DutyType $type) => $type->getParentsAndSelf())
+            ->groupBy(fn ($type) => $type->getMorphClass());
 
-        if ($typeIds->isEmpty()) {
+        if ($byDomain->isEmpty()) {
             return new Collection;
         }
 
         return FileableFile::query()
-            ->where('fileable_type', MorphMap::alias(Type::class))
-            ->whereIn('fileable_id', $typeIds)
+            ->where(function ($query) use ($byDomain): void {
+                foreach ($byDomain as $alias => $domainTypes) {
+                    $query->orWhere(fn ($group) => $group->where('fileable_type', $alias)
+                        ->whereIn('fileable_id', $domainTypes->pluck('id')->unique()));
+                }
+            })
             ->available()
             ->with('fileable:id,title')
             ->orderByDesc('file_date')

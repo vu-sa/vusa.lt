@@ -49,7 +49,6 @@ use App\Http\Controllers\Api\CalendarController;
 use App\Http\Controllers\Api\DocumentController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\TextBoxSubmissionController;
-use App\Http\Controllers\Api\TypeController;
 use App\Services\Typesense\TypesenseManager;
 use Illuminate\Support\Facades\Route;
 
@@ -71,7 +70,7 @@ use Illuminate\Support\Facades\Route;
 | - /api/v1/admin/* - Admin API endpoints (auth required, session-based)
 |
 | Note: RouteServiceProvider adds 'api.' prefix to all route names automatically.
-| So route('api.v1.types.index') maps to /api/v1/types
+| So route('api.v1.typesense.config') maps to /api/v1/typesense/config
 |
 */
 
@@ -86,7 +85,6 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
     |
     */
 
-    Route::get('types', [TypeController::class, 'index'])->name('types.index');
     Route::get('documents', [DocumentController::class, 'index'])->name('documents.index');
 
     // Typesense configuration for frontend search

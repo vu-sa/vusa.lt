@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Role;
-use App\Models\Type;
+use App\Models\DutyType;
 use Illuminate\Database\Seeder;
 
 class RoleGlobalCommunicationCoordinatorSeeder extends Seeder
@@ -78,6 +78,6 @@ class RoleGlobalCommunicationCoordinatorSeeder extends Seeder
         ]);
 
         // This role can be attached to high-level coordination types
-        $role->attachable_types()->attach(Type::query()->where('slug', 'pirmininkas')->firstOrFail());
+        $role->attachable_types()->attach(DutyType::query()->where('slug', 'pirmininkas')->firstOrFail());
     }
 }

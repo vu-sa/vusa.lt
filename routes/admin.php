@@ -109,8 +109,6 @@ Route::patch('studySets/{studySet}/restore', [StudySetController::class, 'restor
 Route::delete('studySets/{studySet}/force-delete', [StudySetController::class, 'forceDelete'])->name('studySets.forceDelete')->withTrashed();
 Route::patch('tags/{tag}/restore', [TagController::class, 'restore'])->name('tags.restore')->withTrashed();
 Route::delete('tags/{tag}/force-delete', [TagController::class, 'forceDelete'])->name('tags.forceDelete')->withTrashed();
-Route::patch('types/{type}/restore', [TypeController::class, 'restore'])->name('types.restore')->withTrashed();
-Route::delete('types/{type}/force-delete', [TypeController::class, 'forceDelete'])->name('types.forceDelete')->withTrashed();
 Route::patch('users/{user}/restore', [UserController::class, 'restore'])->name('users.restore')->withTrashed();
 Route::delete('users/{user}/force-delete', [UserController::class, 'forceDelete'])->name('users.forceDelete')->withTrashed();
 
@@ -291,9 +289,6 @@ Route::middleware('experiment.goals')->group(function (): void {
     });
 });
 
-Route::resource('types', TypeController::class);
-Route::put('types/{type}/models', [TypeController::class, 'syncModels'])->name('types.models.sync');
-Route::put('types/{type}/roles', [TypeController::class, 'syncRoles'])->name('types.roles.sync');
 Route::resource('relationships', RelationshipController::class);
 Route::post('relationships/{relationship}/storeModelRelationship', [RelationshipController::class, 'storeModelRelationship'])->name('relationships.storeModelRelationship');
 Route::patch('relationships/relationshipables/{relationshipable}', [RelationshipController::class, 'updateModelRelationship'])->name('relationships.updateModelRelationship');
@@ -343,3 +338,14 @@ Route::post('settings/authorization', [SettingsController::class, 'updateAuthori
 
 Route::post('/logout/microsoft', [AuthController::class, 'logoutFromMicrosoft'])->name('logout.microsoft');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::get('types', [TypeController::class, 'index'])->name('types.index');
+Route::resource('institutionTypes', InstitutionTypeController::class)->parameters(['institutionTypes' => 'type']);
+Route::resource('dutyTypes', DutyTypeController::class)->parameters(['dutyTypes' => 'type']);
+Route::put('institutionTypes/{type}/models', [InstitutionTypeController::class, 'syncModels'])->name('institutionTypes.models.sync');
+Route::put('dutyTypes/{type}/models', [DutyTypeController::class, 'syncModels'])->name('dutyTypes.models.sync');
+Route::put('dutyTypes/{type}/roles', [DutyTypeController::class, 'syncRoles'])->name('dutyTypes.roles.sync');
+Route::patch('institutionTypes/{type}/restore', [InstitutionTypeController::class, 'restore'])->name('institutionTypes.restore')->withTrashed();
+Route::delete('institutionTypes/{type}/force-delete', [InstitutionTypeController::class, 'forceDelete'])->name('institutionTypes.forceDelete')->withTrashed();
+Route::patch('dutyTypes/{type}/restore', [DutyTypeController::class, 'restore'])->name('dutyTypes.restore')->withTrashed();
+Route::delete('dutyTypes/{type}/force-delete', [DutyTypeController::class, 'forceDelete'])->name('dutyTypes.forceDelete')->withTrashed();

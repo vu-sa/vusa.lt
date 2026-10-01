@@ -7,7 +7,8 @@ use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -476,7 +477,7 @@ test('contentPage includes hierarchical ancestors in page prop', function (): vo
 });
 
 test('a page permalink matching a PKP institution alias redirects to its contacts page', function (): void {
-    $pkpType = Type::query()->where('slug', 'pkp')->firstOrFail();
+    $pkpType = InstitutionType::query()->where('slug', 'pkp')->firstOrFail();
     $institution = Institution::factory()->create(['alias' => 'senas-pkp']);
     $institution->types()->attach($pkpType);
 

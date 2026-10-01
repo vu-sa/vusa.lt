@@ -4,7 +4,8 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Services\InstitutionAccessService;
 use App\Services\ModelAuthorizer;
@@ -29,7 +30,7 @@ beforeEach(function (): void {
         'scout.typesense.client-settings.admin_search_key' => 'test-admin-search-key',
     ]);
 
-    $this->publicType = Type::factory()->create();
+    $this->publicType = InstitutionType::factory()->create();
     app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => [$this->publicType->id]])->save();
 
     $this->member = makeUser(Tenant::query()->first());
@@ -120,7 +121,7 @@ test('an institution gaining a public type re-indexes its meetings, with list an
 });
 
 test('a settings change moves the list with the policy, without a reindex', function (): void {
-    $otherType = Type::factory()->create();
+    $otherType = InstitutionType::factory()->create();
     $institution = Institution::factory()->for($this->otherTenant)->create();
     $institution->types()->attach($otherType);
     $meeting = parityMeetingOf($institution);

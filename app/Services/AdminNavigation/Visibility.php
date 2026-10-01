@@ -58,4 +58,9 @@ final readonly class Visibility
     {
         return ($this->check)($user);
     }
+
+    public static function callback(Closure $check): self
+    {
+        return new self($check);
+    }
 }

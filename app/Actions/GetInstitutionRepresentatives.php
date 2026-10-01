@@ -4,7 +4,7 @@ namespace App\Actions;
 
 use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\Type;
+use App\Models\DutyType;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
@@ -29,7 +29,7 @@ class GetInstitutionRepresentatives
         $checkDate = $date?->toDateString() ?? Carbon::today()->toDateString();
 
         // Get the student representative type
-        $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first();
+        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first();
 
         if (! $studentRepType) {
             return new Collection;
@@ -38,7 +38,7 @@ class GetInstitutionRepresentatives
         // Get duty IDs for this institution with the student rep type
         $dutyIds = Duty::query()
             ->where('institution_id', $institution->id)
-            ->whereHas('types', fn ($q) => $q->where('types.id', $studentRepType->id))
+            ->whereHas('types', fn ($q) => $q->where('duty_types.id', $studentRepType->id))
             ->pluck('id');
 
         if ($dutyIds->isEmpty()) {

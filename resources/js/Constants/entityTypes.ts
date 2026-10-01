@@ -1,3 +1,4 @@
+import { Building2, Tags } from 'lucide-vue-next';
 import type { Component } from 'vue';
 
 import {
@@ -116,7 +117,8 @@ export const entityTypeRegistry: Record<ModelEnum, EntityTypeDefinition> = {
   [ModelEnum.TAG]: entry(ModelEnum.TAG, 'Žyma', 'Žymos', TagIcon, TagIconFilled, 5),
   [ModelEnum.TASK]: entry(ModelEnum.TASK, 'Užduotis', 'Užduotys', TaskIcon, TaskIconFilled, 6),
   [ModelEnum.TENANT]: entry(ModelEnum.TENANT, 'Padalinys', 'Padaliniai', TenantIcon, TenantIconFilled, 8),
-  [ModelEnum.TYPE]: entry(ModelEnum.TYPE, 'Tipas', 'Tipai', TypeIcon, TypeIconFilled, 4),
+  [ModelEnum.INSTITUTION_TYPE]: entry(ModelEnum.INSTITUTION_TYPE, 'types.institutionType.singular', 'types.institutionType.title', Building2, Building2, 8),
+  [ModelEnum.DUTY_TYPE]: entry(ModelEnum.DUTY_TYPE, 'types.dutyType.singular', 'types.dutyType.title', Tags, Tags, 4),
   [ModelEnum.USER]: entry(ModelEnum.USER, 'Narys', 'Nariai', UserIcon, UserIconFilled, 3),
 };
 

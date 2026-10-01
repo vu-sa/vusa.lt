@@ -5,16 +5,17 @@ namespace App\Enums;
 use App\Contracts\SharepointFileableContract;
 use App\Enums\Concerns\HasEnumHelpers;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\Meeting;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * Models that may be addressed as a `fileable` in the SharePoint file endpoints.
  *
  * The backing values are the strings the frontend actually sends (`sharepoint/{type}/{id}`,
- * `<FileManager :fileable="{ type: 'Type' }">`), so this enum is the wire contract as well as
+ * `<FileManager :fileable="{ type: 'InstitutionType' }">`), so this enum is the wire contract as well as
  * the allowlist. Resolving a model class from user input must always go through here.
  *
  * This replaces two separately-declared `const ALLOWED_FILEABLE_TYPES` arrays — one in
@@ -29,7 +30,8 @@ enum AllowedFileablesEnum: string
     case DUTY = 'Duty';
     case INSTITUTION = 'Institution';
     case MEETING = 'Meeting';
-    case TYPE = 'Type';
+    case INSTITUTION_TYPE = 'InstitutionType';
+    case DUTY_TYPE = 'DutyType';
 
     /**
      * @return class-string<Model&SharepointFileableContract>
@@ -40,7 +42,8 @@ enum AllowedFileablesEnum: string
             self::DUTY => Duty::class,
             self::INSTITUTION => Institution::class,
             self::MEETING => Meeting::class,
-            self::TYPE => Type::class,
+            self::INSTITUTION_TYPE => InstitutionType::class,
+            self::DUTY_TYPE => DutyType::class,
         };
     }
 

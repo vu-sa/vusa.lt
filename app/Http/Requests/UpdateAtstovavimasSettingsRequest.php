@@ -15,7 +15,7 @@ class UpdateAtstovavimasSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'student_rep_root_type_id' => 'nullable|integer|exists:types,id',
+            'student_rep_root_type_id' => 'nullable|integer|exists:institution_types,id',
         ];
     }
 }

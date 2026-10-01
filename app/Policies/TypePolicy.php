@@ -13,7 +13,7 @@ class TypePolicy extends ModelPolicy
     public function __construct(ModelAuthorizer $authorizer)
     {
         parent::__construct($authorizer);
-        $this->pluralModelName = Str::plural(ModelEnum::TYPE->label());
+        $this->pluralModelName = 'types';
     }
 
     /**

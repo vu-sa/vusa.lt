@@ -5,7 +5,7 @@ namespace App\Settings;
 use App\Enums\TenantType;
 use App\Models\Institution;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use App\Models\User;
 use App\Policies\Traits\HasCommonChecks;
 use App\Services\ModelAuthorizer;
@@ -114,16 +114,16 @@ class AtstovavimasSettings extends Settings
      * Get the student representative root type model.
      * Defaults to the type with slug 'studentu-atstovu-organas'.
      */
-    public function getStudentRepRootType(): ?Type
+    public function getStudentRepRootType(): ?InstitutionType
     {
         if ($this->student_rep_root_type_id) {
-            $type = Type::find($this->student_rep_root_type_id);
+            $type = InstitutionType::find($this->student_rep_root_type_id);
             if ($type) {
                 return $type;
             }
         }
 
-        return Type::query()->where('slug', 'studentu-atstovu-organas')->first();
+        return InstitutionType::query()->where('slug', 'studentu-atstovu-organas')->first();
     }
 
     /**

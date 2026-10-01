@@ -1,16 +1,18 @@
 <template>
-  <TypeForm remember-key="CreateType" :content-types :type @submit:form="(form) => (form as InertiaForm<Record<string, unknown>>).post(route('types.store'))" />
+  <TypeForm :type-kind :remember-key="`Create${typeKind}`" :content-types :type @submit:form="submit" />
 </template>
 
 <script setup lang="ts">
 import type { InertiaForm } from '@inertiajs/vue3';
-import { trans as $t } from 'laravel-vue-i18n';
-
 import TypeForm from '@/Components/AdminForms/TypeForm.vue';
-import { typeTemplate as type } from '@/Types/formTemplates';
 
-defineProps<{
-  contentTypes: App.Entities.Type[];
+const props = defineProps<{
+  typeKind: 'institutionType' | 'dutyType';
+  contentTypes: Array<App.Entities.InstitutionType | App.Entities.DutyType>;
 }>();
-
+const type = { title: { lt: '', en: '' }, description: { lt: '', en: '' }, parent_id: null, slug: '', extra_attributes: {} } as App.Entities.InstitutionType | App.Entities.DutyType;
+function submit(form: unknown): void {
+  const resource = props.typeKind === 'institutionType' ? 'institutionTypes' : 'dutyTypes';
+  (form as InertiaForm<Record<string, unknown>>).post(route(`${resource}.store`));
+}
 </script>

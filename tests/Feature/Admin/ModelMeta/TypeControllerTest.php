@@ -1,163 +1,110 @@
 <?php
 
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\Type;
-use App\Models\User;
-use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    $this->tenant = Tenant::query()->first();
-
-    $this->user = makeUser($this->tenant);
-    $this->admin = makeAdminUser($this->tenant);
+    $this->user = makeUser(Tenant::query()->first());
+    $this->admin = makeAdminUser(Tenant::query()->first());
 });
 
-describe('unauthorized access', function (): void {
-    test('a simple user cannot index types', function (): void {
-        asUser($this->user)->get(route('types.index'))->assertStatus(403);
-    });
-
-    test('a simple user cannot store a type', function (): void {
-        asUser($this->user)->post(route('types.store'), [
-            'title' => ['lt' => 'Tipas', 'en' => 'Type'],
-            'model_type' => MorphMap::alias(Duty::class),
-        ])->assertStatus(403);
-    });
+test('directory hides every dictionary the user cannot read', function (): void {
+    asUser($this->user)->get(route('types.index'))->assertForbidden();
+    $this->user->givePermissionTo('institutionTypes.read.*');
+    app(\App\Services\ModelAuthorizer::class)->resetCache($this->user);
+    asUser($this->user)->get(route('types.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Admin/ModelMeta/IndexTypes')
+            ->has('destinations', 1)->where('destinations.0.key', 'instituciju_tipai'));
 });
 
-describe('model_type allowlist', function (): void {
-    /**
-     * `model_type` used to be turned into a method name and invoked on the model
-     * (`$type->$modelType()->sync(...)`). Anything outside the allowlist must now
-     * be a validation error — never a dynamic dispatch, and never a 500.
-     */
-    test('rejects a model_type outside the allowlist when storing', function (string $modelType): void {
-        asUser($this->admin)->post(route('types.store'), [
-            'title' => ['lt' => 'Tipas', 'en' => 'Type'],
-            'model_type' => $modelType,
-        ])->assertSessionHasErrors('model_type');
-
-        expect(Type::query()->where('model_type', $modelType)->exists())->toBeFalse();
-    })->with([
-        'roles relation' => [Role::class],
-        'a relation that would 500' => ['App\Models\Descendant'],
-        'an arbitrary class' => [User::class],
-        'not a class at all' => ['nonsense'],
-        'empty string' => [''],
-    ]);
-
-    test('rejects a model_type outside the allowlist when updating', function (): void {
-        $type = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
-
-        asUser($this->admin)->patch(route('types.update', $type), [
-            'title' => ['lt' => 'Tipas', 'en' => 'Type'],
-            'model_type' => MorphMap::alias(Role::class),
-        ])->assertSessionHasErrors('model_type');
-
-        expect($type->fresh()->model_type)->toBe(MorphMap::alias(Duty::class));
-    });
-
-    test('a bogus model_type cannot sync roles onto a type', function (): void {
-        $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
-        $role = Role::query()->first();
-
-        asUser($this->admin)->patch(route('types.update', $type), [
-            'title' => ['lt' => 'Tipas', 'en' => 'Type'],
-            'model_type' => MorphMap::alias(Role::class),
-            'roles' => [$role->id],
-        ])->assertSessionHasErrors('model_type');
-
-        expect($type->fresh()->roles)->toBeEmpty();
-    });
+test('administrator directory links to all five collections', function (): void {
+    asUser($this->admin)->get(route('types.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->has('destinations', 5));
 });
 
-describe('allowed model types still work', function (): void {
-    test('record page shows assigned models and defers picker options', function (): void {
-        $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
-        $institution = Institution::factory()->for($this->tenant)->create();
-        $type->institutions()->attach($institution);
+test('ordinary users cannot create or assign dictionary entries', function (string $resource, string $class): void {
+    $type = $class::factory()->create();
+    asUser($this->user)->post(route($resource.'.store'), ['title' => ['lt' => 'Tipas', 'en' => 'Type']])->assertForbidden();
+    asUser($this->user)->put(route($resource.'.models.sync', $type), ['models' => []])->assertForbidden();
+})->with([
+    ['institutionTypes', InstitutionType::class],
+    ['dutyTypes', DutyType::class],
+]);
 
-        asUser($this->admin)->get(route('types.show', $type))->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ModelMeta/ShowType')
-                ->where('attachedModels.0.id', $institution->id)
-                ->missing('modelOptions')
-                ->missing('roleOptions')
-            );
-    });
+test('each collection creates a translated concrete type', function (string $resource, string $class): void {
+    asUser($this->admin)->post(route($resource.'.store'), [
+        'title' => ['lt' => 'Naujas tipas', 'en' => 'New type'], 'slug' => 'new-type',
+    ])->assertRedirect();
+    expect($class::where('slug', 'new-type')->firstOrFail())->toHaveTranslations('title');
+})->with([
+    ['institutionTypes', InstitutionType::class],
+    ['dutyTypes', DutyType::class],
+]);
 
-    test('can store an institution type', function (): void {
-        $response = asUser($this->admin)->post(route('types.store'), [
-            'title' => ['lt' => 'Padalinys', 'en' => 'Unit'],
-            'model_type' => MorphMap::alias(Institution::class),
-        ]);
+test('parents must belong to the same dictionary and cannot form a cycle', function (): void {
+    $root = InstitutionType::factory()->create();
+    $child = InstitutionType::factory()->create(['parent_id' => $root->id]);
+    asUser($this->admin)->patch(route('institutionTypes.update', $root), [
+        'title' => ['lt' => 'Tipas', 'en' => 'Type'], 'parent_id' => $child->id,
+    ])->assertSessionHasErrors('parent_id');
+    $dutyType = DutyType::factory()->create(['id' => 10000]);
+    asUser($this->admin)->patch(route('institutionTypes.update', $root), [
+        'title' => ['lt' => 'Tipas', 'en' => 'Type'], 'parent_id' => $dutyType->id,
+    ])->assertSessionHasErrors('parent_id');
+});
 
-        $type = Type::query()->where('model_type', MorphMap::alias(Institution::class))
-            ->where('title->lt', 'Padalinys')->firstOrFail();
-        $response->assertRedirect(route('types.show', $type));
-    });
+test('assignment rejects owners from the other domain and supports clearing', function (): void {
+    $type = InstitutionType::factory()->create();
+    $institution = Institution::factory()->create();
+    $type->institutions()->attach($institution);
+    asUser($this->admin)->put(route('institutionTypes.models.sync', $type), [
+        'models' => [Duty::factory()->create()->id],
+    ])->assertSessionHasErrors('models.0');
+    asUser($this->admin)->put(route('institutionTypes.models.sync', $type), ['models' => []])->assertRedirect();
+    expect($type->institutions()->exists())->toBeFalse();
+});
 
-    test('saving attributes leaves institution assignments alone', function (): void {
-        $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
-        $institution = Institution::factory()->for($this->tenant)->create();
-        $type->institutions()->attach($institution);
+test('role links backfill duties and newly assigned duties inherit roles', function (): void {
+    $type = DutyType::factory()->create();
+    $duty = Duty::factory()->create();
+    $type->duties()->attach($duty);
+    $role = Role::query()->first();
+    $type->roles()->attach($role);
+    expect($duty->fresh()->hasRole($role))->toBeTrue();
+    $other = Duty::factory()->create();
+    $other->types()->attach($type);
+    expect($other->fresh()->hasRole($role))->toBeTrue();
+    $type->roles()->detach($role);
+    expect($duty->fresh()->hasRole($role))->toBeFalse()->and($other->fresh()->hasRole($role))->toBeFalse();
+});
 
-        asUser($this->admin)->patch(route('types.update', $type), [
-            'title' => ['lt' => 'Padalinys', 'en' => 'Unit'],
-            'model_type' => MorphMap::alias(Institution::class),
-        ])->assertRedirect();
+test('record exposes assigned owners and deferred files', function (): void {
+    $type = InstitutionType::factory()->create();
+    $institution = Institution::factory()->create();
+    $type->institutions()->attach($institution);
+    asUser($this->admin)->get(route('institutionTypes.show', $type))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Admin/ModelMeta/ShowType')
+            ->where('attachedModels.0.id', $institution->id)->missing('files')
+            ->loadDeferredProps('files', fn (Assert $deferred) => $deferred->has('files')));
+});
 
-        expect($type->fresh()->institutions->pluck('id'))->toContain($institution->id);
-    });
+test('assigned soft-deleted owners block permanent deletion', function (): void {
+    $type = DutyType::factory()->create();
+    $duty = Duty::factory()->create();
+    $type->duties()->attach($duty);
+    $duty->delete();
+    expect($type->forceDeleteBlockedReason())->not->toBeNull();
+});
 
-    test('syncs institutions from the record page', function (): void {
-        $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
-        $institution = Institution::factory()->for($this->tenant)->create();
-
-        asUser($this->admin)->put(route('types.models.sync', $type), [
-            'models' => [$institution->id],
-        ])->assertRedirect();
-
-        expect($type->fresh()->institutions->pluck('id'))->toContain($institution->id);
-    });
-
-    test('syncs duties and roles from separate record actions', function (): void {
-        $type = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
-        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
-        $role = Role::query()->first();
-
-        asUser($this->admin)->put(route('types.models.sync', $type), [
-            'models' => [$duty->id],
-        ])->assertRedirect();
-        asUser($this->admin)->put(route('types.roles.sync', $type), [
-            'roles' => [$role->id],
-        ])->assertRedirect();
-
-        expect($type->fresh()->duties->pluck('id'))->toContain($duty->id)
-            ->and($type->fresh()->roles->pluck('id'))->toContain($role->id);
-    });
-
-    test('rejects a model id from the wrong relation', function (): void {
-        $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
-        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
-
-        asUser($this->admin)->put(route('types.models.sync', $type), [
-            'models' => [$duty->id],
-        ])->assertSessionHasErrors('models.0');
-    });
-
-    test('rejects role assignments on an institution type', function (): void {
-        $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
-
-        asUser($this->admin)->put(route('types.roles.sync', $type), [
-            'roles' => [Role::query()->first()->id],
-        ])->assertStatus(403);
-    });
+test('legacy CRUD and public API routes are retired', function (): void {
+    expect(app('router')->has('types.store'))->toBeFalse()
+        ->and(app('router')->has('api.v1.types.index'))->toBeFalse();
 });

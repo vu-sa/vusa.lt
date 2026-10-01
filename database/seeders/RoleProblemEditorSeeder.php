@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Role;
-use App\Models\Type;
+use App\Models\DutyType;
 use Illuminate\Database\Seeder;
 
 /**
@@ -26,8 +26,8 @@ class RoleProblemEditorSeeder extends Seeder
             'problems.update.padalinys',
         ]);
 
-        // Through Type::roles() so RoleTypeObserver also hands the role to the existing coordinator duties.
-        Type::query()->where('slug', 'koordinatoriai')->firstOrFail()
+        // Through DutyType::roles() so RoleTypeObserver also hands the role to the existing coordinator duties.
+        DutyType::query()->where('slug', 'koordinatoriai')->firstOrFail()
             ->roles()->syncWithoutDetaching([$role->id]);
     }
 }

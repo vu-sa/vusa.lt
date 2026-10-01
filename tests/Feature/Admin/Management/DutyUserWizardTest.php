@@ -5,7 +5,8 @@ use App\Models\Institution;
 use App\Models\Role;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -94,9 +95,8 @@ describe('wizard page access', function (): void {
 
     test('wizard includes institution types for creation', function (): void {
         // Create some institution types
-        $type = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
-            'title' => ['lt' => 'Test Type', 'en' => 'Test Type'],
+        $type = InstitutionType::factory()->create([
+            'title' => ['lt' => 'Test InstitutionType', 'en' => 'Test InstitutionType'],
         ]);
 
         $response = asUser($this->dutyManager)->get(route('duties.updateUsersWizard'));

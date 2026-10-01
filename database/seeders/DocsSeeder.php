@@ -16,7 +16,7 @@ use App\Models\ProblemCategory;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use App\Models\User;
 use App\Support\MeetingTitle;
 use App\Tasks\Handlers\PeriodicityGapTaskHandler;
@@ -64,10 +64,10 @@ class DocsSeeder extends Seeder
 
         $committee = $this->institution($tenant, 'Chemijos studijų programos komitetas', 'Chemistry Study Programme Committee', 'Chemijos SPK');
 
-        $representativeType = Type::query()->where('slug', 'studentu-atstovai')->firstOrFail();
+        $representativeType = InstitutionType::query()->where('slug', 'studentu-atstovai')->firstOrFail();
 
         // A VU body type, so the institution frame shows its governance scope instead of a dash.
-        $council->types()->attach(Type::query()->where('slug', 'studentu-atstovu-organas')->firstOrFail());
+        $council->types()->attach(InstitutionType::query()->where('slug', 'studentu-atstovu-organas')->firstOrFail());
 
         foreach ([$council, $senate, $committee] as $institution) {
             $duty = Duty::factory()->for($institution)->create([

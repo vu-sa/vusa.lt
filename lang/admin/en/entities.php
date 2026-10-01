@@ -62,6 +62,8 @@ return [
         'model' => '{1} tag|[2,*] tags',
         'gender' => 'f',
     ],
+    'institutionType' => ['gender' => 'm', 'model' => '{1} institution type|[2,*] institution types', 'genitive' => 'institution type', 'accusative' => 'institution type'],
+    'dutyType' => ['gender' => 'm', 'model' => '{1} duty type|[2,*] duty types', 'genitive' => 'duty type', 'accusative' => 'duty type'],
     'type' => [
         'model' => '{1} content type|[2,*] content types',
         'gender' => 'm',

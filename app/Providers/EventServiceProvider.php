@@ -31,7 +31,7 @@ use App\Models\Institution;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Role;
 use App\Models\RoleType;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use App\Models\Typeable;
 use App\Models\User;
 use App\Notifications\Subscribers\ApprovalNotificationSubscriber;
@@ -137,8 +137,7 @@ class EventServiceProvider extends ServiceProvider
     {
         Document::observe(DocumentObserver::class);
         RoleType::observe(RoleTypeObserver::class);
-        Type::observe(TypeObserver::class);
-        Typeable::observe(TypeableObserver::class);
+        InstitutionType::observe(TypeObserver::class);
         Institution::observe(InstitutionObserver::class);
         Relationshipable::observe(RelationshipableObserver::class);
         // Permission cache invalidation for users, roles, duties

@@ -9,7 +9,8 @@ use App\Models\Form;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Services\ContactPresentationService;
 use App\Services\PublicAssetService;
@@ -42,7 +43,7 @@ class ContactController extends PublicController
         );
 
         // Get institution type mappings for facet display (slug => title)
-        $institutionTypes = Type::whereHas('institutions')
+        $institutionTypes = InstitutionType::whereHas('institutions')
             ->get()
             ->mapWithKeys(fn ($type) => [
                 $type->slug => $type->getTranslation('title', app()->getLocale()),
@@ -99,7 +100,7 @@ class ContactController extends PublicController
         return $this->renderInstitutionPage($institution, $contacts, $institution->name.' | Kontaktai', activeDutyTypeTab: 'all');
     }
 
-    public function institutionDutyTypeContacts($subdomain, $lang, $contactsString, Type $type)
+    public function institutionDutyTypeContacts($subdomain, $lang, $contactsString, DutyType $type)
     {
         $this->getTenantLinks();
 
@@ -171,7 +172,7 @@ class ContactController extends PublicController
         $this->shareOtherLangURL('contacts.studentRepresentatives', $this->subdomain);
 
         $type = app(AtstovavimasSettings::class)->getStudentRepRootType();
-        /** @var Collection<int, Type> $descendants */
+        /** @var Collection<int, InstitutionType> $descendants */
         $descendants = $type ? $type->getDescendantsAndSelf() : collect();
 
         $descendants->load(['institutions' => function ($query): void {
@@ -185,7 +186,7 @@ class ContactController extends PublicController
 
         // remove descendants without institutions
         $descendants = $descendants->filter(function ($descendant) {
-            /** @var Type $descendant */
+            /** @var InstitutionType $descendant */
             return $descendant->institutions->count() > 0;
         })->values();
 
@@ -222,7 +223,7 @@ class ContactController extends PublicController
 
         if ($isPadalinys) {
             $availableTypeSlugs = ['koordinatoriai', app()->getLocale() === 'en' ? 'mentors' : 'kuratoriai'];
-            $typesWithDuties = Type::whereIn('slug', $availableTypeSlugs)
+            $typesWithDuties = DutyType::whereIn('slug', $availableTypeSlugs)
                 ->whereHas('duties', fn ($q) => $q->where('institution_id', $institution->id))
                 ->get();
 
@@ -444,7 +445,7 @@ class ContactController extends PublicController
      * @param  string  $lang
      * @return Response
      */
-    public function institutionCategory($subdomain, $lang, $contactsString, $contactCategoryString, Type $type)
+    public function institutionCategory($subdomain, $lang, $contactsString, $contactCategoryString, InstitutionType $type)
     {
         $this->getTenantLinks();
 
@@ -506,7 +507,7 @@ class ContactController extends PublicController
 
         // Remove descendants without institutions
         $descendants = $descendants->filter(function ($descendant) {
-            if (! $descendant instanceof Type) {
+            if (! $descendant instanceof InstitutionType) {
                 return false;
             }
 

@@ -8,7 +8,8 @@ use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -65,13 +66,13 @@ describe('GetInstitutionCoordinators', function (): void {
     });
 
     test('is null for a body that is not a VU body', function (InstitutionScope $scope): void {
-        $this->institution->types()->attach(Type::factory()->forInstitutions($scope)->create());
+        $this->institution->types()->attach(InstitutionType::factory()->withGovernanceScope($scope)->create());
 
         expect(coordinatorCardFor($this->institution->fresh()))->toBeNull();
     })->with(['VU SA body' => InstitutionScope::Vusa, 'national body' => InstitutionScope::National, 'international body' => InstitutionScope::International]);
 
     test('names whoever coordinates the institution\'s type instead of the padalinys coordinator', function (): void {
-        $senate = Type::factory()->forInstitutions()->create();
+        $senate = InstitutionType::factory()->withGovernanceScope()->create();
         $this->institution->types()->attach($senate);
         $centralDuty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create(['name' => ['lt' => 'CB koordinatorius', 'en' => 'CB coordinator']]);
         DutyResponsibility::factory()->for($centralDuty)->forType($senate)->create();
@@ -121,7 +122,7 @@ describe('GetUserCoordinators', function (): void {
     });
 
     test('leaves a VU SA body out of what the coordinator covers', function (): void {
-        $vusaType = Type::factory()->forInstitutions(InstitutionScope::Vusa)->create();
+        $vusaType = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create();
         $board = Institution::factory()->for($this->tenant)->create(['name' => ['lt' => 'Valdyba', 'en' => 'Board']]);
         $board->types()->attach($vusaType);
 
@@ -135,7 +136,7 @@ describe('GetUserCoordinators', function (): void {
     });
 
     test('names nobody to a rep who sits only in VU SA bodies', function (): void {
-        $vusaType = Type::factory()->forInstitutions(InstitutionScope::Vusa)->create();
+        $vusaType = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create();
         $this->institution->types()->attach($vusaType);
 
         ($this->seatIn)($this->institution);

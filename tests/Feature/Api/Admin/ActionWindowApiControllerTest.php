@@ -6,7 +6,8 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,7 +97,7 @@ describe('meeting pattern', function (): void {
 
 test('it reports whether an institution may be announced in the calendar', function (): void {
     $this->institution->types()->attach(
-        Type::factory()->forInstitutions(InstitutionScope::University)->create()
+        InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create()
     );
 
     $response = asUser($this->user)

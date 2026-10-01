@@ -6,7 +6,8 @@ use App\Models\Meeting;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Services\InstitutionSubscriptionService;
 use App\Settings\MeetingSettings;
@@ -212,7 +213,7 @@ describe('bulk follow API', function (): void {
 
     test('follows an active institution of another padalinys whose meetings are public', function (): void {
         $foreign = Institution::factory()->for(Tenant::factory())->create(['is_active' => 1]);
-        $publicType = Type::factory()->create();
+        $publicType = InstitutionType::factory()->create();
         app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => [$publicType->id]])->save();
         $foreign->types()->attach($publicType);
 

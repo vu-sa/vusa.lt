@@ -12,7 +12,8 @@ use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Support\MorphMap;
 use App\Tasks\Handlers\PeriodicityGapTaskHandler;
@@ -37,8 +38,8 @@ describe('InstitutionCheckInTaskSubscriber', function (): void {
             ->create(['is_active' => true]);
 
         // Create student rep type and duty
-        $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
+        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -101,8 +102,8 @@ describe('InstitutionCheckInTaskSubscriber', function (): void {
         $institution2 = Institution::factory()->for($tenant)->create(['is_active' => true]);
 
         // Create student rep type and duties for both institutions
-        $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
+        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
 
         foreach ([$institution1, $institution2] as $institution) {
             $duty = Duty::factory()

@@ -358,7 +358,7 @@ import DuplicateDutyWarning from '@/Components/AdminForms/DuplicateDutyWarning.v
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
-const dutyTypesRef = inject<ComputedRef<App.Entities.Type[]> | App.Entities.Type[]>('dutyTypes', []);
+const dutyTypesRef = inject<ComputedRef<App.Entities.DutyType[]> | App.Entities.DutyType[]>('dutyTypes', []);
 
 const dutyTypes = computed(() =>
   'value' in dutyTypesRef ? dutyTypesRef.value : dutyTypesRef,

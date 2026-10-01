@@ -349,7 +349,7 @@ import { DutyIcon } from '@/Components/icons';
 const props = defineProps<{
   institutions: App.Entities.Institution[];
   assignableTenants: App.Entities.Tenant[];
-  institutionTypes: App.Entities.Type[];
+  institutionTypes: App.Entities.InstitutionType[];
 }>();
 
 // Shell focus mode: swaps shell navigation for the wizard's editor bar
@@ -363,7 +363,7 @@ const page = usePage();
 
 // Computed refs for lazy-loaded data (reactive when data arrives via router.reload)
 const studyPrograms = computed(() => (page.props.studyPrograms as App.Entities.StudyProgram[] | undefined) ?? []);
-const dutyTypes = computed(() => (page.props.dutyTypes as App.Entities.Type[] | undefined) ?? []);
+const dutyTypes = computed(() => (page.props.dutyTypes as App.Entities.InstitutionType[] | undefined) ?? []);
 
 // Reactive institutions list (can be updated when new institution is created)
 const institutionsList = ref([...props.institutions]);

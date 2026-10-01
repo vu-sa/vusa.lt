@@ -6,7 +6,8 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Settings\MeetingSettings;
 use Carbon\Carbon;
@@ -51,7 +52,7 @@ test('a coordinator opens the agenda item page with the outcome controls live', 
 });
 
 test('a public agenda item links to its meeting on the institution subdomain', function (): void {
-    $type = Type::factory()->forInstitutions()->create();
+    $type = InstitutionType::factory()->withGovernanceScope()->create();
     $this->institution->types()->attach($type);
     app(MeetingSettings::class)->fill([
         'public_meeting_institution_type_ids' => [$type->id],

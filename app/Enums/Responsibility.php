@@ -23,7 +23,7 @@ enum Responsibility: string
     public function allowedScopes(): array
     {
         return match ($this) {
-            self::StudentRepCoordination => [ResponsibilityScope::Tenant, ResponsibilityScope::Type, ResponsibilityScope::Institution],
+            self::StudentRepCoordination => [ResponsibilityScope::Tenant, ResponsibilityScope::InstitutionType, ResponsibilityScope::Institution],
         };
     }
 

@@ -4,7 +4,8 @@ use App\Enums\InstitutionActivityStatus;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Services\InstitutionActivityStatusService;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -35,7 +36,7 @@ function institutionForActivityStatus(
     $institution->setRelation('types', new Collection(
         $typePeriodicityDays === null
             ? []
-            : [new Type(['extra_attributes' => ['meeting_periodicity_days' => $typePeriodicityDays]])]
+            : [new InstitutionType(['extra_attributes' => ['meeting_periodicity_days' => $typePeriodicityDays]])]
     ));
 
     return $institution;
@@ -161,9 +162,9 @@ describe('InstitutionActivityStatusService', function (): void {
     test('takes the shortest periodicity among several types', function (): void {
         $institution = institutionForActivityStatus(periodicityDays: null);
         $institution->setRelation('types', new Collection([
-            new Type(['extra_attributes' => ['meeting_periodicity_days' => 60]]),
-            new Type(['extra_attributes' => ['meeting_periodicity_days' => 21]]),
-            new Type(['extra_attributes' => []]),
+            new InstitutionType(['extra_attributes' => ['meeting_periodicity_days' => 60]]),
+            new InstitutionType(['extra_attributes' => ['meeting_periodicity_days' => 21]]),
+            new InstitutionType(['extra_attributes' => []]),
         ]));
 
         expect($institution->meeting_periodicity_days)->toBe(21);

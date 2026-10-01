@@ -5,7 +5,8 @@ use App\Models\Institution;
 use App\Models\News;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -433,8 +434,7 @@ describe('duty role management', function (): void {
     });
 
     test('attaching an attachable type to a duty automatically grants associated roles to the duty', function (): void {
-        $type = Type::factory()->create([
-            'model_type' => MorphMap::alias(Duty::class),
+        $type = DutyType::factory()->create([
             'slug' => 'test-duty-type',
         ]);
         $grantedRole = Role::firstOrCreate(['name' => 'Automated Granted Role', 'guard_name' => 'web']);

@@ -8,7 +8,8 @@ use App\Models\EventType;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -21,7 +22,7 @@ beforeEach(function (): void {
     // A VU SA body: only those are announced in the calendar, so anything exercising the
     // announcement path has to be one. An institution with no types resolves to external.
     $this->institution = Institution::factory()->for($this->tenant)->create();
-    $this->institution->types()->attach(Type::factory()->forInstitutions(InstitutionScope::Vusa)->create());
+    $this->institution->types()->attach(InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create());
 
     $this->meeting = Meeting::factory()->create(['start_time' => now()->addWeek()]);
     $this->meeting->institutions()->attach($this->institution);
@@ -31,7 +32,7 @@ beforeEach(function (): void {
 function externalMeeting(Tenant $tenant): Meeting
 {
     $institution = Institution::factory()->for($tenant)->create();
-    $institution->types()->attach(Type::factory()->forInstitutions(InstitutionScope::University)->create());
+    $institution->types()->attach(InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create());
 
     $meeting = Meeting::factory()->create(['start_time' => now()->addWeek()]);
     $meeting->institutions()->attach($institution);

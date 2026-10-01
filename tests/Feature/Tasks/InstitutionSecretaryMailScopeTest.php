@@ -11,7 +11,8 @@ use App\Models\NotificationDigestQueue;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskAutoCompletedNotification;
@@ -40,8 +41,8 @@ beforeEach(function (): void {
         'end_date' => now()->addMonths(6)->toDateString(),
     ]);
 
-    $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-        ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
+    $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
+        ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
 
     $duty = Duty::factory()->for($this->institution)->hasAttached($studentRepType, [], 'types')->create();
 
@@ -68,7 +69,7 @@ function meetingNeedingItsAgendaFilled(Institution $institution): Meeting
 {
     $meeting = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()]);
 
-    // Type null, so the item counts as unfilled and the task stays open.
+    // DutyType null, so the item counts as unfilled and the task stays open.
     AgendaItem::factory()->count(2)->sequentialOrder()->create(['meeting_id' => $meeting->id]);
 
     $meeting->load('agendaItems');

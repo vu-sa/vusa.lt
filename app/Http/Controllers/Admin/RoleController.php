@@ -13,7 +13,7 @@ use App\Http\Requests\UpdateRoleRequest;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Services\Permissions\PermissionMapBuilder;
 use App\Support\Permissions\BaselineAccess;
@@ -116,7 +116,7 @@ class RoleController extends AdminController
                 'attachable_types' => $role->attachable_types->pluck('id')->toArray(),
             ],
             'tenantsWithDuties' => $tenantsWithDuties,
-            'allTypes' => Type::all(),
+            'allTypes' => DutyType::all(),
             'allAvailablePermissions' => $allAvailablePermissions->map(fn ($permissions) => $permissions->pluck('name')),
             'baselineAccess' => BaselineAccess::descriptions(),
             'retiredPermissions' => BaselineAccess::retiredPermissionNames(),

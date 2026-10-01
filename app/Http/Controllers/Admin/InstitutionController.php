@@ -26,7 +26,7 @@ use App\Models\Meeting;
 use App\Models\Problem;
 use App\Models\StudyProgram;
 use App\Models\Task;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
@@ -79,7 +79,7 @@ class InstitutionController extends AdminController
 
         return $this->inertiaResponse('Admin/People/CreateInstitution', [
             'assignableTenants' => GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer),
-            'institutionTypes' => Type::where('model_type', MorphMap::alias(Institution::class))->get(),
+            'institutionTypes' => InstitutionType::query()->get(),
         ]);
     }
 
@@ -322,7 +322,7 @@ class InstitutionController extends AdminController
                 ...$institution->toFullArray(),
                 'types' => $institution->types->pluck('id'),
             ],
-            'institutionTypes' => Type::where('model_type', MorphMap::alias(Institution::class))->get(),
+            'institutionTypes' => InstitutionType::query()->get(),
             'assignableTenants' => GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer),
         ]);
     }

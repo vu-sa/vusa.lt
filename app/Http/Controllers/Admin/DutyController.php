@@ -21,7 +21,8 @@ use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\StudyProgram;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\DutyService;
@@ -90,7 +91,7 @@ class DutyController extends AdminController
         $this->handleAuthorization('create', Duty::class);
 
         return $this->inertiaResponse('Admin/People/CreateDuty', [
-            'dutyTypes' => Type::where('model_type', MorphMap::alias(Duty::class))->get(),
+            'dutyTypes' => DutyType::query()->get(),
             'roles' => Role::all(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
             'assignableUsers' => $this->assignableUsersForDutyForm(),
@@ -677,7 +678,7 @@ class DutyController extends AdminController
 
         // Get data needed for creating institutions and duties
         $assignableTenants = GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer);
-        $institutionTypes = Type::where('model_type', MorphMap::alias(Institution::class))->get();
+        $institutionTypes = InstitutionType::query()->get();
 
         return $this->inertiaResponse('Admin/People/DutyUserUpdateWizard', [
             // Immediate data for Step 1

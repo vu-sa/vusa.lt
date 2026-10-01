@@ -4,7 +4,8 @@ use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Services\InstitutionAccessService;
 use App\Services\ModelAuthorizer;
@@ -474,7 +475,7 @@ describe('public records in every scoped key', function (): void {
     }
 
     beforeEach(function (): void {
-        $this->publicType = Type::factory()->create();
+        $this->publicType = InstitutionType::factory()->create();
         app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => [$this->publicType->id]])->save();
     });
 
@@ -520,7 +521,7 @@ describe('public records in every scoped key', function (): void {
         $user = makeUser(Tenant::query()->first());
         keysFor($user);
 
-        $otherType = Type::factory()->create();
+        $otherType = InstitutionType::factory()->create();
         app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => [$otherType->id]])->save();
 
         expect(scopedKeyFilter(keysFor($user)['meetings']['key']))->toBe("institution_type_ids:=[{$otherType->id}]");

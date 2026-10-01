@@ -8,7 +8,7 @@ use App\Models\Duty;
 use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -34,9 +34,9 @@ class DutyResponsibilityFactory extends Factory
         return $this->state(['scope_type' => ResponsibilityScope::Tenant->value, 'scope_id' => (string) $tenant->id]);
     }
 
-    public function forType(Type $type): static
+    public function forType(InstitutionType $type): static
     {
-        return $this->state(['scope_type' => ResponsibilityScope::Type->value, 'scope_id' => (string) $type->id]);
+        return $this->state(['scope_type' => ResponsibilityScope::InstitutionType->value, 'scope_id' => (string) $type->id]);
     }
 
     public function forInstitution(Institution $institution): static

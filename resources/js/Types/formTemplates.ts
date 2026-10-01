@@ -100,7 +100,7 @@ export const pageTemplate = {
 };
 
 export const typeTemplate: Pick<
-  App.Entities.Type,
+  App.Entities.InstitutionType,
   'title' | 'slug' | 'description' | 'model_type' | 'parent_id' | 'extra_attributes'
 > = {
   title: { lt: '', en: '' },

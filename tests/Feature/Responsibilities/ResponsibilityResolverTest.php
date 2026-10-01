@@ -7,7 +7,8 @@ use App\Models\Duty;
 use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Services\ResponsibilityResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -45,7 +46,7 @@ describe('dutiesFor', function (): void {
     });
 
     test('lets a type assignment override the padalinys, and an institution assignment override both', function (): void {
-        $type = Type::factory()->forInstitutions()->create();
+        $type = InstitutionType::factory()->withGovernanceScope()->create();
         $this->institution->types()->attach($type);
         coordinatorDuty('forTenant', $this->tenant);
         $typeDuty = coordinatorDuty('forType', $type);
@@ -60,8 +61,8 @@ describe('dutiesFor', function (): void {
     });
 
     test('reaches an institution through an ancestor of its type, but a closer type wins', function (): void {
-        $parent = Type::factory()->forInstitutions()->create();
-        $child = Type::factory()->forInstitutions()->create(['parent_id' => $parent->id]);
+        $parent = InstitutionType::factory()->withGovernanceScope()->create();
+        $child = InstitutionType::factory()->withGovernanceScope()->create(['parent_id' => $parent->id]);
         $this->institution->types()->attach($child);
         $parentDuty = coordinatorDuty('forType', $parent);
 
@@ -74,7 +75,7 @@ describe('dutiesFor', function (): void {
     });
 
     test('names nobody for a body that is not a VU body', function (): void {
-        $this->institution->types()->attach(Type::factory()->forInstitutions(InstitutionScope::Vusa)->create());
+        $this->institution->types()->attach(InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create());
         coordinatorDuty('forTenant', $this->tenant);
 
         expect(resolver()->dutiesFor(Responsibility::StudentRepCoordination, $this->institution->fresh()))->toBeEmpty();
@@ -105,7 +106,7 @@ describe('institutionIdsFor', function (): void {
     });
 
     test('uses bounded queries and respects a closer type assignment', function (): void {
-        $type = Type::factory()->forInstitutions()->create();
+        $type = InstitutionType::factory()->withGovernanceScope()->create();
         $typeInstitution = Institution::factory()->for($this->tenant)->create();
         $typeInstitution->types()->attach($type);
         Institution::factory()->for($this->tenant)->count(12)->create();

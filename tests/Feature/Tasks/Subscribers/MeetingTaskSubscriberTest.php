@@ -14,7 +14,8 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Models\Vote;
 use App\Notifications\MeetingAgendaCompletedNotification;
@@ -48,8 +49,8 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->create();
 
             // Create student rep type
-            $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-                ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
+            $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
+                ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
 
             // Create a duty with student rep type
             $duty = Duty::factory()
@@ -339,8 +340,8 @@ describe('MeetingTaskSubscriber', function (): void {
             ]);
 
             // Create student rep type and duty
-            $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-                ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
+            $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
+                ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
 
             $repDuty = Duty::factory()
                 ->for($institution)
@@ -1116,7 +1117,7 @@ describe('MeetingTaskSubscriber', function (): void {
 /** Anyone may follow an active institution, so a follower hears only about meetings they may read. */
 function publishInstitutionMeetings(Institution $institution): void
 {
-    $type = Type::factory()->create();
+    $type = InstitutionType::factory()->create();
     $settings = app(MeetingSettings::class);
     $settings->fill(['public_meeting_institution_type_ids' => [...$settings->public_meeting_institution_type_ids, $type->id]])->save();
     $institution->types()->attach($type);

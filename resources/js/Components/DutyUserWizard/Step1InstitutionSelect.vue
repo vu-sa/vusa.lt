@@ -320,7 +320,7 @@ const props = defineProps<{
 
 const wizard = inject<ReturnType<typeof useDutyUserWizard>>('dutyUserWizard')!;
 const assignableTenants = inject<App.Entities.Tenant[]>('assignableTenants', []);
-const institutionTypes = inject<App.Entities.Type[]>('institutionTypes', []);
+const institutionTypes = inject<App.Entities.InstitutionType[]>('institutionTypes', []);
 const addInstitution = inject<(institution: App.Entities.Institution) => void>('addInstitution');
 
 const page = usePage();

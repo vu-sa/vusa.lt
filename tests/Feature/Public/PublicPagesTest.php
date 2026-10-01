@@ -8,7 +8,8 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -209,7 +210,7 @@ test('an unknown category alias 404s', function (): void {
 test('padalinys institution page renders duty type tabs', function (): void {
     $tenant = Tenant::factory()->create(['type' => TenantType::Padalinys]);
     $institution = Institution::factory()->create(['tenant_id' => $tenant->id]);
-    $type = Type::factory()->create(['slug' => 'koordinatoriai', 'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
+    $type = DutyType::factory()->create(['slug' => 'koordinatoriai', 'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
     $duty = Duty::factory()->create(['institution_id' => $institution->id]);
     $duty->types()->attach($type);
 
@@ -524,12 +525,11 @@ test('duty type contacts page with grouping shows grouped sections', function ()
     $tenant = Tenant::factory()->create();
 
     // Create or find a type for the duty (e.g., koordinatoriai)
-    $type = Type::where('slug', 'koordinatoriai')->first();
+    $type = DutyType::where('slug', 'koordinatoriai')->first();
     if (! $type) {
-        $type = Type::factory()->create([
+        $type = DutyType::factory()->create([
             'slug' => 'koordinatoriai',
             'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
-            'model_type' => MorphMap::alias(Duty::class),
         ]);
     }
 
@@ -582,12 +582,11 @@ test('duty type contacts page handles both grouped and flat duties correctly', f
     }
 
     // Create or find a type for the duty (e.g., koordinatoriai)
-    $type = Type::where('slug', 'koordinatoriai')->first();
+    $type = DutyType::where('slug', 'koordinatoriai')->first();
     if (! $type) {
-        $type = Type::factory()->create([
+        $type = DutyType::factory()->create([
             'slug' => 'koordinatoriai',
             'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
-            'model_type' => MorphMap::alias(Duty::class),
         ]);
     }
 

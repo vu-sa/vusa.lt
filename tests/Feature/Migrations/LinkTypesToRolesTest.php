@@ -4,6 +4,8 @@ use App\Models\Problem;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\Type;
+use App\Models\DutyType;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Database\Seeders\RoleResourceManagerSeeder;
@@ -20,12 +22,16 @@ function linkTypesToRolesMigration(): object
 function typedDutyUser(string $typeSlug): User
 {
     $user = makeUser(Tenant::query()->firstOrFail());
-    $user->duties()->first()->types()->attach(Type::query()->where('slug', $typeSlug)->firstOrFail());
+    $legacy = Type::query()->where('slug', $typeSlug)->firstOrFail();
+    DB::table('typeables')->insert(['type_id' => $legacy->id, 'typeable_type' => 'duty', 'typeable_id' => $user->duties()->first()->id]);
 
     return $user;
 }
 
 beforeEach(function (): void {
+    foreach (DutyType::query()->get() as $type) {
+        DB::table('types')->insertOrIgnore($type->getAttributes() + ['model_type' => 'duty']);
+    }
     Type::query()->whereIn('slug', ['koordinatoriai', 'studentu-atstovai'])->each(fn (Type $type) => $type->roles()->detach());
     Role::query()->whereIn('name', ['Problemų redaktorius', 'Padalinio puslapių redaktorius'])->delete();
     Role::firstOrCreate(['name' => 'Studentų atstovas', 'guard_name' => 'web']);

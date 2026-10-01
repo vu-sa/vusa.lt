@@ -11,7 +11,8 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Settings\MeetingSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -256,7 +257,7 @@ describe('institution contact pages', function (): void {
 
 describe('meeting pages', function (): void {
     beforeEach(function (): void {
-        $type = Type::factory()->forInstitutions(InstitutionScope::Vusa)->create();
+        $type = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create();
         $this->institution = Institution::factory()->for($this->tenant)->create();
         $this->institution->types()->attach($type);
 

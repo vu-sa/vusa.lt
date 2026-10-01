@@ -3,7 +3,8 @@
 use App\Models\Problem;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use Database\Seeders\RoleProblemEditorSeeder;
 use Database\Seeders\RoleStudentRepresentativeSeeder;
@@ -13,11 +14,11 @@ pest()->use(RefreshDatabase::class);
 
 /**
  * A user whose duty was tagged with the type before the role was linked to it — the case the
- * type → role link previously missed, since only the observer on Type::roles() backfills duties.
+ * type → role link previously missed, since only the observer on DutyType::roles() backfills duties.
  */
 function userWithDutyTypedBeforeLink(string $typeSlug, string $roleName): User
 {
-    $type = Type::query()->where('slug', $typeSlug)->firstOrFail();
+    $type = DutyType::query()->where('slug', $typeSlug)->firstOrFail();
     $type->roles()->detach(Role::findByName($roleName)->id);
 
     $user = makeUser(Tenant::query()->firstOrFail());

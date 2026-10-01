@@ -8,7 +8,8 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Settings\MeetingSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -18,7 +19,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
 
-    $this->vusaType = Type::factory()->forInstitutions(InstitutionScope::Vusa)->create();
+    $this->vusaType = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create();
     $this->institution = Institution::factory()->for($this->tenant)->create();
     $this->institution->types()->attach($this->vusaType);
 

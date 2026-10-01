@@ -73,7 +73,7 @@ export interface InstitutionPageRelatedInstitution {
   authorized?: boolean;
 }
 
-interface InstitutionPageType extends Omit<App.Entities.Type, 'title'> {
+interface InstitutionPageType extends Omit<App.Entities.InstitutionType, 'title'> {
   title?: string | null;
 }
 

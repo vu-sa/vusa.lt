@@ -2,17 +2,17 @@
 
 namespace App\Observers;
 
-use App\Models\Type;
+use App\Models\InstitutionType;
 use App\Services\RelationshipService;
 
 class TypeObserver
 {
     /**
-     * Handle the Type "updated" event.
+     * Handle the InstitutionType "updated" event.
      * Clears relationship cache for all institutions with this type
      * when sibling relationship settings change.
      */
-    public function updated(Type $type): void
+    public function updated(InstitutionType $type): void
     {
         // Check if extra_attributes changed (sibling relationship settings)
         if ($type->wasChanged('extra_attributes')) {
@@ -35,7 +35,7 @@ class TypeObserver
     /**
      * Clear the relationship cache for all institutions that have this type.
      */
-    protected function clearCacheForTypeInstitutions(Type $type): void
+    protected function clearCacheForTypeInstitutions(InstitutionType $type): void
     {
         $type->institutions()->pluck('id')->each(function ($institutionId): void {
             RelationshipService::clearRelatedInstitutionsCache($institutionId);

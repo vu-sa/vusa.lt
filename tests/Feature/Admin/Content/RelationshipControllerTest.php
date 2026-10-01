@@ -4,7 +4,8 @@ use App\Models\Institution;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -39,7 +40,7 @@ beforeEach(function (): void {
     $this->relatedInstitution = Institution::factory()->for($this->tenant)->create();
 
     // Create test type for relationship modeling (Types are global, not tenant-specific)
-    $this->type = Type::factory()->create([
+    $this->type = InstitutionType::factory()->create([
         'title' => ['lt' => 'Test tipas', 'en' => 'Test type'],
     ]);
 });
@@ -262,7 +263,7 @@ describe('model relationship operations', function (): void {
     test('rejects model IDs that do not belong to the submitted relationship model type', function (): void {
         asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), [
             'model_id' => $this->institution->id,
-            'model_type' => MorphMap::alias(Type::class),
+            'model_type' => MorphMap::alias(InstitutionType::class),
             'related_model_id' => $this->relatedInstitution->id,
         ])->assertSessionHasErrors(['model_id', 'related_model_id']);
 
@@ -286,7 +287,7 @@ describe('model relationship operations', function (): void {
     test('can store type relationship with scope', function (): void {
         $data = [
             'model_id' => $this->type->id,
-            'model_type' => MorphMap::alias(Type::class),
+            'model_type' => MorphMap::alias(InstitutionType::class),
             'related_model_id' => $this->type->id,
             'scope' => 'cross-tenant',
         ];
@@ -297,7 +298,7 @@ describe('model relationship operations', function (): void {
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => MorphMap::alias(Type::class),
+            'relationshipable_type' => MorphMap::alias(InstitutionType::class),
             'relationshipable_id' => $this->type->id,
             'scope' => 'cross-tenant',
         ]);
@@ -306,7 +307,7 @@ describe('model relationship operations', function (): void {
     test('scope defaults to within-tenant for type relationships', function (): void {
         $data = [
             'model_id' => $this->type->id,
-            'model_type' => MorphMap::alias(Type::class),
+            'model_type' => MorphMap::alias(InstitutionType::class),
             'related_model_id' => $this->type->id,
             // No scope provided - should default to within-tenant
         ];
@@ -316,7 +317,7 @@ describe('model relationship operations', function (): void {
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => MorphMap::alias(Type::class),
+            'relationshipable_type' => MorphMap::alias(InstitutionType::class),
             'relationshipable_id' => $this->type->id,
             'scope' => 'within-tenant',
         ]);
@@ -385,7 +386,7 @@ describe('model relationship operations', function (): void {
     test('cannot store model relationship with invalid scope', function (): void {
         $data = [
             'model_id' => $this->type->id,
-            'model_type' => MorphMap::alias(Type::class),
+            'model_type' => MorphMap::alias(InstitutionType::class),
             'related_model_id' => $this->type->id,
             'scope' => 'invalid-scope',
         ];
@@ -456,7 +457,7 @@ describe('model relationship operations', function (): void {
         // Create a type-based relationshipable
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => MorphMap::alias(Type::class),
+            'relationshipable_type' => MorphMap::alias(InstitutionType::class),
             'relationshipable_id' => $this->type->id,
             'related_model_id' => $this->type->id,
             'scope' => 'within-tenant',

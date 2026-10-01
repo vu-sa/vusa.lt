@@ -393,7 +393,7 @@ interface DutyPropType {
 
 const props = withDefaults(defineProps<{
   duty?: DutyPropType;
-  dutyTypes?: App.Entities.Type[];
+  dutyTypes?: App.Entities.DutyType[];
   assignableInstitutions?: App.Entities.Institution[];
   roles?: App.Entities.Role[];
   assignableTenants?: { id: number; shortname: string; type?: string }[];

@@ -3,7 +3,8 @@
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Institution;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -41,7 +42,7 @@ test('changing a tenant alias moves its cached alias lookup', function (): void 
 test('saving an institution type forgets the cached institution type list', function (): void {
     Cache::forever(HandleInertiaRequests::INSTITUTION_TYPES_CACHE_KEY, 'stale');
 
-    Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
+    InstitutionType::factory()->create([]);
 
     expect(Cache::get(HandleInertiaRequests::INSTITUTION_TYPES_CACHE_KEY))->toBeNull();
 });

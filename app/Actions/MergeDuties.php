@@ -36,7 +36,7 @@ class MergeDuties
             $summary = [
                 'moved_assignments' => $movedAssignments,
                 'collapsed_assignments' => CollapseOverlappingDutiables::execute($kept),
-                'moved_types' => self::repointMorphPivot('typeables', 'typeable_id', 'typeable_type', 'type_id', $kept, $sourceIds),
+                'moved_types' => self::repointTypes($kept, $sourceIds),
                 'moved_roles' => self::repointMorphPivot('model_has_roles', 'model_id', 'model_type', 'role_id', $kept, $sourceIds),
                 'moved_ex_officio' => self::mergeExOfficioLinks($kept, $sourceIds),
                 'moved_tenant_quotas' => self::mergeDutyTenantQuotas($kept, $sourceIds),
@@ -137,6 +137,21 @@ class MergeDuties
      *
      * @param  list<string>  $sourceIds
      */
+    /** @param list<string> $sourceIds */
+    private static function repointTypes(Duty $kept, array $sourceIds): int
+    {
+        $moved = 0;
+        foreach (DB::table('duty_duty_type')->whereIn('duty_id', $sourceIds)->get() as $row) {
+            $moved += DB::table('duty_duty_type')->insertOrIgnore([
+                'duty_id' => $kept->id,
+                'duty_type_id' => $row->duty_type_id,
+            ]);
+        }
+        DB::table('duty_duty_type')->whereIn('duty_id', $sourceIds)->delete();
+
+        return $moved;
+    }
+
     private static function repointMorphPivot(
         string $table,
         string $modelIdColumn,

@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Role;
-use App\Models\Type;
+use App\Models\DutyType;
 use Illuminate\Database\Seeder;
 
 class RoleStudentRepresentativeSeeder extends Seeder
@@ -40,12 +40,12 @@ class RoleStudentRepresentativeSeeder extends Seeder
             'problems.update.padalinys',
         ]);
 
-        $type = Type::query()->where('slug', 'studentu-atstovai')->firstOrFail();
+        $type = DutyType::query()->where('slug', 'studentu-atstovai')->firstOrFail();
 
         // Coordinators can attach this type to duties
         $role->attachable_types()->syncWithoutDetaching([$type->id]);
 
-        // Through Type::roles() so RoleTypeObserver also hands the role to the existing duties of this type.
+        // Through DutyType::roles() so RoleTypeObserver also hands the role to the existing duties of this type.
         $type->roles()->syncWithoutDetaching([$role->id]);
     }
 }

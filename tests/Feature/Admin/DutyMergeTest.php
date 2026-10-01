@@ -5,7 +5,8 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -183,8 +184,8 @@ describe('merging related pivots', function (): void {
     });
 
     test('moves types onto the kept duty without duplicating a type both already share', function (): void {
-        $shared = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
-        $onlyOnSource = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
+        $shared = DutyType::factory()->create([]);
+        $onlyOnSource = DutyType::factory()->create([]);
 
         $this->target->types()->attach($shared->id);
         $this->source->types()->attach([$shared->id, $onlyOnSource->id]);
@@ -194,10 +195,10 @@ describe('merging related pivots', function (): void {
             'source_duty_ids' => [$this->source->id],
         ]);
 
-        $keptTypeIds = $this->target->fresh()->types()->pluck('types.id')->all();
+        $keptTypeIds = $this->target->fresh()->types()->pluck('duty_types.id')->all();
 
         expect($keptTypeIds)->toContain($shared->id, $onlyOnSource->id)
-            ->and(DB::table('typeables')->where('typeable_id', $this->source->id)->count())->toBe(0);
+            ->and(DB::table('duty_duty_type')->where('duty_id', $this->source->id)->count())->toBe(0);
     });
 
     test('moves admin roles onto the kept duty', function (): void {

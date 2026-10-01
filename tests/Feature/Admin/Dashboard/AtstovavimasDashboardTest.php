@@ -16,7 +16,8 @@ use App\Models\Resource;
 use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use App\Services\RelationshipService;
 use App\Support\MorphMap;
@@ -104,11 +105,11 @@ describe('atstovavimas dashboard', function (): void {
     });
 
     test('reference documents are capped at eight, newest document date first', function (): void {
-        $dutyType = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
+        $dutyType = DutyType::factory()->create([]);
         $this->user->current_duties()->first()->types()->attach($dutyType);
         $files = FileableFile::factory()->count(9)
             ->sequence(fn ($sequence) => ['file_date' => now()->subDays(9 - $sequence->index)])
-            ->create(['fileable_type' => MorphMap::alias(Type::class), 'fileable_id' => $dutyType->id]);
+            ->create(['fileable_type' => MorphMap::alias(DutyType::class), 'fileable_id' => $dutyType->id]);
 
         asUser($this->user)
             ->get(route('dashboard.atstovavimas'))
@@ -121,13 +122,13 @@ describe('atstovavimas dashboard', function (): void {
     });
 
     test('reference documents of the user\'s duty types, parents included, load with the secondary group', function (): void {
-        $parentType = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
-        $dutyType = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class), 'parent_id' => $parentType->id]);
+        $parentType = DutyType::factory()->create([]);
+        $dutyType = DutyType::factory()->create([ 'parent_id' => $parentType->id]);
         $this->user->current_duties()->first()->types()->attach($dutyType);
-        $unrelatedType = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
+        $unrelatedType = DutyType::factory()->create([]);
 
-        $fileOn = fn (Type $type, array $attributes = []) => FileableFile::factory()->create([
-            'fileable_type' => MorphMap::alias(Type::class),
+        $fileOn = fn (DutyType $type, array $attributes = []) => FileableFile::factory()->create([
+            'fileable_type' => MorphMap::alias(DutyType::class),
             'fileable_id' => $type->id,
             ...$attributes,
         ]);
@@ -399,8 +400,8 @@ describe('atstovavimas dashboard periodicity', function (): void {
         ]);
 
         // Create a duty and assign it to the user
-        $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
+        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
 
         $duty = Duty::factory()
             ->for($institution)
@@ -440,8 +441,7 @@ describe('atstovavimas dashboard periodicity', function (): void {
 
     test('user institutions use type periodicity when no override', function (): void {
         // Create a type with custom periodicity
-        $institutionType = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
+        $institutionType = InstitutionType::factory()->create([
             'extra_attributes' => ['meeting_periodicity_days' => 14],
         ]);
 
@@ -453,8 +453,8 @@ describe('atstovavimas dashboard periodicity', function (): void {
         $institution->types()->attach($institutionType);
 
         // Create a duty and assign it to the user
-        $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-            ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
+        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai',]);
 
         $duty = Duty::factory()
             ->for($institution)

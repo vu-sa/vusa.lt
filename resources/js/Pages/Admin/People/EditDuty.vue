@@ -48,7 +48,7 @@ const props = defineProps<{
   roles: App.Entities.Role[];
   assignableInstitutions: App.Entities.Institution[];
   assignableUsers?: App.Entities.User[];
-  dutyTypes: App.Entities.Type[];
+  dutyTypes: App.Entities.DutyType[];
   assignableTenants: { id: number; shortname: string; type?: string }[];
   assignableDuties: Array<{ id: string; name: string; institution?: App.Entities.Institution | Record<string, unknown> }>;
 }>();

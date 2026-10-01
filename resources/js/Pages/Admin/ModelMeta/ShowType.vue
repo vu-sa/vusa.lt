@@ -2,7 +2,7 @@
   <RecordPage
     v-model:section="section"
     :title
-    :entity-type="ModelEnum.TYPE"
+    :entity-type="entityType"
     :facts
     :sections
     :primary-action
@@ -69,7 +69,7 @@
     </template>
     <template #roles>
       <div class="max-w-3xl">
-        <Button v-if="can.update && contentType.model_type === 'duty'" variant="outline" class="mb-4" @click="openRoles">
+        <Button v-if="can.update && typeKind === 'dutyType'" variant="outline" class="mb-4" @click="openRoles">
           {{ $t('Tvarkyti roles') }}
         </Button>
         <div class="divide-y divide-border border-y border-border">
@@ -84,12 +84,15 @@
     </template>
     <template #files>
       <div class="max-w-4xl">
-        <FileableFilesPanel
-          :fileable="{ id: contentType.id, type: 'Type' }"
+        <Deferred data="files">
+          <template #fallback><p class="py-6 text-sm text-muted-foreground">{{ $t('Įkeliama…') }}</p></template>
+          <FileableFilesPanel
+          :fileable="{ id: contentType.id, type: fileableType }"
           :files
           :can-upload="can.update && !!sharepointPath"
           :can-delete="can.update"
         />
+        </Deferred>
       </div>
     </template>
   </RecordPage>
@@ -118,12 +121,12 @@
       </label>
     </div>
   </SheetForm>
-  <ConfirmDialog v-model:open="deleteOpen" :title="$t('Šalinti tipą?')" :description="$t('Tipas bus perkeltas į šiukšlinę.')" :confirm-label="$t('Šalinti')" destructive @confirm="router.delete(route('types.destroy', contentType.id))" />
+  <ConfirmDialog v-model:open="deleteOpen" :title="$t('Šalinti tipą?')" :description="$t('Tipas bus perkeltas į šiukšlinę.')" :confirm-label="$t('Šalinti')" destructive @confirm="router.delete(route(`${resource}.destroy`, contentType.id))" />
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Link, router } from '@inertiajs/vue3';
+import { Deferred, Link, router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { Edit, Trash2 } from 'lucide-vue-next';
 
@@ -137,7 +140,8 @@ import { ModelEnum } from '@/Types/enums';
 
 type Translation = string | { lt?: string; en?: string } | null | undefined;
 const props = defineProps<{
-  contentType: App.Entities.Type & { parent?: { title?: Translation }; roles?: Array<{ id: string; name: string }> };
+  typeKind: 'institutionType' | 'dutyType';
+  contentType: (App.Entities.InstitutionType | App.Entities.DutyType) & { parent?: { title?: Translation }; roles?: Array<{ id: string; name: string }> };
   attachedModels: Array<{ id: string; name: string }>;
   modelOptions?: Array<{ id: string; name?: string; title?: Translation }>;
   roleOptions?: Array<{ id: string; name: string }>;
@@ -147,6 +151,9 @@ const props = defineProps<{
   files?: FileableFileItem[];
   can: { update: boolean; delete: boolean };
 }>();
+const resource = props.typeKind === 'institutionType' ? 'institutionTypes' : 'dutyTypes';
+const entityType = props.typeKind === 'institutionType' ? ModelEnum.INSTITUTION_TYPE : ModelEnum.DUTY_TYPE;
+const fileableType = props.typeKind === 'institutionType' ? 'InstitutionType' : 'DutyType';
 const section = ref('overview');
 const deleteOpen = ref(false);
 const modelsOpen = ref(false);
@@ -180,7 +187,7 @@ function openRoles(): void {
 }
 function saveModels(): void {
   modelsProcessing.value = true;
-  router.put(route('types.models.sync', props.contentType.id), { models: modelIds.value }, {
+  router.put(route(`${resource}.models.sync`, props.contentType.id), { models: modelIds.value }, {
     preserveScroll: true,
     onSuccess: () => { modelsOpen.value = false; },
     onFinish: () => { modelsProcessing.value = false; },
@@ -188,29 +195,28 @@ function saveModels(): void {
 }
 function saveRoles(): void {
   rolesProcessing.value = true;
-  router.put(route('types.roles.sync', props.contentType.id), { roles: roleIds.value }, {
+  router.put(route('dutyTypes.roles.sync', props.contentType.id), { roles: roleIds.value }, {
     preserveScroll: true,
     onSuccess: () => { rolesOpen.value = false; },
     onFinish: () => { rolesProcessing.value = false; },
   });
 }
 const facts = computed<RecordFact[]>(() => [
-  { key: 'model_type', label: $t('Modelis'), value: props.contentType.model_type ?? '—' },
   { key: 'models', label: $t('Susieti įrašai'), value: String(props.attachedModels.length) },
-  { key: 'roles', label: $t('Rolės'), value: String(props.contentType.roles?.length ?? 0) },
+  ...(props.typeKind === 'dutyType' ? [{ key: 'roles', label: $t('Rolės'), value: String(props.contentType.roles?.length ?? 0) }] : []),
 ]);
 const sections = computed<RecordPageSection[]>(() => [
   { value: 'overview', label: $t('Apžvalga') },
   { value: 'models', label: $t('Susieti įrašai'), count: props.attachedModels.length },
-  { value: 'roles', label: $t('Rolės'), count: props.contentType.roles?.length },
+  ...(props.typeKind === 'dutyType' ? [{ value: 'roles', label: $t('Rolės'), count: props.contentType.roles?.length }] : []),
   // Type files are reference documents for every duty or institution of the type, so anyone who can
   // see the type reads them; only uploading needs update and a folder.
-  ...(props.sharepointPath || props.files?.length ? [{ value: 'files', label: $t('Failai') }] : []),
+  { value: 'files', label: $t('Failai') },
 ]);
 const primaryAction = computed<RecordAction | undefined>(() => props.can.update ? { key: 'edit', label: $t('Redaguoti'), icon: Edit } : undefined);
 const overflowActions = computed<RecordAction[]>(() => props.can.delete ? [{ key: 'delete', label: $t('Šalinti'), icon: Trash2, destructive: true }] : []);
 function handleAction(action: string): void {
-  if (action === 'edit') router.visit(route('types.edit', props.contentType.id));
+  if (action === 'edit') router.visit(route(`${resource}.edit`, props.contentType.id));
   if (action === 'delete') deleteOpen.value = true;
 }
 </script>

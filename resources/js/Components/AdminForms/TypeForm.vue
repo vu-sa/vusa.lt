@@ -1,10 +1,10 @@
 <template>
   <FormPage
-    :title="isCreate ? $t('Naujas turinio tipas') : (localizedTitle || $t('Tipas'))"
-    :bar-title="isCreate ? $t('Naujas turinio tipas') : (localizedTitle || undefined)"
-    :entity-type="ModelEnum.TYPE"
-    :back-href="route('types.index')"
-    :back-label="$t('Tipai')"
+    :title="isCreate ? $t(`types.${typeKind}.create`) : (localizedTitle || $t('Tipas'))"
+    :bar-title="isCreate ? $t(`types.${typeKind}.create`) : (localizedTitle || undefined)"
+    :entity-type="entityType"
+    :back-href="route(`${resource}.index`)"
+    :back-label="$t(`types.${typeKind}.title`)"
     :processing="form.processing"
     :dirty="form.isDirty"
     :errors="form.errors"
@@ -15,7 +15,7 @@
     :missing-locale-counts
     :created-at="!isCreate ? (type?.created_at as string | undefined) : undefined"
     :updated-at="!isCreate ? (type?.updated_at as string | undefined) : undefined"
-    :activity-subject="!isCreate && form.id ? { type: 'type', id: String(form.id) } : undefined"
+    :activity-subject="!isCreate && form.id ? { type: typeKind, id: String(form.id) } : undefined"
     @update:locale="activeLocale = $event"
     @submit="$emit('submit:form', form)"
   >
@@ -29,7 +29,7 @@
         <Input
           id="title"
           v-model="form.title[activeLocale]"
-          :placeholder="activeLocale === 'lt' ? 'Studentų atstovų organas' : 'Student representative body'"
+          :placeholder="$t(`types.${typeKind}.example`)"
           :class="['h-11', fieldSurfaceClass]"
         />
       </FormFieldWrapper>
@@ -45,18 +45,6 @@
 
     <template #aside>
       <FormPanel :title="$t('forms.sections.type_parameters')" :icon="SlidersHorizontal" title-class="text-brand">
-        <FormFieldWrapper id="model_type" :label="$t('forms.fields.model_type')" required :error="form.errors.model_type">
-          <Select v-model="modelTypeString">
-            <SelectTrigger id="model_type">
-              <SelectValue placeholder="Institucija" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="opt in modelDefaults" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </FormFieldWrapper>
 
         <FormFieldWrapper id="parent_id" :label="$t('forms.fields.parent_type')" :error="form.errors.parent_id">
           <Select v-model="parentIdString">
@@ -76,7 +64,7 @@
       </FormPanel>
 
       <FormPanel
-        v-if="form.model_type === ModelEnum.INSTITUTION"
+        v-if="typeKind === 'institutionType'"
         :title="$t('forms.sections.institution_settings')"
         :icon="Building2"
         title-class="text-brand"
@@ -176,7 +164,6 @@ import { NumberField } from '@/Components/ui/number-field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
-import { modelTypeLabel, modelTypes } from '@/Types/formOptions';
 
 defineEmits<{
   (event: 'submit:form', form: unknown): void;
@@ -184,13 +171,17 @@ defineEmits<{
 }>();
 
 const props = defineProps<{
-  type: App.Entities.Type;
-  contentTypes: Array<{ id: string; title: string | { lt?: string; en?: string }; model_type: string }>;
-  rememberKey?: 'CreateType';
+  typeKind: 'institutionType' | 'dutyType';
+  type: (App.Entities.InstitutionType | App.Entities.DutyType);
+  contentTypes: Array<{ id: number; title: string | { lt?: string; en?: string } | null }>;
+  rememberKey?: string;
   enableDelete?: boolean;
 }>();
 
-const isCreate = computed(() => props.rememberKey === 'CreateType');
+const resource = props.typeKind === 'institutionType' ? 'institutionTypes' : 'dutyTypes';
+const entityType = props.typeKind === 'institutionType' ? ModelEnum.INSTITUTION_TYPE : ModelEnum.DUTY_TYPE;
+
+const isCreate = computed(() => Boolean(props.rememberKey));
 const isDeleteDialogOpen = ref(false);
 const activeLocale = ref<'lt' | 'en'>('lt');
 
@@ -199,7 +190,6 @@ const fieldIds = {
   'title.en': 'title',
   'description.lt': 'description',
   'description.en': 'description',
-  'model_type': 'model_type',
   'parent_id': 'parent_id',
   'slug': 'slug',
 };
@@ -222,14 +212,6 @@ const initialData = {
 
 const form = props.rememberKey ? useForm(props.rememberKey, initialData) : useForm(initialData);
 
-// Bridge string <-> model for Select
-const modelTypeString = computed({
-  get: () => form.model_type ?? '',
-  set: (val: string) => {
-    form.model_type = val || null;
-    form.parent_id = null;
-  },
-});
 
 const parentIdString = computed({
   get: () => form.parent_id != null ? String(form.parent_id) : 'none',
@@ -257,9 +239,8 @@ const governanceScope = computed({
   },
 });
 
-// Computed property to handle extra_attributes.meeting_periodicity_days
 const extraAttributesPeriodicityDays = computed({
-  get: () => form.extra_attributes?.meeting_periodicity_days ?? 0,
+  get: () => form.extra_attributes?.meeting_periodicity_days ?? undefined,
   set: (value) => {
     if (!form.extra_attributes) {
       form.extra_attributes = {};
@@ -271,7 +252,6 @@ const extraAttributesPeriodicityDays = computed({
   },
 });
 
-// Computed property to handle extra_attributes.enable_sibling_relationships
 const enableSiblingRelationships = computed({
   get: () => form.extra_attributes?.enable_sibling_relationships ?? false,
   set: (value) => {
@@ -285,7 +265,6 @@ const enableSiblingRelationships = computed({
   },
 });
 
-// Computed property to handle extra_attributes.enable_cross_tenant_sibling_relationships
 const enableCrossTenantSiblingRelationships = computed({
   get: () => form.extra_attributes?.enable_cross_tenant_sibling_relationships ?? false,
   set: (value) => {
@@ -306,14 +285,10 @@ const missingLocaleCounts = computed(() => ({
   en: [form.title?.en].filter(value => !value).length,
 }));
 
-const modelDefaults = modelTypes.type.map(alias => ({
-  value: alias,
-  label: modelTypeLabel(alias),
-}));
 
 const parentTypeOptions = computed(() => {
   return props.contentTypes.filter(
-    type => form.model_type === type.model_type && form.id !== type.id,
+    type => form.id !== type.id,
   );
 });
 </script>

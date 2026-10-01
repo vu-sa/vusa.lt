@@ -23,7 +23,7 @@ class SyncRoleAttachableTypesRequest extends FormRequest
     {
         return [
             'attachable_types' => 'present|array',
-            'attachable_types.*' => ['integer', Rule::exists('types', 'id')],
+            'attachable_types.*' => ['integer', \App\Rules\SoftDeleteRules::existsLive('duty_types')],
         ];
     }
 }

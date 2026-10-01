@@ -237,7 +237,7 @@ interface Translated { lt: string; en: string }
 
 const props = defineProps<{
   institution: App.Entities.Institution;
-  institutionTypes: App.Entities.Type[];
+  institutionTypes: App.Entities.InstitutionType[];
   assignableTenants: Array<App.Entities.Tenant>;
   /** Create mode when set: keeps the draft across a failed submit. */
   rememberKey?: string;

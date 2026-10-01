@@ -145,6 +145,10 @@ class Dutiable extends MorphPivot
     }
 
     /**
+     * User-only by decision: the morph is a leftover from the removed Contact model, so do not
+     * add a second holder type. Alumni and login-less contacts stay User rows; the planned
+     * simplification is a plain `user_id` foreign key.
+     *
      * @return MorphTo<Model, $this>
      */
     public function dutiable(): MorphTo

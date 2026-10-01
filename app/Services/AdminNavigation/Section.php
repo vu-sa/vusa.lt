@@ -35,6 +35,7 @@ final readonly class Section
         public array $matches = [],
         public ?string $descriptionKey = null,
         public bool $startsGroup = false,
+        public bool $taxonomy = false,
     ) {}
 
     /**

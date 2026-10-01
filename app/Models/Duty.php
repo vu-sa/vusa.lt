@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\DutyDutyType;
 use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
@@ -53,7 +54,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Tenant> $assignableTenants
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Comment> $comments
- * @property-read Typeable|Dutiable|null $pivot
+ * @property-read DutyDutyType|Dutiable|null $pivot
  * @property-read Collection<int, User> $current_users
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $exOfficioSourceDuties
@@ -78,7 +79,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Permission> $teams
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
- * @property-read Collection<int, Type> $types
+ * @property-read Collection<int, DutyType> $types
  * @property-read Collection<int, User> $users
  * @property-read int|null $tenants_count
  * @property-read int|null $meetings_count
@@ -178,7 +179,7 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
             'institution_name_lt' => $this->institution?->getTranslation('name', 'lt'),
             'institution_name_en' => $this->institution?->getTranslation('name', 'en'),
             'type_titles' => $this->types
-                ->map(fn (Type $type) => $type->getTranslation('title', 'lt'))
+                ->map(fn (DutyType $type) => $type->getTranslation('title', 'lt'))
                 ->filter()
                 ->values()
                 ->all(),
@@ -267,9 +268,9 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
         return $this->hasMany(DutyResponsibility::class);
     }
 
-    public function types(): MorphToMany
+    public function types(): BelongsToMany
     {
-        return $this->morphToMany(Type::class, 'typeable')->using(Typeable::class)->withPivot(['typeable_type']);
+        return $this->belongsToMany(DutyType::class)->using(DutyDutyType::class);
     }
 
     public function institution(): BelongsTo

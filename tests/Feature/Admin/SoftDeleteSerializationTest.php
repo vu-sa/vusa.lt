@@ -16,7 +16,8 @@ use App\Models\Resource;
 use App\Models\StudyProgram;
 use App\Models\StudySet;
 use App\Models\Tag;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -65,6 +66,6 @@ it('exposes deleted_at for soft-deletable models', function (string $modelClass,
     'study program' => [StudyProgram::class, fn (): StudyProgram => StudyProgram::factory()->create(), true],
     'study set' => [StudySet::class, fn (): StudySet => StudySet::factory()->create(), true],
     'tag' => [Tag::class, fn (): Tag => Tag::factory()->create(), true],
-    'type' => [Type::class, fn (): Type => Type::factory()->create(), true],
+    'type' => [InstitutionType::class, fn (): InstitutionType => InstitutionType::factory()->create(), true],
     'user' => [User::class, fn (): User => User::factory()->create(), true],
 ]);

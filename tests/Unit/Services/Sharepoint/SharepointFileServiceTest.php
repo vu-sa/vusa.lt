@@ -6,7 +6,8 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Tenant;
-use App\Models\Type;
+use App\Models\InstitutionType;
+use App\Models\DutyType;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
@@ -59,15 +60,14 @@ describe('SharepointFileService', function (): void {
                 ->toThrow(Exception::class, 'Model does not have HasSharepointFiles trait');
         });
 
-        test('generates correct path for Type model', function (): void {
-            $type = Type::factory()->create([
-                'title' => 'Test Type',
-                'model_type' => MorphMap::alias(News::class),
+        test('generates correct path for InstitutionType model', function (): void {
+            $type = InstitutionType::factory()->create([
+                'title' => 'Test InstitutionType',
             ]);
 
             $path = SharepointFileService::pathForFileableDriveItem($type);
 
-            expect($path)->toBe('General/Types/News/Test Type');
+            expect($path)->toBe('General/Types/Institutions/Test InstitutionType');
         });
 
         test('generates correct path for Institution model', function (): void {
@@ -160,9 +160,8 @@ describe('SharepointFileService', function (): void {
         // at the service level when the institution relationship returns null.
 
         test('uses SharepointFolderEnum constants', function (): void {
-            $type = Type::factory()->create([
-                'title' => 'Test Type',
-                'model_type' => MorphMap::alias(News::class),
+            $type = InstitutionType::factory()->create([
+                'title' => 'Test InstitutionType',
             ]);
 
             $path = SharepointFileService::pathForFileableDriveItem($type);

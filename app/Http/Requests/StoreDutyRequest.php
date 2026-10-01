@@ -37,6 +37,7 @@ class StoreDutyRequest extends FormRequest
             'places_to_occupy' => 'nullable|integer',
             'contacts_grouping' => 'required|in:none,study_program,tenant',
             'types' => 'nullable|array',
+            'types.*' => ['integer', 'distinct', \App\Rules\SoftDeleteRules::existsLive('duty_types')],
             'roles' => 'nullable|array',
             'current_users' => 'nullable|array',
             'ex_officio_target_duty_ids' => 'nullable|array',
