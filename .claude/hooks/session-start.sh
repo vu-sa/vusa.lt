@@ -45,3 +45,23 @@ npm run build
 if ! git symbolic-ref -q refs/remotes/origin/HEAD >/dev/null; then
   git fetch -q origin main && git remote set-head origin main
 fi
+
+# Search tests that opt into real Typesense (usesTypesense()) reach it as `typesense:8108`
+# with the dev key, like CI. Keep the version in step with docker-compose.yml.
+TYPESENSE_VERSION=30.2
+TYPESENSE_DIR="$HOME/.cache/typesense/$TYPESENSE_VERSION"
+if [ ! -x "$TYPESENSE_DIR/typesense-server" ]; then
+  mkdir -p "$TYPESENSE_DIR"
+  curl -sSfL "https://dl.typesense.org/releases/$TYPESENSE_VERSION/typesense-server-$TYPESENSE_VERSION-linux-amd64.tar.gz" \
+    | tar -xz -C "$TYPESENSE_DIR"
+fi
+grep -q '[[:space:]]typesense$' /etc/hosts || echo '127.0.0.1 typesense' >> /etc/hosts
+if ! curl -sf http://127.0.0.1:8108/health >/dev/null; then
+  mkdir -p "$TYPESENSE_DIR/data"
+  nohup "$TYPESENSE_DIR/typesense-server" --data-dir="$TYPESENSE_DIR/data" --api-key=xyz --enable-cors \
+    > "$TYPESENSE_DIR/typesense.log" 2>&1 &
+  for _ in $(seq 1 30); do
+    curl -sf http://127.0.0.1:8108/health >/dev/null && break
+    sleep 1
+  done
+fi
