@@ -48,9 +48,9 @@ pest()->browser()->timeout(15_000);
 $tia = pest()->tia()->locally();
 
 // Baseline fetching shells out to the GitHub CLI. Pest aborts the run (exit 1) when `gh` is
-// missing or unauthenticated, and the Sail container ships without it — so opt in only where
-// the CLI is actually resolvable.
-if (shell_exec('command -v gh 2>/dev/null') !== null) {
+// missing or unauthenticated (Sail ships without it; cloud sessions have it logged out), so opt
+// in only where it can actually fetch.
+if (shell_exec('gh auth status >/dev/null 2>&1 && echo ok') !== null) {
     $tia->baselined();
 }
 

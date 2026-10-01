@@ -75,6 +75,8 @@ All Laravel-related commands MUST run through Sail:
 ./vendor/bin/sail npm run storybook
 ```
 
+**Exception — Claude Code on the web** (`CLAUDE_CODE_REMOTE=true`): Docker images can't be pulled there, so Sail never runs. `.claude/hooks/session-start.sh` installs dependencies natively and writes a SQLite `.env`; drop the `./vendor/bin/sail` prefix (`php artisan test --parallel --compact`, `npm run test`, `vendor/bin/pint --dirty`). MariaDB, Typesense, Reverb and Mailpit are unavailable, so verify with tests, not a running site; tests that opt into real Typesense (`usesTypesense()`) fail with `ConnectException` there — run those in CI.
+
 Note: `npm run typecheck` (`vue-tsc --noEmit`) is available and runs in CI, but is currently **non-blocking** (advisory only). Don't run ESLint fixes or chase typecheck findings unless explicitly asked — verify frontend changes with Vitest instead.
 
 ### Running backend tests — always `--parallel`
