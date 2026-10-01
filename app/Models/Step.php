@@ -29,15 +29,24 @@ use Illuminate\Support\Carbon;
  * @property string|null $created_by
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Goal|null $goal
- * @property-read Problem|null $problem
- * @property-read User|null $createdBy
+ * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read AgendaItem|null $agendaItem
+ * @property-read User|null $createdBy
  * @property-read Document|null $document
+ * @property-read array $translatable_columns_from
+ * @property-read Goal|null $goal
  * @property-read Collection<int, User> $performers
+ * @property-read Problem|null $problem
+ * @property-read mixed $translations
  *
  * @method static \Database\Factories\StepFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Step newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Step newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Step query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Step whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Step whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Step whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Step whereLocales(string $column, array $locales)
  *
  * @mixin \Eloquent
  */

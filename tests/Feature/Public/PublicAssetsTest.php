@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Inertia\Testing\AssertableInertia as Assert;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->cataloguePath = tempnam(sys_get_temp_dir(), 'public-icons-');
@@ -98,5 +98,5 @@ it('ignores unknown names and malformed catalogue entries', function (): void {
 it('falls back when the catalogue is unreadable JSON', function (): void {
     File::put($this->cataloguePath, 'incomplete catalogue');
 
-    expect(app(PublicAssetService::class)->icons(['calendar-24-regular']))->toBe([]);
+    expect(app(PublicAssetService::class)->icons(['calendar-24-regular']))->toBeEmpty();
 });

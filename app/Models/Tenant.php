@@ -25,12 +25,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $fullname
  * @property string $shortname
  * @property string $alias
- * @property bool $goals_enabled
  * @property string|null $phone
  * @property string|null $email
  * @property string|null $address
  * @property string|null $shortname_vu
  * @property string|null $primary_institution_id
+ * @property bool $goals_enabled
  * @property-read Collection<int, Banner> $banners
  * @property-read Collection<int, Calendar> $calendar
  * @property-read Collection<int, Duty> $duties

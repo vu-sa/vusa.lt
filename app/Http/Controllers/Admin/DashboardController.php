@@ -23,7 +23,6 @@ use App\Services\RelationshipService;
 use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class DashboardController extends AdminController
@@ -67,37 +66,35 @@ class DashboardController extends AdminController
         });
 
         // Get upcoming tasks (due within 14 days or overdue)
-        $upcomingTasks = fn () => once(function () use ($user) {
-            return $user()->tasks()
-                ->whereNull('completed_at')
-                ->where(function ($query): void {
-                    $query->where('due_date', '<=', now()->addDays(14))
-                        ->orWhere('due_date', '<', now());
-                })
-                ->orderByDesc('due_date')
-                ->with('taskable')
-                ->take(10)
-                ->get()
-                ->map(fn ($task) => [
-                    'id' => $task->id,
-                    'name' => $task->name,
-                    'due_date' => $task->due_date?->toISOString(),
-                    'is_overdue' => $task->isOverdue(),
-                    'taskable_type' => $task->taskable_type ?? '',
-                    'taskable_id' => $task->taskable_id,
-                    // What the task is about, so a row can say "Senato posėdis" and link to it.
-                    'taskable' => $task->taskable === null ? null : [
-                        'id' => (string) $task->taskable_id,
-                        'name' => $task->taskable->getAttribute('title') ?? $task->taskable->getAttribute('name'),
-                    ],
-                    'action_type' => $task->action_type?->value,
-                    'metadata' => $task->metadata,
-                    'progress' => $task->getProgress(),
-                    'can_be_manually_completed' => $task->canBeManuallyCompleted(),
-                    'icon' => $task->icon,
-                    'color' => $task->color,
-                ]);
-        });
+        $upcomingTasks = fn () => once(fn () => $user()->tasks()
+            ->whereNull('completed_at')
+            ->where(function ($query): void {
+                $query->where('due_date', '<=', now()->addDays(14))
+                    ->orWhere('due_date', '<', now());
+            })
+            ->orderByDesc('due_date')
+            ->with('taskable')
+            ->take(10)
+            ->get()
+            ->map(fn ($task) => [
+                'id' => $task->id,
+                'name' => $task->name,
+                'due_date' => $task->due_date?->toISOString(),
+                'is_overdue' => $task->isOverdue(),
+                'taskable_type' => $task->taskable_type ?? '',
+                'taskable_id' => $task->taskable_id,
+                // What the task is about, so a row can say "Senato posėdis" and link to it.
+                'taskable' => $task->taskable === null ? null : [
+                    'id' => (string) $task->taskable_id,
+                    'name' => $task->taskable->getAttribute('title') ?? $task->taskable->getAttribute('name'),
+                ],
+                'action_type' => $task->action_type?->value,
+                'metadata' => $task->metadata,
+                'progress' => $task->getProgress(),
+                'can_be_manually_completed' => $task->canBeManuallyCompleted(),
+                'icon' => $task->icon,
+                'color' => $task->color,
+            ]));
 
         $upcomingMeetings = fn () => once(fn () => GetUpcomingMeetingsForUser::execute($user()));
 

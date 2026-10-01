@@ -20,6 +20,7 @@ use Illuminate\Support\Carbon;
  * @property-read Collection<int, Problem> $problems
  * @property-read mixed $translations
  *
+ * @method static \Database\Factories\ProblemCategoryFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProblemCategory newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProblemCategory newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProblemCategory query()

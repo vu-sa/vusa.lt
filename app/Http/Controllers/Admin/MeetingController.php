@@ -209,18 +209,16 @@ class MeetingController extends AdminController
             ]);
         });
 
-        $missingActions = fn () => once(function () use ($loadMeeting, $agendaItemAbilities, $canCreateAgendaItems): array {
-            return collect($this->meetingCompletionService->missingActions($loadMeeting()))
-                ->filter(function (array $action) use ($agendaItemAbilities, $canCreateAgendaItems): bool {
-                    if ($action['type'] === 'agenda_missing') {
-                        return $canCreateAgendaItems();
-                    }
+        $missingActions = fn () => once(fn (): array => collect($this->meetingCompletionService->missingActions($loadMeeting()))
+            ->filter(function (array $action) use ($agendaItemAbilities, $canCreateAgendaItems): bool {
+                if ($action['type'] === 'agenda_missing') {
+                    return $canCreateAgendaItems();
+                }
 
-                    return $agendaItemAbilities()->get($action['agenda_item_id'], [])['update'] ?? false;
-                })
-                ->values()
-                ->all();
-        });
+                return $agendaItemAbilities()->get($action['agenda_item_id'], [])['update'] ?? false;
+            })
+            ->values()
+            ->all());
 
         $publicUrl = fn () => once(function () use ($loadMeeting, $primaryInstitution): ?string {
             $m = $loadMeeting();

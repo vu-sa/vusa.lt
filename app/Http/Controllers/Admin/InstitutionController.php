@@ -131,51 +131,45 @@ class InstitutionController extends AdminController
         $showsMeetings = fn () => once(fn () => ! $readOnly() || $loadInstitution()->has_public_meetings);
         $activityStatus = fn () => once(fn () => $this->activityStatusService->resolve($loadInstitution())->toArray());
 
-        $recentComments = fn () => once(function () use ($institution, $readOnly) {
-            return $readOnly() ? collect() : $institution->comments()
-                ->roots()
-                ->notErased()
-                ->with('user:id,name,profile_photo_path')
-                ->withCount(['replies' => fn ($query) => $query->notErased()])
-                ->latest()
-                ->limit(3)
-                ->get()
-                ->map(fn (Comment $comment) => [
-                    'id' => $comment->id,
-                    'body' => $comment->body,
-                    'kind' => $comment->kind->value,
-                    'created_at' => $comment->created_at->toISOString(),
-                    'replies_count' => $comment->replies_count,
-                    'user' => $comment->user ? [
-                        'id' => $comment->user->id,
-                        'name' => $comment->user->name,
-                        'profile_photo_path' => $comment->user->profile_photo_path,
-                    ] : null,
-                ]);
-        });
+        $recentComments = fn () => once(fn () => $readOnly() ? collect() : $institution->comments()
+            ->roots()
+            ->notErased()
+            ->with('user:id,name,profile_photo_path')
+            ->withCount(['replies' => fn ($query) => $query->notErased()])
+            ->latest()
+            ->limit(3)
+            ->get()
+            ->map(fn (Comment $comment) => [
+                'id' => $comment->id,
+                'body' => $comment->body,
+                'kind' => $comment->kind->value,
+                'created_at' => $comment->created_at->toISOString(),
+                'replies_count' => $comment->replies_count,
+                'user' => $comment->user ? [
+                    'id' => $comment->user->id,
+                    'name' => $comment->user->name,
+                    'profile_photo_path' => $comment->user->profile_photo_path,
+                ] : null,
+            ]));
 
-        $overviewMeetings = fn () => once(function () use ($institution, $showsMeetings) {
-            return ! $showsMeetings() ? collect() : $institution->meetings()
-                ->withCount('agendaItems')
-                ->with(['agendaItems.votes', 'fileableFiles', 'institutions.types'])
-                ->orderByDesc('start_time')
-                ->limit(3)
-                ->get()
-                ->each->append(['has_report', 'has_protocol']);
-        });
+        $overviewMeetings = fn () => once(fn () => ! $showsMeetings() ? collect() : $institution->meetings()
+            ->withCount('agendaItems')
+            ->with(['agendaItems.votes', 'fileableFiles', 'institutions.types'])
+            ->orderByDesc('start_time')
+            ->limit(3)
+            ->get()
+            ->each->append(['has_report', 'has_protocol']));
 
-        $overviewDuties = fn () => once(function () use ($loadInstitution) {
-            return $loadInstitution()->duties
-                ->sortBy('order')
-                ->map(fn (Duty $duty) => [
-                    'id' => $duty->id,
-                    'name' => $duty->name,
-                    'order' => $duty->order,
-                    'places_to_occupy' => $duty->places_to_occupy,
-                    'current_users' => $duty->current_users,
-                ])
-                ->values();
-        });
+        $overviewDuties = fn () => once(fn () => $loadInstitution()->duties
+            ->sortBy('order')
+            ->map(fn (Duty $duty) => [
+                'id' => $duty->id,
+                'name' => $duty->name,
+                'order' => $duty->order,
+                'places_to_occupy' => $duty->places_to_occupy,
+                'current_users' => $duty->current_users,
+            ])
+            ->values());
 
         // Get subscription status for the current user
         $user = fn () => once(fn () => request()->user());

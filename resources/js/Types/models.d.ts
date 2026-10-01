@@ -50,12 +50,14 @@ declare global {
       main_vote?: Vote
       additional_votes?: Vote[]
       note?: AgendaItemNote
+      problems?: Problem[]
       comments?: Comment[]
       root_comments?: Comment[]
       activities_as_subject?: Activity[]
       // counts
       votes_count: number
       additional_votes_count: number
+      problems_count: number
       comments_count: number
       root_comments_count: number
       activities_as_subject_count: number
@@ -65,6 +67,7 @@ declare global {
       main_vote_exists: boolean
       additional_votes_exists: boolean
       note_exists: boolean
+      problems_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
       activities_as_subject_exists: boolean
@@ -327,6 +330,18 @@ declare global {
       news_exists: boolean
       page_exists: boolean
       tenant_homepage_content_exists: boolean
+    }
+
+    export interface ContentEditorDraft {
+      // columns
+      id: number
+      user_id: string
+      kind: string
+      identity: string
+      snapshot: Array<unknown>
+      revision: number
+      created_at?: string | null
+      updated_at?: string | null
     }
 
     export interface ContentPart {
@@ -694,6 +709,46 @@ declare global {
       // exists
       form_exists: boolean
       field_responses_exists: boolean
+    }
+
+    export interface Goal {
+      // columns
+      id: string
+      tenant_id: number
+      cadence_id?: string | null
+      responsible_duty_id?: string | null
+      title: Array<unknown>
+      description?: Array<unknown> | null
+      expected_result?: Array<unknown> | null
+      evaluation?: Array<unknown> | null
+      status: GoalStatus
+      is_public: boolean
+      created_by?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // mutators
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      tenant?: Tenant
+      cadence?: Cadence
+      responsible_duty?: Duty
+      created_by?: User
+      problems?: Problem[]
+      steps?: Step[]
+      activities_as_subject?: Activity[]
+      // counts
+      problems_count: number
+      steps_count: number
+      activities_as_subject_count: number
+      // exists
+      tenant_exists: boolean
+      cadence_exists: boolean
+      responsible_duty_exists: boolean
+      created_by_exists: boolean
+      problems_exists: boolean
+      steps_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface Institution {
@@ -1138,12 +1193,18 @@ declare global {
       responsible_user?: User
       categories?: ProblemCategory[]
       institutions?: Institution[]
+      agenda_items?: AgendaItem[]
+      goals?: Goal[]
+      steps?: Step[]
       comments?: Comment[]
       root_comments?: Comment[]
       activities_as_subject?: Activity[]
       // counts
       categories_count: number
       institutions_count: number
+      agenda_items_count: number
+      goals_count: number
+      steps_count: number
       comments_count: number
       root_comments_count: number
       activities_as_subject_count: number
@@ -1153,6 +1214,9 @@ declare global {
       responsible_user_exists: boolean
       categories_exists: boolean
       institutions_exists: boolean
+      agenda_items_exists: boolean
+      goals_exists: boolean
+      steps_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
       activities_as_subject_exists: boolean
@@ -1786,6 +1850,44 @@ declare global {
       type_exists: boolean
     }
 
+    export interface Step {
+      // columns
+      id: string
+      goal_id?: string | null
+      problem_id?: string | null
+      title: Array<unknown>
+      description?: Array<unknown> | null
+      happened_on: string
+      agenda_item_id?: string | null
+      document_id?: number | null
+      url?: string | null
+      created_by?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // mutators
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      goal?: Goal
+      problem?: Problem
+      created_by?: User
+      performers?: User[]
+      agenda_item?: AgendaItem
+      document?: Document
+      activities_as_subject?: Activity[]
+      // counts
+      performers_count: number
+      activities_as_subject_count: number
+      // exists
+      goal_exists: boolean
+      problem_exists: boolean
+      created_by_exists: boolean
+      performers_exists: boolean
+      agenda_item_exists: boolean
+      document_exists: boolean
+      activities_as_subject_exists: boolean
+    }
+
     export interface StudyProgram {
       // columns
       id: string
@@ -2058,6 +2160,7 @@ declare global {
       address?: string | null
       shortname_vu?: string | null
       primary_institution_id?: string | null
+      goals_enabled: boolean
       // relations
       banners?: Banner[]
       calendar?: Calendar[]
@@ -2368,6 +2471,16 @@ declare global {
     } as const;
 
     export type FormOptionSource = typeof FormOptionSource[keyof typeof FormOptionSource]
+
+    const GoalStatus = {
+      Planned: 'planned',
+      InProgress: 'in_progress',
+      Achieved: 'achieved',
+      NotAchieved: 'not_achieved',
+      Dropped: 'dropped',
+    } as const;
+
+    export type GoalStatus = typeof GoalStatus[keyof typeof GoalStatus]
 
     const MeetingType = {
       InPerson: 'in-person',

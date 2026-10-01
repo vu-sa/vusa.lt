@@ -9,7 +9,7 @@ use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Support\Facades\Event;
 use Inertia\Ssr\SsrState;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 it('hydrates an anonymous public page without losing its published content', function (): void {
     config(['inertia.ssr.enabled' => false, 'inertia.devtools.enabled' => false]);

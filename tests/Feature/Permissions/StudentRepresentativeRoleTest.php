@@ -114,4 +114,3 @@ test('own-scope representative is allowed to update an agenda item from their ow
     expect($ownItem->fresh()->getTranslation('title', 'lt'))->toBe('Savo klausimas')
         ->and($otherItem->fresh()->getTranslation('title', 'lt'))->not->toBe('Kito klausimas');
 });
-

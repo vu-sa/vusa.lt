@@ -140,10 +140,8 @@ describe('experiment switch', function (): void {
             Tenant::query()->whereKey($this->tenant->id)->update(['goals_enabled' => $enabled]);
 
             asUser($admin)->get(route('problems.show', $problem))
-                ->assertInertia(fn (Assert $page) => $page->where('adminNavigation.workspaces', function ($workspaces) use ($enabled): bool {
-                    return collect($workspaces)->flatMap(fn ($workspace) => $workspace['sections'])->pluck('key')->contains('tikslai') === $enabled
-                        && collect($workspaces)->flatMap(fn ($workspace) => $workspace['createActions'])->pluck('key')->contains('new_goal') === $enabled;
-                }));
+                ->assertInertia(fn (Assert $page) => $page->where('adminNavigation.workspaces', fn ($workspaces): bool => collect($workspaces)->flatMap(fn ($workspace) => $workspace['sections'])->pluck('key')->contains('tikslai') === $enabled
+                    && collect($workspaces)->flatMap(fn ($workspace) => $workspace['createActions'])->pluck('key')->contains('new_goal') === $enabled));
         }
     });
 

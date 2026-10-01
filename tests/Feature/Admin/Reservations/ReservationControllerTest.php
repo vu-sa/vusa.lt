@@ -13,6 +13,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
 pest()->use(RefreshDatabase::class);
+use App\Http\Middleware\HandleInertiaRequests;
 use App\States\ReservationResource\Lent;
 use App\States\ReservationResource\Reserved;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -51,7 +52,7 @@ describe('index', function (): void {
         $response = asUser($this->admin)
             ->withHeaders([
                 'X-Inertia' => 'true',
-                'X-Inertia-Version' => (string) app(\App\Http\Middleware\HandleInertiaRequests::class)->version(request()),
+                'X-Inertia-Version' => (string) app(HandleInertiaRequests::class)->version(request()),
                 'X-Inertia-Partial-Component' => 'Admin/Reservations/IndexReservation',
                 'X-Inertia-Partial-Data' => 'reservationCart',
             ])

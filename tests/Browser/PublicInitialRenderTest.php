@@ -4,7 +4,7 @@ use App\Models\QuickLink;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-uses(RefreshDatabase::class);
+pest()->use(RefreshDatabase::class);
 
 it('renders the signed-in English menu in English from its first browser render', function (): void {
     $tenant = Tenant::where('alias', 'vusa')->firstOrFail();
@@ -44,9 +44,9 @@ it('renders the signed-in English menu in English from its first browser render'
     waitForInertiaRender($page, '[data-slot="header-wordmark"]');
 
     expect($page->script('window.publicMenuRenders[0]'))
-        ->toBe(['lithuanian' => false, 'english' => true, 'icon' => true]);
-    expect($page->script('window.publicMenuRenders.some(render => render.lithuanian)'))->toBeFalse();
-    expect($page->script('JSON.parse(document.querySelector("script[data-page]").textContent).props.auth.user.id'))->toBe($user->id);
-    expect($page->script('document.getElementById("app").hasAttribute("data-server-rendered")'))->toBeFalse();
+        ->toBe(['lithuanian' => false, 'english' => true, 'icon' => true])
+        ->and($page->script('window.publicMenuRenders.some(render => render.lithuanian)'))->toBeFalse()
+        ->and($page->script('JSON.parse(document.querySelector("script[data-page]").textContent).props.auth.user.id'))->toBe($user->id)
+        ->and($page->script('document.getElementById("app").hasAttribute("data-server-rendered")'))->toBeFalse();
     $page->assertNoJavaScriptErrors();
 });

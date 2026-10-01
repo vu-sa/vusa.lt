@@ -36,6 +36,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
+ * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read Collection<int, ProblemCategory> $categories
  * @property-read Collection<int, Comment> $comments
  * @property-read User|null $createdBy

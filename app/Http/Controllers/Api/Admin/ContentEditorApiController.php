@@ -15,7 +15,7 @@ use Illuminate\Http\JsonResponse;
 
 class ContentEditorApiController extends ApiController
 {
-    public function __construct(private ContentEditorService $editor) {}
+    public function __construct(private readonly ContentEditorService $editor) {}
 
     public function show(string $kind, int $record): JsonResponse
     {

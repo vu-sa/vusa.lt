@@ -9,6 +9,7 @@ use App\Services\Authorization\PermissionScope;
 use App\Support\AuthorityCacheExpiry;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -123,7 +124,7 @@ class ModelAuthorizer
                 }
             } elseif (method_exists($duty, $relation)) {
                 $rel = $duty->{$relation}();
-                if ($rel instanceof \Illuminate\Database\Eloquent\Relations\BelongsTo) {
+                if ($rel instanceof BelongsTo) {
                     $foreignKey = $rel->getForeignKeyName();
                     if ($duty->{$foreignKey}) {
                         $ids->push($duty->{$foreignKey});
