@@ -33,6 +33,11 @@ Pranešimų puslapyje rodomi tau skirti pranešimai, naujausi – pirmiausia:
   - **Neskaityti** (su skaitliuku) – rodo tik naujus, dar neperžiūrėtus pranešimus. Tai numatytasis rodinys.
   - **Visi** – rodo ir skaitytus, ir neskaitytus pranešimus.
 
+## Rekomendacijos {#susitarimai}
+
+Pažymėti pranešimą kaip skaitytą ir atlikti jame nurodytą darbą – atskiri veiksmai.
+Užduotį užbaik jos puslapyje, o rezervacijos sprendimą priimk rezervacijos puslapyje.
+
 ## Veiksmai
 
 ### Pranešimo atidarymas ir atlikimas
@@ -76,11 +81,6 @@ mato savo, o ne kitų narių pranešimų dėžutę.
 Pažymėjus pranešimą kaip skaitytą platformoje, jis pašalinamas iš dar neišsiųstos el. pašto
 suvestinės eilės. Vien pamatyti pranešimą naršyklėje nepakanka – reikia jį pažymėti kaip skaitytą.
 Tai nekeičia jau išsiųstų laiškų.
-
-## Susitarimai {#susitarimai}
-
-Pažymėti pranešimą kaip skaitytą ir atlikti jame nurodytą darbą – atskiri veiksmai.
-Užduotį užbaik jos puslapyje, o rezervacijos sprendimą priimk rezervacijos puslapyje.
 
 ## Techninė informacija {#technine-informacija}
 

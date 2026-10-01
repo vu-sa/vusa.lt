@@ -41,6 +41,11 @@ galiojimo apimtis: **tavo padalinyje**, **tik su tavimi susijusiuose įrašuose*
 padalinio naujienas, o Centrinio biuro koordinatorius – visų padalinių naujienas.
 :::
 
+## Rekomendacijos {#susitarimai}
+
+Prieš kurdamas naują rolę, patikrink, ar darbui pakanka esamos. Suteik tik reikalingus veiksmus ir
+pasirink siauriausią tinkamą apimtį. Prieš trindamas rolę, patikrink, kurios pareigybės ją naudoja.
+
 ## Veiksmai
 
 ### Rolių sąrašas (`/mano/roles`)
@@ -110,11 +115,6 @@ visos platformos prieigą, kuri nepriklauso nuo rolės teisių lentelėje pasiri
   talpykla. Pakeitęs teises, patikrink, ar jos atitinka numatytą darbą.
 - **Rolės pagal tipą**: priskyrus pareigybei leidžiamą tipą, jai suteikiamos su tuo tipu susietos rolės.
   Pašalinus tipą, su juo susietos rolės taip pat pašalinamos.
-
-## Susitarimai {#susitarimai}
-
-Prieš kurdamas naują rolę, patikrink, ar darbui pakanka esamos. Suteik tik reikalingus veiksmus ir
-pasirink siauriausią tinkamą apimtį. Prieš trinant rolę, patikrink, kurios pareigybės ją naudoja.
 
 ## Techninė informacija {#technine-informacija}
 

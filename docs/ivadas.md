@@ -19,7 +19,7 @@ Gidas skirtas pirmiausia **administratoriams** – tiems, kurie tvarko padalinio
 narius ir teises ir kuriems reikia žinoti, *kaip* platforma veikia, o ne tik *kur* spausti.
 Naudotojai pagrindinę informaciją gauna pačioje platformoje, bet gidą skaityti gali visi.
 
-Gidas sudarytas taip pat, kaip platforma: po bendrųjų [Pagrindų](/pagrindai/platforma) kiekvienam
+Gidas sudarytas taip pat, kaip platforma: po bendrųjų [Pagrindų](/pagrindai/platforma) kiekvienai
 **darbo sričiai** (Mano, ViSAK, Rezervacijos, Svetainė, Organizacija, Sistema) skirtas atskiras
 skyrius, o kiekvienai sričiai priklausančiai skilčiai – atskiras puslapis. Skaityk tą skyrių, už
 kurį esi atsakingas (-a).
@@ -30,12 +30,17 @@ Skilties žinyno puslapyje rasi šiuos skyrius. Sąvokų ir darbo eigos puslapiu
 
 | Skyrius | Ką rasi |
 |---|---|
-| **Kaip tai veikia** | Sąvokos, būsenos, taisyklės, kurias taiko sistema |
+| **Kaip tai veikia** | Sąvokas, būsenas ir taisykles, kurias taiko sistema |
+| **Rekomendacijos** | Praktinius patarimus, kaip parengti turinį ar tvarkyti įrašus |
 | **Veiksmai** | Ką ir kaip galima padaryti |
 | **Kas ką gali** | Kurios rolės ką leidžia |
 | **Pranešimai ir automatizavimas** | Kokius pranešimus ir užduotis sukuria sistema |
-| **Susitarimai** | Organizaciniai susitarimai, kurių sistema neužtikrina, bet kurių laikomės |
-| **Techninė informacija** | Tikslios teisės, įgyvendinimo detalės ir testai, kurie tai tikrina |
+| **Susitarimai** | Organizacinius susitarimus, kurių sistema automatiškai netikrina |
+| **Techninė informacija** | Tikslias teises, įgyvendinimo detales ir testus, kurie tai tikrina |
+
+**Rekomendacijos** pateikiamos prie praktinio turinio, prieš veiksmų aprašymus. Jos nėra
+privalomos organizacijos taisyklės ar sistemos apribojimai. **Susitarimai** pateikiami tik ten,
+kur aprašomas konkretus organizacinis susitarimas, pavyzdžiui, rezervacijų ar posėdžių tvarka.
 
 Puslapio pradžioje rodoma jo būsena: **Peržiūrėta** – tekstas patikrintas pagal dabartinę
 elgseną; **Dalinis** – aprašyta tik dalis temos; **Rašoma** – turinys dar neparuoštas.

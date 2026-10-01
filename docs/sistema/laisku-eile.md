@@ -39,11 +39,6 @@ Sistemos būsenos ir rolių peržiūros prieigą turintys nariai gali matyti eil
 Santraukos išsiuntimo laikas priklauso nuo gavėjo pranešimų nustatymų. Pašalintos eilutės į
 santrauką nebepatenka.
 
-## Susitarimai {#susitarimai}
-
-Ši skiltis rodo pranešimų santraukos eilę, ne visas serverio užduotis. Ją išvalyk tik tada, kai
-laukiančių pranešimų siųsti nebereikia.
-
 ## Techninė informacija {#technine-informacija}
 
 Peržiūra tikrinama per `RolePolicy::viewAny`, o pašalinimo veiksmus papildomai leidžia tik

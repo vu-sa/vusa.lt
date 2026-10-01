@@ -56,6 +56,12 @@ Patikrink, kas baigia pareigas, kas paskiriamas, jų datas ir naujų narių kont
 Patvirtinus įrašomi pasirinktos pareigybės pakeitimai. Jei išsaugoti nepavyksta,
 pataisyk rodomas klaidas ir bandyk dar kartą.
 
+## Rekomendacijos {#susitarimai}
+
+Atnaujink paskyrimus po rinkimų, patikrink tikras kadencijos datas ir atskirk asmeninį
+nario el. paštą nuo pareigybės institucinio adreso. Renkamosioms pareigoms rekomenduojama
+nurodyti pabaigos datą. Tai patarimai, kurių vedlys automatiškai nepritaiko.
+
 ## Veiksmai
 
 ### Metinis padalinio perdavimas
@@ -89,12 +95,6 @@ pabaigos datos taisyklės: įrašius šiandieną, ji dar įskaitoma.
 - **Naujo nario įrašo sukūrimas nesiunčia pakvietimo ir nesukuria prisijungimo instrukcijų.**
   Prisijungimo perdavimą suderink atskirai.
 - Bendroms pareigybėms sistema tikrina padalinio kvotą.
-
-## Susitarimai {#susitarimai}
-
-Atnaujink paskyrimus po rinkimų, patikrink tikras kadencijos datas ir atskirk asmeninį
-nario el. paštą nuo pareigybės institucinio adreso. Renkamosioms pareigoms rekomenduojama
-nurodyti pabaigos datą. Tai organizaciniai susitarimai, ne automatiniai vedlio sprendimai.
 
 ## Techninė informacija {#technine-informacija}
 

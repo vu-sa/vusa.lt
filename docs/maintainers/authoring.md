@@ -27,12 +27,20 @@ Kam ši skiltis skirta ir kaip ją atverti.
 :::
 
 ## Kaip tai veikia
+## Rekomendacijos {#rekomendacijos}
 ## Veiksmai
 ## Kas ką gali {#teises}
 ## Pranešimai ir automatizavimas {#pranesimai}
 ## Susitarimai {#susitarimai}
 ## Techninė informacija {#technine-informacija}
 ```
+
+**Rekomendacijos** – neprivalomi praktiniai patarimai. Pateik juos prieš veiksmų aprašymus,
+jei jie padeda pasirengti darbui. **Susitarimai** – tik konkretūs organizaciniai susitarimai,
+kurių sistema automatiškai netikrina. Nepaversk bendro patarimo tariama VU SA taisykle ir
+nepriskirk organizacijai dokumentais nepagrįstų reikalavimų, terminų ar skaičių.
+Jei tokių patarimų ar susitarimų nėra, atitinkamą skyrių praleisk; nerašyk „Nėra“.
+Pervadindamas esamą skyrių išsaugok jo inkarą, kad ankstesnės nuorodos liktų veikti.
 
 Pildydamas naudok `partial` ir perspėjime įvardyk, kurios dalys jau aprašytos.
 Tik toms dalims gali pridėti `tests`. Patikrinęs visą parašytą puslapį, pakeisk būseną į
@@ -72,7 +80,7 @@ coverage: ignore
 Paaiškinimas paprastais žodžiais, apimtis ir nuorodos į susijusius puslapius.
 ```
 
-Pridėk tik reikalingas antraštes; šešių žinyno skyrių čia nereikia.
+Pridėk tik reikalingas antraštes; visų žinyno skyrių čia nereikia.
 Apžvalgos peržiūros data nepatvirtina visų jos nuorodomis pasiekiamų puslapių.
 
 ## Patikrinimas prieš užbaigiant
@@ -81,7 +89,7 @@ Apžvalgos peržiūros data nepatvirtina visų jos nuorodomis pasiekiamų puslap
 - Atskirai įvardyk sistemos patikras, siūlomas reikšmes ir organizacinius susitarimus.
 - Patikrink statusą, įrodymų apimtį, nuorodas ir išsaugotus antraščių inkarus.
 - Paleisk `./vendor/bin/sail artisan docs:coverage --strict`.
-- Sukurk PDF su `node docs/pdf/build.ts`, tada svetainę su `./vendor/bin/sail npm run docs:build`.
+- Sukurk PDF su `./vendor/bin/sail npm run docs:pdf`, tada svetainę su `./vendor/bin/sail npm run docs:build`.
 - Pakeitęs maketą patikrink 390, 820, 1180 ir 1440 px, abi temas, klaviatūrą ir lietimą.
 
 `docs:coverage` kredituoja deklaruotus `area` ir `models`, įskaitant juodraščius.
