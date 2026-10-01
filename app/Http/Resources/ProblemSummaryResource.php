@@ -23,9 +23,9 @@ class ProblemSummaryResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'status' => $this->status,
-            'occurred_at' => $this->occurred_at?->toDateString(),
+            'occurred_at' => $this->occurred_at->toDateString(),
             'resolved_at' => $this->resolved_at?->toDateString(),
-            'tenant' => $this->whenLoaded('tenant', fn () => $this->tenant?->only(['id', 'shortname'])),
+            'tenant' => $this->whenLoaded('tenant', fn () => $this->tenant->only(['id', 'shortname'])),
             'responsible_user' => $this->whenLoaded('responsibleUser', fn () => $this->responsibleUser?->only(['id', 'name'])),
         ];
     }

@@ -23,7 +23,7 @@ trait ResolvesPublicContent
     {
         if ($content !== null) {
             $normalized = app(ContentHeadingAnchors::class)->normalize($content->parts->map(fn (ContentPart $part) => [
-                'json_content' => $part->json_content?->toArray(),
+                'json_content' => $part->json_content->toArray(),
                 'options' => $part->options?->toArray(),
             ])->all());
             foreach ($content->parts as $index => $part) {

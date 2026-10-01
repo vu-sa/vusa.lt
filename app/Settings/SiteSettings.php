@@ -35,11 +35,11 @@ class SiteSettings extends Settings
     #[\Override]
     public function save(): self
     {
-        $saved = parent::save();
+        parent::save();
 
         self::forgetCachedPrivacyPageUrls();
 
-        return $saved;
+        return $this;
     }
 
     /**

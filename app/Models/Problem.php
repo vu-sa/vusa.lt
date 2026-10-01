@@ -123,11 +123,17 @@ class Problem extends Model implements Commentable
         return $this->belongsTo(User::class, 'responsible_user_id');
     }
 
+    /**
+     * @return BelongsToMany<ProblemCategory, $this>
+     */
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(ProblemCategory::class);
     }
 
+    /**
+     * @return BelongsToMany<Institution, $this>
+     */
     public function institutions(): BelongsToMany
     {
         return $this->belongsToMany(Institution::class);
@@ -135,6 +141,8 @@ class Problem extends Model implements Commentable
 
     /**
      * Agenda items where the problem was raised; the representation trail of the problem.
+     *
+     * @return BelongsToMany<AgendaItem, $this>
      */
     public function agendaItems(): BelongsToMany
     {

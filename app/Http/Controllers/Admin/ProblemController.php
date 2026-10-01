@@ -196,7 +196,7 @@ class ProblemController extends AdminController
                 'id' => $item->id,
                 'title' => $item->title,
                 'meeting_id' => $item->meeting_id,
-                'start_time' => $item->meeting->start_time?->toISOString(),
+                'start_time' => $item->meeting->start_time->toISOString(),
                 'institutions' => $item->meeting->institutions->pluck('name')->values()->all(),
             ])
             ->values()

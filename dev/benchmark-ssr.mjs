@@ -3,6 +3,15 @@ import { performance } from 'node:perf_hooks';
 
 const [fixturePath, endpoint = 'http://127.0.0.1:13714', seconds = '300', rate = '5'] = process.argv.slice(2);
 if (!fixturePath) throw new Error('Usage: node dev/benchmark-ssr.mjs fixtures.json [endpoint] [seconds] [requests/sec]');
+const renderUrl = new URL(endpoint);
+if (!['http:', 'https:'].includes(renderUrl.protocol)
+  || !['127.0.0.1', '[::1]'].includes(renderUrl.hostname)
+  || renderUrl.username || renderUrl.password) {
+  throw new Error('SSR benchmark endpoint must use HTTP(S) and a literal loopback address (127.0.0.1 or [::1]) without credentials');
+}
+renderUrl.pathname = '/render';
+renderUrl.search = '';
+renderUrl.hash = '';
 const pages = JSON.parse(await readFile(fixturePath, 'utf8'));
 if (!Array.isArray(pages) || !pages.length || pages.some(page => page.props?.auth)) {
   throw new Error('Provide an array of anonymous Inertia page objects');
@@ -12,8 +21,9 @@ let errors = 0;
 async function render(page) {
   const start = performance.now();
   try {
-    const response = await fetch(`${endpoint}/render`, {
+    const response = await fetch(renderUrl, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(page),
+      redirect: 'error',
       signal: AbortSignal.timeout(5000),
     });
     const result = await response.json();

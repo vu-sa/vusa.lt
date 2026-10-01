@@ -41,7 +41,7 @@ class PreviewContentPartsRequest extends FormRequest
     }
 
     /**
-     * @return array<string, mixed>
+     * @return list<int>
      */
     private function previewTenantIds(ModelAuthorizer $authorizer): array
     {

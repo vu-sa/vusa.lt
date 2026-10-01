@@ -83,6 +83,6 @@ final class PublicCacheTags
             fn ($tenantId) => $tenantId !== null,
         ));
 
-        return array_values(array_merge(...array_map(fn ($tenantId) => $tagsFor((int) $tenantId), $tenantIds)));
+        return array_merge(...array_map(fn ($tenantId) => $tagsFor((int) $tenantId), $tenantIds));
     }
 }

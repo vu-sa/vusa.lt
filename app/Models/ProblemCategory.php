@@ -38,6 +38,9 @@ class ProblemCategory extends Model
 
     public array $translatable = ['name', 'description'];
 
+    /**
+     * @return BelongsToMany<Problem, $this>
+     */
     public function problems(): BelongsToMany
     {
         return $this->belongsToMany(Problem::class);

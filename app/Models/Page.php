@@ -108,7 +108,7 @@ class Page extends Model implements Sitemapable
             // default until the model is refreshed — guard here rather than in publicUrl(),
             // which trusts an already-persisted, freshly-queried row (true for every other
             // caller, e.g. NormalizePermalinks).
-            if (! is_string($page->lang)) {
+            if (! is_string($page->getAttribute('lang'))) {
                 return;
             }
 

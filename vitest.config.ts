@@ -18,6 +18,7 @@ import { generateI18nTranslationFiles } from './vite-plugins/i18n-split';
 generateI18nTranslationFiles(__dirname);
 
 const alias = {
+  'lucide-vue-next': '@lucide/vue',
   '@': path.resolve(__dirname, 'resources/js'),
 };
 

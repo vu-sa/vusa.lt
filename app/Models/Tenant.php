@@ -104,7 +104,7 @@ class Tenant extends Model
      * Every tenant, for permission resolution. A fresh collection each call; the models are
      * shared within the request.
      *
-     * @return Collection<int, static>
+     * @return Collection<int, Tenant>
      */
     public static function allCached(): Collection
     {

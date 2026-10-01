@@ -204,6 +204,8 @@ function visitPublicSubdomain(string $subdomain, string $path): PendingAwaitable
  */
 function loginAsAdmin(User $user, string $password = 'password'): PendingAwaitablePage
 {
+    // Public subdomains persist across tests; loopback keeps secure browser APIs available.
+    pest()->browser()->withHost(null);
     app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));
 
     // An auto-started tour overlays the page and swallows clicks (and would land in docs frames).

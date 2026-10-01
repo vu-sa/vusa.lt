@@ -159,7 +159,7 @@ class PublicPageController extends PublicController
                 ];
             });
 
-        if ($pageData === false || $pageData === null) {
+        if ($pageData === false) {
             $publicUrl = $publicUrls->resolve(request()->url());
             $destination = $publicUrl === null ? null : $publicUrls->destinationFor($publicUrl);
 
