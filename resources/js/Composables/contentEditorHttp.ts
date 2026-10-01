@@ -14,7 +14,7 @@ async function request(options: { url: string; method?: string; data?: unknown }
     method: options.method?.toUpperCase() ?? 'GET',
     credentials: 'same-origin',
     headers: {
-      Accept: 'application/json',
+      'Accept': 'application/json',
       'Content-Type': 'application/json',
       'X-Requested-With': 'XMLHttpRequest',
       ...(token ? { 'X-XSRF-TOKEN': decodeURIComponent(token) } : {}),

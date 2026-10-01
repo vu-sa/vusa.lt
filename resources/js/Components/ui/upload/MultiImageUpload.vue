@@ -87,10 +87,11 @@
 import { ref, watch, onMounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 
-import { cn } from '@/Utils/Shadcn/utils';
 import Upload from './Upload.vue';
 import UploadDropzone from './UploadDropzone.vue';
-import { type UploadFile } from './variants';
+import type { UploadFile } from './variants';
+
+import { cn } from '@/Utils/Shadcn/utils';
 import { Button } from '@/Components/ui/button';
 import { useToasts } from '@/Composables/useToasts';
 

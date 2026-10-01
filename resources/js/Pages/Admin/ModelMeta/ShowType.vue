@@ -2,7 +2,7 @@
   <RecordPage
     v-model:section="section"
     :title
-    :entity-type="entityType"
+    :entity-type
     :facts
     :sections
     :primary-action

@@ -2,7 +2,7 @@
   <CollectionPage
     :source
     :collection="resource"
-    :entity-type="entityType"
+    :entity-type
     :eyebrow="`${$t('shell.workspaces.sistema.title')} · ${$t('shell.sections.tipai')}`"
     :title="$t(`types.${typeKind}.title`)"
     :lead="isTrash

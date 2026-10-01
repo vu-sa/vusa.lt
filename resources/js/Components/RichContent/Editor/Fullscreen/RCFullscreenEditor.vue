@@ -11,7 +11,7 @@
         <div ref="toolbarPortalRef" data-rc-smart-toolbar-portal />
 
         <div class="z-40 flex shrink-0 flex-wrap items-center gap-2 border-b border-border bg-background/95 px-3 py-2 backdrop-blur">
-          <Button type="button" v-if="!embedded" size="icon" class="size-11" variant="ghost" :title="$t('rich-content.close_fullscreen_editor')" @click="$emit('close')">
+          <Button v-if="!embedded" type="button" size="icon" class="size-11" variant="ghost" :title="$t('rich-content.close_fullscreen_editor')" @click="$emit('close')">
             <IFluentDismiss24Regular class="size-4" />
           </Button>
           <Button
@@ -51,7 +51,9 @@
             </span>
           </div>
           <SpotlightPopover :title="$t('editor.outline')" :description="$t('editor.outline_hint')" :is-dismissed="outlineSpotlight.isDismissed.value" @dismiss="outlineSpotlight.dismiss">
-            <Button type="button" variant="outline" class="min-h-11 min-w-11" :title="$t('editor.outline')" :aria-label="$t('editor.outline')" :aria-expanded="outlineOpen" @click="outlineOpen = !outlineOpen; outlineSpotlight.dismiss()"><ListTree class="size-4" aria-hidden="true" /><span class="hidden @min-[600px]:inline">{{ $t('editor.outline') }}</span></Button>
+            <Button type="button" variant="outline" class="min-h-11 min-w-11" :title="$t('editor.outline')" :aria-label="$t('editor.outline')" :aria-expanded="outlineOpen" @click="outlineOpen = !outlineOpen; outlineSpotlight.dismiss()">
+              <ListTree class="size-4" aria-hidden="true" /><span class="hidden @min-[600px]:inline">{{ $t('editor.outline') }}</span>
+            </Button>
           </SpotlightPopover>
           <Button type="button" size="sm" class="ml-auto min-h-11" data-testid="fullscreen-save" :disabled="context?.form.processing || (context && !context.ready.value)" @click="context ? context.save() : $emit('save')">
             <IFluentSave24Regular class="size-4" />
@@ -59,35 +61,41 @@
           </Button>
         </div>
 
-        <p v-if="context?.error.value" class="border-b border-border px-4 py-2 text-sm text-destructive" role="alert">{{ context.error.value }}</p>
+        <p v-if="context?.error.value" class="border-b border-border px-4 py-2 text-sm text-destructive" role="alert">
+          {{ context.error.value }}
+        </p>
         <div class="relative flex min-h-0 flex-1">
-        <nav v-if="outlineOpen" :aria-label="$t('editor.outline')" class="absolute inset-y-0 left-0 z-40 w-72 max-w-[85vw] overflow-y-auto border-r border-border bg-background p-3 shadow-lg">
-          <Button type="button" v-for="part in contents ?? []" :key="getBlockKey(part)" variant="ghost" class="min-h-11 w-full justify-start whitespace-normal text-left" @click="scrollToBlock(getBlockKey(part)); outlineOpen = false">{{ getContentType(part.type).label }} · {{ deriveBlockSummary(part) }}</Button>
-          <Button type="button" v-for="anchor in outlineAnchors" :key="anchor.href" variant="ghost" class="min-h-11 w-full justify-start" @click="scrollToAnchor(anchor.href)">{{ anchor.title }}</Button>
-        </nav>
-        <div ref="scrollRoot" data-rc-fullscreen-scroll class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <main ref="canvasRef" class="rc-canvas mx-auto py-20 md:py-28" style="--rc-measure: 44rem">
-            <RCFullscreenCanvasGroup v-for="group in groups" :key="getBlockKey(group.element)" v-model:contents="contents" :group :resolved="resolvedByBlockKey" :bands="bandMap" :preview="isPreviewing" @insert="insertAt" @more="openInsertMenuAt" @move="moveBlock" @remove="removeAt" @form="sideBySideContent = $event" />
+          <nav v-if="outlineOpen" :aria-label="$t('editor.outline')" class="absolute inset-y-0 left-0 z-40 w-72 max-w-[85vw] overflow-y-auto border-r border-border bg-background p-3 shadow-lg">
+            <Button v-for="part in contents ?? []" :key="getBlockKey(part)" type="button" variant="ghost" class="min-h-11 w-full justify-start whitespace-normal text-left" @click="scrollToBlock(getBlockKey(part)); outlineOpen = false">
+              {{ getContentType(part.type).label }} · {{ deriveBlockSummary(part) }}
+            </Button>
+            <Button v-for="anchor in outlineAnchors" :key="anchor.href" type="button" variant="ghost" class="min-h-11 w-full justify-start" @click="scrollToAnchor(anchor.href)">
+              {{ anchor.title }}
+            </Button>
+          </nav>
+          <div ref="scrollRoot" data-rc-fullscreen-scroll class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+            <main ref="canvasRef" class="rc-canvas mx-auto py-20 md:py-28" style="--rc-measure: 44rem">
+              <RCFullscreenCanvasGroup v-for="group in groups" :key="getBlockKey(group.element)" v-model:contents="contents" :group :resolved="resolvedByBlockKey" :bands="bandMap" :preview="isPreviewing" @insert="insertAt" @more="openInsertMenuAt" @move="moveBlock" @remove="removeAt" @form="sideBySideContent = $event" />
 
-            <p v-if="(contents?.length ?? 0) === 0 && !isPreviewing" class="py-16 text-center text-sm text-zinc-400">
-              {{ $t('rich-content.fullscreen_empty') }}
-            </p>
+              <p v-if="(contents?.length ?? 0) === 0 && !isPreviewing" class="py-16 text-center text-sm text-zinc-400">
+                {{ $t('rich-content.fullscreen_empty') }}
+              </p>
 
-            <!-- Trailing insert affordance: doubles as "add the first block" when the
+              <!-- Trailing insert affordance: doubles as "add the first block" when the
                document is empty (appendType/insertAt(0) are the same operation on an
                empty array), so no separate empty-state control is needed. Always visible
                (not hover-only) — it's the one spot with no block below it whose hover a
                user could stumble onto to discover the control. -->
-            <div v-if="!isPreviewing" class="relative">
-              <RCInsertAffordance
-                :quick-add-types
-                always-visible
-                @insert="appendType($event)"
-                @more="openInsertMenuAt(contents?.length ?? 0)"
-              />
-            </div>
-          </main>
-        </div>
+              <div v-if="!isPreviewing" class="relative">
+                <RCInsertAffordance
+                  :quick-add-types
+                  always-visible
+                  @insert="appendType($event)"
+                  @more="openInsertMenuAt(contents?.length ?? 0)"
+                />
+              </div>
+            </main>
+          </div>
         </div>
       </div>
     </component>
@@ -121,9 +129,6 @@ import { groupContent } from '../../groupContent';
 import { collectHeadingIds, normalizeHeadingAnchors } from '../../headingAnchors';
 import { extractAnchorLinks, type AnchorablePart } from '../../tocAnchors';
 import { deriveBlockSummary } from '../blockSummary';
-import RCFullscreenCanvasGroup from './RCFullscreenCanvasGroup.vue';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import BlockPickerDialog from '../../BlockPickerDialog.vue';
 import RCInsertAffordance from '../RCInsertAffordance.vue';
 import RCSideBySideDialog from '../RCSideBySideDialog.vue';
@@ -132,8 +137,11 @@ import { useContentPartPreview } from '../../composables/useContentPartPreview';
 import { createContentItem, getContentType, type ContentPart } from '../../Types';
 import { resolveBands, type BandResolution } from '../../bandLayout';
 
+import RCFullscreenCanvasGroup from './RCFullscreenCanvasGroup.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from './useActiveHotspot';
 
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { SMART_TIPTAP_TOOLBAR_PORTAL_KEY } from '@/Components/TipTap/smartToolbarPortal';
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';

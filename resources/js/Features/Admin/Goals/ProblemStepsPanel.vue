@@ -14,7 +14,7 @@
     </div>
     <GoalStepList
       :steps
-      :can-update="canUpdate"
+      :can-update
       other-side="goal"
       @edit="openStep"
       @delete="stepToDelete = $event"

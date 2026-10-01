@@ -148,7 +148,8 @@ import GoalStepList from '@/Features/Admin/Goals/GoalStepList.vue';
 import LinkProblemSheet from '@/Features/Admin/Goals/LinkProblemSheet.vue';
 import StepSheetForm from '@/Features/Admin/Goals/StepSheetForm.vue';
 import { translatedText, type GoalStep, type Translated } from '@/Features/Admin/Goals/types';
-import { GoalStatus, ModelEnum } from '@/Types/enums';
+import type { GoalStatus } from '@/Types/enums';
+import { ModelEnum } from '@/Types/enums';
 
 const props = defineProps<{
   goal: {

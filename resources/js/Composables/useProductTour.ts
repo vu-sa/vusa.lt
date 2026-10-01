@@ -27,7 +27,6 @@ import { ref, computed, onUnmounted } from 'vue';
 import type { Driver, DriveStep, Config } from 'driver.js';
 import { trans as $t } from 'laravel-vue-i18n';
 
-
 import { useApiMutation } from './useApi';
 import {
   globalProgress,

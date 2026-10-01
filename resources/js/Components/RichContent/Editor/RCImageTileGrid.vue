@@ -13,102 +13,102 @@
       />
     </div>
     <template v-else>
-    <!-- Empty state -->
-    <div v-if="!modelValue?.length"
-      class="flex flex-col items-center justify-center border border-dashed border-border p-6 text-center">
-      <Images class="mb-2 size-8 text-muted-foreground" />
-      <p class="text-sm text-muted-foreground">
-        {{ emptyText ?? $t('rich-content.no_images') }}
-      </p>
-      <TiptapImageButton class="mt-3" @submit:object="addImage">
-        {{ addFirstText ?? $t('rich-content.add_first_image') }}
-      </TiptapImageButton>
-    </div>
-
-    <!-- Tile grid — same column proportions the display renders, so the editor mirrors
-         the output instead of a stacked list of unrelated rows. -->
-    <div v-else ref="gridEl" class="grid grid-cols-2 gap-3 md:grid-cols-[repeat(var(--tile-columns),minmax(0,1fr))]" :style="{ '--tile-columns': columns }">
-      <div v-for="(item, index) in modelValue" :key="index"
-        class="group relative overflow-hidden border border-border focus-within:border-brand"
-        :class="[tileClass ? resolveTileClass(item, index) : 'aspect-4/3', spanClass ? resolveSpanClass(item, index) : '']">
-        <!-- Drag handle -->
-        <div
-          class="rc-image-drag-handle absolute left-1.5 top-1.5 z-10 flex size-8 cursor-grab items-center justify-center bg-ink/75 text-white pointer-coarse:size-11 active:cursor-grabbing"
-          :title="$t('rich-content.drag_to_reorder')"
-          aria-hidden="true"
-        >
-          <GripVertical class="size-4" />
-        </div>
-
-        <!-- Tile menu: focal point, per-type extras (slot), remove -->
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <button type="button"
-              class="absolute right-1.5 top-1.5 z-10 flex size-8 items-center justify-center bg-ink/75 text-white focus-visible:ring-2 focus-visible:ring-brand pointer-coarse:size-11"
-              :aria-label="$t('rich-content.tile_options')">
-              <Ellipsis class="size-4" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem :disabled="!getSrc(item)" @click="openFocalPoint(index)">
-              <ScanEye class="mr-2 size-4" />
-              {{ $t('rich-content.set_focal_point') }}
-            </DropdownMenuItem>
-            <DropdownMenuItem :disabled="index === 0" @click="moveItem(index, index - 1)">
-              <ArrowUp class="mr-2 size-4" />
-              {{ $t('rich-content.move_up') }}
-            </DropdownMenuItem>
-            <DropdownMenuItem :disabled="index === modelValue.length - 1" @click="moveItem(index, index + 1)">
-              <ArrowDown class="mr-2 size-4" />
-              {{ $t('rich-content.move_down') }}
-            </DropdownMenuItem>
-            <slot name="tile-menu" :item :index :update="(patch: Partial<T>) => updateAt(index, patch)" />
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              class="text-destructive focus:text-destructive"
-              :disabled="(modelValue?.length ?? 0) <= 1"
-              @click="removeAt(index)"
-            >
-              <Trash2 class="mr-2 size-4" />
-              {{ $t('common.delete') }}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <!-- Image / click to replace -->
-        <TiptapImageButton as-child @submit:object="(img) => replaceAt(index, img)">
-          <button type="button" class="block h-full w-full" :aria-label="$t('rich-content.replace_image')">
-            <img v-if="getSrc(item)" :src="getSrc(item)" :alt="(item as any).alt || ''"
-              class="h-full w-full object-cover" :style="{ objectPosition: (item as any).objectPosition }">
-            <div v-else class="flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground">
-              <ImagePlus class="size-6" />
-              <span class="text-xs">{{ $t('rich-content.select_image') }}</span>
-            </div>
-          </button>
+      <!-- Empty state -->
+      <div v-if="!modelValue?.length"
+        class="flex flex-col items-center justify-center border border-dashed border-border p-6 text-center">
+        <Images class="mb-2 size-8 text-muted-foreground" />
+        <p class="text-sm text-muted-foreground">
+          {{ emptyText ?? $t('rich-content.no_images') }}
+        </p>
+        <TiptapImageButton class="mt-3" @submit:object="addImage">
+          {{ addFirstText ?? $t('rich-content.add_first_image') }}
         </TiptapImageButton>
+      </div>
 
-        <!-- Inline alt text + any per-type footer control (e.g. width picker) -->
-        <div class="flex items-center gap-1.5 border-t border-border bg-background p-1.5">
-          <Input
-            :model-value="(item as any).alt"
-            type="text"
-            class="min-w-0 flex-1 text-xs"
-            :aria-label="$t('rich-content.image_alt_text')"
-            :placeholder="$t('rich-content.image_alt_placeholder')"
-            @update:model-value="updateAt(index, { alt: $event as string } as Partial<T>)"
-          />
-          <slot name="tile-footer" :item :index :update="(patch: Partial<T>) => updateAt(index, patch)" />
+      <!-- Tile grid — same column proportions the display renders, so the editor mirrors
+         the output instead of a stacked list of unrelated rows. -->
+      <div v-else ref="gridEl" class="grid grid-cols-2 gap-3 md:grid-cols-[repeat(var(--tile-columns),minmax(0,1fr))]" :style="{ '--tile-columns': columns }">
+        <div v-for="(item, index) in modelValue" :key="index"
+          class="group relative overflow-hidden border border-border focus-within:border-brand"
+          :class="[tileClass ? resolveTileClass(item, index) : 'aspect-4/3', spanClass ? resolveSpanClass(item, index) : '']">
+          <!-- Drag handle -->
+          <div
+            class="rc-image-drag-handle absolute left-1.5 top-1.5 z-10 flex size-8 cursor-grab items-center justify-center bg-ink/75 text-white pointer-coarse:size-11 active:cursor-grabbing"
+            :title="$t('rich-content.drag_to_reorder')"
+            aria-hidden="true"
+          >
+            <GripVertical class="size-4" />
+          </div>
+
+          <!-- Tile menu: focal point, per-type extras (slot), remove -->
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <button type="button"
+                class="absolute right-1.5 top-1.5 z-10 flex size-8 items-center justify-center bg-ink/75 text-white focus-visible:ring-2 focus-visible:ring-brand pointer-coarse:size-11"
+                :aria-label="$t('rich-content.tile_options')">
+                <Ellipsis class="size-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem :disabled="!getSrc(item)" @click="openFocalPoint(index)">
+                <ScanEye class="mr-2 size-4" />
+                {{ $t('rich-content.set_focal_point') }}
+              </DropdownMenuItem>
+              <DropdownMenuItem :disabled="index === 0" @click="moveItem(index, index - 1)">
+                <ArrowUp class="mr-2 size-4" />
+                {{ $t('rich-content.move_up') }}
+              </DropdownMenuItem>
+              <DropdownMenuItem :disabled="index === modelValue.length - 1" @click="moveItem(index, index + 1)">
+                <ArrowDown class="mr-2 size-4" />
+                {{ $t('rich-content.move_down') }}
+              </DropdownMenuItem>
+              <slot name="tile-menu" :item :index :update="(patch: Partial<T>) => updateAt(index, patch)" />
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                class="text-destructive focus:text-destructive"
+                :disabled="(modelValue?.length ?? 0) <= 1"
+                @click="removeAt(index)"
+              >
+                <Trash2 class="mr-2 size-4" />
+                {{ $t('common.delete') }}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <!-- Image / click to replace -->
+          <TiptapImageButton as-child @submit:object="(img) => replaceAt(index, img)">
+            <button type="button" class="block h-full w-full" :aria-label="$t('rich-content.replace_image')">
+              <img v-if="getSrc(item)" :src="getSrc(item)" :alt="(item as any).alt || ''"
+                class="h-full w-full object-cover" :style="{ objectPosition: (item as any).objectPosition }">
+              <div v-else class="flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground">
+                <ImagePlus class="size-6" />
+                <span class="text-xs">{{ $t('rich-content.select_image') }}</span>
+              </div>
+            </button>
+          </TiptapImageButton>
+
+          <!-- Inline alt text + any per-type footer control (e.g. width picker) -->
+          <div class="flex items-center gap-1.5 border-t border-border bg-background p-1.5">
+            <Input
+              :model-value="(item as any).alt"
+              type="text"
+              class="min-w-0 flex-1 text-xs"
+              :aria-label="$t('rich-content.image_alt_text')"
+              :placeholder="$t('rich-content.image_alt_placeholder')"
+              @update:model-value="updateAt(index, { alt: $event as string } as Partial<T>)"
+            />
+            <slot name="tile-footer" :item :index :update="(patch: Partial<T>) => updateAt(index, patch)" />
+          </div>
         </div>
       </div>
-    </div>
 
-    <TiptapImageButton as-child @submit:object="addImage">
-      <button type="button"
-        class="flex min-h-11 w-full items-center justify-center gap-1.5 border border-dashed border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent">
-        <Plus class="size-4" />
-        {{ addText ?? $t('rich-content.add_image') }}
-      </button>
-    </TiptapImageButton>
+      <TiptapImageButton as-child @submit:object="addImage">
+        <button type="button"
+          class="flex min-h-11 w-full items-center justify-center gap-1.5 border border-dashed border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent">
+          <Plus class="size-4" />
+          {{ addText ?? $t('rich-content.add_image') }}
+        </button>
+      </TiptapImageButton>
 
     <!-- Focal point dialog -->
     </template>

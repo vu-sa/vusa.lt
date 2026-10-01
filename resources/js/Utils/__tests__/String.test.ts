@@ -389,4 +389,3 @@ describe('camelCase', () => {
     expect(camelCase('user')).toBe('user');
   });
 });
-

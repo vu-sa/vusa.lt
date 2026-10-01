@@ -270,11 +270,12 @@ import { Check, Crop, Crosshair, ImagePlus, Loader2, Plus, RefreshCw, Trash2, Up
 const FocalPointPicker = defineAsyncComponent(() => import('./FocalPointPicker.vue'));
 const ImageCropper = defineAsyncComponent(() => import('./ImageCropper.vue'));
 
-import { cn } from '@/Utils/Shadcn/utils';
-import { useImageCompression, type CompressionOptions, type CompressionResult } from '@/Composables/useImageCompression';
 import Upload from './Upload.vue';
 import UploadDropzone from './UploadDropzone.vue';
-import { type UploadFile } from './variants';
+import type { UploadFile } from './variants';
+
+import { useImageCompression, type CompressionOptions, type CompressionResult } from '@/Composables/useImageCompression';
+import { cn } from '@/Utils/Shadcn/utils';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';

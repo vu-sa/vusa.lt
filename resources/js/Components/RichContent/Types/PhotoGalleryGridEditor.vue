@@ -5,52 +5,53 @@
         <ArrowLeft class="size-4" />
         {{ $t('rich-content.back_to_images') }}
       </Button>
-      <h3 class="text-sm font-semibold text-foreground">{{ $t('rich-content.image_settings') }}</h3>
+      <h3 class="text-sm font-semibold text-foreground">
+        {{ $t('rich-content.image_settings') }}
+      </h3>
       <PhotoGalleryTileSettingsFields v-if="activeImage" :image="activeImage" @update:patch="updateActive" />
     </div>
     <template v-else>
-    <!-- Gallery Options — segmented buttons instead of Selects so the editor grid
+      <!-- Gallery Options — segmented buttons instead of Selects so the editor grid
          visibly reflows as columns/gap change, matching what the public page will do. -->
-    <Field>
-      <FieldLabel>{{ $t('rich-content.gallery_options') }}</FieldLabel>
-      <div class="space-y-3">
-        <div class="space-y-2">
-          <span class="text-sm text-foreground">{{ $t('rich-content.columns') }}</span>
-          <FormSegmentedControl v-model="columnsChoice" :options="columnOptions" :aria-label="$t('rich-content.columns')" />
+      <Field>
+        <FieldLabel>{{ $t('rich-content.gallery_options') }}</FieldLabel>
+        <div class="space-y-3">
+          <div class="space-y-2">
+            <span class="text-sm text-foreground">{{ $t('rich-content.columns') }}</span>
+            <FormSegmentedControl v-model="columnsChoice" :options="columnOptions" :aria-label="$t('rich-content.columns')" />
+          </div>
+          <div class="space-y-2">
+            <span class="text-sm text-foreground">{{ $t('rich-content.gap_size') }}</span>
+            <FormSegmentedControl v-model="gapChoice" :options="gapOptions" :aria-label="$t('rich-content.gap_size')" />
+          </div>
+          <div class="flex min-h-11 items-center gap-3">
+            <Switch :id="lightboxId" v-model="options.showLightbox" />
+            <label :for="lightboxId" class="text-sm text-foreground">
+              {{ $t('rich-content.enable_lightbox') }}
+            </label>
+          </div>
         </div>
-        <div class="space-y-2">
-          <span class="text-sm text-foreground">{{ $t('rich-content.gap_size') }}</span>
-          <FormSegmentedControl v-model="gapChoice" :options="gapOptions" :aria-label="$t('rich-content.gap_size')" />
-        </div>
-        <div class="flex min-h-11 items-center gap-3">
-          <Switch :id="lightboxId" v-model="options.showLightbox" />
-          <label :for="lightboxId" class="text-sm text-foreground">
-            {{ $t('rich-content.enable_lightbox') }}
-          </label>
-        </div>
-      </div>
-    </Field>
+      </Field>
 
-    <RCSectionOptions v-model="options" />
+      <RCSectionOptions v-model="options" />
 
-    <!-- Images -->
-    <Field>
-      <FieldLabel>{{ $t('rich-content.images') }}</FieldLabel>
-      <RCImageTileGrid
-        v-model="json_content"
-        src-key="src"
-        :columns="Number(options.columns ?? '4')"
-        :create-item="createImage"
-      >
-        <template #tile-menu="{ index }">
-          <DropdownMenuItem @click="openTileSettings(index)">
-            <Settings2 class="mr-2 size-4" />
-            {{ $t('rich-content.height_class') }} / {{ $t('rich-content.image_decorations') }}
-          </DropdownMenuItem>
-        </template>
-      </RCImageTileGrid>
-    </Field>
-
+      <!-- Images -->
+      <Field>
+        <FieldLabel>{{ $t('rich-content.images') }}</FieldLabel>
+        <RCImageTileGrid
+          v-model="json_content"
+          src-key="src"
+          :columns="Number(options.columns ?? '4')"
+          :create-item="createImage"
+        >
+          <template #tile-menu="{ index }">
+            <DropdownMenuItem @click="openTileSettings(index)">
+              <Settings2 class="mr-2 size-4" />
+              {{ $t('rich-content.height_class') }} / {{ $t('rich-content.image_decorations') }}
+            </DropdownMenuItem>
+          </template>
+        </RCImageTileGrid>
+      </Field>
     </template>
     <Dialog v-if="!isMobile" v-model:open="showTileSettings">
       <DialogContent class="max-h-[85vh] max-w-lg overflow-y-auto">
@@ -70,6 +71,7 @@ import { ArrowLeft, Settings2 } from 'lucide-vue-next';
 
 import RCImageTileGrid from '../Editor/RCImageTileGrid.vue';
 import RCSectionOptions from '../Editor/RCSectionOptions.vue';
+
 import PhotoGalleryTileSettingsFields from './PhotoGalleryTileSettingsFields.vue';
 
 import type { PhotoGalleryGrid } from '@/Types/contentParts';

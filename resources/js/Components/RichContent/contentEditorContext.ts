@@ -1,4 +1,5 @@
 import type { InjectionKey, Ref } from 'vue';
+
 import type { ContentEditorData, ContentKind, useContentEditor } from '@/Composables/useContentEditor';
 
 export interface ContentEditorContext {

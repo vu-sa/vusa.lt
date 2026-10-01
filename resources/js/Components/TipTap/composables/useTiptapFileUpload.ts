@@ -3,6 +3,7 @@ import type { Editor } from '@tiptap/core';
 import { Plugin, PluginKey } from '@tiptap/pm/state';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { trans } from 'laravel-vue-i18n';
+
 import { useToasts } from '@/Composables/useToasts';
 import { uploadFiles } from '@/Composables/useFileUpload';
 
@@ -63,9 +64,11 @@ export function useTiptapFileUpload() {
             ? { type: 'video', attrs: { src: stored.url } }
             : { type: 'text', text: stored.name, marks: [{ type: 'link', attrs: { href: stored.url, target: '_blank', rel: 'noopener noreferrer' } }] };
         editor.commands.insertContentAt(marker.from, content);
-      } catch (error) {
+      }
+      catch (error) {
         if (!cleared && !editor.isDestroyed) toasts.error(trans('editor.upload_failed'), { description: error instanceof Error ? error.message : String(error) });
-      } finally {
+      }
+      finally {
         uploadingFiles.value.delete(uploadId);
         if (!editor.isDestroyed) editor.view.dispatch(editor.state.tr.setMeta(key, { remove: uploadId }));
       }

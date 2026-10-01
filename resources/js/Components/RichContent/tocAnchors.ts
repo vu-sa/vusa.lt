@@ -1,4 +1,5 @@
 import { richText } from './headingAnchors';
+
 export interface AnchorLink {
   title: string;
   href: string;

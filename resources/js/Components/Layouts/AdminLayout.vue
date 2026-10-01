@@ -51,8 +51,10 @@ import { createShellFocusProvider } from '@/Composables/useShellFocus';
 import { createCommandPaletteProvider } from '@/Composables/useCommandPalette';
 import { createUIPreferencesProvider } from '@/Composables/useUIPreferences';
 import { createStartFmProvider } from '@/Composables/useStartFm';
+
 const AdminCommandPalette = defineAsyncComponent(() => import('@/Components/CommandPalette/AdminCommandPalette.vue'));
 import ActionWindow from '@/Components/ActionWindow/ActionWindow.vue';
+
 const KeyboardShortcutsDialog = defineAsyncComponent(() => import('@/Components/KeyboardShortcutsDialog.vue'));
 
 const props = defineProps<{

@@ -18,9 +18,10 @@
  * `RCFullscreenEditor.vue`/`useLiveBlockPreview.ts` for the reference guard.
  */
 import { inject, ref } from 'vue';
-import { CONTENT_EDITOR_CONTEXT } from '../contentEditorContext';
 import { usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
+
+import { CONTENT_EDITOR_CONTEXT } from '../contentEditorContext';
 
 export interface PreviewPartInput {
   key: string;

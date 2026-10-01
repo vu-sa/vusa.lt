@@ -22,7 +22,7 @@
       <StatusBadge :status="currentStatusPresentation" />
     </template>
 
-    <ContentRecoveryPanel :editor="editor" />
+    <ContentRecoveryPanel :editor />
 
     <FormFieldWrapper
       id="title"
@@ -210,11 +210,11 @@
       <ContentLanguagePanel
         v-model:lang="form.lang"
         v-model:other-lang-id="form.other_lang_id"
+        v-model:pairing-confirmation="form.pairing_confirmation"
         collection="pages"
         :is-create
         :tenant-id="form.tenant_id"
         :record-id="form.id"
-        v-model:pairing-confirmation="form.pairing_confirmation"
         :labels="languageLabels"
         :lang-error="form.errors.lang"
         :lang-valid="form.valid('lang')"
@@ -302,9 +302,6 @@
 
 <script setup lang="ts">
 import { provide, computed, ref, h } from 'vue';
-import ContentRecoveryPanel from './ContentRecoveryPanel.vue';
-import { useContentEditor } from '@/Composables/useContentEditor';
-import { CONTENT_EDITOR_CONTEXT, type ContentEditorContext } from '@/Components/RichContent/contentEditorContext';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, ChevronDown, LayoutTemplate, ListTree, Trash2 } from 'lucide-vue-next';
@@ -313,6 +310,7 @@ import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
 import { getContentType, type BlockWidth } from '../RichContent/Types';
 import VisualOptionSelect from '../FormItems/VisualOptionSelect.vue';
 
+import ContentRecoveryPanel from './ContentRecoveryPanel.vue';
 import ContentLanguagePanel from './ContentLanguagePanel.vue';
 import ContentPublishPanel from './ContentPublishPanel.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
@@ -323,6 +321,8 @@ import SEOPreview from './SEOPreview.vue';
 import TagMultiSelect from './TagMultiSelect.vue';
 import TenantSelectField, { pickDefaultTenantId } from './TenantSelectField.vue';
 
+import { CONTENT_EDITOR_CONTEXT, type ContentEditorContext } from '@/Components/RichContent/contentEditorContext';
+import { useContentEditor } from '@/Composables/useContentEditor';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormToggleRow, StatusBadge } from '@/Components/Patterns';
 import ContentAnalyticsCard from '@/Components/Analytics/ContentAnalyticsCard.vue';
@@ -357,9 +357,7 @@ const props = withDefaults(defineProps<{
   rememberKey: undefined,
 });
 
-const emit = defineEmits<{
-  (event: 'delete'): void;
-}>();
+const emit = defineEmits<(event: 'delete') => void>();
 
 const isCreate = computed(() => props.rememberKey === 'CreatePage');
 const deleteConfirmOpen = ref(false);
@@ -413,7 +411,6 @@ if (!Array.isArray(form.highlights)) {
 }
 
 const pageBaseUrl = computed(() => resolveTenantPublicHost(form.tenant_id as number));
-
 
 const barTitle = computed(() => (isCreate.value ? $t('Naujas puslapis') : (editor.savedRecord.value.title || $t('Puslapis'))));
 

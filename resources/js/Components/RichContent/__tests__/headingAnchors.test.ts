@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { collectHeadingIds, normalizeHeadingAnchors } from '../headingAnchors';
 import { extractAnchorLinks } from '../tocAnchors';
 

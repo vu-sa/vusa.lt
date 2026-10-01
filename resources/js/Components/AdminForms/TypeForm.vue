@@ -2,7 +2,7 @@
   <FormPage
     :title="isCreate ? $t(`types.${typeKind}.create`) : (localizedTitle || $t('Tipas'))"
     :bar-title="isCreate ? $t(`types.${typeKind}.create`) : (localizedTitle || undefined)"
-    :entity-type="entityType"
+    :entity-type
     :back-href="route(`${resource}.index`)"
     :back-label="$t(`types.${typeKind}.title`)"
     :processing="form.processing"
@@ -45,7 +45,6 @@
 
     <template #aside>
       <FormPanel :title="$t('forms.sections.type_parameters')" :icon="SlidersHorizontal" title-class="text-brand">
-
         <FormFieldWrapper id="parent_id" :label="$t('forms.fields.parent_type')" :error="form.errors.parent_id">
           <Select v-model="parentIdString">
             <SelectTrigger id="parent_id">
@@ -119,7 +118,6 @@
         <Input id="slug" v-model="form.slug" type="text" placeholder="pvz.: turinio-tipas" :class="fieldSurfaceClass" />
       </FormFieldWrapper>
     </template>
-
   </FormPage>
 </template>
 
@@ -144,9 +142,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
 
-defineEmits<{
-  (event: 'submit:form', form: unknown): void;
-}>();
+defineEmits<(event: 'submit:form', form: unknown) => void>();
 
 const props = defineProps<{
   typeKind: 'institutionType' | 'dutyType';

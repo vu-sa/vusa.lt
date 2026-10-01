@@ -7,7 +7,9 @@
         <Checkbox :model-value="published" @update:model-value="setPublished(Boolean($event))" />{{ $t('editor.published') }}
       </label>
       <DateTimePicker v-if="kind === 'news'" v-model="publishTimeDate" variant="popover" clearable :placeholder="$t('editor.publish_time')" />
-      <p v-if="Object.keys(context.form.errors).length" class="text-sm text-destructive" role="alert">{{ Object.values(context.form.errors).join(' · ') }}</p>
+      <p v-if="Object.keys(context.form.errors).length" class="text-sm text-destructive" role="alert">
+        {{ Object.values(context.form.errors).join(' · ') }}
+      </p>
     </div>
     <ContentRecoveryPanel v-if="recovery" :editor="recovery" hide-status />
     <div
@@ -57,12 +59,15 @@ import { ChevronRight, Copy } from 'lucide-vue-next';
 import { useForm } from '@inertiajs/vue3';
 import { useManualRefHistory } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
+
+import ContentRecoveryPanel from './ContentRecoveryPanel.vue';
+import ContentRecoveryStatus from './ContentRecoveryStatus.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+
 import { cloneTranslation, TRANSLATION_TEXT_FIELDS, useContentEditor, type ContentEditorData, type ContentKind } from '@/Composables/useContentEditor';
 import { CONTENT_EDITOR_CONTEXT, type ContentEditorContext } from '@/Components/RichContent/contentEditorContext';
 import type { ContentPart } from '@/Components/RichContent/Types';
 import RCFullscreenEditor from '@/Components/RichContent/Editor/Fullscreen/RCFullscreenEditor.vue';
-import ContentRecoveryPanel from './ContentRecoveryPanel.vue';
-import ContentRecoveryStatus from './ContentRecoveryStatus.vue';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
@@ -70,7 +75,7 @@ import { Textarea } from '@/Components/ui/textarea';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
 import DateTimePicker from '@/Components/ui/date-picker/DateTimePicker.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
-import FormFieldWrapper from './FormFieldWrapper.vue';
+
 const props = defineProps<{ kind: ContentKind; initial?: ContentEditorData; existing?: ContentEditorContext; source?: ContentEditorContext; draftIdentity?: string; afterSave?: (data: ContentEditorData) => Promise<void> }>();
 const form = props.existing ? null : useForm<ContentEditorData>({ id: undefined, content_version: undefined, permalink: '', pairing_confirmation: undefined, ...props.initial });
 const editor = form ? useContentEditor(props.kind, form, { stay: true, identity: props.draftIdentity, onSaved: props.afterSave }) : null;

@@ -24,7 +24,8 @@ export const generateHTMLfromTiptap = (json_content: Record<string, unknown>) =>
 
   try {
     return renderToHTMLString({ content: json_content, extensions: renderExtensions });
-  } catch {
+  }
+  catch {
     return `<p>${trans('Turinio nepavyko atvaizduoti')}</p>`;
   }
 };

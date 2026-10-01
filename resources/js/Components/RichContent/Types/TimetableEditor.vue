@@ -5,10 +5,18 @@
         <ArrowLeft class="size-4" />
         {{ $t('rich-content.back_to_timetable') }}
       </Button>
-      <h3 class="text-sm font-semibold text-foreground">{{ $t('rich-content.import_from_meeting') }}</h3>
-      <p v-if="importPending" class="py-8 text-center text-sm text-muted-foreground">{{ $t('rich-content.loading_meetings') }}</p>
-      <p v-else-if="importError" role="alert" class="py-4 text-sm text-status-danger">{{ importError }}</p>
-      <p v-else-if="recentMeetings.length === 0" class="py-8 text-center text-sm text-muted-foreground">{{ $t('rich-content.no_recent_meetings') }}</p>
+      <h3 class="text-sm font-semibold text-foreground">
+        {{ $t('rich-content.import_from_meeting') }}
+      </h3>
+      <p v-if="importPending" class="py-8 text-center text-sm text-muted-foreground">
+        {{ $t('rich-content.loading_meetings') }}
+      </p>
+      <p v-else-if="importError" role="alert" class="py-4 text-sm text-status-danger">
+        {{ importError }}
+      </p>
+      <p v-else-if="recentMeetings.length === 0" class="py-8 text-center text-sm text-muted-foreground">
+        {{ $t('rich-content.no_recent_meetings') }}
+      </p>
       <ul v-else class="divide-y divide-border border-y border-border">
         <li v-for="meeting in recentMeetings" :key="meeting.id">
           <button type="button" class="flex min-h-11 w-full items-center justify-between gap-3 py-3 text-left hover:bg-accent" :disabled="agendaPending" @click="selectMeeting(meeting.id)">
@@ -22,65 +30,64 @@
       </ul>
     </div>
     <template v-else>
-    <Field>
-      <FieldLabel>{{ $t('rich-content.title') }}</FieldLabel>
-      <Input
-        v-model="options.title"
-        type="text"
-        :placeholder="$t('rich-content.timetable_heading_placeholder')"
-      />
-    </Field>
+      <Field>
+        <FieldLabel>{{ $t('rich-content.title') }}</FieldLabel>
+        <Input
+          v-model="options.title"
+          type="text"
+          :placeholder="$t('rich-content.timetable_heading_placeholder')"
+        />
+      </Field>
 
-    <!-- Import from meeting — pre-fills rows as a static snapshot. The data lives in
+      <!-- Import from meeting — pre-fills rows as a static snapshot. The data lives in
          the page's content afterwards, so a later agenda edit never silently reflows
          a published timetable. -->
-    <div class="flex items-center gap-3">
-      <Button variant="outline" size="sm" @click="openImportDialog">
-        <ArrowDownToLine class="size-4" />
-        {{ $t('rich-content.import_from_meeting') }}
-      </Button>
-      <span v-if="importError" role="alert" class="text-xs text-status-danger">{{ importError }}</span>
-    </div>
+      <div class="flex items-center gap-3">
+        <Button variant="outline" size="sm" @click="openImportDialog">
+          <ArrowDownToLine class="size-4" />
+          {{ $t('rich-content.import_from_meeting') }}
+        </Button>
+        <span v-if="importError" role="alert" class="text-xs text-status-danger">{{ importError }}</span>
+      </div>
 
-    <DynamicListInput
-      v-model="rows"
-      :create-item="createRow"
-      :empty-text="$t('rich-content.no_timetable_rows')"
-      :add-first-text="$t('rich-content.add_first_timetable_row')"
-      :add-text="$t('rich-content.add_timetable_row')"
-      compact
-      allow-empty>
-      <template #item="{ item, update }">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <Field>
-            <FieldLabel>{{ $t('rich-content.start_time') }}</FieldLabel>
-            <Input
-              :model-value="item.startTime"
-              type="time"
-              @update:model-value="update({ ...item, startTime: $event })"
-            />
-          </Field>
-          <Field>
-            <FieldLabel>{{ $t('rich-content.end_time') }}</FieldLabel>
-            <Input
-              :model-value="item.endTime"
-              type="time"
-              @update:model-value="update({ ...item, endTime: $event })"
-            />
-          </Field>
-          <Field class="sm:flex-1">
-            <FieldLabel>{{ $t('rich-content.title') }}</FieldLabel>
-            <Input
-              :model-value="item.title"
-              type="text"
-              :placeholder="$t('rich-content.enter_title')"
-              @update:model-value="update({ ...item, title: $event })"
-            />
-          </Field>
-        </div>
-      </template>
-    </DynamicListInput>
-
+      <DynamicListInput
+        v-model="rows"
+        :create-item="createRow"
+        :empty-text="$t('rich-content.no_timetable_rows')"
+        :add-first-text="$t('rich-content.add_first_timetable_row')"
+        :add-text="$t('rich-content.add_timetable_row')"
+        compact
+        allow-empty>
+        <template #item="{ item, update }">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Field>
+              <FieldLabel>{{ $t('rich-content.start_time') }}</FieldLabel>
+              <Input
+                :model-value="item.startTime"
+                type="time"
+                @update:model-value="update({ ...item, startTime: $event })"
+              />
+            </Field>
+            <Field>
+              <FieldLabel>{{ $t('rich-content.end_time') }}</FieldLabel>
+              <Input
+                :model-value="item.endTime"
+                type="time"
+                @update:model-value="update({ ...item, endTime: $event })"
+              />
+            </Field>
+            <Field class="sm:flex-1">
+              <FieldLabel>{{ $t('rich-content.title') }}</FieldLabel>
+              <Input
+                :model-value="item.title"
+                type="text"
+                :placeholder="$t('rich-content.enter_title')"
+                @update:model-value="update({ ...item, title: $event })"
+              />
+            </Field>
+          </div>
+        </template>
+      </DynamicListInput>
     </template>
     <Dialog v-if="!isMobile" v-model:open="importOpen">
       <DialogContent class="max-h-[85vh] max-w-lg overflow-y-auto">
@@ -91,7 +98,9 @@
         <div v-if="importPending" class="py-8 text-center text-sm text-muted-foreground">
           {{ $t('rich-content.loading_meetings') }}
         </div>
-        <div v-else-if="importError" role="alert" class="py-4 text-sm text-status-danger">{{ importError }}</div>
+        <div v-else-if="importError" role="alert" class="py-4 text-sm text-status-danger">
+          {{ importError }}
+        </div>
         <div v-else-if="recentMeetings.length === 0" class="py-8 text-center text-sm text-muted-foreground">
           {{ $t('rich-content.no_recent_meetings') }}
         </div>

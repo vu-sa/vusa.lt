@@ -1,7 +1,9 @@
 <template>
   <div class="group/rc-block relative">
     <div ref="rootRef" class="rc-fullscreen-block-display">
-      <SectionDisplay v-if="content.type === 'section'" :element="content" :anchor-id="content.id ?? content.key" :editable="!preview" :has-children="Boolean($slots.default)" :band @update:element="$emit('update:content', $event)"><slot /></SectionDisplay>
+      <SectionDisplay v-if="content.type === 'section'" :element="content" :anchor-id="content.id ?? content.key" :editable="!preview" :has-children="Boolean($slots.default)" :band @update:element="$emit('update:content', $event)">
+        <slot />
+      </SectionDisplay>
       <BlockPreviewRenderer v-else
         :element="content"
         :resolved

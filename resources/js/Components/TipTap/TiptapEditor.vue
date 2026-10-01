@@ -9,7 +9,9 @@
       ],
     ]"
   >
-    <p v-if="contentError" class="p-3 text-sm text-destructive" role="alert">{{ $t('editor.unsupported_content') }}</p>
+    <p v-if="contentError" class="p-3 text-sm text-destructive" role="alert">
+      {{ $t('editor.unsupported_content') }}
+    </p>
     <template v-if="editor && preset !== 'minimal'">
       <TiptapContextMenus
         ref="contextMenus"
@@ -300,7 +302,7 @@ function updateHeadingIds() {
   editor.value.view.dispatch(transaction);
 }
 
-watch(() => props.modelValue, value => {
+watch(() => props.modelValue, (value) => {
   if (!editor.value) return;
   const current = props.html ? editor.value.getHTML() : editor.value.getJSON();
   if (JSON.stringify(current) !== JSON.stringify(value)) editor.value.commands.setContent(normalizeContent(value), { emitUpdate: false });

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { Editor } from '@tiptap/core';
+
 import { createFullExtensions } from '../extensions/presets';
 import { useTiptapFileUpload } from '../composables/useTiptapFileUpload';
 
@@ -22,7 +23,7 @@ afterEach(() => { uploads.splice(0).forEach(upload => upload.clearPendingUploads
 
 it('keeps adjacent text and file order while typing during a multi-file upload', async () => {
   let finish!: (value: unknown) => void;
-  uploadFiles.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }))
+  uploadFiles.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }))
     .mockResolvedValueOnce(result('second.pdf'));
   const { editor, upload } = session();
   const pending = upload.handleFileDrop(editor, [new File(['a'], 'first.pdf', { type: 'application/pdf' }), new File(['b'], 'second.pdf', { type: 'application/pdf' })], 5);
@@ -47,7 +48,7 @@ it('inserts uploaded video URLs rather than base64 data', async () => {
 
 it('does not insert a completed upload after its editor has been closed', async () => {
   let finish!: (value: unknown) => void;
-  uploadFiles.mockImplementationOnce(() => new Promise(resolve => { finish = resolve; }));
+  uploadFiles.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
   const { editor, upload } = session();
   const pending = upload.handleFileDrop(editor, [new File(['a'], 'first.pdf', { type: 'application/pdf' })], 5);
   upload.clearPendingUploads();

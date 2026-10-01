@@ -1,4 +1,3 @@
-
 export interface CompressionOptions {
   /** Maximum file size in MB (default: 2) */
   maxSizeMB?: number;

@@ -254,7 +254,7 @@ const tenantIdString = computed({
 });
 
 // The chosen status reads in the same colours as its tag in the list and on the record.
-const statusOptions = computed<FormSegmentOption<string>[]>(() => props.statuses.map(option => {
+const statusOptions = computed<FormSegmentOption<string>[]>(() => props.statuses.map((option) => {
   const presentation = goalStatuses[option.value as GoalStatus];
 
   return {

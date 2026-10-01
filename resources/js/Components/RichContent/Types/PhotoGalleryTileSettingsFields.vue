@@ -5,10 +5,18 @@
       <Select :model-value="image.heightClass || 'h-52'" @update:model-value="emit('update:patch', { heightClass: $event as string })">
         <SelectTrigger><SelectValue /></SelectTrigger>
         <SelectContent>
-          <SelectItem value="h-32">{{ $t('rich-content.small') }} (h-32)</SelectItem>
-          <SelectItem value="h-40">{{ $t('rich-content.medium_small') }} (h-40)</SelectItem>
-          <SelectItem value="h-52">{{ $t('rich-content.medium') }} (h-52)</SelectItem>
-          <SelectItem value="h-64">{{ $t('rich-content.large') }} (h-64)</SelectItem>
+          <SelectItem value="h-32">
+            {{ $t('rich-content.small') }} (h-32)
+          </SelectItem>
+          <SelectItem value="h-40">
+            {{ $t('rich-content.medium_small') }} (h-40)
+          </SelectItem>
+          <SelectItem value="h-52">
+            {{ $t('rich-content.medium') }} (h-52)
+          </SelectItem>
+          <SelectItem value="h-64">
+            {{ $t('rich-content.large') }} (h-64)
+          </SelectItem>
         </SelectContent>
       </Select>
     </Field>
@@ -32,9 +40,15 @@
                 <Select :model-value="item.type" @update:model-value="update({ ...item, type: $event })">
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="line">{{ $t('rich-content.line') }}</SelectItem>
-                    <SelectItem value="circle">{{ $t('rich-content.circle') }}</SelectItem>
-                    <SelectItem value="square">{{ $t('rich-content.square') }}</SelectItem>
+                    <SelectItem value="line">
+                      {{ $t('rich-content.line') }}
+                    </SelectItem>
+                    <SelectItem value="circle">
+                      {{ $t('rich-content.circle') }}
+                    </SelectItem>
+                    <SelectItem value="square">
+                      {{ $t('rich-content.square') }}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
@@ -43,10 +57,18 @@
                 <Select :model-value="item.position" @update:model-value="update({ ...item, position: $event })">
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="top-left">{{ $t('rich-content.top_left') }}</SelectItem>
-                    <SelectItem value="top-right">{{ $t('rich-content.top_right') }}</SelectItem>
-                    <SelectItem value="bottom-left">{{ $t('rich-content.bottom_left') }}</SelectItem>
-                    <SelectItem value="bottom-right">{{ $t('rich-content.bottom_right') }}</SelectItem>
+                    <SelectItem value="top-left">
+                      {{ $t('rich-content.top_left') }}
+                    </SelectItem>
+                    <SelectItem value="top-right">
+                      {{ $t('rich-content.top_right') }}
+                    </SelectItem>
+                    <SelectItem value="bottom-left">
+                      {{ $t('rich-content.bottom_left') }}
+                    </SelectItem>
+                    <SelectItem value="bottom-right">
+                      {{ $t('rich-content.bottom_right') }}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </Field>
@@ -56,9 +78,15 @@
               <Select :model-value="item.size" @update:model-value="update({ ...item, size: $event })">
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sm">{{ $t('rich-content.small') }}</SelectItem>
-                  <SelectItem value="md">{{ $t('rich-content.medium') }}</SelectItem>
-                  <SelectItem value="lg">{{ $t('rich-content.large') }}</SelectItem>
+                  <SelectItem value="sm">
+                    {{ $t('rich-content.small') }}
+                  </SelectItem>
+                  <SelectItem value="md">
+                    {{ $t('rich-content.medium') }}
+                  </SelectItem>
+                  <SelectItem value="lg">
+                    {{ $t('rich-content.large') }}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </Field>
@@ -78,7 +106,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 type GalleryImage = PhotoGalleryGrid['json_content'][number];
 
 defineProps<{ image: GalleryImage }>();
-const emit = defineEmits<{ (e: 'update:patch', patch: Partial<GalleryImage>): void }>();
+const emit = defineEmits<(e: 'update:patch', patch: Partial<GalleryImage>) => void>();
 
 function createDecoration(): NonNullable<GalleryImage['decorations']>[number] {
   return { type: 'line', position: 'top-right', size: 'md' };

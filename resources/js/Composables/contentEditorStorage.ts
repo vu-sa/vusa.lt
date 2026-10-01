@@ -24,7 +24,8 @@ export async function recoveryStorage(key: string, operation: 'get' | 'put' | 'd
       transaction.onerror = () => reject(transaction.error);
       transaction.onabort = () => reject(transaction.error);
     });
-  } finally {
+  }
+  finally {
     db.close();
   }
 }

@@ -9,13 +9,16 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+
 import type { ContentPart } from '../../Types';
 import type { ContentGroup } from '../../groupContent';
 import type { BandResolution } from '../../bandLayout';
 import { blockLayoutClasses } from '../../blockLayout';
 import { getQuickAddTypes } from '../quickAddTypes';
 import RCInsertAffordance from '../RCInsertAffordance.vue';
+
 import RCFullscreenBlock from './RCFullscreenBlock.vue';
+
 const props = defineProps<{ group: ContentGroup<ContentPart>; resolved: Record<string, unknown>; bands: Map<ContentPart, BandResolution>; preview: boolean }>();
 const contents = defineModel<ContentPart[]>('contents', { required: true });
 const keyFor = (part: ContentPart) => String(part.key ?? part.id ?? '');

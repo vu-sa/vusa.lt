@@ -11,7 +11,8 @@ export function groupContent<T extends GroupablePart>(parts: T[]): ContentGroup<
       const group: Extract<ContentGroup<T>, { kind: 'section' }> = { kind: 'section', element, children: [] };
       groups.push(group);
       active = element.options?.wraps === 'none' ? null : group;
-    } else {
+    }
+    else {
       if (active && endsSectionWrapping(element)) active = null;
       if (active) active.children.push(element);
       else groups.push({ kind: 'block', element });

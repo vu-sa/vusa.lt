@@ -1,6 +1,8 @@
 <template>
   <div ref="containerRef" class="relative">
-    <p v-if="contentError" class="text-sm text-destructive" role="alert">{{ $t('editor.unsupported_content') }}</p>
+    <p v-if="contentError" class="text-sm text-destructive" role="alert">
+      {{ $t('editor.unsupported_content') }}
+    </p>
     <template v-if="editable">
       <RCSmartTiptapToolbar
         v-if="editor"

@@ -3,10 +3,18 @@
     <DialogContent class="fixed inset-0 left-0 top-0 flex h-[100dvh] w-screen max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-none p-0 sm:max-w-none" :show-close-button="false">
       <div class="flex min-h-14 items-center justify-between gap-3 border-b border-border px-4">
         <DialogTitle>{{ $t('editor.translation_workspace') }}</DialogTitle>
-        <div class="flex gap-2 lg:hidden"><Button v-for="locale in ['lt', 'en']" :key="locale" :data-testid="`translation-locale-${locale}`" type="button" variant="outline" class="min-h-11" :aria-pressed="activeLocale === locale" @click="activeLocale = locale">{{ locale.toUpperCase() }}</Button></div>
-        <Button type="button" variant="ghost" class="min-h-11" @click="open = false">{{ $t('Uždaryti') }}</Button>
+        <div class="flex gap-2 lg:hidden">
+          <Button v-for="locale in ['lt', 'en']" :key="locale" :data-testid="`translation-locale-${locale}`" type="button" variant="outline" class="min-h-11" :aria-pressed="activeLocale === locale" @click="activeLocale = locale">
+            {{ locale.toUpperCase() }}
+          </Button>
+        </div>
+        <Button type="button" variant="ghost" class="min-h-11" @click="open = false">
+          {{ $t('Uždaryti') }}
+        </Button>
       </div>
-      <p v-if="error" role="alert" class="p-4 text-destructive">{{ error }}</p>
+      <p v-if="error" role="alert" class="p-4 text-destructive">
+        {{ error }}
+      </p>
       <div v-if="target && source" class="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-2">
         <ContentTranslationPane :kind="source.kind" :existing="sourcePane" :class="[activeLocale !== source.form.lang && 'hidden lg:flex', 'min-w-0 border-r border-border']" />
         <ContentTranslationPane :kind="source.kind" :initial="target" :source :draft-identity="target.id ? undefined : draftIdentity" :class="[activeLocale !== target.lang && 'hidden lg:flex', 'min-w-0']" :after-save="paired" />
@@ -17,14 +25,17 @@
 
 <script setup lang="ts">
 import { computed, inject, ref, watch } from 'vue';
-import { contentEditorHttp as http } from '@/Composables/contentEditorHttp';
 import { trans as $t } from 'laravel-vue-i18n';
 import { usePage } from '@inertiajs/vue3';
+
+import ContentTranslationPane from './ContentTranslationPane.vue';
+
+import { contentEditorHttp as http } from '@/Composables/contentEditorHttp';
 import { CONTENT_EDITOR_CONTEXT } from '@/Components/RichContent/contentEditorContext';
 import { blankTranslation, type ContentEditorData } from '@/Composables/useContentEditor';
-import ContentTranslationPane from './ContentTranslationPane.vue';
 import { Dialog, DialogContent, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';
+
 const props = defineProps<{ counterpartId?: number | null }>();
 const open = defineModel<boolean>('open', { default: false });
 const source = inject(CONTENT_EDITOR_CONTEXT, null);

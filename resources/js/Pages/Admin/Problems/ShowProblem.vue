@@ -87,7 +87,7 @@
             :problem-id="problem.id"
             :steps="goalLinks.steps"
             :goals="goalLinks.goals"
-            :can-update="canUpdate"
+            :can-update
           />
         </Deferred>
       </div>

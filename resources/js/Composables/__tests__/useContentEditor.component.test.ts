@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, reactive } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import type { InertiaForm } from '@inertiajs/vue3';
+
 import { useContentEditor, blankTranslation, cloneTranslation, type ContentEditorData } from '../useContentEditor';
 
 const http = vi.hoisted(() => ({ get: vi.fn(), put: vi.fn(), delete: vi.fn(), request: vi.fn(), isError: vi.fn(() => false) }));
@@ -65,7 +66,7 @@ describe('content recovery and saves', () => {
 
   it('preserves typing during a save and retains recovery for those newer changes', async () => {
     let finish!: (value: unknown) => void;
-    http.request.mockImplementation(() => new Promise(resolve => { finish = resolve; }));
+    http.request.mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
     const active = session();
     await flushPromises();
     active.form.title = 'Sent';

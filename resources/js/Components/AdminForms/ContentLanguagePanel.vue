@@ -54,7 +54,9 @@
         </template>
       </CollectionSelectDialog>
     </FormFieldWrapper>
-    <p v-if="pairError" class="text-sm text-destructive" role="alert">{{ pairError }}</p>
+    <p v-if="pairError" class="text-sm text-destructive" role="alert">
+      {{ pairError }}
+    </p>
     <div v-if="otherLangId || (context && canCreate)" class="flex gap-2">
       <SpotlightPopover
         v-if="context && (otherLangId || canCreate)"
@@ -95,17 +97,17 @@
 <script setup lang="ts">
 import { computed, inject, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { contentEditorHttp as http } from '@/Composables/contentEditorHttp';
 import { trans as $t } from 'laravel-vue-i18n';
+import { ArrowUpRight, ChevronDown, Columns2, Languages, Plus } from 'lucide-vue-next';
+
 import ContentTranslationWorkspace from './ContentTranslationWorkspace.vue';
+import FormFieldWrapper from './FormFieldWrapper.vue';
+
+import { contentEditorHttp as http } from '@/Composables/contentEditorHttp';
 import { CONTENT_EDITOR_CONTEXT } from '@/Components/RichContent/contentEditorContext';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
-import { ArrowUpRight, ChevronDown, Columns2, Languages, Plus } from 'lucide-vue-next';
-
-import FormFieldWrapper from './FormFieldWrapper.vue';
-
 import { FormPanel, FormSegmentedControl, type FormSegmentOption } from '@/Components/Patterns';
 import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
@@ -167,12 +169,13 @@ const pairDescription = ref('');
 const pairingConfirmation = defineModel<string | undefined>('pairingConfirmation');
 let pendingId: number | null = null;
 let pendingToken: string | undefined;
-watch(otherLangId, async id => {
+watch(otherLangId, async (id) => {
   if (!id) { selected.value = null; return; }
   try {
     const { data } = await http.get(route('api.v1.admin.contentEditor.show', { kind: props.collection, record: id }));
     if (otherLangId.value === id) selected.value = data.data;
-  } catch { pairError.value = $t('editor.counterpart_unavailable'); }
+  }
+  catch { pairError.value = $t('editor.counterpart_unavailable'); }
 }, { immediate: true });
 
 // Tenant filtering is a convenience; the save endpoint checks every affected record.
@@ -197,10 +200,12 @@ async function onConfirm(hits: NormalizedSearchHit[]) {
     const { data } = await http.post(route('api.v1.admin.contentEditor.pairing', { kind: props.collection }), { record_id: props.recordId, target_id: pendingId, lang: lang.value });
     pendingToken = data.data.token;
     if (data.data.confirmation_required) {
-      pairDescription.value = $t('editor.pairing_changes') + '\n' + data.data.records.map((record: { title: string; lang: string; other_lang_id?: number; id: number }) => `${record.title} (${record.lang}) → ${data.data.records.find((candidate: { id: number }) => candidate.id === record.other_lang_id)?.title ?? $t('editor.unpaired')}`).join('\n');
+      pairDescription.value = `${$t('editor.pairing_changes')}\n${data.data.records.map((record: { title: string; lang: string; other_lang_id?: number; id: number }) => `${record.title} (${record.lang}) → ${data.data.records.find((candidate: { id: number }) => candidate.id === record.other_lang_id)?.title ?? $t('editor.unpaired')}`).join('\n')}`;
       confirmOpen.value = true;
-    } else applySelection();
-  } catch (error) { pairError.value = http.isError(error) ? error.response?.data?.message ?? error.message : String(error); }
+    }
+    else applySelection();
+  }
+  catch (error) { pairError.value = http.isError(error) ? error.response?.data?.message ?? error.message : String(error); }
 }
 function openWorkspace() {
   workspaceOpen.value = true;

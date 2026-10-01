@@ -167,10 +167,11 @@
  */
 import { ref, watch, onMounted, computed } from 'vue';
 
-import { cn } from '@/Utils/Shadcn/utils';
 import Upload from './Upload.vue';
 import UploadDropzone from './UploadDropzone.vue';
-import { type UploadFile } from './variants';
+import type { UploadFile } from './variants';
+
+import { cn } from '@/Utils/Shadcn/utils';
 import { Button } from '@/Components/ui/button';
 
 interface Props {

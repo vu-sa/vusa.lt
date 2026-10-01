@@ -87,7 +87,7 @@ import { Button } from '@/Components/ui/button';
 import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import { goalStatuses } from '@/Constants/statuses';
 import { translatedText, type Translated } from '@/Features/Admin/Goals/types';
-import { GoalStatus } from '@/Types/enums';
+import type { GoalStatus } from '@/Types/enums';
 
 interface GoalRow {
   id: string;

@@ -38,8 +38,8 @@
  * *whole* parts array/resolved map, not just one element.
  */
 import { computed } from 'vue';
-import { groupContent } from './groupContent';
 
+import { groupContent } from './groupContent';
 import { getDisplayType } from './Types/display';
 import { blockLayoutClasses } from './blockLayout';
 import { endsSectionWrapping, resolveBandRole, resolveBands, type BandResolution } from './bandLayout';
