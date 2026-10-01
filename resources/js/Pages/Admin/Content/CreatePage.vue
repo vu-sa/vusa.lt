@@ -6,13 +6,10 @@
     :assignable-tenants
     :submit-url="route('pages.store')"
     submit-method="post"
-    @submit:form="submitForm"
   />
 </template>
 
 <script setup lang="ts">
-import type { InertiaForm } from '@inertiajs/vue3';
-
 import PageForm from '@/Components/AdminForms/PageForm.vue';
 
 defineProps<{
@@ -38,8 +35,4 @@ const page = {
     ],
   },
 };
-
-function submitForm(form: unknown): void {
-  (form as InertiaForm<Record<string, unknown>>).post(route('pages.store'));
-}
 </script>

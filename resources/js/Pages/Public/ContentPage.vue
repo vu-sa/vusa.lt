@@ -140,7 +140,7 @@ const pageTitleClass = computed(() => [
 // The sidebar ToC only applies to the `default` layout, requires at least one anchor,
 // and can be turned off per-page (Advanced Settings in PageForm).
 const hasToc = computed(() =>
-  pageLayout.value === 'default' && props.page.show_table_of_contents !== false && anchorLinks.length > 0,
+  pageLayout.value === 'default' && props.page.show_table_of_contents !== false && anchorLinks.value.length > 0,
 );
 
 // An author can hide the page's own title — e.g. when the page opens directly on a
@@ -202,5 +202,5 @@ watchEffect(() => {
 // Tiptap h2/h3(/h4) headings + titled section blocks (hero, accordion, card-stack, …) —
 // see tocAnchors.ts. A page built entirely from section blocks used to get an empty
 // ToC because only tiptap headings were ever indexed.
-const anchorLinks = extractAnchorLinks(props.page.content?.parts as PageContentPart[] | undefined);
+const anchorLinks = computed(() => extractAnchorLinks(props.page.content?.parts as PageContentPart[] | undefined));
 </script>

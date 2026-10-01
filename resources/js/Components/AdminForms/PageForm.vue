@@ -6,6 +6,7 @@
     :back-href="route('pages.index')"
     :back-label="$t('Puslapiai')"
     :processing="form.processing"
+    :disabled="!editor.ready.value"
     :dirty="form.isDirty"
     :errors="form.errors"
     :field-ids
@@ -15,11 +16,13 @@
     :activity-subject="page.id ? { type: 'page', id: page.id } : undefined"
     :created-at="isCreate ? undefined : page.created_at"
     :updated-at="isCreate ? undefined : lastEditedAt"
-    @submit="emit('submit:form', form)"
+    @submit="editor.save()"
   >
     <template v-if="!isCreate" #title-status>
       <StatusBadge :status="currentStatusPresentation" />
     </template>
+
+    <ContentRecoveryPanel :editor="editor" />
 
     <FormFieldWrapper
       id="title"
@@ -123,8 +126,8 @@
     <FormFieldWrapper id="content" :label="$t('Turinys')">
       <RichContentFormElement
         v-model="form.content.parts"
-        :tenant-id="page.tenant_id"
-        @save="$emit('submit:form', form)"
+        :tenant-id="form.tenant_id"
+        @save="editor.save()"
       />
     </FormFieldWrapper>
 
@@ -208,8 +211,10 @@
         v-model:lang="form.lang"
         v-model:other-lang-id="form.other_lang_id"
         collection="pages"
-        :candidates="otherLangPages"
         :is-create
+        :tenant-id="form.tenant_id"
+        :record-id="form.id"
+        v-model:pairing-confirmation="form.pairing_confirmation"
         :labels="languageLabels"
         :lang-error="form.errors.lang"
         :lang-valid="form.valid('lang')"
@@ -296,7 +301,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, h } from 'vue';
+import { provide, computed, ref, h } from 'vue';
+import ContentRecoveryPanel from './ContentRecoveryPanel.vue';
+import { useContentEditor } from '@/Composables/useContentEditor';
+import { CONTENT_EDITOR_CONTEXT, type ContentEditorContext } from '@/Components/RichContent/contentEditorContext';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, ChevronDown, LayoutTemplate, ListTree, Trash2 } from 'lucide-vue-next';
@@ -336,7 +344,6 @@ const props = withDefaults(defineProps<{
   // `descendant_ids` is server-computed (Page::descendantIds()), not a real relation —
   // it disables invalid parent-picker options and has no model-typer equivalent.
   page: App.Entities.Page & { descendant_ids?: number[] };
-  otherLangPages?: App.Entities.Page[];
   availableTags?: App.Entities.Tag[];
   /** Tenants the user may create pages in — only meaningful (and rendered) on create. */
   assignableTenants?: App.Entities.Tenant[];
@@ -345,14 +352,12 @@ const props = withDefaults(defineProps<{
   submitMethod: 'post' | 'patch';
   enableDelete?: boolean;
 }>(), {
-  otherLangPages: () => [],
   availableTags: () => [],
   assignableTenants: () => [],
   rememberKey: undefined,
 });
 
 const emit = defineEmits<{
-  (event: 'submit:form', form: unknown): void;
   (event: 'delete'): void;
 }>();
 
@@ -369,6 +374,9 @@ const fieldIds: Record<string, string> = {
 
 // Initialize form with page data
 const formData = {
+  id: props.page?.id,
+  content_version: (props.page as unknown as { content_version?: string })?.content_version,
+  pairing_confirmation: undefined,
   ...props.page,
   layout: props.page.layout || 'default',
   show_table_of_contents: props.page.show_table_of_contents ?? true,
@@ -391,6 +399,9 @@ if (isCreate.value && form.tenant_id == null) {
 // Set validation timeout to 500ms for faster feedback
 form.setValidationTimeout(500);
 
+const editor = useContentEditor('pages', form);
+provide(CONTENT_EDITOR_CONTEXT, { kind: 'pages', form, save: editor.save, ready: editor.ready, error: editor.saveError, acknowledgePairing: editor.acknowledgePairing, recovery: editor } as unknown as ContentEditorContext);
+
 // Preview-only: the actual permalink is generated server-side on create (GenerateUniqueSlug).
 // Title getter returns '' outside create mode so the composable's own length guard no-ops it —
 // there is nothing to preview once the record exists and the real permalink is editable.
@@ -401,32 +412,33 @@ if (!Array.isArray(form.highlights)) {
   form.highlights = [];
 }
 
-const pageBaseUrl = computed(() => resolveTenantPublicHost(props.page.tenant?.id));
+const pageBaseUrl = computed(() => resolveTenantPublicHost(form.tenant_id as number));
 
-// The bar states what is saved; the heading and fields follow the edit. Props refresh after each save.
-const barTitle = computed(() => (isCreate.value ? $t('Naujas puslapis') : (props.page.title || $t('Puslapis'))));
+
+const barTitle = computed(() => (isCreate.value ? $t('Naujas puslapis') : (editor.savedRecord.value.title || $t('Puslapis'))));
 
 const currentStatusPresentation = computed<StatusPresentation>(() =>
-  props.page.is_active ? contentStatuses.published : contentStatuses.draft,
+  editor.savedRecord.value.is_active ? contentStatuses.published : contentStatuses.draft,
 );
 
 // Construct full page URL using route helper
 const fullPageUrl = computed(() => {
   // A saved inactive page 404s publicly, so there is nothing to open yet.
-  if (!props.page.id || !props.page.is_active || !form.permalink || !props.page.tenant) return undefined;
+  const saved = editor.savedRecord.value;
+  if (!saved.id || !saved.is_active || !saved.permalink || !saved.tenant_id) return undefined;
 
-  const pageLang = form.lang ?? 'lt';
+  const pageLang = saved.lang ?? 'lt';
   return route('page', {
-    subdomain: resolveTenantSubdomain(props.page.tenant.id),
+    subdomain: resolveTenantSubdomain(saved.tenant_id as number),
     lang: pageLang,
-    permalink: form.permalink,
+    permalink: saved.permalink,
   });
 });
 
 // The redirect note is a consequence of an edit, so it appears only once there is one.
-const permalinkChanged = computed(() => form.permalink !== props.page.permalink);
+const permalinkChanged = computed(() => form.permalink !== editor.savedRecord.value.permalink);
 
-const lastEditedAt = computed(() => props.page.last_edited_at ?? props.page.updated_at);
+const lastEditedAt = computed(() => editor.savedRecord.value.last_edited_at ?? editor.savedRecord.value.updated_at ?? props.page.updated_at);
 
 const filledHighlightCount = computed(() => (form.highlights as string[]).filter(item => item?.trim()).length);
 
@@ -494,7 +506,6 @@ const languageLabels = computed(() => ({
   otherLangEn: $t('Puslapis anglų kalba'),
   createHint: $t('Susiesi išsaugojęs puslapį.'),
   editHint: $t('Susieja tą patį turinį kita kalba.'),
-  createPlaceholder: $t('Pasirinkti kitos kalbos puslapį...'),
   dialogTitle: $t('Kitos kalbos puslapis'),
   searchPlaceholder: $t('Ieškoti puslapio pagal pavadinimą...'),
   emptyMessage: $t('Puslapių nerasta'),

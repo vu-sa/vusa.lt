@@ -278,7 +278,7 @@ class ContentPart extends Model
                 return null;
             }
             // Use updated_at timestamp in cache key for automatic invalidation on edit
-            $cacheKey = "content_part_html_{$this->id}_{$this->updated_at->timestamp}";
+            $cacheKey = $this->htmlCacheKey();
 
             return Cache::remember($cacheKey, 86400, fn () => $this->renderTiptapHtml());
         });
@@ -287,7 +287,7 @@ class ContentPart extends Model
     /**
      * Render TipTap JSON content to HTML using the PHP TipTap editor.
      */
-    protected function renderTiptapHtml(): string
+    protected function renderTiptapHtml(): ?string
     {
         try {
             $editor = new TiptapEditor;
@@ -301,10 +301,9 @@ class ContentPart extends Model
             return app(HtmlSanitizerService::class)
                 ->sanitizeRichContent($editor->setContent($content)->getHTML());
         } catch (\Throwable $e) {
-            // Log error but don't break the page - frontend will fallback to JS rendering
             Log::warning("TipTap rendering failed for ContentPart {$this->id}: {$e->getMessage()}");
 
-            return '';
+            return null;
         }
     }
 
@@ -313,8 +312,15 @@ class ContentPart extends Model
      */
     public function clearHtmlCache(): void
     {
-        $cacheKey = "content_part_html_{$this->id}_{$this->updated_at->timestamp}";
+        $cacheKey = $this->htmlCacheKey();
         Cache::forget($cacheKey);
+    }
+
+    private function htmlCacheKey(): string
+    {
+        $version = hash('sha256', json_encode($this->json_content, JSON_THROW_ON_ERROR));
+
+        return "content_part_html_{$this->id}_{$this->updated_at->timestamp}_{$version}";
     }
 
     /**

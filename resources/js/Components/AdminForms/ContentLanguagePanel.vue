@@ -26,10 +26,10 @@
       :hint="isCreate ? labels.createHint : labels.editHint"
     >
       <CollectionSelectDialog
-        v-if="!isCreate"
         v-model:open="dialogOpen"
         :collection
         allow-empty
+        :clear-label="$t('editor.unlink')"
         :base-filter-by
         :initial-hits
         :title="labels.dialogTitle"
@@ -47,31 +47,62 @@
             :class="['h-11 w-full justify-between font-normal hover:bg-secondary/80', fieldSurfaceClass]"
           >
             <span class="truncate" :class="{ 'text-muted-foreground': !selected }">
-              {{ selected ? `${selected.title} (${selected.tenant?.shortname})` : `-- ${$t('Nepasirinkta')} --` }}
+              {{ selected ? selected.title : `-- ${$t('Nepasirinkta')} --` }}
             </span>
             <ChevronDown class="size-4 opacity-50" />
           </Button>
         </template>
       </CollectionSelectDialog>
-      <Button
-        v-else
-        id="other_lang"
-        type="button"
-        variant="outline"
-        voice="plain"
-        class="h-11 w-full justify-between border-border bg-secondary/30 font-normal"
-        disabled
-      >
-        <span class="text-muted-foreground">{{ labels.createPlaceholder }}</span>
-        <ChevronDown class="size-4 opacity-50" />
-      </Button>
     </FormFieldWrapper>
+    <p v-if="pairError" class="text-sm text-destructive" role="alert">{{ pairError }}</p>
+    <div v-if="otherLangId || (context && canCreate)" class="flex gap-2">
+      <SpotlightPopover
+        v-if="context && (otherLangId || canCreate)"
+        class="min-w-0 flex-1"
+        :title="$t('editor.translation_workspace')"
+        :description="$t('editor.translation_hint')"
+        :is-dismissed="spotlight.isDismissed.value"
+        @dismiss="spotlight.dismiss"
+      >
+        <Button type="button" variant="outline" class="w-full" @click="openWorkspace">
+          <component :is="otherLangId ? Columns2 : Plus" class="size-4" aria-hidden="true" />
+          {{ $t(otherLangId ? 'editor.compare' : 'editor.create_translation') }}
+        </Button>
+      </SpotlightPopover>
+      <Button v-if="otherLangId" as-child variant="outline" class="shrink-0">
+        <a
+          :href="route(`${collection}.edit`, otherLangId)"
+          target="_blank"
+          rel="noopener noreferrer"
+          :aria-label="$t('editor.open_other')"
+        >
+          <ArrowUpRight class="size-4" aria-hidden="true" />
+          {{ $t('editor.open_other_short') }}
+        </a>
+      </Button>
+    </div>
   </FormPanel>
+  <ConfirmDialog
+    v-model:open="confirmOpen"
+    :title="$t('editor.replace_pairing')"
+    :description="pairDescription"
+    :confirm-label="$t('editor.confirm_pairing')"
+    @confirm="applySelection"
+  />
+  <ContentTranslationWorkspace v-if="workspaceOpen" v-model:open="workspaceOpen" :counterpart-id="otherLangId" />
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { ChevronDown, Languages } from 'lucide-vue-next';
+import { computed, inject, ref, watch } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { contentEditorHttp as http } from '@/Composables/contentEditorHttp';
+import { trans as $t } from 'laravel-vue-i18n';
+import ContentTranslationWorkspace from './ContentTranslationWorkspace.vue';
+import { CONTENT_EDITOR_CONTEXT } from '@/Components/RichContent/contentEditorContext';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { ConfirmDialog } from '@/Components/Patterns';
+import { ArrowUpRight, ChevronDown, Columns2, Languages, Plus } from 'lucide-vue-next';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
@@ -93,8 +124,8 @@ interface OtherLangCandidate {
 /** A single-language record's language, and the same content in the other language. */
 const props = defineProps<{
   collection: 'pages' | 'news';
-  /** The opposite-language records the server allows linking to. */
-  candidates: OtherLangCandidate[];
+  tenantId?: number | null;
+  recordId?: number;
   isCreate: boolean;
   labels: {
     lang: string;
@@ -102,7 +133,6 @@ const props = defineProps<{
     otherLangEn: string;
     createHint: string;
     editHint: string;
-    createPlaceholder: string;
     dialogTitle: string;
     searchPlaceholder: string;
     emptyMessage: string;
@@ -125,20 +155,28 @@ const dialogOpen = ref(false);
 
 const otherLang = computed<ContentLang>(() => (lang.value === 'lt' ? 'en' : 'lt'));
 
-const selected = computed(() => props.candidates.find(candidate => String(candidate.id) === String(otherLangId.value)));
+const selected = ref<OtherLangCandidate | null>(null);
+const context = inject(CONTENT_EDITOR_CONTEXT, null);
+const page = usePage();
+const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.[props.collection === 'pages' ? 'page' : 'news']));
+const workspaceOpen = ref(false);
+const spotlight = useFeatureSpotlight('content-editor-translation-v1');
+const confirmOpen = ref(false);
+const pairError = ref('');
+const pairDescription = ref('');
+const pairingConfirmation = defineModel<string | undefined>('pairingConfirmation');
+let pendingId: number | null = null;
+let pendingToken: string | undefined;
+watch(otherLangId, async id => {
+  if (!id) { selected.value = null; return; }
+  try {
+    const { data } = await http.get(route('api.v1.admin.contentEditor.show', { kind: props.collection, record: id }));
+    if (otherLangId.value === id) selected.value = data.data;
+  } catch { pairError.value = $t('editor.counterpart_unavailable'); }
+}, { immediate: true });
 
-// Search only the opposite-language records of the candidates' tenants — the same set the server offers.
-const baseFilterBy = computed(() => {
-  const tenantIds = [
-    ...new Set(props.candidates.map(candidate => candidate.tenant?.id).filter((id): id is number => id != null)),
-  ];
-  const parts: string[] = [];
-  if (tenantIds.length > 0) {
-    parts.push(`tenant_ids:[${tenantIds.join(',')}]`);
-  }
-  parts.push(`lang:=${otherLang.value}`);
-  return parts.join(' && ');
-});
+// Tenant filtering is a convenience; the save endpoint checks every affected record.
+const baseFilterBy = computed(() => `${props.tenantId ? `tenant_ids:[${props.tenantId}] && ` : ''}lang:=${otherLang.value}`);
 
 const initialHits = computed<NormalizedSearchHit[]>(() => {
   if (!selected.value) {
@@ -152,7 +190,26 @@ const initialHits = computed<NormalizedSearchHit[]>(() => {
   })];
 });
 
-function onConfirm(hits: NormalizedSearchHit[]) {
-  otherLangId.value = hits[0] ? Number(hits[0].recordId) : null;
+async function onConfirm(hits: NormalizedSearchHit[]) {
+  pendingId = hits[0] ? Number(hits[0].recordId) : null;
+  pairError.value = '';
+  try {
+    const { data } = await http.post(route('api.v1.admin.contentEditor.pairing', { kind: props.collection }), { record_id: props.recordId, target_id: pendingId, lang: lang.value });
+    pendingToken = data.data.token;
+    if (data.data.confirmation_required) {
+      pairDescription.value = $t('editor.pairing_changes') + '\n' + data.data.records.map((record: { title: string; lang: string; other_lang_id?: number; id: number }) => `${record.title} (${record.lang}) → ${data.data.records.find((candidate: { id: number }) => candidate.id === record.other_lang_id)?.title ?? $t('editor.unpaired')}`).join('\n');
+      confirmOpen.value = true;
+    } else applySelection();
+  } catch (error) { pairError.value = http.isError(error) ? error.response?.data?.message ?? error.message : String(error); }
+}
+function openWorkspace() {
+  workspaceOpen.value = true;
+  spotlight.dismiss();
+}
+
+function applySelection() {
+  otherLangId.value = pendingId;
+  pairingConfirmation.value = pendingToken;
+  confirmOpen.value = false;
 }
 </script>

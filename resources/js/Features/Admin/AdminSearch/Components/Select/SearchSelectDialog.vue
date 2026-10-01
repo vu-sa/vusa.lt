@@ -31,7 +31,17 @@
       </div>
 
       <DialogFooter class="flex-row flex-wrap items-center justify-between gap-3 border-t px-3 py-3 sm:px-5">
-        <span class="text-sm text-muted-foreground">
+        <Button
+          v-if="clearLabel && initialHits?.length"
+          variant="ghost"
+          voice="sentence"
+          class="mr-auto"
+          data-testid="search-select-clear"
+          @click="clear"
+        >
+          {{ clearLabel }}
+        </Button>
+        <span v-else class="text-sm text-muted-foreground">
           {{ $t(':count pasirinkta', { count: String(selectedHits.length) }) }}
         </span>
         <div class="flex items-center gap-2">
@@ -74,6 +84,8 @@ const props = defineProps<{
   initialHits?: NormalizedSearchHit[];
   /** Allow confirming with nothing selected (single-select "clear" support). */
   allowEmpty?: boolean;
+  /** Names the action that drops the current selection ("Atsieti…"); shown only when there is one. */
+  clearLabel?: string;
 }>();
 
 const emit = defineEmits<{
@@ -125,6 +137,11 @@ const onToggle = (hit: NormalizedSearchHit) => {
 };
 
 const cancel = () => {
+  emit('update:open', false);
+};
+
+const clear = () => {
+  emit('confirm', []);
   emit('update:open', false);
 };
 

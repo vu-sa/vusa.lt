@@ -108,7 +108,7 @@ export const CustomHeading = Heading.extend({
     // `Array.isArray(node.content)` check silently produced an empty id on every
     // heading rendered through either path. `TiptapEditor.vue`'s own
     // `updateHeadingIds()` already uses `node.textContent` correctly — this now matches.
-    const id = latinizeId(node.textContent);
+    const id = node.attrs.id || latinizeId(node.textContent) || 'heading';
 
     const size = node.attrs.size as HeadingSize | null;
     const accent = node.attrs.accent as HeadingAccent | null;

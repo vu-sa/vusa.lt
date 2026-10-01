@@ -7,6 +7,7 @@
     :confirm-label
     :initial-hits
     :allow-empty
+    :clear-label
     @update:open="$emit('update:open', $event)"
     @confirm="$emit('confirm', $event)"
   >
@@ -50,6 +51,7 @@ withDefaults(defineProps<{
   disabledIds?: Set<string>;
   initialHits?: NormalizedSearchHit[];
   allowEmpty?: boolean;
+  clearLabel?: string;
   mapperCtx?: MapperContext;
   emptyMessage?: string;
   searchPlaceholder?: string;

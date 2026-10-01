@@ -11,6 +11,8 @@ use App\Http\Controllers\Api\Admin\CalendarApiController;
 use App\Http\Controllers\Api\Admin\CommentApiController;
 use App\Http\Controllers\Api\Admin\CommentPollVoteApiController;
 use App\Http\Controllers\Api\Admin\CommentReactionApiController;
+use App\Http\Controllers\Api\Admin\ContentEditorApiController;
+use App\Http\Controllers\Api\Admin\ContentEditorDraftApiController;
 use App\Http\Controllers\Api\Admin\ContentPartPreviewApiController;
 use App\Http\Controllers\Api\Admin\DutiableTimelineApiController;
 use App\Http\Controllers\Api\Admin\DutyApiController;
@@ -192,6 +194,15 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
 
         // Rich content — admin editor preview for unsaved dynamic blocks (link-list,
         // event-list, …), batched so the "preview all" toggle fires one request.
+        Route::get('content-editor/{kind}/drafts/{identity}', [ContentEditorDraftApiController::class, 'show'])->name('contentEditor.drafts.show');
+        Route::match(['put', 'delete'], 'content-editor/{kind}/drafts/{identity}', [ContentEditorDraftApiController::class, 'update'])->name('contentEditor.drafts.update');
+        Route::post('content-editor/{kind}/pairing', [ContentEditorApiController::class, 'pairing'])->name('contentEditor.pairing');
+        Route::get('content-editor/{kind}/{record}', [ContentEditorApiController::class, 'show'])->whereNumber('record')->name('contentEditor.show');
+        Route::post('content-editor/pages', [ContentEditorApiController::class, 'storePage'])->name('contentEditor.pages.store');
+        Route::patch('content-editor/pages/{page}', [ContentEditorApiController::class, 'updatePage'])->name('contentEditor.pages.update');
+        Route::post('content-editor/news', [ContentEditorApiController::class, 'storeNews'])->name('contentEditor.news.store');
+        Route::patch('content-editor/news/{news}', [ContentEditorApiController::class, 'updateNews'])->name('contentEditor.news.update');
+
         Route::post('content-parts/preview', ContentPartPreviewApiController::class)
             ->middleware('throttle:60,1')
             ->name('contentParts.preview');

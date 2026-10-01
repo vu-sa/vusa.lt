@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use App\Actions\GetTenantsForUpserts;
 use App\Enums\ContentPartEnum;
+use App\Models\News;
+use App\Models\Page;
 use App\Services\ModelAuthorizer;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -33,7 +35,7 @@ class PreviewContentPartsRequest extends FormRequest
             return true;
         }
 
-        $allowedTenantIds = GetTenantsForUpserts::execute('pages.update.padalinys', $authorizer)->pluck('id')->all();
+        $allowedTenantIds = $this->previewTenantIds($authorizer);
 
         return in_array((int) $tenantId, $allowedTenantIds, true);
     }
@@ -41,11 +43,29 @@ class PreviewContentPartsRequest extends FormRequest
     /**
      * @return array<string, mixed>
      */
+    private function previewTenantIds(ModelAuthorizer $authorizer): array
+    {
+        $kind = $this->input('kind', 'pages');
+        abort_unless(in_array($kind, ['pages', 'news'], true), 403);
+        if ($this->filled('record_id')) {
+            $model = $kind === 'pages' ? Page::class : News::class;
+            $record = $model::findOrFail($this->input('record_id'));
+            abort_unless($this->user()->can('update', $record), 403);
+
+            return [$record->tenant_id];
+        }
+        $action = $this->has('kind') ? 'create' : 'update';
+
+        return GetTenantsForUpserts::execute($kind.'.'.$action.'.padalinys', $authorizer)->pluck('id')->all();
+    }
+
     public function rules(ModelAuthorizer $authorizer): array
     {
-        $allowedTenantIds = GetTenantsForUpserts::execute('pages.update.padalinys', $authorizer)->pluck('id')->all();
+        $allowedTenantIds = $this->previewTenantIds($authorizer);
 
         return [
+            'kind' => ['nullable', 'in:pages,news'],
+            'record_id' => ['nullable', 'integer'],
             'tenant_id' => ['required', 'integer', Rule::in($allowedTenantIds)],
             'locale' => ['nullable', 'string', Rule::in(['lt', 'en'])],
             'parts' => ['required', 'array', 'max:20'],

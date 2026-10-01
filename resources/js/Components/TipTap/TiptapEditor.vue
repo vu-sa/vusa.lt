@@ -9,6 +9,7 @@
       ],
     ]"
   >
+    <p v-if="contentError" class="p-3 text-sm text-destructive" role="alert">{{ $t('editor.unsupported_content') }}</p>
     <template v-if="editor && preset !== 'minimal'">
       <TiptapContextMenus
         ref="contextMenus"
@@ -118,7 +119,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, useTemplateRef } from 'vue';
+import { computed, nextTick, ref, watch, onBeforeUnmount, useTemplateRef } from 'vue';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
 import { Extension } from '@tiptap/core';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -137,6 +138,7 @@ import TiptapInsertMenu from './TiptapInsertMenu.vue';
 import TiptapMoreMenu from './TiptapMoreMenu.vue';
 import TiptapToolButton from './TiptapToolButton.vue';
 
+import { collectHeadingIds } from '@/Components/RichContent/headingAnchors';
 import { Separator } from '@/Components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { latinizeId } from '@/Utils/String';
@@ -229,7 +231,10 @@ const extensions = [
   LinkShortcut,
 ];
 
+const contentError = ref(false);
 const editor = useEditor({
+  enableContentCheck: true,
+  onContentError: ({ editor: currentEditor }) => { contentError.value = true; currentEditor.setEditable(false); },
   editorProps: {
     attributes: {
       class: ['focus:outline-none w-full min-h-[80px]', isFramed.value ? 'px-4 py-3 text-sm leading-relaxed' : 'px-3 py-2', props.proseStyle ? 'rc-prose-editing tracking-normal' : ''].filter(Boolean).join(' '),
@@ -238,6 +243,7 @@ const editor = useEditor({
   extensions,
   content: normalizeContent(props.modelValue),
   onUpdate: () => {
+    if (contentError.value) return;
     if (props.preset === 'full') {
       updateHeadingIds();
     }
@@ -255,7 +261,10 @@ const editor = useEditor({
 
 const commands = useTiptapCommands(editor);
 
-// Heading ID generation for TOC support
+// Heading ID generation for TOC support. Anchors the block loaded with survive a retitle;
+// a heading typed now follows its text.
+const lockedHeadingIds = collectHeadingIds(props.modelValue);
+
 function updateHeadingIds() {
   if (!editor.value) return;
 
@@ -264,11 +273,12 @@ function updateHeadingIds() {
 
   editor.value.state.doc.descendants((node, pos) => {
     if (node.type.name === 'heading') {
-      let id = latinizeId(node.textContent);
+      const base = (lockedHeadingIds.has(node.attrs.id) ? node.attrs.id : latinizeId(node.textContent)) || 'heading';
+      let id = base;
 
       let counter = 1;
       while (innerHeadings.some(heading => heading.id === id)) {
-        id = `${latinizeId(node.textContent)}-${counter}`;
+        id = `${base}-${counter}`;
         counter++;
       }
 
@@ -289,6 +299,12 @@ function updateHeadingIds() {
 
   editor.value.view.dispatch(transaction);
 }
+
+watch(() => props.modelValue, value => {
+  if (!editor.value) return;
+  const current = props.html ? editor.value.getHTML() : editor.value.getJSON();
+  if (JSON.stringify(current) !== JSON.stringify(value)) editor.value.commands.setContent(normalizeContent(value), { emitUpdate: false });
+}, { deep: true });
 
 onBeforeUnmount(() => {
   clearPendingUploads();

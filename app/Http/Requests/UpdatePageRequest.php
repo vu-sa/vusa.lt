@@ -46,7 +46,14 @@ class UpdatePageRequest extends FormRequest
     {
         return [
             ...$this->contentPartRules(),
-            'title' => 'required|string|max:255',
+            'content_version' => [$this->is('api/*') ? 'required' : 'nullable', 'string', 'size:64'],
+            'pairing_confirmation' => ['nullable', 'string', 'size:64'],
+            'content.parts.*.key' => ['nullable', 'string', 'max:100'],
+            'highlights' => ['nullable', 'array', 'max:3'],
+            'highlights.*' => ['nullable', 'string', 'max:500'],
+            'featured_image' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:500'],
+            'title' => 'required|string|max:200',
             'lang' => ['required', new Enum(LocaleEnum::class)],
             'permalink' => [
                 'sometimes', 'required', 'string', 'max:255', // matches the `pages.permalink` column width
@@ -63,7 +70,7 @@ class UpdatePageRequest extends FormRequest
             ],
             // `different:id` was inert — the payload has no `id` field — so a page
             // could be paired with itself. Compare against the route model instead.
-            'other_lang_id' => ['nullable', SoftDeleteRules::existsLive('pages'), Rule::notIn([$this->page->id])],
+            'other_lang_id' => ['nullable', 'integer', SoftDeleteRules::existsLive('pages'), Rule::notIn([$this->page->id])],
             'is_active' => 'required|boolean',
             'layout' => ['nullable', new Enum(PageLayoutEnum::class)],
             'show_table_of_contents' => ['boolean'],

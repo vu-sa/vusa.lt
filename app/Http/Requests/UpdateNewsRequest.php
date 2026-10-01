@@ -17,20 +17,6 @@ class UpdateNewsRequest extends NewsRequest
         return $this->user()->can('update', $this->news);
     }
 
-    #[\Override]
-    protected function prepareForValidation()
-    {
-        $publishTime = $this->input('publish_time');
-
-        if ($publishTime !== null) {
-            $this->merge([
-                'publish_time' => is_string($publishTime)
-                    ? strtotime($publishTime)
-                    : $publishTime / 1000,
-            ]);
-        }
-    }
-
     /**
      * Get the tenant the news item belongs to, so permalink uniqueness is scoped
      * to that tenant instead of checked globally.
@@ -53,8 +39,9 @@ class UpdateNewsRequest extends NewsRequest
                 fn (string $attribute, mixed $value, Closure $fail) => $this->assertPermalinkNotRetiredByAnother((string) $value, $fail),
             ],
             'image' => 'nullable|string',
-            'short' => 'nullable',
-            'lang' => 'required|string',
+            'short' => 'nullable|string',
+            'lang' => 'required|in:lt,en',
+            'content_version' => [$this->is('api/*') ? 'required' : 'nullable', 'string', 'size:64'],
         ]);
     }
 

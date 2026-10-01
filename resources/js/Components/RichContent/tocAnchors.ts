@@ -1,3 +1,4 @@
+import { richText } from './headingAnchors';
 export interface AnchorLink {
   title: string;
   href: string;
@@ -72,10 +73,10 @@ export function extractAnchorLinks(parts: AnchorablePart[] | null | undefined): 
       }
 
       const headings = partHeadings.reduce((headingsAcc: AnchorLink[], node: HeadingNode) => {
-        if (node.content && node.content[0] && node.content[0].text) {
+        if (richText(node)) {
           if (node.attrs.level === 2) {
             headingsAcc.push({
-              title: node.content[0].text,
+              title: richText(node),
               href: `#${node.attrs.id}`,
               children: [],
             });
@@ -84,13 +85,13 @@ export function extractAnchorLinks(parts: AnchorablePart[] | null | undefined): 
             const lastHeading = headingsAcc[headingsAcc.length - 1];
             if (lastHeading?.children) {
               lastHeading.children.push({
-                title: node.content[0].text,
+                title: richText(node),
                 href: `#${node.attrs.id}`,
               });
             }
             else {
               headingsAcc.push({
-                title: node.content[0].text,
+                title: richText(node),
                 href: `#${node.attrs.id}`,
                 children: [],
               });

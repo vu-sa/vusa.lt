@@ -75,7 +75,7 @@ class AppServiceProvider extends ServiceProvider
         // subsequent request for the rest of the process. bootstrap/app.php never calls
         // $middleware->trimStrings(...), so nothing else depends on this being pre-populated.
         TrimStrings::flushState();
-        TrimStrings::skipWhen(fn (Request $request) => $request->is('mano/*'));
+        TrimStrings::skipWhen(fn (Request $request) => $request->is('mano/*', 'api/v1/admin/content-editor/*'));
 
         Translatable::fallback(
             fallbackLocale: 'lt'

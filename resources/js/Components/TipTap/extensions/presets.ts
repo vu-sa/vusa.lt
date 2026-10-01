@@ -134,6 +134,8 @@ export function createMarksExtensions(options: PresetOptions = {}): AnyExtension
     );
   }
 
+  if (options.maxCharacters != null) extensions.push(CharacterCount.configure({ limit: options.maxCharacters, autoTrim: false }));
+
   return extensions;
 }
 
@@ -219,6 +221,7 @@ export function createFullExtensions(options: PresetOptions = {}): AnyExtension[
     extensions.push(
       CharacterCount.configure({
         limit: options.maxCharacters,
+        autoTrim: false,
       }),
     );
   }

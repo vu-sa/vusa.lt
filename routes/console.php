@@ -3,6 +3,7 @@
 use App\Actions\Schedulable\TaskNotifier;
 use App\Jobs\SyncFileableFilesJob;
 use App\Jobs\SyncStaleDocumentsJob;
+use App\Models\ContentEditorDraft;
 use App\Models\ReservationDraft;
 use App\Models\User;
 use App\Services\SystemMonitorService;
@@ -171,3 +172,7 @@ Schedule::call(fn () => Cache::forever(SystemMonitorService::HEARTBEAT_CACHE_KEY
 Schedule::command('model:prune', ['--model' => [ReservationDraft::class]])
     ->dailyAt('03:30')
     ->name('prune-reservation-drafts');
+
+Schedule::command('model:prune', ['--model' => [ContentEditorDraft::class]])
+    ->dailyAt('03:40')
+    ->name('prune-content-editor-drafts');

@@ -58,6 +58,8 @@ return Application::configure(basePath: dirname(__DIR__))
     // truth for listeners; automatic discovery of app/Listeners would double-register them.
     ->withEvents(discover: false)
     ->withMiddleware(function (Middleware $middleware): void {
+        $isEditorRecovery = fn (Request $request): bool => $request->is('api/v1/admin/content-editor/*/drafts/*');
+        $middleware->convertEmptyStringsToNull(except: [$isEditorRecovery]);
         $middleware->prepend([
             StagingBasicAuth::class,
             BlockRobotsOnStagingDomains::class,

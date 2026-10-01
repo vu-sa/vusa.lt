@@ -6,6 +6,7 @@
     :back-href="route('news.index')"
     :back-label="$t('Naujienos')"
     :processing="form.processing"
+    :disabled="!editor.ready.value"
     :dirty="form.isDirty"
     :errors="form.errors"
     :field-ids
@@ -15,11 +16,13 @@
     :activity-subject="news?.id ? { type: 'news', id: news.id } : undefined"
     :created-at="isCreate ? undefined : news?.created_at"
     :updated-at="isCreate ? undefined : news?.updated_at"
-    @submit="emit('submit:form', form)"
+    @submit="editor.save()"
   >
     <template v-if="!isCreate && news" #title-status>
-      <StatusBadge :status="news.draft ? contentStatuses.draft : contentStatuses.published" />
+      <StatusBadge :status="editor.savedRecord.value.draft ? contentStatuses.draft : contentStatuses.published" />
     </template>
+
+    <ContentRecoveryPanel :editor="editor" />
 
     <FormFieldWrapper
       id="title"
@@ -100,8 +103,8 @@
     <FormFieldWrapper id="content" :label="$t('Turinys')">
       <RichContentFormElement
         v-model="form.content.parts"
-        :tenant-id="news?.tenant_id"
-        @save="$emit('submit:form', form)"
+        :tenant-id="form.tenant_id"
+        @save="editor.save()"
       />
     </FormFieldWrapper>
 
@@ -186,8 +189,10 @@
         v-model:lang="form.lang"
         v-model:other-lang-id="form.other_lang_id"
         collection="news"
-        :candidates="otherLangNews"
         :is-create
+        :tenant-id="form.tenant_id"
+        :record-id="form.id"
+        v-model:pairing-confirmation="form.pairing_confirmation"
         :labels="languageLabels"
         :lang-error="form.errors.lang"
         :lang-valid="form.valid('lang')"
@@ -237,7 +242,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { provide, computed, ref } from 'vue';
+import ContentRecoveryPanel from './ContentRecoveryPanel.vue';
+import { useContentEditor } from '@/Composables/useContentEditor';
+import { CONTENT_EDITOR_CONTEXT, type ContentEditorContext } from '@/Components/RichContent/contentEditorContext';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown, LayoutTemplate, Tags, Trash2 } from 'lucide-vue-next';
@@ -273,7 +281,6 @@ import { stripHtmlTags } from '@/Utils/String';
 
 const props = withDefaults(defineProps<{
   news?: App.Entities.News;
-  otherLangNews?: App.Entities.News[];
   availableTags?: App.Entities.Tag[];
   /** Tenants the user may create news in — only meaningful (and rendered) on create. */
   assignableTenants?: App.Entities.Tenant[];
@@ -283,14 +290,12 @@ const props = withDefaults(defineProps<{
   enableDelete?: boolean;
 }>(), {
   news: undefined,
-  otherLangNews: () => [],
   availableTags: () => [],
   assignableTenants: () => [],
   rememberKey: undefined,
 });
 
 const emit = defineEmits<{
-  (event: 'submit:form', form: unknown): void;
   (event: 'delete'): void;
 }>();
 
@@ -305,6 +310,9 @@ const fieldIds: Record<string, string> = {
 };
 
 const formData = {
+  id: props.news?.id,
+  content_version: (props.news as unknown as { content_version?: string })?.content_version,
+  pairing_confirmation: undefined,
   ...newsTemplate,
   ...props.news,
   show_breadcrumbs: props.news?.show_breadcrumbs ?? true,
@@ -322,6 +330,9 @@ if (isCreate.value && form.tenant_id == null) {
 
 form.setValidationTimeout(500);
 
+const editor = useContentEditor('news', form);
+provide(CONTENT_EDITOR_CONTEXT, { kind: 'news', form, save: editor.save, ready: editor.ready, error: editor.saveError, acknowledgePairing: editor.acknowledgePairing, recovery: editor } as unknown as ContentEditorContext);
+
 // Preview-only: the actual permalink is generated server-side on create (GenerateUniqueSlug).
 // Title getter returns '' outside create mode so the composable's own length guard no-ops it.
 const permalinkPreview = usePermalinkPreview('news', () => (isCreate.value ? form.title ?? '' : ''), () => form.lang ?? 'lt');
@@ -333,24 +344,25 @@ if (!Array.isArray(form.highlights)) {
 const newsBaseUrl = computed(() => {
   const lang = form.lang ?? 'lt';
 
-  return `${resolveTenantPublicHost(props.news?.tenant?.id)}/${lang}/${localizedSlug('newsString', lang)}`;
+  return `${resolveTenantPublicHost(form.tenant_id as number)}/${lang}/${localizedSlug('newsString', lang)}`;
 });
 
 const publicNewsUrl = computed(() => {
   // A saved draft 404s publicly, so there is nothing to open yet.
-  if (!props.news?.id || props.news.draft || !form.permalink || !props.news.tenant) return undefined;
+  const saved = editor.savedRecord.value;
+  if (!saved.id || saved.draft || !saved.permalink || !saved.tenant_id) return undefined;
 
   return localizedRoute('news', {
-    subdomain: resolveTenantSubdomain(props.news.tenant.id),
-    news: form.permalink,
-  }, form.lang ?? 'lt');
+    subdomain: resolveTenantSubdomain(saved.tenant_id as number),
+    news: saved.permalink,
+  }, saved.lang ?? 'lt');
 });
 
-// The bar states what is saved; the heading and fields follow the edit. Props refresh after each save.
-const barTitle = computed(() => (isCreate.value ? $t('Nauja naujiena') : (props.news?.title || $t('Naujiena'))));
+
+const barTitle = computed(() => (isCreate.value ? $t('Nauja naujiena') : (editor.savedRecord.value.title || $t('Naujiena'))));
 
 // The redirect note is a consequence of an edit, so it appears only once there is one.
-const permalinkChanged = computed(() => form.permalink !== props.news?.permalink);
+const permalinkChanged = computed(() => form.permalink !== editor.savedRecord.value.permalink);
 
 const shortPlainText = computed(() => stripHtmlTags(form.short ?? '').trim());
 
@@ -386,7 +398,6 @@ const languageLabels = computed(() => ({
   otherLangEn: $t('Naujiena anglų kalba'),
   createHint: $t('Susiesi išsaugojęs naujieną.'),
   editHint: $t('Susieja tą patį turinį kita kalba.'),
-  createPlaceholder: $t('Pasirinkti kitos kalbos naujieną...'),
   dialogTitle: $t('Kitos kalbos naujiena'),
   searchPlaceholder: $t('Ieškoti naujienos pagal pavadinimą...'),
   emptyMessage: $t('Naujienų nerasta'),

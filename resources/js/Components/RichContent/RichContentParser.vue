@@ -38,6 +38,7 @@
  * *whole* parts array/resolved map, not just one element.
  */
 import { computed } from 'vue';
+import { groupContent } from './groupContent';
 
 import { getDisplayType } from './Types/display';
 import { blockLayoutClasses } from './blockLayout';
@@ -84,45 +85,5 @@ function bandFor(element: models.ContentPart): BandResolution | undefined {
   return bandMap.value.get(element);
 }
 
-type ContentGroup
-  = | { kind: 'block'; element: models.ContentPart }
-    | { kind: 'section'; element: models.ContentPart; children: models.ContentPart[] };
-
-/**
- * Splits `content` into top-level render groups: a plain block, or a `section` marker
- * plus every part that follows it up to the next `section` marker, an independent
- * self-spaced band, or the end.
- * `options.wraps: 'none'` makes a section render header-only — it still opens a group
- * (so it gets its own chrome/anchor), but doesn't absorb anything after it; the very
- * next element (section or not) starts fresh, exactly as if this section didn't exist
- * for grouping purposes. This is also what makes a `wraps: 'none'` section act as an
- * implicit terminator for whatever section came before it — a new section element
- * always ends the previous group regardless of its own `wraps` value.
- */
-const groupedContent = computed<ContentGroup[]>(() => {
-  const groups: ContentGroup[] = [];
-  let active: { kind: 'section'; element: models.ContentPart; children: models.ContentPart[] } | null = null;
-
-  for (const element of props.content) {
-    if (element.type === 'section') {
-      const group: ContentGroup = { kind: 'section', element, children: [] };
-      groups.push(group);
-      active = element.options?.wraps === 'none' ? null : (group as typeof active);
-      continue;
-    }
-
-    if (active && endsSectionWrapping(element)) {
-      active = null;
-    }
-
-    if (active) {
-      active.children.push(element);
-    }
-    else {
-      groups.push({ kind: 'block', element });
-    }
-  }
-
-  return groups;
-});
+const groupedContent = computed(() => groupContent(props.content));
 </script>

@@ -1,10 +1,10 @@
 <template>
   <div class="relative">
     <div v-if="typeof element.html === 'string'" class="rc-prose" v-html="element.html" />
-    <RichContentTiptapHTML v-else-if="element.json_content" :json_content="element.json_content" />
     <div v-else-if="element.html === null" class="text-sm italic text-muted-foreground">
       {{ $t('Turinio nepavyko atvaizduoti') }}
     </div>
+    <RichContentTiptapHTML v-else-if="element.json_content" :json_content="element.json_content" />
   </div>
 </template>
 

@@ -10,6 +10,7 @@ defineProps<{
 
 <script lang="ts">
 import { renderToHTMLString } from '@tiptap/static-renderer/pm/html-string';
+import { trans } from 'laravel-vue-i18n';
 
 import { createRenderExtensions } from '../TipTap/extensions/render';
 
@@ -21,6 +22,10 @@ export const generateHTMLfromTiptap = (json_content: Record<string, unknown>) =>
     return '';
   }
 
-  return renderToHTMLString({ content: json_content, extensions: renderExtensions });
+  try {
+    return renderToHTMLString({ content: json_content, extensions: renderExtensions });
+  } catch {
+    return `<p>${trans('Turinio nepavyko atvaizduoti')}</p>`;
+  }
 };
 </script>

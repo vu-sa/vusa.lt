@@ -227,14 +227,14 @@ const currentStep = ref<number>(1);
 const altHelpOpen = ref(false);
 const isDecorative = ref(false);
 
-// Validation schema for accessibility details. Recomputed so ticking "decorative"
-// lifts the alt requirement instead of leaving the form unsubmittable.
-const formSchema = computed(() => toTypedSchema(z.object({
-  alt: isDecorative.value
-    ? z.string().optional()
-    : z.string().trim().min(1, { message: $t('accessibility.alt_text_required') || 'Alt tekstas privalomas' }),
-  title: z.string().max(200, { message: $t('validation.max') || 'Per ilgas pavadinimas' }).optional().or(z.literal('')),
-})));
+const formSchema = toTypedSchema(z.object({
+  alt: z.string().optional(),
+  title: z.string().max(200, { message: $t('validation.max') }).optional().or(z.literal('')),
+}).superRefine((values, context) => {
+  if (!isDecorative.value && !values.alt?.trim()) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ['alt'], message: $t('accessibility.alt_text_required') });
+  }
+}));
 
 // Watch for modal close to reset form
 watch(showModal, (isOpen) => {

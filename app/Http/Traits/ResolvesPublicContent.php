@@ -4,6 +4,7 @@ namespace App\Http\Traits;
 
 use App\Models\Content;
 use App\Models\ContentPart;
+use App\Services\ContentHeadingAnchors;
 use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\ContentResolution\ResolutionContext;
 use Illuminate\Support\Facades\Cache;
@@ -20,6 +21,16 @@ trait ResolvesPublicContent
      */
     protected function resolveContentParts(?Content $content): array
     {
+        if ($content !== null) {
+            $normalized = app(ContentHeadingAnchors::class)->normalize($content->parts->map(fn (ContentPart $part) => [
+                'json_content' => $part->json_content?->toArray(),
+                'options' => $part->options?->toArray(),
+            ])->all());
+            foreach ($content->parts as $index => $part) {
+                $part->json_content = $normalized[$index]['json_content'];
+                $part->options = $normalized[$index]['options'];
+            }
+        }
         $parts = $content?->parts->filter(
             fn (ContentPart $part) => in_array($part->type, ContentPartResolver::resolvableTypes(), true)
         );
