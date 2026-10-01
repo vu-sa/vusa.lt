@@ -43,6 +43,8 @@ beforeEach(function (): void {
         'broadcasting.connections.reverb.options.host',
         'broadcasting.connections.reverb.options.port',
         'reverb.servers.reverb.port',
+        'inertia.ssr.enabled',
+        'inertia.ssr.url',
         'webpush.vapid.subject',
         'webpush.vapid.public_key',
         'webpush.vapid.private_key',
@@ -83,6 +85,7 @@ function configureSafeStagingIsolation(): void
         'app.staging_broadcasting_enabled' => false,
         'app.staging_push_enabled' => false,
         'broadcasting.default' => 'null',
+        'inertia.ssr.enabled' => false,
         'webpush.vapid.subject' => null,
         'webpush.vapid.public_key' => null,
         'webpush.vapid.private_key' => null,
@@ -195,6 +198,30 @@ test('staging broadcasting refuses production Reverb and push refuses missing ke
         ->expectsOutputToContain('VAPID_PRIVATE_KEY must be set when STAGING_PUSH_ENABLED=true')
         ->assertExitCode(1);
 });
+
+test('staging SSR accepts its own renderer port', function (): void {
+    configureSafeStagingIsolation();
+
+    config(['inertia.ssr.enabled' => true, 'inertia.ssr.url' => 'http://127.0.0.1:13715']);
+
+    $this->artisan('staging:verify-isolation')
+        ->expectsOutputToContain('configuration is safe')
+        ->assertExitCode(0);
+});
+
+test('staging SSR refuses production\'s renderer', function (string $url, string $error): void {
+    configureSafeStagingIsolation();
+
+    config(['inertia.ssr.enabled' => true, 'inertia.ssr.url' => $url]);
+
+    $this->artisan('staging:verify-isolation')
+        ->expectsOutputToContain($error)
+        ->assertExitCode(1);
+})->with([
+    'production port' => ['http://127.0.0.1:13714', 'port other than production SSR'],
+    'no port' => ['http://127.0.0.1', 'port other than production SSR'],
+    'remote host' => ['http://www.vusa.lt:13715', 'INERTIA_SSR_URL must be on 127.0.0.1'],
+]);
 
 test('staging basic auth fails closed when credentials are missing', function (): void {
     config([

@@ -12,6 +12,7 @@ the deploy went years without restarting them.
 | `staging-laravel-worker` | 1 | staging `queue:work` |
 | `reverb` | 1 | production `reverb:start` (WebSockets) |
 | `staging-reverb` | 1 | staging `reverb:start` on `127.0.0.1:6002`, only with `STAGING_BROADCASTING_ENABLED=true` |
+| `staging-inertia-ssr` | 1 | staging Node SSR renderer on `127.0.0.1:13715`, used only with `INERTIA_SSR_ENABLED=true` |
 
 `typesense.conf` and `umami.conf` also live on the server but are not Laravel processes, so they are
 not mirrored here.
@@ -104,8 +105,29 @@ minutes, and a 35-request burst. Require zero errors and p95 below 500 ms, peak 
 The heap cap is not an RSS cap; check the process separately during the run.
 
 To roll back, set `INERTIA_SSR_ENABLED=false`, rebuild the config cache, and stop the SSR program.
-Do not copy or symlink this reference into `/etc` until the pilot checks pass. Staging needs its
-own port and supervisor program before SSR is enabled there.
+Do not copy or symlink this reference into `/etc` until the pilot checks pass.
+
+### Staging renderer
+
+`staging-inertia-ssr.conf` is the place to try SSR before production. It differs from the
+production reference in two ways: `INERTIA_SSR_PORT=13715`, so the two renderers never share a
+port, and `autostart=true`, so it survives a reboot. `staging:verify-isolation` refuses an enabled
+staging whose `INERTIA_SSR_URL` is not on loopback or names production's port — there, a staging
+deploy's `inertia:stop-ssr` would stop production's renderer.
+
+To switch it on:
+
+```bash
+sudo cp deployment/supervisor/staging-inertia-ssr.conf /etc/supervisor/conf.d/
+sudo supervisorctl reread && sudo supervisorctl update
+# in naujas.vusa.lt/.env: INERTIA_SSR_ENABLED=true, INERTIA_SSR_URL=http://127.0.0.1:13715
+/opt/php85/bin/php artisan config:cache && /opt/php85/bin/php artisan staging:verify-isolation
+curl -s http://127.0.0.1:13715/health
+```
+
+While `INERTIA_SSR_ENABLED=false` the process idles and deploys do not restart it, so it keeps the
+bundle it started with: `sudo supervisorctl restart staging-inertia-ssr` when enabling. If it shows
+`FATAL`, `bootstrap/ssr/ssr.js` is missing — the deployed revision predates the SSR build.
 
 ### VPS capacity check — 2026-09-30
 

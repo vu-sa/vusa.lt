@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Uri;
+
 class StagingIsolationService
 {
     /**
@@ -27,6 +29,7 @@ class StagingIsolationService
             ...$this->sharepointErrors(),
             config('mail.default') !== 'log' ? 'The staging mailer must be log.' : null,
             ...$this->broadcastingErrors(),
+            ...$this->ssrErrors(),
             ...$this->pushErrors(),
             ! $this->missing(config('services.umami.website_id')) ? 'UMAMI_WEBSITE_ID must be empty.' : null,
         ]));
@@ -119,6 +122,30 @@ class StagingIsolationService
                 ? 'REVERB_PORT must not be production Reverb\'s port.'
                 : null,
             (int) config('reverb.servers.reverb.port') !== $port ? 'REVERB_SERVER_PORT must match REVERB_PORT.' : null,
+        ]));
+    }
+
+    /**
+     * Staging renders through its own `staging-inertia-ssr` process; on production's port it would
+     * serve production's bundle and each staging deploy would stop production's renderer.
+     *
+     * @return list<string>
+     */
+    public function ssrErrors(): array
+    {
+        if (config('app.env') !== 'staging' || config('inertia.ssr.enabled') !== true) {
+            return [];
+        }
+
+        $url = Uri::of((string) config('inertia.ssr.url'));
+
+        return array_values(array_filter([
+            ! in_array($url->host(), ['127.0.0.1', 'localhost'], true)
+                ? 'INERTIA_SSR_URL must be on 127.0.0.1, staging\'s own SSR process.'
+                : null,
+            in_array($url->port(), [null, (int) config('inertia.ssr.production_port')], true)
+                ? 'INERTIA_SSR_URL must name a port other than production SSR\'s.'
+                : null,
         ]));
     }
 

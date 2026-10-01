@@ -25,6 +25,8 @@ public/build
 public/hot
 /bootstrap/ssr
 /bootstrap/ssr.old
+/bootstrap/icons
+/bootstrap/icons.old
 
 # Deploy archives + the rotated-out vendor, all living at the repo root on the servers.
 /build.tar.gz

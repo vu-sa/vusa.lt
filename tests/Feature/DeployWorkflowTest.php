@@ -103,6 +103,12 @@ describe('the state the server is in before artisan boots', function () use ($sh
 });
 
 describe('the deploy workflows', function () use ($shared, $source): void {
+    // PublicAssetService reads the icon catalogue from bootstrap/icons; left out of the archive, the
+    // public menu silently falls back to fetching every icon from a third-party API.
+    it('ships the server-side build directories with the client assets', function () use ($shared, $source): void {
+        expect($source($shared))->toContain('tar -czf build.tar.gz public/build bootstrap/ssr bootstrap/icons');
+    });
+
     it('share one implementation so they cannot drift', function () use ($shared, $source): void {
         // These two files were ~90 duplicated lines that had already diverged: staging swallowed
         // deploy failures with `|| true`, production never ran git clean, one cleaned up its SSH keys

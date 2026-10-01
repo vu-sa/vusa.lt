@@ -4,7 +4,6 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Vite;
 
 class PublicAssetService
 {
@@ -38,9 +37,7 @@ class PublicAssetService
             return [];
         }
 
-        $path = $this->cataloguePath ?? (Vite::isRunningHot()
-            ? storage_path('framework/cache/fluent-icons.json')
-            : public_path('build/fluent-icons.json'));
+        $path = $this->cataloguePath ?? base_path('bootstrap/icons/fluent-icons.json');
 
         if (! File::exists($path)) {
             return [];

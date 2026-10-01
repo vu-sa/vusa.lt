@@ -66,6 +66,12 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      # Codecov inherits a merged PR's comparison base into every later dev report, so the dev -> main
+      # PR stops being measured against main. Naming main's head on each dev push resets it.
+      - name: Resolve bundle comparison base
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' }}
+        run: echo "CODECOV_COMPARE_SHA=$(git ls-remote origin refs/heads/main | cut -f1)" >> "$GITHUB_ENV"
+
       - name: Build development frontend assets
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -83,6 +89,7 @@ jobs:
           name: build-assets
           path: |
             public/build
+            bootstrap/icons
             vendor.tar.gz
           retention-days: 1
         # Note: public/build contains development build (no secrets)

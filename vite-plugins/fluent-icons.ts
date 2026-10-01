@@ -33,23 +33,24 @@ export default function fluentIcons(): Plugin {
 
   const version = () => createHash('sha256').update(catalogueSource()).digest('hex');
 
+  // Only PHP reads the catalogue, so it stays out of public/build; deploys ship this directory.
+  const write = () => {
+    const path = resolve(root, 'bootstrap/icons/fluent-icons.json');
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, catalogueSource());
+    writeFileSync(`${path}.version`, version());
+  };
+
   return {
     name: 'public-fluent-icons',
     configResolved(config) {
       root = config.root;
     },
-    buildStart() {
-      catalogueSource();
-    },
     configureServer() {
-      const path = resolve(root, 'storage/framework/cache/fluent-icons.json');
-      mkdirSync(dirname(path), { recursive: true });
-      writeFileSync(path, catalogueSource());
-      writeFileSync(`${path}.version`, version());
+      write();
     },
-    generateBundle() {
-      this.emitFile({ type: 'asset', fileName: 'fluent-icons.json', source: catalogueSource() });
-      this.emitFile({ type: 'asset', fileName: 'fluent-icons.json.version', source: version() });
+    writeBundle() {
+      write();
     },
   };
 }

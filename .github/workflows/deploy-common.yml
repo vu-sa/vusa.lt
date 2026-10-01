@@ -142,7 +142,7 @@ jobs:
 
       - name: Package build artifacts
         run: |
-          tar -czf build.tar.gz public/build bootstrap/ssr
+          tar -czf build.tar.gz public/build bootstrap/ssr bootstrap/icons
           tar -czf vendor.tar.gz vendor
 
       # Two changes from the old inline version, both aimed at the intermittent failures where a run
