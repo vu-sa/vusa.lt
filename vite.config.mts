@@ -79,10 +79,6 @@ export default defineConfig(({ command, isSsrBuild }) => {
           enableBundleAnalysis: true,
           bundleName: "vusa-frontend",
           uploadToken: process.env.CODECOV_TOKEN,
-          // Set by CI on dev pushes; without it Codecov keeps diffing against a merged PR's base.
-          ...(process.env.CODECOV_COMPARE_SHA
-            ? { uploadOverrides: { compareSha: process.env.CODECOV_COMPARE_SHA } }
-            : {}),
         }),
       ]
     : [];

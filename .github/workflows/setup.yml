@@ -68,14 +68,27 @@ jobs:
 
       # Codecov inherits a merged PR's comparison base into every later dev report, so the dev -> main
       # PR stops being measured against main. Naming main's head on each dev push resets it.
+      #
+      # @codecov/vite-plugin 2.0.1 drops `uploadOverrides.compareSha` and takes a base only from the
+      # event payload, so the build below is shown a merge_group-shaped event carrying one.
       - name: Resolve bundle comparison base
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' }}
-        run: echo "CODECOV_COMPARE_SHA=$(git ls-remote origin refs/heads/main | cut -f1)" >> "$GITHUB_ENV"
+        run: |
+          main_sha=$(git ls-remote origin refs/heads/main | cut -f1 || true)
+          if [ -n "$main_sha" ]; then
+            jq -n --arg head "$GITHUB_SHA" --arg base "$main_sha" \
+              '{merge_group: {head_sha: $head, base_sha: $base}}' > "$RUNNER_TEMP/bundle-event.json"
+            echo "BUNDLE_EVENT_PATH=$RUNNER_TEMP/bundle-event.json" >> "$GITHUB_ENV"
+          fi
 
       - name: Build development frontend assets
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: npm run build
+        run: |
+          if [ -n "${BUNDLE_EVENT_PATH:-}" ]; then
+            export GITHUB_EVENT_NAME=merge_group GITHUB_EVENT_PATH="$BUNDLE_EVENT_PATH"
+          fi
+          npm run build
 
       # vendor/ is ~600MB across tens of thousands of small files, and upload-artifact bills that
       # per file: uploading it raw took 67s, on the critical path of every downstream job. One

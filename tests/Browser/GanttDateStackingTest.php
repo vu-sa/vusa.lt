@@ -11,9 +11,10 @@ it('keeps the floating Gantt date below the shell topbar', function (): void {
     $page->navigate('/mano/dashboard/atstovavimas');
     waitForInertiaRender($page, '[data-tour=visak-timeline]');
     // The timeline renders only once in view, and deferred panels landing above it can push it back out on a slow runner.
+    // An IIFE, not `scrollIntoView() ?? …`: Chromium's scrollIntoView() returns a value, which ended the loop at once.
     $deadline = microtime(true) + 15;
 
-    while (! $page->script('document.querySelector("[data-tour=visak-timeline]").scrollIntoView() ?? !! document.querySelector(".gantt-center-date")') && microtime(true) < $deadline) {
+    while (! $page->script('(() => { document.querySelector("[data-tour=visak-timeline]").scrollIntoView(); return !! document.querySelector(".gantt-center-date"); })()') && microtime(true) < $deadline) {
         usleep(250_000);
     }
 
@@ -57,7 +58,7 @@ it('keeps dialogs opened from the full-screen timeline above it', function (): v
     // The chart renders only once scrolled into view, as in the test above.
     $deadline = microtime(true) + 15;
 
-    while (! $page->script('document.querySelector("[data-tour=visak-timeline]").scrollIntoView() ?? !! document.querySelector("[data-tour=gantt-fullscreen]")') && microtime(true) < $deadline) {
+    while (! $page->script('(() => { document.querySelector("[data-tour=visak-timeline]").scrollIntoView(); return !! document.querySelector("[data-tour=gantt-fullscreen]"); })()') && microtime(true) < $deadline) {
         usleep(250_000);
     }
 
