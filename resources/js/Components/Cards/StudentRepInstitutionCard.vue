@@ -83,6 +83,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
+import { TenantType } from '@/Types/enums';
 import IFluentArrowRight16Regular from '~icons/fluent/arrow-right-16-regular';
 
 const props = withDefaults(defineProps<{
@@ -102,7 +103,10 @@ const institutionUrl = computed(() => {
   const locale = (page.props.app as { locale?: string } | undefined)?.locale || 'lt';
   return route('contacts.institution', {
     institution: props.institution.id,
-    subdomain: resolveTenantSubdomain(props.institution.tenant?.id),
+    // PKP tenants have no site of their own; their contacts live on www.
+    subdomain: props.institution.tenant?.type === TenantType.Pkp
+      ? 'www'
+      : resolveTenantSubdomain(props.institution.tenant?.id),
     lang: locale,
   });
 });

@@ -1,9 +1,12 @@
 import { mount } from '@vue/test-utils';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { usePage } from '@inertiajs/vue3';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 import StudentRepInstitutionCard from '../StudentRepInstitutionCard.vue';
+
+import { createMockPage } from '@/tests/helpers/createMockPage';
 
 const stubs = {
   SmartLink: {
@@ -13,6 +16,10 @@ const stubs = {
 };
 
 describe('StudentRepInstitutionCard', () => {
+  afterEach(() => {
+    vi.mocked(usePage).mockReset();
+  });
+
   const createMockInstitution = (usersCount = 2): App.Entities.Institution => {
     const firstNames = ['Vardenis', 'Vardenė', 'Jonas', 'Petras', 'Ona', 'Agnė', 'Tomas', 'Lukas'];
     const lastNames = ['Pavardenis', 'Pavardenytė', 'Jonaitis', 'Petraitis', 'Onaitė', 'Agnaitė', 'Tomaitis', 'Lukaitis'];
@@ -140,5 +147,19 @@ describe('StudentRepInstitutionCard', () => {
     expect(wrapper.text()).toContain('Benas Benaitis');
     expect(wrapper.text()).toContain('BB');
     expect(wrapper.find('img').attributes('src')).toBe('/photos/austeja.jpg');
+  });
+
+  it.each([
+    ['links a PKP tenant\'s institution to www', { id: 7, alias: 'the-coins', type: 'pkp' }, 'subdomain=www'],
+    ['links a padalinys institution to its tenant subdomain', { id: 3, alias: 'mif', type: 'padalinys' }, 'subdomain=mif'],
+  ])('%s', (_, tenant, expectedSubdomain) => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({ tenants: [tenant] }));
+
+    const wrapper = mount(StudentRepInstitutionCard, {
+      props: { institution: { id: 'inst-1', name: 'Institucija', tenant, duties: [] } as unknown as App.Entities.Institution },
+      global: { stubs },
+    });
+
+    expect(wrapper.find('a').attributes('href')).toContain(expectedSubdomain);
   });
 });
