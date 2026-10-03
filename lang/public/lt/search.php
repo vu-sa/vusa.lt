@@ -155,6 +155,9 @@ return [
     'document_link_badge' => 'Nuoroda',
     'document_link_hint' => 'Šis įrašas veda į išorinę svetainę',
     'document_link_unresolved' => 'Šis įrašas yra nuoroda į išorinę svetainę, tačiau tikslus adresas dar nenustatytas – atsidarys „SharePoint" peržiūra.',
+    'document_copy_link' => 'Kopijuoti nuorodą',
+    'document_copy_link_success' => 'Nuoroda nukopijuota į iškarpinę!',
+    'document_copy_link_error' => 'Nepavyko nukopijuoti nuorodos',
 
     // Search input specific
     'search_documents_placeholder' => 'Ieškoti dokumentų pagal pavadinimą...',

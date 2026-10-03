@@ -65,7 +65,7 @@
           @click="setViewMode(view)"
         >
           <component :is="view === 'list' ? IFluentList24Regular : IFluentMap24Regular" class="h-4 w-4" />
-          {{ view === 'list' ? $t('List') : $t('Map') }}
+          {{ view === 'list' ? $t('navigation.view_list') : $t('navigation.view_map') }}
         </Button>
       </div>
 

@@ -2,16 +2,16 @@
   <div class="mt-2 space-y-1.5">
     <!-- Meta row -->
     <div class="flex items-center justify-between text-xs text-muted-foreground">
-      <span>{{ $t('Balsų: :count', { count: poll.total_votes }) }}</span>
+      <span>{{ $t('discussions.poll.votes_count', { count: poll.total_votes }) }}</span>
       <span v-if="poll.is_closed" class="inline-flex items-center gap-1 font-medium text-muted-foreground">
         <Lock class="h-3 w-3" />
-        {{ $t('Apklausa uždaryta') }}
+        {{ $t('discussions.poll.closed') }}
       </span>
       <span v-else-if="closesLabel" class="inline-flex items-center gap-1">
         <Clock class="h-3 w-3" />
         {{ closesLabel }}
       </span>
-      <span v-else-if="poll.allow_multiple">{{ $t('Galima rinktis kelis') }}</span>
+      <span v-else-if="poll.allow_multiple">{{ $t('discussions.poll.allow_multiple') }}</span>
     </div>
 
     <!-- Options -->

@@ -35,7 +35,7 @@ describe('CalendarSyncModal', () => {
     const dialogContent = wrapper.find('[data-testid="dialog-content"]');
     expect(dialogContent.exists()).toBe(true);
     expect(dialogContent.classes()).toContain('sm:max-w-3xl');
-    expect(wrapper.text()).toContain('Kalendoriaus sinchronizavimo instrukcija');
+    expect(wrapper.text()).toContain('calendar.sync.title');
   });
 
   it('emits close event when dialog is closed', async () => {

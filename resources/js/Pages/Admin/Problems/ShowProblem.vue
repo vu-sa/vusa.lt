@@ -30,7 +30,7 @@
       <div class="flex flex-wrap items-center justify-between gap-4 border border-border bg-card p-3">
         <div class="flex items-center gap-2">
           <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {{ $t('Būsena') }}:
+            {{ $t('problems.show.status') }}:
           </span>
           <div class="inline-flex border border-border bg-secondary">
             <button
@@ -65,7 +65,7 @@
         <!-- eslint-disable-next-line vue/no-v-html -->
         <div v-if="localizedDescription" class="prose prose-zinc dark:prose-invert max-w-none text-sm" v-html="localizedDescription" />
         <p v-else class="text-sm italic text-muted-foreground">
-          {{ $t('Aprašymas nepateiktas.') }}
+          {{ $t('problems.show.no_description') }}
         </p>
       </div>
     </template>
@@ -97,9 +97,9 @@
         <EmptyState
           v-else
           :icon="List"
-          :title="$t('Žingsniai dar neaprašyti')"
-          :description="$t('Aprašyk veiksmus, kurie jau buvo atlikti bandant išspręsti šią problemą.')"
-          :action-label="canUpdate ? $t('Pridėti žingsnius') : undefined"
+          :title="$t('problems.show.no_steps_title')"
+          :description="$t('problems.show.no_steps_description')"
+          :action-label="canUpdate ? $t('problems.show.add_steps') : undefined"
           @action="router.visit(route('problems.edit', problem.id))"
         />
       </div>
@@ -112,9 +112,9 @@
         <EmptyState
           v-else
           :icon="Lightbulb"
-          :title="$t('Problema dar neišspręsta')"
-          :description="$t('Kai problema bus išspręsta, aprašyk sprendimą čia.')"
-          :action-label="canUpdate ? $t('Pridėti sprendimą') : undefined"
+          :title="$t('problems.show.unresolved_title')"
+          :description="$t('problems.show.unresolved_description')"
+          :action-label="canUpdate ? $t('problems.show.add_solution') : undefined"
           @action="router.visit(route('problems.edit', problem.id))"
         />
       </div>
@@ -139,8 +139,8 @@
         <EmptyState
           v-else
           :icon="Building2"
-          :title="$t('Susijusių institucijų nėra')"
-          :description="$t('Prie šios problemos nėra priskirtų institucijų.')"
+          :title="$t('problems.show.no_institutions_title')"
+          :description="$t('problems.show.no_institutions_description')"
         />
       </div>
     </template>
@@ -267,33 +267,33 @@ const durationText = computed(() => {
   const diffDays = Math.round((endDate.getTime() - occurredAt.getTime()) / (1000 * 60 * 60 * 24));
 
   if (props.problem.status === 'resolved' && props.problem.resolved_at) {
-    return $t('Išspręsta per :count d.', { count: String(diffDays) });
+    return $t('problems.show.duration_resolved', { count: String(diffDays) });
   }
-  return $t('Atvira jau :count d.', { count: String(diffDays) });
+  return $t('problems.show.duration_open', { count: String(diffDays) });
 });
 
 const recordFacts = computed<RecordFact[]>(() => [
   { key: 'occurred_at', label: $t('entities.problem.occurred_at'), value: formatDate(new Date(props.problem.occurred_at)) },
   ...(props.problem.resolved_at ? [{ key: 'resolved_at', label: $t('entities.problem.resolved_at'), value: formatDate(new Date(props.problem.resolved_at)) }] : []),
-  { key: 'duration', label: $t('Trukmė'), value: durationText.value },
+  { key: 'duration', label: $t('problems.show.duration_label'), value: durationText.value },
   ...(props.problem.tenant ? [{ key: 'tenant', label: $tChoice('entities.tenant.model', 1), value: props.problem.tenant.shortname }] : []),
   { key: 'responsible', label: $t('entities.problem.responsible_user'), value: props.problem.responsible_user?.name ?? '—' },
-  ...(createdByUser.value ? [{ key: 'creator', label: $t('Sukūrė'), value: createdByUser.value.name }] : []),
+  ...(createdByUser.value ? [{ key: 'creator', label: $t('problems.show.created_by_label'), value: createdByUser.value.name }] : []),
 ]);
 
 const tabs = computed<RecordPageSection[]>(() => [
-  { value: 'aprasymas', label: $t('Aprašymas') },
-  { value: 'veiksmai', label: $t('Atlikti žingsniai'), count: props.goalLinks ? props.goalLinks.steps.length : hasStepsTaken.value ? 1 : 0 },
-  { value: 'sprendimas', label: $t('Sprendimas'), count: hasSolution.value ? 1 : 0 },
-  ...(agendaItems.value.length ? [{ value: 'posedziai', label: $t('Svarstyta posėdžiuose'), count: agendaItems.value.length }] : []),
+  { value: 'aprasymas', label: $t('problems.show.tab_description') },
+  { value: 'veiksmai', label: $t('problems.show.tab_steps'), count: props.goalLinks ? props.goalLinks.steps.length : hasStepsTaken.value ? 1 : 0 },
+  { value: 'sprendimas', label: $t('problems.show.tab_solution'), count: hasSolution.value ? 1 : 0 },
+  ...(agendaItems.value.length ? [{ value: 'posedziai', label: $t('problems.show.tab_meetings'), count: agendaItems.value.length }] : []),
   ...(props.problem.institutions?.length ? [{ value: 'institucijos', label: $tChoice('entities.institution.model', 2), count: props.problem.institutions.length }] : []),
   ...(props.goalsExperiment ? [{ value: 'tikslai', label: $t('goals.problem_panel.goals'), count: props.goalLinks?.goals.length }] : []),
 ]);
 
 const allStatusDefinitions = [
-  { value: 'open', label: $t('Atvira'), icon: CircleDot },
-  { value: 'in_progress', label: $t('Vykdoma'), icon: LoaderCircle },
-  { value: 'resolved', label: $t('Išspręsta'), icon: CircleCheck },
+  { value: 'open', label: $t('problems.show.status_open'), icon: CircleDot },
+  { value: 'in_progress', label: $t('problems.show.status_in_progress'), icon: LoaderCircle },
+  { value: 'resolved', label: $t('problems.show.status_resolved'), icon: CircleCheck },
 ];
 
 const statusOrder = ['open', 'in_progress', 'resolved'];

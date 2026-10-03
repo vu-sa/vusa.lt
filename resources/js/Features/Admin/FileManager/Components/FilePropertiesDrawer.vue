@@ -241,9 +241,9 @@
   </Sheet>
   <ConfirmDialog
     :open="pendingCompressionPath !== null"
-    :title="$t('Optimizuoti paveikslėlį?')"
-    :description="$t('Paveikslėlis bus perrašytas.')"
-    :confirm-label="$t('Optimizuoti paveikslėlį')"
+    :title="$t('files.optimize.dialog_title')"
+    :description="$t('files.optimize.dialog_description')"
+    :confirm-label="$t('files.optimize.action')"
     @update:open="handleCompressionDialogOpen"
     @confirm="confirmCompression"
   />
@@ -554,7 +554,7 @@ const showCompress = computed(() => {
 });
 
 const compressTitle = computed(() => {
-  return compressing.value ? $t('Optimizuojamas paveikslėlis...') : $t('Optimizuoti paveikslėlį');
+  return compressing.value ? $t('files.optimize.progress') : $t('files.optimize.action');
 });
 
 function confirmAndCompress() {
@@ -579,11 +579,11 @@ function compressImage(path: string) {
     preserveScroll: true,
     preserveState: true,
     onSuccess: () => {
-      toasts.success($t('Paveikslėlis optimizuotas'));
+      toasts.success($t('files.optimize.success'));
       router.reload({ only: ['files'] });
     },
     onError: (errors) => {
-      toasts.error($t('Nepavyko optimizuoti paveikslėlio'), { description: (errors.error as string) || 'Unknown error' });
+      toasts.error($t('files.optimize.error'), { description: (errors.error as string) || 'Unknown error' });
     },
     onFinish: () => {
       compressing.value = false;

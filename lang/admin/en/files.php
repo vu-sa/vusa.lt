@@ -144,4 +144,13 @@ return [
         'upload_partial' => 'Failed to upload :count files.',
         'scan_failed' => 'Could not scan the file usage: :error',
     ],
+
+    'optimize' => [
+        'dialog_title' => 'Optimize this image?',
+        'dialog_description' => 'The image will be overwritten.',
+        'action' => 'Optimize image',
+        'progress' => 'Optimizing image...',
+        'success' => 'Image optimized successfully',
+        'error' => 'Failed to optimize image',
+    ],
 ];

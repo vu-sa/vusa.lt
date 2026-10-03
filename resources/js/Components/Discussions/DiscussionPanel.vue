@@ -7,13 +7,13 @@
         :class="framed ? 'text-xs font-semibold uppercase tracking-wide' : 'text-sm font-medium'"
       >
         <MessagesSquare class="h-4 w-4 text-muted-foreground" />
-        <span>{{ $t('Diskusija') }}</span>
+        <span>{{ $t('discussions.title') }}</span>
         <span v-if="rootCount" class="text-muted-foreground">({{ rootCount }})</span>
       </div>
 
       <div class="flex items-center gap-2">
         <span v-if="members.length > 1" class="text-xs text-muted-foreground">
-          {{ $t(':count peržiūri', { count: members.length }) }}
+          {{ $t('discussions.viewing_count', { count: members.length }) }}
         </span>
         <button
           type="button"
@@ -23,7 +23,7 @@
           ]"
           @click="showResolved = !showResolved"
         >
-          {{ showResolved ? $t('Rodyti tik neišspręstus') : $t('Rodyti visus') }}
+          {{ showResolved ? $t('discussions.filter_unresolved_only') : $t('discussions.filter_all') }}
         </button>
       </div>
     </div>
@@ -45,17 +45,21 @@
               <DialogTrigger as-child>
                 <button
                   type="button"
-                  class="inline-flex items-center gap-1 border border-border bg-background px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  :class="[
+                    'inline-flex items-center gap-1 border border-border bg-background',
+                    'px-2 py-1 text-xs font-medium text-muted-foreground',
+                    'transition-colors hover:bg-accent hover:text-foreground',
+                  ]"
                 >
                   <BarChart3 class="h-3.5 w-3.5" />
-                  {{ $t('Apklausa') }}
+                  {{ $t('discussions.poll.button') }}
                 </button>
               </DialogTrigger>
               <DialogContent class="max-w-lg">
                 <DialogHeader>
-                  <DialogTitle>{{ $t('Sukurti apklausą') }}</DialogTitle>
+                  <DialogTitle>{{ $t('discussions.poll.create_title') }}</DialogTitle>
                   <DialogDescription>
-                    {{ $t('Sukurk apklausą ir gauk komandos atsakymus.') }}
+                    {{ $t('discussions.poll.create_description') }}
                   </DialogDescription>
                 </DialogHeader>
                 <PollComposer

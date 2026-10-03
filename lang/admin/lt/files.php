@@ -145,4 +145,13 @@ return [
         'upload_partial' => 'Nepavyko įkelti :count failų.',
         'scan_failed' => 'Nepavyko nuskaityti failo naudojimo: :error',
     ],
+
+    'optimize' => [
+        'dialog_title' => 'Optimizuoti paveikslėlį?',
+        'dialog_description' => 'Paveikslėlis bus perrašytas.',
+        'action' => 'Optimizuoti paveikslėlį',
+        'progress' => 'Optimizuojamas paveikslėlis...',
+        'success' => 'Paveikslėlis optimizuotas',
+        'error' => 'Nepavyko optimizuoti paveikslėlio',
+    ],
 ];

@@ -3,13 +3,13 @@
     <DialogContent class="sm:max-w-3xl max-h-[90vh] overflow-y-auto rounded-none border border-border bg-background p-6 shadow-xl">
       <DialogHeader class="border-b border-border pb-4 text-left">
         <div class="flex items-center gap-2">
-          <span class="u-eyebrow">{{ $t('Sinchronizavimas') }}</span>
+          <span class="u-eyebrow">{{ $t('calendar.sync.eyebrow') }}</span>
         </div>
         <DialogTitle class="u-display text-xl sm:text-2xl text-foreground mt-1">
-          {{ $t('Kalendoriaus sinchronizavimo instrukcija') }}
+          {{ $t('calendar.sync.title') }}
         </DialogTitle>
         <DialogDescription class="text-sm text-muted-foreground mt-1">
-          {{ $t('Sinchronizuok VU SA renginių kalendorių su savo asmeniniu kalendoriumi') }}
+          {{ $t('calendar.sync.description') }}
         </DialogDescription>
       </DialogHeader>
 
@@ -19,14 +19,14 @@
           <div class="mb-3.5 flex items-center gap-2.5">
             <span class="flex size-6 shrink-0 items-center justify-center border border-brand bg-brand-fill font-mono text-xs font-bold text-brand-foreground">1</span>
             <h3 class="text-xs font-bold uppercase tracking-wider text-foreground">
-              {{ $t('Nukopijuok nuorodą') }}
+              {{ $t('calendar.sync.step_copy') }}
             </h3>
           </div>
 
           <div class="space-y-3">
             <div>
               <p v-if="$page.props.app.locale === 'en'" class="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {{ $t('Visi renginiai') }}
+                {{ $t('calendar.sync.all_events') }}
               </p>
               <div class="flex items-center gap-2">
                 <div class="flex-1 overflow-hidden border border-border bg-background px-3 py-2 font-mono text-xs text-foreground">
@@ -36,11 +36,11 @@
                   show-icon
                   voice="brand"
                   :text-to-copy="route('calendar.ics')"
-                  :error-text="$t('Nepavyko nukopijuoti nuorodos...')"
-                  :success-text="$t('Nuoroda nukopijuota!')"
+                  :error-text="$t('calendar.sync.copy_failed')"
+                  :success-text="$t('calendar.sync.copied')"
                   class="shrink-0 h-9 px-3 text-xs font-bold uppercase tracking-wide border-border hover:border-brand hover:text-brand"
                 >
-                  {{ $t('Kopijuoti') }}
+                  {{ $t('calendar.sync.copy') }}
                 </CopyToClipboardButton>
               </div>
             </div>
@@ -48,7 +48,7 @@
             <template v-if="$page.props.app.locale === 'en'">
               <div>
                 <p class="mb-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {{ $t('Tik renginiai anglų kalba') }}
+                  {{ $t('calendar.sync.only_english') }}
                 </p>
                 <div class="flex items-center gap-2">
                   <div class="flex-1 overflow-hidden border border-border bg-background px-3 py-2 font-mono text-xs text-foreground">
@@ -58,11 +58,11 @@
                     show-icon
                     voice="brand"
                     :text-to-copy="route('calendar.ics', { lang: 'en' })"
-                    :error-text="$t('Nepavyko nukopijuoti nuorodos...')"
-                    :success-text="$t('Nuoroda nukopijuota!')"
+                    :error-text="$t('calendar.sync.copy_failed')"
+                    :success-text="$t('calendar.sync.copied')"
                     class="shrink-0 h-9 px-3 text-xs font-bold uppercase tracking-wide border-border hover:border-brand hover:text-brand"
                   >
-                    {{ $t('Kopijuoti') }}
+                    {{ $t('calendar.sync.copy') }}
                   </CopyToClipboardButton>
                 </div>
               </div>
@@ -75,7 +75,7 @@
           <div class="mb-3.5 flex items-center gap-2.5">
             <span class="flex size-6 shrink-0 items-center justify-center border border-brand bg-brand-fill font-mono text-xs font-bold text-brand-foreground">2</span>
             <h3 class="text-xs font-bold uppercase tracking-wider text-foreground">
-              {{ $t('Pridėk prie savo kalendoriaus') }}
+              {{ $t('calendar.sync.step_add') }}
             </h3>
           </div>
 
@@ -108,30 +108,30 @@
                 <li class="flex items-start gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center border border-border bg-background font-mono text-xs font-bold text-foreground">1</span>
                   <span>
-                    {{ $t('Nueik į savo') }}
+                    {{ $t('calendar.sync.go_to') }}
                     <a
                       target="_blank"
                       rel="noopener noreferrer"
                       class="font-bold text-brand underline underline-offset-2 hover:decoration-2 inline-flex items-center gap-0.5"
                       href="https://calendar.google.com/calendar/u/0/r/settings/addbyurl"
                     >
-                      {{ $t('Google kalendorių') }}
+                      {{ $t('calendar.sync.google_calendar') }}
                       <IFluentOpen16Regular class="size-3 ml-0.5" />
                     </a>
-                    <span class="text-muted-foreground/80"> {{ $t('(per naršyklę kompiuteryje)') }}</span>
+                    <span class="text-muted-foreground/80"> {{ $t('calendar.sync.desktop_browser_hint') }}</span>
                   </span>
                 </li>
                 <li class="flex items-start gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center border border-border bg-background font-mono text-xs font-bold text-foreground">2</span>
-                  <span>{{ $t('Įklijuok nukopijuotą nuorodą') }}</span>
+                  <span>{{ $t('calendar.sync.paste_copied_link') }}</span>
                 </li>
                 <li class="flex items-start gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center border border-border bg-background font-mono text-xs font-bold text-foreground">3</span>
-                  <span>{{ $t('Paspausk') }} <strong class="text-foreground">„Add calendar"</strong></span>
+                  <span>{{ $t('calendar.sync.press') }} <strong class="text-foreground">„Add calendar"</strong></span>
                 </li>
                 <li class="flex items-start gap-3 text-foreground font-medium pt-1">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center border border-brand bg-brand-fill font-mono text-xs font-bold text-brand-foreground">✓</span>
-                  <span>{{ $t('Paruošta! Renginiai atsiras per kelias minutes.') }}</span>
+                  <span>{{ $t('calendar.sync.ready_minutes') }}</span>
                 </li>
               </ol>
             </TabsContent>
@@ -141,33 +141,33 @@
                 <li class="flex items-start gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center border border-border bg-background font-mono text-xs font-bold text-foreground">1</span>
                   <span>
-                    {{ $t('Nueik į savo') }}
+                    {{ $t('calendar.sync.go_to') }}
                     <a
                       target="_blank"
                       rel="noopener noreferrer"
                       class="font-bold text-brand underline underline-offset-2 hover:decoration-2 inline-flex items-center gap-0.5"
                       href="https://outlook.office.com/calendar/addcalendar"
                     >
-                      {{ $t('Outlook kalendorių') }}
+                      {{ $t('calendar.sync.outlook_calendar') }}
                       <IFluentOpen16Regular class="size-3 ml-0.5" />
                     </a>
                   </span>
                 </li>
                 <li class="flex items-start gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center border border-border bg-background font-mono text-xs font-bold text-foreground">2</span>
-                  <span>{{ $t('Eik į') }} <strong class="text-foreground">„Subscribe from web"</strong> {{ $t('sekciją') }}</span>
+                  <span>{{ $t('calendar.sync.go_to_section') }} <strong class="text-foreground">„Subscribe from web"</strong> {{ $t('calendar.sync.section_word') }}</span>
                 </li>
                 <li class="flex items-start gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center border border-border bg-background font-mono text-xs font-bold text-foreground">3</span>
-                  <span>{{ $t('Įklijuok nukopijuotą nuorodą') }}</span>
+                  <span>{{ $t('calendar.sync.paste_copied_link') }}</span>
                 </li>
                 <li class="flex items-start gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center border border-border bg-background font-mono text-xs font-bold text-foreground">4</span>
-                  <span>{{ $t('Paspausk') }} <strong class="text-foreground">„Import"</strong></span>
+                  <span>{{ $t('calendar.sync.press') }} <strong class="text-foreground">„Import"</strong></span>
                 </li>
                 <li class="flex items-start gap-3 text-foreground font-medium pt-1">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center border border-brand bg-brand-fill font-mono text-xs font-bold text-brand-foreground">✓</span>
-                  <span>{{ $t('Paruošta!') }}</span>
+                  <span>{{ $t('calendar.sync.ready') }}</span>
                 </li>
               </ol>
             </TabsContent>
@@ -179,9 +179,9 @@
       <div class="flex items-start gap-2.5 border border-border bg-secondary/40 p-3.5 text-xs text-muted-foreground">
         <IFluentInfo16Regular class="mt-0.5 size-4 shrink-0 text-brand" />
         <p class="leading-relaxed">
-          {{ $t('„Google" ir „Outlook" kartais atnaujina renginių informaciją tik') }}
-          <strong class="text-foreground">{{ $t('kartą per dieną') }}</strong>.
-          {{ $t('Dėl naujausios informacijos apsilankyk vusa.lt') }}
+          {{ $t('calendar.sync.footer_notice') }}
+          <strong class="text-foreground">{{ $t('calendar.sync.once_a_day') }}</strong>.
+          {{ $t('calendar.sync.visit_site_hint') }}
         </p>
       </div>
     </DialogContent>

@@ -197,5 +197,7 @@ return [
     'assign' => [
         'already_assigned' => 'This member already holds this duty during that period.',
         'quota_exceeded' => 'The tenant quota (:quota) has been exceeded.',
+        'last_day_notice' => 'Today is the last day in office. The member remains active until the end of the day, and the term stays in the history.',
+        'still_active_today' => ':name is still in office today. The term ends after today and stays in the history.',
     ],
 ];

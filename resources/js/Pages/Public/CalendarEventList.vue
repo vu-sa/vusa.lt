@@ -198,7 +198,7 @@
             :options="yearOptions"
             :selected="selectedYears"
             searchable
-            :search-placeholder="`${$t('Ieškoti metų')}...`"
+            :search-placeholder="`${$t('calendar.filters.search_year')}...`"
             trigger-class="h-9 px-3"
             @toggle="toggleYear"
             @clear="selectedYears = []"
@@ -220,7 +220,7 @@
             :options="tenantOptions"
             :selected="selectedTenants"
             searchable
-            :search-placeholder="`${$t('Ieškoti padalinio')}...`"
+            :search-placeholder="`${$t('calendar.filters.search_unit')}...`"
             trigger-class="h-9 px-3"
             @toggle="toggleTenant"
             @clear="selectedTenants = []"
@@ -245,7 +245,7 @@
         <!-- Active Filter Chips -->
         <div v-if="hasActiveFilters" class="flex flex-wrap items-center gap-2 pt-1">
           <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground mr-1">
-            {{ $t('Aktyvūs filtrai') }}:
+            {{ $t('calendar.filters.active') }}:
           </span>
 
           <!-- Search term chip -->

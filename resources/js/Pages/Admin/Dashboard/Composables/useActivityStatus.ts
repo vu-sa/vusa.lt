@@ -3,6 +3,8 @@
  * active (today / 7 days) → success, recent (30 days) → attention, stale → neutral, never → danger.
  */
 
+import { trans } from 'laravel-vue-i18n';
+
 import type { RepresentativeActivityCategory } from '../types';
 
 import { statusRoleParts, type StatusRole } from '@/Constants/statuses';
@@ -83,16 +85,7 @@ export function getActivityBadgeClasses(category: RepresentativeActivityCategory
  */
 export function getActivityShortLabel(category: RepresentativeActivityCategory | undefined): string {
   if (!category) return '';
-
-  const labels: Record<RepresentativeActivityCategory, string> = {
-    today: 'Šiandien',
-    week: 'Per 7 d.',
-    month: 'Per 30 d.',
-    stale: 'Seniai',
-    never: 'Niekada',
-  };
-
-  return labels[category] ?? '';
+  return trans(`activity.status_short.${category}`);
 }
 
 /**
@@ -100,18 +93,7 @@ export function getActivityShortLabel(category: RepresentativeActivityCategory |
  */
 export function getActivityLabel(category: RepresentativeActivityCategory | undefined): string {
   if (!category) return '';
-
-  // These are Lithuanian strings that will be translated via laravel-vue-i18n
-  // when used in Vue components. For D3 renderers, we use these directly.
-  const labels: Record<RepresentativeActivityCategory, string> = {
-    today: 'Aktyvus šiandien',
-    week: 'Aktyvus per 7 dienas',
-    month: 'Aktyvus per 30 dienų',
-    stale: 'Neaktyvus > 30 d.',
-    never: 'Niekada neprisijungęs',
-  };
-
-  return labels[category] ?? '';
+  return trans(`activity.status.${category}`);
 }
 
 /**
@@ -119,16 +101,7 @@ export function getActivityLabel(category: RepresentativeActivityCategory | unde
  */
 export function getActivityTooltipLabel(category: RepresentativeActivityCategory | undefined): string {
   if (!category) return '';
-
-  const labels: Record<RepresentativeActivityCategory, string> = {
-    today: 'Prisijungė šiandien',
-    week: 'Prisijungė per pastarąsias 7 dienas',
-    month: 'Prisijungė per pastarąsias 30 dienų',
-    stale: 'Neprisijungė daugiau nei 30 dienų',
-    never: 'Niekada neprisijungė prie sistemos',
-  };
-
-  return labels[category] ?? '';
+  return trans(`activity.status_tooltip.${category}`);
 }
 
 /**

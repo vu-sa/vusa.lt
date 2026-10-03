@@ -75,7 +75,7 @@
                         <IFluentLink20Regular class="size-3.5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom">{{ $t('copy_link') }}</TooltipContent>
+                    <TooltipContent side="bottom">{{ $t('search.document_copy_link') }}</TooltipContent>
                   </Tooltip>
 
                   <Tooltip v-if="calendarEventUrl">
@@ -275,10 +275,10 @@ const copyShareUrl = async () => {
 
   try {
     await navigator.clipboard.writeText(url);
-    toasts.success($t('copy_link_success'));
+    toasts.success($t('search.document_copy_link_success'));
   }
   catch {
-    toasts.error($t('copy_link_error'));
+    toasts.error($t('search.document_copy_link_error'));
   }
 };
 </script>

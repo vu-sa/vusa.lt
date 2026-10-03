@@ -8,7 +8,7 @@
         </Badge>
         <Badge v-if="taskStats.autoCompleting > 0" variant="secondary" class="gap-1 text-xs">
           <RotateCwIcon class="h-3 w-3" />
-          {{ taskStats.autoCompleting }} {{ $t('tasks.auto_completing') }}
+          {{ taskStats.autoCompleting }} {{ $t('tasks.manager.auto_completing_count') }}
         </Badge>
         <Badge v-if="taskStats.completed > 0" variant="secondary" class="gap-1 text-xs">
           <CheckCircleIcon class="h-3 w-3" />
@@ -45,10 +45,10 @@
       </div>
       <div>
         <p class="font-medium text-foreground">
-          {{ $t('Viskas atlikta!') }}
+          {{ $t('tasks.manager.all_done') }}
         </p>
         <p class="text-sm text-muted-foreground">
-          {{ $t('No tasks found.') }}
+          {{ $t('tasks.manager.no_tasks_found') }}
         </p>
       </div>
     </div>
@@ -157,8 +157,8 @@ const filteredTasks = computed(() => {
 
 const handleTaskCompletion = (task: TaskDisplayData) => {
   if (task.can_be_manually_completed === false) {
-    toast.info($t('This task completes automatically'), {
-      description: $t('You cannot manually complete this task'),
+    toast.info($t('tasks.manager.completes_automatically'), {
+      description: $t('tasks.manager.cannot_complete_manually'),
     });
 
     return;
@@ -183,8 +183,8 @@ const handleTaskCompletion = (task: TaskDisplayData) => {
       // No success toast here: the controller flashes one and useToasts shows it globally.
       // Toasting again produced two for every action.
       onError: () => {
-        toast.error($t('Failed to update task status'), {
-          description: $t('Please try again'),
+        toast.error($t('tasks.manager.update_status_failed'), {
+          description: $t('tasks.manager.try_again'),
         });
       },
     },
@@ -225,8 +225,8 @@ const handleDelete = () => {
       loadingTaskId.value = null;
     },
     onError: (errors: Record<string, string>) => {
-      toast.error($t('Failed to delete task'), {
-        description: errors.message || $t('Please try again'),
+      toast.error($t('tasks.manager.delete_failed'), {
+        description: errors.message || $t('tasks.manager.try_again'),
       });
     },
   });

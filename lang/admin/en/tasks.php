@@ -78,4 +78,14 @@ return [
         'action_add_items' => 'Add agenda item',
         'action_view_agenda' => 'View agenda',
     ],
+    'manager' => [
+        'auto_completing_count' => 'auto-completing',
+        'all_done' => 'All done!',
+        'no_tasks_found' => 'No tasks found.',
+        'completes_automatically' => 'This task completes automatically',
+        'cannot_complete_manually' => 'You cannot manually complete this task',
+        'update_status_failed' => 'Failed to update task status',
+        'delete_failed' => 'Failed to delete task',
+        'try_again' => 'Please try again',
+    ],
 ];

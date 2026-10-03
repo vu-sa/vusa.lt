@@ -78,4 +78,14 @@ return [
         'action_add_items' => 'Pridėti darbotvarkės klausimą',
         'action_view_agenda' => 'Peržiūrėti darbotvarkę',
     ],
+    'manager' => [
+        'auto_completing_count' => 'automatinės',
+        'all_done' => 'Viskas atlikta!',
+        'no_tasks_found' => 'Užduočių nerasta.',
+        'completes_automatically' => 'Ši užduotis užsibaigia automatiškai',
+        'cannot_complete_manually' => 'Negali rankiniu būdu užbaigti šios užduoties',
+        'update_status_failed' => 'Nepavyko atnaujinti užduoties būsenos',
+        'delete_failed' => 'Nepavyko ištrinti užduoties',
+        'try_again' => 'Bandyk dar kartą',
+    ],
 ];

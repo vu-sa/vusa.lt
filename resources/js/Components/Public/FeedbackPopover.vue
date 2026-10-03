@@ -13,7 +13,7 @@
         class="fixed z-50 -translate-x-1/2 -translate-y-full"
         :style="{ left: `${coordinates.x}px`, top: `${coordinates.y}px` }"
       >
-        <Button variant="brand" size="icon" :aria-label="$t('Pranešk apie klaidą!')" @click="handleFeedbackClick">
+        <Button variant="brand" size="icon" :aria-label="$t('feedback.button_label')" @click="handleFeedbackClick">
           <IFluentPersonFeedback24Filled />
         </Button>
       </div>
@@ -23,16 +23,16 @@
   <Dialog :open="showModal" @update:open="(val) => !val && handleModalClose()">
     <DialogContent class="sm:max-w-md">
       <DialogHeader>
-        <DialogTitle>{{ $t('Pranešk apie klaidą!') }}</DialogTitle>
+        <DialogTitle>{{ $t('feedback.title') }}</DialogTitle>
         <DialogDescription>
-          {{ $t('Pažymėtas tekstas bus pridėtas prie jūsų pranešimo.') }}
+          {{ $t('feedback.description') }}
         </DialogDescription>
       </DialogHeader>
       <div>
         <p class="mb-4 text-xs text-muted-foreground">
           {{ textInQuestion }}
         </p>
-        <Textarea v-model="feedback" rows="4" :placeholder="$t('Jūsų atsiliepimas, pastaba...')" />
+        <Textarea v-model="feedback" rows="4" :placeholder="$t('feedback.placeholder')" />
       </div>
       <DialogFooter>
         <Button variant="brand" :disabled="loading" @click="handleSend">

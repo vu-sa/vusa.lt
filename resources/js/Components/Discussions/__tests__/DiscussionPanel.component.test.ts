@@ -128,7 +128,7 @@ describe('DiscussionPanel', () => {
     expect(wrapper.html()).toContain('Done thread');
 
     // Toggle to "open only".
-    await wrapper.findAll('button').find(b => b.text().includes('Rodyti tik neišspręstus'))!.trigger('click');
+    await wrapper.findAll('button').find(b => b.text().includes('discussions.filter_unresolved_only'))!.trigger('click');
     await flushPromises();
 
     expect(wrapper.html()).toContain('Open thread');

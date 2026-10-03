@@ -28,10 +28,10 @@
     <span
       v-else-if="task.can_be_manually_completed === false"
       :class="['flex size-6 items-center justify-center border border-border', getTaskActionBadgeClasses(task.action_type)]"
-      :title="$t('This task completes automatically')"
+      :title="$t('tasks.manager.completes_automatically')"
     >
       <component :is="getTaskActionIcon(task.action_type)" class="size-3.5" aria-hidden="true" />
-      <span class="sr-only">{{ $t('This task completes automatically') }}</span>
+      <span class="sr-only">{{ $t('tasks.manager.completes_automatically') }}</span>
     </span>
 
     <Checkbox

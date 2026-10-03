@@ -119,7 +119,7 @@
         </Button>
         <Button voice="brand" variant="outline" size="lg" @click="showModal = true">
           <IFluentArrowSync16Regular class="size-4" />
-          {{ $t('Sinchronizuoti kalendorių') }}
+          {{ $t('calendar.sync.button') }}
         </Button>
       </div>
     </div>

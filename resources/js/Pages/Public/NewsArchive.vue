@@ -23,7 +23,7 @@
             <input
               v-model="query"
               type="text"
-              :placeholder="`${$t('Ieškoti naujienų')}...`"
+              :placeholder="$t('news.archive.search_placeholder')"
               :class="[
                 'h-11 w-full border border-border bg-background pl-10 pr-9 text-sm text-foreground',
                 'placeholder:text-muted-foreground/70 transition-colors focus:border-brand focus:outline-none',
@@ -135,7 +135,7 @@
             :options="tenantOptions"
             :selected="selectedTenants"
             searchable
-            :search-placeholder="`${$t('Ieškoti padalinio')}...`"
+            :search-placeholder="`${$t('news.archive.search_unit')}...`"
             trigger-class="h-9 px-3"
             @toggle="toggleTenant"
             @clear="selectedTenants = []"
@@ -147,7 +147,7 @@
             :options="yearOptions"
             :selected="selectedYears"
             searchable
-            :search-placeholder="`${$t('Ieškoti metų')}...`"
+            :search-placeholder="`${$t('news.archive.search_year')}...`"
             trigger-class="h-9 px-3"
             @toggle="toggleYear"
             @clear="selectedYears = []"
@@ -160,7 +160,7 @@
             :options="tagOptions"
             :selected="selectedTags"
             searchable
-            :search-placeholder="`${$t('Ieškoti žymos')}...`"
+            :search-placeholder="`${$t('news.archive.search_tag')}...`"
             trigger-class="h-9 px-3"
             @toggle="toggleTag"
             @clear="selectedTags = []"
@@ -173,7 +173,7 @@
           <div class="flex min-h-7 flex-wrap items-center gap-2">
             <template v-if="hasActiveFilters">
               <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground mr-1">
-                {{ $t('Aktyvūs filtrai') }}:
+                {{ $t('news.archive.active_filters') }}:
               </span>
 
               <!-- Search term chip -->
@@ -269,10 +269,10 @@
             <IFluentNews24Regular class="size-6" />
           </div>
           <h3 class="mt-4 text-base font-bold text-foreground">
-            {{ $t('Naujienų nerasta') }}
+            {{ $t('news.archive.no_news') }}
           </h3>
           <p class="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-            {{ $t('Pagal pasirinktus kriterijus naujienų nerasta. Pabandykite pakeisti paieškos frazę arba išvalyti filtrus.') }}
+            {{ $t('news.archive.no_news_description') }}
           </p>
           <div v-if="hasActiveFilters" class="mt-6">
             <Button
@@ -281,7 +281,7 @@
               size="sm"
               @click="clearFilters"
             >
-              {{ $t('Išvalyti filtrus') }}
+              {{ $t('news.archive.clear_filters') }}
             </Button>
           </div>
         </div>

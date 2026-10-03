@@ -197,5 +197,7 @@ return [
     'assign' => [
         'already_assigned' => 'Šis narys tuo laikotarpiu jau eina šias pareigas.',
         'quota_exceeded' => 'Padalinio kvota (:quota) viršyta.',
+        'last_day_notice' => 'Šiandien yra paskutinė pareigų diena. Narys lieka aktyvus iki dienos pabaigos, o laikotarpis išlieka istorijoje.',
+        'still_active_today' => ':name šiandien dar eina pareigas. Laikotarpis baigsis po šiandien ir išliks istorijoje.',
     ],
 ];
