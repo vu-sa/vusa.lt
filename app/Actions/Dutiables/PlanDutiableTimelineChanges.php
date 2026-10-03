@@ -362,7 +362,6 @@ class PlanDutiableTimelineChanges
         }
 
         return Dutiable::query()
-            ->without('study_program')
             ->with(['duty:id,name,institution_id', 'user:id,name', 'derivedDutiables.duty:id,name'])
             ->whereIn('id', $rowIds)
             ->get()

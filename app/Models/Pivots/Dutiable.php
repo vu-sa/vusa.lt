@@ -89,9 +89,6 @@ class Dutiable extends MorphPivot
     use HasFactory, HasRelationships, HasTranslations, HasUlids;
 
     #[\Override]
-    protected $with = ['study_program'];
-
-    #[\Override]
     protected $dispatchesEvents = [
         'saved' => DutiableChanged::class,
         'deleted' => DutiableChanged::class,

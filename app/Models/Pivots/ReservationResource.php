@@ -72,9 +72,6 @@ class ReservationResource extends Pivot implements Approvable
     public $incrementing = true;
 
     #[\Override]
-    protected $with = ['comments', 'approvals'];
-
-    #[\Override]
     protected $dispatchesEvents = [
         'created' => ReservationResourceCreated::class,
     ];

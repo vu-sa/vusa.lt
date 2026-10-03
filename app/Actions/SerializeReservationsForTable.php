@@ -11,13 +11,9 @@ use App\Services\ModelAuthorizer;
 use Illuminate\Support\Collection;
 
 /**
- * The one reservation payload every table surface reads — the collection page's first paint, its
- * API pages and the overview — so they cannot disagree about what a user may do with a row.
- *
- * Each resource carries its pivot plus three permission flags that mirror the branches of
- * `ReservationResource::canBeApprovedBy()`, so the table never offers an action the server would
- * reject. Pivot fields are listed explicitly: the pivot model declares `$with = ['comments',
- * 'approvals']`, which has no business in a list payload.
+ * Shared reservation table payload for collection pages, API pages and overviews.
+ * Per-resource action flags mirror server authorization; explicit pivot fields
+ * keep the list payload compact.
  */
 class SerializeReservationsForTable
 {

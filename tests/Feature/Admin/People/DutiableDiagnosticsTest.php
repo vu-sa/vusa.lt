@@ -26,7 +26,7 @@ beforeEach(function (): void {
 
 function analyze(array $overrides = []): array
 {
-    $rows = Dutiable::query()->without('study_program')->with('duty')->get();
+    $rows = Dutiable::query()->with('duty')->get();
 
     return AnalyzeDutiableTimeline::execute($rows, Cadence::query()->get(), $overrides);
 }

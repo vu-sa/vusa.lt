@@ -148,7 +148,7 @@
             folder="contacts"
             cropper
             preview-aspect="4/3"
-            :existing-url="dutiable?.additional_photo as string | null | undefined"
+            :existing-url="dutiable?.additional_photo ?? undefined"
           />
           <p v-if="form.errors.additional_photo" class="text-xs text-destructive">
             {{ form.errors.additional_photo }}

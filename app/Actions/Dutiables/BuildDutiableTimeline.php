@@ -82,9 +82,6 @@ class BuildDutiableTimeline
     private static function query(string $scope, string $scopeId, array $dutyIds, bool $includeEnded): EloquentCollection
     {
         $query = Dutiable::query()
-            // The model's default eager load pulls the whole programme row; the timeline
-            // only ever shows its name, re-loaded narrowly below.
-            ->without('study_program')
             ->where('dutiable_type', MorphMap::alias(User::class))
             ->with([
                 'duty:id,name,institution_id,places_to_occupy,order',
@@ -93,8 +90,6 @@ class BuildDutiableTimeline
                 'tenant:id,shortname',
                 'viaDutiable:id,duty_id,dutiable_id',
                 'viaDutiable.duty:id,name',
-                // Re-added narrowly after `without()` above: the extras badge needs the
-                // programme's name, and only its name.
                 'study_program:id,name',
             ]);
 
