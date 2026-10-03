@@ -296,7 +296,7 @@ Source: `resources/js/Composables/useBreadcrumbsUnified.ts`.
 
 ### Feature discovery (spotlights)
 
-New or relocated admin UI — anything a returning user wouldn't think to look for — **must ship with a spotlight** so it's discoverable. Wrap the entry point with `SpotlightPopover` (`@/Components/Onboarding/SpotlightPopover.vue`) and drive its dismissed state with `useFeatureSpotlight('<feature>-v<n>')` (`@/Composables/useFeatureSpotlight.ts`), which persists per-user via the tutorial-progress API. Dismiss it when the user engages the feature (e.g. opens the menu), not only via the popover button. Bump the `-v<n>` suffix when a feature changes enough to warrant re-surfacing. Example: the `reservation-approval-backtrack-v1` spotlight in `Components/Reservations/ReservationRowActions.vue`.
+New or relocated admin UI — anything a returning user wouldn't think to look for — **must ship with a spotlight** so it's discoverable. Wrap the entry point with `SpotlightPopover` (`@/Components/Onboarding/SpotlightPopover.vue`) and drive its dismissed state with `useFeatureSpotlight('<feature>-v<n>')` (`@/Composables/useFeatureSpotlight.ts`), which persists per-user via the tutorial-progress API. Dismiss it when the user engages the feature (e.g. opens the menu), not only via the popover button. Bump the `-v<n>` suffix when a feature changes enough to warrant re-surfacing. Example: the responsibilities spotlight in `Features/Admin/Responsibilities/DutyResponsibilitiesSection.vue`.
 
 ## Styling (Tailwind v4)
 

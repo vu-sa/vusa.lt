@@ -8,6 +8,11 @@ return [
     'skip' => 'Praleisti',
     'step_of' => '{{current}} iš {{total}}',
 
+    // Feature spotlights (SpotlightPopover)
+    'spotlight_eyebrow' => 'Nauja',
+    'spotlight_got_it' => 'Supratau',
+    'spotlight_what_is_new' => 'Kas naujo?',
+
     // ViSAK overview (/mano/dashboard/atstovavimas)
     'atstovavimas_overview' => [
         'welcome' => [

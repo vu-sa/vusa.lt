@@ -14,7 +14,6 @@
           v-if="canUpdate"
           :title="$t('responsibilities.spotlight.title')"
           :description="$t('responsibilities.spotlight.body')"
-          position="bottom"
           :is-dismissed="spotlight.isDismissed.value"
           @dismiss="spotlight.dismiss()"
         >

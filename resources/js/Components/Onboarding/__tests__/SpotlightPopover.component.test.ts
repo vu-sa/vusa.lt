@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
@@ -8,10 +8,10 @@ describe('Onboarding/SpotlightPopover.vue', () => {
   let wrapper: ReturnType<typeof mount> | null = null;
 
   afterEach(() => {
-    // Teleported content lives outside the wrapper's own element — clean it up
-    // regardless of whether the test's assertions passed, or it leaks into the next test.
+    // The panel is portaled to the body, outside the wrapper — unmount so it cannot leak.
     wrapper?.unmount();
     wrapper = null;
+    vi.useRealTimers();
   });
 
   function mountPopover(props: Record<string, unknown> = {}) {
@@ -28,49 +28,82 @@ describe('Onboarding/SpotlightPopover.vue', () => {
     return wrapper;
   }
 
-  it('renders the pulsing badge inline by default', () => {
+  const panel = () => document.body.querySelector('[data-slot="popover-content"]') as HTMLElement | null;
+
+  async function hover(type: 'pointerenter' | 'pointerleave', pointerType = 'mouse') {
+    const event = new Event(type);
+    Object.assign(event, { pointerType });
+    wrapper!.find('[data-slot="spotlight-popover"]').element.dispatchEvent(event);
+    await nextTick();
+  }
+
+  it('frames the trigger with a notch until dismissed', async () => {
+    mountPopover();
+    expect(wrapper!.find('[data-slot="spotlight-frame"]').exists()).toBe(true);
+    expect(wrapper!.find('[data-slot="spotlight-notch"]').exists()).toBe(true);
+
+    await wrapper!.setProps({ isDismissed: true });
+    expect(wrapper!.find('[data-slot="spotlight-frame"]').exists()).toBe(false);
+    expect(wrapper!.find('[data-slot="spotlight-notch"]').exists()).toBe(false);
+  });
+
+  it('opens immediately on mouse hover and closes after leaving', async () => {
+    vi.useFakeTimers();
     mountPopover();
 
-    const inlineBadge = wrapper!.find('.absolute.-top-3.-right-3');
-    expect(inlineBadge.exists()).toBe(true);
-    // No float: nothing should be teleported to the body.
-    expect(document.body.querySelector('.fixed.z-50.h-8.w-8')).toBeNull();
+    await hover('pointerenter');
+    expect(panel()?.textContent).toContain('New feature');
+    expect(panel()?.textContent).toContain('Try it out');
+
+    await hover('pointerleave');
+    await vi.advanceTimersByTimeAsync(500);
+    expect(panel()).toBeNull();
   });
 
-  it('teleports the badge to the body when float is set, instead of clipping inline', async () => {
-    mountPopover({ float: true });
-    await nextTick();
-
-    // The overflow-hidden-prone inline badge must not render when float takes over.
-    expect(wrapper!.find('.absolute.-top-3.-right-3').exists()).toBe(false);
-
-    const teleportedBadge = document.body.querySelector('.fixed.z-50.h-8.w-8') as HTMLElement | null;
-    expect(teleportedBadge).not.toBeNull();
-    // positionBadge() sets explicit left/top from the trigger's rect.
-    expect(teleportedBadge?.style.left).toBeTruthy();
-    expect(teleportedBadge?.style.top).toBeTruthy();
-  });
-
-  it('hides the badge entirely once dismissed, float or not', async () => {
-    mountPopover({ float: true, isDismissed: true });
-    await nextTick();
-
-    expect(document.body.querySelector('.fixed.z-50.h-8.w-8')).toBeNull();
-  });
-
-  it('anchors the panel to the trigger\'s right edge for position="bottom-right", not centered', async () => {
+  it('ignores touch pointerenter so a tap on the trigger keeps its own action', async () => {
     vi.useFakeTimers();
-    mountPopover({ position: 'bottom-right' });
+    mountPopover();
 
-    await wrapper!.find('.relative.inline-block').trigger('mouseenter');
+    await hover('pointerenter', 'touch');
     await vi.advanceTimersByTimeAsync(200);
+    expect(panel()).toBeNull();
+  });
+
+  it('opens from the notch button, the touch and keyboard path', async () => {
+    mountPopover();
+
+    await wrapper!.find('[data-slot="spotlight-notch"]').trigger('click');
     await nextTick();
 
-    const panel = wrapper!.find('.absolute.z-50.w-80');
-    expect(panel.exists()).toBe(true);
-    expect(panel.classes()).toContain('right-0');
-    expect(panel.classes()).not.toContain('left-1/2');
+    expect(panel()?.textContent).toContain('New feature');
+  });
 
-    vi.useRealTimers();
+  it('forwards the preferred side and alignment to the positioned panel', async () => {
+    mountPopover({ side: 'top', align: 'end' });
+
+    await wrapper!.find('[data-slot="spotlight-notch"]').trigger('click');
+    await nextTick();
+
+    expect(panel()?.getAttribute('data-side')).toBe('top');
+    expect(panel()?.getAttribute('data-align')).toBe('end');
+  });
+
+  it('emits dismiss from the panel button, but not when closed with Escape', async () => {
+    mountPopover();
+
+    await wrapper!.find('[data-slot="spotlight-notch"]').trigger('click');
+    await nextTick();
+
+    panel()!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await flushPromises();
+    expect(panel()).toBeNull();
+    expect(wrapper!.emitted('dismiss')).toBeUndefined();
+
+    await wrapper!.find('[data-slot="spotlight-notch"]').trigger('click');
+    await nextTick();
+    panel()!.querySelector('button')!.click();
+    await nextTick();
+
+    expect(wrapper!.emitted('dismiss')).toHaveLength(1);
   });
 });

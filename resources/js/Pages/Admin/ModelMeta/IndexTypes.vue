@@ -4,6 +4,8 @@
       :title="$t('types.directory_title')"
       :description="$t('types.spotlight')"
       :is-dismissed="spotlight.isDismissed.value"
+      side="top"
+      align="end"
       class="w-full"
       @dismiss="spotlight.dismiss"
     >

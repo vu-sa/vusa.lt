@@ -8,6 +8,11 @@ return [
     'skip' => 'Skip',
     'step_of' => '{{current}} of {{total}}',
 
+    // Feature spotlights (SpotlightPopover)
+    'spotlight_eyebrow' => 'New',
+    'spotlight_got_it' => 'Got it',
+    'spotlight_what_is_new' => 'What\'s new?',
+
     // ViSAK overview (/mano/dashboard/atstovavimas)
     'atstovavimas_overview' => [
         'welcome' => [
