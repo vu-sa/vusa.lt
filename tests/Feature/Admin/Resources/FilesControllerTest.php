@@ -1040,10 +1040,8 @@ describe('Files Controller - File Usage Scanning', function (): void {
         $responseComposed->assertSessionHas('data');
         $dataComposed = session('data');
 
-        // The scan should find the usage we just created, but due to unicode normalization complexities,
-        // we'll accept either finding usages or marking as safe to delete
-        expect($dataComposed)->toHaveKey('total_usages');
-        expect($dataComposed)->toHaveKey('is_safe_to_delete');
+        expect($dataComposed['is_safe_to_delete'])->toBeFalse()
+            ->and($dataComposed['total_usages'])->toBe(1);
 
         // Scan decomposed file
         $responseDecomposed = asUser($this->fileManager)->post(route('files.scanUsage'), [
@@ -1052,7 +1050,8 @@ describe('Files Controller - File Usage Scanning', function (): void {
         expect($responseDecomposed->status())->toBe(302);
         $responseDecomposed->assertSessionHas('data');
         $dataDecomposed = session('data');
-        expect($dataDecomposed)->toHaveKeys(['total_usages', 'is_safe_to_delete']);
+        expect($dataDecomposed['is_safe_to_delete'])->toBeFalse()
+            ->and($dataDecomposed['total_usages'])->toBe(1);
 
         // Additional: simulate JSON where precomposed š stored as \u0161
         $filenamePrecomposed = 'vardas_šaltinis.jpg';
@@ -1079,7 +1078,8 @@ describe('Files Controller - File Usage Scanning', function (): void {
         expect($respPre->status())->toBe(302);
         $respPre->assertSessionHas('data');
         $dataPre = session('data');
-        expect($dataPre)->toHaveKeys(['total_usages', 'is_safe_to_delete']);
+        expect($dataPre['is_safe_to_delete'])->toBeFalse()
+            ->and($dataPre['total_usages'])->toBe(1);
     });
 });
 

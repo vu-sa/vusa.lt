@@ -59,3 +59,53 @@ describe('FilePropertiesDrawer image optimization', () => {
     );
   });
 });
+
+describe('FilePropertiesDrawer usage check', () => {
+  function respondToScan(data: Record<string, unknown>) {
+    vi.mocked(router.post).mockImplementationOnce((_url, _data, options) => {
+      (options as { onSuccess: (page: unknown) => void }).onSuccess({ props: { flash: { data } } });
+    });
+  }
+
+  async function runScan(drawer: ReturnType<typeof mount>) {
+    const check = drawer.findAll('button').find(button => button.text().includes('Tikrinti'));
+    await check!.trigger('click');
+  }
+
+  it('lists every record that uses the file, linking to it', async () => {
+    respondToScan({
+      is_safe_to_delete: false,
+      total_usages: 2,
+      scanned_models: ['contentParts', 'banners'],
+      usage_details: [
+        { model_type: 'news', model_class: 'App\\Models\\News', id: 7, title: 'Rudens šventė', url: '/mano/news/7/edit', matched_parts_count: 2 },
+        { model_type: 'contentEditorDrafts', model_class: 'App\\Models\\ContentEditorDraft', id: 3, title: 'ContentEditorDraft #3', url: null },
+      ],
+    });
+    const drawer = mountDrawer();
+
+    await runScan(drawer);
+
+    const rows = drawer.findAll('[data-testid="file-usage"] li');
+    expect(rows).toHaveLength(2);
+    expect(rows[0].text()).toContain('Rudens šventė');
+    expect(rows[0].text()).toContain('files.usage.models.news');
+    expect(rows[0].text()).toContain('files.usage.matched_blocks');
+    expect(rows[0].find('a').attributes('href')).toBe('/mano/news/7/edit');
+    expect(rows[1].text()).toContain('files.usage.models.contentEditorDrafts');
+    expect(rows[1].text()).not.toContain('files.usage.matched_blocks');
+    expect(rows[1].find('a').exists()).toBe(false);
+  });
+
+  it('reports a safe file without a usage list', async () => {
+    respondToScan({ is_safe_to_delete: true, total_usages: 0, scanned_models: ['contentParts', 'news', 'banners'], usage_details: [] });
+    const drawer = mountDrawer();
+
+    await runScan(drawer);
+
+    const usage = drawer.find('[data-testid="file-usage"]');
+    expect(usage.text()).toContain('Saugu trinti');
+    expect(usage.text()).toContain('files.messages.usage_safe');
+    expect(usage.findAll('li')).toHaveLength(0);
+  });
+});

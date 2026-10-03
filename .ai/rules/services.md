@@ -10,10 +10,16 @@ paths:
 
 Spatie's own `HasRoles`/`HasPermissions` trait methods (`assignRole`, `givePermissionTo`, `syncPermissions`, ...) and the `Role`/`Permission` models' `RefreshesPermissionCache` hooks already self-flush that shared cache. Only pass `flushGlobal: true` when the caller mutates role/permission pivot rows *without* going through those methods (see `AccessChangeAnalyzer`, which runs speculative transactional mutations).
 
-## FileUsageScanner: vusa.lt-only domain stripping and JSON-escaped LIKE matching
-Absolute URLs only count as usages when they are on a vusa.lt host (static/www/tenant subdomains): matching uses the bare "vusa.lt{path}" substring variant — scheme-agnostic, any subdomain. Foreign hosts sharing the path must NOT match in JSON columns: jsonNeedles() anchors path needles at the JSON opening quote, so "https://cdn.example.com/uploads/x.jpg" is not a usage of the local /uploads/x.jpg.
+## FileUsageScanner: decode the stored value, never enumerate needle encodings
+One upload path reaches the database in many forms: raw in plain columns, `\/` and `\uXXXX` in Laravel-cast JSON, `%20` and `&#43;`/`&amp;`/`&#039;` in sanitized HTML (symfony UrlSanitizer), percent-encoded when pasted from a browser, NFC or NFD. The old scanner built LIKE needles for each combination and still missed `%20`, so files with spaces in rich text read as "safe to delete".
 
-Gotchas: content_parts.json_content is longtext — raw JSON stores "/" as "\/" and MySQL's default LIKE escape char "\" silently un-escapes it. All scanner LIKEs therefore use ESCAPE '|' (single char, works on MySQL and SQLite) via escapeLike(). Never reintroduce a static cache in resolvePrimaryOwnerForContent(): RefreshDatabase reuses auto-increment ids in SQLite, so cached owners leak between tests.
+The scanner now works in two stages. Stage 1 is SQL: it ANDs `LIKE ? ESCAPE '|'` on the path's `[A-Za-z0-9._-]{2,}` runs (`FileReferenceMatcher::coarseNeedles()`), which every encoding above leaves intact. Stage 2 is PHP: `FileReferenceMatcher::matches()` decodes each candidate (JSON leaves → HTML entities → `rawurldecode`, NFC) and matches the whole `/uploads/files/<path>` with boundaries.
+- To support a new storage form, extend the decoding in `FileReferenceMatcher`. Never add needle variants. `tests/Unit/Services/FileReferenceMatcherTest.php` asserts the coarse needles survive every positive form.
+- Every column that can hold an upload URL belongs in `FileUsageScanner::targets()`, including every ContentPart type (no type filter). `tests/Feature/Services/FileUsageScannerTest.php` creates a reference in each registered column and fails if a column does not exist.
+- Only vusa.lt hosts count; a foreign host serving the same path does not. Bare filenames never count.
+- Legacy `/uploads/<path>` counts only when no file exists at `public/<path>` (RewriteUploadsUrl redirects only then).
+- No result cache: a cached "safe" outlives a new reference. Do not swallow query exceptions either, since an empty result reads as "safe to delete".
+- Never reintroduce a static cache in owner resolution: RefreshDatabase reuses auto-increment ids in SQLite.
 
 ## Meeting scope and visibility rules live in models.md
 `InstitutionScopeResolver`, `MeetingCompletionService` and `VoteStatisticsCalculator` are all

@@ -3,11 +3,13 @@ doc_status: reviewed
 title: Failai
 area: files
 models: [File]
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-03
 tests:
   - tests/Feature/Admin/Resources/FilesControllerTest.php
   - tests/Feature/Api/Admin/FileApiControllerTest.php
   - tests/Feature/Services/FileUsageScannerTest.php
+  - tests/Unit/Services/FileReferenceMatcherTest.php
+  - resources/js/Features/Admin/FileManager/__tests__/FilePropertiesDrawer.component.test.ts
   - resources/js/Features/Admin/FileManager/__tests__/FileManagerUpload.component.test.ts
   - resources/js/Features/Admin/FileManager/__tests__/FileManagerView.component.test.ts
 ---
@@ -64,7 +66,15 @@ Pasirinkus failą, dešinėje pusėje atsidaro **savybių skydelis** (`FilePrope
 
 Prieš trinant failą, sistema leidžia apsisaugoti nuo puslapių sugadinimo:
 
-- **Naudojimo patikra:** pasirinkęs failą gali patikrinti, kur jis naudojamas. Sistema patikrina puslapius, naujienas bei kitus įrašus ir parodo, ar failas kur nors naudojamas.
+<ChangelogNote version="v3.0" date="2026-10-02" title="Patikimesnė naudojimo patikra">
+
+Patikra randa failą visuose turinio blokuose, nuotraukų laukuose ir nuorodose, net kai jo pavadinime yra tarpų ar lietuviškų raidžių, ir parodo, kur jis naudojamas.
+
+</ChangelogNote>
+
+- **Naudojimo patikra:** pasirinkęs failą, savybių skydelyje spausk **Tikrinti**. Sistema patikrina visus puslapių, naujienų ir padalinių pradinių puslapių turinio blokus, nuotraukų laukus (naujienų, puslapių, banerių, institucijų, narių), aprašymus ir nuorodas (renginių, pareigybių, formų, problemų, žymų, navigacijos, greitųjų nuorodų) bei dar neišsaugotus juodraščius. Įrašai šiukšlinėje taip pat skaičiuojami – juos atkūrus, failas vėl būtų reikalingas.
+- **Rezultatas:** jei failas naudojamas, matai sąrašą, kur jis panaudotas, ir gali atsidaryti tą įrašą. Patikra visada atliekama iš naujo, todėl rodo ir ką tik įterptas nuorodas.
+- **Kas nelaikoma naudojimu:** to paties pavadinimo failas kitame aplanke ir nuoroda į kitą svetainę (ne vusa.lt) su tokiu pačiu keliu.
 - **Trynimas:** jei failas nebenaudojamas, pasirink **Ištrinti**.
 - **Kelių failų trynimas:** pažymėk kelis failus ar aplankus ir spausk **Ištrinti pasirinktus**.
 
@@ -101,5 +111,5 @@ Prieš trinant failą, sistema leidžia apsisaugoti nuo puslapių sugadinimo:
 - API valdiklis: `App\Http\Controllers\Api\Admin\FileApiController` (aptarnauja asinchroninę failų naršyklę, paiešką ir miniatiūrų teikimą).
 - Failų saugojimo šaknis: `storage/app/public/files/`.
 - Saugumo valdymas: `App\Support\StoragePath::normalizeRelative()` pašalina bet kokius bandymus išeiti iš katalogo (pvz., `../`), užkirsdamas kelią „Path Traversal“ atakoms.
-- Naudojimo paieška: `App\Services\FileUsageScanner` nuskaito duomenų bazės stulpelius ir Tiptap turinio JSON/HTML struktūras, ieškodamas failo pavadinimo ar URL paminėjimų.
+- Naudojimo paieška: `App\Services\FileUsageScanner` turi tikrinamų stulpelių sąrašą (`targets()`). SQL užklausa atrenka eilutes pagal kelio dalis, kurios nesikeičia jokioje koduotėje, o `App\Services\FileUsage\FileReferenceMatcher` kiekvieną reikšmę iškoduoja (JSON, HTML entities, `%20`, NFC/NFD) ir lygina visą kelią `/uploads/files/…`. Senasis kelias `/uploads/…` (be `files/`) skaičiuojamas tik tada, kai tokiu adresu nėra kito failo.
 - Paveikslėlių glaudinimas: atliekamas per `Intervention\Image` biblioteką valdiklio metode `compressImage()`.

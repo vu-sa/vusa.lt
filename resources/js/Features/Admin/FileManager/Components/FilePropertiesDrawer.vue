@@ -163,39 +163,38 @@
         </div>
 
         <!-- Usage Results Card (Local) -->
-        <div v-if="usageData" class="border border-border p-3 text-xs space-y-2 bg-muted/20">
-          <div class="flex items-center justify-between">
+        <div v-if="usageData" class="border border-border p-3 text-xs space-y-2" data-testid="file-usage">
+          <div class="flex items-center justify-between gap-2">
             <span class="font-semibold text-foreground">{{ $t('Naudojimo patikra') }}</span>
-            <span
-              :class="[
-                'px-1.5 py-0.5 text-[10px] font-bold uppercase',
-                usageData.is_safe_to_delete
-                  ? 'bg-emerald-500/10 text-emerald-600'
-                  : 'bg-rose-500/10 text-rose-600',
-              ]"
-            >
-              {{ usageData.is_safe_to_delete ? $t('Saugu trinti') : $t('Naudojamas') }}
-            </span>
+            <StatusBadge :status="usageStatus" voice="sentence" />
           </div>
 
-          <p class="text-muted-foreground text-[11px]">
-            {{ usageData.is_safe_to_delete ? $t('files.messages.usage_safe', { count: usageData.total_usages }) : $t('files.messages.usage_found', { count: usageData.total_usages }) }}
+          <p class="text-muted-foreground">
+            {{ usageData.is_safe_to_delete
+              ? $t('files.messages.usage_safe', { count: usageData.scanned_models.length })
+              : $t('files.messages.usage_found', { count: usageData.total_usages }) }}
           </p>
 
-          <div v-if="usageData.usages && usageData.usages.length > 0" class="space-y-1.5 max-h-40 overflow-y-auto pt-1">
-            <div
-              v-for="(usage, index) in usageData.usages"
-              :key="index"
-              class="p-1.5 bg-background border border-border/60 text-[11px]"
-            >
-              <p class="font-medium text-foreground truncate">
-                {{ usage.title }}
-              </p>
-              <p class="text-muted-foreground text-[10px]">
-                {{ getModelDisplayName(usage.model_type) }}
-              </p>
-            </div>
-          </div>
+          <ul v-if="usageData.usage_details.length > 0" class="max-h-60 divide-y divide-border overflow-y-auto border-t border-border">
+            <li v-for="usage in usageData.usage_details" :key="`${usage.model_class}:${usage.id}`">
+              <component
+                :is="usage.url ? Link : 'div'"
+                :href="usage.url ?? undefined"
+                :class="[
+                  'flex min-h-11 flex-col justify-center py-1.5',
+                  usage.url && 'hover:bg-secondary focus-visible:bg-secondary focus-visible:outline-none',
+                ]"
+              >
+                <span class="truncate font-medium text-foreground">{{ usage.title }}</span>
+                <span class="text-muted-foreground">
+                  {{ $t(`files.usage.models.${usage.model_type}`) }}
+                  <template v-if="(usage.matched_parts_count ?? 0) > 1">
+                    · {{ $t('files.usage.matched_blocks', { count: usage.matched_parts_count ?? 0 }) }}
+                  </template>
+                </span>
+              </component>
+            </li>
+          </ul>
         </div>
       </div>
     </SheetContent>
@@ -212,10 +211,11 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
+  CircleCheck,
   Copy,
   Download,
   Eye,
@@ -233,20 +233,26 @@ import { formatBytes } from '../utils';
 import { Sheet, SheetContent } from '@/Components/ui/sheet';
 import { Spinner } from '@/Components/ui/spinner';
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import { StatusBadge } from '@/Components/Patterns';
+import type { StatusPresentation } from '@/Constants/statuses';
 import { useToasts } from '@/Composables/useToasts';
 import { getFileIcon } from '@/Utils/fileIcons';
 
-interface FileUsageItem {
-  title?: string;
+/** Mirrors App\\Services\\FileUsageScanner::scanFileUsage(). */
+interface FileUsageDetail {
   model_type: string;
-  [key: string]: unknown;
+  model_class: string;
+  id: number | string;
+  title: string;
+  url: string | null;
+  matched_parts_count?: number;
 }
 
 interface FileUsageResult {
   is_safe_to_delete: boolean;
   total_usages: number;
-  usages?: FileUsageItem[];
-  [key: string]: unknown;
+  usage_details: FileUsageDetail[];
+  scanned_models: string[];
 }
 
 const props = withDefaults(
@@ -275,6 +281,10 @@ const toasts = useToasts();
 const scanningUsage = ref(false);
 const usageData = ref<FileUsageResult | null>(null);
 const usageError = ref<string | null>(null);
+
+const usageStatus = computed<StatusPresentation>(() => usageData.value?.is_safe_to_delete
+  ? { label: 'Saugu trinti', role: 'success', icon: CircleCheck }
+  : { label: 'Naudojamas', role: 'attention', icon: Link2 });
 const compressing = ref(false);
 const pendingCompressionPath = ref<string | null>(null);
 
@@ -369,19 +379,18 @@ function scanFileUsage() {
     preserveScroll: true,
     onSuccess: (page) => {
       if (page.props.flash?.data) {
-        usageData.value = page.props.flash.data;
+        usageData.value = page.props.flash.data as FileUsageResult;
       }
       if (page.props.flash?.success) {
-        toasts.success('Scan completed', { description: page.props.flash.success });
+        toasts.success($t('files.usage.scan_done'), { description: page.props.flash.success });
       }
       else if (page.props.flash?.info) {
-        toasts.info('Scan completed', { description: page.props.flash.info });
+        toasts.info($t('files.usage.scan_done'), { description: page.props.flash.info });
       }
     },
     onError: (errors) => {
-      console.error('File usage scan failed:', errors);
-      usageError.value = (errors.error as string) || 'Unknown error occurred';
-      toasts.error('Failed to scan file usage');
+      usageError.value = (errors.error as string) || $t('files.usage.scan_failed');
+      toasts.error($t('files.usage.scan_failed'), { description: errors.error as string | undefined });
     },
     onFinish: () => {
       scanningUsage.value = false;
@@ -434,21 +443,5 @@ function compressImage(path: string) {
       compressing.value = false;
     },
   });
-}
-
-function getModelDisplayName(modelType: string): string {
-  const modelNames: Record<string, string> = {
-    calendar: 'Calendar Events',
-    news: 'News Articles',
-    duties: 'Duties',
-    institutions: 'Institutions',
-    types: 'Types',
-    forms: 'Forms',
-    dutiables: 'Duty Assignments',
-    contentParts: 'Content Parts',
-    page: 'Pages',
-    tenant: 'Tenants',
-  };
-  return modelNames[modelType] || modelType;
 }
 </script>
