@@ -147,13 +147,17 @@ class QuickLinkController extends AdminController
 
     public function updateOrder(UpdateQuickLinkOrderRequest $request)
     {
-        foreach ($request->orderList as $idAndOrder) {
-            $this->handleAuthorization('update', [QuickLink::class, QuickLink::find($idAndOrder['id']), $this->authorizer]);
+        $orderList = $request->validated('orderList');
+        $quickLinks = QuickLink::query()->whereIn('id', array_column($orderList, 'id'))->get()->keyBy('id');
+
+        // Authorize every row before writing any, so a mixed batch changes nothing.
+        foreach ($quickLinks as $quickLink) {
+            $this->handleAuthorization('update', [QuickLink::class, $quickLink, $this->authorizer]);
         }
 
-        DB::transaction(function () use ($request): void {
-            foreach ($request->orderList as $idAndOrder) {
-                $quickLink = QuickLink::find($idAndOrder['id']);
+        DB::transaction(function () use ($orderList, $quickLinks): void {
+            foreach ($orderList as $idAndOrder) {
+                $quickLink = $quickLinks[$idAndOrder['id']];
                 $quickLink->order = $idAndOrder['order'];
                 $quickLink->save();
             }

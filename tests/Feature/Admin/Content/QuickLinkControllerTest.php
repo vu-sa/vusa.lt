@@ -300,4 +300,20 @@ describe('tenant isolation', function (): void {
             ])
             ->assertStatus(403);
     });
+
+    test('reordering a batch that includes another tenant quick link changes nothing', function (): void {
+        $otherOrder = $this->otherQuickLink->order;
+
+        asUser($this->admin)
+            ->post(route('quickLinks.update-order'), [
+                'orderList' => [
+                    ['id' => $this->quickLink->id, 'order' => 5],
+                    ['id' => $this->otherQuickLink->id, 'order' => 6],
+                ],
+            ])
+            ->assertStatus(403);
+
+        expect($this->quickLink->fresh()->order)->toBe(1)
+            ->and($this->otherQuickLink->fresh()->order)->toBe($otherOrder);
+    });
 });
