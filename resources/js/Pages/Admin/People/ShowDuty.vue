@@ -4,27 +4,13 @@
     :history-subject="{ type: 'duty', id: duty.id }"
     :title="dutyTitle"
     :entity-type="ModelEnum.DUTY"
-    :status="dutyStatus"
     :facts="recordFacts"
     :sections="tabs"
     :primary-action
     :overflow-actions
+    actions-beside-title
     @action="handleRecordAction"
   >
-    <template #subtitle>
-      <div v-if="duty.institution" class="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-        <Link
-          :href="route('institutions.show', duty.institution.id)"
-          class="hover:text-foreground hover:underline"
-        >
-          {{ duty.institution.name }}
-        </Link>
-        <span v-if="duty.institution.tenant?.shortname" :class="chipClass">
-          {{ duty.institution.tenant.shortname }}
-        </span>
-      </div>
-    </template>
-
     <template #fact-email>
       <a v-if="duty.email" :href="`mailto:${duty.email}`" class="underline underline-offset-4">
         {{ duty.email }}
@@ -51,62 +37,58 @@
     </template>
 
     <template #members>
-      <div class="space-y-8">
-        <section>
-          <div class="flex items-center justify-between border-b border-border pb-3">
-            <div class="flex items-center gap-2">
-              <h3 class="text-base font-semibold text-foreground">
-                {{ $t('Dabartiniai nariai') }}
-              </h3>
-              <span :class="countChipClass">{{ currentHolders.length }}</span>
+      <div class="grid gap-10 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] xl:gap-16">
+        <div class="flex min-w-0 flex-col gap-10">
+          <OverviewSection variant="home" :title="$t('Dabartiniai nariai')" :icon="Users" :count="currentHolders.length">
+            <template v-if="canAssignMembers" #actions>
+              <Button size="sm" variant="outline" voice="sentence" class="u-touch" @click="openAssignSheet()">
+                <UserPlus class="size-4" />
+                {{ $t('Priskirti narį') }}
+              </Button>
+            </template>
+
+            <p v-if="currentHolders.length === 0" class="text-sm text-muted-foreground">
+              {{ $t('Šiuo metu nėra priskirtų narių.') }}
+            </p>
+            <div v-else>
+              <MemberTermRow
+                v-for="user in currentHolders"
+                :key="`${user.id}-${user.pivot?.id}`"
+                :user
+                :can-manage="canAssignMembers"
+                @edit="openAssignSheet(user.pivot, user)"
+                @end="endTenureTarget = user"
+              />
             </div>
-            <Button v-if="canAssignMembers" size="sm" variant="outline" class="u-touch" @click="openAssignSheet()">
-              <UserPlus class="size-4" />
-              {{ $t('Priskirti narį') }}
-            </Button>
-          </div>
+          </OverviewSection>
 
-          <p v-if="currentHolders.length === 0" class="border-b border-border py-6 text-sm text-muted-foreground">
-            {{ $t('Šiuo metu nėra priskirtų narių.') }}
-          </p>
-          <div v-else class="divide-y divide-border border-b border-border">
-            <MemberTermRow
-              v-for="user in currentHolders"
-              :key="`${user.id}-${user.pivot?.id}`"
-              :user
-              :can-manage="canAssignMembers"
-              @edit="openAssignSheet(user.pivot, user)"
-              @end="endTenureTarget = user"
-            />
-          </div>
-        </section>
+          <OverviewSection
+            v-if="upcomingHolders.length > 0"
+            variant="home"
+            :title="$t('Būsimi nariai')"
+            :icon="CalendarClock"
+            :count="upcomingHolders.length"
+          >
+            <div>
+              <MemberTermRow
+                v-for="user in upcomingHolders"
+                :key="`${user.id}-${user.pivot?.id}`"
+                :user
+                :can-manage="canAssignMembers"
+                @edit="openAssignSheet(user.pivot, user)"
+              />
+            </div>
+          </OverviewSection>
+        </div>
 
-        <section v-if="upcomingHolders.length > 0">
-          <div class="flex items-center gap-2 border-b border-border pb-3">
-            <h3 class="text-base font-semibold text-foreground">
-              {{ $t('Būsimi nariai') }}
-            </h3>
-            <span :class="countChipClass">{{ upcomingHolders.length }}</span>
-          </div>
-          <div class="divide-y divide-border border-b border-border">
-            <MemberTermRow
-              v-for="user in upcomingHolders"
-              :key="`${user.id}-${user.pivot?.id}`"
-              :user
-              :can-manage="canAssignMembers"
-              @edit="openAssignSheet(user.pivot, user)"
-            />
-          </div>
-        </section>
-
-        <section v-if="historicalHolders.length > 0">
-          <div class="flex items-center gap-2 border-b border-border pb-3">
-            <h3 class="text-base font-semibold text-foreground">
-              {{ $t('Laikotarpių istorija') }}
-            </h3>
-            <span :class="countChipClass">{{ historicalHolders.length }}</span>
-          </div>
-          <div class="divide-y divide-border border-b border-border">
+        <OverviewSection
+          v-if="historicalHolders.length > 0"
+          variant="home"
+          :title="$t('Laikotarpių istorija')"
+          :icon="History"
+          :count="historicalHolders.length"
+        >
+          <div>
             <MemberTermRow
               v-for="user in historicalHolders"
               :key="`${user.id}-${user.pivot?.id}`"
@@ -115,43 +97,40 @@
               @edit="openAssignSheet(user.pivot, user)"
             />
           </div>
-        </section>
+        </OverviewSection>
       </div>
     </template>
 
     <template #about>
-      <div class="max-w-2xl space-y-8">
-        <div v-if="dutyDescriptionHtml">
-          <h3 class="mb-3 text-base font-semibold text-foreground">
-            {{ $t('Aprašymas') }}
-          </h3>
+      <div class="grid gap-10 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] xl:gap-16">
+        <OverviewSection variant="home" :title="$t('Aprašymas')" :icon="FileText">
           <!-- eslint-disable-next-line vue/no-v-html -->
-          <div class="prose prose-sm dark:prose-invert max-w-none" v-html="dutyDescriptionHtml" />
-        </div>
-        <p v-else class="text-sm text-muted-foreground">
-          {{ $t('Ši pareigybė neturi aprašymo.') }}
-        </p>
+          <div v-if="dutyDescriptionHtml" class="prose prose-sm dark:prose-invert max-w-none" v-html="dutyDescriptionHtml" />
+          <p v-else class="text-sm text-muted-foreground">
+            {{ $t('Ši pareigybė neturi aprašymo.') }}
+          </p>
+        </OverviewSection>
 
         <Deferred data="otherDuties">
           <template #fallback>
             <div class="space-y-2" data-testid="other-duties-skeleton">
               <div class="h-5 w-56 animate-pulse bg-secondary" />
-              <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                <div v-for="n in 2" :key="n" class="h-14 animate-pulse border border-border bg-secondary/60" />
-              </div>
+              <div v-for="n in 2" :key="n" class="h-12 animate-pulse bg-secondary/60" />
             </div>
           </template>
 
-          <div v-if="otherDuties.length > 0" class="border-t border-border pt-6">
-            <h3 class="mb-4 text-base font-semibold text-foreground">
-              {{ $t('Kitos pareigybės šioje institucijoje') }}
-            </h3>
-            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <OverviewSection
+            v-if="otherDuties.length > 0"
+            variant="home"
+            :title="$t('Kitos pareigybės šioje institucijoje')"
+            :icon="Briefcase"
+          >
+            <div class="-mx-2">
               <Link
                 v-for="sibling in otherDuties"
                 :key="sibling.id"
                 :href="route('duties.show', sibling.id)"
-                class="flex items-center justify-between border border-border bg-card p-3 transition-colors hover:bg-accent"
+                class="flex min-h-11 items-center justify-between gap-3 px-2 py-2 transition-colors hover:bg-accent"
               >
                 <div class="min-w-0">
                   <p class="truncate text-sm font-medium text-foreground">
@@ -164,7 +143,7 @@
                 <ChevronRight class="size-4 shrink-0 text-muted-foreground" />
               </Link>
             </div>
-          </div>
+          </OverviewSection>
         </Deferred>
       </div>
     </template>
@@ -172,10 +151,10 @@
     <template #responsibilities>
       <Deferred data="responsibilities">
         <template #fallback>
-          <div class="grid max-w-4xl gap-10 lg:grid-cols-2" data-testid="responsibilities-skeleton">
+          <div class="grid gap-10 xl:grid-cols-2 xl:gap-16" data-testid="responsibilities-skeleton">
             <div v-for="n in 2" :key="n" class="space-y-2">
               <div class="h-5 w-40 animate-pulse bg-secondary" />
-              <div class="h-11 animate-pulse border-y border-border bg-secondary/60" />
+              <div class="h-11 animate-pulse bg-secondary/60" />
             </div>
           </div>
         </template>
@@ -255,11 +234,16 @@ import { computed, onMounted, ref } from 'vue';
 import { Deferred, Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
+  Briefcase,
+  CalendarClock,
   CalendarRange,
   ChevronRight,
   Edit3,
+  FileText,
+  History,
   Trash2,
   UserPlus,
+  Users,
   UserX,
 } from 'lucide-vue-next';
 
@@ -267,7 +251,7 @@ import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarni
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
-import { ConfirmDialog } from '@/Components/Patterns';
+import { ConfirmDialog, OverviewSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import type { StatusPresentation } from '@/Constants/statuses';
@@ -303,9 +287,6 @@ const props = defineProps<{
   files?: FileableFileItem[];
   typeFiles?: FileableFileItem[];
 }>();
-
-const chipClass = 'border border-border bg-secondary px-1.5 py-0.5 text-xs font-medium text-muted-foreground';
-const countChipClass = 'border border-border bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground';
 
 const currentSection = ref('members');
 const assignSheetOpen = ref(false);
@@ -365,11 +346,16 @@ const recordFacts = computed<RecordFact[]>(() => {
     });
   }
 
-  facts.push({
-    key: 'places',
-    label: $t('Vietos'),
-    value: `${currentHolders.value.length} / ${props.duty.places_to_occupy || '—'}`,
-  });
+  if (props.duty.institution?.tenant?.shortname) {
+    facts.push({ key: 'tenant', label: $t('Padalinys'), value: props.duty.institution.tenant.shortname });
+  }
+
+  const places = `${currentHolders.value.length} / ${props.duty.places_to_occupy || '—'}`;
+
+  // Vacancy rides on the places fact, as an institution's status does on its own.
+  facts.push(dutyStatus.value
+    ? { key: 'places', label: $t('Vietos'), status: dutyStatus.value, detail: places }
+    : { key: 'places', label: $t('Vietos'), value: places });
 
   facts.push({
     key: 'email',

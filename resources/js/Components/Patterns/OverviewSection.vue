@@ -15,6 +15,9 @@
         <h2 :class="['flex items-center gap-2 text-foreground', variant === 'home' ? 'text-sm font-bold uppercase tracking-[0.18em]' : 'text-base font-semibold']">
           <component :is="icon" v-if="icon" class="size-4 shrink-0 text-brand" aria-hidden="true" />
           {{ title }}
+          <span v-if="count !== undefined && count !== null" class="text-xs font-normal tracking-normal text-muted-foreground" data-slot="overview-section-count">
+            {{ count }}
+          </span>
         </h2>
         <Link
           v-if="href"
@@ -48,6 +51,7 @@ const props = withDefaults(defineProps<{
   emptyText?: string;
   href?: string;
   hrefLabel?: string;
+  count?: number | null;
   /** The content draws its own rules (a bordered list, tiles), so the heading drops its hairline. */
   contentRuled?: boolean;
 }>(), {
@@ -56,6 +60,7 @@ const props = withDefaults(defineProps<{
   emptyText: undefined,
   href: undefined,
   hrefLabel: undefined,
+  count: undefined,
 });
 
 const headerRuleClass = computed(() => {

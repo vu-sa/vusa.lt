@@ -1,70 +1,62 @@
 <template>
-  <div class="space-y-8" data-slot="institution-overview">
-    <section v-if="description" class="space-y-2">
-      <h3 class="border-b border-border pb-2 text-base font-semibold text-foreground">
-        {{ $t('Apie') }}
-      </h3>
-      <!-- eslint-disable-next-line vue/no-v-html -->
-      <div class="prose prose-sm dark:prose-invert max-w-none" v-html="description" />
-    </section>
+  <div class="grid gap-10 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] xl:gap-16" data-slot="institution-overview">
+    <div class="flex min-w-0 flex-col gap-10">
+      <OverviewSection v-if="description" variant="home" :title="$t('Apie')" :icon="Info">
+        <!-- eslint-disable-next-line vue/no-v-html -->
+        <div class="prose prose-sm dark:prose-invert max-w-none" v-html="description" />
+      </OverviewSection>
 
-    <section class="space-y-2">
-      <div class="flex items-center justify-between border-b border-border pb-2">
-        <h3 class="text-base font-semibold text-foreground">
-          {{ $t('Paskutiniai susitikimai') }}
-        </h3>
-        <button
+      <OverviewSection variant="home" :title="$t('Paskutiniai posėdžiai')" :icon="CalendarIcon">
+        <template v-if="overview.recentMeetings.length > 0" #actions>
+          <button
+            type="button"
+            class="inline-flex items-center gap-1 text-sm font-semibold text-brand transition-colors hover:text-foreground pointer-coarse:min-h-11"
+            @click="$emit('navigate-tab', 'meetings')"
+          >
+            {{ $t('Visi posėdžiai') }}
+            <ChevronRight class="size-4" aria-hidden="true" />
+          </button>
+        </template>
+
+        <InstitutionMeetingsList
           v-if="overview.recentMeetings.length > 0"
-          type="button"
-          class="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground pointer-coarse:min-h-11"
-          @click="$emit('navigate-tab', 'meetings')"
-        >
-          {{ $t('Visi susitikimai') }}
-          <ChevronRight class="size-4" aria-hidden="true" />
-        </button>
-      </div>
+          :meetings="recentMeetings"
+          :institution-name="institution.name"
+          @select="(meeting) => $emit('view-meeting', meeting)"
+        />
+        <EmptyState
+          v-else-if="overview.meetings_hidden"
+          :title="$t('Posėdžiai nėra vieši')"
+          :description="hiddenMeetingsDescription"
+          :icon="Lock"
+          data-testid="institution-meetings-hidden"
+        />
+        <EmptyState
+          v-else
+          :title="$t('Nėra susitikimų')"
+          :description="$t('Šiai institucijai dar nėra suplanuota susitikimų.')"
+          :icon="CalendarIcon"
+        />
+      </OverviewSection>
+    </div>
 
-      <InstitutionMeetingsList
-        v-if="overview.recentMeetings.length > 0"
-        :meetings="recentMeetings"
-        :institution-name="institution.name"
-        @select="(meeting) => $emit('view-meeting', meeting)"
-      />
-      <EmptyState
-        v-else-if="overview.meetings_hidden"
-        :title="$t('Posėdžiai nėra vieši')"
-        :description="hiddenMeetingsDescription"
-        :icon="Lock"
-        data-testid="institution-meetings-hidden"
-      />
-      <EmptyState
-        v-else
-        :title="$t('Nėra susitikimų')"
-        :description="$t('Šiai institucijai dar nėra suplanuota susitikimų.')"
-        :icon="CalendarIcon"
-      />
-    </section>
-
-    <section v-if="secretaries.length" class="space-y-2">
-      <!-- Nominated for the current term (O22). Distinct from the body's members: a secretary
-           need not hold a duty here at all. -->
-      <h3 class="border-b border-border pb-2 text-base font-semibold text-foreground">
-        {{ $t('secretaries.label') }}
-      </h3>
+    <!-- Nominated for the current term (O22). Distinct from the body's members: a secretary
+         need not hold a duty here at all. -->
+    <OverviewSection v-if="secretaries.length" variant="home" :title="$t('secretaries.label')" :icon="UserCheck">
       <UsersAvatarGroup :users="(secretaries as unknown as App.Entities.User[])" :max="5" :size="32" />
-    </section>
+    </OverviewSection>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Calendar as CalendarIcon, ChevronRight, Lock } from 'lucide-vue-next';
+import { Calendar as CalendarIcon, ChevronRight, Info, Lock, UserCheck } from 'lucide-vue-next';
 
 import InstitutionMeetingsList from './InstitutionMeetingsList.vue';
 
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
-import { EmptyState } from '@/Components/Patterns';
+import { EmptyState, OverviewSection } from '@/Components/Patterns';
 import type { InstitutionOverviewData, InstitutionPageData, InstitutionPageMeeting } from '@/Types/InstitutionPage';
 
 const props = defineProps<{

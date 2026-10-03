@@ -180,7 +180,6 @@ describe('authorized access', function (): void {
                     ->has('management.cadences')
                     ->has('management.globalCadences')
                     ->has('management.secretaryRosters')
-                    ->has('management.suggestedSecretaries')
                     ->has('management.studyPrograms')));
     });
 

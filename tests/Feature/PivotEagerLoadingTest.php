@@ -51,9 +51,9 @@ describe('dutiable query loading', function (): void {
         $rows = Dutiable::query()->whereKey($this->rows->modelKeys())
             ->with('study_program:id,name')->get()->keyBy('id');
 
-        expect($rows[$this->rows[0]->id]->study_program->name)->toBe('Informatika');
-        expect($rows[$this->rows[1]->id]->study_program->name)->toBe('Informatika');
-        expect($rows[$this->rows[2]->id]->relationLoaded('study_program'))->toBeTrue()
+        expect($rows[$this->rows[0]->id]->study_program->name)->toBe('Informatika')
+            ->and($rows[$this->rows[1]->id]->study_program->name)->toBe('Informatika')
+            ->and($rows[$this->rows[2]->id]->relationLoaded('study_program'))->toBeTrue()
             ->and($rows[$this->rows[2]->id]->study_program)->toBeNull();
     });
 });
@@ -101,9 +101,9 @@ describe('reservation resource query loading', function (): void {
 
         expect($pivots)->toHaveCount($count);
         foreach ($pivots as $pivot) {
-            expect($pivot->comments)->toHaveCount(1);
-            expect($pivot->comments->first()->user)->not->toBeNull();
-            expect($pivot->approvals)->toHaveCount(1);
+            expect($pivot->comments)->toHaveCount(1)
+                ->and($pivot->comments->first()->user)->not->toBeNull()
+                ->and($pivot->approvals)->toHaveCount(1);
         }
     })->with([1, 2]);
 

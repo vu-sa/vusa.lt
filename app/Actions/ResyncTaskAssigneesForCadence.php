@@ -52,6 +52,20 @@ class ResyncTaskAssigneesForCadence
     }
 
     /**
+     * Re-staff every term the institution has secretaries on — for when the ladder it
+     * follows switches between the shared one and its own overrides.
+     *
+     * @return int the number of tasks whose assignees were rewritten
+     */
+    public static function forInstitution(Institution $institution): int
+    {
+        return Cadence::query()
+            ->whereHas('secretaryAssignments', fn ($query) => $query->where('institution_id', $institution->getKey()))
+            ->get()
+            ->sum(fn (Cadence $cadence) => self::execute($institution, $cadence));
+    }
+
+    /**
      * The institutions a term actually staffs — the only ones where moving it can change
      * an answer, since everywhere else the fallback to date-scoped members already applies.
      *

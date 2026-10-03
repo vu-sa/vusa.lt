@@ -135,37 +135,33 @@
           :requires-student-perspective
           @manage-votes="votesSheetOpen = true" />
 
-        <section aria-labelledby="agenda-item-description-title" class="space-y-2">
-          <h3 id="agenda-item-description-title" :class="LABEL_CLASS">
-            {{ $t('meetings.item.description') }}
-          </h3>
+        <OverviewSection variant="home" :title="$t('meetings.item.description')" :icon="FileText" data-testid="agenda-item-description">
           <p v-if="descriptionText" class="max-w-prose whitespace-pre-line text-sm leading-relaxed text-foreground">
             {{ descriptionText }}
           </p>
           <p v-else class="text-sm text-muted-foreground">
             {{ $t('meetings.item.description_empty') }}
           </p>
-        </section>
+        </OverviewSection>
 
-        <section v-if="requiresStudentPerspective" aria-labelledby="agenda-item-position-title" class="space-y-2">
-          <h3 id="agenda-item-position-title" :class="LABEL_CLASS">
-            {{ $t('meetings.item.student_position') }}
-          </h3>
+        <OverviewSection v-if="requiresStudentPerspective" variant="home" :title="$t('meetings.item.student_position')" :icon="MessageSquareQuote">
           <p v-if="studentPositionText" class="max-w-prose whitespace-pre-line text-sm leading-relaxed text-foreground">
             {{ studentPositionText }}
           </p>
           <p v-else class="text-sm text-muted-foreground">
             {{ $t('meetings.item.student_position_empty') }}
           </p>
-        </section>
+        </OverviewSection>
 
-        <section v-if="problems.length || canUpdate" aria-labelledby="agenda-item-problems-title" class="space-y-3" data-testid="agenda-item-problems">
-          <div class="flex items-center justify-between gap-3">
-            <h3 id="agenda-item-problems-title" :class="LABEL_CLASS">
-              {{ $t('Susijusios problemos') }}
-            </h3>
+        <OverviewSection
+          v-if="problems.length || canUpdate"
+          variant="home"
+          :title="$t('Susijusios problemos')"
+          :icon="AlertCircle"
+          data-testid="agenda-item-problems"
+        >
+          <template v-if="canUpdate" #actions>
             <Button
-              v-if="canUpdate"
               variant="outline"
               size="sm"
               voice="sentence"
@@ -176,12 +172,12 @@
               <Link2 class="size-4" aria-hidden="true" />
               {{ $t('Susieti problemą') }}
             </Button>
-          </div>
+          </template>
           <ProblemSummaryList v-if="problems.length" :problems :removable="canUpdate" @remove="unlinkProblem" />
           <p v-else class="text-sm text-muted-foreground">
             {{ $t('Jei šiame klausime atstovai kėlė studentų problemą, susiek ją – taip matysis, kur problema svarstyta.') }}
           </p>
-        </section>
+        </OverviewSection>
 
         <!-- Goals pilot: absent outside it. -->
         <Deferred v-if="goalsExperiment" data="goalLinks">
@@ -255,7 +251,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { Deferred, Link, router, useForm } from '@inertiajs/vue3';
 import { useClipboard, useMediaQuery } from '@vueuse/core';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
-import { Check, CircleDashed, Copy, ExternalLink, Globe, Link2, Loader2, NotebookPen, PenLine, Shapes, Trash2 } from 'lucide-vue-next';
+import { AlertCircle, Check, CircleDashed, Copy, ExternalLink, FileText, Globe, Link2, Loader2, MessageSquareQuote, NotebookPen, PenLine, Shapes, Trash2 } from 'lucide-vue-next';
 
 import { useToasts } from '@/Composables/useToasts';
 import AgendaItemBody from '@/Components/AgendaItems/AgendaItemBody.vue';
@@ -264,7 +260,7 @@ import AgendaItemSheetForm from '@/Components/AgendaItems/AgendaItemSheetForm.vu
 import AgendaItemVotesSheetForm from '@/Components/AgendaItems/AgendaItemVotesSheetForm.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';
 import { missingFieldsLabel, type AgendaItemMissingAction } from '@/Components/Meetings/meetingCompletion';
-import { ConfirmDialog } from '@/Components/Patterns';
+import { ConfirmDialog, OverviewSection } from '@/Components/Patterns';
 import ProblemLinkSheet from '@/Components/Problems/ProblemLinkSheet.vue';
 import AgendaItemGoalsPanel from '@/Features/Admin/Goals/AgendaItemGoalsPanel.vue';
 import type { LinkedGoal } from '@/Features/Admin/Goals/types';
@@ -326,7 +322,6 @@ const props = withDefaults(defineProps<{
   requiresStudentPerspective: true,
 });
 
-const LABEL_CLASS = 'text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground';
 const LINK_CLASS = 'text-brand underline decoration-brand/40 underline-offset-4 hover:decoration-brand';
 
 const isDesktop = useMediaQuery('(min-width: 1024px)');

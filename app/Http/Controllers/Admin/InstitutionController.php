@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\GetInstitutionMembers;
 use App\Actions\GetInstitutionSecretaries;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetTypeFiles;
 use App\Actions\GetUserTenantShortnames;
-use App\Enums\Responsibility;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexInstitutionRequest;
 use App\Http\Requests\ReorderDutiesRequest;
@@ -31,7 +29,6 @@ use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\RelationshipService;
 use App\Services\ResourceServices\SharepointFileService;
-use App\Services\ResponsibilityResolver;
 use App\Settings\CadenceSettings;
 use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
@@ -210,9 +207,6 @@ class InstitutionController extends AdminController
                 'tasks_count' => (int) $loadInstitution()->getAttribute('tasks_count') + (int) $loadInstitution()->getAttribute('tasks_from_meetings_count'),
                 'related_institutions_count' => RelationshipService::getRelatedInstitutionsCached($institution)->count(),
                 'managers' => $managers(),
-                'managers_source' => $managers()->isNotEmpty()
-                    ? app(ResponsibilityResolver::class)->sourceFor(Responsibility::StudentRepCoordination, $institution)?->value
-                    : null,
                 'secretaries' => $readOnly() ? [] : InstitutionSecretaryController::usersPayload(
                     GetInstitutionSecretaries::execute($institution)
                 ),
@@ -294,10 +288,6 @@ class InstitutionController extends AdminController
                     'default_end_month_day' => app(CadenceSettings::class)->default_end_month_day,
                 ],
                 'secretaryRosters' => InstitutionSecretaryController::payload($institution),
-                // Suggested first in the picker: the people already in the body.
-                'suggestedSecretaries' => InstitutionSecretaryController::usersPayload(
-                    GetInstitutionMembers::execute($institution)
-                ),
                 // The Priskirti sheet's programme picker, narrowed to this institution's tenant.
                 'studyPrograms' => StudyProgram::query()
                     ->where('tenant_id', $institution->tenant_id)

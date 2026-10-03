@@ -1,8 +1,9 @@
 <template>
   <div data-slot="agenda-item-body" class="space-y-8">
-    <section v-if="!editable || typeOpen" id="agenda-item-type" aria-labelledby="agenda-item-type-title" class="space-y-2">
-      <div class="flex items-center justify-between gap-3">
-        <h3 id="agenda-item-type-title" :class="[LABEL_CLASS, 'flex items-center gap-2']">
+    <section v-if="!editable || typeOpen" id="agenda-item-type" aria-labelledby="agenda-item-type-title" class="space-y-3">
+      <div :class="HEADER_CLASS">
+        <h3 id="agenda-item-type-title" :class="HEADING_CLASS">
+          <Shapes class="size-4 shrink-0 text-brand" aria-hidden="true" />
           {{ $t('meetings.item.type') }}
           <span v-if="awaitingType" class="size-1.5 bg-status-attention" aria-hidden="true" data-testid="agenda-item-type-pending" />
         </h3>
@@ -41,8 +42,9 @@
       aria-labelledby="agenda-item-votes-title"
       class="space-y-3"
     >
-      <div class="flex items-center justify-between gap-3">
-        <h3 id="agenda-item-votes-title" :class="LABEL_CLASS">
+      <div :class="HEADER_CLASS">
+        <h3 id="agenda-item-votes-title" :class="HEADING_CLASS">
+          <Vote class="size-4 shrink-0 text-brand" aria-hidden="true" />
           {{ $t('meetings.item.outcome') }}
         </h3>
         <AdminVotingHelpButton />
@@ -56,7 +58,7 @@
 import { computed } from 'vue';
 import type { InertiaForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarClock, ChevronUp, CircleHelp, Coffee, Info, Vote } from 'lucide-vue-next';
+import { CalendarClock, ChevronUp, CircleHelp, Coffee, Info, Shapes, Vote } from 'lucide-vue-next';
 
 import AdminVotingHelpButton from '@/Components/AgendaItems/AdminVotingHelpButton.vue';
 import AgendaItemVotes from '@/Components/AgendaItems/AgendaItemVotes.vue';
@@ -84,7 +86,9 @@ const emit = defineEmits<{
 /** Once a type is set the picker folds away; the record page offers a way back to it. */
 const typeOpen = defineModel<boolean>('typeOpen', { default: true });
 
-const LABEL_CLASS = 'text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground';
+// The branded section heading (OverviewSection's home variant), kept inline for the anchors and the pending dot.
+const HEADER_CLASS = 'flex items-center justify-between gap-3 border-b border-border pb-3';
+const HEADING_CLASS = 'flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-foreground';
 
 const typeOptions: FormSegmentOption<AgendaItemType>[] = [
   { value: 'voting', label: $t('Balsavimas'), icon: Vote },

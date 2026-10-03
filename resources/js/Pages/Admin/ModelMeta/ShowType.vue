@@ -7,23 +7,43 @@
     :sections
     :primary-action
     :overflow-actions
+    actions-beside-title
     @action="handleAction"
   >
     <template #overview>
-      <div class="max-w-3xl space-y-6">
-        <div>
-          <h2 class="mb-2 text-base font-semibold">
-            {{ $t('Aprašymas') }}
-          </h2>
+      <div class="grid gap-10 xl:grid-cols-2 xl:gap-16">
+        <OverviewSection variant="home" :title="$t('Aprašymas')" :icon="FileText">
           <p class="whitespace-pre-wrap text-sm text-foreground">
             {{ description || $t('Aprašymo nėra.') }}
           </p>
-        </div>
-        <div v-if="responsibleDuties?.length" data-slot="type-responsible-duties">
-          <h2 class="mb-2 text-base font-semibold">
-            {{ $t('responsibilities.label') }}
-          </h2>
-          <ul class="divide-y divide-border border-y border-border">
+          <dl class="grid gap-4 pt-2 sm:grid-cols-2">
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {{ $t('Techninė žymė') }}
+              </dt>
+              <dd class="mt-1 text-sm font-medium">
+                {{ contentType.slug || '—' }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {{ $t('Tėvinis tipas') }}
+              </dt>
+              <dd class="mt-1 text-sm font-medium">
+                {{ localized(contentType.parent?.title) || '—' }}
+              </dd>
+            </div>
+          </dl>
+        </OverviewSection>
+
+        <OverviewSection
+          v-if="responsibleDuties?.length"
+          variant="home"
+          :title="$t('responsibilities.label')"
+          :icon="Compass"
+          data-slot="type-responsible-duties"
+        >
+          <ul class="divide-y divide-border">
             <li v-for="item in responsibleDuties" :key="item.id">
               <Link :href="route('duties.show', item.duty_id)" class="flex min-h-11 flex-col justify-center py-2 hover:bg-secondary">
                 <span class="text-sm font-medium">{{ item.duty }}</span>
@@ -31,56 +51,42 @@
               </Link>
             </li>
           </ul>
-        </div>
-        <dl class="grid border border-border sm:grid-cols-2">
-          <div class="border-b border-border p-4 sm:border-b-0 sm:border-r">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {{ $t('Techninė žymė') }}
-            </dt>
-            <dd class="mt-1 text-sm font-medium">
-              {{ contentType.slug || '—' }}
-            </dd>
-          </div>
-          <div class="p-4">
-            <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {{ $t('Tėvinis tipas') }}
-            </dt>
-            <dd class="mt-1 text-sm font-medium">
-              {{ localized(contentType.parent?.title) || '—' }}
-            </dd>
-          </div>
-        </dl>
+        </OverviewSection>
       </div>
     </template>
     <template #models>
-      <div class="max-w-3xl">
-        <Button v-if="can.update" variant="outline" class="mb-4" @click="openModels">
-          {{ $t('Tvarkyti susietus įrašus') }}
-        </Button>
-        <div class="divide-y divide-border border-y border-border">
+      <OverviewSection variant="home" :title="$t('Susieti įrašai')" :icon="Link2" :count="attachedModels.length" class="max-w-3xl">
+        <template v-if="can.update" #actions>
+          <Button variant="outline" size="sm" @click="openModels">
+            {{ $t('Tvarkyti susietus įrašus') }}
+          </Button>
+        </template>
+        <div class="divide-y divide-border">
           <div v-for="model in attachedModels" :key="model.id" class="py-3 text-sm font-medium">
             {{ model.name }}
           </div>
-          <p v-if="!attachedModels.length" class="py-6 text-sm text-muted-foreground">
+          <p v-if="!attachedModels.length" class="text-sm text-muted-foreground">
             {{ $t('Susietų įrašų nėra.') }}
           </p>
         </div>
-      </div>
+      </OverviewSection>
     </template>
     <template #roles>
-      <div class="max-w-3xl">
-        <Button v-if="can.update && typeKind === 'dutyType'" variant="outline" class="mb-4" @click="openRoles">
-          {{ $t('Tvarkyti roles') }}
-        </Button>
-        <div class="divide-y divide-border border-y border-border">
+      <OverviewSection variant="home" :title="$t('Rolės')" :icon="Shield" :count="contentType.roles?.length ?? 0" class="max-w-3xl">
+        <template v-if="can.update && typeKind === 'dutyType'" #actions>
+          <Button variant="outline" size="sm" @click="openRoles">
+            {{ $t('Tvarkyti roles') }}
+          </Button>
+        </template>
+        <div class="divide-y divide-border">
           <div v-for="role in contentType.roles ?? []" :key="role.id" class="py-3 text-sm font-medium">
             {{ role.name }}
           </div>
-          <p v-if="!contentType.roles?.length" class="py-6 text-sm text-muted-foreground">
+          <p v-if="!contentType.roles?.length" class="text-sm text-muted-foreground">
             {{ $t('Rolių nepriskirta.') }}
           </p>
         </div>
-      </div>
+      </OverviewSection>
     </template>
     <template #files>
       <div class="max-w-4xl">
@@ -133,11 +139,11 @@
 import { computed, ref } from 'vue';
 import { Deferred, Link, router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
-import { Edit, Trash2 } from 'lucide-vue-next';
+import { Compass, Edit, FileText, Link2, Shield, Trash2 } from 'lucide-vue-next';
 
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
-import { ConfirmDialog, SheetForm } from '@/Components/Patterns';
+import { ConfirmDialog, OverviewSection, SheetForm } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';

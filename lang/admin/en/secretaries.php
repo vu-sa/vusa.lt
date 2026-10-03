@@ -4,18 +4,17 @@ return [
     'label' => 'Secretaries',
 
     'institution' => [
-        'title' => 'Institution secretaries',
-        'description' => 'The people responsible for this institution\'s meetings in each cadence.',
-        'effect_warning' => 'When a cadence has secretaries, the meeting tasks for that cadence go to them alone — other members stop receiving them. With no secretaries, the tasks go to the representatives active at the time.',
-        'none_yet' => 'No secretaries',
+        'title' => 'Secretaries',
+        'effect_warning' => 'When a cadence has secretaries, its meeting tasks go to them alone. Otherwise they go to the representatives active at the time.',
         'current_term' => 'Current',
-        'inherited_term' => 'Shared',
-        'no_cadences' => 'No cadences',
-        'no_cadences_hint' => 'Secretaries are nominated per cadence. Define the cadences above first.',
+        'next_term' => 'Next',
+        'previous' => 'Previous secretaries',
+        'no_cadences_hint' => 'There is no current cadence, so secretaries cannot be assigned. Add a cadence below.',
     ],
 
     'actions' => [
-        'manage' => 'Manage',
+        'add' => 'Assign',
+        'manage' => 'Change',
         'remove' => 'Remove :name',
     ],
 

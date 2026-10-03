@@ -4,18 +4,17 @@ return [
     'label' => 'Sekretoriai',
 
     'institution' => [
-        'title' => 'Institucijos sekretoriai',
-        'description' => 'Žmonės, atsakingi už šios institucijos posėdžių tvarkymą kiekvienoje kadencijoje.',
-        'effect_warning' => 'Kai kadencijai nurodyti sekretoriai, tos kadencijos posėdžių užduotys tenka tik jiems — kiti nariai jų nebegauna. Jei sekretorių nėra, užduotys tenka tuo metu aktyviems atstovams.',
-        'none_yet' => 'Sekretorių nėra',
+        'title' => 'Sekretoriai',
+        'effect_warning' => 'Kai kadencijai priskirti sekretoriai, jos posėdžių užduotys tenka tik jiems. Kitu atveju – tuo metu aktyviems atstovams.',
         'current_term' => 'Dabartinė',
-        'inherited_term' => 'Bendra',
-        'no_cadences' => 'Kadencijų nėra',
-        'no_cadences_hint' => 'Sekretorius galima priskirti tik kadencijai. Pirmiausia nurodyk kadencijas aukščiau.',
+        'next_term' => 'Kita',
+        'previous' => 'Ankstesni sekretoriai',
+        'no_cadences_hint' => 'Dabartinės kadencijos nėra, todėl sekretorių priskirti negalima. Pridėk kadenciją žemiau.',
     ],
 
     'actions' => [
-        'manage' => 'Tvarkyti',
+        'add' => 'Priskirti',
+        'manage' => 'Keisti',
         'remove' => 'Pašalinti :name',
     ],
 

@@ -1,5 +1,5 @@
 <template>
-  <RecordPage v-model:section="section" :title="supportRequest.title" entity-type="support_request" :status="statusPresentation" :facts :sections :primary-action :overflow-actions @action="handleAction">
+  <RecordPage v-model:section="section" :title="supportRequest.title" entity-type="support_request" :facts :sections :primary-action :overflow-actions actions-beside-title @action="handleAction">
     <template #alert>
       <div v-if="permissions.can_update_status || permissions.can_assign" class="flex flex-wrap items-center gap-3 border border-border bg-card p-3">
         <label v-if="permissions.can_update_status" class="flex items-center gap-2 text-sm font-medium">
@@ -78,6 +78,7 @@ const page = usePage();
 const locale = computed(() => (page.props as { app?: { locale?: string } }).app?.locale ?? 'lt');
 const creatorName = computed(() => props.supportRequest.creator?.name ?? props.supportRequest.reporter_name ?? $t('Svečias'));
 const facts = computed<RecordFact[]>(() => [
+  { key: 'status', label: $t('Būsena'), status: statusPresentation.value },
   { key: 'creator', label: $t('Pateikė'), value: creatorName.value },
   { key: 'created', label: $t('Pateikta'), value: formatDate(props.supportRequest.created_at) },
   { key: 'assignee', label: $t('Priskirta'), value: props.supportRequest.assignedTo?.name ?? $t('Nepriskirta') },

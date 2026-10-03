@@ -165,7 +165,7 @@ describe('ShowAgendaItem.vue', () => {
     expect(link.attributes('target')).toBe('_blank');
     expect(link.attributes('rel')).toBe('noopener noreferrer');
     expect(link.find('svg').exists()).toBe(true);
-    expect(wrapper.find('#agenda-item-description-title').text()).toBe('meetings.item.description');
+    expect(wrapper.find('[data-testid="agenda-item-description"] h2').text()).toBe('meetings.item.description');
   });
 
   it('uses a neutral visibility surface when the meeting is internal', () => {

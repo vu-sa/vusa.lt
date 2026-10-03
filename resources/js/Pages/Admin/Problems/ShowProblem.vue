@@ -4,28 +4,13 @@
     :history-subject="{ type: 'problem', id: problem.id }"
     :title="localizedTitle"
     :entity-type="ModelEnum.PROBLEM"
-    :status="problemStatuses[problem.status as ProblemStatus]"
     :facts="recordFacts"
     :sections="tabs"
     :primary-action
     :overflow-actions
+    actions-beside-title
     @action="handleRecordAction"
   >
-    <template #subtitle>
-      <div class="flex flex-wrap items-center gap-2">
-        <div v-if="problem.categories?.length" class="flex flex-wrap gap-1">
-          <Badge v-for="cat in problem.categories" :key="cat.id" variant="secondary" class="text-xs">
-            {{ cat.name }}
-          </Badge>
-        </div>
-        <div v-if="problem.institutions?.length" class="flex flex-wrap gap-1">
-          <Badge v-for="inst in problem.institutions" :key="inst.id" variant="outline" class="text-xs">
-            {{ inst.name }}
-          </Badge>
-        </div>
-      </div>
-    </template>
-
     <template #alert>
       <div class="flex flex-wrap items-center justify-between gap-4 border border-border bg-card p-3">
         <div class="flex items-center gap-2">
@@ -122,19 +107,16 @@
 
     <template #institucijos>
       <div class="max-w-3xl">
-        <div v-if="problem.institutions?.length" class="grid gap-2 sm:grid-cols-2">
-          <div
+        <div v-if="problem.institutions?.length" class="-mx-2">
+          <Link
             v-for="inst in problem.institutions"
             :key="inst.id"
-            class="flex items-center justify-between border border-border bg-card p-3"
+            :href="route('institutions.show', inst.id)"
+            class="flex min-h-11 items-center justify-between gap-3 px-2 py-2 transition-colors hover:bg-accent"
           >
             <span class="text-sm font-medium">{{ inst.name }}</span>
-            <Button as-child variant="ghost" size="icon-sm">
-              <Link :href="route('institutions.show', inst.id)">
-                <ChevronRight class="size-4" />
-              </Link>
-            </Button>
-          </div>
+            <ChevronRight class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </Link>
         </div>
         <EmptyState
           v-else
@@ -146,7 +128,7 @@
     </template>
 
     <template #posedziai>
-      <ul class="max-w-3xl divide-y divide-border border-y border-border" data-testid="problem-agenda-items">
+      <ul class="max-w-3xl divide-y divide-border" data-testid="problem-agenda-items">
         <li v-for="item in agendaItems" :key="item.id">
           <Link
             :href="route('agendaItems.show', item.id)"
@@ -210,7 +192,6 @@ import { computed, ref } from 'vue';
 
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
-import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { problemStatuses, type ProblemStatus } from '@/Constants/statuses';
@@ -276,6 +257,7 @@ const recordFacts = computed<RecordFact[]>(() => [
   { key: 'occurred_at', label: $t('entities.problem.occurred_at'), value: formatDate(new Date(props.problem.occurred_at)) },
   ...(props.problem.resolved_at ? [{ key: 'resolved_at', label: $t('entities.problem.resolved_at'), value: formatDate(new Date(props.problem.resolved_at)) }] : []),
   { key: 'duration', label: $t('problems.show.duration_label'), value: durationText.value },
+  ...(props.problem.categories?.length ? [{ key: 'categories', label: $t('Kategorijos'), value: props.problem.categories.map(category => category.name).join(', ') }] : []),
   ...(props.problem.tenant ? [{ key: 'tenant', label: $tChoice('entities.tenant.model', 1), value: props.problem.tenant.shortname }] : []),
   { key: 'responsible', label: $t('entities.problem.responsible_user'), value: props.problem.responsible_user?.name ?? '—' },
   ...(createdByUser.value ? [{ key: 'creator', label: $t('problems.show.created_by_label'), value: createdByUser.value.name }] : []),

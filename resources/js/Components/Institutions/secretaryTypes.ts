@@ -14,5 +14,6 @@ export interface SecretaryRoster {
   /** The term comes from the shared ladder rather than an override of this institution. */
   is_global: boolean;
   is_current: boolean;
+  is_past: boolean;
   secretaries: SecretaryUser[];
 }

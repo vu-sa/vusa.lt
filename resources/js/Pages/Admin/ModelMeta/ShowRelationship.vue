@@ -1,21 +1,17 @@
 <template>
-  <RecordPage v-model:section="section" :title="relationship.name" :entity-type="ModelEnum.RELATIONSHIP" :facts :sections :primary-action :overflow-actions @action="handleAction">
+  <RecordPage v-model:section="section" :title="relationship.name" :entity-type="ModelEnum.RELATIONSHIP" :facts :sections :primary-action :overflow-actions actions-beside-title @action="handleAction">
     <template #overview>
-      <div class="max-w-3xl space-y-5">
-        <div>
-          <h2 class="mb-2 text-base font-semibold">
-            {{ $t('Aprašymas') }}
-          </h2>
-          <p class="whitespace-pre-wrap text-sm">
-            {{ relationship.description || $t('Aprašymo nėra.') }}
-          </p>
-        </div>
-        <div class="border border-border p-4">
-          <span class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{{ $t('Techninė žymė') }}</span><p class="mt-1 text-sm font-medium">
+      <OverviewSection variant="home" :title="$t('Aprašymas')" :icon="FileText" class="max-w-3xl">
+        <p class="whitespace-pre-wrap text-sm">
+          {{ relationship.description || $t('Aprašymo nėra.') }}
+        </p>
+        <div class="pt-2">
+          <span class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{{ $t('Techninė žymė') }}</span>
+          <p class="mt-1 text-sm font-medium">
             {{ relationship.slug }}
           </p>
         </div>
-      </div>
+      </OverviewSection>
     </template>
     <template #connections>
       <RelationshipConnections :relationship :related-models :can-update="can.update" />
@@ -28,12 +24,12 @@
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Edit, Trash2 } from 'lucide-vue-next';
+import { Edit, FileText, Trash2 } from 'lucide-vue-next';
 
 import RelationshipConnections from './RelationshipConnections.vue';
 
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
-import { ConfirmDialog } from '@/Components/Patterns';
+import { ConfirmDialog, OverviewSection } from '@/Components/Patterns';
 import { ModelEnum } from '@/Types/enums';
 
 const props = defineProps<{

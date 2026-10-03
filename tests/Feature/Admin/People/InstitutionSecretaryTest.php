@@ -194,3 +194,39 @@ describe('task assignment', function (): void {
             ->toBe([$this->member->id]);
     });
 });
+
+describe('overriding the shared ladder', function (): void {
+    beforeEach(function (): void {
+        $this->bare = Institution::factory()->for($this->tenant)->create();
+        $this->globalCadence = Cadence::factory()->forYear(2025)->create();
+
+        InstitutionSecretary::create([
+            'institution_id' => $this->bare->id,
+            'cadence_id' => $this->globalCadence->id,
+            'user_id' => $this->candidate->id,
+        ]);
+    });
+
+    test('a first own term takes over the roster of the shared term it overlaps', function (): void {
+        asUser($this->admin)->post(route('settings.cadences.store'), [
+            'institution_id' => $this->bare->id,
+            'start_date' => '2025-09-01',
+            'end_date' => '2026-08-31',
+        ])->assertSessionHasNoErrors();
+
+        expect(GetInstitutionSecretaries::execute($this->bare, Carbon::parse('2025-11-01'))->pluck('id')->all())
+            ->toBe([$this->candidate->id])
+            // Kept, so removing the override restores the shared roster as it was.
+            ->and($this->globalCadence->secretaryAssignments()->count())->toBe(1);
+    });
+
+    test('an own term overlapping no staffed shared term starts empty', function (): void {
+        asUser($this->admin)->post(route('settings.cadences.store'), [
+            'institution_id' => $this->bare->id,
+            'start_date' => '2027-07-01',
+            'end_date' => '2028-06-30',
+        ])->assertSessionHasNoErrors();
+
+        expect(GetInstitutionSecretaries::execute($this->bare, Carbon::parse('2027-11-01')))->toBeEmpty();
+    });
+});

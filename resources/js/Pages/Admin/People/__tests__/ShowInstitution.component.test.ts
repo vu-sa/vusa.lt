@@ -186,14 +186,6 @@ describe('ShowInstitution.vue', () => {
     expect(threeCoordinators.find('users-avatar-group-stub').attributes('expandable')).toBe('true');
   });
 
-  it('names the coordinator source only when a coordinator is shown', () => {
-    const coordinated = createWrapper({ managers: [{ id: 1, name: 'Rūta' }], managers_source: 'type' });
-    const vacant = createWrapper({ managers: [], managers_source: null });
-
-    expect(coordinated.get('[data-slot="institution-managers-source"]').text()).toContain('responsibilities.sources.type');
-    expect(vacant.find('[data-slot="institution-managers-source"]').exists()).toBe(false);
-  });
-
   it('moves the type and governance scope to a fact and shows meeting visibility instead of periodicity', () => {
     const wrapper = createWrapper({
       types: [{ title: 'Taryba' }],
@@ -258,7 +250,6 @@ describe('ShowInstitution.vue', () => {
         globalCadences: [],
         cadenceDefaults: { default_start_month_day: '07-01', default_end_month_day: '06-30' },
         secretaryRosters: [],
-        suggestedSecretaries: [],
         studyPrograms: [],
       },
     });

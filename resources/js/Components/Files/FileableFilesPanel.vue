@@ -37,7 +37,7 @@
               :file
               :can-delete
               @copy="copyLink"
-              @delete="fileToDelete = $event"              @revoke="linkToRevoke = $event"
+              @delete="fileToDelete = $event" @revoke="linkToRevoke = $event"
             />
             <li v-if="filesOfType(type).length === 0" class="py-1.5">
               <button
@@ -70,7 +70,7 @@
             :file
             :can-delete
             @copy="copyLink"
-            @delete="fileToDelete = $event"            @revoke="linkToRevoke = $event"
+            @delete="fileToDelete = $event" @revoke="linkToRevoke = $event"
           />
         </ul>
 

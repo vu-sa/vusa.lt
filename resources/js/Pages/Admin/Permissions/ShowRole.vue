@@ -7,6 +7,7 @@
     :sections
     :primary-action
     :overflow-actions
+    actions-beside-title
     @action="handleAction"
   >
     <template #permissions>
@@ -17,22 +18,17 @@
     </template>
 
     <template #duties>
-      <div class="max-w-4xl space-y-4">
-        <div class="flex items-center justify-between border-b border-border pb-3">
-          <div>
-            <h2 class="text-base font-semibold text-foreground">
-              {{ $t('Priskirtos pareigybės') }}
-            </h2>
-            <p class="mt-1 text-sm text-muted-foreground">
-              {{ $t('Rolė taikoma šias pareigybes einantiems nariams.') }}
-            </p>
-          </div>
-          <Button v-if="can.update" size="sm" @click="saveDuties">
+      <OverviewSection variant="home" :title="$t('Priskirtos pareigybės')" :icon="Briefcase" class="max-w-4xl">
+        <template v-if="can.update" #actions>
+          <Button size="sm" @click="saveDuties">
             {{ $t('Išsaugoti') }}
           </Button>
-        </div>
+        </template>
+        <p class="text-xs text-muted-foreground">
+          {{ $t('Rolė taikoma šias pareigybes einantiems nariams.') }}
+        </p>
         <TransferList v-if="can.update" v-model="dutyIds" :options="dutyOptions" />
-        <ul v-else class="divide-y divide-border border-y border-border">
+        <ul v-else class="divide-y divide-border">
           <li v-for="duty in role.duties ?? []" :key="duty.id" class="py-3 text-sm font-medium">
             {{ duty.name }}
           </li>
@@ -40,26 +36,21 @@
             {{ $t('Pareigybių nepriskirta.') }}
           </li>
         </ul>
-      </div>
+      </OverviewSection>
     </template>
 
     <template #types>
-      <div class="max-w-4xl space-y-4">
-        <div class="flex items-center justify-between border-b border-border pb-3">
-          <div>
-            <h2 class="text-base font-semibold text-foreground">
-              {{ $t('Priskiriami tipai') }}
-            </h2>
-            <p class="mt-1 text-sm text-muted-foreground">
-              {{ $t('Ši rolė gali būti priskiriama tik pasirinktiems tipams.') }}
-            </p>
-          </div>
-          <Button v-if="can.update" size="sm" @click="saveAttachableTypes">
+      <OverviewSection variant="home" :title="$t('Priskiriami tipai')" :icon="Tags" class="max-w-4xl">
+        <template v-if="can.update" #actions>
+          <Button size="sm" @click="saveAttachableTypes">
             {{ $t('Išsaugoti') }}
           </Button>
-        </div>
+        </template>
+        <p class="text-xs text-muted-foreground">
+          {{ $t('Ši rolė gali būti priskiriama tik pasirinktiems tipams.') }}
+        </p>
         <TransferList v-if="can.update" v-model="attachableTypeIds" :options="typeOptions" />
-        <ul v-else class="divide-y divide-border border-y border-border">
+        <ul v-else class="divide-y divide-border">
           <li v-for="type in attachedTypes" :key="type.id" class="py-3 text-sm font-medium">
             {{ localized(type.title) }}
           </li>
@@ -67,7 +58,7 @@
             {{ $t('Tipų nepriskirta.') }}
           </li>
         </ul>
-      </div>
+      </OverviewSection>
     </template>
   </RecordPage>
 
@@ -85,11 +76,11 @@
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
-import { Edit, Trash2 } from 'lucide-vue-next';
+import { Briefcase, Edit, Tags, Trash2 } from 'lucide-vue-next';
 
 import RolePermissionForms from '@/Components/AdminForms/RolePermissionForms.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
-import { ConfirmDialog } from '@/Components/Patterns';
+import { ConfirmDialog, OverviewSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { TransferList } from '@/Components/ui/transfer-list';
 import { ModelEnum } from '@/Types/enums';

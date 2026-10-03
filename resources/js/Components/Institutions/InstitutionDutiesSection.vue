@@ -1,42 +1,41 @@
 <template>
-  <section data-slot="institution-duties-section">
-    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
-      <h3 class="text-base font-semibold text-foreground">
-        {{ $t('Pareigybės') }}
-        <span class="ml-1 text-sm font-normal text-muted-foreground tabular-nums">{{ duties.length }}</span>
-      </h3>
-
-      <div v-if="canManage" class="flex flex-wrap items-center gap-2">
-        <template v-if="reordering">
-          <Button type="button" variant="ghost" size="sm" class="pointer-coarse:h-11" :disabled="saving" @click="cancelReorder">
-            {{ $t('Atšaukti') }}
-          </Button>
-          <Button type="button" variant="brand" size="sm" class="pointer-coarse:h-11" :disabled="saving || !changed" @click="saveOrder">
-            <Save class="size-4" aria-hidden="true" />
-            {{ $t('Išsaugoti tvarką') }}
-          </Button>
-        </template>
-        <template v-else>
-          <Button
-            v-if="duties.length > 1"
-            type="button"
-            variant="outline"
-            size="sm"
-            class="pointer-coarse:h-11"
-            @click="startReorder"
-          >
-            <ArrowDownUp class="size-4" aria-hidden="true" />
-            {{ $t('Keisti tvarką') }}
-          </Button>
-          <Button as-child variant="outline" size="sm" class="pointer-coarse:h-11">
-            <Link :href="route('duties.create', { institution_id: institutionId })">
-              <Plus class="size-4" aria-hidden="true" />
-              {{ $t('Nauja pareigybė') }}
-            </Link>
-          </Button>
-        </template>
-      </div>
-    </div>
+  <OverviewSection
+    variant="home"
+    :title="$t('Pareigybės')"
+    :icon="Briefcase"
+    :count="duties.length"
+    data-slot="institution-duties-section"
+  >
+    <template v-if="canManage" #actions>
+      <template v-if="reordering">
+        <Button type="button" variant="ghost" size="sm" class="pointer-coarse:h-11" :disabled="saving" @click="cancelReorder">
+          {{ $t('Atšaukti') }}
+        </Button>
+        <Button type="button" variant="brand" size="sm" class="pointer-coarse:h-11" :disabled="saving || !changed" @click="saveOrder">
+          <Save class="size-4" aria-hidden="true" />
+          {{ $t('Išsaugoti tvarką') }}
+        </Button>
+      </template>
+      <template v-else>
+        <Button
+          v-if="duties.length > 1"
+          type="button"
+          variant="outline"
+          size="sm"
+          class="pointer-coarse:h-11"
+          @click="startReorder"
+        >
+          <ArrowDownUp class="size-4" aria-hidden="true" />
+          {{ $t('Keisti tvarką') }}
+        </Button>
+        <Button as-child variant="outline" size="sm" class="pointer-coarse:h-11">
+          <Link :href="route('duties.create', { institution_id: institutionId })">
+            <Plus class="size-4" aria-hidden="true" />
+            {{ $t('Nauja pareigybė') }}
+          </Link>
+        </Button>
+      </template>
+    </template>
 
     <EmptyState
       v-if="duties.length === 0"
@@ -81,7 +80,7 @@
       </template>
     </SortableDutiesTable>
 
-    <div v-else class="divide-y divide-border border-b border-border">
+    <div v-else class="divide-y divide-border">
       <DutyCard
         v-for="duty in duties"
         :key="duty.id"
@@ -92,7 +91,7 @@
         @edit-term="(target, user) => $emit('edit-term', target, user)"
       />
     </div>
-  </section>
+  </OverviewSection>
 </template>
 
 <script setup lang="ts">
@@ -102,7 +101,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowDown, ArrowDownUp, ArrowUp, Briefcase, Plus, Save } from 'lucide-vue-next';
 
 import DutyCard, { type DutyWithUsers, type UserWithPivot } from '@/Components/AdminForms/DutyCard.vue';
-import { EmptyState } from '@/Components/Patterns';
+import { EmptyState, OverviewSection } from '@/Components/Patterns';
 import SortableDutiesTable from '@/Components/Tables/SortableDutiesTable.vue';
 import { Button } from '@/Components/ui/button';
 

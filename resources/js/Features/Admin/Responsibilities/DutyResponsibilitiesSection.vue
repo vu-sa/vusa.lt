@@ -1,30 +1,24 @@
 <template>
-  <div class="grid max-w-4xl gap-10 lg:grid-cols-2" data-slot="duty-responsibilities">
-    <section>
-      <div class="mb-3 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 class="text-base font-semibold text-foreground">
-            {{ $t('responsibilities.duty.title') }}
-          </h3>
-          <p class="text-sm text-muted-foreground">
-            {{ $t('responsibilities.duty.description') }}
-          </p>
-        </div>
+  <div class="grid gap-10 xl:grid-cols-2 xl:gap-16" data-slot="duty-responsibilities">
+    <OverviewSection variant="home" :title="$t('responsibilities.duty.title')" :icon="Compass">
+      <template v-if="canUpdate" #actions>
         <SpotlightPopover
-          v-if="canUpdate"
           :title="$t('responsibilities.spotlight.title')"
           :description="$t('responsibilities.spotlight.body')"
           :is-dismissed="spotlight.isDismissed.value"
           @dismiss="spotlight.dismiss()"
         >
-          <Button variant="outline" voice="sentence" class="pointer-coarse:h-11" data-testid="responsibility-add" @click="openSheet">
+          <Button size="sm" variant="outline" voice="sentence" class="u-touch" data-testid="responsibility-add" @click="openSheet">
             <Plus class="size-4" aria-hidden="true" />
             {{ $t('responsibilities.duty.add') }}
           </Button>
         </SpotlightPopover>
-      </div>
+      </template>
 
-      <ul v-if="items.length" class="divide-y divide-border border-y border-border">
+      <p class="text-xs text-muted-foreground">
+        {{ $t('responsibilities.duty.description') }}
+      </p>
+      <ul v-if="items.length" class="divide-y divide-border">
         <li v-for="item in items" :key="item.id" class="flex min-h-11 items-center justify-between gap-3 py-2" data-testid="responsibility-row">
           <span class="min-w-0">
             <span class="block text-sm font-medium text-foreground">{{ item.label }}</span>
@@ -45,29 +39,24 @@
           </Button>
         </li>
       </ul>
-      <p v-else class="border-y border-border py-3 text-sm text-muted-foreground">
+      <p v-else class="text-sm text-muted-foreground">
         {{ $t('responsibilities.duty.empty') }}
       </p>
-    </section>
+    </OverviewSection>
 
-    <section>
-      <div class="mb-3">
-        <h3 class="text-base font-semibold text-foreground">
-          {{ $t('responsibilities.duty.roles_title') }}
-        </h3>
-        <p class="text-sm text-muted-foreground">
-          {{ $t('responsibilities.duty.roles_description') }}
-        </p>
-      </div>
-      <ul v-if="roles.length" class="divide-y divide-border border-y border-border">
+    <OverviewSection variant="home" :title="$t('responsibilities.duty.roles_title')" :icon="ShieldCheck">
+      <p class="text-xs text-muted-foreground">
+        {{ $t('responsibilities.duty.roles_description') }}
+      </p>
+      <ul v-if="roles.length" class="divide-y divide-border">
         <li v-for="role in roles" :key="role.id" class="py-2.5 text-sm font-medium text-foreground" data-testid="duty-role-row">
           {{ role.name }}
         </li>
       </ul>
-      <p v-else class="border-y border-border py-3 text-sm text-muted-foreground">
+      <p v-else class="text-sm text-muted-foreground">
         {{ $t('responsibilities.duty.roles_empty') }}
       </p>
-    </section>
+    </OverviewSection>
 
     <SheetForm
       v-model:open="sheetOpen"
@@ -178,13 +167,13 @@
 import { computed, ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Plus } from 'lucide-vue-next';
+import { Compass, Plus, ShieldCheck } from 'lucide-vue-next';
 
 import type { DutyResponsibilityItem, DutyResponsibilityOptions, ResponsibilityScopeValue } from './types';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-import { ConfirmDialog, FormSegmentedControl, SheetForm, type FormSegmentOption } from '@/Components/Patterns';
+import { ConfirmDialog, FormSegmentedControl, OverviewSection, SheetForm, type FormSegmentOption } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { SingleSelect } from '@/Components/ui/single-select';

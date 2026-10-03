@@ -138,7 +138,7 @@ describe('InstitutionOverviewSection', () => {
       global: { stubs },
     });
 
-    await wrapper.findAll('button').find(b => b.text().includes('Visi susitikimai'))!.trigger('click');
+    await wrapper.findAll('button').find(b => b.text().includes('Visi posėdžiai'))!.trigger('click');
 
     expect(wrapper.emitted('navigate-tab')?.[0]).toEqual(['meetings']);
   });

@@ -32,7 +32,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $file_date Document date (not upload date)
  * @property string|null $description
  * @property string|null $public_link SharePoint anonymous sharing link
- * @property string|null $public_link_permission_id
+ * @property string|null $public_link_permission_id SharePoint permission behind public_link, deleted to revoke it
  * @property Carbon|null $public_link_expires_at
  * @property Carbon|null $last_synced_at
  * @property Carbon|null $deleted_externally_at Set when file deleted in SharePoint

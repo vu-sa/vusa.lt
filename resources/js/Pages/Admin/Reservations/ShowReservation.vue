@@ -4,11 +4,11 @@
     :history-subject="{ type: 'reservation', id: reservation.id }"
     :title="reservation.name"
     :entity-type="ModelEnum.RESERVATION"
-    :status="undefined"
     :facts="recordFacts"
     :sections="tabs"
     :primary-action
     :overflow-actions
+    actions-beside-title
     @action="handleRecordAction"
   >
     <!-- One item can be approved while another waits, so the badge reports every state, not one. -->

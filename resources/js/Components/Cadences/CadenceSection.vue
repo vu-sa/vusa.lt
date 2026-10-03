@@ -1,46 +1,28 @@
 <template>
-  <div data-slot="cadence-section" class="space-y-5">
-    <!--
-      The inherited ladder comes first and stays read-only: an editor should see what
-      already applies before deciding to replace it.
-    -->
-    <div v-if="globalCadences.length > 0" class="space-y-2">
-      <div class="flex items-baseline justify-between gap-2">
-        <h4 class="text-sm font-medium">
-          {{ $t('cadences.institution.inherited') }}
-        </h4>
-        <Badge v-if="ownCadences.length > 0" variant="outline" class="text-[10px]">
-          {{ $t('cadences.institution.override_active') }}
-        </Badge>
-      </div>
-      <p class="text-xs text-muted-foreground">
-        {{ $t('cadences.institution.inherited_hint') }}
+  <div data-slot="cadence-section" class="space-y-3">
+    <!-- Terms are set up once and rarely touched, so the default is one line saying which apply. -->
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <p class="text-sm" data-slot="cadence-summary">
+        {{ hasOwn ? $t('cadences.institution.summary_own') : $t('cadences.institution.summary_global') }}
+        <span class="text-muted-foreground">
+          · {{ current ? $t('cadences.institution.now', { label: current.label }) : $t('cadences.institution.none_now') }}
+        </span>
       </p>
-      <div :class="ownCadences.length > 0 ? 'opacity-50' : undefined">
-        <CadenceList
-          readonly
-          :cadences="globalCadences"
-          :empty-message="$t('cadences.global.empty')"
-        />
-      </div>
+
+      <Button v-if="!editing" type="button" size="xs" variant="ghost" voice="sentence" @click="startEditing">
+        <Pencil v-if="hasOwn" class="size-3.5" />
+        <Plus v-else class="size-3.5" />
+        {{ hasOwn ? $t('cadences.institution.manage') : $t('cadences.institution.customize') }}
+      </Button>
+      <Button v-else type="button" size="xs" variant="ghost" voice="sentence" @click="stopEditing">
+        {{ $t('cadences.institution.done') }}
+      </Button>
     </div>
 
-    <div class="space-y-2">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <h4 class="text-sm font-medium">
-          {{ $t('cadences.institution.own') }}
-        </h4>
-        <Button type="button" size="xs" variant="outline" :disabled="crud.processing.value" @click="startAdding">
-          <Plus class="size-3.5" />
-          {{ $t('cadences.actions.add') }}
-        </Button>
-      </div>
-
-      <Alert class="py-2">
-        <AlertDescription class="text-xs">
-          {{ $t('cadences.institution.override_warning') }}
-        </AlertDescription>
-      </Alert>
+    <div v-if="editing" class="space-y-3">
+      <p v-if="!hasOwn" class="text-xs text-muted-foreground">
+        {{ $t('cadences.institution.override_warning') }}
+      </p>
 
       <CadenceList
         :cadences="ownCadences"
@@ -52,45 +34,94 @@
         :prefill
         @edit="crud.editingId.value = $event"
         @cancel-edit="crud.editingId.value = null"
-        @cancel-add="crud.adding.value = false"
+        @cancel-add="onCancelAdd"
         @create="value => crud.create(value)"
         @update="crud.update"
         @delete="crud.destroy"
       />
+
+      <Button
+        v-if="hasOwn && !crud.adding.value"
+        type="button"
+        size="xs"
+        variant="outline"
+        voice="sentence"
+        :disabled="crud.processing.value"
+        @click="startAdding"
+      >
+        <Plus class="size-3.5" />
+        {{ $t('cadences.actions.add') }}
+      </Button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Plus } from 'lucide-vue-next';
+import { Pencil, Plus } from 'lucide-vue-next';
 
 import CadenceList from './CadenceList.vue';
 import { prefillFrom, useCadenceCrud } from './useCadenceCrud';
 
 import type { CadenceDraft, CadenceRow } from './index';
 
-import { Alert, AlertDescription } from '@/Components/ui/alert';
-import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 
 const props = defineProps<{
   institutionId: string;
   /** This institution's own overrides. */
   ownCadences: CadenceRow[];
-  /** The shared ladder, shown for reference. */
+  /** The shared ladder, which applies while there are no overrides. */
   globalCadences: CadenceRow[];
   defaults: { default_start_month_day: string; default_end_month_day: string };
 }>();
 
 const crud = useCadenceCrud(props.institutionId);
 const prefill = ref<CadenceDraft | null>(null);
+const editing = ref(false);
 
-/** A first override extrapolates from the shared ladder, so the dates start plausible. */
-const source = computed(() => (props.ownCadences.length > 0 ? props.ownCadences : props.globalCadences));
+const hasOwn = computed(() => props.ownCadences.length > 0);
+
+/** Own terms replace the shared ladder outright — see ResolveCadenceForInstitution. */
+const applicable = computed(() => (hasOwn.value ? props.ownCadences : props.globalCadences));
+
+const current = computed(() => {
+  const today = localToday();
+
+  return applicable.value.find(cadence => cadence.start_date <= today && cadence.end_date >= today) ?? null;
+});
 
 function startAdding(): void {
-  prefill.value = prefillFrom(source.value, props.defaults);
+  // A first override extrapolates from the shared ladder, so the dates start plausible.
+  prefill.value = prefillFrom(applicable.value, props.defaults);
   crud.adding.value = true;
+}
+
+function startEditing(): void {
+  editing.value = true;
+
+  // Without own terms there is nothing to list — go straight to the first one.
+  if (!hasOwn.value) {
+    startAdding();
+  }
+}
+
+function stopEditing(): void {
+  crud.reset();
+  editing.value = false;
+}
+
+function onCancelAdd(): void {
+  crud.adding.value = false;
+
+  if (!hasOwn.value) {
+    editing.value = false;
+  }
+}
+
+function localToday(): string {
+  const now = new Date();
+
+  return [now.getFullYear(), now.getMonth() + 1, now.getDate()].map(part => String(part).padStart(2, '0')).join('-');
 }
 </script>

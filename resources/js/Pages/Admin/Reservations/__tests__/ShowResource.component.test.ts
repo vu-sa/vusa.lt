@@ -14,14 +14,14 @@ vi.stubGlobal('route', (name?: string, param?: string) => (name === undefined ? 
 const stubs = {
   ...commonStubs,
   RecordPage: {
-    props: ['title', 'status', 'sections', 'facts', 'primaryAction', 'overflowActions'],
+    props: ['title', 'sections', 'facts', 'primaryAction', 'overflowActions'],
     emits: ['action'],
     template: `
       <div>
         <slot name="identity" />
         <h1>{{ title }}</h1>
-        <div data-testid="status">{{ status?.role ?? '' }}</div>
-        <div data-testid="facts">{{ facts.map(f => f.key + '=' + (f.value ?? '')).join('|') }}</div>
+        <div data-testid="status">{{ facts.find(f => f.key === 'available')?.status?.role ?? '' }}</div>
+        <div data-testid="facts">{{ facts.map(f => f.key + '=' + (f.value ?? f.detail ?? '')).join('|') }}</div>
         <button v-if="primaryAction" data-testid="primary" @click="$emit('action', primaryAction.key)">{{ primaryAction.label }}</button>
         <button v-for="a in overflowActions" :key="a.key" :data-testid="'overflow-' + a.key" @click="$emit('action', a.key)">{{ a.label }}</button>
         <slot name="alert" />

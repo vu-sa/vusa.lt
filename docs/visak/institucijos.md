@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-03
 tests:
   - tests/Feature/Admin/Management/InstitutionControllerTest.php
   - tests/Feature/Admin/Management/InstitutionCheckInTest.php
@@ -12,6 +12,7 @@ tests:
   - tests/Feature/Institutions/InstitutionScopeTest.php
   - tests/Feature/Public/PublicMeetingVisibilityTest.php
   - tests/Feature/SoftDelete/ForceDeleteGuardsTest.php
+  - tests/Feature/Tasks/InstitutionSecretaryTaskResyncTest.php
   - tests/Feature/Tasks/RepopulateInstitutionTasksTest.php
   - tests/Feature/Tasks/Handlers/PeriodicityGapTaskHandlerTest.php
   - tests/Feature/Tasks/Subscribers/InstitutionCheckInTaskSubscriberTest.php
@@ -60,8 +61,8 @@ Rūšis lemia, ką rodo ir ko reikalauja kiti puslapiai:
   tinklai). Ji pažymėta „Matoma vusa.lt“, nes rodoma viešame institucijos puslapyje.
 - VU SA darinių posėdžiuose studentų pozicijos žymėti nereikia (žr.
   [Darbotvarkės klausimai](/visak/darbotvarkes-klausimai#vusa-isimtis)).
-- [Koordinatorius](/visak/#koordinatorius) priskiriamas tik VU organams. Institucijos puslapyje
-  parašyta, iš kur jis parinktas (plačiau – [Atsakomybės](/pagrindai/atsakomybes)).
+- [Koordinatorius](/visak/#koordinatorius) priskiriamas tik VU organams. Kaip jis parenkamas,
+  aprašyta [Atsakomybėse](/pagrindai/atsakomybes).
 
 ### Aktyvi institucija
 
@@ -148,8 +149,14 @@ sekretoriai**). Sekretoriumi gali būti bet kuris narys, nebūtinai institucijos
   pareigas ėjusiems atstovams.
 - Pakeitus sekretorius, atviros tos kadencijos užduotys perduodamos naujiems, o atliktos lieka
   kaip buvo. Perdavimas pranešimų nesiunčia.
+- Skirtuke keisti gali dabartinės ir kitos kadencijos sekretorius. Ankstesnių kadencijų sekretoriai
+  rodomi tik kaip istorija.
 - Jei institucija turi savo kadencijas, sekretoriai skiriami joms, jei ne – bendroms kadencijoms
-  (žr. [Kadencijos](/sistema/nustatymai#kadencijos)).
+  (žr. [Kadencijos](/sistema/nustatymai#kadencijos)). Savas kadencijas nustatyk tame pačiame
+  skirtuke paspaudęs **Nustatyti savas**; prireikia retai.
+- Nustačius pirmą savo kadenciją, sekretoriai perkeliami iš ją dengiančios bendros kadencijos, o
+  atviros užduotys perskirstomos. Ištrynus paskutinę savo kadenciją, vėl galioja bendrosios
+  kadencijos ir jų sekretoriai.
 - Sekretoriai nerodomi tarp narių, kontaktų ir paieškoje.
 
 Kuo sekretorius skiriasi nuo koordinatoriaus, aprašyta [ViSAK](/visak/#koordinatorius) puslapyje.
@@ -253,4 +260,5 @@ pranešimus „Posėdžio nebuvo“ tvarko ir kuruojamose institucijose, net be 
 - Periodiškumo užduotis: `tasks:repopulate institution` (kasdien 08:00) →
   `PeriodicityGapTaskHandler`; gavėjai – `ResolveTaskAssignees::forInstitution`.
 - Pranešimo sutrumpinimas: `CheckInService::adjustForMeeting()` iš `MeetingController`.
-- Sekretoriai: `InstitutionSecretary`; perskyrimas – `ResyncTaskAssigneesForCadence`.
+- Sekretoriai: `InstitutionSecretary`; perskyrimas – `ResyncTaskAssigneesForCadence`; perkėlimas į
+  savą kadenciją – `CarrySecretariesIntoOverride` (`Cadence::booted()`).

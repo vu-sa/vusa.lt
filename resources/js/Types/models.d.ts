@@ -706,6 +706,7 @@ declare global {
       file_date?: string | null
       description?: string | null
       public_link?: string | null
+      public_link_permission_id?: string | null
       public_link_expires_at?: string | null
       last_synced_at?: string | null
       deleted_externally_at?: string | null
@@ -1929,8 +1930,6 @@ declare global {
       role_exists: boolean
       type_exists: boolean
     }
-
-
 
     export interface Step {
       // columns

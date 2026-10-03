@@ -4,19 +4,14 @@
     :history-subject="{ type: 'goal', id: goal.id }"
     :title="goalTitle"
     :entity-type="ModelEnum.GOAL"
-    :eyebrow-suffix="goal.tenant.shortname"
-    :status="goalStatuses[goal.status]"
+    :eyebrow-suffix="$t('goals.experimental')"
     :facts
     :sections
     :primary-action
     :overflow-actions
+    actions-beside-title
     @action="handleAction"
   >
-    <template #subtitle>
-      <Badge variant="outline" class="text-xs" :title="$t('goals.experimental_note')">
-        {{ $t('goals.experimental') }}
-      </Badge>
-    </template>
 
     <template #veiksmai>
       <GoalStepList
@@ -38,7 +33,7 @@
 
     <template #problemos>
       <div class="space-y-4">
-        <ul v-if="problems.length" class="divide-y divide-border border-y border-border">
+        <ul v-if="problems.length" class="divide-y divide-border">
           <li v-for="problem in problems" :key="problem.id" class="flex min-h-11 items-center gap-3 px-2 py-2 sm:px-3">
             <Link :href="route('problems.show', problem.id)" class="min-w-0 flex-1">
               <span class="block truncate text-sm font-medium hover:text-brand">{{ problem.title }}</span>
@@ -73,32 +68,26 @@
     </template>
 
     <template #apie>
-      <div class="max-w-3xl space-y-8">
-        <section v-if="expectedResult">
-          <h3 class="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
-            {{ $t('entities.goal.expected_result') }}
-          </h3>
-          <p class="text-sm leading-relaxed">
-            {{ expectedResult }}
-          </p>
-        </section>
-        <section>
-          <h3 class="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
-            {{ $t('entities.goal.description') }}
-          </h3>
+      <div :class="['grid gap-10', (expectedResult || evaluation) && 'xl:grid-cols-2 xl:gap-16']">
+        <OverviewSection variant="home" :title="$t('entities.goal.description')" :icon="FileText">
           <!-- eslint-disable-next-line vue/no-v-html -->
           <div v-if="description" class="prose prose-zinc dark:prose-invert max-w-none text-sm" v-html="description" />
           <p v-else class="text-sm italic text-muted-foreground">
             {{ $t('Aprašymas nepateiktas.') }}
           </p>
-        </section>
-        <section v-if="evaluation">
-          <h3 class="mb-2 text-xs font-bold uppercase tracking-wide text-muted-foreground">
-            {{ $t('entities.goal.evaluation') }}
-          </h3>
-          <!-- eslint-disable-next-line vue/no-v-html -->
-          <div class="prose prose-zinc dark:prose-invert max-w-none text-sm" v-html="evaluation" />
-        </section>
+        </OverviewSection>
+
+        <div v-if="expectedResult || evaluation" class="flex min-w-0 flex-col gap-10">
+          <OverviewSection v-if="expectedResult" variant="home" :title="$t('entities.goal.expected_result')" :icon="Target">
+            <p class="text-sm leading-relaxed">
+              {{ expectedResult }}
+            </p>
+          </OverviewSection>
+          <OverviewSection v-if="evaluation" variant="home" :title="$t('entities.goal.evaluation')" :icon="ClipboardCheck">
+            <!-- eslint-disable-next-line vue/no-v-html -->
+            <div class="prose prose-zinc dark:prose-invert max-w-none text-sm" v-html="evaluation" />
+          </OverviewSection>
+        </div>
       </div>
     </template>
   </RecordPage>
@@ -135,13 +124,12 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ExternalLink, ListChecks, Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { ClipboardCheck, ExternalLink, FileText, ListChecks, Pencil, Plus, Target, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import { ProblemIcon } from '@/Components/icons';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
-import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
-import { Badge } from '@/Components/ui/badge';
+import { ConfirmDialog, EmptyState, OverviewSection, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { goalStatuses, problemStatuses, type ProblemStatus } from '@/Constants/statuses';
 import GoalStepList from '@/Features/Admin/Goals/GoalStepList.vue';
@@ -186,6 +174,7 @@ const expectedResult = computed(() => translatedText(props.goal.expected_result,
 const evaluation = computed(() => translatedText(props.goal.evaluation, locale));
 
 const facts = computed<RecordFact[]>(() => [
+  { key: 'status', label: $t('Būsena'), status: goalStatuses[props.goal.status] },
   { key: 'tenant', label: $tChoice('entities.tenant.model', 1), value: props.goal.tenant.shortname },
   { key: 'cadence', label: $t('entities.goal.cadence'), value: props.goal.cadence?.label ?? '—' },
   {

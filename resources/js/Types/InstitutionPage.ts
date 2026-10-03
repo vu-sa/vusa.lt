@@ -84,8 +84,6 @@ export interface InstitutionPageData {
   description?: string | null;
   types: InstitutionPageType[];
   managers: App.Entities.User[];
-  /** Where the coordinator assignment comes from: the institution, its type or its padalinys. */
-  managers_source?: 'institution' | 'type' | 'tenant' | null;
   secretaries?: SecretaryUser[];
   sharepointPath: string | null;
   sharepointFolderUrl?: string | null;

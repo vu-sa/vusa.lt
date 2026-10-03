@@ -18,4 +18,9 @@ describe('OverviewSection', () => {
   it('drops the rule when the content draws its own, so no line doubles', () => {
     expect(headerOf({ contentRuled: true }).classes()).not.toContain('border-b');
   });
+
+  it('shows a count beside the title, including zero', () => {
+    expect(headerOf({ count: 0 }).get('[data-slot="overview-section-count"]').text()).toBe('0');
+    expect(headerOf({}).find('[data-slot="overview-section-count"]').exists()).toBe(false);
+  });
 });

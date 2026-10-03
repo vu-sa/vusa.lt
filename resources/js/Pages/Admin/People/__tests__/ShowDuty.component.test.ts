@@ -14,16 +14,15 @@ const ConfirmStub = {
 const stubs = {
   ...commonStubs,
   RecordPage: {
-    props: ['title', 'status', 'facts', 'sections', 'primaryAction', 'overflowActions'],
+    props: ['title', 'facts', 'sections', 'primaryAction', 'overflowActions', 'actionsBesideTitle'],
     emits: ['action'],
     template: `
       <div>
         <h1>{{ title }}</h1>
-        <div v-if="status" data-testid="status">{{ status.label }}</div>
+        <div v-for="f in facts" :key="f.key" :data-testid="'fact-' + f.key" :data-status="f.status?.label">{{ f.value ?? f.detail }}</div>
         <div data-testid="tabs">{{ sections.map(s => s.label + ':' + (s.count ?? '')).join('|') }}</div>
         <button v-if="primaryAction" data-testid="primary" @click="$emit('action', primaryAction.key)">{{ primaryAction.label }}</button>
         <button v-for="a in overflowActions" :key="a.key" :data-testid="'overflow-' + a.key" @click="$emit('action', a.key)">{{ a.label }}</button>
-        <slot name="subtitle" />
         <slot name="alert" />
         <slot name="members" />
         <slot name="about" />
@@ -117,14 +116,14 @@ describe('ShowDuty.vue', () => {
 
     expect(wrapper.text()).toContain('Komunikacijos koordinatorius');
     expect(wrapper.text()).toContain('Dabartinis Narys');
-    expect(wrapper.find('[data-testid="status"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="fact-places"]').attributes('data-status')).toBeUndefined();
     expect(wrapper.find('[data-testid="duty-vacancy-alert"]').exists()).toBe(false);
   });
 
-  it('flags a vacant duty once as a status and once as the record alert', () => {
+  it('flags a vacant duty on the places fact and as the record alert', () => {
     const wrapper = mountPage({ duty: { ...baseDuty, users: [] } });
 
-    expect(wrapper.find('[data-testid="status"]').text()).toBe('Neužimta');
+    expect(wrapper.find('[data-testid="fact-places"]').attributes('data-status')).toBe('Neužimta');
     expect(wrapper.find('[data-testid="duty-vacancy-alert"]').exists()).toBe(true);
   });
 
@@ -153,7 +152,15 @@ describe('ShowDuty.vue', () => {
       duty: { ...baseDuty, users: [holder('future', 'Būsimas Narys', { start_date: '2026-10-01' })] },
     });
 
-    expect(wrapper.find('[data-testid="status"]').text()).toBe('Neužimta');
+    expect(wrapper.find('[data-testid="fact-places"]').attributes('data-status')).toBe('Neužimta');
+  });
+
+  it('names the institution and its padalinys as facts, with the actions beside the title', () => {
+    const wrapper = mountPage();
+
+    expect(wrapper.find('[data-testid="fact-institution"]').text()).toBe('VU SA MIF');
+    expect(wrapper.find('[data-testid="fact-tenant"]').text()).toBe('MIF');
+    expect(wrapper.findComponent(stubs.RecordPage).props('actionsBesideTitle')).toBe('');
   });
 
   it('hands the sheet who already holds the duty, so they cannot be assigned twice', () => {

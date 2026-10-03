@@ -1,27 +1,26 @@
 <template>
   <div class="space-y-4" data-testid="problem-steps-panel">
-    <div class="flex items-center justify-between gap-3">
-      <h3 class="text-xs font-bold uppercase tracking-wide text-muted-foreground">
-        {{ $t('goals.sections.steps') }}
-        <Badge variant="outline" class="ml-2 align-middle text-[11px] font-normal normal-case tracking-normal">
+    <OverviewSection variant="home" :title="$t('goals.sections.steps')" :icon="ListChecks">
+      <template #actions>
+        <Badge variant="outline" class="text-xs">
           {{ $t('goals.experimental') }}
         </Badge>
-      </h3>
-      <Button v-if="canUpdate" variant="outline" size="sm" voice="sentence" class="pointer-coarse:min-h-11" @click="openStep(null)">
-        <Plus class="size-4" />
-        {{ $t('goals.steps.add') }}
-      </Button>
-    </div>
-    <GoalStepList
-      :steps
-      :can-update
-      other-side="goal"
-      @edit="openStep"
-      @delete="stepToDelete = $event"
-    />
-    <p v-if="!steps.length" class="text-sm text-muted-foreground">
-      {{ $t('goals.steps.empty_description') }}
-    </p>
+        <Button v-if="canUpdate" variant="outline" size="sm" voice="sentence" class="pointer-coarse:min-h-11" @click="openStep(null)">
+          <Plus class="size-4" />
+          {{ $t('goals.steps.add') }}
+        </Button>
+      </template>
+      <GoalStepList
+        :steps
+        :can-update
+        other-side="goal"
+        @edit="openStep"
+        @delete="stepToDelete = $event"
+      />
+      <p v-if="!steps.length" class="text-sm text-muted-foreground">
+        {{ $t('goals.steps.empty_description') }}
+      </p>
+    </OverviewSection>
 
     <StepSheetForm
       v-model:open="stepOpen"
@@ -45,14 +44,14 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Plus } from 'lucide-vue-next';
+import { ListChecks, Plus } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 import GoalStepList from './GoalStepList.vue';
 import StepSheetForm from './StepSheetForm.vue';
 import type { GoalStep, LinkedGoal } from './types';
 
-import { ConfirmDialog } from '@/Components/Patterns';
+import { ConfirmDialog, OverviewSection } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 

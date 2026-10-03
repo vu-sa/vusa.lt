@@ -30,7 +30,7 @@ class UpdateInstitutionSecretariesRequest extends FormRequest
             'cadence_id' => ['required', 'ulid', $this->applicableCadenceRule()],
             'user_ids' => ['present', 'array'],
             // Deliberately any user: a tenant coordinator with no duty in the body is a
-            // legitimate secretary. The picker only *suggests* current members.
+            // legitimate secretary.
             'user_ids.*' => ['ulid', Rule::exists('users', 'id')->whereNull('deleted_at')],
         ];
     }

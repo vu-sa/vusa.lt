@@ -8,14 +8,9 @@
     :sections="tabs"
     :primary-action
     :overflow-actions
+    actions-beside-title
     @action="handleRecordAction"
   >
-    <template #subtitle>
-      <div v-if="form.tenant?.shortname" class="text-xs text-muted-foreground">
-        {{ form.tenant.shortname }}
-      </div>
-    </template>
-
     <template #registracijos>
       <div class="space-y-4">
         <SimpleDataTable
@@ -55,11 +50,11 @@
     </template>
 
     <template #laukai>
-      <div class="max-w-3xl space-y-3">
+      <div class="max-w-3xl divide-y divide-border">
         <div
           v-for="(field, index) in form.form_fields"
           :key="field.id"
-          class="border border-border bg-card p-4"
+          class="py-4 first:pt-0"
         >
           <div class="flex items-start justify-between gap-4">
             <div class="space-y-1">
@@ -81,7 +76,7 @@
             </Badge>
           </div>
 
-          <div v-if="field.options && field.options.length > 0" class="mt-3 border-t border-border pt-3">
+          <div v-if="field.options && field.options.length > 0" class="mt-3">
             <span class="text-xs font-medium text-muted-foreground">{{ $t('Galimos reikšmės') }}:</span>
             <div class="mt-1.5 flex flex-wrap gap-1.5">
               <span

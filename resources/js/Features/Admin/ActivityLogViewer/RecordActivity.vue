@@ -2,7 +2,8 @@
   <section aria-labelledby="record-activity-title">
     <div class="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h2 id="record-activity-title" class="text-xl font-semibold text-foreground">
+        <h2 id="record-activity-title" class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-foreground">
+          <History class="size-4 shrink-0 text-brand" aria-hidden="true" />
           {{ $t('Veikla') }}
         </h2>
         <p class="mt-1 text-sm text-muted-foreground">
@@ -79,7 +80,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { BarChart3 } from 'lucide-vue-next';
+import { BarChart3, History } from 'lucide-vue-next';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import CommentComposer from '@/Components/Discussions/CommentComposer.vue';

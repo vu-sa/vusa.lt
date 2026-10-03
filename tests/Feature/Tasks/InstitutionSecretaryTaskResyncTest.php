@@ -124,3 +124,29 @@ test('re-syncing sends nobody a task-assigned notification', function (): void {
 
     Notification::assertNotSentTo($this->nominee, TaskAssignedNotification::class);
 });
+
+describe('switching between the shared ladder and own terms', function (): void {
+    beforeEach(function (): void {
+        // Start the institution on the shared ladder, with the nominee carrying the task.
+        $this->cadence->update(['institution_id' => null]);
+
+        asUser($this->admin)->put(route('institutions.secretaries.update', $this->institution), [
+            'cadence_id' => $this->cadence->id,
+            'user_ids' => [$this->nominee->id],
+        ])->assertRedirect();
+    });
+
+    test('an own term that leaves the meeting uncovered hands the task back to the members', function (): void {
+        Cadence::factory()->forYear(2026)->create(['institution_id' => $this->institution->id]);
+
+        expect($this->task->fresh()->users()->pluck('users.id')->all())->toBe([$this->member->id]);
+    });
+
+    test('dropping the last own term gives the task back to the shared roster', function (): void {
+        $override = Cadence::factory()->forYear(2026)->create(['institution_id' => $this->institution->id]);
+
+        asUser($this->admin)->delete(route('settings.cadences.destroy', $override))->assertRedirect();
+
+        expect($this->task->fresh()->users()->pluck('users.id')->all())->toBe([$this->nominee->id]);
+    });
+});

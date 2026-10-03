@@ -54,50 +54,50 @@
     </template>
 
     <template #duties>
-      <div class="space-y-8">
-        <section v-for="group in dutyGroups" :key="group.key" :data-group="group.key">
-          <div class="flex items-center justify-between gap-2 border-b border-border pb-3">
-            <h3 class="text-base font-semibold text-foreground">
-              {{ group.title }}
-              <span class="ml-1 text-sm font-normal text-muted-foreground tabular-nums">{{ group.duties.length }}</span>
-            </h3>
-          </div>
-          <div class="divide-y divide-border">
-            <UserTermRow
-              v-for="duty in group.duties"
-              :key="`${duty.id}-${duty.pivot?.id}`"
-              :duty
-              :holder="dutyHolder"
-              :can-manage="Boolean(can?.update) && group.key !== 'previous'"
-              @edit="openTermSheet(duty)"
-              @end="openTermSheet(duty)"
-            />
-          </div>
-        </section>
-
-        <EmptyState
-          v-if="!allDuties.length"
-          :title="$t('Pareigų nėra')"
-          :description="$t('Šiam nariui dar nėra priskirta pareigybių.')"
-          :icon="Briefcase"
-          :action-label="can?.update ? $t('Pridėti pareigybę') : undefined"
-          @action="openAssignSheet"
-        />
+      <div v-if="allDuties.length" class="grid gap-10 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] xl:gap-16">
+        <div v-for="column in dutyColumns" :key="column.key" class="flex min-w-0 flex-col gap-10">
+          <OverviewSection
+            v-for="group in column.groups"
+            :key="group.key"
+            variant="home"
+            :title="group.title"
+            :icon="group.icon"
+            :count="group.duties.length"
+            :data-group="group.key"
+          >
+            <div class="divide-y divide-border">
+              <UserTermRow
+                v-for="duty in group.duties"
+                :key="`${duty.id}-${duty.pivot?.id}`"
+                :duty
+                :holder="dutyHolder"
+                :can-manage="Boolean(can?.update) && group.key !== 'previous'"
+                @edit="openTermSheet(duty)"
+                @end="openTermSheet(duty)"
+              />
+            </div>
+          </OverviewSection>
+        </div>
       </div>
+
+      <EmptyState
+        v-else
+        :title="$t('Pareigų nėra')"
+        :description="$t('Šiam nariui dar nėra priskirta pareigybių.')"
+        :icon="Briefcase"
+        :action-label="can?.update ? $t('Pridėti pareigybę') : undefined"
+        @action="openAssignSheet"
+      />
     </template>
 
     <template #roles>
-      <div class="space-y-4">
-        <div class="flex items-center justify-between border-b border-border pb-3">
-          <h3 class="text-base font-semibold text-foreground">
-            {{ $t('Rolės') }}
-            <span class="ml-1 text-sm font-normal text-muted-foreground tabular-nums">{{ roles.length }}</span>
-          </h3>
-          <Button v-if="can?.updateRoles" type="button" variant="outline" size="sm" class="pointer-coarse:h-11" @click="rolesOpen = true">
+      <OverviewSection variant="home" :title="$t('Rolės')" :icon="Shield" :count="roles.length">
+        <template v-if="can?.updateRoles" #actions>
+          <Button type="button" variant="outline" size="sm" class="pointer-coarse:h-11" @click="rolesOpen = true">
             <Shield class="size-4" aria-hidden="true" />
             {{ $t('Keisti roles') }}
           </Button>
-        </div>
+        </template>
         <ul v-if="roles.length" class="flex flex-wrap gap-2">
           <li
             v-for="role in roles"
@@ -110,7 +110,7 @@
         <p v-else class="text-sm text-muted-foreground">
           {{ $t('Roles nėra — prieiga kyla iš pareigybių.') }}
         </p>
-      </div>
+      </OverviewSection>
     </template>
 
     <template #tasks>
@@ -125,7 +125,8 @@
     <template #activity>
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="text-xl font-semibold text-foreground">
+          <h2 class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-foreground">
+            <History class="size-4 shrink-0 text-brand" aria-hidden="true" />
             {{ $t('Veikla') }}
           </h2>
           <p class="mt-1 text-sm text-muted-foreground">
@@ -205,12 +206,12 @@ import { computed, defineAsyncComponent, ref } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Briefcase, CalendarRange, Copy, Edit3, KeyRound, Plus, Shield, Trash2 } from 'lucide-vue-next';
+import { Briefcase, CalendarClock, CalendarRange, Copy, Edit3, History, KeyRound, Plus, Shield, Trash2 } from 'lucide-vue-next';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
-import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
+import { ConfirmDialog, EmptyState, OverviewSection } from '@/Components/Patterns';
 import SheetForm from '@/Components/Patterns/SheetForm.vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
@@ -291,11 +292,17 @@ const dutyGroups = computed(() => {
   });
 
   return [
-    { key: 'current', title: $t('Dabartinės pareigos'), duties: groups.current },
-    { key: 'upcoming', title: $t('Būsimos pareigos'), duties: groups.upcoming },
-    { key: 'previous', title: $t('Buvusios pareigos'), duties: groups.previous },
+    { key: 'current', title: $t('Dabartinės pareigos'), icon: Briefcase, duties: groups.current },
+    { key: 'upcoming', title: $t('Būsimos pareigos'), icon: CalendarClock, duties: groups.upcoming },
+    { key: 'previous', title: $t('Buvusios pareigos'), icon: History, duties: groups.previous },
   ].filter(group => group.duties.length > 0);
 });
+
+/** What is held now (and next) leads; the record of past terms sits beside it on wide screens. */
+const dutyColumns = computed(() => [
+  { key: 'active', groups: dutyGroups.value.filter(group => group.key !== 'previous') },
+  { key: 'previous', groups: dutyGroups.value.filter(group => group.key === 'previous') },
+].filter(column => column.groups.length > 0));
 
 const currentDuties = computed(() => dutyGroups.value.find(group => group.key === 'current')?.duties ?? []);
 const roles = computed(() => props.user.roles ?? []);

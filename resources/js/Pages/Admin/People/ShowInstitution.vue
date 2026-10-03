@@ -17,9 +17,6 @@
 
     <template #fact-managers>
       <UsersFactList :users="institution.managers ?? []" :inline-limit="2" class="mt-1" />
-      <span v-if="institution.managers_source" class="block text-xs text-muted-foreground" data-slot="institution-managers-source">
-        {{ $t(`responsibilities.sources.${institution.managers_source}`) }}
-      </span>
     </template>
 
     <template #overview>
@@ -81,39 +78,19 @@
             <div v-for="n in 2" :key="n" class="h-16 animate-pulse border border-border bg-secondary/60" />
           </div>
         </template>
-        <div v-if="management" class="space-y-10" data-testid="institution-terms">
-          <section class="space-y-3">
-            <div class="border-b border-border pb-2">
-              <h3 class="text-base font-semibold text-foreground">
-                {{ $t('cadences.institution.title') }}
-              </h3>
-              <p class="mt-0.5 text-xs text-muted-foreground">
-                {{ $t('cadences.institution.description') }}
-              </p>
-            </div>
+        <div v-if="management" class="grid gap-10 xl:grid-cols-2 xl:gap-16" data-testid="institution-terms">
+          <OverviewSection variant="home" :title="$t('secretaries.institution.title')" :icon="UserCheck">
+            <SecretariesSection :institution-id="institution.id" :rosters="management.secretaryRosters" />
+          </OverviewSection>
+
+          <OverviewSection variant="home" :title="$t('cadences.institution.title')" :icon="CalendarRange">
             <CadenceSection
               :institution-id="institution.id"
               :own-cadences="management.cadences"
               :global-cadences="management.globalCadences"
               :defaults="management.cadenceDefaults"
             />
-          </section>
-
-          <section class="space-y-3">
-            <div class="border-b border-border pb-2">
-              <h3 class="text-base font-semibold text-foreground">
-                {{ $t('secretaries.institution.title') }}
-              </h3>
-              <p class="mt-0.5 text-xs text-muted-foreground">
-                {{ $t('secretaries.institution.description') }}
-              </p>
-            </div>
-            <SecretariesSection
-              :institution-id="institution.id"
-              :rosters="management.secretaryRosters"
-              :suggested="management.suggestedSecretaries"
-            />
-          </section>
+          </OverviewSection>
         </div>
       </Deferred>
     </template>
@@ -233,6 +210,7 @@ import {
   Eye,
   EyeOff,
   Plus,
+  UserCheck,
 } from 'lucide-vue-next';
 
 import { CadenceSection } from '@/Components/Cadences';
@@ -240,12 +218,12 @@ import InstitutionDutiesSection from '@/Components/Institutions/InstitutionDutie
 import InstitutionMeetingsList from '@/Components/Institutions/InstitutionMeetingsList.vue';
 import InstitutionOverviewSection from '@/Components/Institutions/InstitutionOverviewSection.vue';
 import { describeInstitutionActivity } from '@/Components/Institutions/institutionActivity';
-import { SecretariesSection, type SecretaryRoster, type SecretaryUser } from '@/Components/Institutions';
+import { SecretariesSection, type SecretaryRoster } from '@/Components/Institutions';
 import AddCheckInDialog from '@/Components/Institutions/AddCheckInDialog.vue';
 import UsersFactList from '@/Components/Avatars/UsersFactList.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
-import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
+import { ConfirmDialog, EmptyState, OverviewSection } from '@/Components/Patterns';
 import ProblemSummaryList, { type ProblemSummary } from '@/Components/Problems/ProblemSummaryList.vue';
 import { Button } from '@/Components/ui/button';
 import { useActionWindow } from '@/Composables/useActionWindow';
@@ -292,7 +270,6 @@ const props = defineProps<{
     globalCadences: CadenceRow[];
     cadenceDefaults: { default_start_month_day: string; default_end_month_day: string };
     secretaryRosters: SecretaryRoster[];
-    suggestedSecretaries: SecretaryUser[];
     studyPrograms: (App.Entities.StudyProgram & { tenant_id?: number | null })[];
   } | null;
   subscription?: {

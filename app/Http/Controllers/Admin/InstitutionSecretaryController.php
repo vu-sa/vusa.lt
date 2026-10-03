@@ -61,6 +61,7 @@ class InstitutionSecretaryController extends AdminController
                     'end_date' => $cadence->end_date->toDateString(),
                     'is_global' => $cadence->institution_id === null,
                     'is_current' => $cadence->contains($today),
+                    'is_past' => $cadence->end_date->lt($today),
                     'secretaries' => $secretaryList,
                 ];
             })

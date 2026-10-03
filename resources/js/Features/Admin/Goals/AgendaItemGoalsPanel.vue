@@ -1,9 +1,10 @@
 <template>
   <section aria-labelledby="agenda-item-goals-title" class="space-y-3" data-testid="agenda-item-goals">
-    <div class="flex items-center justify-between gap-3">
-      <h3 id="agenda-item-goals-title" class="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+    <div class="flex items-center justify-between gap-3 border-b border-border pb-3">
+      <h3 id="agenda-item-goals-title" class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-foreground">
+        <Target class="size-4 shrink-0 text-brand" aria-hidden="true" />
         {{ $t('goals.agenda_item.title') }}
-        <Badge variant="outline" class="ml-2 align-middle text-[11px] font-normal normal-case tracking-normal">
+        <Badge variant="outline" class="text-xs font-normal normal-case tracking-normal">
           {{ $t('goals.experimental') }}
         </Badge>
       </h3>
@@ -56,7 +57,7 @@
 <script setup lang="ts">
 import { router, useForm } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Link2 } from 'lucide-vue-next';
+import { Link2, Target } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import LinkedGoalList from './LinkedGoalList.vue';

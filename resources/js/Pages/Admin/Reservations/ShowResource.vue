@@ -4,11 +4,11 @@
       v-model:section="currentSection"
       :title="resource.name || $t('Be pavadinimo')"
       :entity-type="ModelEnum.RESOURCE"
-      :status
       :facts
       :sections
       :primary-action
       :overflow-actions
+      actions-beside-title
       @action="handleAction"
     >
       <!-- Without a photo there is no anchor: the eyebrow already names the type. -->
@@ -19,12 +19,6 @@
           class="size-16 border border-border object-cover sm:size-20"
           data-testid="resource-identity-image"
         >
-      </template>
-
-      <template #subtitle>
-        <span v-if="resource.tenant" class="border border-border bg-secondary px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
-          {{ resource.tenant.shortname }}
-        </span>
       </template>
 
       <template #fact-managers>
@@ -59,8 +53,8 @@
       </template>
 
       <template #availability>
-        <div class="max-w-3xl space-y-8">
-          <section v-if="period && resource.is_reservable" class="border-b border-border pb-6" data-testid="resource-period-availability">
+        <div class="space-y-10">
+          <section v-if="period && resource.is_reservable" data-testid="resource-period-availability">
             <p class="text-xs font-bold uppercase tracking-wide text-muted-foreground">
               {{ $t('reservations.resource.check_period') }}
             </p>
@@ -72,25 +66,33 @@
             </p>
           </section>
 
-          <section v-if="currentLoans.length > 0" data-testid="resource-current-loans">
-            <h3 class="flex items-center gap-2 border-b border-border pb-3 text-base font-semibold text-foreground">
-              {{ $t('reservations.resource.current_loans') }}
-              <span class="border border-border bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground">{{ currentLoans.length }}</span>
-            </h3>
-            <ul class="divide-y divide-border border-b border-border">
-              <ResourceBookingRow v-for="booking in currentLoans" :key="booking.id" :booking />
-            </ul>
-          </section>
+          <div v-if="currentLoans.length > 0 || upcoming.length > 0" class="grid gap-10 xl:grid-cols-2 xl:gap-16">
+            <OverviewSection
+              v-if="currentLoans.length > 0"
+              variant="home"
+              :title="$t('reservations.resource.current_loans')"
+              :icon="PackageCheck"
+              :count="currentLoans.length"
+              data-testid="resource-current-loans"
+            >
+              <ul class="divide-y divide-border">
+                <ResourceBookingRow v-for="booking in currentLoans" :key="booking.id" :booking />
+              </ul>
+            </OverviewSection>
 
-          <section v-if="upcoming.length > 0" data-testid="resource-upcoming">
-            <h3 class="flex items-center gap-2 border-b border-border pb-3 text-base font-semibold text-foreground">
-              {{ $t('reservations.resource.upcoming') }}
-              <span class="border border-border bg-secondary px-2 py-0.5 text-xs font-semibold text-muted-foreground">{{ upcoming.length }}</span>
-            </h3>
-            <ul class="divide-y divide-border border-b border-border">
-              <ResourceBookingRow v-for="booking in upcoming" :key="booking.id" :booking />
-            </ul>
-          </section>
+            <OverviewSection
+              v-if="upcoming.length > 0"
+              variant="home"
+              :title="$t('reservations.resource.upcoming')"
+              :icon="CalendarClock"
+              :count="upcoming.length"
+              data-testid="resource-upcoming"
+            >
+              <ul class="divide-y divide-border">
+                <ResourceBookingRow v-for="booking in upcoming" :key="booking.id" :booking />
+              </ul>
+            </OverviewSection>
+          </div>
 
           <!-- Empty lists gather into one quiet status list, as on Pradžia ("Viskas tvarkoje"). -->
           <OverviewStatusList :entries="emptyBookingLists" />
@@ -98,18 +100,17 @@
       </template>
 
       <template #about>
-        <div class="max-w-3xl space-y-8">
-          <p v-if="resource.description" class="whitespace-pre-line text-sm text-foreground">
-            {{ resource.description }}
-          </p>
-          <p v-else class="text-sm text-muted-foreground">
-            {{ $t('reservations.resource.description_empty') }}
-          </p>
+        <div class="grid gap-10 xl:grid-cols-2 xl:gap-16">
+          <OverviewSection variant="home" :title="$t('Aprašymas')" :icon="FileText">
+            <p v-if="resource.description" class="whitespace-pre-line text-sm text-foreground">
+              {{ resource.description }}
+            </p>
+            <p v-else class="text-sm text-muted-foreground">
+              {{ $t('reservations.resource.description_empty') }}
+            </p>
+          </OverviewSection>
 
-          <section v-if="resource.images.length > 0">
-            <h3 class="mb-3 text-base font-semibold text-foreground">
-              {{ $t('reservations.resource.photos') }}
-            </h3>
+          <OverviewSection v-if="resource.images.length > 0" variant="home" :title="$t('reservations.resource.photos')" :icon="ImageIcon">
             <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
               <a
                 v-for="image in resource.images"
@@ -123,7 +124,7 @@
                 <img :src="image" :alt="resource.name ?? ''" loading="lazy" class="aspect-square w-full object-cover">
               </a>
             </div>
-          </section>
+          </OverviewSection>
         </div>
       </template>
 
@@ -163,12 +164,12 @@
 import { Deferred, router } from '@inertiajs/vue3';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Ban, CalendarClock, CalendarPlus, Check, Clock, Edit3, Link2, PackageCheck, PackageX, Plus, Trash2 } from 'lucide-vue-next';
+import { Ban, CalendarClock, CalendarPlus, Check, Clock, Edit3, FileText, Image as ImageIcon, Link2, PackageCheck, PackageX, Plus, Trash2 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { capitalize, computed, ref, watch } from 'vue';
 
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
-import { ConfirmDialog, OverviewStatusList } from '@/Components/Patterns';
+import { ConfirmDialog, OverviewSection, OverviewStatusList } from '@/Components/Patterns';
 import ReservationCartBar from '@/Components/Reservations/ReservationCartBar.vue';
 import ReservationCartSheet from '@/Components/Reservations/ReservationCartSheet.vue';
 import { formatReservationPeriod } from '@/Components/Reservations/reservationPeriod';
@@ -265,12 +266,15 @@ const status = computed<StatusPresentation | undefined>(() => {
 
 const facts = computed<RecordFact[]>(() => {
   const list: RecordFact[] = [
-    {
-      key: 'available',
-      label: $t('reservations.resource.available_now'),
-      value: `${props.availableNow} / ${props.resource.capacity}`,
-    },
+    // A status (not reservable, all out) rides on the availability it explains.
+    status.value
+      ? { key: 'available', label: $t('reservations.resource.available_now'), status: status.value, detail: `${props.availableNow} / ${props.resource.capacity}` }
+      : { key: 'available', label: $t('reservations.resource.available_now'), value: `${props.availableNow} / ${props.resource.capacity}` },
   ];
+
+  if (props.resource.tenant) {
+    list.push({ key: 'tenant', label: $t('Padalinys'), value: props.resource.tenant.shortname });
+  }
 
   if (props.resource.category) {
     list.push({ key: 'category', label: $t('reservations.resource.category'), value: props.resource.category });
