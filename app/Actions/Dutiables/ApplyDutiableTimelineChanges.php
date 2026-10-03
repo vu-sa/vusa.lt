@@ -6,13 +6,7 @@ use App\Models\Pivots\Dutiable;
 use App\Support\Dutiables\DutiableTimelineChange;
 use App\Support\Dutiables\DutiableTimelinePlan;
 
-/**
- * Writes an already-planned set of moves.
- *
- * Row by row, never a mass update(): each save has to fire DutiableChanged so the
- * ex-officio sync and the permission-cache invalidation both run. DutyController's
- * endDateDutiables() loops for the same reason.
- */
+/** Writes through each model so derived seats and permission caches follow its dates. */
 class ApplyDutiableTimelineChanges
 {
     /**

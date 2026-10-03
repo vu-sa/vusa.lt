@@ -133,6 +133,7 @@ tests/Feature/
 │   └── Resources/  # Document, Files, SharePoint controllers
 ├── Api/Admin/      # {Controller}Test.php for each admin API controller
 ├── Approvals/      # ApprovalService and ApprovalController (one describe per action)
+├── Duties/         # Duty update action and shared assignment service
 ├── Tasks/          # Mirrors app/Tasks/ structure
 │   ├── Handlers/   # {HandlerName}Test.php for each task handler
 │   └── Subscribers/# {SubscriberName}Test.php for each subscriber

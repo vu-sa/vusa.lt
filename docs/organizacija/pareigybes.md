@@ -3,8 +3,10 @@ doc_status: reviewed
 title: Pareigybės
 area: duties
 models: [Duty, Role, Tenant, Type, Institution, DutyResponsibility]
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-03
 tests:
+  - tests/Feature/Duties/UpdateDutyTest.php
+  - tests/Feature/Duties/DutyAssignmentServiceTest.php
   - tests/Feature/Admin/Management/DutyControllerTest.php
   - tests/Feature/Admin/DutyMergeTest.php
   - tests/Feature/Admin/People/DutyForceDeleteTest.php

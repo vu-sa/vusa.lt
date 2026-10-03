@@ -39,6 +39,7 @@ class UpdateDutyRequest extends FormRequest
             'description' => 'nullable',
             'email' => 'nullable|email',
             'current_users' => 'nullable|array',
+            'roles' => 'nullable|array',
             'institution_id' => 'required',
             'places_to_occupy' => 'required|numeric',
             'contacts_grouping' => 'required|in:none,study_program,tenant',
