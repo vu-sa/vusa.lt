@@ -22,7 +22,7 @@ studentams universiteto organuose.
 Platformos struktūra sudaryta iš keturių grandžių:
 
 1. **Padalinys** – teritorinis ar administracinis VU SA vienetas: fakultetinis padalinys
-   (pvz., VU SA MIF, VU SA FilF), Centrinis biuras (VU SA CB) arba programinė veikla (pvz., PKP).
+   (pvz., VU SA MIF, VU SA FilF), Centrinis biuras (VU SA CB) arba iniciatyva (pvz., PKP).
 2. **Institucija** – padaliniui priklausantis organas, komitetas, taryba, darbo grupė
    arba pati VU SA struktūrinė dalis.
 3. **Pareigybė** – konkreti vieta institucijoje (pvz., padalinio pirmininkas, komunikacijos

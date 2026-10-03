@@ -7,7 +7,7 @@ coverage: ignore
 
 # Darbų gidas
 
-Pasirink darbą, kurį nori atlikti. Nuorodos veda į darbo sričių žinyną:
+Pasirink darbą, kurį nori atlikti. Nuorodos veda į darbo sričių gidą:
 ten rasi veiksmus, teises ir sistemos taisykles. Jei kolega mato daugiau veiksmų,
 patikrink [savo pareigas ir roles](/mano/paskyra-ir-prieiga#prieiga) bei [bazinę prieigą](/pagrindai/teises).
 
@@ -41,7 +41,7 @@ Atstovavimo kliūtis registruok [problemose](/visak/problemos).
 ## Tvarkyti svetainę ar sistemą {#svetaine-ir-sistema}
 
 [Svetainės](/svetaine/) ir [Sistemos](/sistema/) apžvalgos padeda rasti skiltis,
-o atskiri žinyno puslapiai aprašo veiksmus ir prieigą. Prieš remdamasis instrukcija patikrink
+o atskiri gido puslapiai aprašo veiksmus ir prieigą. Prieš remdamasis instrukcija patikrink
 turinio peržiūros datą. Dokumentams skaityk [archyvo gidą](/visak/dokumentai),
 sinchronizavimo ar siuntimo problemoms – [SharePoint](/sistema/sharepoint) ir [Laiškų eilę](/sistema/laisku-eile).
 
