@@ -148,7 +148,7 @@ class Resource extends Model implements GuardsForceDelete, HasMedia
     {
         return $this->belongsToMany(Reservation::class)
             ->using(ReservationResource::class)
-            ->withPivot(['state', 'start_time', 'end_time', 'quantity']);
+            ->withPivot(['id', 'state', 'start_time', 'end_time', 'quantity']);
     }
 
     /**

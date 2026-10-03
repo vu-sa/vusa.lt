@@ -252,7 +252,7 @@ import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
 import { injectActiveHotspot } from '../Editor/Fullscreen/useActiveHotspot';
 
 import type { DecorationConfig, Hero } from '@/Types/contentParts';
-import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
+import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
 import { Button } from '@/Components/ui/button';

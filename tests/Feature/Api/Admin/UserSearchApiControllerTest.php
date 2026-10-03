@@ -9,7 +9,7 @@ pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
-    $this->coordinator = makeTenantUserWithRole('Student Representative Coordinator', $this->tenant);
+    $this->coordinator = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
 });
 
 describe('search', function (): void {

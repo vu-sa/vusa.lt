@@ -9,7 +9,7 @@ rendered HTML or Inertia props.
 ## Running
 
 ```bash
-vendor/bin/sail pest tests/Browser
+vendor/bin/sail pest tests/Browser --parallel
 ```
 
 Browser configuration (`pest()->browser()->timeout()`, `inDarkMode()`, …) belongs in
@@ -33,16 +33,19 @@ If you ran that (or the full `dev/sailsetup.sh` bootstrap) already, you have eve
 ./dev/storybook-setup.sh
 ```
 
-Additionally, tests that navigate between **public, tenant-subdomain-routed pages** (most of them —
-see "The subdomain/SmartLink gotcha" below) need `www.vusa.test` to resolve to `127.0.0.1` from
-**inside** the Sail container, not just your host machine's `/etc/hosts`:
+Tests that visit **public, tenant-subdomain-routed pages** need `www.vusa.test` to resolve to
+`127.0.0.1` from **inside** the Sail container. `docker-compose.yml` maps it via the
+`laravel.test` service's `extra_hosts`, so it survives container recreation. If you pulled that
+change, run `vendor/bin/sail up -d` once to recreate the container. A test visiting another
+subdomain needs its own `extra_hosts` entry. (CI adds the same entry as a one-off `/etc/hosts`
+step; see `.github/workflows/ci.yml`'s `browser-tests` job.)
 
-```bash
-vendor/bin/sail root-shell -c "echo '127.0.0.1 www.vusa.test' >> /etc/hosts"
-```
+## What belongs here
 
-This doesn't persist across container recreation — re-run it if `sail down` / `sail up` wipes it.
-(CI adds the same entry as a one-off step; see `.github/workflows/ci.yml`'s `browser-tests` job.)
+Read `.ai/rules/browser.md` before adding a test. In short: only behaviour a real browser can
+prove (SPA navigation, computed layout and overflow, pointer/keyboard interaction, a real save
+round-trip, "mounts with no JS errors"). Structure and copy assertions go in Vitest. Select by
+`data-testid` / `data-slot` / scoped role, not by copy that may render twice (desktop and phone bars).
 
 ## The subdomain/SmartLink gotcha
 
@@ -80,9 +83,7 @@ across `RefreshDatabase` test boundaries.
 
 `loginAsAdmin()` (in `tests/Pest.php`) therefore calls `disableServiceWorker()`, which stubs
 `navigator.serviceWorker.register` in the live document *and* as a context init script for every
-future document, and unregisters anything the page already managed to register. MailQueueTest
-asserts the registrations count stays at zero — copy that assertion if you add another
-full-page-navigation admin test.
+future document, and unregisters anything the page already managed to register.
 
 ## The client-render gotcha (and why waitForFunction/waitForURL won't help)
 
@@ -132,3 +133,21 @@ new URL before the destination component resolves, so a URL-based wait proves no
 `tests/Browser/Screenshots/` is gitignored. Always pass an explicit `filename:` —
 `$page->screenshot(filename: 'my-check')` — otherwise repeated runs overwrite the same
 `it_verify.png`. Delete throwaway screenshots once you've looked at them.
+
+### Docs screenshots
+
+A test can also save a reference frame for the VitePress docs with
+`docsScreenshot($page, 'name')` (or `selector:` for one element). It is a no-op unless
+`DOCS_SCREENSHOTS` is set, strips dark mode, and waits out deferred skeletons. Frames land in
+`Screenshots/docs/{locale}/{name}.png` and are never committed: CI uploads them as the
+`docs-screenshots` artifact and the deploy fetches the branch's newest one before `docs:build`.
+
+- Embed with `<DocScreenshot name="name" alt="…" />`; a missing frame hides, and `docs:build`
+  lists it. Renaming a frame breaks the docs page silently otherwise.
+- Only take one where the docs use it — the default light theme, desktop (or `-phone` at 390).
+- Seed `DocsSeeder` for realistic Lithuanian content instead of faker names.
+- A page that searches Typesense from the browser (admin collections such as `/mano/resources`)
+  needs `usesTypesenseInBrowser()` and its records indexed (`Model::query()->get()->searchable()`):
+  it points the in-container browser at `typesense:8108` and mints a throwaway search key for
+  the test's prefixed collections, since the dev key cannot read them.
+- Preview locally with `vendor/bin/sail npm run docs:screenshots`, then `docs:dev`.

@@ -1,7 +1,7 @@
 <template>
   <Link
     :href="route('users.show', member.id)"
-    :class="['flex items-center gap-2.5 rounded-lg border border-border bg-card px-2.5 py-2 text-left', interactiveCardClass]"
+    :class="['flex items-center gap-2.5 border border-border bg-card px-2.5 py-2 text-left', interactiveCardClass]"
   >
     <UserPopover :user="member" :size="32" :clickable="false" class="shrink-0" />
 

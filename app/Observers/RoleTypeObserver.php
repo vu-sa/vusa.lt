@@ -34,7 +34,7 @@ class RoleTypeObserver
 
         $role->usersThroughDuties->each(function ($user): void {
             PermissionMapBuilder::forgetCachedMaps($user->id);
-            Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($user->id));
+            Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($user->id));
         });
     }
 
@@ -64,7 +64,7 @@ class RoleTypeObserver
 
         $role->usersThroughDuties->each(function ($user): void {
             PermissionMapBuilder::forgetCachedMaps($user->id);
-            Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($user->id));
+            Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($user->id));
         });
     }
 }

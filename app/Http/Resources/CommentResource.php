@@ -26,6 +26,7 @@ class CommentResource extends JsonResource
         $userId = $request->user()?->id;
         $isAuthor = $userId !== null && $this->user_id === $userId;
         $canModerate = (bool) $request->attributes->get('comment_can_moderate', false);
+        $isErased = $this->isErased();
 
         return [
             'id' => $this->id,
@@ -33,9 +34,11 @@ class CommentResource extends JsonResource
             'thread_root_id' => $this->thread_root_id,
             'kind' => $this->kind->value,
             'body' => $this->body,
+            // A placeholder: nothing of the comment or its author remains to show.
+            'is_erased' => $isErased,
             'metadata' => $this->metadata,
             'user' => [
-                'id' => (string) $this->user_id,
+                'id' => $this->user_id,
                 'name' => $this->user?->name,
                 'profile_photo_path' => $this->user?->profile_photo_path,
             ],
@@ -55,11 +58,11 @@ class CommentResource extends JsonResource
                 fn () => self::collection($this->replies),
             ),
             'can' => [
-                'update' => $isAuthor,
-                'delete' => $isAuthor || $canModerate,
+                'update' => ! $isErased && $isAuthor,
+                'delete' => ! $isErased && ($isAuthor || $canModerate),
                 // Reaching this endpoint already required `view` on the parent,
                 // and resolve follows the view audience.
-                'resolve' => $userId !== null,
+                'resolve' => ! $isErased && $userId !== null,
             ],
         ];
     }

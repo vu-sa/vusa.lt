@@ -2,7 +2,7 @@
 
 use App\Enums\InstitutionScope;
 use App\Models\Institution;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use App\Services\InstitutionScopeResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -14,9 +14,9 @@ function scopeResolver(): InstitutionScopeResolver
 }
 
 test('a type takes the scope declared on its nearest ancestor', function (): void {
-    $root = Type::factory()->forInstitutions(InstitutionScope::University)->create();
-    $child = Type::factory()->forInstitutions()->create(['parent_id' => $root->id]);
-    $grandchild = Type::factory()->forInstitutions()->create(['parent_id' => $child->id]);
+    $root = InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create();
+    $child = InstitutionType::factory()->withGovernanceScope()->create(['parent_id' => $root->id]);
+    $grandchild = InstitutionType::factory()->withGovernanceScope()->create(['parent_id' => $child->id]);
 
     expect($child->governanceScope())->toBe(InstitutionScope::University)
         ->and($grandchild->governanceScope())->toBe(InstitutionScope::University)
@@ -24,29 +24,39 @@ test('a type takes the scope declared on its nearest ancestor', function (): voi
 });
 
 test('a child type declaring its own scope beats its parent', function (): void {
-    $root = Type::factory()->forInstitutions(InstitutionScope::University)->create();
-    $child = Type::factory()->forInstitutions(InstitutionScope::Vusa)->create(['parent_id' => $root->id]);
-    $grandchild = Type::factory()->forInstitutions()->create(['parent_id' => $child->id]);
+    $root = InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create();
+    $child = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create(['parent_id' => $root->id]);
+    $grandchild = InstitutionType::factory()->withGovernanceScope()->create(['parent_id' => $child->id]);
 
     expect($child->governanceScope())->toBe(InstitutionScope::Vusa)
         ->and($grandchild->governanceScope())->toBe(InstitutionScope::Vusa);
 });
 
 test('a type tree declaring nothing resolves to no scope', function (): void {
-    $root = Type::factory()->forInstitutions()->create();
-    $child = Type::factory()->forInstitutions()->create(['parent_id' => $root->id]);
+    $root = InstitutionType::factory()->withGovernanceScope()->create();
+    $child = InstitutionType::factory()->withGovernanceScope()->create(['parent_id' => $root->id]);
 
     expect(scopeResolver()->forType($child->id))->toBeNull();
 });
 
 test('an institution takes the scope of its first typed ancestor', function (): void {
-    $root = Type::factory()->forInstitutions(InstitutionScope::Vusa)->create();
-    $child = Type::factory()->forInstitutions()->create(['parent_id' => $root->id]);
+    $root = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create();
+    $child = InstitutionType::factory()->withGovernanceScope()->create(['parent_id' => $root->id]);
 
     $institution = Institution::factory()->create();
     $institution->types()->attach($child->id);
 
     expect($institution->fresh()->governance_scope)->toBe(InstitutionScope::Vusa);
+});
+
+test('an institution with both a VU SA type and an external one counts as external', function (): void {
+    $institution = Institution::factory()->create();
+    $institution->types()->attach([
+        InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create()->id,
+        InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create()->id,
+    ]);
+
+    expect($institution->fresh()->governance_scope)->toBe(InstitutionScope::University);
 });
 
 test('an institution with no types falls back to the university scope', function (): void {
@@ -57,7 +67,7 @@ test('an institution with no types falls back to the university scope', function
 });
 
 test('saving a type invalidates the resolved scope map', function (): void {
-    $type = Type::factory()->forInstitutions(InstitutionScope::University)->create();
+    $type = InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create();
 
     expect($type->governanceScope())->toBe(InstitutionScope::University);
 

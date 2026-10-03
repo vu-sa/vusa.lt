@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Pivots\AgendaItem;
@@ -10,6 +11,7 @@ use App\Services\ModelAuthorizer;
 use App\Services\Typesense\TypesenseCollectionConfig;
 use App\Services\Typesense\TypesenseManager;
 use App\Services\Typesense\TypesenseScopedKeyService;
+use App\Settings\MeetingSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery\MockInterface;
 use Typesense\Client;
@@ -145,7 +147,7 @@ describe('TypesenseScopedKeyService', function (): void {
     test('user with tenant permission gets scoped keys with tenant filter', function (): void {
         $this->markTestSkipped('Requires running Typesense server');
         $tenant = Tenant::factory()->create(['type' => 'padalinys']);
-        $user = makeTenantUserWithRole('Communication Coordinator', $tenant);
+        $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
 
         // Give the role the necessary permission
         $duty = $user->duties()->first();
@@ -192,9 +194,9 @@ describe('TypesenseScopedKeyService', function (): void {
         // Do not give any roles or permissions
 
         $mockKeys = Mockery::mock(Keys::class);
-        // Header key + documents key + resources key (documents and resources are accessible to all authenticated users)
+        // Header key + documents + resources + public meetings and agenda items
         $mockKeys->shouldReceive('generateScopedSearchKey')
-            ->times(3)
+            ->times(5)
             ->andReturn('scoped-key');
 
         $mockClient = Mockery::mock(Client::class);
@@ -213,8 +215,8 @@ describe('TypesenseScopedKeyService', function (): void {
         expect($result['collections']['documents']['has_access'])->toBeTrue()
             ->and($result['collections'])->toHaveKey('resources')
             ->and($result['collections']['resources']['has_access'])->toBeTrue();
-        // But should NOT have access to permission-protected collections
-        expect($result['collections'])->not->toHaveKey('meetings');
+        // Public meetings are open to everyone; other permission-protected collections are not
+        expect($result['collections'])->toHaveKey('meetings');
         expect($result['collections'])->not->toHaveKey('news');
     });
 
@@ -279,7 +281,7 @@ describe('TypesenseScopedKeyService', function (): void {
     test('skip_tenant_filter collections get keys without filter_by', function (): void {
         $this->markTestSkipped('Requires running Typesense server');
         $tenant = Tenant::factory()->create(['type' => 'padalinys']);
-        $user = makeTenantUserWithRole('Communication Coordinator', $tenant);
+        $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
 
         // User doesn't need any specific permission for documents since permission is null
         // Documents are accessible to all authenticated users
@@ -354,7 +356,7 @@ describe('TypesenseManager', function (): void {
     test('getAdminFrontendConfig includes accessible collections for permitted user', function (): void {
         $this->markTestSkipped('Requires running Typesense server');
         $tenant = Tenant::factory()->create(['type' => 'padalinys']);
-        $user = makeTenantUserWithRole('Communication Coordinator', $tenant);
+        $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
 
         $this->mock(TypesenseScopedKeyService::class, function (MockInterface $mock) use ($tenant): void {
             $mock->shouldReceive('generateScopedKeysForUser')
@@ -444,5 +446,96 @@ describe('Search API endpoints', function (): void {
 
         $response->assertOk()
             ->assertJsonStructure(['success', 'config']);
+    });
+});
+
+describe('public records in every scoped key', function (): void {
+    /** The params a scoped key carries: HMAC digest (44 chars), parent key prefix (4), then the JSON. */
+    function scopedKeyParams(string $scopedKey): array
+    {
+        return json_decode(substr(base64_decode($scopedKey), 48), true);
+    }
+
+    function scopedKeyFilter(string $scopedKey): ?string
+    {
+        return scopedKeyParams($scopedKey)['filter_by'] ?? null;
+    }
+
+    function keysFor(User $user): array
+    {
+        // Scoped keys are an HMAC computed locally, so a real client needs no running server.
+        $client = new Client([
+            'api_key' => 'test-admin-key',
+            'nodes' => config('scout.typesense.client-settings.nodes'),
+        ]);
+
+        return new TypesenseScopedKeyService($client, app(ModelAuthorizer::class), app(InstitutionAccessService::class))
+            ->generateScopedKeysForUser($user)['collections'];
+    }
+
+    beforeEach(function (): void {
+        $this->publicType = InstitutionType::factory()->create();
+        app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => [$this->publicType->id]])->save();
+    });
+
+    test('a member without permissions gets public meetings, agenda items and active institutions only', function (): void {
+        $collections = keysFor(makeUser(Tenant::query()->first()));
+        $publicTypes = "institution_type_ids:=[{$this->publicType->id}]";
+
+        expect(scopedKeyFilter($collections['meetings']['key']))->toBe($publicTypes)
+            ->and(scopedKeyFilter($collections['agenda_items']['key']))->toBe($publicTypes)
+            ->and(scopedKeyFilter($collections['institutions']['key']))->toBe('is_active:=true');
+    });
+
+    test('a rep holding meetings.read.own also gets their own institutions', function (): void {
+        $user = makeTenantUserWithRole('Studentų atstovas', Tenant::query()->first());
+        $institutionId = $user->duties()->first()->institution_id;
+
+        $filter = scopedKeyFilter(keysFor($user)['meetings']['key']);
+
+        expect($filter)->toStartWith("(institution_type_ids:=[{$this->publicType->id}] || ")
+            ->toContain("`{$institutionId}`");
+    });
+
+    test('meetings.read.padalinys adds the tenant clause', function (): void {
+        $tenant = Tenant::query()->first();
+        $user = makeUser($tenant);
+        $duty = $user->duties()->first();
+        $duty->pivot->end_date = null;
+        $duty->pivot->save();
+        $duty->givePermissionTo('meetings.read.padalinys');
+
+        expect(scopedKeyFilter(keysFor($user)['meetings']['key']))
+            ->toContain("institution_type_ids:=[{$this->publicType->id}]")
+            ->toContain("tenant_ids:=[{$tenant->id}]");
+    });
+
+    test('with no public meeting types a member still gets the collection, empty', function (): void {
+        app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => []])->save();
+
+        expect(scopedKeyFilter(keysFor(makeUser(Tenant::query()->first()))['meetings']['key']))->toBe('tenant_ids:=-1');
+    });
+
+    test('a settings change retires every cached key, with no reindex', function (): void {
+        $user = makeUser(Tenant::query()->first());
+        keysFor($user);
+
+        $otherType = InstitutionType::factory()->create();
+        app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => [$otherType->id]])->save();
+
+        expect(scopedKeyFilter(keysFor($user)['meetings']['key']))->toBe("institution_type_ids:=[{$otherType->id}]");
+    });
+
+    test('a key expires when one of the user\'s duties ends, not an hour later', function (): void {
+        $user = makeTenantUserWithRole('Studentų atstovas', Tenant::query()->first());
+        $duty = $user->duties()->first();
+        // The end date is the last day in office, so today's date ends access at midnight.
+        $duty->pivot->end_date = now()->toDateString();
+        $duty->pivot->save();
+        $this->travelTo(now()->endOfDay()->subMinutes(10));
+
+        $expiresAt = scopedKeyParams(keysFor($user)['meetings']['key'])['expires_at'];
+
+        expect($expiresAt)->toBeLessThanOrEqual(now()->addMinutes(11)->timestamp);
     });
 });

@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\ProcessNotificationDigests;
+use App\Enums\NotificationType;
 use App\Mail\NotificationDigest;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -15,15 +16,16 @@ use Inertia\Testing\AssertableInertia as Assert;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    $this->travelTo(now()->setTime(12, 0));
     $this->tenant = Tenant::query()->first();
     $this->user = User::factory()->create([
         'email' => 'user@example.com',
     ]);
 });
 
-describe('getAvailableDigestEmails', function (): void {
+describe('getAvailableNotificationEmails', function (): void {
     test('returns user email when user has no duties', function (): void {
-        $emails = $this->user->getAvailableDigestEmails();
+        $emails = $this->user->getAvailableNotificationEmails();
 
         expect($emails)->toHaveCount(1)
             ->and($emails[0])->toMatchArray(['email' => 'user@example.com', 'type' => 'user']);
@@ -42,7 +44,7 @@ describe('getAvailableDigestEmails', function (): void {
             'end_date' => null,
         ]);
 
-        $emails = $this->user->getAvailableDigestEmails();
+        $emails = $this->user->getAvailableNotificationEmails();
 
         expect($emails)->toHaveCount(2)
             ->and(collect($emails)->pluck('email')->toArray())->toContain('user@example.com')
@@ -69,7 +71,7 @@ describe('getAvailableDigestEmails', function (): void {
             'end_date' => null,
         ]);
 
-        $emails = $this->user->getAvailableDigestEmails();
+        $emails = $this->user->getAvailableNotificationEmails();
 
         expect($emails)->toHaveCount(3); // user email + 2 duty emails
         expect(collect($emails)->pluck('email')->toArray())->toContain('user@example.com');
@@ -89,14 +91,14 @@ describe('getAvailableDigestEmails', function (): void {
             'end_date' => now()->subMonth(),
         ]);
 
-        $emails = $this->user->getAvailableDigestEmails();
+        $emails = $this->user->getAvailableNotificationEmails();
 
         expect($emails)->toHaveCount(1)
             ->and($emails[0]['email'])->toBe('user@example.com');
     });
 });
 
-describe('getDigestEmails', function (): void {
+describe('notificationEmails', function (): void {
     test('returns duty email by default when user has @vusa.lt duty email', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $duty = Duty::factory()->for($institution)->create([
@@ -108,7 +110,7 @@ describe('getDigestEmails', function (): void {
             'end_date' => null,
         ]);
 
-        $emails = $this->user->getDigestEmails();
+        $emails = $this->user->notificationEmails();
 
         expect($emails)->toBe(['duty@vusa.lt']);
     });
@@ -133,7 +135,7 @@ describe('getDigestEmails', function (): void {
             'end_date' => null,
         ]);
 
-        $emails = $this->user->getDigestEmails();
+        $emails = $this->user->notificationEmails();
 
         // By default, returns only the first @vusa.lt duty email (matches old behavior)
         expect($emails)->toHaveCount(1);
@@ -161,9 +163,9 @@ describe('getDigestEmails', function (): void {
         ]);
 
         // User explicitly configures both duty emails
-        $this->user->setDigestEmails(['duty1@vusa.lt', 'duty2@vusa.lt']);
+        $this->user->update(['notification_preferences' => ['emails' => ['duty1@vusa.lt', 'duty2@vusa.lt']]]);
 
-        $emails = $this->user->getDigestEmails();
+        $emails = $this->user->notificationEmails();
 
         expect($emails)->toHaveCount(2)
             ->toContain('duty1@vusa.lt')
@@ -171,7 +173,7 @@ describe('getDigestEmails', function (): void {
     });
 
     test('returns user email by default when no duty email exists', function (): void {
-        $emails = $this->user->getDigestEmails();
+        $emails = $this->user->notificationEmails();
 
         expect($emails)->toBe(['user@example.com']);
     });
@@ -188,9 +190,9 @@ describe('getDigestEmails', function (): void {
         ]);
 
         // Set preference to use user email instead of duty email
-        $this->user->setDigestEmails(['user@example.com']);
+        $this->user->update(['notification_preferences' => ['emails' => ['user@example.com']]]);
 
-        $emails = $this->user->getDigestEmails();
+        $emails = $this->user->notificationEmails();
 
         expect($emails)->toBe(['user@example.com']);
     });
@@ -207,16 +209,16 @@ describe('getDigestEmails', function (): void {
         ]);
 
         // Set preference to use both emails
-        $this->user->setDigestEmails(['user@example.com', 'duty@vusa.lt']);
+        $this->user->update(['notification_preferences' => ['emails' => ['user@example.com', 'duty@vusa.lt']]]);
 
-        $emails = $this->user->getDigestEmails();
+        $emails = $this->user->notificationEmails();
 
         expect($emails)->toHaveCount(2)
             ->toContain('user@example.com')
             ->toContain('duty@vusa.lt');
     });
 
-    test('lazy cleanup removes invalid emails and falls back to user email', function (): void {
+    test('lazy cleanup removes invalid emails and falls back to the default address', function (): void {
         $institution = Institution::factory()->for($this->tenant)->create();
         $duty = Duty::factory()->for($institution)->create([
             'email' => 'duty@vusa.lt',
@@ -229,7 +231,7 @@ describe('getDigestEmails', function (): void {
         ]);
 
         // Set preference to use duty email
-        $this->user->setDigestEmails(['duty@vusa.lt']);
+        $this->user->update(['notification_preferences' => ['emails' => ['duty@vusa.lt']]]);
 
         // Now end the duty (simulating duty expiration)
         $this->user->duties()->updateExistingPivot($duty->id, [
@@ -239,8 +241,8 @@ describe('getDigestEmails', function (): void {
         // Refresh user to clear cache
         $this->user->refresh();
 
-        // Should fall back to user email since duty email is no longer available
-        $emails = $this->user->getDigestEmails();
+        // No current duty address is left, so the default is the personal address.
+        $emails = $this->user->notificationEmails();
 
         expect($emails)->toBe(['user@example.com']);
     });
@@ -257,7 +259,7 @@ describe('getDigestEmails', function (): void {
         ]);
 
         // Set preference to use both emails
-        $this->user->setDigestEmails(['user@example.com', 'duty@vusa.lt']);
+        $this->user->update(['notification_preferences' => ['emails' => ['user@example.com', 'duty@vusa.lt']]]);
 
         // End the duty
         $this->user->duties()->updateExistingPivot($duty->id, [
@@ -267,88 +269,80 @@ describe('getDigestEmails', function (): void {
         $this->user->refresh();
 
         // Should only return user email now
-        $emails = $this->user->getDigestEmails();
+        $emails = $this->user->notificationEmails();
 
         expect($emails)->toBe(['user@example.com']);
     });
 });
 
-describe('setDigestEmails', function (): void {
-    test('only stores valid emails', function (): void {
-        // Try to set an email that is not available
-        $this->user->setDigestEmails(['invalid@notavailable.com']);
-
-        $preferences = $this->user->notification_preferences;
-
-        expect($preferences['digest_emails'])->toBe([]);
-    });
-
-    test('stores valid emails', function (): void {
-        $this->user->setDigestEmails(['user@example.com']);
-
-        $preferences = $this->user->notification_preferences;
-
-        expect($preferences['digest_emails'])->toBe(['user@example.com']);
-    });
-});
-
 describe('updateNotificationPreferences endpoint', function (): void {
+    test('followed-institution push is on until the user turns it off', function (): void {
+        expect($this->user->wantsPushFor(NotificationType::FollowedInstitutionActivity))->toBeTrue();
+
+        asUser($this->user)
+            ->patch(route('profile.updateNotificationPreferences'), ['types' => ['followed_institution_activity' => ['email' => 'digest', 'push' => false]]])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        expect($this->user->refresh()->wantsPushFor(NotificationType::FollowedInstitutionActivity))->toBeFalse();
+    });
+
     test('user can update digest emails through API', function (): void {
         asUser($this->user)
             ->patch(route('profile.updateNotificationPreferences'), [
-                'digest_emails' => ['user@example.com'],
+                'emails' => ['user@example.com'],
             ])
             ->assertRedirect()
             ->assertSessionHas('success');
 
         $this->user->refresh();
-        expect($this->user->notification_preferences['digest_emails'])->toBe(['user@example.com']);
+        expect($this->user->notification_preferences['emails'])->toBe(['user@example.com']);
     });
 
     test('API rejects invalid emails', function (): void {
         asUser($this->user)
             ->patch(route('profile.updateNotificationPreferences'), [
-                'digest_emails' => ['not-an-email'],
+                'emails' => ['not-an-email'],
             ])
-            ->assertSessionHasErrors('digest_emails.0');
+            ->assertSessionHasErrors('emails.0');
     });
 
     test('API only stores available emails', function (): void {
         asUser($this->user)
             ->patch(route('profile.updateNotificationPreferences'), [
-                'digest_emails' => ['user@example.com', 'notavailable@other.com'],
+                'emails' => ['user@example.com', 'notavailable@other.com'],
             ])
             ->assertRedirect();
 
         $this->user->refresh();
         // Only the available email should be stored
-        expect($this->user->notification_preferences['digest_emails'])->toBe(['user@example.com']);
+        expect($this->user->notification_preferences['emails'])->toBe(['user@example.com']);
     });
 });
 
-describe('userSettings page', function (): void {
-    test('includes availableDigestEmails in props', function (): void {
+describe('notificationSettings page', function (): void {
+    test('includes availableEmails in props', function (): void {
         asUser($this->user)
-            ->get(route('profile'))
+            ->get(route('profile.notifications'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowUserSettings')
-                ->has('availableDigestEmails')
-                ->where('availableDigestEmails.0.email', 'user@example.com')
-                ->where('availableDigestEmails.0.type', 'user')
+                ->component('Admin/ShowNotificationSettings')
+                ->has('availableEmails')
+                ->where('availableEmails.0.email', 'user@example.com')
+                ->where('availableEmails.0.type', 'user')
             );
     });
 
-    test('includes digest_emails in notification preferences', function (): void {
-        $this->user->setDigestEmails(['user@example.com']);
+    test('includes chosen emails in notification preferences', function (): void {
+        $this->user->update(['notification_preferences' => ['emails' => ['user@example.com']]]);
 
         asUser($this->user)
-            ->get(route('profile'))
+            ->get(route('profile.notifications'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowUserSettings')
-                ->has('notificationPreferences.digest_emails')
-                ->where('notificationPreferences.digest_emails', ['user@example.com'])
+                ->component('Admin/ShowNotificationSettings')
+                ->has('notificationPreferences.emails')
+                ->where('notificationPreferences.emails', ['user@example.com'])
             );
     });
 });
@@ -368,8 +362,8 @@ describe('ProcessNotificationDigests command', function (): void {
         ]);
 
         // Configure to send to user email instead of default duty email
-        $this->user->setDigestEmails(['user@example.com']);
-        $this->user->setDigestFrequencyHours(1);
+        $this->user->update(['notification_preferences' => ['emails' => ['user@example.com']]]);
+        $this->user->update(['notification_preferences' => [...$this->user->notification_preferences, 'digest_frequency_hours' => 1]]);
 
         // Create a digest queue item and manually set created_at (not fillable)
         $item = NotificationDigestQueue::create([
@@ -405,7 +399,7 @@ describe('ProcessNotificationDigests command', function (): void {
             'end_date' => null,
         ]);
 
-        $this->user->setDigestFrequencyHours(1);
+        $this->user->update(['notification_preferences' => [...$this->user->notification_preferences, 'digest_frequency_hours' => 1]]);
 
         $item = NotificationDigestQueue::create([
             'user_id' => $this->user->id,
@@ -440,8 +434,8 @@ describe('ProcessNotificationDigests command', function (): void {
         ]);
 
         // Configure to send to both emails
-        $this->user->setDigestEmails(['user@example.com', 'duty@vusa.lt']);
-        $this->user->setDigestFrequencyHours(1);
+        $this->user->update(['notification_preferences' => ['emails' => ['user@example.com', 'duty@vusa.lt']]]);
+        $this->user->update(['notification_preferences' => [...$this->user->notification_preferences, 'digest_frequency_hours' => 1]]);
 
         $item = NotificationDigestQueue::create([
             'user_id' => $this->user->id,

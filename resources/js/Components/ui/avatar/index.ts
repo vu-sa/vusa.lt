@@ -18,7 +18,7 @@ export const avatarVariants = cva(
     variants: {
       size: avatarSizeClasses,
       interactive: {
-        true: 'cursor-pointer transition-shadow hover:ring-1 hover:ring-primary/30',
+        true: 'cursor-pointer transition-shadow hover:ring-1 hover:ring-brand/40',
         false: '',
       },
     },

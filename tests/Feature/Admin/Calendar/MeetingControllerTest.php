@@ -4,14 +4,15 @@ use App\Enums\InstitutionScope;
 use App\Models\Calendar;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Role;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Models\User;
+use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -26,13 +27,12 @@ beforeEach(function (): void {
     $this->user = makeUser($this->tenant);
 
     // Create an admin user with Communication Coordinator role
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     // Create an institution for testing
     $this->institution = Institution::factory()->for($this->tenant)->create();
 
-    // Create a meeting type using the Type model
-    $this->meetingType = Type::firstOrCreate(['title' => 'Test Meeting Type']);
+    $this->meetingType = InstitutionType::factory()->create();
 
     // Record initial DB counts
     $this->initialMeetingCount = Meeting::count();
@@ -53,17 +53,17 @@ describe('authorization tests', function (): void {
                 ->post(route('meetings.store'), [
                     'start_time' => $startTime,
                     'institution_id' => $this->institution->id,
-                    'type_id' => $this->meetingType->id,
                 ])
                 ->assertStatus(403);
 
             expect(Meeting::count())->toEqual($this->initialMeetingCount);
         });
 
-        test('cannot view meetings index without permission', function (): void {
+        test('browses the meetings index without permission — the search key limits it to public ones', function (): void {
             asUser($this->user)
                 ->get(route('meetings.index'))
-                ->assertStatus(403);
+                ->assertOk()
+                ->assertInertia(fn ($page) => $page->has('defaultTenantShortnames'));
         });
     });
 
@@ -86,7 +86,6 @@ describe('authorization tests', function (): void {
                 ->post(route('meetings.store'), [
                     'start_time' => $startTime,
                     'institution_id' => $this->institution->id,
-                    'type_id' => $this->meetingType->id,
                 ]);
 
             $response->assertStatus(302);
@@ -123,7 +122,6 @@ describe('authorization tests', function (): void {
                 ->post(route('meetings.store'), [
                     'start_time' => $startTime,
                     'institution_id' => $this->institution->id,
-                    'type_id' => $this->meetingType->id,
                 ]);
 
             $meeting = Meeting::latest('id')->first();
@@ -144,7 +142,6 @@ describe('refactored meeting creation', function (): void {
             ->post(route('meetings.store'), [
                 'start_time' => $startTime,
                 'institution_id' => $this->institution->id,
-                'type_id' => $this->meetingType->id,
             ]);
 
         $meeting = Meeting::latest('id')->first();
@@ -180,7 +177,6 @@ describe('refactored meeting creation', function (): void {
             ->post(route('meetings.store'), [
                 'start_time' => $startTime,
                 'institution_id' => $this->institution->id,
-                'type_id' => $this->meetingType->id,
             ]);
 
         $meeting = Meeting::latest('id')->first();
@@ -206,7 +202,6 @@ describe('refactored meeting creation', function (): void {
             ->post(route('meetings.store'), [
                 'start_time' => $startTime,
                 'institution_id' => $this->institution->id,
-                'type_id' => $this->meetingType->id,
             ]);
 
         $meeting = Meeting::latest('id')->first();
@@ -241,7 +236,6 @@ describe('refactored meeting creation', function (): void {
             ->post(route('meetings.store'), [
                 'start_time' => $startTime,
                 'institution_id' => $this->institution->id,
-                'type_id' => $this->meetingType->id,
             ]);
 
         $meeting = Meeting::latest('id')->first();
@@ -290,7 +284,6 @@ describe('end-to-end refactored meeting flow', function (): void {
             ->post(route('meetings.store'), [
                 'start_time' => $startTime,
                 'institution_id' => $this->institution->id,
-                'type_id' => $this->meetingType->id,
             ]);
 
         $meeting = Meeting::latest('id')->first();
@@ -374,6 +367,34 @@ describe('end-to-end refactored meeting flow', function (): void {
 });
 
 describe('meeting show payload', function (): void {
+    test('shows the public link after creating a meeting for another tenant', function (): void {
+        $otherTenant = Tenant::factory()->create(['alias' => 'other']);
+        $institution = Institution::factory()->for($otherTenant)->create();
+        $institution->types()->attach($this->meetingType);
+        app(MeetingSettings::class)->fill([
+            'public_meeting_institution_type_ids' => [$this->meetingType->id],
+        ])->save();
+        $admin = makeAdminUser($this->tenant);
+
+        $response = asUser($admin)->post(route('meetings.store'), [
+            'start_time' => Carbon::now()->addDay()->format('Y-m-d H:i'),
+            'institution_id' => $institution->id,
+        ]);
+
+        $meeting = Meeting::latest('id')->firstOrFail();
+        $response->assertRedirect(route('meetings.show', $meeting));
+
+        asUser($admin)->get(route('meetings.show', $meeting))
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Representation/ShowMeeting')
+                ->where('publicUrl', route('publicMeetings.show', [
+                    'subdomain' => 'other',
+                    'lang' => app()->getLocale(),
+                    'meeting' => $meeting,
+                ]))
+            );
+    });
+
     test('defers task and document panels', function (): void {
         $meeting = Meeting::factory()->create(['start_time' => now()->addDay()]);
         $meeting->institutions()->attach($this->institution);
@@ -383,6 +404,11 @@ describe('meeting show payload', function (): void {
 
         $response->assertInertia(fn ($page) => $page
             ->component('Admin/Representation/ShowMeeting')
+            ->where('completion.status', 'no_items')
+            ->where('completion.missingActions.0.type', 'agenda_missing')
+            ->where('abilities.update', true)
+            ->where('abilities.delete', true)
+            ->where('abilities.createAgendaItems', true)
             ->missing('meeting.tasks')
             ->missing('meeting.documents')
             ->missing('tasks')
@@ -393,6 +419,74 @@ describe('meeting show payload', function (): void {
                 ->has('documents')
             )
         );
+    });
+});
+
+describe('read-only public meeting record', function (): void {
+    beforeEach(function (): void {
+        $publicType = InstitutionType::factory()->create();
+        app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => [$publicType->id]])->save();
+
+        $this->publicInstitution = Institution::factory()->for($this->tenant)->create();
+        $this->publicInstitution->types()->attach($publicType);
+
+        $this->publicMeeting = Meeting::factory()->create(['start_time' => now()->subDay()]);
+        $this->publicMeeting->institutions()->attach($this->publicInstitution);
+        $this->agendaItem = AgendaItem::factory()->for($this->publicMeeting)->create();
+        $this->publicMeeting->tasks()->create(['name' => 'Internal task']);
+    });
+
+    test('a member without meeting access reads the agenda of a public meeting only', function (): void {
+        asUser($this->user)->get(route('meetings.show', $this->publicMeeting))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Representation/ShowMeeting')
+                ->where('readOnly', true)
+                ->has('meeting.agenda_items', 1)
+                ->where('files', [])
+                ->where('tasks', [])
+                ->where('documents', [])
+                ->where('secretaries', [])
+                ->where('recordNavigation', null)
+                ->where('abilities.update', false)
+                ->where('meeting.agenda_items.0.can.update', false)
+                ->missing('meeting.comments')
+                ->missing('meeting.fileable_files')
+            );
+    });
+
+    test('a member without meeting access cannot open a non-public meeting', function (): void {
+        $meeting = Meeting::factory()->create();
+        $meeting->institutions()->attach($this->institution);
+
+        asUser($this->user)->get(route('meetings.show', $meeting))->assertForbidden();
+    });
+
+    test('a member with meeting access gets the full record', function (): void {
+        asUser(makeAdminUser($this->tenant))->get(route('meetings.show', $this->publicMeeting))
+            ->assertInertia(fn ($page) => $page->where('readOnly', false));
+    });
+
+    test('a public agenda item opens read-only, without its notes', function (): void {
+        $this->agendaItem->note()->create(['notes_html' => '<p>Private</p>']);
+
+        asUser($this->user)->get(route('agendaItems.show', $this->agendaItem))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Representation/ShowAgendaItem')
+                ->where('readOnly', true)
+                ->where('abilities.update', false)
+                ->missing('agendaItem.note')
+            );
+    });
+
+    test('a private agenda item stays forbidden', function (): void {
+        $meeting = Meeting::factory()->create();
+        $meeting->institutions()->attach($this->institution);
+        $item = AgendaItem::factory()->for($meeting)->create();
+
+        asUser($this->user)->get(route('agendaItems.show', $item))->assertForbidden();
+        asUser($this->user)->get(route('agendaItems.edit', $item))->assertForbidden();
     });
 });
 
@@ -463,6 +557,22 @@ describe('joint meeting institution management', function (): void {
             ->assertSessionHas('error');
 
         expect($this->meeting->fresh()->institutions()->count())->toBe(1);
+    });
+});
+
+describe('meeting participants', function (): void {
+    test('a former member keeps the meetings of their term, not the ones after it', function (): void {
+        $member = makeUser($this->tenant);
+        $duty = $member->duties()->first();
+        $duty->pivot->start_date = now()->subYear();
+        $duty->pivot->end_date = now()->subMonth();
+        $duty->pivot->save();
+
+        $during = Meeting::factory()->hasAttached($duty->institution)->create(['start_time' => now()->subMonths(6)]);
+        $after = Meeting::factory()->hasAttached($duty->institution)->create(['start_time' => now()->subWeek()]);
+
+        asUser($member)->get(route('meetings.show', $during))->assertOk();
+        asUser($member)->get(route('meetings.show', $after))->assertForbidden();
     });
 });
 
@@ -631,7 +741,7 @@ describe('cross-tenant parent scoping', function (): void {
      */
     test('cannot announce a meeting of a body VU SA only delegates into', function (): void {
         $external = Institution::factory()->for($this->tenant)->create();
-        $external->types()->attach(Type::factory()->forInstitutions(InstitutionScope::University)->create());
+        $external->types()->attach(InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create());
 
         asUser($this->admin)->post(route('meetings.store'), [
             'start_time' => Carbon::now()->addDay()->format('Y-m-d H:i'),
@@ -667,7 +777,7 @@ describe('cross-tenant parent scoping', function (): void {
 
     test('announces a VU SA body\'s meeting as a draft event', function (): void {
         $internal = Institution::factory()->for($this->tenant)->create();
-        $internal->types()->attach(Type::factory()->forInstitutions(InstitutionScope::Vusa)->create());
+        $internal->types()->attach(InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create());
 
         asUser($this->admin)->post(route('meetings.store'), [
             'start_time' => Carbon::now()->addDay()->format('Y-m-d H:i'),
@@ -750,5 +860,173 @@ describe('cross-tenant parent scoping', function (): void {
         ])->assertStatus(403);
 
         expect($foreignMeeting->agendaItems()->count())->toEqual(0);
+    });
+});
+
+describe('Posėdžiai collection', function (): void {
+    test('serves a shell without rows, since the list is read from the search index', function (): void {
+        Meeting::factory()->hasAttached($this->institution)->create();
+
+        asUser($this->admin)
+            ->get(route('meetings.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Representation/IndexMeeting')
+                ->missing('data')
+                ->has('deletedCount')
+                ->has('recentlyChanged')
+            );
+    });
+
+    test('a student representative holding only meetings.read.own can open it', function (): void {
+        $rep = makeTenantUserWithRole('Studentų atstovas', $this->tenant);
+
+        asUser($rep)
+            ->get(route('meetings.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Admin/Representation/IndexMeeting'));
+    });
+
+    test('the trash is the same collection, fed from the database', function (): void {
+        $trashed = Meeting::factory()->hasAttached($this->institution)->create();
+        $trashed->delete();
+
+        asUser($this->admin)
+            ->get(route('meetings.index', ['showDeleted' => 'true']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Representation/IndexMeeting')
+                ->where('recentlyChanged', [])
+            );
+
+        asUser($this->admin)
+            ->getJson(route('api.v1.admin.trash.index', ['collection' => 'meetings']))
+            ->assertOk()
+            ->assertJsonPath('data.items.0.id', (string) $trashed->id);
+    });
+
+    test('counts the trash so the collection can offer it', function (): void {
+        Meeting::factory()->hasAttached($this->institution)->create()->delete();
+
+        asUser($this->admin)
+            ->get(route('meetings.index'))
+            ->assertInertia(fn ($page) => $page->where('deletedCount', 1));
+    });
+
+    test('pins meetings the user changed in the last minutes until the index catches up', function (): void {
+        $mine = Meeting::factory()->hasAttached($this->institution)->create(['title' => 'Ką tik pakeistas']);
+        $notMine = Meeting::factory()->hasAttached($this->institution)->create(['title' => 'Kažkieno kito']);
+        $stale = Meeting::factory()->hasAttached($this->institution)->create(['title' => 'Senas pakeitimas']);
+
+        activity()->performedOn($stale)->causedBy($this->admin)->log('updated');
+        $this->travel(10)->minutes();
+        activity()->performedOn($mine)->causedBy($this->admin)->log('updated');
+        activity()->performedOn($notMine)->causedBy($this->user)->log('updated');
+
+        asUser($this->admin)
+            ->get(route('meetings.index'))
+            ->assertInertia(fn ($page) => $page
+                ->has('recentlyChanged', 1)
+                ->where('recentlyChanged.0.title', 'Ką tik pakeistas')
+                ->where('recentlyChanged.0.id', $mine->id)
+                ->has('recentlyChanged.0.completion_status')
+            );
+    });
+});
+
+describe('institution meeting navigation', function (): void {
+    test('steps through the primary institution\'s meetings in date order', function (): void {
+        [$earlier, $middle, $later] = collect(['2026-01-10', '2026-02-10', '2026-03-10'])
+            ->map(fn (string $date) => Meeting::factory()->hasAttached($this->institution)->create(['start_time' => $date.' 10:00']))
+            ->all();
+
+        asUser($this->admin)->get(route('meetings.show', $middle))
+            ->assertInertia(fn ($page) => $page
+                ->where('recordNavigation.position', 2)
+                ->where('recordNavigation.total', 3)
+                ->where('recordNavigation.previousHref', route('meetings.show', $earlier))
+                ->where('recordNavigation.nextHref', route('meetings.show', $later))
+                ->where('recordNavigation.previousLabel', '01-10')
+                ->where('recordNavigation.nextLabel', '03-10')
+                ->has('recordNavigation.meetings', 3)
+                ->where('recordNavigation.meetings.0.id', $earlier->id)
+                ->where('recordNavigation.meetings.2.href', route('meetings.show', $later))
+            );
+    });
+
+    test('offers no navigation for an institution\'s only meeting', function (): void {
+        $only = Meeting::factory()->hasAttached($this->institution)->create();
+
+        asUser($this->admin)->get(route('meetings.show', $only))
+            ->assertInertia(fn ($page) => $page->where('recordNavigation', null));
+    });
+});
+
+describe('editing a meeting', function (): void {
+    beforeEach(function (): void {
+        $this->meeting = Meeting::factory()->hasAttached($this->institution)->create(['start_time' => now()->subDays(3)->setTime(14, 0)]);
+    });
+
+    test('the old edit URL opens the record page, keeping the tab and action', function (): void {
+        asUser($this->admin)
+            ->get(route('meetings.edit', ['meeting' => $this->meeting, 'tab' => 'files', 'action' => 'add']))
+            ->assertRedirect(route('meetings.show', ['meeting' => $this->meeting, 'tab' => 'files', 'action' => 'add']));
+
+        asUser($this->user)->get(route('meetings.edit', $this->meeting))->assertForbidden();
+    });
+
+    test('changing the date or type regenerates the title, without a time for an email decision', function (): void {
+        $startTime = Carbon::parse('2026-03-05 16:30');
+
+        asUser($this->admin)
+            ->patch(route('meetings.update', $this->meeting), ['start_time' => $startTime->toDateTimeString(), 'type' => 'in-person'])
+            ->assertSessionHasNoErrors();
+
+        expect($this->meeting->fresh()->title)->toBe('2026 kovo 05 d. 16.30 val. posėdis');
+
+        asUser($this->admin)
+            ->patch(route('meetings.update', $this->meeting), ['start_time' => $startTime->toDateTimeString(), 'type' => 'email'])
+            ->assertSessionHasNoErrors();
+
+        expect($this->meeting->fresh()->title)->toBe('2026 kovo 05 d. posėdis');
+    });
+
+    test('a member at the time of the meeting edits it without a role, but not its agenda items', function (): void {
+        $member = makeUser($this->tenant);
+        $duty = $member->duties()->first();
+        $meeting = Meeting::factory()->hasAttached($duty->institution)->create(['start_time' => now()->setTime(10, 0)]);
+        $item = AgendaItem::factory()->for($meeting)->create();
+
+        asUser($member)
+            ->patch(route('meetings.update', $meeting), ['start_time' => now()->setTime(12, 0)->toDateTimeString()])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        expect($meeting->fresh()->start_time->format('H:i'))->toBe('12:00');
+
+        asUser($member)
+            ->patch(route('agendaItems.update', $item), ['title' => ['lt' => 'Pakeista']])
+            ->assertForbidden();
+    });
+
+    test('deleting moves the meeting to the trash and restoring brings it back', function (): void {
+        asUser($this->admin)->delete(route('meetings.destroy', $this->meeting))->assertRedirect();
+
+        expect($this->meeting->fresh()->trashed())->toBeTrue();
+
+        asUser($this->admin)->patch(route('meetings.restore', $this->meeting))->assertRedirect();
+
+        expect($this->meeting->fresh()->trashed())->toBeFalse();
+    });
+
+    test('a student representative coordinator deletes only meetings of their own institutions', function (): void {
+        $coordinator = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
+        $own = Meeting::factory()->hasAttached($coordinator->duties()->first()->institution)->create();
+
+        asUser($coordinator)->delete(route('meetings.destroy', $this->meeting))->assertForbidden();
+        asUser($coordinator)->delete(route('meetings.destroy', $own))->assertRedirect();
+
+        expect($this->meeting->fresh()->trashed())->toBeFalse()
+            ->and($own->fresh()->trashed())->toBeTrue();
     });
 });

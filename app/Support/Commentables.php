@@ -3,11 +3,13 @@
 namespace App\Support;
 
 use App\Contracts\Commentable;
+use App\Models\Duty;
+use App\Models\Form;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Problem;
 use App\Models\Reservation;
-use App\Models\SharepointFile;
 use App\Models\SupportRequest;
 use Illuminate\Database\Eloquent\Model;
 
@@ -26,8 +28,10 @@ class Commentables
         'meeting' => Meeting::class,
         'agendaItem' => AgendaItem::class,
         'institution' => Institution::class,
+        'duty' => Duty::class,
+        'form' => Form::class,
+        'problem' => Problem::class,
         'reservation' => Reservation::class,
-        'sharepointFile' => SharepointFile::class,
         'supportRequest' => SupportRequest::class,
     ];
 

@@ -229,19 +229,20 @@ return [
                 ],
             ],
 
-            // Static Pages - Admin index: everything non-trashed, inactive and
-            // scheduled pages included. See PublicPage below for the public index.
+            // Static Pages - Admin index: everything non-trashed, inactive pages
+            // included. See PublicPage below for the public index.
             Page::class => [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
-                        ['name' => 'title', 'type' => 'string', 'infix' => true],
+                        ['name' => 'title', 'type' => 'string', 'infix' => true, 'sort' => true],
                         ['name' => 'permalink', 'type' => 'string', 'optional' => true],
                         ['name' => 'meta_description', 'type' => 'string', 'optional' => true, 'infix' => true],
                         ['name' => 'lang', 'type' => 'string', 'facet' => true],
                         ['name' => 'tenant_id', 'type' => 'int32', 'facet' => true],
                         ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true],
                         ['name' => 'tenant_name', 'type' => 'string', 'facet' => true],
+                        ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'tag_names', 'type' => 'string[]', 'facet' => true, 'optional' => true],
                         ['name' => 'is_active', 'type' => 'bool', 'facet' => true],
                         ['name' => 'created_at', 'type' => 'int64'],
@@ -293,8 +294,7 @@ return [
                 ],
             ],
 
-            // Public Pages - Only active, published pages. Field shape mirrors
-            // Page::class above minus the admin-only `is_active` facet.
+            // Public Pages - Only active, published pages. Admin-only fields are omitted.
             PublicPage::class => [
                 'collection-schema' => [
                     'fields' => [
@@ -525,6 +525,10 @@ return [
                         ['name' => 'type_titles', 'type' => 'string[]', 'facet' => true, 'optional' => true],
                         // Self-referential institution_ids for .own permission filtering
                         ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true],
+                        // Refreshed nightly (institutions:refresh-activity-status) and on meeting/check-in changes
+                        ['name' => 'activity_status', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'is_active', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'type_ids', 'type' => 'int32[]', 'optional' => true],
                         // Linked members and duties for discoverability
                         ['name' => 'current_user_names', 'type' => 'string[]', 'optional' => true],
                         ['name' => 'duty_names', 'type' => 'string[]', 'optional' => true],
@@ -591,7 +595,7 @@ return [
 
                         // Status fields
                         ['name' => 'completion_status', 'type' => 'string', 'facet' => true],
-                        ['name' => 'is_public', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'institution_type_ids', 'type' => 'int32[]', 'optional' => true],
                         ['name' => 'is_recent', 'type' => 'bool', 'facet' => true],
 
                         // Representatives attending the meeting
@@ -645,6 +649,7 @@ return [
                         ['name' => 'institution_name_lt', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'institution_name_en', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true], // ULIDs for .own scope filtering
+                        ['name' => 'institution_type_ids', 'type' => 'int32[]', 'optional' => true],
 
                         // Completion indicators
                         ['name' => 'has_student_vote', 'type' => 'bool', 'facet' => true],

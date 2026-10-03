@@ -6,7 +6,10 @@ use App\Models\Duty;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Authorization\PermissionScope;
+use App\Support\AuthorityCacheExpiry;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -15,7 +18,7 @@ use Spatie\Permission\PermissionRegistrar;
  *
  * Permissions are `{resource}.{action}.{scope}`, resolved in this order: super admin,
  * then a permission granted directly to the user, then permissions granted through the
- * user's *current* duties. `*` scope means every tenant.
+ * user's non-ended duties. `*` scope means every tenant.
  *
  * Every public method takes the user and the permission explicitly and returns an
  * immutable {@see PermissionScope}. The service holds no notion of a "current user" or
@@ -37,11 +40,18 @@ class ModelAuthorizer
     private array $scopes = [];
 
     /**
-     * Current duties per user, keyed by user id.
+     * Authorization duties per user, keyed by user id.
      *
      * @var array<string, Collection<int, Duty>>
      */
     private array $duties = [];
+
+    /**
+     * Permissable model IDs for own-scope permissions, keyed "{userId}:{permission}".
+     *
+     * @var array<string, \Illuminate\Support\Collection<int, int|string>>
+     */
+    private array $ownModelIds = [];
 
     /**
      * Resolve what a permission grants this user.
@@ -70,13 +80,63 @@ class ModelAuthorizer
     }
 
     /**
-     * The current duties that granted this permission.
+     * The non-ended duties that granted this permission.
      *
      * @return Collection<int, Duty>
      */
     public function duties(User $user, string $permission): Collection
     {
         return $this->scope($user, $permission)->duties;
+    }
+
+    /**
+     * Permissable model IDs directly associated with the granting duties for an own-scope permission.
+     *
+     * @param  Collection<int, Duty>  $duties
+     * @return \Illuminate\Support\Collection<int, int|string>
+     */
+    public function ownModelIds(User $user, string $permission, Collection $duties, string $relation): \Illuminate\Support\Collection
+    {
+        $key = "{$user->id}:{$permission}";
+
+        return $this->ownModelIds[$key] ??= $this->resolveOwnModelIds($duties, $relation);
+    }
+
+    /**
+     * @param  Collection<int, Duty>  $duties
+     * @return \Illuminate\Support\Collection<int, int|string>
+     */
+    private function resolveOwnModelIds(Collection $duties, string $relation): \Illuminate\Support\Collection
+    {
+        if ($relation === 'duties') {
+            return $duties->pluck('id');
+        }
+
+        $ids = collect();
+
+        foreach ($duties as $duty) {
+            if ($duty->relationLoaded($relation)) {
+                $related = $duty->getRelation($relation);
+                if ($related instanceof Model) {
+                    $ids->push($related->getKey());
+                } elseif ($related instanceof Collection || $related instanceof \Illuminate\Support\Collection) {
+                    $ids = $ids->merge($related->pluck('id'));
+                }
+            } elseif (method_exists($duty, $relation)) {
+                $rel = $duty->{$relation}();
+                if ($rel instanceof BelongsTo) {
+                    $foreignKey = $rel->getForeignKeyName();
+                    if ($duty->{$foreignKey}) {
+                        $ids->push($duty->{$foreignKey});
+                    }
+                } else {
+                    $qualifiedKey = $rel->getRelated()->getQualifiedKeyName();
+                    $ids = $ids->merge($rel->pluck($qualifiedKey));
+                }
+            }
+        }
+
+        return $ids->unique()->values();
     }
 
     /**
@@ -106,6 +166,12 @@ class ModelAuthorizer
             }
         }
 
+        foreach (array_keys($this->ownModelIds) as $key) {
+            if (str_starts_with($key, "{$userId}:")) {
+                unset($this->ownModelIds[$key]);
+            }
+        }
+
         unset($this->duties[$userId]);
 
         // Persisted duty cache (loadDuties) is the only cross-request entry for this user.
@@ -119,11 +185,11 @@ class ModelAuthorizer
     private function resolve(User $user, string $permission): PermissionScope
     {
         if ($user->isSuperAdmin()) {
-            return new PermissionScope(true, true, new Collection, Tenant::all());
+            return new PermissionScope(true, true, new Collection, $this->allTenants());
         }
 
         // A permission granted directly to the user, rather than through a duty. It is
-        // genuinely held, so it scopes to the tenants of that user's current duties —
+        // genuinely held, so it scopes to the tenants of that user's non-ended duties —
         // narrowing it further is a separate policy decision that would lock out anyone
         // holding a directly-assigned role today.
         if ($user->hasPermissionTo($permission)) {
@@ -133,7 +199,7 @@ class ModelAuthorizer
                 true,
                 $isAllScope,
                 new Collection,
-                $isAllScope ? Tenant::all() : $this->tenantsOf($this->loadDuties($user)),
+                $isAllScope ? $this->allTenants() : $this->tenantsOf($this->loadDuties($user)),
             );
         }
 
@@ -161,8 +227,16 @@ class ModelAuthorizer
             true,
             $isAllScope,
             $granting,
-            $isAllScope ? Tenant::all() : $this->tenantsOf($granting),
+            $isAllScope ? $this->allTenants() : $this->tenantsOf($granting),
         );
+    }
+
+    /**
+     * @return Collection<int, Tenant>
+     */
+    private function allTenants(): Collection
+    {
+        return Tenant::allCached();
     }
 
     /**
@@ -171,22 +245,25 @@ class ModelAuthorizer
      */
     private function tenantsOf(Collection $duties): Collection
     {
+        // Read from the shared tenant list, not cached with the duties, so a renamed tenant
+        // is current on the next request.
+        $tenantsById = $this->allTenants()->keyBy('id');
+
         /** @var \Illuminate\Support\Collection<int, Tenant> $tenants */
         $tenants = $duties
-            // loadMissing, not load: loadDuties() already eager-loads current_duties.institution,
-            // and a second resolution in the same request will already have the .tenant leg
-            // loaded too — load() re-queried both unconditionally.
-            ->loadMissing('institution.tenant')
-            ->pluck('institution.tenant')
+            ->loadMissing('institution:id,tenant_id')
+            ->pluck('institution.tenant_id')
             ->filter()
-            ->unique('id')
+            ->unique()
+            ->map(fn (int $tenantId) => $tenantsById->get($tenantId))
+            ->filter()
             ->values();
 
         return new Collection($tenants->all());
     }
 
     /**
-     * Load the user's current duties with the relations every resolution needs.
+     * Load the user's non-ended duties with the relations every resolution needs.
      *
      * @return Collection<int, Duty>
      */
@@ -194,17 +271,15 @@ class ModelAuthorizer
     {
         return $this->duties[(string) $user->id] ??= Cache::remember(
             "auth:duties:{$user->id}",
-            static::CACHE_TTL,
+            fn () => AuthorityCacheExpiry::for($user, static::CACHE_TTL),
             fn () => $user->load([
-                'current_duties:id,name,institution_id',
-                // tenant_id (not just id) so tenantsOf()'s loadMissing('institution.tenant')
-                // can resolve the nested tenant relation without re-fetching institution.
-                'current_duties.institution:id,tenant_id',
-                'current_duties.roles.permissions',
+                'authorization_duties:id,name,institution_id',
+                'authorization_duties.institution:id,tenant_id',
+                'authorization_duties.roles.permissions',
                 // Without this, the duty loop lazy-loads $duty->permissions (direct, not via
                 // role) once per duty — an N+1 on every permission check.
-                'current_duties.permissions',
-            ])->current_duties
+                'authorization_duties.permissions',
+            ])->authorization_duties
         );
     }
 

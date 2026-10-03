@@ -3,8 +3,8 @@ import { VueUseComponentsResolver } from 'unplugin-vue-components/resolvers';
 import Components from 'unplugin-vue-components/vite';
 import Icons from 'unplugin-icons/vite';
 import IconsResolver from 'unplugin-icons/resolver';
-import Markdown from 'unplugin-vue-markdown/vite';
 import i18nSplit from './vite-plugins/i18n-split.ts';
+import fluentIcons from './vite-plugins/fluent-icons.ts';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 import vueDevTools from 'vite-plugin-vue-devtools';
@@ -15,11 +15,10 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 import { codecovVitePlugin } from "@codecov/vite-plugin";
 
-export default defineConfig(({ command }) => {
+export default defineConfig(({ command, isSsrBuild }) => {
   // Define common plugins that will be used in both build and test
   const commonPlugins = [
     vue({
-      include: [/\.vue$/, /\.md$/],
       template: {
         transformAssetUrls: {
           base: null,
@@ -49,25 +48,18 @@ export default defineConfig(({ command }) => {
     }),
     Icons(),
     i18nSplit(),
+    ...(!isSsrBuild ? [fluentIcons()] : []),
   ];
 
   // Core plugins needed for both dev and build
   const corePlugins = [
-    laravel([
-      'resources/js/app.ts',
-      'resources/css/app.css',
-    ]),
+    laravel({
+      input: ['resources/js/app.ts', 'resources/css/app.css'],
+      ssr: 'resources/js/ssr.ts',
+    }),
     tailwindcss(),
     ziggy({
       sail: true,
-    }),
-    Markdown({
-      markdownItOptions: {
-        html: true,
-        linkify: true,
-        typographer: true,
-      },
-      wrapperClasses: undefined,
     }),
   ];
 
@@ -118,7 +110,7 @@ export default defineConfig(({ command }) => {
       background_color: '#27272a',
       display: 'standalone',
       scope: '/mano',
-      start_url: '/mano',
+      start_url: '/mano?source=pwa',
       icons: [
         {
           src: '/images/icons/favicons/pwa-192x192.png',
@@ -205,24 +197,14 @@ export default defineConfig(({ command }) => {
         'assets/app-*.css',
         'assets/admin-*.js',
         'assets/admin-*.css',
-        // Vue core (shared by all pages)
-        'assets/index-*.js',
         // Admin home page and layout
         'assets/ShowAdminHome-*.js',
-        'assets/ShowAdminHome-*.css',
-        'assets/AdminContentPage*.js',
         'assets/AdminLayout*.js',
-        // Dashboard components
-        'assets/TasksCard*.js',
-        'assets/UpcomingMeetingsCard*.js',
-        'assets/CalendarEventsCard*.js',
-        'assets/NewsListCard*.js',
         // UI primitives heavily used by admin home
         'assets/Card*.js',
         'assets/Separator*.js',
         // date-fns locales for greeting/date formatting
         'assets/lt-*.js',
-        'assets/en-US-*.js',
         'assets/format-*.js',
         // Translation bundles
         'assets/php_admin_lt-*.js',
@@ -250,15 +232,17 @@ export default defineConfig(({ command }) => {
       ...corePlugins,
       ...devPlugins,
       ...codecovPlugins,
-      pwaPlugin,
+      ...(!isSsrBuild ? [pwaPlugin] : []),
     ],
     resolve: {
-      alias: {
-        '@': '/resources/js',
-        'vue': 'vue/dist/vue.esm-bundler.js',
-        'ziggy-js': '/vendor/tightenco/ziggy/dist',
-      },
+      alias: [
+        { find: 'lucide-vue-next', replacement: '@lucide/vue' },
+        { find: '@', replacement: '/resources/js' },
+        { find: /^vue$/, replacement: 'vue/dist/vue.runtime.esm-bundler.js' },
+        { find: 'ziggy-js', replacement: '/vendor/tightenco/ziggy/dist' },
+      ],
     },
+    ssr: { noExternal: true },
     build: {
       // sourcemap: true,
 

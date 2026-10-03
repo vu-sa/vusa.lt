@@ -22,7 +22,7 @@ function makeContactManager($tenant): User
 {
     $user = makeUser($tenant);
 
-    $user->duties()->first()->assignRole('Student Representative Coordinator');
+    $user->duties()->first()->assignRole('Studentų atstovų koordinatorius');
 
     return $user;
 }
@@ -154,6 +154,11 @@ test('contact manager can detach duty from user', function (): void {
             ->component('Admin/People/EditUser')
             ->has('flash.success')
             ->has('user.current_duties', 0)
+        );
+
+    $admin->get(route('users.show', $this->user->id))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/People/ShowUser')
             ->has('user.previous_duties', 1)
         );
 
@@ -217,10 +222,10 @@ test('contact manager can add type to duty', function (): void {
     $userDuty = $this->user->current_duties->first();
 
     $this->assertDatabaseHas('roles', [
-        'name' => 'Student Representative',
+        'name' => 'Studentų atstovas',
     ]);
 
-    $this->assertDatabaseHas('types', [
+    $this->assertDatabaseHas('duty_types', [
         'slug' => 'studentu-atstovai',
     ]);
 
@@ -262,14 +267,13 @@ test('contact manager can add type to duty', function (): void {
             ->has('flash.success')
         );
 
-    $this->assertDatabaseHas('typeables', [
-        'typeable_id' => $userDuty->id,
-        'typeable_type' => $userDuty->getMorphClass(),
-        'type_id' => $firstTypeId,
+    $this->assertDatabaseHas('duty_duty_type', [
+        'duty_id' => $userDuty->id,
+        'duty_type_id' => $firstTypeId,
     ]);
 
     $this->assertDatabaseHas('model_has_roles', [
-        'role_id' => Role::query()->where('name', 'Student Representative')->first()->id,
+        'role_id' => Role::query()->where('name', 'Studentų atstovas')->first()->id,
         'model_type' => $userDuty->getMorphClass(),
         'model_id' => $userDuty->id,
     ]);
@@ -291,14 +295,13 @@ test('contact manager can add type to duty', function (): void {
             ->has('flash.success')
         );
 
-    $this->assertDatabaseMissing('typeables', [
-        'typeable_id' => $userDuty->id,
-        'typeable_type' => $userDuty->getMorphClass(),
-        'type_id' => $firstTypeId,
+    $this->assertDatabaseMissing('duty_duty_type', [
+        'duty_id' => $userDuty->id,
+        'duty_type_id' => $firstTypeId,
     ]);
 
     $this->assertDatabaseMissing('model_has_roles', [
-        'role_id' => Role::query()->where('name', 'Student Representative')->first()->id,
+        'role_id' => Role::query()->where('name', 'Studentų atstovas')->first()->id,
         'model_type' => $userDuty->getMorphClass(),
         'model_id' => $userDuty->id,
     ]);

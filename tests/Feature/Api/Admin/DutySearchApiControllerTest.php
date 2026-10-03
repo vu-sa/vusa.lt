@@ -11,7 +11,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'duties.read.padalinys',
         'duties.create.padalinys',
@@ -20,7 +20,7 @@ beforeEach(function (): void {
 
     $this->dutyManager = makeUser($this->tenant);
     $this->dutyManagerDuty = $this->dutyManager->duties()->first();
-    $this->dutyManagerDuty->assignRole('Communication Coordinator');
+    $this->dutyManagerDuty->assignRole('Komunikacijos koordinatorius');
 
     $this->institution = $this->dutyManagerDuty->institution;
 });
@@ -69,7 +69,7 @@ describe('similar', function (): void {
 
     test('the same name in a different institution is informational, not alarming', function (): void {
         $elsewhere = Duty::factory()->create([
-            'name' => ['lt' => 'Studentų atstovas', 'en' => 'Student Representative'],
+            'name' => ['lt' => 'Studentų atstovas', 'en' => 'Studentų atstovas'],
             'institution_id' => Institution::factory()->for($this->tenant)->create()->id,
         ]);
 
@@ -87,7 +87,7 @@ describe('similar', function (): void {
 
     test('other-institution matches are capped while the count reflects the true total', function (): void {
         Duty::factory()->count(5)->create([
-            'name' => ['lt' => 'Studentų atstovas', 'en' => 'Student Representative'],
+            'name' => ['lt' => 'Studentų atstovas', 'en' => 'Studentų atstovas'],
             'institution_id' => Institution::factory()->for($this->tenant),
         ]);
 

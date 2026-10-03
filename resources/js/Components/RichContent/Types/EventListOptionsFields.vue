@@ -122,7 +122,7 @@
  * title/subtitle/eyebrow header (`RCSectionOptions`). Shared between `EventListEditor.vue`
  * (the regular side form) and `EventListBlockToolbar.vue`'s full-screen options popover so
  * the two surfaces can't drift apart. Entirely option-driven — there is no author-written
- * `json_content` (see `EventListResolver`, modeled on `PublicPageController::summerCamps()`).
+ * `json_content` (see `EventListResolver`).
  */
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';

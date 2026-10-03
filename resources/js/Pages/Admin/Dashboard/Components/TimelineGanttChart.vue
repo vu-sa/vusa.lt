@@ -1,6 +1,6 @@
 <template>
-  <Card v-if="institutions.length > 0" :class="{ 'h-full flex flex-col': height === '100%' }">
-    <CardContent class="p-4" :class="{ 'flex-1 min-h-0': height === '100%' }">
+  <div v-if="institutions.length > 0" :class="{ 'h-full flex flex-col': height === '100%' }">
+    <div :class="{ 'flex-1 min-h-0': height === '100%' }">
       <MeetingsGantt
         v-model:details-expanded="detailsExpanded"
         :meetings
@@ -28,7 +28,7 @@
         :show-duty-members
         :show-activity-status
         :height="effectiveHeight"
-        :hide-fullscreen-button
+        :fullscreen-active
         :loading-range :meetings-loading
         @create-meeting="$emit('create-meeting', $event)"
         @create-check-in="$emit('create-check-in', $event)"
@@ -36,11 +36,10 @@
         @show-legend-modal="showLegendModal = true"
         @range-changed="(min: Date, max: Date) => $emit('range-changed', min, max)"
       />
-    </CardContent>
+    </div>
 
-    <!-- Legend Modal -->
     <GanttLegendModal :is-open="showLegendModal" @update:is-open="showLegendModal = $event" />
-  </Card>
+  </div>
   <p v-else class="text-sm text-muted-foreground">
     {{ emptyMessage }}
   </p>
@@ -61,7 +60,6 @@ import type {
 import MeetingsGantt from '@/Components/Graphs/MeetingsGantt.vue';
 import GanttLegendModal from '@/Components/Graphs/GanttLegendModal.vue';
 import { horizontalScrollbarSize } from '@/Components/Graphs/scrollbarSize';
-import { Card, CardContent } from '@/Components/ui/card';
 
 interface Props {
   institutions: GanttInstitution[];
@@ -93,8 +91,8 @@ interface Props {
   loadingRange?: { from: Date; until: Date } | null;
   // Whether meetings are currently being fetched (delayed ~300ms by the caller)
   meetingsLoading?: boolean;
-  // Hide fullscreen button (when already in fullscreen modal)
-  hideFullscreenButton?: boolean;
+  // In focus mode: the toolbar's full-screen button reads as "exit"
+  fullscreenActive?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -118,6 +116,7 @@ const formattedInstitutions = computed(() => {
     id: i.id,
     name: i.name,
     tenant_id: i.tenant_id,
+    is_internal: i.is_internal,
     is_related: i.is_related,
     relationship_direction: i.relationship_direction,
     source_institution_id: i.source_institution_id,

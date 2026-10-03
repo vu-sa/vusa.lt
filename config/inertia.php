@@ -25,9 +25,17 @@ return [
 
         'url' => env('INERTIA_SSR_URL', 'http://127.0.0.1:13714'),
 
+        // Hard-coded, not env-driven, so a production .env copied to staging still fails closed.
+        'production_port' => 13714,
+
         'ensure_bundle_exists' => (bool) env('INERTIA_SSR_ENSURE_BUNDLE_EXISTS', false),
 
-        // 'bundle' => base_path('bootstrap/ssr/ssr.mjs'),
+        'bundle' => base_path('bootstrap/ssr/ssr.js'),
+
+        // The renderer reads the same variable to drop renders Laravel has already abandoned.
+        'timeout' => (int) env('INERTIA_SSR_TIMEOUT', 1),
+
+        'routes' => ['home', 'page', 'news'],
 
         /*
         |--------------------------------------------------------------------------

@@ -300,18 +300,6 @@ export function processTenantFacetValues(
 }
 
 /**
- * Format completion status for display
- */
-export function formatCompletionStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    complete: 'Užbaigtas',
-    incomplete: 'Neužbaigtas',
-    partial: 'Dalinai užbaigtas',
-  };
-  return statusMap[status] || status;
-}
-
-/**
  * Format vote alignment status for display
  */
 export function formatVoteAlignmentStatus(status: string): string {

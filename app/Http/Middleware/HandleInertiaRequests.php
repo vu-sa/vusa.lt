@@ -3,25 +3,49 @@
 namespace App\Http\Middleware;
 
 use App\Models\EventType;
-use App\Models\Form;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Tag;
+use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Models\User;
+use App\Services\AdminNavigation\AdminNavigationCatalog;
+use App\Services\DeviceMetricService;
 use App\Services\Permissions\PermissionMapBuilder;
 use App\Services\Typesense\TypesenseManager;
-use App\Settings\FormSettings;
 use App\Settings\SiteSettings;
-use App\Support\MorphMap;
+use App\Support\AuthorityCacheExpiry;
+use Closure;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 use Inertia\Middleware;
+use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
 {
+    public const TENANTS_CACHE_KEY = 'all-tenants-for-inertia';
+
+    public const EVENT_TYPES_CACHE_KEY = 'all-event-types-for-inertia';
+
+    public const TAGS_CACHE_KEY = 'all-tags-for-inertia';
+
+    public const INSTITUTION_TYPES_CACHE_KEY = 'all-institution-types-for-inertia';
+
+    public const NOTIFICATION_PREVIEW_LIMIT = 20;
+
+    /**
+     * Cached forever; each owning model forgets its key on write.
+     */
+    public const SHARED_CACHE_KEYS = [
+        self::TENANTS_CACHE_KEY,
+        self::EVENT_TYPES_CACHE_KEY,
+        self::TAGS_CACHE_KEY,
+        self::INSTITUTION_TYPES_CACHE_KEY,
+    ];
+
     /**
      * The root template that's loaded on the first page visit.
      *
@@ -31,6 +55,30 @@ class HandleInertiaRequests extends Middleware
      */
     #[\Override]
     protected $rootView = 'app';
+
+    #[\Override]
+    public function handle(Request $request, Closure $next)
+    {
+        $ssrEligible = config('inertia.ssr.enabled') && $request->user() === null
+            && $request->routeIs(...config('inertia.ssr.routes'));
+
+        Inertia::disableSsr(! $ssrEligible);
+
+        // Only full page loads are server-rendered; XHR visits already have the client's @routes.
+        if ($ssrEligible && ! $request->header('X-Inertia')) {
+            Inertia::share('ziggy', fn () => [
+                ...(new Ziggy)->filter(collect(Route::getRoutes())->filter(
+                    fn ($route) => ! str_starts_with($route->uri(), 'api/')
+                        && (! str_starts_with($route->uri(), 'mano') || $route->getName() === 'login')
+                )->map->getName()->filter()->all())->toArray(),
+                'location' => $request->url(),
+            ]);
+        }
+
+        $this->recordPwaLaunchIfDetected($request);
+
+        return parent::handle($request, $next);
+    }
 
     /**
      * Determines the current asset version.
@@ -55,9 +103,16 @@ class HandleInertiaRequests extends Middleware
     #[\Override]
     public function share(Request $request)
     {
-        $user = $this->getLoggedInUserForInertia();
+        /** @var User|null $user */
+        $user = $request->user();
 
-        $isSuperAdmin = $user?->isSuperAdmin() ?? false;
+        // Admin-only data stays off public pages, where no component reads it.
+        $onAdmin = $request->is('mano', 'mano/*');
+
+        $pushEndpoints = null;
+        $getPushEndpoints = function () use ($user, &$pushEndpoints): array {
+            return $pushEndpoints ??= $user?->pushSubscriptions()->pluck('endpoint')->all() ?? [];
+        };
 
         return array_merge(parent::share($request), [
             'app' => [
@@ -75,26 +130,29 @@ class HandleInertiaRequests extends Middleware
                 'legal' => config('vusa.legal'),
                 // Resolved server-side so the cookie banner links to the right language
                 // record without knowing anything about permalinks. Null when unconfigured.
-                'privacyPageUrl' => app(SiteSettings::class)->privacyPageUrl(),
+                'privacyPageUrl' => SiteSettings::cachedPrivacyPageUrl(app()->getLocale()),
             ],
             'auth' => is_null($user) ? null : [
                 'can' => fn () => [
-                    'index' => fn () => $this->getIndexPermissions($user),
-                    'create' => fn () => $this->getCreatePermissions($user),
-                    'forceDelete' => fn () => $this->getForceDeletePermissions($user),
-                    'manageSettings' => fn () => $user->can('manage-settings'),
-                    'accessAdministration' => fn () => $user->can('access-administration'),
+                    'index' => fn () => $onAdmin ? $this->getIndexPermissions($user) : [],
+                    'create' => fn () => $onAdmin ? $this->getCreatePermissions($user) : [],
+                    'forceDelete' => fn () => $onAdmin ? $this->getForceDeletePermissions($user) : [],
                 ],
                 'user' => fn () => [
-                    ...$user->toArray(),
-                    'isSuperAdmin' => $isSuperAdmin,
-                    'tenants' => $user->tenants()->get(['tenants.id', 'tenants.shortname', 'tenants.alias'])->unique(),
-                    'unreadNotifications' => $user->unreadNotifications()->get(),
+                    // Relations loaded on the request user by policies or controllers are not shared.
+                    ...$user->withoutRelations()->toArray(),
+                    ...($onAdmin ? $this->getOpenTaskCounts($user) : []),
+                    'isSuperAdmin' => $user->isSuperAdmin(),
+                    'tenants' => $onAdmin
+                        ? $user->tenants()->distinct()->get(['tenants.id', 'tenants.shortname', 'tenants.alias'])
+                        : [],
+                    // Newest first; the badge reads the count, so the list can stay short.
+                    'unreadNotifications' => $onAdmin ? $user->unreadNotifications()->limit(self::NOTIFICATION_PREVIEW_LIMIT)->get() : [],
+                    'unreadNotificationsCount' => $onAdmin ? $user->unreadNotifications()->count() : 0,
                     'tutorial_progress' => $user->tutorial_progress ?? [],
                     'ui_preferences' => $user->ui_preferences ?? [],
                 ],
                 'impersonating' => fn () => $this->getImpersonationState($request),
-                'registrationForms' => fn () => $this->getViewableRegistrationForms($user),
             ],
             'csrf_token' => csrf_token(...),
             // 'flash' is used in the admin navigation to show only the allowed pages
@@ -119,8 +177,8 @@ class HandleInertiaRequests extends Middleware
             // controller/form that needs an event-type picker (Calendar admin form,
             // RichContent's event-list/calendar block editors). See QuickLinkController's
             // identical "not worth a search endpoint" rationale for topics.
-            'eventTypes' => $this->getEventTypesForInertia(...),
-            'tags' => $this->getTagsForInertia(...),
+            'eventTypes' => fn () => $onAdmin ? $this->getEventTypesForInertia() : [],
+            'tags' => fn () => $onAdmin ? $this->getTagsForInertia() : [],
             'institutionTypes' => $this->getInstitutionTypesForInertia(...),
             'typesenseConfig' => TypesenseManager::getFrontendConfig(...),
             // CARTO now requires an API key on basemap tile requests (PadalinysMap, EventLocationMap).
@@ -129,24 +187,31 @@ class HandleInertiaRequests extends Middleware
             ],
             'pwa' => [
                 'vapidPublicKey' => fn () => config('webpush.vapid.public_key'),
-                'hasPushSubscription' => fn () => $user?->pushSubscriptions()->exists() ?? false,
-                'subscriptionEndpoints' => fn () => $user?->pushSubscriptions()
-                    ->pluck('endpoint')
-                    ->toArray() ?? [],
+                'hasPushSubscription' => fn () => $onAdmin && $getPushEndpoints() !== [],
+                'subscriptionEndpoints' => fn () => $onAdmin ? $getPushEndpoints() : [],
             ],
+            // The navigation catalog (O19): one server-side definition of every admin
+            // destination, gated and cached per user. Null outside `/mano` so public pages pay
+            // one string comparison instead of resolving permissions nobody asked for.
+            'adminNavigation' => fn () => $user && $onAdmin
+                ? app(AdminNavigationCatalog::class)->for($user)
+                : null,
         ]);
     }
 
-    private function getLoggedInUserForInertia(): ?User
+    /**
+     * Open and overdue task counts for the admin shell badges, in one query.
+     *
+     * @return array{tasks_count: int, overdue_tasks_count: int}
+     */
+    private function getOpenTaskCounts(User $user): array
     {
-        $user = User::query()
-            ->withCount(['tasks' => function ($query): void {
-                $query->whereNull('completed_at');
-            }])
-            ->with('roles', 'current_duties:id,name,institution_id', 'current_duties.roles', 'current_duties.institution:id,name')
-            ->find(Auth::id());
+        $counts = Task::openTaskCountsFor($user);
 
-        return $user;
+        return [
+            'tasks_count' => $counts['tasks_count'],
+            'overdue_tasks_count' => $counts['overdue_tasks_count'],
+        ];
     }
 
     /**
@@ -154,14 +219,12 @@ class HandleInertiaRequests extends Middleware
      */
     private function getTenantsForInertia(): Collection
     {
-        // TODO: maybe should return all tenants, even pagrindinis
-        $tenants = Cache::rememberForever('all-tenants-for-inertia',
-            fn () => Tenant::orderBy('shortname_vu')->get(['id', 'alias', 'shortname', 'fullname', 'type', 'primary_institution_id'])
+        // Institution saves forget this key too, since the primary institution is cached with it.
+        return Cache::rememberForever(self::TENANTS_CACHE_KEY,
+            fn () => Tenant::orderBy('shortname_vu')
+                ->with('primary_institution:id,short_name,image_url,image_focal_point')
+                ->get(['id', 'alias', 'shortname', 'fullname', 'type', 'primary_institution_id'])
         );
-
-        $tenants->load('primary_institution:id,short_name,image_url,image_focal_point');
-
-        return $tenants;
     }
 
     /**
@@ -169,7 +232,7 @@ class HandleInertiaRequests extends Middleware
      */
     private function getEventTypesForInertia(): Collection
     {
-        return Cache::rememberForever('all-event-types-for-inertia',
+        return Cache::rememberForever(self::EVENT_TYPES_CACHE_KEY,
             fn () => EventType::orderBy('sort_order')->get(['id', 'name', 'slug'])
         );
     }
@@ -179,18 +242,18 @@ class HandleInertiaRequests extends Middleware
      */
     private function getTagsForInertia(): Collection
     {
-        return Cache::rememberForever('all-tags-for-inertia',
+        return Cache::rememberForever(self::TAGS_CACHE_KEY,
             fn () => Tag::orderBy('alias')->get(['id', 'name', 'alias', 'is_topic'])
         );
     }
 
     /**
-     * @return Collection<int, Type>
+     * @return Collection<int, InstitutionType>
      */
     private function getInstitutionTypesForInertia(): Collection
     {
-        return Cache::rememberForever('all-institution-types-for-inertia',
-            fn () => Type::where('model_type', MorphMap::alias(Institution::class))->get(['id', 'title', 'slug'])
+        return Cache::rememberForever(self::INSTITUTION_TYPES_CACHE_KEY,
+            fn () => InstitutionType::query()->get(['id', 'title', 'slug'])
         );
     }
 
@@ -215,7 +278,7 @@ class HandleInertiaRequests extends Middleware
      */
     private function getIndexPermissions(User $user): array
     {
-        return Cache::remember(PermissionMapBuilder::INDEX_CACHE_PREFIX.$user->id, 1800,
+        return Cache::remember(PermissionMapBuilder::INDEX_CACHE_PREFIX.$user->id, fn () => AuthorityCacheExpiry::for($user, 1800),
             fn () => app(PermissionMapBuilder::class)->indexMap($user)
         );
     }
@@ -225,7 +288,7 @@ class HandleInertiaRequests extends Middleware
      */
     private function getCreatePermissions(User $user): array
     {
-        return Cache::remember(PermissionMapBuilder::CREATE_CACHE_PREFIX.$user->id, 1800,
+        return Cache::remember(PermissionMapBuilder::CREATE_CACHE_PREFIX.$user->id, fn () => AuthorityCacheExpiry::for($user, 1800),
             fn () => app(PermissionMapBuilder::class)->createMap($user)
         );
     }
@@ -235,44 +298,28 @@ class HandleInertiaRequests extends Middleware
      */
     private function getForceDeletePermissions(User $user): array
     {
-        return Cache::remember(PermissionMapBuilder::FORCE_DELETE_CACHE_PREFIX.$user->id, 1800,
+        return Cache::remember(PermissionMapBuilder::FORCE_DELETE_CACHE_PREFIX.$user->id, fn () => AuthorityCacheExpiry::for($user, 1800),
             fn () => app(PermissionMapBuilder::class)->forceDeleteMap($user)
         );
     }
 
-    /**
-     * The member and student rep registration forms, but only when this user may open them.
-     *
-     * The sidebar links straight to these two forms, so the ids are filtered through the
-     * policy here — a link is never shown for a form that would then respond with 403.
-     *
-     * @return array{member: string|null, studentRep: string|null}
-     */
-    private function getViewableRegistrationForms(User $user): array
+    public static function adminNavigationCacheKey(string $userId): string
     {
-        return Cache::remember(self::registrationFormsCacheKey($user->id), 1800, function () use ($user) {
-            $settings = app(FormSettings::class);
-
-            return [
-                'member' => $this->formIdIfViewable($user, $settings->member_registration_form_id),
-                'studentRep' => $this->formIdIfViewable($user, $settings->student_rep_registration_form_id),
-            ];
-        });
+        return AdminNavigationCatalog::CACHE_PREFIX.$userId;
     }
 
-    private function formIdIfViewable(User $user, ?string $formId): ?string
+    private function recordPwaLaunchIfDetected(Request $request): void
     {
-        if (! $formId) {
-            return null;
+        if (! $request->hasSession()) {
+            return;
         }
 
-        $form = Form::find($formId);
+        $isPwa = $request->query('source') === 'pwa'
+            || ($request->cookie('pwa_mode') === '1' && $request->is('mano*'));
 
-        return $form && $user->can('view', $form) ? $form->id : null;
-    }
-
-    public static function registrationFormsCacheKey(string $userId): string
-    {
-        return 'registration-forms-'.$userId;
+        if ($isPwa && ! $request->session()->has('pwa_launch_recorded')) {
+            $request->session()->put('pwa_launch_recorded', true);
+            app(DeviceMetricService::class)->recordPwaLaunch();
+        }
     }
 }

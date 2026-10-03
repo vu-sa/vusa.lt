@@ -89,23 +89,6 @@ export function isApiError<T>(response: ApiResponse<T>): response is ApiErrorRes
 */
 
 /**
- * Task indicator response
- * Route: GET /api/v1/admin/tasks/indicator
- */
-export interface TaskIndicatorData {
-  id: number;
-  name: string;
-  due_date: string | null;
-  completed_at: string | null;
-  taskable_type: string;
-  taskable_id: number;
-  taskable?: {
-    id: number;
-    [key: string]: unknown;
-  };
-}
-
-/**
  * File browser response
  * Route: GET /api/v1/admin/files
  */
@@ -133,40 +116,6 @@ export interface DirectoryItem {
 }
 
 /**
- * Fileable files response
- * Route: GET /api/v1/admin/fileables/{type}/{id}/files
- */
-export interface FileableFileData {
-  id: number;
-  fileable_type: string;
-  fileable_id: number;
-  sharepoint_id: string;
-  name: string;
-  file_type: string;
-  file_date: string | null;
-  description: string | null;
-  web_url: string;
-  created_at: string;
-  updated_at: string;
-}
-
-/**
- * Potential fileables response
- * Route: GET /api/v1/admin/sharepoint/potential-fileables
- */
-export interface PotentialFileablesData {
-  institutions: Array<{
-    id: number;
-    name: string;
-    meetings: Array<{ id: number; start_time: string }>;
-  }>;
-  types: Array<{
-    id: number;
-    title: string;
-  }>;
-}
-
-/**
  * Tutorial progress response
  * Route: GET /api/v1/admin/tutorials/progress
  */
@@ -179,18 +128,6 @@ export interface TutorialProgressData {
 | Public API Response Types
 |--------------------------------------------------------------------------
 */
-
-/**
- * Types list response
- * Route: GET /api/v1/types
- */
-export interface TypeData {
-  id: number;
-  title: string;
-  slug: string;
-  description?: string;
-  parent_id: number | null;
-}
 
 /**
  * Documents list response

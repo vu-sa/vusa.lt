@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationType;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use Illuminate\Support\Carbon;
@@ -18,15 +18,15 @@ use Illuminate\Support\Carbon;
  */
 class DutyExpiringNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::DutyExpiring;
+    }
+
     /**
      * Create a new notification instance.
      */
     public function __construct(protected Duty $duty, protected Dutiable $dutiable, protected int $daysUntilExpiry = 30) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Duty;
-    }
 
     public function title(object $notifiable): string
     {
@@ -70,22 +70,27 @@ class DutyExpiringNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
     {
-        return [
-            [
-                'label' => __('notifications.action_view_duty'),
-                'url' => $this->url(),
-            ],
-        ];
+        return $this->contextRows([
+            'duty' => $this->duty->name,
+            'institution' => $this->duty->institution?->name,
+            'end_date' => Carbon::parse($this->dutiable->end_date)->format('Y-m-d'),
+        ]);
     }
 
-    /**
-     * Duty expiry notifications are important reminders and should not be digested.
-     */
     #[\Override]
-    public function supportsEmailDigest(): bool
+    public function mailSignature(object $notifiable): ?array
     {
-        return false;
+        return $this->coordinatorSignature($notifiable, $this->duty->institution);
+    }
+
+    #[\Override]
+    public function primaryAction(): ?array
+    {
+        return [
+            'label' => __('notifications.action_view_duty'),
+            'url' => $this->url(),
+        ];
     }
 }

@@ -287,3 +287,19 @@ describe('cache TTL', function (): void {
         expect($ttl)->toBeLessThanOrEqual(3600);
     });
 });
+
+test('a renamed tenant is current on the next request despite the cached duties', function (): void {
+    $user = makeUser($this->tenant);
+    $user->duties()->first()->assignRole($this->coordinatorRole);
+
+    $this->authorizer->tenants($user, 'users.read.padalinys');
+
+    $this->tenant->update(['shortname' => 'Pervadintas']);
+
+    // A later request: a fresh authorizer, but the duty cache in Redis survives.
+    app()->forgetScopedInstances();
+    $tenants = app(ModelAuthorizer::class)->tenants($user, 'users.read.padalinys');
+
+    expect($tenants->pluck('shortname')->all())->toBe(['Pervadintas'])
+        ->and(Cache::has("auth:duties:{$user->id}"))->toBeTrue();
+});

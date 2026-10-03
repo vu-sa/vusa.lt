@@ -30,6 +30,24 @@ describe('FormForm.vue', () => {
     ],
   };
 
+  interface FormFormVm {
+    form: {
+      patch: unknown;
+      post: unknown;
+      data: unknown;
+      name: Record<'lt' | 'en', string>;
+      path: Record<'lt' | 'en', string>;
+      form_fields: Array<{ id: string; type: string; label: Record<string, string>; order: number; is_required: boolean }>;
+    };
+    showFormFieldModal: boolean;
+    pathChangedOnExistingForm: boolean;
+    selectedFormField: { id: string; label: Record<string, string> };
+    onPathInput: (locale: 'lt' | 'en', value: string) => void;
+    handleDeleteFormField: (field: { id: string }) => void;
+    handleEditFormField: (field: unknown) => void;
+    handleNewFormFieldCreate: () => void;
+  }
+
   const createWrapper = (props = {}) => {
     return mount(FormForm, {
       props: {
@@ -38,12 +56,16 @@ describe('FormForm.vue', () => {
       },
       global: {
         stubs: {
-          // Dialog components: stubbed due to focus/teleport behavior in jsdom
-          CardModal: {
-            template: '<div v-if="show" class="card-modal"><slot /></div>',
-            props: ['show'],
-            emits: ['update:show', 'close'],
+          // Sheet components: stubbed due to focus/teleport behavior in jsdom
+          Sheet: {
+            template: '<div v-if="open" class="card-modal"><slot /></div>',
+            props: ['open'],
+            emits: ['update:open'],
           },
+          SheetContent: { template: '<div><slot /></div>' },
+          SheetHeader: { template: '<div><slot /></div>' },
+          SheetTitle: { template: '<div><slot /></div>' },
+          SheetDescription: { template: '<div><slot /></div>' },
           // Complex third-party components that may break in jsdom
           TiptapEditor: {
             template: '<textarea :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)"></textarea>',
@@ -120,7 +142,7 @@ describe('FormForm.vue', () => {
     it('uses useForm internally (form has inertia methods)', () => {
       wrapper = createWrapper();
 
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as FormFormVm;
       expect(vm.form).toBeDefined();
       expect(typeof vm.form.patch).toBe('function');
       expect(typeof vm.form.post).toBe('function');
@@ -129,7 +151,7 @@ describe('FormForm.vue', () => {
 
     it('form data is reactive and mutable', async () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as FormFormVm;
 
       expect(vm.form.name.lt).toBe('Test forma');
 
@@ -143,7 +165,7 @@ describe('FormForm.vue', () => {
   describe('form fields', () => {
     it('opens modal when add button is clicked', async () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as FormFormVm;
 
       const addButton = wrapper.findAll('button').find(b => b.text().includes('forms.add'));
       expect(addButton).toBeDefined();
@@ -187,7 +209,7 @@ describe('FormForm.vue', () => {
         ],
       };
       wrapper = createWrapper({ form: formWithFields });
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as FormFormVm;
 
       expect(vm.form.form_fields).toHaveLength(1);
 
@@ -208,7 +230,7 @@ describe('FormForm.vue', () => {
 
     it('generates the path from the name when the path is empty', async () => {
       wrapper = createWrapper({ form: blankPathForm });
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as FormFormVm;
 
       vm.form.name.lt = 'Narių registracija';
       vm.form.name.en = 'Member registration';
@@ -220,7 +242,7 @@ describe('FormForm.vue', () => {
 
     it('stops generating once the user edits the path', async () => {
       wrapper = createWrapper({ form: blankPathForm });
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as FormFormVm;
 
       vm.form.name.lt = 'Narių registracija';
       await nextTick();
@@ -236,7 +258,7 @@ describe('FormForm.vue', () => {
     it('never overwrites a path an existing form already has', async () => {
       // defaultProps.form arrives with path { lt: 'testas', en: 'test' }
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as FormFormVm;
 
       vm.form.name.lt = 'Visiškai naujas pavadinimas';
       await nextTick();
@@ -246,7 +268,7 @@ describe('FormForm.vue', () => {
 
     it('warns only after the path of an existing form is changed', async () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as FormFormVm;
 
       expect(vm.pathChangedOnExistingForm).toBe(false);
 
@@ -266,7 +288,7 @@ describe('FormForm.vue', () => {
         ],
       };
       wrapper = createWrapper({ form: formWithFields });
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as FormFormVm;
 
       vm.handleEditFormField(vm.form.form_fields[0]);
       vm.selectedFormField.label.lt = 'Discarded edit';
@@ -277,7 +299,7 @@ describe('FormForm.vue', () => {
 
     it('gives each new field its own object rather than the shared template', async () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as FormFormVm;
 
       vm.handleNewFormFieldCreate();
       const first = vm.selectedFormField;
@@ -293,23 +315,24 @@ describe('FormForm.vue', () => {
   });
 
   describe('emits', () => {
-    it('forwards submit:form event from AdminForm', async () => {
+    it('hands the form to the page on submit', async () => {
       wrapper = createWrapper();
-      const vm = wrapper.vm as any;
+      const vm = wrapper.vm as unknown as FormFormVm;
 
-      const adminForm = wrapper.findComponent({ name: 'AdminForm' });
-      expect(adminForm.exists()).toBe(true);
-      await adminForm.vm.$emit('submit:form');
+      const formPage = wrapper.findComponent({ name: 'FormPage' });
+      expect(formPage.exists()).toBe(true);
+      await formPage.vm.$emit('submit');
 
       expect(wrapper.emitted('submit:form')).toBeTruthy();
       expect(wrapper.emitted('submit:form')?.[0]?.[0]).toBe(vm.form);
     });
 
-    it('forwards delete event from AdminForm', async () => {
-      wrapper = createWrapper();
+    it('forwards delete event from ConfirmDialog', async () => {
+      wrapper = createWrapper({ enableDelete: true });
 
-      const adminForm = wrapper.findComponent({ name: 'AdminForm' });
-      await adminForm.vm.$emit('delete');
+      const confirmDialog = wrapper.findComponent({ name: 'ConfirmDialog' });
+      expect(confirmDialog.exists()).toBe(true);
+      await confirmDialog.vm.$emit('confirm');
 
       expect(wrapper.emitted('delete')).toBeTruthy();
     });

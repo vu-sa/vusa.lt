@@ -52,7 +52,7 @@ class Cadence extends Model
     /**
      * The institutions this term staffs, read while it still stands.
      *
-     * `institution_administrators.cadence_id` cascades in the database, so by `deleted`
+     * `institution_secretaries.cadence_id` cascades in the database, so by `deleted`
      * the roster is gone and there is nothing left to ask.
      *
      * @var Collection<int, Institution>|null
@@ -61,7 +61,7 @@ class Cadence extends Model
 
     /**
      * Moving or dropping a term moves meetings in and out of it, and with them the tasks
-     * its administrators carry — task assignment is stored, not derived, so nothing else
+     * its secretaries carry — task assignment is stored, not derived, so nothing else
      * re-staffs them. On the model rather than in CadenceController because dates also move
      * from the meeting side, through {@see SyncCadenceDatesFromAnchors}.
      */

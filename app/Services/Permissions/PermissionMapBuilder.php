@@ -6,6 +6,7 @@ use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Enums\PermissionScopeEnum;
 use App\Models\User;
+use App\Services\AdminNavigation\AdminNavigationCatalog;
 use App\Services\ModelAuthorizer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -29,6 +30,7 @@ class PermissionMapBuilder
         self::INDEX_CACHE_PREFIX,
         self::CREATE_CACHE_PREFIX,
         self::FORCE_DELETE_CACHE_PREFIX,
+        AdminNavigationCatalog::CACHE_PREFIX,
     ];
 
     public const INDEX_CACHE_PREFIX = 'index-permissions-';

@@ -1,6 +1,6 @@
 import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { debounce } from 'lodash-es';
+import { useDebounceFn } from '@vueuse/core';
 
 import { SearchClientFactory, type TypesenseClient } from '@/Shared/Search/services/SearchClientFactory';
 import type { NewsItem } from '@/Types/contentParts';
@@ -308,7 +308,7 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
     }
   };
 
-  const debouncedSearch = debounce(() => {
+  const debouncedSearch = useDebounceFn(() => {
     performSearch(false);
   }, 300);
 

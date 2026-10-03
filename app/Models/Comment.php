@@ -15,8 +15,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 /**
  * @property string $id
@@ -24,7 +24,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $thread_root_id
  * @property string $commentable_type
  * @property string $commentable_id
- * @property string $user_id
+ * @property string|null $user_id
  * @property CommentKind $kind
  * @property string $body
  * @property array<array-key, mixed>|null $metadata
@@ -32,9 +32,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $resolved_at
  * @property string|null $resolved_by
  * @property Carbon|null $edited_at
+ * @property Carbon|null $erased_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property Carbon|null $deleted_at
  * @property-read Model|\Eloquent $commentable
  * @property-read Comment|null $parent
  * @property-read Collection<int, CommentPollVote> $pollVotes
@@ -48,13 +48,11 @@ use Illuminate\Support\Carbon;
  * @method static Builder<static>|Comment forCommentable(string $type, string $id)
  * @method static Builder<static>|Comment newModelQuery()
  * @method static Builder<static>|Comment newQuery()
- * @method static Builder<static>|Comment onlyTrashed()
+ * @method static Builder<static>|Comment notErased()
  * @method static Builder<static>|Comment query()
  * @method static Builder<static>|Comment resolved()
  * @method static Builder<static>|Comment roots()
  * @method static Builder<static>|Comment unresolved()
- * @method static Builder<static>|Comment withTrashed(bool $withTrashed = true)
- * @method static Builder<static>|Comment withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -62,7 +60,7 @@ use Illuminate\Support\Carbon;
 #[Unguarded]
 class Comment extends Model
 {
-    use HasFactory, HasUlids, SoftDeletes;
+    use HasFactory, HasUlids;
 
     /**
      * The emoji a user may react to a comment with.
@@ -92,6 +90,7 @@ class Comment extends Model
             'mentioned_user_ids' => 'array',
             'resolved_at' => 'datetime',
             'edited_at' => 'datetime',
+            'erased_at' => 'datetime',
         ];
     }
 
@@ -150,6 +149,35 @@ class Comment extends Model
         return $this->hasMany(CommentPollVote::class);
     }
 
+    public function isErased(): bool
+    {
+        return $this->erased_at !== null;
+    }
+
+    /**
+     * Deleting a comment erases what it said and who said it, for good, but keeps its row so the
+     * thread shows "Komentaras ištrintas" in its place and its replies stay where they were.
+     */
+    public function erase(): void
+    {
+        DB::transaction(function (): void {
+            $this->reactions()->delete();
+            $this->pollVotes()->delete();
+
+            $this->forceFill([
+                'kind' => CommentKind::Comment,
+                'body' => '',
+                'metadata' => null,
+                'mentioned_user_ids' => null,
+                'user_id' => null,
+                'edited_at' => null,
+                'erased_at' => now(),
+            ])->save();
+        });
+
+        $this->unsetRelation('user')->unsetRelation('reactions')->unsetRelation('pollVotes');
+    }
+
     public function isPoll(): bool
     {
         return $this->kind === CommentKind::Poll;
@@ -197,6 +225,14 @@ class Comment extends Model
     public function scopeRoots(Builder $query): void
     {
         $query->whereNull('parent_id');
+    }
+
+    /**
+     * @param  Builder<Comment>  $query
+     */
+    public function scopeNotErased(Builder $query): void
+    {
+        $query->whereNull('erased_at');
     }
 
     /**

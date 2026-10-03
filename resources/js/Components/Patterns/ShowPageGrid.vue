@@ -8,7 +8,7 @@
     </div>
 
     <!-- The sidebar sticks on wide viewports so context stays visible while the main column scrolls. -->
-    <div v-if="hasSidebar" class="space-y-6 xl:sticky xl:top-6 xl:self-start">
+    <div v-if="hasSidebar" class="space-y-6 xl:sticky xl:top-[calc(var(--shell-chrome-height,0px)+1.5rem)] xl:self-start">
       <slot name="sidebar" />
     </div>
   </div>

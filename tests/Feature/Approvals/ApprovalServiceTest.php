@@ -21,7 +21,7 @@ beforeEach(function (): void {
     $this->user = makeUser($this->tenant);
 
     $this->resourceManager = makeUser($this->tenant);
-    $this->resourceManager->duties()->first()->assignRole('Resource Manager');
+    $this->resourceManager->duties()->first()->assignRole('Išteklių administratorius');
 
     $this->category = ResourceCategory::factory()->create();
     $this->resource = Resource::factory()->create([

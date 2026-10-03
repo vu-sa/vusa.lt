@@ -9,7 +9,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 });
 
 describe('page parent validation', function (): void {

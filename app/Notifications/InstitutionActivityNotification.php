@@ -2,39 +2,40 @@
 
 namespace App\Notifications;
 
-use App\Enums\InstitutionActivityStatus;
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationType;
 use App\Models\Institution;
 use App\Models\Task;
 
 class InstitutionActivityNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::InstitutionActivity;
+    }
+
     public function __construct(
         private readonly Task $task,
         private readonly Institution $institution,
     ) {}
 
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Task;
-    }
-
     public function title(object $notifiable): string
     {
-        $status = InstitutionActivityStatus::tryFrom(
-            (string) ($this->task->metadata['activity_status'] ?? '')
-        );
-
-        return __('visak.activity.activity_status.'.match ($status) {
-            InstitutionActivityStatus::Approaching => 'approaching',
-            default => 'overdue',
-        });
+        return __('notifications.periodicity_gap_question_title', [
+            'institution' => $this->institution->name,
+        ]);
     }
 
     public function body(object $notifiable): string
     {
-        return __('notifications.periodicity_gap_body', [
+        $days = $this->task->metadata['effective_days_since_activity'] ?? null;
+
+        if (! is_numeric($days)) {
+            return __('notifications.periodicity_gap_body');
+        }
+
+        return __('notifications.periodicity_gap_body_days', [
             'institution' => $this->institution->name,
+            'days' => (int) $days,
         ]);
     }
 
@@ -59,23 +60,52 @@ class InstitutionActivityNotification extends BaseNotification
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
+    {
+        $days = $this->task->metadata['effective_days_since_activity'] ?? null;
+
+        return $this->contextRows([
+            'institution' => $this->institution->name,
+            'days_since_activity' => is_numeric($days) ? __('notifications.context.days_value', ['count' => (int) $days]) : null,
+        ]);
+    }
+
+    #[\Override]
+    public function mailSignature(object $notifiable): ?array
+    {
+        return $this->coordinatorSignature($notifiable, $this->institution);
+    }
+
+    /**
+     * Both answers open Pradžia with the window already on the right flow (U21, R-a): "yes" records the
+     * meeting, "no" files a check-in, which is what closes the task.
+     */
+    #[\Override]
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_register_meeting'),
-                'url' => route('institutions.show', [
-                    'institution' => $this->institution,
-                    'activityAction' => 'register-meeting',
-                ]),
-            ],
-            [
-                'label' => __('notifications.action_report_activity'),
-                'url' => route('institutions.show', [
-                    'institution' => $this->institution,
-                    'activityAction' => 'report-activity',
-                ]),
-            ],
+            'label' => __('notifications.action_register_meeting'),
+            'url' => $this->answerUrl('meeting.create'),
         ];
+    }
+
+    #[\Override]
+    public function secondaryAction(): ?array
+    {
+        return [
+            'label' => __('notifications.action_report_activity'),
+            'url' => $this->answerUrl('check-in'),
+        ];
+    }
+
+    #[\Override]
+    public function secondaryActionIsAnswer(): bool
+    {
+        return true;
+    }
+
+    private function answerUrl(string $window): string
+    {
+        return route('dashboard', ['window' => $window, 'institution' => $this->institution->id]);
     }
 }

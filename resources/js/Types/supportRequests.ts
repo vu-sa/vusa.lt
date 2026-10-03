@@ -42,6 +42,7 @@ export interface SupportRequestItem {
   title: string;
   description: string;
   context_url?: string | null;
+  context?: { viewport?: string; browser?: string } | null;
   selected_text?: string | null;
   locale?: string;
   resolved_at?: string | null;

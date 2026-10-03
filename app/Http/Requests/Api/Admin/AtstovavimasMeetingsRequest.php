@@ -50,4 +50,12 @@ class AtstovavimasMeetingsRequest extends FormRequest
             }
         });
     }
+
+    /**
+     * @return list<int>
+     */
+    public function tenantIds(): array
+    {
+        return array_values(array_map(intval(...), $this->validated('tenant_ids')));
+    }
 }

@@ -8,53 +8,44 @@ return [
     'skip' => 'Praleisti',
     'step_of' => '{{current}} iš {{total}}',
 
-    // Atstovavimas Overview Tour
+    // Feature spotlights (SpotlightPopover)
+    'spotlight_eyebrow' => 'Nauja',
+    'spotlight_got_it' => 'Supratau',
+    'spotlight_what_is_new' => 'Kas naujo?',
+
+    // ViSAK overview (/mano/dashboard/atstovavimas)
     'atstovavimas_overview' => [
         'welcome' => [
-            'title' => 'Sveiki atvykę į Atstovavimą!',
-            'description' => 'Ši sritis padės jums <strong>stebėti ir valdyti</strong> savo atstovavimo veiklą institucijose. Leiskite trumpai supažindinti su pagrindinėmis funkcijomis.',
+            'title' => 'ViSAK apžvalga',
+            'description' => 'Čia matai savo atstovavimo darbą institucijose: kur <strong>reikia dėmesio</strong>, kas artėja ir kaip sekėsi iki šiol.',
         ],
         'institutions_card' => [
-            'title' => 'Jūsų institucijos',
-            'description' => 'Čia matote visas institucijas, kuriose atstovaujate. Kortelė rodo, kurioms institucijoms <strong>reikia dėmesio</strong> – ar trūksta susitikimų, ar artėja laikas planuoti naują veiklą.',
-        ],
-        'institution_item' => [
-            'title' => 'Institucijos eilutė',
-            'description' => 'Kiekviena institucija turi <strong>būsenos indikatorių</strong> ir veiksmo mygtukus. Galite suplanuoti susitikimą arba pranešti apie nebuvimą (atostogos, sesija ir pan.).',
+            'title' => 'Kur reikia dėmesio',
+            'description' => 'Institucijos, kuriose seniai užfiksuotas posėdis ar veikla. Iš čia iškart <strong>užfiksuosi posėdį</strong> arba pažymėsi, kad jo nebuvo (atostogos, sesija ir pan.).',
         ],
         'meetings_card' => [
-            'title' => 'Artėjantys susitikimai',
-            'description' => 'Čia matote <strong>artimiausius suplanuotus susitikimus</strong>. Skaičius viršuje rodo, kiek susitikimų laukia. Spustelėkite ant susitikimo, kad peržiūrėtumėte detales.',
+            'title' => 'Artėjantys posėdžiai',
+            'description' => 'Artimiausi suplanuoti posėdžiai. Paspausk ant posėdžio, kad pamatytum darbotvarkę ir detales.',
         ],
         'create_meeting' => [
-            'title' => 'Naujo susitikimo kūrimas',
-            'description' => 'Naudokite šį mygtuką, kad <strong>sukurtumėte naują susitikimą</strong>. Galite pasirinkti instituciją ir nustatyti datą bei darbotvarkę.',
-        ],
-        'all_meetings' => [
-            'title' => 'Visų susitikimų peržiūra',
-            'description' => 'Šis mygtukas atidaro <strong>pilną susitikimų sąrašą</strong> su išplėstine paieška ir filtrais. Čia rasite ir praėjusius susitikimus.',
+            'title' => 'Naujas posėdis',
+            'description' => 'Per <strong>+ Sukurti</strong> užregistruosi naują posėdį: pasirinksi instituciją, datą ir darbotvarkę.',
         ],
         'timeline' => [
             'title' => 'Laiko juosta',
-            'description' => 'Čia matote savo institucijų <strong>veiklos laiko juostą</strong> – susitikimus, spragas ir aktyvumo periodus. Tai padeda vizualiai planuoti atstovavimo veiklą.',
+            'description' => 'Tavo institucijų <strong>veiklos laiko juosta</strong> – posėdžiai, spragos ir aktyvumo periodai. Padeda planuoti į priekį.',
         ],
         'complete' => [
-            'title' => 'Paruošta!',
-            'description' => 'Dabar žinote pagrindines Atstovavimo funkcijas. Jei turite klausimų, kreipkitės į savo padalinio koordinatorių.',
+            'title' => 'Viskas!',
+            'description' => 'Turi klausimų? Kreipkis į savo padalinio koordinatorių. Šį turą bet kada pakartosi per <strong>Pagalba</strong>.',
         ],
-    ],
-
-    // Tenant Tab Spotlight
-    'tenant_tab_spotlight' => [
-        'title' => 'Padalinio vaizdas',
-        'description' => 'Kaip vadovas, galite peržiūrėti viso padalinio institucijų laiko juostą. Spustelėkite čia, kad matytumėte bendrą vaizdą.',
     ],
 
     // Gantt Chart Tour
     'gantt_tour' => [
         'fullscreen' => [
             'title' => 'Viso ekrano režimas',
-            'description' => 'Rekomenduojame pradėti nuo <strong>viso ekrano režimo</strong> – taip matysite daugiau informacijos ir bus patogiau naršyti.',
+            'description' => 'Rekomenduojame pradėti nuo <strong>viso ekrano režimo</strong> – taip matysi daugiau informacijos ir bus patogiau naršyti.',
         ],
         'chart_overview' => [
             'title' => 'Laiko juostos diagrama',
@@ -62,23 +53,23 @@ return [
         ],
         'date_navigation' => [
             'title' => 'Metų navigacija',
-            'description' => 'Spustelėkite datą, kad <strong>peršoktumėte į kitus metus</strong>. Taip pat rasite mygtuką grįžti į šiandieną.',
+            'description' => 'Spustelėk datą, kad <strong>peršoktum į kitus metus</strong>. Taip pat rasi mygtuką grįžti į šiandieną.',
         ],
         'scale' => [
             'title' => 'Mastelio valdymas',
-            'description' => 'Slankikliu galite <strong>keisti mastelio dydį</strong> – sumažinti, kad matytumėte daugiau laiko, arba padidinti detalesniam vaizdui.',
+            'description' => 'Slankikliu gali <strong>keisti mastelio dydį</strong> – sumažinti, kad matytum daugiau laiko, arba padidinti detalesniam vaizdui.',
         ],
         'filters' => [
             'title' => 'Filtravimo parinktys',
-            'description' => 'Spustelėkite šį mygtuką, kad <strong>atidarytumėte filtrus</strong>. Galite pasirinkti padalinius, rodyti tik aktyvias institucijas ar viešas institucijas.',
+            'description' => 'Spustelėk šį mygtuką, kad <strong>atidarytum filtrus</strong>. Gali pasirinkti padalinius, rodyti tik aktyvias institucijas ar viešas institucijas.',
         ],
         'institution_row' => [
             'title' => 'Institucijos pavadinimas',
-            'description' => 'Institucijos pavadinimas yra <strong>nuoroda</strong> – spustelėkite, kad atidarytumėte institucijos puslapį su visa informacija.',
+            'description' => 'Institucijos pavadinimas yra <strong>nuoroda</strong> – spustelėk, kad atidarytum institucijos puslapį su visa informacija.',
         ],
         'meeting_icons' => [
             'title' => 'Susitikimų žymėjimai',
-            'description' => 'Taškai diagramoje žymi <strong>susitikimus</strong>. Spustelėkite ant bet kurio taško, kad atidarytumėte susitikimo detales.',
+            'description' => 'Taškai diagramoje žymi <strong>susitikimus</strong>. Spustelėk ant bet kurio taško, kad atidarytum susitikimo detales.',
         ],
         'safety_bands' => [
             'title' => 'Periodiškumo zonos',
@@ -86,105 +77,95 @@ return [
         ],
         'legend' => [
             'title' => 'Legenda',
-            'description' => 'Baigėme! Spustelėkite čia, kad <strong>atidarytumėte legendą</strong> su visais diagramos elementų paaiškinimais.',
+            'description' => 'Baigėme! Spustelėk čia, kad <strong>atidarytum legendą</strong> su visais diagramos elementų paaiškinimais.',
         ],
     ],
 
-    // Admin Home Tour
+    // Admin Home / Welcome Tour (≤ 5 steps)
     'admin_home' => [
         'welcome' => [
-            'title' => 'Sveiki atvykę į Mano VU SA!',
-            'description' => 'Mano VU SA atsinaujino!<br><br>Tai yra jūsų <strong>pagrindinis darbalaukis</strong>, kuriame rasite svarbiausius įrankius ir informaciją. Leiskite trumpai supažindinti su pagrindinėmis funkcijomis.',
+            'title' => 'Labas! Čia Mano VU SA',
+            'description' => 'Trumpai parodysime, kur kas yra: kaip judėti tarp sričių, rasti ir sukurti tai, ko reikia, ir kur tavęs laukia užduotys. Užtruks mažiau nei minutę.',
         ],
-        'home_search' => [
-            'title' => 'Paieška visur',
-            'description' => 'Šioje paieškoje galite rasti <strong>posėdžius, institucijas, dokumentus ir kitus įrašus</strong>. Ją bet kada pasieksite paspaudę <strong>Ctrl+K</strong>.',
+        'all_sections' => [
+            'title' => 'Visi skyriai',
+            'description' => 'Vienoje vietoje – viskas, ką gali atidaryti su savo paskyra. Pravers, kai nežinai, kurioje srityje ko ieškoti.',
         ],
-        'meetings_card' => [
-            'title' => 'Artėjantys susitikimai',
-            'description' => 'Ši kortelė rodo jūsų <strong>artimiausius suplanuotus susitikimus</strong>. Galite greitai sukurti naują susitikimą arba peržiūrėti visus.',
-        ],
-        'nav_visak' => [
-            'title' => 'ViSAK – Atstovavimas',
-            'description' => 'Šis mygtukas atidaro <strong>ViSAK</strong> – Virtualaus Studentų Atstovų Koordinatoriaus puslapį, kuriame galite valdyti visą savo atstovavimo veiklą.',
-        ],
-        'nav_administravimas' => [
-            'title' => 'Administravimas',
-            'description' => 'Šis mygtukas atidaro <strong>administravimo skyrių</strong>, kuriame galite valdyti vartotojus, padalinius, institucijas ir kitus nustatymus.',
-        ],
-        'action_window' => [
+        'quick_actions' => [
             'title' => 'Greiti veiksmai',
-            'description' => 'Nežinai, nuo ko pradėti? Paspaudęs čia rasi <strong>dažniausius veiksmus</strong> – pranešti apie posėdį, pažymėti, kad posėdžių nebus, ar papildyti jau įvykusį. Klausiama po vieną dalyką, tad nereikia nieko atsiminti iš anksto.',
+            'description' => 'Kūrimo veiksmai iš sričių, kuriose gali dirbti – tie patys kaip <strong>+ Sukurti</strong>, tik be papildomo paspaudimo.',
+        ],
+        'section_switcher' => [
+            'title' => 'Kur esi',
+            'description' => 'Čia matai, kurioje srityje ir skyriuje esi. Paspausk, kad greitai peršoktum į kitą skyrių.',
+        ],
+        'command_palette_mobile' => [
+            'title' => 'Paieška',
+            'description' => 'Rask puslapius, dokumentus, kontaktus ar neseniai redaguotus įrašus.',
+        ],
+        'mobile_menu' => [
+            'title' => 'Meniu',
+            'description' => 'Kitos darbo sritys, paskyra, nustatymai ir pagalba – čia pat galėsi pakartoti ir šį turą.',
+        ],
+        'workspaces' => [
+            'title' => 'Darbo sritys',
+            'description' => 'Mano VU SA suskirstyta į sritis pagal tavo pareigybes ir teises (Pradžia, ViSAK, Rezervacijos ir kt.). Čia greitai persijungsi tarp jų.',
+        ],
+        'command_palette' => [
+            'title' => 'Greitoji paieška',
+            'description' => 'Paspausk <strong>Ctrl+K</strong> (arba <strong>⌘K</strong>) arba paieškos laukelį – rasi puslapius, dokumentus, kontaktus ar neseniai redaguotus įrašus.',
+        ],
+        'action_create' => [
+            'title' => 'Greitas kūrimas',
+            'description' => 'Vienas mygtukas visiems veiksmams – pradėk naują posėdį, pateik rezervaciją ar sukurk registraciją.',
         ],
         'tasks_card' => [
-            'title' => 'Užduotys',
-            'description' => 'Ši kortelė rodo jūsų <strong>asmenines užduotis</strong> ir jų būseną. Matysite, kiek užduočių laukia ir kurios artėja.',
+            'title' => 'Užduotys ir dėmesio eilė',
+            'description' => 'Tavo asmeninės užduotys ir artėjantys priminimai visada matomi Pradžioje – niekas nepasimes.',
         ],
-        'tasks_indicator' => [
-            'title' => 'Užduočių indikatorius',
-            'description' => 'Šis mygtukas rodo jūsų <strong>laukiančių užduočių skaičių</strong>. Spustelėkite, kad peržiūrėtumėte užduotis ar pažymėtumėte jas kaip atliktas.',
-        ],
-        'notifications_indicator' => [
-            'title' => 'Pranešimai',
-            'description' => 'Šis mygtukas rodo jūsų <strong>neperskaitytus pranešimus</strong>. Spustelėkite, kad peržiūrėtumėte naujausius pranešimus.',
-        ],
-        'help_button' => [
-            'title' => 'Pagalbos mygtukas',
-            'description' => 'Šis mygtukas leidžia <strong>paleisti šį vadovą iš naujo</strong> bet kada. Kiekvienas puslapis su vadovu turi šį mygtuką.',
-        ],
-        'nav_dokumentacija' => [
-            'title' => 'Dokumentacija',
-            'description' => 'Spustelėkite čia, kad atidarytumėte <strong>išsamią platformos dokumentaciją</strong> su visais paaiškinimais ir instrukcijomis.',
-        ],
-        'user_menu' => [
-            'title' => 'Jūsų profilis',
-            'description' => 'Šiame meniu rasite <strong>profilio nustatymus</strong>, kalbos ir temos parinktis bei atsijungimo mygtuką.',
-        ],
-        'nav_feedback' => [
-            'title' => 'Palik atsiliepimą',
-            'description' => 'Turi pastebėjimų ar pasiūlymų? <strong>Parašyk mums!</strong> Nuolat tobuliname platformą pagal jūsų atsiliepimus. Sėkmės! ✨',
+        'account_menu' => [
+            'title' => 'Paskyra ir pagalba',
+            'description' => 'Čia rasi savo profilį, temos bei kalbos nustatymus, dokumentaciją ir pagalbos meniu.',
         ],
     ],
 
     // Dutiable timeline editor (/mano/dutiables/timeline)
     'dutiable_timeline' => [
         'welcome' => [
-            'title' => 'Pareigybių laikotarpiai',
-            'description' => 'Čia vienoje juostoje matote <strong>visus institucijos pareigybių laikotarpius</strong>. Vietoj to, kad kiekvieną narį redaguotumėte atskirai, viską galite sutvarkyti iš karto.',
+            'title' => 'Laikotarpių tvarkyklė',
+            'description' => 'Čia vienoje juostoje matai <strong>visus institucijos pareigybių laikotarpius</strong>. Užuot redagavęs kiekvieną narį atskirai, viską gali sutvarkyti iš karto.',
         ],
         'institution' => [
             'title' => 'Institucija',
-            'description' => 'Rodoma institucija. Spustelėję pasirinksite kitą – pirmiausia siūlomos tos, kuriose einate pareigas.',
+            'description' => 'Rodoma institucija. Spustelėjęs pasirinksi kitą – pirmiausia siūlomos tos, kuriose eini pareigas.',
         ],
         'chart' => [
             'title' => 'Laiko juosta',
-            'description' => 'Kiekviena juostelė – vienas pareigybės laikotarpis. Žalias fonas rodo <strong>kadenciją</strong>: juostelė, kuri nesutampa su jos kraštu, ir yra tai, ką čia taisome. Juostelę galima tempti; kaip – parašyta prie „i“ ženklo dešinėje.',
+            'description' => 'Kiekviena juosta – vienas pareigybės laikotarpis: tamsi – dabartinis, pilka – pasibaigęs, gintarinė – neišsaugotas pakeitimas. Fone matomos <strong>kadencijos</strong>. Juostą gali tempti; kaip – parašyta prie „i“ ženklo.',
         ],
         'controls' => [
             'title' => 'Suskleidimas ir rikiavimas',
-            'description' => 'Suskleiskite visas pareigybes, kad matytumėte bendrą vaizdą. Kur nurodytos studijų programos, įrašus galima surikiuoti pagal jas.',
+            'description' => 'Suskleisk visas pareigybes, kad matytum bendrą vaizdą. Kur nurodytos studijų programos, įrašus gali surikiuoti pagal jas.',
         ],
         'filters' => [
             'title' => 'Filtrai',
-            'description' => 'Filtruokite pagal kadenciją ar padalinį. Ten pat pasirinksite, ar rodyti <strong>pasibaigusius</strong> laikotarpius.',
+            'description' => 'Filtruok pagal kadenciją ar padalinį. Ten pat pasirinksi, ar rodyti <strong>pasibaigusius</strong> laikotarpius.',
+        ],
+        'fullscreen' => [
+            'title' => 'Visas ekranas',
+            'description' => 'Grafikas užima visą ekraną, kai reikia daugiau vietos. Grįžti gali tuo pačiu mygtuku arba Esc.',
         ],
         'selection' => [
             'title' => 'Pažymėtas įrašas',
-            'description' => 'Pažymėjus juostelę čia matysite tikslias datas ir veiksmus: sulygiuoti su kadencija, užbaigti, sujungti ar pašalinti.',
+            'description' => 'Šoniniame skydelyje matai pažymėtos juostos tikslias datas ir veiksmus: sulygiuoti su kadencija, užbaigti, sujungti ar pašalinti.',
         ],
         'suggestions' => [
             'title' => 'Siūlomi taisymai',
-            'description' => 'Sistema pati randa neatitikimus – persidengiančius laikotarpius, neterminuotas pareigas po pasibaigusios kadencijos. Galite pritaikyti juos vienu paspaudimu.',
+            'description' => 'Sistema pati randa neatitikimus – persidengiančius laikotarpius, neterminuotas pareigas po pasibaigusios kadencijos. Gali juos pritaikyti vienu paspaudimu.',
         ],
         'save' => [
             'title' => 'Peržiūra ir išsaugojimas',
-            'description' => 'Niekas neišsaugoma, kol nepaspaudžiate. Prieš tai galite <strong>peržiūrėti</strong>, kaip įrašai atrodys po pakeitimų.',
+            'description' => 'Niekas neišsaugoma, kol nepaspaudi <strong>Išsaugoti</strong> viršuje. Prieš tai gali <strong>peržiūrėti</strong>, kaip įrašai atrodys po pakeitimų.',
         ],
-    ],
-
-    // Help Button Spotlight
-    'help_button_spotlight' => [
-        'title' => 'Reikia pagalbos?',
-        'description' => 'Spauskite šį mygtuką, kad pradėtumėte interaktyvų puslapio vadovą ir sužinotumėte, kaip naudotis funkcijomis.',
     ],
 ];

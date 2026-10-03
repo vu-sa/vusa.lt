@@ -1,7 +1,10 @@
 <template>
   <div class="group/rc-block relative">
     <div ref="rootRef" class="rc-fullscreen-block-display">
-      <BlockPreviewRenderer
+      <SectionDisplay v-if="content.type === 'section'" :element="content" :anchor-id="content.id ?? content.key" :editable="!preview" :has-children="Boolean($slots.default)" :band @update:element="$emit('update:content', $event)">
+        <slot />
+      </SectionDisplay>
+      <BlockPreviewRenderer v-else
         :element="content"
         :resolved
         :band
@@ -73,6 +76,7 @@
 import { computed, ref, type Component } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import SectionDisplay from '../../RCSection/SectionDisplay.vue';
 import BlockPreviewRenderer from '../BlockPreviewRenderer.vue';
 import RCPresentationPicker from '../RCPresentationPicker.vue';
 import RCWidthPicker from '../RCWidthPicker.vue';

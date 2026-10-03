@@ -72,51 +72,36 @@ describe('useTenantOptions', () => {
     expect(currentLabel().value).toBe('MIF');
   });
 
-  it('switchTenant keeps the current path when the page supports tenant-scoped content', () => {
+  it('tenantSwitchUrl keeps the current path when the page supports tenant-scoped content', () => {
     const mockPage = createMockPage({ tenants, tenantSwitchTarget: 'same-page' });
     mockPage.url = '/lt/kontaktai';
     vi.mocked(usePage).mockReturnValue(mockPage);
-    Object.defineProperty(window, 'location', {
-      value: { host: 'mif.vusa.test', protocol: 'https:', href: '' },
-      writable: true,
-      configurable: true,
-    });
+    jsdom.reconfigure({ url: 'https://mif.vusa.test/' });
 
-    const { switchTenant } = useTenantOptions();
-    switchTenant('ff');
+    const { tenantSwitchUrl } = useTenantOptions();
 
-    expect(window.location.href).toBe('https://ff.vusa.test/lt/kontaktai');
+    expect(tenantSwitchUrl('ff')).toBe('https://ff.vusa.test/lt/kontaktai');
   });
 
-  it('switchTenant goes to the selected tenant home page when the current page is not tenant-scoped', () => {
+  it('tenantSwitchUrl goes to the selected tenant home page when the current page is not tenant-scoped', () => {
     const mockPage = createMockPage({ tenants, app: { locale: 'en' } });
     mockPage.url = '/en/documents';
     vi.mocked(usePage).mockReturnValue(mockPage);
-    Object.defineProperty(window, 'location', {
-      value: { host: 'www.vusa.test', protocol: 'https:', href: '' },
-      writable: true,
-      configurable: true,
-    });
+    jsdom.reconfigure({ url: 'https://www.vusa.test/' });
 
-    const { switchTenant } = useTenantOptions();
-    switchTenant('ff');
+    const { tenantSwitchUrl } = useTenantOptions();
 
-    expect(window.location.href).toBe('https://ff.vusa.test/en');
+    expect(tenantSwitchUrl('ff')).toBe('https://ff.vusa.test/en');
   });
 
-  it('switchTenant maps the "vusa" alias to the "www" subdomain', () => {
+  it('tenantSwitchUrl maps the "vusa" alias to the "www" subdomain', () => {
     const mockPage = createMockPage({ tenants, tenantSwitchTarget: 'same-page' });
     mockPage.url = '/lt';
     vi.mocked(usePage).mockReturnValue(mockPage);
-    Object.defineProperty(window, 'location', {
-      value: { host: 'mif.vusa.test', protocol: 'https:', href: '' },
-      writable: true,
-      configurable: true,
-    });
+    jsdom.reconfigure({ url: 'https://mif.vusa.test/' });
 
-    const { switchTenant } = useTenantOptions();
-    switchTenant('vusa');
+    const { tenantSwitchUrl } = useTenantOptions();
 
-    expect(window.location.href).toBe('https://www.vusa.test/lt');
+    expect(tenantSwitchUrl('vusa')).toBe('https://www.vusa.test/lt');
   });
 });

@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\SharepointConfigEnum;
-use App\Models\SharepointFile;
 use App\Services\SharepointGraphService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
@@ -549,75 +548,6 @@ describe('SharePoint Service Robustness', function (): void {
             expect($result->keys()->all())->toBe(['good-item-1', 'good-item-2']);
         });
 
-        test('parseDriveItems processes item data correctly', function (): void {
-            $reflection = new ReflectionClass($this->service);
-            $method = $reflection->getMethod('parseDriveItems');
-
-            $mockDriveItems = collect([
-                [
-                    'id' => 'test-drive-item-1',
-                    'name' => 'Test File.pdf',
-                    'size' => 1024,
-                    'file' => ['mimeType' => 'application/pdf'],
-                    'createdDateTime' => '2024-01-15T10:00:00Z',
-                    'lastModifiedDateTime' => '2024-01-15T12:00:00Z',
-                    'webUrl' => 'https://sharepoint.test/file.pdf',
-                    'listItem' => [
-                        'fields' => [
-                            'Title' => 'Test Document',
-                            'Date' => '2024-01-15',
-                        ],
-                    ],
-                    'thumbnails' => [
-                        [
-                            'large' => [
-                                'url' => 'https://sharepoint.test/thumbnail.jpg',
-                            ],
-                        ],
-                    ],
-                ],
-            ]);
-
-            // Mock SharepointFile::whereIn to return empty collection
-            // This test validates the method signature and basic functionality
-            // In a real implementation, you would properly mock this with Mockery
-
-            // Skip this specific functionality test as it requires database setup
-            $this->markTestSkipped('SharepointFile whereIn test requires proper database setup');
-
-            try {
-                SharepointFile::whereIn('id', [])->get();
-                expect(true)->toBeTrue(); // If this works, the method exists
-            } catch (Exception) {
-                expect(false)->toBeTrue('SharepointFile::whereIn method is not available');
-            }
-
-            $result = $method->invoke($this->service, $mockDriveItems);
-
-            expect($result)->toHaveCount(1);
-            $item = $result->first();
-            expect($item)->toMatchArray(['id' => 'test-drive-item-1', 'name' => 'Test File.pdf', 'size' => 1024, 'webUrl' => 'https://sharepoint.test/file.pdf'])
-                ->and($item['thumbnails'])->toHaveCount(1);
-        });
-
-        test('getDriveItemByPath handles encoding correctly', function (): void {
-            // Test URL encoding for paths with special characters
-            $testPaths = [
-                'Simple Path',
-                'Path with spaces',
-                'Path/with/slashes',
-                'Path with ümlauts',
-                'Path with & symbols',
-            ];
-
-            foreach ($testPaths as $path) {
-                // The method should handle encoding internally
-                // We can't easily test the actual GraphQL call without mocking extensively
-                // But we can verify the method exists and accepts the path parameter
-                expect(method_exists($this->service, 'getDriveItemByPath'))->toBeTrue();
-            }
-        });
-
         test('updateDriveItemByPath validates input parameters', function (): void {
             // Test that the method exists and has proper structure
             expect(method_exists($this->service, 'updateDriveItemByPath'))->toBeTrue();
@@ -647,19 +577,6 @@ describe('SharePoint Service Robustness', function (): void {
 
             $reflection = new ReflectionMethod($this->service, 'deleteDriveItem');
             expect($reflection->getNumberOfRequiredParameters())->toBe(1);
-        });
-
-        test('getDriveItemsChildrenByPaths handles batch operations', function (): void {
-            // Test that the method can handle multiple paths
-            expect(method_exists($this->service, 'getDriveItemsChildrenByPaths'))->toBeTrue();
-
-            $reflection = new ReflectionMethod($this->service, 'getDriveItemsChildrenByPaths');
-            expect($reflection->getNumberOfRequiredParameters())->toBe(1);
-
-            // Test with empty array
-            // Can't test the actual call without extensive mocking, but can verify structure
-            $emptyPaths = [];
-            expect($emptyPaths)->toBeArray();
         });
 
         test('getListItem and updateListItem methods exist', function (): void {
@@ -730,15 +647,6 @@ describe('SharePoint Service Robustness', function (): void {
     });
 
     describe('error handling edge cases', function (): void {
-        test('handles Microsoft Graph OData errors gracefully', function (): void {
-            // Test that OData errors are properly handled in getDriveItemByPath
-            // This is important for the actual service usage
-            expect(method_exists($this->service, 'getDriveItemByPath'))->toBeTrue();
-
-            // The method should return an empty collection when OData errors occur
-            // This is tested implicitly in the actual implementation
-        });
-
         test('handles invalid SharePoint field values', function (): void {
             // Test various SharePoint field scenarios that might cause issues
             $problematicValues = [
@@ -752,23 +660,6 @@ describe('SharePoint Service Robustness', function (): void {
             // These would be handled in the batchProcessDocuments method
             // We can verify the method structure handles these cases
             expect(method_exists($this->service, 'batchProcessDocuments'))->toBeTrue();
-        });
-
-        test('handles SharePoint API response variations', function (): void {
-            // Test different response formats that SharePoint might return
-            $responseVariations = [
-                // Missing optional fields
-                ['id' => 'test', 'name' => 'test.pdf'],
-                // Extra fields
-                ['id' => 'test', 'name' => 'test.pdf', 'extraField' => 'value'],
-                // Null values in expected places
-                ['id' => 'test', 'name' => null, 'size' => null],
-            ];
-
-            foreach ($responseVariations as $response) {
-                // The parseDriveItems method should handle these gracefully
-                expect(isset($response['id']))->toBeTrue(); // Basic validation
-            }
         });
 
         test('validates SharePoint configuration before operations', function (): void {

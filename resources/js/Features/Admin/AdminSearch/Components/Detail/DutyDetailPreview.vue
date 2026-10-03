@@ -33,7 +33,7 @@
     >
       <Building2 class="mt-0.5 size-4 shrink-0" />
       <span>
-        {{ $t('Ši pareigybė priklauso kitam padaliniui') }}<template v-if="duty.tenant_shortname"> ({{ duty.tenant_shortname }})</template>{{ $t('. Galite valdyti tik savo padalinio atstovus.') }}
+        {{ $t('Ši pareigybė priklauso kitam padaliniui') }}<template v-if="duty.tenant_shortname"> ({{ duty.tenant_shortname }})</template>{{ $t('. Gali valdyti tik savo padalinio atstovus.') }}
       </span>
     </div>
 

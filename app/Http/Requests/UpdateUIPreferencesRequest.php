@@ -5,7 +5,6 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 
 class UpdateUIPreferencesRequest extends FormRequest
 {
@@ -25,14 +24,6 @@ class UpdateUIPreferencesRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'sidebar' => ['nullable', 'array'],
-            'sidebar.sections' => ['nullable', 'array'],
-            'sidebar.sections.*' => ['boolean'],
-            'sidebar.order' => ['nullable', 'array'],
-            'sidebar.order.*' => ['string'],
-            'sidebar.collapsed' => ['nullable', 'boolean'],
-            'appearance' => ['nullable', 'array'],
-            'appearance.density' => ['nullable', Rule::in(['comfortable', 'compact'])],
             'pinned_pages' => ['nullable', 'array'],
             'pinned_pages.*.route' => ['required_with:pinned_pages', 'string'],
             'pinned_pages.*.params' => ['nullable', 'array'],

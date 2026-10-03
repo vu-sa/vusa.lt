@@ -8,7 +8,7 @@
     </div>
 
     <div v-if="isLoading" class="flex flex-col gap-2">
-      <Skeleton v-for="n in 3" :key="n" class="h-16 w-full rounded-xl" />
+      <Skeleton v-for="n in 3" :key="n" class="h-16 w-full" />
     </div>
 
     <EmptyState
@@ -27,7 +27,7 @@
         :key="institution.id"
         :title="institution.name"
         :icon="statusStyle(institution).icon"
-        :gradient="statusStyle(institution).gradient"
+        :tone="statusStyle(institution).tone"
         @click="pick(institution)"
       >
         <template #description>
@@ -42,7 +42,6 @@
         :title="$t('action_window.institution.other')"
         :description="$t('action_window.institution.other_description')"
         :icon="SearchIcon"
-        gradient="from-indigo-500/15 to-violet-500/15 dark:from-indigo-400/12 dark:to-violet-400/12"
         @click="openSearch"
       />
     </ActionChoiceList>
@@ -70,7 +69,9 @@ import { useWindowDates } from '../useWindowDates';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData, type ActionWindowInstitution } from '@/Composables/useActionWindowData';
+import { describeInstitutionActivity } from '@/Components/Institutions/institutionActivity';
 import { EmptyState } from '@/Components/Patterns';
+import type { StatusRole } from '@/Constants/statuses';
 import { Input } from '@/Components/ui/input';
 import { Skeleton } from '@/Components/ui/skeleton';
 
@@ -109,55 +110,27 @@ const emptyDescription = computed(() =>
 );
 
 /**
- * Each activity status gets its own icon and tint: "overdue" and "covered by a
- * check-in" are opposite situations, and a single warning triangle for both was
- * the fastest way to make the list unreadable.
+ * Each activity status gets its own icon and status role: "overdue" and "covered by a
+ * check-in" are opposite situations, and a single warning triangle for both was the
+ * fastest way to make the list unreadable. Roles follow `institutionActivityStatuses`.
  */
-const STATUS_STYLES: Record<string, { icon: LucideIcon; gradient: string }> = {
-  overdue: { icon: CircleAlert, gradient: 'from-red-500/20 to-rose-500/15 dark:from-red-400/15 dark:to-rose-400/12' },
-  approaching: { icon: CalendarClock, gradient: 'from-amber-500/20 to-orange-500/15 dark:from-amber-400/15 dark:to-orange-400/12' },
-  no_activity: { icon: CircleHelp, gradient: 'from-zinc-500/15 to-zinc-400/15 dark:from-zinc-400/12 dark:to-zinc-300/12' },
-  covered_by_check_in: { icon: CalendarOff, gradient: 'from-violet-500/15 to-purple-500/15 dark:from-violet-400/12 dark:to-purple-400/12' },
-  covered_by_upcoming_meeting: { icon: CalendarCheck, gradient: 'from-sky-500/15 to-indigo-500/15 dark:from-sky-400/12 dark:to-indigo-400/12' },
-  healthy: { icon: Landmark, gradient: 'from-emerald-500/15 to-teal-500/15 dark:from-emerald-400/12 dark:to-teal-400/12' },
+const STATUS_STYLES: Record<string, { icon: LucideIcon; tone: StatusRole }> = {
+  overdue: { icon: CircleAlert, tone: 'danger' },
+  approaching: { icon: CalendarClock, tone: 'attention' },
+  no_activity: { icon: CircleHelp, tone: 'neutral' },
+  covered_by_check_in: { icon: CalendarOff, tone: 'info' },
+  covered_by_upcoming_meeting: { icon: CalendarCheck, tone: 'info' },
+  // The healthy state is the ordinary one and carries no colour (status rule: don't paint every row).
+  healthy: { icon: Landmark, tone: 'neutral' },
 };
 
-const FALLBACK_STYLE = { icon: Landmark, gradient: 'from-muted to-muted' };
+const FALLBACK_STYLE: { icon: LucideIcon; tone: StatusRole } = { icon: Landmark, tone: 'neutral' };
 
 const statusStyle = (institution: ActionWindowInstitution) =>
   STATUS_STYLES[institution.activity_status.status] ?? FALLBACK_STYLE;
 
-/**
- * What is already scheduled, before what is overdue: a body can hold both an upcoming
- * meeting and an active check-in, and knowing only one of them was what made the list
- * look wrong ("no meetings until October" beside a meeting next Tuesday).
- */
-const contextLine = (institution: ActionWindowInstitution): string => {
-  const status = institution.activity_status;
-  const parts: string[] = [];
-
-  if (status.next_meeting_at) {
-    parts.push($t('action_window.institution.next_meeting', { date: dates.day(status.next_meeting_at) }));
-  }
-
-  if (status.active_check_in_until) {
-    parts.push(parts.length > 0
-      ? $t('action_window.institution.check_in_until_short', { date: dates.day(status.active_check_in_until) })
-      : $t('action_window.institution.check_in_until', { date: dates.day(status.active_check_in_until) }));
-  }
-
-  if (parts.length > 0) {
-    return parts.join(' · ');
-  }
-
-  // The date, not `effective_days_since_activity`: that counter skips vacation periods,
-  // so rendering it as "N days ago" told the reader something no calendar agrees with.
-  if (status.last_meeting_at) {
-    return $t('action_window.institution.last_meeting', { date: dates.fullDay(status.last_meeting_at) });
-  }
-
-  return $t('action_window.institution.no_meetings_yet');
-};
+const contextLine = (institution: ActionWindowInstitution): string =>
+  describeInstitutionActivity(institution.activity_status, dates);
 
 /**
  * Carries the return frame, so changing the institution from the review still lands

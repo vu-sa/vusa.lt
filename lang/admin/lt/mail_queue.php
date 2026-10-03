@@ -5,4 +5,7 @@ return [
     'empty_description' => 'Nėra nė vieno laukiančio pranešimo — visos santraukos išsiųstos.',
     'line_count' => '{1} :count eilutė|[2,9] :count eilutės|[10,*] :count eilučių',
     'clear_all_warning' => 'Bus pašalinta :count laukiančių eilučių, skirtų :recipients gavėjams. Šie laiškai niekada nebus išsiųsti. Veiksmo atšaukti negalima.',
+    'show_lines' => 'Peržiūrėti laiško eilutes',
+    'discard_title' => 'Nesiųsti šių pranešimų?',
+    'discard_warning' => 'Bus pašalinta :count laukiančių eilučių. Jos nebebus išsiųstos. Veiksmo atšaukti negalima.',
 ];

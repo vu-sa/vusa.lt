@@ -4,8 +4,22 @@
     :class="{ 'opacity-75': variant === 'past' }"
     data-slot="event-card"
   >
+    <component
+      :is="sameOrigin ? Link : 'a'"
+      v-if="variant === 'compact'"
+      :href="eventHref"
+      class="flex items-center gap-4 border-b border-border py-4 hover:bg-secondary/40 pointer-coarse:min-h-11"
+    >
+      <DatePlate :date="eventDateObj" class="w-14 border border-border bg-secondary/40" />
+      <span class="min-w-0 flex-1">
+        <span class="block text-sm font-bold text-foreground transition-colors group-hover:text-brand">{{ eventTitle }}</span>
+        <span class="mt-1 block text-xs text-muted-foreground">{{ formattedDateTime }}</span>
+      </span>
+      <IFluentArrowUpRight20Regular class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+    </component>
     <!-- 16:10 fixed-ratio image frame per v0 design -->
-    <Link
+    <component :is="sameOrigin ? Link : 'a'"
+      v-else
       :href="eventHref"
       class="relative aspect-[16/9] overflow-hidden border border-border bg-secondary"
     >
@@ -56,15 +70,15 @@
           {{ tenantShortname }}
         </span>
       </div>
-    </Link>
+    </component>
 
     <!-- Content -->
-    <div class="flex flex-1 flex-col pt-4">
+    <div v-if="variant !== 'compact'" class="flex flex-1 flex-col pt-4">
       <!-- Title -->
       <h3 class="text-pretty text-lg font-bold leading-snug text-foreground transition-colors group-hover:text-brand">
-        <Link :href="eventHref">
+        <component :is="sameOrigin ? Link : 'a'" :href="eventHref">
           {{ eventTitle }}
-        </Link>
+        </component>
       </h3>
 
       <!-- Metadata -->
@@ -86,13 +100,13 @@
 
       <!-- Action -->
       <div class="mt-auto flex items-center justify-between gap-3 pt-4">
-        <Link
+        <component :is="sameOrigin ? Link : 'a'"
           :href="eventHref"
           class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-foreground transition-colors group-hover:text-brand"
         >
           <span>{{ variant === 'past' ? $t('Peržiūrėti') : $t('Daugiau') }}</span>
           <IFluentArrowUpRight20Regular class="size-4" />
-        </Link>
+        </component>
       </div>
     </div>
   </article>
@@ -170,6 +184,10 @@ const tenantShortname = computed(() => {
 });
 
 const eventHref = computed(() => getCalendarEvent2Route(props.event, page.props.app.locale));
+const sameOrigin = computed(() => {
+  if (typeof window === 'undefined') return false;
+  return new URL(eventHref.value, window.location.href).origin === window.location.origin;
+});
 
 const imageUrl = computed(() => {
   const ev = props.event as CalendarEventLike;

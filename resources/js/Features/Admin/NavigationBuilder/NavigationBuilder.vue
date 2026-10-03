@@ -5,11 +5,11 @@
         <Label class="text-sm text-muted-foreground">{{ $t('navigation.builder.lang_switch') }}</Label>
         <ToggleGroup type="single" size="sm" :model-value="lang" @update:model-value="val => val && $emit('update:lang', val as 'lt' | 'en')">
           <ToggleGroupItem value="lt" class="gap-1.5">
-            <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-3.5 w-3.5 rounded-full" alt="">
+            <img src="https://hatscripts.github.io/circle-flags/flags/lt.svg" class="h-3.5 w-3.5" alt="">
             LT
           </ToggleGroupItem>
           <ToggleGroupItem value="en" class="gap-1.5">
-            <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-3.5 w-3.5 rounded-full" alt="">
+            <img src="https://hatscripts.github.io/circle-flags/flags/gb.svg" class="h-3.5 w-3.5" alt="">
             EN
           </ToggleGroupItem>
         </ToggleGroup>
@@ -35,10 +35,10 @@
       </div>
     </div>
 
-    <Alert v-if="driftMessage" class="mb-4 border-sky-200 bg-sky-50 text-sky-950 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-100">
-      <AlertDescription class="flex flex-wrap items-center justify-between gap-2 text-sm text-sky-900 dark:text-sky-100">
+    <Alert v-if="driftMessage" class="mb-4 border-status-info/20 bg-status-info/10 text-foreground">
+      <AlertDescription class="flex flex-wrap items-center justify-between gap-2 text-sm">
         {{ driftMessage }}
-        <Button variant="outline" size="sm" class="border-sky-300 bg-white text-sky-950 hover:bg-sky-100 dark:border-sky-800 dark:bg-sky-950/50 dark:text-sky-100 dark:hover:bg-sky-900/40" @click="$emit('update:lang', otherLang)">
+        <Button variant="outline" size="sm" class="bg-background hover:bg-muted" @click="$emit('update:lang', otherLang)">
           {{ $t('navigation.builder.drift_jump', { lang: otherLang.toUpperCase() }) }}
         </Button>
       </AlertDescription>
@@ -70,12 +70,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, toRaw } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link, router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { useSortable } from '@vueuse/integrations/useSortable';
-import { cloneDeep } from 'lodash-es';
 import { Eye, Pencil, Plus } from 'lucide-vue-next';
 
 import NavigationRootItem from './NavigationRootItem.vue';
@@ -104,10 +103,10 @@ const saveState = ref<'idle' | 'saving' | 'saved' | 'error'>('idle');
 // `preserveState: true` (see below) never overwrites it, so a fresh reference from a
 // *different* Inertia visit (e.g. the language switch) is the only thing that should
 // reset it, which the `lang` watcher below does explicitly.
-const contents = ref<AdminNavigationRoot[]>(cloneDeep(props.roots));
+const contents = ref<AdminNavigationRoot[]>(structuredClone(toRaw(props.roots)));
 
 watch(() => props.lang, () => {
-  contents.value = cloneDeep(props.roots);
+  contents.value = structuredClone(toRaw(props.roots));
 });
 
 // `watchElement: true` rebinds Sortable to the new element whenever the roots list

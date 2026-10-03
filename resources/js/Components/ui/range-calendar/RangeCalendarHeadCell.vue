@@ -1,5 +1,5 @@
 <template>
-  <RangeCalendarHeadCell :class="cn('w-9 rounded-md text-[0.8rem] font-normal text-zinc-500 dark:text-zinc-400', props.class)" v-bind="forwardedProps">
+  <RangeCalendarHeadCell :class="cn('w-9 text-[0.8rem] font-normal text-muted-foreground', props.class)" v-bind="forwardedProps">
     <slot />
   </RangeCalendarHeadCell>
 </template>

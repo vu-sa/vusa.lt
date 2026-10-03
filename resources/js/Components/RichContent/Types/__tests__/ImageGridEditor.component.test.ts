@@ -62,6 +62,8 @@ describe('ImageGridEditor', () => {
 
     const inputs = wrapper.findAll('input[type="text"]');
     expect(inputs.map(i => (i.element as HTMLInputElement).value)).toEqual(['Alt A', 'Alt B']);
+    expect(inputs.every(input => input.attributes('aria-label') === 'rich-content.image_alt_text')).toBe(true);
+    expect(wrapper.find('[aria-label="rich-content.tile_options"]').exists()).toBe(true);
   });
 
   it('editing a tile\'s alt input updates only that image', async () => {

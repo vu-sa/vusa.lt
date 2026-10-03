@@ -1,9 +1,9 @@
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button type="button" size="xs" variant="outline" :disabled="options.length === 0 && !$slots.extra">
+      <Button type="button" size="xs" variant="outline" class="pointer-coarse:min-h-11" :disabled="options.length === 0 && !$slots.extra">
         {{ label }}
-        <Badge v-if="modelValue.length > 0" variant="secondary" class="ml-1 text-[10px]">
+        <Badge v-if="modelValue.length > 0" variant="secondary" class="ml-1 text-xs">
           {{ modelValue.length }}
         </Badge>
         <!-- Whatever the `extra` switches are set to. They persist between visits, so their
@@ -28,7 +28,7 @@
         @update:model-value="toggle(option.value)"
       >
         <span class="truncate">{{ option.label }}</span>
-        <span class="ml-auto pl-2 text-[10px] text-muted-foreground">{{ option.count }}</span>
+        <span class="ml-auto pl-2 text-xs text-muted-foreground">{{ option.count }}</span>
       </DropdownMenuCheckboxItem>
 
       <!-- View switches that belong to the same question the filter answers, e.g. whether

@@ -22,7 +22,7 @@ function makeMockEditor(overrides = {}): Editor {
     chain: () => ({
       focus: () => ({
         setParagraph: () => ({ run: vi.fn() }),
-        toggleHeading: () => ({ run: vi.fn() }),
+        setHeading: () => ({ run: vi.fn() }),
         toggleBulletList: () => ({ run: vi.fn() }),
         toggleOrderedList: () => ({ run: vi.fn() }),
         toggleBlockquote: () => ({ run: vi.fn() }),
@@ -169,7 +169,10 @@ describe('RCSmartTiptapToolbar', () => {
     const extendMarkRange = vi.fn(() => ({ setLink }));
     const focus = vi.fn(() => ({ extendMarkRange, unsetLink: () => ({ run: vi.fn() }) }));
     const chain = vi.fn(() => ({ focus }));
-    const editor = makeMockEditor({ chain });
+    const editor = makeMockEditor({
+      chain,
+      state: { selection: { from: 1, to: 8, $from: { depth: 1, before: () => 0, pos: 1 } } },
+    });
 
     const wrapper = mount(RCSmartTiptapToolbar, {
       props: { editor },

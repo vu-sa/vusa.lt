@@ -9,8 +9,9 @@ self.addEventListener('push', (event) => {
   let data = {
     title: 'VU SA',
     body: 'Gavote naują pranešimą',
-    icon: '/logos/vusa-en.png',
-    badge: '/logos/vusa-en.png',
+    icon: '/images/icons/favicons/favicon-196x196.png',
+    // No default badge: Android draws it as a monochrome mask, so a colour logo becomes a white square.
+    badge: undefined,
     url: '/mano',
   };
 

@@ -5,12 +5,77 @@ namespace App\Services;
 use App\Enums\AgendaItemType;
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\Pivots\AgendaItem;
 use App\Models\Vote;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 use Illuminate\Support\Collection;
 
 class MeetingCompletionService
 {
+    /**
+     * Return the concrete work still required to complete a meeting agenda.
+     *
+     * @return array<int, array{
+     *     type: 'agenda_missing'|'agenda_item_type_missing'|'agenda_item_vote_missing',
+     *     agenda_item_id?: string,
+     *     title?: string,
+     *     position?: int,
+     *     missing_fields?: array<int, 'decision'|'student_vote'|'student_benefit'>
+     * }>
+     */
+    public function missingActions(Meeting $meeting): array
+    {
+        if (! $meeting->relationLoaded('agendaItems')) {
+            $meeting->load('agendaItems.votes');
+        }
+
+        if ($meeting->agendaItems->isEmpty()) {
+            return [['type' => 'agenda_missing']];
+        }
+
+        $requiresStudentPerspective = $meeting->requiresStudentPerspective();
+
+        $actions = [];
+
+        foreach ($meeting->agendaItems->sortBy('order')->values() as $index => $item) {
+            $base = [
+                'agenda_item_id' => (string) $item->getKey(),
+                'title' => (string) $item->title,
+                'position' => $index + 1,
+            ];
+
+            $type = $item->getAttribute('type');
+
+            if ($type === null) {
+                $actions[] = ['type' => 'agenda_item_type_missing', ...$base];
+
+                continue;
+            }
+
+            if ($this->itemIsComplete($item, $requiresStudentPerspective)) {
+                continue;
+            }
+
+            $mainVote = $item->votes->firstWhere('is_main', true);
+            $vote = $mainVote ?? $item->votes->first();
+            $requiredFields = $requiresStudentPerspective
+                ? ['decision', 'student_vote', 'student_benefit']
+                : ['decision'];
+            $missingFields = collect($requiredFields)
+                ->filter(fn (string $field): bool => $vote === null || empty($vote->{$field}))
+                ->values()
+                ->all();
+
+            $actions[] = [
+                'type' => 'agenda_item_vote_missing',
+                ...$base,
+                'missing_fields' => $missingFields,
+            ];
+        }
+
+        return $actions;
+    }
+
     /**
      * Calculate the completion status of a meeting based on its agenda items and votes.
      *
@@ -30,29 +95,32 @@ class MeetingCompletionService
 
         $requiresStudentPerspective = $meeting->requiresStudentPerspective();
 
-        $allComplete = $agendaItems->every(function ($item) use ($requiresStudentPerspective) {
-            $type = $item->getAttribute('type');
-            if ($type instanceof AgendaItemType && ! $type->requiresVote()) {
-                return true;
-            }
-
-            if (! $item->relationLoaded('votes')) {
-                $item->load('votes');
-            }
-
-            if ($item->votes->isEmpty()) {
-                return false;
-            }
-
-            $mainVote = $item->votes->firstWhere('is_main', true);
-            if ($mainVote) {
-                return $this->voteIsComplete($mainVote, $requiresStudentPerspective);
-            }
-
-            return $item->votes->contains(fn ($vote) => $this->voteIsComplete($vote, $requiresStudentPerspective));
-        });
+        $allComplete = $agendaItems->every(
+            fn (AgendaItem $item): bool => $this->itemIsComplete($item, $requiresStudentPerspective)
+        );
 
         return $allComplete ? 'complete' : 'incomplete';
+    }
+
+    /**
+     * The one rule for a filled-in agenda item, shared by the meeting status, the completion task
+     * and the agenda item search index: a set type, and for voting items a complete main vote.
+     */
+    public function itemIsComplete(AgendaItem $item, bool $requiresStudentPerspective): bool
+    {
+        $type = $item->getAttribute('type');
+
+        if (! $type instanceof AgendaItemType) {
+            return false;
+        }
+
+        if (! $type->requiresVote()) {
+            return true;
+        }
+
+        $mainVote = $item->votes->firstWhere('is_main', true);
+
+        return $mainVote instanceof Vote && $this->voteIsComplete($mainVote, $requiresStudentPerspective);
     }
 
     /**

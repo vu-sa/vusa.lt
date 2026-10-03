@@ -45,7 +45,7 @@ describe('EventCalendarElement', () => {
     const allEvents = wrapper.get('[data-calendar-all-events]');
     expect(allEvents.text()).toContain('Visi renginiai');
     expect(allEvents.attributes('href')).toContain('/calendar');
-    expect(wrapper.text()).toContain('Sinchronizuoti kalendorių');
+    expect(wrapper.text()).toContain('calendar.sync.button');
   });
 
   it('renders the authored title, falling back to the default heading when blank', () => {

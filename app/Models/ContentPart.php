@@ -6,6 +6,7 @@ use App\Enums\ContentPartEnum;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\ContentService;
 use App\Services\HtmlSanitizerService;
+use App\Support\PublicCacheTags;
 use App\Tiptap\TiptapEditor;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -153,9 +154,10 @@ class ContentPart extends Model
 
         if ($content->page !== null) {
             $page = $content->page;
-            Cache::tags(['pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
+            Cache::tags([PublicCacheTags::pages((int) $page->tenant_id, (string) $page->lang)])->flush();
         }
 
+        // Every homepage: a tenant without its own falls back to the main tenant's.
         if ($content->tenantHomepageContent !== null) {
             Cache::tags(['homepage'])->flush();
         }
@@ -276,7 +278,7 @@ class ContentPart extends Model
                 return null;
             }
             // Use updated_at timestamp in cache key for automatic invalidation on edit
-            $cacheKey = "content_part_html_{$this->id}_{$this->updated_at->timestamp}";
+            $cacheKey = $this->htmlCacheKey();
 
             return Cache::remember($cacheKey, 86400, fn () => $this->renderTiptapHtml());
         });
@@ -285,7 +287,7 @@ class ContentPart extends Model
     /**
      * Render TipTap JSON content to HTML using the PHP TipTap editor.
      */
-    protected function renderTiptapHtml(): string
+    protected function renderTiptapHtml(): ?string
     {
         try {
             $editor = new TiptapEditor;
@@ -299,10 +301,9 @@ class ContentPart extends Model
             return app(HtmlSanitizerService::class)
                 ->sanitizeRichContent($editor->setContent($content)->getHTML());
         } catch (\Throwable $e) {
-            // Log error but don't break the page - frontend will fallback to JS rendering
             Log::warning("TipTap rendering failed for ContentPart {$this->id}: {$e->getMessage()}");
 
-            return '';
+            return null;
         }
     }
 
@@ -311,8 +312,15 @@ class ContentPart extends Model
      */
     public function clearHtmlCache(): void
     {
-        $cacheKey = "content_part_html_{$this->id}_{$this->updated_at->timestamp}";
+        $cacheKey = $this->htmlCacheKey();
         Cache::forget($cacheKey);
+    }
+
+    private function htmlCacheKey(): string
+    {
+        $version = hash('sha256', json_encode($this->json_content, JSON_THROW_ON_ERROR));
+
+        return "content_part_html_{$this->id}_{$this->updated_at->timestamp}_{$version}";
     }
 
     /**
@@ -320,14 +328,7 @@ class ContentPart extends Model
      */
     public function isValidType(): bool
     {
-        try {
-            // Attempt to create an enum from the type string
-            ContentPartEnum::from($this->type);
-
-            return true;
-        } catch (\Throwable) {
-            return false;
-        }
+        return ContentPartEnum::tryFrom($this->type) !== null;
     }
 
     /**

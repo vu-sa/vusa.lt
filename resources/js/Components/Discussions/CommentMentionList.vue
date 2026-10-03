@@ -1,7 +1,7 @@
 <template>
   <div
     data-comment-mention-menu
-    class="z-50 max-h-64 w-56 overflow-y-auto rounded-lg border border-zinc-200 bg-popover p-1 shadow-md dark:border-zinc-700"
+    class="z-50 max-h-64 w-56 overflow-y-auto border border-border bg-popover p-1"
   >
     <template v-if="items.length">
       <button
@@ -9,16 +9,16 @@
         :key="item.id"
         type="button"
         :class="[
-          'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors',
-          index === selectedIndex ? 'bg-zinc-100 dark:bg-zinc-800' : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/50',
+          'flex w-full items-center gap-2 px-2 py-1.5 text-left text-sm transition-colors',
+          index === selectedIndex ? 'bg-accent' : 'hover:bg-accent/60',
         ]"
         @click="selectItem(index)"
       >
         <UserAvatar :user="(item as any)" :size="22" />
-        <span class="truncate text-zinc-800 dark:text-zinc-100">{{ item.name }}</span>
+        <span class="truncate text-foreground">{{ item.name }}</span>
       </button>
     </template>
-    <p v-else class="px-2 py-1.5 text-xs text-zinc-400">
+    <p v-else class="px-2 py-1.5 text-xs text-muted-foreground">
       {{ $t('Nieko nerasta') }}
     </p>
   </div>

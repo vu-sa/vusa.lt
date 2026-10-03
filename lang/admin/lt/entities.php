@@ -66,6 +66,8 @@ return [
         'model' => '{1} žyma|[2,9] žymos|[10,*] žymų',
         'gender' => 'f',
     ],
+    'institutionType' => ['gender' => 'm', 'model' => '{1} institucijos tipas|[2,9] institucijų tipai|[10,*] institucijų tipų', 'genitive' => 'institucijos tipo', 'accusative' => 'institucijos tipą'],
+    'dutyType' => ['gender' => 'm', 'model' => '{1} pareigybės tipas|[2,9] pareigybių tipai|[10,*] pareigybių tipų', 'genitive' => 'pareigybės tipo', 'accusative' => 'pareigybės tipą'],
     'type' => [
         'model' => '{1} turinio tipas|[2,9] turinio tipai|[10,*] turinio tipų',
         'gender' => 'm',
@@ -146,6 +148,10 @@ return [
         'model' => '{1} išteklius|[2,9] ištekliai|[10,*] išteklių',
         'gender' => 'm',
     ],
+    'problemCategory' => [
+        'model' => '{1} problemų kategorija|[2,9] problemų kategorijos|[10,*] problemų kategorijų',
+        'gender' => 'f',
+    ],
     'resourceCategory' => [
         'model' => '{1} išteklių kategorija|[2,9] išteklių kategorijos|[10,*] išteklių kategorijų',
         'gender' => 'f',
@@ -199,6 +205,27 @@ return [
             'in_progress' => 'Vykdoma',
             'resolved' => 'Išspręsta',
         ],
+    ],
+
+    'goal' => [
+        'model' => '{1} tikslas|[2,9] tikslai|[10,*] tikslų',
+        'gender' => 'm',
+        'title' => 'tikslo pavadinimas',
+        'description' => 'aprašymas',
+        'expected_result' => 'laukiamas rezultatas',
+        'evaluation' => 'metų įvertinimas',
+        'status' => 'būsena',
+        'is_public' => 'rodoma vusa.lt',
+        'cadence' => 'kadencija',
+        'responsible_duty' => 'atsakinga pareigybė',
+    ],
+
+    'step' => [
+        'model' => '{1} veiksmas|[2,9] veiksmai|[10,*] veiksmų',
+        'gender' => 'm',
+        'title' => 'kas padaryta',
+        'description' => 'plačiau',
+        'happened_on' => 'data',
     ],
 
     'contentPart' => [

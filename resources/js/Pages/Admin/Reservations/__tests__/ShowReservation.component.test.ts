@@ -31,9 +31,26 @@ const mockRoute = (name?: string, params?: Record<string, unknown>) => {
 vi.stubGlobal('route', mockRoute);
 
 const stubs = {
-  // Mounted by ShowPageLayout; it fetches on mount and pulls in Sheet + SpotlightPopover.
-  ActivityLogSheet: {
-    template: '<div data-testid="activity-log" />',
+  RecordPage: {
+    props: ['title', 'sections', 'facts', 'primaryAction', 'overflowActions'],
+    emits: ['action'],
+    template: `
+      <div>
+        <h1>{{ title }}</h1>
+        <div data-testid="tabs">{{ sections.map(s => s.value + ':' + (s.count ?? '')).join('|') }}</div>
+        <div data-testid="facts">{{ facts.map(f => f.key).join('|') }}</div>
+        <button v-if="primaryAction" data-testid="primary" @click="$emit('action', primaryAction.key)">{{ primaryAction.label }}</button>
+        <button v-for="a in overflowActions" :key="a.key" :data-testid="'overflow-' + a.key" @click="$emit('action', a.key)">{{ a.label }}</button>
+        <slot name="subtitle" />
+        <slot name="resources" />
+        <slot name="description" />
+        <slot name="activity" />
+      </div>
+    `,
+  },
+  RecordActivity: {
+    props: ['subjectType', 'subjectId', 'commentableType', 'commentableId'],
+    template: '<div data-testid="record-activity" :data-commentable-type="commentableType" :data-commentable-id="commentableId" />',
   },
   UsersAvatarGroup: {
     props: ['users', 'max', 'size'],
@@ -43,34 +60,22 @@ const stubs = {
     props: ['states', 'unresolved'],
     template: '<div data-testid="state-summary" />',
   },
-  DiscussionPanel: {
-    name: 'DiscussionPanel',
-    props: ['commentableType', 'commentableId'],
-    template: '<div data-testid="discussion-panel" :data-commentable-type="commentableType" :data-commentable-id="commentableId" />',
+  ReservationResourceList: {
+    name: 'ReservationResourceList',
+    props: ['resources', 'target', 'canEdit'],
+    template: '<div data-testid="resource-list" />',
   },
-  ReservationResourceTable: {
-    name: 'ReservationResourceTable',
-    props: ['reservation', 'selectedReservationResource'],
-    template: '<div data-testid="reservation-resource-table" />',
+  ReservationDecisionDialog: {
+    props: ['open', 'decision', 'targets'],
+    template: '<div data-testid="decision-dialog" :data-open="open" />',
   },
+  ConfirmDialog: true,
   ReservationResourceForm: {
     template: '<div data-testid="reservation-resource-form" />',
   },
   UserAvatar: {
     props: ['user', 'size'],
     template: '<span class="user-avatar" />',
-  },
-  MdSuspenseWrapper: {
-    template: '<div data-testid="md-suspense-wrapper" />',
-  },
-  IFluentTextDescription24Regular: {
-    template: '<span class="icon-description" />',
-  },
-  IFluentAdd24Filled: {
-    template: '<span class="icon-add" />',
-  },
-  IFluentCheckmark24Filled: {
-    template: '<span class="icon-checkmark" />',
   },
   Dialog: {
     props: ['open'],
@@ -110,11 +115,11 @@ const stubs = {
   },
 };
 
-const resourceFromTenant = (id: string, tenantId: string, tenantShortname: string) => ({
+const resourceFromTenant = (id: string, tenantId: string, tenantShortname: string, state = 'created') => ({
   id,
   name: `Resource ${id}`,
   tenant: { id: tenantId, shortname: tenantShortname },
-  pivot: { id: `pivot-${id}`, state: 'created', quantity: 1 },
+  pivot: { id: `pivot-${id}`, state, quantity: 1, start_time: '2026-09-20T10:00:00Z', end_time: '2026-09-21T10:00:00Z' },
 });
 
 const baseReservation = {
@@ -127,91 +132,122 @@ const baseReservation = {
   users: [],
 };
 
-function createWrapper(props: Record<string, unknown> = {}) {
+/** The server's flagged copy of the reservation, one entry per item. */
+const targetFor = (resources: ReturnType<typeof resourceFromTenant>[], approvable = true) => ({
+  ...baseReservation,
+  created_at: baseReservation.start_time,
+  resources: resources.map(resource => ({
+    ...resource,
+    pivot: { ...resource.pivot, approvable, backtrackable: false, cancellable: false },
+  })),
+});
+
+function createWrapper(props: Record<string, unknown> = {}, resources: ReturnType<typeof resourceFromTenant>[] = []) {
   return mount(ShowReservation, {
     props: {
-      reservation: baseReservation,
+      reservation: { ...baseReservation, resources },
+      decisionTarget: targetFor(resources),
+      can: { update: true, delete: true },
       ...props,
     },
     global: { stubs },
   });
 }
 
+const visibleIds = (wrapper: ReturnType<typeof mount>) =>
+  (wrapper.findComponent({ name: 'ReservationResourceList' }).props('resources') as { id: string }[]).map(resource => resource.id);
+
 describe('ShowReservation.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('renders a reservation-bound DiscussionPanel on the page', () => {
+  it('closes with the reservation-bound activity feed, not a separate comments tab', () => {
     const wrapper = createWrapper();
+    const activity = wrapper.find('[data-testid="record-activity"]');
 
-    const panel = wrapper.find('[data-testid="discussion-panel"]');
-
-    expect(panel.exists()).toBe(true);
-    expect(panel.attributes('data-commentable-type')).toBe('reservation');
-    expect(panel.attributes('data-commentable-id')).toBe('res1');
+    expect(activity.attributes('data-commentable-type')).toBe('reservation');
+    expect(activity.attributes('data-commentable-id')).toBe('res1');
+    expect(wrapper.find('[data-testid="tabs"]').text()).not.toContain('Komentarai');
   });
 
-  it('does not render a separate comments tab', () => {
-    const wrapper = createWrapper();
+  it('renders the name, the period and the resource count as the title band', () => {
+    const wrapper = createWrapper({}, [resourceFromTenant('r1', 'tenant-1', 'VU SA MIF')]);
 
-    expect(wrapper.text()).not.toContain('Komentarai');
+    expect(wrapper.text()).toContain('Test Reservation');
+    expect(wrapper.find('[data-testid="facts"]').text()).toContain('period');
+    expect(wrapper.find('[data-testid="tabs"]').text()).toBe('resources:1|description:');
+  });
+
+  it('shows the state summary in the title band', () => {
+    expect(createWrapper().find('[data-testid="state-summary"]').exists()).toBe(true);
   });
 
   it('hides the tenant filter when every resource belongs to the same tenant', () => {
-    const wrapper = createWrapper({
-      reservation: {
-        ...baseReservation,
-        resources: [
-          resourceFromTenant('r1', 'tenant-1', 'VU SA MIF'),
-          resourceFromTenant('r2', 'tenant-1', 'VU SA MIF'),
-        ],
-      },
-    });
+    const wrapper = createWrapper({}, [
+      resourceFromTenant('r1', 'tenant-1', 'VU SA MIF'),
+      resourceFromTenant('r2', 'tenant-1', 'VU SA MIF'),
+    ]);
 
     expect(wrapper.find('[data-testid="tenant-filter"]').exists()).toBe(false);
   });
 
-  it('renders the reservation name in the hero', () => {
-    expect(createWrapper().text()).toContain('Test Reservation');
-  });
-
-  it('renders a trigger for each tab, with the resource count', () => {
-    const wrapper = createWrapper({
-      reservation: {
-        ...baseReservation,
-        resources: [resourceFromTenant('r1', 'tenant-1', 'VU SA MIF')],
-      },
-    });
-
-    const triggers = wrapper.findAll('[role="tab"]');
-
-    expect(triggers).toHaveLength(2);
-    expect(triggers[0].text()).toContain('1');
-  });
-
-  it('filters the resource table down to the selected tenant', async () => {
-    const wrapper = createWrapper({
-      reservation: {
-        ...baseReservation,
-        resources: [
-          resourceFromTenant('r1', 'tenant-1', 'VU SA MIF'),
-          resourceFromTenant('r2', 'tenant-2', 'VU SA CHGF'),
-          resourceFromTenant('r3', 'tenant-2', 'VU SA CHGF'),
-        ],
-      },
-    });
+  it('filters the resource list down to the selected tenant', async () => {
+    const wrapper = createWrapper({}, [
+      resourceFromTenant('r1', 'tenant-1', 'VU SA MIF'),
+      resourceFromTenant('r2', 'tenant-2', 'VU SA CHGF'),
+      resourceFromTenant('r3', 'tenant-2', 'VU SA CHGF'),
+    ]);
 
     expect(wrapper.find('[data-testid="tenant-filter"]').exists()).toBe(true);
-
-    const table = () => wrapper.findComponent({ name: 'ReservationResourceTable' });
-
-    expect((table().props('reservation') as { resources: unknown[] }).resources).toHaveLength(3);
+    expect(visibleIds(wrapper)).toEqual(['r1', 'r2', 'r3']);
 
     await wrapper.find('[data-value="tenant-2"]').trigger('click');
 
-    const filtered = (table().props('reservation') as { resources: { id: string }[] }).resources;
+    expect(visibleIds(wrapper)).toEqual(['r2', 'r3']);
+  });
 
-    expect(filtered.map(resource => resource.id)).toEqual(['r2', 'r3']);
+  it('feeds the list the flagged decision target, not the record payload', () => {
+    const wrapper = createWrapper({}, [resourceFromTenant('r1', 'tenant-1', 'VU SA MIF')]);
+    const target = wrapper.findComponent({ name: 'ReservationResourceList' }).props('target') as { resources: { pivot: { approvable: boolean } }[] };
+
+    expect(target.resources[0].pivot.approvable).toBe(true);
+  });
+
+  describe('actions', () => {
+    it('offers adding a resource as the one primary action to someone who may update', () => {
+      const wrapper = createWrapper({}, [resourceFromTenant('r1', 'tenant-1', 'VU SA MIF')]);
+
+      expect(wrapper.find('[data-testid="primary"]').text()).toBe('Pridėti išteklių');
+      expect(wrapper.find('[data-testid="overflow-add-user"]').exists()).toBe(true);
+    });
+
+    it('makes approving everything the primary action once several items wait on this user', async () => {
+      const wrapper = createWrapper({}, [
+        resourceFromTenant('r1', 'tenant-1', 'VU SA MIF'),
+        resourceFromTenant('r2', 'tenant-1', 'VU SA MIF'),
+      ]);
+
+      expect(wrapper.find('[data-testid="primary"]').text()).toBe('reservations.actions.approve');
+      expect(wrapper.find('[data-testid="decision-dialog"]').attributes('data-open')).toBe('false');
+
+      await wrapper.find('[data-testid="primary"]').trigger('click');
+
+      expect(wrapper.find('[data-testid="decision-dialog"]').attributes('data-open')).toBe('true');
+    });
+
+    it('offers no editing actions to someone who may only view', () => {
+      const wrapper = createWrapper({ can: { update: false, delete: false } }, [
+        resourceFromTenant('r1', 'tenant-1', 'VU SA MIF', 'reserved'),
+      ]);
+
+      expect(wrapper.find('[data-testid="primary"]').exists()).toBe(false);
+      expect(wrapper.find('[data-testid="overflow-add-user"]').exists()).toBe(false);
+      expect(wrapper.find('[data-testid="overflow-delete"]').exists()).toBe(false);
+    });
+
+    it('keeps deleting the reservation in the overflow, for those who may', () => {
+      expect(createWrapper().find('[data-testid="overflow-delete"]').exists()).toBe(true);
+    });
   });
 });

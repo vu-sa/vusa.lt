@@ -8,9 +8,9 @@ Place tests in `__tests__/` directories adjacent to the source files they test:
 
 ```
 resources/js/Components/AdminForms/
-├── AdminForm.vue
+├── TenantForm.vue
 └── __tests__/
-    └── AdminForm.component.test.ts
+    └── TenantForm.component.test.ts
 ```
 
 Shared test helpers go in `resources/js/tests/helpers/`.
@@ -103,7 +103,7 @@ let wrapper: ReturnType<typeof mount>;
 vendor/bin/sail npx vitest run --project component
 
 # Specific component test file
-vendor/bin/sail npx vitest run --project component resources/js/Components/AdminForms/__tests__/AdminForm.component.test.ts
+vendor/bin/sail npx vitest run --project component resources/js/Components/AdminForms/__tests__/TenantForm.component.test.ts
 
 # Unit tests
 vendor/bin/sail npx vitest run --project unit
@@ -125,7 +125,8 @@ setup file to any individual test.
 `vi.mock('@inertiajs/vue3', () => ({ ...actual, usePage: () => ({ props: myProps }) }))` bakes one
 file's page props into the module. It works today only because each test file gets a private module
 registry — which is exactly what stops the suite from running with `isolate: false` (measured at
-~9s instead of ~41s). 73 of 227 files currently mock a module that another file also mocks.
+~9s instead of ~41s under the old `forks` pool; `vmThreads` now gets it to ~13s). 73 of 227 files
+currently mock a module that another file also mocks.
 
 Use the one shared factory plus per-test state instead:
 
@@ -135,6 +136,12 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 // then, per test:
 vi.mocked(usePage).mockReturnValue(createMockPage({ app: { locale: 'lt' } }));
 ```
+
+## The suite runs under `pool: 'vmThreads'`
+
+Each spec gets its own VM context over the real jsdom window. So: don't redefine
+`window.location` (set the URL with `jsdom.reconfigure({ url })` instead), don't build a second
+`new JSDOM()`, and polyfill missing globals in `tests/setup.ts`. Details: `.ai/rules/js.md`.
 
 ## Key Principles
 

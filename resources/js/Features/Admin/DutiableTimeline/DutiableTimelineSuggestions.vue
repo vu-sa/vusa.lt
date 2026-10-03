@@ -1,14 +1,14 @@
 <template>
   <section data-slot="dutiable-timeline-suggestions" class="flex h-full min-h-0 flex-col gap-2 overflow-hidden p-3">
     <div class="flex items-center justify-between gap-2">
-      <p class="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+      <p class="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
         {{ $t('dutiables.timeline.dock.suggestions') }}
         <span v-if="findings.length > 0">({{ findings.length }})</span>
       </p>
       <span class="flex shrink-0 gap-1">
-        <Badge v-if="counts.error > 0" variant="destructive" class="text-[10px]">{{ counts.error }}</Badge>
-        <Badge v-if="counts.warning > 0" variant="secondary" class="text-[10px]">{{ counts.warning }}</Badge>
-        <Badge v-if="counts.info > 0" variant="outline" class="text-[10px]">{{ counts.info }}</Badge>
+        <Badge v-if="counts.error > 0" variant="destructive" class="text-xs">{{ counts.error }}</Badge>
+        <Badge v-if="counts.warning > 0" variant="warning" class="text-xs">{{ counts.warning }}</Badge>
+        <Badge v-if="counts.info > 0" variant="outline" class="text-xs">{{ counts.info }}</Badge>
       </span>
     </div>
     <p v-if="findings.length === 0" class="py-4 text-center text-xs text-muted-foreground">
@@ -16,7 +16,7 @@
     </p>
 
     <template v-else>
-      <p class="text-[10px] text-muted-foreground">
+      <p class="text-xs text-muted-foreground">
         {{ $t('dutiables.timeline.diagnostics.advisory') }}
       </p>
       <ul class="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
@@ -29,17 +29,17 @@
           <li v-if="section.folded">
             <button
               type="button"
-              class="flex w-full items-center gap-2 rounded-md px-1.5 py-1 text-left hover:bg-accent/50"
+              class="flex w-full items-center gap-2 px-1.5 py-1 text-left hover:bg-accent/50"
               @click="toggleSection(section.code)"
             >
               <ChevronRight
                 class="size-3 shrink-0 text-muted-foreground transition-transform"
                 :class="{ 'rotate-90': expanded.has(section.code) }"
               />
-              <span class="min-w-0 flex-1 truncate text-[11px] font-medium" :class="severityClass(section.severity)">
+              <span class="min-w-0 flex-1 truncate text-xs font-medium" :class="severityClass(section.severity)">
                 {{ $t(`dutiables.timeline.diagnostics.codes.${section.code}`) }}
               </span>
-              <span class="shrink-0 text-[10px] tabular-nums text-muted-foreground">
+              <span class="shrink-0 text-xs tabular-nums text-muted-foreground">
                 {{ section.entries.length }}
               </span>
             </button>
@@ -48,7 +48,7 @@
           <li
             v-for="entry in section.folded && !expanded.has(section.code) ? [] : section.entries"
             :key="entry.key"
-            class="flex items-start gap-2 rounded-md px-1.5 py-1 hover:bg-accent/50"
+            class="flex items-start gap-2 px-1.5 py-1 hover:bg-accent/50"
             :class="{ 'pl-5': section.folded }"
           >
             <Checkbox
@@ -65,16 +65,16 @@
               <span class="flex flex-wrap items-baseline gap-x-1.5">
                 <span
                   v-if="!section.folded"
-                  class="text-[11px] font-medium"
+                  class="text-xs font-medium"
                   :class="severityClass(entry.finding.severity)"
                 >
                   {{ $t(`dutiables.timeline.diagnostics.codes.${entry.finding.code}`) }}
                 </span>
-                <span v-if="entry.subject" class="truncate text-[10px] text-muted-foreground">
+                <span v-if="entry.subject" class="truncate text-xs text-muted-foreground">
                   {{ entry.subject }}
                 </span>
               </span>
-              <span v-if="entry.detail" class="block font-mono text-[10px] text-muted-foreground">
+              <span v-if="entry.detail" class="block font-mono text-xs text-muted-foreground">
                 {{ entry.detail }}
               </span>
             </button>
@@ -142,9 +142,10 @@ const entries = computed<SuggestionEntry[]>(() => [...props.findings]
 
 /**
  * Codes that are noise by default rather than findings: true of the whole set often enough
- * that listing each one drowns the rest. They are still there, one click away.
+ * that listing each one drowns the rest. Both fire on every re-elected member — one open
+ * row, or one row across terms — so they are context, one click away.
  */
-const FOLDED_CODES = new Set(['spans_cadences']);
+const FOLDED_CODES = new Set(['spans_cadences', 'open_ended_stale']);
 
 interface SuggestionSection {
   /** Unique per rendered section; several findings can share one code. */
@@ -196,24 +197,38 @@ const expanded = ref(new Set<string>());
 
 function toggleSection(code: string): void {
   const next = new Set(expanded.value);
-  next.has(code) ? next.delete(code) : next.add(code);
+  if (next.has(code)) {
+    next.delete(code);
+  }
+  else {
+    next.add(code);
+  }
   expanded.value = next;
 }
 
 const checked = ref(new Set<string>());
 
-// Errors are pre-checked because they are never a judgement call; warnings and notes are
-// left for the admin to opt into. Re-seeded whenever the finding set changes, which it
-// does on every drag.
+/**
+ * Only fixes that shorten a period are pre-checked. `inverted` is an error too, but its fix
+ * clears the end date, which reopens access — so it waits for the admin like everything
+ * else. Re-seeded whenever the finding set changes, which it does on every drag.
+ */
+const PRE_CHECKED_CODES = new Set(['overlap']);
+
 watch(entries, (next) => {
   checked.value = new Set(
-    next.filter(entry => entry.fixable && entry.finding.severity === 'error').map(entry => entry.key),
+    next.filter(entry => entry.fixable && PRE_CHECKED_CODES.has(entry.finding.code)).map(entry => entry.key),
   );
 }, { immediate: true });
 
 function toggle(key: string): void {
   const next = new Set(checked.value);
-  next.has(key) ? next.delete(key) : next.add(key);
+  if (next.has(key)) {
+    next.delete(key);
+  }
+  else {
+    next.add(key);
+  }
   checked.value = next;
 }
 
@@ -273,11 +288,7 @@ function detailFor(finding: TimelineDiagnostic): string | null {
         : null;
 
     case 'spans_cadences':
-      return $t('dutiables.timeline.diagnostics.detail.spans', {
-        count: detail.count ?? 0,
-        start: detail.suggested_start ?? '—',
-        end: detail.suggested_end ?? '—',
-      });
+      return $t('dutiables.timeline.diagnostics.detail.spans', { count: detail.count ?? 0 });
 
     // The "there is less space than places_to_occupy" message that never said how many.
     case 'understaffed':
@@ -298,8 +309,8 @@ function detailFor(finding: TimelineDiagnostic): string | null {
 }
 
 function severityClass(severity: string): string {
-  if (severity === 'error') return 'text-destructive';
-  if (severity === 'warning') return 'text-amber-600 dark:text-amber-400';
+  if (severity === 'error') return 'text-status-danger';
+  if (severity === 'warning') return 'text-status-attention';
 
   return 'text-muted-foreground';
 }

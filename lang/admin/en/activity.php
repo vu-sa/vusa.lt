@@ -2,8 +2,9 @@
 
 return [
     'title' => 'Activity log',
-    'spotlight_description' => 'See who changed this record and when — including changes to related items.',
     'empty' => 'No changes yet.',
+    'comments_empty' => 'No comments yet. Start the conversation — mention a colleague with @.',
+    'comments_lead' => 'Discuss this record with your team. Who changed what is under ⋯ → “Activity log”.',
     'load_more' => 'Load more',
     'loading' => 'Loading...',
     'event' => [
@@ -69,5 +70,26 @@ return [
         'person-quote' => 'Quote',
         'section' => 'Section',
         'spacer' => 'Spacer',
+    ],
+    'status' => [
+        'today' => 'Active today',
+        'week' => 'Active within 7 days',
+        'month' => 'Active within 30 days',
+        'stale' => 'Inactive > 30 days',
+        'never' => 'Never logged in',
+    ],
+    'status_short' => [
+        'today' => 'Today',
+        'week' => 'Past 7 d.',
+        'month' => 'Past 30 d.',
+        'stale' => 'Long ago',
+        'never' => 'Never',
+    ],
+    'status_tooltip' => [
+        'today' => 'Logged in today',
+        'week' => 'Logged in during the past 7 days',
+        'month' => 'Logged in during the past 30 days',
+        'stale' => 'Has not logged in for over 30 days',
+        'never' => 'Has never logged in to the system',
     ],
 ];

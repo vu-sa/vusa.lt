@@ -290,8 +290,7 @@
  * `link-list`'s fetch-configuration fields (source/mode/limit/pinned items/category/tenant
  * scope) — everything beyond the shared title/subtitle/eyebrow header (`RCSectionOptions`).
  * Shared between `LinkListEditor.vue` (the regular side form) and `LinkListBlockToolbar.vue`
- * (the full-screen editor's options popover), so the two surfaces can't drift apart — see
- * the "HTML text fields" rule in RICH_CONTENT_EDITOR.md for why one implementation matters.
+ * (the full-screen editor's options popover), so the two surfaces can't drift apart.
  *
  * `source: 'manual'` stores author-typed links directly; `'news'`/`'pages'` are resolved
  * server-side (see `LinkListResolver`), so only the *selector* (pinned ids, topic, tenant

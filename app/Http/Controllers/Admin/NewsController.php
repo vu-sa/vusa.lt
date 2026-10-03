@@ -3,29 +3,28 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\DuplicateNewsAction;
-use App\Actions\GenerateUniqueSlug;
 use App\Actions\GetTenantsForUpserts;
-use App\Actions\PairTranslatedRecord;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\Content\BulkDestroyNewsRequest;
+use App\Http\Requests\Content\BulkUpdateNewsStatusRequest;
 use App\Http\Requests\IndexNewsRequest;
 use App\Http\Requests\StoreNewsRequest;
 use App\Http\Requests\UpdateNewsRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
-use App\Models\Content;
 use App\Models\News;
 use App\Models\PublicUrl;
 use App\Models\Tag;
-use App\Services\ContentService;
+use App\Services\ContentEditorService;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class NewsController extends AdminController
 {
     use HandlesSoftDeletes, HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
@@ -34,46 +33,10 @@ class NewsController extends AdminController
     {
         $this->handleAuthorization('viewAny', News::class);
 
-        $query = News::query()->with([
-            'other_language_news:id,title,lang',
-            'tenant:id,shortname',
-        ]);
-
-        $searchableColumns = ['title', 'short'];
-
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-                'tenantRelation' => 'tenant',
-                'permission' => 'news.read.padalinys',
-            ]
-        );
-
-        $deletedCount = $this->getTrashedCount($query);
-
-        $news = $query->paginate($request->getPerPage())
-            ->withQueryString();
-
+        // Live rows come from Typesense (the scoped key carries the authorization) and the trash
+        // from api.v1.admin.trash.index, so the page itself needs no rows.
         return $this->inertiaResponse('Admin/Content/IndexNews', [
-            'news' => [
-                'data' => $news->items(),
-                'meta' => [
-                    'total' => $news->total(),
-                    'per_page' => $news->perPage(),
-                    'current_page' => $news->currentPage(),
-                    'last_page' => $news->lastPage(),
-                    'from' => $news->firstItem(),
-                    'to' => $news->lastItem(),
-                ],
-            ],
-            'filters' => $request->getFilters(),
-            'sorting' => $request->getSorting(),
-            'showDeleted' => $request->getShowDeleted(),
-            'deletedCount' => $deletedCount,
+            'deletedCount' => $this->scopedTrashedCount(News::query(), 'tenant', 'news.read.padalinys'),
         ]);
     }
 
@@ -106,36 +69,7 @@ class NewsController extends AdminController
      */
     public function store(StoreNewsRequest $request)
     {
-        $tenant_id = $request->validated('tenant_id');
-
-        $content = new Content;
-
-        $content->save();
-
-        $news = News::create([
-            'title' => $request->title,
-            'permalink' => GenerateUniqueSlug::execute(News::class, $request->title, $tenant_id),
-            'short' => $request->short,
-            'lang' => $request->lang,
-            'content_id' => $content->id,
-            'image' => $request->image,
-            'image_author' => $request->image_author,
-            'draft' => $request->draft ?? 0,
-            'publish_time' => $request->publish_time,
-            'show_breadcrumbs' => $request->boolean('show_breadcrumbs', true),
-            'highlights' => $request->highlights ?? [],
-            'tenant_id' => $tenant_id,
-        ]);
-
-        // Created after the News so the parts' first activity-log entries can
-        // already resolve their root up to the News (see App\Support\ActivityRoots)
-        // instead of self-rooting to the not-yet-owned Content.
-        $content->parts()->createMany($request->content['parts']);
-
-        // Sync tags if provided
-        if ($request->has('tags') && is_array($request->tags)) {
-            $news->tags()->sync($request->tags);
-        }
+        app(ContentEditorService::class)->save('news', $request->validated(), $request->user());
 
         return $this->redirectToIndexWithSuccess('news', $this->entityMessage('created', 'news'));
     }
@@ -147,33 +81,13 @@ class NewsController extends AdminController
     {
         $this->handleAuthorization('update', $news);
 
-        $other_lang_pages = News::with('tenant:id,shortname')->when(! request()->user()->isSuperAdmin(), function ($query) use ($news): void {
-            $query->where('tenant_id', $news->tenant_id);
-        })->where('lang', '!=', $news->lang)->select('id', 'title', 'tenant_id')->get();
-
         $tags = Tag::orderBy('alias')->get();
 
         return $this->inertiaResponse('Admin/Content/EditNews', [
             'news' => [
-                'id' => $news->id,
-                'title' => $news->title,
-                'permalink' => $news->permalink,
-                'content' => $news->content,
-                'lang' => $news->lang,
-                'other_lang_id' => $news->other_language_news?->id,
-                'tenant' => $news->tenant,
-                'draft' => $news->draft,
-                'short' => $news->short,
-                // Raw image value for admin form (no fallback applied)
-                'image' => $news->image,
-                'tags' => $news->tags->pluck('id')->toArray(),
-                'image_author' => $news->image_author,
-                'publish_time' => $news->publish_time,
-                'show_breadcrumbs' => $news->show_breadcrumbs ?? true,
-                'highlights' => $news->highlights ?? [],
+                ...app(ContentEditorService::class)->snapshot($news),
                 'public_urls' => $news->publicUrls()->get(['id', 'url', 'locale', 'created_at']),
             ],
-            'otherLangNews' => $other_lang_pages,
             'availableTags' => $tags->map->toFullArray(),
         ]);
     }
@@ -183,35 +97,7 @@ class NewsController extends AdminController
      */
     public function update(UpdateNewsRequest $request, News $news)
     {
-        $news->update([
-            ...$request->safe()->only(
-                'title',
-                'permalink',
-                'lang',
-                'draft',
-                'publish_time',
-                'short',
-                'image',
-                'image_author',
-                'highlights',
-            ),
-            // Sent as an explicit boolean by Inertia's useForm; boolean() also covers
-            // the default when the field is absent from other callers.
-            'show_breadcrumbs' => $request->boolean('show_breadcrumbs', true),
-        ]);
-
-        $news->save();
-
-        $content = Content::query()->find($news->content->id);
-
-        app(ContentService::class)->updateContentParts($content, $request->content['parts']);
-
-        // Sync tags if provided
-        if ($request->has('tags') && is_array($request->tags)) {
-            $news->tags()->sync($request->tags);
-        }
-
-        PairTranslatedRecord::execute($news, $request->other_lang_id);
+        $news = app(ContentEditorService::class)->save('news', $request->validated(), $request->user(), $news);
 
         return back()->with('success', $this->entityMessage('updated', 'news'))->with('data', $news->load('content'));
     }
@@ -231,6 +117,29 @@ class NewsController extends AdminController
     /**
      * Restore the specified resource from storage.
      */
+    /**
+     * Publish or unpublish the articles picked in the collection (one id for the inline status menu).
+     * Saved one by one so Scout, the public index and the activity log see every change.
+     */
+    public function bulkUpdateStatus(BulkUpdateNewsStatusRequest $request): RedirectResponse
+    {
+        $news = $request->records();
+        $isDraft = ! $request->boolean('published');
+
+        DB::transaction(fn () => $news->each(fn (News $article) => $article->update(['draft' => $isDraft])));
+
+        return back()->with('success', __('messages.bulk_updated', ['count' => $news->count()]));
+    }
+
+    public function bulkDestroy(BulkDestroyNewsRequest $request): RedirectResponse
+    {
+        $news = $request->records();
+
+        DB::transaction(fn () => $news->each(fn (News $article) => $article->delete()));
+
+        return back()->with('info', __('messages.bulk_deleted', ['count' => $news->count()]));
+    }
+
     public function restore(News $news): RedirectResponse
     {
         return $this->restoreModel($news, $this->entityMessage('restored', 'news'));

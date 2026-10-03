@@ -24,6 +24,17 @@ export const RESOURCE_PLACEHOLDERS = {
   },
 };
 
+export const PROBLEM_CATEGORY_PLACEHOLDERS = {
+  name: {
+    lt: 'Studijų procesas',
+    en: 'Study process',
+  },
+  description: {
+    lt: 'Tvarkaraščiai, atsiskaitymai, studijų programų pokyčiai...',
+    en: 'Timetables, assessments, study programme changes...',
+  },
+};
+
 export const RESOURCE_CATEGORY_PLACEHOLDERS = {
   name: {
     lt: 'Prailgintuvai',
@@ -45,7 +56,7 @@ export const RESERVATION_PLACEHOLDERS = {
     en: 'All resources will be used for this event. If necessary, resources A could be returned earlier...',
   },
   resource: {
-    lt: 'Pasirinkite išteklių...',
+    lt: 'Pasirink išteklių...',
     en: 'Select resource...',
   },
 };

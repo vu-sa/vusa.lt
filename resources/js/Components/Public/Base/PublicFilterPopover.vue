@@ -3,20 +3,14 @@
     <PopoverTrigger as-child>
       <button
         type="button"
-        :class="cn(
-          'inline-flex items-center justify-between gap-2 border px-3 py-2 text-xs font-bold uppercase tracking-wide transition-colors',
-          selected.length > 0
-            ? 'border-brand text-brand bg-brand/5 hover:bg-brand/10'
-            : 'border-border bg-background text-foreground hover:border-brand hover:text-brand',
-          props.triggerClass,
-        )"
+        :class="cn(controlVariants({ size: 'sm', active: selected.length > 0 }), 'justify-between', props.triggerClass)"
         :aria-label="label"
         data-slot="public-filter-popover-trigger"
       >
         <span class="truncate">{{ label }}</span>
         <span
           v-if="selected.length > 0"
-          class="flex size-4 shrink-0 items-center justify-center bg-brand-fill text-brand-foreground text-[0.625rem] font-mono leading-none"
+          :class="controlCountClass"
         >
           {{ selected.length }}
         </span>
@@ -125,6 +119,7 @@ import type { HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref, computed } from 'vue';
 
+import { controlCountClass, controlVariants } from '@/Components/ui/control';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { cn } from '@/Utils/Shadcn/utils';
 import IFluentChevronDown16Regular from '~icons/fluent/chevron-down-16-regular';

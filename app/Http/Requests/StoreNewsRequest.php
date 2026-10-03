@@ -4,7 +4,6 @@ namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\News;
-use Illuminate\Support\Carbon;
 
 class StoreNewsRequest extends NewsRequest
 {
@@ -21,20 +20,6 @@ class StoreNewsRequest extends NewsRequest
         return $this->user()->can('create', News::class);
     }
 
-    #[\Override]
-    protected function prepareForValidation()
-    {
-        $publishTime = $this->input('publish_time');
-
-        if ($publishTime !== null) {
-            $this->merge([
-                'publish_time' => is_string($publishTime)
-                    ? Carbon::createFromTimestamp(strtotime($publishTime), 'Europe/Vilnius')
-                    : Carbon::createFromTimestampMs($publishTime, 'Europe/Vilnius'),
-            ]);
-        }
-    }
-
     /**
      * Get the validation rules that apply to the request.
      */
@@ -43,7 +28,7 @@ class StoreNewsRequest extends NewsRequest
     {
         return array_merge(parent::rules(), [
             'image' => 'nullable|string',
-            'short' => 'required',
+            'short' => 'required|string',
             'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope('news.create.padalinys')],
         ]);
     }

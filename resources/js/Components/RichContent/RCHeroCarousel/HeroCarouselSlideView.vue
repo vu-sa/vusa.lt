@@ -277,7 +277,7 @@ const hasTitle = computed(() => hasHtmlText(props.slide.title));
 
 // Full-bleed display caps overwhelm the photo once a title runs past a couple of lines.
 const titleClass = computed(() => {
-  const length = stripHtmlTags(props.slide.title ?? '').trim().length;
+  const { length } = stripHtmlTags(props.slide.title ?? '').trim();
   const size = length > 60
     ? 'text-[1.75rem] sm:text-4xl lg:text-5xl'
     : length > 35

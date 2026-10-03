@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\DutyType;
 use App\Models\Role;
-use App\Models\Type;
 use Illuminate\Database\Seeder;
 
 class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
@@ -16,7 +16,7 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
     public function run()
     {
         $role = Role::firstOrCreate([
-            'name' => 'Student Representative Coordinator',
+            'name' => 'Studentų atstovų koordinatorius',
             'guard_name' => 'web',
         ]);
 
@@ -40,21 +40,14 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
             'duties.read.padalinys',
             'duties.update.padalinys',
             'duties.delete.padalinys',
-            'comments.create.own',
-            'comments.read.own',
-            'comments.update.own',
-            'sharepointFiles.create.padalinys',
-            'sharepointFiles.read.padalinys',
-            'sharepointFiles.update.padalinys',
             'tasks.create.padalinys',
             'tasks.read.own',
             'tasks.update.own',
             'problems.create.padalinys',
-            'problems.read.padalinys',
             'problems.update.padalinys',
             'problems.delete.padalinys',
         ]);
 
-        $role->attachable_types()->attach(Type::query()->where('slug', 'studentu-atstovai')->firstOrFail());
+        $role->attachable_types()->attach(DutyType::query()->where('slug', 'studentu-atstovai')->firstOrFail());
     }
 }

@@ -9,14 +9,15 @@
       <div v-if="canUpdate" class="flex items-center gap-2">
         <FilePicker
           v-if="sharepointPickerAvailable"
-          :loading="uploading"
-          size="sm"
           @pick="uploadFromSharepoint"
         >
-          <span class="flex items-center gap-1.5">
-            <Upload class="size-3.5" />
-            {{ $t('Įkelti iš SharePoint') }}
-          </span>
+          <template #trigger>
+            <Button type="button" variant="outline" size="sm" voice="sentence" :disabled="uploading">
+              <Spinner v-if="uploading" class="mr-1.5 size-3.5" />
+              <Upload v-else class="mr-1.5 size-3.5" />
+              {{ $t('Įkelti iš SharePoint') }}
+            </Button>
+          </template>
         </FilePicker>
 
         <CollectionSelectDialog
@@ -33,7 +34,7 @@
           @confirm="linkDocuments"
         >
           <template #trigger>
-            <Button type="button" variant="outline" size="sm">
+            <Button type="button" variant="outline" size="sm" voice="sentence">
               <Link2 class="mr-1.5 size-3.5" />
               {{ $t('Susieti dokumentą') }}
             </Button>
@@ -66,7 +67,7 @@
                  filed in both — so say which this one is. -->
             <span
               v-if="languageLabel(document)"
-              class="rounded border border-border px-1 py-px text-[10px] font-semibold uppercase tracking-wide"
+              class="border border-border px-1 py-px text-[11px] font-semibold uppercase tracking-wide"
             >{{ languageLabel(document) }}</span>
             <span>
               {{ document.content_type }}
@@ -77,8 +78,9 @@
         <button
           v-if="canUpdate"
           type="button"
-          class="shrink-0 text-muted-foreground transition-colors hover:text-destructive"
+          class="flex size-8 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:text-destructive pointer-coarse:size-11"
           :title="$t('Atsieti dokumentą')"
+          :aria-label="$t('Atsieti dokumentą')"
           @click="unlink(document.id)"
         >
           <X class="size-4" />
@@ -96,6 +98,7 @@ import { FileText, Link2, Upload, X } from 'lucide-vue-next';
 
 import { EmptyState, SectionCard } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
+import { Spinner } from '@/Components/ui/spinner';
 import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';

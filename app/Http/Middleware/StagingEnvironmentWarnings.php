@@ -21,7 +21,7 @@ class StagingEnvironmentWarnings
             Inertia::share('staging', [
                 'isStaging' => true,
                 'filesReadOnly' => config('app.files_read_only', false),
-                'sharepointReadOnly' => config('app.sharepoint_read_only', false),
+                'sharepointReadOnly' => (bool) config('app.sharepoint_read_only', false),
             ]);
         }
 

@@ -132,7 +132,10 @@ class DocumentSharepointSyncService
             ]);
 
             if ($anonymousPermission === null) {
-                if (StagingProtection::sharepointIsReadOnly()) {
+                if (StagingProtection::sharepointIsReadOnly(
+                    $document->sharepoint_site_id,
+                    config('filesystems.sharepoint.archive_drive_id'),
+                )) {
                     Log::info('No public permission found; staging read-only mode prevents creating one', [
                         'document_id' => $document->id,
                     ]);

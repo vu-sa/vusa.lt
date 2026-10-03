@@ -45,6 +45,11 @@ return [
     'direction_incoming' => 'Incoming',
     'direction_sibling' => 'Sibling',
     'related' => 'Related',
+    // Section headings on an institution's record: who this body oversees and who oversees it.
+    'group_outgoing' => 'Oversees',
+    'group_incoming' => 'Overseen by',
+    'group_sibling' => 'Parallel',
+    'group_other' => 'Related',
 
     // Authorization
     'authorized' => 'Authorized',

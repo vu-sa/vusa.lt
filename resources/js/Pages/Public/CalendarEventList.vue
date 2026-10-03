@@ -12,8 +12,9 @@
 
       <template #actions>
         <Button
-          variant="brand-outline"
-          size="public"
+          voice="brand"
+          variant="outline"
+          size="lg"
           @click="showModal = true"
         >
           <IFluentArrowSync20Regular class="size-4" />
@@ -197,7 +198,7 @@
             :options="yearOptions"
             :selected="selectedYears"
             searchable
-            :search-placeholder="`${$t('Ieškoti metų')}...`"
+            :search-placeholder="`${$t('calendar.filters.search_year')}...`"
             trigger-class="h-9 px-3"
             @toggle="toggleYear"
             @clear="selectedYears = []"
@@ -219,7 +220,7 @@
             :options="tenantOptions"
             :selected="selectedTenants"
             searchable
-            :search-placeholder="`${$t('Ieškoti padalinio')}...`"
+            :search-placeholder="`${$t('calendar.filters.search_unit')}...`"
             trigger-class="h-9 px-3"
             @toggle="toggleTenant"
             @clear="selectedTenants = []"
@@ -244,7 +245,7 @@
         <!-- Active Filter Chips -->
         <div v-if="hasActiveFilters" class="flex flex-wrap items-center gap-2 pt-1">
           <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground mr-1">
-            {{ $t('Aktyvūs filtrai') }}:
+            {{ $t('calendar.filters.active') }}:
           </span>
 
           <!-- Search term chip -->
@@ -347,8 +348,9 @@
           </p>
           <div v-if="hasActiveFilters" class="mt-6">
             <Button
-              variant="brand-outline"
-              size="public-sm"
+              voice="brand"
+              variant="outline"
+              size="sm"
               @click="clearFilters"
             >
               {{ $t('Išvalyti filtrus') }}
@@ -375,8 +377,9 @@
           class="mt-12 flex justify-center"
         >
           <Button
-            variant="brand-outline"
-            size="public"
+            voice="brand"
+            variant="outline"
+            size="lg"
             :disabled="isLoadingMore"
             @click="loadMore"
           >
@@ -410,10 +413,10 @@ import { useCalendarSearch, type CalendarSearchSort } from '@/Composables/useCal
 import { TenantType } from '@/Types/enums';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
-import TagChip from '@/Components/Public/Base/TagChip.vue';
+import TagChip from '@/Components/Brand/TagChip.vue';
 import EventCard from '@/Components/Calendar/EventCard.vue';
 import CalendarFilterPopover, { type FilterOption } from '@/Components/Calendar/CalendarFilterPopover.vue';
-import CalendarSyncModal from '@/Components/Dialogs/CalendarSyncModal.vue';
+import CalendarSyncModal from '@/Components/Public/CalendarSyncModal.vue';
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import IFluentCalendarLtr24Regular from '~icons/fluent/calendar-ltr-24-regular';

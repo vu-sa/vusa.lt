@@ -158,7 +158,7 @@ export interface Hero {
      * `split` (default): two-column text + image — the original hero.
      * `centered`: no image, centred title/description/buttons — CTA/slogan sections.
      * `banner`: a compact single-row strip, title + one button.
-     * `panel`: the SummerCamps-style rounded gradient panel with a square thumbnail —
+     * `panel`: a ruled panel with a square thumbnail —
      * flow-role, not a band; it keeps its own fixed chrome and ignores `presentation`.
      */
     variant?: 'split' | 'centered' | 'banner' | 'panel';
@@ -469,7 +469,7 @@ export interface LinkListResolved {
 
 /**
  * Server-resolved (see `EventListResolver`) filtered, optionally tenant-grouped list
- * of Calendar events — the generalization of `PublicPageController::summerCamps()`.
+ * of Calendar events.
  * Entirely option-driven; there is no author-written `json_content`.
  */
 export interface EventList {
@@ -484,13 +484,12 @@ export interface EventList {
     groupBy?: 'none' | 'tenant';
     limit?: number;
     style?: 'cards' | 'list';
-    /** e.g. `"VU "` — prefixed onto the tenant fullname when grouped, reproducing SummerCamps' faculty naming. `full` style only. */
+    /** e.g. `"VU "` — prefixed onto the tenant fullname when grouped, `full` style only. */
     tenantLabelPrefix?: string;
     /**
      * `full` (default): `tenantLabelPrefix` + the locative `fullname`.
      * `faculty`: `"VU " + nominative faculty` derived from the fullname (e.g. "VU Filologijos fakultetas"
      * from "...atstovybė Filologijos fakultete"); the central tenant falls back to its fullname.
-     * Mirrors the client-side `getFacultyName` util (see EventListResolver::facultyLabel).
      */
     tenantLabelStyle?: 'full' | 'faculty';
     emptyMessage?: string;

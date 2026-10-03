@@ -60,7 +60,7 @@ class ResyncTaskAssigneesForCadence
     public static function institutionsStaffedOn(Cadence $cadence): Collection
     {
         return Institution::query()
-            ->whereHas('administratorAssignments', fn ($query) => $query->where('cadence_id', $cadence->getKey()))
+            ->whereHas('secretaryAssignments', fn ($query) => $query->where('cadence_id', $cadence->getKey()))
             ->get();
     }
 

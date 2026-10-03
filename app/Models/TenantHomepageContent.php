@@ -41,8 +41,7 @@ class TenantHomepageContent extends Model
 
     private function forgetCachedHomepage(): void
     {
-        Cache::tags(['homepage', "tenant_{$this->tenant_id}", "locale_{$this->locale}"])
-            ->forget("homepage_content_{$this->tenant_id}_{$this->locale}");
+        Cache::tags(['homepage'])->forget("homepage_content_{$this->tenant_id}_{$this->locale}");
     }
 
     public function content(): BelongsTo

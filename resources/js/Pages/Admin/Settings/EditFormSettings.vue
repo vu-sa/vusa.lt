@@ -1,117 +1,104 @@
 <template>
-  <PageContent :title="$t('settings.pages.forms.title')" :back-url="route('settings.index')">
-    <UpsertModelLayout>
-      <AdminForm :model="form" @submit:form="handleFormSubmit">
-        <FormElement>
-          <template #title>
-            {{ $t('settings.form_settings.registration_form_title') }}
-          </template>
-          <template #description>
-            {{ $t('settings.form_settings.registration_form_description') }}
-          </template>
+  <FormPage
+    :title="$t('settings.pages.forms.title')"
+    :back-href="route('settings.index')"
+    :back-label="$t('settings.title')"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :available-locales="[]"
+    @submit="handleFormSubmit"
+  >
+    <FormSection
+      :title="$t('settings.form_settings.registration_form_title')"
+      :description="$t('settings.form_settings.registration_form_description')"
+    >
+      <FormFieldWrapper
+        id="member_registration_form_id"
+        :label="$t('settings.form_settings.form_label')"
+        :error="form.errors.member_registration_form_id"
+      >
+        <Select v-model="form.member_registration_form_id">
+          <SelectTrigger id="member_registration_form_id">
+            <SelectValue :placeholder="$t('settings.form_settings.form_placeholder')" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="formOption in forms" :key="formOption.id" :value="formOption.id">
+              {{ formOption.name }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
 
-          <div class="space-y-4">
-            <div class="space-y-2">
-              <Label class="inline-flex items-center gap-1">
-                <component :is="FormIcon" class="h-4 w-4" />
-                {{ $t('settings.form_settings.form_label') }}
-              </Label>
-              <Select v-model="form.member_registration_form_id">
-                <SelectTrigger>
-                  <SelectValue :placeholder="$t('settings.form_settings.form_placeholder')" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="formOption in forms" :key="formOption.id" :value="formOption.id">
-                    {{ formOption.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      <FormFieldWrapper
+        id="member_registration_notification_recipient_role_id"
+        :label="$t('settings.form_settings.role_label')"
+        :error="form.errors.member_registration_notification_recipient_role_id"
+      >
+        <Select v-model="form.member_registration_notification_recipient_role_id">
+          <SelectTrigger id="member_registration_notification_recipient_role_id">
+            <SelectValue :placeholder="$t('settings.form_settings.role_placeholder')" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="role in roles" :key="role.id" :value="role.id">
+              {{ role.name }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
+    </FormSection>
 
-            <div class="space-y-2">
-              <Label class="inline-flex items-center gap-1">
-                <component :is="RoleIcon" class="h-4 w-4" />
-                {{ $t('settings.form_settings.role_label') }}
-              </Label>
-              <Select v-model="form.member_registration_notification_recipient_role_id">
-                <SelectTrigger>
-                  <SelectValue :placeholder="$t('settings.form_settings.role_placeholder')" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem v-for="role in roles" :key="role.id" :value="role.id">
-                    {{ role.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </FormElement>
+    <FormSection
+      :title="$t('settings.form_settings.student_rep_title')"
+      :description="$t('settings.form_settings.student_rep_description')"
+    >
+      <FormFieldWrapper
+        id="student_rep_registration_form_id"
+        :label="$t('settings.form_settings.student_rep_form_label')"
+        :error="form.errors.student_rep_registration_form_id"
+      >
+        <Select v-model="form.student_rep_registration_form_id">
+          <SelectTrigger id="student_rep_registration_form_id">
+            <SelectValue :placeholder="$t('settings.form_settings.form_placeholder')" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem :value="null">
+              {{ $t('settings.form_settings.no_form_selected') }}
+            </SelectItem>
+            <SelectItem v-for="formOption in forms" :key="formOption.id" :value="formOption.id">
+              {{ formOption.name }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
 
-        <!-- Student Representative Registration Form Settings -->
-        <FormElement>
-          <template #title>
-            {{ $t('settings.form_settings.student_rep_title') }}
-          </template>
-          <template #description>
-            {{ $t('settings.form_settings.student_rep_description') }}
-          </template>
-
-          <div class="space-y-4">
-            <div class="space-y-2">
-              <Label class="inline-flex items-center gap-1">
-                <component :is="FormIcon" class="h-4 w-4" />
-                {{ $t('settings.form_settings.student_rep_form_label') }}
-              </Label>
-              <Select v-model="form.student_rep_registration_form_id">
-                <SelectTrigger>
-                  <SelectValue :placeholder="$t('settings.form_settings.form_placeholder')" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem :value="null">
-                    {{ $t('settings.form_settings.no_form_selected') }}
-                  </SelectItem>
-                  <SelectItem v-for="formOption in forms" :key="formOption.id" :value="formOption.id">
-                    {{ formOption.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div class="space-y-2">
-              <Label class="inline-flex items-center gap-1">
-                <component :is="TypeIcon" class="h-4 w-4" />
-                {{ $t('settings.form_settings.student_rep_types_label') }}
-              </Label>
-              <p class="text-sm text-muted-foreground">
-                {{ $t('settings.form_settings.student_rep_types_description') }}
-              </p>
-              <MultiSelect
-                v-model="selectedTypes"
-                :options="props.institution_types"
-                label-field="title"
-                value-field="id"
-                :placeholder="$t('settings.form_settings.student_rep_types_placeholder')"
-                :empty-text="$t('settings.form_settings.no_types_found')"
-              />
-            </div>
-          </div>
-        </FormElement>
-      </AdminForm>
-    </UpsertModelLayout>
-  </PageContent>
+      <FormFieldWrapper
+        id="student_rep_institution_type_ids"
+        :label="$t('settings.form_settings.student_rep_types_label')"
+        :hint="$t('settings.form_settings.student_rep_types_description')"
+        :error="form.errors.student_rep_institution_type_ids"
+      >
+        <MultiSelect
+          v-model="selectedTypes"
+          :options="props.institution_types"
+          label-field="title"
+          value-field="id"
+          :placeholder="$t('settings.form_settings.student_rep_types_placeholder')"
+          :empty-text="$t('settings.form_settings.no_types_found')"
+        />
+      </FormFieldWrapper>
+    </FormSection>
+  </FormPage>
 </template>
 
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import AdminForm from '@/Components/AdminForms/AdminForm.vue';
-import FormElement from '@/Components/AdminForms/FormElement.vue';
-import { Label } from '@/Components/ui/label';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import FormSection from '@/Components/Patterns/FormSection.vue';
 import { MultiSelect } from '@/Components/ui/multi-select';
-import { FormIcon, RoleIcon, TypeIcon } from '@/Components/icons';
 import {
   Select,
   SelectContent,

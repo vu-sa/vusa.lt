@@ -26,7 +26,7 @@ beforeEach(function (): void {
 
 function analyze(array $overrides = []): array
 {
-    $rows = Dutiable::query()->without('study_program')->with('duty')->get();
+    $rows = Dutiable::query()->with('duty')->get();
 
     return AnalyzeDutiableTimeline::execute($rows, Cadence::query()->get(), $overrides);
 }
@@ -114,7 +114,10 @@ test('an open-ended row whose term is long over is stale, and carries the date t
 
     $finding = collect(analyze())->firstWhere('code', 'open_ended_stale');
 
+    // Informational: a re-elected member keeps one open row across terms, so this is
+    // usually a seat still held rather than one someone forgot to close.
     expect($finding)->not->toBeNull()
+        ->and($finding['severity'])->toBe('info')
         ->and($finding['detail']['suggested_end'])->toBe('2025-06-30');
 });
 
@@ -232,4 +235,27 @@ describe('rows covering more than one term', function (): void {
         expect($finding['detail']['drift_days'])->toBe(['start' => 4, 'end' => 10])
             ->and($finding['detail']['cadence_ids']['end'])->toBe($this->second->id);
     });
+});
+
+test('an active row on an ex-officio target duty without its source is flagged as a suspect orphan', function (): void {
+    $sourceDuty = Duty::factory()->for($this->institution)->create();
+    $targetDuty = Duty::factory()->for($this->institution)->create();
+    $sourceDuty->exOfficioTargetDuties()->attach($targetDuty);
+
+    $orphanRow = Dutiable::factory()->create([
+        'duty_id' => $targetDuty->id,
+        'dutiable_id' => $this->holder->id,
+        'start_date' => now()->subMonth()->toDateString(),
+        'end_date' => null,
+        'via_dutiable_id' => null,
+    ]);
+
+    $findings = analyze();
+
+    expect(codes($findings))->toContain('orphan_derived_suspect');
+
+    $diagnostic = collect($findings)->firstWhere('code', 'orphan_derived_suspect');
+    expect($diagnostic)->not->toBeNull()
+        ->and($diagnostic['severity'])->toBe('info')
+        ->and($diagnostic['row_ids'])->toBe([$orphanRow->id]);
 });

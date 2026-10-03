@@ -6,6 +6,7 @@ use App\Notifications\Channels\IdempotentDatabaseChannel;
 use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer;
 use App\Services\PermissionService;
+use App\Services\ResponsibilityResolver;
 use App\Support\LocalizedRouteSlugs;
 use App\Support\MorphMap;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -40,6 +41,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Singleton so the institution-type scope map is built at most once per request.
         $this->app->singleton(InstitutionScopeResolver::class);
+        $this->app->scoped(ResponsibilityResolver::class);
 
         // Register our new permission service
         $this->app->scoped('permission.service', fn ($app) => new PermissionService($app->make(ModelAuthorizer::class)));
@@ -73,7 +75,7 @@ class AppServiceProvider extends ServiceProvider
         // subsequent request for the rest of the process. bootstrap/app.php never calls
         // $middleware->trimStrings(...), so nothing else depends on this being pre-populated.
         TrimStrings::flushState();
-        TrimStrings::skipWhen(fn (Request $request) => $request->is('mano/*'));
+        TrimStrings::skipWhen(fn (Request $request) => $request->is('mano/*', 'api/v1/admin/content-editor/*'));
 
         Translatable::fallback(
             fallbackLocale: 'lt'
@@ -119,10 +121,6 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('fileManager', fn (Request $request) => $request->user()
             ? Limit::perMinute(1000)->by($request->user()->id)
             : Limit::perMinute(60)->by($request->ip()));
-
-        RateLimiter::for('summerCamps', fn (Request $request) => $request->user()
-            ? Limit::perMinute(100)->by($request->user()->id)
-            : Limit::perMinute(15)->by($request->ip()));
 
         RateLimiter::for('formRegistrations', fn (Request $request) => $request->user()
             ? Limit::perMinute(100)->by($request->user()->id)

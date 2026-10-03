@@ -41,7 +41,7 @@ class StoreSupportRequestRequest extends FormRequest
                     }
 
                     $hasRole = $user->roles()->where('roles.id', $value)->exists()
-                        || $user->current_duties()->whereHas('roles', fn ($q) => $q->where('roles.id', $value))->exists();
+                        || $user->authorization_duties()->whereHas('roles', fn ($q) => $q->where('roles.id', $value))->exists();
 
                     if (! $hasRole) {
                         $fail(__('Jūs negalite pasirinkti šios rolės.'));
@@ -51,6 +51,9 @@ class StoreSupportRequestRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:10000'],
             'context_url' => ['nullable', 'string', 'max:2000'],
+            'context' => ['nullable', 'array:viewport,browser'],
+            'context.viewport' => ['nullable', 'string', 'max:32'],
+            'context.browser' => ['nullable', 'string', 'max:1000'],
             'reporter_name' => ['nullable', 'string', 'max:255'],
             'reporter_email' => ['nullable', 'email', 'max:255'],
             'images' => ['nullable', 'array', 'max:5'],

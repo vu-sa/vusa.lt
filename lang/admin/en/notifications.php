@@ -11,8 +11,6 @@ return [
         'user' => 'User',
         'duty' => 'Duties',
         'system' => 'System',
-        'news' => 'News',
-        'calendar' => 'Events',
     ],
 
     // Channels
@@ -24,8 +22,8 @@ return [
         'push_enable' => 'Enable',
         'push_disable' => 'Disable',
         'push_blocked' => 'Blocked',
-        'email_digest' => 'Email Digest',
-        'email_digest_description' => 'Receive notifications via periodic email digest',
+        'email_digest' => 'Email',
+        'email_digest_description' => 'Urgent notifications arrive right away, the rest in an email digest',
     ],
 
     // Digest
@@ -37,6 +35,7 @@ return [
     'digest_count_label' => '{1} notification|[2,*] notifications',
     'digest_total' => 'total',
     'digest_more_items' => '{1} :count more item|[2,*] :count more items',
+    'digest_open_system' => 'Open Mano VU SA',
     'digest_view_all' => 'View all notifications',
     'view_all' => 'View All Notifications',
     'toast_fallback_title' => 'New Notification',
@@ -72,9 +71,11 @@ return [
     'task_overdue_body_multiple' => 'You have :count overdue tasks: :tasks and more',
     'overdue_tasks' => 'Overdue Tasks',
     'periodicity_gap_title' => 'Time to report activity for :institution',
-    'periodicity_gap_body' => 'Register a new meeting or report activity for “:institution”.',
-    'action_register_meeting' => 'Register meeting',
-    'action_report_activity' => 'Report activity',
+    'periodicity_gap_question_title' => 'Did “:institution” meet?',
+    'periodicity_gap_body' => 'If a meeting took place, record it. If not, tell us in one tap that it did not.',
+    'periodicity_gap_body_days' => 'No activity recorded for “:institution” in :days days. If a meeting took place, record it. If not, tell us in one tap that it did not.',
+    'action_register_meeting' => 'Yes, record it',
+    'action_report_activity' => 'No, it did not',
 
     // Registration notifications
     'member_registered_title' => 'New Member Registration',
@@ -88,16 +89,12 @@ return [
     'reservation_status_changed_body_with_user' => ':user changed reservation ":reservation" (:resource) status to :status',
     'reservation_task_hint_pickup' => '📋 Pick up :resource by :date.',
     'reservation_task_hint_return' => '📋 Return :resource by :date.',
+    'reservation_draft_item_taken_title' => 'Not enough left for your reservation',
+    'reservation_draft_item_taken_body' => '{1} Someone reserved :resources, so there is no longer enough of it for your chosen time. Change the quantity or the time.|[2,*] Someone reserved :resources, so there is no longer enough of them for your chosen time. Change the quantities or the time.',
 
     // Approval notifications
     'approval_requested_title' => 'Approval Required',
     'approval_requested_body' => 'Your approval is needed for: :item',
-    'approval_approved_title' => 'Approved',
-    'approval_approved_body' => ':user approved :item',
-    'approval_rejected_title' => 'Rejected',
-    'approval_rejected_body' => ':user rejected :item',
-    'approval_cancelled_title' => 'Cancelled',
-    'approval_cancelled_body' => ':user cancelled :item',
     'approval_escalation_title' => 'Approval Overdue',
     'approval_escalation_body' => 'Approval for :item is overdue and requires your attention',
 
@@ -117,19 +114,10 @@ return [
     'meeting_agenda_type_break' => ':count break',
     'meeting_agenda_additional_votes_note' => 'If there were additional votes, don\'t forget to add them.',
 
-    // News notifications
-    'news_published_title' => 'New Article',
-    'news_published_body' => ':tenant published a new article: :title',
-
-    // Calendar notifications
-    'calendar_reminder_title' => 'Upcoming Event',
-    'calendar_reminder_soon_title' => 'Event Soon!',
-    'calendar_reminder_body' => 'Event ":event" starts in approximately :hours hours',
-    'calendar_reminder_body_one_hour' => 'Event ":event" starts in approximately 1 hour',
-    'calendar_reminder_body_tomorrow' => 'Tomorrow\'s event: :event',
-
     // Duty notifications
     'duty_expiring_title' => 'Duty expires in :days days',
+    'access_changed_title' => 'Your access changed',
+    'access_changed_body' => 'Your duties changed. Check what you can do now.',
     'duty_expiring_body' => 'Your duty ":duty" ends on :date. Remember to transfer your experience!',
 
     // System notifications
@@ -154,14 +142,150 @@ return [
     'action_view_tasks' => 'View Tasks',
     'action_view_registration' => 'View Registration',
     'action_view_reservation' => 'View Reservation',
+    'action_review_reservation_draft' => 'Review reservation',
     'action_view_meeting' => 'View Meeting',
     'action_view_duty' => 'View Duty',
+    'action_view_access' => 'View my roles',
     'action_explore_dashboard' => 'Explore Dashboard',
     'action_view' => 'View',
     'action_review' => 'Review',
 
+    // Email footer: signature and "why you got this"
+    'mail' => [
+        'why_received' => 'You are getting this email because “:category” emails are turned on in your notification settings.',
+        'settings_link' => 'Change notification settings',
+        'signature_intro' => 'Questions? Write to:',
+        'sign_off' => 'Mano VU SA',
+    ],
+
+    // Context rows (label/value pairs shown under a notification)
+    'context' => [
+        'institution' => 'Institution',
+        'deadline' => 'Deadline',
+        'days_overdue' => 'Overdue by',
+        'days_since_activity' => 'No activity for',
+        'days_value' => ':count d',
+        'task' => 'Task',
+        'date' => 'Time',
+        'format' => 'Format',
+        'object' => 'Item',
+        'step' => 'Step',
+        'assigned_by' => 'Assigned by',
+        'duty' => 'Duty',
+        'end_date' => 'Term ends',
+        'access_started' => 'From :date you have',
+        'access_ended' => 'From :date you no longer have',
+        'author' => 'Author',
+    ],
+
+    // One entry per NotificationType
+    'types' => [
+        'task_assigned' => [
+            'label' => 'A task is assigned to you',
+            'description' => 'When a new task is assigned to you, by hand or automatically, e.g. filling in a meeting agenda.',
+        ],
+        'task_reminder' => [
+            'label' => 'Task deadline is near',
+            'description' => 'The chosen number of days before an open task is due.',
+        ],
+        'task_overdue' => [
+            'label' => 'Overdue tasks',
+            'description' => 'On Mondays, if you have open tasks past their deadline.',
+        ],
+        'task_auto_completed' => [
+            'label' => 'Task completed automatically',
+            'description' => 'When the system closes your task itself, e.g. after a reservation decision.',
+        ],
+        'meeting_reminder' => [
+            'label' => 'Upcoming meeting',
+            'description' => 'The chosen number of hours before a meeting of an institution you hold a duty in.',
+        ],
+        'institution_activity' => [
+            'label' => 'Did the institution meet?',
+            'description' => 'When your institution has had no recorded meeting for a long time. Answer with one button.',
+        ],
+        'meeting_created' => [
+            'label' => 'New meeting created',
+            'description' => 'When a meeting is created in an institution you coordinate or oversee.',
+        ],
+        'meeting_agenda_completed' => [
+            'label' => 'Meeting agenda filled in',
+            'description' => 'When the agenda of a meeting you coordinate or oversee is complete.',
+        ],
+        'followed_institution_activity' => [
+            'label' => 'Meetings of followed institutions',
+            'description' => 'When a followed institution gets a new meeting or its agenda is filled in. You follow institutions from the institution list.',
+        ],
+        'approval_requested' => [
+            'label' => 'Reservation needs approval',
+            'description' => 'When someone reserves a resource of your unit and it needs your decision.',
+        ],
+        'reservation_status_changed' => [
+            'label' => 'Reservation status changed',
+            'description' => 'When a resource you reserved is picked up, returned or changes status.',
+        ],
+        'assigned_to_resource' => [
+            'label' => 'Added to a reservation',
+            'description' => 'When someone adds you to their reservation.',
+        ],
+        'reservation_draft_item_taken' => [
+            'label' => 'Draft is short of resources',
+            'description' => 'When others reserved resources your unsubmitted reservation needed.',
+        ],
+        'comment_mention' => [
+            'label' => 'You were mentioned',
+            'description' => 'When someone tags you with @name in a comment.',
+        ],
+        'comment_activity' => [
+            'label' => 'New comments',
+            'description' => 'When someone comments on your meeting, task or other record, or replies to your comment.',
+        ],
+        'duty_expiring' => [
+            'label' => 'Your term is ending',
+            'description' => '30 days before your duty ends.',
+        ],
+        'access_changed' => [
+            'label' => 'Your access changed',
+            'description' => 'When a duty of yours starts or ends and what you can see changes.',
+        ],
+        'member_registration' => [
+            'label' => 'New member registration',
+            'description' => 'When someone registers to become a VU SR member in your unit.',
+        ],
+        'student_rep_registration' => [
+            'label' => 'Student representative registration',
+            'description' => 'When someone registers to become a student representative in your unit.',
+        ],
+        'support_request_status_changed' => [
+            'label' => 'Support request status',
+            'description' => 'When the status of a support request you submitted changes.',
+        ],
+    ],
+
     // Preferences UI
     'preferences' => [
+        'spotlight_title' => 'New notification settings',
+        'spotlight_description' => 'You now choose email (at once, in digest or off) and push for each notification separately.',
+        'lead' => 'Choose how each notification reaches you. The bell always shows everything.',
+        'email_label' => 'Email',
+        'push_label' => 'Push',
+        'email_immediate' => 'Email at once',
+        'email_digest' => 'In digest',
+        'email_off' => 'No email',
+        'email_locked' => 'Sent to the duty inbox',
+        'section_all' => 'All',
+        'push_no_devices' => 'You have no connected devices, so push notifications won\'t arrive. Turn them on in the side panel.',
+        'emails_title' => 'Emails',
+        'emails_description' => 'Both immediate emails and the digest go to these addresses.',
+        'emails_default_info' => 'With no address selected, emails go to :email.',
+        'quiet_hours' => 'From 22:00 to 07:00, push notifications and digests wait until morning.',
+        'mute_description' => 'While muted, no emails, push notifications or digests are sent. The bell still shows everything.',
+        'mute_locked_note' => 'Registration emails to a duty inbox are sent even while muted.',
+        'unmuted' => 'Notifications are back on.',
+        'in_app_title' => 'Bell',
+        'in_app_description' => 'Every notification appears in real time in the bell and the notification centre — even with email off or notifications muted.',
+        'push_description' => 'Reaches a connected device even when the system is closed.',
+        'email_description' => '“At once” sends its own email right away. “In digest” bundles it with others at your chosen frequency.',
         'title' => 'Notification Settings',
         'description' => 'Choose how and when you want to receive notifications.',
         'mute_all' => 'Temporary Mute',
@@ -183,8 +307,28 @@ return [
         'task_reminder_days_description' => 'How many days before to remind about upcoming task deadlines',
         'meeting_reminder_hours' => 'Meeting Reminder Hours',
         'meeting_reminder_hours_description' => 'How many hours before to remind about upcoming meetings',
-        'calendar_reminder_hours' => 'Event Reminder Hours',
-        'calendar_reminder_hours_description' => 'How many hours before to remind about upcoming events',
+        'emails_hint' => 'Both immediate emails and the digest go here. With no address selected, they go to :email.',
+        'emails_label' => 'Addresses',
+        'digest_label' => 'Digest',
+        'digest_hint' => 'How often to send a digest of unread notifications.',
+        'section_all_label' => 'All notifications in this section',
+        'push_off_all' => 'Turn push off for all',
+        'push_on_all' => 'Turn push on for all',
+        'reset' => 'Restore defaults',
+        'reset_title' => 'Restore the default settings?',
+        'reset_description' => 'Email and push choices for every notification, reminder times and the digest frequency go back to their defaults. Your email addresses and mute stay as they are.',
+        'reset_done' => 'Notification settings restored.',
+        'how_title' => 'Who gets notifications, and when?',
+        'how_bell' => 'The bell and the notification centre show all your notifications — even with email off or notifications muted.',
+        'how_email' => '“Email at once” sends its own email right away; “In digest” bundles it with others at your chosen frequency.',
+        'how_quiet' => 'From 22:00 to 07:00, push notifications and digests wait until morning; urgent emails still go at once.',
+        'how_mute' => 'While muted, no emails, push or digests are sent, except registration emails to a duty inbox.',
+        'how_tasks' => 'Task notifications go to the people the task is assigned to who still hold a duty in that institution. When secretaries are appointed for the term, meeting tasks go to them rather than to every representative.',
+        'how_meetings' => 'Meeting reminders go to everyone holding a duty in the institution on the meeting day, and to that term\'s secretaries. Coordinators hear about a new meeting or a filled-in agenda; whoever carries the agenda task gets only the task notice.',
+        'how_followed' => 'Followed-institution notices reach you only when your duties do not already bring you the same news, and only if you have not muted the institution.',
+        'how_reservations' => 'Resource managers get only the approval request. The requester hears about the decision once — when the reservation\'s status changes.',
+        'how_self' => 'You are never notified about your own action (an approval, closing a task, a status change).',
+        'how_list' => 'You only see the notifications your duties and roles can bring you.',
     ],
 
     // Legacy compatibility
@@ -250,5 +394,9 @@ return [
         'status_blocked' => 'Push notifications are blocked in browser settings',
         'status_enabled' => 'Push notifications are enabled',
         'status_disabled' => 'Push notifications are disabled',
+        'worker_missing' => 'Push notifications are not ready in this browser yet. Reload the page; if that does not help, clear the site data.',
+        'subscribe_failed' => 'Could not turn push notifications on. Check the browser permission and try again.',
+        'test_result' => 'The push service accepted the notification for :accepted of :total devices. If you do not see it, check the device\'s notification permission for the browser.',
+        'test_failed' => 'No device accepted the notification. Stale devices were removed — turn push on again on this device.',
     ],
 ];

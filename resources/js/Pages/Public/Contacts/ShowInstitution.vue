@@ -62,9 +62,8 @@
       </div>
     </section>
 
-    <!-- Available Contact Details Mini-Card Grid (ruled flex grid matching PartnersBanner) -->
     <section v-if="availableDetails.length > 0">
-      <div class="mx-auto flex max-w-7xl flex-wrap justify-center">
+      <RuledGrid :columns="detailColumns" align="center" class="mx-auto max-w-7xl">
         <component
           :is="item.href ? 'a' : 'div'"
           v-for="item in availableDetails"
@@ -73,10 +72,8 @@
           :target="item.external ? '_blank' : undefined"
           :rel="item.external ? 'noopener noreferrer' : undefined"
           :class="[
-            'group flex shrink-0 grow-0 flex-col p-6 sm:p-8 text-left transition-colors hover:bg-secondary/40',
-            detailBasisClass,
-            'border-b border-l border-border',
-            detailBorderRightClass,
+            'flex flex-col p-6 text-left sm:p-8',
+            item.href && 'group transition-colors hover:bg-secondary/40 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
           ]"
         >
           <component :is="item.icon" class="size-5 text-brand" />
@@ -90,7 +87,7 @@
             {{ item.sub }}
           </p>
         </component>
-      </div>
+      </RuledGrid>
 
       <!-- Separator line with generous margin below contact details -->
       <div class="mt-10 sm:mt-14 border-b border-border mb-4 sm:mb-6" />
@@ -200,6 +197,7 @@
               <Tooltip>
                 <TooltipTrigger as-child>
                   <Button
+                    voice="brand"
                     variant="ghost"
                     size="sm"
                     class="size-7 p-0 text-muted-foreground hover:text-foreground"
@@ -214,7 +212,7 @@
           </div>
 
           <CollapsibleTrigger as-child>
-            <Button variant="ghost" size="sm" class="size-8 p-0">
+            <Button voice="brand" variant="ghost" size="sm" class="size-8 p-0">
               <IFluentChevronDown16Regular
                 class="size-4 transition-transform duration-200"
                 :class="{ 'rotate-180': !showMeetings }"
@@ -247,6 +245,7 @@
           <!-- Previous years toggle -->
           <Button
             v-if="previousYearsMeetings && previousYearsMeetings.length > 0 && !showPreviousYears"
+            voice="brand"
             variant="outline"
             size="sm"
             class="mb-4 w-full"
@@ -304,6 +303,7 @@ import PublicVotingExplainerModal from '@/Components/Public/PublicVotingExplaine
 import MeetingTimelineItem from '@/Components/Public/MeetingTimelineItem.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
+import { RuledGrid, type RuledGridColumns } from '@/Components/Brand';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { getMeetingStatusSummary } from '@/Composables/useAgendaItemStyling';
 import IFluentChevronDown16Regular from '~icons/fluent/chevron-down-16-regular';
@@ -548,22 +548,10 @@ const availableDetails = computed(() => {
   return items;
 });
 
-const detailBasisClass = computed(() => {
+const detailColumns = computed<RuledGridColumns>(() => {
   const count = availableDetails.value.length;
-  if (count === 1) return 'basis-full';
-  if (count === 2) return 'basis-full sm:basis-1/2 lg:basis-1/2';
-  if (count === 3) return 'basis-full sm:basis-1/2 lg:basis-1/3';
-  if (count === 4) return 'basis-full sm:basis-1/2 lg:basis-1/4';
-  if (count === 5) return 'basis-full sm:basis-1/2 lg:basis-1/5';
-  return 'basis-full sm:basis-1/2 lg:basis-1/3';
-});
-
-const detailBorderRightClass = computed(() => {
-  const count = availableDetails.value.length;
-  if (count <= 5) {
-    return 'max-sm:border-r sm:max-lg:[&:is(:nth-child(2n),:last-child)]:border-r lg:[&:last-child]:border-r';
-  }
-  return 'max-sm:border-r sm:max-lg:[&:is(:nth-child(2n),:last-child)]:border-r lg:[&:is(:nth-child(3n),:last-child)]:border-r';
+  const wideColumns = Math.max(1, Math.min(count, 5)) as RuledGridColumns['base'];
+  return { base: 1, sm: count <= 1 ? 1 : 2, lg: count <= 5 ? wideColumns : 3 };
 });
 
 // Check if there are any contacts

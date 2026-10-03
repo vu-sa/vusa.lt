@@ -1,95 +1,100 @@
 <template>
-  <!-- Active impersonation status -->
   <div
     v-if="isImpersonating"
     data-slot="impersonation-status"
     role="status"
     :class="[
-      'rounded-xl border border-amber-200 bg-amber-50 text-amber-950 shadow-sm print:hidden',
-      'dark:border-amber-900/70 dark:bg-amber-950/50 dark:text-amber-100',
+      'border-b border-status-attention-border bg-status-attention-surface text-status-attention print:hidden',
       props.class,
     ]"
   >
-    <div class="flex min-h-11 items-center justify-between gap-3 px-3 py-2 text-sm sm:px-4">
+    <div class="mx-auto flex min-h-11 w-full max-w-7xl items-center justify-between gap-3 px-4 py-1 text-sm sm:px-6 lg:px-8">
       <div class="flex min-w-0 items-center gap-3">
-        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/60">
-          <UserCog class="h-4 w-4 text-amber-700 dark:text-amber-300" />
-        </div>
+        <UserCog class="size-4 shrink-0" />
         <p class="min-w-0 truncate font-medium">
-          {{ $t('Impersonating as') }} <strong>{{ currentUserName }}</strong>
-          <span class="hidden text-amber-700 sm:inline dark:text-amber-300">
-            ({{ $t('logged in by') }} {{ impersonatorName }})
+          {{ $t('Prisijungei kaip') }} <strong>{{ currentUserName }}</strong>
+          <span class="hidden sm:inline">
+            ({{ $t('Pradinė paskyra') }}: {{ impersonatorName }})
           </span>
         </p>
       </div>
       <Button
-        size="sm"
+        size="xs"
         variant="outline"
-        class="h-8 shrink-0 gap-1.5 rounded-lg border-amber-300 bg-white/70 hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/60 dark:hover:bg-amber-900/60"
+        class="shrink-0 pointer-coarse:min-h-11"
         :disabled="stopping"
         @click="stopImpersonating"
       >
         <LogOut class="h-4 w-4" />
-        <span class="hidden sm:inline">{{ $t('Stop Impersonating') }}</span>
-        <span class="sr-only sm:hidden">{{ $t('Stop Impersonating') }}</span>
+        <span class="hidden sm:inline">{{ $t('Grįžti į savo paskyrą') }}</span>
+        <span class="sr-only sm:hidden">{{ $t('Grįžti į savo paskyrą') }}</span>
       </Button>
     </div>
+    <p v-if="requestError" role="alert" class="mx-auto w-full max-w-7xl px-4 pb-2 text-sm sm:px-6 lg:px-8">
+      {{ requestError }}
+    </p>
   </div>
 
-  <Teleport to="body">
-    <!-- Impersonate selector (super admin, non-impersonating) -->
-    <div
-      v-if="canImpersonate && !isImpersonating && !dismissed"
-      data-slot="impersonation-launcher"
-      class="fixed bottom-4 right-4 z-[9998] print:hidden"
-    >
+  <div
+    v-if="canImpersonate && !isImpersonating && !dismissed"
+    data-slot="impersonation-launcher"
+    class="min-h-11 border-b border-border bg-secondary/50 print:hidden"
+  >
+    <div class="mx-auto flex min-h-11 w-full max-w-7xl items-center justify-end gap-2 px-4 py-1 sm:px-6 lg:px-8">
       <Popover v-model:open="popoverOpen">
         <PopoverTrigger as-child>
           <Button
-            size="icon"
-            variant="secondary"
-            class="h-10 w-10 rounded-full shadow-lg bg-background"
+            size="sm"
+            variant="outline"
+            class="min-h-11"
           >
-            <UserCog class="h-5 w-5" />
-            <span class="sr-only">{{ $t('Impersonate User') }}</span>
+            <UserCog class="size-4" />
+            {{ $t('Apsimesti nariu') }}
           </Button>
         </PopoverTrigger>
-        <PopoverContent class="w-72 p-0" align="end" side="top">
-          <div class="p-3 border-b">
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="text-sm font-medium">
-                {{ $t('Impersonate User') }}
+        <PopoverContent class="w-[min(20rem,calc(100vw-2rem))] rounded-none border-border p-0 shadow-none" align="end" side="bottom">
+          <div class="border-b border-border p-3">
+            <div class="mb-2 flex items-center justify-between">
+              <h4 class="text-sm font-semibold text-foreground">
+                {{ $t('Apsimesti nariu') }}
               </h4>
-              <button
-                type="button"
-                class="p-1 hover:bg-muted rounded-md transition-colors"
-                @click="dismissed = true; popoverOpen = false"
+              <Button
+                size="icon-sm"
+                variant="ghost"
+                class="min-h-11 min-w-11"
+                :aria-label="$t('Uždaryti')"
+                @click="popoverOpen = false"
               >
-                <X class="h-3.5 w-3.5 text-muted-foreground" />
-              </button>
+                <X class="size-4" />
+              </Button>
             </div>
             <Input
               v-model="searchQuery"
-              :placeholder="$t('Search by name or email...')"
-              class="h-8 text-sm"
+              :placeholder="$t('Ieškok pagal vardą ar el. paštą…')"
               @input="debouncedSearch"
             />
           </div>
-          <div class="max-h-48 overflow-y-auto">
+          <div class="max-h-60 overflow-y-auto">
             <div v-if="searching" class="p-3 text-center text-sm text-muted-foreground">
-              {{ $t('Searching...') }}
+              {{ $t('Ieškoma…') }}
             </div>
             <div v-else-if="searchResults.length === 0 && searchQuery.length >= 2" class="p-3 text-center text-sm text-muted-foreground">
-              {{ $t('No users found') }}
+              {{ $t('Narių nerasta') }}
             </div>
             <div v-else-if="searchQuery.length < 2 && searchQuery.length > 0" class="p-3 text-center text-sm text-muted-foreground">
-              {{ $t('Type at least 2 characters') }}
+              {{ $t('Įvesk bent 2 simbolius') }}
             </div>
+            <p v-if="requestError" role="alert" class="border-b border-status-danger-border bg-status-danger-surface px-3 py-2 text-sm text-status-danger">
+              {{ requestError }}
+            </p>
             <button
               v-for="user in searchResults"
               :key="user.id"
               type="button"
-              class="w-full flex flex-col gap-0.5 px-3 py-2 text-left hover:bg-muted transition-colors text-sm"
+              :class="[
+                'flex min-h-11 w-full flex-col gap-0.5 border-b border-border px-3 py-2 text-left text-sm transition-colors',
+                'last:border-b-0 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none',
+              ]"
               :disabled="starting"
               @click="startImpersonating(user.id)"
             >
@@ -99,8 +104,18 @@
           </div>
         </PopoverContent>
       </Popover>
+      <Button
+        data-slot="impersonation-bar-close"
+        size="icon-sm"
+        variant="ghost"
+        class="min-h-11 min-w-11"
+        :aria-label="$t('Uždaryti')"
+        @click="dismissed = true"
+      >
+        <X class="size-4" />
+      </Button>
     </div>
-  </Teleport>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -108,6 +123,7 @@ import type { HTMLAttributes } from 'vue';
 import { computed, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { useDebounceFn, useFetch } from '@vueuse/core';
+import { trans as $t } from 'laravel-vue-i18n';
 import { LogOut, UserCog, X } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
@@ -135,6 +151,7 @@ const searchResults = ref<SearchUser[]>([]);
 const searching = ref(false);
 const starting = ref(false);
 const stopping = ref(false);
+const requestError = ref('');
 
 const page = usePage();
 
@@ -181,10 +198,11 @@ const debouncedSearch = useDebounceFn(async () => {
 
 async function startImpersonating(userId: string) {
   starting.value = true;
+  requestError.value = '';
 
   try {
     const url = route('api.v1.admin.impersonate.start');
-    await useFetch(url, {
+    const { data, error } = await useFetch(url, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -194,7 +212,12 @@ async function startImpersonating(userId: string) {
       },
       credentials: 'same-origin',
       body: JSON.stringify({ user_id: userId }),
-    }).json();
+    }).json<{ success: boolean; message?: string }>();
+
+    if (error.value || !data.value?.success) {
+      requestError.value = data.value?.message ?? $t('Nepavyko prisijungti kaip šis narys.');
+      return;
+    }
 
     popoverOpen.value = false;
     router.reload();
@@ -206,10 +229,11 @@ async function startImpersonating(userId: string) {
 
 async function stopImpersonating() {
   stopping.value = true;
+  requestError.value = '';
 
   try {
     const url = route('api.v1.admin.impersonate.stop');
-    await useFetch(url, {
+    const { data, error } = await useFetch(url, {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -218,7 +242,12 @@ async function stopImpersonating() {
         'X-CSRF-TOKEN': String(page.props.csrf_token ?? ''),
       },
       credentials: 'same-origin',
-    }).json();
+    }).json<{ success: boolean; message?: string }>();
+
+    if (error.value || !data.value?.success) {
+      requestError.value = data.value?.message ?? $t('Nepavyko grįžti į savo paskyrą.');
+      return;
+    }
 
     router.reload();
   }

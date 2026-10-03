@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
  * @property string $emoji
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Comment|null $comment
+ * @property-read Comment $comment
  * @property-read User|null $user
  *
  * @method static \Database\Factories\CommentReactionFactory factory($count = null, $state = [])

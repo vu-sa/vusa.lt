@@ -1,128 +1,64 @@
-import { shared } from './shared'
-import { mergeObjects } from './utils'
+import { shared } from './shared.ts'
+import { mergeObjects } from './utils.ts'
+import { guide, pdfFileName, sourceFile } from './structure.ts'
+import fs from 'node:fs'
+
+const sidebarPage = (page: { text: string, link: string }) => {
+  const source = fs.readFileSync(new URL(`../${sourceFile(page.link)}`, import.meta.url), 'utf8')
+  const status = source.match(/^doc_status: (\w+)/m)?.[1]
+  const label = { draft: 'Rašoma', partial: 'Dalinis' }[status ?? '']
+  return { ...page, text: label ? `${page.text} · ${label}` : page.text }
+}
 
 export default {
   title: "vusa.lt gidas",
   label: 'Lietuvių',
   lang: 'lt',
-  description: 'VU SA informacijos bei vidaus sistemos gidas - visa reikalinga informacija apie mano.vusa.lt platformą',
+  description: 'Mano VU SA platformos žinynas administratoriams: kaip veikia kiekviena darbo sritis, puslapis ir teisė',
   themeConfig: mergeObjects(shared, {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
-      { text: 'Pradinis', link: '/' },
-      {
-        text: 'Pagal vaidmenį',
-        items: [
-          { text: 'Studentų atstovams', link: '/roles/student-representatives/faq' },
-          { text: 'Administratoriams', link: '/roles/administrators/faq' },
-        ]
-      },
-      { text: 'Naujienos', link: '/blog/' },
-      { text: 'Atnaujinimai', link: '/changelog/' },
-      { text: 'D.U.K.', link: '/faq' },
+      { text: 'Gidas', link: '/darbai', activeMatch: '^/(?!changelog)' },
+      { text: 'Atnaujinimai', link: '/changelog/v3', activeMatch: '/changelog/' },
+      // A file, not a page: VitePress adds the `/docs/` base only to page links.
+      { text: 'PDF', link: `/docs/${pdfFileName}`, target: '_blank' },
     ],
 
-    sidebar: {
-      '/roles/student-representatives/': [
-        {
-          text: 'Studentų atstovams',
-          items: [
-            { text: 'Atsakomybės', link: '/roles/student-representatives/responsibilities' },
-            { text: 'D.U.K.', link: '/roles/student-representatives/faq' },
-          ]
-        },
-        {
-          text: 'Taip pat žiūrėkite',
-          collapsed: false,
-          items: [
-            { text: '← Administratoriams', link: '/roles/administrators/faq' },
-          ]
-        },
-      ],
-      '/roles/administrators/': [
-        {
-          text: 'Administratoriams',
-          items: [
-            { text: 'D.U.K.', link: '/roles/administrators/faq' },
-            { text: 'Rezervacijų sistema', link: '/reservation-system' },
-            { text: 'Archyvas', link: '/archive' },
-          ]
-        },
-        {
-          text: 'Taip pat žiūrėkite',
-          collapsed: false,
-          items: [
-            { text: '← Studentų atstovams', link: '/roles/student-representatives/faq' },
-          ]
-        },
-      ],
-      '/blog/': [
-        {
-          text: 'Naujienos',
-          items: [
-            { text: 'Visos naujienos', link: '/blog/' },
-          ]
-        },
-        {
-          text: 'Taip pat žiūrėkite',
-          collapsed: false,
-          items: [
-            { text: '← Atnaujinimai', link: '/changelog/' },
-            { text: '← Pradinis', link: '/' },
-          ]
-        },
-      ],
-      '/changelog/': [
-        {
-          text: 'Platformos atnaujinimai',
-          items: [
-            { text: 'Visi atnaujinimai', link: '/changelog/' },
-          ]
-        },
-        {
-          text: 'Taip pat žiūrėkite',
-          collapsed: false,
-          items: [
-            { text: '← Naujienos', link: '/blog/' },
-            { text: '← Pradinis', link: '/' },
-          ]
-        },
-      ],
-      '/': [
-        {
-          text: 'Bendra informacija',
-          items: [
-            { text: 'Dokumentų nuasmeninimas', link: '/dng' },
-            { text: 'Informacijos administravimas', link: '/informacijos-administravimas' },
-            { text: 'D.U.K.', link: '/faq' },
-          ]
-        },
-        {
-          text: 'Kitos platformos',
-          collapsed: true,
-          items: [
-            { text: 'Miro', link: '/kitos-platformos/miro' },
-            { text: 'Moodle (Narystės testas)', link: '/kitos-platformos/narystes-testas' },
-          ]
-        },
-        {
-          text: 'Pagal vaidmenį',
-          collapsed: false,
-          items: [
-            { text: 'Studentų atstovams →', link: '/roles/student-representatives/faq' },
-            { text: 'Administratoriams →', link: '/roles/administrators/faq' },
-          ]
-        },
-      ],
-    },
-    
+    sidebar: [
+      ...guide.map(chapter => ({
+        text: chapter.text,
+        link: chapter.index,
+        collapsed: chapter.text !== 'Pradžia',
+        items: chapter.pages.map(sidebarPage),
+      })),
+      {
+        text: 'Atnaujinimai',
+        collapsed: true,
+        items: [
+          { text: 'v3', link: '/changelog/v3' },
+          { text: 'v2', link: '/changelog/v2' },
+          { text: 'v1', link: '/changelog/v1' },
+        ]
+      },
+    ],
+
     // Override shared translations for Lithuanian
+    sidebarMenuLabel: 'Turinys',
+    skipToContentLabel: 'Pereiti prie turinio',
+    returnToTopLabel: 'Į pradžią',
+    darkModeSwitchLabel: 'Tema',
+    lightModeSwitchTitle: 'Įjungti šviesią temą',
+    darkModeSwitchTitle: 'Įjungti tamsią temą',
     editLink: {
       pattern: 'https://github.com/vu-sa/vusa.lt/edit/main/docs/:path',
       text: 'Redaguoti šį puslapį GitHub platformoje'
     },
+    outline: {
+      label: 'Šiame puslapyje'
+    },
     lastUpdated: {
-      text: 'Paskutinį kartą atnaujinta'
+      text: 'Failas pakeistas',
+      formatOptions: { year: 'numeric', month: '2-digit', day: '2-digit', forceLocale: true }
     },
     docFooter: {
       prev: 'Ankstesnis puslapis',

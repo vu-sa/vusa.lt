@@ -93,6 +93,8 @@ export interface NormalizedSearchHit {
   editHref?: string;
   /** Contextual colored status badge shown on the list row. */
   statusBadge?: { label: string; tone: BadgeTone };
+  /** Context shown as a neutral chip rather than a status. */
+  contextBadge?: string;
   /** Duties only: the row belongs to a tenant outside the user's own scope. */
   isExternal?: boolean;
   /** Meetings / agenda items: result comes from a related (non-direct) institution. */
@@ -122,82 +124,6 @@ export const COLLECTION_META: Record<SearchCollectionKey, {
   calendar: { icon: CalendarIcon, label: 'Kalendorius' },
   users: { icon: UserIcon, label: 'Nariai', tab: 'users' },
 };
-
-/** Per-collection color scheme for icon containers (less saturated than the palette defaults). */
-export const COLLECTION_COLOR: Record<SearchCollectionKey, {
-  bg: string;
-  text: string;
-  hoverBg: string;
-  darkBg: string;
-  darkText: string;
-  darkHoverBg: string;
-}> = {
-  meetings: {
-    bg: 'bg-blue-400/10', text: 'text-blue-500',
-    hoverBg: 'group-hover:bg-blue-400/15',
-    darkBg: 'dark:bg-blue-500/15', darkText: 'dark:text-blue-400',
-    darkHoverBg: 'dark:group-hover:bg-blue-500/25',
-  },
-  agendaItems: {
-    bg: 'bg-violet-400/10', text: 'text-violet-500',
-    hoverBg: 'group-hover:bg-violet-400/15',
-    darkBg: 'dark:bg-violet-500/15', darkText: 'dark:text-violet-400',
-    darkHoverBg: 'dark:group-hover:bg-violet-500/25',
-  },
-  institutions: {
-    bg: 'bg-indigo-400/10', text: 'text-indigo-500',
-    hoverBg: 'group-hover:bg-indigo-400/15',
-    darkBg: 'dark:bg-indigo-500/15', darkText: 'dark:text-indigo-400',
-    darkHoverBg: 'dark:group-hover:bg-indigo-500/25',
-  },
-  resources: {
-    bg: 'bg-orange-400/10', text: 'text-orange-500',
-    hoverBg: 'group-hover:bg-orange-400/15',
-    darkBg: 'dark:bg-orange-500/15', darkText: 'dark:text-orange-400',
-    darkHoverBg: 'dark:group-hover:bg-orange-500/25',
-  },
-  duties: {
-    bg: 'bg-pink-400/10', text: 'text-pink-500',
-    hoverBg: 'group-hover:bg-pink-400/15',
-    darkBg: 'dark:bg-pink-500/15', darkText: 'dark:text-pink-400',
-    darkHoverBg: 'dark:group-hover:bg-pink-500/25',
-  },
-  documents: {
-    bg: 'bg-teal-400/10', text: 'text-teal-500',
-    hoverBg: 'group-hover:bg-teal-400/15',
-    darkBg: 'dark:bg-teal-500/15', darkText: 'dark:text-teal-400',
-    darkHoverBg: 'dark:group-hover:bg-teal-500/25',
-  },
-  news: {
-    bg: 'bg-amber-400/10', text: 'text-amber-500',
-    hoverBg: 'group-hover:bg-amber-400/15',
-    darkBg: 'dark:bg-amber-500/15', darkText: 'dark:text-amber-400',
-    darkHoverBg: 'dark:group-hover:bg-amber-500/25',
-  },
-  pages: {
-    bg: 'bg-sky-400/10', text: 'text-sky-500',
-    hoverBg: 'group-hover:bg-sky-400/15',
-    darkBg: 'dark:bg-sky-500/15', darkText: 'dark:text-sky-400',
-    darkHoverBg: 'dark:group-hover:bg-sky-500/25',
-  },
-  calendar: {
-    bg: 'bg-rose-400/10', text: 'text-rose-500',
-    hoverBg: 'group-hover:bg-rose-400/15',
-    darkBg: 'dark:bg-rose-500/15', darkText: 'dark:text-rose-400',
-    darkHoverBg: 'dark:group-hover:bg-rose-500/25',
-  },
-  users: {
-    bg: 'bg-emerald-400/10', text: 'text-emerald-500',
-    hoverBg: 'group-hover:bg-emerald-400/15',
-    darkBg: 'dark:bg-emerald-500/15', darkText: 'dark:text-emerald-400',
-    darkHoverBg: 'dark:group-hover:bg-emerald-500/25',
-  },
-};
-
-/** Convenience helper to resolve a collection's color classes for the icon container. */
-export function getCollectionColor(key: SearchCollectionKey): typeof COLLECTION_COLOR[SearchCollectionKey] {
-  return COLLECTION_COLOR[key];
-}
 
 /** Map an AdminCollection (snake_case) to the canonical result key (camelCase). */
 export function adminCollectionToKey(collection: AdminCollection): SearchCollectionKey {
@@ -354,8 +280,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     subtitle: [r.location, r.category_name].filter(Boolean).join(' • ') || undefined,
     imageUrl: r.image_url || undefined,
     badge: r.tenant_shortname,
-    href: route('resources.edit', r.id),
-    // No view button: ResourceController@show is an unimplemented stub.
+    href: route('resources.show', r.id),
     editHref: route('resources.edit', r.id),
     statusBadge: {
       label: r.is_reservable ? $t('Skolinamas') : $t('Neskolinamas'),
@@ -377,11 +302,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
       viewHref: route('duties.show', d.id),
       editHref: route('duties.edit', d.id),
       isExternal: external,
-      // Subtle cross-tenant indicator: only external duties get a badge, labelled
-      // with their owning padalinys.
-      statusBadge: external && d.tenant_shortname
-        ? { label: d.tenant_shortname, tone: 'info' as BadgeTone }
-        : undefined,
+      contextBadge: external ? d.tenant_shortname : undefined,
     };
   },
   documents: (d: DocumentSearchResult) => ({
@@ -392,9 +313,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     meta: formatSearchDate(d.document_date),
     href: d.anonymous_url,
     viewHref: route('documents.show', d.id),
-    statusBadge: d.content_type
-      ? { label: d.content_type, tone: 'neutral' as BadgeTone }
-      : undefined,
+    contextBadge: d.content_type,
   }),
   news: (n: NewsSearchResult) => ({
     recordId: String(n.id),
@@ -407,7 +326,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     // The admin index (unlike the public one) also contains drafts and
     // scheduled articles — flag them so they aren't mistaken for live ones.
     statusBadge: n.draft
-      ? { label: $t('Juodraštis'), tone: 'warning' as BadgeTone }
+      ? { label: $t('Juodraštis'), tone: 'neutral' as BadgeTone }
       : (n.publish_time && n.publish_time * 1000 > Date.now()
           ? { label: $t('Suplanuota'), tone: 'info' as BadgeTone }
           : undefined),
@@ -438,7 +357,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     viewHref: route('users.show', u.id),
     editHref: route('users.edit', u.id),
     statusBadge: u.is_active === false
-      ? { label: $t('Ištrintas'), tone: 'destructive' as BadgeTone }
+      ? { label: $t('Ištrintas'), tone: 'danger' as BadgeTone }
       : undefined,
   }),
 };

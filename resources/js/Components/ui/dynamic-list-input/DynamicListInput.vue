@@ -1,14 +1,16 @@
 <template>
   <div class="space-y-3" data-dynamic-list>
     <!-- Empty state -->
-    <div v-if="items.length === 0"
-      class="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-zinc-200 p-6 text-center dark:border-zinc-700">
-      <component :is="emptyIcon" v-if="emptyIcon" class="mb-2 h-8 w-8 text-zinc-400 dark:text-zinc-500" />
-      <p class="text-sm text-zinc-500 dark:text-zinc-400">
+    <div
+      v-if="items.length === 0"
+      class="flex flex-col items-center justify-center border border-dashed border-border bg-secondary/20 p-6 text-center"
+    >
+      <component :is="emptyIcon" v-if="emptyIcon" class="mb-2 size-8 text-muted-foreground" />
+      <p class="text-sm text-muted-foreground">
         {{ emptyText }}
       </p>
       <Button type="button" variant="outline" size="sm" class="mt-3" @click="addItem">
-        <IFluentAdd24Regular class="mr-2 h-4 w-4" />
+        <Plus class="mr-2 size-4" />
         {{ addFirstText }}
       </Button>
     </div>
@@ -16,52 +18,58 @@
     <!-- Items list -->
     <template v-else>
       <TransitionGroup name="list" tag="div" class="space-y-3">
-        <div v-for="(item, index) in items" :key="itemKeys[index]"
-          class="group relative rounded-lg border border-dashed border-zinc-200 bg-zinc-50/50 transition-all hover:border-solid hover:border-zinc-300 dark:border-zinc-700 dark:bg-zinc-800/30 dark:hover:border-zinc-600"
+        <div
+          v-for="(item, index) in items"
+          :key="itemKeys[index]"
+          class="group relative border border-border bg-secondary/30 transition-all hover:border-foreground/30"
           :class="[
-            { 'border-primary bg-primary/5': draggedIndex === index },
+            { 'border-brand bg-brand/5': draggedIndex === index },
             compact ? 'py-3 pl-7 pr-8' : 'p-4',
-          ]">
-          <!-- Compact: hover-revealed drag rail on the left edge, instead of a full header
-               row above every item — reclaims the vertical space that cost when an editor
-               (accordion, card-stack, carousel) stacks many short items. -->
-          <div v-if="compact"
-            class="absolute inset-y-0 left-0 flex w-6 shrink-0 cursor-grab items-center justify-center rounded-l-lg text-zinc-300 opacity-0 transition-opacity hover:bg-zinc-100 hover:text-zinc-500 active:cursor-grabbing group-hover:opacity-100 dark:text-zinc-600 dark:hover:bg-zinc-800"
+          ]"
+        >
+          <!-- Compact: hover-revealed drag rail on the left edge -->
+          <div
+            v-if="compact"
+            class="absolute inset-y-0 left-0 flex w-6 shrink-0 cursor-grab items-center justify-center border-r border-transparent text-muted-foreground opacity-0 transition-opacity hover:border-border hover:bg-secondary active:cursor-grabbing group-hover:opacity-100"
             draggable="true"
             @dragstart="handleDragStart(index, $event)"
             @dragend="handleDragEnd"
             @dragover.prevent="handleDragOver(index)"
-            @drop="handleDrop(index)">
-            <IFluentReOrderDotsVertical24Regular class="h-3.5 w-3.5" />
+            @drop="handleDrop(index)"
+          >
+            <GripVertical class="size-3.5" />
           </div>
 
           <!-- Compact: delete moves to a hover-revealed top-right icon -->
-          <Button v-if="compact"
+          <Button
+            v-if="compact"
             type="button"
             variant="ghost"
             size="icon"
-            class="absolute right-1.5 top-1.5 h-6 w-6 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-            :class="items.length === 1 && !allowEmpty ? 'text-zinc-300 cursor-not-allowed dark:text-zinc-600' : 'text-zinc-400 hover:text-red-600 dark:hover:text-red-400'"
+            class="absolute right-1.5 top-1.5 size-6 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+            :class="items.length === 1 && !allowEmpty ? 'text-muted-foreground/40 cursor-not-allowed' : 'text-muted-foreground hover:text-destructive'"
             :disabled="items.length === 1 && !allowEmpty"
-            @click="removeItem(index)">
-            <IFluentDelete24Regular class="h-3.5 w-3.5" />
+            @click="removeItem(index)"
+          >
+            <Trash2 class="size-3.5" />
           </Button>
 
-          <!-- Non-compact: the original full-width header row -->
+          <!-- Non-compact: header row -->
           <div v-if="!compact" class="mb-3 flex items-center gap-2">
             <!-- Drag handle -->
             <div
-              class="flex h-7 w-7 shrink-0 cursor-grab items-center justify-center rounded bg-zinc-100 text-sm font-medium text-zinc-500 transition-colors hover:bg-zinc-200 active:cursor-grabbing dark:bg-zinc-800 dark:hover:bg-zinc-700"
+              class="flex size-7 shrink-0 cursor-grab items-center justify-center border border-border bg-background text-muted-foreground transition-colors hover:bg-secondary active:cursor-grabbing"
               draggable="true"
               @dragstart="handleDragStart(index, $event)"
               @dragend="handleDragEnd"
               @dragover.prevent="handleDragOver(index)"
-              @drop="handleDrop(index)">
-              <IFluentReOrderDotsVertical24Regular class="h-4 w-4" />
+              @drop="handleDrop(index)"
+            >
+              <GripVertical class="size-4" />
             </div>
 
             <!-- Item number -->
-            <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
               #{{ index + 1 }}
             </span>
 
@@ -70,11 +78,12 @@
               type="button"
               variant="ghost"
               size="icon"
-              class="ml-auto h-7 w-7 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
-              :class="items.length === 1 && !allowEmpty ? 'text-zinc-400 cursor-not-allowed' : 'text-zinc-500 hover:text-red-600 dark:hover:text-red-400'"
+              class="ml-auto size-7 shrink-0 opacity-0 transition-opacity group-hover:opacity-100"
+              :class="items.length === 1 && !allowEmpty ? 'text-muted-foreground/40 cursor-not-allowed' : 'text-muted-foreground hover:text-destructive'"
               :disabled="items.length === 1 && !allowEmpty"
-              @click="removeItem(index)">
-              <IFluentDelete24Regular class="h-4 w-4" />
+              @click="removeItem(index)"
+            >
+              <Trash2 class="size-4" />
             </Button>
           </div>
 
@@ -90,8 +99,9 @@
         variant="outline"
         size="sm"
         class="w-full border-dashed"
-        @click="addItem">
-        <IFluentAdd24Regular class="mr-2 h-4 w-4" />
+        @click="addItem"
+      >
+        <Plus class="mr-2 size-4" />
         {{ addText }}
       </Button>
     </template>
@@ -100,11 +110,9 @@
 
 <script setup lang="ts" generic="T">
 import { ref, watch, type Component } from 'vue';
+import { GripVertical, Plus, Trash2 } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
-import IFluentAdd24Regular from '~icons/fluent/add24-regular';
-import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
-import IFluentReOrderDotsVertical24Regular from '~icons/fluent/re-order-dots-vertical24-regular';
 
 const props = withDefaults(defineProps<{
   /** Maximum number of items allowed */

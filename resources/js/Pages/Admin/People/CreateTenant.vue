@@ -1,18 +1,17 @@
 <template>
-  <PageContent title="Naujas padalinys" :heading-icon="TenantIcon">
-    <UpsertModelLayout>
-      <TenantForm remember-key="CreateTenant" :tenant :assignable-institutions @submit:form="(form) => form.post(route('tenants.store'))" />
-    </UpsertModelLayout>
-  </PageContent>
+  <TenantForm
+    remember-key="CreateTenant"
+    :tenant
+    :assignable-institutions
+    @submit:form="submitForm"
+  />
 </template>
 
 <script setup lang="ts">
+import type { InertiaForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import TenantForm from '@/Components/AdminForms/TenantForm.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import { TenantIcon } from '@/Components/icons';
 
 defineProps<{
   assignableInstitutions: Array<App.Entities.Institution>;
@@ -21,9 +20,13 @@ defineProps<{
 const tenant = ref({
   fullname: '',
   shortname: '',
-  type: '',
+  type: 'padalinys',
   alias: '',
   shortname_vu: '',
   primary_institution_id: null,
-});
+} as unknown as App.Entities.Tenant);
+
+function submitForm(form: unknown): void {
+  (form as InertiaForm<Record<string, unknown>>).post(route('tenants.store'));
+}
 </script>

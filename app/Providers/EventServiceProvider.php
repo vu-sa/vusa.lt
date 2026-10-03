@@ -13,39 +13,41 @@ use App\Listeners\BlockExternalNotificationsOnStaging;
 use App\Listeners\HandleDutiableChange;
 use App\Listeners\HandleTaskCreated;
 use App\Listeners\NotifyUsersOfComment;
+use App\Listeners\PruneRejectedPushSubscription;
 use App\Listeners\QueueNotificationForDigest;
+use App\Listeners\RecordDeviceLogin;
 use App\Listeners\ReservationResource\HandleReservationResourceCreated;
 use App\Listeners\ReservationResource\HandleReservationResourceStateChanged;
 use App\Listeners\SendMemberRegistrationNotification;
 use App\Listeners\SendStudentRepRegistrationNotification;
 use App\Listeners\SyncContactSearchIndexes;
 use App\Listeners\SyncExOfficioDutiables;
+use App\Listeners\SyncInstitutionActivityIndex;
+use App\Listeners\SyncRelationSearchIndex;
 use App\Listeners\UpdateSharepointFolder;
-use App\Models\Calendar;
 use App\Models\Document;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Role;
 use App\Models\RoleType;
-use App\Models\Type;
-use App\Models\Typeable;
 use App\Models\User;
 use App\Notifications\Subscribers\ApprovalNotificationSubscriber;
-use App\Observers\CalendarObserver;
 use App\Observers\DocumentObserver;
 use App\Observers\InstitutionObserver;
 use App\Observers\RelationshipableObserver;
 use App\Observers\RoleTypeObserver;
-use App\Observers\TypeableObserver;
 use App\Observers\TypeObserver;
 use App\Observers\UserPermissionObserver;
 use App\Tasks\Subscribers\ApprovalTaskSubscriber;
 use App\Tasks\Subscribers\InstitutionCheckInTaskSubscriber;
 use App\Tasks\Subscribers\MeetingTaskSubscriber;
 use App\Tasks\Subscribers\ReservationTaskSubscriber;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Notifications\Events\NotificationSending;
+use NotificationChannels\WebPush\Events\NotificationFailed;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use SocialiteProviders\Microsoft\MicrosoftExtendSocialite;
 use Spatie\ModelStates\Events\StateChanged;
@@ -96,6 +98,12 @@ class EventServiceProvider extends ServiceProvider
             BlockExternalNotificationsOnStaging::class,
             QueueNotificationForDigest::class,
         ],
+        Login::class => [
+            RecordDeviceLogin::class,
+        ],
+        NotificationFailed::class => [
+            PruneRejectedPushSubscription::class,
+        ],
     ];
 
     /**
@@ -112,6 +120,9 @@ class EventServiceProvider extends ServiceProvider
         InstitutionCheckInTaskSubscriber::class,
         // Notification subscribers
         ApprovalNotificationSubscriber::class,
+        // Search index subscribers
+        SyncInstitutionActivityIndex::class,
+        SyncRelationSearchIndex::class,
     ];
 
     /**
@@ -123,10 +134,8 @@ class EventServiceProvider extends ServiceProvider
     public function boot()
     {
         Document::observe(DocumentObserver::class);
-        Calendar::observe(CalendarObserver::class);
         RoleType::observe(RoleTypeObserver::class);
-        Type::observe(TypeObserver::class);
-        Typeable::observe(TypeableObserver::class);
+        InstitutionType::observe(TypeObserver::class);
         Institution::observe(InstitutionObserver::class);
         Relationshipable::observe(RelationshipableObserver::class);
         // Permission cache invalidation for users, roles, duties

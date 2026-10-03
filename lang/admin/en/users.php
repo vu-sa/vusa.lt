@@ -13,6 +13,10 @@ return [
     'duplicate_open_profile' => 'Open',
     'duplicate_contact_admins' => 'Contact that unit\'s administrators',
     'no_tenant' => 'No unit',
+    'filters' => [
+        'duty_timing' => 'Duty timing',
+        'scheduled' => 'Upcoming duties',
+    ],
     'validation' => [
         'current_password_required' => 'The current password is required.',
         'current_password_string' => 'The current password must be text.',

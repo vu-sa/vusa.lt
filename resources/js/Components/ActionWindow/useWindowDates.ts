@@ -10,6 +10,13 @@ import { format } from 'date-fns';
 
 import { useDateLocale } from '@/Composables/useDateLocale';
 
+/**
+ * The shared `DatePicker` speaks in UTC-noon dates (so no timezone can shift the day), while
+ * the window works in local wall-clock dates. Seed the picker through this, not `new Date()`.
+ */
+export const toPickerDate = (date: Date): Date =>
+  new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 12));
+
 export function useWindowDates() {
   const locale = useDateLocale();
 

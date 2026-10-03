@@ -38,6 +38,10 @@ class ResourceCategoryController extends AdminController
             ->withQueryString();
 
         return $this->inertiaResponse('Admin/Reservations/IndexResourceCategory', [
+            'abilities' => [
+                'update' => $request->user()->can('update', new ResourceCategory),
+                'delete' => $request->user()->can('delete', new ResourceCategory),
+            ],
             'resourceCategories' => [
                 'data' => $resourceCategories->getCollection()->map(function ($category) {
                     /** @var ResourceCategory $category */
@@ -58,16 +62,6 @@ class ResourceCategoryController extends AdminController
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $this->handleAuthorization('create', ResourceCategory::class);
-
-        return $this->inertiaResponse('Admin/Reservations/CreateResourceCategory');
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(StoreResourceCategoryRequest $request)
@@ -79,18 +73,6 @@ class ResourceCategoryController extends AdminController
         $resourceCategory->save();
 
         return redirect()->route('resourceCategories.index')->with(['success' => $this->entityMessage('created', 'resourceCategory')]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ResourceCategory $resourceCategory)
-    {
-        $this->handleAuthorization('update', $resourceCategory);
-
-        return $this->inertiaResponse('Admin/Reservations/EditResourceCategory', [
-            'resourceCategory' => $resourceCategory->toFullArray(),
-        ]);
     }
 
     /**

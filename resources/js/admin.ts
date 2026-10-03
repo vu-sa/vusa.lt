@@ -1,11 +1,6 @@
 import '../css/app.css';
-import '../css/admin.css';
-import '../css/driver-tour.css';
-
+import '../css/admin/tour.css';
 import { type DefineComponent, createApp, h } from 'vue';
-
-// Initialize PWA (service worker registration, install prompt handling)
-initPWA();
 import { ZiggyVue } from 'ziggy-js';
 import { createInertiaApp } from '@inertiajs/vue3';
 import { defineAsyncComponent } from 'vue';
@@ -14,6 +9,9 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 import { initPWA } from './Composables/usePWA';
 import { initProgress } from './Composables/useTutorialProgress';
+import { useAccessibilityPreferences } from './Composables/useAccessibilityPreferences';
+
+initPWA();
 
 const AdminLayout = defineAsyncComponent(
   () => import('./Components/Layouts/AdminLayout.vue'),
@@ -59,6 +57,9 @@ createInertiaApp({
     return page;
   },
   setup({ App, props, el, plugin }) {
+    // The settings dialog only mounts on open, so stored preferences must be applied at boot.
+    useAccessibilityPreferences();
+
     // https://github.com/inertiajs/inertia/discussions/372#discussioncomment-6052940
     const application = createApp({ render: () => h(App, props) })
       .use(plugin)
@@ -66,7 +67,7 @@ createInertiaApp({
         fallbackLang: 'en',
         resolve: async (lang: string) => {
           // Load JSON translations (shared between admin/public)
-          const jsonLangs = import.meta.glob('../../lang/*.json');
+          const jsonLangs = import.meta.glob(['../../lang/lt.json', '../../lang/en.json']);
           // Load admin-specific PHP translations (shared + admin combined)
           const phpLangs = import.meta.glob('../../lang/php_admin_*.json');
 
@@ -74,8 +75,10 @@ createInertiaApp({
           const phpPath = `../../lang/php_admin_${lang}.json`;
 
           // Load both translation sources
-          const jsonModule = jsonLangs[jsonPath] ? await jsonLangs[jsonPath]() : { default: {} };
-          const phpModule = phpLangs[phpPath] ? await phpLangs[phpPath]() : { default: {} };
+          const [jsonModule, phpModule] = await Promise.all([
+            jsonLangs[jsonPath] ? jsonLangs[jsonPath]() : { default: {} },
+            phpLangs[phpPath] ? phpLangs[phpPath]() : { default: {} },
+          ]);
 
           // Merge translations: JSON base + PHP compiled
           // Return in { default: {...} } format expected by laravel-vue-i18n

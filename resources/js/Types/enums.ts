@@ -17,11 +17,12 @@ export enum AllowedFileablesEnum {
     DUTY = 'Duty',
     INSTITUTION = 'Institution',
     MEETING = 'Meeting',
-    TYPE = 'Type',
+    INSTITUTION_TYPE = 'InstitutionType',
+    DUTY_TYPE = 'DutyType',
 }
 export enum AllowedRelationshipablesEnum {
     INSTITUTION = 'INSTITUTION',
-    TYPE = 'TYPE',
+    INSTITUTION_TYPE = 'INSTITUTION_TYPE',
 }
 export enum ApprovalDecision {
     Approved = 'approved',
@@ -78,9 +79,21 @@ export enum DegreeEnum {
     PROFESSIONAL_PEDAGOGY = 'PROFESSIONAL_PEDAGOGY',
     OTHER = 'OTHER',
 }
+export enum EmailDelivery {
+    Immediate = 'immediate',
+    Digest = 'digest',
+    Off = 'off',
+}
 export enum FormOptionSource {
     Tenant = 'tenant',
     Institution = 'institution',
+}
+export enum GoalStatus {
+    Planned = 'planned',
+    InProgress = 'in_progress',
+    Achieved = 'achieved',
+    NotAchieved = 'not_achieved',
+    Dropped = 'dropped',
 }
 export enum InstitutionActivityStatus {
     NoActivity = 'no_activity',
@@ -113,10 +126,13 @@ export enum ModelEnum {
     DOCUMENT = 'document',
     DUTIABLE = 'dutiable',
     DUTY = 'duty',
+    DUTY_TYPE = 'duty_type',
     EVENT_TYPE = 'event_type',
     FILE = 'file',
     FORM = 'form',
+    GOAL = 'goal',
     INSTITUTION = 'institution',
+    INSTITUTION_TYPE = 'institution_type',
     MEETING = 'meeting',
     NAVIGATION = 'navigation',
     NEWS = 'news',
@@ -130,14 +146,11 @@ export enum ModelEnum {
     RESERVATION_RESOURCE = 'reservation_resource',
     RESOURCE = 'resource',
     ROLE = 'role',
-    SHAREPOINT_FILE = 'sharepoint_file',
-    SHAREPOINT_FILEABLE = 'sharepoint_fileable',
     STUDY_PROGRAM = 'study_program',
     STUDY_SET = 'study_set',
     TAG = 'tag',
     TASK = 'task',
     TENANT = 'tenant',
-    TYPE = 'type',
     USER = 'user',
 }
 export enum NotificationCategory {
@@ -149,13 +162,36 @@ export enum NotificationCategory {
     User = 'user',
     Duty = 'duty',
     System = 'system',
-    News = 'news',
-    Calendar = 'calendar',
 }
-export enum NotificationChannel {
-    InApp = 'in_app',
-    Push = 'push',
-    EmailDigest = 'email_digest',
+export enum NotificationType {
+    TaskAssigned = 'task_assigned',
+    TaskReminder = 'task_reminder',
+    TaskOverdue = 'task_overdue',
+    TaskAutoCompleted = 'task_auto_completed',
+    MeetingReminder = 'meeting_reminder',
+    InstitutionActivity = 'institution_activity',
+    MeetingCreated = 'meeting_created',
+    MeetingAgendaCompleted = 'meeting_agenda_completed',
+    FollowedInstitutionActivity = 'followed_institution_activity',
+    ApprovalRequested = 'approval_requested',
+    ReservationStatusChanged = 'reservation_status_changed',
+    AssignedToResource = 'assigned_to_resource',
+    ReservationDraftItemTaken = 'reservation_draft_item_taken',
+    CommentMention = 'comment_mention',
+    CommentActivity = 'comment_activity',
+    DutyExpiring = 'duty_expiring',
+    AccessChanged = 'access_changed',
+    MemberRegistration = 'member_registration',
+    StudentRepRegistration = 'student_rep_registration',
+    SupportRequestStatusChanged = 'support_request_status_changed',
+    Welcome = 'welcome',
+    TestPush = 'test_push',
+}
+export enum NotificationUrgency {
+    Act = 'act',
+    Know = 'know',
+    Record = 'record',
+    Onboarding = 'onboarding',
 }
 export enum PageLayoutEnum {
     DEFAULT = 'default',
@@ -166,6 +202,14 @@ export enum PermissionScopeEnum {
     OWN = 'OWN',
     PADALINYS = 'PADALINYS',
     ALL = 'ALL',
+}
+export enum Responsibility {
+    StudentRepCoordination = 'student_rep_coordination',
+}
+export enum ResponsibilityScope {
+    Institution = 'institution',
+    InstitutionType = 'institution_type',
+    Tenant = 'tenant',
 }
 export enum SearchableModelEnum {
     NEWS = 'NEWS',
@@ -229,6 +273,16 @@ export enum SupportRequestVisibility {
     Private = 'private',
     Roles = 'roles',
     Public = 'public',
+}
+export enum SystemMaintenanceAction {
+    RefreshPublicContent = 'refresh-public-content',
+    ClearApplicationCache = 'clear-application-cache',
+    RestartQueueWorkers = 'restart-queue-workers',
+    SendTestMail = 'send-test-mail',
+    SyncPublicSearch = 'sync-public-search',
+    RefreshInstitutionActivity = 'refresh-institution-activity',
+    SyncSharepointDocuments = 'sync-sharepoint-documents',
+    ReindexSearch = 'reindex-search',
 }
 export enum TenantType {
     Pagrindinis = 'pagrindinis',

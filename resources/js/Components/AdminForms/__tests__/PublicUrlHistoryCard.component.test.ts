@@ -9,9 +9,9 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const stubs = {
   ...commonStubs,
-  DeleteConfirmationDialog: {
-    props: ['isOpen', 'title', 'message', 'isDeleting'],
-    template: '<div v-if="isOpen" data-testid="delete-dialog"><button data-testid="confirm-delete" @click="$emit(\'confirm\')">confirm</button></div>',
+  ConfirmDialog: {
+    props: ['open', 'title', 'description', 'confirmLabel'],
+    template: '<div v-if="open" data-testid="delete-dialog"><button data-testid="confirm-delete" @click="$emit(\'confirm\')">confirm</button></div>',
   },
 };
 

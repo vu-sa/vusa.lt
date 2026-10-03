@@ -15,7 +15,6 @@ class FeatureArea
      * @param  class-string|null  $modelClass  the model class, or null when the area has no model
      * @param  list<string>  $routes  every named route in the area
      * @param  list<string>  $testedRoutes  routes some test file names
-     * @param  bool  $hasHelp  a `docs/_parts/<model>` inline-help fragment exists
      * @param  list<string>  $docPages  doc pages that document this area
      * @param  bool  $isAdmin  the area is reachable under `/mano`
      */
@@ -25,15 +24,10 @@ class FeatureArea
         public readonly ?string $modelClass,
         public readonly array $routes,
         public readonly array $testedRoutes,
-        public readonly bool $hasHelp,
         public readonly array $docPages,
         public readonly bool $isAdmin,
     ) {}
 
-    /**
-     * Documented means a human wrote a page about it — inline `_parts` help is a
-     * weaker, separate signal, surfaced in its own column, not counted here.
-     */
     public function isDocumented(): bool
     {
         return $this->docPages !== [];
@@ -51,13 +45,12 @@ class FeatureArea
 
     /**
      * How much this area is worth documenting first: a bigger tested surface is
-     * more behaviour to explain, existing inline help makes it a cheap win, and
-     * admin areas matter more than public ones to the people these docs serve.
+     * more behaviour to explain, and admin areas matter more than public ones to
+     * the people these docs serve.
      */
     public function priority(): int
     {
         return count($this->testedRoutes) * 3
-            + ($this->hasHelp ? 5 : 0)
             + ($this->isAdmin ? 4 : 0);
     }
 }

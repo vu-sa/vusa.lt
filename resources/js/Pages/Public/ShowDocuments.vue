@@ -33,12 +33,7 @@
             v-for="type in importantContentTypes"
             :key="`quick-${type}`"
             type="button"
-            :class="[
-              'h-8 px-3 text-xs font-bold uppercase tracking-wide transition-colors inline-flex items-center gap-1.5 border shrink-0',
-              isContentTypeSelected(type)
-                ? 'border-brand bg-brand/10 text-brand'
-                : 'border-border bg-background text-foreground hover:border-brand hover:text-brand',
-            ]"
+            :class="controlVariants({ size: 'sm', active: isContentTypeSelected(type) })"
             @click="searchController.toggleContentType(type)"
           >
             <span>{{ type }}</span>
@@ -58,10 +53,7 @@
               v-model="searchInput"
               type="text"
               :placeholder="`${$t('search.enter_search_or_browse')}...`"
-              :class="[
-                'h-11 w-full border border-border bg-background pl-10 pr-9 text-sm text-foreground',
-                'placeholder:text-muted-foreground/70 transition-colors focus:border-brand focus:outline-none',
-              ]"
+              :class="searchFieldClass"
             >
             <button
               v-if="searchInput"
@@ -78,19 +70,14 @@
             <!-- Filter Button (opens filter popovers row) -->
             <button
               type="button"
-              :class="[
-                'inline-flex h-11 items-center justify-center gap-2 border px-3 sm:px-5 text-xs font-bold uppercase tracking-wide transition-colors',
-                showFilterBar || activeFilterCount > 0
-                  ? 'border-brand text-brand bg-brand/5 hover:bg-brand/10'
-                  : 'border-border bg-background text-foreground hover:border-brand hover:text-brand',
-              ]"
+              :class="controlVariants({ active: showFilterBar || activeFilterCount > 0 })"
               @click="showFilterBar = !showFilterBar"
             >
               <IFluentFilter20Regular class="size-4" />
               <span class="max-[359px]:hidden">{{ $t('Filtrai') }}</span>
               <span
                 v-if="activeFilterCount > 0"
-                class="flex size-4 items-center justify-center bg-brand-fill text-brand-foreground text-[0.625rem] font-mono leading-none"
+                :class="controlCountClass"
               >
                 {{ activeFilterCount }}
               </span>
@@ -105,12 +92,7 @@
               <PopoverTrigger as-child>
                 <button
                   type="button"
-                  :class="[
-                    'inline-flex h-11 shrink-0 items-center justify-between gap-2 border px-3.5 text-xs font-bold uppercase tracking-wide transition-colors',
-                    filters.sort !== 'relevance'
-                      ? 'border-brand bg-brand/5 text-brand hover:bg-brand/10'
-                      : 'border-border bg-background text-foreground hover:border-brand hover:text-brand',
-                  ]"
+                  :class="controlVariants({ active: filters.sort !== 'relevance' })"
                   :aria-label="$t('Rikiuoti')"
                 >
                   <component :is="currentSortIcon" class="size-3.5" />
@@ -159,15 +141,10 @@
             </Popover>
 
             <!-- View Mode Toggle -->
-            <div class="inline-flex h-11 border border-border bg-background p-0.5">
+            <div :class="segmentGroupClass">
               <button
                 type="button"
-                :class="[
-                  'h-full px-3 text-xs font-bold uppercase tracking-wide transition-colors flex items-center gap-1.5 justify-center',
-                  viewMode === 'list'
-                    ? 'bg-brand-fill text-brand-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
-                ]"
+                :class="segmentVariants({ active: viewMode === 'list' })"
                 :title="$t('search.view_mode_list')"
                 @click="searchController.setViewMode('list')"
               >
@@ -176,12 +153,7 @@
               </button>
               <button
                 type="button"
-                :class="[
-                  'h-full px-3 text-xs font-bold uppercase tracking-wide transition-colors flex items-center gap-1.5 justify-center',
-                  viewMode === 'compact'
-                    ? 'bg-brand-fill text-brand-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
-                ]"
+                :class="segmentVariants({ active: viewMode === 'compact' })"
                 :title="$t('search.view_mode_compact')"
                 @click="searchController.setViewMode('compact')"
               >
@@ -343,8 +315,9 @@
           </p>
           <div v-if="hasActiveFilters" class="mt-6">
             <Button
-              variant="brand-outline"
-              size="public-sm"
+              voice="brand"
+              variant="outline"
+              size="sm"
               @click="clearAllFilters"
             >
               {{ $t('Išvalyti filtrus') }}
@@ -377,8 +350,9 @@
             class="mt-12 flex justify-center"
           >
             <Button
-              variant="brand-outline"
-              size="public"
+              voice="brand"
+              variant="outline"
+              size="lg"
               :disabled="isLoadingMore"
               @click="searchController.loadMore"
             >
@@ -406,13 +380,14 @@ import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcru
 import { useDocumentSearch } from '@/Composables/useDocumentSearch';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
-import TagChip from '@/Components/Public/Base/TagChip.vue';
+import TagChip from '@/Components/Brand/TagChip.vue';
 import HairlineList from '@/Components/Public/Base/HairlineList.vue';
 import PublicFilterPopover, { type FilterOption } from '@/Components/Public/Base/PublicFilterPopover.vue';
 import DocumentListItem from '@/Components/Public/Search/DocumentListItem.vue';
 import DocumentCompactListItem from '@/Components/Public/Search/DocumentCompactListItem.vue';
 import DocumentResultsSkeleton from '@/Components/Public/Search/DocumentResultsSkeleton.vue';
 import { Button } from '@/Components/ui/button';
+import { controlCountClass, controlVariants, searchFieldClass, segmentGroupClass, segmentVariants } from '@/Components/ui/control';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import type { DocumentFacet, DocumentSearchSort } from '@/Types/DocumentSearchTypes';
 import { TenantType } from '@/Types/enums';

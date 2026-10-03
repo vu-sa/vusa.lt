@@ -18,13 +18,21 @@ use Illuminate\Support\Collection;
 class ResolveMeetingNotificationAudience
 {
     /**
-     * @return Collection<int, User>
+     * The audience by why each person is in it; someone who both oversees and follows counts
+     * as an overseer, so each person gets the notice once.
+     *
+     * @return array{overseers: Collection<int, User>, followers: Collection<int, User>}
      */
-    public static function execute(Meeting $meeting): Collection
+    public static function split(Meeting $meeting): array
     {
-        return GetMeetingOverseers::execute($meeting)
-            ->merge(GetInstitutionFollowersToNotify::execute($meeting))
-            ->unique('id')
-            ->values();
+        $overseers = GetMeetingOverseers::execute($meeting)->unique('id')->values();
+        $overseerIds = $overseers->pluck('id');
+
+        return [
+            'overseers' => $overseers,
+            'followers' => GetInstitutionFollowersToNotify::execute($meeting)
+                ->reject(fn (User $user): bool => $overseerIds->contains($user->id))
+                ->values(),
+        ];
     }
 }

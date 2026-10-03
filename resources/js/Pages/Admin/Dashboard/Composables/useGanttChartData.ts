@@ -100,6 +100,8 @@ export function useGanttChartData(
       id: i.id,
       name: String(i.name ?? ''),
       tenant_id: String(i.tenant_id ?? i.tenant?.id ?? ''),
+      is_internal: i.is_internal,
+      authorized: i.authorized,
     }));
   });
 

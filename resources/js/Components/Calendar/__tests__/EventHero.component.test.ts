@@ -50,7 +50,6 @@ describe('Calendar/EventHero.vue', () => {
 
     const hero = wrapper.find('[data-slot="event-hero"]');
     expect(hero.exists()).toBe(true);
-    expect(hero.classes()).toContain('rc-viewport');
     expect(hero.classes()).toContain('border-b');
     expect(hero.classes()).toContain('border-border');
   });

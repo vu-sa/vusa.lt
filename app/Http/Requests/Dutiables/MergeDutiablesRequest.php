@@ -66,7 +66,6 @@ class MergeDutiablesRequest extends FormRequest
         }
 
         return Dutiable::query()
-            ->without('study_program')
             ->with('duty.assignableTenants', 'user')
             ->whereIn('id', $ids)
             ->get();

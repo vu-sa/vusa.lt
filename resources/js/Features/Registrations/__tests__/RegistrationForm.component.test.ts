@@ -1,6 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
+import { nextTick } from 'vue';
 import type { z } from 'zod';
+import { router } from '@inertiajs/vue3';
 
 import RegistrationForm from '@/Features/Registrations/RegistrationForm.vue';
 
@@ -60,6 +62,12 @@ const createWrapper = (fields = formFields, props = {}) => mount(RegistrationFor
     stubs: {
       AutoForm: AutoFormStub,
       AutoFormField: { template: '<div class="auto-form-field" />' },
+      ConfirmDialog: {
+        name: 'ConfirmDialog',
+        props: ['open', 'title', 'description', 'confirmLabel'],
+        emits: ['confirm', 'update:open'],
+        template: '<div v-if="open" data-testid="discard-dialog"><button type="button" data-testid="confirm-leave" @click="$emit(\'confirm\')">Leave</button><button type="button" data-testid="cancel-leave" @click="$emit(\'update:open\', false)">Stay</button></div>',
+      },
     },
   },
 });
@@ -125,5 +133,39 @@ describe('RegistrationForm.vue', () => {
     expect(schema.shape['form-field-4'].parse(undefined)).toBe(
       'Vilniaus universiteto Studentų atstovybė Istorijos fakultete',
     );
+  });
+
+  it('cancels an unsaved navigation and resumes it only after confirmation', async () => {
+    const wrapper = createWrapper();
+    const form = wrapper.findComponent({ name: 'AutoForm' }).props('form');
+    form.setFieldValue('form-field-4', 'Vilniaus universiteto Studentų atstovybė Fizikos fakultete');
+    await nextTick();
+
+    const visit = { id: 'old-visit', url: new URL('https://www.vusa.test/en'), method: 'get', prefetch: false, preserveScroll: true };
+    const preventDefault = vi.fn();
+    const triggerBefore = (router as unknown as { __triggerBefore: (event: unknown) => void }).__triggerBefore;
+    vi.mocked(router.visit).mockClear();
+    triggerBefore({ detail: { visit }, preventDefault });
+    await nextTick();
+
+    expect(preventDefault).toHaveBeenCalledOnce();
+    expect(wrapper.find('[data-testid="discard-dialog"]').exists()).toBe(true);
+    expect(router.visit).not.toHaveBeenCalled();
+
+    await wrapper.find('[data-testid="cancel-leave"]').trigger('click');
+    expect(wrapper.find('[data-testid="discard-dialog"]').exists()).toBe(false);
+    expect(router.visit).not.toHaveBeenCalled();
+
+    triggerBefore({ detail: { visit }, preventDefault });
+    await nextTick();
+    await wrapper.find('[data-testid="confirm-leave"]').trigger('click');
+
+    expect(router.visit).toHaveBeenCalledOnce();
+    expect(router.visit).toHaveBeenCalledWith(visit.url, {
+      method: 'get',
+      prefetch: false,
+      preserveScroll: true,
+    });
+    wrapper.unmount();
   });
 });

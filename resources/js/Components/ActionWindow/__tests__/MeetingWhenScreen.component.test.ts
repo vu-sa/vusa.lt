@@ -24,10 +24,10 @@ vi.mock('@/Composables/useActionWindowData', () => ({
 }));
 
 /**
- * The window only ever suggests a date it can justify from this body's own history.
- * A generic "tomorrow at 18:00" is wrong for almost every institution, and a wrong
- * default is worse than none — which is why the no-history case has to skip the screen
- * rather than fall back to guesses.
+ * Today and yesterday are always offered — most meetings are filed the day of or the day
+ * after. Anything further ahead is only ever suggested from this body's own history: a
+ * generic "next Tuesday at 18:00" is wrong for almost every institution, and a wrong
+ * default is worse than none.
  */
 const mountScreen = (type?: string) => {
   vi.mocked(usePage).mockReturnValue(createMockPage());
@@ -59,18 +59,30 @@ describe('MeetingWhenScreen.vue', () => {
     vi.mocked(usePage).mockReset();
   });
 
-  it('suggests the next two occurrences of the weekday this body meets on', async () => {
+  it('leads with today and yesterday, then the next two occurrences of the weekday this body meets on', async () => {
     state.pattern = { weekday: 2, time: '18:30' };
     const { wrapper } = mountScreen();
     await flushPromises();
 
     const suggestions = choices(wrapper);
-    expect(suggestions).toHaveLength(3);
+    expect(suggestions).toHaveLength(5);
 
+    expect(suggestions[0]).toContain('action_window.meeting.when.today');
+    expect(suggestions[1]).toContain('action_window.meeting.when.yesterday');
     // The time is part of the answer, so it must be visible in the choice itself.
-    expect(suggestions[0]).toContain('18:30');
-    expect(suggestions[1]).toContain('18:30');
+    expect(suggestions[2]).toContain('18:30');
+    expect(suggestions[3]).toContain('18:30');
+    expect(suggestions[4]).toContain('action_window.meeting.when.custom');
+  });
+
+  it('offers today, yesterday and a custom date when the body has never met', async () => {
+    const { wrapper, window } = mountScreen();
+    await flushPromises();
+
+    const suggestions = choices(wrapper);
+    expect(suggestions).toHaveLength(3);
     expect(suggestions[2]).toContain('action_window.meeting.when.custom');
+    expect(window.current.value.id).toBe('meeting.when');
   });
 
   it('picks a future date on that weekday, at that hour, as a local wall clock', async () => {
@@ -78,7 +90,7 @@ describe('MeetingWhenScreen.vue', () => {
     const { wrapper, window } = mountScreen();
     await flushPromises();
 
-    await wrapper.findAll('[data-slot="action-choice-button"]')[0]!.trigger('click');
+    await wrapper.findAll('[data-slot="action-choice-button"]')[2]!.trigger('click');
 
     const chosen = new Date(window.draft.meeting.start_time!);
     const isoWeekday = chosen.getDay() === 0 ? 7 : chosen.getDay();
@@ -96,12 +108,12 @@ describe('MeetingWhenScreen.vue', () => {
     const { wrapper, window } = mountScreen();
     await flushPromises();
 
-    await wrapper.findAll('[data-slot="action-choice-button"]')[1]!.trigger('click');
+    await wrapper.findAll('[data-slot="action-choice-button"]')[3]!.trigger('click');
     const later = new Date(window.draft.meeting.start_time!);
 
     window.backTo('meeting.when');
     await flushPromises();
-    await wrapper.findAll('[data-slot="action-choice-button"]')[0]!.trigger('click');
+    await wrapper.findAll('[data-slot="action-choice-button"]')[2]!.trigger('click');
     const sooner = new Date(window.draft.meeting.start_time!);
 
     expect(later.getTime() - sooner.getTime()).toBe(7 * 24 * 60 * 60 * 1000);
@@ -119,8 +131,8 @@ describe('MeetingWhenScreen.vue', () => {
       await flushPromises();
 
       const suggestions = choices(wrapper);
-      expect(suggestions[0]).not.toContain('18:30');
-      expect(suggestions[1]).not.toContain('18:30');
+      expect(suggestions[2]).not.toContain('18:30');
+      expect(suggestions[3]).not.toContain('18:30');
     });
 
     it('stores the picked day as a 23:59 deadline rather than the usual hour', async () => {
@@ -128,7 +140,7 @@ describe('MeetingWhenScreen.vue', () => {
       const { wrapper, window } = mountScreen('email');
       await flushPromises();
 
-      await wrapper.findAll('[data-slot="action-choice-button"]')[0]!.trigger('click');
+      await wrapper.findAll('[data-slot="action-choice-button"]')[2]!.trigger('click');
 
       const chosen = new Date(window.draft.meeting.start_time!);
       expect(chosen.getHours()).toBe(23);
@@ -140,7 +152,7 @@ describe('MeetingWhenScreen.vue', () => {
       const { wrapper, window } = mountScreen();
       await flushPromises();
 
-      await wrapper.findAll('[data-slot="action-choice-button"]')[0]!.trigger('click');
+      await wrapper.findAll('[data-slot="action-choice-button"]')[2]!.trigger('click');
       expect(new Date(window.draft.meeting.start_time!).getHours()).toBe(18);
 
       window.updateMeeting({ type: 'email' });
@@ -151,20 +163,89 @@ describe('MeetingWhenScreen.vue', () => {
     });
   });
 
-  it('skips itself entirely when the body has never met', async () => {
-    const { wrapper, window } = mountScreen();
-    await flushPromises();
+  describe('the day presets', () => {
+    const daysBetweenNowAnd = (iso: string) => {
+      const picked = new Date(iso);
+      const today = new Date();
+      picked.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
 
-    // Replaced, not pushed: there is no "back" to a screen that had nothing to offer.
-    expect(window.current.value.id).toBe('meeting.date');
-    void wrapper;
+      return Math.round((picked.getTime() - today.getTime()) / 86_400_000);
+    };
+
+    it('picks today at the body\'s usual hour and moves on to confirm the time', async () => {
+      state.pattern = { weekday: 2, time: '17:30' };
+      const { wrapper, window } = mountScreen();
+      await flushPromises();
+
+      await wrapper.findAll('[data-slot="action-choice-button"]')[0]!.trigger('click');
+
+      const chosen = new Date(window.draft.meeting.start_time!);
+      expect(daysBetweenNowAnd(window.draft.meeting.start_time!)).toBe(0);
+      expect(chosen.getHours()).toBe(17);
+      expect(chosen.getMinutes()).toBe(30);
+      expect(window.current.value.id).toBe('meeting.time');
+    });
+
+    it('picks yesterday, falling back to 18:00 when the body has no usual hour', async () => {
+      const { wrapper, window } = mountScreen();
+      await flushPromises();
+
+      await wrapper.findAll('[data-slot="action-choice-button"]')[1]!.trigger('click');
+
+      const chosen = new Date(window.draft.meeting.start_time!);
+      expect(daysBetweenNowAnd(window.draft.meeting.start_time!)).toBe(-1);
+      expect(chosen.getHours()).toBe(18);
+      expect(window.current.value.id).toBe('meeting.time');
+    });
+
+    it('for an email meeting stores a 23:59 deadline and skips the clock', async () => {
+      const { wrapper, window } = mountScreen('email');
+      await flushPromises();
+
+      await wrapper.findAll('[data-slot="action-choice-button"]')[1]!.trigger('click');
+
+      const chosen = new Date(window.draft.meeting.start_time!);
+      expect(chosen.getHours()).toBe(23);
+      expect(chosen.getMinutes()).toBe(59);
+      expect(window.current.value.id).toBe('meeting.agenda');
+    });
+
+    it('keeps an hour already chosen when only the day changes from the review', async () => {
+      const { wrapper, window } = mountScreen();
+      window.updateMeeting({ start_time: '2026-03-02T09:15:00' });
+      window.goTo('meeting.review');
+      window.editFromHere('meeting.when');
+      await flushPromises();
+
+      await wrapper.findAll('[data-slot="action-choice-button"]')[0]!.trigger('click');
+
+      const chosen = new Date(window.draft.meeting.start_time!);
+      expect(chosen.getHours()).toBe(9);
+      expect(chosen.getMinutes()).toBe(15);
+      // An amendment goes straight back rather than walking the rest of the flow again.
+      expect(window.current.value.id).toBe('meeting.review');
+    });
   });
 
-  it('waits for the fetch before deciding there is nothing to suggest', async () => {
-    state.loading = true;
-    const { window } = mountScreen();
+  it('opens the date field for anything else, carrying the return frame', async () => {
+    const { wrapper, window } = mountScreen();
+    window.goTo('meeting.review');
+    window.editFromHere('meeting.when');
     await flushPromises();
 
-    expect(window.current.value.id).toBe('meeting.when');
+    const buttons = wrapper.findAll('[data-slot="action-choice-button"]');
+    await buttons[buttons.length - 1]!.trigger('click');
+
+    expect(window.current.value.id).toBe('meeting.date');
+    expect(window.current.value.params?.returnTo).toBe('meeting.review');
+  });
+
+  it('waits for the fetch before offering anything', async () => {
+    state.loading = true;
+    const { wrapper } = mountScreen();
+    await flushPromises();
+
+    expect(choices(wrapper)).toHaveLength(0);
   });
 });

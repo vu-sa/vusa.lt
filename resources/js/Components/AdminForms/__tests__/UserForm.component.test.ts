@@ -1,61 +1,42 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mount, flushPromises } from '@vue/test-utils';
-import { nextTick, ref, computed, defineComponent, h } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { mount } from '@vue/test-utils';
+import { usePage } from '@inertiajs/vue3';
 
 import UserForm from '@/Components/AdminForms/UserForm.vue';
-import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
-import { createMockForm } from '@/tests/helpers/createMockForm';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 
-// Captures the columns passed to each stubbed SimpleDataTable so the previous-duties
-// delete cell handler can be invoked directly (the real table is stubbed out).
-const capturedColumns: { previous?: any[] } = {};
-const SimpleDataTableStub = defineComponent({
-  props: ['data', 'columns'],
-  setup(props) {
-    if (Array.isArray(props.columns) && props.columns.some((c: any) => c.id === 'delete')) {
-      capturedColumns.previous = props.columns;
-    }
-    return () => h('div', { 'data-testid': 'simple-data-table' });
-  },
-});
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-// Control variables for useApiMutation mock
-const apiMockController = {
-  execute: vi.fn(),
-  isFetching: ref(false),
-  isSuccess: ref(false),
-  error: ref<string | null>(null),
+vi.mock('@/Composables/useDuplicateUserCheck', () => ({
+  useDuplicateUserCheck: () => ({ matches: { value: [] } }),
+}));
+
+vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}`));
+
+/** FormPage is stubbed so the test can read the mode it is given and fire its submit. */
+const stubs = {
+  ...commonStubs,
+  FormPage: {
+    props: ['title', 'mode'],
+    emits: ['submit'],
+    template: '<form data-testid="form-page" :data-mode="mode" @submit.prevent="$emit(\'submit\')"><h1>{{ title }}</h1><slot /><slot name="aside" /><slot name="footer-extra" /></form>',
+  },
+  FormPanel: { props: ['title'], template: '<div data-testid="form-panel" :data-panel="title"><slot /></div>' },
+  FormSection: { props: ['title'], template: '<section :data-section="title"><slot /></section>' },
+  FormFieldWrapper: { props: ['id'], template: '<div :data-field="id"><slot /></div>' },
+  Input: {
+    props: ['modelValue', 'disabled'],
+    template: '<input data-testid="input" :disabled="disabled" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
+  },
+  Checkbox: { props: ['modelValue', 'disabled', 'id'], template: '<input :id="id" type="checkbox" :checked="modelValue" :disabled="disabled" />' },
+  MultiSelect: { props: ['id', 'options'], template: '<div :data-testid="id" :data-options="options.map(o => o.label).join(\'|\')" />' },
+  MultiLocaleInput: { template: '<div />' },
+  ImageUpload: true,
+  DuplicateUserWarning: true,
 };
 
-vi.mock('@/Composables/useApi', async () => {
-  return {
-    useApi: vi.fn(() => ({
-      data: { value: null },
-      response: { value: null },
-      error: { value: null },
-      isFetching: { value: false },
-      isFinished: { value: false },
-      isSuccess: { value: false },
-      execute: vi.fn(),
-      abort: vi.fn(),
-    })),
-    useApiMutation: vi.fn(() => ({
-      execute: apiMockController.execute,
-      isFetching: apiMockController.isFetching,
-      isSuccess: apiMockController.isSuccess,
-      error: apiMockController.error,
-      isFinished: { value: false },
-      data: { value: null },
-      response: { value: null },
-      abort: vi.fn(),
-    })),
-  };
-});
-
-const createUser = (overrides: Record<string, any> = {}) => ({
+const createUser = (overrides: Record<string, unknown> = {}) => ({
   id: 'user-1',
   name: 'Petras Petraitis',
   email: 'petras@stud.vu.lt',
@@ -64,313 +45,194 @@ const createUser = (overrides: Record<string, any> = {}) => ({
   profile_photo_path: null,
   pronouns: { lt: '', en: '' },
   show_pronouns: false,
-  has_password: false,
   last_action: null,
-  current_duties: [
-    {
-      id: 'duty-1',
-      name: 'Komunikacijos koordinatorius',
-      email: 'komunikacija@vusa.lt',
-      pivot: {
-        id: 'dutiable-1',
-        duty_id: 'duty-1',
-        dutiable_id: 'user-1',
-        start_date: '2024-09-01',
-        end_date: null,
-        additional_email: null,
-      },
-    },
-    {
-      id: 'duty-2',
-      name: 'Studentų atstovas',
-      email: 'atstovas@fsf.vu.lt',
-      pivot: {
-        id: 'dutiable-2',
-        duty_id: 'duty-2',
-        dutiable_id: 'user-1',
-        start_date: '2024-09-01',
-        end_date: null,
-        additional_email: 'mano@example.com',
-      },
-    },
-  ],
-  previous_duties: [
-    {
-      id: 'duty-3',
-      name: 'Buvęs koordinatorius',
-      email: 'buvęs@vusa.lt',
-      pivot: {
-        id: 'dutiable-3',
-        duty_id: 'duty-3',
-        dutiable_id: 'user-1',
-        start_date: '2023-09-01',
-        end_date: '2024-06-30',
-        additional_email: null,
-      },
-    },
-  ],
-  roles: [],
+  current_duties: [],
   ...overrides,
 });
+
+const tenantsWithDuties = [
+  {
+    id: 1,
+    shortname: 'VU SA MIF',
+    institutions: [{ id: 'i1', name: 'MIF taryba', duties: [{ id: 'd1', name: 'Pirmininkas' }, { id: 'd2', name: 'Sekretorius' }] }],
+  },
+  {
+    id: 2,
+    shortname: 'VU SA CHGF',
+    institutions: [{ id: 'i2', name: 'CHGF taryba', duties: [{ id: 'd3', name: 'Pirmininkas' }] }],
+  },
+];
+
+const mountForm = (props: Record<string, unknown> = {}) =>
+  mount(UserForm, {
+    props: { user: createUser(), ...props } as never,
+    global: { stubs },
+  });
+
+const formOf = (wrapper: ReturnType<typeof mount>) => (wrapper.vm as unknown as { form: Record<string, unknown> }).form;
 
 describe('UserForm.vue', () => {
   let wrapper: ReturnType<typeof mount>;
 
-  const createWrapper = (props = {}) => {
-    return mount(UserForm, {
-      props: {
-        user: createUser(),
-        roles: [],
-        tenantsWithDuties: [],
-        permissableTenants: [],
-        ...props,
-      },
-      global: {
-        stubs: {
-          ...commonStubs,
-          // Stub heavy components
-          TransferList: { template: '<div data-testid="transfer-list" />' },
-          Tree: { template: '<div data-testid="tree" />' },
-          TiptapEditor: { template: '<div data-testid="tiptap" />' },
-          ImageUpload: { template: '<div data-testid="image-upload" />' },
-          SimpleDataTable: SimpleDataTableStub,
-          MultiSelect: { template: '<div data-testid="multi-select" />' },
-          SingleSelect: { template: '<div data-testid="single-select" />' },
-          DatePicker: { template: '<div data-testid="date-picker" />' },
-          // Icons
-          IFluentAdd24Filled: { template: '<span class="icon-add" />' },
-          IFluentCopy16Regular: { template: '<span class="icon-copy" />' },
-          PersonEdit24Regular: { template: '<span class="icon-edit" />' },
-          Delete24Regular: { template: '<span class="icon-delete" />' },
-          Eye16Regular: { template: '<span class="icon-eye" />' },
-        },
-      },
-    });
-  };
-
   beforeEach(() => {
-    vi.clearAllMocks();
-    capturedColumns.previous = undefined;
-    apiMockController.execute.mockResolvedValue(undefined);
-    apiMockController.isFetching.value = false;
-    apiMockController.isSuccess.value = false;
-    apiMockController.error.value = null;
+    vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { user: { isSuperAdmin: false } } }) as never);
   });
 
   afterEach(() => {
     wrapper?.unmount();
   });
 
+  describe('edit', () => {
+    it('edits in edit mode and asks only for the person\'s own attributes', () => {
+      wrapper = mountForm();
+
+      expect(wrapper.find('[data-testid="form-page"]').attributes('data-mode')).toBe('edit');
+      expect(wrapper.findAll('[data-section]').map(section => section.attributes('data-section'))).toEqual([
+        'Kas tai?',
+        'Kaip su juo susisiekti?',
+      ]);
+      expect(wrapper.findAll('[data-panel]').map(panel => panel.attributes('data-panel'))).toEqual([
+        'Kreipinys ir įvardžiai',
+      ]);
+    });
+
+    it('never sends duties or roles — they are managed on the record', () => {
+      wrapper = mountForm();
+
+      expect(Object.keys(formOf(wrapper))).not.toContain('current_duties');
+      expect(Object.keys(formOf(wrapper))).not.toContain('roles');
+      expect(wrapper.find('[data-testid="user-duties"]').exists()).toBe(false);
+      expect(wrapper.find('[data-testid="user-roles"]').exists()).toBe(false);
+    });
+
+    it('hands the form to the page on submit', async () => {
+      wrapper = mountForm();
+
+      await wrapper.find('[data-testid="form-page"]').trigger('submit');
+
+      expect(wrapper.emitted('submit:form')).toHaveLength(1);
+    });
+
+    it('shows when the person last signed in', () => {
+      wrapper = mountForm({ user: createUser({ last_action: '2026-09-01T10:00:00Z' }) });
+
+      expect(wrapper.text()).toContain('Paskutinį kartą prisijungė');
+    });
+  });
+
   describe('email warning', () => {
-    it('shows warning when user email ends with @vusa.lt', async () => {
-      wrapper = createWrapper({
-        user: createUser({ email: 'koordinatorius@vusa.lt' }),
-      });
-      await nextTick();
+    it('advises against a @vusa.lt address, which usually belongs to a duty', () => {
+      wrapper = mountForm({ user: createUser({ email: 'koordinatorius@vusa.lt' }) });
 
-      const warning = wrapper.find('.text-amber-600');
-      expect(warning.exists()).toBe(true);
-      expect(warning.text()).toContain('koordinatorius@vusa.lt');
-      expect(warning.text()).toContain('@vusa.lt');
+      expect(wrapper.find('[data-testid="duty-email-hint"]').exists()).toBe(true);
     });
 
-    it('does not show warning for .stud.vu.lt student email', async () => {
-      wrapper = createWrapper();
-      await nextTick();
+    it.each(['petras@stud.vu.lt', 'petras@gmail.com'])('says nothing about %s', (email) => {
+      wrapper = mountForm({ user: createUser({ email }) });
 
-      const warning = wrapper.find('.text-amber-600');
-      expect(warning.exists()).toBe(false);
-    });
-
-    it('does not show warning for personal email', async () => {
-      wrapper = createWrapper({
-        user: createUser({ email: 'petras@gmail.com' }),
-      });
-      await nextTick();
-
-      const warning = wrapper.find('.text-amber-600');
-      expect(warning.exists()).toBe(false);
+      expect(wrapper.find('[data-testid="duty-email-hint"]').exists()).toBe(false);
     });
   });
 
-  describe('identity field lock', () => {
-    // Email is the login identity, so a tenant admin who only shares one tenant
-    // with this person must not be able to edit it.
-    const emailInput = (w: ReturnType<typeof mount>) =>
-      w.findAll('input').find(i => i.attributes('placeholder') === 'vardas.pavarde@stud.vu.lt');
+  describe('identity lock', () => {
+    it('leaves email editable by default', () => {
+      wrapper = mountForm();
 
-    it('leaves email editable by default so the create form is unaffected', async () => {
-      wrapper = createWrapper();
-      await nextTick();
-
-      expect(emailInput(wrapper)?.attributes('disabled')).toBeUndefined();
+      expect(wrapper.find('#user-email').attributes('disabled')).toBeUndefined();
     });
 
-    it('disables name and email when canUpdateIdentity is false', async () => {
-      wrapper = createWrapper({ canUpdateIdentity: false });
-      await nextTick();
+    it('disables name and email when the actor may not change identity, and explains why', () => {
+      wrapper = mountForm({ canUpdateIdentity: false });
 
-      const nameInput = wrapper.findAll('input')
-        .find(i => i.attributes('placeholder') === 'Įrašyti vardą ir pavardę');
-
-      expect(nameInput?.attributes('disabled')).toBeDefined();
-      expect(emailInput(wrapper)?.attributes('disabled')).toBeDefined();
+      expect(wrapper.find('#user-email').attributes('disabled')).toBeDefined();
+      expect(wrapper.find('#user-name').attributes('disabled')).toBeDefined();
+      expect(wrapper.text()).toContain('users.identity_locked_hint');
     });
 
-    it('suppresses the @vusa.lt email advice when the field is locked', async () => {
-      // Advising a change the admin cannot make would just be noise.
-      wrapper = createWrapper({
-        user: createUser({ email: 'koordinatorius@vusa.lt' }),
-        canUpdateIdentity: false,
-      });
-      await nextTick();
+    it('suppresses the @vusa.lt advice when the field is locked', () => {
+      wrapper = mountForm({ user: createUser({ email: 'koordinatorius@vusa.lt' }), canUpdateIdentity: false });
 
-      expect(wrapper.find('.text-amber-600').exists()).toBe(false);
+      expect(wrapper.find('[data-testid="duty-email-hint"]').exists()).toBe(false);
     });
 
-    describe('super-admin override', () => {
-      afterEach(() => {
-        // Restore the default page mock so isSuperAdmin resets for other suites.
-        vi.mocked(usePage).mockReturnValue(createMockPage());
-      });
+    it('lets a super admin fix an existing name that is otherwise locked', () => {
+      vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { user: { isSuperAdmin: true } } }) as never);
+      wrapper = mountForm();
 
-      it('lets a super-admin edit an existing user name that would otherwise be locked', async () => {
-        // The base user ships with a non-empty name, which hard-locks the field
-        // for everyone except super-admins.
-        vi.mocked(usePage).mockReturnValue(
-          createMockPage({ auth: { user: { isSuperAdmin: true } } }),
-        );
-        wrapper = createWrapper();
-        await nextTick();
+      expect(wrapper.find('#user-name').attributes('disabled')).toBeUndefined();
+    });
 
-        const nameInput = wrapper.findAll('input')
-          .find(i => i.attributes('placeholder') === 'Įrašyti vardą ir pavardę');
+    it('keeps an existing name locked for anyone else', () => {
+      wrapper = mountForm();
 
-        expect(nameInput?.attributes('disabled')).toBeUndefined();
-      });
-
-      it('keeps the name field locked for a non-super-admin with an existing name', async () => {
-        wrapper = createWrapper();
-        await nextTick();
-
-        const nameInput = wrapper.findAll('input')
-          .find(i => i.attributes('placeholder') === 'Įrašyti vardą ir pavardę');
-
-        expect(nameInput?.attributes('disabled')).toBeDefined();
-      });
+      expect(wrapper.find('#user-name').attributes('disabled')).toBeDefined();
     });
   });
 
-  describe('duty email context block', () => {
-    it('renders only @vusa.lt duty emails in context block', async () => {
-      wrapper = createWrapper();
-      await nextTick();
-
-      const contextBlock = wrapper.find('.bg-blue-50');
-      expect(contextBlock.exists()).toBe(true);
-      expect(contextBlock.text()).toContain('Komunikacijos koordinatorius');
-      expect(contextBlock.text()).toContain('komunikacija@vusa.lt');
-      // .vu.lt duty should NOT appear here
-      expect(contextBlock.text()).not.toContain('atstovas@fsf.vu.lt');
-    });
-
-    it('shows grey message when no duties have any email', async () => {
-      wrapper = createWrapper({
+  describe('duty email context', () => {
+    it('lists only the @vusa.lt duty emails, which also allow signing in', () => {
+      wrapper = mountForm({
         user: createUser({
           current_duties: [
-            {
-              id: 'duty-1',
-              name: 'Pareiga be pašto',
-              email: null,
-              pivot: {
-                id: 'dutiable-1',
-                duty_id: 'duty-1',
-                dutiable_id: 'user-1',
-                start_date: '2024-09-01',
-                end_date: null,
-                additional_email: null,
-              },
-            },
+            { id: 'd1', name: 'Koordinatorius', email: 'koordinatorius@vusa.lt' },
+            { id: 'd2', name: 'Narys', email: 'narys@gmail.com' },
           ],
         }),
       });
-      await nextTick();
 
-      const contextBlock = wrapper.find('.bg-blue-50');
-      expect(contextBlock.exists()).toBe(false);
-
-      const greyMessage = wrapper.find('.text-muted-foreground');
-      expect(greyMessage.text()).toContain('vienintelis naudojamas prisijungimui');
+      expect(wrapper.text()).toContain('koordinatorius@vusa.lt');
+      expect(wrapper.text()).not.toContain('narys@gmail.com');
     });
   });
 
-  describe('form rendering', () => {
-    it('renders email input with student placeholder', async () => {
-      wrapper = createWrapper();
-      await nextTick();
-
-      const emailInput = wrapper.find('input[placeholder="vardas.pavarde@stud.vu.lt"]');
-      expect(emailInput.exists()).toBe(true);
+  describe('create', () => {
+    const createProps = () => ({
+      user: createUser({ id: undefined, name: '', email: '' }),
+      rememberKey: 'CreateUser',
+      tenantsWithDuties,
+      permissableTenants: [{ id: 1, shortname: 'VU SA MIF' }],
+      roles: [{ id: 1, name: 'Editor' }],
     });
 
-    it('renders duty tables', async () => {
-      wrapper = createWrapper();
-      await nextTick();
+    it('creates in create mode and asks for the first duties', () => {
+      wrapper = mountForm(createProps());
 
-      const tables = wrapper.findAll('[data-testid="simple-data-table"]');
-      expect(tables.length).toBe(2);
+      expect(wrapper.find('[data-testid="form-page"]').attributes('data-mode')).toBe('create');
+      expect(wrapper.find('[data-testid="user-duties"]').exists()).toBe(true);
+      expect(Object.keys(formOf(wrapper))).toContain('current_duties');
     });
 
-    it('attributes a duty to its institution instead of showing a bare name', async () => {
-      // A duty name alone is unattributable once it repeats across institutions
-      // (which it does constantly — see DutyLabel.vue). The name column must
-      // show the institution, not just link off to the duty.
-      wrapper = createWrapper();
-      await nextTick();
+    it('offers only duties in tenants the actor may create people in, named with their institution', () => {
+      wrapper = mountForm(createProps());
 
-      const nameColumn = capturedColumns.previous?.find((c: any) => c.accessorKey === 'name');
-      const cellVNode = nameColumn.cell({
-        row: { original: { id: 'duty-2', name: 'Studentų atstovas', institution: { name: 'VU SA FsF', tenant: { shortname: 'VU SA FsF' } } } },
-      });
+      const options = wrapper.find('[data-testid="user-duties"]').attributes('data-options')!.split('|');
 
-      const cellWrapper = mount(defineComponent({ render: () => cellVNode }));
+      expect(options).toEqual([
+        'Pirmininkas · MIF taryba (VU SA MIF)',
+        'Sekretorius · MIF taryba (VU SA MIF)',
+      ]);
+    });
 
-      expect(cellWrapper.text()).toContain('Studentų atstovas');
-      expect(cellWrapper.text()).toContain('VU SA FsF');
+    it('offers roles to a super admin only', () => {
+      wrapper = mountForm(createProps());
+      expect(wrapper.find('[data-testid="user-roles"]').exists()).toBe(false);
+      wrapper.unmount();
+
+      vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { user: { isSuperAdmin: true } } }) as never);
+      wrapper = mountForm(createProps());
+      expect(wrapper.find('[data-testid="user-roles"]').exists()).toBe(true);
     });
   });
 
-  describe('previous-duty deletion self-lockout guard', () => {
-    const invokeDeleteCell = () => {
-      const deleteColumn = capturedColumns.previous?.find((c: any) => c.id === 'delete');
-      expect(deleteColumn).toBeDefined();
-      const vnode = deleteColumn!.cell({ row: { original: { pivot: { id: 'dutiable-3' } } } }) as any;
-      // The rendered Button vnode carries the onClick handler.
-      vnode.props.onClick();
-    };
+  describe('pronouns', () => {
+    it('cannot show pronouns publicly until there are some', () => {
+      wrapper = mountForm();
 
-    it('routes the delete through the guard with acknowledge_access_change = false', async () => {
-      wrapper = createWrapper();
-      await nextTick();
+      expect(wrapper.find('#user-show-pronouns').attributes('disabled')).toBeDefined();
+      wrapper.unmount();
 
-      invokeDeleteCell();
-
-      expect(router.delete).toHaveBeenCalledTimes(1);
-      expect(router.delete).toHaveBeenCalledWith(
-        expect.stringContaining('/mocked-route/dutiables.destroy'),
-        expect.objectContaining({
-          data: { acknowledge_access_change: false },
-          preserveState: true,
-          preserveScroll: true,
-        }),
-      );
-    });
-
-    it('renders the access-change warning dialog', async () => {
-      wrapper = createWrapper();
-      await nextTick();
-
-      expect(wrapper.findComponent(AccessChangeWarningDialog).exists()).toBe(true);
+      wrapper = mountForm({ user: createUser({ pronouns: { lt: 'Jie/jų', en: '' } }) });
+      expect(wrapper.find('#user-show-pronouns').attributes('disabled')).toBeUndefined();
     });
   });
 });

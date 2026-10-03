@@ -7,11 +7,16 @@ use App\Http\Requests\AuthenticateRequest;
 use App\Models\Duty;
 use App\Models\User;
 use GuzzleHttp\Exception\ClientException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Uri;
+use Inertia\Inertia;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
+use SocialiteProviders\Microsoft\Provider as MicrosoftProvider;
+use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
@@ -56,8 +61,10 @@ class AuthController extends Controller
             return redirect()->route('login')->with('error', $message);
         }
 
+        $microsoftProvider = Socialite::driver('microsoft');
+
         try {
-            $microsoftUser = Socialite::driver('microsoft')->user();
+            $microsoftUser = $microsoftProvider->user();
         } catch (InvalidStateException) {
             // Log the error for debugging
             Log::warning('Microsoft OAuth InvalidStateException, retrying with stateless', [
@@ -69,7 +76,8 @@ class AuthController extends Controller
 
             // Retry with stateless method
             /** @phpstan-ignore-next-line */
-            $microsoftUser = Socialite::driver('microsoft')->stateless()->user();
+            $microsoftProvider = Socialite::driver('microsoft')->stateless();
+            $microsoftUser = $microsoftProvider->user();
         } catch (ClientException $e) {
             // Handle Guzzle HTTP errors (e.g., 400 Bad Request from token exchange)
             Log::error('Microsoft OAuth ClientException', [
@@ -99,6 +107,16 @@ class AuthController extends Controller
             }
 
             return redirect()->route('login')->with('error', $message);
+        }
+
+        $request->session()->forget('microsoft_logout_hint');
+
+        if ($microsoftProvider instanceof MicrosoftProvider) {
+            $logoutHint = $microsoftProvider->getClaims()->login_hint ?? null;
+
+            if (is_string($logoutHint) && $logoutHint !== '') {
+                $request->session()->put('microsoft_logout_hint', $logoutHint);
+            }
         }
 
         // pirmiausia ieškome per vartotoją, per paštą
@@ -212,16 +230,43 @@ class AuthController extends Controller
     /**
      * Log the user out.
      */
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
+    {
+        $this->logoutSession($request);
+
+        // Cleanly return the user to homepage, without inertia
+        return back()->with('success', __('messages.auth.logout_success'));
+    }
+
+    public function logoutFromMicrosoft(Request $request): Response
+    {
+        $logoutRedirect = config('services.microsoft.logout_redirect');
+
+        if (! is_string($logoutRedirect) || $logoutRedirect === '') {
+            $logoutRedirect = route('login');
+        }
+
+        /** @var MicrosoftProvider $microsoftProvider */
+        $microsoftProvider = Socialite::driver('microsoft');
+        $logoutUrl = Uri::of((string) $microsoftProvider->getLogoutUrl($logoutRedirect));
+        $logoutHint = $request->session()->get('microsoft_logout_hint');
+
+        if (is_string($logoutHint) && $logoutHint !== '') {
+            $logoutUrl = $logoutUrl->withQuery(['logout_hint' => $logoutHint]);
+        }
+
+        $this->logoutSession($request);
+
+        return Inertia::location((string) $logoutUrl);
+    }
+
+    private function logoutSession(Request $request): void
     {
         Auth::logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
-
-        // Cleanly return the user to homepage, without inertia
-        return back()->with('success', __('messages.auth.logout_success'));
     }
 
     /**

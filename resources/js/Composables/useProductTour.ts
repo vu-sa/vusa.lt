@@ -24,10 +24,9 @@
  */
 
 import { ref, computed, onUnmounted } from 'vue';
-import { driver, type Driver, type DriveStep, type Config } from 'driver.js';
+import type { Driver, DriveStep, Config } from 'driver.js';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import 'driver.js/dist/driver.css';
 import { useApiMutation } from './useApi';
 import {
   globalProgress,
@@ -79,6 +78,8 @@ export function useProductTour(options: ProductTourOptions) {
   const currentStep = ref(0);
   const isVoluntaryTour = ref(false);
   let driverInstance: Driver | null = null;
+  let starting = false;
+  let disposed = false;
 
   // Track if we've already marked this tour session as complete
   // Prevents double-saving when both onDestroyStarted and onUnmounted fire
@@ -142,9 +143,34 @@ export function useProductTour(options: ProductTourOptions) {
    * Start the product tour
    * @param isVoluntary - If true, allows user to close/skip at any time without penalty
    */
-  function startTour(isVoluntary = false): void {
+  async function startTour(isVoluntary = false): Promise<void> {
+    if (disposed || starting || isActive.value) return;
+    starting = true;
+    let driver: typeof import('driver.js')['driver'];
+    try {
+      [{ driver }] = await Promise.all([import('driver.js'), import('driver.js/dist/driver.css')]);
+    }
+    catch (error) {
+      console.warn('Failed to load product tour:', error);
+      return;
+    }
+    finally {
+      starting = false;
+    }
+    if (disposed) return;
     // Resolve steps at tour start time (lazy evaluation for translations)
-    const steps = resolveSteps();
+    const rawSteps = resolveSteps();
+
+    // An anchor can exist in both the phone and the desktop chrome: target the copy that is actually
+    // rendered, and skip the step when none is (a hidden ancestor leaves no client rects).
+    const steps = rawSteps.flatMap((step) => {
+      if (!step.element || typeof window === 'undefined') return [step];
+      const candidates = typeof step.element === 'string'
+        ? [...document.querySelectorAll(step.element)]
+        : [step.element as Element];
+      const visible = candidates.find(el => el.getClientRects().length > 0);
+      return visible ? [{ ...step, element: visible }] : [];
+    });
 
     if (isActive.value || steps.length === 0) return;
 
@@ -177,7 +203,7 @@ export function useProductTour(options: ProductTourOptions) {
 
       // Highlighted element styling
       stagePadding: 12,
-      stageRadius: 8,
+      stageRadius: 0,
 
       // Popover positioning and styling
       popoverOffset: 16,
@@ -269,6 +295,7 @@ export function useProductTour(options: ProductTourOptions) {
    * Clean up on unmount
    */
   onUnmounted(() => {
+    disposed = true;
     if (driverInstance) {
       // Mark as complete before destroying if tour was active
       // This handles the case where user navigates away mid-tour

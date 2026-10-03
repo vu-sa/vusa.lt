@@ -2,34 +2,25 @@
 
 ## Breadcrumb System
 
-**Status**: ✅ FULLY MIGRATED to unified system
+**Status**: ✅ Public-only unified system (removed from admin redesign)
 
 ### Single Source of Truth
 - `useBreadcrumbsUnified.ts` - Main breadcrumb composable (state management)
-- `AdminBreadcrumbs.vue` - Admin display component (in Components/)
-- `PublicBreadcrumbs.vue` - Public display component (in Components/Public/)
-- `BreadcrumbHelpers` - All helper functions
+- `PublicBreadcrumbs.vue` - Public display component (in `Components/Public/`)
+- `BreadcrumbHelpers` - Public helper functions
 
-### Quick Usage
+### Quick Usage (Public Pages)
 ```vue
 <script setup>
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 
-// For admin forms (Create/Edit)
+// Public content pages
 usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm('Section', 'section.index', 'Page Title', Icons.ICON)
+  BreadcrumbHelpers.publicContent([
+    BreadcrumbHelpers.createRouteBreadcrumb('Naujienos', 'newsArchive'),
+    BreadcrumbHelpers.createBreadcrumbItem(article.title),
+  ])
 );
-
-// For admin show pages
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminShow('Parent', 'parent.index', {}, 'Current', Icons.PARENT, Icons.CURRENT)
-);
-
-// Simple breadcrumbs
-usePageBreadcrumbs([
-  { label: 'Section', href: route('section.index'), icon: Icons.SECTION },
-  { label: 'Current Page' }
-]);
 </script>
 ```
 
@@ -37,10 +28,10 @@ usePageBreadcrumbs([
 - **Automatic lifecycle**: mount/unmount handled automatically
 - **Graceful fallbacks**: shows warnings in dev, fails silently in prod
 - **No flashing**: breadcrumbs persist during navigation
-- **Unified API**: same interface for admin and public pages
+- **Public-only**: Admin navigation is handled cleanly by the shell tabs and workspace picker
 
 ### Architecture
 The system uses Vue's provide/inject pattern:
-1. **Provider**: `createBreadcrumbState()` - called in layout components
+1. **Provider**: `createBreadcrumbState()` - called in public layout components (`PublicLayout.vue`)
 2. **Consumer**: `useBreadcrumbs()` - injects state with graceful fallback
-3. **Page helper**: `usePageBreadcrumbs()` - recommended API, handles lifecycle
+3. **Page helper**: `usePageBreadcrumbs()` - recommended API for public pages, handles lifecycle

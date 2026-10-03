@@ -1,161 +1,235 @@
 <template>
-  <AdminForm :model="form" label-placement="top" :is-create-form="!reservation.id">
-    <FormElement>
-      <template #title>
-        {{ $t("forms.context.main_info") }}
-      </template>
-      <template #description>
-        <a target="_blank" class="mb-4 flex items-center gap-1" :href="reservationGuideUrl">
-          <IFluentLink24Filled />
-          <strong class="underline">{{ $t('Rezervacijų atmintinė') }}</strong>
-        </a>
-        <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="description" />
-      </template>
-      <FormFieldWrapper id="name" :label="$t('forms.fields.title')" required>
-        <Input v-model="form.name" :placeholder="RESERVATION_PLACEHOLDERS.name[$page.props.app.locale]" />
-      </FormFieldWrapper>
-      <FormFieldWrapper id="description" :label="$t('forms.fields.description')" required>
-        <Textarea v-model="form.description"
-          :placeholder="RESERVATION_PLACEHOLDERS.description[$page.props.app.locale]" />
-      </FormFieldWrapper>
-    </FormElement>
-    <FormElement :icon="ResourceIcon">
-      <template #title>
-        {{
-          capitalize($tChoice("entities.resource.model", 2))
-        }}
-      </template>
-      <template #description>
-        <MdSuspenseWrapper directory="reservations" :locale="$page.props.app.locale" file="resources" />
-        <a class="w-fit" target="_blank" :href="route('resources.index')">
-          <div class="inline-flex items-center gap-2">
-            <IFluentCube24Regular class="text-gray-400" />
-            <strong class="underline">{{
-              $t("entities.meta.model_list", {
-                model: capitalize($tChoice("entities.resource.model", 11)),
-              })
-            }}</strong>
-          </div>
-        </a>
-      </template>
-      <FormFieldWrapper id="period" :label="capitalize($t('entities.reservation.period'))" required>
-        <div class="flex flex-wrap gap-4">
-          <DateTimePicker v-model="startDate" :placeholder="$t('Pradžia')" :minute-step="15" @change="onDateChange" />
-          <DateTimePicker v-model="endDate" :placeholder="$t('Pabaiga')" :minute-step="15" @change="onDateChange" />
-        </div>
-      </FormFieldWrapper>
-      <FormFieldWrapper id="resources" :label="$t('Pasirinkti ištekliai')">
-        <div class="space-y-3">
-          <div>
-            <ResourceSelectDialog
-              v-model:open="resourceDialogOpen"
-              :date-time-range
-              :excluded-ids="selectedResourceIds"
-              multiple
-              @confirm="onResourcesConfirm"
-            >
-              <template #trigger>
-                <Button type="button" variant="outline" :disabled="!hasValidRange">
-                  <IFluentCube24Regular class="mr-2 h-4 w-4" />
-                  {{ $t('Naršyti išteklius') }}
-                </Button>
-              </template>
-            </ResourceSelectDialog>
-            <p v-if="!hasValidRange" class="mt-1 text-xs text-muted-foreground">
-              {{ $t('Pirmiausia pasirinkite rezervacijos laikotarpį.') }}
-            </p>
-          </div>
-
-          <p v-if="form.resources.length === 0" class="text-sm text-muted-foreground">
-            {{ $t('Nėra pridėtų išteklių') }}
-          </p>
-
-          <div v-else class="space-y-2">
-            <div
-              v-for="(item, index) in form.resources"
-              :key="item.id"
-              class="flex items-center justify-between gap-3 rounded-lg border p-3"
-            >
-              <div class="flex min-w-0 items-center gap-2">
-                <IFluentCube24Regular class="h-4 w-4 shrink-0 text-gray-400" />
-                <span class="truncate">{{ resourceName(item.id) }}</span>
-                <Badge v-if="resourceTenant(item.id)" variant="secondary" class="shrink-0 text-xs">
-                  {{ resourceTenant(item.id) }}
-                </Badge>
-              </div>
-              <div class="flex shrink-0 items-center gap-2">
-                <span class="text-xs text-gray-400">
-                  {{ getleftCapacity(item.id) }} {{ $t("iš") }} {{ resourceCapacity(item.id) }}
-                </span>
-                <NumberField v-model="item.quantity" :min="1" :max="getleftCapacity(item.id)" />
-                <Button type="button" variant="ghost" size="icon" @click="removeResource(index)">
-                  <IFluentDelete24Regular />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </FormFieldWrapper>
-    </FormElement>
-    <FormElement>
-      <template #title>
-        {{ $t("forms.context.additional_info") }}
-      </template>
-      <div class="flex items-center gap-2">
-        <Checkbox id="condition" v-model="conditionAcquaintance" />
-        <Label for="condition">
-          {{ $t('Sutinku įdėmiai sekti rezervacijos informaciją, išteklius pasiimti ir grąžinti laiku.') }}
-        </Label>
-      </div>
-    </FormElement>
-    <template #buttons>
-      <Button :disabled="!conditionAcquaintance" @click="submit">
-        Pateikti
-      </Button>
+  <FormPage
+    :title="form.name || $t('Nauja rezervacija')"
+    :bar-title="$t('Nauja rezervacija')"
+    :head-title="$t('Nauja rezervacija')"
+    :lead="$t('reservations.cart.checkout_lead')"
+    :entity-type="ModelEnum.RESERVATION"
+    :back-href="route('reservations.index')"
+    :back-label="capitalize($tChoice('entities.reservation.model', 2))"
+    :save-label="$t('Pateikti')"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :field-ids
+    :available-locales="[]"
+    mode="create"
+    @submit="submit"
+  >
+    <template v-if="draftStatus" #title-status>
+      <StatusBadge :status="draftStatus" data-testid="reservation-draft-status" />
     </template>
-  </AdminForm>
+
+    <FormFieldWrapper
+      id="reservation-name"
+      :label="$t('forms.fields.title')"
+      required
+      :hint="$t('reservations.cart.name_hint')"
+      :char-count="form.name?.length || 0"
+      :max-length="255"
+      :error="form.errors.name"
+    >
+      <Input
+        id="reservation-name"
+        v-model="form.name"
+        :placeholder="RESERVATION_PLACEHOLDERS.name[$page.props.app.locale]"
+        :class="['h-11', fieldSurfaceClass]"
+      />
+    </FormFieldWrapper>
+
+    <FormFieldWrapper
+      id="reservation-description"
+      :label="$t('forms.fields.description')"
+      required
+      :hint="$t('reservations.cart.description_hint')"
+      :error="form.errors.description"
+    >
+      <Textarea
+        id="reservation-description"
+        v-model="form.description"
+        rows="3"
+        :placeholder="RESERVATION_PLACEHOLDERS.description[$page.props.app.locale]"
+        :class="fieldSurfaceClass"
+      />
+    </FormFieldWrapper>
+
+    <FormFieldWrapper
+      id="reservation-period"
+      :label="$t('reservations.cart.period_label')"
+      required
+      :hint="$t('reservations.cart.period_hint')"
+    >
+      <ReservationPeriodFields
+        id-prefix="reservation"
+        :model-value="period"
+        :start-error="form.errors.start_time"
+        :end-error="form.errors.end_time"
+        @update:model-value="onPeriodChange"
+      />
+    </FormFieldWrapper>
+
+    <FormFieldWrapper
+      id="reservation-resources"
+      :label="capitalize($tChoice('entities.resource.model', 2))"
+      required
+    >
+      <div class="space-y-3">
+        <div
+          v-if="problemCount > 0"
+          class="border-l-2 border-status-danger bg-status-danger-surface px-4 py-3 text-sm"
+          role="alert"
+          data-testid="reservation-cart-conflicts"
+        >
+          <p class="font-semibold text-status-danger">
+            {{ $t('reservations.cart.conflicts_title') }}
+          </p>
+          <p class="mt-0.5 text-muted-foreground">
+            {{ $t('reservations.cart.conflicts_description') }}
+          </p>
+        </div>
+
+        <p v-if="items.length === 0" class="border border-dashed border-border p-4 text-sm text-muted-foreground">
+          {{ $t('reservations.cart.empty_checkout') }}
+        </p>
+        <ul v-else :class="['divide-y divide-border border border-border px-3', fieldSurfaceClass]" data-testid="selected-resources">
+          <ReservationCartItemRow v-for="item in items" :key="item.resource_id" :item />
+        </ul>
+        <p v-for="message in resourceErrors" :key="message" class="text-xs text-destructive">
+          {{ message }}
+        </p>
+
+        <div class="flex flex-wrap gap-2">
+          <Button
+            id="reservation-resources"
+            type="button"
+            :variant="items.length === 0 ? 'brand' : 'outline'"
+            :voice="items.length === 0 ? 'brand' : 'sentence'"
+            class="u-touch"
+            data-testid="reservation-browse-resources"
+            @click="browseResources"
+          >
+            <Search class="size-4" aria-hidden="true" />
+            {{ items.length === 0 ? $t('reservations.cart.browse') : $t('reservations.cart.add_more') }}
+          </Button>
+          <ResourceSelectDialog
+            v-model:open="resourceDialogOpen"
+            :date-time-range
+            :excluded-ids="selectedResourceIds"
+            multiple
+            @confirm="onResourcesConfirm"
+          >
+            <template #trigger>
+              <Button type="button" variant="ghost" voice="sentence" class="u-touch" :disabled="!hasValidRange">
+                <Plus class="size-4" aria-hidden="true" />
+                {{ $t('reservations.cart.quick_add') }}
+              </Button>
+            </template>
+          </ResourceSelectDialog>
+        </div>
+      </div>
+    </FormFieldWrapper>
+
+    <template #aside>
+      <FormPanel :title="$t('reservations.cart.submit_panel')" :icon="Send" title-class="text-brand">
+        <div
+          class="flex items-start gap-2 border border-border bg-secondary/40 p-3 text-xs leading-relaxed text-muted-foreground"
+          data-testid="reservation-draft-intro"
+        >
+          <Save class="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+          <span>
+            <span class="block font-semibold text-foreground">{{ $t('reservations.cart.draft_intro_title') }}</span>
+            {{ $t('reservations.cart.draft_intro_description', { days: String(cart?.ttlDays ?? 14) }) }}
+          </span>
+        </div>
+
+        <div class="flex items-start gap-2.5">
+          <Checkbox id="condition" v-model="conditionAcquaintance" class="mt-0.5" />
+          <Label for="condition" class="cursor-pointer text-sm font-normal">
+            {{ $t('Sutinku įdėmiai sekti rezervacijos informaciją, išteklius pasiimti ir grąžinti laiku.') }}
+          </Label>
+        </div>
+        <p v-if="form.errors.condition" class="text-xs text-destructive">
+          {{ form.errors.condition }}
+        </p>
+
+        <p v-if="items.length > 0 && problemCount > 0" class="text-xs text-status-danger">
+          {{ $t('reservations.cart.fix_before_submit') }}
+        </p>
+      </FormPanel>
+
+      <FormPanel :title="$t('reservations.cart.more_about')" :icon="Info" title-class="text-brand">
+        <a class="inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4" target="_blank" rel="noopener noreferrer" :href="reservationGuideUrl">
+          <ExternalLink class="size-4" aria-hidden="true" />
+          {{ $t('Rezervacijų atmintinė') }}
+        </a>
+        <a class="inline-flex items-center gap-1.5 text-sm font-medium underline underline-offset-4" target="_blank" rel="noopener noreferrer" :href="rulesHref">
+          <ExternalLink class="size-4" aria-hidden="true" />
+          {{ $t('reservations.cart.rules') }}
+        </a>
+      </FormPanel>
+    </template>
+
+    <template v-if="cart" #danger-zone>
+      <Button
+        type="button"
+        variant="outline"
+        voice="sentence"
+        class="border-destructive/40 text-destructive hover:border-destructive hover:bg-destructive hover:text-destructive-foreground"
+        data-testid="reservation-draft-delete"
+        @click="deleteDraftOpen = true"
+      >
+        <Trash2 class="size-4" aria-hidden="true" />
+        {{ $t('reservations.cart.delete_draft') }}
+      </Button>
+
+      <ConfirmDialog
+        v-model:open="deleteDraftOpen"
+        :title="$t('reservations.cart.delete_draft_title')"
+        :description="$t('reservations.cart.clear_description')"
+        :confirm-label="$t('reservations.cart.delete_draft')"
+        destructive
+        @confirm="deleteDraft"
+      />
+    </template>
+  </FormPage>
 </template>
 
 <script setup lang="ts">
 import { router, useForm, usePage } from '@inertiajs/vue3';
-import { trans as $t } from 'laravel-vue-i18n';
-import { computed, ref, watch } from 'vue';
+import { useDebounceFn } from '@vueuse/core';
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { CloudCheck, ExternalLink, Info, Loader2, Plus, Save, Search, Send, Trash2 } from 'lucide-vue-next';
+import { capitalize, computed, onMounted, ref, watch } from 'vue';
 
-import FormElement from './FormElement.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
-import AdminForm from './AdminForm.vue';
 
-import IFluentCube24Regular from '~icons/fluent/cube24-regular';
-import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
-import { Badge } from '@/Components/ui/badge';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import { ConfirmDialog, FormPanel, StatusBadge } from '@/Components/Patterns';
+import ReservationCartItemRow from '@/Components/Reservations/ReservationCartItemRow.vue';
+import ReservationPeriodFields, { type ReservationPeriod } from '@/Components/Reservations/ReservationPeriodFields.vue';
+import type { ReservationCart } from '@/Components/Reservations/types';
+import { useReservationCart } from '@/Components/Reservations/useReservationCart';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
-import { DateTimePicker } from '@/Components/ui/date-picker';
+import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { NumberField } from '@/Components/ui/number-field';
 import { Textarea } from '@/Components/ui/textarea';
+import { useDocsHref } from '@/Composables/useDocsHref';
+import { RESERVATION_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
+import type { StatusPresentation } from '@/Constants/statuses';
 import { ResourceSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
-import { RESERVATION_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
-import { capitalize } from '@/Utils/String';
-import type { ReservationCreationTemplate } from '@/Pages/Admin/Reservations/CreateReservation.vue';
-import MdSuspenseWrapper from '@/Features/MarkdownGetterFromDocs/MdSuspenseWrapper.vue';
-import { ResourceIcon } from '@/Components/icons';
+import { ModelEnum } from '@/Types/enums';
 
-defineEmits<{
-  (event: 'update:value', value: number | null): void;
-  (event: 'submit:form', form: unknown): void;
-}>();
-
-// Only creation remains: a reservation is never updated as a whole, so the sole
-// caller is CreateReservation.vue passing `reservations.store`.
+// The checkout of the reservation cart: the draft holds the items and is saved as the user types,
+// so the form only submits what the draft already says.
 const props = defineProps<{
-  reservation: ReservationCreationTemplate;
-  allResources: App.Entities.Resource[];
-  modelRoute: string;
-  rememberKey?: 'CreateReservation';
+  cart: ReservationCart | null;
+  defaultPeriod: ReservationPeriod;
 }>();
+
+const { items, period: cartPeriod, isSaving, setPeriod, saveDetails, add, clear } = useReservationCart();
 
 const conditionAcquaintance = ref(false);
 
@@ -165,83 +239,157 @@ const reservationGuideUrl = computed(() => usePage().props.app.locale === 'lt'
   ? 'https://vustudentuatstovybe.sharepoint.com/:b:/s/vieningai/ERnxptqtoF5DmDiqAbpfBewBjV-z7QcgAZiZi5w5sS1ODQ?e=cP6Zsv'
   : 'https://vustudentuatstovybe.sharepoint.com/:b:/s/vieningai/ESPcgxR0HqNFj0TBAQL4hmQBLmE5RSN72cEFe9psis3gjg?e=wS2uKj');
 
-const routeToSubmit = computed(() => {
-  return props.reservation?.id
-    ? route(props.modelRoute, props.reservation.id)
-    : route(props.modelRoute);
+const rulesHref = useDocsHref('/rezervacijos/rezervacijos#susitarimai');
+
+const period = computed<ReservationPeriod>(() => cartPeriod.value ?? props.defaultPeriod);
+
+const form = useForm({
+  name: props.cart?.name ?? '',
+  description: props.cart?.description ?? '',
+  start_time: period.value.start,
+  end_time: period.value.end,
+  resources: [] as { id: string; quantity: number }[],
 });
 
-const form = props.rememberKey
-  ? useForm(props.rememberKey, props.reservation)
-  : useForm(props.reservation);
+// Error keys that are not the id of the field they belong to.
+const fieldIds = {
+  name: 'reservation-name',
+  description: 'reservation-description',
+};
 
-// Convert timestamps to Date objects for DateTimePicker
-const startDate = ref<Date | null>(form.start_time ? new Date(form.start_time) : null);
-const endDate = ref<Date | null>(form.end_time ? new Date(form.end_time) : null);
+const textsChanged = () => (form.name || null) !== (props.cart?.name ?? null)
+  || (form.description || null) !== (props.cart?.description ?? null);
 
-watch([startDate, endDate], ([newStart, newEnd]) => {
-  form.start_time = newStart ? newStart.getTime() : null;
-  form.end_time = newEnd ? newEnd.getTime() : null;
+const deleteDraftOpen = ref(false);
+
+// Set once the draft is deleted, so a text save still waiting on its debounce cannot recreate it.
+let discarded = false;
+
+const deleteDraft = () => {
+  discarded = true;
+  clear(() => router.visit(route('reservations.index')));
+};
+
+const saveTexts = useDebounceFn(() => {
+  if (!discarded && textsChanged()) {
+    saveDetails({ name: form.name || null, description: form.description || null });
+  }
+}, 800);
+
+// The debounce may not have fired yet, so what was typed is saved before leaving for the list.
+const browseResources = () => {
+  const visitList = () => router.visit(route('resources.index'));
+
+  // Also when nothing was typed: the saved draft is what turns the list's buttons into "Pridėti".
+  if (!props.cart || textsChanged()) {
+    saveDetails({ name: form.name || null, description: form.description || null }, visitList);
+  }
+  else {
+    visitList();
+  }
+};
+
+const draftStatus = computed<StatusPresentation | null>(() => {
+  if (isSaving.value) {
+    return { label: $t('reservations.cart.saving'), role: 'neutral', icon: Loader2 };
+  }
+
+  return props.cart ? { label: $t('reservations.cart.draft_saved'), role: 'neutral', icon: CloudCheck } : null;
 });
+
+watch(() => [form.name, form.description], () => {
+  void saveTexts();
+});
+
+// A cart filled while browsing may have no period yet; the default one is shown, so store it.
+onMounted(() => {
+  if (!cartPeriod.value && items.value.length > 0) {
+    setPeriod(props.defaultPeriod.start, props.defaultPeriod.end);
+  }
+});
+
+function onPeriodChange(value: ReservationPeriod) {
+  form.start_time = value.start;
+  form.end_time = value.end;
+  setPeriod(value.start, value.end);
+}
+
+watch(period, (value) => {
+  form.start_time = value.start;
+  form.end_time = value.end;
+});
+
+const problemCount = computed(() => items.value.filter(item => item.problem !== null).length);
+
+const resourceErrors = computed(() => Object.entries(form.errors)
+  .filter(([key]) => key.startsWith('resources'))
+  .map(([, message]) => message));
+
+// --- Quick add without leaving the checkout ---------------------------------------------------
 
 const resourceDialogOpen = ref(false);
 
-const selectedResourceIds = computed(() => form.resources.map(resource => resource.id));
+const selectedResourceIds = computed(() => items.value.map(item => item.resource_id));
 
-const dateTimeRange = computed(() => ({
-  start: form.start_time ?? 0,
-  end: form.end_time ?? 0,
-}));
+const dateTimeRange = computed(() => ({ start: form.start_time, end: form.end_time }));
 
 const hasValidRange = computed(() => !!form.start_time && !!form.end_time && form.start_time < form.end_time);
 
-const findResource = (id: string) => props.allResources.find(resource => resource.id === id);
-
-const resourceName = (id: string) => findResource(id)?.name ?? id;
-const resourceTenant = (id: string) => findResource(id)?.tenant?.shortname;
-const resourceCapacity = (id: string) => findResource(id)?.capacity;
-
 const onResourcesConfirm = (hits: NormalizedSearchHit[]) => {
   const existing = new Set(selectedResourceIds.value);
+
   for (const hit of hits) {
     if (!existing.has(hit.recordId)) {
-      form.resources.push({ id: hit.recordId, quantity: 1 });
-      existing.add(hit.recordId);
+      add(hit.recordId);
     }
   }
 };
 
-const removeResource = (index: number) => {
-  form.resources.splice(index, 1);
+// Checked on press rather than by disabling the button, so pressing it always says what is missing.
+const findClientErrors = () => {
+  const errors: Partial<Record<'name' | 'description' | 'resources' | 'condition', string>> = {};
+
+  if (!form.name.trim()) {
+    errors.name = $t('reservations.cart.name_required');
+  }
+  if (!form.description.trim()) {
+    errors.description = $t('reservations.cart.description_required');
+  }
+  if (items.value.length === 0) {
+    errors.resources = $t('reservations.cart.resources_required');
+  }
+  else if (problemCount.value > 0) {
+    errors.resources = $t('reservations.cart.fix_before_submit');
+  }
+  if (!conditionAcquaintance.value) {
+    errors.condition = $t('reservations.cart.terms_required');
+  }
+
+  return errors;
 };
 
-const onDateChange = () => {
-  if (!startDate.value || !endDate.value) return;
-
-  form.resources = [];
-  // Reset dirty state so the "unsaved changes" guard doesn't fire on the reload
-  form.defaults();
-  router.reload({
-    data: {
-      dateTimeRange: { start: startDate.value.getTime(), end: endDate.value.getTime() },
-    },
-    preserveScroll: true,
-    only: ['resources'],
-  });
-};
-
-const getleftCapacity = (id: string) => {
-  return props.allResources.find(resource => resource.id === id)
-    ?.lowestCapacityAtDateTimeRange;
-};
+watch(conditionAcquaintance, (accepted) => {
+  if (accepted) {
+    form.clearErrors('condition');
+  }
+});
 
 const submit = () => {
-  // Clear dirty state before navigating so the "unsaved changes" guard doesn't fire
-  form.defaults();
-  form.submit(
-    props.reservation?.id ? 'patch' : 'post',
-    routeToSubmit.value, {
-      preserveScroll: true,
-    });
+  const clientErrors = findClientErrors();
+
+  form.clearErrors();
+
+  if (Object.keys(clientErrors).length > 0) {
+    form.setError(clientErrors);
+
+    return;
+  }
+
+  form
+    .transform(data => ({
+      ...data,
+      resources: items.value.map(item => ({ id: item.resource_id, quantity: item.quantity })),
+    }))
+    .post(route('reservations.store'), { preserveScroll: true });
 };
 </script>

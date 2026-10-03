@@ -98,11 +98,11 @@ test('non-html translatable fields are left untouched', function (): void {
 });
 
 test('duty description is sanitized through the controller', function (): void {
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo(['duties.read.padalinys', 'duties.update.padalinys']);
 
     $dutyManager = makeUser($this->tenant);
-    $dutyManager->duties()->first()->assignRole('Communication Coordinator');
+    $dutyManager->duties()->first()->assignRole('Komunikacijos koordinatorius');
 
     asUser($dutyManager)->patch(route('duties.update', $this->duty), [
         'name' => ['lt' => 'Pareigos', 'en' => 'Duty'],

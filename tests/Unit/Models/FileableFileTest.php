@@ -60,16 +60,6 @@ describe('FileableFile scopes', function (): void {
             ->and($reportFiles)->toHaveCount(1);
     });
 
-    test('notDeletedExternally scope excludes externally deleted files', function (): void {
-        FileableFile::factory()->for($this->institution, 'fileable')->create();
-        FileableFile::factory()->for($this->institution, 'fileable')->deletedExternally()->create();
-
-        $availableFiles = FileableFile::notDeletedExternally()->get();
-
-        expect($availableFiles)->toHaveCount(1)
-            ->and($availableFiles->first()->deleted_externally_at)->toBeNull();
-    });
-
     test('available scope excludes externally deleted files', function (): void {
         $normalFile = FileableFile::factory()->for($this->institution, 'fileable')->create();
         FileableFile::factory()->for($this->institution, 'fileable')->deletedExternally()->create();

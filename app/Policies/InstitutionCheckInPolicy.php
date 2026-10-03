@@ -2,45 +2,62 @@
 
 namespace App\Policies;
 
+use App\Enums\Responsibility;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\User;
-use App\Settings\AtstovavimasSettings;
+use App\Services\ModelAuthorizer;
+use App\Services\ResponsibilityResolver;
 
 class InstitutionCheckInPolicy
 {
+    public function __construct(
+        private readonly ModelAuthorizer $authorizer,
+        private readonly ResponsibilityResolver $responsibilities,
+    ) {}
+
     public function viewAny(User $user): bool
     {
-        return $this->isAdmin($user);
+        return $this->authorizer->allows($user, 'institutions.update.padalinys')
+            || $this->responsibilities->holdsAnywhere($user, Responsibility::StudentRepCoordination);
     }
 
     public function view(User $user, InstitutionCheckIn $checkIn): bool
     {
-        return $this->isMember($user, $checkIn->institution) || $this->isAdmin($user);
+        return $this->isMember($user, $checkIn->institution) || $this->administers($user, $checkIn->institution);
     }
 
     public function create(User $user, Institution $institution): bool
     {
-        return $this->isMember($user, $institution) || $this->isAdmin($user);
+        return $this->isMember($user, $institution) || $this->administers($user, $institution);
     }
 
     public function delete(User $user, InstitutionCheckIn $checkIn): bool
     {
-        // Author can delete their own, or admin can delete any
-        return $user->id === $checkIn->user_id || $this->isAdmin($user);
+        return $user->id === $checkIn->user_id || $this->administers($user, $checkIn->institution);
+    }
+
+    public function deleteAll(User $user, Institution $institution): bool
+    {
+        return $this->administers($user, $institution);
     }
 
     private function isMember(User $user, Institution $institution): bool
     {
-        // user has any current duty in the institution
         return $institution->users()->whereKey($user->getKey())->exists();
     }
 
-    private function isAdmin(User $user): bool
+    /**
+     * Whoever may edit the institution in its padalinys, or coordinates it.
+     */
+    private function administers(User $user, Institution $institution): bool
     {
-        // Uses configured role that indicates institution managers
-        $settings = app(AtstovavimasSettings::class);
+        $scope = $this->authorizer->scope($user, 'institutions.update.padalinys');
 
-        return $settings->userIsInstitutionManager($user);
+        if ($scope->isAllScope || $scope->tenantIds()->contains($institution->tenant_id)) {
+            return true;
+        }
+
+        return $this->responsibilities->isResponsibleFor($user, Responsibility::StudentRepCoordination, $institution);
     }
 }

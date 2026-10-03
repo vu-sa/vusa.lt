@@ -134,24 +134,33 @@ test('the public news index excludes drafts and scheduled articles', function ()
         ->and(PublicNews::find($scheduled->id)->shouldBeSearchable())->toBeFalse();
 });
 
-test('the admin pages index includes inactive and scheduled pages', function (): void {
+test('the admin pages index includes inactive pages', function (): void {
     $active = Page::factory()->create(['is_active' => true]);
     $inactive = Page::factory()->create(['is_active' => false]);
-    $scheduled = Page::factory()->create(['is_active' => true, 'publish_time' => now()->addDay()]);
 
     expect($active->shouldBeSearchable())->toBeTrue()
-        ->and($inactive->shouldBeSearchable())->toBeTrue()
-        ->and($scheduled->shouldBeSearchable())->toBeTrue();
+        ->and($inactive->shouldBeSearchable())->toBeTrue();
 });
 
-test('the public pages index excludes inactive and scheduled pages', function (): void {
+test('the admin pages document supports short tenant names and title sorting', function (): void {
+    $page = Page::factory()->create(['is_active' => true]);
+
+    $document = $page->toSearchableArray();
+    $publicDocument = PublicPage::findOrFail($page->id)->toSearchableArray();
+    $fields = collect(config('scout.typesense.model-settings.'.Page::class.'.collection-schema.fields'));
+
+    expect($document['tenant_shortname'])->toBe($page->tenant->shortname)
+        ->and($publicDocument)->not->toHaveKey('tenant_shortname')
+        ->and($fields->firstWhere('name', 'title')['sort'])->toBeTrue()
+        ->and($fields->firstWhere('name', 'tenant_shortname'))->not->toBeNull();
+});
+
+test('the public pages index excludes inactive pages', function (): void {
     $active = Page::factory()->create(['is_active' => true]);
     $inactive = Page::factory()->create(['is_active' => false]);
-    $scheduled = Page::factory()->create(['is_active' => true, 'publish_time' => now()->addDay()]);
 
     expect(PublicPage::find($active->id)->shouldBeSearchable())->toBeTrue()
-        ->and(PublicPage::find($inactive->id)->shouldBeSearchable())->toBeFalse()
-        ->and(PublicPage::find($scheduled->id)->shouldBeSearchable())->toBeFalse();
+        ->and(PublicPage::find($inactive->id)->shouldBeSearchable())->toBeFalse();
 });
 
 test('duty search array carries index-aligned member ids for current and previous members', function (): void {

@@ -13,7 +13,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'studySets.read.padalinys',
         'studySets.create.padalinys',
@@ -22,7 +22,7 @@ beforeEach(function (): void {
     ]);
 
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     $this->studySet = StudySet::factory()->for($this->tenant)->create([
         'name' => ['lt' => 'Testinis komplektas', 'en' => 'Test Set'],
@@ -86,9 +86,7 @@ describe('authorized access', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/StudySets/IndexStudySet')
                 ->has('studySets')
-                ->has('studySets.data')
-                ->has('filters')
-                ->has('sorting')
+                ->has('deletedCount')
             );
     });
 
@@ -272,8 +270,8 @@ describe('tenant isolation', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/StudySets/IndexStudySet')
-                ->has('studySets.data')
-                ->where('studySets.data', fn ($data) => collect($data)->every(fn ($item) => $item['tenant_id'] === $this->tenant->id))
+                ->has('studySets')
+                ->where('studySets', fn ($data) => collect($data)->every(fn ($item) => $item['tenant_id'] === $this->tenant->id))
             );
     });
 

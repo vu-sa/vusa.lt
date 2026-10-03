@@ -5,7 +5,7 @@ namespace App\Enums;
 use App\Enums\Concerns\HasEnumHelpers;
 use App\Enums\Traits\HasCamelCaseLabels;
 use App\Models\Institution;
-use App\Models\Type;
+use App\Models\InstitutionType;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -21,7 +21,7 @@ enum AllowedRelationshipablesEnum: string
     use HasEnumHelpers;
 
     case INSTITUTION = 'INSTITUTION';
-    case TYPE = 'TYPE';
+    case INSTITUTION_TYPE = 'INSTITUTION_TYPE';
 
     /**
      * @return class-string<Model>
@@ -30,7 +30,7 @@ enum AllowedRelationshipablesEnum: string
     {
         return match ($this) {
             self::INSTITUTION => Institution::class,
-            self::TYPE => Type::class,
+            self::INSTITUTION_TYPE => InstitutionType::class,
         };
     }
 

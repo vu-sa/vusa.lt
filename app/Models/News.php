@@ -6,9 +6,11 @@ use App\Actions\PairTranslatedRecord;
 use App\Feed\FeedHtml;
 use App\Feed\FeedItem;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\HtmlSanitizerService;
 use App\Services\PublicUrlService;
 use App\Support\LocalizedRouteSlugs;
+use App\Support\PublicCacheTags;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
@@ -123,8 +125,8 @@ class News extends Model implements Feedable, Sitemapable
         });
 
         static::saved(function ($news): void {
-            // Clear sitemap cache when news is updated
-            Cache::tags(['sitemap', 'news', "tenant_{$news->tenant_id}"])->flush();
+            Cache::tags(PublicCacheTags::newsOf($news))->flush();
+            Cache::tags([ContentPartResolver::CACHE_TAG])->flush();
 
             // A freshly inserted row's `lang` attribute isn't hydrated from the column's DB
             // default until the model is refreshed — guard here rather than in publicUrl(),
@@ -156,8 +158,8 @@ class News extends Model implements Feedable, Sitemapable
         static::saved(fn (News $news) => $news->syncPublicSearchIndex());
 
         static::deleted(function ($news): void {
-            // Clear sitemap cache when news is deleted
-            Cache::tags(['sitemap', 'news', "tenant_{$news->tenant_id}"])->flush();
+            Cache::tags(PublicCacheTags::newsOf($news))->flush();
+            Cache::tags([ContentPartResolver::CACHE_TAG])->flush();
         });
 
         static::deleted(fn (News $news) => $news->publicSearchModel()->unsearchable());

@@ -59,8 +59,8 @@ class SettingsSettings extends Settings
             return true;
         }
 
-        // Check roles through current duties
-        foreach ($user->current_duties as $duty) {
+        // Check roles through non-ended duties
+        foreach ($user->authorization_duties as $duty) {
             if ($duty->hasRole($role->name)) {
                 return true;
             }

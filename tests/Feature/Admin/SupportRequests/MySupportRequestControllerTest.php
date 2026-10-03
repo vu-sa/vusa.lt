@@ -40,6 +40,23 @@ describe('guest access', function (): void {
 });
 
 describe('authenticated user index', function (): void {
+    test('collection API keeps private requests out and filters the mine tab', function (): void {
+        $own = SupportRequest::factory()->create(['created_by' => $this->user->id]);
+        SupportRequest::factory()->create([
+            'created_by' => makeUser($this->tenant)->id,
+            'visibility' => SupportRequestVisibility::Private,
+        ]);
+
+        asUser($this->user)->getJson(route('api.v1.admin.supportRequests.index'))
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.id', $own->id);
+
+        asUser($this->user)->getJson(route('api.v1.admin.supportRequests.index', ['tab' => 'mine']))
+            ->assertOk()
+            ->assertJsonPath('data.total', 1);
+    });
+
     test('shows all visible support requests by default and mine on request', function (): void {
         $ownActive = SupportRequest::factory()->create([
             'created_by' => $this->user->id,
@@ -195,6 +212,7 @@ describe('creating and storing support requests', function (): void {
             'visibility' => 'roles',
             'roles' => [$role->id],
             'context_url' => 'http://www.vusa.test/lt/forma',
+            'context' => ['viewport' => '390×844', 'browser' => 'Mozilla/5.0 test'],
             'images' => [$file],
         ];
 
@@ -204,6 +222,7 @@ describe('creating and storing support requests', function (): void {
         expect($supportRequest)->not->toBeNull()
             ->and($supportRequest->title)->toBe('Puslapio klaida formoje')
             ->and($supportRequest->visibility)->toBe(SupportRequestVisibility::Roles)
+            ->and($supportRequest->context)->toBe(['viewport' => '390×844', 'browser' => 'Mozilla/5.0 test'])
             ->and($supportRequest->roles()->pluck('roles.id')->all())->toContain($role->id);
 
         $response->assertRedirect(route('supportRequests.show', $supportRequest->id));
@@ -286,4 +305,40 @@ describe('creator editing permissions', function (): void {
 
         expect($request->fresh()->selected_text)->toBe('Viešame puslapyje pažymėtas tekstas');
     });
+});
+
+test('assignment permits private viewing without granting management or dashboard visibility', function (): void {
+    $author = makeUser($this->tenant);
+    $request = SupportRequest::factory()->create([
+        'created_by' => $author->id,
+        'assigned_to' => $this->user->id,
+        'visibility' => SupportRequestVisibility::Private,
+        'status' => SupportRequestStatus::New,
+    ]);
+
+    asUser($this->user)->get(route('supportRequests.show', $request))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('supportRequest.id', $request->id)
+            ->where('permissions.can_update', false)
+            ->where('permissions.can_update_status', false)
+            ->where('permissions.can_assign', false)
+            ->where('permissions.can_delete', false));
+    asUser($this->user)->get(route('supportRequests.edit', $request))->assertForbidden();
+    asUser($this->user)->patch(route('supportRequests.status.update', $request), ['status' => 'done'])->assertForbidden();
+    asUser($this->user)->patch(route('supportRequests.assign', $request), ['assigned_to' => $author->id])->assertForbidden();
+    asUser(makeUser($this->tenant))->get(route('supportRequests.show', $request))->assertForbidden();
+
+    asUser($this->user)->getJson(route('api.v1.admin.supportRequests.index'))
+        ->assertOk()->assertJsonPath('data.total', 0);
+    expect($request->fresh()->status)->toBe(SupportRequestStatus::New)
+        ->and($request->fresh()->assigned_to)->toBe($this->user->id);
+});
+
+test('collection API filters visible requests by their assignee', function (): void {
+    $assigned = SupportRequest::factory()->create(['created_by' => $this->user->id, 'assigned_to' => $this->user->id]);
+    SupportRequest::factory()->create(['created_by' => $this->user->id, 'assigned_to' => null]);
+
+    asUser($this->user)->getJson(route('api.v1.admin.supportRequests.index', ['filters' => json_encode(['assigned_to' => [$this->user->id]])]))
+        ->assertOk()->assertJsonPath('data.total', 1)->assertJsonPath('data.items.0.id', $assigned->id);
 });

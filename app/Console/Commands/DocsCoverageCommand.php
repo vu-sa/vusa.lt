@@ -85,12 +85,10 @@ class DocsCoverageCommand extends Command
         $areas = $this->inScope($features);
         $areaCount = count($areas);
         $documented = count(array_filter($areas, fn (FeatureArea $a) => $a->isDocumented()));
-        $withHelp = count(array_filter($areas, fn (FeatureArea $a) => $a->hasHelp));
 
         $this->newLine();
         $this->line(sprintf('  <options=bold>Feature areas</>  %d areas', $areaCount));
         $this->line(sprintf('    documented  %s  <fg=gray>%d%%</>', $this->bar($documented, $areaCount), $this->pct($documented, $areaCount)));
-        $this->line(sprintf('    with help   %s  <fg=gray>%d%%</>', $this->bar($withHelp, $areaCount), $this->pct($withHelp, $areaCount)));
         // Test coverage of routes is not the headline — this is a docs tool. It
         // survives only as a per-area ranking hint in the backlog below.
         $this->line("  <fg=gray>scanned {$surface->fileCount} test files, {$surface->testCount} tests</>");
@@ -143,10 +141,9 @@ class DocsCoverageCommand extends Command
                 count($backlog)));
             $this->newLine();
             foreach ($backlog as $area) {
-                $this->line(sprintf('  <fg=yellow>%-24s</> <fg=gray>%d routes tested · %s%s</>',
+                $this->line(sprintf('  <fg=yellow>%-24s</> <fg=gray>%d routes tested%s</>',
                     $area->slug,
                     count($area->testedRoutes),
-                    $area->hasHelp ? 'has inline help' : 'no help yet',
                     $area->isAdmin ? ' · admin' : '',
                 ));
             }
@@ -362,15 +359,14 @@ class DocsCoverageCommand extends Command
 
         $md = "## Documentation coverage\n\n";
         $md .= "| | count | share |\n|---|---|---|\n";
-        $md .= "| feature areas documented | `{$documented}/{$areaCount}` | ".$this->pct($documented, $areaCount)."% |\n";
-        $md .= '| areas with inline help | `'.$features->withHelpCount()."/{$areaCount}` | ".$this->pct($features->withHelpCount(), $areaCount)."% |\n\n";
+        $md .= "| feature areas documented | `{$documented}/{$areaCount}` | ".$this->pct($documented, $areaCount)."% |\n\n";
 
         $backlog = $features->backlog();
 
         if ($backlog !== []) {
-            $md .= "### Undocumented feature areas\n\n| area | routes tested | inline help |\n|---|---|---|\n";
+            $md .= "### Undocumented feature areas\n\n| area | routes tested |\n|---|---|\n";
             foreach (array_slice($backlog, 0, 15) as $area) {
-                $md .= "| `{$area->slug}` | ".count($area->testedRoutes).' | '.($area->hasHelp ? 'yes' : '—')." |\n";
+                $md .= "| `{$area->slug}` | ".count($area->testedRoutes)." |\n";
             }
             $md .= "\n";
         }
@@ -406,35 +402,32 @@ class DocsCoverageCommand extends Command
 
         $areas = array_values($features->areas);
         $documented = $features->documentedCount();
-        $md .= sprintf("**%d/%d feature areas documented · %d areas with inline help.**\n\n",
-            $documented, count($areas), $features->withHelpCount());
+        $md .= sprintf("**%d/%d feature areas documented.**\n\n", $documented, count($areas));
 
         $backlog = $features->backlog();
 
         if ($backlog !== []) {
             $md .= "## Start here\n\nRanked by how much tested behaviour goes unexplained.\n\n";
-            $md .= "| # | area | model | routes tested | inline help |\n|---|---|---|---|---|\n";
+            $md .= "| # | area | model | routes tested |\n|---|---|---|---|\n";
             foreach (array_slice($backlog, 0, 10) as $i => $area) {
-                $md .= sprintf("| %d | `%s` | %s | %d | %s |\n",
+                $md .= sprintf("| %d | `%s` | %s | %d |\n",
                     $i + 1,
                     $area->slug,
                     $area->modelClass !== null ? class_basename($area->modelClass) : '—',
                     count($area->testedRoutes),
-                    $area->hasHelp ? 'yes' : '—',
                 );
             }
             $md .= "\n";
         }
 
         $md .= "## All feature areas\n\n";
-        $md .= "| area | model | inline help | documented | routes tested | reviewed |\n|---|---|---|---|---|---|\n";
+        $md .= "| area | model | documented | routes tested | reviewed |\n|---|---|---|---|---|\n";
         foreach ($areas as $area) {
             $pages = $area->docPages;
             $reviewed = $this->reviewedFor($pages, $freshness);
-            $md .= sprintf("| `%s` | %s | %s | %s | %d/%d | %s |\n",
+            $md .= sprintf("| `%s` | %s | %s | %d/%d | %s |\n",
                 $area->slug,
                 $area->modelClass !== null ? class_basename($area->modelClass) : '—',
-                $area->hasHelp ? 'yes' : '—',
                 $this->documentedCell($area, $drift),
                 count($area->testedRoutes),
                 count($area->routes),

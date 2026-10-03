@@ -51,7 +51,7 @@ beforeEach(function (): void {
     }
 
     // Create roles
-    $this->communicationCoordinatorRole = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $this->communicationCoordinatorRole = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $this->superAdminRole = Role::firstOrCreate(['name' => config('permission.super_admin_role_name'), 'guard_name' => 'web']);
 
     $this->communicationCoordinatorRole->givePermissionTo([
@@ -80,7 +80,7 @@ beforeEach(function (): void {
     ]);
 
     // Assign role to the duty
-    $fileManagerDuty->assignRole('Communication Coordinator');
+    $fileManagerDuty->assignRole('Komunikacijos koordinatorius');
 
     $this->superAdmin = User::factory()->create();
     $this->superAdmin->assignRole(config('permission.super_admin_role_name'));
@@ -157,7 +157,7 @@ describe('Files Controller - Directory Listing', function (): void {
         $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($this->forbiddenPath));
 
         expect($response->status())->toBe(403)
-            ->and($response->json('message'))->toContain('Neturite teisių')
+            ->and($response->json('message'))->toContain('Neturi teisių')
             ->and($response->json('code'))->toBe('INSUFFICIENT_PERMISSIONS');
     });
 
@@ -880,7 +880,7 @@ describe('Files Controller - File Usage Scanning', function (): void {
 
         expect($response->status())->toBe(302);
         $response->assertSessionHasErrors('error');
-        expect(session('errors')->first('error'))->toContain('Neturite teisių skenuoti šio failo naudojimą');
+        expect(session('errors')->first('error'))->toContain('Neturi teisių skenuoti šio failo naudojimą');
     });
 
     test('super admin can scan file usage in any directory', function (): void {

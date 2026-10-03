@@ -9,7 +9,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'duties.read.padalinys',
         'users.read.padalinys',
@@ -17,7 +17,7 @@ beforeEach(function (): void {
     ]);
 
     $this->admin = makeUser($this->tenant);
-    $this->admin->duties()->first()->assignRole('Communication Coordinator');
+    $this->admin->duties()->first()->assignRole('Komunikacijos koordinatorius');
 });
 
 test('admin removing own last duty is warned and nothing persists', function (): void {
@@ -79,7 +79,7 @@ test('super admin removing own super admin role is warned', function (): void {
 test('super admin removing only a duty (not the super admin role) is not warned', function (): void {
     $superAdmin = makeUser($this->tenant);
     $superAdmin->assignRole(config('permission.super_admin_role_name'));
-    $superAdmin->duties()->first()->assignRole('Communication Coordinator');
+    $superAdmin->duties()->first()->assignRole('Komunikacijos koordinatorius');
 
     $superRoleId = Role::where('name', config('permission.super_admin_role_name'))->value('id');
 

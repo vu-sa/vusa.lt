@@ -20,3 +20,18 @@ Resolve band ground from document order in bandLayout.ts. Authors may choose onl
 
 ## Band chrome is derived, not authored — set `bandRole`, never re-add background/padding
 A block's ground (tint/border/bleed) is computed by bandLayout.ts from document position. The only presentation values are auto|plain; CTA bands alone use emphasis. Do not restore general background/rounded/divider/bleed controls. Plain blocks may author options.plainPadding as none|compact|default; automatic bands keep fixed padding.
+
+## Use the published display for editor previews
+Render live blocks through BlockPreviewRenderer on the public surface. Register inlineEditable only for displays that implement the edit contract; preview mode must render the published state without hotspots, placeholders, or toolbars. Route full-screen Save through RichContentEditor and RichContentFormElement to the parent form.
+
+## Keep inline editing on the canvas and structured editing in the side dialog
+Use RCInlineText or a single active TipTap field for direct text edits, contextual popovers for visible structured elements, and RCBlockToolbarShell for whole-block controls. Keep ContentEditorFactory as the structured fallback in RCSideBySideDialog. Anchor popovers to the visible trigger, using the block root only until the trigger mounts.
+
+## Keep HTML field rendering and editing consistent
+Render stored HTML strings with v-html in every display branch and strip tags before testing whether they are empty. Use the same Tiptap preset in every editor surface for a field; short styled lines use preset="marks" with toolbar="bubble" so hidden block extensions cannot activate.
+
+## Keep repeatable block controls in sync
+Give new inline-editable repeatable blocks visible starter items. Apply the same item limit in structured forms and canvas controls, including the add handler. Put compact add, remove, and reorder controls in the block toolbar; use focused dialogs for secondary fields rather than DynamicListInput inside a popover.
+
+## Use shared optional section toolbar controls
+For blocks with usesSectionChrome, use RCSectionToolbarOptions in More Options for adding or removing the optional header while keeping presentation and padding available. Keep row and column controls anchored to their own visible canvas elements rather than folding them into block-level options.

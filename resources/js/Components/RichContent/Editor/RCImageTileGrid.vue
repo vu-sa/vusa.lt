@@ -1,110 +1,126 @@
 <template>
   <div class="space-y-3">
-    <!-- Empty state -->
-    <div v-if="!modelValue?.length"
-      class="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-zinc-200 p-6 text-center dark:border-zinc-700">
-      <IFluentImageMultiple24Regular class="mb-2 h-8 w-8 text-zinc-400 dark:text-zinc-500" />
-      <p class="text-sm text-zinc-500 dark:text-zinc-400">
-        {{ emptyText ?? $t('rich-content.no_images') }}
-      </p>
-      <TiptapImageButton class="mt-3" @submit:object="addImage">
-        {{ addFirstText ?? $t('rich-content.add_first_image') }}
-      </TiptapImageButton>
+    <div v-if="showFocalPoint && isMobile" class="space-y-4">
+      <Button variant="ghost" size="sm" @click="showFocalPoint = false">
+        <ArrowLeft class="size-4" />
+        {{ $t('rich-content.back_to_images') }}
+      </Button>
+      <FocalPointPicker
+        v-if="focalPointImage && getSrc(focalPointImage)"
+        :image-url="getSrc(focalPointImage)!"
+        :model-value="focalPointImage.objectPosition ?? null"
+        @update:model-value="(val: string) => updateAt(focalPointIndex!, { objectPosition: val } as Partial<T>)"
+      />
     </div>
-
-    <!-- Tile grid — same column proportions the display renders, so the editor mirrors
-         the output instead of a stacked list of unrelated rows. -->
-    <div v-else ref="gridEl" class="grid gap-3" :style="{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }">
-      <div v-for="(item, index) in modelValue" :key="index"
-        class="group relative overflow-hidden rounded-xl ring-1 ring-zinc-200/60 transition-shadow hover:ring-vusa-red/40 dark:ring-zinc-700/50"
-        :class="[tileClass ? resolveTileClass(item, index) : 'aspect-4/3', spanClass ? resolveSpanClass(item, index) : '']">
-        <!-- Drag handle -->
-        <div
-          class="rc-image-drag-handle absolute left-1.5 top-1.5 z-10 flex h-6 w-6 cursor-grab items-center justify-center rounded bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100 active:cursor-grabbing"
-          :title="$t('rich-content.drag_to_reorder')"
-        >
-          <IFluentReOrderDotsVertical24Regular class="h-3.5 w-3.5" />
-        </div>
-
-        <!-- Tile menu: focal point, per-type extras (slot), remove -->
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <button type="button"
-              class="absolute right-1.5 top-1.5 z-10 flex h-6 w-6 items-center justify-center rounded bg-black/50 text-white opacity-0 transition-opacity group-hover:opacity-100"
-              :title="$t('rich-content.tile_options')">
-              <IFluentMoreHorizontal24Regular class="h-3.5 w-3.5" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem :disabled="!getSrc(item)" @click="openFocalPoint(index)">
-              <IFluentTarget24Regular class="mr-2 h-4 w-4" />
-              {{ $t('rich-content.set_focal_point') }}
-            </DropdownMenuItem>
-            <DropdownMenuItem :disabled="index === 0" @click="moveItem(index, index - 1)">
-              <IFluentArrowUp24Regular class="mr-2 h-4 w-4" />
-              {{ $t('rich-content.move_up') }}
-            </DropdownMenuItem>
-            <DropdownMenuItem :disabled="index === modelValue.length - 1" @click="moveItem(index, index + 1)">
-              <IFluentArrowDown24Regular class="mr-2 h-4 w-4" />
-              {{ $t('rich-content.move_down') }}
-            </DropdownMenuItem>
-            <slot name="tile-menu" :item :index :update="(patch: Partial<T>) => updateAt(index, patch)" />
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              class="text-red-600 focus:text-red-600"
-              :disabled="(modelValue?.length ?? 0) <= 1"
-              @click="removeAt(index)"
-            >
-              <IFluentDelete24Regular class="mr-2 h-4 w-4" />
-              {{ $t('common.delete') }}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <!-- Image / click to replace -->
-        <TiptapImageButton as-child @submit:object="(img) => replaceAt(index, img)">
-          <button type="button" class="block h-full w-full">
-            <img v-if="getSrc(item)" :src="getSrc(item)" :alt="(item as any).alt || ''"
-              class="h-full w-full object-cover" :style="{ objectPosition: (item as any).objectPosition }">
-            <div v-else class="flex h-full w-full flex-col items-center justify-center gap-1 text-zinc-400 dark:text-zinc-500">
-              <IFluentImageAdd24Regular class="h-6 w-6" />
-              <span class="text-xs">{{ $t('rich-content.select_image') }}</span>
-            </div>
-          </button>
+    <template v-else>
+      <!-- Empty state -->
+      <div v-if="!modelValue?.length"
+        class="flex flex-col items-center justify-center border border-dashed border-border p-6 text-center">
+        <Images class="mb-2 size-8 text-muted-foreground" />
+        <p class="text-sm text-muted-foreground">
+          {{ emptyText ?? $t('rich-content.no_images') }}
+        </p>
+        <TiptapImageButton class="mt-3" @submit:object="addImage">
+          {{ addFirstText ?? $t('rich-content.add_first_image') }}
         </TiptapImageButton>
+      </div>
 
-        <!-- Inline alt text + any per-type footer control (e.g. width picker) -->
-        <div class="flex items-center gap-1.5 border-t border-zinc-200 bg-white p-1.5 dark:border-zinc-700 dark:bg-zinc-900">
-          <Input
-            :model-value="(item as any).alt"
-            type="text"
-            class="h-7 flex-1 text-xs"
-            :placeholder="$t('rich-content.image_alt_placeholder')"
-            @update:model-value="updateAt(index, { alt: $event as string } as Partial<T>)"
-          />
-          <slot name="tile-footer" :item :index :update="(patch: Partial<T>) => updateAt(index, patch)" />
+      <!-- Tile grid — same column proportions the display renders, so the editor mirrors
+         the output instead of a stacked list of unrelated rows. -->
+      <div v-else ref="gridEl" class="grid grid-cols-2 gap-3 md:grid-cols-[repeat(var(--tile-columns),minmax(0,1fr))]" :style="{ '--tile-columns': columns }">
+        <div v-for="(item, index) in modelValue" :key="index"
+          class="group relative overflow-hidden border border-border focus-within:border-brand"
+          :class="[tileClass ? resolveTileClass(item, index) : 'aspect-4/3', spanClass ? resolveSpanClass(item, index) : '']">
+          <!-- Drag handle -->
+          <div
+            class="rc-image-drag-handle absolute left-1.5 top-1.5 z-10 flex size-8 cursor-grab items-center justify-center bg-ink/75 text-white pointer-coarse:size-11 active:cursor-grabbing"
+            :title="$t('rich-content.drag_to_reorder')"
+            aria-hidden="true"
+          >
+            <GripVertical class="size-4" />
+          </div>
+
+          <!-- Tile menu: focal point, per-type extras (slot), remove -->
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <button type="button"
+                class="absolute right-1.5 top-1.5 z-10 flex size-8 items-center justify-center bg-ink/75 text-white focus-visible:ring-2 focus-visible:ring-brand pointer-coarse:size-11"
+                :aria-label="$t('rich-content.tile_options')">
+                <Ellipsis class="size-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem :disabled="!getSrc(item)" @click="openFocalPoint(index)">
+                <ScanEye class="mr-2 size-4" />
+                {{ $t('rich-content.set_focal_point') }}
+              </DropdownMenuItem>
+              <DropdownMenuItem :disabled="index === 0" @click="moveItem(index, index - 1)">
+                <ArrowUp class="mr-2 size-4" />
+                {{ $t('rich-content.move_up') }}
+              </DropdownMenuItem>
+              <DropdownMenuItem :disabled="index === modelValue.length - 1" @click="moveItem(index, index + 1)">
+                <ArrowDown class="mr-2 size-4" />
+                {{ $t('rich-content.move_down') }}
+              </DropdownMenuItem>
+              <slot name="tile-menu" :item :index :update="(patch: Partial<T>) => updateAt(index, patch)" />
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                class="text-destructive focus:text-destructive"
+                :disabled="(modelValue?.length ?? 0) <= 1"
+                @click="removeAt(index)"
+              >
+                <Trash2 class="mr-2 size-4" />
+                {{ $t('common.delete') }}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <!-- Image / click to replace -->
+          <TiptapImageButton as-child @submit:object="(img) => replaceAt(index, img)">
+            <button type="button" class="block h-full w-full" :aria-label="$t('rich-content.replace_image')">
+              <img v-if="getSrc(item)" :src="getSrc(item)" :alt="(item as any).alt || ''"
+                class="h-full w-full object-cover" :style="{ objectPosition: (item as any).objectPosition }">
+              <div v-else class="flex h-full w-full flex-col items-center justify-center gap-1 text-muted-foreground">
+                <ImagePlus class="size-6" />
+                <span class="text-xs">{{ $t('rich-content.select_image') }}</span>
+              </div>
+            </button>
+          </TiptapImageButton>
+
+          <!-- Inline alt text + any per-type footer control (e.g. width picker) -->
+          <div class="flex items-center gap-1.5 border-t border-border bg-background p-1.5">
+            <Input
+              :model-value="(item as any).alt"
+              type="text"
+              class="min-w-0 flex-1 text-xs"
+              :aria-label="$t('rich-content.image_alt_text')"
+              :placeholder="$t('rich-content.image_alt_placeholder')"
+              @update:model-value="updateAt(index, { alt: $event as string } as Partial<T>)"
+            />
+            <slot name="tile-footer" :item :index :update="(patch: Partial<T>) => updateAt(index, patch)" />
+          </div>
         </div>
       </div>
-    </div>
 
-    <TiptapImageButton as-child @submit:object="addImage">
-      <button type="button"
-        class="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-zinc-300 px-2.5 py-1.5 text-xs font-medium text-zinc-600 transition-colors hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:bg-zinc-800/50">
-        <IFluentAdd24Regular class="h-3.5 w-3.5" />
-        {{ addText ?? $t('rich-content.add_image') }}
-      </button>
-    </TiptapImageButton>
+      <TiptapImageButton as-child @submit:object="addImage">
+        <button type="button"
+          class="flex min-h-11 w-full items-center justify-center gap-1.5 border border-dashed border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent">
+          <Plus class="size-4" />
+          {{ addText ?? $t('rich-content.add_image') }}
+        </button>
+      </TiptapImageButton>
 
     <!-- Focal point dialog -->
-    <Dialog v-model:open="showFocalPoint">
+    </template>
+    <Dialog v-if="!isMobile" v-model:open="showFocalPoint">
       <DialogContent class="max-w-xl">
         <DialogHeader>
           <DialogTitle>{{ $t('rich-content.set_focal_point') }}</DialogTitle>
         </DialogHeader>
         <FocalPointPicker
-          v-if="focalPointIndex !== null && getSrc(modelValue![focalPointIndex])"
-          :image-url="getSrc(modelValue![focalPointIndex])!"
-          :model-value="(modelValue![focalPointIndex] as any).objectPosition ?? null"
+          v-if="focalPointImage && getSrc(focalPointImage)"
+          :image-url="getSrc(focalPointImage)!"
+          :model-value="focalPointImage.objectPosition ?? null"
           @update:model-value="(val: string) => updateAt(focalPointIndex!, { objectPosition: val } as Partial<T>)"
         />
       </DialogContent>
@@ -113,33 +129,19 @@
 </template>
 
 <script setup lang="ts" generic="T extends Record<string, any>">
-/**
- * Shared thumbnail-grid image editor behind ImageGridEditor and PhotoGalleryGridEditor.
- * Tiles are laid out in the same proportions the display renders, click-to-replace,
- * drag-to-reorder, with inline alt text and a hover menu for focal point + per-type
- * options (colspan for image-grid, height/decorations for photo-gallery) supplied
- * through the `tile-menu` / `tile-footer` slots — so the two editors share one
- * implementation instead of drifting (photo-gallery used to be a completely separate
- * stacked-rows DynamicListInput UI with alt collected twice).
- */
-import { ref, watch } from 'vue';
+/** Shared tile controls keep image grids and galleries in sync. */
+import { computed, ref, watch } from 'vue';
 import { useSortable } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
+import { ArrowDown, ArrowLeft, ArrowUp, Ellipsis, GripVertical, ImagePlus, Images, Plus, ScanEye, Trash2 } from 'lucide-vue-next';
 
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import { Input } from '@/Components/ui/input';
+import { Button } from '@/Components/ui/button';
 import FocalPointPicker from '@/Components/ui/upload/FocalPointPicker.vue';
-import IFluentAdd24Regular from '~icons/fluent/add24-regular';
-import IFluentArrowDown24Regular from '~icons/fluent/arrow-down24-regular';
-import IFluentArrowUp24Regular from '~icons/fluent/arrow-up24-regular';
-import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
-import IFluentImageAdd24Regular from '~icons/fluent/image-add24-regular';
-import IFluentImageMultiple24Regular from '~icons/fluent/image-multiple24-regular';
-import IFluentMoreHorizontal24Regular from '~icons/fluent/more-horizontal24-regular';
-import IFluentReOrderDotsVertical24Regular from '~icons/fluent/re-order-dots-vertical24-regular';
-import IFluentTarget24Regular from '~icons/fluent/target24-regular';
+import { useIsMobile } from '@/Composables/useIsMobile';
 
 const props = withDefaults(defineProps<{
   /** Which key on each item holds the image URL — `image` (ImageGrid) or `src` (PhotoGalleryGrid). */
@@ -162,6 +164,7 @@ const props = withDefaults(defineProps<{
 });
 
 const modelValue = defineModel<T[]>({ default: () => [] });
+const isMobile = useIsMobile();
 
 function getSrc(item: T): string | undefined {
   return item?.[props.srcKey];
@@ -213,6 +216,7 @@ function addImage(imageData: { src: string; alt: string; title: string }) {
 // Focal point dialog
 const showFocalPoint = ref(false);
 const focalPointIndex = ref<number | null>(null);
+const focalPointImage = computed(() => focalPointIndex.value === null ? null : modelValue.value?.[focalPointIndex.value] ?? null);
 function openFocalPoint(index: number) {
   focalPointIndex.value = index;
   showFocalPoint.value = true;

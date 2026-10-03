@@ -124,11 +124,15 @@ tests/Feature/
 │   ├── Calendar/   # AgendaItem, Calendar, Meeting controllers
 │   ├── Content/    # Banner, Category, News, Page, Tag controllers  
 │   ├── Core/       # Dashboard controller
+│   ├── Dashboard/  # One {Workspace}DashboardTest.php per workspace overview
 │   ├── Forms/      # Form controller
 │   ├── Management/ # Duty, Institution, StudyProgram, Tenant, User controllers
 │   ├── Navigation/ # Navigation controller
 │   ├── Permissions/# Permission, Role controllers
-│   └── Resources/  # Document, Files, Reservation controllers
+│   ├── Reservations/# Reservation, cart, Resource, ResourceCategory controllers
+│   └── Resources/  # Document, Files, SharePoint controllers
+├── Api/Admin/      # {Controller}Test.php for each admin API controller
+├── Approvals/      # ApprovalService and ApprovalController (one describe per action)
 ├── Tasks/          # Mirrors app/Tasks/ structure
 │   ├── Handlers/   # {HandlerName}Test.php for each task handler
 │   └── Subscribers/# {SubscriberName}Test.php for each subscriber

@@ -15,3 +15,9 @@ ambient state on the service. See `.ai/rules/services.md`, "ModelAuthorizer has 
 
 ## Verify Sail before reporting it unavailable
 A transient Sail failure is not a blocker. Before reporting Docker or Podman unavailable, retry the requested Sail command and run `./vendor/bin/sail ps`; report it only if that health check also fails.
+
+## A duty's end_date is the last day in office (inclusive)
+`dutiables.end_date` is the last active day: a term is in force while `end_date IS NULL OR DATE(end_date) >= today` (or `>= $date` for point-in-time checks). Always compare with `whereDate(..., '>=', today())` / `'<', today()` — never against `now()`, which ends access at the date's midnight, a day early.
+- Ending someone right now writes yesterday's date; "ends today" means today is still their last day.
+- Caches of a user's authority expire at the start of the day after their nearest end date (`AuthorityCacheExpiry`).
+- Check-ins, cadences and calendar events have their own date semantics; this is about duty assignments only.

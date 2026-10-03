@@ -6,12 +6,12 @@ use App\Models\Calendar;
 use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Settings\MeetingSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -24,7 +24,7 @@ beforeEach(function (): void {
     Http::fake();
 
     $this->tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
-    $this->editor = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->editor = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     $this->plainUser = makeUser($this->tenant);
 });
 
@@ -111,7 +111,7 @@ describe('content pages', function (): void {
 
     test('a padalinys editor does not get an edit link for another tenant page', function (): void {
         $otherTenant = Tenant::factory()->create(['alias' => 'edit-link-other']);
-        $otherEditor = makeTenantUserWithRole('Communication Coordinator', $otherTenant);
+        $otherEditor = makeTenantUserWithRole('Komunikacijos koordinatorius', $otherTenant);
 
         $page = Page::factory()->for($otherTenant)->create([
             'permalink' => 'edit-link-other-page',
@@ -178,7 +178,7 @@ describe('calendar events', function (): void {
 
     test('a padalinys editor does not get an edit link for another tenant event', function (): void {
         $otherTenant = Tenant::factory()->create(['alias' => 'edit-link-other']);
-        $otherEditor = makeTenantUserWithRole('Communication Coordinator', $otherTenant);
+        $otherEditor = makeTenantUserWithRole('Komunikacijos koordinatorius', $otherTenant);
 
         $event = Calendar::factory()->for($otherTenant)->create(['is_draft' => false]);
 
@@ -219,7 +219,7 @@ describe('homepage', function (): void {
         $this->tenant->homepageContents()->create(['content_id' => $mainContent->id, 'locale' => 'lt']);
 
         $otherTenant = Tenant::factory()->create(['alias' => 'edit-link-tenant']);
-        $tenantEditor = makeTenantUserWithRole('Communication Coordinator', $otherTenant);
+        $tenantEditor = makeTenantUserWithRole('Komunikacijos koordinatorius', $otherTenant);
 
         asUser($tenantEditor)
             ->get(route('home', ['subdomain' => $otherTenant->alias, 'lang' => 'lt']))
@@ -256,7 +256,7 @@ describe('institution contact pages', function (): void {
 
 describe('meeting pages', function (): void {
     beforeEach(function (): void {
-        $type = Type::factory()->forInstitutions(InstitutionScope::Vusa)->create();
+        $type = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create();
         $this->institution = Institution::factory()->for($this->tenant)->create();
         $this->institution->types()->attach($type);
 

@@ -1,15 +1,9 @@
 <template>
-  <!-- Edge-to-edge band, no inset panel and no rounding: the hero is the one element that
-       breaks every measure on the page, so the photograph runs to the viewport edges and only
-       the copy inside it keeps the content measure. `rc-viewport` is what escapes PublicLayout's
-       `.container` column (see app.css); `-mt-*` cancels the content wrapper's top padding so
-       the band sits flush under the fixed header. -->
+  <!-- Edge-to-edge band: the photograph runs to the viewport edges and only the copy inside it
+       keeps the content measure. `rc-viewport` escapes the rich-content canvas (see canvas.css). -->
   <section
     :id="anchorId ? `rc-${anchorId}` : undefined"
-    :class="[
-      'rc-viewport relative isolate scroll-mt-32 overflow-hidden border-b border-border bg-ink',
-      isFirstElement && '-mt-4 md:-mt-6 lg:-mt-8',
-    ]"
+    class="rc-viewport relative isolate scroll-mt-32 overflow-hidden border-b border-border bg-ink"
   >
     <!-- Single slide: rendered as a pure static full-bleed hero -->
     <HeroCarouselSlideView
@@ -63,7 +57,7 @@
               :scrim-strength
               :grayscale
               :is-first-slide="index === 0"
-              preload-image
+              :preload-image="index === currentSlide"
               :editable
               :block-key
               :can-delete-slide="editable && slides.length > 1"
@@ -151,7 +145,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
+import { usePreferredReducedMotion } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { asBoolean } from '../booleanish';
@@ -172,7 +167,6 @@ defineOptions({ inheritAttrs: false });
 
 const props = defineProps<{
   element: HeroCarousel;
-  isFirstElement?: boolean;
   anchorId?: number | null;
   editable?: boolean;
   blockKey?: string;
@@ -248,16 +242,14 @@ function addSlide(): void {
 let autoplayInterval: ReturnType<typeof setInterval> | null = null;
 let restartTimeout: ReturnType<typeof setTimeout> | null = null;
 
-// jsdom has no matchMedia; Inertia SSR has no window at setup. Resolved in
-// onMounted (client-only), so only the jsdom case needs the guard.
-let reducedMotionQuery: MediaQueryList | null = null;
+const preferredReducedMotion = usePreferredReducedMotion();
 
 const autoplayDelay = () => props.element.options?.autoplayDelay || 8000;
 
 const startCarouselAutoplay = () => {
   if (props.editable) return;
   if (!asBoolean(props.element.options?.autoplay) || !hasMultipleSlides.value || !carouselApi.value) return;
-  if (reducedMotionQuery?.matches) return;
+  if (preferredReducedMotion.value === 'reduce') return;
   if (autoplayInterval) return;
 
   autoplayInterval = setInterval(() => carouselApi.value?.scrollNext(), autoplayDelay());
@@ -311,12 +303,9 @@ watch(() => slides.value.length, (length) => {
   }
 });
 
-onMounted(() => {
-  if (typeof window.matchMedia === 'function') {
-    reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    reducedMotionQuery.addEventListener('change', (event) => {
-      if (event.matches) stopCarouselAutoplay();
-    });
+watch(preferredReducedMotion, (motion) => {
+  if (motion === 'reduce') {
+    stopCarouselAutoplay();
   }
 });
 

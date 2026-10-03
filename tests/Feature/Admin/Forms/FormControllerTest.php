@@ -13,7 +13,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 });
 
 describe('unauthorized access', function (): void {
@@ -380,7 +380,7 @@ describe('updating form fields', function (): void {
         $field = FormField::factory()->for($form)->create([
             'type' => 'string',
             'label' => ['lt' => 'Vardas', 'en' => 'Name'],
-            'description' => ['lt' => 'Įrašykite vardą', 'en' => 'Enter your name'],
+            'description' => ['lt' => 'Įrašyk vardą', 'en' => 'Enter your name'],
         ]);
 
         $registration = Registration::factory()->for($form)->create();
@@ -397,7 +397,7 @@ describe('updating form fields', function (): void {
                         'id' => $field->id,
                         'type' => 'string',
                         'label' => ['lt' => 'Vardas', 'en' => 'Name'],
-                        'description' => ['lt' => 'Įrašykite vardą', 'en' => 'Enter your name'],
+                        'description' => ['lt' => 'Įrašyk vardą', 'en' => 'Enter your name'],
                         'is_required' => false,
                         'order' => 1,
                         'options' => null,
@@ -406,7 +406,7 @@ describe('updating form fields', function (): void {
             ])
             ->assertRedirect();
 
-        expect($field->fresh()->getTranslation('description', 'lt'))->toBe('Įrašykite vardą');
+        expect($field->fresh()->getTranslation('description', 'lt'))->toBe('Įrašyk vardą');
     });
 
     test('creates fields whose id carries the new- prefix', function (): void {

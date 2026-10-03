@@ -134,6 +134,8 @@ export function createMarksExtensions(options: PresetOptions = {}): AnyExtension
     );
   }
 
+  if (options.maxCharacters != null) extensions.push(CharacterCount.configure({ limit: options.maxCharacters, autoTrim: false }));
+
   return extensions;
 }
 
@@ -160,12 +162,13 @@ export function createCompactExtensions(options: PresetOptions = {}): AnyExtensi
     BubbleMenu,
     Image.configure({
       HTMLAttributes: {
-        class: 'w-full rounded-md',
+        class: 'w-full',
       },
     }),
     Youtube.configure({
+      nocookie: true,
       HTMLAttributes: {
-        class: 'aspect-video w-auto my-2',
+        class: 'rc-embed',
       },
     }),
   ];
@@ -197,19 +200,18 @@ export function createFullExtensions(options: PresetOptions = {}): AnyExtension[
     Superscript,
     AccessibleImage.configure({
       HTMLAttributes: {
-        class: 'max-w-full h-auto rounded-md',
+        class: 'max-w-full h-auto',
         loading: 'lazy',
       },
       allowBase64: true,
     }),
     Video,
-    // The same classes `createRenderExtensions` and App\Tiptap\TiptapEditor bake,
-    // so the embed looks identical while typing and once published — the old
-    // `h-36 w-auto` made the editor show a small centered player where the
-    // published page renders a full-width one.
+    // Only the `rc-embed` hook, as in `createRenderExtensions` and App\Tiptap\TiptapEditor;
+    // the frame itself lives in typography.css so editor and published page match.
     Youtube.configure({
+      nocookie: true,
       HTMLAttributes: {
-        class: 'aspect-video h-auto w-full rounded-xl shadow-lg',
+        class: 'rc-embed',
       },
     }),
   ];
@@ -219,6 +221,7 @@ export function createFullExtensions(options: PresetOptions = {}): AnyExtension[
     extensions.push(
       CharacterCount.configure({
         limit: options.maxCharacters,
+        autoTrim: false,
       }),
     );
   }
@@ -232,33 +235,15 @@ export function createFullExtensions(options: PresetOptions = {}): AnyExtension[
     );
   }
 
-  // Tables (optional). The same HTMLAttributes `createRenderExtensions` and
-  // App\Tiptap\TiptapEditor bake: tiptap-base.css's own cell chrome is scoped
-  // `:not(.rc-prose-editing)`, so on the prose editing surface these classes are
-  // the *only* thing styling the table — and they make it identical to the
-  // published output.
+  // Tables (optional). Only the `rc-table` hook is stored, as in `createRenderExtensions`
+  // and App\Tiptap\TiptapEditor; the chrome itself lives in typography.css.
   if (!options.disableTables) {
     extensions.push(
       TableKit.configure({
         table: {
           resizable: true,
           HTMLAttributes: {
-            class: 'border-collapse table-auto w-full tracking-normal',
-          },
-        },
-        tableCell: {
-          HTMLAttributes: {
-            class: 'border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left tracking-normal [&[align=center]]:text-center [&[align=right]]:text-right',
-          },
-        },
-        tableHeader: {
-          HTMLAttributes: {
-            class: 'border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left font-bold tracking-normal [&[align=center]]:text-center [&[align=right]]:text-right',
-          },
-        },
-        tableRow: {
-          HTMLAttributes: {
-            class: 'm-0 border-t p-0 even:bg-zinc-100 dark:even:bg-zinc-800/20',
+            class: 'rc-table',
           },
         },
       }),
@@ -301,64 +286,4 @@ export function getExtensionsForPreset(preset: EditorPreset, options: PresetOpti
   }
 }
 
-/**
- * Extensions for rendering HTML (display-only)
- * Used by RichContentTiptapHTML
- */
-export function createRenderExtensions(): AnyExtension[] {
-  return [
-    StarterKit.configure({
-      heading: false,
-      codeBlock: false,
-      // Colour/underline treatment lives in `.rc-prose a` (app.css), not here — that
-      // way stored HTML rendered through TiptapDisplay is styled by the same rule as
-      // freshly generated HTML, and neither drifts from the editing surface. Only
-      // `tracking-normal` stays, since it resets tracking inherited from a host.
-      link: {
-        HTMLAttributes: {
-          class: 'tracking-normal',
-        },
-      },
-    }),
-    CustomHeading.configure({
-      levels: [2, 3, 4],
-    }),
-    TextAlign,
-    RCTag,
-    AccessibleImage.configure({
-      HTMLAttributes: {
-        class: 'w-full rounded-md',
-        loading: 'lazy',
-      },
-      allowBase64: true,
-    }),
-    TableKit.configure({
-      table: {
-        HTMLAttributes: {
-          class: 'border-collapse table-auto w-full tracking-normal',
-        },
-      },
-      tableCell: {
-        HTMLAttributes: {
-          class: 'border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left tracking-normal [&[align=center]]:text-center [&[align=right]]:text-right',
-        },
-      },
-      tableHeader: {
-        HTMLAttributes: {
-          class: 'border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left font-bold tracking-normal [&[align=center]]:text-center [&[align=right]]:text-right',
-        },
-      },
-      tableRow: {
-        HTMLAttributes: {
-          class: 'm-0 border-t p-0 even:bg-zinc-100 dark:even:bg-zinc-800/20',
-        },
-      },
-    }),
-    Video,
-    Youtube.configure({
-      HTMLAttributes: {
-        class: 'aspect-video h-auto w-full rounded-xl shadow-lg',
-      },
-    }),
-  ];
-}
+export { createRenderExtensions } from './render';

@@ -2,7 +2,10 @@
 
 use App\Models\Content;
 use App\Models\ContentPart;
+use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Navigation;
+use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
 use App\Support\LocalizedRouteSlugs;
@@ -425,7 +428,7 @@ test('categoryRedirect permanently redirects legacy category URLs on www', funct
 
     $this->get(LocalizedRouteSlugs::route('category', ['alias' => 'freshmen-camps'], 'lt'))
         ->assertStatus(301)
-        ->assertRedirect(LocalizedRouteSlugs::route('pirmakursiuStovyklos', [], 'lt'));
+        ->assertRedirect(LocalizedRouteSlugs::route('page', ['subdomain' => 'www', 'permalink' => 'pirmakursiu-stovyklos'], 'lt'));
 
     $this->get(LocalizedRouteSlugs::route('category', ['alias' => 'non-existent-category'], 'lt'))
         ->assertNotFound();
@@ -436,7 +439,7 @@ test('categoryRedirect permanently redirects legacy category URLs on tenant subd
 
     $this->get(LocalizedRouteSlugs::route('tenant.category', ['subdomain' => 'mif', 'alias' => 'freshmen-camps'], 'lt'))
         ->assertStatus(301)
-        ->assertRedirect(LocalizedRouteSlugs::route('pirmakursiuStovyklos', [], 'lt'));
+        ->assertRedirect(LocalizedRouteSlugs::route('page', ['subdomain' => 'www', 'permalink' => 'pirmakursiu-stovyklos'], 'lt'));
 });
 
 test('contentPage includes hierarchical ancestors in page prop', function (): void {
@@ -472,3 +475,55 @@ test('contentPage includes hierarchical ancestors in page prop', function (): vo
     );
 });
 
+test('a page permalink matching a PKP institution alias redirects to its contacts page', function (): void {
+    $pkpType = InstitutionType::query()->where('slug', 'pkp')->firstOrFail();
+    $institution = Institution::factory()->create(['alias' => 'senas-pkp']);
+    $institution->types()->attach($pkpType);
+
+    $this->get('/lt/senas-pkp')
+        ->assertRedirect(route('contacts.alias', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => 'senas-pkp']));
+});
+
+test('a permalink that 404ed serves the page once it is created', function (): void {
+    $this->get('/lt/greitai-bus')->assertNotFound();
+
+    Page::factory()->create([
+        'permalink' => 'greitai-bus',
+        'tenant_id' => $this->tenant->id,
+        'lang' => 'lt',
+        'is_active' => true,
+    ]);
+
+    $this->get('/lt/greitai-bus')->assertOk();
+});
+
+test('the homepage news block shows an article published after the page was cached', function (): void {
+    $content = Content::factory()->create();
+    $newsPart = ContentPart::factory()->for($content)->create([
+        'type' => 'news',
+        'json_content' => ['title' => 'Naujienos'],
+        'options' => ['limit' => 4],
+    ]);
+    $this->tenant->homepageContents()->create(['content_id' => $content->id, 'locale' => 'lt']);
+
+    $home = fn () => $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))->assertOk();
+
+    $home()->assertInertia(fn (Assert $page) => $page
+        ->component('Public/HomePage')
+        ->where("resolvedParts.{$newsPart->id}.items", [])
+        ->where('firstNewsImageUrl', null)
+        ->missing('news')
+        ->missing('calendarEvents')
+    );
+
+    $article = News::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'lang' => 'lt',
+        'draft' => false,
+        'publish_time' => now()->subHour(),
+    ]);
+
+    $home()->assertInertia(fn (Assert $page) => $page
+        ->where("resolvedParts.{$newsPart->id}.items.0.id", $article->id)
+    );
+});

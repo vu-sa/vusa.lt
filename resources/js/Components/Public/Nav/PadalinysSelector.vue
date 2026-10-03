@@ -11,6 +11,7 @@
       @blur="scheduleClose"
     >
       <Button
+        voice="brand"
         variant="ghost"
         :size="size === 'tiny' ? 'sm' : 'default'"
         class="flex w-auto items-center justify-between gap-2 border border-border
@@ -56,14 +57,15 @@
         <Button
           v-for="view in (['list', 'map'] as const)"
           :key="view"
+          voice="brand"
           :variant="viewMode === view ? 'brand' : 'ghost'"
-          size="public-sm"
+          size="sm"
           class="flex-1"
           :class="viewMode !== view && 'text-muted-foreground hover:text-foreground'"
           @click="setViewMode(view)"
         >
           <component :is="view === 'list' ? IFluentList24Regular : IFluentMap24Regular" class="h-4 w-4" />
-          {{ view === 'list' ? $t('List') : $t('Map') }}
+          {{ view === 'list' ? $t('navigation.view_list') : $t('navigation.view_map') }}
         </Button>
       </div>
 
@@ -170,7 +172,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { computed, ref, watch, nextTick } from 'vue';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { FocusOutsideEvent, PointerDownOutsideEvent } from 'reka-ui';
@@ -184,6 +186,7 @@ import IFluentMap24Regular from '~icons/fluent/map-24-regular';
 import IFluentList24Regular from '~icons/fluent/list-24-regular';
 import type { TenantOption } from '@/Composables/useTenantOptions';
 import { useTenantOptions } from '@/Composables/useTenantOptions';
+import { useHoverPopover } from '@/Composables/useHoverPopover';
 import { Button } from '@/Components/ui/button';
 import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Popover, PopoverTrigger, PopoverContent } from '@/Components/ui/popover';
@@ -232,8 +235,13 @@ const facultyLocations: Record<string, FacultyLocation> = {
 
 const viewMode = useStorage('padalinysSelectorViewMode', 'list'); // 'list' or 'map'
 const hoveredLocation = ref<TenantOption | null>(null);
-const isPopoverOpen = ref(false);
-let closeTimeoutId: ReturnType<typeof setTimeout> | null = null;
+
+const {
+  open: isPopoverOpen,
+  openNow: openOnHover,
+  scheduleClose,
+  onOpenChange,
+} = useHoverPopover(150);
 
 const {
   options: options_padaliniai,
@@ -268,31 +276,6 @@ function rowNameClass(option: TenantOption): string {
 
 const isDisabled = computed(() => options_padaliniai.value.length === 0);
 
-/** Opens on hover; a real click still toggles via `handlePopoverOpenChange` below. */
-function openOnHover(): void {
-  clearScheduledClose();
-
-  handlePopoverOpenChange(true);
-}
-
-/** Short grace period so moving the cursor from the trigger down into the panel doesn't close it. */
-function scheduleClose(): void {
-  clearScheduledClose();
-  closeTimeoutId = setTimeout(() => {
-    closeTimeoutId = null;
-    handlePopoverOpenChange(false);
-  }, 150);
-}
-
-function clearScheduledClose(): void {
-  if (closeTimeoutId === null) {
-    return;
-  }
-
-  clearTimeout(closeTimeoutId);
-  closeTimeoutId = null;
-}
-
 /** Blocks reka-ui's default focus-return-to-trigger, which would re-fire the trigger's focus handler and reopen the popover. */
 function preventCloseAutoFocus(event: Event): void {
   event.preventDefault();
@@ -310,10 +293,6 @@ function scheduleCloseOnFocusOut(event: FocusEvent): void {
   }
   scheduleClose();
 }
-
-onBeforeUnmount(() => {
-  clearScheduledClose();
-});
 
 // Set view mode and refresh the map after it becomes visible.
 const setViewMode = (mode: 'list' | 'map') => {
@@ -333,12 +312,10 @@ const setViewMode = (mode: 'list' | 'map') => {
 
 // Refresh geometry once per actual open transition, not on every focus event within the map.
 const handlePopoverOpenChange = (open: boolean) => {
-  if (isPopoverOpen.value === open) {
-    return;
-  }
+  onOpenChange(open);
+};
 
-  isPopoverOpen.value = open;
-
+watch(isPopoverOpen, (open) => {
   if (open && viewMode.value === 'map') {
     nextTick(() => {
       setTimeout(() => {
@@ -346,5 +323,5 @@ const handlePopoverOpenChange = (open: boolean) => {
       }, 100);
     });
   }
-};
+});
 </script>

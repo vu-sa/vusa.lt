@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\Docs\ChangedTestAnalyzer;
 use Illuminate\Support\Facades\Artisan;
 
 /**
@@ -13,6 +14,7 @@ function fixtureDocs(array $pages): string
     mkdir($dir, 0777, true);
 
     foreach ($pages as $name => $contents) {
+        @mkdir(dirname($dir.'/'.$name), 0777, true);
         file_put_contents($dir.'/'.$name, $contents);
     }
 
@@ -22,7 +24,7 @@ function fixtureDocs(array $pages): string
 function removeFixtureDocs(string $dir): void
 {
     foreach (glob($dir.'/*') ?: [] as $file) {
-        unlink($file);
+        is_dir($file) ? removeFixtureDocs($file) : unlink($file);
     }
     @rmdir($dir);
 }
@@ -68,14 +70,14 @@ describe('docs:coverage report', function (): void {
         preg_match_all('/^\s+([a-zA-Z][\w.-]+)\s+(?:tested|untested)$/m', $output, $matches);
 
         expect($matches[1])->not->toBeEmpty()
-            ->and(collect($matches[1])->every(fn ($r) => str_starts_with($r, 'reservations')))->toBeTrue();
+            ->and(collect($matches[1])->every(fn ($r) => str_starts_with($r, 'reservations') || str_starts_with($r, 'api.v1.admin.reservations')))->toBeTrue();
     });
 
     test('credits an area to the page that declares it', function (): void {
-        // docs/reservation-system.md declares `area: reservations`.
+        // docs/rezervacijos/rezervacijos.md declares `area: reservations`.
         Artisan::call('docs:coverage', ['--area' => 'reservations']);
 
-        expect(Artisan::output())->toContain('docs/reservation-system.md');
+        expect(Artisan::output())->toContain('docs/rezervacijos/rezervacijos.md');
     });
 
     test('lists undocumented feature areas as the writing backlog', function (): void {
@@ -111,6 +113,41 @@ describe('docs:coverage strictness', function (): void {
         try {
             expect(Artisan::call('docs:coverage', ['--strict' => true, '--docs-path' => $docs]))->toBe(1)
                 ->and(Artisan::output())->toContain('Stale claims');
+        } finally {
+            removeFixtureDocs($docs);
+        }
+    });
+
+    test('accepts a Vitest spec as evidence and holds it to the same existence check', function (): void {
+        $docs = fixtureDocs([
+            'screen.md' => "---\ntests:\n  - resources/js/Utils/__tests__/ReservationStatus.test.ts\n---\n\n# Screen\n",
+        ]);
+
+        try {
+            expect(Artisan::call('docs:coverage', ['--strict' => true, '--docs-path' => $docs]))->toBe(0)
+                ->and(Artisan::output())->not->toContain('cited path is not');
+        } finally {
+            removeFixtureDocs($docs);
+        }
+
+        $docs = fixtureDocs([
+            'gone.md' => "---\ntests:\n  - resources/js/Utils/__tests__/GoneForever.test.ts\n---\n\n# Gone\n",
+        ]);
+
+        try {
+            expect(Artisan::call('docs:coverage', ['--strict' => true, '--docs-path' => $docs]))->toBe(1);
+        } finally {
+            removeFixtureDocs($docs);
+        }
+    });
+
+    test('ignores the PDF build\'s copies of the pages', function (): void {
+        $docs = fixtureDocs([
+            'pdf/pages/copy.md' => "---\ntests:\n  - tests/Feature/GoneForeverTest.php\n---\n\n# Copy\n",
+        ]);
+
+        try {
+            expect(Artisan::call('docs:coverage', ['--strict' => true, '--docs-path' => $docs]))->toBe(0);
         } finally {
             removeFixtureDocs($docs);
         }
@@ -206,6 +243,11 @@ describe('docs:coverage dashboard', function (): void {
 
 describe('docs:coverage review mode', function (): void {
     test('reports when a branch changed no test files', function (): void {
+        $analyzer = Mockery::mock(ChangedTestAnalyzer::class);
+        $analyzer->shouldReceive('analyze')->with('HEAD')->andReturn([]);
+        $analyzer->shouldReceive('warnings')->andReturn([]);
+        $this->app->instance(ChangedTestAnalyzer::class, $analyzer);
+
         expect(Artisan::call('docs:coverage', ['--changed' => 'HEAD']))->toBe(0)
             ->and(Artisan::output())->toContain('No');
     });

@@ -3,10 +3,10 @@
 use App\Enums\AgendaItemType;
 use App\Enums\InstitutionScope;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Models\Vote;
 use App\Services\VoteStatisticsCalculator;
 use App\Settings\MeetingSettings;
@@ -21,7 +21,7 @@ pest()->use(RefreshDatabase::class);
  */
 function meetingWithDecisionOnlyVote(InstitutionScope $scope): Meeting
 {
-    $type = Type::factory()->forInstitutions($scope)->create();
+    $type = InstitutionType::factory()->withGovernanceScope($scope)->create();
     $institution = Institution::factory()->for(Tenant::query()->first())->create();
     $institution->types()->attach($type);
 
@@ -61,7 +61,7 @@ test('national and international bodies keep the student perspective', function 
 test('a joint VU SA and VU meeting keeps the student perspective', function (): void {
     $meeting = meetingWithDecisionOnlyVote(InstitutionScope::Vusa);
 
-    $vuType = Type::factory()->forInstitutions(InstitutionScope::University)->create();
+    $vuType = InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create();
     $vuInstitution = Institution::factory()->for(Tenant::query()->first())->create();
     $vuInstitution->types()->attach($vuType);
     $meeting->institutions()->attach($vuInstitution);
@@ -85,24 +85,13 @@ test('vote statistics report no alignment for an internal body', function (): vo
         ->and($calculator->alignmentStatus($votes, requiresStudentPerspective: false))->toBe('neutral');
 });
 
-test('the completion filter finds VU SA meetings that only recorded an outcome', function (): void {
-    $tenant = Tenant::query()->first();
-    $admin = makeAdminUser($tenant);
-
+test('the completion facet counts VU SA meetings that only recorded an outcome as complete', function (): void {
     $complete = meetingWithDecisionOnlyVote(InstitutionScope::Vusa);
     $incomplete = meetingWithDecisionOnlyVote(InstitutionScope::University);
 
-    // BaseIndexRequest takes `filters` as a JSON string.
-    $response = asUser($admin)->get(route('meetings.index', [
-        'filters' => json_encode(['completion_status' => ['complete']]),
-    ]));
-
-    $response->assertOk();
-
-    $ids = collect($response->viewData('page')['props']['data'])->pluck('id');
-
-    expect($ids)->toContain($complete->id)
-        ->and($ids)->not->toContain($incomplete->id);
+    // The collection filters on the search document, not on SQL.
+    expect($complete->toSearchableArray()['completion_status'])->toBe('complete')
+        ->and($incomplete->toSearchableArray()['completion_status'])->toBe('incomplete');
 });
 
 test('the public institution page carries the meeting scope for agenda statuses', function (): void {
@@ -111,7 +100,7 @@ test('the public institution page carries the meeting scope for agenda statuses'
     $institution = $meeting->institutions()->first();
 
     app(MeetingSettings::class)->fill([
-        'public_meeting_institution_type_ids' => $institution->types()->pluck('types.id')->all(),
+        'public_meeting_institution_type_ids' => $institution->types()->pluck('institution_types.id')->all(),
     ])->save();
 
     $this->get(route('contacts.institution', [

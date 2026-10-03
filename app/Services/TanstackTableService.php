@@ -306,10 +306,14 @@ class TanstackTableService
         ?\Closure $orInclude = null
     ): Builder {
         $user = auth()->user();
+
+        if ($user?->isSuperAdmin()) {
+            return $query;
+        }
+
         $scope = $authorizer->scope($user, $permission);
 
-        // Only apply if not all scope and not super admin
-        if ($scope->isAllScope || $user?->isSuperAdmin()) {
+        if ($scope->isAllScope) {
             return $query;
         }
 

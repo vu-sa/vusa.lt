@@ -40,11 +40,9 @@ class StagingReadOnlyMode
      * are ALLOWED because they only modify local database or READ from SharePoint
      */
     protected array $sharepointWriteRoutes = [
-        'sharepointFiles.store',                  // Upload file TO SharePoint
-        'sharepointFiles.destroy',                // Delete file FROM SharePoint
+        'fileableFiles.store',                    // Upload files TO SharePoint
         'fileableFiles.destroy',                  // Delete file FROM SharePoint
-        'sharepoint.createFolder',                // Create folder IN SharePoint
-        'sharepoint.createPublicPermission',      // Create public link IN SharePoint
+        'fileableFiles.revokePublicLink',         // Delete a sharing link IN SharePoint
     ];
 
     /**
@@ -94,8 +92,7 @@ class StagingReadOnlyMode
         if (config('app.sharepoint_read_only') && $this->isSharepointWriteRoute($routeName)) {
             return $this->readOnlyResponse(
                 $request,
-                'SharePoint modifications are disabled in staging environment. '.
-                'SharePoint is shared with production.'
+                'SharePoint modifications are disabled in staging environment.'
             );
         }
 

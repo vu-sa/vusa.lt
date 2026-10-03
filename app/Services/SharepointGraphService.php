@@ -8,7 +8,6 @@ use App\Enums\SharepointPermissionTypeEnum;
 use App\Enums\SharepointScopeEnum;
 use App\Models\Document;
 use App\Models\Institution;
-use App\Models\SharepointFile;
 use App\Support\StagingProtection;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\UploadedFile;
@@ -19,7 +18,6 @@ use Illuminate\Support\Sleep;
 use Microsoft\Graph\BatchRequestBuilder;
 use Microsoft\Graph\Core\Requests\BatchRequestContent;
 use Microsoft\Graph\Core\Requests\BatchRequestItem;
-use Microsoft\Graph\Generated\Drives\Item\Items\Item\Children\ChildrenRequestBuilder;
 use Microsoft\Graph\Generated\Drives\Item\Items\Item\CreateLink\CreateLinkPostRequestBody;
 use Microsoft\Graph\Generated\Drives\Item\Items\Item\DriveItemItemRequestBuilderGetRequestConfiguration;
 use Microsoft\Graph\Generated\Models;
@@ -102,32 +100,6 @@ class SharepointGraphService
         $drive = $this->graph->sites()->bySiteId($this->siteId)->drive()->get()->wait();
 
         return $drive;
-    }
-
-    /**
-     * getDriveItemByPath
-     *
-     * Note: for some reason DriveItems are not returned
-     *
-     * @return Collection
-     */
-    public function getDriveItemByPath(string $path, bool $getChildren = false)
-    {
-        // encode path
-        $childrenPath = $getChildren ? ':/children' : '';
-
-        try {
-            $sharepointPathFinal = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root:'."/{$path}{$childrenPath}?\$expand=listItem,thumbnails";
-
-            $drive = $this->graph->drives()->byDriveId($this->driveId)->withUrl($sharepointPathFinal)->get()->wait();
-
-        } catch (ODataError) {
-            return collect([]);
-        }
-
-        $driveItems = collect($drive->getAdditionalData()['value']);
-
-        return $this->parseDriveItems($driveItems);
     }
 
     /**
@@ -262,7 +234,7 @@ class SharepointGraphService
 
     public function updateDriveItemByPath(string $path, array $fields): ?DriveItem
     {
-        StagingProtection::ensureSharepointIsWritable();
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         try {
             $path = rawurlencode($path);
@@ -317,7 +289,7 @@ class SharepointGraphService
 
     public function updateListItem(string $listId, string $listItemId, array $fields): FieldValueSet
     {
-        StagingProtection::ensureSharepointIsWritable();
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         try {
             $requestConfiguration = new FieldsRequestBuilderPatchRequestConfiguration;
@@ -340,49 +312,6 @@ class SharepointGraphService
 
             throw $e;
         }
-    }
-
-    // Since every institution can have types and with them associated documents, we need to
-    // get them by batch
-    public function getDriveItemsChildrenByPaths(array $paths)
-    {
-        $pathCollection = collect($paths);
-
-        $batch = new BatchRequestContent(
-            $pathCollection->map(function ($path) {
-                $path = rawurlencode($path);
-
-                $sharepointPathFinal = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root:'."/{$path}:/children?\expand=listItem,thumbnails";
-
-                $request = $this->graph->drives()->byDriveId($this->driveId)->root()->withUrl($sharepointPathFinal)->toGetRequestInformation();
-
-                return new BatchRequestItem($request);
-            })->toArray()
-        );
-
-        // Create a batch request builder to send the batched requests
-        $batchRequestBuilder = new BatchRequestBuilder($this->graph->getRequestAdapter());
-
-        $batchResponse = $batchRequestBuilder->postAsync($batch)->wait();
-
-        $driveItemCollections = collect($batch->getRequests())->map(function (BatchRequestItem $request) use ($batchResponse) {
-            $response = $batchResponse->getResponseBody($request->getId(), Models\DriveItemCollectionResponse::class)->getValue();
-
-            return $response;
-        });
-
-        $driveItems = $driveItemCollections->map(function (?array $driveItemCollection) {
-            if (! $driveItemCollection) {
-                return false;
-            }
-
-            // flatten driveItemCollection
-            return $driveItemCollection;
-        })->reject(fn ($value) => $value === false)->flatten()->map(
-            // turn to simple array
-            fn (DriveItem $driveItem) => $driveItem->getBackingStore()->enumerate());
-
-        return $this->parseDriveItems($driveItems);
     }
 
     protected function getDriveItemPermissions(string $driveItemId): PermissionCollectionResponse
@@ -456,7 +385,7 @@ class SharepointGraphService
 
     public function createPublicPermission(?string $siteId, string $driveItemId, Carbon|false|null $datetime = null): Models\Permission
     {
-        StagingProtection::ensureSharepointIsWritable();
+        StagingProtection::ensureSharepointIsWritable($siteId ?? $this->siteId, $this->driveId);
         $this->validateNotEmpty(['driveItemId' => $driveItemId]);
 
         // Validate item is a file, not folder
@@ -503,7 +432,7 @@ class SharepointGraphService
      */
     public function deletePermission(string $driveItemId, string $permissionId): void
     {
-        StagingProtection::ensureSharepointIsWritable();
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         $this->graph->drives()
             ->byDriveId($this->driveId)
@@ -522,7 +451,7 @@ class SharepointGraphService
 
     public function uploadDriveItem(string $filePath, UploadedFile $file): DriveItem
     {
-        StagingProtection::ensureSharepointIsWritable();
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         $factory = new Psr17Factory;
 
@@ -537,51 +466,9 @@ class SharepointGraphService
 
     public function deleteDriveItem(string $driveItemId): void
     {
-        StagingProtection::ensureSharepointIsWritable();
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->delete()->wait();
-    }
-
-    /**
-     * Create a folder in SharePoint.
-     * Creates parent folders recursively if they don't exist.
-     *
-     * @param  string  $folderPath  The full path for the folder (e.g., "General/Padaliniai/NewFolder")
-     */
-    public function createFolder(string $folderPath): DriveItem
-    {
-        StagingProtection::ensureSharepointIsWritable();
-
-        $pathParts = explode('/', trim($folderPath, '/'));
-        $folderName = array_pop($pathParts);
-        $parentPath = implode('/', $pathParts);
-
-        // Build the parent item path
-        $parentUrl = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root';
-        if (! empty($parentPath)) {
-            $parentUrl .= ':/'.$parentPath.':';
-        }
-
-        $requestBody = new DriveItem;
-        $requestBody->setName($folderName);
-        $requestBody->setFolder(new Models\Folder);
-        $requestBody->setAdditionalData([
-            '@microsoft.graph.conflictBehavior' => 'fail',
-        ]);
-
-        $childrenRequestBuilder = new ChildrenRequestBuilder(
-            $parentUrl.'/children',
-            $this->graph->getRequestAdapter()
-        );
-
-        $createdFolder = $childrenRequestBuilder->post($requestBody)->wait();
-
-        $this->logInfo('Folder created', [
-            'path' => $folderPath,
-            'folder_id' => $createdFolder->getId(),
-        ]);
-
-        return $createdFolder;
     }
 
     /**
@@ -593,7 +480,7 @@ class SharepointGraphService
      */
     public function uploadUrlShortcut(string $filePath, string $content): DriveItem
     {
-        StagingProtection::ensureSharepointIsWritable();
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         $factory = new Psr17Factory;
 
@@ -605,45 +492,6 @@ class SharepointGraphService
         $uploadedDriveItem = $this->graph->drives()->byDriveId($this->driveId)->root()->withUrl($sharepointPathFinal)->content()->put($stream)->wait();
 
         return $uploadedDriveItem;
-    }
-
-    /**
-     * parseDriveItems
-     *
-     * @return Collection
-     */
-    private function parseDriveItems(Collection $driveItems)
-    {
-        // get all driveitem ids
-        $driveItemIds = $driveItems->map(fn ($driveItem) => $driveItem['id'])->toArray();
-
-        // load all sharepointFile models wherein sharepointfile.sharepoint_id
-        // is in $driveItemIds
-        $sharepointFiles = SharepointFile::whereIn('sharepoint_id', $driveItemIds)->with('fileables.fileable', 'comments')->get();
-
-        $parsedDriveItems = $driveItems->map(fn (array $driveItem) => [
-            'id' => $driveItem['id'],
-            'sharepointFile' => $sharepointFiles->filter(fn ($sharepointFile) => $sharepointFile->sharepoint_id == $driveItem['id'])->first(),
-            'name' => $driveItem['name'],
-            'file' => $driveItem['file'] ?? null,
-            // if driveitem is a file, get content
-            'folder' => $driveItem['folder'] ?? null,
-            'size' => $driveItem['size'],
-            'createdDateTime' => $driveItem['createdDateTime'],
-            'lastModifiedDateTime' => $driveItem['lastModifiedDateTime'],
-            'webUrl' => $driveItem['webUrl'],
-            'listItem' => [
-                'fields' => $driveItem['listItem']['fields'] ?? null,
-            ],
-            'permissions' => $driveItem['permissions'] ?? null,
-            'thumbnails' => collect($driveItem['thumbnails'] ?? [])->map(fn ($thumbnail) => [
-                'large' => [
-                    'url' => $thumbnail['large']['url'],
-                ],
-            ]),
-        ]);
-
-        return $parsedDriveItems;
     }
 
     /**
@@ -701,7 +549,7 @@ class SharepointGraphService
             ->contains(fn ($permission) => $this->isValidAnonymousPermission($permission)));
 
         // Add anonymous url to drive items without it
-        if ($driveItemsWithoutAnonymousUrl->isNotEmpty() && ! StagingProtection::sharepointIsReadOnly()) {
+        if ($driveItemsWithoutAnonymousUrl->isNotEmpty() && ! StagingProtection::sharepointIsReadOnly($this->siteId, $this->driveId)) {
             $batch = new BatchRequestContent(
                 $driveItemsWithoutAnonymousUrl->map(function (array $driveItem) {
 
@@ -1019,7 +867,7 @@ class SharepointGraphService
         $url = $anonymousPermission['link']['webUrl'] ?? null;
 
         if ($url === null) {
-            if (! StagingProtection::sharepointIsReadOnly()) {
+            if (! StagingProtection::sharepointIsReadOnly($this->siteId, $this->driveId)) {
                 $document->anonymous_url = null;
                 $document->sharepoint_permission_id = null;
             }

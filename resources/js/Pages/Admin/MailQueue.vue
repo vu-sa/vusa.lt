@@ -1,63 +1,42 @@
 <template>
-  <AdminContentPage :title="$t('Laiškų eilė')">
-    <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
-      <div class="flex gap-3">
-        <StatTile :label="$t('Laukiančios eilutės')" :value="totals.items" />
-        <StatTile :label="$t('Gavėjai')" :value="totals.recipients" />
-      </div>
-
+  <CollectionPage
+    :source
+    collection="mailQueue"
+    :eyebrow="$t('Sistemos būsena')"
+    :title="$t('Laiškų eilė')"
+    :lead="$t('mail_queue.explanation')"
+    default-view="rows"
+    :available-views="['rows']"
+    :item-key="recipient => recipient.user_id"
+  >
+    <template #actions>
       <div class="flex items-center gap-2">
-        <Button variant="outline" size="sm" @click="router.reload()">
+        <Button variant="outline" voice="sentence" @click="source.refresh()">
           <RefreshCwIcon class="mr-2 h-4 w-4" />
           {{ $t('Atnaujinti') }}
         </Button>
 
-        <AlertDialog v-if="canManage && totals.items > 0">
-          <AlertDialogTrigger as-child>
-            <Button variant="destructive" size="sm">
-              <Trash2Icon class="mr-2 h-4 w-4" />
-              {{ $t('Išvalyti eilę') }}
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{{ $t('Išvalyti visą laiškų eilę?') }}</AlertDialogTitle>
-              <AlertDialogDescription>
-                {{ $t('mail_queue.clear_all_warning', { count: totals.items, recipients: totals.recipients }) }}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>{{ $t('Atšaukti') }}</AlertDialogCancel>
-              <AlertDialogAction
-                class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                @click="clearAll"
-              >
-                {{ $t('Išvalyti') }}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <Button v-if="canManage && totals.items > 0" variant="outline" voice="sentence" class="text-destructive" @click="requestClearAll">
+          <Trash2Icon class="size-4" />
+          {{ $t('Išvalyti eilę') }}
+        </Button>
       </div>
-    </div>
-
-    <p class="mb-6 max-w-2xl text-sm text-muted-foreground">
-      {{ $t('mail_queue.explanation') }}
-    </p>
-
-    <EmptyState
-      v-if="recipients.length === 0"
-      :title="$t('Laiškų eilė tuščia')"
-      :description="$t('mail_queue.empty_description')"
-    />
-
-    <div v-else class="space-y-3">
-      <SectionCard
-        v-for="recipient in recipients"
-        :key="recipient.user_id"
-        :title="recipient.user?.name ?? $t('Ištrintas naudotojas')"
-        :icon="MailIcon"
-      >
-        <template #action>
+    </template>
+    <template #row="{ item: recipient }">
+      <div class="border-b border-border px-3 py-3 last:border-b-0 sm:px-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex min-w-0 items-center gap-3">
+            <MailIcon class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <div class="min-w-0">
+              <p class="truncate text-sm font-semibold text-foreground">
+                {{ recipient.user?.name ?? $t('Ištrintas naudotojas') }}
+              </p>
+              <p class="truncate text-xs text-muted-foreground">
+                <span v-if="recipient.user?.email">{{ recipient.user.email }} · </span>
+                {{ $t('Seniausia') }}: {{ formatDate(recipient.oldest_at) }}
+              </p>
+            </div>
+          </div>
           <div class="flex items-center gap-2">
             <Badge variant="secondary">
               {{ $tChoice('mail_queue.line_count', recipient.items_count) }}
@@ -66,83 +45,84 @@
               v-if="canManage"
               variant="ghost"
               size="sm"
+              voice="sentence"
               class="text-destructive hover:text-destructive"
-              :disabled="busyKey === recipient.user_id"
-              @click="clearRecipient(recipient)"
+              :disabled="busyKey !== null"
+              @click="requestClearRecipient(recipient)"
             >
-              <Trash2Icon class="mr-2 h-4 w-4" />
+              <Trash2Icon class="size-4" />
               {{ $t('Nesiųsti') }}
             </Button>
           </div>
-        </template>
+        </div>
 
-        <p class="mb-3 text-xs text-muted-foreground">
-          <span v-if="recipient.user?.email">{{ recipient.user.email }} · </span>
-          {{ $t('Seniausia') }}: {{ formatDate(recipient.oldest_at) }}
-        </p>
-
-        <ul class="divide-y divide-border">
-          <li
-            v-for="item in recipient.items"
-            :key="item.id"
-            class="flex items-start justify-between gap-3 py-2"
-          >
-            <div class="min-w-0">
-              <div class="flex items-center gap-2">
-                <Badge variant="outline" class="shrink-0 text-xs">
-                  {{ item.category }}
-                </Badge>
-                <span class="truncate text-sm font-medium">{{ item.title ?? item.notification_class }}</span>
-              </div>
-              <p v-if="item.body" class="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
-                {{ item.body }}
-              </p>
-              <p class="mt-0.5 text-xs text-muted-foreground">
-                {{ formatDate(item.created_at) }}
-              </p>
-            </div>
-
-            <Button
-              v-if="canManage"
-              variant="ghost"
-              size="icon"
-              class="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
-              :disabled="busyKey === item.id"
-              :aria-label="$t('Pašalinti eilutę')"
-              @click="deleteItem(item)"
+        <details class="mt-2 border-t border-border/70 pt-1">
+          <summary class="flex min-h-11 cursor-pointer items-center text-xs font-medium text-foreground hover:text-brand">
+            {{ $t('mail_queue.show_lines') }}
+          </summary>
+          <ul class="divide-y divide-border">
+            <li
+              v-for="item in recipient.items"
+              :key="item.id"
+              class="flex items-start justify-between gap-3 py-2"
             >
-              <Trash2Icon class="h-4 w-4" />
-            </Button>
-          </li>
-        </ul>
-      </SectionCard>
-    </div>
-  </AdminContentPage>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <Badge variant="outline" class="shrink-0 text-xs">
+                    {{ item.category }}
+                  </Badge>
+                  <span class="truncate text-sm font-medium">{{ item.title ?? item.notification_class }}</span>
+                </div>
+                <p v-if="item.body" class="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+                  {{ item.body }}
+                </p>
+                <p class="mt-0.5 text-xs text-muted-foreground">
+                  {{ formatDate(item.created_at) }}
+                </p>
+              </div>
+
+              <Button
+                v-if="canManage"
+                variant="ghost"
+                size="icon"
+                class="size-11 shrink-0 text-destructive hover:text-destructive"
+                :disabled="busyKey !== null"
+                :aria-label="$t('Pašalinti eilutę')"
+                @click="requestDeleteItem(item)"
+              >
+                <Trash2Icon class="h-4 w-4" />
+              </Button>
+            </li>
+          </ul>
+        </details>
+      </div>
+    </template>
+    <template #empty>
+      <EmptyState :title="$t('Laiškų eilė tuščia')" :description="$t('mail_queue.empty_description')" />
+    </template>
+  </CollectionPage>
+  <ConfirmDialog
+    v-model:open="confirmationOpen"
+    :title="confirmationTitle"
+    :description="confirmationDescription"
+    :confirm-label="$t('Nesiųsti')"
+    destructive
+    @confirm="confirmDiscard"
+  />
 </template>
 
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { format, parseISO } from 'date-fns';
 import { Mail as MailIcon, RefreshCw as RefreshCwIcon, Trash2 as Trash2Icon } from 'lucide-vue-next';
 
-import AdminContentPage from '@/Components/Layouts/AdminContentPage.vue';
-import { EmptyState, SectionCard, StatTile } from '@/Components/Patterns';
+import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
+import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/Components/ui/alert-dialog';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { useDateLocale } from '@/Composables/useDateLocale';
 
 interface QueuedItem {
@@ -164,16 +144,35 @@ interface Recipient {
   items: QueuedItem[];
 }
 
-// Browser-tested manually; a Pest browser test (tests/Browser/MailQueueTest.php) was removed
-// because the click chain into this page consistently timed out at 15s, likely something
-// elsewhere on the page polling and starving the click — not a bug in this component.
-defineProps<{
-  recipients: Recipient[];
+const props = defineProps<{
+  recipients: {
+    data: Recipient[];
+    current_page: number;
+    last_page: number;
+    total: number;
+    per_page: number;
+  };
   canManage: boolean;
   totals: { items: number; recipients: number };
 }>();
 
 const dateLocale = useDateLocale();
+const source = useDatabaseCollectionSource<Recipient>({
+  endpoint: route('api.v1.admin.mailQueue.index'),
+  initial: {
+    items: props.recipients.data,
+    total: props.recipients.total,
+    perPage: props.recipients.per_page,
+    currentPage: props.recipients.current_page,
+    lastPage: props.recipients.last_page,
+  },
+  defaultSort: 'items_count:desc',
+  sortOptions: () => [
+    { value: 'items_count:desc', label: $t('Daugiausia eilučių') },
+    { value: 'oldest_at:asc', label: $t('Seniausi pirmiau') },
+  ],
+});
+watch(() => props.recipients, () => source.refresh());
 
 // One request at a time, keyed by whatever row triggered it.
 const busyKey = ref<string | number | null>(null);
@@ -195,14 +194,30 @@ const submit = (url: string, key: string | number) => {
   });
 };
 
-const deleteItem = (item: QueuedItem) => submit(route('mailQueue.destroy', item.id), item.id);
+const pendingDiscard = ref<{ url: string; key: string | number; kind: 'item' | 'recipient' | 'all'; count: number } | null>(null);
+const confirmationOpen = computed({
+  get: () => pendingDiscard.value !== null,
+  set: (open: boolean) => { if (!open) pendingDiscard.value = null; },
+});
+const confirmationTitle = computed(() => pendingDiscard.value?.kind === 'all'
+  ? $t('Išvalyti visą laiškų eilę?')
+  : $t('mail_queue.discard_title'));
+const confirmationDescription = computed(() => pendingDiscard.value?.kind === 'all'
+  ? $t('mail_queue.clear_all_warning', { count: props.totals.items, recipients: props.totals.recipients })
+  : $t('mail_queue.discard_warning', { count: pendingDiscard.value?.count ?? 0 }));
 
-const clearRecipient = (recipient: Recipient) =>
-  submit(route('mailQueue.destroyForUser', recipient.user_id), recipient.user_id);
+const requestDeleteItem = (item: QueuedItem) => {
+  pendingDiscard.value = { url: route('mailQueue.destroy', item.id), key: item.id, kind: 'item', count: 1 };
+};
+const requestClearRecipient = (recipient: Recipient) => {
+  pendingDiscard.value = { url: route('mailQueue.destroyForUser', recipient.user_id), key: recipient.user_id, kind: 'recipient', count: recipient.items_count };
+};
+const requestClearAll = () => {
+  pendingDiscard.value = { url: route('mailQueue.destroyAll'), key: 'all', kind: 'all', count: props.totals.items };
+};
+const confirmDiscard = () => {
+  if (!pendingDiscard.value) return;
+  submit(pendingDiscard.value.url, pendingDiscard.value.key);
+};
 
-const clearAll = () => submit(route('mailQueue.destroyAll'), 'all');
-
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm($t('Sistemos būsena'), 'systemStatus', $t('Laiškų eilė')),
-);
 </script>

@@ -5,7 +5,7 @@
  * When user holds Shift and drags on an institution row, a selection
  * rectangle is shown and on mouseup, a check-in creation event is emitted.
  */
-import { ref, onUnmounted, type Ref, type ComputedRef } from 'vue';
+import { ref, getCurrentScope, onScopeDispose, type Ref, type ComputedRef } from 'vue';
 import * as d3 from 'd3';
 
 export interface DragSelectionState {
@@ -80,6 +80,7 @@ export function useDragSelection(
   // Track initial mouse position for distance calculation
   let initialMouseX = 0;
   let dragThresholdMet = false;
+  let trackedContainer: HTMLElement | null = null;
 
   /**
    * Find the layout row at the given Y position
@@ -231,26 +232,29 @@ export function useDragSelection(
    * Returns a cleanup function
    */
   function attachDragHandler(): () => void {
+    cleanup();
     const container = containerRef.value;
     if (!container) return () => {};
 
+    trackedContainer = container;
     container.addEventListener('mousedown', handleMouseDown);
 
     return () => {
-      container.removeEventListener('mousedown', handleMouseDown);
-      // Also clean up any in-progress drag
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('keyup', handleKeyUp);
+      if (trackedContainer === container) {
+        cleanup();
+      }
     };
   }
 
-  // Cleanup on unmount
-  onUnmounted(() => {
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-    document.removeEventListener('keyup', handleKeyUp);
-  });
+  function cleanup() {
+    trackedContainer?.removeEventListener('mousedown', handleMouseDown);
+    trackedContainer = null;
+    cancelDrag();
+  }
+
+  if (getCurrentScope()) {
+    onScopeDispose(cleanup);
+  }
 
   return {
     /** Current drag selection state */
@@ -261,6 +265,7 @@ export function useDragSelection(
     attachDragHandler,
     /** Cancel current drag operation */
     cancelDrag,
+    cleanup,
   };
 }
 

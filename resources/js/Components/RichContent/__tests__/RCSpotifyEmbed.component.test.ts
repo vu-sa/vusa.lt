@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 import { describe, expect, it, vi } from 'vitest';
 
 const darkRef = ref(false);
@@ -17,8 +17,9 @@ function makeElement(overrides: Partial<SpotifyEmbed['json_content']> = {}, opti
 }
 
 describe('RCSpotifyEmbed', () => {
-  it('renders the plain bordered iframe for the default inline variant', () => {
+  it('renders the plain bordered iframe for the default inline variant', async () => {
     const wrapper = mount(RCSpotifyEmbed, { props: { element: makeElement({ url: 'https://open.spotify.com/show/abc' }) } });
+    await nextTick();
 
     expect(wrapper.find('iframe').attributes('src')).toBe('https://open.spotify.com/show/abc?theme=1');
     expect(wrapper.findComponent({ name: 'RCSpotifyPromoDisplay' }).exists()).toBe(false);

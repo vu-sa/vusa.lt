@@ -12,7 +12,7 @@
         <!-- `data-surface="public"` for the same reason the block previews carry it: this renders
              the public site's own menu component, so it should resolve the public palette and
              radius scale rather than admin's. -->
-        <div data-surface="public" class="inline-block border shadow-sm font-public">
+        <div data-surface="public" class="inline-block border font-public">
           <MainNavigationMenuContent :item="toPreviewItem(root)" is-used-without-root are-links-disabled />
         </div>
       </div>

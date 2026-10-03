@@ -6,11 +6,41 @@ Shared instructions for any AI agent (Claude Code, Copilot, Cursor, etc.) workin
 
 **VU SR website (vusa.lt)** — a dual-purpose Laravel app: a **public website** for VU Students' Representation, and an **internal management platform** for student representation work.
 
-**Stack**: Laravel 13+, Vue 3, Inertia.js v3, Tailwind v4, Shadcn Vue, MySQL, Redis, Typesense (public search), Laravel Sail.
+**Stack**: Laravel 13+, Vue 3, Inertia.js v3, Tailwind v4, Shadcn Vue, MySQL, Redis, Typesense (public and admin search), Laravel Sail.
 
 **Local dev**: `http://www.vusa.test` (the `www.` subdomain is required). Test login: `test@test.com` / `password`.
 
 This is a **student-run project**. Prioritize maintainability and approachability over clever solutions.
+
+## Admin UI (Mano VU SA)
+
+**Calm, direct, square** — the public site's paper, ink and VU SA red/amber, hairlines instead of
+boxes, at working density. Every screen answers *what needs me?* before *where can I go?*.
+
+1. **Permissions shape the product** — workspaces, sections and actions appear on `viewAny`/`create`; hidden, never disabled.
+2. **One catalog** (`AdminNavigationCatalog`) feeds every menu; the palette accelerates but never hides.
+3. **Seven page types** — Overview, Collection, Record, Form, Sheet form, Guided flow, Workbench; one canonical page per record.
+4. **Forms edit attributes; relations live on the record.** One create door: **+ Sukurti** → ActionWindow.
+5. **Budgets** — one brand fill per region; uppercase only for primary creation buttons, section titles, form labels, eyebrows, tabs, headlines, and content publishing options (`contentStatuses` / `bannerStatuses`) — every other button, row action, tag, chip (including quick filters and literal resource names) and status badge is sentence case (`voice="sentence"`); status colours are never brand. Pradžia follows the scoped typography exception in `.ai/rules/components-home.md`.
+6. **Phone and tablet are first-class** (390 · 820 · 1180 · 1440, 44px touch, nothing hover-only).
+7. **Speak like a colleague** — *tu*, verbs on buttons, one glossary. The benchmark is a rep finishing an emailed task on a phone in five minutes.
+
+The rules live in `.ai/rules`: `js-pages-admin.md` (page types, anatomy, visual, migrate-on-touch),
+`admin-forms.md`, `single-select.md` (pickers), `css.md` (colour system), `constants.md` (statuses,
+entity types), `shell.md` (navigation), `lang.md` (glossary), `notifications.md`, `home.md` (reps).
+The reasoning behind them is in git history: `git log -- .ai/redesign/admin`. Code comments that cite
+a decision ID (D1–D13, O1–O26, U1–U26, R-a…R-h) or a redesign PR number (e.g. "PR 5.5") refer to
+that folder's `decisions.md`, `reps.md` and `plan.md` — read them with
+`git show $(git log -1 --format=%H -- .ai/redesign/admin/decisions.md)^:.ai/redesign/admin/decisions.md`.
+
+## Public UI
+
+Public pages use the shared paper, ink, and brand palette under `data-surface="public"`.
+`--accent` remains the shadcn hover surface; `--brand` and `--brand-fill` carry VU SA red or amber.
+Build from `ui/` → `Public/Base/` → `Public/<area>/` → `Public/Layouts/` → `Pages/Public/`.
+Use `Public/Base/` for domain-free primitives and `ui/button` for actions. Keep corners square and
+use tokens instead of raw colour utilities. Check both themes and phone layouts. Detailed rules
+live in `.ai/rules/public.md`, `.ai/rules/css.md`, and `resources/js/Components/CLAUDE.md`.
 
 ## Documentation Hub
 
@@ -44,6 +74,8 @@ All Laravel-related commands MUST run through Sail:
 ./vendor/bin/sail npm run test         # frontend (Vitest)
 ./vendor/bin/sail npm run storybook
 ```
+
+**Exception — Claude Code on the web** (`CLAUDE_CODE_REMOTE=true`): Docker images can't be pulled there, so Sail never runs. `.claude/hooks/session-start.sh` installs dependencies natively and writes a SQLite `.env`; drop the `./vendor/bin/sail` prefix (`php artisan test --parallel --compact`, `npm run test`, `vendor/bin/pint --dirty`). MariaDB, Typesense, Reverb and Mailpit are unavailable, so verify with tests, not a running site; tests that opt into real Typesense (`usesTypesense()`) fail with `ConnectException` there — run those in CI.
 
 Note: `npm run typecheck` (`vue-tsc --noEmit`) is available and runs in CI, but is currently **non-blocking** (advisory only). Don't run ESLint fixes or chase typecheck findings unless explicitly asked — verify frontend changes with Vitest instead.
 
@@ -118,10 +150,10 @@ Frontend usage:
 
 ```typescript
 import { useApi } from '@/Composables/useApi';
-import type { TaskIndicatorData } from '@/Types/api.d';
+import type { TutorialProgressData } from '@/Types/api.d';
 
-const { data, isFetching, execute } = useApi<TaskIndicatorData[]>(
-  route('api.v1.admin.tasks.indicator')
+const { data, isFetching, execute } = useApi<TutorialProgressData>(
+  route('api.v1.admin.tutorials.progress')
 );
 ```
 
@@ -147,7 +179,7 @@ permission the actor does not hold resolves to **zero** tenants — never a wide
 
 Always either call `$this->authorize(...)` in controllers or apply the `tenant.permission` middleware. Validate inputs through Form Requests. Return **403** for forbidden, never 302 for direct hits — see "Authorization responses" below.
 
-For tests, prefer the smallest role that covers the case (`'Communication Coordinator'`, `'Resource Manager'`, etc.). Use `config('permission.super_admin_role_name')` only when comprehensive coverage is genuinely needed. See [tests/CLAUDE.md](tests/CLAUDE.md).
+For tests, prefer the smallest role that covers the case (`'Komunikacijos koordinatorius'`, `'Išteklių administratorius'`, etc.). Use `config('permission.super_admin_role_name')` only when comprehensive coverage is genuinely needed. See [tests/CLAUDE.md](tests/CLAUDE.md).
 
 ### Translatable models (Spatie)
 
@@ -178,8 +210,8 @@ Public controllers extending `PublicController` should call `shareOtherLangURL()
 
 ### Search
 
-- Default Scout driver: `database` (`SCOUT_DRIVER` env). Admin searches **must** use it (avoids circular dependencies).
-- Public search: Typesense (fast, typo-tolerant).
+- Default Scout driver: `database` (`SCOUT_DRIVER` env) — used by every model that does not override `searchableUsing()`.
+- Typesense: models that override `searchableUsing()` (users, institutions, duties, meetings, agenda items, documents, resources, pages, news, calendar). Public search and admin collections/search query it from the browser with scoped keys (`useTypesenseCollectionSource`, `Features/Admin/AdminSearch`). Trash views always read the database.
 - Redis: caching + sessions; target >80% hit ratio.
 
 ### Activity log (spatie/laravel-activitylog)
@@ -213,9 +245,9 @@ if ($request->filled('field')) {
 
 ### Component tiers
 
-`ui/` (shadcn primitives) → `Patterns/` (generic: `SectionCard`, `EmptyState`, `EntityLinkCard`, `DateBadge`, `ShowPageGrid`) → entity folders (`Duties/`, `Institutions/`, …) → `Layouts/` → pages. Dependencies run one way only.
+`ui/` (shadcn primitives) → `Patterns/` (generic: `SectionCard`, `EmptyState`, `StatusBadge`, `SheetForm`, `FormSection`, `ConfirmDialog`, …) → entity folders (`Duties/`, `Institutions/`, …) → `Layouts/` (`OverviewPage`, `CollectionPage`, `RecordPage`, `FormPage`) → pages. Dependencies run one way only.
 
-Pages **compose**; they don't hand-roll card chrome. A titled panel is `SectionCard` from `@/Components/Patterns`, not raw `<Card><CardHeader>` — ESLint warns on `ui/card` imports under `Pages/Admin/**`. Admin Show pages use `ShowPageLayout` (`ShowDuty.vue` / `ShowUser.vue` are the reference pages).
+Pages **compose**; they don't hand-roll card chrome. A titled panel is `SectionCard` from `@/Components/Patterns`, not raw `<Card><CardHeader>` — ESLint rejects `ui/card` imports under `Pages/Admin/**`. Admin records use `RecordPage` (`ShowDuty.vue` / `ShowMeeting.vue` are reference pages); collections use `CollectionPage`.
 
 Before adding a card, check the ~40 that exist: `find resources/js -name '*Card*.vue' -not -path '*/ui/*'`.
 
@@ -245,19 +277,16 @@ import { NewsIcon, MeetingIconFilled } from '@/Components/icons';
 ### Data tables (TanStack)
 
 Decision tree:
-- Full admin page (header, breadcrumbs, actions) → `IndexTablePage.vue`
-- Server-side table without page wrapper → `ServerDataTable.vue`
-- Client-side, < 100 items → `SimpleDataTable.vue`
+- Admin collection page → `Layouts/CollectionPage.vue` + `useTypesenseCollectionSource` / `useDatabaseCollectionSource` / `useLocalCollectionSource`; trash is the same page (`?showDeleted=true`)
+- Small table embedded in another page → `SimpleDataTable.vue`
 
 Details: [resources/js/Components/Tables/CLAUDE.md](resources/js/Components/Tables/CLAUDE.md).
 
 ### Breadcrumbs
 
-- Index pages → `IndexPageLayout` (automatic).
-- Form pages → `usePageBreadcrumbs()` + `BreadcrumbHelpers.adminForm()`.
-- Show pages → `usePageBreadcrumbs()` + `BreadcrumbHelpers.adminShow()`.
+Breadcrumbs are used exclusively on public-facing pages (`PublicBreadcrumbs.vue`). The admin shell does not display breadcrumbs — the workspace switcher, section tabs, and page headers establish location.
 
-Details: [resources/js/Composables/BREADCRUMBS_GUIDE.md](resources/js/Composables/BREADCRUMBS_GUIDE.md).
+Source: `resources/js/Composables/useBreadcrumbsUnified.ts`.
 
 ### Inertia `useForm` — clearing dirty state
 
@@ -267,7 +296,7 @@ Details: [resources/js/Composables/BREADCRUMBS_GUIDE.md](resources/js/Composable
 
 ### Feature discovery (spotlights)
 
-New or relocated admin UI — anything a returning user wouldn't think to look for — **must ship with a spotlight** so it's discoverable. Wrap the entry point with `SpotlightPopover` (`@/Components/Onboarding/SpotlightPopover.vue`) and drive its dismissed state with `useFeatureSpotlight('<feature>-v<n>')` (`@/Composables/useFeatureSpotlight.ts`), which persists per-user via the tutorial-progress API. Dismiss it when the user engages the feature (e.g. opens the menu), not only via the popover button. Bump the `-v<n>` suffix when a feature changes enough to warrant re-surfacing. Example: the account-menu spotlight (`sidebar-settings-v1`) in `AppSidebar.vue`.
+New or relocated admin UI — anything a returning user wouldn't think to look for — **must ship with a spotlight** so it's discoverable. Wrap the entry point with `SpotlightPopover` (`@/Components/Onboarding/SpotlightPopover.vue`) and drive its dismissed state with `useFeatureSpotlight('<feature>-v<n>')` (`@/Composables/useFeatureSpotlight.ts`), which persists per-user via the tutorial-progress API. Dismiss it when the user engages the feature (e.g. opens the menu), not only via the popover button. Bump the `-v<n>` suffix when a feature changes enough to warrant re-surfacing. Example: the responsibilities spotlight in `Features/Admin/Responsibilities/DutyResponsibilitiesSection.vue`.
 
 ## Styling (Tailwind v4)
 
@@ -365,7 +394,9 @@ That covers every write path (mass assignment, `update()`, `setTranslations()`, 
 
 ## Changelog
 
-User-facing changes go in `docs/changelog/index.md` (LT) **and** `docs/en/changelog/index.md` (EN). Skip purely internal changes (deps, refactors).
+User-facing changes go in `docs/changelog/v3.md` (LT) **and** `docs/en/changelog/v3.md` (EN) — one file per major version; a new major gets a new `vN.md` pair plus sidebar entries in `docs/.vitepress/{lt,en}.ts`, and the admin "What's new" link follows automatically. Skip purely internal changes (deps, refactors).
+
+Keep changes already on `main` in v2. The current `dev` release candidate is consolidated in v3.0; update its summary instead of adding entries for superseded candidate iterations. Its 2026-10-02 date is the documentation snapshot, not a production deployment date.
 
 Use exactly three emojis:
 - ⭐ new feature
@@ -378,6 +409,14 @@ Use exactly three emojis:
 - 🔧 **Short title** — what changed and the user impact
 - ⭐ **Another change** — what users can now do
 ```
+
+**The changelog says what changed; the guide says how it works now.** A user-facing change or fix
+also updates the guide page for that section (`docs/<workspace>/<section>.md`, see
+`docs/.vitepress/structure.ts`) in the same change — its *Kas ką gali*, statuses or *Susitarimai*
+— and the LT changelog entry links to it (`[plačiau](/rezervacijos/rezervacijos#teises)`). A
+section without a page yet gets its stub filled in. If you touch the tests a page cites, update its
+`tests:` paths and `last_reviewed`. For a notable change, add a `<ChangelogNote>` next to the part of
+the guide page it changed.
 
 ## Database & debugging
 
@@ -392,14 +431,12 @@ Use exactly three emojis:
 
 # Laravel Boost Guidelines
 
-The Laravel Boost guidelines are specifically curated by Laravel maintainers for this application. These guidelines should be followed closely to ensure the best experience when building Laravel applications.
-
 ## Foundational Context
 
-This application is a Laravel application running on PHP 8.5. You are an expert with the Laravel ecosystem. Always use the APIs that match the installed major version of each package — do not assume a version.
+This application is a Laravel application running on PHP 8.5. Always use the APIs that match the installed major version of each package — do not assume a version.
 
 Before relying on a package's API, confirm its installed version:
-- PHP packages: run `composer show --direct` to list direct dependencies with versions, or `composer show <vendor/package>` for a single package.
+- PHP packages: run `vendor/bin/sail composer show --direct` to list direct dependencies with versions, or `vendor/bin/sail composer show <vendor/package>` for a single package.
 - JS packages: check `package.json` for the installed versions.
 
 ## Skills Activation
@@ -423,15 +460,11 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 ## Frontend Bundling
 
-- If the user doesn't see a frontend change reflected in the UI, it could mean they need to run `vendor/bin/sail npm run build`, `vendor/bin/sail npm run dev`, or `vendor/bin/sail composer run dev`. Ask them.
+- If a frontend change doesn't show in the UI or you get a "Unable to locate file in Vite manifest" error, run `vendor/bin/sail npm run build` or ask the user to run `vendor/bin/sail npm run dev` or `vendor/bin/sail composer run dev`.
 
 ## Documentation Files
 
 - You must only create documentation files if explicitly requested by the user.
-
-## Replies
-
-- Be concise in your explanations - focus on what's important rather than explaining obvious details.
 
 === boost rules ===
 
@@ -461,8 +494,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 ## Project Rules
 
-- This project contains committed, area-grouped rules in `.ai/rules` when that directory exists (settled decisions, non-obvious traps, standing constraints). Framework and package guidelines that only apply to specific paths (testing, frontend, components) also live there, under `.ai/rules/boost` — this is not just recorded decisions, it is load-bearing guidance you have not seen inline. Before you enter plan mode or create/edit any file, you MUST first: open @.ai/rules/index.md (it maps file globs to rule files), read every rule file whose globs cover the path(s) in scope, and run `grep -rin 'keyword' .ai/rules` to catch what a path match alone misses. Do not write code until you have read and are following every matching rule. If `.ai/rules` does not exist, continue without it.
-- Record durable rules with `record-rule` so the next agent or teammate inherits them instead of working them out again. Pass a `glob` (e.g. `app/Http/Controllers/**`), a short `title`, and a few-line `note`. Always use `record-rule`, never your native memory or notes tool — native memory is personal and session-scoped; only `.ai/rules` is shared with the team and persists in the repo.
+- This project contains committed, area-grouped rules in `.ai/rules` when that directory exists, including path-scoped framework guidelines under `.ai/rules/boost`. Before you enter plan mode or create/edit any file, you MUST first: open @.ai/rules/index.md (it maps file globs to rule files), read every rule file whose globs cover the path(s) in scope, and run `grep -rin 'keyword' .ai/rules` to catch what a path match alone misses. Do not write code until you have read and are following every matching rule. If `.ai/rules` does not exist, continue without it.
 
 ## Artisan
 
@@ -506,6 +538,16 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
     - Execute Node commands: `vendor/bin/sail npm run dev`
     - Execute PHP scripts: `vendor/bin/sail php [script]`
 - View all available Sail commands by running `vendor/bin/sail` without arguments.
+
+=== tests rules ===
+
+# Test Enforcement
+
+- Add or update tests for behavior and logic changes when a test provides meaningful regression coverage.
+- Pure copy, styling, and layout-only changes do not require new or updated tests.
+- When test coverage applies, run the affected tests and ensure they pass.
+- Test the changed behavior and its important failure modes, but do not add tests beyond them.
+- Read the `testing-best-practices` skill before writing tests.
 
 === inertia-laravel/core rules ===
 
@@ -556,10 +598,6 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Faker: Use methods such as `$this->faker->word()` or `fake()->randomDigit()`. Follow existing conventions whether to use `$this->faker` or `fake()`.
 - When creating tests, make use of `vendor/bin/sail artisan make:test [options] {name}` to create a feature test, and pass `--unit` to create a unit test. Most tests should be feature tests.
 
-## Vite Error
-
-- If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `vendor/bin/sail npm run build` or ask the user to run `vendor/bin/sail npm run dev` or `vendor/bin/sail composer run dev`.
-
 === pint/core rules ===
 
 # Laravel Pint Code Formatter
@@ -578,10 +616,10 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 ## Running Tests
 
-- Run the narrowest set of tests that covers the change. Pass a file path or `--filter=testName` to `vendor/bin/sail artisan test --compact`. Add `--parallel` for anything wider than one file — see [Running backend tests](#running-backend-tests--always---parallel).
+- Run the narrowest set of tests that covers the change. Pass a file path or `--filter=testName` to `vendor/bin/sail artisan test --compact`.
 - Rerun a test after each change to it.
 - Run `vendor/bin/sail bin pest` to call the test runner directly. It accepts the same file path and `--filter=testName` arguments.
-- After the feature tests pass, ask the user to run the complete suite with `vendor/bin/sail artisan test --parallel --compact`.
+- After the feature tests pass, ask the user to run the complete suite with `vendor/bin/sail artisan test --compact`.
 
 === inertia-vue/core rules ===
 
@@ -627,11 +665,8 @@ If `visit()` is undefined (or the package is not installed), **do not install it
 
 ```bash
 composer require pestphp/pest-plugin-browser --dev   # the browser plugin (needs Node.js)
-
 npm install playwright@latest                         # Playwright driver
-
 npx playwright install                                # download the browser binaries
-
 ```
 
 Once the user approves and it's installed, add `tests/Browser/Screenshots` to `.gitignore` so captured screenshots aren't committed. Browser assertions then run through the same `vendor/bin/pest --agent='…'` flow:

@@ -1,18 +1,18 @@
 <template>
-  <div class="space-y-3 rounded-lg border border-zinc-200 bg-zinc-50/60 p-3 dark:border-zinc-700 dark:bg-zinc-900/40">
+  <div class="space-y-3 border border-border bg-card p-3">
     <div class="flex items-center gap-2 text-sm font-medium text-foreground">
       <BarChart3 class="h-4 w-4 text-muted-foreground" />
-      {{ $t('Sukurti apklausą') }}
+      {{ $t('discussions.poll.create_title') }}
     </div>
 
     <!-- Presets -->
     <div class="flex flex-wrap items-center gap-1.5">
-      <span class="text-xs text-muted-foreground">{{ $t('Šablonai') }}:</span>
+      <span class="text-xs text-muted-foreground">{{ $t('discussions.poll.templates') }}:</span>
       <button
         v-for="preset in presets"
         :key="preset.key"
         type="button"
-        class="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-xs text-zinc-600 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+        class="border border-border bg-background px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         @click="applyPreset(preset.labels)"
       >
         {{ preset.label }}
@@ -24,14 +24,14 @@
       <div v-for="(option, index) in options" :key="index" class="flex items-center gap-1.5">
         <Input
           v-model="options[index]"
-          :placeholder="$t('Variantas :n', { n: index + 1 })"
+          :placeholder="$t('discussions.poll.option_placeholder', { n: index + 1 })"
           class="h-8"
         />
         <button
           v-if="options.length > 2"
           type="button"
-          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-zinc-100 hover:text-destructive dark:hover:bg-zinc-800"
-          :title="$t('Pašalinti')"
+          class="flex size-9 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-destructive pointer-coarse:size-11"
+          :title="$t('discussions.poll.remove_option')"
           @click="options.splice(index, 1)"
         >
           <X class="h-4 w-4" />
@@ -40,11 +40,11 @@
       <button
         v-if="options.length < 10"
         type="button"
-        class="inline-flex items-center gap-1 text-xs text-vusa-red transition-colors hover:underline"
+        class="inline-flex items-center gap-1 text-xs text-brand transition-colors hover:underline"
         @click="options.push('')"
       >
         <Plus class="h-3.5 w-3.5" />
-        {{ $t('Pridėti variantą') }}
+        {{ $t('discussions.poll.add_option') }}
       </button>
     </div>
 
@@ -52,13 +52,13 @@
     <div class="space-y-2 text-sm">
       <label class="flex items-center gap-2">
         <Switch v-model="allowMultiple" />
-        <span class="text-xs text-foreground">{{ $t('Galima rinktis kelis') }}</span>
+        <span class="text-xs text-foreground">{{ $t('discussions.poll.allow_multiple') }}</span>
       </label>
       <div class="space-y-1">
-        <span class="text-xs text-muted-foreground">{{ $t('Uždaryti (nebūtina)') }}</span>
+        <span class="text-xs text-muted-foreground">{{ $t('discussions.poll.close_optional') }}</span>
         <DateTimePicker
           v-model="closesAt"
-          :placeholder="$t('Pasirinkite datą')"
+          :placeholder="$t('Pasirink datą')"
           :min-date="minCloseDate"
         />
       </div>

@@ -49,12 +49,11 @@ class ImpersonateApiController extends ApiController
         $user = $this->requireAuth($request);
         $this->guardSuperAdmin($user);
 
-        $target = User::findOrFail($request->input('user_id'));
-
-        if ($target->isSuperAdmin()) {
-            return $this->jsonError('Cannot impersonate a super admin.', 403);
+        if ($request->session()->has('impersonator_id')) {
+            return $this->jsonError('Stop the current impersonation before starting another.', 409);
         }
 
+        $target = User::findOrFail($request->validated('user_id'));
         $request->session()->put('impersonator_id', $user->id);
 
         Auth::login($target);

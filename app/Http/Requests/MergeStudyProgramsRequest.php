@@ -14,7 +14,21 @@ class MergeStudyProgramsRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can('create', StudyProgram::class);
+        $target = StudyProgram::find($this->input('target_study_program_id'));
+        $sourceIds = (array) $this->input('source_study_program_ids', []);
+
+        if (! $target) {
+            return true;
+        }
+
+        if (! $this->user()->can('update', $target)) {
+            return false;
+        }
+
+        $sources = StudyProgram::query()->whereIn('id', $sourceIds)->get();
+
+        return $sources->count() !== count($sourceIds)
+            || $sources->every(fn (StudyProgram $source): bool => $this->user()->can('delete', $source));
     }
 
     /**
@@ -27,7 +41,7 @@ class MergeStudyProgramsRequest extends FormRequest
         return [
             'target_study_program_id' => ['required', SoftDeleteRules::existsLive('study_programs')],
             'source_study_program_ids' => 'required|array|min:1',
-            'source_study_program_ids.*' => ['required', SoftDeleteRules::existsLive('study_programs'), 'different:target_study_program_id'],
+            'source_study_program_ids.*' => ['required', 'distinct', SoftDeleteRules::existsLive('study_programs'), 'different:target_study_program_id'],
         ];
     }
 

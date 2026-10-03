@@ -3,7 +3,7 @@
     :title="$t('action_window.check_in.review.title')"
     :subtitle="$t('action_window.check_in.review.subtitle')"
   >
-    <dl class="divide-y divide-border overflow-hidden rounded-xl border border-border">
+    <dl class="divide-y divide-border border-y border-border">
       <ReviewRow
         :label="$t('action_window.meeting.review.institution')"
         :value="draft.institution?.name"
@@ -28,10 +28,9 @@
     </div>
 
     <template #footer>
-      <Button class="w-full" size="lg" :disabled="submitting" @click="submit">
-        <Loader2 v-if="submitting" class="mr-2 size-4 animate-spin" />
+      <ActionWindowPrimaryButton :loading="submitting" @click="submit">
         {{ submitting ? $t('action_window.check_in.review.submitting') : $t('action_window.check_in.review.submit') }}
-      </Button>
+      </ActionWindowPrimaryButton>
     </template>
   </ActionWindowScreen>
 </template>
@@ -39,15 +38,14 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Loader2 } from 'lucide-vue-next';
 
+import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
 import ReviewRow from '../ReviewRow.vue';
 import { useWindowDates } from '../useWindowDates';
 
 import { useActionWindow, type ScreenId } from '@/Composables/useActionWindow';
 import { invalidateActionWindowData } from '@/Composables/useActionWindowData';
-import { Button } from '@/Components/ui/button';
 import { Label } from '@/Components/ui/label';
 import { Textarea } from '@/Components/ui/textarea';
 

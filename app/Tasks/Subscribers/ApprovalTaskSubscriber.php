@@ -59,15 +59,16 @@ class ApprovalTaskSubscriber
     {
         $approvable = $event->approvable;
         $reason = __('Approval decision was made');
+        $decider = $event->approval->user;
 
-        $this->approvalHandler->completeForModel($approvable, $reason);
+        $this->approvalHandler->completeForModel($approvable, $reason, $decider);
 
         // ReservationResource tasks are attached to the parent Reservation.
         if (method_exists($approvable, 'reservation')) {
             $reservation = $approvable->reservation()->first();
 
             if ($reservation) {
-                $this->approvalHandler->completeForModel($reservation, $reason);
+                $this->approvalHandler->completeForModel($reservation, $reason, $decider);
             }
         }
     }

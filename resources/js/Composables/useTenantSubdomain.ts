@@ -10,3 +10,14 @@ export function resolveTenantSubdomain(tenantId?: number): string {
 
   return !alias || alias === 'vusa' ? 'www' : alias;
 }
+
+/** A tenant's public host without scheme, e.g. `mif.vusa.lt` — what permalink fields show before the path. */
+export function resolveTenantPublicHost(tenantId?: number): string {
+  // app.url is the main tenant's own URL ("https://www.vusa.test"); drop its "www." so the
+  // main tenant doesn't double up into "www.www.vusa.test".
+  const rootDomain = (usePage().props.app?.url ?? 'https://vusa.lt')
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '');
+
+  return `${resolveTenantSubdomain(tenantId)}.${rootDomain}`;
+}

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\CalendarHeroStyleEnum;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\IcalendarService;
 use App\Services\PublicUrlService;
 use App\Support\LocalizedRouteSlugs;
@@ -44,7 +45,6 @@ use Spatie\SchemaOrg\Place;
  * @property array|string|null $organizer
  * @property array|string|null $cto_url URL for Call To Action
  * @property string|null $facebook_url
- * @property string|null $video_url
  * @property string|null $main_image_focal_point
  * @property bool $is_draft
  * @property bool $is_all_day
@@ -141,8 +141,7 @@ class Calendar extends Model implements HasMedia
      * Restricts to one event type, by slug. A no-op when `$slug` is null/empty — callers
      * don't need to guard the call themselves. The event type is a grouping key, not a
      * publication gate — a trashed event type (e.g. a retired campaign) must still work
-     * as a filter for the events that already carry it. See the identical rationale in
-     * PublicPageController::summerCamps().
+     * as a filter for the events that already carry it.
      */
     #[Scope]
     protected function ofEventType($query, ?string $slug)
@@ -196,8 +195,8 @@ class Calendar extends Model implements HasMedia
     protected static function booted()
     {
         static::saved(function (self $calendar): void {
-            // Flush calendar cache for all locales since calendar events can be international
-            Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
+            Cache::tags(['calendar'])->flush();
+            Cache::tags([ContentPartResolver::CACHE_TAG])->flush();
             // Also clear the specific iCal cache keys used by IcalendarService
             IcalendarService::clearCache();
             $calendar->syncMeetingDocumentsSearchIndex();
@@ -229,8 +228,8 @@ class Calendar extends Model implements HasMedia
         });
 
         static::deleted(function ($calendar): void {
-            // Flush calendar cache for all locales since calendar events can be international
-            Cache::tags(['calendar', 'locale_lt', 'locale_en'])->flush();
+            Cache::tags(['calendar'])->flush();
+            Cache::tags([ContentPartResolver::CACHE_TAG])->flush();
             // Also clear the specific iCal cache keys used by IcalendarService
             IcalendarService::clearCache();
             $calendar->syncMeetingDocumentsSearchIndex();

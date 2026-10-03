@@ -80,7 +80,7 @@
  * type-specific editing already on the cell (live tiptap text, RCImageHotspot, card
  * inline fields). Every column gets exactly one of these, at a fixed corner, regardless
  * of content type: this is "the column's own popover", not folded into the block-level
- * More Options toolbar. See RICH_CONTENT_EDITOR.md.
+ * More Options toolbar. See .ai/rules/rich-content.md.
  */
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';

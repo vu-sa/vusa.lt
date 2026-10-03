@@ -1,1 +1,0 @@
-Changing the reservation time will clear the selected resources.  The number of resources displayed is **automatically calculated for the specified reservation period.**

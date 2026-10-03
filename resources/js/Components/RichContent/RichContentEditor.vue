@@ -11,20 +11,20 @@
     />
 
     <!-- Launcher Card (Primary Form View) -->
-    <div class="rounded-xl border border-zinc-200 bg-white p-4 shadow-xs dark:border-zinc-800 dark:bg-zinc-900/50">
+    <div class="border border-border bg-background p-4">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div class="space-y-1">
           <div class="flex items-center gap-2">
-            <h4 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <h4 class="text-sm font-bold text-foreground">
               {{ $t('rich-content.content') }}
             </h4>
-            <Badge variant="secondary" size="sm">
+            <span class="inline-flex items-center border border-border bg-secondary/60 px-2 py-0.5 text-xs font-medium normal-case text-muted-foreground">
               {{ (contents?.length ?? 0) === 0
                 ? $t('rich-content.content_empty')
                 : $tChoice('rich-content.blocks_count', contents?.length ?? 0) }}
-            </Badge>
+            </span>
           </div>
-          <p class="text-xs text-zinc-500 dark:text-zinc-400">
+          <p class="text-xs leading-relaxed text-muted-foreground">
             {{ (contents?.length ?? 0) === 0
               ? $t('rich-content.content_empty_description')
               : $t('rich-content.fullscreen_editable_hint') }}
@@ -32,31 +32,23 @@
         </div>
 
         <div class="flex items-center">
-          <SpotlightPopover
-            :title="$t('rich-content.spotlight.title')"
-            :description="$t('rich-content.spotlight.description')"
-            :is-dismissed="editorSpotlight.isDismissed.value"
-            position="top-right"
-            @dismiss="editorSpotlight.dismiss"
-          >
-            <Button type="button" @click="handleOpenEditor">
-              <IFluentEdit24Regular class="mr-1.5 size-4" />
-              {{ $t('rich-content.edit_content') }}
-            </Button>
-          </SpotlightPopover>
+          <Button type="button" variant="outline" class="gap-1.5" @click="isFullscreenOpen = true">
+            <Pencil class="size-4" />
+            {{ $t('rich-content.edit_content') }}
+          </Button>
         </div>
       </div>
 
       <!-- Compact preview chips of existing blocks -->
-      <div v-if="(contents?.length ?? 0) > 0" class="mt-3 flex flex-wrap gap-1.5 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+      <div v-if="(contents?.length ?? 0) > 0" class="mt-3 flex flex-wrap gap-1.5 border-t border-border pt-3">
         <div
           v-for="(item, idx) in contents"
           :key="item?.id ?? item?.key ?? idx"
-          class="flex items-center gap-1.5 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs text-zinc-700 dark:border-zinc-800 dark:bg-zinc-800/60 dark:text-zinc-300"
+          class="flex items-center gap-1.5 border border-border bg-secondary/40 px-2.5 py-1 text-xs text-foreground"
         >
-          <component :is="getContentType(item.type).icon" class="size-3.5 text-zinc-500" />
+          <component :is="getContentType(item.type).icon" class="size-3.5 text-muted-foreground" />
           <span class="font-medium">{{ getContentType(item.type).label }}</span>
-          <span v-if="deriveBlockSummary(item) !== '—'" class="max-w-[14rem] truncate text-zinc-400">
+          <span v-if="deriveBlockSummary(item) !== '—'" class="max-w-[14rem] truncate text-muted-foreground">
             · {{ deriveBlockSummary(item) }}
           </span>
         </div>
@@ -69,16 +61,13 @@
 import { onMounted, ref } from 'vue';
 import { useManualRefHistory } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
+import { Pencil } from 'lucide-vue-next';
 
 import RCFullscreenEditor from './Editor/Fullscreen/RCFullscreenEditor.vue';
 import { deriveBlockSummary } from './Editor/blockSummary';
 import { getContentType, type ContentPart } from './Types';
 
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
-import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import IFluentEdit24Regular from '~icons/fluent/edit24-regular';
 
 defineProps<{
   maxContentBlocks?: number;
@@ -109,11 +98,4 @@ onMounted(() => {
 const { commit, undo, redo, canUndo, canRedo } = useManualRefHistory(contents, { clone: true, capacity: 30 });
 
 const isFullscreenOpen = ref(false);
-
-const editorSpotlight = useFeatureSpotlight('rich-content-fullscreen-v1');
-
-function handleOpenEditor(): void {
-  editorSpotlight.dismiss();
-  isFullscreenOpen.value = true;
-}
 </script>

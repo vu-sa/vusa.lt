@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'group relative flex h-full flex-col rounded-lg border border-border bg-card p-4',
+      'group relative flex h-full flex-col border border-border bg-card p-4',
       interactiveCardClass,
       muted && 'opacity-70',
     ]"
@@ -121,7 +121,9 @@ const contactEmail = computed(() => props.duty.pivot?.additional_email || props.
 
 const tenureLabel = computed(() => {
   const start = props.duty.pivot?.start_date;
-  if (!start) { return ''; }
+  if (!start) {
+    return '';
+  }
   const monthAndYear: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short' };
   const startLabel = formatStaticTime(new Date(start), monthAndYear, locale.value);
   const end = props.duty.pivot?.end_date;

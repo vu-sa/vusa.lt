@@ -344,6 +344,10 @@ export interface MeetingSearchResult {
   vote_alignment_status?: string;
   institution_type_title?: string;
   agenda_items_count?: number;
+  votes_count?: number;
+  /** MeetingType value: `in-person`, `remote` or `email`. */
+  type?: string;
+  institution_type_ids?: number[];
   year?: number;
   user_names?: string[];
 }
@@ -400,6 +404,7 @@ export interface PageSearchResult {
   lang: string;
   tenant_id?: number;
   tenant_name?: string;
+  tenant_shortname?: string;
   /** Only present in the admin `pages` index — the public index drops it. */
   is_active?: boolean;
 }
@@ -435,6 +440,7 @@ export interface InstitutionSearchResult {
   type_titles?: string[];
   current_user_names?: string[];
   duty_names?: string[];
+  type_ids?: number[];
 }
 
 /**

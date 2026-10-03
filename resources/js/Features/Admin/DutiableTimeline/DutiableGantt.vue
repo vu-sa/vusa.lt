@@ -1,13 +1,12 @@
 <template>
   <!--
-    Fills the space the editor gives it, but never more than its own content needs: with
-    four rows the box ends after the fourth lane and the dock rises to meet it, with forty
-    it stops at the available height and scrolls inside.
+    Never taller than its own content, never taller than the space the editor gives it:
+    four rows end after the fourth lane, forty stop at the available height and scroll inside.
   -->
   <div
     data-slot="dutiable-gantt"
-    class="flex min-h-0 flex-auto overflow-hidden rounded-md border border-border"
-    :style="{ maxHeight: `${maxHeightPx}px` }"
+    class="flex min-h-0 overflow-hidden border border-border"
+    :style="{ maxHeight: `min(${maxHeightPx}px, 100%)` }"
   >
     <!-- Label column. Scrolls vertically in lockstep with the chart, never horizontally. -->
     <div
@@ -38,7 +37,7 @@
         <!-- Only where a programme is actually recorded: a sort nobody can use is noise. -->
         <DropdownMenu v-if="sortable">
           <DropdownMenuTrigger as-child>
-            <Button type="button" size="xs" variant="ghost" class="min-w-0 px-1.5 text-[11px] font-normal">
+            <Button type="button" size="xs" variant="ghost" class="min-w-0 px-1.5 text-xs font-normal">
               <ArrowDownNarrowWide class="size-3.5 shrink-0" />
               <span class="truncate">{{ $t(`dutiables.timeline.sort.${sortMode}`) }}</span>
             </Button>
@@ -74,7 +73,7 @@
             >
               <button
                 type="button"
-                class="shrink-0 rounded p-0.5 hover:bg-accent"
+                class="shrink-0 p-0.5 hover:bg-accent"
                 :aria-label="collapsed.has(lane.key)
                   ? $t('dutiables.timeline.expand_group')
                   : $t('dutiables.timeline.collapse_group')"
@@ -99,7 +98,7 @@
               <span v-else class="truncate" :title="lane.group.label">{{ lane.group.label }}</span>
               <span
                 v-if="lane.group.sublabel"
-                class="truncate text-[10px] font-normal text-muted-foreground"
+                class="truncate text-xs font-normal text-muted-foreground"
                 :title="lane.group.sublabel"
               >
                 {{ lane.group.sublabel }}
@@ -110,18 +109,18 @@
                 <Badge
                   variant="secondary"
                   data-slot="group-row-count"
-                  class="ml-auto shrink-0 px-1 py-0 text-[10px] font-normal"
+                  class="ml-auto shrink-0 px-1 py-0 text-xs font-normal"
                 >
                   {{ groupSummaries.get(lane.key)!.count }}
                 </Badge>
-                <span class="shrink-0 whitespace-nowrap text-[10px] font-normal tabular-nums opacity-60">
+                <span class="shrink-0 whitespace-nowrap text-xs font-normal tabular-nums opacity-60">
                   {{ formatDuration(groupSummaries.get(lane.key)!.start, groupSummaries.get(lane.key)!.end) }}
                 </span>
               </template>
             </div>
             <div
               v-else
-              class="flex items-center gap-1.5 truncate px-2 pl-4 text-[11px] text-muted-foreground"
+              class="flex items-center gap-1.5 truncate px-2 pl-4 text-xs text-muted-foreground"
               :class="{ 'bg-accent/60': lane.row && selectedIds.has(lane.row.id) }"
               :style="{ height: `${lane.height}px` }"
             >
@@ -147,14 +146,14 @@
                 answers "there is one" when the question is "which".
               -->
               <span
-                v-if="lane.row?.extras?.study_program"
-                class="max-w-20 shrink truncate text-[10px] opacity-70"
+                v-if="lane.row?.extras?.study_program && !narrowLabels"
+                class="max-w-20 shrink truncate text-xs opacity-70"
                 :title="lane.row.extras.study_program"
               >
                 {{ lane.row.extras.study_program }}
               </span>
               <DutiableExtrasBadge
-                v-if="lane.row?.extras"
+                v-if="lane.row?.extras && !narrowLabels"
                 :extras="lane.row.extras"
                 :omit="['study_program']"
               />
@@ -164,8 +163,8 @@
                 Two units at most, so a fortnight and a decade take the same room.
               -->
               <span
-                v-if="lane.row"
-                class="ml-auto shrink-0 whitespace-nowrap text-[10px] tabular-nums opacity-60"
+                v-if="lane.row && !narrowLabels"
+                class="ml-auto shrink-0 whitespace-nowrap text-xs tabular-nums opacity-60"
                 :title="$t('dutiables.timeline.duration.label')"
               >
                 {{ formatDuration(lane.row.startDate, lane.row.endDate) }}
@@ -286,10 +285,14 @@ const labelScroller = ref<HTMLElement | null>(null);
 const chartSvg = ref<SVGSVGElement | null>(null);
 const headerSvg = ref<SVGSVGElement | null>(null);
 
-const labelWidth = ref(260);
+// A phone cannot spare 260px of names, or the chart is left a sliver; the handle still widens it.
+const labelWidth = ref(typeof window !== 'undefined' && window.innerWidth < 640 ? 150 : 260);
 const scrollTop = ref(0);
 const colors = shallowRef(getGanttColors(isDarkModeActive()));
 const timelineColors = shallowRef(getTimelineColors(isDarkModeActive()));
+
+/** Below this the name is what matters; extras and duration would squeeze it to nothing. */
+const narrowLabels = computed(() => labelWidth.value < 200);
 
 const { startResize } = useColumnResize(
   (width) => { labelWidth.value = width; },

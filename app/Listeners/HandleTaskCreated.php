@@ -4,7 +4,6 @@ namespace App\Listeners;
 
 use App\Events\TaskCreated;
 use App\Models\Institution;
-use App\Models\Task;
 use App\Notifications\InstitutionActivityNotification;
 use App\Notifications\TaskAssignedNotification;
 use App\Tasks\Enums\ActionType;
@@ -17,18 +16,15 @@ class HandleTaskCreated implements ShouldQueue
     {
         $task = $event->task;
 
-        // Check if task is instance of Task
-        if (! $task instanceof Task) {
+        // ApprovalRequestedNotification already asks the approvers; a task notice would repeat it.
+        if ($task->action_type === ActionType::Approval) {
             return;
         }
-
-        // Get the user who created the task (the assigner)
-        $assigner = auth()->user();
 
         $notification = $task->action_type === ActionType::PeriodicityGap
             && $task->taskable instanceof Institution
             ? new InstitutionActivityNotification($task, $task->taskable)
-            : new TaskAssignedNotification($task, $assigner);
+            : new TaskAssignedNotification($task, $event->assigner);
 
         Notification::send($task->notifiableUsers(), $notification);
     }

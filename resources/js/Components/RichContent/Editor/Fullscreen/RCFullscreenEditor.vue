@@ -1,21 +1,23 @@
 <template>
-  <Dialog :open="true" @update:open="v => !v && $emit('close')">
-    <DialogContent
-      class="fixed inset-0 top-0 left-0 block h-[100dvh] w-screen max-w-none overflow-hidden translate-x-0 translate-y-0 gap-0 rounded-none border-0 p-0 sm:max-w-none"
+  <component :is="embedded ? 'div' : Dialog" :class="embedded ? 'flex min-h-0 flex-1 flex-col' : undefined" :open="true" @update:open="v => !v && $emit('close')">
+    <component :is="embedded ? 'div' : DialogContent"
+      :class="embedded ? 'relative min-h-0 flex-1 overflow-hidden border border-border' : 'fixed inset-0 top-0 left-0 block h-[100dvh] w-screen max-w-none overflow-hidden translate-x-0 translate-y-0 gap-0 rounded-none border-0 p-0 sm:max-w-none'"
       :show-close-button="false"
     >
-      <DialogTitle class="sr-only">
+      <component :is="embedded ? 'h2' : DialogTitle" class="sr-only">
         {{ $t('rich-content.fullscreen_editor') }}
-      </DialogTitle>
+      </component>
       <div data-surface="public" class="@container flex h-full min-h-0 flex-col overflow-x-clip bg-background text-foreground font-public">
         <div ref="toolbarPortalRef" data-rc-smart-toolbar-portal />
 
-        <div class="z-40 flex shrink-0 items-center gap-2 border-b border-border bg-background/95 px-4 py-2 backdrop-blur">
-          <Button size="icon-xs" variant="ghost" :title="$t('rich-content.close_fullscreen_editor')" @click="$emit('close')">
+        <div class="z-40 flex shrink-0 flex-wrap items-center gap-2 border-b border-border bg-background/95 px-3 py-2 backdrop-blur">
+          <Button v-if="!embedded" type="button" size="icon" class="size-11" variant="ghost" :title="$t('rich-content.close_fullscreen_editor')" @click="$emit('close')">
             <IFluentDismiss24Regular class="size-4" />
           </Button>
           <Button
-            size="icon-xs"
+            type="button"
+            size="icon"
+            class="size-11"
             variant="ghost"
             :aria-pressed="isPreviewing"
             :title="isPreviewing ? $t('rich-content.switch_to_edit') : $t('rich-content.switch_to_preview')"
@@ -25,18 +27,18 @@
             <IFluentEye24Regular v-else class="size-4" />
           </Button>
           <ButtonGroup>
-            <Button size="icon-xs" variant="outline" :disabled="!history.canUndo" @click="history.undo()">
+            <Button type="button" size="icon" class="size-11" variant="outline" :title="$t('Atšaukti')" :disabled="!history.canUndo" @click="history.undo()">
               <IFluentArrowUndo24Filled class="size-3.5" />
             </Button>
-            <Button size="icon-xs" variant="outline" :disabled="!history.canRedo" @click="history.redo()">
+            <Button type="button" size="icon" class="size-11" variant="outline" :title="$t('editor.redo')" :disabled="!history.canRedo" @click="history.redo()">
               <IFluentArrowRedo24Filled class="size-3.5" />
             </Button>
           </ButtonGroup>
-          <DarkModeButton size="icon-xs" />
-          <div class="ml-auto hidden items-center gap-2 sm:flex">
+          <DarkModeButton size="icon" class="size-11" />
+          <div class="ml-auto hidden items-center gap-2 @min-[900px]:flex">
             <span
               :class="[
-                'rounded-full px-2.5 py-1 text-xs font-semibold',
+                'px-2.5 py-1 text-xs font-semibold',
                 isPreviewing
                   ? 'bg-muted text-muted-foreground'
                   : 'bg-vusa-red/10 text-vusa-red dark:bg-vusa-red/20',
@@ -48,64 +50,56 @@
               {{ isPreviewing ? $t('rich-content.preview_mode_hint') : $t('rich-content.edit_mode_hint') }}
             </span>
           </div>
-          <Button size="sm" @click="$emit('save')">
+          <SpotlightPopover :title="$t('editor.outline')" :description="$t('editor.outline_hint')" :is-dismissed="outlineSpotlight.isDismissed.value" @dismiss="outlineSpotlight.dismiss">
+            <Button type="button" variant="outline" class="min-h-11 min-w-11" :title="$t('editor.outline')" :aria-label="$t('editor.outline')" :aria-expanded="outlineOpen" @click="outlineOpen = !outlineOpen; outlineSpotlight.dismiss()">
+              <ListTree class="size-4" aria-hidden="true" /><span class="hidden @min-[600px]:inline">{{ $t('editor.outline') }}</span>
+            </Button>
+          </SpotlightPopover>
+          <Button type="button" size="sm" class="ml-auto min-h-11" data-testid="fullscreen-save" :disabled="context?.form.processing || (context && !context.ready.value)" @click="context ? context.save() : $emit('save')">
             <IFluentSave24Regular class="size-4" />
-            {{ $t('Išsaugoti') }}
+            {{ $t(context?.form.processing ? 'editor.saving' : 'Išsaugoti') }}
           </Button>
         </div>
 
-        <div data-rc-fullscreen-scroll class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <main ref="canvasRef" class="rc-canvas mx-auto py-20 md:py-28" style="--rc-measure: 44rem">
-            <div
-              v-for="(content, index) in contents ?? []" :key="getBlockKey(content)"
-              :class="['relative', blockLayoutClasses(content)]"
-              :data-rc-block-key="getBlockKey(content)"
-            >
-              <RCInsertAffordance
-                v-if="!isPreviewing"
-                :quick-add-types
-                @insert="insertAt($event, index)"
-                @more="openInsertMenuAt(index)"
-              />
-              <RCFullscreenBlock
-                :content
-                :resolved="resolvedFor(content)"
-                :band="bandMap.get(content)"
-                :block-key="getBlockKey(content)"
-                :can-move-up="index > 0"
-                :can-move-down="(contents?.length ?? 0) > index + 1"
-                :can-delete="(contents?.length ?? 0) > 1"
-                :preview="isPreviewing"
-                @update:content="(val) => { contents![index] = val; }"
-                @move-up="moveBlock(index, index - 1)"
-                @move-down="moveBlock(index, index + 1)"
-                @open-form="sideBySideContent = content"
-                @delete="removeAt(index)"
-              />
-            </div>
+        <p v-if="context?.error.value" class="border-b border-border px-4 py-2 text-sm text-destructive" role="alert">
+          {{ context.error.value }}
+        </p>
+        <div class="relative flex min-h-0 flex-1">
+          <nav v-if="outlineOpen" :aria-label="$t('editor.outline')" class="absolute inset-y-0 left-0 z-40 w-72 max-w-[85vw] overflow-y-auto border-r border-border bg-background p-3 shadow-lg">
+            <Button v-for="part in contents ?? []" :key="getBlockKey(part)" type="button" variant="ghost" class="min-h-11 w-full justify-start whitespace-normal text-left" @click="scrollToBlock(getBlockKey(part)); outlineOpen = false">
+              {{ getContentType(part.type).label }} · {{ deriveBlockSummary(part) }}
+            </Button>
+            <Button v-for="anchor in outlineAnchors" :key="anchor.href" type="button" variant="ghost" class="min-h-11 w-full justify-start" @click="scrollToAnchor(anchor.href)">
+              {{ anchor.title }}
+            </Button>
+          </nav>
+          <div ref="scrollRoot" data-rc-fullscreen-scroll class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+            <main ref="canvasRef" class="rc-canvas mx-auto py-20 md:py-28" style="--rc-measure: 44rem">
+              <RCFullscreenCanvasGroup v-for="group in groups" :key="getBlockKey(group.element)" v-model:contents="contents" :group :resolved="resolvedByBlockKey" :bands="bandMap" :preview="isPreviewing" @insert="insertAt" @more="openInsertMenuAt" @move="moveBlock" @remove="removeAt" @form="sideBySideContent = $event" />
 
-            <p v-if="(contents?.length ?? 0) === 0 && !isPreviewing" class="py-16 text-center text-sm text-zinc-400">
-              {{ $t('rich-content.fullscreen_empty') }}
-            </p>
+              <p v-if="(contents?.length ?? 0) === 0 && !isPreviewing" class="py-16 text-center text-sm text-zinc-400">
+                {{ $t('rich-content.fullscreen_empty') }}
+              </p>
 
-            <!-- Trailing insert affordance: doubles as "add the first block" when the
+              <!-- Trailing insert affordance: doubles as "add the first block" when the
                document is empty (appendType/insertAt(0) are the same operation on an
                empty array), so no separate empty-state control is needed. Always visible
                (not hover-only) — it's the one spot with no block below it whose hover a
                user could stumble onto to discover the control. -->
-            <div v-if="!isPreviewing" class="relative">
-              <RCInsertAffordance
-                :quick-add-types
-                always-visible
-                @insert="appendType($event)"
-                @more="openInsertMenuAt(contents?.length ?? 0)"
-              />
-            </div>
-          </main>
+              <div v-if="!isPreviewing" class="relative">
+                <RCInsertAffordance
+                  :quick-add-types
+                  always-visible
+                  @insert="appendType($event)"
+                  @more="openInsertMenuAt(contents?.length ?? 0)"
+                />
+              </div>
+            </main>
+          </div>
         </div>
       </div>
-    </DialogContent>
-  </Dialog>
+    </component>
+  </component>
 
   <!-- "Open in form" escape hatch — the exact same dialog forms mode uses. -->
   <RCSideBySideDialog
@@ -125,33 +119,29 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Full-screen editing mode: authors see the real rendered page, edit text in place, and
- * reach structured fields through contextual popovers anchored to the element they
- * clicked (see `useActiveHotspot.ts`) — no persistent side panel. Additive — the
- * form-based editor (`RichContentEditor.vue`'s default view) stays as the data layer and
- * the "open full form" escape hatch for every type (not just the ones migrated to
- * inline editing — see `RCBlockToolbarShell.vue`'s docblock).
- *
- * `resolveBands(contents)` runs once here, the same way `RichContentParser` runs it for
- * the public page, so alternation here always matches what will actually publish.
- */
-import { computed, provide, ref, watch } from 'vue';
+import { computed, inject, provide, ref, watch } from 'vue';
+import { ListTree } from 'lucide-vue-next';
 import { moveArrayElement } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { CONTENT_EDITOR_CONTEXT } from '../../contentEditorContext';
+import { groupContent } from '../../groupContent';
+import { collectHeadingIds, normalizeHeadingAnchors } from '../../headingAnchors';
+import { extractAnchorLinks, type AnchorablePart } from '../../tocAnchors';
+import { deriveBlockSummary } from '../blockSummary';
 import BlockPickerDialog from '../../BlockPickerDialog.vue';
 import RCInsertAffordance from '../RCInsertAffordance.vue';
 import RCSideBySideDialog from '../RCSideBySideDialog.vue';
-import { blockLayoutClasses } from '../../blockLayout';
 import { getQuickAddTypes } from '../quickAddTypes';
 import { useContentPartPreview } from '../../composables/useContentPartPreview';
 import { createContentItem, getContentType, type ContentPart } from '../../Types';
 import { resolveBands, type BandResolution } from '../../bandLayout';
 
+import RCFullscreenCanvasGroup from './RCFullscreenCanvasGroup.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from './useActiveHotspot';
-import RCFullscreenBlock from './RCFullscreenBlock.vue';
 
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { SMART_TIPTAP_TOOLBAR_PORTAL_KEY } from '@/Components/TipTap/smartToolbarPortal';
 import { Button } from '@/Components/ui/button';
 import { ButtonGroup } from '@/Components/ui/button-group';
@@ -166,10 +156,8 @@ import IFluentSave24Regular from '~icons/fluent/save24-regular';
 
 const props = defineProps<{
   tenantId?: number | null;
-  /** The same undo history hoisted in `RichContentEditor.vue` — keystrokes inside an
-   *  inline field are deliberately NOT committed here; Tiptap/the browser's own
-   *  contenteditable undo owns those. `commit()` brackets every structural mutation
-   *  (insert/move/delete/presentation change) below. */
+  embedded?: boolean;
+  /** Structural history stays separate from each text editor's undo history. */
   history: {
     commit: () => void;
     undo: () => void;
@@ -186,7 +174,20 @@ defineEmits<{
 
 const contents = defineModel<ContentPart[]>('contents');
 const isPreviewing = ref(false);
+const context = inject(CONTENT_EDITOR_CONTEXT, null);
+const outlineOpen = ref(false);
+const outlineSpotlight = useFeatureSpotlight('content-editor-outline-v1');
+const groups = computed(() => groupContent(contents.value ?? []));
+const outlineAnchors = computed(() => extractAnchorLinks(contents.value as AnchorablePart[]).flatMap(anchor => [anchor, ...anchor.children]));
+// Anchors already in the document may be linked to from elsewhere, so a retitle keeps them.
+const lockedHeadingIds = collectHeadingIds(contents.value);
+watch(contents, value => normalizeHeadingAnchors(value, lockedHeadingIds), { deep: true, immediate: true });
+function scrollToAnchor(href: string) {
+  canvasRef.value?.querySelector(`[id="${href.slice(1)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  outlineOpen.value = false;
+}
 const canvasRef = ref<HTMLElement | null>(null);
+const scrollRoot = ref<HTMLElement | null>(null);
 const toolbarPortalRef = ref<HTMLElement | null>(null);
 
 provide(ACTIVE_HOTSPOT_KEY, useActiveHotspot());
@@ -197,7 +198,7 @@ const quickAddTypes = computed(getQuickAddTypes);
 const EMPTY_PART: ContentPart = { type: 'tiptap', json_content: {} };
 
 function getBlockKey(content: ContentPart): string {
-  return String(content.id ?? content.key ?? '');
+  return String(content.key ?? content.id ?? '');
 }
 
 const bandMap = computed<Map<ContentPart, BandResolution>>(() => resolveBands(contents.value ?? []));
@@ -271,10 +272,10 @@ function updateSideBySideContent(value: ContentPart): void {
 // — a *saved* id would leave a just-added or still-unsaved block (link-list, event-list,
 // news, calendar) with no dynamic data at all until the page is saved once, which is
 // exactly the "preview doesn't show the fetched events" gap this fixes.
-const { debouncedFetchPreview } = useContentPartPreview(() => props.tenantId);
+const { debouncedFetchPreview } = useContentPartPreview(() => props.tenantId, () => context ? { kind: context.kind, record_id: context.form.id, locale: context.form.lang } : undefined);
 const resolvedByBlockKey = ref<Record<string, unknown>>({});
 
-watch(contents, async (currentContents) => {
+watch(() => [contents.value, props.tenantId, context?.form.lang] as const, async ([currentContents]) => {
   const resolvableParts = (currentContents ?? []).filter(part => !!getContentType(part.type).serverResolved);
   if (resolvableParts.length === 0) {
     resolvedByBlockKey.value = {};
@@ -297,8 +298,4 @@ watch(contents, async (currentContents) => {
   }
 }, { deep: true, immediate: true });
 
-function resolvedFor(content: ContentPart): unknown {
-  if (!getContentType(content.type).serverResolved) return undefined;
-  return resolvedByBlockKey.value[getBlockKey(content)];
-}
 </script>

@@ -14,9 +14,13 @@ vi.mock('@/Plugins/umami', () => ({ trackEvent: vi.fn() }));
 
 // Array-friendly localStorage mock (the default helper spreads objects, which breaks arrays).
 // Backed by a real `ref` so computeds that depend on it (e.g. `totalResultCount`) stay reactive.
-vi.mock('@vueuse/core', () => ({
-  useLocalStorage: vi.fn((_key: string, defaultValue: any) => ref(Array.isArray(defaultValue) ? [...defaultValue] : defaultValue)),
-}));
+vi.mock('@vueuse/core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@vueuse/core')>();
+  return {
+    ...actual,
+    useLocalStorage: vi.fn((_key: string, defaultValue: any) => ref(Array.isArray(defaultValue) ? [...defaultValue] : defaultValue)),
+  };
+});
 
 /**
  * Build a Typesense `/multi_search` response with one result per requested search,

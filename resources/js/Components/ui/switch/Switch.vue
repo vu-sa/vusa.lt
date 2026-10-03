@@ -2,12 +2,12 @@
   <SwitchRoot
     v-bind="forwarded"
     :class="cn(
-      'peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-zinc-900 data-[state=unchecked]:bg-zinc-300 dark:focus-visible:ring-zinc-300 dark:focus-visible:ring-offset-zinc-950 dark:data-[state=checked]:bg-zinc-50 dark:data-[state=unchecked]:bg-zinc-700',
+      'peer inline-flex h-6 w-11 shrink-0 cursor-pointer items-center border border-input bg-background px-[3px] transition-colors outline-none hover:border-foreground/60 focus-visible:ring-[3px] focus-visible:ring-ring/40 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-brand-fill data-[state=checked]:bg-brand-fill',
       props.class,
     )"
   >
     <SwitchThumb
-      :class="cn('pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform data-[state=checked]:translate-x-5 dark:bg-zinc-950')"
+      :class="cn('pointer-events-none block size-4 bg-muted-foreground transition-[translate,background-color] duration-150 data-[state=checked]:translate-x-5 data-[state=checked]:bg-brand-foreground')"
     >
       <slot name="thumb" />
     </SwitchThumb>

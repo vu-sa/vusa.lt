@@ -13,7 +13,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     // Create related test data
     $this->page = Page::factory()->for($this->tenant)->create();
@@ -28,7 +28,7 @@ describe('user settings', function (): void {
             ->get(route('profile'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowUserSettings')
+                ->component('Admin/ShowProfile')
                 ->has('user')
                 ->where('user.id', $this->admin->id)
             );
@@ -39,7 +39,7 @@ describe('user settings', function (): void {
             ->get(route('profile'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowUserSettings')
+                ->component('Admin/ShowProfile')
                 ->has('user.roles')
                 ->has('user.current_duties')
             );
@@ -90,6 +90,20 @@ describe('user settings', function (): void {
         expect($this->admin->phone)->toBe('+37061111111');
     });
 
+    test('user can change their own name once', function (): void {
+        $this->admin->forceFill(['name_was_changed' => false])->save();
+
+        asUser($this->admin)
+            ->patch(route('profile.update'), ['name' => 'Corrected Name'])
+            ->assertStatus(302)
+            ->assertSessionHas('success');
+
+        $this->admin->refresh();
+
+        expect($this->admin->name)->toBe('Corrected Name')
+            ->and($this->admin->name_was_changed)->toBeTrue();
+    });
+
     test('user cannot change name after it was previously changed', function (): void {
         // Set name_was_changed to true
         $this->admin->name_was_changed = true;
@@ -129,5 +143,25 @@ describe('user settings', function (): void {
             ->patch(route('profile.updatePassword'), $passwordData)
             ->assertStatus(302)
             ->assertSessionHas('success');
+    });
+});
+
+describe('notification settings', function (): void {
+    test('authenticated user can access notification settings', function (): void {
+        asUser($this->admin)
+            ->get(route('profile.notifications'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ShowNotificationSettings')
+                ->has('notificationPreferences')
+                ->has('notificationTypes')
+                ->has('availableEmails')
+                ->has('defaultEmail')
+            );
+    });
+
+    test('unauthenticated user cannot access notification settings', function (): void {
+        $this->get(route('profile.notifications'))
+            ->assertRedirect(route('login'));
     });
 });

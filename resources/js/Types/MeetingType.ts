@@ -22,9 +22,9 @@ export interface MeetingTypeOption {
 export function getMeetingTypeOptions(locale: 'lt' | 'en' = 'lt'): MeetingTypeOption[] {
   const labels = {
     lt: {
-      [MeetingType.InPerson]: 'Gyvas susitikimas',
-      [MeetingType.Remote]: 'Nuotolinis susitikimas',
-      [MeetingType.Email]: 'Elektroninis posėdis (el. laišku)',
+      [MeetingType.InPerson]: 'Gyvas posėdis',
+      [MeetingType.Remote]: 'Nuotolinis posėdis',
+      [MeetingType.Email]: 'Sprendimas el. paštu',
       other: 'Kita',
     },
     en: {

@@ -1,12 +1,12 @@
 <?php
 
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Models\User;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
@@ -34,8 +34,8 @@ function institutionWithRepresentative(): Institution
             'meeting_periodicity_days' => 30,
         ]);
 
-    $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-        ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
+    $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
+        ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
     $duty = Duty::factory()
         ->for($institution)
@@ -73,6 +73,21 @@ describe('tasks:repopulate institution', function (): void {
         $this->artisan('tasks:repopulate institution --force')->assertExitCode(0);
 
         expect(periodicityGapTaskFor($institution))->not->toBeNull();
+    });
+
+    test('does not create a task for an inactive institution', function (): void {
+        $this->travelTo('2025-11-15');
+
+        $institution = institutionWithRepresentative();
+        $institution->update(['is_active' => false]);
+
+        Meeting::factory()
+            ->hasAttached($institution)
+            ->create(['start_time' => '2025-10-01 10:00:00']);
+
+        $this->artisan('tasks:repopulate institution --force')->assertExitCode(0);
+
+        expect(periodicityGapTaskFor($institution))->toBeNull();
     });
 
     test('does not create a task when the gap is made up of vacation days', function (): void {

@@ -21,7 +21,7 @@ export interface CadenceBandContext {
  * Term bands behind the bars. This is the reference an admin reads drift against —
  * a bar that does not line up with a band edge is the whole problem made visible.
  *
- * Consecutive bands alternate between two tints, the way table rows do: one flat green
+ * Consecutive bands alternate between two tints, the way table rows do: one flat wash
  * across the whole chart read as a single wash, which is exactly the wrong reading.
  */
 export function renderCadenceBands(ctx: CadenceBandContext): void {

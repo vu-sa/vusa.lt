@@ -7,6 +7,7 @@ use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\Duty;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Step;
 use App\Models\TenantHomepageContent;
 use App\Models\Vote;
 
@@ -39,6 +40,8 @@ class ActivityRoots
         // App\Models\Content::news()/page()/tenantHomepageContent().
         Content::class => ['news', 'page', 'tenantHomepageContent'],
         TenantHomepageContent::class => 'tenant',
+        // Goals pilot: tried in order, so a step on both shows in its goal's feed.
+        Step::class => ['goal', 'problem'],
     ];
 
     /**

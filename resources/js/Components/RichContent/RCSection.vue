@@ -63,7 +63,7 @@ import {
   INNER_CLASS, SECTION_HEADING_SIZE_CLASS, type SectionHeadingLevel, type SectionInner,
 } from './sectionClasses';
 
-import SectionHeader from '@/Components/ui/SectionHeader.vue';
+import SectionHeader from '@/Components/RichContent/SectionHeader.vue';
 import { EyebrowLabel } from '@/Components/Public/Base';
 import { latinizeId } from '@/Utils/String';
 

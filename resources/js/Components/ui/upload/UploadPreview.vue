@@ -125,7 +125,7 @@
 import type { HTMLAttributes } from 'vue';
 import { inject, computed } from 'vue';
 
-import type { UploadFile } from '.';
+import type { UploadFile } from './variants';
 
 import { cn } from '@/Utils/Shadcn/utils';
 import { Button } from '@/Components/ui/button';

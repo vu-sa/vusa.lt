@@ -10,7 +10,6 @@
         :title="option.label"
         :description="option.description"
         :icon="option.icon"
-        :gradient="option.gradient"
         :selected="draft.meeting.type === option.value"
         :show-chevron="false"
         @click="pick(option.value)"
@@ -34,15 +33,15 @@ import { getMeetingTypeOptions, isDateOnlyMeetingType, MeetingType, type Meeting
 const { current, draft, advance, goTo, isDateLocked, updateMeeting } = useActionWindow();
 
 /**
- * "Gyvas susitikimas" and "Nuotolinis susitikimas" say everything already; only the
+ * "Gyvas posėdis" and "Nuotolinis posėdis" say everything already; only the
  * two that carry a consequence — a date-only deadline, or no type at all — explain
  * themselves.
  */
-const EXTRAS: Record<string, { icon: typeof Users; gradient: string; descriptionKey?: string }> = {
-  [MeetingType.InPerson]: { icon: Users, gradient: 'from-amber-500/15 to-orange-500/15 dark:from-amber-400/12 dark:to-orange-400/12' },
-  [MeetingType.Remote]: { icon: Video, gradient: 'from-sky-500/15 to-indigo-500/15 dark:from-sky-400/12 dark:to-indigo-400/12' },
-  [MeetingType.Email]: { icon: Mail, gradient: 'from-emerald-500/15 to-teal-500/15 dark:from-emerald-400/12 dark:to-teal-400/12', descriptionKey: 'action_window.meeting.type.email' },
-  other: { icon: CircleDashed, gradient: 'from-zinc-500/15 to-zinc-400/15 dark:from-zinc-400/12 dark:to-zinc-300/12', descriptionKey: 'action_window.meeting.type.other' },
+const EXTRAS: Record<string, { icon: typeof Users; descriptionKey?: string }> = {
+  [MeetingType.InPerson]: { icon: Users },
+  [MeetingType.Remote]: { icon: Video },
+  [MeetingType.Email]: { icon: Mail, descriptionKey: 'action_window.meeting.type.email' },
+  other: { icon: CircleDashed, descriptionKey: 'action_window.meeting.type.other' },
 };
 
 const options = computed(() =>
@@ -55,7 +54,6 @@ const options = computed(() =>
       label: option.label,
       description: extra.descriptionKey ? $t(extra.descriptionKey) : undefined,
       icon: extra.icon,
-      gradient: extra.gradient,
     };
   }),
 );

@@ -63,6 +63,8 @@
 import { ref, computed, onMounted, nextTick } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { detectSocialPlatform, toInstagramEmbedUrl } from './embedUrl';
+
 import SocialIcon from '~icons/fluent/share-24-regular';
 import type { SocialEmbed } from '@/Types/contentParts';
 
@@ -79,30 +81,13 @@ const hasRendered = ref(false);
 const fbContainer = ref<HTMLElement | null>(null);
 const igContainer = ref<HTMLElement | null>(null);
 
-// Detect platform from stored value or URL
-const platform = computed(() => {
-  if (props.element.json_content.platform) {
-    return props.element.json_content.platform;
-  }
-  // Fallback: detect from URL
-  const { url } = props.element.json_content;
-  if (!url) return null;
-
-  if (/facebook\.com|fb\.watch/i.test(url)) return 'facebook';
-  if (/instagram\.com|instagr\.am/i.test(url)) return 'instagram';
-  return null;
-});
+const platform = computed(() => detectSocialPlatform(props.element.json_content.url));
 
 const showCaption = computed(() => props.element.options?.showCaption !== false);
 
-// Extract clean Instagram URL for embedding
 const instagramEmbedUrl = computed(() => {
   if (!props.element.json_content.url || platform.value !== 'instagram') return '';
-  const cleanUrl = props.element.json_content.url.split('?')[0] || '';
-  if (!cleanUrl.endsWith('/')) {
-    return `${cleanUrl}/`;
-  }
-  return cleanUrl;
+  return toInstagramEmbedUrl(props.element.json_content.url);
 });
 
 interface FacebookSDK {

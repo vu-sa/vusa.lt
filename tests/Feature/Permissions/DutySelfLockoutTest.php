@@ -11,7 +11,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'duties.read.padalinys',
         'duties.update.padalinys',
@@ -19,7 +19,7 @@ beforeEach(function (): void {
 
     $this->admin = makeUser($this->tenant);
     $this->adminDuty = $this->admin->duties()->first();
-    $this->adminDuty->assignRole('Communication Coordinator');
+    $this->adminDuty->assignRole('Komunikacijos koordinatorius');
 });
 
 function dutyUpdatePayload(Duty $duty, array $overrides = []): array
@@ -45,7 +45,7 @@ test('removing the role from your own duty is warned and rolled back', function 
 
 test('editing a duty you do not hold is not guarded', function (): void {
     $otherDuty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
-    $otherDuty->assignRole('Communication Coordinator');
+    $otherDuty->assignRole('Komunikacijos koordinatorius');
 
     asUserWithInertia($this->admin)
         ->patch(route('duties.update', $otherDuty), dutyUpdatePayload($otherDuty, [

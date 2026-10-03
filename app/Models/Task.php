@@ -31,7 +31,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property-read mixed $color
  * @property-read mixed $icon
- * @property-read Model|\Eloquent $taskable
+ * @property-read Model|\Eloquent|null $taskable
  * @property-read Collection<int, Tenant> $tenants
  * @property-read Collection<int, User> $users
  * @property-read int|null $tenants_count
@@ -68,6 +68,32 @@ class Task extends Model
             'action_type' => ActionType::class,
             'metadata' => 'array',
         ];
+    }
+
+    /**
+     * Open, overdue, and due soon task counts for a user in a single aggregate query.
+     *
+     * @return array{tasks_count: int, overdue_tasks_count: int, due_soon_tasks_count: int}
+     */
+    public static function openTaskCountsFor(User $user): array
+    {
+        return once(function () use ($user) {
+            $now = now();
+            $soon = now()->addDays(7);
+            $counts = $user->tasks()
+                ->whereNull('completed_at')
+                ->toBase()
+                ->selectRaw('count(*) as tasks_count')
+                ->selectRaw('sum(case when due_date < ? then 1 else 0 end) as overdue_tasks_count', [$now])
+                ->selectRaw('sum(case when due_date >= ? and due_date <= ? then 1 else 0 end) as due_soon_tasks_count', [$now, $soon])
+                ->first();
+
+            return [
+                'tasks_count' => (int) ($counts->tasks_count ?? 0),
+                'overdue_tasks_count' => (int) ($counts->overdue_tasks_count ?? 0),
+                'due_soon_tasks_count' => (int) ($counts->due_soon_tasks_count ?? 0),
+            ];
+        });
     }
 
     /**
@@ -140,19 +166,13 @@ class Task extends Model
     /**
      * Whether the user may remove this task outright.
      *
-     * The policy answers the ordinary case; an automatic task is additionally reserved for
-     * super admins, who need the escape hatch when it can no longer complete itself (its
-     * subject is gone, its agenda can never be filled). {@see TaskController::destroy()}
-     * enforces the same two rules — this exists so the UI can offer the action only where it
-     * would actually succeed.
+     * Automatic tasks included: whoever holds the delete permission may clear one that can no
+     * longer complete itself. Separate from the policy call so the UI offers the action only
+     * where it would succeed.
      */
     public function isDeletableBy(User $user): bool
     {
-        if (! $user->can('delete', $this)) {
-            return false;
-        }
-
-        return $this->canBeManuallyCompleted() || $user->isSuperAdmin();
+        return $user->can('delete', $this);
     }
 
     /**

@@ -4,15 +4,15 @@ return [
     'create_new' => 'Sukurti naują ryšį',
     'create' => 'Sukurti',
     'model_type' => 'Modelio tipas',
-    'select_model_type' => 'Pasirinkite modelio tipą',
+    'select_model_type' => 'Pasirink modelio tipą',
 
     // Source and target labels
     'source' => 'Ryšio šaltinis',
     'source_hint' => 'galės matyti tikslą',
     'target' => 'Ryšio tikslas',
     'target_hint' => 'bus matomas šaltiniui',
-    'select_source' => 'Pasirinkite šaltinį',
-    'select_target' => 'Pasirinkite tikslą',
+    'select_source' => 'Pasirink šaltinį',
+    'select_target' => 'Pasirink tikslą',
     'search_model' => 'Ieškoti...',
     'no_results' => 'Nieko nerasta',
 
@@ -23,12 +23,12 @@ return [
     // Model connections section
     'model_connections' => 'Modelių ryšiai',
     'no_connections' => 'Nėra ryšių',
-    'no_connections_description' => 'Pridėkite ryšius tarp modelių, kad jie galėtų matyti vieni kitų duomenis.',
+    'no_connections_description' => 'Pridėk ryšius tarp modelių, kad jie galėtų matyti vieni kitų duomenis.',
     'create_first' => 'Sukurti pirmąjį ryšį',
     'edit_connection' => 'Redaguoti ryšį',
-    'edit_connection_description' => 'Pakeiskite ryšio nustatymus.',
-    'create_new_description' => 'Sukurkite naują ryšį tarp modelių.',
-    'confirm_delete' => 'Ar tikrai norite ištrinti šį ryšį?',
+    'edit_connection_description' => 'Pakeisk ryšio nustatymus.',
+    'create_new_description' => 'Sukurk naują ryšį tarp modelių.',
+    'confirm_delete' => 'Ar tikrai nori ištrinti šį ryšį?',
 
     // Access explanation
     'access_explanation_title' => 'Prieigos paaiškinimas',
@@ -45,6 +45,11 @@ return [
     'direction_incoming' => 'Įeinantis',
     'direction_sibling' => 'Lygiagretus',
     'related' => 'Susijusi',
+    // Section headings on an institution's record: who this body oversees and who oversees it.
+    'group_outgoing' => 'Prižiūri',
+    'group_incoming' => 'Prižiūrima',
+    'group_sibling' => 'Lygiagrečios',
+    'group_other' => 'Susijusios',
 
     // Authorization
     'authorized' => 'Su prieiga',

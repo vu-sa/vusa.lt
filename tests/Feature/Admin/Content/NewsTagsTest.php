@@ -19,7 +19,7 @@ beforeEach(function (): void {
     $communicationCoordinatorDuty = Duty::factory()->has(Institution::factory()->state(
         ['tenant_id' => $this->tenant->id]
     ))->hasAttached($this->newsManager, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])->create();
-    $communicationCoordinatorDuty->assignRole('Communication Coordinator');
+    $communicationCoordinatorDuty->assignRole('Komunikacijos koordinatorius');
 });
 
 describe('News Tag Functionality', function (): void {

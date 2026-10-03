@@ -70,7 +70,7 @@ import type { InstitutionList, InstitutionListItem, InstitutionListResolved } fr
 import { EyebrowLabel } from '@/Components/Public/Base';
 import { Skeleton } from '@/Components/ui/skeleton';
 import RCInlineText from '@/Components/RichContent/Editor/Fullscreen/RCInlineText.vue';
-import NewInstitutionCard from '@/Components/Cards/NewInstitutionCard.vue';
+import NewInstitutionCard from '@/Components/Public/Institutions/NewInstitutionCard.vue';
 import type { BandResolution } from '@/Components/RichContent/bandLayout';
 import { BAND_GROUND_CLASS, BAND_PADDING } from '@/Components/RichContent/sectionClasses';
 

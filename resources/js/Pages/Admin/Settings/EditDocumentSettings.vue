@@ -1,47 +1,44 @@
 <template>
-  <PageContent :title="$t('settings.pages.documents.title')" :back-url="route('settings.index')">
-    <UpsertModelLayout>
-      <AdminForm :model="form" @submit:form="handleFormSubmit">
-        <FormElement>
-          <template #title>
-            {{ $t('settings.document_settings.important_types_title') }}
-          </template>
-          <template #description>
-            {{ $t('settings.document_settings.important_types_description') }}
-          </template>
-
-          <div class="space-y-2">
-            <Label class="inline-flex items-center gap-1">
-              <component :is="DocumentIcon" class="h-4 w-4" />
-              {{ $t('settings.document_settings.important_types_label') }}
-            </Label>
-
-            <MultiSelect
-              v-model="selectedTypes"
-              :options="contentTypeOptions"
-              label-field="label"
-              value-field="value"
-              :placeholder="$t('settings.document_settings.important_types_placeholder')"
-              :empty-text="$t('settings.document_settings.no_types_found')"
-            />
-          </div>
-        </FormElement>
-      </AdminForm>
-    </UpsertModelLayout>
-  </PageContent>
+  <FormPage
+    :title="$t('settings.pages.documents.title')"
+    :back-href="route('settings.index')"
+    :back-label="$t('settings.title')"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :available-locales="[]"
+    @submit="handleFormSubmit"
+  >
+    <FormSection
+      :title="$t('settings.document_settings.important_types_title')"
+      :description="$t('settings.document_settings.important_types_description')"
+    >
+      <FormFieldWrapper
+        id="important_content_types"
+        :label="$t('settings.document_settings.important_types_label')"
+        :error="form.errors.important_content_types"
+      >
+        <MultiSelect
+          v-model="selectedTypes"
+          :options="contentTypeOptions"
+          label-field="label"
+          value-field="value"
+          :placeholder="$t('settings.document_settings.important_types_placeholder')"
+          :empty-text="$t('settings.document_settings.no_types_found')"
+        />
+      </FormFieldWrapper>
+    </FormSection>
+  </FormPage>
 </template>
 
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
 
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import AdminForm from '@/Components/AdminForms/AdminForm.vue';
-import FormElement from '@/Components/AdminForms/FormElement.vue';
-import { Label } from '@/Components/ui/label';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import FormSection from '@/Components/Patterns/FormSection.vue';
 import { MultiSelect } from '@/Components/ui/multi-select';
-import { DocumentIcon } from '@/Components/icons';
 
 interface ContentTypeOption {
   value: string;

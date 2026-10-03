@@ -11,7 +11,7 @@
       <!-- List -->
       <div
         :class="[
-          'min-h-0 rounded-lg border bg-card',
+          'min-h-0 border border-border bg-card',
           'w-full lg:w-2/5 lg:max-w-md',
           mobileShowsDetail ? 'hidden lg:block' : 'block',
         ]"
@@ -38,13 +38,13 @@
       <!-- Detail -->
       <div
         :class="[
-          'min-h-0 flex-1 rounded-lg border bg-card',
+          'min-h-0 flex-1 border border-border bg-card',
           mobileShowsDetail ? 'block' : 'hidden lg:block',
         ]"
       >
         <!-- Mobile back button -->
         <div class="border-b p-2 lg:hidden">
-          <Button variant="ghost" size="sm" @click="mobileShowsDetail = false">
+          <Button variant="ghost" size="sm" voice="sentence" @click="mobileShowsDetail = false">
             <ChevronLeft class="mr-1 size-4" />
             {{ $t('Atgal į sąrašą') }}
           </Button>
@@ -136,6 +136,9 @@ useEventListener('keydown', (event: KeyboardEvent) => {
   }
   const target = event.target as HTMLElement | null;
   const typing = target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName));
+  if (target?.closest('button, a, [role="button"], [role="checkbox"], [role="combobox"]')) {
+    return;
+  }
 
   if (event.key === 'Enter') {
     if (typing) {

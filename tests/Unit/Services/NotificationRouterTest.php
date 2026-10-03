@@ -21,7 +21,7 @@ describe('NotificationRouter', function (): void {
 
             $result = $this->service->routeForMail($user, new Notification);
 
-            expect($result)->toBe('user@example.com');
+            expect($result)->toBe(['user@example.com']);
         });
 
         test('returns duty email when it ends with vusa.lt', function (): void {
@@ -33,10 +33,10 @@ describe('NotificationRouter', function (): void {
 
             $result = $this->service->routeForMail($user, new Notification);
 
-            expect($result)->toBe('duty@vusa.lt');
+            expect($result)->toBe(['duty@vusa.lt']);
         });
 
-        test('falls back to user email when duty email does not end with vusa.lt', function (): void {
+        test('uses a duty address on another domain rather than the personal one', function (): void {
             $user = User::factory()->create(['email' => 'user@example.com']);
             $duty = Duty::factory()->create([
                 'email' => 'duty@example.com',
@@ -45,7 +45,7 @@ describe('NotificationRouter', function (): void {
 
             $result = $this->service->routeForMail($user, new Notification);
 
-            expect($result)->toBe('user@example.com');
+            expect($result)->toBe(['duty@example.com']);
         });
 
         test('prefers first vusa.lt duty email when multiple duties exist', function (): void {
@@ -61,7 +61,26 @@ describe('NotificationRouter', function (): void {
 
             $result = $this->service->routeForMail($user, new Notification);
 
-            expect($result)->toBe('first@vusa.lt');
+            expect($result)->toBe(['first@vusa.lt']);
+        });
+
+        test('prefers a vusa.lt duty address over another duty address', function (): void {
+            $user = User::factory()->create(['email' => 'user@example.com']);
+            $other = Duty::factory()->create(['email' => 'role@example.com']);
+            $vusa = Duty::factory()->create(['email' => 'role@gmc.vusa.lt']);
+            $user->duties()->attach($other->id, ['start_date' => now()->subYear(), 'end_date' => now()->addYear()]);
+            $user->duties()->attach($vusa->id, ['start_date' => now()->subYear(), 'end_date' => now()->addYear()]);
+
+            expect($this->service->routeForMail($user, new Notification))->toBe(['role@gmc.vusa.lt']);
+        });
+
+        test('follows the addresses chosen on the settings page', function (): void {
+            $user = User::factory()->create(['email' => 'user@example.com']);
+            $duty = Duty::factory()->create(['email' => 'duty@vusa.lt']);
+            $user->duties()->attach($duty->id, ['start_date' => now()->subYear(), 'end_date' => now()->addYear()]);
+            $user->update(['notification_preferences' => ['emails' => ['user@example.com']]]);
+
+            expect($this->service->routeForMail($user->fresh(), new Notification))->toBe(['user@example.com']);
         });
     });
 });

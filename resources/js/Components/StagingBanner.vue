@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="isStaging && !dismissed"
+    v-if="isStaging && !compact && !dismissed"
     data-slot="staging-status"
     role="status"
     class="rounded-xl border border-amber-300/70 bg-amber-100 text-amber-950 shadow-sm print:hidden dark:border-amber-800/70 dark:bg-amber-950/60 dark:text-amber-100"
@@ -11,49 +11,66 @@
           <AlertTriangle class="h-4 w-4 text-amber-800 dark:text-amber-300" />
         </div>
         <div class="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
-          <span class="shrink-0 font-bold">STAGING ENVIRONMENT</span>
+          <span class="shrink-0 font-bold uppercase">{{ $t('Bandomoji aplinka') }}</span>
           <span class="hidden text-amber-700 sm:inline dark:text-amber-300">|</span>
           <span
             v-if="hasSharedResources"
             class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-amber-800 sm:text-sm dark:text-amber-200"
           >
-            <template v-for="(warning, index) in warnings" :key="warning">
+            <template v-for="(warning, index) in warnings" :key="warning.label">
               <span class="inline-flex items-center gap-1">
-                <FileWarning v-if="warning.includes('File')" class="h-3 w-3" />
-                <CloudOff v-if="warning.includes('SharePoint')" class="h-3 w-3" />
-                {{ warning }}
+                <FileWarning v-if="warning.kind === 'files'" class="h-3 w-3" />
+                <CloudOff v-if="warning.kind === 'sharepoint'" class="h-3 w-3" />
+                {{ $t(warning.label) }}
               </span>
               <span v-if="index < warnings.length - 1" aria-hidden="true">•</span>
             </template>
           </span>
           <span v-else class="text-xs text-amber-800 sm:text-sm dark:text-amber-200">
-            Test environment — data may differ from production
+            {{ $t('Bandomosios aplinkos duomenys gali skirtis nuo tikrosios') }}
           </span>
         </div>
       </div>
       <button
         type="button"
         :class="[
-          'shrink-0 rounded-lg p-1.5 transition-colors',
+          'flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg transition-colors',
           'hover:bg-amber-200/70 dark:hover:bg-amber-900/60',
           'focus-visible:outline-none focus-visible:ring-2',
           'focus-visible:ring-amber-600 dark:focus-visible:ring-amber-400',
         ]"
-        aria-label="Dismiss staging banner"
-        @click="dismissed = true"
+        :aria-label="$t('Suskleisti bandomosios aplinkos įspėjimą')"
+        @click="emit('update:dismissed', true)"
       >
         <X class="h-4 w-4" />
       </button>
     </div>
   </div>
+  <button
+    v-else-if="isStaging && compact && dismissed"
+    type="button"
+    data-slot="staging-warning-button"
+    :aria-label="`${$t('Atverti bandomosios aplinkos įspėjimą')}: ${warningText}`"
+    :title="`${$t('Bandomoji aplinka')}: ${warningText}`"
+    :class="[
+      'flex size-11 shrink-0 items-center justify-center',
+      'border border-status-attention-border bg-status-attention-surface text-status-attention',
+      'transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:outline-ring',
+    ]"
+    @click="emit('update:dismissed', false)"
+  >
+    <AlertTriangle class="size-5" aria-hidden="true" />
+  </button>
 </template>
 
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed } from 'vue';
 import { AlertTriangle, X, FileWarning, CloudOff } from 'lucide-vue-next';
 
-const dismissed = ref(false);
+defineProps<{ dismissed?: boolean; compact?: boolean }>();
+const emit = defineEmits<{ 'update:dismissed': [value: boolean] }>();
 
 interface StagingProps {
   isStaging: boolean;
@@ -64,18 +81,21 @@ interface StagingProps {
 const staging = computed(() => usePage().props.staging as StagingProps | undefined);
 
 const isStaging = computed(() => staging.value?.isStaging ?? false);
-const hasSharedResources = computed(() =>
-  staging.value?.filesReadOnly || staging.value?.sharepointReadOnly,
-);
 
 const warnings = computed(() => {
-  const list: string[] = [];
+  const list: { kind: 'files' | 'sharepoint'; label: string }[] = [];
   if (staging.value?.filesReadOnly) {
-    list.push('File storage is shared with production (read-only)');
+    list.push({ kind: 'files', label: 'Failų saugykla bendrinama su tikrąja aplinka (tik skaitymui)' });
   }
   if (staging.value?.sharepointReadOnly) {
-    list.push('SharePoint is shared with production (read-only)');
+    list.push({ kind: 'sharepoint', label: 'SharePoint bendrinama su tikrąja aplinka (tik skaitymui)' });
+  }
+  else if (staging.value?.isStaging) {
+    list.push({ kind: 'sharepoint', label: 'SharePoint failai įkeliami į bandomąją svetainę' });
   }
   return list;
 });
+
+const warningText = computed(() => warnings.value.map(warning => $t(warning.label)).join('; '));
+const hasSharedResources = computed(() => warnings.value.length > 0);
 </script>

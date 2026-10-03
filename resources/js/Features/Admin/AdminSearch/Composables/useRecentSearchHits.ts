@@ -34,7 +34,6 @@ function routeToCollection(routeName: string): SearchCollectionKey {
     case 'duties': return 'duties';
     case 'documents':
     case 'files':
-    case 'sharepointFiles':
       return 'documents';
     case 'news': return 'news';
     case 'pages':

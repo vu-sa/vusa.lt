@@ -28,7 +28,7 @@ class UserNotificationsController extends AdminController
 
         if ($notification) {
             $notification->markAsRead();
-            $this->removeMatchingDigestEntries($user, $notification->data);
+            NotificationDigestQueue::query()->where('user_id', $user->id)->where('notification_id', $notification->id)->delete();
         }
 
         return back();
@@ -51,7 +51,7 @@ class UserNotificationsController extends AdminController
         $notification = $user->notifications()->where('id', $id)->first();
 
         if ($notification) {
-            $this->removeMatchingDigestEntries($user, $notification->data);
+            NotificationDigestQueue::query()->where('user_id', $user->id)->where('notification_id', $notification->id)->delete();
             $notification->delete();
         }
 
@@ -71,36 +71,5 @@ class UserNotificationsController extends AdminController
         }
 
         return back();
-    }
-
-    /**
-     * Remove a single digest queue entry that matches a notification's data.
-     *
-     * Matches on title + body + url to avoid false positives when multiple
-     * notifications share the same title and URL (e.g. "Nauja užduotis" all
-     * pointing to /mano/tasks — the body contains the specific task name).
-     *
-     * @param  array<string, mixed>  $notificationData
-     */
-    private function removeMatchingDigestEntries(User $user, array $notificationData): void
-    {
-        $query = NotificationDigestQueue::where('user_id', $user->id);
-
-        if (isset($notificationData['title'])) {
-            $query->whereJsonContains('data->title', $notificationData['title']);
-        }
-
-        if (isset($notificationData['body'])) {
-            $query->whereJsonContains('data->body', $notificationData['body']);
-        }
-
-        if (isset($notificationData['url'])) {
-            $query->whereJsonContains('data->url', $notificationData['url']);
-        }
-
-        // Delete only one matching entry to avoid removing digest items
-        // for other unread notifications with similar data
-        $match = $query->first();
-        $match?->delete();
     }
 }

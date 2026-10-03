@@ -1,32 +1,21 @@
-<!--
-  CommentTipTap - Comment form wrapper around TiptapEditor
-
-  This is a specialized component for comment forms that includes:
-  - User avatar
-  - Minimal text editor
-  - Submit button
-
-  For general-purpose editing, use TiptapEditor directly with appropriate preset.
--->
 <template>
-  <div class="flex flex-col" style="max-height: 280px">
-    <div :class="{ 'rounded-t-md': roundedTop }"
-      class="grid grid-cols-[60px_1fr] overflow-y-scroll rounded-b-md border dark:border-zinc-600">
+  <div class="flex max-h-72 flex-col">
+    <div class="grid grid-cols-[52px_1fr] overflow-y-auto border border-border bg-card">
       <div class="flex justify-center items-center">
         <UserAvatar :size="23" class="sticky top-4" :user="$page.props.auth?.user" />
       </div>
       <TiptapEditor
         v-model="internalText"
         preset="minimal"
-        :html="true"
+        html
         :placeholder="$t('forms.commentPlaceholder')"
         class="comment-editor"
       />
     </div>
-    <div class="border-top-0 flex items-center justify-end gap-2 border-zinc-400 p-4">
-      <Button size="sm" :disabled="disabled || loading" @click="$emit('submit:comment')">
+    <div class="flex items-center justify-end gap-2 border-x border-b border-border bg-card p-3">
+      <Button variant="brand" :disabled="disabled || loading" @click="$emit('submit:comment')">
         <Spinner v-if="loading" />
-        <IFluentSend24Filled v-else />
+        <Send v-else class="size-4" aria-hidden="true" />
         {{ submitText ?? $t("Pateikti") }}
       </Button>
     </div>
@@ -36,18 +25,17 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Send } from 'lucide-vue-next';
 
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
 import { Spinner } from '@/Components/ui/spinner';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
-import IFluentSend24Filled from '~icons/fluent/send24-filled';
 
 const props = defineProps<{
   text: string | null;
   disabled: boolean;
   loading: boolean;
-  roundedTop?: boolean;
   submitText?: string;
 }>();
 

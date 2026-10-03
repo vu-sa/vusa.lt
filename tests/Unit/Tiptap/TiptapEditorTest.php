@@ -76,11 +76,11 @@ describe('TiptapEditor', function (): void {
 
         expect($html)->toContain('src="/images/test.jpg"')
             ->toContain('alt="Test image"')
-            ->toContain('class="tiptap-image max-w-full h-auto rounded-md mx-auto block"')
+            ->toContain('class="tiptap-image max-w-full h-auto mx-auto block"')
             ->toContain('loading="lazy"');
     });
 
-    it('renders tables with Tailwind classes', function (): void {
+    it('renders tables with the rc-table hook and no baked colour utilities', function (): void {
         $content = [
             'type' => 'doc',
             'content' => [
@@ -107,10 +107,10 @@ describe('TiptapEditor', function (): void {
         $editor = new TiptapEditor;
         $html = $editor->setContent($content)->getHTML();
 
-        expect($html)->toContain('<table')
-            ->toContain('border-collapse')
+        expect($html)->toContain('<table class="rc-table"')
             ->toContain('<th')
-            ->toContain('<td');
+            ->toContain('<td')
+            ->not->toContain('zinc');
     });
 
     it('wraps a rendered table in a scrollable container, so a wide resized table scrolls instead of overflowing the page', function (): void {
@@ -216,7 +216,7 @@ describe('Youtube node', function (): void {
 
         expect($html)->toContain('youtube-nocookie.com/embed/dQw4w9WgXcQ')
             ->toContain('allowfullscreen')
-            ->toContain('class="aspect-video');
+            ->toContain('class="rc-embed"');
     });
 
     it('appends start time query param when present', function (): void {
@@ -319,7 +319,7 @@ describe('Video node', function (): void {
         expect($html)->toContain('<video')
             ->toContain('src="/videos/test.mp4"')
             ->toContain('controls')
-            ->toContain('class="aspect-video');
+            ->toContain('class="rc-embed"');
     });
 
     it('includes optional width and height attributes', function (): void {

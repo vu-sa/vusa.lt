@@ -1,7 +1,13 @@
 <?php
 
+use App\Enums\AgendaItemType;
+use App\Enums\InstitutionScope;
+use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Tenant;
+use App\Models\Vote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -26,4 +32,37 @@ test('agenda item whose meeting is soft-deleted still emits the required tenant 
         ->and($array['tenant_shortnames'])->toBe([])
         ->and($array)->toHaveKey('institution_ids')
         ->and($array['institution_ids'])->toBe([]);
+});
+
+test('the list filter counts an item complete by the same rule as the meeting and its task', function (): void {
+    $vusaType = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create();
+    $vuType = InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create();
+
+    $meetingOf = function (InstitutionType $type): Meeting {
+        $institution = Institution::factory()->for(Tenant::query()->first())->create();
+        $institution->types()->attach($type);
+        $meeting = Meeting::factory()->create();
+        $meeting->institutions()->attach($institution);
+
+        return $meeting;
+    };
+
+    $vuMeeting = $meetingOf($vuType);
+    $informational = AgendaItem::factory()->for($vuMeeting)->create(['type' => AgendaItemType::Informational]);
+    $break = AgendaItem::factory()->for($vuMeeting)->create(['type' => AgendaItemType::Break]);
+    $untyped = AgendaItem::factory()->for($vuMeeting)->create(['type' => null]);
+    $decisionOnlyVu = AgendaItem::factory()->for($vuMeeting)->create(['type' => AgendaItemType::Voting]);
+    Vote::factory()->for($decisionOnlyVu, 'agendaItem')->create(['is_main' => true, 'decision' => 'positive', 'student_vote' => null, 'student_benefit' => null]);
+
+    $decisionOnlyVusa = AgendaItem::factory()->for($meetingOf($vusaType))->create(['type' => AgendaItemType::Voting]);
+    Vote::factory()->for($decisionOnlyVusa, 'agendaItem')->create(['is_main' => true, 'decision' => 'positive', 'student_vote' => null, 'student_benefit' => null]);
+
+    $isComplete = fn (AgendaItem $item): bool => $item->fresh()->toSearchableArray()['is_complete'];
+
+    expect($isComplete($informational))->toBeTrue()
+        ->and($isComplete($break))->toBeTrue()
+        ->and($isComplete($untyped))->toBeFalse()
+        ->and($isComplete($decisionOnlyVu))->toBeFalse()
+        ->and($isComplete($decisionOnlyVusa))->toBeTrue()
+        ->and($decisionOnlyVusa->fresh()->toSearchableArray()['vote_alignment_status'])->toBe('neutral');
 });

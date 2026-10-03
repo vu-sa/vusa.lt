@@ -33,7 +33,6 @@ use Laravel\Scout\Searchable;
  * @property bool $show_breadcrumbs
  * @property string|null $featured_image
  * @property string|null $meta_description
- * @property Carbon|null $publish_time
  * @property int $tenant_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -82,26 +81,18 @@ class PublicPage extends Page
             return false;
         }
 
-        if (! $this->is_active) {
-            return false;
-        }
-
-        if ($this->publish_time) {
-            return $this->publish_time->isPast();
-        }
-
-        return true;
+        return (bool) $this->is_active;
     }
 
     /**
      * Get searchable array for Typesense indexing.
-     * Same shape as the admin index, minus the is_active flag admins don't need publicly.
+     * Omit admin-only fields from the public search document.
      */
     #[\Override]
     public function toSearchableArray(): array
     {
         $array = parent::toSearchableArray();
-        unset($array['is_active']);
+        unset($array['is_active'], $array['tenant_shortname']);
 
         return $array;
     }

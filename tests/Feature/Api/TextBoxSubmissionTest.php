@@ -20,7 +20,7 @@ function makeTextBoxContentPart(?Tenant $tenant = null): ContentPart
         'json_content' => [],
         'options' => [
             'title' => ['lt' => 'Klausimas', 'en' => 'Question'],
-            'placeholder' => ['lt' => 'Atsakykite...', 'en' => 'Answer...'],
+            'placeholder' => ['lt' => 'Atsakyk...', 'en' => 'Answer...'],
         ],
     ]);
 }
@@ -41,7 +41,7 @@ function makeTiptapContentPart(): ContentPart
  */
 function makeSubmissionsManager(): User
 {
-    return makeTenantUserWithRole('Communication Coordinator', Tenant::query()->first());
+    return makeTenantUserWithRole('Komunikacijos koordinatorius', Tenant::query()->first());
 }
 
 // Public store endpoint

@@ -36,6 +36,7 @@
                   <Tooltip>
                     <TooltipTrigger as-child>
                       <Button
+                        voice="brand"
                         variant="ghost"
                         size="icon"
                         class="h-7 w-8 border border-border text-muted-foreground hover:border-brand hover:text-brand hover:bg-brand/5"
@@ -50,6 +51,7 @@
                   <Tooltip v-if="downloadUrl">
                     <TooltipTrigger as-child>
                       <Button
+                        voice="brand"
                         variant="ghost"
                         size="icon"
                         class="h-7 w-8 border border-border text-muted-foreground hover:border-brand hover:text-brand hover:bg-brand/5"
@@ -64,6 +66,7 @@
                   <Tooltip v-if="document.link_url || document.share_url">
                     <TooltipTrigger as-child>
                       <Button
+                        voice="brand"
                         variant="ghost"
                         size="icon"
                         class="h-7 w-8 border border-border text-muted-foreground hover:border-brand hover:text-brand hover:bg-brand/5"
@@ -72,12 +75,13 @@
                         <IFluentLink20Regular class="size-3.5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom">{{ $t('copy_link') }}</TooltipContent>
+                    <TooltipContent side="bottom">{{ $t('search.document_copy_link') }}</TooltipContent>
                   </Tooltip>
 
                   <Tooltip v-if="calendarEventUrl">
                     <TooltipTrigger as-child>
                       <Button
+                        voice="brand"
                         variant="ghost"
                         size="icon"
                         :aria-label="$t('Peržiūrėti posėdį')"
@@ -271,10 +275,10 @@ const copyShareUrl = async () => {
 
   try {
     await navigator.clipboard.writeText(url);
-    toasts.success($t('copy_link_success'));
+    toasts.success($t('search.document_copy_link_success'));
   }
   catch {
-    toasts.error($t('copy_link_error'));
+    toasts.error($t('search.document_copy_link_error'));
   }
 };
 </script>
