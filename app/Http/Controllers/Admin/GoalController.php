@@ -13,6 +13,7 @@ use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Goal;
 use App\Models\Problem;
+use App\Services\AgendaItemPresenter;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Support\Experiments\GoalsExperiment;
 use App\Support\LocalizedRouteSlugs;
@@ -105,7 +106,9 @@ class GoalController extends AdminController
                 'created_by' => $goal->createdBy?->only(['id', 'name']),
                 'public_url' => $goal->is_public ? $this->publicUrl($goal) : null,
             ],
-            'steps' => StepResource::collection($goal->steps()->with(StepResource::RELATIONS)->get())->resolve(),
+            'steps' => StepResource::collection($goal->steps()->with(StepResource::RELATIONS)->get()
+                ->filter(fn ($step) => ! $step->agendaItem?->is_private || AgendaItemPresenter::canRead($step->agendaItem, request()->user()))
+                ->values())->resolve(),
             'problems' => $goal->problems()->with('tenant:id,shortname')->get()->map(fn (Problem $problem): array => [
                 'id' => $problem->id,
                 'title' => $problem->title,

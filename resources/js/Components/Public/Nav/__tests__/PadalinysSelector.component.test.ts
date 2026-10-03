@@ -50,6 +50,16 @@ function isOpen(wrapper: ReturnType<typeof mount>): boolean {
 }
 
 describe('PadalinysSelector.vue', () => {
+  it('uses a compact navigation trigger with a larger touch target', () => {
+    const { wrapper, restore } = mountSelector();
+    const trigger = wrapper.find('button');
+
+    expect(trigger.classes()).toContain('h-8');
+    expect(trigger.classes()).toContain('pointer-coarse:min-h-11');
+
+    restore();
+  });
+
   afterEach(() => {
     vi.useRealTimers();
     localStorage.removeItem('padalinysSelectorViewMode');

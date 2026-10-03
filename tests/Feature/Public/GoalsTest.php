@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Goal;
+use App\Models\Meeting;
+use App\Models\Pivots\AgendaItem;
 use App\Models\Step;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -66,4 +68,16 @@ test('database enrollment changes apply on the next visit and preserve public go
 
     $this->get(goalUrl($this->tenant, $this->goal))->assertOk();
     expect($this->goal->fresh())->not->toBeNull();
+});
+
+test('a step linked to an internal-only agenda item is excluded from public goals and their counts', function (): void {
+    $item = AgendaItem::factory()->for(Meeting::factory())->create(['is_private' => true]);
+    Step::factory()->create([
+        'goal_id' => $this->goal->id, 'agenda_item_id' => $item->id,
+        'title' => ['lt' => 'Vidaus klausimo kopija', 'en' => 'Copied internal item'],
+    ]);
+
+    $this->get(goalUrl($this->tenant))->assertInertia(fn (Assert $page) => $page->where('goals.0.steps_count', 1));
+    $this->get(goalUrl($this->tenant, $this->goal))->assertInertia(fn (Assert $page) => $page->has('steps', 1))
+        ->assertDontSee('Vidaus klausimo kopija');
 });

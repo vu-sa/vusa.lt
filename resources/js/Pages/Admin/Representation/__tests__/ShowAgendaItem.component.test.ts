@@ -74,6 +74,29 @@ const createWrapper = (props: Record<string, unknown> = {}) =>
   });
 
 describe('ShowAgendaItem.vue', () => {
+  it('opens visibility editing from an unpadded text action', async () => {
+    const wrapper = createWrapper();
+    const action = wrapper.find('[data-testid="agenda-item-edit-visibility"]');
+    expect(action.classes()).toContain('p-0');
+    expect(action.classes()).toContain('hover:underline');
+    await action.trigger('click');
+    expect(wrapper.findComponent({ name: 'AgendaItemSheetForm' }).props('open')).toBe(true);
+  });
+
+  it('renders only the placeholder and parent meeting for a redacted item', () => {
+    const wrapper = createWrapper({
+      agendaItem: { id: 'item-2', order: 2, title: 'Darbo klausimas', is_private: true, is_redacted: true },
+      meetingContext: { id: 'meet-1', title: 'Posėdis', start_time: '2026-09-24T10:00:00Z' },
+      readOnly: true, isRedacted: true, abilities: { update: false, delete: false },
+    });
+    expect(wrapper.find('[data-testid="agenda-item-private-placeholder"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain('Darbo klausimas');
+    expect(wrapper.findComponent({ name: 'AgendaItemBody' }).exists()).toBe(false);
+    expect(wrapper.find('[data-testid="notes"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="activity"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="sheet"]').exists()).toBe(false);
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     window.history.replaceState({}, '', '/');
@@ -152,6 +175,7 @@ describe('ShowAgendaItem.vue', () => {
     const wrapper = createWrapper({
       agendaItem: { ...baseAgendaItem, meeting: { ...baseAgendaItem.meeting, is_public: true } },
       publicUrl: 'https://www.vusa.test/lt/meeting',
+      abilities: { update: false, delete: false },
     });
     const visibility = wrapper.findAll('dl > div')[1];
     const link = visibility.find('a');
@@ -172,7 +196,7 @@ describe('ShowAgendaItem.vue', () => {
     const visibility = createWrapper().findAll('dl > div')[1];
 
     expect(visibility.classes()).toContain('bg-status-neutral-surface');
-    expect(visibility.find('dd').text()).toBe('meetings.record.internal_only');
+    expect(visibility.find('dd').text()).toBe('meetings.privacy.internal_only');
     expect(visibility.find('a').exists()).toBe(false);
   });
 

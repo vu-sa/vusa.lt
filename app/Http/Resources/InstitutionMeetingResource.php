@@ -3,6 +3,8 @@
 namespace App\Http\Resources;
 
 use App\Models\Meeting;
+use App\Services\AgendaItemPresenter;
+use App\Services\VoteStatisticsCalculator;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -17,7 +19,11 @@ class InstitutionMeetingResource extends JsonResource
     #[\Override]
     public function toArray(Request $request): array
     {
-        $statistics = $this->voteStatistics();
+        $this->loadMissing('agendaItems.votes');
+        $statistics = app(VoteStatisticsCalculator::class)->calculate(
+            $this->agendaItems->filter(fn ($item) => ! $item->is_private || AgendaItemPresenter::canRead($item, $request->user()))->flatMap(fn ($item) => $item->votes),
+            $this->requiresStudentPerspective(),
+        );
 
         return [
             'id' => $this->id,
@@ -28,7 +34,7 @@ class InstitutionMeetingResource extends JsonResource
             'agenda_item_titles' => $this->agendaItems
                 ->sortBy('order')
                 ->take(3)
-                ->pluck('title')
+                ->map(fn ($item) => AgendaItemPresenter::forUser($item, $request->user())['title'])
                 ->values()
                 ->all(),
             'vote_matches' => $statistics['vote_matches'],

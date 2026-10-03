@@ -43,7 +43,7 @@
     <!-- Nominated for the current term (O22). Distinct from the body's members: a secretary
          need not hold a duty here at all. -->
     <OverviewSection v-if="secretaries.length" variant="home" :title="$t('secretaries.label')" :icon="UserCheck">
-      <UsersAvatarGroup :users="(secretaries as unknown as App.Entities.User[])" :max="5" :size="32" />
+      <UsersAvatarGroup :users="(secretaries as unknown as App.Entities.User[])" :max="5" size="xxs" />
     </OverviewSection>
   </div>
 </template>

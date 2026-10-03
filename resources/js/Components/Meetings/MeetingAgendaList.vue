@@ -84,7 +84,7 @@
           <span
             :class="[
               'flex size-7 shrink-0 items-center justify-center text-xs font-semibold tabular-nums',
-              getNumberBadgeClass(item as AgendaStatusItem, requiresStudentPerspective),
+              item.is_redacted ? 'bg-muted text-muted-foreground' : getNumberBadgeClass(item as AgendaStatusItem, requiresStudentPerspective),
             ]"
           >
             {{ index + 1 }}
@@ -96,7 +96,8 @@
             </span>
 
             <span class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-              <span :class="['inline-flex items-center gap-1 font-medium', statusRoleParts[statusOf(item).role].text]" data-slot="agenda-status">
+              <span v-if="item.is_private">{{ $t('meetings.privacy.internal_only') }}</span>
+              <span v-if="!item.is_redacted" :class="['inline-flex items-center gap-1 font-medium', statusRoleParts[statusOf(item).role].text]" data-slot="agenda-status">
                 <component :is="statusOf(item).icon" class="size-3.5" aria-hidden="true" />
                 {{ $t(statusOf(item).label) }}
               </span>

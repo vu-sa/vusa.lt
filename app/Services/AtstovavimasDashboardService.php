@@ -380,7 +380,7 @@ class AtstovavimasDashboardService
                     ->select('meetings.id', 'meetings.title', 'meetings.start_time', 'meetings.type')
                     ->whereBetween('meetings.start_time', [$from, $until])
                     ->with([
-                        'agendaItems:id,meeting_id,title,type,brought_by_students',
+                        'agendaItems:id,meeting_id,title,type,brought_by_students,order,is_private,public_title',
                         'agendaItems.votes:id,agenda_item_id,decision,student_vote,student_benefit,is_main',
                         'fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
                         // Eager: mapMeeting asks every meeting in the window whether it is announced.
@@ -596,6 +596,10 @@ class AtstovavimasDashboardService
      */
     private function mapAgendaItem(AgendaItem $item): array
     {
+        if ($item->is_private && ! AgendaItemPresenter::canRead($item, auth()->user())) {
+            return AgendaItemPresenter::redacted($item);
+        }
+
         $mainVote = $item->votes->firstWhere('is_main', true) ?? $item->votes->first();
 
         return [

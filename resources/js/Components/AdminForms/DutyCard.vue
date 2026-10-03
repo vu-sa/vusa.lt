@@ -29,7 +29,7 @@
         class="flex items-center gap-2 text-sm"
       >
         <Link :href="route('users.show', user.id)" class="min-w-0 hover:underline">
-          <UserPopover :user :size="20" show-name :clickable="false" class="text-muted-foreground" />
+          <UserPopover :user size="xxs" show-name :clickable="false" class="text-muted-foreground" />
         </Link>
         <span class="text-xs text-muted-foreground tabular-nums">{{ $t('nuo') }} {{ formatDate(user.pivot?.start_date) }}</span>
         <Button
@@ -49,7 +49,7 @@
         v-if="!duty.current_users?.length && duty.previous_users?.[0]"
         class="flex items-center gap-2 text-sm text-muted-foreground"
       >
-        <UserPopover :user="duty.previous_users[0]" :size="20" show-name />
+        <UserPopover :user="duty.previous_users[0]" size="xxs" show-name />
         <span class="text-xs tabular-nums">{{ $t('iki') }} {{ formatDate(duty.previous_users[0]?.pivot?.end_date) }}</span>
       </li>
 

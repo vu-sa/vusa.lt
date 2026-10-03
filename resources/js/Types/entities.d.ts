@@ -1,5 +1,5 @@
 declare namespace App.Entities {
-  export type AgendaItem = models.AgendaItem;
+  export type AgendaItem = models.AgendaItem & { is_redacted?: boolean };
   export type Banner = models.Banner;
   export type Calendar = models.Calendar;
   export type Comment = models.Comment;

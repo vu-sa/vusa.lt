@@ -69,6 +69,7 @@
             </div>
             <Input
               v-model="searchQuery"
+              data-slot="impersonation-search-input"
               :placeholder="$t('Ieškok pagal vardą, el. paštą ar pareigas…')"
               @input="debouncedSearch"
             />

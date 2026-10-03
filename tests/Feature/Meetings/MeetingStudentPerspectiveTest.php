@@ -111,5 +111,5 @@ test('the public institution page carries the meeting scope for agenda statuses'
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('currentYearMeetings.meetings.0.requires_student_perspective', false)
-            ->where('currentYearMeetings.meetings.0.completion_status', 'complete'));
+            ->missing('currentYearMeetings.meetings.0.completion_status'));
 });

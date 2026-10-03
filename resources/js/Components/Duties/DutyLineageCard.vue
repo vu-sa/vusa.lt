@@ -20,7 +20,7 @@
         </div>
 
         <div v-if="group.members.length > 0" class="mt-1.5">
-          <UsersAvatarGroup :users="group.members" :max="6" :size="28" />
+          <UsersAvatarGroup :users="group.members" :max="6" size="xxs" />
         </div>
         <p v-else class="mt-1 text-xs text-muted-foreground">
           {{ $t('Neužimta') }}

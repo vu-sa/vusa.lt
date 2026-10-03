@@ -22,15 +22,30 @@ const mountSheet = (props: Record<string, unknown> = {}) => mount(AddAgendaItems
 describe('AddAgendaItemsSheet', () => {
   beforeEach(() => vi.clearAllMocks());
 
+  it('preserves privacy when using an earlier agenda as a template', async () => {
+    const wrapper = mountSheet({
+      initialMode: 'previous',
+      recentAgendas: [{ id: 'old', start_time: '2026-05-01T10:00:00Z', institution_name: 'VU Senatas', agenda_items: [{ title: 'Vidaus klausimas', is_private: true }, { title: 'Viešas klausimas', is_private: false }] }],
+    });
+    await wrapper.findAll('button').find(button => button.text().includes('VU Senatas'))!.trigger('click');
+    await wrapper.find('form').trigger('submit');
+    expect(router.post).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({
+      agendaItemTitles: ['Vidaus klausimas', 'Viešas klausimas'], privateFlags: [true, false],
+    }), expect.anything());
+  });
+
   it('adds a pasted timetable with its times', async () => {
     const wrapper = mountSheet({ initialMode: 'paste' });
 
+    expect(wrapper.find('[role="switch"]').exists()).toBe(false);
+    expect(wrapper.text()).toContain('meetings.privacy.creation_hint');
     await wrapper.find('#agenda-paste').setValue('1. 10.00–10.30 Studijų tvarka\n2. Kiti klausimai');
     await wrapper.find('form').trigger('submit');
 
     expect(router.post).toHaveBeenCalledWith(expect.stringContaining('agendaItems.store'), {
       meeting_id: 'm1',
       agendaItemTitles: ['Studijų tvarka', 'Kiti klausimai'],
+      privateFlags: [false, false],
       startTimes: ['10:00', null],
       endTimes: ['10:30', null],
     }, expect.anything());

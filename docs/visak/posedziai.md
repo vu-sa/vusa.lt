@@ -3,8 +3,9 @@ doc_status: reviewed
 title: Posėdžiai
 area: meetings
 models: [Meeting]
-last_reviewed: 2026-09-27
+last_reviewed: 2026-10-04
 tests:
+  - tests/Feature/Meetings/AgendaItemPrivacyTest.php
   - tests/Feature/Admin/Calendar/MeetingControllerTest.php
   - tests/Feature/Admin/Management/InstitutionCheckInTest.php
   - tests/Feature/Meetings/MeetingCalendarEventTest.php
@@ -164,6 +165,9 @@ darbotvarkės gale. Kaip pildyti punktus, aprašyta puslapyje
 Sąraše (`/mano/meetings`) filtruojama pagal metus, būseną, balsavimo atitikimą, institucijos tipą
 ir padalinį. Pirmą kartą rodomi tavo padalinių posėdžiai. Posėdžiai, kuriuos ką tik keitei,
 rodomi viršuje.
+
+Atskiras klausimas gali būti pažymėtas **Tik viduje**, net jei posėdis viešas. Viešai lieka
+jo numeris, matomumo žyma ir nebūtinas viešas pavadinimas. [Klausimo matomumas](/visak/darbotvarkes-klausimai#matomumas).
 
 ## Kas ką gali {#teises}
 

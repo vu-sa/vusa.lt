@@ -85,6 +85,7 @@ class StoreMeetingRequest extends FormRequest
             'agendaItems.*.description' => 'nullable|string|max:1000',
             'agendaItems.*.order' => 'required|integer|min:1',
             'agendaItems.*.brought_by_students' => 'nullable|boolean',
+            'agendaItems.*.is_private' => 'sometimes|boolean',
             // Batch creation, unlike UpdateAgendaItemRequest's single-item form, has no
             // straightforward way to conditionally require `after:` only for rows that set a
             // start time — leave ordering a client-side concern here.

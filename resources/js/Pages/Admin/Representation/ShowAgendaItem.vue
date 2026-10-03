@@ -1,7 +1,7 @@
 <template>
   <RecordPage
     v-model:section="section"
-    :history-subject="{ type: 'agendaItem', id: agendaItem.id }"
+    :history-subject="isRedacted ? undefined : { type: 'agendaItem', id: agendaItem.id }"
     :title="displayTitle"
     title-voice="sentence"
     :entity-type="ModelEnum.AGENDA_ITEM"
@@ -81,7 +81,7 @@
     </template>
 
     <template #fact-meeting>
-      <Link :href="route('meetings.show', agendaItem.meeting_id)" :class="LINK_CLASS">
+      <Link :href="route('meetings.show', meeting?.id ?? agendaItem.meeting_id)" :class="LINK_CLASS">
         {{ meetingLabel || $t('Posėdis') }}
       </Link>
     </template>
@@ -99,8 +99,27 @@
     </template>
 
     <template #fact-visibility>
+      <SpotlightPopover
+        v-if="canUpdate"
+        :title="$t('meetings.privacy.spotlight_title')"
+        :description="$t('meetings.privacy.spotlight_body')"
+        :is-dismissed="privacySpotlight.isDismissed.value"
+        @dismiss="privacySpotlight.dismiss"
+      >
+        <Button
+          variant="link"
+          voice="sentence"
+          class="relative min-h-0 p-0 text-sm pointer-coarse:min-h-0 before:absolute before:-inset-y-3 before:inset-x-0"
+          data-testid="agenda-item-edit-visibility"
+          @click="openPrivacyEditor"
+        >
+          {{ form.is_private || !publicUrl ? $t('meetings.privacy.internal_only') : $t('meetings.record.visible_public') }}
+          <PenLine class="size-3.5" />
+        </Button>
+      </SpotlightPopover>
+      <span v-else-if="isRedacted || form.is_private">{{ $t('meetings.privacy.internal_only') }}</span>
       <a
-        v-if="publicUrl"
+        v-else-if="publicUrl"
         :href="publicUrl"
         target="_blank"
         rel="noopener noreferrer"
@@ -127,7 +146,8 @@
     </template>
 
     <template #item>
-      <div class="space-y-10">
+      <p v-if="isRedacted" class="text-sm text-muted-foreground" data-testid="agenda-item-private-placeholder">{{ $t('meetings.privacy.placeholder') }}</p>
+      <div v-else class="space-y-10">
         <AgendaItemBody
           v-model:type-open="typeOpen"
           :form
@@ -207,6 +227,7 @@
       :requires-student-perspective
       :is-public="meetingIsPublic"
       :can-delete="abilities.delete"
+      :order="agendaItem.order"
       @delete="deleteOpen = true"
     />
 
@@ -257,6 +278,8 @@ import { useToasts } from '@/Composables/useToasts';
 import AgendaItemBody from '@/Components/AgendaItems/AgendaItemBody.vue';
 import AgendaItemNotesSidebar from '@/Components/AgendaItems/AgendaItemNotesSidebar.vue';
 import AgendaItemSheetForm from '@/Components/AgendaItems/AgendaItemSheetForm.vue';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import AgendaItemVotesSheetForm from '@/Components/AgendaItems/AgendaItemVotesSheetForm.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';
 import { missingFieldsLabel, type AgendaItemMissingAction } from '@/Components/Meetings/meetingCompletion';
@@ -281,10 +304,11 @@ import { isEmailMeeting } from '@/Utils/MeetingDisplay';
  * `AgendaItemController::show()` sends `toFullArray()`, so the translatable fields arrive as
  * `{lt, en}` maps rather than the localized strings every other surface receives.
  */
-type EditableAgendaItem = Omit<App.Entities.AgendaItem, 'title' | 'description' | 'student_position' | 'votes'> & {
+type EditableAgendaItem = Omit<App.Entities.AgendaItem, 'title' | 'description' | 'student_position' | 'public_title' | 'votes'> & {
   title: unknown;
   description: unknown;
   student_position: unknown;
+  public_title?: unknown;
   votes?: Array<Omit<App.Entities.Vote, 'title' | 'note'> & { title: unknown; note: unknown }>;
 };
 
@@ -312,6 +336,8 @@ const props = withDefaults(defineProps<{
   problems?: ProblemSummary[];
   /** A public meeting's item outside the user's reach: no notes or discussion (AgendaItemPolicy::viewSummary). */
   readOnly?: boolean;
+  isRedacted?: boolean;
+  meetingContext?: App.Entities.Meeting;
   /** Goals pilot: set only inside it, with `goalLinks` deferred. */
   goalsExperiment?: boolean;
   goalLinks?: { goals: LinkedGoal[]; options: LinkedGoal[] };
@@ -319,6 +345,7 @@ const props = withDefaults(defineProps<{
   abilities: () => ({ update: false, delete: false }),
   problems: () => [],
   publicUrl: null,
+  meetingContext: undefined,
   requiresStudentPerspective: true,
 });
 
@@ -326,6 +353,12 @@ const LINK_CLASS = 'text-brand underline decoration-brand/40 underline-offset-4 
 
 const isDesktop = useMediaQuery('(min-width: 1024px)');
 const canUpdate = computed(() => props.abilities.update);
+const privacySpotlight = useFeatureSpotlight('agenda-item-privacy-v1');
+
+const openPrivacyEditor = () => {
+  void privacySpotlight.dismiss();
+  sheetOpen.value = true;
+};
 
 const section = ref('item');
 const sections = computed(() => [{ value: 'item', label: $t('Punktas') }]);
@@ -354,6 +387,8 @@ const defaultStartTimeFromPreviousItem = (): string | null => {
 
 const form = useForm<AgendaItemFormData>({
   title: toTranslatedField(props.agendaItem.title),
+  is_private: props.agendaItem.is_private ?? false,
+  public_title: toTranslatedField(props.agendaItem.public_title),
   type: (props.agendaItem.type ?? null) as AgendaItemFormData['type'],
   brought_by_students: props.agendaItem.brought_by_students ?? false,
   student_position: toTranslatedField(props.agendaItem.student_position),
@@ -391,7 +426,7 @@ const status = computed(() => agendaItemStatuses[getAgendaItemStatus({
   votes: form.votes.map(vote => ({ ...vote, id: vote.id ?? undefined })),
 }, props.requiresStudentPerspective)]);
 
-const meeting = computed(() => props.agendaItem.meeting as (App.Entities.Meeting & { is_public?: boolean }) | undefined);
+const meeting = computed(() => (props.meetingContext ?? props.agendaItem.meeting) as (App.Entities.Meeting & { is_public?: boolean }) | undefined);
 const meetingIsPublic = computed(() => Boolean(meeting.value?.is_public));
 // An email meeting's time is only a placeholder, so it would anchor the time suggestions nowhere useful.
 const meetingStartTime = computed(() => {
@@ -417,23 +452,32 @@ watch(() => props.agendaItem.id, () => {
 
 const timeRange = computed(() => [form.start_time, form.end_time].filter(Boolean).join('–'));
 
-const recordFacts = computed<RecordFact[]>(() => [
-  // The status leads, toned in its colour, as the one answer to "is this item done?".
-  { key: 'status', label: $t('Būsena'), status: status.value },
-  {
-    key: 'visibility',
-    label: $t('Matomumas'),
-    labelIcon: Globe,
-    surfaceClass: props.publicUrl ? 'bg-status-success-surface' : 'bg-status-neutral-surface',
-  },
-  { key: 'institution', label: $t('meetings.item.institution') },
-  { key: 'meeting', label: $t('meetings.item.meeting') },
-  { key: 'time', label: $t('meetings.item.time'), value: timeRange.value || '—' },
-  // Only a question the reps raised says something; "—" on every other item was noise.
-  ...(form.brought_by_students
-    ? [{ key: 'raised-by', label: $t('meetings.item.raised_by'), value: $t('meetings.item.raised_by_students') }]
-    : []),
-]);
+const recordFacts = computed<RecordFact[]>(() => {
+  if (props.isRedacted) {
+    return [
+      { key: 'visibility', label: $t('Matomumas') },
+      { key: 'meeting', label: $t('meetings.item.meeting') },
+    ];
+  }
+
+  return [
+    // The status leads, toned in its colour, as the one answer to "is this item done?".
+    { key: 'status', label: $t('Būsena'), status: status.value },
+    {
+      key: 'visibility',
+      label: $t('Matomumas'),
+      labelIcon: Globe,
+      surfaceClass: props.publicUrl && !form.is_private ? 'bg-status-success-surface' : 'bg-status-neutral-surface',
+    },
+    { key: 'institution', label: $t('meetings.item.institution') },
+    { key: 'meeting', label: $t('meetings.item.meeting') },
+    { key: 'time', label: $t('meetings.item.time'), value: timeRange.value || '—' },
+    // Only a question the reps raised says something; "—" on every other item was noise.
+    ...(form.brought_by_students
+      ? [{ key: 'raised-by', label: $t('meetings.item.raised_by'), value: $t('meetings.item.raised_by_students') }]
+      : []),
+  ];
+});
 
 const requestedFocus = typeof window !== 'undefined'
   ? new URLSearchParams(window.location.search).get('focus')
@@ -472,6 +516,7 @@ const { copy: copyUrl } = useClipboard({ legacy: true });
 
 const handleRecordAction = (action: string) => {
   if (action === 'edit') {
+    void privacySpotlight.dismiss();
     sheetOpen.value = true;
   }
   else if (action === 'copy-link') {

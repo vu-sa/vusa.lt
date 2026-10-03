@@ -176,6 +176,7 @@ const avatarSize = computed<AvatarSize>(() => {
 // Text size for the name label when showName is true
 const nameTextClass = computed(() => {
   const sizeMap: Record<AvatarSize, string> = {
+    xxs: 'text-xs',
     xs: 'text-xs',
     sm: 'text-sm',
     default: 'text-base',

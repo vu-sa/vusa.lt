@@ -29,7 +29,7 @@
             :key="secretary.id"
             class="inline-flex items-center gap-1.5 border border-border bg-background py-0.5 pl-0.5 pr-1 text-xs"
           >
-            <UserAvatar :user="(secretary as unknown as App.Entities.User)" :size="20" />
+            <UserAvatar :user="(secretary as unknown as App.Entities.User)" size="xxs" />
             <span class="max-w-40 truncate">{{ secretary.name }}</span>
             <button
               type="button"

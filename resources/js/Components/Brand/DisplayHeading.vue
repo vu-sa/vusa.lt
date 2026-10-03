@@ -13,10 +13,11 @@
       <slot>{{ title }}</slot>
     </component>
 
-    <p v-if="lead || $slots.lead" class="mt-5 max-w-2xl leading-relaxed text-muted-foreground">
-      <slot name="lead">
-        {{ lead }}
-      </slot>
+    <div v-if="$slots.lead" class="mt-5 max-w-2xl leading-relaxed text-muted-foreground">
+      <slot name="lead" />
+    </div>
+    <p v-else-if="lead" class="mt-5 max-w-2xl leading-relaxed text-muted-foreground">
+      {{ lead }}
     </p>
   </div>
 </template>

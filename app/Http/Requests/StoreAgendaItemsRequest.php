@@ -45,6 +45,8 @@ class StoreAgendaItemsRequest extends FormRequest
             'meeting_id' => ['required', 'ulid', SoftDeleteRules::existsLive('meetings')],
             'broughtByStudentsFlags' => 'nullable|array',
             'broughtByStudentsFlags.*' => 'nullable|boolean',
+            'privateFlags' => 'nullable|array',
+            'privateFlags.*' => 'boolean',
             // Times recognised in a pasted timetable, parallel to the titles.
             'startTimes' => 'nullable|array',
             'startTimes.*' => 'nullable|date_format:H:i',

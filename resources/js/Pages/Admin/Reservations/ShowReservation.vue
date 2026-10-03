@@ -26,7 +26,7 @@
 
     <template #fact-managers>
       <div v-if="reservation.users?.length" class="flex items-center gap-2">
-        <UsersAvatarGroup :users="reservation.users" :max="3" :size="20" />
+        <UsersAvatarGroup :users="reservation.users" :max="3" size="xxs" />
         <span class="text-sm text-muted-foreground tabular-nums">{{ reservation.users.length }}</span>
       </div>
       <span v-else>—</span>
@@ -123,12 +123,12 @@
           >
             <template #selected-item="{ item: user }">
               <div class="flex items-center gap-1">
-                <UserAvatar :user="(user as unknown as App.Entities.User)" :size="16" />
+                <UserAvatar :user="(user as unknown as App.Entities.User)" size="xxs" />
                 <span class="max-w-[120px] truncate">{{ (user as unknown as App.Entities.User).name }}</span>
               </div>
             </template>
             <template #option="{ item: user }">
-              <UserAvatar :user="(user as unknown as App.Entities.User)" :size="24" class="shrink-0" />
+              <UserAvatar :user="(user as unknown as App.Entities.User)" size="xxs" class="shrink-0" />
               <span class="min-w-0 truncate">{{ (user as unknown as App.Entities.User).name }}</span>
             </template>
           </MultiSelect>

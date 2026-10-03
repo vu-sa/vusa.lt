@@ -2,11 +2,11 @@
   <span v-if="!users.length">—</span>
   <ul v-else-if="users.length <= inlineLimit" data-slot="users-fact-list" class="flex flex-col gap-1.5">
     <li v-for="user in users" :key="user.id" class="flex min-w-0 items-center gap-2">
-      <UserAvatar :user :size="24" class="shrink-0" />
+      <UserAvatar :user size="xxs" class="shrink-0" />
       <span class="min-w-0 truncate">{{ user.name }}</span>
     </li>
   </ul>
-  <UsersAvatarGroup v-else :users :max="5" :size="24" expandable />
+  <UsersAvatarGroup v-else :users :max="5" size="xxs" expandable />
 </template>
 
 <script setup lang="ts">

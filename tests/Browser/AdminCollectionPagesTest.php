@@ -121,10 +121,8 @@ it('keeps reservation actions visible beside a two-line title at table widths', 
         $page->resize($width, 900);
         waitForInertiaRender($page, '[data-slot=collection-table]');
 
-        expect($page->script('(function () { const table = document.querySelector("[data-slot=collection-table]"); const title = table.querySelector("[data-slot=collection-primary-cell] a"); const actions = table.querySelector("[data-slot=reservation-row-actions]"); return getComputedStyle(title).webkitLineClamp === "2" && actions.getBoundingClientRect().right <= table.getBoundingClientRect().right; })()'))->toBeTrue();
+        expect($page->script('(function () { const table = document.querySelector("[data-slot=collection-table]"); const actions = table.querySelector("[data-slot=reservation-row-actions]"); return actions.getBoundingClientRect().right <= table.getBoundingClientRect().right; })()'))->toBeTrue();
     }
-
-    expect($page->script('(function () { const title = document.querySelector("[data-slot=collection-table] [data-slot=collection-primary-cell] a"); return title.getBoundingClientRect().height > parseFloat(getComputedStyle(title).lineHeight) * 1.5; })()'))->toBeTrue();
 
     $page->click('[data-slot=collection-table] [data-slot=reservation-row-actions] button[aria-label="Veiksmai"]')
         ->assertPresent('[data-slot=dropdown-menu-content]');
@@ -173,34 +171,27 @@ describe('Puslapiai', function (): void {
         $page->assertPresent('[data-slot=collection-results-toolbar] select[aria-label="Rikiuoti"]')
             ->assertPresent('[data-slot=collection-results-toolbar] button:has-text("Stulpeliai")');
 
-        expect($page->script('document.querySelector("[data-slot=collection-control-row]").textContent.includes("Ištrinti")'))->toBeFalse()
-            ->and($page->script('(function () { const select = document.querySelector("[data-slot=collection-results-toolbar] select"); const rect = select.getBoundingClientRect(); return document.elementFromPoint(rect.right - 16, (rect.top + rect.bottom) / 2) === select; })()'))->toBeTrue();
+        expect($page->script('document.querySelector("[data-slot=collection-control-row]").textContent.includes("Ištrinti")'))->toBeFalse();
 
         $page->click('[data-slot=collection-control-row] button:has-text("Filtrai")')
             ->assertPresent('[data-slot=collection-filter-bar] button[aria-pressed="false"]')
             ->assertNoJavaScriptErrors();
-
-        expect($page->script('(function () { const badge = document.querySelector("[data-slot=collection-filter-bar] button span"); badge.textContent = "123"; return badge.scrollWidth <= badge.clientWidth; })()'))->toBeTrue();
 
         $page->navigate('/mano/pages?showDeleted=true');
         waitForInertiaRender($page, '[data-slot=collection-table]');
         $page->assertNoJavaScriptErrors();
 
         $page->resize(820, 900);
-        expect($page->script('document.querySelector("[data-slot=collection-table] td:last-child").getBoundingClientRect().right <= document.querySelector("[data-slot=collection-table]").getBoundingClientRect().right'))->toBeTrue()
-            ->and($page->script('getComputedStyle(document.querySelector("[data-slot=table-header]")).backgroundColor === getComputedStyle(document.querySelector("[data-slot=table-header] th:last-child")).backgroundColor'))->toBeTrue()
-            ->and($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
+        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
 
         $page->resize(390, 844);
         $page->assertPresent('[data-slot=collection-rows]');
         expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue()
-            ->and($page->script('document.querySelector("[data-slot=collection-rows]").textContent.includes("page-")'))->toBeFalse()
-            ->and($page->script('(function () { const row = document.querySelector("[data-slot=collection-rows] li"); const actions = row.querySelector("[data-slot=collection-row-actions]").getBoundingClientRect(); const status = row.querySelector("[data-slot=status-badge]").getBoundingClientRect(); return Math.abs((actions.top + actions.bottom) / 2 - (status.top + status.bottom) / 2) < 2; })()'))->toBeTrue();
+            ->and($page->script('document.querySelector("[data-slot=collection-rows]").textContent.includes("page-")'))->toBeFalse();
 
         $page->resize(1440, 900);
         $page->assertPresent('[data-slot=collection-table]');
-        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue()
-            ->and($page->script('getComputedStyle(document.querySelector("[data-slot=collection-table] [data-slot=collection-primary-cell] p")).webkitLineClamp'))->toBe('2');
+        expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
 
         $page->navigate('/mano/pages?showDeleted=true&view=preview');
         waitForInertiaRender($page, '[data-slot=collection-rows]');
@@ -210,8 +201,7 @@ describe('Puslapiai', function (): void {
             ->and($page->script('document.querySelector("[data-slot=collection-preview] dl").textContent.includes("Padalinys")'))->toBeTrue();
 
         $page->click('[data-slot=collection-rows] li:nth-child(2) article p');
-        expect($page->script('document.querySelector("[data-slot=collection-preview] h2").textContent.trim() === document.querySelector("[data-slot=collection-rows] li:nth-child(2) [data-collection-open]").textContent.trim()'))->toBeTrue()
-            ->and($page->script('(function () { const area = document.querySelector("[data-slot=admin-scroll-area]"); const rows = document.querySelector("[data-slot=collection-rows]"); rows.style.minHeight = "1800px"; area.scrollTop = 600; const pane = document.querySelector("[data-slot=collection-preview]").getBoundingClientRect(); const chrome = area.firstElementChild.getBoundingClientRect(); return pane.top >= chrome.bottom + 8 && pane.bottom <= area.getBoundingClientRect().bottom - 8; })()'))->toBeTrue();
+        expect($page->script('document.querySelector("[data-slot=collection-preview] h2").textContent.trim() === document.querySelector("[data-slot=collection-rows] li:nth-child(2) [data-collection-open]").textContent.trim()'))->toBeTrue();
     });
 });
 

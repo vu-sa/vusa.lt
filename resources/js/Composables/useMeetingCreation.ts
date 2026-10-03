@@ -34,6 +34,7 @@ export interface MeetingFormData {
 
 export interface AgendaItemFormData {
   title: string;
+  is_private?: boolean;
   description?: string;
   order: number;
   brought_by_students?: boolean;

@@ -382,9 +382,6 @@ class ContactController extends PublicController
 
         $this->sharePublicEditLink($meeting);
 
-        // Append completion status
-        $meeting->append('completion_status');
-
         $documents = GetPublicMeetingDocuments::execute($meeting);
 
         // Get primary institution for breadcrumbs
@@ -425,7 +422,7 @@ class ContactController extends PublicController
         );
 
         return Inertia::render('Public/Meetings/ShowMeeting', [
-            'meeting' => $meeting,
+            'meeting' => \App\Services\AgendaItemPresenter::publicMeeting($meeting),
             'institution' => $primaryInstitution,
             'representatives' => $representatives,
             'previousMeeting' => $previousMeeting,
@@ -587,7 +584,7 @@ class ContactController extends PublicController
             $yearData = [
                 'year_key' => $year,
                 'year_label' => $year.' mokslo metai',
-                'meetings' => $yearMeetings->values(),
+                'meetings' => $yearMeetings->map(fn (Meeting $meeting): array => \App\Services\AgendaItemPresenter::publicMeeting($meeting))->values(),
             ];
 
             if ($year === $currentAcademicYear) {

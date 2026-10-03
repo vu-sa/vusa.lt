@@ -24,7 +24,7 @@
       />
     </ActionChoiceList>
 
-    <AgendaItemsEditor v-else v-model="titles" />
+    <AgendaItemsEditor v-else v-model="titles" v-model:private-flags="privateFlags" />
 
     <template v-if="editing" #footer>
       <div class="flex items-center gap-2">
@@ -61,6 +61,7 @@ const titles = ref<string[]>(draft.agendaItems.length > 0
   : ['']);
 
 const editing = ref(draft.agendaItems.length > 0);
+const privateFlags = ref(draft.agendaItems.map(item => Boolean(item.is_private)));
 
 const startEditing = () => {
   updateMeeting({ open_bulk_agenda: false });
@@ -87,9 +88,9 @@ const skip = () => {
 const submit = () => {
   // Blank lines are how the editor grows, not something the user meant to add.
   const items: AgendaItemFormData[] = titles.value
-    .map(title => title.trim())
-    .filter(title => title !== '')
-    .map((title, index) => ({ title, description: '', order: index + 1 }));
+    .map((title, index) => ({ title: title.trim(), is_private: Boolean(privateFlags.value[index]) }))
+    .filter(item => item.title !== '')
+    .map((item, index) => ({ ...item, description: '', order: index + 1 }));
 
   setAgendaItems(items);
   updateMeeting({ open_bulk_agenda: false });

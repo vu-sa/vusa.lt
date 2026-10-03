@@ -19,6 +19,7 @@ use App\Models\Calendar;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Services\AgendaItemPresenter;
 use App\Services\CheckInService;
 use App\Services\InstitutionScopeResolver;
 use App\Services\MeetingCompletionService;
@@ -117,6 +118,7 @@ class MeetingController extends AdminController
                             : null,
                         'order' => $agendaItemData['order'],
                         'brought_by_students' => $agendaItemData['brought_by_students'] ?? false,
+                        'is_private' => $agendaItemData['is_private'] ?? false,
                         'start_time' => $agendaItemData['start_time'] ?? null,
                         'end_time' => $agendaItemData['end_time'] ?? null,
                         'meeting_id' => $meeting->id,
@@ -238,7 +240,7 @@ class MeetingController extends AdminController
             'meeting' => fn () => [
                 ...$loadMeeting()->toArray(),
                 'agenda_items' => $loadMeeting()->agendaItems->map(fn (AgendaItem $item): array => [
-                    ...$item->toArray(),
+                    ...AgendaItemPresenter::forUser($item, request()->user()),
                     'can' => $agendaItemAbilities()->get((string) $item->getKey()),
                 ])->all(),
                 // The edit dialog writes the description, so it needs every locale rather
@@ -261,7 +263,8 @@ class MeetingController extends AdminController
                 'attachInstitution' => $canUpdate(),
             ],
             'completion' => fn () => [
-                'status' => $this->meetingCompletionService->calculate($loadMeeting()),
+                'status' => $readOnly() && $loadMeeting()->agendaItems->contains(fn ($item) => $item->is_private)
+                    ? null : $this->meetingCompletionService->calculate($loadMeeting()),
                 'missingActions' => $missingActions(),
             ],
             'publicUrl' => fn () => $publicUrl(),
@@ -331,7 +334,7 @@ class MeetingController extends AdminController
     /**
      * Earlier agendas of the same institutions, to start a recurring meeting's agenda from.
      *
-     * @return list<array{id: string, start_time: string, institution_name: string, agenda_items: list<string>}>
+     * @return list<array{id: string, start_time: string, institution_name: string, agenda_items: list<array{title: string, is_private: bool}>}>
      */
     private function recentAgendasFor(Meeting $meeting): array
     {
@@ -351,7 +354,11 @@ class MeetingController extends AdminController
                 'institution_name' => (string) $recent->institutions->first()?->getTranslation('name', app()->getLocale()),
                 // Lithuanian: the template refills a new agenda, which is written in Lithuanian.
                 'agenda_items' => $recent->agendaItems
-                    ->map(fn (AgendaItem $item): string => (string) $item->getTranslation('title', 'lt'))
+                    ->filter(fn (AgendaItem $item): bool => ! $item->is_private || AgendaItemPresenter::canRead($item, request()->user()))
+                    ->map(fn (AgendaItem $item): array => [
+                        'title' => (string) $item->getTranslation('title', 'lt'),
+                        'is_private' => (bool) $item->is_private,
+                    ])
                     ->values()
                     ->all(),
             ])

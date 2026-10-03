@@ -28,6 +28,14 @@ const mountPicker = (props: Record<string, unknown> = {}) => mount(WorkspacePick
 const isOpen = (wrapper: ReturnType<typeof mount>) => wrapper.find('[data-open]').attributes('data-open') === 'true';
 
 describe('WorkspacePicker', () => {
+  it('uses a compact trigger alongside the search field', () => {
+    const trigger = mountPicker().find('button');
+
+    expect(trigger.classes()).toContain('h-8');
+    expect(trigger.classes()).not.toContain('min-h-10');
+    expect(trigger.classes()).toContain('pointer-coarse:h-11');
+  });
+
   afterEach(() => {
     vi.useRealTimers();
   });

@@ -594,7 +594,7 @@ return [
                         ['name' => 'vote_alignment_status', 'type' => 'string', 'facet' => true],
 
                         // Status fields
-                        ['name' => 'completion_status', 'type' => 'string', 'facet' => true],
+                        ['name' => 'completion_status', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'institution_type_ids', 'type' => 'int32[]', 'optional' => true],
                         ['name' => 'is_recent', 'type' => 'bool', 'facet' => true],
 
@@ -622,6 +622,7 @@ return [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'is_private', 'type' => 'bool', 'facet' => true],
                         ['name' => 'title', 'type' => 'string', 'infix' => true, 'sort' => true],
                         ['name' => 'description', 'type' => 'string', 'optional' => true, 'infix' => true],
                         ['name' => 'order', 'type' => 'int32', 'sort' => true],

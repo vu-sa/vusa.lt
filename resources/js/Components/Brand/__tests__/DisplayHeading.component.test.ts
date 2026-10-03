@@ -45,12 +45,15 @@ describe('DisplayHeading', () => {
 
   it('lets a slot override the matching prop', () => {
     const wrapper = mount(DisplayHeading, {
-      props: { title: 'From prop', eyebrow: 'Prop eyebrow' },
-      slots: { default: 'From slot', eyebrow: 'Slot eyebrow' },
+      props: { title: 'From prop', eyebrow: 'Prop eyebrow', lead: 'Prop lead' },
+      slots: { default: 'From slot', eyebrow: 'Slot eyebrow', lead: '<ul><li>Slot lead</li></ul>' },
     });
 
     expect(wrapper.get('h2').text()).toBe('From slot');
     expect(wrapper.get('[data-slot="eyebrow-label"]').text()).toBe('Slot eyebrow');
+    expect(wrapper.find('div.leading-relaxed').exists()).toBe(true);
+    expect(wrapper.find('div.leading-relaxed').text()).toBe('Slot lead');
+    expect(wrapper.find('p.leading-relaxed').exists()).toBe(false);
   });
 
   it('steps the visual size independently of the heading level', () => {

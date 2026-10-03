@@ -190,11 +190,10 @@ const avatarWrapperClass = computed(() => {
   return avatarSizeClasses[avatarSize.value];
 });
 
-// Use a slightly smaller avatar size in the popup list for better UX
 const popoverAvatarSize = computed<AvatarSize>(() => {
-  const sizeOrder: AvatarSize[] = ['xs', 'sm', 'default', 'lg', 'xl'];
+  const sizeOrder: AvatarSize[] = ['xxs', 'xs', 'sm', 'default', 'lg', 'xl'];
   const currentIndex = sizeOrder.indexOf(avatarSize.value);
-  // Go one size smaller, but don't go below 'xs'
-  return sizeOrder[Math.max(0, currentIndex - 1)];
+  // Popup rows stay at least 24px to keep names readable.
+  return sizeOrder[Math.max(1, currentIndex - 1)];
 });
 </script>

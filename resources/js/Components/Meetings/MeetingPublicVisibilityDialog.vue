@@ -37,6 +37,9 @@
         </section>
 
         <p class="text-xs text-muted-foreground">
+          {{ $t('meetings.privacy.documents_hint') }}
+        </p>
+        <p class="text-xs text-muted-foreground">
           {{ $t('meetings.visibility.files_link_note') }}
           <a :href="filesDocsHref" target="_blank" rel="noopener" class="underline underline-offset-4 hover:text-foreground">{{ $t('Plačiau') }}</a>
         </p>

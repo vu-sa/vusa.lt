@@ -148,7 +148,7 @@ return [
             'change_institutions' => 'Keisti institucijas',
             'note' => 'Žinutė gavėjams (nebūtina)',
             'note_placeholder' => 'Pvz., „Prašau atsakyti iki penktadienio – ruošiame ataskaitą.“',
-            'no_sign_in' => 'Laiške bus mygtukai „Taip, vyko“, „Ne, nevyko“ ir „Tai ne mano institucija“. Nuoroda atvers atsakymo puslapį; atsakymas įrašomas tik gavėjui jį patvirtinus.',
+            'no_sign_in' => 'Laiške bus mygtukai „Taip, vyko“, „Ne, nevyko“ ir „Nesu šio organo narys (-ė)“. Nuoroda atvers atsakymo puslapį; atsakymas įrašomas tik gavėjui jį patvirtinus.',
             'submit' => 'Išsiųsti klausimus (:count)',
         ],
     ],

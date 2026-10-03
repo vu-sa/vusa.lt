@@ -11,6 +11,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Notifications\MeetingAgendaCompletedNotification;
 use App\Notifications\MeetingCreatedNotification;
+use App\Services\AgendaItemPresenter;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
@@ -87,6 +88,11 @@ class MeetingTaskSubscriber
         }
 
         ['overseers' => $overseers, 'followers' => $followers] = ResolveMeetingNotificationAudience::split($meeting);
+
+        $privateItems = $meeting->agendaItems()->where('is_private', true)->get();
+        $canReadAll = fn (User $user): bool => $privateItems->every(fn (AgendaItem $item): bool => AgendaItemPresenter::canRead($item, $user));
+        $overseers = $overseers->filter($canReadAll);
+        $followers = $followers->filter($canReadAll);
 
         // Whoever carries the agenda task hears about the meeting from that task.
         $overseers = $overseers->reject(fn (User $user): bool => $representatives->contains('id', $user->id));

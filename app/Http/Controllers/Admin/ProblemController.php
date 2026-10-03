@@ -17,6 +17,7 @@ use App\Models\Institution;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
 use App\Models\ProblemCategory;
+use App\Services\AgendaItemPresenter;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
 use App\Support\Experiments\GoalsExperiment;
@@ -175,7 +176,9 @@ class ProblemController extends AdminController
             'steps' => StepResource::collection($problem->steps()
                 ->where(fn ($query) => $query->whereNull('goal_id')
                     ->orWhereHas('goal.tenant', fn ($query) => $query->where('goals_enabled', true)))
-                ->with(StepResource::RELATIONS)->get())->resolve(),
+                ->with(StepResource::RELATIONS)->get()
+                ->filter(fn ($step) => ! $step->agendaItem?->is_private || AgendaItemPresenter::canRead($step->agendaItem, request()->user()))
+                ->values())->resolve(),
         ];
     }
 
@@ -190,11 +193,12 @@ class ProblemController extends AdminController
         return $problem->agendaItems()
             ->with('meeting.institutions:id,name')
             ->get()
-            ->filter(fn (AgendaItem $item): bool => $item->meeting !== null && Gate::allows('viewSummary', $item))
+            ->filter(fn (AgendaItem $item): bool => $item->meeting !== null && Gate::allows('viewSummary', $item)
+                && (! $item->is_private || Gate::allows('view', $item)))
             ->sortByDesc(fn (AgendaItem $item) => $item->meeting->start_time)
             ->map(fn (AgendaItem $item): array => [
                 'id' => $item->id,
-                'title' => $item->title,
+                'title' => AgendaItemPresenter::forUser($item, request()->user())['title'],
                 'meeting_id' => $item->meeting_id,
                 'start_time' => $item->meeting->start_time->toISOString(),
                 'institutions' => $item->meeting->institutions->pluck('name')->values()->all(),

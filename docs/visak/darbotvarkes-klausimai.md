@@ -3,8 +3,11 @@ doc_status: reviewed
 title: Darbotvarkės klausimai
 area: agendaItems
 models: [AgendaItem, Vote]
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-04
 tests:
+  - tests/Browser/AgendaItemPrivacyTest.php
+  - resources/js/Components/Public/__tests__/PublicAgendaItemRow.component.test.ts
+  - tests/Feature/Meetings/AgendaItemPrivacyTest.php
   - tests/Feature/Admin/Problems/AgendaItemProblemControllerTest.php
   - tests/Feature/Admin/Calendar/AgendaItemControllerTest.php
   - tests/Feature/Admin/Calendar/AgendaItemNoteTest.php
@@ -45,6 +48,43 @@ savo puslapį `/mano/agendaItems/{id}`.
 <DocScreenshot name="agenda-item-record" alt="Darbotvarkės klausimo puslapis: būsena, institucija, posėdis, rezultato laukai Sprendimas, Studentų balsas ir Nauda studentams bei atstovų pastabos" caption="Klausimas, kuriam dar nepažymėta nauda studentams." />
 
 ## Kaip tai veikia
+
+### Matomumas: Tik viduje {#matomumas}
+
+Posėdis gali būti viešas, o atskiras jo klausimas skirtas vidaus darbui. Matomumą pasirink
+jau sukurtame klausime: atverk **Redaguoti** arba paspausk jo matomumą. Įjunk
+**Nerodyti punkto turinio viešai** ir, jei reikia, įrašyk **Viešas pavadinimas (neprivaloma)**.
+Peržiūra parodo, kaip atrodys vieša eilutė. Išskleidęs **Kas matys klausimą?**, rasi prieigos
+paaiškinimą. Kuriant posėdį ar jo klausimus rodoma tik trumpa nuoroda į šią galimybę.
+
+Viešai lieka klausimo numeris, žyma **Tik viduje** ir tavo įrašytas viešas pavadinimas.
+Jei jo nėra, pavadinimas yra **Nerodoma**. Originalus pavadinimas, aprašymas, studentų pozicija,
+laikas, tipas, balsavimai, pastabos ir užpildymo duomenys viešai nerodomi. Tai galioja ir
+prisijungusio nario apsilankymui viešoje svetainėje. Vieši posėdžio rodikliai neįtraukia tokių
+klausimų balsavimų.
+
+Jei posėdis dar neviešas, jo puslapyje prieiga dabar nepasikeis. Vis tiek įjunk šią
+parinktį vidaus darbui skirtiems klausimams: institucijos tipas vėliau gali leisti viešinti
+posėdžius arba posėdis gali būti susietas su viešu kalendoriaus renginiu. Parinktis saugo
+punkto turinį ir tokiais atvejais. Saugok tik darbui būtiną asmeninę informaciją.
+
+Visą klausimą Mano VU SA ir toliau gali skaityti institucijos nariai, turintys prieigą pagal
+posėdžio datą, atitinkamos apimties studentų atstovai ir koordinatoriai, prieigą per institucijų
+ryšius turintys nariai bei super administratorius. Vien prisijungti neužtenka. Klausimo pakeitimų istorija taip pat neatskleidžiama be vidaus prieigos. Jei gali matyti
+tik viešą posėdį, klausimo puslapyje taip pat matai tik viešą eilutę. Matomumą gali keisti tie
+patys žmonės, kurie gali redaguoti klausimą.
+
+Žyma nekeičia vidaus darbo: klausimui galioja tos pačios užpildymo taisyklės. Nuėmęs žymą,
+viešame posėdyje paskelbi jo įprastą turinį, todėl prieš išsaugodamas jį peržiūrėk.
+Kopijuojant ankstesnę darbotvarkę, matomumo žyma išlieka; viešą pavadinimą įrašyk naujam
+klausimui atskirai.
+
+<ChangelogNote version="v3.0" date="2026-10-02" title="Atskiro klausimo matomumas">
+
+Žyma **Tik viduje** leidžia atskirti vidaus darbo klausimą nuo kitų viešo posėdžio klausimų.
+Redagavimo lange matai prieigos paaiškinimą ir viešos eilutės peržiūrą.
+
+</ChangelogNote>
 
 ### Klausimo tipas {#tipai}
 
@@ -180,7 +220,19 @@ Institucijos narys be rolės klausimo redaguoti negali, nors gali keisti patį p
   koordinatoriai ir institucijos sekėjai gauna pranešimą, kad darbotvarkė užpildyta.
 - Jei užpildytas klausimas vėl tampa nepilnas (pvz., pakeistas į Balsavimą), užduotis atveriama.
 
+Kai darbotvarkėje yra vidaus klausimų, pranešimas apie jos užpildymą siunčiamas tik visus juos
+skaityti galintiems gavėjams.
+
 Plačiau – [Posėdžiai](/visak/posedziai#pranesimai) ir [Užduotys](/mano/uzduotys).
+
+## Susitarimai {#susitarimai}
+
+- **Tik viduje** skirta darbo medžiagos skelbimui valdyti. Nekelk ir nesaugok perteklinės
+  asmeninės informacijos ar asmeninių failų — tai galioja ir vidaus klausimams bei pastaboms.
+- Viešą pavadinimą rinkis tokį, kurį galima skelbti. Nebūtina jame kartoti originalaus pavadinimo.
+- Atskirai paskelbti dokumentai, failų nuorodos ir į kitą turinį nukopijuotas tekstas turi savo
+  skelbimo nustatymus. Klausimo matomumo žyma jų nekeičia. Viešuose tiksluose su vidaus
+  klausimu susieti žingsniai nerodomi.
 
 ## Techninė informacija {#technine-informacija}
 
@@ -208,3 +260,18 @@ Plačiau – [Posėdžiai](/visak/posedziai#pranesimai) ir [Užduotys](/mano/uzd
 - Reikšmių pavadinimai: `VoteValue` (serveris), `useAgendaItemStyling.ts` ir sąrašo filtrų
   `FACET_VALUE_LABELS` – visur tie patys.
 - Senas redagavimo adresas `/mano/agendaItems/{id}/edit` nukreipia į klausimo puslapį.
+
+### Diegimas ir paieška
+
+- `AgendaItemPresenter` parenka viešą eilutę arba vidaus turinį. Vidaus paieškoje klausimą
+  leidžiama rasti tik turint `AgendaItemPolicy::view`; `viewSummary` prieiga suteikia viešą eilutę.
+- Ribojantis pakeitimas pirmiausia pašalina senus klausimo ir posėdžio paieškos įrašus.
+  Jei paieškos tarnyba nepasiekiama, pakeitimas neišsaugomas. Indeksavimo darbai naudoja tą
+  patį posėdžio užraktą ir iš naujo nuskaito dabartinį įrašą.
+- Diegdami šį pakeitimą, priežiūros režimu pritaikyk migracijas, paleisk `search:reindex`
+  klausimų, posėdžių ir viešų posėdžių schemoms bei duomenims atnaujinti. Prieš vėl leisdami
+  kurti vidaus klausimus, pakeisk ankstesnį administravimo paieškos pirminį raktą ir atšauk senąjį
+  (`typesense:rotate-keys --force --delete-old`), atnaujink konfigūracijos podėlį bei perkrauk
+  darbuotojus. Patikrink, kad senieji raktai nebeveikia; vien podėlio išvalymas jų neatšaukia.
+  Raktų rotavimo komanda šalina ankstesnius platformos generuotus raktus, todėl bendroje
+  Typesense instancijoje pirmiausia patikrink kitų aplinkų naudojamus raktus.

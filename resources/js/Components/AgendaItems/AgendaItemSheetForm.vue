@@ -29,6 +29,50 @@
       </p>
     </div>
 
+    <div class="space-y-3 border-y border-border py-4" data-slot="agenda-item-privacy">
+      <label class="flex cursor-pointer items-center gap-3 text-sm pointer-coarse:min-h-11">
+        <Switch id="agenda-item-private" v-model="draft.is_private" aria-describedby="agenda-item-privacy-lead" />
+        {{ $t('meetings.privacy.switch_label') }}
+      </label>
+      <p id="agenda-item-privacy-lead" class="text-sm text-muted-foreground">
+        {{ $t(draft.is_private ? 'meetings.privacy.enabled_lead' : 'meetings.privacy.disabled_lead') }}
+      </p>
+      <details class="group" data-testid="agenda-item-privacy-details">
+        <summary :class="[
+          'u-touch inline-flex cursor-pointer items-center gap-1.5',
+          'select-none text-xs font-bold uppercase tracking-wide text-foreground/80 transition-colors hover:text-foreground',
+        ]">
+          <ChevronDown class="size-3.5 transition-transform group-open:rotate-180" />
+          {{ $t('meetings.privacy.details_label') }}
+        </summary>
+        <div class="mt-3 space-y-3 text-sm text-muted-foreground">
+          <p v-if="!isPublic">{{ $t('meetings.privacy.nonpublic_hint') }}</p>
+          <p>{{ $t('meetings.privacy.audience') }}</p>
+          <p>{{ $t('meetings.privacy.no_personal_data') }}</p>
+        </div>
+      </details>
+      <FormFieldWrapper
+        v-if="draft.is_private"
+        id="agenda-item-public-title"
+        :label="$t('meetings.privacy.public_title')"
+        :hint="$t('meetings.privacy.public_title_hint')"
+        :error="form.errors[`public_title.${locale}`]"
+      >
+        <Input id="agenda-item-public-title" v-model="draft.public_title[locale]" maxlength="200" :class="fieldSurfaceClass" />
+      </FormFieldWrapper>
+      <div v-if="draft.is_private" class="border-l-2 border-border pl-3 text-sm" data-testid="agenda-item-public-preview">
+        <p class="text-xs text-muted-foreground">
+          {{ $t('meetings.privacy.public_preview') }}
+        </p>
+        <p>
+          <span v-if="order" class="mr-2 font-mono text-muted-foreground">{{ order }}.</span>
+          {{ draft.public_title[locale]?.trim() || draft.public_title.lt?.trim() || $t('meetings.privacy.hidden_title') }}
+        </p>
+        <span class="text-xs text-muted-foreground">{{ $t('meetings.privacy.internal_only') }}</span>
+      </div>
+      <p v-else-if="form.is_private" class="text-sm text-status-attention">{{ $t('meetings.privacy.publish_hint') }}</p>
+    </div>
+
     <FormFieldWrapper id="agenda-item-title" :label="$t('meetings.item.title_label')" :error="titleError" required>
       <Textarea
         id="agenda-item-title"
@@ -103,16 +147,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, nextTick, reactive, ref, watch } from 'vue';
 import type { InertiaForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Languages, Trash2 } from 'lucide-vue-next';
+import { ChevronDown, Languages, Trash2 } from 'lucide-vue-next';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { SheetForm } from '@/Components/Patterns';
 import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
+import { Switch } from '@/Components/ui/switch';
+import { Input } from '@/Components/ui/input';
 import { fieldSurfaceClass, segmentGroupClass, segmentVariants } from '@/Components/ui/control';
 import { Textarea } from '@/Components/ui/textarea';
 import { TimePicker, type TimeValue } from '@/Components/ui/time-picker';
@@ -131,12 +177,14 @@ const props = withDefaults(defineProps<{
   requiresStudentPerspective?: boolean;
   isPublic?: boolean;
   canDelete?: boolean;
+  order?: number;
 }>(), {
   defaultStartTime: null,
   meetingStartTime: null,
   requiresStudentPerspective: true,
   isPublic: false,
   canDelete: false,
+  order: undefined,
 });
 
 const emit = defineEmits<{
@@ -147,7 +195,7 @@ const emit = defineEmits<{
 const LOCALES = ['lt', 'en'] as const;
 
 /** Votes are edited in AgendaItemVotesSheetForm, so this sheet stays about the item itself. */
-type TextDraft = Pick<AgendaItemFormData, 'title' | 'brought_by_students' | 'description' | 'student_position' | 'start_time' | 'end_time'>;
+type TextDraft = Pick<AgendaItemFormData, 'title' | 'is_private' | 'public_title' | 'brought_by_students' | 'description' | 'student_position' | 'start_time' | 'end_time'>;
 
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
@@ -155,6 +203,8 @@ function clone<T>(value: T): T {
 
 const fromForm = (): TextDraft => clone({
   title: props.form.title,
+  is_private: props.form.is_private ?? false,
+  public_title: props.form.public_title ?? { lt: '', en: '' },
   brought_by_students: props.form.brought_by_students,
   description: props.form.description,
   student_position: props.form.student_position,
@@ -200,15 +250,13 @@ const toTimeString = (value: TimeValue | undefined): string | null =>
     ? `${String(value.hour).padStart(2, '0')}:${String(value.minute).padStart(2, '0')}`
     : null;
 
-const publicHint = computed(() => (props.isPublic ? $t('meetings.record.visible_public') : undefined));
+const publicHint = computed(() => (draft.is_private ? $t('meetings.privacy.internal_only') : props.isPublic ? $t('meetings.record.visible_public') : undefined));
 
-const save = () => {
-  props.form.title = clone(draft.title);
-  props.form.brought_by_students = draft.brought_by_students;
-  props.form.description = clone(draft.description);
-  props.form.student_position = clone(draft.student_position);
-  props.form.start_time = draft.start_time;
-  props.form.end_time = draft.end_time;
+const save = async () => {
+  // eslint-disable-next-line vue/no-mutating-props -- Commit the draft to the parent-owned Inertia form on save.
+  Object.assign(props.form, clone(draft));
+  // Inertia recalculates isDirty through a watcher before saveThen decides whether to submit.
+  await nextTick();
 
   // A rejected save never calls back, so the sheet stays open on its errors.
   props.saveThen(() => {

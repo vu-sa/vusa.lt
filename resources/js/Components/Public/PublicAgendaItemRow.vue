@@ -23,20 +23,21 @@
 
       <div class="min-w-0">
         <p class="text-sm font-medium leading-snug text-foreground">
-          {{ item.title }}
+          {{ item.title || $t('meetings.privacy.hidden_title') }}
         </p>
+        <p v-if="item.is_private && item.title !== $t('meetings.privacy.internal_only')" class="mt-0.5 text-xs text-muted-foreground">{{ $t('meetings.privacy.internal_only') }}</p>
         <p
-          v-if="showStatus || item.brought_by_students || isExpandable"
+          v-if="showStatus || (!item.is_private && item.brought_by_students) || isExpandable"
           class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground"
         >
           <span v-if="showStatus" :class="status.colorClass">{{ status.label }}</span>
-          <span v-if="showStatus && item.brought_by_students" aria-hidden="true">·</span>
-          <span v-if="item.brought_by_students" class="inline-flex items-center gap-1">
+          <span v-if="showStatus && (!item.is_private && item.brought_by_students)" aria-hidden="true">·</span>
+          <span v-if="(!item.is_private && item.brought_by_students)" class="inline-flex items-center gap-1">
             <IFluentPeople20Regular class="size-3" />
             {{ $t('Įtraukta studentų') }}
           </span>
           <template v-if="isExpandable">
-            <span v-if="showStatus || item.brought_by_students" aria-hidden="true">·</span>
+            <span v-if="showStatus || (!item.is_private && item.brought_by_students)" aria-hidden="true">·</span>
             <span class="inline-flex items-center gap-0.5 text-muted-foreground group-open/item:hidden">
               {{ $t('Plačiau') }}
               <IFluentChevronDown20Regular class="size-3" />
@@ -166,21 +167,23 @@ const mainVote = computed(() => getMainVote(props.item));
  * Showing either publicly makes an ordinary agenda look neglected.
  */
 const showStatus = computed(() => {
+  if (props.item.is_private) return false;
   if (status.value.status === 'unset') return false;
 
   return !(props.isUpcoming && status.value.status === 'no_vote');
 });
 
-const showsOutcome = computed(() => props.item.type === 'voting' && hasDecisionData(props.item));
+const showsOutcome = computed(() => !props.item.is_private && props.item.type === 'voting' && hasDecisionData(props.item));
 const decisionColorClass = computed(() => getDecisionTextColorClass(mainVote.value?.decision));
 
 /** Only rows with something more to say are worth making clickable. */
-const isExpandable = computed(() => Boolean(props.item.description) || showsOutcome.value);
+const isExpandable = computed(() => !props.item.is_private && (Boolean(props.item.description) || showsOutcome.value));
 
 /** The columns are TIME, which MySQL hands back as `HH:MM:SS`. */
 const trimSeconds = (value: string) => value.slice(0, 5);
 
 const timeRangeLabel = computed(() => {
+  if (props.item.is_private) return null;
   const { start_time: start, end_time: end } = props.item;
   if (!start) return null;
 

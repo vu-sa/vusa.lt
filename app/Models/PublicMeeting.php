@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\MeetingType;
 use App\Models\Pivots\AgendaItem;
+use App\Services\Typesense\MeetingSearchEngine;
 use App\Services\VoteStatisticsCalculator;
 use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
@@ -13,7 +14,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
-use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 
 /**
@@ -176,7 +176,7 @@ class PublicMeeting extends Meeting
      */
     protected function calculateVoteStatistics(): array
     {
-        $allVotes = $this->agendaItems->flatMap(fn ($item) => $item->votes);
+        $allVotes = $this->agendaItems->reject(fn ($item) => $item->is_private)->flatMap(fn ($item) => $item->votes);
 
         return app(VoteStatisticsCalculator::class)->calculate($allVotes);
     }
@@ -210,6 +210,6 @@ class PublicMeeting extends Meeting
     #[\Override]
     public function searchableUsing()
     {
-        return app(EngineManager::class)->engine('typesense');
+        return MeetingSearchEngine::resolve();
     }
 }

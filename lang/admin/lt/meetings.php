@@ -9,7 +9,7 @@ return [
         'never_heading' => 'Niekada nerodoma',
         'shown' => [
             'basics' => 'Posėdžio data, institucija ir būsena',
-            'agenda' => 'Darbotvarkės klausimai ir balsavimo rezultatai',
+            'agenda' => 'Darbotvarkės klausimai ir balsavimo rezultatai. Punktams „Tik viduje“ – tik vieta darbotvarkėje ir viešas pavadinimas, jei įrašytas.',
             'representatives' => 'Tuo metu pareigas ėję studentų atstovai',
             'documents' => 'Skirtuko „Dokumentai“ dokumentai, turintys viešą nuorodą (VU SA organų nutarimai ir protokolai)',
         ],

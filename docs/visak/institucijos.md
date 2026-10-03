@@ -92,6 +92,8 @@ viešumas**. Kalendoriuje paskelbtas posėdis pats savaime viešu netampa.
 
 ### Ką rodo institucijos puslapis
 
+Narių ir sekretorių nuotraukos rodomos mažos, kad sąrašuose ir kortelėse daugiau vietos liktų vardams bei pareigoms.
+
 Viršuje – veiklos būklė, rūšis ir tipas, padalinys, nariai (užimtos ir visos vietos), posėdžių
 viešumas ir koordinatoriai. Skirtukai:
 
@@ -191,7 +193,7 @@ Nuorodos galioja **14 dienų**.
   įrašyti ir jų darbotvarkės bei sprendimai užpildyti. Kol dar yra neužpildytų įrašų, patvirtinimo
   priimti negalima. Pranešimas apie laiką be posėdžių apima tik likusį tarpą po paskutinio posėdžio iki
   nurodytos pabaigos. Jau patvirtinti tarpai nedubliuojami.
-- **Tai ne mano institucija** – pranešk klaususiems koordinatoriams patikrinti atstovų duomenis.
+- **Nesu šio organo narys (-ė)** – pranešk klaususiems koordinatoriams patikrinti atstovų duomenis.
   Kitų gavėjų užklausos lieka atviros.
 
 <DocScreenshot name="activity-request-reply" narrow alt="Atsakymo puslapis be prisijungimo, kuriame atstovas pažymi posėdžius" caption="Viešas atsakymo puslapis: atstovė nurodo posėdžio datą, laiką ir formatą be prisijungimo." />
@@ -304,7 +306,7 @@ pranešimus „Posėdžio nebuvo“ tvarko ir atstovų apie posėdžius klausia 
 |---|---|---|
 | Kasdien, kai būklė „Artėja terminas“ arba „Vėluoja“ | Kadencijos sekretoriai, o jei jų nėra – dabartiniai atstovai | Užduotį **„Pranešti apie veiklą“** ir laišką „Ar vyko posėdis?“, į kurį [atsakoma neprisijungus](#atsakymas) |
 | Koordinatorius [paklausia atstovų](#paklausti) | Tie patys | Vieną laišką „Ar vyko posėdis?“ apie visas jų institucijas, su koordinatoriaus žinute |
-| Gavėjas atsako „Tai ne mano institucija“ | Klausęs koordinatorius, o automatinio priminimo atveju – institucijos koordinatoriai | Pranešimą patikrinti institucijos atstovus |
+| Gavėjas atsako „Nesu šio organo narys (-ė)“ | Klausęs koordinatorius, o automatinio priminimo atveju – institucijos koordinatoriai | Pranešimą patikrinti institucijos atstovus |
 | Užregistruojamas dabartinį veiklos laikotarpį apimantis posėdis arba pranešimas „Posėdžio nebuvo“ | – | Periodiškumo užduotis pažymima atlikta automatiškai |
 | Seki instituciją ir sukuriamas jos posėdis ar užpildoma darbotvarkė | Sekėjai, išskyrus nutildžiusius | Pranešimą |
 

@@ -34,7 +34,7 @@ class GoalController extends PublicController
             ->where('tenant_id', $this->tenant->id)
             ->where('is_public', true)
             ->with('cadence')
-            ->withCount('steps')
+            ->withCount(['steps' => fn ($query) => $query->whereDoesntHave('agendaItem', fn ($items) => $items->where('is_private', true))])
             ->get()
             ->sortByDesc(fn (Goal $goal) => $goal->cadence?->start_date)
             ->values()
@@ -76,7 +76,7 @@ class GoalController extends PublicController
                 'evaluation' => $goal->status->isClosed() ? $goal->evaluation : null,
                 'responsible_duty' => $goal->responsibleDuty?->name,
             ],
-            'steps' => $goal->steps()->with('agendaItem.meeting.institutions.tenant', 'document')->get()->map(fn (Step $step): array => [
+            'steps' => $goal->steps()->whereDoesntHave('agendaItem', fn ($items) => $items->where('is_private', true))->with('agendaItem.meeting.institutions.tenant', 'document')->get()->map(fn (Step $step): array => [
                 'id' => $step->id,
                 'title' => $step->title,
                 'description' => $step->description,

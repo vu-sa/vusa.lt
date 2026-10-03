@@ -87,7 +87,7 @@ Užklausa nurodo tavo laikotarpį; jo pabaiga užfiksuota siunčiant.
 - Įrašų papildymo užklausoje matai jau vykusius posėdžius be darbotvarkės arba su neužpildytais
   sprendimais. Atverk jų įrašus ir prisijungęs papildyk juos. **Viskas užfiksuota** patvirtinsi,
   kai darbotvarkės ir sprendimai bus užpildyti. Jei trūksta paties posėdžio, gali jį pridėti.
-- Abiem atvejais gali pasirinkti **Tai ne mano institucija**, kad koordinatorius patikrintų duomenis.
+- Abiem atvejais gali pasirinkti **Nesu šio organo narys (-ė)**, kad koordinatorius patikrintų duomenis.
 
 Atsakymo nuoroda galioja 14 dienų ir leidžia atsakyti neprisijungus. Vien jos atvėrimas nieko
 neįrašo. Vienu atsakymu gali įrašyti kelis posėdžius; sprendimams el. paštu laiko nereikia.
@@ -100,7 +100,7 @@ nereiškia, kad laiškas jau pristatytas. Užklausų istoriją rasi
 
 **Suvestinėje** kiekviena rodoma institucija turi savo laikotarpį ir pasirašytas atsakymo
 nuorodas: veiklos klausime **Taip, vyko** / **Ne, nevyko**, papildymo klausime **Papildyti įrašus** /
-**Viskas užfiksuota**, abiem atvejais **Tai ne mano institucija**. Papildymo klausime pateikiamos
+**Viskas užfiksuota**, abiem atvejais **Nesu šio organo narys (-ė)**. Papildymo klausime pateikiamos
 ir konkrečių neužpildytų posėdžių nuorodos. Jos yra ir tekstinėje laiško versijoje.
 
 Visi laiškai pasirašomi **Mano VU SA** vardu, ne koordinatoriaus.

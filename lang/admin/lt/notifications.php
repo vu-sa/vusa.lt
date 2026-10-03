@@ -79,7 +79,7 @@ return [
     'activity_request_note' => ':name rašo: „:note“',
     'action_register_meeting' => 'Taip, vyko',
     'action_report_activity' => 'Ne, nevyko',
-    'action_not_mine' => 'Tai ne mano institucija',
+    'action_not_mine' => 'Nesu šio organo narys (-ė)',
     'action_answer' => 'Atsakyti',
     'action_open_institution' => 'Atverti instituciją',
     'activity_not_mine_title' => 'Patikrink „:institution“ atstovus',

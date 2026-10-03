@@ -51,6 +51,8 @@ Pagrindiniai kūrimo veiksmai išsiskiria ryškia spalva ir didžiosiomis raidė
 rašomi įprastai, kad būtų lengviau juos perskaityti. Naršant klaviatūra, aktyvi nuoroda turi
 matomą apvadą.
 
+Darbo srities pasirinkimas viršutinėje juostoje yra tokio pat aukščio kaip paieškos laukas. Jutikliniame ekrane mygtukas lieka didesnis, kad būtų patogu paspausti.
+
 Sąrašuose įrašo veiksmai matomi tiek eilutėse, tiek lentelėje. Vien piktograma pažymėti mygtukai
 turi aiškų pavadinimą ekrano skaitytuvui, o telefone jų paspaudimo vieta yra bent 44 × 44 taškai.
 Įrašų rūšys, turinčios šiukšlinę, leidžia atkurti įrašą arba, turint teisę ir nesant susiejimų apribojimų, ištrinti jį visam laikui.

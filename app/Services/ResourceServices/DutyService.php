@@ -128,7 +128,7 @@ class DutyService
                 'tenant:id,shortname',
                 'types', // explicit since not auto-loaded
                 'meetings:id,title,start_time,type',
-                'meetings.agendaItems:id,meeting_id,title,type,brought_by_students',
+                'meetings.agendaItems:id,meeting_id,title,type,brought_by_students,order,is_private,public_title',
                 'meetings.agendaItems.votes:id,agenda_item_id,title,decision,student_vote,student_benefit,is_main',
                 'meetings.calendarEvent:id,meeting_id,is_draft',
                 // Historical assignments are required for Gantt coverage periods.
@@ -329,7 +329,7 @@ class DutyService
                 'meetings:id,title,start_time,type',
                 'meetings.institutions:id',
                 'meetings.institutions.types',
-                'meetings.agendaItems:id,meeting_id,title,type,brought_by_students',
+                'meetings.agendaItems:id,meeting_id,title,type,brought_by_students,order,is_private,public_title',
                 'meetings.agendaItems.votes:id,agenda_item_id,title,decision,student_vote,student_benefit,is_main',
                 // Load fileableFiles for has_report and has_protocol accessors (prevents N+1)
                 'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',

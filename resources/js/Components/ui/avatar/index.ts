@@ -5,6 +5,7 @@ export { default as AvatarFallback } from './AvatarFallback.vue';
 export { default as AvatarImage } from './AvatarImage.vue';
 
 export const avatarSizeClasses = {
+  xxs: 'size-5', // 20px
   xs: 'size-6', // 24px
   sm: 'size-8', // 32px
   default: 'size-10', // 40px
@@ -43,6 +44,7 @@ export function mapPixelToSize(pixels?: number): AvatarSize {
 
 // Text size classes corresponding to avatar sizes
 export const avatarTextSizes: Record<AvatarSize, string> = {
+  xxs: 'text-xs',
   xs: 'text-xs',
   sm: 'text-xs',
   default: 'text-sm',

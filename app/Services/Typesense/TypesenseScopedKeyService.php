@@ -3,6 +3,7 @@
 namespace App\Services\Typesense;
 
 use App\Models\Duty;
+use App\Models\Pivots\AgendaItem;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\InstitutionAccessService;
@@ -12,6 +13,7 @@ use App\Support\AuthorityCacheExpiry;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Gate;
 use Typesense\Client;
 
 /**
@@ -77,7 +79,12 @@ class TypesenseScopedKeyService
     /** Changes whenever the settings that decide public rows do. */
     public static function visibilityVersion(): string
     {
-        return md5(app(MeetingSettings::class)->getPublicMeetingInstitutionTypeIds()->sort()->implode(','));
+        return md5(implode(':', [
+            'agenda-privacy-v1',
+            config('scout.typesense.client-settings.admin_search_key'),
+            Cache::get('agenda-privacy-version', ''),
+            app(MeetingSettings::class)->getPublicMeetingInstitutionTypeIds()->sort()->implode(','),
+        ]));
     }
 
     /**
@@ -134,9 +141,22 @@ class TypesenseScopedKeyService
                 $tenantIds = $permission ? $this->getTenantIdsForPermission($user, $permission) : collect();
                 $institutionIds = $ownPermission ? $this->getInstitutionIdsForOwnPermission($ownPermission, $user) : collect();
 
+                $filter = $this->buildCombinedFilterByClause($tenantIds, $institutionIds, $this->publicRowsClause($publicRows));
+                if ($collection === 'agenda_items') {
+                    $privateIds = AgendaItem::query()->where('is_private', true)
+                        ->with(['meeting.institutions.types', 'meeting.institutions.tenant', 'tenants'])
+                        ->get()->filter(fn (AgendaItem $item): bool => Gate::forUser($user)->allows('view', $item))
+                        ->pluck('id')->map(fn ($id): string => '`'.$id.'`')->implode(',');
+                    $clauses = $filter ? ['('.$filter.') && is_private:=false'] : [];
+                    if ($privateIds !== '') {
+                        $clauses[] = 'is_private:=true && id:=['.$privateIds.']';
+                    }
+                    $filter = $clauses ? '('.implode(' || ', $clauses).')' : 'id:=__no_access__';
+                }
+
                 $scopedKey = $this->client->getKeys()->generateScopedSearchKey($parentKey, [
                     'collection' => $prefixedCollectionName,
-                    'filter_by' => $this->buildCombinedFilterByClause($tenantIds, $institutionIds, $this->publicRowsClause($publicRows))
+                    'filter_by' => $filter
                         // Nothing public and no permissions: an empty list, not a missing collection.
                         ?? 'tenant_ids:=-1',
                     'expires_at' => $expiresAt,
@@ -259,10 +279,9 @@ class TypesenseScopedKeyService
             // No access = collection is excluded entirely from response
         }
 
-        // Generate an unrestricted header key for multi_search endpoint authentication
-        // This key has no collection/filter restrictions - it's only for endpoint access
-        // Individual search requests use their own collection-scoped keys
+        // Without a per-search key, the transport credential must never return records.
         $headerKey = $this->client->getKeys()->generateScopedSearchKey($parentKey, [
+            'filter_by' => 'id:=__transport_only__',
             'expires_at' => $expiresAt,
         ]);
 

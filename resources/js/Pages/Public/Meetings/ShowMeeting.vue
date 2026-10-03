@@ -1,34 +1,17 @@
 <template>
   <div class="meeting-page">
-    <PageTitleBand :title="formatMeetingDateTime(meeting)" :lead="meeting.description || undefined" size="md">
+    <PageTitleBand :title="formatMeetingDateTime(meeting)" size="md">
       <template #breadcrumbs>
         <PublicBreadcrumbs variant="inline" />
       </template>
       <template #eyebrow>
-        <InertiaLink :href="institutionUrl" class="transition-colors hover:text-foreground">
+        <InertiaLink :href="institutionUrl" class="no-underline transition-colors hover:text-foreground">
           {{ institution.name }}
         </InertiaLink>
       </template>
-      <template v-if="requiresStudentPerspective" #actions>
-        <Button voice="brand" variant="outline" size="sm" @click="showInfoModal = true">
-          <IFluentInfo16Regular class="size-4" />
-          {{ $t('Apie balsavimo skaidrumą') }}
-        </Button>
-      </template>
-    </PageTitleBand>
-
-    <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
-      <div class="max-w-3xl space-y-10">
-        <div class="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-          <span>
-            {{ allAgendaItems.length }}
-            {{ allAgendaItems.length === 1 ? $t('klausimas') : $t('klausimai') }}
-          </span>
-          <AgendaOutcomeIndicators v-if="requiresStudentPerspective" :agenda-items="itemsWithDecisions" />
-        </div>
-
+      <template #lead>
         <div>
-          <EyebrowLabel as="h2" class="mb-3 text-muted-foreground">
+          <EyebrowLabel as="h2" class="mb-2.5 text-muted-foreground">
             {{ $t('Studentų atstovai') }}
           </EyebrowLabel>
           <ul v-if="representatives.length > 0" class="flex flex-wrap gap-x-6 gap-y-3">
@@ -47,25 +30,17 @@
             {{ $t('Atstovai nežinomi') }}
           </p>
         </div>
+      </template>
+      <template v-if="requiresStudentPerspective" #actions>
+        <Button voice="brand" variant="outline" size="sm" @click="showInfoModal = true">
+          <IFluentInfo16Regular class="size-4" />
+          {{ $t('Apie balsavimo skaidrumą') }}
+        </Button>
+      </template>
+    </PageTitleBand>
 
-        <section v-if="requiresStudentPerspective && outcomeSummary.total > 0" data-testid="outcome-summary">
-          <h2 :class="sectionHeadingClass">
-            {{ $t('Sprendimų santrauka') }}
-          </h2>
-          <div class="grid grid-cols-3 divide-x divide-border border-y border-border">
-            <StatCell :value="outcomeSummary.positive" :label="$t('Teigiami')" class="px-4 py-5 first:pl-0" />
-            <StatCell :value="outcomeSummary.neutral" :label="$t('Neutralūs')" class="px-4 py-5" />
-            <StatCell :value="outcomeSummary.negative" :label="$t('Neigiami')" class="px-4 py-5" />
-          </div>
-          <p v-if="outcomeSummary.alignedCount > 0" class="mt-3 text-sm text-muted-foreground">
-            {{ $t('Studentų pozicijos atitiko sprendimą') }}:
-            <span class="font-semibold text-foreground">
-              {{ outcomeSummary.alignedCount }} / {{ outcomeSummary.comparableCount }}
-              ({{ outcomeSummary.alignmentRate }}%)
-            </span>
-          </p>
-        </section>
-
+    <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
+      <div class="max-w-3xl space-y-10">
         <section>
           <h2 :class="sectionHeadingClass">
             {{ $t('Darbotvarkė') }}
@@ -126,14 +101,12 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import { formatMeetingDateTime } from '@/Utils/MeetingDisplay';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import { getMainVote, getMeetingStatusSummary, hasDecisionData } from '@/Composables/useAgendaItemStyling';
-import AgendaOutcomeIndicators from '@/Components/Public/AgendaOutcomeIndicators.vue';
 import FeedbackPopover from '@/Components/Public/FeedbackPopover.vue';
 import PublicAgendaList from '@/Components/Public/PublicAgendaList.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import PublicMeetingDocuments, { type PublicMeetingDocument } from '@/Components/Public/PublicMeetingDocuments.vue';
 import PublicVotingExplainerModal from '@/Components/Public/PublicVotingExplainerModal.vue';
-import { EyebrowLabel, PageTitleBand, StatCell } from '@/Components/Public/Base';
+import { EyebrowLabel, PageTitleBand } from '@/Components/Public/Base';
 import { Button } from '@/Components/ui/button';
 import IFluentArrowLeft20Regular from '~icons/fluent/arrow-left-20-regular';
 import IFluentArrowRight20Regular from '~icons/fluent/arrow-right-20-regular';
@@ -165,7 +138,6 @@ const sectionHeadingClass = 'u-display mb-4 border-l-2 border-brand pl-3 text-lg
 
 const isUpcoming = computed(() => new Date(props.meeting.start_time) > new Date());
 const allAgendaItems = computed(() => props.meeting.agenda_items || []);
-const itemsWithDecisions = computed(() => allAgendaItems.value.filter(hasDecisionData));
 
 const routeContext = computed(() => ({
   lang: page.props.app.locale,
@@ -174,26 +146,6 @@ const routeContext = computed(() => ({
 
 const institutionUrl = computed(() => route('contacts.institution', { institution: props.institution.id, ...routeContext.value }));
 const meetingUrl = (id: string) => route('publicMeetings.show', { meeting: id, ...routeContext.value });
-
-const outcomeSummary = computed(() => {
-  const summary = getMeetingStatusSummary(allAgendaItems.value, props.requiresStudentPerspective);
-  const counts = { positive: 0, negative: 0, neutral: 0 };
-
-  for (const item of allAgendaItems.value) {
-    const decision = getMainVote(item)?.decision;
-    if (decision === 'positive' || decision === 'negative' || decision === 'neutral') {
-      counts[decision]++;
-    }
-  }
-
-  return {
-    ...counts,
-    total: counts.positive + counts.negative + counts.neutral,
-    alignedCount: summary.aligned,
-    comparableCount: summary.aligned + summary.misaligned,
-    alignmentRate: summary.alignmentRate,
-  };
-});
 
 usePageBreadcrumbs(() => [
   BreadcrumbHelpers.createRouteBreadcrumb(

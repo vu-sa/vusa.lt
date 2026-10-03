@@ -13,8 +13,8 @@
       <Button
         voice="brand"
         variant="ghost"
-        :size="size === 'tiny' ? 'sm' : 'default'"
-        class="flex w-auto items-center justify-between gap-2 border border-border
+        :size="size === 'medium' ? 'default' : 'xs'"
+        class="flex w-auto items-center justify-between gap-2 border border-border pointer-coarse:min-h-11
           text-sm font-bold uppercase tracking-wide
           text-foreground transition-colors duration-200
           hover:border-brand hover:bg-transparent hover:text-brand

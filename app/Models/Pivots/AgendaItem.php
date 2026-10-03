@@ -10,12 +10,16 @@ use App\Models\Comment;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Problem;
+use App\Models\PublicMeeting;
 use App\Models\Tenant;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Vote;
+use App\Services\AgendaItemPresenter;
 use App\Services\MeetingCompletionService;
+use App\Services\Typesense\MeetingSearchEngine;
+use App\Services\Typesense\MeetingSearchLock;
 use App\Services\VoteStatisticsCalculator;
 use Database\Factories\AgendaItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -31,7 +35,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
-use Laravel\Scout\EngineManager;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -43,6 +48,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property int $order
  * @property bool $brought_by_students
+ * @property bool $is_private
+ * @property array|string|null $public_title
  * @property AgendaItemType|null $type
  * @property string|null $start_time
  * @property string|null $end_time
@@ -79,13 +86,75 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 #[Unguarded]
 class AgendaItem extends Pivot implements Commentable
 {
-    use HasComments, HasFactory, HasRelationships, HasTranslations, HasUlids, LogsModelActivity, Searchable;
+    use HasComments, HasFactory, HasRelationships, HasUlids, LogsModelActivity, Searchable;
+    use HasTranslations {
+        toArray as private translatedArray;
+        setAttribute as private translatedSetAttribute;
+    }
 
     #[\Override]
     public $incrementing = true;
 
     /** @var list<string> */
-    public $translatable = ['title', 'description', 'student_position'];
+    public $translatable = ['title', 'description', 'student_position', 'public_title'];
+
+    public function setAttribute($key, $value): static
+    {
+        if ($key === 'public_title' && $value === null) {
+            return $this->setTranslations($key, []);
+        }
+
+        return $this->translatedSetAttribute($key, $value);
+    }
+
+    /** Default serialization must be safe even when a new surface forgets its audience. */
+    public function toArray(): array
+    {
+        return $this->is_private ? AgendaItemPresenter::redacted($this) : $this->translatedArray();
+    }
+
+    public function toInternalArray(): array
+    {
+        return $this->translatedArray();
+    }
+
+    public function save(array $options = []): bool
+    {
+        return app(MeetingSearchLock::class)->run((string) $this->meeting_id, function () use ($options): bool {
+            $visibilityChanged = $this->isDirty('is_private');
+            $meeting = ($visibilityChanged || $this->is_private) ? $this->meeting : null;
+            $publicMeeting = $meeting ? PublicMeeting::query()->find($meeting->id) : null;
+
+            if ($visibilityChanged && $this->is_private && $this->exists) {
+                // Evict before writing: a failed search connection must not leave old public content.
+                $this->searchableUsing()->delete(new Collection([$this]));
+                if ($meeting) {
+                    $meeting->searchableUsing()->delete(new Collection([$meeting]));
+                }
+                if ($publicMeeting) {
+                    $publicMeeting->searchableUsing()->delete(new Collection([$publicMeeting]));
+                }
+            }
+
+            $saved = parent::save($options);
+
+            if ($saved && ($visibilityChanged || $this->is_private)) {
+                $this->searchableUsing()->update(new Collection([$this]));
+                if ($meeting) {
+                    $meeting->searchableUsing()->update(new Collection([$meeting]));
+                }
+                if ($publicMeeting?->shouldBeSearchable()) {
+                    $publicMeeting->searchableUsing()->update(new Collection([$publicMeeting]));
+                }
+            }
+
+            if ($saved && $visibilityChanged) {
+                $this->getConnection()->afterCommit(fn () => Cache::forever('agenda-privacy-version', (string) Str::uuid()));
+            }
+
+            return $saved;
+        });
+    }
 
     /**
      * English agenda items are the exception, not the rule. Falling back to Lithuanian keeps
@@ -108,6 +177,7 @@ class AgendaItem extends Pivot implements Commentable
         return [
             'type' => AgendaItemType::class,
             'brought_by_students' => 'boolean',
+            'is_private' => 'boolean',
         ];
     }
 
@@ -207,6 +277,7 @@ class AgendaItem extends Pivot implements Commentable
             'title' => $this->getTranslation('title', 'lt'),
             'description' => $this->getTranslation('description', 'lt'),
             'order' => $this->order,
+            'is_private' => (bool) $this->is_private,
 
             // New fields
             'type' => $typeValue,
@@ -336,6 +407,6 @@ class AgendaItem extends Pivot implements Commentable
      */
     public function searchableUsing()
     {
-        return app(EngineManager::class)->engine('typesense');
+        return MeetingSearchEngine::resolve();
     }
 }

@@ -13,7 +13,9 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\User;
 use App\Models\Vote;
+use App\Services\AgendaItemPresenter;
 use App\Services\MeetingCompletionService;
+use App\Services\Typesense\MeetingSearchLock;
 use App\Support\Experiments\GoalsExperiment;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
@@ -58,6 +60,7 @@ class AgendaItemController extends AdminController
                     'title' => ['lt' => $agendaItemTitle],
                     'order' => $maxOrder + $index + 1,
                     'brought_by_students' => $broughtByStudentsFlags[$index] ?? false,
+                    'is_private' => $validatedData['privateFlags'][$index] ?? false,
                     'start_time' => $startTimes[$index] ?? null,
                     'end_time' => $endTimes[$index] ?? null,
                 ]);
@@ -79,6 +82,21 @@ class AgendaItemController extends AdminController
 
         // A public meeting's item outside the user's reach: the item itself, without notes or discussion.
         $readOnly = ! Gate::allows('view', $agendaItem);
+
+        if ($agendaItem->is_private && $readOnly) {
+            $meeting = $agendaItem->meeting;
+            $meeting->loadMissing(['institutions.types', 'institutions.tenant', 'agendaItems']);
+
+            return $this->inertiaResponse('Admin/Representation/ShowAgendaItem', [
+                'agendaItem' => AgendaItemPresenter::redacted($agendaItem),
+                'siblingAgendaItems' => $meeting->agendaItems->sortBy('order')->map(fn (AgendaItem $item): array => AgendaItemPresenter::publicItem($item)
+                )->values()->all(),
+                'meetingContext' => $meeting->only(['id', 'title', 'start_time', 'type']),
+                'readOnly' => true,
+                'isRedacted' => true,
+                'abilities' => ['update' => false, 'delete' => false],
+            ]);
+        }
 
         if (! $readOnly) {
             $agendaItem->load('note');
@@ -105,20 +123,22 @@ class AgendaItemController extends AdminController
             ->keyBy('agenda_item_id');
 
         $siblingAgendaItems = $meeting->agendaItems
-            ->map(fn (AgendaItem $item): array => [
-                'id' => $item->id,
-                'title' => $item->title,
-                'type' => $item->type?->value,
-                'order' => $item->order,
-                'brought_by_students' => (bool) $item->brought_by_students,
-                'main_vote' => $item->mainVote,
-                'comments_count' => $item->comments_count,
-                'has_notes' => (bool) $item->getAttribute('has_notes'),
-                // The previous item's end time seeds this one's start (ShowAgendaItem.vue).
-                'start_time' => $item->start_time,
-                'end_time' => $item->end_time,
-                'missing' => $missingByItem->get((string) $item->getKey()),
-            ])
+            ->map(fn (AgendaItem $item): array => $item->is_private && ! AgendaItemPresenter::canRead($item, $request->user())
+                ? AgendaItemPresenter::redacted($item)
+                : [
+                    'id' => $item->id,
+                    'title' => $item->title,
+                    'type' => $item->type?->value,
+                    'order' => $item->order,
+                    'brought_by_students' => (bool) $item->brought_by_students,
+                    'main_vote' => $item->mainVote,
+                    'comments_count' => $item->comments_count,
+                    'has_notes' => (bool) $item->getAttribute('has_notes'),
+                    // The previous item's end time seeds this one's start (ShowAgendaItem.vue).
+                    'start_time' => $item->start_time,
+                    'end_time' => $item->end_time,
+                    'missing' => $missingByItem->get((string) $item->getKey()),
+                ])
             ->values();
 
         return $this->inertiaResponse('Admin/Representation/ShowAgendaItem', [
@@ -132,6 +152,7 @@ class AgendaItemController extends AdminController
                 $agendaItem->problems()->with(['tenant:id,shortname', 'responsibleUser:id,name'])->orderByDesc('occurred_at')->get()
             )->resolve(),
             'publicUrl' => $publicUrl,
+            'isRedacted' => false,
             'readOnly' => $readOnly,
             'abilities' => [
                 'update' => ! $readOnly && Gate::allows('update', $agendaItem),
@@ -201,7 +222,7 @@ class AgendaItemController extends AdminController
      */
     public function update(UpdateAgendaItemRequest $request, AgendaItem $agendaItem)
     {
-        DB::transaction(function () use ($request, $agendaItem): void {
+        app(MeetingSearchLock::class)->run($agendaItem->meeting_id, fn () => DB::transaction(function () use ($request, $agendaItem): void {
             // Update agenda item fields (excluding votes)
             $agendaItem->fill($request->safe()->except('votes'));
             $agendaItem->save();
@@ -211,7 +232,7 @@ class AgendaItemController extends AdminController
                 // validated(), not input(): raw input would carry through anything unvalidated.
                 $this->syncVotes($agendaItem, $request->validated('votes') ?? []);
             }
-        });
+        }));
 
         return back()->with('success', $this->entityMessage('updated', 'agendaItem'));
     }

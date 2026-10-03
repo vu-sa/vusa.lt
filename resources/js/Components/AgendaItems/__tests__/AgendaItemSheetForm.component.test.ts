@@ -17,6 +17,8 @@ const SheetFormStub = {
 function factory(props: Record<string, unknown> = {}) {
   const form = createMockForm({
     title: { lt: 'Stipendijos', en: '' },
+    is_private: false,
+    public_title: { lt: '', en: '' },
     brought_by_students: false,
     description: { lt: '', en: '' },
     student_position: { lt: '', en: '' },
@@ -32,6 +34,53 @@ function factory(props: Record<string, unknown> = {}) {
 }
 
 describe('AgendaItemSheetForm', () => {
+  it('explains the selected visibility and future publication of a private meeting', async () => {
+    const { wrapper } = factory({ isPublic: false });
+    expect(wrapper.text()).toContain('meetings.privacy.disabled_lead');
+    const details = wrapper.find('[data-testid="agenda-item-privacy-details"]');
+    expect(details.element.tagName).toBe('DETAILS');
+    expect(details.attributes('open')).toBeUndefined();
+    expect(details.find('summary').text()).toContain('meetings.privacy.details_label');
+    expect(details.text()).toContain('meetings.privacy.nonpublic_hint');
+    await wrapper.findComponent({ name: 'Switch' }).vm.$emit('update:modelValue', true);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.text()).toContain('meetings.privacy.enabled_lead');
+    expect(wrapper.text()).not.toContain('meetings.privacy.disabled_lead');
+    await wrapper.setProps({ isPublic: true });
+    expect(wrapper.text()).not.toContain('meetings.privacy.nonpublic_hint');
+  });
+
+  it('saves privacy with the draft and never previews the original title', async () => {
+    const { wrapper, form } = factory({ order: 3 });
+    await wrapper.findComponent({ name: 'Switch' }).vm.$emit('update:modelValue', true);
+    await wrapper.vm.$nextTick();
+
+    const preview = wrapper.find('[data-testid="agenda-item-public-preview"]');
+    expect(preview.text()).toContain('3.');
+    expect(preview.text()).toContain('meetings.privacy.hidden_title');
+    expect(preview.text()).not.toContain('Stipendijos');
+    expect(form.is_private).toBe(false);
+    expect(wrapper.text()).toContain('meetings.privacy.audience');
+    expect(wrapper.text()).toContain('meetings.privacy.no_personal_data');
+
+    await wrapper.find('#agenda-item-public-title').setValue('Darbo klausimas');
+    await wrapper.find('[data-testid="agenda-item-locale-en"]').trigger('click');
+    await wrapper.find('#agenda-item-public-title').setValue('Working item');
+    await wrapper.find('form').trigger('submit');
+    expect(form.is_private).toBe(true);
+    expect(form.public_title).toEqual({ lt: 'Darbo klausimas', en: 'Working item' });
+  });
+
+  it('discarding the privacy draft leaves the saved visibility untouched', async () => {
+    const { wrapper, form } = factory();
+    wrapper.findComponent({ name: 'Switch' }).vm.$emit('update:modelValue', true);
+    await wrapper.vm.$nextTick();
+    wrapper.findComponent({ name: 'SheetForm' }).vm.$emit('cancel');
+    await wrapper.vm.$nextTick();
+    expect(form.is_private).toBe(false);
+    expect(wrapper.find('#agenda-item-public-title').exists()).toBe(false);
+  });
+
   /** The page autosaves every change; typing must not, so the sheet writes a draft back on Išsaugoti. */
   it('leaves the live form alone until saved, then writes back and closes', async () => {
     const { wrapper, form, saveThen } = factory();

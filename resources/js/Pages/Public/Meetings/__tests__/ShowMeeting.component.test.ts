@@ -40,18 +40,23 @@ describe('Public/Meetings/ShowMeeting.vue', () => {
     });
   }
 
-  // The page used to repeat itself: a standalone timetable card above the description and
-  // the agenda list with the same times below it. Only the agenda list remains — the
-  // timetable is now a content block usable anywhere, not something this page assembles.
-  it('shows agenda times once, in the agenda list below the description', () => {
-    const wrapper = mountPage({ meeting: makeMeeting({ description: 'Trumpas aprašymas' }) });
+  it('shows student representatives immediately below the title instead of description', () => {
+    const wrapper = mountPage({
+      meeting: makeMeeting({ description: 'Trumpas aprašymas' }),
+      representatives: [
+        { id: 'u1', name: 'Jonas Jonaitis', profile_photo_path: '/photos/jonas.jpg' },
+      ],
+    });
 
     const text = wrapper.text();
-    const descriptionIndex = text.indexOf('Trumpas aprašymas');
+    expect(text).toContain('Jonas Jonaitis');
+    expect(text).not.toContain('Trumpas aprašymas');
+
+    const repIndex = text.indexOf('Jonas Jonaitis');
     const timeIndex = text.indexOf('18:30');
 
-    expect(descriptionIndex).toBeGreaterThan(-1);
-    expect(timeIndex).toBeGreaterThan(descriptionIndex);
+    expect(repIndex).toBeGreaterThan(-1);
+    expect(timeIndex).toBeGreaterThan(repIndex);
     expect(text.split('18:30')).toHaveLength(2);
   });
 
@@ -63,7 +68,7 @@ describe('Public/Meetings/ShowMeeting.vue', () => {
     expect(wrapper.text()).not.toContain('Tvarkaraštis');
   });
 
-  it('counts main-vote decisions into the outcome summary', () => {
+  it('does not show the outcome summary or question count', () => {
     const wrapper = mountPage({
       meeting: makeMeeting({
         agenda_items: [
@@ -75,10 +80,18 @@ describe('Public/Meetings/ShowMeeting.vue', () => {
       }),
     });
 
-    const values = wrapper.find('[data-testid="outcome-summary"]')
-      .findAll('[data-slot="stat-cell"]')
-      .map(cell => cell.find('.u-display').text());
+    expect(wrapper.find('[data-testid="outcome-summary"]').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain('Sprendimų santrauka');
+    expect(wrapper.text()).not.toContain('klausimas');
+    expect(wrapper.text()).not.toContain('klausimai');
+  });
 
-    expect(values).toEqual(['2', '0', '1']);
+  it('does not underline the institution link in the eyebrow', () => {
+    const wrapper = mountPage({
+      institution: { id: 'inst-1', name: 'VU SA Parlamentas' },
+    });
+
+    const institutionLink = wrapper.findAll('a').find(link => link.text() === 'VU SA Parlamentas');
+    expect(institutionLink?.classes()).toContain('no-underline');
   });
 });

@@ -41,6 +41,8 @@ declare global {
       title?: Array<unknown> | null
       description?: Array<unknown> | null
       student_position?: Array<unknown> | null
+      is_private: boolean
+      public_title?: Array<unknown> | null
       // mutators
       translatable_columns_from: Array<unknown>
       translations: unknown
@@ -2654,4 +2656,3 @@ declare global {
 
   }
 }
-

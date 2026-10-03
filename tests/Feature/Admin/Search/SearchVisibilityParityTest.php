@@ -1,16 +1,20 @@
 <?php
 
+use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\Vote;
 use App\Services\InstitutionAccessService;
 use App\Services\ModelAuthorizer;
 use App\Services\Typesense\TypesenseScopedKeyService;
 use App\Settings\MeetingSettings;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Typesense\Client;
 
@@ -141,4 +145,60 @@ test('institutions in the list are exactly the ones the member may open', functi
     expect(parityAdmittedIds(Institution::class, parityKeyFilter($this->member, 'institutions'), $institutions))
         ->toBe(parityAllowedIds($this->member, $institutions))
         ->toHaveCount(1);
+});
+
+test('real scoped keys conceal private items and the transport key cannot bypass them', function (): void {
+    usesTypesenseInBrowser();
+    $institution = Institution::factory()->for($this->otherTenant)->create();
+    $institution->types()->attach($this->publicType);
+    $meeting = parityMeetingOf($institution);
+    $item = $meeting->agendaItems->first();
+    Vote::factory()->for($item, 'agendaItem')->create([
+        'is_main' => true, 'student_vote' => 'positive', 'decision' => 'positive', 'student_benefit' => 'positive',
+    ]);
+    $staleItem = $item->fresh();
+    $item->update(['is_private' => true]);
+    $staleItem->searchableUsing()->update(new Collection([$staleItem]));
+
+    expect(Gate::forUser($this->member)->allows('viewSummary', $item))->toBeTrue()
+        ->and(Gate::forUser($this->member)->allows('view', $item))->toBeFalse();
+
+    $service = app(TypesenseScopedKeyService::class);
+    $keys = $service->generateScopedKeysForUser($this->member);
+    $config = config('scout.typesense.client-settings');
+    $client = new Client([...$config, 'api_key' => $keys['collections']['agenda_items']['key']]);
+    $params = ['q' => '*', 'query_by' => 'title', 'filter_by' => 'id:='.$item->id];
+    $collection = $item->searchableAs();
+
+    expect($client->collections[$collection]->documents->search($params)['found'])->toBe(0);
+    $transport = new Client([...$config, 'api_key' => $keys['header_key']]);
+    expect($transport->collections[$collection]->documents->search($params)['found'])->toBe(0);
+    $result = $transport->multiSearch->perform(['searches' => [[...$params, 'collection' => $collection]]]);
+    expect($result['results'][0]['found'])->toBe(0);
+
+    $duty = Duty::factory()->for($institution)->create();
+    $this->member->duties()->attach($duty, ['start_date' => $meeting->start_time->subDay()->toDateString(), 'end_date' => null]);
+    $this->member->refresh();
+    TypesenseScopedKeyService::invalidateForUser($this->member->id);
+    $keys = $service->generateScopedKeysForUser($this->member);
+    $reader = new Client([...$config, 'api_key' => $keys['collections']['agenda_items']['key']]);
+    expect($reader->collections[$collection]->documents->search($params)['found'])->toBe(1);
+    $result = $transport->multiSearch->perform(['searches' => [[
+        ...$params, 'collection' => $collection, 'x-typesense-api-key' => $keys['collections']['agenda_items']['key'],
+    ]]]);
+    expect($result['results'][0]['found'])->toBe(1);
+
+    $indexedMeeting = (new Client($config))->collections[$meeting->searchableAs()]->documents[$meeting->id]->retrieve();
+    expect($indexedMeeting['vote_matches'])->toBe(0);
+    expect($indexedMeeting)->not->toHaveKey('completion_status');
+
+    try {
+        DB::transaction(function () use ($item): void {
+            $item->update(['is_private' => false]);
+            throw new RuntimeException('Cancel publication');
+        });
+    } catch (RuntimeException) {
+    }
+    $indexedItem = (new Client($config))->collections[$collection]->documents[$item->id]->retrieve();
+    expect($item->fresh()->is_private)->toBeTrue()->and($indexedItem['is_private'])->toBeTrue();
 });

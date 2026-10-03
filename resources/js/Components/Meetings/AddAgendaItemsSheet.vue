@@ -18,7 +18,7 @@
       test-id-prefix="agenda-add-mode"
     />
 
-    <AgendaItemsEditor v-if="mode === 'lines'" v-model="lines" />
+    <AgendaItemsEditor v-if="mode === 'lines'" v-model="lines" v-model:private-flags="privateFlags" />
 
     <FormFieldWrapper
       v-else-if="mode === 'paste'"
@@ -76,6 +76,9 @@
         </span>
       </li>
     </ol>
+    <p v-if="mode !== 'lines'" class="text-xs text-muted-foreground">
+      {{ $t('meetings.privacy.creation_hint') }}
+    </p>
   </SheetForm>
 </template>
 
@@ -100,7 +103,7 @@ export interface RecentAgenda {
   id: string;
   start_time: string | null;
   institution_name: string;
-  agenda_items: string[];
+  agenda_items: Array<string | { title: string; is_private: boolean }>;
 }
 
 const props = defineProps<{
@@ -117,6 +120,7 @@ const emit = defineEmits<{
 
 const mode = ref<AddAgendaMode>(props.initialMode ?? 'lines');
 const lines = ref<string[]>(['']);
+const privateFlags = ref<boolean[]>([]);
 const pasted = ref('');
 const processing = ref(false);
 const loadingRecent = ref(false);
@@ -145,12 +149,11 @@ watch([mode, () => props.open], ([current, open]) => {
   }
 }, { immediate: true });
 
-const items = computed<ParsedAgendaLine[]>(() => (mode.value === 'paste'
-  ? parseAgendaText(pasted.value)
+const items = computed<Array<ParsedAgendaLine & { is_private: boolean }>>(() => (mode.value === 'paste'
+  ? parseAgendaText(pasted.value).map(item => ({ ...item, is_private: false }))
   : lines.value
-      .map(title => title.trim())
-      .filter(title => title !== '')
-      .map(title => ({ title, startTime: null, endTime: null }))));
+      .map((title, index) => ({ title: title.trim(), is_private: Boolean(privateFlags.value[index]), startTime: null, endTime: null }))
+      .filter(item => item.title !== '')));
 
 const submitLabel = computed(() => (items.value.length
   ? `${$t('meetings.agenda.submit')} (${items.value.length})`
@@ -160,12 +163,14 @@ const formatRecentDate = (value: string | null) => formatDate(value, { format: '
 
 /** A template is a starting point: it lands in the editable list, not straight on the agenda. */
 const applyRecent = (recent: RecentAgenda) => {
-  lines.value = recent.agenda_items.length ? [...recent.agenda_items] : [''];
+  lines.value = recent.agenda_items.length ? recent.agenda_items.map(item => typeof item === 'string' ? item : item.title) : [''];
+  privateFlags.value = recent.agenda_items.map(item => typeof item === 'string' ? false : item.is_private);
   mode.value = 'lines';
 };
 
 const reset = () => {
   lines.value = [''];
+  privateFlags.value = [];
   pasted.value = '';
 };
 
@@ -179,6 +184,7 @@ const submit = () => {
   router.post(route('agendaItems.store'), {
     meeting_id: props.meetingId,
     agendaItemTitles: items.value.map(item => item.title),
+    privateFlags: items.value.map(item => item.is_private),
     startTimes: items.value.map(item => item.startTime),
     endTimes: items.value.map(item => item.endTime),
   }, {

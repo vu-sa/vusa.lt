@@ -7,6 +7,7 @@ use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer;
 use App\Services\PermissionService;
 use App\Services\ResponsibilityResolver;
+use App\Services\Typesense\MeetingSearchLock;
 use App\Support\LocalizedRouteSlugs;
 use App\Support\MorphMap;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -42,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
         // Singleton so the institution-type scope map is built at most once per request.
         $this->app->singleton(InstitutionScopeResolver::class);
         $this->app->scoped(ResponsibilityResolver::class);
+        $this->app->scoped(MeetingSearchLock::class);
 
         // Register our new permission service
         $this->app->scoped('permission.service', fn ($app) => new PermissionService($app->make(ModelAuthorizer::class)));

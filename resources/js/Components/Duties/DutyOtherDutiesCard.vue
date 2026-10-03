@@ -29,7 +29,7 @@
           v-if="duty.current_users?.length"
           :users="duty.current_users"
           :max="3"
-          :size="24"
+          size="xxs"
           class="shrink-0"
         />
         <ChevronRight class="h-4 w-4 shrink-0 text-muted-foreground" />

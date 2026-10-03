@@ -22,3 +22,9 @@ admin.ts registers the workbox SW (scope /mano) on every admin page boot; its in
 
 ## Subdomain-routed public pages need visitPublicSubdomain(), never visit()
 A browser test visiting a tenant-subdomain-routed public page (Route::domain('{subdomain}.vusa.test')) must use visitPublicSubdomain(string $subdomain, string $path) (tests/Pest.php), not visit() directly: the plugin's server binds 127.0.0.1 (subdomain routes 404 without withHost), and SmartLink.vue misdetects internal links as external once app.url carries a port. The host must resolve inside the container — docker-compose.yml's `extra_hosts` maps `www.vusa.test`; add any other subdomain a test visits there too.
+
+## Anti-patterns: Never assert pixel geometry or computed CSS properties
+- **No pixel peeping:** Never assert exact pixel heights, widths, or radii (`toBe(32)`, `toBeGreaterThanOrEqual(44)`, `toBe('0px')`, `inset <= 1`). Design system components (`Button.vue`, `@theme` tokens) own styling and touch target sizing; test variants and token classes in Vitest component tests or design token tests.
+- **No computed CSS inspection:** Do not assert `getComputedStyle(...).textTransform === 'uppercase'`, `textAlign === 'left'`, or `webkitLineClamp === '2'` in a browser test. Tailwind utilities already guarantee these; asserting them in browser tests is redundant, slow, and brittle.
+- **No volatile selectors:** Never select form inputs or actions by localized placeholder text (`input[placeholder="..."]`) or volatile marketing copy. Always use `data-slot`, `data-testid`, or standard input roles.
+

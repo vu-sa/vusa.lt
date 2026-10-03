@@ -7,6 +7,7 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use Laravel\Scout\Engines\TypesenseEngine;
 use Typesense\Client;
 use Typesense\Exceptions\ObjectNotFound;
 
@@ -101,7 +102,7 @@ class ReindexSearchCommand extends Command
         $instance = new $model;
         $engine = $instance->searchableUsing();
 
-        return class_basename($engine::class);
+        return $engine instanceof TypesenseEngine ? 'TypesenseEngine' : class_basename($engine::class);
     }
 
     /**

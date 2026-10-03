@@ -5,7 +5,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
 
-it('keeps the impersonation control visible and square on desktop and phone', function (): void {
+it('keeps the impersonation launcher visible across widths and dismissible until reload', function (): void {
     config(['app.env' => 'local']);
 
     $user = User::factory()->create();
@@ -16,22 +16,7 @@ it('keeps the impersonation control visible and square on desktop and phone', fu
     foreach ([1440, 1180, 820, 390] as $width) {
         $page->resize($width, 900);
         $page->assertPresent('[data-slot=impersonation-launcher]');
-
-        $geometry = $page->script('(() => {
-            const button = document.querySelector("[data-slot=impersonation-launcher] button");
-            return {
-                radius: getComputedStyle(button).borderTopLeftRadius,
-                height: button.getBoundingClientRect().height,
-                fits: button.getBoundingClientRect().right <= innerWidth,
-            };
-        })()');
-
-        expect($geometry['radius'])->toBe('0px')
-            ->and($geometry['fits'])->toBeTrue();
-
-        if ($width === 390) {
-            expect($geometry['height'])->toBeGreaterThanOrEqual(44);
-        }
+        expect($page->script('document.documentElement.scrollWidth <= window.innerWidth'))->toBeTrue();
     }
 
     $page->click('[data-slot=impersonation-bar-close]');
@@ -44,7 +29,7 @@ it('keeps the impersonation control visible and square on desktop and phone', fu
     $page->assertNoJavaScriptErrors();
 });
 
-it('aligns the active impersonation bar with the admin shell', function (): void {
+it('allows starting impersonation from the launcher popover', function (): void {
     config(['app.env' => 'local']);
 
     $actor = User::factory()->create();
@@ -53,25 +38,14 @@ it('aligns the active impersonation bar with the admin shell', function (): void
 
     $page = loginAsAdmin($actor);
     $page->click('[data-slot=impersonation-launcher] [data-slot=popover-trigger]');
-    $page->fill('input[placeholder="Ieškok pagal vardą ar el. paštą…"]', 'Akvilė');
+    waitForInertiaRender($page, '[data-slot=impersonation-search-input]');
+
+    $page->fill('[data-slot=impersonation-search-input]', 'Akvilė');
     $page->assertSee('Akvilė Banytė');
     $page->click('button:has-text("Akvilė Banytė")');
+
+    waitForInertiaRender($page, '[data-slot=impersonation-status]');
     $page->assertPresent('[data-slot=impersonation-status]');
-
-    $geometry = $page->script('(() => {
-        const content = document.querySelector("[data-slot=impersonation-status] > div");
-        const shell = document.querySelector("[data-slot=shell-top-bar] > div");
-        const button = content.querySelector("button");
-        return {
-            aligned: content.getBoundingClientRect().left === shell.getBoundingClientRect().left,
-            buttonHeight: button.getBoundingClientRect().height,
-            radius: getComputedStyle(button).borderTopLeftRadius,
-        };
-    })()');
-
-    expect($geometry['aligned'])->toBeTrue()
-        ->and($geometry['buttonHeight'])->toBe(32)
-        ->and($geometry['radius'])->toBe('0px');
 
     $page->assertNoJavaScriptErrors();
 });

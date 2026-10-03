@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Step;
+use App\Services\AgendaItemPresenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Gate;
@@ -37,6 +38,20 @@ class StepResource extends JsonResource
         $meeting = $agendaItem?->meeting;
         $document = $this->document;
 
+        if ($agendaItem?->is_private && ! AgendaItemPresenter::canRead($agendaItem, $request->user())) {
+            return [
+                'id' => $this->id,
+                'title' => ['lt' => __('meetings.privacy.hidden_title', [], 'lt'), 'en' => __('meetings.privacy.hidden_title', [], 'en')],
+                'description' => ['lt' => '', 'en' => ''],
+                'happened_on' => null,
+                'agenda_item' => null,
+                'document' => null,
+                'performers' => [],
+                'recorder' => null,
+                'url' => null,
+            ];
+        }
+
         return [
             'id' => $this->id,
             'title' => $this->getTranslations('title'),
@@ -54,7 +69,7 @@ class StepResource extends JsonResource
             'performers' => $this->performers->map(fn ($user) => $user->only(['id', 'name']))->values(),
             'agenda_item' => $agendaItem !== null && $meeting !== null && Gate::allows('viewSummary', $agendaItem) ? [
                 'id' => $agendaItem->id,
-                'title' => $agendaItem->title,
+                'title' => AgendaItemPresenter::forUser($agendaItem, $request->user())['title'],
                 'start_time' => $meeting->start_time->toISOString(),
                 'institutions' => $meeting->institutions->pluck('name')->values(),
             ] : null,

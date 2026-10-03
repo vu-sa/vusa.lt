@@ -10,12 +10,13 @@
         :ref="(el: unknown) => setInputRef(el, index)"
         :model-value="item"
         :placeholder="$t('action_window.meeting.agenda.placeholder')"
-        class="h-11 flex-1"
+        class="h-11 min-w-0 flex-1"
         @update:model-value="(value: string | number) => update(index, String(value))"
         @keydown.enter.prevent="addAfter(index)"
         @keydown.backspace="removeIfEmpty(index, $event)"
       />
       <Button
+        data-action="remove-agenda-item"
         variant="ghost"
         size="icon"
         class="size-9 shrink-0 text-muted-foreground hover:text-destructive pointer-coarse:size-11"
@@ -27,6 +28,9 @@
       </Button>
     </div>
 
+    <p class="text-xs text-muted-foreground">
+      {{ $t('meetings.privacy.creation_hint') }}
+    </p>
     <Button variant="ghost" size="sm" class="self-start gap-1.5 pointer-coarse:h-11" @click="addAfter(items.length - 1)">
       <Plus class="size-4" />
       {{ $t('action_window.meeting.agenda.add_another') }}
@@ -42,6 +46,7 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 
 const items = defineModel<string[]>({ required: true });
+const privateFlags = defineModel<boolean[]>('privateFlags', { default: () => [] });
 
 const inputs = ref<Array<HTMLInputElement | null>>([]);
 
@@ -63,6 +68,9 @@ const update = (index: number, value: string) => {
 
 /** Enter behaves like a list editor: it opens the next line rather than submitting. */
 const addAfter = (index: number) => {
+  const flags = items.value.map((_, i) => Boolean(privateFlags.value[i]));
+  flags.splice(index + 1, 0, false);
+  privateFlags.value = flags;
   const next = [...items.value];
   next.splice(index + 1, 0, '');
   items.value = next;
@@ -70,6 +78,7 @@ const addAfter = (index: number) => {
 };
 
 const remove = (index: number) => {
+  privateFlags.value = items.value.map((_, i) => Boolean(privateFlags.value[i])).filter((_, i) => i !== index);
   const next = items.value.filter((_, i) => i !== index);
   items.value = next.length > 0 ? next : [''];
   focus(Math.max(0, index - 1));

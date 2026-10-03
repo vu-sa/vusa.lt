@@ -16,6 +16,7 @@ use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
+use App\Services\AgendaItemPresenter;
 use App\Services\LocationGeocoder;
 use App\Services\PublicUrlService;
 use App\Support\LocalizedRouteSlugs;
@@ -538,7 +539,7 @@ class PublicPageController extends PublicController
         return [
             'id' => $meeting->id,
             'start_time' => $meeting->start_time,
-            'agenda_items' => $meeting->agendaItems,
+            'agenda_items' => $meeting->agendaItems->map(fn ($item): array => AgendaItemPresenter::publicItem($item))->all(),
             'requires_student_perspective' => $meeting->requiresStudentPerspective(),
             'documents' => GetPublicMeetingDocuments::execute($meeting),
             'institution' => $institution?->only(['id', 'name', 'alias']),

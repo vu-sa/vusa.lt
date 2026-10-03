@@ -9,7 +9,7 @@ return [
         'never_heading' => 'Never shown',
         'shown' => [
             'basics' => 'Meeting date, institution and status',
-            'agenda' => 'Agenda items and voting results',
+            'agenda' => 'Agenda items and voting results. For internal-only items: only their agenda position and public title, if provided.',
             'representatives' => 'Student representatives in office at the time',
             'documents' => 'Documents in the “Documents” tab that have a public link (resolutions and protocols of VU SA bodies)',
         ],
