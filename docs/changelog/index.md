@@ -9,6 +9,7 @@ lastUpdated: true
 
 - ✨ **Lengviau skaitomos antraštės** — viešojo puslapio antraštės (herojaus, naujienų, turinio puslapių) šiek tiek sumažintos ir turi daugiau tarpo tarp eilučių, todėl ilgesni pavadinimai ir lietuviškos raidės su diakritiniais ženklais nesilieja
 - ✨ **Rezervacijos veiksmą galima atšaukti** — išteklių valdytojas gali grąžinti klaidingą patvirtinimą, išdavimą ar grąžinimą vienu žingsniu atgal; kas ir kodėl veiksmą atšaukė, lieka istorijoje
+- 🔧 **Teisingos PKP institucijų nuorodos** — kontaktų kategorijų puslapiuose (pvz., programų, klubų ir projektų) institucijų kortelės veda į kontaktų puslapį www.vusa.lt, o ne į neegzistuojantį PKP subdomeną
 - 🔧 **Teisinga pagrindinio puslapio redagavimo nuoroda** — padalinio puslapyje ji atveria to padalinio redaktorių, net jei laikinai rodomas centrinės VU SA turinys
 - 🔧 **Tikslesnė kontaktų paieška** — atnaujinus atstovo paskyrimą, vardą ar pareigybę, paieškoje atnaujinami susijusių institucijų kontaktai; būsimi atstovai nerodomi iki paskyrimo pradžios, o pasibaigęs paskyrimas automatiškai pašalinamas suėjus terminui
 - 🔧 **Senosios „kategorijos“ pakeistos temomis ir renginių tipais** — naujienos ir puslapiai dabar žymimi temomis (temos puslapis pasiekiamas per `/tema/...`), o renginiams galima pasirinkti konkretų, bet neprivalomą tipą, įskaitant atskirus „Posėdis“ ir „Susirinkimas“ tipus; senos `/kategorija/...` nuorodos automatiškai nukreipiamos į naują vietą
