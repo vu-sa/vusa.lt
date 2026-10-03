@@ -118,6 +118,41 @@ describe('ImpersonateBanner', () => {
     expect(wrapper.get('[data-slot="impersonation-launcher"] button').text()).toContain('Apsimesti nariu');
   });
 
+  it('lists each result\'s current duties', async () => {
+    vi.useFakeTimers();
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      app: { env: 'local' },
+      auth: {
+        user: { name: 'Original Admin', isSuperAdmin: true },
+        impersonating: null,
+      },
+    }));
+    jsonMock.mockResolvedValue({
+      data: ref({
+        success: true,
+        data: [{
+          id: 'u1',
+          name: 'Ona Dabartinė',
+          email: 'ona@vusa.lt',
+          current_duties: [
+            { id: 'd1', name: 'Koordinatorė', institution: 'MIF SA' },
+            { id: 'd2', name: 'Narė', institution: null },
+          ],
+        }],
+      }),
+      error: ref(null),
+    });
+
+    const wrapper = mount(ImpersonateBanner, { global: { stubs: popoverStubs } });
+    await wrapper.get('input').setValue('Koord');
+    await vi.advanceTimersByTimeAsync(300);
+    await flushPromises();
+    vi.useRealTimers();
+
+    const duties = wrapper.findAll('[data-slot="impersonation-duty"]').map(duty => duty.text());
+    expect(duties).toEqual(['Koordinatorė · MIF SA', 'Narė']);
+  });
+
   it('closes the idle bar until the component remounts', async () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
       app: { env: 'local' },

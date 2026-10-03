@@ -38,15 +38,15 @@
   <div
     v-if="canImpersonate && !isImpersonating && !dismissed"
     data-slot="impersonation-launcher"
-    class="min-h-11 border-b border-border bg-secondary/50 print:hidden"
+    class="border-b border-border bg-secondary/50 print:hidden"
   >
-    <div class="mx-auto flex min-h-11 w-full max-w-7xl items-center justify-end gap-2 px-4 py-1 sm:px-6 lg:px-8">
+    <div class="mx-auto flex w-full max-w-7xl items-center justify-end gap-2 px-4 py-1 sm:px-6 lg:px-8">
       <Popover v-model:open="popoverOpen">
         <PopoverTrigger as-child>
           <Button
-            size="sm"
+            size="xs"
             variant="outline"
-            class="min-h-11"
+            class="pointer-coarse:min-h-11"
           >
             <UserCog class="size-4" />
             {{ $t('Apsimesti nariu') }}
@@ -61,7 +61,6 @@
               <Button
                 size="icon-sm"
                 variant="ghost"
-                class="min-h-11 min-w-11"
                 :aria-label="$t('Uždaryti')"
                 @click="popoverOpen = false"
               >
@@ -70,7 +69,7 @@
             </div>
             <Input
               v-model="searchQuery"
-              :placeholder="$t('Ieškok pagal vardą ar el. paštą…')"
+              :placeholder="$t('Ieškok pagal vardą, el. paštą ar pareigas…')"
               @input="debouncedSearch"
             />
           </div>
@@ -100,6 +99,14 @@
             >
               <span class="font-medium">{{ user.name }}</span>
               <span class="text-xs text-muted-foreground">{{ user.email }}</span>
+              <span
+                v-for="duty in user.current_duties"
+                :key="duty.id"
+                data-slot="impersonation-duty"
+                class="text-xs text-foreground/80"
+              >
+                {{ duty.name }}<template v-if="duty.institution"> · {{ duty.institution }}</template>
+              </span>
             </button>
           </div>
         </PopoverContent>
@@ -108,7 +115,6 @@
         data-slot="impersonation-bar-close"
         size="icon-sm"
         variant="ghost"
-        class="min-h-11 min-w-11"
         :aria-label="$t('Uždaryti')"
         @click="dismissed = true"
       >
@@ -142,6 +148,7 @@ interface SearchUser {
   id: string;
   name: string;
   email: string;
+  current_duties: Array<{ id: string; name: string; institution: string | null }>;
 }
 
 const dismissed = ref(false);
