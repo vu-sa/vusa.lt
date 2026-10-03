@@ -197,6 +197,7 @@
         :files
         :type-files
         :can-upload="canManageDuty && !!duty.sharepointPath"
+        :folder-url="duty.sharepointFolderUrl"
         :can-delete="canManageDuty"
       />
     </template>
@@ -287,6 +288,7 @@ interface TranslatableText {
 const props = defineProps<{
   duty: App.Entities.Duty & {
     sharepointPath?: string | null;
+    sharepointFolderUrl?: string | null;
   };
   can?: { update: boolean; managePeople: boolean };
   /** Deferred (`dutyPanels`): only the About tab needs siblings. */

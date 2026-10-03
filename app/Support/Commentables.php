@@ -10,7 +10,6 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
 use App\Models\Reservation;
-use App\Models\SharepointFile;
 use App\Models\SupportRequest;
 use Illuminate\Database\Eloquent\Model;
 
@@ -33,7 +32,6 @@ class Commentables
         'form' => Form::class,
         'problem' => Problem::class,
         'reservation' => Reservation::class,
-        'sharepointFile' => SharepointFile::class,
         'supportRequest' => SupportRequest::class,
     ];
 

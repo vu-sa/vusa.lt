@@ -217,6 +217,7 @@ class InstitutionController extends AdminController
                     GetInstitutionSecretaries::execute($institution)
                 ),
                 'sharepointPath' => $readOnly() ? null : SharepointFileService::pathOrNull($institution),
+                'sharepointFolderUrl' => $readOnly() ? null : SharepointFileService::folderUrlOrNull($institution),
             ],
             'readOnly' => fn () => $readOnly(),
             'overview' => fn () => [

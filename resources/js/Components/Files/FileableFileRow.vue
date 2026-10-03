@@ -25,6 +25,19 @@
       <Link2 class="size-4" />
     </Button>
     <Button
+      v-if="canDelete && file.public_link"
+      type="button"
+      variant="ghost"
+      size="icon-sm"
+      class="shrink-0 text-muted-foreground"
+      :title="$t('Atšaukti nuorodą')"
+      :aria-label="$t('Atšaukti nuorodą')"
+      data-action="revoke-link"
+      @click="emit('revoke', file)"
+    >
+      <Link2Off class="size-4" />
+    </Button>
+    <Button
       v-if="canDelete"
       type="button"
       variant="ghost"
@@ -42,7 +55,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { FileText, Link2, Trash2 } from 'lucide-vue-next';
+import { FileText, Link2, Link2Off, Trash2 } from 'lucide-vue-next';
 
 import type { FileableFileItem } from './types';
 
@@ -57,6 +70,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   copy: [file: FileableFileItem];
   delete: [file: FileableFileItem];
+  revoke: [file: FileableFileItem];
 }>();
 
 const meta = computed(() => [

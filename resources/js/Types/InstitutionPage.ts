@@ -88,6 +88,7 @@ export interface InstitutionPageData {
   managers_source?: 'institution' | 'type' | 'tenant' | null;
   secretaries?: SecretaryUser[];
   sharepointPath: string | null;
+  sharepointFolderUrl?: string | null;
   has_public_meetings?: boolean;
   meeting_periodicity_days?: number | null;
   governance_scope?: string;

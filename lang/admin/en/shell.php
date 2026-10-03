@@ -135,7 +135,6 @@ return [
         'laisku_eile' => 'Mail queue',
         'rep_metrics' => 'Representative metrics',
         'pagalbos_uzklausos' => 'Support requests',
-        'sharepoint_failai' => 'SharePoint files',
     ],
 
     'section_descriptions' => [
@@ -184,7 +183,6 @@ return [
         'laisku_eile' => 'Outgoing and stuck emails',
         'rep_metrics' => 'How reps record their meetings',
         'pagalbos_uzklausos' => 'Problems reported by users',
-        'sharepoint_failai' => 'Institution documents in Sharepoint',
     ],
 
     'actions' => [

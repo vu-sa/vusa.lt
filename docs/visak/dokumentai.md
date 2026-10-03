@@ -25,9 +25,9 @@ tvarkantiems jis taip pat pasiekiamas Svetainės srityje.
 Archyvo įrašas saugo dokumento duomenis ir viešą SharePoint nuorodą. Pats failas lieka
 SharePoint. Dokumento rūšis, data, kalba ir institucija padeda jį rasti ir viešoje svetainėje.
 
-Ne kiekvienas prie posėdžio ar pareigybės pridėtas failas yra viešo dokumentų archyvo įrašas.
-Prie konkretaus įrašo esančius failus tvarkyk jo failų skiltyje;
-bendrą integraciją paaiškina [SharePoint failų gidas](/sistema/sharepoint).
+Prie posėdžio ar pareigybės skirtuke **Failai** įkelti failai nėra archyvo įrašai ir viešai
+nerodomi – žr. [Įrašų failai](/visak/failai). Bendrą integraciją paaiškina
+[SharePoint integracija](/sistema/sharepoint).
 Posėdžio dokumentų susiejimas aprašytas [Posėdžių gide](/visak/posedziai).
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Dokumentų archyvas pasiekiamas visiems nariams">

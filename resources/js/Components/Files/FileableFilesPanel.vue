@@ -37,7 +37,7 @@
               :file
               :can-delete
               @copy="copyLink"
-              @delete="fileToDelete = $event"
+              @delete="fileToDelete = $event"              @revoke="linkToRevoke = $event"
             />
             <li v-if="filesOfType(type).length === 0" class="py-1.5">
               <button
@@ -70,7 +70,7 @@
             :file
             :can-delete
             @copy="copyLink"
-            @delete="fileToDelete = $event"
+            @delete="fileToDelete = $event"            @revoke="linkToRevoke = $event"
           />
         </ul>
 
@@ -83,6 +83,22 @@
           </ul>
         </section>
       </div>
+
+      <template #footer>
+        <p class="text-xs text-muted-foreground" data-slot="fileable-files-privacy">
+          {{ $t('files.record.privacy_note') }}
+          <a :href="filesDocsHref" target="_blank" rel="noopener" class="underline underline-offset-4 hover:text-foreground">{{ $t('Plačiau') }}</a><template v-if="folderUrl">
+            ·
+            <a
+              :href="folderUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="underline underline-offset-4 hover:text-foreground"
+              data-slot="fileable-sharepoint-folder"
+            >{{ $t('files.record.open_in_sharepoint') }}</a>
+          </template>
+        </p>
+      </template>
     </SectionCard>
 
     <FileableUploadSheet
@@ -105,6 +121,16 @@
       @update:open="(open) => { if (!open) fileToDelete = null; }"
       @confirm="deleteFile"
     />
+
+    <ConfirmDialog
+      :open="linkToRevoke !== null"
+      :title="$t('files.record.revoke_title')"
+      :description="$t('files.record.revoke_description')"
+      :confirm-label="$t('Atšaukti nuorodą')"
+      destructive
+      @update:open="(open) => { if (!open) linkToRevoke = null; }"
+      @confirm="revokeLink"
+    />
   </div>
 </template>
 
@@ -123,6 +149,7 @@ import { ConfirmDialog, EmptyState, SectionCard } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { type FileableFileType, fileTypeLabel } from '@/Constants/fileTypes';
+import { useDocsHref } from '@/Composables/useDocsHref';
 import { useToasts } from '@/Composables/useToasts';
 
 const props = withDefaults(defineProps<{
@@ -136,9 +163,12 @@ const props = withDefaults(defineProps<{
   /** Always shown, as a slot to fill when missing (a meeting's protocol and report). */
   primaryTypes?: FileableFileType[];
   defaultDate?: string;
+  /** The record's folder in SharePoint itself; only set for people who manage the record. */
+  folderUrl?: string | null;
 }>(), {
   files: undefined,
   typeFiles: undefined,
+  folderUrl: null,
   primaryTypes: () => [],
   defaultDate: undefined,
 });
@@ -150,6 +180,8 @@ const uploadOpen = ref(false);
 const presetType = ref<FileableFileType | null>(null);
 const initialFiles = ref<File[]>([]);
 const fileToDelete = ref<FileableFileItem | null>(null);
+const linkToRevoke = ref<FileableFileItem | null>(null);
+const filesDocsHref = useDocsHref('/visak/failai');
 const dropZoneRef = ref<HTMLElement | null>(null);
 
 const loading = computed(() => props.files === undefined);
@@ -202,6 +234,15 @@ const deleteFile = () => {
 
   if (file) {
     router.delete(route('fileableFiles.destroy', file.id), { preserveScroll: true });
+  }
+};
+
+const revokeLink = () => {
+  const file = linkToRevoke.value;
+  linkToRevoke.value = null;
+
+  if (file) {
+    router.delete(route('fileableFiles.revokePublicLink', file.id), { preserveScroll: true });
   }
 };
 

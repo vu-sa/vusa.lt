@@ -79,6 +79,7 @@ class DutyTypeController extends AdminController
             'roleOptions' => Inertia::optional(fn () => Role::query()->orderBy('name')->get(['id', 'name'])),
             'responsibleDuties' => [],
             'sharepointPath' => SharepointFileService::pathOrNull($type),
+            'sharepointFolderUrl' => SharepointFileService::folderUrlOrNull($type),
             'files' => Inertia::defer(fn () => $type->availableFiles()->orderByDesc('file_date')->get(), 'files'),
             'can' => [
                 'update' => auth()->user()?->can('update', $type) ?? false,

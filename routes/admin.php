@@ -21,7 +21,6 @@ use Illuminate\Support\Facades\Route;
 | See routes/api.php for:
 | - /api/v1/admin/tasks/indicator (TasksIndicator component)
 | - /api/v1/admin/files (file browser AJAX)
-| - /api/v1/admin/fileables/* (SharePoint file management)
 | - /api/v1/admin/tutorials/progress (tutorial state)
 |
 */
@@ -302,19 +301,12 @@ Route::resource('tasks', TaskController::class)->only(['store', 'destroy']);
 Route::get('tasks/summary', [TaskController::class, 'summary'])->name('tasks.summary');
 Route::post('tasks/{task}/updateCompletionStatus', [TaskController::class, 'updateCompletionStatus'])->name('tasks.updateCompletionStatus');
 
-Route::resource('sharepointFiles', SharepointFileController::class)->only('index', 'destroy');
-
 // FileableFiles - a record's files kept in SharePoint
 Route::post('fileables/{type}/{id}/files', [FileableFileController::class, 'store'])->name('fileableFiles.store');
 Route::get('fileableFiles/{fileableFile}/open', [FileableFileController::class, 'open'])->name('fileableFiles.open');
 Route::post('fileableFiles/{fileableFile}/public-link', [FileableFileController::class, 'publicLink'])->name('fileableFiles.publicLink');
+Route::delete('fileableFiles/{fileableFile}/public-link', [FileableFileController::class, 'revokePublicLink'])->name('fileableFiles.revokePublicLink');
 Route::delete('fileableFiles/{fileableFile}', [FileableFileController::class, 'destroy'])->name('fileableFiles.destroy');
-
-// SharePoint integration
-// GET endpoints moved to API: route('api.v1.admin.sharepoint.driveItems')
-Route::post('sharepoint/createFolder', [SharepointFileController::class, 'createFolder'])->name('sharepoint.createFolder');
-Route::get('sharepoint/{id}/permissions', [SharepointFileController::class, 'getDriveItemPublicLink'])->name('sharepoint.getDriveItemPublicLink');
-Route::post('sharepoint/{id}/permissions/createPublic', [SharepointFileController::class, 'createPublicPermission'])->name('sharepoint.createPublicPermission');
 
 // Settings routes
 Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');

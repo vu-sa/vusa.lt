@@ -1,6 +1,28 @@
 <?php
 
 return [
+    'visibility' => [
+        'title' => 'What is shown on vusa.lt?',
+        'public_intro' => 'This meeting is public because at least one of its institutions is of a type whose meetings are published on vusa.lt.',
+        'internal_intro' => 'This meeting is not published on vusa.lt. If it is announced in the calendar, the event page shows its agenda only.',
+        'shown_heading' => 'Shown on vusa.lt',
+        'never_heading' => 'Never shown',
+        'shown' => [
+            'basics' => 'Meeting date, institution and status',
+            'agenda' => 'Agenda items and voting results',
+            'representatives' => 'Student representatives in office at the time',
+            'documents' => 'Documents in the “Documents” tab that have a public link (resolutions and protocols of VU SA bodies)',
+        ],
+        'never' => [
+            'files' => 'Files in the “Files” tab (protocols, reports, etc.)',
+            'tasks' => 'Tasks',
+            'comments' => 'Comments and representatives’ notes',
+        ],
+        'files_link_note' => 'Files are never listed publicly, but anyone holding an opened file’s link can open it. You can revoke the link in the “Files” tab.',
+        'trigger' => 'What is shown?',
+        'spotlight_title' => 'What is visible on vusa.lt?',
+        'spotlight_body' => 'See what of this meeting is shown publicly and what never is.',
+    ],
     'agenda' => [
         'add_items' => 'Add items',
         'empty_description' => 'Paste the agenda from the invitation — each line becomes an item.',

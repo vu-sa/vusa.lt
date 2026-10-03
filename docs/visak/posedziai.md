@@ -64,6 +64,17 @@ dokumentai.
 Viešą posėdį gali atidaryti ir nariai, kurie jo tvarkyti negali: jie mato darbotvarkę, bet ne
 failus, užduotis, komentarus ir atstovų pastabas.
 
+Šalia matomumo paspaudęs **Kas rodoma?** pamatysi, kas iš posėdžio rodoma vusa.lt, o kas –
+niekada. Skirtuko **Failai** failai viešai nerodomi niekada (žr.
+[Įrašų failai](/visak/failai#viesumas)).
+
+<ChangelogNote version="v3.0" date="2026-10-02" title="Kas rodoma vusa.lt?">
+
+Iki v3.0 posėdžio puslapis rodė tik „Matoma vusa.lt“ ar „Tik viduje“, nepaaiškindamas, kas
+konkrečiai skelbiama.
+
+</ChangelogNote>
+
 ### Bendri posėdžiai
 
 Posėdis gali priklausyti kelioms institucijoms (pvz., bendras dviejų komitetų posėdis). Institucija
@@ -89,7 +100,7 @@ Po būsena rodoma **Nepilnų punktų: N** su nuorodomis į kiekvieną nepilną p
 ### Po posėdžio: protokolas ir ataskaita {#protokolas}
 
 Laukas **Po posėdžio** rodo, ar įkelti posėdžio **protokolas** ir **ataskaita** (SharePoint failai
-su tipu „Protokolai“ arba „Ataskaitos“). Juos įkelk skirtuke **Failai**.
+su tipu „Protokolai“ arba „Ataskaitos“). Juos įkelk skirtuke **Failai** (žr. [Įrašų failai](/visak/failai)).
 
 ### Skirtukai
 
@@ -97,7 +108,7 @@ su tipu „Protokolai“ arba „Ataskaitos“). Juos įkelk skirtuke **Failai**
 |---|---|
 | **Darbotvarkė** | Punktai su būsena; čia pridedami ir perrikiuojami punktai |
 | **Dokumentai** | Tik VU SA darinių posėdžiams: su posėdžiu susieti dokumentų naršyklės dokumentai (nutarimai, protokolai) |
-| **Failai** | Posėdžio SharePoint failai |
+| **Failai** | Posėdžio darbo failai SharePoint; viešai nerodomi (žr. [Įrašų failai](/visak/failai)) |
 | **Užduotys** | Posėdžio užduotys; skaičius rodo neatliktas |
 
 ## Veiksmai

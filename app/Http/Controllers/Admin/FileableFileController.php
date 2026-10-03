@@ -92,6 +92,24 @@ class FileableFileController extends AdminController
         }
     }
 
+    public function revokePublicLink(FileableFile $fileableFile): RedirectResponse
+    {
+        $this->authorize('update', $fileableFile);
+
+        try {
+            $this->files->revokePublicLink($fileableFile);
+        } catch (\Throwable $e) {
+            Log::warning('Could not revoke a fileable file public link', [
+                'file_id' => $fileableFile->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', __('messages.sharepoint.link_revoke_failed'));
+        }
+
+        return back()->with('success', __('messages.sharepoint.link_revoked'));
+    }
+
     public function destroy(FileableFile $fileableFile): RedirectResponse
     {
         $this->authorize('delete', $fileableFile);

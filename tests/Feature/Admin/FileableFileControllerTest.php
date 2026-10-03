@@ -36,12 +36,13 @@ function fakeDriveItem(string $id, string $name): DriveItem
     return $item;
 }
 
-function fakeAnonymousLink(string $url): Permission
+function fakeAnonymousLink(string $url, string $permissionId = 'permission-1'): Permission
 {
     $link = new SharingLink;
     $link->setWebUrl($url);
 
     $permission = new Permission;
+    $permission->setId($permissionId);
     $permission->setLink($link);
 
     return $permission;
@@ -175,7 +176,9 @@ describe('open', function (): void {
             ->get(route('fileableFiles.open', $file))
             ->assertRedirect('https://sharepoint.test/new-link');
 
-        expect($file->fresh()->public_link)->toBe('https://sharepoint.test/new-link');
+        expect($file->fresh())
+            ->public_link->toBe('https://sharepoint.test/new-link')
+            ->public_link_permission_id->toBe('permission-1');
     });
 
     test('marks a file gone from SharePoint instead of failing', function (): void {
@@ -242,4 +245,74 @@ test('destroy retains and marks the current record after a non-404 Graph failure
 
     $this->assertModelExists($file);
     expect($file->fresh()->deleted_externally_at)->not->toBeNull();
+});
+
+describe('revokePublicLink', function (): void {
+    test('deletes the stored SharePoint permission and forgets the link', function (): void {
+        $file = meetingFile($this->meeting, ['public_link' => 'https://sharepoint.test/old', 'public_link_permission_id' => 'permission-1']);
+
+        $this->graph->shouldNotReceive('getDriveItemPublicLink');
+        $this->graph->shouldReceive('deletePermission')->once()->with('drive-item-1', 'permission-1');
+
+        asUser($this->admin)
+            ->delete(route('fileableFiles.revokePublicLink', $file))
+            ->assertRedirect()
+            ->assertSessionHas('success', __('messages.sharepoint.link_revoked'));
+
+        expect($file->fresh())
+            ->public_link->toBeNull()
+            ->public_link_permission_id->toBeNull();
+    });
+
+    test('finds the permission on the drive item for links minted before ids were stored', function (): void {
+        $file = meetingFile($this->meeting, ['public_link' => 'https://sharepoint.test/old']);
+
+        $this->graph->shouldReceive('getDriveItemPublicLink')->with('drive-item-1')
+            ->andReturn(fakeAnonymousLink('https://sharepoint.test/old', 'legacy-permission'));
+        $this->graph->shouldReceive('deletePermission')->once()->with('drive-item-1', 'legacy-permission');
+
+        asUser($this->admin)->delete(route('fileableFiles.revokePublicLink', $file))->assertSessionHas('success');
+
+        expect($file->fresh()->public_link)->toBeNull();
+    });
+
+    test('treats a permission SharePoint already lost as revoked', function (): void {
+        $file = meetingFile($this->meeting, ['public_link' => 'https://sharepoint.test/old', 'public_link_permission_id' => 'permission-1']);
+
+        $this->graph->shouldReceive('deletePermission')->andThrow(graphNotFound());
+
+        asUser($this->admin)->delete(route('fileableFiles.revokePublicLink', $file))->assertSessionHas('success');
+
+        expect($file->fresh()->public_link)->toBeNull();
+    });
+
+    test('keeps the link when SharePoint fails for another reason', function (): void {
+        $file = meetingFile($this->meeting, ['public_link' => 'https://sharepoint.test/old', 'public_link_permission_id' => 'permission-1']);
+
+        $this->graph->shouldReceive('deletePermission')->andThrow(new RuntimeException('Graph timeout'));
+
+        asUser($this->admin)
+            ->delete(route('fileableFiles.revokePublicLink', $file))
+            ->assertSessionHas('error', __('messages.sharepoint.link_revoke_failed'));
+
+        expect($file->fresh()->public_link)->toBe('https://sharepoint.test/old');
+    });
+
+    test('returns 403 for a user who cannot update the meeting', function (): void {
+        $file = meetingFile($this->meeting, ['public_link' => 'https://sharepoint.test/old', 'public_link_permission_id' => 'permission-1']);
+
+        $this->graph->shouldNotReceive('deletePermission');
+
+        asUser(makeUser($this->tenant))
+            ->delete(route('fileableFiles.revokePublicLink', $file))
+            ->assertStatus(403);
+    });
+});
+
+test('destroy returns 403 for a user who cannot update the meeting', function (): void {
+    $file = meetingFile($this->meeting);
+
+    asUser(makeUser($this->tenant))
+        ->delete(route('fileableFiles.destroy', $file))
+        ->assertStatus(403);
 });

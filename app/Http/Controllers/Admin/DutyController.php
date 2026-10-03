@@ -145,6 +145,7 @@ class DutyController extends AdminController
         return $this->inertiaResponse('Admin/People/ShowDuty', [
             'duty' => fn () => array_merge($loadDuty()->toArray(), [
                 'sharepointPath' => SharepointFileService::pathOrNull($duty),
+                'sharepointFolderUrl' => SharepointFileService::folderUrlOrNull($duty),
             ]),
             'files' => Inertia::defer(fn () => $duty->availableFiles()->orderByDesc('file_date')->get(), 'files'),
             'typeFiles' => Inertia::defer(fn () => GetTypeFiles::forFileable($duty), 'files'),

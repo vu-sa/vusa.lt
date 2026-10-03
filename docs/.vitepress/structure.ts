@@ -64,6 +64,7 @@ export const guide: GuideChapter[] = [
       { text: 'Problemos', link: '/visak/problemos' },
       { text: 'Tikslai (bandomoji)', link: '/visak/tikslai' },
       { text: 'Dokumentai', link: '/visak/dokumentai' },
+      { text: 'Įrašų failai', link: '/visak/failai' },
       { text: 'Laikotarpių tvarkyklė', link: '/visak/pareigybiu-laikotarpiai' },
       { text: 'Institucijų grafas', link: '/visak/instituciju-grafas' },
       { text: 'Komentarai', link: '/visak/komentarai' },
@@ -122,7 +123,7 @@ export const guide: GuideChapter[] = [
       { text: 'Laiškų eilė', link: '/sistema/laisku-eile' },
       { text: 'Atstovų rodikliai', link: '/sistema/atstovu-rodikliai' },
       { text: 'Pagalbos užklausos', link: '/sistema/pagalbos-uzklausos' },
-      { text: 'Sharepoint failai', link: '/sistema/sharepoint' },
+      { text: 'SharePoint integracija', link: '/sistema/sharepoint' },
     ],
   },
 ]

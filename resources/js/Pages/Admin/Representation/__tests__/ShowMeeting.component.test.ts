@@ -237,9 +237,25 @@ describe('ShowMeeting.vue', () => {
     expect(publicFact.find('dt').attributes('aria-label')).toBe('Matomumas');
     expect(publicFact.find('dt svg').exists()).toBe(true);
     expect(publicFact.find('dt').text()).toBe('');
-    expect(publicFact.find('dd').text()).toBe('Matoma vusa.lt');
+    expect(publicFact.find('dd a').text()).toBe('Matoma vusa.lt');
     expect(privateFact.classes()).toContain('bg-status-neutral-surface');
-    expect(privateFact.find('dd').text()).toBe('Tik viduje');
+    expect(privateFact.find('dd').text()).toContain('Tik viduje');
+  });
+
+  it('explains what vusa.lt shows for this meeting', async () => {
+    const wrapper = createWrapper({ publicUrl: 'https://www.vusa.test/lt/meeting' });
+    const dialog = wrapper.findComponent({ name: 'MeetingPublicVisibilityDialog' });
+
+    expect(dialog.props('open')).toBe(false);
+
+    await wrapper.get('[data-testid="meeting-visibility-explain"]').trigger('click');
+
+    expect(dialog.props('open')).toBe(true);
+    expect(dialog.props('isPublic')).toBe(true);
+  });
+
+  it('hides the explanation trigger in the read-only view', () => {
+    expect(createWrapper({ readOnly: true }).find('[data-testid="meeting-visibility-explain"]').exists()).toBe(false);
   });
 
   it('merges the protocol and report into one fact', () => {

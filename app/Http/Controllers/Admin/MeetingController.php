@@ -245,6 +245,7 @@ class MeetingController extends AdminController
                 // than the current one — the rest of the page reads the localized array above.
                 'description' => $loadMeeting()->getTranslations('description'),
                 'sharepointPath' => $readOnly() ? null : SharepointFileService::pathOrNull($meeting),
+                'sharepointFolderUrl' => $readOnly() ? null : SharepointFileService::folderUrlOrNull($meeting),
             ],
             'readOnly' => fn () => $readOnly(),
             'files' => fn () => $readOnly() ? [] : $loadMeeting()->fileableFiles->whereNull('deleted_externally_at')->sortByDesc('file_date')->values(),

@@ -23,4 +23,3 @@ t. y. faktiškai tik platformos administratoriams.
 | Laiškų eilė | `/mano/mail-queue` | Turintys teisę matyti roles |
 | Atstovų rodikliai | `/mano/rep-metrics` | Turintys teisę matyti roles |
 | Pagalbos užklausos | `/mano/support-requests` | Turintys teisę matyti pagalbos užklausas |
-| Sharepoint failai | `/mano/sharepointFiles` | Turintys teisę matyti Sharepoint failus |

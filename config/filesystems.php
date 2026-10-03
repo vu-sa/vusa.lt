@@ -102,6 +102,8 @@ return [
         'site_id' => env('SHAREPOINT_SITE_ID', $sharepointSite['site_id']),
         'list_id' => env('SHAREPOINT_LIST_ID', $sharepointSite['list_id']),
         'vusa_drive_id' => env('SHAREPOINT_VUSA_DRIVE_ID', $sharepointSite['drive_id']),
+        // Browser address of that drive's root (…/sites/<site>/Shared Documents); unset hides the folder links.
+        'vusa_drive_url' => env('SHAREPOINT_VUSA_DRIVE_URL'),
         // Production's document archive everywhere; staging's Entra app may only read it.
         'archive_drive_id' => env('SHAREPOINT_ARCHIVE_DRIVE_ID', 'b!pMfaXjYdIEy8zqO3LWICz9geSweNHJhMi7VW4z5KDW0k2jqzC_i8TaX9RPnDbkJq'),
 

@@ -16,12 +16,12 @@
     <template #actions>
       <FilePicker
         v-if="sharepointPickerAvailable && canCreate"
-        :loading="uploadLoading"
         @pick="handleDocumentPick"
       >
         <template #trigger>
-          <Button variant="brand">
-            <ExternalLink aria-hidden="true" />
+          <Button variant="brand" :disabled="uploadLoading">
+            <Spinner v-if="uploadLoading" aria-hidden="true" />
+            <ExternalLink v-else aria-hidden="true" />
             {{ $t('Įkelti iš SharePoint') }}
           </Button>
         </template>
@@ -194,6 +194,7 @@ import { DocumentIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
+import { Spinner } from '@/Components/ui/spinner';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
 import type { StatusPresentation } from '@/Constants/statuses';

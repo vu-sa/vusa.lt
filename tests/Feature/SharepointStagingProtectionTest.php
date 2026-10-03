@@ -67,7 +67,6 @@ test('every direct SharePoint mutator refuses to run in staging', function (): v
         fn () => $service->deletePermission('item', 'permission'),
         fn () => $service->uploadDriveItem('folder/document.pdf', $file),
         fn () => $service->deleteDriveItem('item'),
-        fn () => $service->createFolder('parent/child'),
         fn () => $service->uploadUrlShortcut('folder/link.url', '[InternetShortcut]'),
     ];
 

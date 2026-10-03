@@ -1,104 +1,54 @@
 ---
 doc_status: reviewed
-title: Sharepoint failai
-area: sharepointFiles
-models: [SharepointFile, FileableFile]
-last_reviewed: 2026-10-02
+title: SharePoint integracija
+last_reviewed: 2026-10-03
 tests:
-  - tests/Feature/Admin/Resources/SharepointFileControllerTest.php
-  - tests/Feature/Api/Admin/SharepointApiControllerTest.php
   - tests/Feature/SharepointStagingProtectionTest.php
-  - tests/Feature/Admin/FileableFileControllerTest.php
-  - resources/js/Features/Admin/FileManager/__tests__/FilePropertiesDrawer.component.test.ts
+  - tests/Feature/SyncFileableFilesJobTest.php
+  - tests/Feature/Listeners/UpdateSharepointFolderTest.php
 ---
 
-# Sharepoint failai
+# SharePoint integracija
 
-Skiltis **Sharepoint failai** (`/mano/sharepointFiles`) skirta universiteto „Microsoft SharePoint“ dokumentų saugyklai naršyti, aplankams tvarkyti ir failams susieti su platformos įrašais.
-
-Čia saugomi institucijų posėdžių protokolai, darbotvarkės, nuostatai ir kiti atstovavimo dokumentai, pasiekiami per tiesioginę „Microsoft 365“ integraciją.
+Platforma nesaugo dokumentų savo serveryje – jie laikomi VU SA „Microsoft 365“ SharePoint. Mano
+VU SA per „Microsoft Graph“ sąsają juos įkelia, atveria ir susieja su platformos įrašais. Bendros
+SharePoint failų naršyklės platformoje nėra: aplankus tiesiogiai tvarko VU SA „Microsoft“
+paskyrą turintys žmonės pačiame SharePoint.
 
 ## Kaip tai veikia
 
-Platforma nesaugo didelių dokumentų failų savo serveryje – jie fiziškai laikomi VU „Microsoft 365“ SharePoint diske. Mano VU SA per „Microsoft Graph API“ sąsają pasiekia disko elementus ir susieja juos su vidiniais sistemos modeliais.
+SharePoint naudojamas dviem tikslais:
 
-### Ryšys su platformos įrašais
+| Kas | Kur aprašyta | Ar rodoma viešai |
+|---|---|---|
+| Įrašų failai – posėdžių, institucijų, pareigybių ir jų tipų skirtukas **Failai** | [Įrašų failai](/visak/failai) | Niekada |
+| Dokumentų archyvas – nuostatai, nutarimai, protokolai ir kiti skelbiami dokumentai | [Dokumentai](/visak/dokumentai) | Taip, per vusa.lt dokumentų paiešką ir viešus posėdžius |
 
-Vietinėje duomenų bazėje saugomi failo metaduomenys ir sąsaja su platformos įrašu. Dabartinis failo įrašas apima abu; senesniems failams dar naudojamas atskiras metaduomenų modelis:
-- Failas gali būti priskirtas **posėdžiui**, **institucijai** ar kitam objektui.
-- Kai dokumentas priskiriamas posėdžiui, institucijos atstovai jį mato tiesiai posėdžio kortelėje.
-
-### Viešos ir privačios nuorodos
-
-Failo prieigą nustato SharePoint leidimai. Jei dokumentas turi būti pasiekiamas viešai,
-savybių skydelyje gali sukurti viešą nuorodą. Ją turintis žmogus gali atverti dokumentą
-neprisijungęs prie „Microsoft“. Prieš kurdamas nuorodą patikrink, ar dokumentą galima viešinti.
+Kiekvienas įrašas turi savo aplanką `General` medyje. Pervadinus instituciją, pareigybę ar tipą,
+platforma pervadina ir aplanką, todėl aplankų ranka nepervadink ir neperkelk.
 
 ### Apsauga ne gamybinėse aplinkose
 
-Bandomojoje (*staging*) aplinkoje failų keitimas ir šalinimas blokuojamas, kai įjungtas
-skaitymo režimas arba pasirinkta neleistina svetainė ar gamybinis diskas. Veiksmas nėra
-imituojamas ir automatiškai nenukreipiamas į kitą diską. Ši apsauga netaikoma visoms kūrimo
-ar testavimo aplinkoms.
-
-## Veiksmai
-
-### Failų naršyklė (`/mano/sharepointFiles`)
-
-Puslapyje veikia failų tvarkyklė:
-- **Judėjimas tarp aplankų**: pradinis aplankas yra `General`. Dukart spustelėk aplanką, kad į jį užeitum.
-- **Kelio juosta** (viršuje): rodo visą kelią iki esamo aplanko. Spustelėk bet kurią kelio dalį, kad sugrįžtum į aukštesnį lygį.
-- **Paieška**: įvesk pavadinimo fragmentą paieškos lauke, norėdamas atsirinkti failus esamame aplanke.
-- **Atnaujinti**: paspausk atnaujinimo mygtuką, jei failai SharePoint diske buvo neseniai pakeisti iš išorės.
-
-### Naujo aplanko sukūrimas
-
-1. Aplankų lange paspausk **Sukurti aplanką**.
-2. Įvesk naujo aplanko pavadinimą.
-3. Patvirtink – aplankas bus sukurtas tiesiogiai SharePoint diske esamo aplanko viduje.
-
-### Failo savybių peržiūra
-
-Pasirink failą, kad dešinėje atvertum savybių skydelį:
-- Matomas failo pavadinimas, dydis, plėtinys, paskutinio pakeitimo laikas ir vieta.
-- Skydelyje galima sugeneruoti viešą atsisiuntimo nuorodą.
-
-### Failo šalinimas
-
-1. Pasirink failą ir atverk jo savybių skydelį.
-2. Paspausk **Ištrinti** ir patvirtink veiksmą.
-3. Sėkmingai ištrynus dabartinį failą iš SharePoint disko, pašalinamas jo vietinis įrašas. Jei failo diske jau nėra, vietinis įrašas taip pat pašalinamas. Kitai integracijos klaidai įvykus, įrašas išlieka ir pažymimas kaip ištrintas išorėje; ši žyma savaime neįrodo, kad failo diske nebėra.
-
-## Kas ką gali {#teises}
-
-| Veiksmas | Studentų atstovas | Studentų atstovų koordinatorius | Centrinio biuro studentų atstovų koordinatorius | Super Admin |
-|---|---|---|---|---|
-| Matyti failų skiltį ir naršyti aplankus | – | ✓ | ✓ | ✓ |
-| Kurti aplankus ir viešas nuorodas | ✓ | ✓ | ✓ | ✓ |
-| Šalinti dabartinį susietą failą | Pagal susieto įrašo redagavimo teisę | Pagal susieto įrašo redagavimo teisę | Pagal susieto įrašo redagavimo teisę | ✓ |
-
-Lentelėje įvardytos sistemoje apibrėžtos rolės. **Studentų atstovas** turi failų kūrimo
-teisę, bet bendros failų naršyklės neatveria; failus pasiekia per susietą įrašą. Prisijungimas be atitinkamos rolės ar
-atskirai suteiktų teisių failų naršyklės neatveria. Dabartinio failo šalinimo teisė tikrinama
-pagal jo savininką, pavyzdžiui, posėdį. Senesnių failų šalinimui taikoma savininko šalinimo teisė.
+Bandomojoje (*staging*) aplinkoje failų keitimas, šalinimas ir nuorodų kūrimas ar atšaukimas
+blokuojamas, kai įjungtas skaitymo režimas arba pasirinkta neleistina svetainė ar gamybinis
+diskas. Veiksmas nėra imituojamas ir automatiškai nenukreipiamas į kitą diską.
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 
-- **Sinchronizavimas fone**: dokumentų importas ir metaduomenų atnaujinimas iš SharePoint vykdomas foninėmis eilės užduotimis.
-- **Išorinio trynimo atpažinimas**: jei failas pašalinamas pačioje „Microsoft SharePoint“ sistemoje, platforma klaidą atpažįsta ir pažymi vietinį įrašą kaip ištrintą išorėje ir pateikia pranešimą apie nepasiekiamą failą.
+- Įrašų failai kartą per savaitę sutikrinami su SharePoint: atnaujinami jų duomenys, o
+  SharePoint nebesantys failai pašalinami iš sąrašų.
+- Dokumentų archyvo sinchronizavimas aprašytas puslapyje [Dokumentai](/visak/dokumentai).
 
-## Rekomendacijos {#susitarimai}
+## Susitarimai {#susitarimai}
 
-- Laikykis nustatytos padalinių ir institucijų aplankų hierarchijos, kad dokumentai nepasimestų.
-- Netrink ir nepervadink pagrindinių šakninių aplankų (`General`, padalinių santrumpų aplankų), nes jie susieti su automatinėmis posėdžių dokumentų kėlimo taisyklėmis.
+- Netrink ir nepervadink šakninių aplankų (`General`, `Padaliniai`, padalinių santrumpų), nes
+  pagal juos sudaromi įrašų aplankai.
 
 ## Techninė informacija {#technine-informacija}
 
-- Valdikliai:
-  - `SharepointFileController` (`sharepointFiles.index`, `sharepointFiles.destroy`, `createFolder`, `getDriveItemPublicLink`, `createPublicPermission`).
-  - `SharepointApiController` (`attachFileableFilesToDriveItems`, `fileableFiles`).
-- Integracijos tarnyba: `SharepointGraphService` (naudoja `microsoft/microsoft-graph` paketą ir `vusa_drive_id` disko ID).
-- Prieigos politika: `SharepointFilePolicy` (trynimas tikrinamas per `$sharepointFile->fileables->first()?->fileable`).
-- Modeliai: `SharepointFile`, `FileableFile`, `SharepointFileable`.
-- Dabartiniai failai: `FileableFileController` ir `FileableFilePolicy`; senesni metaduomenys: `SharepointFile`.
-- Bandomosios aplinkos integracijos apsauga: `SharepointGraphService::shouldRestrictSharepointOperations()`; `StagingReadOnlyMode` atskirai riboja platformos užklausas.
+- Graph sąsaja: `SharepointGraphService` (`microsoft/microsoft-graph`), diskas –
+  `filesystems.sharepoint.vusa_drive_id`, archyvas – `archive_drive_id`.
+- Įrašų failai: `SharepointFileService`, `FileableFile`; aplankų pervadinimas –
+  `UpdateSharepointFolder`; sinchronizavimas – `SyncFileableFilesJob`.
+- Apsauga: `StagingProtection::ensureSharepointIsWritable()`; platformos užklausas atskirai riboja
+  `StagingReadOnlyMode`.

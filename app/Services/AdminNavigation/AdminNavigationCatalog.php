@@ -24,7 +24,6 @@ use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
 use App\Models\Role;
-use App\Models\SharepointFile;
 use App\Models\StudyProgram;
 use App\Models\StudySet;
 use App\Models\SupportRequest;
@@ -392,7 +391,6 @@ class AdminNavigationCatalog
                 new Section('laisku_eile', 'shell.sections.laisku_eile', 'mailQueue', [], null, Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.laisku_eile'),
                 new Section('rep_metrics', 'shell.sections.rep_metrics', 'repMetrics', [], null, Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.rep_metrics'),
                 new Section('pagalbos_uzklausos', 'shell.sections.pagalbos_uzklausos', 'supportRequests.index', [], null, Visibility::can('viewAny', SupportRequest::class), descriptionKey: 'shell.section_descriptions.pagalbos_uzklausos'),
-                new Section('sharepoint_failai', 'shell.sections.sharepoint_failai', 'sharepointFiles.index', [], 'sharepoint_file', Visibility::can('viewAny', SharepointFile::class), matches: ['sharepointFiles.*', 'sharepoint.*'], descriptionKey: 'shell.section_descriptions.sharepoint_failai'),
             ],
             overview: new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.sistema', [], null, Visibility::always()),
             createActions: [

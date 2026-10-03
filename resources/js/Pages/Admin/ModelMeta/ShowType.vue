@@ -94,6 +94,7 @@
             :fileable="{ id: contentType.id, type: fileableType }"
             :files
             :can-upload="can.update && !!sharepointPath"
+            :folder-url="sharepointFolderUrl"
             :can-delete="can.update"
           />
         </Deferred>
@@ -151,6 +152,7 @@ const props = defineProps<{
   roleOptions?: Array<{ id: string; name: string }>;
   responsibleDuties?: Array<{ id: string; duty_id: string; duty: string; label: string }>;
   sharepointPath?: string | null;
+  sharepointFolderUrl?: string | null;
   /** Deferred (`files`). */
   files?: FileableFileItem[];
   can: { update: boolean; delete: boolean };

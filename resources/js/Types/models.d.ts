@@ -1930,54 +1930,7 @@ declare global {
       type_exists: boolean
     }
 
-    export interface SharepointFile {
-      // columns
-      sharepoint_id: string
-      id: string
-      // relations
-      fileables?: SharepointFileable[]
-      duty_types?: DutyType[]
-      institution_types?: InstitutionType[]
-      institutions?: Institution[]
-      meetings?: Meeting[]
-      comments?: Comment[]
-      root_comments?: Comment[]
-      // counts
-      fileables_count: number
-      duty_types_count: number
-      institution_types_count: number
-      institutions_count: number
-      meetings_count: number
-      comments_count: number
-      root_comments_count: number
-      // exists
-      fileables_exists: boolean
-      duty_types_exists: boolean
-      institution_types_exists: boolean
-      institutions_exists: boolean
-      meetings_exists: boolean
-      comments_exists: boolean
-      root_comments_exists: boolean
-    }
 
-    export interface SharepointFileable {
-      // columns
-      sharepoint_file_id: string
-      fileable_type: string
-      fileable_id: string
-      created_at: string
-      updated_at: string
-      // relations
-      fileable?: SharepointFileable
-      sharepoint_file?: SharepointFile
-      meeting?: Meeting
-      institution?: Institution
-      // counts
-      // exists
-      sharepoint_file_exists: boolean
-      meeting_exists: boolean
-      institution_exists: boolean
-    }
 
     export interface Step {
       // columns

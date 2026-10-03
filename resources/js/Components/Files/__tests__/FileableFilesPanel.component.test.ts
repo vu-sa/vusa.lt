@@ -73,4 +73,32 @@ describe('FileableFilesPanel', () => {
     expect(wrapper.find('button[data-missing-type]').exists()).toBe(false);
     expect(wrapper.find('button[aria-label="Ištrinti"]').exists()).toBe(false);
   });
+
+  it('revokes a file link only after confirming, and only once the file has one', async () => {
+    const wrapper = mountPanel({ files: [protocol, { ...protocol, id: 'f2', public_link: 'https://sharepoint.test/x' }] });
+
+    const revokeButtons = wrapper.findAll('[data-action="revoke-link"]');
+    expect(revokeButtons).toHaveLength(1);
+
+    await revokeButtons[0].trigger('click');
+    expect(router.delete).not.toHaveBeenCalled();
+
+    await wrapper.find('[data-testid="confirm-delete"]').trigger('click');
+    expect(router.delete).toHaveBeenCalledWith(expect.stringContaining('fileableFiles.revokePublicLink'), expect.anything());
+  });
+
+  it('offers no link revocation to a reader', () => {
+    const wrapper = mountPanel({ files: [{ ...protocol, public_link: 'https://sharepoint.test/x' }], canDelete: false });
+
+    expect(wrapper.find('[data-action="revoke-link"]').exists()).toBe(false);
+  });
+
+  it('always says files are never shown on vusa.lt and links the folder when one is given', () => {
+    const reader = mountPanel({ canUpload: false });
+    expect(reader.find('[data-slot="fileable-files-privacy"]').text()).toContain('files.record.privacy_note');
+    expect(reader.find('[data-slot="fileable-sharepoint-folder"]').exists()).toBe(false);
+
+    const manager = mountPanel({ folderUrl: 'https://example.sharepoint.com/General' });
+    expect(manager.find('[data-slot="fileable-sharepoint-folder"]').attributes('href')).toBe('https://example.sharepoint.com/General');
+  });
 });

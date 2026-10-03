@@ -41,10 +41,8 @@ class StagingReadOnlyMode
      */
     protected array $sharepointWriteRoutes = [
         'fileableFiles.store',                    // Upload files TO SharePoint
-        'sharepointFiles.destroy',                // Delete file FROM SharePoint
         'fileableFiles.destroy',                  // Delete file FROM SharePoint
-        'sharepoint.createFolder',                // Create folder IN SharePoint
-        'sharepoint.createPublicPermission',      // Create public link IN SharePoint
+        'fileableFiles.revokePublicLink',         // Delete a sharing link IN SharePoint
     ];
 
     /**

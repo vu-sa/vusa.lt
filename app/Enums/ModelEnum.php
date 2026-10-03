@@ -43,8 +43,6 @@ enum ModelEnum: string
     case RESERVATION_RESOURCE = 'reservation_resource';
     case RESOURCE = 'resource';
     case ROLE = 'role';
-    case SHAREPOINT_FILE = 'sharepoint_file';
-    case SHAREPOINT_FILEABLE = 'sharepoint_fileable';
     case STUDY_PROGRAM = 'study_program';
     case STUDY_SET = 'study_set';
     case TAG = 'tag';

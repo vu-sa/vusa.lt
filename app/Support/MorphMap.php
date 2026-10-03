@@ -75,8 +75,6 @@ final class MorphMap
         'resource_category' => Models\ResourceCategory::class,
         'role' => Models\Role::class,
         'role_type' => Models\RoleType::class,
-        'sharepoint_file' => Models\SharepointFile::class,
-        'sharepoint_fileable' => Models\Pivots\SharepointFileable::class,
         'study_program' => Models\StudyProgram::class,
         'study_set' => Models\StudySet::class,
         'study_set_course' => Models\StudySetCourse::class,

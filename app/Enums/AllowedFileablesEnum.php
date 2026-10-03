@@ -12,16 +12,8 @@ use App\Models\Meeting;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Models that may be addressed as a `fileable` in the SharePoint file endpoints.
- *
- * The backing values are the strings the frontend actually sends (`sharepoint/{type}/{id}`,
- * `<FileManager :fileable="{ type: 'InstitutionType' }">`), so this enum is the wire contract as well as
- * the allowlist. Resolving a model class from user input must always go through here.
- *
- * This replaces two separately-declared `const ALLOWED_FILEABLE_TYPES` arrays — one in
- * SharepointFileController, one in SharepointApiController. Being namespace-level constants in
- * different namespaces, they were two distinct values free to drift apart. The enum previously
- * also listed USER, which is not a SharepointFileableContract at all.
+ * Models that may be addressed as a `fileable` in the record file endpoints (`fileables/{type}/{id}/files`).
+ * The backing values are what the frontend sends, so resolving a model class from user input must go through here.
  */
 enum AllowedFileablesEnum: string
 {

@@ -99,6 +99,7 @@ class InstitutionTypeController extends AdminController
             // Duties responsible for every institution of this type (e.g. VU Senatas → CB coordinator).
             'responsibleDuties' => $responsibleDuties,
             'sharepointPath' => SharepointFileService::pathOrNull($type),
+            'sharepointFolderUrl' => SharepointFileService::folderUrlOrNull($type),
             'files' => Inertia::defer(fn () => $type->availableFiles()->orderByDesc('file_date')->get(), 'files'),
             'can' => [
                 'update' => auth()->user()?->can('update', $type) ?? false,

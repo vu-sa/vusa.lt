@@ -28,7 +28,6 @@ const uiModels: (keyof typeof ModelEnum)[] = [
   'RESERVATION',
   'RESOURCE',
   'ROLE',
-  'SHAREPOINT_FILE',
   'STUDY_PROGRAM',
   'TAG',
   'TASK',

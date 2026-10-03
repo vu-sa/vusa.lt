@@ -1,6 +1,6 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import type { Component } from 'vue';
-import { Bell, ChartNoAxesCombined, FileStack, Folder, HardDrive, LayoutDashboard, ListTree, Mail, Settings2, Tags } from 'lucide-vue-next';
+import { Bell, ChartNoAxesCombined, FileStack, Folder, LayoutDashboard, ListTree, Mail, Settings2, Tags } from 'lucide-vue-next';
 
 import type { NavigationTileItem } from '@/Components/Patterns/NavigationTiles.vue';
 import { sectionHref, type AdminSection } from '@/Composables/useAdminNavigation';
@@ -16,7 +16,6 @@ const sectionIcons: Record<string, Component> = {
   laisku_eile: Mail,
   rep_metrics: ChartNoAxesCombined,
   pagalbos_uzklausos: ListTree,
-  sharepoint_failai: HardDrive,
 };
 
 export const sectionIcon = (section: AdminSection): Component =>

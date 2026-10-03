@@ -34,7 +34,6 @@ use App\Http\Controllers\Api\Admin\ResourceApiController;
 use App\Http\Controllers\Api\Admin\ResourceAvailabilityApiController;
 use App\Http\Controllers\Api\Admin\ResourceCategoryApiController;
 use App\Http\Controllers\Api\Admin\SearchApiController;
-use App\Http\Controllers\Api\Admin\SharepointApiController;
 use App\Http\Controllers\Api\Admin\SupportRequestCollectionApiController;
 use App\Http\Controllers\Api\Admin\TagApiController;
 use App\Http\Controllers\Api\Admin\TaskApiController;
@@ -214,11 +213,6 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
             Route::get('files/allowed-types', [FileApiController::class, 'allowedTypes'])->name('files.allowedTypes');
             Route::get('files/thumbnail', [FileApiController::class, 'thumbnail'])->name('files.thumbnail');
         });
-
-        // Sharepoint / FileableFiles
-        Route::get('fileables/{type}/{id}/files', [SharepointApiController::class, 'fileableFiles'])->name('fileables.files');
-        Route::get('fileables/{type}/{id}/inherited', [SharepointApiController::class, 'inheritedFiles'])->name('fileables.inherited');
-        Route::get('sharepoint/drive-items', [SharepointApiController::class, 'driveItems'])->name('sharepoint.driveItems');
 
         // Tutorials
         Route::get('tutorials/progress', [TutorialApiController::class, 'progress'])->name('tutorials.progress');

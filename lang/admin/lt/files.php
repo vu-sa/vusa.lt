@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'record' => [
+        'privacy_note' => 'Failai niekada nerodomi vusa.lt. Atvėrus failą sukuriama nuoroda, kuria gali atverti kiekvienas ją turintis – ją gali atšaukti.',
+        'open_in_sharepoint' => 'Atidaryti aplanką SharePoint (reikia VU SA Microsoft paskyros)',
+        'revoke_title' => 'Atšaukti nuorodą?',
+        'revoke_description' => 'Visi, kuriems siuntei šią nuorodą, nebegalės atverti failo. Kitą kartą atvėrus failą bus sukurta nauja nuoroda.',
+    ],
     'ui' => [
         'delete_folder_blocked' => 'Aplanko ištrinti negalima: jame dar yra :count aplankų. Pirmiausia ištrink juos.',
         'no_files_here' => 'Šiame aplanke failų nėra',
@@ -67,7 +73,6 @@ return [
         'type' => 'Tipas',
         'location' => 'Vieta',
         'file_properties' => 'Failo savybės ir veiksmai',
-        'sharepoint_properties' => 'SharePoint failo savybės',
         'cannot_select_file_type' => 'Šio failo tipo pasirinkti negalima.',
     ],
     'validation' => [

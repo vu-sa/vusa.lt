@@ -17,7 +17,7 @@ tests:
 
 Komentaruose gali aptarti įrašą su kolegomis, užduoti klausimą ar suderinti kitą veiksmą.
 Komentarų skydelį rasi posėdžiuose, darbotvarkės klausimuose, problemose, institucijose, pareigybėse,
-formose, rezervacijose, SharePoint failuose ir pagalbos užklausose.
+formose, rezervacijose ir pagalbos užklausose.
 
 Komentaras priskiriamas jį parašiusiam asmeniui ir įrašui, prie kurio jis paliktas. Diskusijose galima
 atsakyti į kitų komentarus, paminėti kolegas, rengti greitas apklausas ir pažymėti klausimus išspręstais.
@@ -84,7 +84,7 @@ Jei rodai tik neišspręstas temas, ji bus paslėpta. Norėdamas vėl atverti kl
 Komentarų rašymui atskirų teisių ar rolių nereikia: tai yra [bazinė nario prieiga](/pagrindai/teises#bazine-prieiga),
 kuri seka paties įrašo matomumą. Kito žmogaus komentaro redaguoti negali niekas.
 
-Prie įrašų, kurie nepriklauso padaliniui (SharePoint failų ir pagalbos užklausų), vien padalinio
+Prie įrašų, kurie nepriklauso padaliniui (pagalbos užklausų), vien padalinio
 komentarų trynimo teisės nepakanka. Savo komentarą gali trinti autorius, kitų komentarus – įrašą
 redaguoti galintis narys arba visos platformos komentarų moderatorius.
 
@@ -104,7 +104,7 @@ redaguoti galintis narys arba visos platformos komentarų moderatorius.
 
 ## Techninė informacija {#technine-informacija}
 
-- Komentavimo galimybę palaiko šie modeliai (`Commentables::TYPES`): `Meeting`, `AgendaItem`, `Institution`, `Duty`, `Form`, `Problem`, `Reservation`, `SharepointFile`, `SupportRequest`.
+- Komentavimo galimybę palaiko šie modeliai (`Commentables::TYPES`): `Meeting`, `AgendaItem`, `Institution`, `Duty`, `Form`, `Problem`, `Reservation`, `SupportRequest`.
 - API užklausas apdoroja `CommentApiController`, reakcijas – `CommentReactionApiController`, apklausų balsus – `CommentPollVoteApiController`.
 - Prieigos taisykles nustato `CommentPolicy`: `view`, `resolve` ir `react` tikrina pagrindinio įrašo `view` teisę; `update` leidžiama tik autoriui; `delete` leidžiama autoriui, pagrindinio įrašo redaktoriui arba turintiems `comments.delete.padalinys` / `comments.delete.*`.
 - Paminėjimams taikomas `CommentMention`, veiklai temoje – `CommentActivity`.

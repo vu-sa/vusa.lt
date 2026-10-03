@@ -4,7 +4,7 @@
       <!-- Header -->
       <div class="flex items-center justify-between border-b border-border px-4 py-3 shrink-0">
         <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-          {{ source === 'sharepoint' ? $t('files.ui.sharepoint_properties') : $t('Failo informacija') }}
+          {{ $t('Failo informacija') }}
         </p>
       </div>
 
@@ -83,7 +83,6 @@
         <div class="grid grid-cols-2 gap-2 pt-1">
           <!-- Preview (Local) -->
           <button
-            v-if="source === 'local'"
             type="button"
             class="inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
             @click="$emit('preview')"
@@ -94,7 +93,7 @@
 
           <!-- Download (Local) -->
           <a
-            v-if="source === 'local' && selectedFile"
+            v-if="selectedFile"
             :href="`/uploads/${selectedFile.replace(/^public\//, '')}`"
             target="_blank"
             download
@@ -106,7 +105,6 @@
 
           <!-- Star / Favorite Toggle (Local) -->
           <button
-            v-if="source === 'local'"
             type="button"
             class="inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
             @click="$emit('toggleStar')"
@@ -117,7 +115,6 @@
 
           <!-- Copy URL (Local) -->
           <button
-            v-if="source === 'local'"
             type="button"
             class="inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
             @click="copyUrl"
@@ -128,7 +125,6 @@
 
           <!-- Scan Usage (Local) -->
           <button
-            v-if="source === 'local'"
             type="button"
             :disabled="scanningUsage"
             class="inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-50"
@@ -141,7 +137,7 @@
 
           <!-- Optimize (Local, large images) -->
           <button
-            v-if="source === 'local' && showCompress"
+            v-if="showCompress"
             type="button"
             :disabled="compressing"
             class="inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary disabled:opacity-50"
@@ -152,41 +148,6 @@
             <Image v-else class="size-3.5 text-muted-foreground" aria-hidden="true" />
             <span>{{ compressing ? '...' : $t('Optimizuoti') }}</span>
           </button>
-
-          <!-- SharePoint: Open / Copy / Create public permission -->
-          <template v-if="source === 'sharepoint'">
-            <a
-              v-if="publicWebUrl"
-              :href="publicWebUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
-            >
-              <ExternalLink class="size-3.5 text-muted-foreground" aria-hidden="true" />
-              <span>{{ $t('Atidaryti') }}</span>
-            </a>
-            <button
-              v-if="publicWebUrl"
-              type="button"
-              class="inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
-              @click="copySharePointUrl"
-            >
-              <Copy class="size-3.5 text-muted-foreground" aria-hidden="true" />
-              <span>{{ $t('Kopijuoti') }}</span>
-            </button>
-            <button
-              v-else-if="!loadingPublicPermission"
-              type="button"
-              class="col-span-2 inline-flex min-h-11 items-center justify-center gap-1.5 border border-border bg-secondary/40 px-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-secondary"
-              @click="createPublicPermission"
-            >
-              <Link2 class="size-3.5 text-muted-foreground" aria-hidden="true" />
-              <span>{{ $t('Sukurti viešą nuorodą') }}</span>
-            </button>
-            <div v-if="loadingPublicPermission" class="col-span-2 flex justify-center py-2">
-              <Spinner class="size-4" />
-            </div>
-          </template>
 
           <!-- Delete Action -->
           <button
@@ -251,13 +212,12 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
-import { useClipboard, useFetch } from '@vueuse/core';
+import { router } from '@inertiajs/vue3';
+import { useClipboard } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   Copy,
   Download,
-  ExternalLink,
   Eye,
   Image,
   Link2,
@@ -276,16 +236,6 @@ import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
 import { useToasts } from '@/Composables/useToasts';
 import { getFileIcon } from '@/Utils/fileIcons';
 
-interface SharePointFileEntry {
-  id?: string;
-  name?: string;
-  size?: number;
-  folder?: unknown;
-  lastModifiedDateTime?: string;
-  parentReference?: { path?: string };
-  [key: string]: unknown;
-}
-
 interface FileUsageItem {
   title?: string;
   model_type: string;
@@ -303,14 +253,10 @@ const props = withDefaults(
   defineProps<{
     selectedFile: string | null;
     files: Array<FileEntry | Record<string, unknown>>;
-    source?: 'local' | 'sharepoint';
-    sharepointFile?: SharePointFileEntry | null;
     selectionMode?: boolean;
     isStarred?: boolean;
   }>(),
   {
-    source: 'local',
-    sharepointFile: null,
     selectionMode: false,
     isStarred: false,
   },
@@ -332,20 +278,9 @@ const usageError = ref<string | null>(null);
 const compressing = ref(false);
 const pendingCompressionPath = ref<string | null>(null);
 
-const loadingPublicPermission = ref(false);
-const publicWebUrl = ref<string | null>(null);
-
-const isOpen = computed(() => {
-  if (props.source === 'sharepoint') {
-    return !!props.sharepointFile;
-  }
-  return !!props.selectedFile;
-});
+const isOpen = computed(() => !!props.selectedFile);
 
 const fileName = computed(() => {
-  if (props.source === 'sharepoint') {
-    return props.sharepointFile?.name ?? 'Unknown file';
-  }
   if (!props.selectedFile) return '';
   return props.selectedFile.split('/').pop() || 'Unknown file';
 });
@@ -364,9 +299,7 @@ const thumbnailSrc = computed(() => {
 });
 
 const fileExtension = computed(() => {
-  const name = props.source === 'sharepoint'
-    ? props.sharepointFile?.name
-    : props.selectedFile?.split('/').pop();
+  const name = props.selectedFile?.split('/').pop();
 
   if (!name) return '';
   const extension = name.split('.').pop()?.toLowerCase();
@@ -374,24 +307,12 @@ const fileExtension = computed(() => {
 });
 
 const fileSize = computed(() => {
-  if (props.source === 'sharepoint') {
-    const size = props.sharepointFile?.size;
-    if (!size) return '—';
-    return formatBytes(size);
-  }
-
   if (!props.selectedFile) return '—';
   const fileInfo = props.files?.find(file => file.path === props.selectedFile);
   return formatBytes(fileInfo?.size);
 });
 
 const fileDate = computed(() => {
-  if (props.source === 'sharepoint') {
-    const dateStr = props.sharepointFile?.lastModifiedDateTime;
-    if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('lt-LT');
-  }
-
   if (!props.selectedFile) return '—';
   const fileInfo = props.files?.find((file: FileEntry) => file.path === props.selectedFile);
   if (fileInfo?.modified) {
@@ -402,13 +323,6 @@ const fileDate = computed(() => {
 });
 
 const relativePath = computed(() => {
-  if (props.source === 'sharepoint') {
-    const parentPath = props.sharepointFile?.parentReference?.path;
-    if (!parentPath) return '/';
-    const parts = parentPath.split('/');
-    return parts[parts.length - 1] || '/';
-  }
-
   if (!props.selectedFile) return '/';
   const pathWithoutPublicFiles = props.selectedFile.replace(/^public\/files\/?/, '');
   const directory = pathWithoutPublicFiles.substring(0, pathWithoutPublicFiles.lastIndexOf('/'));
@@ -421,72 +335,12 @@ function handleClose(open: boolean) {
   }
 }
 
-watch([() => props.selectedFile, () => props.sharepointFile], () => {
+watch(() => props.selectedFile, () => {
   pendingCompressionPath.value = null;
   usageData.value = null;
   usageError.value = null;
-  publicWebUrl.value = null;
   thumbnailFailed.value = false;
-
-  if (props.source === 'sharepoint' && props.sharepointFile?.id && !props.sharepointFile?.folder) {
-    fetchPublicLink();
-  }
 });
-
-async function fetchPublicLink() {
-  if (!props.sharepointFile?.id) return;
-
-  loadingPublicPermission.value = true;
-  try {
-    const { data } = await useFetch(
-      route('sharepoint.getDriveItemPublicLink', props.sharepointFile.id),
-    ).json();
-
-    if (data.value && Object.keys(data.value).length > 0) {
-      publicWebUrl.value = data.value;
-    }
-    else {
-      publicWebUrl.value = null;
-    }
-  }
-  finally {
-    loadingPublicPermission.value = false;
-  }
-}
-
-async function createPublicPermission() {
-  if (!props.sharepointFile?.id) {
-    toast.error('No file selected');
-    return;
-  }
-
-  if (props.sharepointFile?.folder) {
-    toast.error('Cannot create public link for folders.');
-    return;
-  }
-
-  loadingPublicPermission.value = true;
-
-  const { data, error } = await useFetch(
-    route('sharepoint.createPublicPermission', props.sharepointFile.id),
-    {
-      headers: {
-        'X-CSRF-TOKEN': usePage().props.csrf_token as string,
-        'Content-Type': 'application/json',
-      },
-    },
-  ).post().json();
-
-  loadingPublicPermission.value = false;
-
-  if (error.value || !data.value?.success) {
-    toast.error(data.value?.error || 'Failed to create public link');
-    return;
-  }
-
-  publicWebUrl.value = data.value.url;
-  toast.success('Public link created successfully');
-}
 
 const { copy: copyToClipboard } = useClipboard({ legacy: true });
 
@@ -498,19 +352,11 @@ function copyUrl() {
   });
 }
 
-function copySharePointUrl() {
-  if (!publicWebUrl.value) return;
-  void copyToClipboard(publicWebUrl.value).then(() => {
-    toast.success($t('Nuoroda nukopijuota į iškarpinę'));
-  });
-}
-
 function handleDelete() {
   emit('delete');
 }
 
 function scanFileUsage() {
-  if (props.source !== 'local') return;
   if (!props.selectedFile || scanningUsage.value) return;
 
   scanningUsage.value = true;
@@ -546,7 +392,6 @@ function scanFileUsage() {
 const eligibleExtensions = ['JPG', 'JPEG', 'PNG'];
 
 const showCompress = computed(() => {
-  if (props.source !== 'local') return false;
   if (!props.selectedFile) return false;
   if (!eligibleExtensions.includes(fileExtension.value.toUpperCase())) return false;
   const fileInfo = props.files?.find(f => f.path === props.selectedFile);

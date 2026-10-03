@@ -34,10 +34,29 @@
     </template>
 
     <template #fact-visibility>
-      <a v-if="publicUrl" :href="publicUrl" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-status-success underline underline-offset-4">
-        {{ $t('Matoma vusa.lt') }}
-      </a>
-      <span v-else>{{ $t('Tik viduje') }}</span>
+      <div class="flex flex-wrap items-center gap-x-2">
+        <a v-if="publicUrl" :href="publicUrl" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-status-success underline underline-offset-4">
+          {{ $t('Matoma vusa.lt') }}
+        </a>
+        <span v-else>{{ $t('Tik viduje') }}</span>
+        <SpotlightPopover
+          v-if="!readOnly"
+          :title="$t('meetings.visibility.spotlight_title')"
+          :description="$t('meetings.visibility.spotlight_body')"
+          :is-dismissed="visibilitySpotlight.isDismissed.value"
+          @dismiss="visibilitySpotlight.dismiss()"
+        >
+          <button
+            type="button"
+            class="text-xs font-normal text-muted-foreground underline decoration-border underline-offset-4 hover:text-foreground hover:decoration-foreground pointer-coarse:min-h-11"
+            data-testid="meeting-visibility-explain"
+            @click="openVisibilityDialog"
+          >
+            {{ $t('meetings.visibility.trigger') }}
+          </button>
+        </SpotlightPopover>
+      </div>
+      <MeetingPublicVisibilityDialog v-model:open="showVisibilityDialog" :is-public="!!publicUrl" />
     </template>
 
     <template #fact-after-meeting>
@@ -112,6 +131,7 @@
         :fileable="{ id: meeting.id, type: 'Meeting' }"
         :files
         :can-upload="canUploadFiles"
+        :folder-url="meeting.sharepointFolderUrl"
         :can-delete="abilities.update"
         :primary-types="MEETING_PRIMARY_FILE_TYPES"
         :default-date="meeting.start_time"
@@ -288,6 +308,7 @@ import { AlertTriangle, CalendarPlus, CalendarX, CircleCheck, CircleDashed, Copy
 import { DialogDescription } from 'reka-ui';
 
 import { useToasts } from '@/Composables/useToasts';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
 import { formatRelativeTime } from '@/Utils/IntlTime';
 import { formatMeetingDateTime, formatMeetingTimeOnly } from '@/Utils/MeetingDisplay';
@@ -306,6 +327,8 @@ import MeetingDatePlate from '@/Components/Meetings/MeetingDatePlate.vue';
 import AddAgendaItemsSheet, { type AddAgendaMode, type RecentAgenda } from '@/Components/Meetings/AddAgendaItemsSheet.vue';
 import MeetingForm from '@/Components/AdminForms/MeetingForm.vue';
 import AnnounceMeetingDialog from '@/Components/Meetings/AnnounceMeetingDialog.vue';
+import MeetingPublicVisibilityDialog from '@/Components/Meetings/MeetingPublicVisibilityDialog.vue';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import MeetingDocumentsPanel from '@/Components/Meetings/MeetingDocumentsPanel.vue';
 import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
 import { MEETING_PRIMARY_FILE_TYPES, type FileableFileType } from '@/Constants/fileTypes';
@@ -400,6 +423,14 @@ const {
 } = useTaskActionDialogs();
 
 const showAnnounceDialog = ref(false);
+
+const showVisibilityDialog = ref(false);
+const visibilitySpotlight = useFeatureSpotlight('meeting-public-visibility-v1');
+
+const openVisibilityDialog = () => {
+  visibilitySpotlight.dismiss();
+  showVisibilityDialog.value = true;
+};
 
 const openAnnounceDialog = () => {
   showAnnounceDialog.value = true;

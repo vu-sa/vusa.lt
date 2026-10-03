@@ -173,5 +173,7 @@ return [
         'upload_failed' => 'Could not upload: :failed.',
         'link_failed' => 'Could not open the file. Try again or contact an administrator.',
         'file_missing' => 'This file is no longer in SharePoint.',
+        'link_revoked' => 'The link no longer works. Opening the file creates a new one.',
+        'link_revoke_failed' => 'Could not revoke the link. Try again or contact an administrator.',
     ],
 ];

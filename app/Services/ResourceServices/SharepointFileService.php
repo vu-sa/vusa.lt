@@ -30,14 +30,6 @@ class SharepointFileService
         return $this->graph ??= app(SharepointGraphService::class, ['driveId' => config('filesystems.sharepoint.vusa_drive_id')]);
     }
 
-    public function generateUniqueFolderName(string $fileable_id, string $fileable_name)
-    {
-        // name + last 4 characters of id
-        $folderName = $fileable_name.'-'.substr($fileable_id, -4);
-
-        return $folderName;
-    }
-
     /**
      * Get the human-readable SharePoint path for a fileable.
      * This path uses model names and is easier to navigate in SharePoint.
@@ -133,6 +125,23 @@ class SharepointFileService
     }
 
     /**
+     * Where the record's folder opens in SharePoint itself — only useful to people with a VU SA Microsoft account.
+     */
+    public static function folderUrlOrNull(Model $fileable): ?string
+    {
+        $driveUrl = config('filesystems.sharepoint.vusa_drive_url');
+        $path = self::pathOrNull($fileable);
+
+        if (blank($driveUrl) || $path === null) {
+            return null;
+        }
+
+        $segments = array_map(rawurlencode(...), explode('/', $path));
+
+        return rtrim($driveUrl, '/').'/'.implode('/', $segments);
+    }
+
+    /**
      * Upload file to SharePoint and create local FileableFile record.
      */
     public function uploadFile(UploadedFile $file, string $filename, Model $fileable, array $listItemProperties): FileableFile
@@ -204,9 +213,46 @@ class SharepointFileService
             throw new \RuntimeException('SharePoint returned a sharing link without a URL.');
         }
 
-        $file->update(['public_link' => $url, 'public_link_expires_at' => null]);
+        $file->update([
+            'public_link' => $url,
+            'public_link_permission_id' => $permission->getId(),
+            'public_link_expires_at' => null,
+        ]);
 
         return $url;
+    }
+
+    /**
+     * Cuts off everyone holding the file's anonymous link. Opening the file afterwards mints a new one.
+     */
+    public function revokePublicLink(FileableFile $file): void
+    {
+        StagingProtection::ensureSharepointIsWritable(
+            config('filesystems.sharepoint.site_id'),
+            config('filesystems.sharepoint.vusa_drive_id'),
+        );
+
+        $graph = $this->graph();
+
+        try {
+            // Links minted before the id was stored are found on the drive item instead.
+            $permissionId = $file->public_link_permission_id
+                ?? $graph->getDriveItemPublicLink($file->sharepoint_id)?->getId();
+
+            if ($permissionId !== null) {
+                $graph->deletePermission($file->sharepoint_id, $permissionId);
+            }
+        } catch (\Throwable $e) {
+            if (! self::isNotFound($e)) {
+                throw $e;
+            }
+        }
+
+        $file->update([
+            'public_link' => null,
+            'public_link_permission_id' => null,
+            'public_link_expires_at' => null,
+        ]);
     }
 
     public function deleteFile(FileableFile $file): void

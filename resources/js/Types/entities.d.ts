@@ -74,8 +74,6 @@ declare namespace App.Entities {
     };
   export type FileableFile = models.FileableFile;
   export type Role = models.Role;
-  export type SharepointFile = models.SharepointFile;
-  export type SharepointFileable = models.SharepointFileable;
   export type StudyProgram = models.StudyProgram;
   export type Tag = models.Tag;
   export type Task = models.Task;

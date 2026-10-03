@@ -156,6 +156,7 @@
         :files
         :type-files
         :can-upload="can.update && !!institution.sharepointPath"
+        :folder-url="institution.sharepointFolderUrl"
         :can-delete="can.update"
       />
     </template>

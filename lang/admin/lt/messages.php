@@ -175,5 +175,7 @@ return [
         'upload_failed' => 'Nepavyko įkelti failų: :failed.',
         'link_failed' => 'Nepavyko atidaryti failo. Pabandyk dar kartą arba parašyk administratoriui.',
         'file_missing' => 'Šio failo SharePoint nebėra.',
+        'link_revoked' => 'Nuoroda nebeveikia. Atvėrus failą bus sukurta nauja.',
+        'link_revoke_failed' => 'Nepavyko atšaukti nuorodos. Pabandyk dar kartą arba parašyk administratoriui.',
     ],
 ];

@@ -9,14 +9,15 @@
       <div v-if="canUpdate" class="flex items-center gap-2">
         <FilePicker
           v-if="sharepointPickerAvailable"
-          :loading="uploading"
-          size="sm"
           @pick="uploadFromSharepoint"
         >
-          <span class="flex items-center gap-1.5">
-            <Upload class="size-3.5" />
-            {{ $t('Įkelti iš SharePoint') }}
-          </span>
+          <template #trigger>
+            <Button type="button" variant="outline" size="sm" voice="sentence" :disabled="uploading">
+              <Spinner v-if="uploading" class="mr-1.5 size-3.5" />
+              <Upload v-else class="mr-1.5 size-3.5" />
+              {{ $t('Įkelti iš SharePoint') }}
+            </Button>
+          </template>
         </FilePicker>
 
         <CollectionSelectDialog
@@ -97,6 +98,7 @@ import { FileText, Link2, Upload, X } from 'lucide-vue-next';
 
 import { EmptyState, SectionCard } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
+import { Spinner } from '@/Components/ui/spinner';
 import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';

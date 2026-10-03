@@ -99,7 +99,7 @@ viešumas ir koordinatoriai. Skirtukai:
 | **Kadencijos ir sekretoriai** | Kadencijos ir kiekvienos jų sekretoriai (tik galintiems redaguoti) |
 | **Ryšiai** | Susijusios institucijos (tik jei jų yra, žr. [Ryšiai](/sistema/rysiai)) |
 | **Problemos** | Su institucija susietos problemos, pirmiau neišspręstos (tik jei jų yra, žr. [Problemos](/visak/problemos#posedziai)) |
-| **Failai** | Institucijos SharePoint failai |
+| **Failai** | Institucijos darbo failai SharePoint; viešai nerodomi (žr. [Įrašų failai](/visak/failai)) |
 | **Užduotys** | Institucijos ir jos posėdžių užduotys; skaičius rodo neatliktas |
 
 **Savo** instituciją (kurioje eini ar netrukus pradėsi eiti pareigas) matai pilnai, net be rolės.

@@ -287,8 +287,7 @@ test('read only middleware blocks the real file and SharePoint mutation route na
 })->with([
     'admin file upload' => 'files.store',
     'API file upload' => 'api.v1.admin.files.store',
-    'SharePoint folder creation' => 'sharepoint.createFolder',
-    'SharePoint public permission creation' => 'sharepoint.createPublicPermission',
+    'SharePoint public link revocation' => 'fileableFiles.revokePublicLink',
     'SharePoint file deletion' => 'fileableFiles.destroy',
 ]);
 

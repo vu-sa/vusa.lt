@@ -146,8 +146,6 @@ export enum ModelEnum {
     RESERVATION_RESOURCE = 'reservation_resource',
     RESOURCE = 'resource',
     ROLE = 'role',
-    SHAREPOINT_FILE = 'sharepoint_file',
-    SHAREPOINT_FILEABLE = 'sharepoint_fileable',
     STUDY_PROGRAM = 'study_program',
     STUDY_SET = 'study_set',
     TAG = 'tag',

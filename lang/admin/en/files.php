@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'record' => [
+        'privacy_note' => 'Files are never shown on vusa.lt. Opening a file creates a link that anyone holding it can use – you can revoke it.',
+        'open_in_sharepoint' => 'Open the folder in SharePoint (needs a VU SA Microsoft account)',
+        'revoke_title' => 'Revoke the link?',
+        'revoke_description' => 'Anyone you sent this link to will no longer be able to open the file. Opening the file next time creates a new link.',
+    ],
     'ui' => [
         'delete_folder_blocked' => 'This folder cannot be deleted: it still contains :count subfolders. Delete those first.',
         'no_files_here' => 'No files in this folder',
@@ -67,7 +73,6 @@ return [
         'type' => 'Type',
         'location' => 'Location',
         'file_properties' => 'File properties and actions',
-        'sharepoint_properties' => 'SharePoint file properties',
         'cannot_select_file_type' => 'This file type cannot be selected.',
     ],
     'validation' => [

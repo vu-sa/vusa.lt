@@ -135,7 +135,6 @@ return [
         'laisku_eile' => 'Laiškų eilė',
         'rep_metrics' => 'Atstovų rodikliai',
         'pagalbos_uzklausos' => 'Pagalbos užklausos',
-        'sharepoint_failai' => 'Sharepoint failai',
     ],
 
     'section_descriptions' => [
@@ -184,7 +183,6 @@ return [
         'laisku_eile' => 'Siunčiami ir įstrigę laiškai',
         'rep_metrics' => 'Kaip atstovai fiksuoja posėdžius',
         'pagalbos_uzklausos' => 'Naudotojų pranešimai apie problemas',
-        'sharepoint_failai' => 'Institucijų dokumentai Sharepoint',
     ],
 
     'actions' => [

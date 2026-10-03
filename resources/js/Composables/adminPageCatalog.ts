@@ -332,7 +332,6 @@ const ROUTE_PREFIX_ICONS: Record<string, Component> = {
   agendaItems: AgendaItemIcon,
   documents: DocumentIcon,
   files: FileIcon,
-  sharepointFiles: FileIcon,
   tasks: TaskIcon,
   reservations: ReservationIcon,
   resources: ResourceIcon,

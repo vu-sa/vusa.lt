@@ -1,6 +1,28 @@
 <?php
 
 return [
+    'visibility' => [
+        'title' => 'Kas rodoma vusa.lt?',
+        'public_intro' => 'Šis posėdis viešas, nes bent viena jo institucija yra tipo, kurio posėdžiai skelbiami vusa.lt.',
+        'internal_intro' => 'Šis posėdis vusa.lt neskelbiamas. Jei posėdis paskelbtas kalendoriuje, renginio puslapyje rodoma tik jo darbotvarkė.',
+        'shown_heading' => 'Rodoma vusa.lt',
+        'never_heading' => 'Niekada nerodoma',
+        'shown' => [
+            'basics' => 'Posėdžio data, institucija ir būsena',
+            'agenda' => 'Darbotvarkės klausimai ir balsavimo rezultatai',
+            'representatives' => 'Tuo metu pareigas ėję studentų atstovai',
+            'documents' => 'Skirtuko „Dokumentai“ dokumentai, turintys viešą nuorodą (VU SA organų nutarimai ir protokolai)',
+        ],
+        'never' => [
+            'files' => 'Skirtuko „Failai“ failai (protokolai, ataskaitos ir kt.)',
+            'tasks' => 'Užduotys',
+            'comments' => 'Komentarai ir atstovų pastabos',
+        ],
+        'files_link_note' => 'Failai nerodomi niekur viešai, bet atvertą failą gali atidaryti kiekvienas, turintis jo nuorodą. Nuorodą gali atšaukti skirtuke „Failai“.',
+        'trigger' => 'Kas rodoma?',
+        'spotlight_title' => 'Kas matoma vusa.lt?',
+        'spotlight_body' => 'Čia pamatysi, kas iš posėdžio rodoma viešai, o kas – niekada.',
+    ],
     'agenda' => [
         'add_items' => 'Pridėti punktų',
         'empty_description' => 'Įklijuok darbotvarkę iš kvietimo – kiekviena eilutė taps punktu.',
