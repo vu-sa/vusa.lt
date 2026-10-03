@@ -573,8 +573,6 @@ class RelationshipService
 
         $incomingDirectByType = $institution->load(['types.incomingRelationships.pivot.relationshipable.institutions.tenant'])->types->map(fn ($type) => $type->incomingRelationships)->flatten(1);
 
-        // dd($outgoingDirect, $incomingDirect->pluck('pivot.relationshipable'), $outgoingDirectByType, $incomingDirectByType->pluck('pivot.relationshipable.institutions'));
-
         return [
             'outgoingDirect' => $outgoingDirect,
             'incomingDirect' => $incomingDirect,

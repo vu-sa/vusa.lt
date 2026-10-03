@@ -250,14 +250,6 @@ class PublicPageController extends PublicController
                         'permalink' => $ancestor->permalink,
                     ]),
                 ], $ancestors),
-                /* 'content' => [ */
-                /*    ...$page->content->toArray(), */
-                /*    'parts' => $page->content->parts->map(function ($part) { */
-                /*        return [ */
-                /*            ...$part->parseTipTapElements()->toArray(), */
-                /*        ]; */
-                /*    }), */
-                /* ] */
             ],
         ])->withViewData([
             'JSONLD_Schemas' => [$this->getBreadcrumbSchema($breadcrumbs)],

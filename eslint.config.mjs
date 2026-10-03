@@ -127,7 +127,7 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Features/Admin/EventTypes/**',
   'resources/js/Pages/Admin/Navigation/**',
   'resources/js/Features/Admin/NavigationBuilder/**',
-  'resources/js/Components/AdminForms/{PageForm,NewsForm,CalendarForm,FormStatusHeader,FormFieldWrapper,PermalinkField,PermalinkPreviewHint,SEOPreview,FormLinkButton,BannerForm,QuickLinkForm,NavigationForm,NavigationParentForm,TagForm}.vue',
+  'resources/js/Components/AdminForms/{PageForm,NewsForm,CalendarForm,FormFieldWrapper,PermalinkField,PermalinkPreviewHint,SEOPreview,BannerForm,QuickLinkForm,NavigationForm,NavigationParentForm,TagForm}.vue',
   'resources/js/Components/Analytics/ContentAnalyticsCard.vue',
   'resources/js/Pages/Admin/Files/**',
   'resources/js/Features/Admin/FileManager/**',

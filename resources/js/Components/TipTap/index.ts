@@ -42,7 +42,6 @@ export { default as TiptapMoreMenu } from './TiptapMoreMenu.vue';
 export { default as TiptapToolButton } from './TiptapToolButton.vue';
 export { default as TiptapImageButton } from './TiptapImageButton.vue';
 export { default as TiptapLinkButton } from './TiptapLinkButton.vue';
-export { default as TiptapVideoButton } from './TiptapVideoButton.vue';
 export { default as TiptapYoutubeButton } from './TiptapYoutubeButton.vue';
 
 // Re-export HTML generation from RichContentTiptapHTML

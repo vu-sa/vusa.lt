@@ -148,7 +148,7 @@ things that truly cannot be reused. `Dashboard/` is the only folder doing this t
 
 ## Writing a shared component
 
-`Hero/ShowPageHero.vue` is the reference implementation. Match its shape:
+`Patterns/EntityLinkCard.vue` is the reference implementation. Match its shape:
 
 - Props **and** a matching slot for anything a caller might need to override
   (`:title` prop with a `#title` slot that wins).

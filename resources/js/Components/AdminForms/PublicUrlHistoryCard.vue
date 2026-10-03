@@ -78,8 +78,7 @@ export interface PublicUrlRow {
 }
 
 const props = defineProps<{
-  /** Every row here is a retired permalink — the live URL is never stored, only computed and
-   *  shown via the "Public" link in FormStatusHeader. */
+  /** Only retired permalinks are stored; the live URL is computed. */
   urls: PublicUrlRow[];
   /** Builds the destroy route for a given row id — kept caller-supplied so this stays entity-agnostic. */
   destroyRoute: (id: number) => string;

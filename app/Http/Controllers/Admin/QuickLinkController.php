@@ -112,26 +112,6 @@ class QuickLinkController extends AdminController
     {
         $this->handleAuthorization('update', $quickLink);
 
-        // $routes = Route::getRoutes();
-
-        // Filter the routes to include only those without parameters EXCEPT for {subdomain} and {lang}.
-        // Also the routes NOT in /mano directory, debugbar, telescope, impersonate, laravel-websockets, ignition, auth, login, feed and broadcasting routes
-        // $routesWithoutParams = collect($routes->getRoutesByMethod()['GET'])->filter(function ($route) {
-        //     return !collect($route->parameterNames)->except(['subdomain', 'lang'])->count() &&
-        //         !collect($route->getAction())->has('prefix', 'mano') &&
-        //         !collect($route->getAction())->has('prefix', '_debugbar') &&
-        //         !collect($route->getAction())->has('prefix', 'telescope') &&
-        //         !collect($route->getAction())->has('prefix', 'impersonate') &&
-        //         !collect($route->getAction())->has('prefix', 'laravel-websockets') &&
-        //         !collect($route->getAction())->has('prefix', 'ignition') &&
-        //         !collect($route->getAction())->has('prefix', 'auth') &&
-        //         !collect($route->getAction())->has('prefix', 'login') &&
-        //         !collect($route->getAction())->has('prefix', 'feed') &&
-        //         !collect($route->getAction())->has('prefix', 'broadcasting');
-        // });
-
-        // dd($routesWithoutParams);
-
         return $this->inertiaResponse('Admin/Content/EditQuickLink', [
             'quickLink' => $quickLink,
             'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.update.padalinys', $this->authorizer),
