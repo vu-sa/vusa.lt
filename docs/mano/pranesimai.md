@@ -3,13 +3,14 @@ doc_status: reviewed
 title: Pranešimai
 area: notifications
 models: [DatabaseNotification]
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-03
 tests:
   - tests/Feature/Notifications/NotificationCountTest.php
   - tests/Feature/Notifications/DigestSystemTest.php
   - tests/Feature/Notifications/NotificationSettingsTest.php
   - resources/js/Pages/Admin/__tests__/ShowNotifications.component.test.ts
   - resources/js/Features/Admin/Notifications/__tests__/NotificationCard.component.test.ts
+  - resources/js/Components/__tests__/NotificationsIndicator.component.test.ts
 ---
 
 # Pranešimai
@@ -29,6 +30,8 @@ Pranešimų puslapyje rodomi tau skirti pranešimai, naujausi – pirmiausia:
   informaciją (pvz., instituciją, rezervuotą daiktą ar terminą).
 - **Tiesioginis veiksmas**: dauguma pranešimų turi pagrindinį veiksmo mygtuką (pvz., *Peržiūrėti posėdį*,
   *Peržiūrėti užduotis*, *Peržiūrėti rezervaciją*), leidžiantį vienu paspaudimu pereiti tiesiai prie darbo.
+  Varpelio sąraše ir pranešimų puslapyje jis rodomas piktograma šalia skaitymo žymos. Piktograma
+  atitinka veiksmą; užvedęs žymeklį pamatysi jo pavadinimą.
 - **Greitieji filtrai viršuje**:
   - **Neskaityti** (su skaitliuku) – rodo tik naujus, dar neperžiūrėtus pranešimus. Tai numatytasis rodinys.
   - **Visi** – rodo ir skaitytus, ir neskaitytus pranešimus.

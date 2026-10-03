@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { CalendarDays, Eye, FileCheck, ListTodo, Megaphone, MessageSquare, ShieldCheck } from 'lucide-vue-next';
 
 import {
   getNotificationColorClasses,
@@ -6,6 +7,7 @@ import {
   getNotificationContext,
   getNotificationCategoryTag,
   getNotificationPrimaryAction,
+  getNotificationPrimaryActionIcon,
   getNotificationSecondaryAction,
   type Notification,
   type NotificationData,
@@ -98,5 +100,20 @@ describe('notification category tag', () => {
     expect(getNotificationCategoryTag(make({ modelClass: 'Duty' }))).toBe('Pareigybė');
     expect(getNotificationCategoryTag({ ...make({}), type: 'App\\Notifications\\StudentRepRegistrationNotification' })).toBe('Registracija');
     expect(getNotificationCategoryTag({ ...make({}), type: 'App\\Notifications\\UnknownNotification' })).toBe('Pranešimas');
+  });
+});
+
+describe('notification primary action icons', () => {
+  it.each([
+    ['TaskAssignedNotification', 'task', ListTodo],
+    ['TaskReminderNotification', 'task', ListTodo],
+    ['CommentPostedNotification', 'comment', MessageSquare],
+    ['MeetingReminderNotification', 'meeting', CalendarDays],
+    ['MeetingAgendaCompletedNotification', 'meeting', FileCheck],
+    ['ApprovalRequestedNotification', 'reservation', ShieldCheck],
+    ['InstitutionActivityNotification', 'institution', Megaphone],
+    ['UnknownNotification', 'system', Eye],
+  ])('chooses an action icon for %s', (type, category, icon) => {
+    expect(getNotificationPrimaryActionIcon({ ...make({ category }), type })).toBe(icon);
   });
 });

@@ -45,7 +45,7 @@ describe('NotificationCard', () => {
     const wrapper = mountCard(make({}));
 
     expect(wrapper.find('[data-slot="notification-context"]').exists()).toBe(false);
-    expect(wrapper.find('[data-slot="notification-actions"]').exists()).toBe(false);
+    expect(wrapper.find('[data-slot="notification-primary-action"]').exists()).toBe(false);
   });
 
   it('renders the primary action and, for a binary answer, the secondary one', () => {
@@ -54,30 +54,47 @@ describe('NotificationCard', () => {
       secondaryAction: { label: 'Pranešti apie veiklą', url: '/report' },
     }));
 
-    expect(wrapper.find('[data-slot="notification-actions"]').findAll('button').map(el => el.text()))
-      .toEqual(['Registruoti posėdį', 'Pranešti apie veiklą']);
+    const action = wrapper.get('[data-slot="notification-primary-action"]');
+    expect(action.text()).toBe('');
+    expect(action.attributes('aria-label')).toBe('Registruoti posėdį');
+    expect(action.attributes('title')).toBe('Registruoti posėdį');
+    expect(wrapper.get('[data-slot="notification-row-actions"]').find('button[title="Pažymėti kaip skaitytą"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain('Pranešti apie veiklą');
   });
 
   it('shows the action of a row stored before the contract existed', () => {
     const wrapper = mountCard(make({ actions: [{ label: 'Peržiūrėti', url: '/legacy' }] }));
 
-    expect(wrapper.find('[data-slot="notification-actions"] button').text()).toBe('Peržiūrėti');
+    expect(wrapper.find('[data-slot="notification-primary-action"]').attributes('aria-label')).toBe('Peržiūrėti');
   });
 
   it('visits the action url, not the card url, and marks an unread card read', async () => {
     const wrapper = mountCard(make({ primaryAction: { label: 'Registruoti posėdį', url: '/register' } }));
 
-    await wrapper.find('[data-slot="notification-actions"] button').trigger('click');
+    await wrapper.find('[data-slot="notification-primary-action"]').trigger('click');
 
     expect(router.visit).toHaveBeenCalledTimes(1);
     expect(router.visit).toHaveBeenCalledWith('/register');
     expect(wrapper.emitted('markAsRead')).toEqual([['n1']]);
   });
 
+  it('omits the open arrow when it duplicates the primary action destination', () => {
+    const wrapper = mountCard(make({ primaryAction: { label: 'Peržiūrėti', url: '/meetings/1' } }));
+
+    expect(wrapper.find('a[title="Atidaryti"]').exists()).toBe(false);
+    expect(wrapper.find('[data-slot="notification-primary-action"]').exists()).toBe(true);
+  });
+
+  it('keeps the open arrow when the primary action leads elsewhere', () => {
+    const wrapper = mountCard(make({ primaryAction: { label: 'Registruoti', url: '/register' } }));
+
+    expect(wrapper.find('a[title="Atidaryti"]').attributes('href')).toBe('/meetings/1');
+  });
+
   it('does not re-mark an already read card when its action is used', async () => {
     const wrapper = mountCard(make({ primaryAction: { label: 'Atidaryti', url: '/x' } }, '2026-09-20T11:00:00Z'));
 
-    await wrapper.find('[data-slot="notification-actions"] button').trigger('click');
+    await wrapper.find('[data-slot="notification-primary-action"]').trigger('click');
 
     expect(wrapper.emitted('markAsRead')).toBeUndefined();
     expect(router.visit).toHaveBeenCalledWith('/x');

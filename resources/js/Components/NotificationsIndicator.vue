@@ -129,31 +129,28 @@
                 v-html="getNotificationMessage(notification)"
               />
 
-              <!-- The ask action button -->
-              <div
-                v-if="getPrimaryAction(notification)"
-                class="mt-2"
-              >
-                <Button
-                  variant="outline"
-                  size="xs"
-                  voice="sentence"
-                  class="pointer-coarse:min-h-11"
-                  @click.stop="openAction(notification, getPrimaryAction(notification)!.url)"
-                >
-                  {{ getPrimaryAction(notification)!.label }}
-                </Button>
-              </div>
-
               <!-- Timestamp -->
               <p class="mt-1 text-xs text-muted-foreground">
                 {{ formatNotificationTime(notification) }}
               </p>
             </div>
 
-            <!-- Mark as read button (sibling) -->
-            <div v-if="!notification.read_at" class="flex shrink-0 items-center self-start pt-0.5">
+            <div data-slot="notification-row-actions" class="flex shrink-0 items-center gap-1.5 self-start pt-0.5">
+              <Button
+                v-if="getPrimaryAction(notification)"
+                data-slot="notification-primary-action"
+                variant="outline"
+                size="icon-sm"
+                voice="sentence"
+                class="size-7 text-muted-foreground hover:border-brand hover:text-foreground pointer-coarse:size-11"
+                :title="getPrimaryAction(notification)!.label"
+                :aria-label="getPrimaryAction(notification)!.label"
+                @click.stop="openAction(notification, getPrimaryAction(notification)!.url)"
+              >
+                <component :is="getNotificationPrimaryActionIcon(notification)" class="size-3.5" aria-hidden="true" />
+              </Button>
               <button
+                v-if="!notification.read_at"
                 type="button"
                 :class="[
                   'flex size-7 items-center justify-center border border-border text-muted-foreground',
@@ -216,6 +213,7 @@ import {
   getNotificationMessage,
   getNotificationUrl,
   getNotificationPrimaryAction as getPrimaryAction,
+  getNotificationPrimaryActionIcon,
   getNotificationCategoryTag,
   formatNotificationTime,
   type Notification,

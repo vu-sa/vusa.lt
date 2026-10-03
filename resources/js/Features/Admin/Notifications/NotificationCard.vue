@@ -75,23 +75,8 @@
         </template>
       </dl>
 
-      <!-- The ask / action buttons -->
-      <div
-        v-if="primaryAction"
-        data-slot="notification-actions"
-        class="flex flex-wrap items-center gap-2 pt-1.5"
-      >
+      <div v-if="secondaryAction" class="pt-1.5">
         <Button
-          variant="outline"
-          size="sm"
-          voice="sentence"
-          class="pointer-coarse:min-h-11"
-          @click="visit(primaryAction.url)"
-        >
-          {{ primaryAction.label }}
-        </Button>
-        <Button
-          v-if="secondaryAction"
           variant="ghost"
           size="sm"
           voice="sentence"
@@ -111,7 +96,20 @@
     </div>
 
     <!-- Row actions (always visible, touch-friendly) -->
-    <div class="flex shrink-0 items-center gap-1.5 self-start pt-0.5">
+    <div data-slot="notification-row-actions" class="flex shrink-0 flex-wrap items-center gap-1.5 self-start pt-0.5">
+      <Button
+        v-if="primaryAction"
+        data-slot="notification-primary-action"
+        variant="outline"
+        size="icon-sm"
+        voice="sentence"
+        class="size-8 text-muted-foreground hover:border-brand hover:text-foreground pointer-coarse:size-11"
+        :title="primaryAction.label"
+        :aria-label="primaryAction.label"
+        @click="visit(primaryAction.url)"
+      >
+        <component :is="getNotificationPrimaryActionIcon(notification)" class="size-3.5" aria-hidden="true" />
+      </Button>
       <button
         v-if="!notification.read_at"
         type="button"
@@ -137,7 +135,7 @@
       </button>
 
       <a
-        v-if="url"
+        v-if="url && url !== primaryAction?.url"
         :href="url"
         :class="[
           'hidden size-8 items-center justify-center border border-border text-muted-foreground',
@@ -166,6 +164,7 @@ import {
   getNotificationMessage,
   getNotificationUrl,
   getNotificationPrimaryAction,
+  getNotificationPrimaryActionIcon,
   getNotificationSecondaryAction,
   getNotificationContext,
   getNotificationCategoryTag,

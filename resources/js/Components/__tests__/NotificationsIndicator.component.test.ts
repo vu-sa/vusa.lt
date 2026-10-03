@@ -172,6 +172,43 @@ describe('NotificationsIndicator', () => {
     );
   });
 
+  it('places an accessible icon action beside the read control and visits its own destination', async () => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      auth: {
+        user: {
+          id: 'user-1',
+          name: 'Test Rep',
+          unreadNotifications: [{
+            id: 'notif-action',
+            type: 'App\\Notifications\\TaskAssignedNotification',
+            data: {
+              category: 'task',
+              title: 'Užduotis',
+              url: '/record',
+              primaryAction: { label: 'Peržiūrėti užduotis', url: '/tasks' },
+            },
+            read_at: null,
+            created_at: '2026-09-24T12:00:00Z',
+          }],
+        },
+      },
+    }));
+    const wrapper = mount(NotificationsIndicator, { global: { stubs: popoverStubs } });
+    const controls = wrapper.get('[data-slot="notification-row-actions"]');
+    const action = controls.get('[data-slot="notification-primary-action"]');
+
+    expect(action.text()).toBe('');
+    expect(action.attributes('title')).toBe('Peržiūrėti užduotis');
+    expect(action.attributes('aria-label')).toBe('Peržiūrėti užduotis');
+    expect(action.find('svg').classes()).toContain('lucide-list-todo');
+    expect(controls.find('button[title="Pažymėti kaip skaitytą"]').exists()).toBe(true);
+    await action.trigger('click');
+
+    expect(router.visit).toHaveBeenCalledTimes(1);
+    expect(router.visit).toHaveBeenCalledWith('/tasks');
+    expect(router.post).toHaveBeenCalledWith('/routes/notifications.markAsRead/notif-action', {}, expect.any(Object));
+  });
+
   it('provides a prominent link to all notifications page in footer', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
       auth: {

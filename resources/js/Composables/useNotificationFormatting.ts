@@ -8,6 +8,7 @@
 
 import { trans as $t } from 'laravel-vue-i18n';
 import type { Component } from 'vue';
+import { BriefcaseBusiness, CalendarCheck, CalendarDays, ClipboardList, Eye, FileCheck, ListTodo, Megaphone, MessageSquare, ShieldCheck, type LucideIcon } from 'lucide-vue-next';
 
 import { formatNearDate } from '@/Utils/dateTime';
 import { getModelIcon } from '@/Components/icons';
@@ -415,6 +416,40 @@ export function getNotificationUrl(notification: Notification): string | null {
  */
 export function getNotificationPrimaryAction(notification: Notification): NotificationAction | null {
   return notification.data.primaryAction ?? notification.data.actions?.[0] ?? null;
+}
+
+export function getNotificationPrimaryActionIcon(notification: Notification): LucideIcon {
+  switch (getNotificationType(notification)) {
+    case 'ApprovalRequestedNotification':
+      return ShieldCheck;
+    case 'MeetingAgendaCompletedNotification':
+      return FileCheck;
+    case 'InstitutionActivityNotification':
+      return Megaphone;
+    case 'AccessChangedNotification':
+      return ShieldCheck;
+    case 'TaskAssignedNotification':
+    case 'TaskOverdueNotification':
+    case 'TaskReminderNotification':
+      return ListTodo;
+  }
+
+  switch (notification.data.category) {
+    case 'task':
+      return ListTodo;
+    case 'comment':
+      return MessageSquare;
+    case 'meeting':
+      return CalendarDays;
+    case 'reservation':
+      return CalendarCheck;
+    case 'registration':
+      return ClipboardList;
+    case 'duty':
+      return BriefcaseBusiness;
+    default:
+      return Eye;
+  }
 }
 
 /** The second action, present only for binary answers (see getNotificationPrimaryAction for the fallback). */
