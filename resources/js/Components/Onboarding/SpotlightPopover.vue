@@ -2,6 +2,7 @@
   <Popover :open="isOpen && !isDismissed" @update:open="handleOpenChange">
     <PopoverAnchor as-child>
       <div
+        ref="anchorRef"
         :class="cn('relative inline-block', props.class)"
         data-slot="spotlight-popover"
         v-bind="$attrs"
@@ -65,9 +66,15 @@
   </Popover>
 </template>
 
+<script lang="ts">
+/** One auto-opened panel per page at a time, so several spotlights in view don't pile up. */
+let autoOpenOwner: symbol | null = null;
+</script>
+
 <script setup lang="ts">
 import { computed, onUnmounted, ref, type HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+import { useIntersectionObserver, useMediaQuery } from '@vueuse/core';
 
 import { EyebrowLabel } from '@/Components/Brand';
 import { Button } from '@/Components/ui/button';
@@ -88,6 +95,8 @@ interface Props {
   dismissText?: string;
   showDelay?: number;
   hideDelay?: number;
+  /** How long the trigger must rest in view on a hover-less device before the panel opens itself. */
+  autoOpenDelay?: number;
   class?: HTMLAttributes['class'];
 }
 
@@ -99,6 +108,7 @@ const props = withDefaults(defineProps<Props>(), {
   dismissText: undefined,
   showDelay: 0,
   hideDelay: 400,
+  autoOpenDelay: 700,
   class: undefined,
 });
 
@@ -113,6 +123,73 @@ let showTimeout: ReturnType<typeof setTimeout> | null = null;
 let hideTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const computedDismissText = computed(() => props.dismissText ?? $t('tutorials.spotlight_got_it'));
+
+const anchorRef = ref<HTMLElement | null>(null);
+const instanceId = Symbol('spotlight');
+const canHover = useMediaQuery('(hover: hover)');
+/** Hover-less devices get the panel once per visit, when the trigger settles in view, instead of on hover. */
+const openedAutomatically = ref(false);
+let hasAutoOpened = false;
+let autoOpenTimeout: ReturnType<typeof setTimeout> | null = null;
+
+function clearAutoOpenTimer() {
+  if (autoOpenTimeout) {
+    clearTimeout(autoOpenTimeout);
+    autoOpenTimeout = null;
+  }
+}
+
+function releaseAutoOpen() {
+  openedAutomatically.value = false;
+
+  if (autoOpenOwner === instanceId) {
+    autoOpenOwner = null;
+  }
+}
+
+function isComfortablyInView(entry: IntersectionObserverEntry): boolean {
+  if (!entry.isIntersecting) return false;
+
+  // A trigger taller than the band never reaches the ratio, so filling half of it counts too.
+  const bandHeight = entry.rootBounds?.height ?? window.innerHeight;
+
+  return entry.intersectionRatio >= 0.9 || entry.intersectionRect.height >= bandHeight / 2;
+}
+
+useIntersectionObserver(
+  anchorRef,
+  ([entry]) => {
+    if (!entry || canHover.value || props.isDismissed) return;
+
+    if (isComfortablyInView(entry)) {
+      if (hasAutoOpened || isOpen.value || autoOpenTimeout) return;
+
+      autoOpenTimeout = setTimeout(() => {
+        autoOpenTimeout = null;
+
+        if (autoOpenOwner !== null || isOpen.value || props.isDismissed) return;
+
+        autoOpenOwner = instanceId;
+        hasAutoOpened = true;
+        openedByNotch.value = false;
+        openedAutomatically.value = true;
+        isOpen.value = true;
+      }, props.autoOpenDelay);
+
+      return;
+    }
+
+    // Scrolling past is not a dismissal: the panel just steps aside and the notch still reopens it.
+    clearAutoOpenTimer();
+
+    if (openedAutomatically.value && !entry.isIntersecting) {
+      isOpen.value = false;
+      releaseAutoOpen();
+    }
+  },
+  // The band keeps the panel off the sticky header and out of the thumb zone at the bottom.
+  { rootMargin: '-15% 0px -25% 0px', threshold: [0, 0.5, 0.9, 1] },
+);
 
 function clearTimers() {
   if (showTimeout) {
@@ -158,6 +235,7 @@ function handlePointerLeave(event: PointerEvent) {
 
 function openNow() {
   clearTimers();
+  releaseAutoOpen();
   openedByNotch.value = true;
   isOpen.value = true;
 }
@@ -165,6 +243,10 @@ function openNow() {
 function handleOpenChange(open: boolean) {
   clearTimers();
   isOpen.value = open;
+
+  if (!open) {
+    releaseAutoOpen();
+  }
 }
 
 function handleOpenAutoFocus(event: Event) {
@@ -176,8 +258,13 @@ function handleOpenAutoFocus(event: Event) {
 function handleDismiss() {
   clearTimers();
   isOpen.value = false;
+  releaseAutoOpen();
   emit('dismiss');
 }
 
-onUnmounted(clearTimers);
+onUnmounted(() => {
+  clearTimers();
+  clearAutoOpenTimer();
+  releaseAutoOpen();
+});
 </script>

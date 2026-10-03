@@ -106,4 +106,83 @@ describe('Onboarding/SpotlightPopover.vue', () => {
 
     expect(wrapper!.emitted('dismiss')).toHaveLength(1);
   });
+
+  describe('on a device without hover', () => {
+    let observerCallback: ((entries: Partial<IntersectionObserverEntry>[]) => void) | null = null;
+
+    function stubTouchDevice() {
+      vi.stubGlobal('matchMedia', (query: string) => ({
+        matches: false,
+        media: query,
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      }));
+      vi.stubGlobal('IntersectionObserver', class {
+        constructor(callback: typeof observerCallback) {
+          observerCallback = callback;
+        }
+
+        observe() {}
+        disconnect() {}
+      });
+    }
+
+    async function scroll(isIntersecting: boolean) {
+      observerCallback!([{ isIntersecting, intersectionRatio: isIntersecting ? 1 : 0, intersectionRect: { height: 40 } as DOMRectReadOnly }]);
+      await nextTick();
+    }
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      observerCallback = null;
+    });
+
+    it('opens once the trigger rests in view and steps aside when scrolled past', async () => {
+      vi.useFakeTimers();
+      stubTouchDevice();
+      mountPopover();
+      await nextTick();
+
+      await scroll(true);
+      expect(panel()).toBeNull();
+
+      await vi.advanceTimersByTimeAsync(700);
+      expect(panel()?.textContent).toContain('New feature');
+
+      await scroll(false);
+      await flushPromises();
+      expect(panel()).toBeNull();
+      expect(wrapper!.emitted('dismiss')).toBeUndefined();
+
+      await scroll(true);
+      await vi.advanceTimersByTimeAsync(700);
+      expect(panel()).toBeNull();
+    });
+
+    it('does not open when the trigger is only scrolled through', async () => {
+      vi.useFakeTimers();
+      stubTouchDevice();
+      mountPopover();
+      await nextTick();
+
+      await scroll(true);
+      await vi.advanceTimersByTimeAsync(300);
+      await scroll(false);
+      await vi.advanceTimersByTimeAsync(700);
+
+      expect(panel()).toBeNull();
+    });
+
+    it('stays closed once dismissed', async () => {
+      vi.useFakeTimers();
+      stubTouchDevice();
+      mountPopover({ isDismissed: true });
+      await nextTick();
+
+      await scroll(true);
+      await vi.advanceTimersByTimeAsync(700);
+
+      expect(panel()).toBeNull();
+    });
+  });
 });
