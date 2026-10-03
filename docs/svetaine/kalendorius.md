@@ -70,17 +70,16 @@ Viršuje spausk **Naujas renginys** (arba eik adresu `/mano/calendar/create`):
 8. **Viršelis ir nuotraukos** – įkelk pagrindinį plakatą / viršelį, kuris bus rodomas kalendoriaus kortelėje, bei papildomus vaizdus.
 9. Spausk **Išsaugoti**.
 
-### Renginio dubliavimas
+### Panašūs ir pasikartojantys renginiai
 
-Norėdamas sukurti panašų renginį: <!-- TODO: periodiniai renginiai -->
-
-1. Sąrašo veiksmų meniu **⋯** arba redagavimo lange pasirink **Dubliuoti**.
-2. Sukuriama tiksli renginio kopija su prierašu „(kopija)“.
-3. Pakeisk datą, atnaujink kitus duomenis ir išsaugok.
+Kiekvienam pasikartojančio renginio kartui sukurk atskirą įrašą su jo data ir laiku.
+Dabartinėje formoje nėra periodinių renginių tvarkyklės ar dubliavimo veiksmo.
+Naudok ankstesnio renginio informaciją kaip pavyzdį, bet prieš skelbdamas patikrink vietą,
+registracijos nuorodą ir kalbų versijas.
 
 ### Posėdžių susiejimas su kalendoriaus renginiais
 
-Posėdžių skiltyje (`/visak/posedziai/{id}`) organizatoriai gali vienu mygtuko paspaudimu sukurti viešą kalendoriaus renginį. Sistema automatiškai perkelia posėdžio pavadinimą, laiką, vietą ir darbotvarkę į kalendoriaus įrašą. Ištrynus kalendoriaus įrašą iš posėdžio puslapio, pašalinamas ir susietas kalendoriaus renginys.
+Posėdžių skiltyje (`/mano/meetings/{id}`) organizatoriai gali vienu mygtuko paspaudimu sukurti viešą kalendoriaus renginį. Sistema automatiškai perkelia posėdžio pavadinimą, laiką, vietą ir darbotvarkę į kalendoriaus įrašą. Ištrynus kalendoriaus įrašą iš posėdžio puslapio, pašalinamas ir susietas kalendoriaus renginys.
 
 ### Šalinimas ir atkūrimas
 

@@ -21,6 +21,12 @@ Pranešimų nustatymuose pasirink, apie ką ir kokiu būdu nori būti informuoja
 
 ## Pranešimų kanalai {#kanalai}
 
+<ChangelogNote version="v3.0" date="2026-10-02" title="Laiško pristatymą rinkis kiekvienai pranešimų rūšiai">
+
+Laiškas iškart, suvestinė ir išjungimas yra atskiri pasirinkimai. Įrenginio pranešimai valdomi atskirai, o nutildymas nepašalina pranešimo iš varpelio. Ramybės valandos neatideda pavienių laiškų.
+
+</ChangelogNote>
+
 Pranešimai gali pasiekti tave trimis kanalais:
 
 1. **Platformoje (varpelis)**: matomas viršutinėje juostoje (telefone – apatinėje). Skaičius rodo visus

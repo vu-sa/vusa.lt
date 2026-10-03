@@ -24,7 +24,7 @@ describe('SheetForm.vue', () => {
       props: {
         open: true,
         title: 'Priskirti narį',
-        description: 'Priskirkite naudotoją pareigoms.',
+        description: 'Priskirk naudotoją pareigoms.',
         saveLabel: 'Išsaugoti',
       },
       slots: {
@@ -34,7 +34,7 @@ describe('SheetForm.vue', () => {
     });
 
     expect(wrapper.text()).toContain('Priskirti narį');
-    expect(wrapper.text()).toContain('Priskirkite naudotoją pareigoms.');
+    expect(wrapper.text()).toContain('Priskirk naudotoją pareigoms.');
     expect(wrapper.find('[data-testid="form-body"]').exists()).toBe(true);
     expect(wrapper.text()).toContain('Išsaugoti');
     expect(wrapper.text()).toContain('Atšaukti');

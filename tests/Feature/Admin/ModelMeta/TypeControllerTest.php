@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
@@ -7,7 +8,9 @@ use App\Models\InstitutionType;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer;
+use App\Services\Permissions\PermissionMapBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -118,4 +121,95 @@ test('cycle validation traverses soft-deleted intermediate types', function (): 
     asUser($this->admin)->patch(route('institutionTypes.update', $root), [
         'title' => ['lt' => 'Tipas', 'en' => 'Type'], 'parent_id' => $leaf->id,
     ])->assertSessionHasErrors('parent_id');
+});
+
+test('assigned types can enter the trash and be restored without losing assignments', function (string $resource, string $class, string $ownerClass, string $relation): void {
+    $type = $class::factory()->create();
+    $owner = $ownerClass::factory()->create();
+    $type->{$relation}()->attach($owner);
+
+    asUser($this->admin)->delete(route($resource.'.destroy', $type))->assertRedirect();
+    $this->assertSoftDeleted($type);
+    asUser($this->admin)->patch(route($resource.'.restore', $type))->assertRedirect()->assertSessionHas('success');
+
+    $this->assertNotSoftDeleted($type);
+    expect($type->fresh()->{$relation}()->whereKey($owner->id)->exists())->toBeTrue();
+})->with([
+    'institution type' => ['institutionTypes', InstitutionType::class, Institution::class, 'institutions'],
+    'duty type' => ['dutyTypes', DutyType::class, Duty::class, 'duties'],
+]);
+
+test('permanent deletion refuses an assigned owner even when that owner is trashed', function (string $resource, string $class, string $ownerClass, string $relation): void {
+    $type = $class::factory()->create();
+    $owner = $ownerClass::factory()->create();
+    $type->{$relation}()->attach($owner);
+    $owner->delete();
+    $type->delete();
+
+    asUser($this->admin)->delete(route($resource.'.forceDelete', $type))->assertRedirect()->assertSessionHas('error');
+
+    $this->assertSoftDeleted($type);
+    expect($type->{$relation}()->withTrashed()->whereKey($owner->id)->exists())->toBeTrue();
+})->with([
+    'institution type' => ['institutionTypes', InstitutionType::class, Institution::class, 'institutions'],
+    'duty type' => ['dutyTypes', DutyType::class, Duty::class, 'duties'],
+]);
+
+test('permanent deletion refuses child types', function (string $resource, string $class): void {
+    $type = $class::factory()->create();
+    $child = $class::factory()->create(['parent_id' => $type->id]);
+    $type->delete();
+
+    asUser($this->admin)->delete(route($resource.'.forceDelete', $type))->assertRedirect()->assertSessionHas('error');
+
+    $this->assertSoftDeleted($type);
+    expect($child->fresh()->parent_id)->toBe($type->id);
+})->with([
+    'institution type' => ['institutionTypes', InstitutionType::class],
+    'duty type' => ['dutyTypes', DutyType::class],
+]);
+
+test('permanent deletion refuses a duty type with roles', function (): void {
+    $type = DutyType::factory()->create();
+    $role = Role::query()->where('name', 'Studentų atstovų koordinatorius')->firstOrFail();
+    $type->roles()->attach($role);
+    $type->delete();
+
+    asUser($this->admin)->delete(route('dutyTypes.forceDelete', $type))->assertRedirect()->assertSessionHas('error');
+
+    $this->assertSoftDeleted($type);
+    expect($type->roles()->whereKey($role->id)->exists())->toBeTrue();
+});
+
+test('permanent deletion removes a trashed type without dependencies', function (string $resource, string $class): void {
+    $type = $class::factory()->create();
+    $type->delete();
+
+    asUser($this->admin)->delete(route($resource.'.forceDelete', $type))->assertRedirect()->assertSessionHas('success');
+
+    $this->assertModelMissing($type);
+})->with([
+    'institution type' => ['institutionTypes', InstitutionType::class],
+    'duty type' => ['dutyTypes', DutyType::class],
+]);
+
+test('removing a duty type assignment removes its roles and invalidates warmed access maps', function (): void {
+    $type = DutyType::factory()->create();
+    $role = Role::query()->where('name', 'Studentų atstovų koordinatorius')->firstOrFail();
+    $type->roles()->attach($role);
+    $duty = $this->user->duties()->first();
+    $duty->types()->attach($type);
+    $authorizer = app(ModelAuthorizer::class);
+    expect($authorizer->allows($this->user, 'institutions.update.padalinys'))->toBeTrue();
+    $navigationKey = HandleInertiaRequests::adminNavigationCacheKey($this->user->id);
+    $mapKey = PermissionMapBuilder::INDEX_CACHE_PREFIX.$this->user->id;
+    Cache::put($navigationKey, ['stale'], 300);
+    Cache::put($mapKey, ['stale'], 300);
+
+    asUser($this->admin)->put(route('dutyTypes.models.sync', $type), ['models' => []])->assertRedirect();
+
+    expect($duty->fresh()->hasRole($role))->toBeFalse()
+        ->and(Cache::has('auth:duties:'.$this->user->id))->toBeFalse()
+        ->and(Cache::has($navigationKey))->toBeFalse()
+        ->and(Cache::has($mapKey))->toBeFalse();
 });

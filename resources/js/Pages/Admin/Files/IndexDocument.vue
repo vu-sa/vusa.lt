@@ -162,7 +162,7 @@
     :title="$t('Ištrinti dokumentą?')"
     :description="
       $t(
-        'Ar tikrai norite pašalinti dokumentą „:title“? SharePoint failas nebus ištrintas, tačiau bus panaikinta vieša prieiga.',
+        'Ar tikrai nori pašalinti dokumentą „:title“? SharePoint failas nebus ištrintas, tačiau bus panaikinta vieša prieiga.',
         { title: documentToDelete?.title ?? '' },
       )
     "

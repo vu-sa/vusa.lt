@@ -29,7 +29,7 @@
             v-model="linkUrl"
             type="url"
             class="h-7 w-44 border border-border bg-transparent px-2 text-xs focus:border-brand focus:outline-none"
-            :placeholder="$t('Įklijuokite nuorodą…')"
+            :placeholder="$t('Įklijuok nuorodą…')"
             @keydown.enter.prevent="applyLink"
             @keydown.esc.prevent="closeLink"
           >
@@ -205,7 +205,7 @@ const editor = useEditor({
       suggestion: mentionSuggestion,
     }),
     Placeholder.configure({
-      placeholder: props.placeholder || $t('Rašykite bendras pastabas…'),
+      placeholder: props.placeholder || $t('Rašyk bendras pastabas…'),
     }),
     Collaboration.configure({ document: props.doc }),
     CollaborationCaret.configure({

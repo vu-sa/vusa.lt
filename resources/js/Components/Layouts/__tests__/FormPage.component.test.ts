@@ -17,7 +17,7 @@ describe('FormPage.vue', () => {
     const wrapper = mount(FormPage, {
       props: {
         title: 'Pareigybės forma',
-        lead: 'Sukurkite naują pareigybę',
+        lead: 'Sukurk naują pareigybę',
         entityType: ModelEnum.DUTY,
         backHref: '/mano/duties',
         backLabel: 'Pareigybės',
@@ -29,7 +29,7 @@ describe('FormPage.vue', () => {
     });
 
     expect(wrapper.text()).toContain('Pareigybės forma');
-    expect(wrapper.text()).toContain('Sukurkite naują pareigybę');
+    expect(wrapper.text()).toContain('Sukurk naują pareigybę');
     expect(wrapper.find('[data-testid="entity-type-mark"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="form-content"]').exists()).toBe(true);
     expect(wrapper.text()).toContain('Pareigybės');

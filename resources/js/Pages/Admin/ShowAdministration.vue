@@ -33,7 +33,7 @@
       v-if="!hasVisibleItems"
       mode="no-results"
       :title="$t('shell.chrome.no_sections')"
-      :description="$t('Bandykite pakeisti paieškos kriterijus arba filtrus.')"
+      :description="$t('Bandyk pakeisti paieškos kriterijus arba filtrus.')"
     />
   </OverviewPage>
 </template>

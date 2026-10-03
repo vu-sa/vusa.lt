@@ -164,7 +164,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       error.value = {
         type: 'auth',
         message: 'No access to this collection',
-        userMessage: 'Neturite prieigos prie šios paieškos.',
+        userMessage: 'Neturi prieigos prie šios paieškos.',
         retryable: false,
       };
       return false;
@@ -202,7 +202,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       error.value = {
         type: 'server',
         message: err instanceof Error ? err.message : 'Unknown error',
-        userMessage: 'Nepavyko įkelti filtrų. Bandykite dar kartą.',
+        userMessage: 'Nepavyko įkelti filtrų. Bandyk dar kartą.',
         retryable: true,
       };
     }
@@ -285,7 +285,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       error.value = {
         type: 'server',
         message: err instanceof Error ? err.message : 'Unknown error',
-        userMessage: 'Paieška nepavyko. Bandykite dar kartą.',
+        userMessage: 'Paieška nepavyko. Bandyk dar kartą.',
         retryable: true,
       };
 

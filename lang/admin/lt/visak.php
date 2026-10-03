@@ -2,8 +2,8 @@
 
 return [
     'full_name' => 'Virtualus Studentų Atstovų Koordinatorius',
-    'description' => 'ViSAK padeda stebėti ir koordinuoti studentų atstovavimo veiklą VU SA institucijose. Čia galite matyti savo institucijas, planuoti susitikimus ir pranešti apie nedalyvavimą.',
-    'features_title' => 'Ką galite daryti:',
+    'description' => 'ViSAK padeda stebėti ir koordinuoti studentų atstovavimo veiklą VU SA institucijose. Čia gali matyti savo institucijas, planuoti susitikimus ir pranešti apie nedalyvavimą.',
+    'features_title' => 'Ką gali daryti:',
     'feature_1' => 'Stebėti savo institucijų atstovavimo būklę',
     'feature_2' => 'Planuoti ir registruoti susitikimus',
     'feature_3' => 'Pranešti apie laikinus nebuvimus (atostogos, sesija)',
@@ -44,7 +44,7 @@ return [
         'empty' => 'Pasirinktuose padaliniuose institucijų nerasta',
         'view_institutions' => 'Peržiūrėti institucijas',
         'dialog_title' => 'Visos pasirinkto padalinio institucijos',
-        'dialog_description' => 'Ieškokite institucijų ir palyginkite jų atostogas įvertinančią veiklos būklę.',
+        'dialog_description' => 'Ieškok institucijų ir palygink jų atostogas įvertinančią veiklos būklę.',
         'next_meeting' => 'Kitas susitikimas: :date',
         'last_meeting' => 'Paskutinis susitikimas: :date',
         'overview_tab' => 'Apžvalga',
@@ -154,6 +154,6 @@ return [
     // Gantt chart loading state
     'gantt' => [
         'loading_meetings' => 'Kraunami posėdžiai…',
-        'meetings_load_failed' => 'Nepavyko įkelti posėdžių. Bandykite dar kartą.',
+        'meetings_load_failed' => 'Nepavyko įkelti posėdžių. Bandyk dar kartą.',
     ],
 ];

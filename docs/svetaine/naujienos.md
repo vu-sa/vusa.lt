@@ -28,6 +28,8 @@ Nuo įprastų [puslapių](/svetaine/puslapiai) naujienos skiriasi keliais esmini
 - **Viršelis:** reprezentacinis vaizdas, rodomas sąrašuose ir straipsnio viršuje.
 - **Žymos:** teminės etiketės, leidžiančios naujienai atsidurti atitinkamuose [Temos puslapiuose](/svetaine/zymos#temos-puslapis).
 
+<DocScreenshot name="news-form" alt="Naujienos forma: pavadinimas, nuoroda, įvadinis tekstas ir turinys kairėje, paskelbimo būsena, laikas, žymos ir kalba dešinėje" caption="Paskelbtos naujienos redagavimas." />
+
 ### Būsenos
 
 | Būsena | Reikšmė | Matomumas |
@@ -41,7 +43,11 @@ Naujienos turinio blokai redaguojami taip pat kaip [puslapiuose](/svetaine/pusla
 
 ## Išsaugojimas ir paskelbimas {#issaugojimas}
 
-<ChangelogNote version="v2.34" date="2026-10-01" title="Patikimesnis išsaugojimas" />
+<ChangelogNote version="v3.0" date="2026-10-02" title="Patikimesnis išsaugojimas">
+
+Nepavykęs išsaugojimas palieka tavo pakeitimus formoje. Jei kolega jau išsaugojo naujesnę versiją, pirmiausia ją peržiūrėk.
+
+</ChangelogNote>
 
 **Juodraštis** matomas tik sistemoje. Pasirinkęs **Paskelbta** ir išsaugojęs, naujieną padarai pasiekiamą pagal viešą nuorodą. Jei paskelbimo laikas ateityje, paieškoje ir naujienų sąrašuose ji pasirodys nuo pasirinkto laiko; pati nuoroda jau veikia.
 

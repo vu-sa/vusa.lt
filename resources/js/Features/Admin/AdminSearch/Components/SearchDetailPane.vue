@@ -6,7 +6,7 @@
         <MousePointerClick class="size-6 text-muted-foreground/50" />
       </div>
       <p class="text-sm font-medium text-foreground">
-        {{ $t('Pasirinkite rezultatą') }}
+        {{ $t('Pasirink rezultatą') }}
       </p>
       <p class="mt-1 text-xs text-muted-foreground">
         {{ $t('Peržiūra bus rodoma čia') }}

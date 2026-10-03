@@ -58,7 +58,7 @@
         <span class="text-xs text-muted-foreground">{{ $t('Uždaryti (nebūtina)') }}</span>
         <DateTimePicker
           v-model="closesAt"
-          :placeholder="$t('Pasirinkite datą')"
+          :placeholder="$t('Pasirink datą')"
           :min-date="minCloseDate"
         />
       </div>

@@ -157,7 +157,7 @@ describe('Files Controller - Directory Listing', function (): void {
         $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($this->forbiddenPath));
 
         expect($response->status())->toBe(403)
-            ->and($response->json('message'))->toContain('Neturite teisių')
+            ->and($response->json('message'))->toContain('Neturi teisių')
             ->and($response->json('code'))->toBe('INSUFFICIENT_PERMISSIONS');
     });
 
@@ -880,7 +880,7 @@ describe('Files Controller - File Usage Scanning', function (): void {
 
         expect($response->status())->toBe(302);
         $response->assertSessionHasErrors('error');
-        expect(session('errors')->first('error'))->toContain('Neturite teisių skenuoti šio failo naudojimą');
+        expect(session('errors')->first('error'))->toContain('Neturi teisių skenuoti šio failo naudojimą');
     });
 
     test('super admin can scan file usage in any directory', function (): void {

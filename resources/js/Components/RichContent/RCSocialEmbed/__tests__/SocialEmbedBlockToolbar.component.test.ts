@@ -88,7 +88,7 @@ describe('SocialEmbedBlockToolbar', () => {
     expect((emitted.json_content as Record<string, unknown>).platform).toBeNull();
 
     await wrapper.setProps({ content: emitted });
-    expect(wrapper.text()).toContain('Patikrinkite nuorodą');
+    expect(wrapper.text()).toContain('Patikrink nuorodą');
   });
 
   it('detects instagram reels and emits platform as instagram', async () => {

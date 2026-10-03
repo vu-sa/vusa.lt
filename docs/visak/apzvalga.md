@@ -34,6 +34,12 @@ nuo rolės. Viso padalinio vaizdas yra [Padalinių apžvalgoje](/visak/padalinia
 
 ## Kaip tai veikia
 
+<ChangelogNote version="v3.0" date="2026-10-02" title="Tavo institucijos ir padalinių rodikliai atskirti">
+
+Ši apžvalga skirta tavo institucijoms ir toms, kurių sekretorius esi. Viso padalinio rodiklius bei laiko juostą atverk skiltyje **Padaliniai**; apžvalgoje seno „Mano institucijos / Padalinys“ jungiklio nėra.
+
+</ChangelogNote>
+
 **Tavo institucijos** yra institucijos, kuriose eini pareigas, ir institucijos, kurių
 **sekretorius** esi, nors nesi jų narys. Pastarosios pažymėtos ženklu **Sekretorius**. Kiekviena
 institucija turi **veiklos būseną**, kuri parodo, ar apie jos veiklą laiku pranešama.

@@ -45,7 +45,7 @@
           <Textarea v-model="context.form.meta_description" />
         </FormFieldWrapper>
         <FormFieldWrapper :id="`highlights-${context.form.lang}`" :label="$t('Svarbiausi punktai')">
-          <OrderedListInput v-model="context.form.highlights" :max="3" input-type="textarea" :placeholder="$t('Įveskite svarbų punktą...')" :empty-text="$t('Dar nepridėta jokių punktų')" :add-first-text="$t('Pridėti pirmą punktą')" :add-text="$t('Pridėti punktą')" />
+          <OrderedListInput v-model="context.form.highlights" :max="3" input-type="textarea" :placeholder="$t('Įvesk svarbų punktą...')" :empty-text="$t('Dar nepridėta jokių punktų')" :add-first-text="$t('Pridėti pirmą punktą')" :add-text="$t('Pridėti punktą')" />
         </FormFieldWrapper>
       </div>
     </div>

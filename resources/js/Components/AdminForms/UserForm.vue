@@ -133,7 +133,7 @@
             :options="dutyOptions"
             label-field="label"
             value-field="value"
-            :placeholder="$t('Pasirinkite pareigybes…')"
+            :placeholder="$t('Pasirink pareigybes…')"
           />
         </FormFieldWrapper>
 

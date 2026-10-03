@@ -75,7 +75,7 @@ return [
         ],
     ],
 
-    'type_to_confirm' => 'Patvirtinimui įveskite šį tekstą:',
+    'type_to_confirm' => 'Patvirtinimui įvesk šį tekstą:',
     'confirmation_label' => 'Patvirtinimo tekstas',
-    'confirmation_placeholder' => 'Įveskite nurodytą tekstą',
+    'confirmation_placeholder' => 'Įvesk nurodytą tekstą',
 ];

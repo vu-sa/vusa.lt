@@ -6,7 +6,7 @@ import { useDocsHref } from '@/Composables/useDocsHref';
 const STORAGE_KEY = 'docs-changelog-last-seen';
 
 /** Fallback until `changelog-meta.json` names the newest per-major changelog page. */
-const DEFAULT_CHANGELOG = 'v2';
+const DEFAULT_CHANGELOG = 'v3';
 
 /**
  * Tracks whether there are unseen documentation/platform updates.

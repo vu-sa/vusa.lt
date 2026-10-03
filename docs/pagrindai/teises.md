@@ -18,6 +18,12 @@ naudotojas teises gauna eidamas pareigybę.
 
 ## Ką gali kiekvienas narys {#bazine-prieiga}
 
+<ChangelogNote version="v3.0" date="2026-10-02" title="Rolė prideda prieigą prie bendro pagrindo">
+
+Vieša institucijų ir posėdžių informacija, problemos ir ištekliai pasiekiami be papildomos rolės. Savo pareigų metu vykusių posėdžių prieiga išlieka ir pareigoms pasibaigus; tai nesuteikia prieigos prie vėlesnių neviešų posėdžių.
+
+</ChangelogNote>
+
 Kai kas nepriklauso nuo rolių: tai gali kiekvienas prisijungęs narys, net neturėdamas nė vienos
 rolės. Rolės prideda tik tai, kas viršija šį pagrindą. Rolės puslapyje (**Sistema → Rolės**) prie
 kiekvienos įrašų rūšies parašyta, ką visi nariai jau gali, o tokios teisės pažymėtos užraktu

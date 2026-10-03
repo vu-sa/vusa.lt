@@ -40,7 +40,7 @@ return [
     'gantt_tour' => [
         'fullscreen' => [
             'title' => 'Viso ekrano režimas',
-            'description' => 'Rekomenduojame pradėti nuo <strong>viso ekrano režimo</strong> – taip matysite daugiau informacijos ir bus patogiau naršyti.',
+            'description' => 'Rekomenduojame pradėti nuo <strong>viso ekrano režimo</strong> – taip matysi daugiau informacijos ir bus patogiau naršyti.',
         ],
         'chart_overview' => [
             'title' => 'Laiko juostos diagrama',
@@ -48,23 +48,23 @@ return [
         ],
         'date_navigation' => [
             'title' => 'Metų navigacija',
-            'description' => 'Spustelėkite datą, kad <strong>peršoktumėte į kitus metus</strong>. Taip pat rasite mygtuką grįžti į šiandieną.',
+            'description' => 'Spustelėk datą, kad <strong>peršoktum į kitus metus</strong>. Taip pat rasi mygtuką grįžti į šiandieną.',
         ],
         'scale' => [
             'title' => 'Mastelio valdymas',
-            'description' => 'Slankikliu galite <strong>keisti mastelio dydį</strong> – sumažinti, kad matytumėte daugiau laiko, arba padidinti detalesniam vaizdui.',
+            'description' => 'Slankikliu gali <strong>keisti mastelio dydį</strong> – sumažinti, kad matytum daugiau laiko, arba padidinti detalesniam vaizdui.',
         ],
         'filters' => [
             'title' => 'Filtravimo parinktys',
-            'description' => 'Spustelėkite šį mygtuką, kad <strong>atidarytumėte filtrus</strong>. Galite pasirinkti padalinius, rodyti tik aktyvias institucijas ar viešas institucijas.',
+            'description' => 'Spustelėk šį mygtuką, kad <strong>atidarytum filtrus</strong>. Gali pasirinkti padalinius, rodyti tik aktyvias institucijas ar viešas institucijas.',
         ],
         'institution_row' => [
             'title' => 'Institucijos pavadinimas',
-            'description' => 'Institucijos pavadinimas yra <strong>nuoroda</strong> – spustelėkite, kad atidarytumėte institucijos puslapį su visa informacija.',
+            'description' => 'Institucijos pavadinimas yra <strong>nuoroda</strong> – spustelėk, kad atidarytum institucijos puslapį su visa informacija.',
         ],
         'meeting_icons' => [
             'title' => 'Susitikimų žymėjimai',
-            'description' => 'Taškai diagramoje žymi <strong>susitikimus</strong>. Spustelėkite ant bet kurio taško, kad atidarytumėte susitikimo detales.',
+            'description' => 'Taškai diagramoje žymi <strong>susitikimus</strong>. Spustelėk ant bet kurio taško, kad atidarytum susitikimo detales.',
         ],
         'safety_bands' => [
             'title' => 'Periodiškumo zonos',
@@ -72,7 +72,7 @@ return [
         ],
         'legend' => [
             'title' => 'Legenda',
-            'description' => 'Baigėme! Spustelėkite čia, kad <strong>atidarytumėte legendą</strong> su visais diagramos elementų paaiškinimais.',
+            'description' => 'Baigėme! Spustelėk čia, kad <strong>atidarytum legendą</strong> su visais diagramos elementų paaiškinimais.',
         ],
     ],
 

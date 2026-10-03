@@ -47,7 +47,8 @@ todėl asmeninė paskyros istorija turi likti susieta su konkrečiu žmogumi.
 
 1. **Prieiga suteikiama per pareigybes.** Naudotojas pats savaime dažniausiai neturi jokių administravimo
    teisių (bazinė nario prieiga leidžia matyti savo užduotis, pranešimus ir teikti rezervacijas).
-   Visos papildomos teisės gaunamos per [pareigybes](/organizacija/pareigybes) ir joms priskirtas roles.
+   Papildomos teisės paprastai gaunamos per [pareigybes](/organizacija/pareigybes) ir joms priskirtas roles;
+   superadministratorius gali priskirti rolę tiesiogiai paskyrai.
 2. **Padalinys nustatomas iš pareigybių.** Platformoje narys nepriklauso padaliniui tiesioginiu lauku – nario padaliniai
    nustatomi pagal jo einamas pareigybes (`User::tenants()`).
 3. **Nariai be padalinio.** Jei asmuo šiuo metu neturi jokios aktyvios pareigybės, sąraše prie jo rodoma
@@ -57,15 +58,19 @@ todėl asmeninė paskyros istorija turi likti susieta su konkrečiu žmogumi.
 
 Siekiant apsaugoti narių paskyras nuo netyčinio ar piktavališko perėmimo, sistemoje galioja griežtos taisyklės:
 
-- **Vardo keitimas**: esamo nario vardo ir pavardės laukelis yra užrakintas. Jį pakeisti gali tik
-  Superadministratorius. <!-- TODO: gali pats asmuo pakeisti, bet tik vieną kartą -->
-- **El. pašto keitimas**: prisijungimo el. paštą gali keisti pats narys savo profilio nustatymuose
-  arba Superadministratorius. Padalinio koordinatorius kito nario el. paštą gali pakeisti tik tuo atveju,
-  jei visi šio nario padaliniai (įskaitant buvusius istorinius paskyrimus) įeina į koordinatoriaus administruojamus
+- **Vardo keitimas**: kito nario vardą ir pavardę narių administravime gali pakeisti tik
+  Superadministratorius. Pats narys savo vardą gali pataisyti **vieną kartą** savo paskyros formoje;
+  vėliau laukelis užrakinamas ir keisti reikia kreiptis į administratorių
+  ([Paskyra ir prieiga](/mano/paskyra-ir-prieiga#profilis)).
+- **El. pašto keitimas**: prisijungimo el. paštas savo paskyros formoje užrakintas. Jį keičia
+  Superadministratorius arba atitinkamą nario administravimo prieigą turintis koordinatorius. Padalinio koordinatorius kito nario el. paštą gali pakeisti tik tuo atveju,
+  jei visi šio nario padaliniai (įskaitant tuos, kuriuose jis ėjo pareigas anksčiau) įeina į koordinatoriaus administruojamus
   padalinius ir narys neturi tiesioginių administratoriaus rolių. Jei narys kada nors ėjo pareigas kitame padalinyje,
   laukelis rodomas su spyna ir paaiškinimu, kad tapatybė apsaugota.
 - **Savęs užsirakinimo apsauga**: jei administratorius bando redaguoti savo paties profilį taip, kad
-  prarastų administravimo prieigą, sistema parodo perspėjimą apie prieigos pasikeitimą ir reikalauja aiškaus patvirtinimo. <!-- TODO: patikrinti -->
+  prarastų kurią nors savo rolę, sistema nieko neišsaugo, parodo perspėjimą apie prieigos pasikeitimą ir
+  laukia aiškaus patvirtinimo. Patvirtinus pakeitimas išsaugomas ir atveriama Pradžia. Superadministratorius
+  perspėjamas tik tada, kai šalina savo Super Admin rolę.
 - **Savęs trynimo blokavimas**: administratorius negali ištrinti savo paties paskyros.
 
 ## Rekomendacijos {#susitarimai}
@@ -93,20 +98,22 @@ kontaktinis el. paštas, telefonas, paskutinio veiksmo data ir prisijungimo slap
 
 Profilis suskirstytas į skirtukus:
 
+<DocScreenshot name="user-record" alt="Nario puslapis: el. paštas, telefonas, dabartinės ir buvusios pareigos su datomis" caption="Narys, kuris anksčiau buvo parlamento narys, o dabar eina pirmininko pareigas." />
+
 1. **Pareigos**:
    - *Dabartinės pareigos* – aktyvūs pareigybių laikotarpiai, institucija, kadencijos pradžia ir pabaiga.
-   - *Būsimos pareigos* – suplanuoti būsimi paskyrimai.
+   - *Būsimos pareigos* – pareigos, kurios prasidės ateityje.
    - *Buvusios pareigos* – visa istorinė asmens veikla VU SA.
-   - Mygtukas **Priskirti pareigybę** atidaro šoninį pareigybės priskyrimo langą (pasirenkama pareigybė, kadencijos datos ir studijų programa).
+   - Mygtukas **Pridėti pareigybę** atidaro šoninį pareigybės priskyrimo langą (pasirenkama pareigybė, kadencijos datos ir studijų programa).
 2. **Rolės**:
    - Rodomos tiesiogiai paskyrai priskirtos rolės (jei tokių yra). Kasdieniame darbe rolės gaunamos per pareigybes, todėl čia paprastai rodoma „Rolių nėra – prieiga suteikiama per pareigybes“. Tiesiogines roles keisti gali tik Superadministratorius.
 3. **Užduotys**:
    - Visi nariui priskirti darbai, jų terminai ir atlikimo būsenos (`TaskManager`).
-4. **Veikla**:
-   - Nario įrašo pakeitimų istorija per veiklos žurnalo langą (`ActivityLogSheet`).
+Nario įrašo pakeitimų istoriją peržiūrėk veiklos žurnalo lange; tai nėra atskiras profilio skirtukas.
 
-Per meniu **⋯** profilio viršuje pasiekiami veiksmai: **Redaguoti narį**, **Priskirti pareigybę**,
-**Generuoti slaptažodį** (tik Superadministratoriui) ir **Ištrinti narį**.
+Per meniu **⋯** profilio viršuje pasiekiami veiksmai: **Redaguoti**, laikotarpių tvarkyklė,
+**Generuoti naują slaptažodį** (tik Superadministratoriui) ir **Ištrinti narį**.
+**Pridėti pareigybę** yra pagrindinis profilio veiksmas.
 
 ### Naujo nario sukūrimas {#kurimas}
 
@@ -119,7 +126,6 @@ Naujas narys kuriamas paspaudus **Naujas narys (-ė)** sąrašo viršuje (`/mano
 3. **Pareigybės priskyrimas** – kuriant profilį privaloma iškart priskirti bent vieną pareigybę iš savo
    administruojamų padalinių. Kitas pareigybes galėsi pridėti vėliau nario kortelėje.
 
-<!-- TODO: gal reikėtų? -->
 ::: warning Pakvietimai nesiunčiami
 Naujo nario profilio sukūrimas **nesiunčia** automatinių el. laiškų ar prisijungimo pakvietimų.
 Narys prie sistemos jungiasi savarankiškai per Microsoft OAuth su savo VU el. paštu.
@@ -165,7 +171,7 @@ Jei tas pats asmuo užsiregistravo kelis kartus (pavyzdžiui, vieną kartą su `
 | Matyti padalinio narius | – | ✓ | ✓ | ✓, visų padalinių | ✓ |
 | Sukurti naują narį | – | ✓ | ✓ | ✓ | ✓ |
 | Redaguoti nario kontaktus ir nuotrauką | tik savo | ✓, savo padalinio | ✓, savo padalinio | ✓ | ✓ |
-| Keisti nario el. paštą | tik savo | ✓, tik jei narys priklauso tik šiam padaliniui | ✓, tik jei narys priklauso tik šiam padaliniui | ✓ | ✓ |
+| Keisti nario el. paštą | – | ✓, tik jei narys priklauso tik šiam padaliniui | ✓, tik jei narys priklauso tik šiam padaliniui | ✓ | ✓ |
 | Keisti nario vardą ir pavardę | – | – | – | – | ✓ |
 | Priskirti padalinio pareigybes | – | ✓ | ✓ | ✓ | ✓ |
 | Sujungti narius | – | – | – | ✓ | ✓ |

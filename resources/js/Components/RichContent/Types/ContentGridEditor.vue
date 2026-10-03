@@ -16,7 +16,7 @@
         <FormFieldWrapper id="gap" label="Tarpai">
           <Select v-model="options.gap">
             <SelectTrigger>
-              <SelectValue placeholder="Pasirinkite tarpą" />
+              <SelectValue placeholder="Pasirink tarpą" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="opt in gapOptions" :key="opt.value" :value="opt.value">

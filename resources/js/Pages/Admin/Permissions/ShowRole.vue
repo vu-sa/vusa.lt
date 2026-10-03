@@ -12,7 +12,7 @@
     <template #permissions>
       <RolePermissionForms v-if="can.update" :role :all-available-permissions :baseline-access :retired-permissions model-route="roles.update" />
       <p v-else class="text-sm text-muted-foreground">
-        {{ $t('Neturite teisės keisti šios rolės teisių.') }}
+        {{ $t('Neturi teisės keisti šios rolės teisių.') }}
       </p>
     </template>
 

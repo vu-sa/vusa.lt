@@ -103,8 +103,6 @@ tipą ar konkretų organą ši pareigybė atsako (pavyzdžiui, *Studentų atstov
 Atsakomybė nurodo sistemai, kas gauna atstovų registracijos anketas, posėdžių klausimus ir veiklos
 ataskaitas. Plačiau apie atsakomybių mechanizmą skaityk skyriuje [Atsakomybės](/pagrindai/atsakomybes).
 
-<DocScreenshot name="duty-responsibilities" alt="Pareigybės skirtukas Atsakomybės: studentų atstovų koordinavimas ir šalia esančios rolės" caption="Atsakomybės ir rolės pareigybės puslapyje." />
-
 ### Bendros pareigybės tarp padalinių (kvotos) {#bendros-pareigybes}
 
 Kai kurios institucijos (pvz., VU SA Parlamentas) priklauso bendram dariniui, tačiau jų nariai renkami iš visų fakultetinių
@@ -162,24 +160,28 @@ Pareigybių sąraše (`/mano/duties`) pateikiamos visos pasiekiamos pareigybės:
 
 ### Pareigybės puslapis {#puslapis}
 
-Atidarius pareigybę (`/mano/duties/{id}`), viršuje matoma pagrindinė informacija: institucija,
-el. paštas, vietų skaičius ir atvaizdavimo grupavimas. Puslapis suskirstytas į skirtukus:
+Atidarius pareigybę (`/mano/duties/{id}`), viršuje matai instituciją, užimtų ir visų vietų
+skaičių (pvz., 3 / 5), pareigybės el. paštą ir kategorijas, jei jos priskirtos. Puslapis
+suskirstytas į skirtukus:
+
+<DocScreenshot name="duty-record" alt="Pareigybės puslapis: institucija, užimtos vietos, el. paštas, dabartiniai nariai su veiksmais Redaguoti ir Užbaigti pareigas bei laikotarpių istorija" caption="Parlamento nario pareigybė: trys iš penkių vietų užimtos." />
 
 1. **Nariai**:
-   - *Dabartiniai nariai*: kas šiuo metu eina pareigas, jų kadencijos datos ir studijų programos.
-   - *Būsimi nariai*: suplanuoti paskyrimai, kurių pradžios data yra ateityje.
-   - *Buvę nariai*: istorinis visų anksčiau pareigas ėjusių narių sąrašas.
-   - Mygtukas **Priskirti narį** atidaro nario priskyrimo formą.
+   - *Dabartiniai nariai*: kas šiuo metu eina pareigas ir nuo kada. Žyma **Ex-officio** rodo, kad
+     pareigos kyla iš kitos pareigybės, o **Deleguota** – kad narys atstovauja kitam padaliniui.
+   - *Būsimi nariai*: nariai, kurių pareigos prasidės ateityje (rodoma, tik jei tokių yra).
+   - *Laikotarpių istorija*: pasibaigę laikotarpiai – kas ir kada šias pareigas ėjo anksčiau.
+   - Mygtukas **Priskirti narį** atidaro nario priskyrimo formą. Prie kiekvieno nario rasi
+     **Redaguoti**, o prie dabartinių – ir **Užbaigti pareigas**.
 2. **Apie pareigybę**:
-   - Aprašymas lietuvių ir anglų kalbomis.
-   - Pareigybei suteiktos rolės ir jų teisės.
-   - Kitos tos pačios institucijos pareigybės.
-   - *Ex officio* ryšiai ir padalinių kvotos.
+   - Pareigybės aprašymas.
+   - Kitos tos pačios institucijos pareigybės ir kiek narių jas eina.
 3. **Atsakomybės**:
    - Padaliniai, institucijų tipai ar konkretūs organai, kuriuos ši pareigybė koordinuoja.
    - Mygtukas **Pridėti atsakomybę** leidžia priskirti naują koordinavimo sritį.
-4. **Failai**:
-   - Su pareigybe susieti dokumentai, ataskaitos ar Sharepoint failai (jei jų yra).
+   - Greta rodomos pareigybės rolės – jos lemia, ką pareigybė gali daryti platformoje.
+4. **Failai** (rodoma, jei pareigybė turi SharePoint aplanką ar kategoriją):
+   - Su pareigybe susieti dokumentai ir ataskaitos.
 
 ### Laikotarpio datos {#laikotarpio-datos}
 
@@ -188,7 +190,7 @@ Pradžia negali būti vėlesnė už pabaigą. Pabaigos data yra paskutinė aktyv
 narys lieka dabartinių narių sąraše iki dienos pabaigos ir tampa buvusiu kitą dieną.
 Istorinis įrašas išlieka. Jei paskutinė pareigų diena buvo vakar, įrašyk vakarykštę datą.
 
-<ChangelogNote version="v2.30" date="2026-09-30" title="Paskutinė pareigų diena">
+<ChangelogNote version="v3.0" date="2026-10-02" title="Paskutinė pareigų diena">
 
 Dabartinių ir buvusių narių sąrašai dabar vienodai įskaito pabaigos dieną.
 Užbaigimo patvirtinimas aiškiai paaiškina, kad šiandien pareigos dar galioja.
@@ -328,5 +330,5 @@ laikotarpyje gali turėti nurodytą papildomą kontaktinį el. paštą ar asmeni
 - Savęs užsirakinimo apsaugą užtikrina `AdminController::guardSelfLockout` kartu su
   `DutySelfLockoutChecker`.
 - `current_duties` tikrina ir pradžią, ir imtinę pabaigą. `authorization_duties` apima ir
-  suplanuotus nepasibaigusius paskyrimus; šią atskirą prieigos sutartį tikrina
-  `ScheduledDutyAuthorizationTest`. Būsimas paskyrimas dėl to netampa dabartiniu laikotarpiu.
+  dar neprasidėjusius laikotarpius; tai tikrina `ScheduledDutyAuthorizationTest`.
+  Būsimas laikotarpis dėl to netampa dabartiniu.

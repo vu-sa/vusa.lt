@@ -107,7 +107,7 @@ return [
             'custom' => 'Nurodyti tikslų laiką…',
         ],
         'agenda' => [
-            'title' => 'Ką svarstysite?',
+            'title' => 'Ką svarstysi?',
             'subtitle' => 'Darbotvarkę galėsi papildyti ir vėliau.',
             'add' => 'Surašyti klausimus',
             'add_description' => 'Įrašyk, kokie klausimai bus svarstomi.',

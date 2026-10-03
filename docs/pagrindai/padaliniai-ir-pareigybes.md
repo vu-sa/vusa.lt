@@ -28,8 +28,8 @@ Platformos struktūra sudaryta iš keturių grandžių:
 3. **Pareigybė** – konkreti vieta institucijoje (pvz., padalinio pirmininkas, komunikacijos
    koordinatorius, kuratorius, studentų atstovas taryboje ar studijų programos komitete). Pareigybė turi
    numatytą vietų skaičių, tipus ir jai suteiktas roles.
-4. **Pareigybės laikotarpis** – konkretaus asmens paskyrimas į pareigybę tam tikram
-   laiko tarpui su pradžios ir pabaigos datomis.
+4. **Pareigybės laikotarpis** – kas ir kada eina šias pareigas: konkretus žmogus su
+   pradžios ir pabaigos datomis.
 
 Kasdieniame administravimo darbe teisės sujungiamos į **roles**, o rolės priskiriamos
 **pareigybėms**. Narys šias teises gauna per savo **pareigybės laikotarpius**. Be šio kelio,
@@ -44,7 +44,7 @@ yra bazinė nario prieiga ir tiesiogiai paskyrai suteiktos teisės; jas paaiški
 - **Pareigybės laikotarpis** nurodo, kas ir kada šias pareigas ėjo. Vienas žmogus tose pačiose pareigose
   gali turėti kelis laikotarpius (pvz., po pertraukos), o perrinktam nariui galima pratęsti esamą laikotarpį arba pradėti naują.
 - [Pareigybių atnaujinimo vedlys](/organizacija/pareigybiu-atnaujinimas) **nesiunčia kvietimo
-  prisijungti ir nesukuria slaptažodžio**. Vien paskyrimas į pareigas nėra kvietimas prisijungti.
+  prisijungti ir nesukuria slaptažodžio**. Pridėtas į pareigas narys pats kvietimo negauna.
 
 ## Datos ir narystės taisyklės {#datos}
 
@@ -59,8 +59,8 @@ pavyzdžius rasi [pareigybių laikotarpių datų aprašyme](/organizacija/pareig
 **Dabartinis narys** – žmogus, kurio pareigų pradžios diena jau atėjo, o paskutinė pareigų diena dar
 nepasibaigė. Pagal dabartinę narystę sudaromi pareigas einančių narių sąrašai.
 
-Būsimas paskyrimas gali suteikti pareigybės rolėse numatytą prieigą **dar prieš pareigų pradžią**.
-Tačiau iki pradžios dienos žmogus nelaikomas dabartiniu pareigų vykdytoju.
+Jei pareigos prasidės ateityje, žmogus pareigybės rolių prieigą gauna **jau dabar**, kad spėtų
+pasiruošti. Tačiau iki pradžios dienos jis nerodomas tarp pareigas einančių narių.
 
 ## Dažnai painiojamos sąvokos {#savoku-skirtumai}
 
@@ -68,12 +68,12 @@ Kad administravimas būtų tikslus, atskirk šias sąvokas:
 
 | Sąvoka | Kas tai yra | Kur naudojama |
 |---|---|---|
-| **Pareigybės laikotarpis** | Konkretaus žmogaus paskyrimas į pareigas su pradžios ir pabaigos datomis | Nustato, ar žmogus dabar eina pareigas ir kokias teises turi |
+| **Pareigybės laikotarpis** | Kas eina pareigas ir nuo kada iki kada | Nustato, ar žmogus dabar eina pareigas ir kokias teises turi |
 | **Institucijos kadencija** | Visos institucijos veiklos ciklas (dažniausiai liepos 1 d. – birželio 30 d.) | Naudojama posėdžiams ir protokolams priskirti veiklos laikotarpiui bei pareigybių datoms derinti |
 | **Rolė** | Teisių rinkinys (pvz., *Komunikacijos koordinatorius*), priskiriamas pareigybei | Nurodo, kokius veiksmus asmuo gali atlikti platformoje |
 | **Koordinavimo atsakomybė** | Atsakomybė už organą, tipą ar padalinį (pvz., studentų atstovų koordinavimas) | Nurodo, kam atstovai siunčia klausimus ir kas gauna atstovavimo registracijas |
 | **Sekretorius** | Asmuo, paskirtas konkrečios institucijos kadencijai tvarkyti posėdžius | Gauna posėdžių protokolavimo ir darbotvarkės užduotis |
-| **Koordinatorius** | Žmogus, einantis pareigas su koordinavimo atsakomybe | Padeda atstovams; vien koordinavimo atsakomybė nereiškia sekretoriaus paskyrimo |
+| **Koordinatorius** | Žmogus, einantis pareigas su koordinavimo atsakomybe | Padeda atstovams; koordinatorius savaime nėra sekretorius |
 
 ::: warning Koordinavimo atsakomybė nėra leidimų rolė
 Atsakomybės priskyrimas nurodo atstovavimo pagalbą, bet **nesuteikia** padalinio puslapių, naujienų ar
@@ -94,8 +94,8 @@ pareigybių valdymo teisių. Šią prieigą kasdieniame darbe suteikia pareigybe
 ## Techninė informacija {#technine-informacija}
 
 - Padalinius aprašo `Tenant` modelis, institucijas – `Institution`, pareigybes – `Duty`.
-- Asmens paskyrimas saugomas ryšio lentelėje `dutiables` (`Dutiable` modelis) su `start_date`, `end_date`, `study_program_id`, `additional_email`, `additional_photo`.
+- Pareigybės laikotarpis saugomas ryšio lentelėje `dutiables` (`Dutiable` modelis) su `start_date`, `end_date`, `study_program_id`, `additional_email`, `additional_photo`.
 - `User::current_duties()` tikrina, kad `start_date <= today` ir `(end_date is null or end_date >= today)`.
-- `User::authorization_duties()` tikrina `(end_date is null or end_date >= today)` – tai apima ir būsimus paskyrimus (`upcoming_duties()`). Šią atskirtį tikrina `ScheduledDutyAuthorizationTest`.
+- `User::authorization_duties()` tikrina `(end_date is null or end_date >= today)` – tai apima ir būsimus laikotarpius (`upcoming_duties()`). Šią atskirtį tikrina `ScheduledDutyAuthorizationTest`.
 - Bazinę prisijungusio nario prieigą be rolių užtikrina `BaselineAccessTest`.
 - Koordinatorių parinkimą pagal organo hierarchiją atlieka `ResponsibilityResolver`, tikrinamas `ResponsibilityResolverTest`.

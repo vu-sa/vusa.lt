@@ -67,7 +67,7 @@
           <Label class="text-xs font-semibold">{{ $t('Kontaktų grupavimas') }} *</Label>
           <Select v-model="http.contacts_grouping">
             <SelectTrigger :class="{ 'border-destructive': createErrors['contacts_grouping'] }">
-              <SelectValue :placeholder="$t('Pasirinkite grupavimą')" />
+              <SelectValue :placeholder="$t('Pasirink grupavimą')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">
@@ -432,7 +432,7 @@ const createDuty = () => {
       }
     },
     onError: () => {
-      toast.error($t('Patikrinkite formos laukus'));
+      toast.error($t('Patikrink formos laukus'));
     },
     onNetworkError: () => {
       toast.error($t('Nepavyko sukurti pareigybės'));

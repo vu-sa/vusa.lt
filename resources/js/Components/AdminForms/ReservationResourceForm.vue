@@ -35,7 +35,7 @@
             <Button type="button" variant="outline" class="w-full justify-between font-normal">
               <span class="inline-flex items-center gap-2 truncate" :class="{ 'text-muted-foreground': !selectedResource }">
                 <component :is="ResourceIcon" class="size-4" />
-                {{ selectedResource?.name ?? `${$t('Pasirinkite')}...` }}
+                {{ selectedResource?.name ?? `${$t('Pasirink')}...` }}
               </span>
               <span class="flex shrink-0 items-center gap-2">
                 <Badge v-if="selectedResource?.tenant?.shortname" variant="outline" class="text-xs">

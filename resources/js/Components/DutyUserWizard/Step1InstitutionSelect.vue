@@ -12,7 +12,7 @@
               {{ $t('Nauja institucija') }}
             </h3>
             <p class="text-xs text-muted-foreground">
-              {{ $t('Užpildykite informaciją apie naują instituciją') }}
+              {{ $t('Užpildyk informaciją apie naują instituciją') }}
             </p>
           </div>
         </div>
@@ -483,7 +483,7 @@ const createInstitution = () => {
       }
     },
     onError: () => {
-      toast.error($t('Patikrinkite formos laukus'));
+      toast.error($t('Patikrink formos laukus'));
     },
     onNetworkError: () => {
       toast.error($t('Nepavyko sukurti institucijos'));

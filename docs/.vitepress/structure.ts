@@ -47,6 +47,7 @@ export const guide: GuideChapter[] = [
     pages: [
       { text: 'Užduotys', link: '/mano/uzduotys' },
       { text: 'Pranešimai', link: '/mano/pranesimai' },
+      { text: 'Paskyra ir prieiga', link: '/mano/paskyra-ir-prieiga' },
     ],
   },
   {

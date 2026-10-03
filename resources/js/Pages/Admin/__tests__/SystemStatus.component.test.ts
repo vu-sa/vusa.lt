@@ -32,6 +32,16 @@ const props = {
 };
 
 describe('SystemStatus', () => {
+  it('refreshes the status snapshot, device metrics and timestamp on request', async () => {
+    vi.mocked(router.reload).mockClear();
+    const wrapper = mount(SystemStatus, { props });
+
+    await wrapper.findAll('button').find(button => button.text().includes('Atnaujinti'))!.trigger('click');
+
+    expect(router.reload).toHaveBeenCalledOnce();
+    expect(router.reload).toHaveBeenCalledWith({ only: ['status', 'deviceMetrics', 'lastUpdated'] });
+  });
+
   it('renders every check from the eagerly loaded status prop', () => {
     const wrapper = mount(SystemStatus, { props });
 

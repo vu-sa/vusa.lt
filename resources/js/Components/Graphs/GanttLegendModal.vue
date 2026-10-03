@@ -9,7 +9,7 @@
           {{ $t('Laiko juostos legenda') }}
         </DialogTitle>
         <DialogDescription>
-          {{ $t('Susipažinkite su laiko juostos simboliais ir jų reikšmėmis') }}
+          {{ $t('Susipažink su laiko juostos simboliais ir jų reikšmėmis') }}
         </DialogDescription>
       </DialogHeader>
 
@@ -114,7 +114,7 @@
                 <div>
                   <span class="text-sm font-medium">{{ $t('Susijusi institucija') }}</span>
                   <p class="text-xs text-muted-foreground">
-                    {{ $t('Institucija, kurios veikla susijusi su jūsų institucijomis') }}
+                    {{ $t('Institucija, kurios veikla susijusi su tavo institucijomis') }}
                   </p>
                 </div>
               </div>
@@ -185,7 +185,7 @@
                 <div>
                   <span class="text-sm font-medium">{{ $t('Centro linija') }}</span>
                   <p class="text-xs text-muted-foreground">
-                    {{ $t('Rodo, kokią datą matote ekrano centre') }}
+                    {{ $t('Rodo, kokią datą matai ekrano centre') }}
                   </p>
                 </div>
               </div>
@@ -278,10 +278,10 @@
             {{ $t('Patarimai') }}
           </h4>
           <ul class="text-xs text-muted-foreground space-y-1 list-disc pl-4 columns-1 sm:columns-2 gap-6">
-            <li>{{ $t('Paspauskite ant susitikimo taško, kad peržiūrėtumėte susitikimo detales') }}</li>
-            <li>{{ $t('Paspauskite ant tuščios vietos eilutėje, kad sukurtumėte naują susitikimą') }}</li>
-            <li>{{ $t('Naudokite mastelio slankiklį, kad priartintumėte ar atitolintumėte laiko juostą') }}</li>
-            <li>{{ $t('Slinkite horizontaliai, kad naršytumėte per laikotarpius') }}</li>
+            <li>{{ $t('Paspausk ant susitikimo taško, kad peržiūrėtum susitikimo detales') }}</li>
+            <li>{{ $t('Paspausk ant tuščios vietos eilutėje, kad sukurtum naują susitikimą') }}</li>
+            <li>{{ $t('Naudok mastelio slankiklį, kad priartintum ar atitolintum laiko juostą') }}</li>
+            <li>{{ $t('Slink horizontaliai, kad naršytum per laikotarpius') }}</li>
           </ul>
         </div>
       </div>

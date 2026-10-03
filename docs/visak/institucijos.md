@@ -134,6 +134,12 @@ arba institucijos meniu **⋯ → Pridėti pažymą**.
 
 ### Sekretoriai {#sekretoriai}
 
+<ChangelogNote version="v3.0" date="2026-10-02" title="Sekretorius ir koordinatorius atlieka skirtingus darbus">
+
+Sekretorių skirk kadencijai, jei jis fiksuos jos posėdžius: tų posėdžių užduotys ir laiškai keliaus jam. Koordinavimo atsakomybė pati savaime žmogaus sekretoriumi nepaskiria.
+
+</ChangelogNote>
+
 **Sekretorius** paskiriamas konkrečios kadencijos posėdžiams tvarkyti (skirtukas **Kadencijos ir
 sekretoriai**). Sekretoriumi gali būti bet kuris narys, nebūtinai institucijos narys.
 

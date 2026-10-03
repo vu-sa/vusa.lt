@@ -64,7 +64,10 @@ describe('support request dashboard', () => {
   it('starts on all and renders the request rows', () => {
     const wrapper = createWrapper();
 
-    expect(wrapper.findComponent(CollectionPageStub).props('quickFilters')[0]).toEqual({ id: 'all', label: 'Visi · 4', active: true });
+    expect(wrapper.findComponent(CollectionPageStub).props('quickFilters')).toEqual([
+      { id: 'all', label: 'Visi · 4', active: true },
+      { id: 'mine', label: 'Mano pranešimai · 1', active: false },
+    ]);
     expect(wrapper.text()).toContain('Prisijungimo klaida');
     expect(wrapper.text()).toContain('Justinas Kavoliūnas');
   });

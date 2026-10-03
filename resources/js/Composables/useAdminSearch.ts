@@ -781,14 +781,14 @@ export const useAdminSearch = () => {
         if (response.status === 401) {
           const errorText = await response.text();
           console.error('Search authentication error after retry:', errorText);
-          throw new Error('Paieškos autentifikacija nepavyko. Pabandykite perkrauti puslapį.');
+          throw new Error('Paieškos autentifikacija nepavyko. Pabandyk perkrauti puslapį.');
         }
 
         // Handle 403 - forbidden (scoped key doesn't allow this operation)
         if (response.status === 403) {
           const errorText = await response.text();
           console.error('Search forbidden:', errorText);
-          throw new Error('Neturite prieigos prie paieškos. Pabandykite perkrauti puslapį.');
+          throw new Error('Neturi prieigos prie paieškos. Pabandyk perkrauti puslapį.');
         }
 
         // Handle 429 - rate limited

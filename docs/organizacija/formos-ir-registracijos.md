@@ -72,10 +72,10 @@ Dvi formos sistemoje atlieka ypatingą vaidmenį ir yra susietos su automatiniai
 
 1. **Narių registracija** (`member_registration_form_id`):
    - Bendra anketa norintiems tapti VU SA nariais.
-   - Priklauso Centriniam biurui, tačiau pretendentas anketoje pasirenka padalinį arba iniciatyvą.
+   - Priklauso Centriniam biurui, tačiau studentas anketoje pasirenka padalinį arba iniciatyvą.
    - Atsakymus mato atitinkamo padalinio pirmininkas (nustatytas nustatymuose kaip registracijų gavėjas) ir padalinio Komunikacijos koordinatorius.
 2. **Studentų atstovų registracija** (`student_rep_registration_form_id`):
-   - Bendra anketa norintiems tapti studentų atstovais VU organuose. Formą ir institucijų tipus, į kuriuos galima kandidatuoti, parink skiltyje [Formų nustatymai](/sistema/nustatymai#formos).
+   - Bendra anketa norintiems tapti studentų atstovais VU organuose. Formą ir institucijų tipus, į kuriuos galima registruotis, parink skiltyje [Formų nustatymai](/sistema/nustatymai#formos).
    - Registracijas mato asmenys, turintys [studentų atstovų koordinavimo atsakomybę](/pagrindai/atsakomybes) tose institucijose arba padalinyje.
 
 Jei naudotojas turi teisę peržiūrėti šias anketas, jos automatiškai atsiranda kairiajame naršymo meniu
@@ -122,9 +122,11 @@ Atidarius formos redagavimą per **Redaguoti formą** (`/mano/forms/{id}/edit`):
 
 Paspaudus formos pavadinimo atveriamas formos puslapis (`/mano/forms/{id}`):
 
+<DocScreenshot name="form-record" alt="Formos puslapis: registracijų skaičius, paskutinė registracija, padalinys, nuoroda į viešą formą ir atsakymų lentelė" caption="Kiekvienas formos klausimas tampa lentelės stulpeliu." />
+
 - Skirtuke **Registracijos** rodoma atsakymų lentelė. Stulpeliai dinamiškai sugeneruojami pagal formos klausimus.
 - Pasirinkimo laukams (`enum`) viršuje rodomi greitieji filtrai, leidžiantys filtruoti atsakymus pagal pasirinktas reikšmes.
-- Paspaudus bet kurios registracijos eilutės atsidaro **Registracijos peržiūros langas**, kuriame tvarkingai pateikiami visi pretendento atsakymai ir pateikimo laikas.
+- Paspaudus bet kurios registracijos eilutės atsidaro **Registracijos peržiūros langas**, kuriame tvarkingai pateikiami visi studento atsakymai ir pateikimo laikas.
 - Skirtuke **Laukai** galima peržiūrėti visų klausimų struktūrą ir nustatymus.
 - Skirtuke **Veikla** galima rašyti vidinius komentarus tarp administratorių.
 
@@ -160,7 +162,7 @@ Centrinio biuro koordinatoriai lentelėje – **Centrinio biuro komunikacijos ko
 
 ::: tip Prieiga be formų administravimo teisės
 Padalinio pirmininkas ir studentų atstovų koordinatorius gali neturėti bendros formų administravimo
-rolės (`forms.*`), tačiau jie vis tiek mato savo sričių registracijas per specialiąsias teises:
+rolės, tačiau jie vis tiek mato savo sričių registracijas per specialiąsias teises:
 pirmininkas – kaip padalinio anketų gavėjas, o koordinatorius – per pareigybės koordinavimo atsakomybę.
 :::
 
@@ -168,14 +170,17 @@ pirmininkas – kaip padalinio anketų gavėjas, o koordinatorius – per pareig
 
 | Kada | Kas nutinka | Kas gauna |
 |---|---|---|
-| Pretendentas pateikia **narių registraciją** | Išsiunčiamas patvirtinimo laiškas pretendentui (`ConfirmMemberRegistration`) | Pretendentas |
-| Pretendentas pateikia **narių registraciją** | Padalinio pirmininkas gauna sistemos pranešimą ir el. laišką (`MemberRegistrationNotification`) | Padalinio pirmininkas |
-| Pretendentas pateikia **studentų atstovų registraciją** | Išsiunčiamas patvirtinimo laiškas pretendentui (`ConfirmStudentRepRegistration`) | Pretendentas |
-| Pretendentas pateikia **studentų atstovų registraciją** | Institucijos koordinatoriai gauna pranešimą apie naują kandidatą (`StudentRepRegistrationNotification`) | Atstovų koordinatoriai |
+| Studentas pateikia **narių registraciją** | Išsiunčiamas patvirtinimo laiškas registracijos pateikėjui (`ConfirmMemberRegistration`) | Registracijos pateikėjas |
+| Studentas pateikia **narių registraciją** | Padalinio pirmininkas gauna sistemos pranešimą ir el. laišką (`MemberRegistrationNotification`) | Padalinio pirmininkas |
+| Studentas pateikia **studentų atstovų registraciją** | Išsiunčiamas patvirtinimo laiškas registracijos pateikėjui (`ConfirmStudentRepRegistration`) | Registracijos pateikėjas |
+| Studentas pateikia **studentų atstovų registraciją** | Institucijos koordinatoriai gauna pranešimą apie naują registraciją (`StudentRepRegistrationNotification`) | Atstovų koordinatoriai |
 | Pateikiama įprasta renginio ar apklausos forma | Registracija išsaugoma duomenų bazėje; automatiniai laiškai nesiunčiami | Niekas |
 
-Jei padalinio pirmininko pareigybė šiuo metu neužimta, nario registracijos pranešimas siunčiamas
-tiesiai į institucinį pareigybės el. paštą (`@vusa.lt`). <!-- TODO: o įprastu atveju, kur siunčiama? patikrinti -->
+Nario registracijos laiškas siunčiamas gavėjo pareigybės instituciniu el. paštu (`@vusa.lt`),
+net jei pareigybė neužimta. Jei yra dabartinis pareigybės narys, jis papildomai gauna pranešimą
+platformoje. Gavėjo pareigybę parenka registracijų nustatymuose nurodyta rolė.
+Jei tokios pareigybės padalinio pagrindinėje institucijoje nėra, nesiunčiamas ir studento
+patvirtinimo laiškas – kreipkis į administratorių patikrinti gavėjo nustatymo.
 
 ## Techninė informacija {#technine-informacija}
 
@@ -189,8 +194,8 @@ tiesiai į institucinį pareigybės el. paštą (`@vusa.lt`). <!-- TODO: o įpra
   - Narių registraciją gali atverti naudotojai, turintys nustatymuose sukonfigūruotą gavėjo rolę (`userIsMemberRegistrationRecipient`), arba turintys `forms.read.padalinys`.
   - Studentų atstovų registraciją gali atverti naudotojai, turintys `Responsibility::StudentRepCoordination` atsakomybę, arba turintys `forms.read.padalinys`.
 - Registracijų matomumą riboja `FormRegistrationVisibilityService`:
-  - Narių registracijos filtruojamos pagal pretendento pasirinkto padalinio lauką (`options_model === Tenant::class`).
-  - Studentų atstovų registracijos filtruojamos pagal pretendento pasirinktos institucijos lauką (`options_model === Institution::class`), atsižvelgiant į koordinatoriaus administruojamą padalinį arba specifinius institucijų tipus.
+  - Narių registracijos filtruojamos pagal studento pasirinkto padalinio lauką (`options_model === Tenant::class`).
+  - Studentų atstovų registracijos filtruojamos pagal studento pasirinktos institucijos lauką (`options_model === Institution::class`), atsižvelgiant į koordinatoriaus administruojamą padalinį arba specifinius institucijų tipus.
 - Eksportavimas (`FormController::export`) reikalauja `update` teisės formoje.
 
 ### Kaip tai įgyvendinta

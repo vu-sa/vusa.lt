@@ -181,17 +181,17 @@
                 </p>
                 <p class="mt-1 text-xs text-foreground leading-relaxed">
                   <template v-if="wizard.state.currentStep === 1">
-                    {{ $t('Pasirinkite instituciją, kurioje norite atnaujinti pareigybes. Galite ieškoti pagal pavadinimą.') }}
+                    {{ $t('Pasirink instituciją, kurioje nori atnaujinti pareigybes. Gali ieškoti pagal pavadinimą.') }}
                   </template>
                   <template v-else-if="wizard.state.currentStep === 2">
-                    {{ $t('Pasirinkite pareigybę. Skaičius prie pareigybės rodo kiek vietų užimta.') }}
+                    {{ $t('Pasirink pareigybę. Skaičius prie pareigybės rodo kiek vietų užimta.') }}
                   </template>
                   <template v-else-if="wizard.state.currentStep === 3">
-                    {{ $t('Galite pridėti kelis narius vienu metu. Siūloma pabaigos data: ') }}
+                    {{ $t('Gali pridėti kelis narius vienu metu. Siūloma pabaigos data: ') }}
                     <strong>{{ formatDateForDisplay(getSuggestedEndDate()) }}</strong>
                   </template>
                   <template v-else>
-                    {{ $t('Peržiūrėkite visus pakeitimus prieš patvirtindami.') }}
+                    {{ $t('Peržiūrėk visus pakeitimus prieš patvirtindami.') }}
                   </template>
                 </p>
               </div>
@@ -253,7 +253,7 @@
                 v-if="wizard.state.currentStep === 3 && !wizard.hasChanges"
                 class="text-xs text-muted-foreground"
               >
-                {{ $t('Pridėkite bent vieną pakeitimą') }}
+                {{ $t('Pridėk bent vieną pakeitimą') }}
               </span>
 
               <Button
@@ -397,7 +397,7 @@ const steps = computed(() => [
   {
     id: 1,
     title: $t('Institucija'),
-    description: $t('Pasirinkite instituciją, kuriai norite atnaujinti pareigybes'),
+    description: $t('Pasirink instituciją, kuriai nori atnaujinti pareigybes'),
     icon: Building2,
     completed: wizard.state.maxCompletedStep >= 1,
     active: wizard.state.currentStep === 1,
@@ -406,7 +406,7 @@ const steps = computed(() => [
   {
     id: 2,
     title: $t('Pareigybė'),
-    description: $t('Pasirinkite pareigybę, kurios narius norite keisti'),
+    description: $t('Pasirink pareigybę, kurios narius nori keisti'),
     icon: DutyIcon,
     completed: wizard.state.maxCompletedStep >= 2,
     active: wizard.state.currentStep === 2,
@@ -415,7 +415,7 @@ const steps = computed(() => [
   {
     id: 3,
     title: $t('Nariai'),
-    description: $t('Pridėkite arba pašalinkite narius, nustatykite datas'),
+    description: $t('Pridėk arba pašalink narius, nustatyk datas'),
     icon: Users,
     completed: wizard.state.maxCompletedStep >= 3 && wizard.hasChanges,
     active: wizard.state.currentStep === 3,
@@ -426,7 +426,7 @@ const steps = computed(() => [
   {
     id: 4,
     title: $t('Peržiūra'),
-    description: $t('Peržiūrėkite ir patvirtinkite pakeitimus'),
+    description: $t('Peržiūrėk ir patvirtink pakeitimus'),
     icon: ClipboardCheck,
     completed: false,
     active: wizard.state.currentStep === 4,

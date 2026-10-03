@@ -142,9 +142,9 @@ pažymėjęs jį, šoniniame skydelyje rasi mygtuką šaltinio įrašui pažymė
 
 ### Išdėstymas ir visas ekranas {#visas-ekranas}
 
-<ChangelogNote version="v2.24" date="2026-09-27" title="Naujas išdėstymas ir visas ekranas">
+<ChangelogNote version="v3.0" date="2026-10-02" title="Naujas išdėstymas ir visas ekranas">
 
-Iki v2.24 pasirinkimas, pasiūlymai ir išsaugojimas buvo po grafiku ir užėmė nemažą ekrano dalį.
+Iki v3.0 pasirinkimas, pasiūlymai ir išsaugojimas buvo po grafiku ir užėmė nemažą ekrano dalį.
 Dabar išsaugojimas yra įrankių juostoje, o pasirinkimas ir pasiūlymai – šoniniame skydelyje.
 
 </ChangelogNote>

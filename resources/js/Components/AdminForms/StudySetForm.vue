@@ -44,7 +44,7 @@
 
     <FormSection
       :title="$t('Dalykai')"
-      :description="$t('Pridėkite dalykus, kurie sudaro šį individualų studijų komplektą.')"
+      :description="$t('Pridėk dalykus, kurie sudaro šį individualų studijų komplektą.')"
       :badge="String(form.courses.length)"
     >
       <ol v-if="form.courses.length" class="divide-y divide-border border-y border-border">
@@ -76,7 +76,7 @@
             <FormFieldWrapper :id="`course-semester-${index}`" :label="$t('Semestras')">
               <Select v-model="course.semester">
                 <SelectTrigger :id="`course-semester-${index}`">
-                  <SelectValue :placeholder="$t('Pasirinkite')" />
+                  <SelectValue :placeholder="$t('Pasirink')" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="autumn">
@@ -114,7 +114,7 @@
 
     <FormSection
       :title="$t('Dėstytojų atsiliepimai')"
-      :description="$t('Pridėkite dėstytojų atsiliepimus apie kursus.')"
+      :description="$t('Pridėk dėstytojų atsiliepimus apie kursus.')"
       :badge="String(form.reviews.length)"
     >
       <ol v-if="form.reviews.length" class="divide-y divide-border border-y border-border">
@@ -136,7 +136,7 @@
           <FormFieldWrapper :id="`review-course-${index}`" :label="$t('Dalykas')" required>
             <Select v-model="review.study_set_course_id">
               <SelectTrigger :id="`review-course-${index}`">
-                <SelectValue :placeholder="$t('Pasirinkite dalyką')" />
+                <SelectValue :placeholder="$t('Pasirink dalyką')" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="course in savedCourses" :key="course.id" :value="course.id">
@@ -170,7 +170,7 @@
           {{ $t("Pridėti atsiliepimą") }}
         </Button>
         <p v-if="savedCourses.length === 0" class="text-xs text-muted-foreground">
-          {{ $t("Pirmiausia pridėkite ir išsaugokite bent vieną dalyką.") }}
+          {{ $t("Pirmiausia pridėk ir išsaugok bent vieną dalyką.") }}
         </p>
       </div>
     </FormSection>
@@ -186,7 +186,7 @@
         <FormFieldWrapper id="tenant_id" :label="$t('Padalinys')" required :error="form.errors.tenant_id">
           <Select v-model="tenantIdString">
             <SelectTrigger id="tenant_id">
-              <SelectValue :placeholder="$t('Pasirinkite padalinį')" />
+              <SelectValue :placeholder="$t('Pasirink padalinį')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="tenant in tenants" :key="tenant.id" :value="String(tenant.id)">

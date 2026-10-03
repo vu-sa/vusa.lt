@@ -8,7 +8,7 @@ hero:
   actions:
     - theme: brand
       text: Updates
-      link: /en/changelog/v2
+      link: /en/changelog/v3
     - theme: alt
       text: Guide (Lithuanian)
       link: /ivadas

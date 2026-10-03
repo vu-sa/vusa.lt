@@ -1,6 +1,6 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-02
 title: Įvadas
 coverage: ignore
 ---
@@ -24,6 +24,25 @@ Gidas sudarytas taip pat, kaip platforma: po bendrųjų [Pagrindų](/pagrindai/p
 skyrius, o kiekvienai sričiai priklausančiai skilčiai – atskiras puslapis. Skaityk tą skyrių, už
 kurį esi atsakingas (-a).
 
+## Kas pasikeitė nuo rugsėjo {#rugsejo-pokyciai}
+
+Gidas aprašo dabartinį platformos **v3.0 variantą**, parengtą po rugsėjo ir spalio pradžios
+pakeitimų. Jau įtraukti v2 atnaujinimai lieka
+[v2 istorijoje](/changelog/v2); o naujo paleidimo suvestinė – [v3.0](/changelog/v3#v3-0).
+
+Pirmiausia patikrink šias pasikeitusias platformos sritis:
+
+- **Rasti veiksmą**: [darbo sritys, + Sukurti ir paieška](/pagrindai/platforma) pakeičia seną administravimo meniu.
+- **Suprasti savo prieigą**: [Paskyra ir prieiga](/mano/paskyra-ir-prieiga) parodo tavo pareigas, roles ir jų istoriją; [datos](/pagrindai/padaliniai-ir-pareigybes#datos) paaiškina, kodėl prieigą gali gauti dar prieš pareigų pradžią.
+- **Perduoti pareigas ir koordinuoti**: [vedlys](/organizacija/pareigybiu-atnaujinimas) tvarko vieną pareigybę, o [atsakomybės](/pagrindai/atsakomybes) pakeičia koordinatorių rolės parinktį.
+- **Gauti pranešimus**: [kanalų parinktys](/pagrindai/pranesimai#kanalai) leidžia pasirinkti laiško pristatymą kiekvienai rūšiai; nutildymas nepaslepia darbo platformoje.
+- **Rezervuoti daiktus**: [krepšelis](/rezervacijos/rezervacijos) išlaiko pasirinkimą, bet jo nepateikus daiktai neužimami; rezervacijos trynimas yra negrįžtamas.
+- **Užbaigti posėdį ir sekti problemą**: [užpildymo taisyklė](/visak/darbotvarkes-klausimai#uzpildyta) vienoda skirtinguose ekranuose, o [problemos](/visak/problemos#posedziai) siejamos su konkrečiu svarstymu.
+- **Redaguoti turinį**: [atkūrimo kopijos](/svetaine/puslapiai#atkurimas) nepaskelbia pakeitimų, o [abi kalbos](/svetaine/puslapiai#kalbu-versijos) išsaugomos atskirai.
+
+Prie svarbiausių taisyklių rasi pažymėtus atnaujinimus su nuoroda į jų suvestinę.
+Datos ties v3.0 rodo, kada aprašymas patikrintas, o ne kada naujoji versija pradėjo veikti vusa.lt.
+
 ## Kaip skaityti puslapius
 
 Skilties žinyno puslapyje rasi šiuos skyrius. Sąvokų ir darbo eigos puslapiuose paliekami tik reikalingi skyriai:
@@ -42,10 +61,12 @@ Skilties žinyno puslapyje rasi šiuos skyrius. Sąvokų ir darbo eigos puslapiu
 privalomos organizacijos taisyklės ar sistemos apribojimai. **Susitarimai** pateikiami tik ten,
 kur aprašomas konkretus organizacinis susitarimas, pavyzdžiui, rezervacijų ar posėdžių tvarka.
 
-Puslapio pradžioje rodoma jo būsena: **Peržiūrėta** – tekstas patikrintas pagal dabartinę
-elgseną; **Dalinis** – aprašyta tik dalis temos; **Rašoma** – turinys dar neparuoštas.
-**Turinys peržiūrėtas** nurodo teksto patikrinimo datą, o ne paskutinį failo pakeitimą.
-Darbo srities apžvalgos data netaikoma visiems jos puslapiams.
+Tik nebaigti puslapiai pažymėti būsena: **Dalinis** – aprašyta tik dalis temos;
+**Rašoma** – turinys dar neparuoštas. Šias žymas matai meniu ir puslapio pradžioje.
+Puslapio pabaigoje **Turinys peržiūrėtas** nurodo, kada tekstas patikrintas pagal sistemos
+veikimą. Ši data rodoma ir tada, kai puslapis neturi testų nuorodų. **Failas pakeistas**
+nurodo paskutinio į versijų istoriją įrašyto pakeitimo datą. Ji nėra turinio patikrinimo data.
+Abi datos taikomos tik tam puslapiui, o ne visai darbo sričiai.
 
 Pabaigoje gali išskleisti **Testų nuorodas**: serverio testai tikrina taisykles ir teises,
 sąsajos bei naršyklės testai – atitinkamą ekrano elgseną. Testai neperskaito gido ir neįrodo

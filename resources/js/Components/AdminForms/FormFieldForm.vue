@@ -12,7 +12,7 @@
     <FormFieldWrapper id="type" :label="$t('Tipas')" required>
       <Select v-model="model.type" :disabled="hasRegistrations">
         <SelectTrigger>
-          <SelectValue :placeholder="$t('Pasirinkite tipą')" />
+          <SelectValue :placeholder="$t('Pasirink tipą')" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem v-for="opt in options" :key="opt.value" :value="opt.value">
@@ -25,7 +25,7 @@
     <FormFieldWrapper v-if="subtypeOptions.length > 0" id="subtype" :label="$t('Subtipas')">
       <Select v-model="model.subtype" :disabled="hasRegistrations">
         <SelectTrigger>
-          <SelectValue :placeholder="$t('Pasirinkite subtipą')" />
+          <SelectValue :placeholder="$t('Pasirink subtipą')" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem v-for="opt in subtypeOptions" :key="opt.value" :value="opt.value">
@@ -79,7 +79,7 @@
             <FormFieldWrapper id="option_source" :label="$t('Duomenų šaltinis')">
               <Select v-model="model.option_source" :disabled="!model.use_model_options">
                 <SelectTrigger>
-                  <SelectValue :placeholder="$t('Pasirinkite modelį')" />
+                  <SelectValue :placeholder="$t('Pasirink modelį')" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem v-for="opt in fieldModels" :key="opt.value" :value="opt.value">

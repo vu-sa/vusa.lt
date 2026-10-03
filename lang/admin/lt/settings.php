@@ -3,7 +3,7 @@
 return [
     // Settings index page
     'title' => 'Nustatymai',
-    'description' => 'Valdykite sistemos nustatymus ir konfigūracijas.',
+    'description' => 'Valdyk sistemos nustatymus ir konfigūracijas.',
 
     // Settings categories
     'categories' => [
@@ -15,38 +15,38 @@ return [
     'pages' => [
         'forms' => [
             'title' => 'Formų nustatymai',
-            'description' => 'Konfigūruokite formų nustatymus, pvz., narystės registraciją.',
+            'description' => 'Konfigūruok formų nustatymus, pvz., narystės registraciją.',
         ],
         'meetings' => [
             'title' => 'Posėdžių rodymo nustatymai',
-            'description' => 'Konfigūruokite, kurių institucijų tipų posėdžiai rodomi viešai.',
+            'description' => 'Konfigūruok, kurių institucijų tipų posėdžiai rodomi viešai.',
         ],
         'documents' => [
             'title' => 'Dokumentų nustatymai',
-            'description' => 'Konfigūruokite, kurie dokumentų tipai rodomi pirmiausia kaip svarbiausi.',
+            'description' => 'Konfigūruok, kurie dokumentų tipai rodomi pirmiausia kaip svarbiausi.',
         ],
         'atstovavimas' => [
             'title' => 'Atstovavimo nustatymai',
-            'description' => 'Konfigūruokite, kurios rolės suteikia prieigą prie padalinio institucijų atstovavimo skydelyje.',
+            'description' => 'Konfigūruok, kurios rolės suteikia prieigą prie padalinio institucijų atstovavimo skydelyje.',
         ],
         'cadences' => [
             'title' => 'Kadencijos',
-            'description' => 'Nurodykite kadencijų pradžios ir pabaigos datas bei institucijų išimtis.',
+            'description' => 'Nurodyk kadencijų pradžios ir pabaigos datas bei institucijų išimtis.',
         ],
         'site' => [
             'title' => 'Svetainės nustatymai',
-            'description' => 'Nurodykite svetainės puslapius, į kuriuos nukreipia sistema, pvz., privatumo politiką.',
+            'description' => 'Nurodyk svetainės puslapius, į kuriuos nukreipia sistema, pvz., privatumo politiką.',
         ],
         'authorization' => [
             'title' => 'Nustatymų autorizacija',
-            'description' => 'Konfigūruokite, kuri rolė gali valdyti sistemos nustatymus.',
+            'description' => 'Konfigūruok, kuri rolė gali valdyti sistemos nustatymus.',
         ],
     ],
 
     // Form labels and descriptions
     'authorization_form' => [
         'role_label' => 'Nustatymų valdymo rolė',
-        'role_description' => 'Pasirinkite, kuri rolė gali valdyti nustatymus. Jei nepasirinkta, tik Super Administratoriai gali valdyti nustatymus.',
+        'role_description' => 'Pasirink, kuri rolė gali valdyti nustatymus. Jei nepasirinkta, tik Super Administratoriai gali valdyti nustatymus.',
         'role_placeholder' => 'Tik Super Administratoriai (numatytasis)',
         'super_admin_note' => 'Pastaba: Super Administratoriai visada gali valdyti nustatymus, nepaisant šio nustatymo.',
     ],
@@ -63,8 +63,8 @@ return [
         'student_rep_description' => 'Pasirinkti, kuri forma bus naudojama studentų atstovų registracijai. Kai institucija neturi aktyvių atstovų, bus rodomas mygtukas užsiregistruoti.',
         'student_rep_form_label' => 'Studentų atstovų forma',
         'student_rep_types_label' => 'Institucijų tipai',
-        'student_rep_types_description' => 'Pasirinkite, kuriuose institucijų tipuose bus rodomas registracijos mygtukas, kai nėra aktyvių atstovų.',
-        'student_rep_types_placeholder' => 'Pasirinkite institucijų tipus',
+        'student_rep_types_description' => 'Pasirink, kuriuose institucijų tipuose bus rodomas registracijos mygtukas, kai nėra aktyvių atstovų.',
+        'student_rep_types_placeholder' => 'Pasirink institucijų tipus',
         'no_types_found' => 'Tipų nerasta',
         'no_form_selected' => 'Nepasirinkta (išjungta)',
     ],
@@ -72,12 +72,12 @@ return [
     // Meeting settings page
     'meeting_settings' => [
         'types_title' => 'Institucijų tipai su viešais posėdžiais',
-        'types_description' => 'Pasirinkite, kurių institucijų tipų posėdžiai bus rodomi viešai kontaktų puslapiuose. Pavyzdžiui: studijų kolegija, KAP taryba, studijų programų komitetas.',
+        'types_description' => 'Pasirink, kurių institucijų tipų posėdžiai bus rodomi viešai kontaktų puslapiuose. Pavyzdžiui: studijų kolegija, KAP taryba, studijų programų komitetas.',
         'types_label' => 'Institucijų tipai',
         'types_placeholder' => 'Pasirinkti institucijų tipus',
         'no_types_found' => 'Institucijų tipų nerasta.',
         'excluded_types_title' => 'Institucijų tipai be posėdžių',
-        'excluded_types_description' => 'Pasirinkite institucijų tipus, kurie neturėtų būti rodomi atstovavimo skydelyje. Šių tipų institucijos (pvz., padalinys, PKP) neturi formalių posėdžių ir neturėtų būti stebimos.',
+        'excluded_types_description' => 'Pasirink institucijų tipus, kurie neturėtų būti rodomi atstovavimo skydelyje. Šių tipų institucijos (pvz., padalinys, PKP) neturi formalių posėdžių ir neturėtų būti stebimos.',
         'excluded_types_label' => 'Išskirti institucijų tipai',
         'excluded_types_placeholder' => 'Pasirinkti institucijų tipus išskyrimui',
     ],
@@ -85,7 +85,7 @@ return [
     // Atstovavimas settings page
     'atstovavimas_settings' => [
         'student_rep_type_title' => 'Studentų atstovų organų šakninis tipas',
-        'student_rep_type_description' => 'Pasirinkite šakninį institucijos tipą, kuris (ir visi jo potipiai) laikomas studentų atstovų organu. Šio tipo institucijoms viešame kontaktų puslapyje bus rodoma studentų atstovų kortelė vietoje standartinės institucijos kortelės.',
+        'student_rep_type_description' => 'Pasirink šakninį institucijos tipą, kuris (ir visi jo potipiai) laikomas studentų atstovų organu. Šio tipo institucijoms viešame kontaktų puslapyje bus rodoma studentų atstovų kortelė vietoje standartinės institucijos kortelės.',
         'student_rep_type_label' => 'Šakninis tipas',
         'student_rep_type_placeholder' => 'Pagal nutylėjimą: Studentų atstovų organas',
         'student_rep_type_default' => 'Pagal nutylėjimą (studentu-atstovu-organas)',
@@ -95,7 +95,7 @@ return [
     // Document settings page
     'document_settings' => [
         'important_types_title' => 'Svarbiausi dokumentų tipai',
-        'important_types_description' => 'Pasirinkite, kurie dokumentų tipai bus rodomi pirmi filtre kaip "Svarbiausi".',
+        'important_types_description' => 'Pasirink, kurie dokumentų tipai bus rodomi pirmi filtre kaip "Svarbiausi".',
         'important_types_label' => 'Dokumentų tipai',
         'important_types_placeholder' => 'Pasirinkti dokumentų tipus',
         'no_types_found' => 'Dokumentų tipų nerasta.',
@@ -105,7 +105,7 @@ return [
     'messages' => [
         'updated' => 'Nustatymai atnaujinti sėkmingai.',
         'authorization_updated' => 'Nustatymų autorizacija atnaujinta sėkmingai.',
-        'unauthorized' => 'Jūs neturite teisių valdyti nustatymus.',
+        'unauthorized' => 'Tu neturi teisių valdyti nustatymus.',
     ],
 
     // Breadcrumbs
@@ -120,7 +120,7 @@ return [
 
     'site_settings' => [
         'privacy_page_title' => 'Privatumo politikos puslapis',
-        'privacy_page_description' => 'Puslapiai, į kuriuos veda slapukų juostos nuoroda. Kiekvienai kalbai pasirinkite atskirą puslapį; jei viena kalba nepasirinkta, jos lankytojams bus rodoma kitos kalbos puslapio nuoroda.',
+        'privacy_page_description' => 'Puslapiai, į kuriuos veda slapukų juostos nuoroda. Kiekvienai kalbai pasirink atskirą puslapį; jei viena kalba nepasirinkta, jos lankytojams bus rodoma kitos kalbos puslapio nuoroda.',
         'privacy_page_label' => 'Privatumo politikos puslapis',
         'privacy_page_placeholder' => 'Nepasirinkta',
         'privacy_page_search_placeholder' => 'Ieškoti puslapio pagal pavadinimą...',

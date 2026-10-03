@@ -48,7 +48,7 @@
           </Button>
         </div>
         <p class="text-xs text-muted-foreground">
-          {{ $t('Šis slaptažodis bus rodomas tik vieną kartą! Įsitikinkite, kad jį išsaugojote saugiai.') }}
+          {{ $t('Šis slaptažodis bus rodomas tik vieną kartą! Įsitikink, kad jį išsaugojai saugiai.') }}
         </p>
       </div>
     </template>
@@ -167,14 +167,14 @@
 
   <ConfirmDialog
     v-model:open="generateOpen"
-    :title="$t('Ar tikrai norite sugeneruoti naują slaptažodį šiam naudotojui?')"
+    :title="$t('Ar tikrai nori sugeneruoti naują slaptažodį šiam naudotojui?')"
     :description="user.has_password ? $t('Dėmesio: Tai pakeis esamą naudotojo slaptažodį!') : undefined"
     :confirm-label="$t('Generuoti')"
     @confirm="generatePassword"
   />
   <ConfirmDialog
     v-model:open="deletePasswordOpen"
-    :title="$t('Ar tikrai norite ištrinti šio naudotojo slaptažodį?')"
+    :title="$t('Ar tikrai nori ištrinti šio naudotojo slaptažodį?')"
     :description="$t('Dėmesio: Naudotojas nebegalės prisijungti su slaptažodžiu!')"
     :confirm-label="$t('Ištrinti')"
     destructive

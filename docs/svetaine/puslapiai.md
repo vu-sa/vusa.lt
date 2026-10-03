@@ -40,6 +40,12 @@ temos puslapį, vienoje vietoje pateikia su ja susietą viešą turinį.
 
 ## Turinio redagavimas {#turinio-redagavimas}
 
+<ChangelogNote version="v2.0" date="2026-09-05" title="Turinį redaguok puslapio vaizde">
+
+Vizualus redaktorius leidžia keisti turinio blokus jų peržiūroje. Viso ekrano režimas skirtas turiniui; pavadinimą, viršelį ir kitus įrašo duomenis tvarkyk formoje.
+
+</ChangelogNote>
+
 Skaitytojams redaktorius neįkeliamas. Turėdamas puslapio redagavimo teisę gali atverti turinio redaktorių ir keisti tekstą tiesiogiai turinio bloke. Viso ekrano režime redaguoji tik turinio blokus; pavadinimas, viršelis ir puslapio nustatymai lieka formoje. **Turinio struktūra** leidžia pereiti prie bloko, skyriaus ar antraštės. **Išsaugoti** išsaugo visą formą, taip pat pakeistus aprašymą, viršelį ir svarbiausius punktus.
 
 Puslapio formoje atverk **Redaguoti turinį**. Blokų pasirinkimo lange pasirink kategoriją arba ieškok pagal pavadinimą. Kompiuteryje bloką įterpia jo eilutė; telefone pirmiausia pamatysi peržiūrą, tada spausk **Pridėti šį bloką**. Peržiūros variantus gali pakeisti prieš įterpdamas.
@@ -50,7 +56,11 @@ Tvarkaraščio eilutes gali įrašyti ranka arba importuoti iš posėdžio. Impo
 
 ## Atkūrimo kopijos {#atkurimas}
 
-<ChangelogNote version="v2.34" date="2026-10-01" title="Privatūs pakeitimai ir aiškesnis atkūrimas" />
+<ChangelogNote version="v3.0" date="2026-10-02" title="Privatūs pakeitimai ir aiškesnis atkūrimas">
+
+Automatinė atkūrimo kopija padeda tęsti darbą, bet nepakeičia paskelbto puslapio. Įrašą atnaujini tik paspaudęs **Išsaugoti**.
+
+</ChangelogNote>
 
 Pakeitimus paskelbi arba išsaugai kaip juodraštį paspaudęs **Išsaugoti**. Kol redaguoji, privati atkūrimo kopija saugoma šiame įrenginyje ir serveryje. Jos nemato nei lankytojai, nei kiti redaktoriai; automatinis kopijos saugojimas nekeičia išsaugoto puslapio.
 
@@ -62,7 +72,13 @@ Jei kitas redaktorius išsaugojo naujesnę puslapio versiją, tavo pakeitimai jo
 
 ## Kalbų versijos {#kalbu-versijos}
 
-<ChangelogNote version="v2.34" date="2026-10-01" title="Abi kalbas redaguok kartu" />
+<ChangelogNote version="v3.0" date="2026-10-02" title="Abi kalbas redaguok kartu">
+
+Kalbų versijas gali palyginti ir redaguoti viename lange. Kiekviena išsaugoma ir skelbiama atskirai; kitos kalbos versija nesukuriama ar nepaskelbiama savaime.
+
+</ChangelogNote>
+
+<DocScreenshot name="page-form" alt="Kalbų versijos: lietuviškas ir angliškas puslapis greta, kiekvienas su savo pavadinimu, paskelbimo žyma ir mygtuku Išsaugoti" caption="Palyginimo lange kiekviena kalba išsaugoma atskirai." />
 
 Skiltyje **Kalba** pasirink tos pačios informacijos įrašą kita kalba. Paieška iš pradžių rodo dabartinio padalinio priešingos kalbos įrašus. Pasirinktą versiją gali atverti atskirai arba spausti **Palyginti ir redaguoti**. Kompiuteryje abi versijos rodomos greta; telefone persijunk **LT** ir **EN**. Kiekvieną versiją išsaugai ir paskelbi atskirai.
 

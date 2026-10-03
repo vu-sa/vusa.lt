@@ -1,6 +1,6 @@
 <template>
   <PaletteDialog v-model:open="isOpen" :title="$t('Komandų paletė')"
-    :description="$t('Ieškokite veiksmų, posėdžių ir darbotvarkės punktų')">
+    :description="$t('Ieškok veiksmų, posėdžių ir darbotvarkės punktų')">
     <!-- Custom search input (not CommandInput to avoid internal filtering) -->
     <div class="flex h-12 items-center gap-2 border-b border-border px-3 pr-12">
       <div class="relative flex size-4 items-center justify-center">
@@ -105,7 +105,7 @@
             {{ $t('Rezultatų nerasta') }}
           </p>
           <p class="mt-1 text-xs text-muted-foreground">
-            {{ $t('Pabandykite kitą paieškos frazę') }}
+            {{ $t('Pabandyk kitą paieškos frazę') }}
           </p>
         </div>
       </template>
@@ -257,7 +257,7 @@ const performSearch = useDebounceFn(async (searchQuery: string) => {
 
   // Skip if rate limited
   if (isRateLimited.value) {
-    searchError.value = $t('Per daug užklausų. Palaukite ir bandykite vėliau.');
+    searchError.value = $t('Per daug užklausų. Palauk ir bandyk vėliau.');
     isSearching.value = false;
     return;
   }
@@ -280,7 +280,7 @@ const performSearch = useDebounceFn(async (searchQuery: string) => {
     const message = error instanceof Error ? error.message : 'Search failed';
     // Show user-friendly message for rate limiting
     if (message.includes('Too many requests')) {
-      searchError.value = $t('Per daug užklausų. Palaukite ir bandykite vėliau.');
+      searchError.value = $t('Per daug užklausų. Palauk ir bandyk vėliau.');
     }
     else {
       searchError.value = message;

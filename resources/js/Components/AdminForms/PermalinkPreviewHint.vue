@@ -7,7 +7,7 @@
     </div>
     <p v-if="preview" class="flex items-center gap-1 text-xs text-muted-foreground">
       <Info class="h-3.5 w-3.5 shrink-0" />
-      {{ $t('Nuorodą galėsite pakeisti vėliau, redaguodami įrašą.') }}
+      {{ $t('Nuorodą galėsi pakeisti vėliau, redaguodami įrašą.') }}
     </p>
   </div>
 </template>

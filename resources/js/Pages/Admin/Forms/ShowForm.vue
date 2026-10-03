@@ -134,7 +134,7 @@
   <ConfirmDialog
     v-model:open="showDeleteDialog"
     :title="$t('Šalinti formą?')"
-    :description="$t('Ar tikrai norite ištrinti šią formą? Forma bus perkelta į šiukšlinę.')"
+    :description="$t('Ar tikrai nori ištrinti šią formą? Forma bus perkelta į šiukšlinę.')"
     :confirm-label="$t('Šalinti')"
     destructive
     @confirm="handleDelete"

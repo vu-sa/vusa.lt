@@ -54,7 +54,7 @@ return [
     'assigned_to' => 'Priskirta',
     'periodicity_gap' => [
         'name' => 'Pranešti apie veiklą: :institution',
-        'description' => 'Institucijos veiklos pranešimo periodiškumas artėja prie ribos. Užregistruokite naują susitikimą arba praneškite apie veiklą.',
+        'description' => 'Institucijos veiklos pranešimo periodiškumas artėja prie ribos. Užregistruok naują susitikimą arba pranešk apie veiklą.',
         'completed_meeting_created' => 'Susitikimas užregistruotas',
         'completed_checkin_created' => 'Pranešimas apie veiklą sukurtas',
         'schedule_meeting' => 'Registruoti susitikimą',
@@ -62,16 +62,16 @@ return [
     ],
     'agenda_creation' => [
         'meeting_context' => 'Posėdis: :institution (:date).',
-        'assignee_context' => 'Jūs ir dar :count asmuo(-ų) turi šią užduotį.',
+        'assignee_context' => 'Tu ir dar :count asmuo(-ų) turi šią užduotį.',
         'first_item_created' => 'Pirmas darbotvarkės klausimas sukurtas',
     ],
     'agenda_completion' => [
         'meeting_context' => 'Posėdis: :institution (:date).',
-        'assignee_context' => 'Jūs ir dar :count asmuo(-ų) turi šią užduotį.',
+        'assignee_context' => 'Tu ir dar :count asmuo(-ų) turi šią užduotį.',
         'all_items_completed' => 'Visi darbotvarkės klausimai užpildyti',
     ],
     'delete_confirm_title' => 'Ištrinti šią užduotį?',
-    'delete_confirm_description' => '„:name" bus visam laikui pašalinta. Šio veiksmo atšaukti negalėsite.',
+    'delete_confirm_description' => '„:name" bus visam laikui pašalinta. Šio veiksmo atšaukti negalėsi.',
     'orphaned' => 'Objektas ištrintas',
     'orphaned_description' => 'Įrašas, kuriam priskirta ši užduotis, nebeegzistuoja, todėl užduotis niekada nebus užbaigta automatiškai.',
     'agenda' => [

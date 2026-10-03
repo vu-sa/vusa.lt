@@ -129,7 +129,7 @@
         <FormFieldWrapper id="institution-tenant" :label="$t('Padalinys')" required :error="form.errors.tenant_id">
           <Select v-model="tenantIdString">
             <SelectTrigger id="institution-tenant">
-              <SelectValue :placeholder="$t('Pasirinkite padalinį')" />
+              <SelectValue :placeholder="$t('Pasirink padalinį')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem v-for="tenant in assignableTenants" :key="tenant.id" :value="String(tenant.id)">
@@ -146,7 +146,7 @@
             id="institution-types"
             v-model="selectedTypes"
             :options="institutionTypeOptions"
-            :placeholder="$t('Pasirinkite tipus')"
+            :placeholder="$t('Pasirink tipus')"
           />
           <div v-if="resolvedScope" class="flex flex-wrap items-center gap-2 pt-1">
             <InstitutionScopeBadge :scope="resolvedScope" />

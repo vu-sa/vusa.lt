@@ -62,7 +62,7 @@ Adresas: `/mano/settings/forms`. Čia nurodomos pagrindinės platformos registra
 - **Narių registracijos forma**: forma, kuria viešai registruojasi nauji VU SA nariai.
 - **Narių registracijos gavėjo rolė**: rolė, kurios pareigybių pašto dėžutėms siunčiami pranešimai apie
   naujas narių registracijas atitinkamame padalinyje.
-- **Studentų atstovų registracijos forma**: forma, skirta studentų atstovų kandidatavimui į organus.
+- **Studentų atstovų registracijos forma**: forma, kuria studentai registruojasi tapti atstovais VU organuose.
 - **Institucijų tipai atstovų registracijai**: institucijų tipai, kuriems leidžiama registruotis kaip
   studentų atstovui.
 

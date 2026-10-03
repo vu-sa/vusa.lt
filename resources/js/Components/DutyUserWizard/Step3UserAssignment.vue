@@ -176,7 +176,7 @@
               <Input
                 v-model="userSearchQuery"
                 :disabled="quotaReached"
-                :placeholder="$t('Įveskite vardą arba el. paštą...')"
+                :placeholder="$t('Įvesk vardą arba el. paštą...')"
                 class="pl-9 pr-8 h-10"
                 @focus="showUserSearch = true"
               />
@@ -238,7 +238,7 @@
               </div>
             </div>
             <p v-if="!userSearchQuery && !showUserSearch" class="text-xs text-muted-foreground">
-              {{ $t('Pradėkite rašyti, kad rastumėte naudotoją') }}
+              {{ $t('Pradėk rašyti, kad rastum naudotoją') }}
             </p>
           </div>
 
@@ -356,7 +356,7 @@
               <div v-if="usersToAdd.length === 0" class="text-center py-6 text-muted-foreground border border-dashed border-border p-4">
                 <UserPlus class="size-6 mx-auto mb-1.5 opacity-50" />
                 <p class="text-xs">
-                  {{ $t('Ieškokite ir pridėkite narius') }}
+                  {{ $t('Ieškok ir pridėk narius') }}
                 </p>
               </div>
             </div>

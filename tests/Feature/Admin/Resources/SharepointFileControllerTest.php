@@ -7,6 +7,7 @@ use App\Models\SharepointFile;
 use App\Models\Tenant;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Gate;
 
 pest()->use(RefreshDatabase::class);
 
@@ -91,3 +92,21 @@ describe('drive item permission endpoints', function (): void {
             ->assertStatus(403);
     });
 });
+
+test('seeded roles grant the documented browser and public-link capabilities', function (?string $role, bool $canView, bool $canCreate): void {
+    $user = match ($role) {
+        null => $this->user,
+        'Super Admin' => makeAdminUser($this->tenant),
+        default => makeTenantUserWithRole($role, $this->tenant),
+    };
+    $gate = Gate::forUser($user);
+
+    expect($gate->allows('viewAny', SharepointFile::class))->toBe($canView)
+        ->and($gate->allows('create', SharepointFile::class))->toBe($canCreate);
+})->with([
+    'ordinary member' => [null, false, false],
+    'representative' => ['Studentų atstovas', false, true],
+    'tenant coordinator' => ['Studentų atstovų koordinatorius', true, true],
+    'central coordinator' => ['Centrinio biuro studentų atstovų koordinatorius', true, true],
+    'super admin' => ['Super Admin', true, true],
+]);

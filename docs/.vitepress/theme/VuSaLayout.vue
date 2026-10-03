@@ -4,6 +4,7 @@ import DefaultTheme from 'vitepress/theme'
 import { ref, onMounted } from 'vue'
 import TestEvidence from './TestEvidence.vue'
 import DocReview from './DocReview.vue'
+import DocReviewDate from './DocReviewDate.vue'
 
 const { Layout } = DefaultTheme
 const { lang } = useData()
@@ -37,6 +38,7 @@ onMounted(async () => {
 
     <template #doc-footer-before>
       <TestEvidence />
+      <DocReviewDate />
     </template>
 
     <template #home-features-after>

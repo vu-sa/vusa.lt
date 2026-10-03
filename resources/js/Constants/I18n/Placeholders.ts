@@ -56,7 +56,7 @@ export const RESERVATION_PLACEHOLDERS = {
     en: 'All resources will be used for this event. If necessary, resources A could be returned earlier...',
   },
   resource: {
-    lt: 'Pasirinkite išteklių...',
+    lt: 'Pasirink išteklių...',
     en: 'Select resource...',
   },
 };

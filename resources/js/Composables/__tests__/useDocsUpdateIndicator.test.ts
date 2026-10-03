@@ -46,11 +46,22 @@ describe('useDocsUpdateIndicator', () => {
     expect(latestVersion.value).toBe('v3.1');
   });
 
-  test('falls back to the v2 changelog when the meta is unavailable', async () => {
+  test.each(['lt', 'en'])('falls back to the v3 changelog when the meta is unavailable (%s)', async (locale) => {
     mockFetch.mockResolvedValue({ ok: false });
+
+    const { changelogHref } = await mountIndicator(locale);
+
+    expect(changelogHref.value).toBe(`/docs/${locale === 'en' ? 'en/' : ''}changelog/v3`);
+  });
+
+  test('uses the v3 fallback when older metadata omits the changelog page', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ latestVersion: 'v3.0', lastUpdated: '2026-10-02' }),
+    });
 
     const { changelogHref } = await mountIndicator('lt');
 
-    expect(changelogHref.value).toBe('/docs/changelog/v2');
+    expect(changelogHref.value).toBe('/docs/changelog/v3');
   });
 });

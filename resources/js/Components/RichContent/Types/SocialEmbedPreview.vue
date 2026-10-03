@@ -32,7 +32,7 @@
 
     <!-- Error/unsupported state -->
     <div v-else-if="!platform && url" class="rounded-lg bg-zinc-100 p-4 text-center text-sm text-zinc-500 dark:bg-zinc-800">
-      {{ $t('Įveskite galiojančią Facebook arba Instagram nuorodą') }}
+      {{ $t('Įvesk galiojančią Facebook arba Instagram nuorodą') }}
     </div>
   </div>
 </template>

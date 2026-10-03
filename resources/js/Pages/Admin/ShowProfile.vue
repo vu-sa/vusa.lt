@@ -111,7 +111,7 @@
           v-model="passwordForm.current_password"
           type="password"
           autocomplete="current-password"
-          placeholder="Įveskite dabartinį slaptažodį"
+          placeholder="Įvesk dabartinį slaptažodį"
           @keydown.enter.prevent="handlePasswordUpdate"
         />
       </FormFieldWrapper>
@@ -128,14 +128,14 @@
             v-model="passwordForm.password"
             type="password"
             autocomplete="new-password"
-            placeholder="Įveskite naują slaptažodį"
+            placeholder="Įvesk naują slaptažodį"
             @keydown.enter.prevent="handlePasswordUpdate"
           />
         </FormFieldWrapper>
 
         <FormFieldWrapper
           id="password-confirmation"
-          :label="$t('Pakartokite naują slaptažodį')"
+          :label="$t('Pakartok naują slaptažodį')"
           required
           :error="passwordForm.errors.password_confirmation"
         >
@@ -144,7 +144,7 @@
             v-model="passwordForm.password_confirmation"
             type="password"
             autocomplete="new-password"
-            placeholder="Pakartokite naują slaptažodį"
+            placeholder="Pakartok naują slaptažodį"
             @keydown.enter.prevent="handlePasswordUpdate"
           />
         </FormFieldWrapper>
@@ -225,7 +225,7 @@
         title-class="text-brand"
       >
         <p class="text-xs text-muted-foreground leading-relaxed">
-          {{ $t('Galite iš naujo peržiūrėti interaktyvius vadovus, kurie padeda susipažinti su sistema.') }}
+          {{ $t('Gali iš naujo peržiūrėti interaktyvius vadovus, kurie padeda susipažinti su sistema.') }}
         </p>
 
         <div class="flex items-center gap-3 pt-1">

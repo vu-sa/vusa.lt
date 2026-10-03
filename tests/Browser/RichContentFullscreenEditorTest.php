@@ -90,9 +90,9 @@ it('edits a hero button through its hotspot popover and the change survives a sa
 
     // Click the button hotspot — opens a popover with the button's fields.
     $page->click('button:has-text("Registruotis")');
-    $page->page()->waitForSelector('input[placeholder="Įveskite mygtuko tekstą..."]', ['timeout' => 10_000]);
+    $page->page()->waitForSelector('input[placeholder="Įvesk mygtuko tekstą..."]', ['timeout' => 10_000]);
 
-    $textInput = $page->page()->locator('input[placeholder="Įveskite mygtuko tekstą..."]');
+    $textInput = $page->page()->locator('input[placeholder="Įvesk mygtuko tekstą..."]');
     $textInput->fill('Prisijungti dabar');
 
     // Close the full-screen editor — the same live array, so nothing is lost.
@@ -131,12 +131,12 @@ it('opening a second hotspot visually closes the first', function (): void {
     waitForInertiaRender($page, 'button:has-text("Registruotis")');
 
     $page->click('button:has-text("Registruotis")');
-    $page->page()->waitForSelector('input[placeholder="Įveskite mygtuko tekstą..."]', ['timeout' => 10_000]);
+    $page->page()->waitForSelector('input[placeholder="Įvesk mygtuko tekstą..."]', ['timeout' => 10_000]);
 
     $page->click('button:has-text("Sužinoti daugiau")');
-    $page->page()->waitForSelector('input[placeholder="Įveskite mygtuko tekstą..."]', ['timeout' => 10_000]);
+    $page->page()->waitForSelector('input[placeholder="Įvesk mygtuko tekstą..."]', ['timeout' => 10_000]);
 
-    $buttonTextInputs = 'document.querySelectorAll(\'input[placeholder="Įveskite mygtuko tekstą..."]\')';
+    $buttonTextInputs = 'document.querySelectorAll(\'input[placeholder="Įvesk mygtuko tekstą..."]\')';
     expect($page->script("{$buttonTextInputs}.length"))->toBe(1)
         ->and($page->script("{$buttonTextInputs}[0].value"))->toBe('Sužinoti daugiau');
 

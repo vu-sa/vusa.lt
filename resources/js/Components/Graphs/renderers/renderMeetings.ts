@@ -183,7 +183,7 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
       // For unauthorized meetings, show info toast instead of navigating
       // This prevents page refresh flicker and provides clear feedback
       if (d.authorized === false) {
-        toast.info($t('Neturite prieigos prie šio posėdžio duomenų'));
+        toast.info($t('Neturi prieigos prie šio posėdžio duomenų'));
         return;
       }
 
@@ -201,7 +201,7 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
 
       // For unauthorized meetings, show info toast instead of navigating
       if (d.authorized === false) {
-        toast.info($t('Neturite prieigos prie šio posėdžio duomenų'));
+        toast.info($t('Neturi prieigos prie šio posėdžio duomenų'));
         return;
       }
 
@@ -215,7 +215,7 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
       if (event.key === 'Enter' || event.key === ' ') {
         // For unauthorized meetings, show info toast instead of navigating
         if (d.authorized === false) {
-          toast.info($t('Neturite prieigos prie šio posėdžio duomenų'));
+          toast.info($t('Neturi prieigos prie šio posėdžio duomenų'));
           return;
         }
 

@@ -71,7 +71,7 @@
   <ConfirmDialog
     v-model:open="isDeleteDialogOpen"
     :title="$t('Ištrinti žymą?')"
-    :description="$t('Ar tikrai norite perkelti šią žymą į šiukšliadėžę?')"
+    :description="$t('Ar tikrai nori perkelti šią žymą į šiukšliadėžę?')"
     :confirm-label="$t('Ištrinti')"
     destructive
     @confirm="emit('delete')"

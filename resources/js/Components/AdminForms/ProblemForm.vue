@@ -149,7 +149,7 @@
             <ComboboxList class="min-w-[var(--reka-popper-anchor-width)]">
               <ComboboxViewport class="max-h-60">
                 <div v-if="userSearchTerm.length < 2 && !selectedUser" class="px-2 py-4 text-center text-sm text-muted-foreground">
-                  {{ $t('Įveskite bent 2 simbolius') }}
+                  {{ $t('Įvesk bent 2 simbolius') }}
                 </div>
                 <div v-else-if="isSearchingUsers" class="px-2 py-4 text-center text-sm text-muted-foreground">
                   {{ $t('Ieškoma...') }}

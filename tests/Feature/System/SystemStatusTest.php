@@ -9,6 +9,7 @@ use Illuminate\Foundation\Console\QueuedCommand;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Queue;
+use Inertia\Testing\AssertableInertia;
 
 pest()->use(RefreshDatabase::class);
 
@@ -346,4 +347,18 @@ describe('SystemStatus: Maintenance actions', function (): void {
 
         Queue::assertPushed(QueuedCommand::class, fn (QueuedCommand $job) => $job->displayName() === 'search:reindex');
     });
+});
+
+test('a member without role-reading permission cannot open system status', function (): void {
+    asUser(makeUser($this->tenant))->get(route('systemStatus'))->assertForbidden();
+});
+
+test('a non-super-admin role reader sees the snapshot but cannot run maintenance', function (): void {
+    $reader = makeUser($this->tenant);
+    $reader->givePermissionTo('roles.read.*');
+
+    asUser($reader)->get(route('systemStatus'))->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('status')->has('deviceMetrics')->has('maintenanceActions', 0));
+    asUser($reader)->post(route('systemStatus.maintenance'), ['action' => 'refresh-public-content'])->assertForbidden();
 });

@@ -24,6 +24,12 @@ einantis žmogus; pasikeitus žmogui, atsakomybė lieka pareigybei. Ji taikoma t
 
 ## Kaip tai veikia
 
+<ChangelogNote version="v3.0" date="2026-10-02" title="Koordinavimas persikėlė į pareigybės atsakomybes">
+
+Buvusi koordinatorių rolės parinktis atstovavimo nustatymuose pakeista atsakomybe pareigybėje. Keičiantis nariui, koordinavimo apimtis lieka pareigybei; rolės atskirai suteikia teises.
+
+</ChangelogNote>
+
 ### Kaip nustatomas koordinatorius {#koordinatorius}
 
 Atsakomybę galima priskirti vienam **VU organui**, jo **tipui** arba visam **padaliniui**. Ieškant

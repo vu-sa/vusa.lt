@@ -45,11 +45,10 @@ spausk „Pridėti“, ir jis patenka į tavo krepšelį. Krepšelis:
 - ištrinamas automatiškai, jei jo nekeitei **14 dienų**;
 - **nerezervuoja daiktų**. Kol renkiesi, tuos pačius daiktus gali užsirezervuoti kiti.
 
-<ChangelogNote version="v2.21" date="2026-09-24" title="Rezervacija išsaugoma kaip juodraštis">
+<ChangelogNote version="v3.0" date="2026-10-02" title="Rezervacija išsaugoma kaip juodraštis">
 
-Krepšelis atsirado v2.21: iki tol rezervacijos forma neišsaugodavo pasirinktų išteklių, o
-pakeitus laiką jie išsivalydavo. Kiekis dabar tikrinamas ir pateikiant, net jei du žmonės
-pateikia vienu metu.
+Nebaigtas pasirinkimas išlieka ir kitame įrenginyje, o pakeitus laiką ištekliai neišvalomi.
+Krepšelis daiktų neužima: kiekis dar kartą tikrinamas pateikiant, net jei du žmonės pateikia vienu metu.
 
 </ChangelogNote>
 
@@ -111,6 +110,12 @@ prieš jį išsaugant.
 
 ## Veiksmai
 
+<ChangelogNote version="v3.0" date="2026-10-02" title="Ištrinta rezervacija nebeatkuriama">
+
+Rezervacijos neturi šiukšlinės. **Atšaukti** ir **Ištrinti** yra skirtingi veiksmai: ištrynus įrašas pašalinamas visam laikui.
+
+</ChangelogNote>
+
 ### Rezervacijų sąrašas ir filtrai
 
 <DocScreenshot name="reservations-index" alt="Rezervacijų sąrašas su greitaisiais filtrais ir būsenomis" caption="Rezervacijų sąrašas: galima filtruoti pagal būseną, vėlavimą arba perjungti tarp savo ir administruojamų rezervacijų." href="/mano/reservations" />
@@ -123,6 +128,12 @@ Rezervacijų sąraše (`/mano/reservations`) pateikiama visų pasiekiamų rezerv
 Šoniniuose filtruose galima papildomai filtruoti pagal konkrečią būseną arba pasirinkti **Vėluoja grąžinti**.
 
 ### Valdytojo sprendimai
+
+<ChangelogNote version="v2.2" date="2026-09-14" title="Klaidingą sprendimą galima grąžinti vienu žingsniu">
+
+**Atšaukti paskutinį veiksmą** grąžina patvirtinimą, išdavimą ar grąžinimą į ankstesnę būseną. Tai skiriasi nuo rezervacijos atšaukimo ar jos ištrynimo; veiksmo priežastis lieka istorijoje.
+
+</ChangelogNote>
 
 <DocScreenshot name="reservation-decisions" alt="Rezervacijos puslapis: kiekvienas išteklius su savo būsena ir kitu veiksmu – Grąžinti, Išduoti, Tvirtinti" caption="Kiekvienas rezervacijos išteklius turi savo būseną ir savo kitą veiksmą." />
 

@@ -7,7 +7,7 @@
           {{ $t('Pranešti apie posėdžio nebuvimą') }}
         </DialogTitle>
         <DialogDescription>
-          {{ $t('Nurodykite laikotarpį, kada posėdžiai nėra planuojami. Tai padeda sekti atstovavimo organizavimą.') }}
+          {{ $t('Nurodyk laikotarpį, kada posėdžiai nėra planuojami. Tai padeda sekti atstovavimo organizavimą.') }}
         </DialogDescription>
       </DialogHeader>
 
@@ -20,7 +20,7 @@
               {{ $t('Ką tai reiškia?') }}
             </p>
             <p class="mt-1 text-muted-foreground">
-              {{ $t('Jei žinote, kad nurodytu laikotarpiu posėdžių nebus (pvz., atostogos, egzaminų sesija), pranešimas padės išvengti nereikalingų priminimų.') }}
+              {{ $t('Jei žinai, kad nurodytu laikotarpiu posėdžių nebus (pvz., atostogos, egzaminų sesija), pranešimas padės išvengti nereikalingų priminimų.') }}
             </p>
           </div>
         </div>

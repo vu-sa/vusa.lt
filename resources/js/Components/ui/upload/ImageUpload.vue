@@ -143,10 +143,10 @@
               </div>
               <div>
                 <p class="text-sm font-bold text-foreground">
-                  {{ isDragging ? $t("Paleiskite failą") : $t("Įkelti nuotrauką") }}
+                  {{ isDragging ? $t("Paleisk failą") : $t("Įkelti nuotrauką") }}
                 </p>
                 <p class="mt-1 text-xs text-muted-foreground">
-                  {{ $t("Vilkite arba spustelėkite") }}
+                  {{ $t("Vilk arba spustelėk") }}
                 </p>
               </div>
               <p class="text-[11px] text-muted-foreground">

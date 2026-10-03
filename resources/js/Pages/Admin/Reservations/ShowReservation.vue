@@ -118,7 +118,7 @@
             :options="allUsers ?? []"
             label-field="name"
             value-field="id"
-            :placeholder="`${$t('Pasirinkite')}...`"
+            :placeholder="`${$t('Pasirink')}...`"
             :empty-text="$t('No users found.')"
           >
             <template #selected-item="{ item: user }">

@@ -96,9 +96,9 @@ Klausimas **užpildytas**, kai:
 Papildomi balsavimai užpildymui įtakos neturi. Ta pati taisyklė taikoma posėdžio
 [būsenai](/visak/posedziai#busena), užpildymo užduočiai ir sąrašo filtrui **Užpildymo būsena**.
 
-<ChangelogNote version="v2.26" date="2026-09-27" title="Viena užpildymo taisyklė">
+<ChangelogNote version="v3.0" date="2026-10-02" title="Viena užpildymo taisyklė">
 
-Iki v2.26 sąrašo filtras informacinius, atidėtus klausimus, pertraukas ir VU SA darinių klausimus su
+Iki v3.0 sąrašo filtras informacinius, atidėtus klausimus, pertraukas ir VU SA darinių klausimus su
 vien sprendimu laikė nepilnais, o posėdžio būsena klausimą be tipo galėjo laikyti užpildytu.
 
 </ChangelogNote>

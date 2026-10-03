@@ -5,7 +5,7 @@
     entity-type="support_request"
     :eyebrow="$t('vusa.lt pagalba')"
     :title="$t('vusa.lt pagalba')"
-    :lead="$t('Čia galite pranešti apie vusa.lt svetainės problemas, siūlyti patobulinimus ir stebėti užklausų eigą.')"
+    :lead="$t('Čia gali pranešti apie vusa.lt svetainės problemas, siūlyti patobulinimus ir stebėti užklausų eigą.')"
     default-view="rows"
     :available-views="['rows']"
     :item-key="item => item.id"

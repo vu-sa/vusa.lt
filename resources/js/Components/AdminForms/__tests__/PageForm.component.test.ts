@@ -171,7 +171,7 @@ describe('PageForm.vue — show_breadcrumbs toggle', () => {
     field.vm.$emit('update:permalink', 'naujas-adresas');
     await wrapper.vm.$nextTick();
 
-    expect(field.props('warning')).toBe('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.');
+    expect(field.props('warning')).toBe('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsi ištrinti.');
   });
 
   it('switches between draft and published with the status segment', async () => {

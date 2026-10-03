@@ -394,7 +394,9 @@ That covers every write path (mass assignment, `update()`, `setTranslations()`, 
 
 ## Changelog
 
-User-facing changes go in `docs/changelog/v2.md` (LT) **and** `docs/en/changelog/v2.md` (EN) — one file per major version; a new major gets a new `vN.md` pair plus sidebar entries in `docs/.vitepress/{lt,en}.ts`, and the admin "What's new" link follows automatically. Skip purely internal changes (deps, refactors).
+User-facing changes go in `docs/changelog/v3.md` (LT) **and** `docs/en/changelog/v3.md` (EN) — one file per major version; a new major gets a new `vN.md` pair plus sidebar entries in `docs/.vitepress/{lt,en}.ts`, and the admin "What's new" link follows automatically. Skip purely internal changes (deps, refactors).
+
+Keep changes already on `main` in v2. The current `dev` release candidate is consolidated in v3.0; update its summary instead of adding entries for superseded candidate iterations. Its 2026-10-02 date is the documentation snapshot, not a production deployment date.
 
 Use exactly three emojis:
 - ⭐ new feature

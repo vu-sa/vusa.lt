@@ -18,14 +18,14 @@ hero:
       target: _blank
     - theme: alt
       text: Atnaujinimai
-      link: /changelog/v2
+      link: /changelog/v3
 
 features:
   - title: 🧭 Pagrindai
-    details: Platforma, teisės ir atsakomybės. Dalis bendrųjų sąvokų dar rašoma.
+    details: Darbo sritys, prieiga, teisės ir atsakomybės.
     link: /pagrindai/platforma
   - title: 🏠 Mano
-    details: Tavo užduotys aprašytos. Pranešimų gidas dar rašomas.
+    details: Tavo pradžia, užduotys, pranešimai ir paskyros prieiga.
     link: /mano/
   - title: 🎓 ViSAK
     details: Posėdžiai, institucijos, darbotvarkės ir problemos
@@ -34,15 +34,15 @@ features:
     details: Įrangos ir daiktų skolinimas
     link: /rezervacijos/
   - title: 🌐 Svetainė
-    details: Puslapiai, naujienos, kalendorius ir failai. Šios srities gidas dar rašomas.
+    details: Puslapiai, naujienos, kalendorius, formos ir failai.
     link: /svetaine/
   - title: 👥 Organizacija
-    details: Pareigybės ir narių perdavimas aprašyti. Kiti puslapiai dar pildomi.
+    details: Naudotojai, pareigybės, narių perdavimas ir studijų duomenys.
     link: /organizacija/
   - title: ⚙️ Sistema
-    details: Laiškų eilė aprašyta. Rolių, nustatymų ir priežiūros gidas dar pildomas.
+    details: Rolės, tipai, ryšiai, integracijos ir sistemos priežiūra.
     link: /sistema/
   - title: 🔄 Atnaujinimai
     details: Kas pasikeitė platformoje
-    link: /changelog/v2
+    link: /changelog/v3
 ---

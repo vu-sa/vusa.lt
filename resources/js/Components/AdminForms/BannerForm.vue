@@ -106,7 +106,7 @@
   <ConfirmDialog
     v-model:open="isDeleteDialogOpen"
     :title="$t('Ištrinti banerį?')"
-    :description="$t('Ar tikrai norite perkelti šį banerį į šiukšliadėžę?')"
+    :description="$t('Ar tikrai nori perkelti šį banerį į šiukšliadėžę?')"
     :confirm-label="$t('Ištrinti')"
     destructive
     @confirm="emit('delete')"

@@ -33,7 +33,7 @@
               <DialogHeader>
                 <DialogTitle>{{ $t('Sukurti apklausą') }}</DialogTitle>
                 <DialogDescription>
-                  {{ $t('Sukurkite apklausą ir gaukite komandos atsakymus.') }}
+                  {{ $t('Sukurk apklausą ir gauk komandos atsakymus.') }}
                 </DialogDescription>
               </DialogHeader>
               <PollComposer

@@ -4,7 +4,7 @@
       <DialogHeader>
         <DialogTitle>{{ $t('Sujungti įrašus') }}</DialogTitle>
         <DialogDescription>
-          {{ $t('Pasirinkite įrašą, kurį paliksite. Kiti pasirinkti įrašai bus panaikinti, o jų ryšiai perkelti į paliekamą įrašą.') }}
+          {{ $t('Pasirink įrašą, kurį paliksi. Kiti pasirinkti įrašai bus panaikinti, o jų ryšiai perkelti į paliekamą įrašą.') }}
         </DialogDescription>
       </DialogHeader>
 
@@ -32,7 +32,7 @@
         <template v-else>
           <label class="space-y-2">
             <span class="text-sm font-medium">{{ $t('Sujungti su…') }}</span>
-            <Input v-model="query" :placeholder="$t('Pradėkite rašyti pavadinimą')" @input="search" />
+            <Input v-model="query" :placeholder="$t('Pradėk rašyti pavadinimą')" @input="search" />
           </label>
           <div v-if="isSearching" class="text-sm text-muted-foreground">
             {{ $t('Ieškoma…') }}

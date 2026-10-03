@@ -65,7 +65,7 @@ describe('SocialEmbedEditor', () => {
 
       expect(content.platform).toBeNull();
       expect(wrapper.find('[data-testid="platform-badge"]').exists()).toBe(false);
-      expect(wrapper.text()).not.toContain('Patikrinkite nuorodą');
+      expect(wrapper.text()).not.toContain('Patikrink nuorodą');
     });
   });
 
@@ -109,7 +109,7 @@ describe('SocialEmbedEditor', () => {
 
       expect(content.platform).toBeNull();
       expect(wrapper.text()).not.toContain('Nuoroda atpažinta');
-      expect(wrapper.text()).not.toContain('Patikrinkite nuorodą');
+      expect(wrapper.text()).not.toContain('Patikrink nuorodą');
       expect(wrapper.findComponent({ name: 'SocialEmbedPreview' }).exists()).toBe(false);
     });
   });
@@ -126,7 +126,7 @@ describe('SocialEmbedEditor', () => {
       await urlInput.setValue('not-a-valid-url');
 
       expect(content.platform).toBeNull();
-      expect(wrapper.text()).toContain('Patikrinkite nuorodą');
+      expect(wrapper.text()).toContain('Patikrink nuorodą');
       expect(wrapper.text()).not.toContain('Nuoroda atpažinta');
       expect(wrapper.findComponent({ name: 'SocialEmbedPreview' }).exists()).toBe(false);
     });
@@ -142,20 +142,20 @@ describe('SocialEmbedEditor', () => {
 
       await urlInput.setValue('https://notfacebook.com/posts/123');
       expect(content.platform).toBeNull();
-      expect(wrapper.text()).toContain('Patikrinkite nuorodą');
+      expect(wrapper.text()).toContain('Patikrink nuorodą');
       expect(wrapper.findComponent({ name: 'SocialEmbedPreview' }).exists()).toBe(false);
 
       await urlInput.setValue('https://facebook.com.evil.com/posts/123');
       expect(content.platform).toBeNull();
-      expect(wrapper.text()).toContain('Patikrinkite nuorodą');
+      expect(wrapper.text()).toContain('Patikrink nuorodą');
 
       await urlInput.setValue('https://fakeinstagram.com/p/123');
       expect(content.platform).toBeNull();
-      expect(wrapper.text()).toContain('Patikrinkite nuorodą');
+      expect(wrapper.text()).toContain('Patikrink nuorodą');
 
       await urlInput.setValue('https://evil.com/?facebook.com');
       expect(content.platform).toBeNull();
-      expect(wrapper.text()).toContain('Patikrinkite nuorodą');
+      expect(wrapper.text()).toContain('Patikrink nuorodą');
     });
 
     it('shows warning on root domains without post target', async () => {
@@ -169,7 +169,7 @@ describe('SocialEmbedEditor', () => {
       await urlInput.setValue('https://www.facebook.com/');
 
       expect(content.platform).toBeNull();
-      expect(wrapper.text()).toContain('Patikrinkite nuorodą');
+      expect(wrapper.text()).toContain('Patikrink nuorodą');
     });
   });
 });

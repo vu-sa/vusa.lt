@@ -1,7 +1,7 @@
 <template>
-  <FormFieldWrapper id="tags" :label="label ?? $t('Žymos')" :hint="hint ?? $t('Pasirinkite temas')">
+  <FormFieldWrapper id="tags" :label="label ?? $t('Žymos')" :hint="hint ?? $t('Pasirink temas')">
     <MultiSelect v-model="selectedTags" :options="tagOptions" value-field="value" :disabled
-      :placeholder="$t('Pasirinkite žymas...')" />
+      :placeholder="$t('Pasirink žymas...')" />
   </FormFieldWrapper>
 </template>
 

@@ -12,7 +12,7 @@
         placeholder="https://www.facebook.com/... arba https://www.instagram.com/p/..."
       />
       <p class="text-xs text-muted-foreground">
-        {{ $t('Įklijuokite Facebook arba Instagram įrašo nuorodą') }}
+        {{ $t('Įklijuok Facebook arba Instagram įrašo nuorodą') }}
       </p>
     </div>
 
@@ -27,7 +27,7 @@
         </span>
       </template>
       <span v-else class="inline-flex items-center gap-1 text-status-attention">
-        <TriangleAlert class="size-4" /> {{ $t('Patikrinkite nuorodą') }}
+        <TriangleAlert class="size-4" /> {{ $t('Patikrink nuorodą') }}
       </span>
     </div>
 
@@ -58,10 +58,10 @@
       <p class="text-xs text-muted-foreground">
         <strong>{{ $t('Kaip gauti nuorodą') }}:</strong><br>
         <span class="mt-1 block">
-          <strong>Facebook:</strong> {{ $t('Paspauskite ant įrašo datos arba "..." → "Embed" → kopijuokite nuorodą') }}
+          <strong>Facebook:</strong> {{ $t('Paspausk ant įrašo datos arba "..." → "Embed" → kopijuok nuorodą') }}
         </span>
         <span class="mt-1 block">
-          <strong>Instagram:</strong> {{ $t('Paspauskite "..." → "Copy link" ant įrašo') }}
+          <strong>Instagram:</strong> {{ $t('Paspausk "..." → "Copy link" ant įrašo') }}
         </span>
       </p>
     </div>

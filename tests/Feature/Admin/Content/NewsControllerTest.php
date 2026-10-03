@@ -399,7 +399,7 @@ describe('auth: news manager', function (): void {
                         'json_content' => [],
                         'options' => [
                             'title' => ['lt' => 'Klausimas', 'en' => 'Question'],
-                            'placeholder' => ['lt' => 'Atsakykite...', 'en' => 'Answer...'],
+                            'placeholder' => ['lt' => 'Atsakyk...', 'en' => 'Answer...'],
                             'isClosed' => false,
                             'closedMessage' => ['lt' => 'Uždaryta', 'en' => 'Closed'],
                         ],

@@ -6,7 +6,7 @@ import fs from 'node:fs'
 const sidebarPage = (page: { text: string, link: string }) => {
   const source = fs.readFileSync(new URL(`../${sourceFile(page.link)}`, import.meta.url), 'utf8')
   const status = source.match(/^doc_status: (\w+)/m)?.[1]
-  const label = { draft: 'Rašoma', partial: 'Dalinis', reviewed: 'Peržiūrėta' }[status ?? '']
+  const label = { draft: 'Rašoma', partial: 'Dalinis' }[status ?? '']
   return { ...page, text: label ? `${page.text} · ${label}` : page.text }
 }
 
@@ -19,7 +19,7 @@ export default {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { text: 'Gidas', link: '/darbai', activeMatch: '^/(?!changelog)' },
-      { text: 'Atnaujinimai', link: '/changelog/v2', activeMatch: '/changelog/' },
+      { text: 'Atnaujinimai', link: '/changelog/v3', activeMatch: '/changelog/' },
       // A file, not a page: VitePress adds the `/docs/` base only to page links.
       { text: 'PDF', link: `/docs/${pdfFileName}`, target: '_blank' },
     ],
@@ -35,6 +35,7 @@ export default {
         text: 'Atnaujinimai',
         collapsed: true,
         items: [
+          { text: 'v3', link: '/changelog/v3' },
           { text: 'v2', link: '/changelog/v2' },
           { text: 'v1', link: '/changelog/v1' },
         ]
@@ -56,7 +57,8 @@ export default {
       label: 'Šiame puslapyje'
     },
     lastUpdated: {
-      text: 'Failas pakeistas'
+      text: 'Failas pakeistas',
+      formatOptions: { year: 'numeric', month: '2-digit', day: '2-digit', forceLocale: true }
     },
     docFooter: {
       prev: 'Ankstesnis puslapis',

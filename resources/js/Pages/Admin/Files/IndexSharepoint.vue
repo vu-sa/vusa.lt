@@ -10,7 +10,7 @@
         {{ $t('Sharepoint failai') }}
       </h1>
       <p class="text-sm text-muted-foreground">
-        {{ $t('Peržiūrėkite ir tvarkykite universiteto „Microsoft SharePoint“ dokumentus bei failus.') }}
+        {{ $t('Peržiūrėk ir tvarkyk universiteto „Microsoft SharePoint“ dokumentus bei failus.') }}
       </p>
     </header>
 

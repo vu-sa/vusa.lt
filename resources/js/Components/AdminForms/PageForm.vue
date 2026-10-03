@@ -52,7 +52,7 @@
         :disabled="false"
         :view-url="fullPageUrl"
         :warning="permalinkChanged
-          ? $t('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.')
+          ? $t('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsi ištrinti.')
           : undefined"
         :validating="form.validating"
         :valid="form.valid('permalink')"
@@ -116,7 +116,7 @@
         v-model="form.highlights"
         :max="3"
         input-type="textarea"
-        :placeholder="$t('Įveskite svarbų punktą...')"
+        :placeholder="$t('Įvesk svarbų punktą...')"
         :empty-text="$t('Dar nepridėta jokių punktų')"
         :add-first-text="$t('Pridėti pirmą punktą')"
         :add-text="$t('Pridėti punktą')"

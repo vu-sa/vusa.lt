@@ -10,6 +10,7 @@ In "Kas ką gali" and the rest of a guide page, say which role allows an action 
 
 ## Docs voice and shared glossary
 Address the reader as tu with direct verbs (Pasirink, Įrašyk, Patikrink). Follow .ai/rules/lang.md for the shared product glossary and copy actual interface labels. Distinguish pareigybė (position), pareigybės laikotarpis (one person's dated assignment), kadencija (institutional term), rolė (access bundle), atsakomybė (area of coordination), koordinatorius and sekretorius; define shared concepts once and link them.
+Write for a layperson: never "paskyrimas/paskyrimai" (say pareigos, pareigybės laikotarpis or pareigų datos), never "kandidatas"/"pretendentas" (say studentas or registracijos pateikėjas; for a release, "nauja versija"), and no dev jargon such as `main` or "release candidate" outside Techninė informacija.
 
 ## Guide claims follow supported behaviour
 Verify named production roles against seeders AND policies/role tests; distinguish roles from actor relationships (e.g. teikėjas) and baseline access. Describe supported UI actions, not backend-only methods. Record creation does not imply invitations or notifications. Separate enforced rules, suggested defaults and organisational agreements; implementation identifiers belong only in Techninė informacija.

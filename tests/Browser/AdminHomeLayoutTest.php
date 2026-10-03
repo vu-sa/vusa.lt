@@ -21,8 +21,15 @@ it('keeps the home layout within the viewport at the redesign widths', function 
 
             $page->screenshot(fullPage: false, filename: 'admin-home-'.$width.($dark ? '-dark' : '-light'));
 
-            if (! $dark && in_array($width, [390, 1440], true)) {
-                docsScreenshot($page, $width === 390 ? 'admin-home-phone' : 'admin-home');
+            if (! $dark && $width === 390) {
+                docsScreenshot($page, 'admin-home-phone');
+            }
+
+            // 840 ends the desktop frame after Tavo institucijos instead of on the next heading.
+            if (! $dark && $width === 1440) {
+                $page->resize(1440, 840);
+                docsScreenshot($page, 'admin-home');
+                $page->resize(1440, 900);
             }
 
             expect($page->script('document.documentElement.scrollWidth'))->toBeLessThanOrEqual($width)

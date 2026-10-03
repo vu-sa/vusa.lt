@@ -46,7 +46,7 @@
           <MultiCollectionSelectDialog
             v-model:open="pickerOpen"
             :collections="['pages', 'news', 'calendar', 'institutions', 'documents']"
-            :title="$t('Pasirinkite objektą')"
+            :title="$t('Pasirink objektą')"
             :confirm-label="$t('Pasirinkti')"
             :search-placeholder="$t('navigation.form.link_target_search')"
             @confirm="onTargetConfirm"
@@ -171,7 +171,7 @@
   <ConfirmDialog
     v-model:open="isDeleteDialogOpen"
     :title="$t('Ištrinti greitąją nuorodą?')"
-    :description="$t('Ar tikrai norite perkelti šią greitąją nuorodą į šiukšliadėžę?')"
+    :description="$t('Ar tikrai nori perkelti šią greitąją nuorodą į šiukšliadėžę?')"
     :confirm-label="$t('Ištrinti')"
     destructive
     @confirm="emit('delete')"

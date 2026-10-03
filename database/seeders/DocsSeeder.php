@@ -2,19 +2,27 @@
 
 namespace Database\Seeders;
 
+use App\Actions\PairTranslatedRecord;
 use App\Enums\AgendaItemType;
 use App\Enums\MeetingType;
 use App\Events\MeetingFullyCreated;
 use App\Models\Cadence;
+use App\Models\Content;
 use App\Models\Duty;
 use App\Models\DutyType;
+use App\Models\FieldResponse;
+use App\Models\Form;
+use App\Models\FormField;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
+use App\Models\News;
+use App\Models\Page;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
 use App\Models\Problem;
 use App\Models\ProblemCategory;
+use App\Models\Registration;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
@@ -24,6 +32,7 @@ use App\Tasks\Handlers\PeriodicityGapTaskHandler;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Tiptap\Editor;
 
 /**
  * A small, hand-written world for the screenshots shown in the docs (tests/Browser README,
@@ -50,6 +59,14 @@ class DocsSeeder extends Seeder
     public const OPEN_PROBLEM = 'Bendrabučių vietos skirstomos per vėlai';
 
     public const RESOLVED_PROBLEM = 'Laboratorinių darbų tvarkaraštis kirtosi su paskaitomis';
+
+    public const COMMUNICATION_COORDINATOR_EMAIL = 'rugile.navickaite@vusa.test';
+
+    public const NEWS_TITLE = 'Prasideda registracija į pirmakursių stovyklą';
+
+    public const PAGE_TITLE = 'Kaip tapti studentų atstovu';
+
+    public const REGISTRATION_FORM = 'Pirmakursių stovyklos registracija';
 
     public function run(): void
     {
@@ -102,6 +119,111 @@ class DocsSeeder extends Seeder
         $this->problems($tenant, $representative, $council, $committee);
         $this->dutyTimeline($tenant);
         $this->coordinators($tenant);
+        $this->content($tenant);
+    }
+
+    /**
+     * A communication coordinator with a news item, a page paired with its English version and a
+     * filled-in registration form, so the Svetainė and Formos frames show real content.
+     */
+    private function content(Tenant $tenant): void
+    {
+        $board = Institution::query()->where('name->lt', 'VU SA padalinio valdyba')->firstOrFail();
+        $duty = Duty::factory()->for($board)->create([
+            'name' => ['lt' => 'Komunikacijos koordinatorė', 'en' => 'Communication coordinator'],
+            'description' => ['lt' => '', 'en' => ''],
+        ]);
+        $duty->assignRole('Komunikacijos koordinatorius');
+
+        User::factory()->create(['name' => 'Rugilė Navickaitė', 'email' => self::COMMUNICATION_COORDINATOR_EMAIL])
+            ->duties()->attach($duty, ['start_date' => now()->subYear()]);
+
+        News::factory()->for($tenant)->create([
+            'title' => self::NEWS_TITLE,
+            'permalink' => 'prasideda-registracija-i-pirmakursiu-stovykla',
+            'short' => 'Trys dienos prie ežero su naujais kurso draugais: registruokis iki rugsėjo 20 d.',
+            'content_id' => $this->richContent(
+                '<p>Kviečiame visus pirmakursius į tradicinę stovyklą prie Asvejos ežero. Laukia pažintiniai žaidimai, susitikimas su dėstytojais ir vakaras prie laužo.</p><p>Vietų skaičius ribotas, todėl registruokis kuo greičiau.</p>'
+            ),
+            'image' => '/images/placeholders/foto2.jpg',
+            'important' => false,
+            'draft' => false,
+            'publish_time' => now()->subDays(2)->setTime(10, 0),
+            'lang' => 'lt',
+        ]);
+
+        $page = Page::factory()->for($tenant)->create([
+            'title' => self::PAGE_TITLE,
+            'permalink' => 'kaip-tapti-studentu-atstovu',
+            'content_id' => $this->richContent(
+                '<p>Studentų atstovai kalba studentų vardu fakulteto tarybose, studijų programų komitetuose ir Senate.</p><p>Užpildyk registracijos formą, o padalinio koordinatorius susisieks su tavimi ir papasakos apie rinkimus.</p>'
+            ),
+            'is_active' => true,
+            'lang' => 'lt',
+        ]);
+        $englishPage = Page::factory()->for($tenant)->create([
+            'title' => 'How to become a student representative',
+            'permalink' => 'how-to-become-a-student-representative',
+            'content_id' => $this->richContent(
+                '<p>Student representatives speak for students in faculty councils, study programme committees and the Senate.</p><p>Fill in the registration form and the unit coordinator will tell you about the elections.</p>'
+            ),
+            'is_active' => true,
+            'lang' => 'en',
+        ]);
+        PairTranslatedRecord::execute($page, $englishPage->id);
+
+        $this->registrationForm($tenant);
+    }
+
+    private function registrationForm(Tenant $tenant): void
+    {
+        $form = Form::factory()->for($tenant)->create([
+            'name' => ['lt' => self::REGISTRATION_FORM, 'en' => 'First-year camp registration'],
+            'description' => ['lt' => '<p>Registracija į rugsėjo pabaigos stovyklą.</p>', 'en' => '<p>Registration for the camp at the end of September.</p>'],
+            'path' => ['lt' => 'pirmakursiu-stovykla', 'en' => 'first-year-camp'],
+            'publish_time' => now()->subWeek(),
+        ]);
+
+        $fields = collect([
+            ['Vardas ir pavardė', 'Full name', 'string'],
+            ['El. paštas', 'Email', 'string'],
+            ['Studijų programa', 'Study programme', 'string'],
+            ['Reikia nakvynės', 'Needs accommodation', 'boolean'],
+        ])->map(fn (array $field, int $order): FormField => FormField::factory()->for($form)->create([
+            'label' => ['lt' => $field[0], 'en' => $field[1]],
+            'description' => ['lt' => '', 'en' => ''],
+            'type' => $field[2],
+            'is_required' => $field[2] === 'string',
+            'order' => $order,
+        ]));
+
+        foreach ([
+            ['Paulius Mockus', 'paulius.mockus@stud.vu.lt', 'Chemija', true],
+            ['Karolina Jankauskaitė', 'karolina.jankauskaite@stud.vu.lt', 'Geologija', false],
+            ['Domantas Vasiliauskas', 'domantas.vasiliauskas@stud.vu.lt', 'Biochemija', true],
+        ] as $daysAgo => $answers) {
+            $registration = Registration::factory()->for($form)->create(['created_at' => now()->subDays($daysAgo + 1)]);
+
+            foreach ($fields as $index => $field) {
+                FieldResponse::factory()->create([
+                    'registration_id' => $registration->id,
+                    'form_field_id' => $field->id,
+                    'response' => ['value' => $answers[$index]],
+                ]);
+            }
+        }
+    }
+
+    private function richContent(string $html): int
+    {
+        $content = Content::query()->create();
+        $content->parts()->create([
+            'type' => 'tiptap',
+            'order' => 0,
+            'json_content' => (new Editor)->setContent($html)->getDocument(),
+        ]);
+
+        return $content->id;
     }
 
     /**
@@ -306,11 +428,13 @@ class DocsSeeder extends Seeder
         $chair = Duty::factory()->for($parliament)->create([
             'name' => ['lt' => 'Pirmininkas (-ė)', 'en' => 'Chair'],
             'description' => ['lt' => '', 'en' => ''],
+            'email' => 'parlamentas@vusa.lt',
             'places_to_occupy' => 1,
         ]);
         $member = Duty::factory()->for($parliament)->create([
             'name' => ['lt' => 'Parlamento narys (-ė)', 'en' => 'Member of Parliament'],
             'description' => ['lt' => '', 'en' => ''],
+            'email' => 'parlamento.nariai@vusa.lt',
             'places_to_occupy' => 5,
         ]);
 
@@ -330,7 +454,11 @@ class DocsSeeder extends Seeder
         $people = [];
 
         foreach ($seats as [$duty, $name, [$start, $end]]) {
-            $people[$name] ??= User::factory()->create(['name' => $name, 'email' => Str::slug($name, '.').'@vusa.test']);
+            $people[$name] ??= User::factory()->create([
+                'name' => $name,
+                'email' => Str::slug($name, '.').'@vusa.test',
+                'phone' => sprintf('+370 6%02d %05d', count($people) + 10, 12345 + count($people)),
+            ]);
 
             Dutiable::factory()->create([
                 'duty_id' => $duty->id,

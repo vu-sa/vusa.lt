@@ -15,7 +15,7 @@ function makeElement(options: TextBox['options'] = null): TextBox & { id: number
     json_content: {},
     options: {
       title: 'Atsiliepimai',
-      placeholder: 'Jūsų tekstas...',
+      placeholder: 'Tavo tekstas...',
       isClosed: false,
       closedMessage: 'Forma uždaryta',
       ...options,
@@ -45,7 +45,7 @@ describe('TextBoxDisplay', () => {
     });
 
     expect(wrapper.text()).toContain('Atsiliepimai');
-    expect(wrapper.find('textarea').attributes('placeholder')).toBe('Jūsų tekstas...');
+    expect(wrapper.find('textarea').attributes('placeholder')).toBe('Tavo tekstas...');
   });
 
   it('renders closed message when isClosed is true', () => {

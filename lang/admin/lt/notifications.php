@@ -128,7 +128,7 @@ return [
 
     // Test email
     'test_email_button' => 'Siųsti bandomąjį laišką',
-    'test_email_hint' => 'Laiškas bus išsiųstas išsaugotais adresais. Pirma išsaugokite pakeitimus.',
+    'test_email_hint' => 'Laiškas bus išsiųstas išsaugotais adresais. Pirma išsaugok pakeitimus.',
     'test_email_sent' => 'Bandomasis laiškas išsiųstas: :emails',
     'test_email_failed' => 'Nepavyko išsiųsti laiško: :error',
 
@@ -368,8 +368,8 @@ return [
         'delete_all' => 'Ištrinti visus',
         'empty_unread_title' => 'Naujų pranešimų nėra',
         'empty_all_title' => 'Pranešimų nėra',
-        'empty_unread_body' => 'Visus pranešimus perskaitėte! Nauji pranešimai bus rodomi čia.',
-        'empty_all_body' => 'Kol kas pranešimų nėra. Jie bus rodomi čia, kai gausite naujų.',
+        'empty_unread_body' => 'Visus pranešimus perskaitei! Nauji pranešimai bus rodomi čia.',
+        'empty_all_body' => 'Kol kas pranešimų nėra. Jie bus rodomi čia, kai gausi naujų.',
         'deleted' => 'Pranešimas ištrintas.',
         'all_marked_read' => 'Visi pranešimai pažymėti kaip perskaityti.',
         'read_deleted' => 'Perskaityti pranešimai ištrinti.',

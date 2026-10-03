@@ -92,9 +92,9 @@ klausimais**, kuriuose atstovai ją kėlė. Taip matyti, kur problema svarstyta 
 - Problemos puslapyje skirtukas **Svarstyta posėdžiuose** rodo klausimus su posėdžio data ir
   institucija. Klausimai iš posėdžių, kurių tu atidaryti negali, nerodomi.
 
-<ChangelogNote version="v2.28" date="2026-09-27" title="Problemos susietos su posėdžiais">
+<ChangelogNote version="v3.0" date="2026-10-02" title="Problemos susietos su posėdžiais">
 
-Nuo v2.28 problemą galima susieti su darbotvarkės klausimu, o institucijos puslapyje matyti
+Nuo v3.0 problemą galima susieti su darbotvarkės klausimu, o institucijos puslapyje matyti
 jos problemos.
 
 </ChangelogNote>

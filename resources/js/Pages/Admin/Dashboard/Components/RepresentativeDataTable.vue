@@ -6,7 +6,7 @@
           {{ $t('Visi atstovai') }}
         </DialogTitle>
         <DialogDescription class="text-sm">
-          {{ $t('Peržiūrėkite visų atstovų prisijungimo aktyvumą') }}
+          {{ $t('Peržiūrėk visų atstovų prisijungimo aktyvumą') }}
         </DialogDescription>
       </DialogHeader>
 

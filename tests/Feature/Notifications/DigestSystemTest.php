@@ -572,7 +572,7 @@ describe('digest queue cleanup on read', function (): void {
             'data' => [
                 'category' => 'task',
                 'title' => 'Nauja užduotis',
-                'body' => 'Jums priskirta nauja užduotis: Task A',
+                'body' => 'Tau priskirta nauja užduotis: Task A',
                 'url' => '/mano/tasks',
                 'icon' => '☑️',
             ],
@@ -584,7 +584,7 @@ describe('digest queue cleanup on read', function (): void {
             'data' => [
                 'category' => 'task',
                 'title' => 'Nauja užduotis',
-                'body' => 'Jums priskirta nauja užduotis: Task B',
+                'body' => 'Tau priskirta nauja užduotis: Task B',
                 'url' => '/mano/tasks',
                 'icon' => '☑️',
             ],
@@ -596,14 +596,14 @@ describe('digest queue cleanup on read', function (): void {
             'notification_id' => $idA,
             'notification_class' => TaskAssignedNotification::class,
             'category' => 'task',
-            'data' => ['title' => 'Nauja užduotis', 'body' => 'Jums priskirta nauja užduotis: Task A', 'url' => '/mano/tasks', 'icon' => '☑️'],
+            'data' => ['title' => 'Nauja užduotis', 'body' => 'Tau priskirta nauja užduotis: Task A', 'url' => '/mano/tasks', 'icon' => '☑️'],
         ]);
         NotificationDigestQueue::create([
             'user_id' => $user->id,
             'notification_id' => $idB,
             'notification_class' => TaskAssignedNotification::class,
             'category' => 'task',
-            'data' => ['title' => 'Nauja užduotis', 'body' => 'Jums priskirta nauja užduotis: Task B', 'url' => '/mano/tasks', 'icon' => '☑️'],
+            'data' => ['title' => 'Nauja užduotis', 'body' => 'Tau priskirta nauja užduotis: Task B', 'url' => '/mano/tasks', 'icon' => '☑️'],
         ]);
 
         expect($this->getDigestQueueCountForUser($user))->toBe(2);

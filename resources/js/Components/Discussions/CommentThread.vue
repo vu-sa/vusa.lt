@@ -35,7 +35,7 @@
       v-if="replyOpen"
       class="mt-3 pl-3"
       :mentionables
-      :placeholder="$t('Atsakykite…')"
+      :placeholder="$t('Atsakyk…')"
       :submit-label="$t('Atsakyti')"
       :submitting
       show-cancel

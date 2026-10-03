@@ -12,13 +12,14 @@ export default {
     // The guide itself is Lithuanian-only; English keeps the changelog the admin "What's new" link opens.
     nav: [
       { text: 'Guide (LT)', link: '/ivadas' },
-      { text: 'Updates', link: '/en/changelog/v2', activeMatch: '/en/changelog/' },
+      { text: 'Updates', link: '/en/changelog/v3', activeMatch: '/en/changelog/' },
     ],
 
     sidebar: [
       {
         text: 'Updates',
         items: [
+          { text: 'v3', link: '/en/changelog/v3' },
           { text: 'v2', link: '/en/changelog/v2' },
           { text: 'v1', link: '/en/changelog/v1' },
         ]

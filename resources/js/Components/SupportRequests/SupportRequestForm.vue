@@ -20,7 +20,7 @@
 
     <FormSection
       :title="$t('Pranešimo informacija')"
-      :description="$t('Aprašykite problemą ar idėją taip, kad ją būtų galima suprasti ir įvertinti.')"
+      :description="$t('Aprašyk problemą ar idėją taip, kad ją būtų galima suprasti ir įvertinti.')"
     >
       <FormFieldWrapper id="title" :label="$t('Pavadinimas')" required :error="form.errors.title">
         <Input
@@ -56,7 +56,7 @@
 
     <FormSection
       :title="$t('Ekrano nuotraukos ir failai')"
-      :description="$t('Pridėkite vaizdų, kurie padėtų greičiau suprasti pranešimą.')"
+      :description="$t('Pridėk vaizdų, kurie padėtų greičiau suprasti pranešimą.')"
     >
       <div class="space-y-3">
         <div class="flex items-center justify-between">
@@ -239,7 +239,7 @@
               </label>
             </div>
             <p v-else class="text-xs text-muted-foreground italic">
-              {{ $t('Neturite priskirtų rolių, kurioms galėtumėte suteikti prieigą.') }}
+              {{ $t('Neturi priskirtų rolių, kurioms galėtum suteikti prieigą.') }}
             </p>
             <p v-if="form.errors.roles" class="text-xs text-destructive mt-1">
               {{ form.errors.roles }}
@@ -379,7 +379,7 @@ const visibilityOptions = computed(() => [
     value: 'roles',
     label: $t('Pasirinktoms rolėms'),
     description: props.roles.length === 0
-      ? $t('Neturite priskirtų rolių, kurioms galėtumėte suteikti prieigą.')
+      ? $t('Neturi priskirtų rolių, kurioms galėtum suteikti prieigą.')
       : $t('Matoma nurodytų rolių nariams ir administratoriams.'),
     icon: Users,
     disabled: props.roles.length === 0,

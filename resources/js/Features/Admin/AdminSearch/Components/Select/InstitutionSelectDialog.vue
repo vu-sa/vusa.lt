@@ -4,7 +4,7 @@
     collection="institutions"
     :multiple="false"
     :title="$t('Pasirinkti instituciją')"
-    :description="$t('Ieškokite ir filtruokite institucijas pagal padalinį.')"
+    :description="$t('Ieškok ir filtruok institucijas pagal padalinį.')"
     :confirm-label="$t('Pasirinkti')"
     :base-filter-by
     :initial-hits

@@ -9,7 +9,7 @@
       ]"
       @click="expand"
     >
-      <span class="text-muted-foreground">{{ placeholder || $t('Parašykite komentarą…') }}</span>
+      <span class="text-muted-foreground">{{ placeholder || $t('Parašyk komentarą…') }}</span>
     </button>
     <div
       v-else
@@ -20,7 +20,7 @@
       <EditorContent :editor />
       <div class="flex items-center justify-between gap-2 border-t border-border px-2 py-1.5">
         <div class="flex items-center gap-2">
-          <span class="text-xs text-muted-foreground">{{ $t('Naudokite @ paminėti') }}</span>
+          <span class="text-xs text-muted-foreground">{{ $t('Naudok @ paminėti') }}</span>
           <slot name="leading" />
         </div>
         <div class="flex items-center gap-1.5">
@@ -162,7 +162,7 @@ const editor = useEditor({
       },
     }),
     Placeholder.configure({
-      placeholder: props.placeholder || $t('Parašykite komentarą…'),
+      placeholder: props.placeholder || $t('Parašyk komentarą…'),
     }),
   ],
   editorProps: {

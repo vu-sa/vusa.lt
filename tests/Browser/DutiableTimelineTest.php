@@ -282,7 +282,15 @@ it('edits a duty period in a side sheet on desktop and a bottom sheet on a phone
 
     // The sheet opens with its first date focused, which reads as an error in a still frame.
     $page->script('document.activeElement?.blur()');
+    // Grow the viewport by what the sheet's body scrolls, so the frame is not cut by its footer.
+    $hidden = $page->script(<<<'JS'
+    [...document.querySelectorAll('[data-slot="sheet-form"] *')]
+      .filter(element => ['auto', 'scroll'].includes(getComputedStyle(element).overflowY))
+      .reduce((most, element) => Math.max(most, element.scrollHeight - element.clientHeight), 0)
+    JS);
+    $page->resize(1440, 900 + (int) ceil($hidden) + 24);
     docsScreenshot($page, 'dutiable-sheet', selector: '[data-slot="sheet-form"]');
+    $page->resize(1440, 900);
 
     $page->resize(390, 844);
 

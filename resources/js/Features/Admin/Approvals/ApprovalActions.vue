@@ -14,14 +14,14 @@
         <span class="text-sm text-muted-foreground">/ {{ maxQuantity }}</span>
       </div>
       <p v-if="selectedQuantity < maxQuantity" class="text-sm text-muted-foreground">
-        {{ $t("Patvirtinsite") }} {{ selectedQuantity }} {{ $t("iš") }} {{ maxQuantity }}
+        {{ $t("Patvirtinsi") }} {{ selectedQuantity }} {{ $t("iš") }} {{ maxQuantity }}
       </p>
     </div>
 
     <!-- Notes input (optional) -->
     <div v-if="showNotes" class="space-y-2">
       <Label for="approval-notes">{{ $t("Pastabos") }} ({{ $t("neprivaloma") }})</Label>
-      <Textarea id="approval-notes" v-model="notes" :placeholder="$t('Įveskite pastabas...')" rows="3" />
+      <Textarea id="approval-notes" v-model="notes" :placeholder="$t('Įvesk pastabas...')" rows="3" />
     </div>
 
     <!-- Action buttons -->

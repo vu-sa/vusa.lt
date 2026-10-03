@@ -584,7 +584,7 @@ describe('content part width validation', function (): void {
             'json_content' => [],
             'options' => [
                 'title' => ['lt' => 'Klausimas', 'en' => 'Question'],
-                'placeholder' => ['lt' => 'Atsakykite...', 'en' => 'Answer...'],
+                'placeholder' => ['lt' => 'Atsakyk...', 'en' => 'Answer...'],
                 'isClosed' => true,
                 'closedMessage' => ['lt' => 'Uždaryta', 'en' => 'Closed'],
             ],

@@ -1,7 +1,7 @@
 <template>
   <div ref="containerRef" class="space-y-4" data-document-selector>
     <div class="space-y-2">
-      <Label for="document-search">Pasirinkite dokumentą</Label>
+      <Label for="document-search">Pasirink dokumentą</Label>
 
       <!-- Simple search input -->
       <div class="relative">
@@ -9,7 +9,7 @@
           id="document-search"
           v-model="http.search"
           type="text"
-          placeholder="Ieškokite dokumento..."
+          placeholder="Ieškok dokumento..."
           class="pr-10"
           @input="handleSearch"
         />
@@ -34,7 +34,7 @@
 
         <!-- Search hint -->
         <div v-else-if="documents.length === 0 && http.search.length === 0" class="p-3 text-sm text-muted-foreground">
-          Pradėkite rašyti, kad ieškoti dokumentų...
+          Pradėk rašyti, kad ieškoti dokumentų...
         </div>
 
         <!-- Results -->
@@ -50,7 +50,7 @@
 
           <!-- Show more hint if we hit the limit -->
           <div v-if="documents.length >= 20" class="border-t px-3 py-2 text-xs text-muted-foreground">
-            Rodoma 20 rezultatų. Patikslinkite paiešką daugiau rezultatų.
+            Rodoma 20 rezultatų. Patikslink paiešką daugiau rezultatų.
           </div>
         </div>
       </div>

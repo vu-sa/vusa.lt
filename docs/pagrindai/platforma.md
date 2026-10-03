@@ -18,6 +18,9 @@ tests:
   - tests/Browser/AdminShellTest.php
   - tests/Browser/DefaultThemeTest.php
   - tests/Feature/Admin/SoftDeletableResourcesTest.php
+  - tests/Feature/Admin/Search/SearchControllerTest.php
+  - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
+  - resources/js/Components/Layouts/Shell/__tests__/PaletteField.component.test.ts
   - tests/Unit/Models/TranslatableExpectationsTest.php
   - tests/Feature/System/TranslationIntegrityTest.php
 ---
@@ -38,15 +41,39 @@ išjungti. Jei kolega mato skiltį, kurios tu nematai, skiriasi jūsų teisės (
 
 ## Mygtukai ir klaviatūra {#mygtukai-ir-klaviatura}
 
+<ChangelogNote version="v3.0" date="2026-10-02" title="Viena kūrimo vieta ir darbo sričių navigacija">
+
+Vietoje seno administravimo meniu rinkis darbo sritį ir jos skiltį. **+ Sukurti** rodo tau leidžiamus kūrimo veiksmus; telefono juostose pasieksi tuos pačius pagrindinius darbus.
+
+</ChangelogNote>
+
 Pagrindiniai kūrimo veiksmai išsiskiria ryškia spalva ir didžiosiomis raidėmis. Kiti veiksmai
 rašomi įprastai, kad būtų lengviau juos perskaityti. Naršant klaviatūra, aktyvi nuoroda turi
 matomą apvadą.
 
 Sąrašuose įrašo veiksmai matomi tiek eilutėse, tiek lentelėje. Vien piktograma pažymėti mygtukai
 turi aiškų pavadinimą ekrano skaitytuvui, o telefone jų paspaudimo vieta yra bent 44 × 44 taškai.
-Ištrintų įrašų sąraše galima juos atkurti arba, turint teisę, ištrinti visam laikui.
+Įrašų rūšys, turinčios šiukšlinę, leidžia atkurti įrašą arba, turint teisę ir nesant susiejimų apribojimų, ištrinti jį visam laikui.
 
 ## Paieška ir įrašų pasirinkimas {#paieska-ir-pasirinkimas}
+
+### Rasti skiltį ar įrašą {#bendra-paieska}
+
+Viršutinėje juostoje atverk paiešką arba spausk **⌘/Ctrl + K** – atsidarys komandų paletė.
+Joje rasi tau prieinamas skiltis, veiksmus ir įrašų paiešką. Žvaigždute prisek dažnai naudojamą
+puslapį; prisegtos nuorodos rodomos paletės pradžioje. Telefone paiešką pasieksi iš navigacijos.
+
+Atskiras **Paieška** puslapis (`/mano/search`) grupuoja rezultatus pagal įrašo rūšį.
+**Rodyti visus** nuveda į atitinkamą sąrašą, kuriame gali tikslinti paiešką ir filtrus.
+Paieška nesuteikia naujų teisių: kitų įrašų ar jų veiksmų prieiga priklauso nuo tavo pareigų ir rolių.
+
+### Grįžti prie sąrašo {#sarasai}
+
+Sąrašo paieška ir filtrai veikia tik tos rūšies įrašams. Pakeitęs filtrus ar rikiavimą ir
+atvėręs įrašą, grįžk atgal – sąrašas išlaiko tavo pasirinktą būklę. **Išvalyti filtrus** naudok,
+jei tikėtino įrašo nematai. Prieš kartodamas kūrimą patikrink, ar jis jau nėra sąraše.
+
+### Pasirinkti susijusį įrašą
 
 Kai forma prašo susieti kitą įrašą, pasirinkimo lange gali ieškoti, filtruoti ir peržiūrėti radinį prieš jį pridėdamas. Pažymėtus įrašus patvirtini lango apačioje; jei laukas neprivalomas, pasirinkimą gali išvalyti. Telefone peržiūrėjęs radinį mygtuku „Atgal į sąrašą“ grįši prie rezultatų. Nepasiekiamą išteklių gali peržiūrėti, bet negali pasirinkti.
 
@@ -67,8 +94,8 @@ Turinio ir konfigūracijos įrašai (naujienos, puslapiai, baneriai, kalendoriau
 ### Daugiakalbiškumas ir vertimai {#vertimai}
 
 VU SA platforma yra dvikalbė (lietuvių ir anglų k.):
-- **Formose** verčiami laukai pateikiami su kalbų pasirinkimu (LT ir EN skirtukais). Lietuvių kalbos tekstas yra privalomas, o anglų kalbos – rekomenduojamas.
-- **Sąrašuose ir viešojoje svetainėje** rodoma dabartinė vartotojo pasirinkta kalba. Jei angliško vertimo nėra, sistema automatiškai rodo lietuvišką tekstą (atsarginį variantą).
+- **Formose su verčiamais laukais** kalbas perjungi LT ir EN valdikliu. Privalomos kalbos ir laukai priklauso nuo įrašo rūšies – vadovaukis forma bei jos gidu.
+- **Verčiamų laukų peržiūroje** rodoma pasirinkta kalba; trūkstamas vertimas gali būti pakeičiamas atsargine kalba. Puslapiai ir naujienos turi [atskirus susietus įrašus kiekvienai kalbai](/svetaine/puslapiai#kalbu-versijos), todėl jų vertimas savaime nesukuriamas.
 
 ## Spalvos, ženklai ir formos {#spalvos-zenklai-ir-formos}
 

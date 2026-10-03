@@ -93,7 +93,7 @@ export function useMeetingCreation() {
       onError: (received) => {
         errors.value = Object.keys(received).length > 0
           ? received
-          : { general: $t('Nepavyko sukurti susitikimo. Bandykite dar kartą.') };
+          : { general: $t('Nepavyko sukurti susitikimo. Bandyk dar kartą.') };
         callbacks.onError?.(errors.value);
       },
       onFinish: () => {

@@ -340,7 +340,7 @@ describe('CollectionPage', () => {
   });
 
   it('shows the source error with a way to retry', async () => {
-    const { source, spies } = makeSource({ error: ref('Paieška nepavyko. Bandykite dar kartą.') });
+    const { source, spies } = makeSource({ error: ref('Paieška nepavyko. Bandyk dar kartą.') });
     const wrapper = mountPage(source);
 
     expect(wrapper.find('[role="alert"]').text()).toContain('Paieška nepavyko');

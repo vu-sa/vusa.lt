@@ -30,7 +30,11 @@ Skiltis pasiekiama adresu `/mano/quickLinks`.
 
 ## Rodymas svetainėje {#rodymas}
 
-<ChangelogNote version="v2.35" date="2026-10-01" title="Meniu paruošiamas prieš pirmą rodymą" />
+<ChangelogNote version="v3.0" date="2026-10-02" title="Meniu paruošiamas prieš pirmą rodymą">
+
+Viešo meniu kalba ir greitųjų nuorodų piktogramos paruošiamos kartu su puslapiu. Nuorodų duomenis toliau tvarkyk šioje skiltyje.
+
+</ChangelogNote>
 
 Nuorodas ir jų piktogramas svetainė pateikia kartu su puslapiu. Piktogramos pasirinkimo keisti nereikia. Jei piktograma dar nepalaikoma vietiniame rinkinyje, ji įkeliama atskirai; nuoroda veikia ir be jos.
 

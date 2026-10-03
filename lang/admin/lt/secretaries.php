@@ -11,7 +11,7 @@ return [
         'current_term' => 'Dabartinė',
         'inherited_term' => 'Bendra',
         'no_cadences' => 'Kadencijų nėra',
-        'no_cadences_hint' => 'Sekretorius galima priskirti tik kadencijai. Pirmiausia nurodykite kadencijas aukščiau.',
+        'no_cadences_hint' => 'Sekretorius galima priskirti tik kadencijai. Pirmiausia nurodyk kadencijas aukščiau.',
     ],
 
     'actions' => [

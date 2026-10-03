@@ -349,7 +349,7 @@ function refreshFiles() {
 }
 
 async function handleCreateFolder() {
-  const folderName = prompt($t('Įveskite aplanko pavadinimą'));
+  const folderName = prompt($t('Įvesk aplanko pavadinimą'));
   if (!folderName || !folderName.trim()) return;
 
   folderHttp.path = currentPath.value;

@@ -10,7 +10,9 @@ use App\Models\Relationship;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
+use App\Services\InstitutionAccessService;
 use App\Services\RelationshipService;
+use App\Services\Typesense\TypesenseScopedKeyService;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -1170,3 +1172,77 @@ describe('getTypeRelationshipGraph', function (): void {
         expect(collect($graph['nodes'])->pluck('id'))->toContain((string) $isolatedType->id);
     });
 });
+
+test('relationship lifecycle refreshes warmed institution results without manual cache clearing', function (string $class): void {
+    $source = $this->sourceInstitution;
+    $target = $this->relatedInstitution;
+    $sourceId = $source->id;
+    $targetId = $target->id;
+    if ($class === InstitutionType::class) {
+        $sourceType = InstitutionType::factory()->create();
+        $targetType = InstitutionType::factory()->create();
+        $source->types()->attach($sourceType);
+        $target->types()->attach($targetType);
+        $sourceId = $sourceType->id;
+        $targetId = $targetType->id;
+    }
+    expect(RelationshipService::getRelatedInstitutionsCached($source))->toBeEmpty()
+        ->and(RelationshipService::getRelatedInstitutionsCached($target))->toBeEmpty();
+
+    $edge = Relationshipable::create([
+        'relationship_id' => $this->relationship->id,
+        'relationshipable_type' => MorphMap::alias($class),
+        'relationshipable_id' => $sourceId,
+        'related_model_id' => $targetId,
+        'bidirectional' => false,
+    ]);
+
+    expect(RelationshipService::getRelatedInstitutionsCached($source)->first()['authorized'])->toBeTrue()
+        ->and(RelationshipService::getRelatedInstitutionsCached($target)->first()['authorized'])->toBeFalse();
+
+    $edge->update(['bidirectional' => true]);
+
+    expect(RelationshipService::getRelatedInstitutionsCached($target)->first()['authorized'])->toBeTrue();
+
+    $edge->delete();
+
+    expect(RelationshipService::getRelatedInstitutionsCached($source))->toBeEmpty()
+        ->and(RelationshipService::getRelatedInstitutionsCached($target))->toBeEmpty();
+})->with([
+    'direct institutions' => [Institution::class],
+    'institution types' => [InstitutionType::class],
+]);
+
+test('direct relationship mutations invalidate both members access variants and search keys', function (string $mutation): void {
+    $sourceUser = User::factory()->create();
+    $targetUser = User::factory()->create();
+    Duty::factory()->for($this->sourceInstitution)->create()->users()->attach($sourceUser, ['start_date' => now()->subDay()]);
+    Duty::factory()->for($this->relatedInstitution)->create()->users()->attach($targetUser, ['start_date' => now()->subDay()]);
+    $attributes = [
+        'relationship_id' => $this->relationship->id,
+        'relationshipable_type' => MorphMap::alias(Institution::class),
+        'relationshipable_id' => $this->sourceInstitution->id,
+        'related_model_id' => $this->relatedInstitution->id,
+    ];
+    $edge = $mutation === 'create' ? null : Relationshipable::create($attributes);
+    $keys = collect([$sourceUser, $targetUser])->flatMap(fn (User $user) => [
+        InstitutionAccessService::getAccessCacheKey($user->id),
+        InstitutionAccessService::getAccessCacheKey($user->id, false),
+        TypesenseScopedKeyService::getCacheKey($user->id),
+    ]);
+    foreach ($keys as $key) {
+        Cache::put($key, ['stale'], 300);
+    }
+    Cache::put('unrelated-relationship-cache', 'kept', 300);
+
+    match ($mutation) {
+        'create' => Relationshipable::create($attributes),
+        'update' => $edge->update(['bidirectional' => true]),
+        'delete' => $edge->delete(),
+    };
+
+    foreach ($keys as $key) {
+        expect(Cache::has($key))->toBeFalse();
+    }
+    expect(Cache::get('unrelated-relationship-cache'))->toBe('kept');
+})->with(['create', 'update', 'delete']);

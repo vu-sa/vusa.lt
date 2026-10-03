@@ -222,3 +222,24 @@ test('destroy removes the record when SharePoint already lost the file', functio
 
     expect(FileableFile::query()->find($file->id))->toBeNull();
 });
+
+test('destroy removes the current local record after a successful remote deletion', function (): void {
+    $file = meetingFile($this->meeting);
+    $this->graph->shouldReceive('deleteDriveItem')->once()->with('drive-item-1')->andReturnNull();
+
+    asUser($this->admin)->delete(route('fileableFiles.destroy', $file))
+        ->assertRedirect()->assertSessionHas('info', __('messages.sharepoint.file_deleted'));
+
+    $this->assertModelMissing($file);
+});
+
+test('destroy retains and marks the current record after a non-404 Graph failure', function (): void {
+    $file = meetingFile($this->meeting);
+    $this->graph->shouldReceive('deleteDriveItem')->once()->with('drive-item-1')->andThrow(new RuntimeException('Graph timeout'));
+
+    asUser($this->admin)->delete(route('fileableFiles.destroy', $file))
+        ->assertRedirect()->assertSessionHas('info');
+
+    $this->assertModelExists($file);
+    expect($file->fresh()->deleted_externally_at)->not->toBeNull();
+});

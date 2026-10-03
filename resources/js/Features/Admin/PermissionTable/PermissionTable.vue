@@ -1,6 +1,6 @@
 <template>
   <Spinner v-if="formDisabled">
-    <p>Netikėta klaida. Praneškite administratoriui.</p>
+    <p>Netikėta klaida. Pranešk administratoriui.</p>
   </Spinner>
   <table v-else class="w-full table-auto">
     <thead>

@@ -120,7 +120,7 @@ const hits = computed<NormalizedSearchHit[]>(() => {
 
 const runSearch = useDebounceFn(async () => {
   if (adminSearch.isRateLimited.value) {
-    errorMessage.value = $t('Per daug užklausų. Palaukite ir bandykite vėliau.');
+    errorMessage.value = $t('Per daug užklausų. Palauk ir bandyk vėliau.');
     isSearching.value = false;
     return;
   }

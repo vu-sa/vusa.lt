@@ -13,7 +13,11 @@ tests:
 
 ## Kaip tai veikia
 
-<ChangelogNote version="v2.36" date="2026-10-02" title="Atskiri institucijų ir pareigybių tipų sąrašai" />
+<ChangelogNote version="v3.0" date="2026-10-02" title="Atskiri institucijų ir pareigybių tipų sąrašai">
+
+Institucijų ir pareigybių tipai tvarkomi atskirai. Renkantis sąrašą išlieka bendras katalogas, o susiejimai ir rolės tvarkomi konkretaus tipo įraše.
+
+</ChangelogNote>
 
 Skiltyje **Sistema → Tipai ir kategorijos** pasirink vieną iš penkių sąrašų:
 
@@ -36,13 +40,19 @@ Atidaręs tipo įrašą, skiltyje **Susieti įrašai** tvarkyk institucijas arba
 Viena institucija ar pareigybė gali turėti kelis tipus. Pareigybės tipo įraše atskirai tvarkyk
 roles. Failus rask tipo įrašo failų skiltyje; susieti įrašai gali paveldėti savo tipų ir jų tėvų failus.
 
-## Kas ką gali
+## Kas ką gali {#teises}
 
-Sistemos administratorius tvarko visus penkis sąrašus. Kitiems naudotojams sąrašai ir veiksmai
+Rolė **Super Admin** leidžia tvarkyti visus penkis sąrašus. Kitiems naudotojams sąrašai ir veiksmai
 rodomi pagal suteiktas teises; teisė tvarkyti institucijas ar pareigybes savaime nesuteikia teisės
 keisti bendro tipų sąrašo.
 
-## Susitarimai
+## Pranešimai ir automatizavimas {#pranesimai}
+
+- **Rolių suteikimas**: priskyrus pareigybės tipą pareigybei, jai automatiškai suteikiamos su tuo tipu susietos rolės. Pašalinus tipo priskyrimą pareigybei, su tuo tipu susietos rolės nuo pareigybės atjungiamos.
+- **Teisių atnaujinimas**: atnaujinus tipo roles ar susiejimus, išvaloma susijusių naudotojų prieigos ir navigacijos talpykla.
+- **Vientisumo apsauga**: visam laikui ištrinti tipą, turintį vaikinių tipų, susietų įrašų ar rolių, neleidžiama. Perkėlimui į šiukšlinę šis apribojimas netaikomas.
+
+## Susitarimai {#susitarimai}
 
 Institucijų ir pareigybių tipai yra atskiri sąrašai. Tipo rūšies redaguodamas nekeisk;
 sukurk tinkamos rūšies tipą ir susiek jam reikalingus įrašus.
@@ -50,8 +60,8 @@ sukurk tinkamos rūšies tipą ir susiek jam reikalingus įrašus.
 Ištrintą tipą gali atkurti iš šiukšlinės. Visam laikui ištrinti nepavyks, kol su juo susieti
 įrašai, vaikiniai tipai arba pareigybės tipo rolės; tai galioja ir ištrintiems susietiems įrašams.
 
-## Techninė informacija
+## Techninė informacija {#technine-informacija}
 
 Bendras katalogas: `/mano/types`. Institucijų tipai: `/mano/institutionTypes`;
 pareigybių tipai: `/mano/dutyTypes`. Ankstesni bendri tipų kūrimo ir redagavimo maršrutai
-bei viešas `/api/v1/types` endpointas pašalinti.
+bei viešas `/api/v1/types` maršrutas pašalinti.

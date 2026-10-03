@@ -183,3 +183,20 @@ describe('the Sistema page', function (): void {
         $this->get(route('repMetrics'))->assertRedirect();
     });
 });
+
+test('a non-super-admin reader receives own-recording rates without a baseline or target', function (): void {
+    $reader = makeUser(Tenant::query()->first());
+    $reader->givePermissionTo('roles.read.*');
+    pastMeeting($this->institution, '2026-09-10 10:00:00', 1, $this->rep);
+    pastMeeting($this->institution, '2026-09-11 10:00:00', 1, User::factory()->create());
+    pastMeeting($this->institution, '2026-09-12 10:00:00', 1);
+
+    asUser($reader)->get(route('repMetrics'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->missing('report')
+            ->loadDeferredProps('secondary', fn (Assert $deferred) => $deferred
+                ->where('report.metrics.5.key', 'own_recording')
+                ->where('report.metrics.5.now', 50)
+                ->where('report.metrics.5.baseline', null)
+                ->where('report.metrics.5.target', null)));
+});

@@ -84,7 +84,7 @@
         :label="`${$t('Nuoroda')} (${activeLocale.toUpperCase()})`"
         :disabled="readOnly"
         :warning="permalinkChanged
-          ? $t('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsite ištrinti.')
+          ? $t('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsi ištrinti.')
           : undefined"
         :validating="form.validating"
         :valid="form.valid(`permalink.${activeLocale}`)"

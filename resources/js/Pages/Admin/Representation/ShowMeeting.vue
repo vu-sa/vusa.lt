@@ -157,14 +157,14 @@
             {{ $t('Pridėti instituciją') }}
           </DialogTitle>
           <DialogDescription class="text-sm text-muted-foreground mt-2">
-            Retais atvejais, atstovavimo organai gali turėti bendrų posėdžių. Jei šis posėdis yra bendras su kitomis institucijomis, pasirinkite jas.
-            Galite pasirinkti tik iš susijusių institucijų.
+            Retais atvejais, atstovavimo organai gali turėti bendrų posėdžių. Jei šis posėdis yra bendras su kitomis institucijomis, pasirink jas.
+            Gali pasirinkti tik iš susijusių institucijų.
           </DialogDescription>
         </DialogHeader>
         <div class="space-y-4 pt-2">
           <Select v-model="addInstitutionId">
             <SelectTrigger>
-              <SelectValue :placeholder="$t('Pasirinkite instituciją')" />
+              <SelectValue :placeholder="$t('Pasirink instituciją')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
@@ -202,7 +202,7 @@
         </DialogHeader>
         <div class="space-y-4">
           <p class="text-sm text-muted-foreground">
-            {{ $t("Ar tikrai norite ištrinti šį darbotvarkės punktą? Šis veiksmas negrįžtamas.") }}
+            {{ $t("Ar tikrai nori ištrinti šį darbotvarkės punktą? Šis veiksmas negrįžtamas.") }}
           </p>
           <p v-if="agendaItemPendingDelete" class="border border-border bg-secondary/60 px-3 py-2 text-sm font-medium text-foreground">
             {{ agendaItemPendingDelete.title }}
@@ -232,7 +232,7 @@
 
         <div class="space-y-4">
           <p class="text-sm text-muted-foreground">
-            {{ $t("Ar tikrai norite ištrinti šį posėdį? Šis veiksmas negrįžtamas ir bus pašalinti visi su posėdžiu susiję duomenys, įskaitant darbotvarkės punktus.") }}
+            {{ $t("Ar tikrai nori ištrinti šį posėdį? Šis veiksmas negrįžtamas ir bus pašalinti visi su posėdžiu susiję duomenys, įskaitant darbotvarkės punktus.") }}
           </p>
 
           <div class="border border-[var(--status-danger-border)] bg-[var(--status-danger-surface)] p-3 text-[var(--status-danger)]">

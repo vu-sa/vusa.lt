@@ -7,7 +7,7 @@
  */
 return [
     'merge' => [
-        'redirect' => 'Įrašų sujungimą dabar rasite sąrašo veiksmuose.',
+        'redirect' => 'Įrašų sujungimą dabar rasi sąrašo veiksmuose.',
     ],
     'workspaces' => [
         'pradzia' => [
@@ -211,7 +211,7 @@ return [
         ],
         'new_problem' => [
             'title' => 'Nauja problema',
-            'description' => 'Praneškite apie studentams aktualią problemą',
+            'description' => 'Pranešk apie studentams aktualią problemą',
         ],
         'new_reservation' => [
             'title' => 'Nauja rezervacija',

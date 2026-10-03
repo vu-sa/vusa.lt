@@ -28,10 +28,10 @@
         <component :is="hasSearched ? SearchX : Sparkles" class="size-6 text-muted-foreground/50" />
       </div>
       <p class="text-sm font-medium text-foreground">
-        {{ hasSearched ? emptyMessage : $t('Pradėkite rašyti') }}
+        {{ hasSearched ? emptyMessage : $t('Pradėk rašyti') }}
       </p>
       <p class="mt-1 text-xs text-muted-foreground">
-        {{ hasSearched ? $t('Pabandykite kitą paieškos frazę') : $t('Ieškokite visose jums prieinamose srityse vienu metu') }}
+        {{ hasSearched ? $t('Pabandyk kitą paieškos frazę') : $t('Ieškok visose tau prieinamose srityse vienu metu') }}
       </p>
     </div>
 

@@ -213,7 +213,9 @@ function loginAsAdmin(User $user, string $password = 'password'): PendingAwaitab
 
     // `/up` creates the browser context without loading admin.ts, so its next document gets the
     // service-worker stub before the login app can attempt a registration.
-    $page = visit('/up');
+    // Intl and toLocale* formatting as a Lithuanian user sees it. Native date inputs still follow
+    // the pre-launched Chromium's own language, which the plugin offers no way to set.
+    $page = visit('/up')->withLocale('lt-LT');
     disableServiceWorker($page);
     ignoreResizeObserverLoopErrors($page);
 
@@ -286,6 +288,18 @@ function docsScreenshot(PendingAwaitablePage|AwaitableWebpage $page, string $nam
                 }
             }, 100);
         })
+        JS);
+
+    // Public links are built from the test server's address; readers should see the real site.
+    $page->script(<<<'JS'
+        (() => {
+            const loopback = /127\.0\.0\.1:\d+/g;
+            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+            while (walker.nextNode()) {
+                walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(loopback, 'vusa.lt');
+            }
+            document.querySelectorAll('input').forEach(input => { input.value = input.value.replace(loopback, 'vusa.lt'); });
+        })()
         JS);
 
     $wasDark = $page->script('document.documentElement.classList.contains("dark")');

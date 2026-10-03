@@ -155,7 +155,7 @@
                 </li>
                 <li class="flex items-start gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center border border-border bg-background font-mono text-xs font-bold text-foreground">2</span>
-                  <span>{{ $t('Pasirink') }} <strong class="text-foreground">„Subscribe from web"</strong> {{ $t('sekciją') }}</span>
+                  <span>{{ $t('Eik į') }} <strong class="text-foreground">„Subscribe from web"</strong> {{ $t('sekciją') }}</span>
                 </li>
                 <li class="flex items-start gap-3">
                   <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center border border-border bg-background font-mono text-xs font-bold text-foreground">3</span>

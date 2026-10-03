@@ -79,7 +79,7 @@
 
       <p v-if="!notes.isHydrating.value && !expanded" class="px-2 pt-2 text-xs leading-relaxed text-muted-foreground">
         <span class="font-semibold">{{ $t('Eksperimentinė funkcija') }}.</span>
-        {{ $t('Pažymėkite tekstą formatavimui, „/" atveria blokų meniu, „@" pamini atstovą.') }}
+        {{ $t('Pažymėk tekstą formatavimui, „/" atveria blokų meniu, „@" pamini atstovą.') }}
       </p>
     </div>
 
@@ -127,7 +127,7 @@
 
         <p class="text-xs leading-relaxed text-muted-foreground">
           <span class="font-semibold">{{ $t('Eksperimentinė funkcija') }}.</span>
-          {{ $t('Pažymėkite tekstą formatavimui, „/" atveria blokų meniu, „@" pamini atstovą.') }}
+          {{ $t('Pažymėk tekstą formatavimui, „/" atveria blokų meniu, „@" pamini atstovą.') }}
         </p>
       </DialogContent>
     </Dialog>
@@ -179,7 +179,7 @@ const extraParticipants = computed(() => Math.max(0, notes.participants.value.le
 const presenceLabel = computed(() => {
   const count = notes.participants.value.length;
   if (count <= 1) {
-    return $t('Tik jūs');
+    return $t('Tik tu');
   }
   return $t(':count žiūri', { count });
 });

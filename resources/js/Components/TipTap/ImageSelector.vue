@@ -5,7 +5,7 @@
         <DialogHeader>
           <DialogTitle>{{ $t('accessibility.select_image') || 'Pasirinkti paveikslėlį' }}</DialogTitle>
           <DialogDescription>
-            {{ $t('accessibility.image_selection_help_text') || 'Pasirinkite paveikslėlį iš failų tvarkyklės ir nustatykite jo prieinamumo savybes.' }}
+            {{ $t('accessibility.image_selection_help_text') || 'Pasirink paveikslėlį iš failų tvarkyklės ir nustatyk jo prieinamumo savybes.' }}
           </DialogDescription>
         </DialogHeader>
 

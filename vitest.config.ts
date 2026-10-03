@@ -105,7 +105,7 @@ export default defineConfig({
         ],
       ),
       // Component tests project - Vue components
-      jsdomProject('component', ['resources/js/**/__tests__/**/*.component.test.ts']),
+      jsdomProject('component', ['resources/js/**/__tests__/**/*.component.test.ts', 'docs/.vitepress/theme/__tests__/**/*.component.test.ts']),
       // Storybook tests project - Stories with browser testing
       {
         plugins: [

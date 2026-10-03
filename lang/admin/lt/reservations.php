@@ -78,9 +78,9 @@ return [
         'clear' => 'Išvalyti',
         'notes' => 'Pastabos',
         'notes_optional' => 'neprivaloma',
-        'notes_placeholder' => 'Įveskite pastabas...',
-        'reject_notes_placeholder' => 'Įveskite atmetimo priežastį...',
-        'backtrack_notes_placeholder' => 'Įveskite atšaukimo priežastį...',
+        'notes_placeholder' => 'Įvesk pastabas...',
+        'reject_notes_placeholder' => 'Įvesk atmetimo priežastį...',
+        'backtrack_notes_placeholder' => 'Įvesk atšaukimo priežastį...',
     ],
     'bulk' => [
         'approve_title' => 'Tvirtinti pasirinktus išteklius',
@@ -107,7 +107,7 @@ return [
         'reversion_reason' => 'Priežastis: :reason',
     ],
     'messages' => [
-        'backtrack_forbidden' => 'Neturite teisės atšaukti šio rezervacijos veiksmo.',
+        'backtrack_forbidden' => 'Neturi teisės atšaukti šio rezervacijos veiksmo.',
         'backtrack_invalid_state' => 'Šioje būsenoje nėra veiksmo, kurį galima atšaukti.',
         'backtrack_missing_approval' => 'Nerastas aktyvus patvirtinimas, kurį galima atšaukti.',
         'backtrack_failed' => 'Nepavyko atšaukti nė vieno rezervacijos veiksmo.',

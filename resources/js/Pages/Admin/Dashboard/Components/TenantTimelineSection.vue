@@ -39,7 +39,7 @@
 
       <TimelineGanttSkeleton v-if="!isReady || filters.tenantInstitutionsLoading.value" />
       <p v-else-if="!filters.tenantInstitutionsLoaded.value && !hasData" class="py-12 text-center text-sm text-muted-foreground">
-        {{ $t('Pasirinkite padalinį norėdami matyti institucijų laiko juostą') }}
+        {{ $t('Pasirink padalinį norėdami matyti institucijų laiko juostą') }}
       </p>
       <div v-else data-tour="gantt-chart" :class="active && 'min-h-0 flex-1'">
         <TimelineGanttChart :class="active && 'h-full'" :height="active ? '100%' : undefined" :fullscreen-active="active"

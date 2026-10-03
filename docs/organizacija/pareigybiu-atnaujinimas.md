@@ -58,7 +58,7 @@ pataisyk rodomas klaidas ir bandyk dar kartą.
 
 ## Rekomendacijos {#susitarimai}
 
-Atnaujink paskyrimus po rinkimų, patikrink tikras kadencijos datas ir atskirk asmeninį
+Po rinkimų atnaujink, kas eina pareigas, patikrink tikras kadencijos datas ir atskirk asmeninį
 nario el. paštą nuo pareigybės institucinio adreso. Renkamosioms pareigoms rekomenduojama
 nurodyti pabaigos datą. Tai patarimai, kurių vedlys automatiškai nepritaiko.
 
@@ -74,7 +74,7 @@ Kiekvienai pareigybei atlik atskirą vedlio eigą. Prieš keisdamas savo adminis
 
 Jei narys tęsia tą patį laikotarpį, jo pabaigos datą pakeisk pareigybės puslapyje.
 Jei reikia atskiro naujos kadencijos įrašo, užbaik seną ir pridėk naują laikotarpį.
-Pasirink pagal tikrą paskyrimą; vedlys savaime nenusprendžia, ar prasidėjo nauja kadencija.
+Rinkis pagal tai, ar narys iš tikrųjų perrinktas naujai kadencijai; vedlys savaime nenusprendžia, ar prasidėjo nauja kadencija.
 
 ## Kas ką gali {#teises}
 
@@ -90,7 +90,7 @@ pabaigos datos taisyklės: įrašius šiandieną, ji dar įskaitoma.
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 
-- Paskyrimas keičia nario pareigybės laikotarpius ir iš jų gaunamą prieigą.
+- Naujo nario pridėjimas keičia jo pareigybės laikotarpius ir iš jų gaunamą prieigą.
 - Užbaigimas išsaugo laikotarpio istoriją; kitos nario pareigybės lieka galioti.
 - **Naujo nario įrašo sukūrimas nesiunčia pakvietimo ir nesukuria prisijungimo instrukcijų.**
   Prisijungimo perdavimą suderink atskirai.

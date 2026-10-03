@@ -19,7 +19,7 @@
           @update:model-value="updateUrl(String($event))"
         />
         <FieldDescription class="text-xs">
-          {{ $t('Įklijuokite Facebook arba Instagram įrašo nuorodą') }}
+          {{ $t('Įklijuok Facebook arba Instagram įrašo nuorodą') }}
         </FieldDescription>
       </Field>
 
@@ -35,7 +35,7 @@
           </span>
         </template>
         <span v-else class="text-amber-600 dark:text-amber-400">
-          {{ $t('Patikrinkite nuorodą') }}
+          {{ $t('Patikrink nuorodą') }}
         </span>
       </div>
 
