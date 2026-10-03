@@ -5,7 +5,7 @@
     desktop it is a bounded dialog, so the window does not resize under the pointer as
     screens swap.
   -->
-  <Drawer v-if="isMobile" :open="isOpen" @update:open="onOpenChange">
+  <Drawer v-if="isMobile" :open="isOpen" @update:open="open => onOpenChange(open, true)">
     <DrawerContent class="h-[92dvh] max-h-[92dvh] border-t border-border p-0">
       <VisuallyHidden>
         <DrawerTitle>{{ $t('action_window.personas.title') }}</DrawerTitle>
@@ -14,7 +14,7 @@
     </DrawerContent>
   </Drawer>
 
-  <Dialog v-else :open="isOpen" @update:open="onOpenChange">
+  <Dialog v-else :open="isOpen" @update:open="open => onOpenChange(open, false)">
     <!--
       Bounded rather than fixed: a floor keeps the window from resizing noticeably
       between steps, a ceiling keeps a long agenda scrolling inside it, and letting
@@ -48,8 +48,8 @@ const { isOpen, close } = useActionWindow();
 // provider, so it falls back to the shell's `useIsMobile()`.
 const isMobile = useIsMobile();
 
-const onOpenChange = (open: boolean) => {
-  if (!open) {
+const onOpenChange = (open: boolean, fromMobile: boolean) => {
+  if (!open && isMobile.value === fromMobile) {
     close();
   }
 };

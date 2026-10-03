@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Actions\PairTranslatedRecord;
 use App\Enums\AgendaItemType;
+use App\Enums\InstitutionActivityCampaign;
 use App\Enums\MeetingType;
 use App\Events\MeetingFullyCreated;
 use App\Models\Cadence;
@@ -14,6 +15,7 @@ use App\Models\FieldResponse;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Institution;
+use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\News;
@@ -119,6 +121,7 @@ class DocsSeeder extends Seeder
         $this->problems($tenant, $representative, $council, $committee);
         $this->dutyTimeline($tenant);
         $this->coordinators($tenant);
+        $this->activityRequests($tenant, $representative, $committee);
         $this->content($tenant);
     }
 
@@ -329,6 +332,39 @@ class DocsSeeder extends Seeder
 
             User::factory()->create(['name' => $name, 'email' => $email])
                 ->duties()->attach($duty, ['start_date' => now()->subYear()]);
+        }
+    }
+
+    /**
+     * An open activity request from the coordinator to the representative for the committee,
+     * providing realistic data for the activity request tab and documentation frames.
+     */
+    private function activityRequests(Tenant $tenant, User $representative, Institution $committee): void
+    {
+        $coordinator = User::query()->where('email', self::COORDINATOR_EMAIL)->firstOrFail();
+
+        $request = InstitutionActivityRequest::query()
+            ->where('institution_id', $committee->id)
+            ->where('recipient_id', $representative->id)
+            ->first();
+
+        if ($request !== null) {
+            $request->update([
+                'requested_by_id' => $coordinator->id,
+                'note' => 'Ar per pastarąjį mėnesį vyko Chemijos SPK posėdis? Laukiame informacijos apie priimtus sprendimus.',
+                'locale' => 'lt',
+            ]);
+        } else {
+            InstitutionActivityRequest::factory()->create([
+                'institution_id' => $committee->id,
+                'recipient_id' => $representative->id,
+                'requested_by_id' => $coordinator->id,
+                'campaign_type' => InstitutionActivityCampaign::ActivityConfirmation,
+                'period_start' => now()->subDays(30),
+                'period_end' => today(),
+                'note' => 'Ar per pastarąjį mėnesį vyko Chemijos SPK posėdis? Laukiame informacijos apie priimtus sprendimus.',
+                'locale' => 'lt',
+            ]);
         }
     }
 

@@ -88,12 +88,6 @@ class TaskAssignedNotification extends BaseNotification
     }
 
     #[\Override]
-    public function mailSignature(object $notifiable): ?array
-    {
-        return $this->coordinatorSignature($notifiable, $this->task->taskable instanceof Institution ? $this->task->taskable : null);
-    }
-
-    #[\Override]
     public function primaryAction(): ?array
     {
         return [

@@ -2,12 +2,10 @@
 
 namespace App\Notifications;
 
-use App\Actions\GetInstitutionCoordinators;
 use App\Enums\EmailDelivery;
 use App\Enums\NotificationCategory;
 use App\Enums\NotificationType;
 use App\Enums\NotificationUrgency;
-use App\Models\Institution;
 use App\Models\User;
 use App\Support\QuietHours;
 use Carbon\CarbonInterface;
@@ -104,15 +102,6 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     }
 
     /**
-     * Whether the secondary action answers the same question as the primary one (R-a), so a mail
-     * draws it as a second button rather than a text link.
-     */
-    public function secondaryActionIsAnswer(): bool
-    {
-        return false;
-    }
-
-    /**
      * Label/value rows saying what this is about (institution, date, deadline); keep to four.
      *
      * @return array<int, array{label: string, value: string}>
@@ -173,40 +162,6 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     public function object(): ?array
     {
         return null;
-    }
-
-    /**
-     * The person the email is signed by, or null to sign as Mano VU SA.
-     *
-     * @return array{name: string, duty: string|null, email: string}|null
-     */
-    public function mailSignature(object $notifiable): ?array
-    {
-        return null;
-    }
-
-    /**
-     * Sign as the coordinator of an institution, using the duty address so a reply reaches the role.
-     *
-     * @return array{name: string, duty: string|null, email: string}|null
-     */
-    protected function coordinatorSignature(object $notifiable, ?Institution $institution): ?array
-    {
-        if ($institution === null) {
-            return null;
-        }
-
-        $coordinator = GetInstitutionCoordinators::execute([$institution], $notifiable instanceof User ? $notifiable : null)[0] ?? null;
-
-        if ($coordinator === null || $coordinator['email'] === null) {
-            return null;
-        }
-
-        return [
-            'name' => $coordinator['name'],
-            'duty' => $coordinator['duty'],
-            'email' => $coordinator['email'],
-        ];
     }
 
     /**
@@ -298,8 +253,6 @@ abstract class BaseNotification extends Notification implements ShouldQueue
                 'body' => $this->body($notifiable),
                 'context' => $this->context($notifiable),
                 'secondaryAction' => $this->secondaryAction(),
-                'secondaryIsAnswer' => $this->secondaryActionIsAnswer(),
-                'signature' => $this->mailSignature($notifiable),
                 'category' => __($this->category()->labelKey()),
                 'settingsUrl' => route('profile.notifications'),
             ]);

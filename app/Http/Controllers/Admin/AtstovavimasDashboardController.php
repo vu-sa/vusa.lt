@@ -9,6 +9,7 @@ use App\Actions\GetUserCoordinators;
 use App\Enums\TenantType;
 use App\Http\Controllers\AdminController;
 use App\Models\Institution;
+use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\Tenant;
@@ -170,6 +171,7 @@ class AtstovavimasDashboardController extends AdminController
             'ganttTenants' => $ganttTenants,
             'defaultGanttTenantIds' => $this->defaultGanttTenantIds($user, $statsTenants, $ganttTenants),
             'canViewTenantTasks' => $user->can('viewAny', Task::class),
+            'canAskAboutActivity' => $user->can('viewAny', InstitutionCheckIn::class),
         ]);
     }
 

@@ -12,6 +12,6 @@
   html: (
     callout: (attrs, body) => callout(type: attrs.at("type", default: "info"), title: attrs.at("title", default: none), body),
     changelog: (attrs, body) => changelog-note(version: attrs.version, date: attrs.date, title: attrs.title, href: attrs.href, body),
-    screenshot: ("void", attrs => screenshot(attrs.src, caption: attrs.at("caption", default: none), narrow: "narrow" in attrs)),
+    screenshot: ("void", attrs => screenshot(attrs.src, caption: attrs.at("caption", default: none), narrow: "narrow" in attrs, phone: "phone" in attrs)),
   ),
 )

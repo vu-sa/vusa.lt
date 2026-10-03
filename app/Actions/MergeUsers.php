@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\Comment;
 use App\Models\Duty;
+use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionCheckIn;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
@@ -68,6 +69,8 @@ class MergeUsers
 
         Comment::query()->where('user_id', $mergedUser->id)->update(['user_id' => $keptUser->id]);
         InstitutionCheckIn::query()->where('user_id', $mergedUser->id)->update(['user_id' => $keptUser->id]);
+        InstitutionActivityRequest::query()->where('recipient_id', $mergedUser->id)->update(['recipient_id' => $keptUser->id]);
+        InstitutionActivityRequest::query()->where('requested_by_id', $mergedUser->id)->update(['requested_by_id' => $keptUser->id]);
 
         $mergedUser->delete();
 

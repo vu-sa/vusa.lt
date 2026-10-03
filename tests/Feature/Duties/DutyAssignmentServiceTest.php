@@ -47,10 +47,10 @@ test('representative lists only change manual rows of the selected duty and tena
 
     app(DutyAssignmentService::class)->syncRepresentatives($duty, [], $tenantId);
 
-    expect($manual->fresh()->end_date->toDateString())->toBe('2026-10-02');
-    expect($source->fresh()->end_date)->toBeNull();
-    expect($otherTenant->fresh()->end_date)->toBeNull();
-    expect($derived->fresh()->end_date)->toBeNull();
+    expect($manual->fresh()->end_date->toDateString())->toBe('2026-10-02')
+        ->and($source->fresh()->end_date)->toBeNull()
+        ->and($otherTenant->fresh()->end_date)->toBeNull()
+        ->and($derived->fresh()->end_date)->toBeNull();
 })->with(['owning tenant' => false, 'assignable tenant' => true]);
 
 test('duplicate representative ids create one audited membership and repeated syncs keep it', function (): void {
@@ -64,13 +64,13 @@ test('duplicate representative ids create one audited membership and repeated sy
     $service->syncRepresentatives($duty, [$user->id], $tenant->id);
 
     $rows = $duty->dutiables()->where('dutiable_id', $user->id)->get();
-    expect($rows)->toHaveCount(1);
-    expect($rows->first()->start_date->toDateString())->toBe('2026-10-02');
-    expect($rows->first()->tenant_id)->toBe($tenant->id);
+    expect($rows)->toHaveCount(1)
+        ->and($rows->first()->start_date->toDateString())->toBe('2026-10-02')
+        ->and($rows->first()->tenant_id)->toBe($tenant->id);
     $activities = Activity::forSubject($duty)->where('event', 'relation_updated')->get();
-    expect($activities)->toHaveCount(1);
-    expect($activities->first()->properties->get('relation'))->toBe('users');
-    expect($activities->first()->properties->get('attached')[0]['id'])->toBe($user->id);
+    expect($activities)->toHaveCount(1)
+        ->and($activities->first()->properties->get('relation'))->toBe('users')
+        ->and($activities->first()->properties->get('attached')[0]['id'])->toBe($user->id);
 });
 
 test('end dating through the service propagates to derived seats', function (): void {
@@ -84,8 +84,8 @@ test('end dating through the service propagates to derived seats', function (): 
 
     app(DutyAssignmentService::class)->endDateDutiables(Dutiable::whereKey($source->id), '2026-10-02');
 
-    expect($source->fresh()->end_date->toDateString())->toBe('2026-10-02');
-    expect($derived->fresh()->end_date->toDateString())->toBe('2026-10-02');
+    expect($source->fresh()->end_date->toDateString())->toBe('2026-10-02')
+        ->and($derived->fresh()->end_date->toDateString())->toBe('2026-10-02');
 });
 
 test('returning representatives get a new term without overwriting their history', function (): void {
@@ -101,7 +101,7 @@ test('returning representatives get a new term without overwriting their history
 
     expect($historical->fresh()->end_date->toDateString())->toBe('2026-06-30');
     $current = $duty->dutiables()->current()->sole();
-    expect($current->id)->not->toBe($historical->id);
-    expect($current->start_date->toDateString())->toBe('2026-10-02');
-    expect($current->end_date)->toBeNull();
+    expect($current->id)->not->toBe($historical->id)
+        ->and($current->start_date->toDateString())->toBe('2026-10-02')
+        ->and($current->end_date)->toBeNull();
 });

@@ -30,7 +30,9 @@
           :institutions="attention"
           :title="$t('visak.institution_summary.needs_attention')"
           :limit="ATTENTION_LIMIT"
+          :askable="canAskAboutActivity"
           @record="recordActivityFor"
+          @ask="askAboutActivity"
         />
       </div>
 
@@ -135,6 +137,7 @@ const props = defineProps<{
   defaultGanttTenantIds: string[];
   /** May read ViSAK → Užduotys; the open-task number counts the selected padaliniai's tasks. */
   canViewTenantTasks: boolean;
+  canAskAboutActivity?: boolean;
 }>();
 
 const ATTENTION_LIMIT = 5;
@@ -222,6 +225,14 @@ const numbers = computed<OverviewNumberItem[]>(() => [
 
 function recordActivityFor(institution: InstitutionActivityInsight): void {
   actionWindow.open({ flow: 'institution.report', institution: { id: institution.id, name: institution.name } });
+}
+
+function askAboutActivity(institutions: InstitutionActivityInsight[]): void {
+  actionWindow.open({
+    flow: 'activity.request',
+    // The request takes at most 100; the list is sorted by urgency, so the cut drops the calmest.
+    institutions: institutions.map(institution => ({ id: institution.id, name: institution.name })),
+  });
 }
 
 // Tenant institutions are rarely the viewer's own, so the window needs the name handed to it.

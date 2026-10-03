@@ -50,6 +50,7 @@ final class MorphMap
         'goal' => Models\Goal::class,
         'institution' => Models\Institution::class,
         'institution_secretary' => Models\InstitutionSecretary::class,
+        'institution_activity_request' => Models\InstitutionActivityRequest::class,
         'institution_check_in' => Models\InstitutionCheckIn::class,
         'institution_follow' => Models\InstitutionFollow::class,
         'institution_notification_mute' => Models\InstitutionNotificationMute::class,

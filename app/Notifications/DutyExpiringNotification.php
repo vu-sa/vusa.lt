@@ -80,12 +80,6 @@ class DutyExpiringNotification extends BaseNotification
     }
 
     #[\Override]
-    public function mailSignature(object $notifiable): ?array
-    {
-        return $this->coordinatorSignature($notifiable, $this->duty->institution);
-    }
-
-    #[\Override]
     public function primaryAction(): ?array
     {
         return [

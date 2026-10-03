@@ -34,6 +34,9 @@ export const ACTION_WINDOW_SCREENS: Record<ScreenId, Component> = {
   'checkin.institution': screen(() => import('./screens/InstitutionPickerScreen.vue')),
   'checkin.until': screen(() => import('./screens/CheckInUntilScreen.vue')),
   'checkin.review': screen(() => import('./screens/CheckInReviewScreen.vue')),
+  'activity.campaign': screen(() => import('./screens/ActivityRequestCampaignScreen.vue')),
+  'activity.institutions': screen(() => import('./screens/ActivityRequestInstitutionsScreen.vue')),
+  'activity.review': screen(() => import('./screens/ActivityRequestReviewScreen.vue')),
 };
 
 /**
@@ -60,7 +63,13 @@ const CHECK_IN_FLOW: ScreenId[][] = [
   ['checkin.review'],
 ];
 
-const FLOWS: ScreenId[][][] = [MEETING_FLOW, CHECK_IN_FLOW];
+const ACTIVITY_REQUEST_FLOW: ScreenId[][] = [
+  ['activity.campaign'],
+  ['activity.institutions'],
+  ['activity.review'],
+];
+
+const FLOWS: ScreenId[][][] = [MEETING_FLOW, CHECK_IN_FLOW, ACTIVITY_REQUEST_FLOW];
 
 export interface FlowProgress {
   step: number;
@@ -104,6 +113,10 @@ const FLOW_IDENTITIES: Array<{ screens: ScreenId[]; identity: FlowIdentity }> = 
   {
     screens: CHECK_IN_FLOW.flat(),
     identity: { entity: ModelEnum.MEETING, label: 'action_window.flows.no_meeting' },
+  },
+  {
+    screens: ACTIVITY_REQUEST_FLOW.flat(),
+    identity: { entity: ModelEnum.INSTITUTION, label: 'action_window.flows.ask_activity' },
   },
   {
     screens: ['meeting.pick'],

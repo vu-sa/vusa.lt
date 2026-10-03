@@ -25,6 +25,7 @@
   "Super Admin": "Super administratorius",
   "User": "Vartotojas",
   "Forbidden": "Uždrausta",
+  "Invalid signature.": "Nuoroda nebegalioja arba yra neteisinga.",
   "pending": "laukia",
   "completed": "atlikta",
   "overdue": "vėluoja",

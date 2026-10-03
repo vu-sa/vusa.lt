@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 class UpdateDuty
 {
-    public function __construct(private DutyAssignmentService $assignments) {}
+    public function __construct(private readonly DutyAssignmentService $assignments) {}
 
     /**
      * @param array{name: array<string, string|null>|string, institution_id: string, places_to_occupy: int|float|string, contacts_grouping: string,

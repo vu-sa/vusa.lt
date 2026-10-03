@@ -54,7 +54,7 @@ export default defineConfig(({ command, isSsrBuild }) => {
   // Core plugins needed for both dev and build
   const corePlugins = [
     laravel({
-      input: ['resources/js/app.ts', 'resources/css/app.css'],
+      input: ['resources/js/app.ts', 'resources/js/activity-reply.ts', 'resources/css/app.css'],
       ssr: 'resources/js/ssr.ts',
     }),
     tailwindcss(),

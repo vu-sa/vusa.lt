@@ -106,11 +106,9 @@ const delegatedProps = computed(() => {
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
 
-// Abbreviated month names for the dropdown (prevent overflow)
-const monthNames = [
-  'Sau', 'Vas', 'Kov', 'Bal', 'Geg', 'Bir',
-  'Lie', 'Rgp', 'Rgs', 'Spa', 'Lap', 'Grd',
-];
+const monthNames = computed(() => Array.from({ length: 12 }, (_, month) =>
+  new Intl.DateTimeFormat(props.locale ?? 'lt-LT', { month: 'short', timeZone: 'UTC' }).format(new Date(Date.UTC(2020, month, 1))),
+));
 
 // Generate years array from range
 const years = computed(() => {

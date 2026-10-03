@@ -432,8 +432,8 @@ describe('duty role management', function (): void {
             'roles' => [$role->id],
         ])->assertForbidden();
 
-        expect($duty->fresh()->getTranslations('name'))->toBe($originalName);
-        expect($duty->roles()->count())->toBe(0);
+        expect($duty->fresh()->getTranslations('name'))->toBe($originalName)
+            ->and($duty->roles()->count())->toBe(0);
     });
 
     test('can assign roles to duties', function (): void {

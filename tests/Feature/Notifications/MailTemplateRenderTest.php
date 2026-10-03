@@ -5,6 +5,7 @@ use App\Mail\NotificationDigest;
 use App\Models\Duty;
 use App\Models\DutyResponsibility;
 use App\Models\Institution;
+use App\Models\InstitutionActivityRequest;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -13,6 +14,7 @@ use App\Notifications\CommentPostedNotification;
 use App\Notifications\InstitutionActivityNotification;
 use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskAutoCompletedNotification;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Mail\Markdown;
 
@@ -92,13 +94,12 @@ describe('notification email', function (): void {
         expect(mb_strlen(renderNotificationMail($notification, $this->recipient)['subject']))->toBeLessThanOrEqual(60);
     });
 
-    test('a notification whose second action is an answer draws it as a second button', function (): void {
-        $task = Task::factory()->create(['metadata' => ['activity_status' => 'overdue']]);
-        $notification = new InstitutionActivityNotification($task, Institution::factory()->create());
+    test('"Ar vyko posėdis?" draws both answers as buttons and offers "not mine" as a link', function (): void {
+        $notification = new InstitutionActivityNotification(new EloquentCollection([InstitutionActivityRequest::factory()->create()]));
 
         $rendered = renderNotificationMail($notification, $this->recipient);
 
-        expect($rendered['html'])->toContain(e($notification->secondaryAction()['url']), 'button-secondary')
+        expect($rendered['html'])->toContain(e($notification->primaryAction()['url']), e($notification->secondaryAction()['url']), 'button-secondary', __('notifications.action_not_mine'))
             ->and($rendered['text'])->toContain($notification->secondaryAction()['url'], $notification->secondaryAction()['label']);
     });
 
@@ -136,33 +137,22 @@ describe('notification email', function (): void {
         expect($rendered['html'])->toContain('https://example.test/two')->not->toContain('button-secondary');
     });
 
-    test('an institution email is signed by the coordinator, on the duty address', function (): void {
+    test('an institution email signs off as Mano VU SA, not on behalf of its coordinator', function (): void {
         $tenant = Tenant::query()->where('type', '!=', 'pkp')->first() ?? Tenant::factory()->create(['type' => 'padalinys']);
         $institution = Institution::factory()->for($tenant)->create();
         coordinatorFor($institution, 'koordinatoriai@vusa.lt');
 
-        $rendered = renderNotificationMail(new InstitutionActivityNotification(Task::factory()->create(), $institution), $this->recipient);
+        $request = InstitutionActivityRequest::factory()->for($institution)->create();
+        $rendered = renderNotificationMail(new InstitutionActivityNotification(new EloquentCollection([$request])), $this->recipient);
 
-        expect($rendered['html'])->toContain('Ona Koordinatorė', 'koordinatoriai@vusa.lt')
-            ->and($rendered['text'])->toContain('Ona Koordinatorė', 'koordinatoriai@vusa.lt');
+        expect($rendered['text'])->toContain(__('notifications.mail.sign_off'))
+            ->not->toContain('Ona Koordinatorė', 'koordinatoriai@vusa.lt');
     });
 
-    test('the recipient is never asked to write to themselves', function (): void {
-        $tenant = Tenant::query()->where('type', '!=', 'pkp')->first() ?? Tenant::factory()->create(['type' => 'padalinys']);
-        $institution = Institution::factory()->for($tenant)->create();
-        $coordinator = coordinatorFor($institution, 'koordinatoriai@vusa.lt');
-
-        $rendered = renderNotificationMail(new InstitutionActivityNotification(Task::factory()->create(), $institution), $coordinator);
-
-        expect($rendered['html'])->not->toContain('koordinatoriai@vusa.lt')
-            ->and($rendered['text'])->not->toContain(__('notifications.mail.signature_intro'));
-    });
-
-    test('without a person to sign it falls back to Mano VU SA, never the system', function (): void {
+    test('every email signs off as Mano VU SA, never the system', function (): void {
         $rendered = renderNotificationMail(new TaskAutoCompletedNotification(Task::factory()->create(), 'Patvirtinta'), $this->recipient);
 
         expect($rendered['text'])->toContain(__('notifications.mail.sign_off'))
-            ->not->toContain(__('notifications.mail.signature_intro'))
             ->not->toContain('SISTEMA');
     });
 });

@@ -14,6 +14,24 @@
     :trash="{ count: deletedCount, active: isTrash }"
     :search-placeholder="$t('Ieškoti tipų')"
   >
+    <template #actions>
+      <SpotlightPopover
+        v-if="canCreate && !isTrash"
+        :title="$t(`shell.actions.${createAction}.title`)"
+        :description="$t(`shell.actions.${createAction}.description`)"
+        :is-dismissed="spotlight.isDismissed.value"
+        align="end"
+        @dismiss="spotlight.dismiss"
+      >
+        <Button as-child variant="brand" size="lg">
+          <Link :href="route(`${resource}.create`)" @click="spotlight.dismiss">
+            <Plus aria-hidden="true" />
+            {{ $t(`shell.actions.${createAction}.title`) }}
+          </Link>
+        </Button>
+      </SpotlightPopover>
+    </template>
+
     <template #row="{ item }">
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
@@ -34,8 +52,9 @@
 </template>
 
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Plus } from 'lucide-vue-next';
 import { computed, toRef } from 'vue';
 
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
@@ -43,9 +62,12 @@ import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { Button } from '@/Components/ui/button';
 import { ModelEnum } from '@/Types/enums';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { isTrashView, useLocalCollectionSource } from '@/Composables/useCollectionSource';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { formatDate } from '@/Utils/dateTime';
 
@@ -59,8 +81,13 @@ const props = defineProps<{
 
 const resource = props.typeKind === 'institutionType' ? 'institutionTypes' : 'dutyTypes';
 const entityType = props.typeKind === 'institutionType' ? ModelEnum.INSTITUTION_TYPE : ModelEnum.DUTY_TYPE;
+const createAction = props.typeKind === 'institutionType' ? 'new_institution_type' : 'new_duty_type';
+const spotlight = props.typeKind === 'institutionType'
+  ? useFeatureSpotlight('institution-type-create-v1')
+  : useFeatureSpotlight('duty-type-create-v1');
 const page = usePage();
 const isTrash = isTrashView();
+const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.[props.typeKind]));
 const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.[props.typeKind]));
 
 const titleOf = (type: TypeRow) => getTranslatedValue(type.title) || type.slug || '—';

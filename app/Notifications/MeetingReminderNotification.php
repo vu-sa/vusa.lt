@@ -85,12 +85,6 @@ class MeetingReminderNotification extends BaseNotification
     }
 
     #[\Override]
-    public function mailSignature(object $notifiable): ?array
-    {
-        return $this->coordinatorSignature($notifiable, $this->meeting->institutions->first());
-    }
-
-    #[\Override]
     public function primaryAction(): ?array
     {
         return [

@@ -47,3 +47,10 @@ describe('useActionWindowCatalog', () => {
     expect(resolved.findPersona('coordinator')?.actions[1]?.target).toEqual({ kind: 'route', route: 'dutiables.timeline' });
   });
 });
+
+it('shows the campaign chooser under the coordinator persona only when catalogued', () => {
+  vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: catalog([action('ask_activity', { kind: 'screen', screen: 'activity.campaign' })]) }));
+  const resolved = resolveCatalog();
+  expect(resolved.findPersona('coordinator')?.actions[0]?.target).toEqual({ kind: 'screen', screen: 'activity.campaign' });
+  expect(resolved.findPersona('representative')).toBeUndefined();
+});

@@ -20,6 +20,9 @@ tests:
   - tests/Feature/Tasks/InstitutionSecretaryMailScopeTest.php
   - tests/Feature/Tasks/Subscribers/MeetingTaskSubscriberTest.php
   - tests/Feature/Notifications/InstitutionActivityAnswerTest.php
+  - tests/Feature/Admin/Management/InstitutionActivityRequestControllerTest.php
+  - resources/js/Components/ActionWindow/__tests__/ActivityRequestScreens.component.test.ts
+  - tests/Browser/InstitutionActivityReplyTest.php
   - tests/Unit/InstitutionActivityStatusServiceTest.php
   - resources/js/Pages/Admin/People/__tests__/ShowInstitution.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/IndexInstitution.component.test.ts
@@ -133,6 +136,89 @@ arba institucijos meniu **⋯ → Pridėti pažymą**.
 - Galiojančius pranešimus galima panaikinti. Narys panaikina tik savo pranešimą, koordinatorius ir
   institucijos redaguotojas – visus.
 
+### Paklausti atstovų, ar vyko posėdis {#paklausti}
+
+Koordinatorius gali pats paklausti atstovų, ar institucija posėdžiavo – nelaukdamas automatinio
+priminimo. Klausimą siųsk iš:
+
+- **ViSAK → Padaliniai**, sąrašo **Reikia dėmesio** mygtuko **Paklausti atstovų** (pasirinktos visos
+  sąrašo institucijos);
+- **+ Sukurti → Paklausti, ar vyko posėdžiai** (institucijas pasirenki pats);
+- institucijos meniu **⋯ → Paklausti, ar vyko posėdžiai**.
+
+<ChangelogNote version="v3.0" date="2026-10-02" title="Dvi atskiros užklausos ir atsakymų istorija">
+Pasirink, ar klausi apie institucijos veiklą, ar prašai papildyti posėdžių įrašus. Išsiųstas užklausas
+ir atsakymus rasi institucijos skiltyje **Užklausos atstovams**.
+</ChangelogNote>
+
+Pirmiausia pasirink **Ar vyko posėdis?** arba **Papildyk posėdžių įrašus** – net jei institucijos
+jau pasirinktos. Vienu kartu gali pasirinkti iki **100 institucijų**. Filtruok pagal padalinį arba
+ieškok pavadinimo; prieš atveriant langą pasirinktos institucijos lieka sąrašo pradžioje.
+
+Peržiūroje **Ką ir kam išsiųsime** matai kiekvieną gavėją ir jo laikotarpį.
+**Kam laiško nesiųsime** paaiškina praleistas institucijas ir gavėjų pranešimų nustatymus:
+laiškas dabar, santrauka, išjungtas el. paštas ar nutildyti pranešimai. Gali pridėti žinutę iki 500
+simbolių. Patvirtinus rodoma, kiek užklausų ir laiškų įtraukta į eilę; tai dar nėra pristatymo patvirtinimas.
+
+<DocScreenshot name="activity-request-review" narrow alt="Veiksmų lango peržiūra prieš siunčiant veiklos užklausas" caption="Veiksmų lango peržiūra: gavėjų sąrašas, laikotarpis ir koordinatoriaus žinutė prieš išsiunčiant užklausas." />
+
+Užklausa skiriama dabartinės kadencijos sekretoriams, o jei jų nėra – dabartiniams studentų
+atstovams. Tau pačiam užklausos nesiunčiame. Laikotarpis prasideda nuo institucijos dabartinės
+kadencijos pradžios, bet atstovui negali prasidėti anksčiau už jo pareigybės laikotarpį. Jei dabartinės
+kadencijos nėra, naudojama atstovo pareigų pradžia. Paskutinė pareigų diena dar yra galiojanti.
+Laikotarpio pabaiga užfiksuojama siunčiant ir vėliau nesikeičia.
+
+**Ar vyko posėdis?** nesiunčiama gavėjui, kurio laikotarpiu posėdis jau užfiksuotas.
+**Papildyk posėdžių įrašus** klausia apie jau vykusius posėdžius, kurių darbotvarkės tuščios arba
+neužpildyti sprendimai. Jei laikotarpiu posėdžių nėra, rinkis **Ar vyko posėdis?**; jei visos
+darbotvarkės užpildytos, papildymo užklausos nesiunčiamos. Koordinatorius, kuris pats yra
+institucijos atstovas, gali įtraukti ir save. Pakartotinės užklausos
+tam pačiam gavėjui, apie tą pačią instituciją ir tą patį jau apimtą laikotarpį nesiunčiamos;
+skirtingos užklausų rūšys vertinamos atskirai.
+
+### Atsakymas iš laiško {#atsakymas}
+
+Atsakyti gali **neprisijungęs**. Nuoroda atveria puslapį, o atsakymą įrašo tik tavo patvirtinimas.
+Nuorodos galioja **14 dienų**.
+
+<DocScreenshot name="activity-request-email" narrow alt="Atstovui siunčiamas pranešimo el. laiškas su veiklos klausimu ir atsakymo mygtukais" caption="Pranešimo el. laiškas atstovui su pasirašytomis greitojo atsakymo nuorodomis." />
+
+- **Taip, vyko** – įrašyk vieno ar kelių posėdžių datas, formatus ir laiką. Sprendimui el. paštu
+  laiko nereikia. Darbotvarkes papildysi prisijungęs prie Mano VU SA.
+- **Ne, nevyko** – veiklos užklausoje patvirtink, kad visą nurodytą laikotarpį posėdžio nebuvo.
+  Jei posėdis tuo metu jau įrašytas, šio atsakymo patvirtinti negalėsi.
+- **Viskas užfiksuota** – įrašų papildymo užklausoje patvirtink, kad visi laikotarpio posėdžiai
+  įrašyti ir jų darbotvarkės bei sprendimai užpildyti. Kol dar yra neužpildytų įrašų, patvirtinimo
+  priimti negalima. Pranešimas apie laiką be posėdžių apima tik likusį tarpą po paskutinio posėdžio iki
+  nurodytos pabaigos. Jau patvirtinti tarpai nedubliuojami.
+- **Tai ne mano institucija** – pranešk klaususiems koordinatoriams patikrinti atstovų duomenis.
+  Kitų gavėjų užklausos lieka atviros.
+
+<DocScreenshot name="activity-request-reply" narrow alt="Atsakymo puslapis be prisijungimo, kuriame atstovas pažymi posėdžius" caption="Viešas atsakymo puslapis: atstovė nurodo posėdžio datą, laiką ir formatą be prisijungimo." />
+
+Įrašų papildymo laiške ir puslapyje matai posėdžius, kuriuos reikia papildyti. **Papildyti įrašus**
+atveria užklausą; konkretaus posėdžio nuoroda veda į Mano VU SA, kur prisijungęs papildai
+darbotvarkę ir sprendimus. Jei trūksta paties posėdžio, rinkis **Pridėti trūkstamą posėdį**.
+Klaidingai užpildytos eilutės ir
+pasirinktas atsakymas išlieka, kad galėtum pataisyti laukus. Kompiuteryje kalendorius rodomas
+lietuviškai (angliškame puslapyje – angliškai), savaitė prasideda pirmadienį, laikas rašomas 24 val.
+formatu. Telefono kalendoriaus kalba priklauso nuo tavo įrenginio.
+
+Užfiksuotas posėdis gali užbaigti tik to laikotarpio veiklos užklausą. Įrašų papildymo užklausas
+kitiems gavėjams užbaigia tik **Viskas užfiksuota**, kai tavo patvirtintas laikotarpis apima jų
+klausiamą laikotarpį. Senas, nesusijęs posėdis ar pranešimas dabartinės priminimo užduoties neužbaigia.
+
+### Užklausos atstovams {#uzklausos}
+
+Institucijos puslapyje atverk **Užklausos atstovams**. Koordinatorius mato visas institucijos
+užklausas, gavėjas – tik savąsias; kiti skaitytojai jų nemato. Naujausios siuntimo grupės rodomos
+pirmos, pagal užklausos rūšį. Matai siuntėją arba automatinį šaltinį, laikotarpį, žinutę, gavėją,
+atsakymą, laikus ir užfiksuotus rezultatus. Koordinatoriui nerodomos gavėjo atsakymo nuorodos.
+
+Istorija įkeliama atskirai, po 20 siuntimo grupių; senesnes atverk mygtuku **Rodyti daugiau**.
+Būsena rodo, ar dar laukiama atsakymo, jau atsakyta, veikla patvirtinta kitu įrašu, ar nuorodos
+galiojimas baigėsi. Ankstesnės užklausos be užfiksuotos pabaigos išlaiko laikotarpį iki atsakymo dienos.
+
 ### Sekretoriai {#sekretoriai}
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Sekretorius ir koordinatorius atlieka skirtingus darbus">
@@ -202,6 +288,7 @@ puslapyje (**⋯ → Sekti**) arba sąraše, pažymėjęs kelias institucijas. S
 | Matyti visą institucijos puslapį | – | ✓ | ✓, savo ir su jomis susietų | ✓, savo padalinio | ✓, savo padalinio | ✓ |
 | Fiksuoti posėdį | – | – | ✓, savo institucijose | ✓, savo padalinio | ✓, savo padalinio | ✓ |
 | Pranešti „Posėdžio nebuvo“ | – | ✓ | ✓, savo institucijose | ✓, savo padalinio | ✓, savo padalinio | ✓ |
+| Paklausti atstovų, ar vyko posėdis | – | – | – | ✓, savo padalinio | ✓, savo padalinio | ✓ |
 | Sukurti, redaguoti, skirti sekretorius | – | – | – | ✓, savo padalinio | ✓, savo padalinio | ✓ |
 | Ištrinti ir atkurti | – | – | – | – | ✓, savo padalinio | ✓ |
 | Galutinai ištrinti | – | – | – | – | – | – |
@@ -209,14 +296,16 @@ puslapyje (**⋯ → Sekti**) arba sąraše, pažymėjęs kelias institucijas. S
 „Centrinio biuro koordinatoriai“ – rolės **Centrinio biuro studentų atstovų koordinatorius** ir
 **Centrinio biuro komunikacijos koordinatorius**. Galutinai ištrinti gali tik super
 administratorius. Pareigybė su studentų atstovų [koordinavimo atsakomybe](/pagrindai/atsakomybes#teises)
-pranešimus „Posėdžio nebuvo“ tvarko ir kuruojamose institucijose, net be rolės.
+pranešimus „Posėdžio nebuvo“ tvarko ir atstovų apie posėdžius klausia kuruojamose institucijose, net be rolės.
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 
 | Kada | Kas gauna | Ką |
 |---|---|---|
-| Kasdien, kai būklė „Artėja terminas“ arba „Vėluoja“ | Kadencijos sekretoriai, o jei jų nėra – dabartiniai atstovai | Užduotį **„Pranešti apie veiklą“** ir laišką „Ar vyko posėdis?“ su dviem mygtukais: užregistruoti posėdį arba pranešti, kad jo nebuvo |
-| Užregistruojamas posėdis arba pranešimas „Posėdžio nebuvo“ | – | Užduotis pažymima atlikta automatiškai |
+| Kasdien, kai būklė „Artėja terminas“ arba „Vėluoja“ | Kadencijos sekretoriai, o jei jų nėra – dabartiniai atstovai | Užduotį **„Pranešti apie veiklą“** ir laišką „Ar vyko posėdis?“, į kurį [atsakoma neprisijungus](#atsakymas) |
+| Koordinatorius [paklausia atstovų](#paklausti) | Tie patys | Vieną laišką „Ar vyko posėdis?“ apie visas jų institucijas, su koordinatoriaus žinute |
+| Gavėjas atsako „Tai ne mano institucija“ | Klausęs koordinatorius, o automatinio priminimo atveju – institucijos koordinatoriai | Pranešimą patikrinti institucijos atstovus |
+| Užregistruojamas dabartinį veiklos laikotarpį apimantis posėdis arba pranešimas „Posėdžio nebuvo“ | – | Periodiškumo užduotis pažymima atlikta automatiškai |
 | Seki instituciją ir sukuriamas jos posėdis ar užpildoma darbotvarkė | Sekėjai, išskyrus nutildžiusius | Pranešimą |
 
 - Užduotis nekuriama per akademines atostogas, jei institucija turi suplanuotą posėdį ar galiojantį
@@ -247,7 +336,8 @@ pranešimus „Posėdžio nebuvo“ tvarko ir kuruojamose institucijose, net be 
   centrinio biuro rolės – tas pačias su `*`. `institutions.forceDelete.*` neturi nė viena rolė.
 - Pranešimus „Posėdžio nebuvo“ tikrina `InstitutionCheckInPolicy`: kurti gali nariai ir
   administratoriai (`institutions.update.padalinys` institucijos padalinyje arba studentų atstovų
-  koordinavimo atsakomybė institucijai); visus panaikinti – tik administratoriai.
+  koordinavimo atsakomybė institucijai); visus panaikinti – tik administratoriai. Klausti atstovų
+  (`askAboutActivity`) gali tik administratoriai; super administratorius – visur.
 
 ### Kaip tai įgyvendinta
 
@@ -260,5 +350,12 @@ pranešimus „Posėdžio nebuvo“ tvarko ir kuruojamose institucijose, net be 
 - Periodiškumo užduotis: `tasks:repopulate institution` (kasdien 08:00) →
   `PeriodicityGapTaskHandler`; gavėjai – `ResolveTaskAssignees::forInstitution`.
 - Pranešimo sutrumpinimas: `CheckInService::adjustForMeeting()` iš `MeetingController`.
+- Klausimai „Ar vyko posėdis?“: `InstitutionActivityRequest` (vienas gavėjui ir institucijai),
+  siunčia `SendInstitutionActivityRequests` (`HandleTaskCreated` automatiniam priminimui,
+  `InstitutionActivityRequestController` koordinatoriui). Atsakymo puslapis
+  `InstitutionActivityAnswerController` pasiekiamas per pasirašytą nuorodą (`signed`); GET nieko
+  neįrašo, nes pašto skeneriai atveria nuorodas. Atsakymą įrašo `AnswerInstitutionActivityRequest`,
+  o laikotarpį atitinkančius veiklos klausimus užbaigia `ResolveInstitutionActivityRequests`.
+  Įrašų papildymo klausimus užbaigia tik aiškus laikotarpio patvirtinimas.
 - Sekretoriai: `InstitutionSecretary`; perskyrimas – `ResyncTaskAssigneesForCadence`; perkėlimas į
   savą kadenciją – `CarrySecretariesIntoOverride` (`Cadence::booted()`).

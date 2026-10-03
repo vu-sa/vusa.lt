@@ -122,6 +122,10 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (Throwable $e, Request $request): ?Response {
+            if ($request->is('atsakymas/*') && $e instanceof HttpException && in_array($e->getStatusCode(), [403, 404], true)) {
+                return response()->view('activity-answers.unavailable', [], $e->getStatusCode());
+            }
+
             // Maintenance mode gets the dedicated maintenance view instead of the generic
             // 503 page. PreventRequestsDuringMaintenance throws a plain HttpException with
             // no maintenance-specific type, so the only way to tell it apart from a genuine

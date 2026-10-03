@@ -24,7 +24,7 @@ Sritis rodoma **visiems** naudotojams.
 
 <DocScreenshot name="admin-home" alt="Mano VU SA pradžia: tavo užduotys, greiti veiksmai ir artimiausi posėdžiai" caption="Pradžia – užduotys ir artimiausi tavo posėdžiai vienoje vietoje." href="/mano" />
 
-<DocScreenshot name="admin-home-phone" narrow alt="Pradžia telefone: užduotys, institucijos ir apatinė juosta su Mano, Užduotys, + Sukurti, Pranešimai ir Meniu" caption="Telefone skiltys ir + Sukurti perkeliami į apatinę juostą." />
+<DocScreenshot name="admin-home-phone" phone alt="Pradžia telefone: užduotys, institucijos ir apatinė juosta su Mano, Užduotys, + Sukurti, Pranešimai ir Meniu" caption="Telefone skiltys ir + Sukurti perkeliami į apatinę juostą." />
 
 Pradžios puslapio turinys priklauso nuo tavo pareigybių: studentų atstovas mato savo institucijų
 posėdžius ir jų užduotis, išteklių valdytojas – tvirtinimo laukiančias rezervacijas.

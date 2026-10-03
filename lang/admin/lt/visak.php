@@ -156,4 +156,9 @@ return [
         'loading_meetings' => 'Kraunami posėdžiai…',
         'meetings_load_failed' => 'Nepavyko įkelti posėdžių. Bandyk dar kartą.',
     ],
+    'activity_request' => [
+        'ask' => 'Paklausti atstovų',
+        'spotlight_title' => 'Paklausk atstovų vienu laišku',
+        'spotlight_body' => 'Atstovai gaus laišką „Ar vyko posėdis?“ ir atsakys vienu paspaudimu, net neprisijungę. Atsakymai užfiksuojami automatiškai.',
+    ],
 ];

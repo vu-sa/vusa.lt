@@ -7,7 +7,7 @@ paths:
 
 ## Rep-facing screens: the five-minute visit
 Student reps (~300, mostly on phones) arrive from an email and must finish the job on that page without learning the app. Their problem is the recording loop, not navigation.
-- Reminders are answerable (buttons deep-link into the right ActionWindow screen, pre-filled).
+- Reminders are answerable (buttons deep-link into the right ActionWindow screen, pre-filled). "Ar vyko posėdis?" goes further: a signed link answers it without signing in (`InstitutionActivityAnswerController`), and its GET only asks — mail scanners open every link, so only the confirming POST records.
 - A meeting can be saved with institution + date only; what's missing shows as a one-tap "Papildyk" list, never a blocker.
 - Agenda items can be pasted from invitation text; an unanswered vote row shows big taps (už / prieš / susilaikė), an answered one collapses to its answer (tap to change or clear). Vote titles, order, main vote and notes live in the "Tvarkyti balsavimus" sheet, not on the cards. One item per screen with ‹ › stepping through every item — no "incomplete only" walk mode.
 - Show impact ("Matoma vusa.lt") and the named koordinatorius with a contact action.

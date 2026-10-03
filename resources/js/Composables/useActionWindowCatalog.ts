@@ -23,6 +23,7 @@ import {
   FileText,
   GraduationCap,
   Landmark,
+  MailQuestion,
   MessageSquareWarning,
   PencilLine,
   Settings2,
@@ -133,6 +134,14 @@ export function buildPersonas(): ActionWindowPersona[] {
       description: $t('action_window.personas.coordinator.description'),
       icon: Settings2,
       actions: [
+        {
+          key: 'ask_activity',
+          title: $t('shell.actions.ask_activity.title'),
+          description: $t('shell.actions.ask_activity.description'),
+          icon: MailQuestion,
+          requiresPermission: () => true,
+          target: { kind: 'screen', screen: 'activity.campaign' },
+        },
         {
           key: 'new_news',
           title: $t('action_window.actions.new_news.title'),

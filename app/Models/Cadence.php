@@ -33,7 +33,7 @@ use Illuminate\Support\Collection;
  * @property-read Meeting|null $endMeeting
  * @property-read Institution|null $institution
  * @property-read mixed $label
- * @property-read Collection<int, InstitutionSecretary> $secretaryAssignments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, InstitutionSecretary> $secretaryAssignments
  * @property-read Meeting|null $startMeeting
  *
  * @method static Builder<static>|Cadence containing(string $date)

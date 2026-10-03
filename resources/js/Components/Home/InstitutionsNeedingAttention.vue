@@ -6,6 +6,26 @@
     :empty="institutions.length === 0"
     :empty-text="$t('visos institucijos posėdžius fiksuoja laiku')"
   >
+    <template v-if="askable" #actions>
+      <SpotlightPopover
+        :title="$t('visak.activity_request.spotlight_title')"
+        :description="$t('visak.activity_request.spotlight_body')"
+        :is-dismissed="askSpotlight.isDismissed.value"
+        @dismiss="askSpotlight.dismiss()"
+      >
+        <Button
+          variant="outline"
+          size="sm"
+          class="pointer-coarse:h-11"
+          data-slot="institutions-needing-attention-ask"
+          @click="ask"
+        >
+          <MailQuestion aria-hidden="true" />
+          {{ $t('visak.activity_request.ask') }}
+        </Button>
+      </SpotlightPopover>
+    </template>
+
     <InstitutionAttentionList :institutions="visibleInstitutions" @record="emit('record', $event)" />
 
     <!-- A padalinys can have hundreds: the rest open in a searchable dialog, not inline. -->
@@ -47,13 +67,15 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Landmark, List, Search } from 'lucide-vue-next';
+import { Landmark, List, MailQuestion, Search } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import InstitutionAttentionList from './InstitutionAttentionList.vue';
 import type { InstitutionActivityInsight } from './types';
 
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
@@ -63,11 +85,21 @@ const props = defineProps<{
   title?: string;
   /** Rows shown on the page; the rest open in a dialog. Unset shows all. */
   limit?: number;
+  /** Offers to email the representatives of every listed institution "Ar vyko posėdis?". */
+  askable?: boolean;
 }>();
 
 const emit = defineEmits<{
   record: [institution: InstitutionActivityInsight];
+  ask: [institutions: InstitutionActivityInsight[]];
 }>();
+
+const askSpotlight = useFeatureSpotlight('activity-requests-v1');
+
+function ask(): void {
+  askSpotlight.dismiss();
+  emit('ask', props.institutions);
+}
 
 const sectionTitle = computed(() => props.title ?? $t('Tavo institucijos'));
 

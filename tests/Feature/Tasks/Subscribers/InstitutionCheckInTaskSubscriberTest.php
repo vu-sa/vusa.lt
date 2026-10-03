@@ -66,7 +66,7 @@ describe('InstitutionCheckInTaskSubscriber', function (): void {
         InstitutionCheckIn::factory()
             ->for($institution)
             ->for($user)
-            ->create();
+            ->create(['start_date' => today(), 'end_date' => today()->addWeek()]);
 
         $task->refresh();
 
@@ -87,7 +87,7 @@ describe('InstitutionCheckInTaskSubscriber', function (): void {
         $checkIn = InstitutionCheckIn::factory()
             ->for($institution)
             ->for($user)
-            ->create();
+            ->create(['start_date' => today(), 'end_date' => today()->addWeek()]);
 
         expect($checkIn)->not->toBeNull();
     });
@@ -140,7 +140,7 @@ describe('InstitutionCheckInTaskSubscriber', function (): void {
         InstitutionCheckIn::factory()
             ->for($institution1)
             ->for($user)
-            ->create();
+            ->create(['start_date' => today(), 'end_date' => today()->addWeek()]);
 
         $task1->refresh();
         $task2->refresh();

@@ -5,6 +5,7 @@ use App\Enums\NotificationType;
 use App\Enums\NotificationUrgency;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionActivityRequest;
 use App\Models\Meeting;
 use App\Models\Pivots\Dutiable;
 use App\Models\Task;
@@ -22,6 +23,7 @@ use App\Notifications\TaskOverdueNotification;
 use App\Notifications\TaskReminderNotification;
 use App\Notifications\WelcomeNotification;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use NotificationChannels\WebPush\WebPushChannel;
 
@@ -83,8 +85,7 @@ describe('base contract', function (): void {
     });
 
     test('the only two-action notification is the register-meeting / report-activity pair', function (): void {
-        $task = Task::factory()->create(['metadata' => ['activity_status' => 'overdue']]);
-        $notification = new InstitutionActivityNotification($task, Institution::factory()->create());
+        $notification = new InstitutionActivityNotification(new EloquentCollection([InstitutionActivityRequest::factory()->create()]));
 
         expect($notification->primaryAction())->toHaveKeys(['label', 'url'])
             ->and($notification->secondaryAction())->toHaveKeys(['label', 'url'])
@@ -157,8 +158,9 @@ describe('act-tier context rows', function (): void {
     test('InstitutionActivity lists the institution and days without activity', function (): void {
         $institution = Institution::factory()->create();
         $task = Task::factory()->create(['metadata' => ['activity_status' => 'overdue', 'effective_days_since_activity' => 45]]);
+        $request = InstitutionActivityRequest::factory()->for($institution)->create(['task_id' => $task->id]);
 
-        $rows = new InstitutionActivityNotification($task, $institution)->context($this->user);
+        $rows = new InstitutionActivityNotification(new EloquentCollection([$request]))->context($this->user);
 
         expectContextRows($rows);
         expect(collect($rows)->pluck('value'))->toContain($institution->name, '45 d.');

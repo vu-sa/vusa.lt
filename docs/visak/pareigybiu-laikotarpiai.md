@@ -73,7 +73,7 @@ pareigybės laikotarpį** (telefone – iš apačios). Joje:
   (žr. [laikotarpio datas](/organizacija/pareigybes#laikotarpio-datos)); **Ištrinti priskyrimą** –
   pašalina laikotarpį visai (tai daryk tik klaidingai sukurtam įrašui).
 
-<DocScreenshot name="dutiable-sheet" narrow alt="Forma „Redaguoti pareigybės laikotarpį“: pareigybė, narys, pradžios ir pabaigos datos, papildomas el. paštas ir nuotrauka" caption="Vieno pareigybės laikotarpio forma pareigybės puslapyje." />
+<DocScreenshot name="dutiable-sheet" phone alt="Forma „Redaguoti pareigybės laikotarpį“: pareigybė, narys, pradžios ir pabaigos datos, papildomas el. paštas ir nuotrauka" caption="Vieno pareigybės laikotarpio forma pareigybės puslapyje." />
 
 *Ex officio* laikotarpio (žr. [Ex officio pareigos](#ex-officio)) datų formoje keisti negalima, o
 užbaigti ar ištrinti jo nesiūloma.

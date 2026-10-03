@@ -18,7 +18,11 @@
 @endforeach
 </div>
 @endif
-@if (! empty($item['primaryAction']))
+@if (! empty($item['activity_questions']))
+@foreach ($item['activity_questions'] as $question)
+<x-mail::activity-question :question="$question" />
+@endforeach
+@elseif (! empty($item['primaryAction']))
 <div style="margin-top: 6px;"><a href="{{ $item['primaryAction']['url'] }}" style="font-size: 13px; font-weight: 600; color: #bd2835; text-decoration: none;">{{ $item['primaryAction']['label'] }} →</a></div>
 @endif
 </td>

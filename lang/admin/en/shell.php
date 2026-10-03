@@ -195,6 +195,10 @@ return [
             'title' => 'Record a meeting',
             'description' => 'Record a meeting and its agenda',
         ],
+        'ask_activity' => [
+            'title' => 'Ask whether meetings happened',
+            'description' => 'Representatives answer from the email in one tap',
+        ],
         'no_meeting' => [
             'title' => 'No meeting held',
             'description' => 'Mark that the institution did not meet this period',

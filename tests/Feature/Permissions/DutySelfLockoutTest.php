@@ -72,10 +72,10 @@ test('self lockout rolls back duty attributes memberships and queued target back
         ]))
         ->assertSessionHas('access_change_warning');
 
-    expect($this->adminDuty->fresh()->getTranslations('name'))->toBe($originalName);
-    expect($membership->fresh()->end_date)->toBeNull();
-    expect($this->adminDuty->exOfficioTargetDuties()->count())->toBe(0);
-    expect(Dutiable::where('duty_id', $target->id)->count())->toBe(0);
+    expect($this->adminDuty->fresh()->getTranslations('name'))->toBe($originalName)
+        ->and($membership->fresh()->end_date)->toBeNull()
+        ->and($this->adminDuty->exOfficioTargetDuties()->count())->toBe(0)
+        ->and(Dutiable::where('duty_id', $target->id)->count())->toBe(0);
 });
 
 test('acknowledged duty role loss persists and redirects to the dashboard', function (): void {
@@ -89,6 +89,6 @@ test('acknowledged duty role loss persists and redirects to the dashboard', func
         ->assertSessionHas('success', __('access_change.applied'))
         ->assertSessionMissing('access_change_warning');
 
-    expect($this->adminDuty->fresh()->roles()->count())->toBe(0);
-    expect($this->adminDuty->fresh()->getTranslation('name', 'lt'))->toBe('Test Duty');
+    expect($this->adminDuty->fresh()->roles()->count())->toBe(0)
+        ->and($this->adminDuty->fresh()->getTranslation('name', 'lt'))->toBe('Test Duty');
 });

@@ -177,11 +177,14 @@ declare global {
       label: unknown
       // relations
       institution?: Institution
+      secretary_assignments?: InstitutionSecretary[]
       start_meeting?: Meeting
       end_meeting?: Meeting
       // counts
+      secretary_assignments_count: number
       // exists
       institution_exists: boolean
+      secretary_assignments_exists: boolean
       start_meeting_exists: boolean
       end_meeting_exists: boolean
     }
@@ -929,6 +932,54 @@ declare global {
       available_files_exists: boolean
       tasks_exists: boolean
       activities_as_subject_exists: boolean
+    }
+
+    export interface InstitutionActivityRequest {
+      // columns
+      id: string
+      send_id: string
+      institution_id: string
+      recipient_id: string
+      requested_by_id?: string | null
+      task_id?: string | null
+      period_start: string
+      note?: string | null
+      answer?: InstitutionActivityAnswer | null
+      answered_at?: string | null
+      resolved_at?: string | null
+      meeting_id?: string | null
+      check_in_id?: string | null
+      expires_at: string
+      created_at?: string | null
+      updated_at?: string | null
+      campaign_type: InstitutionActivityCampaign
+      period_end?: string | null
+      locale?: string | null
+      resolution_source?: string | null
+      resolved_by_request_id?: string | null
+      // relations
+      institution?: Institution
+      recipient?: User
+      requested_by?: User
+      task?: Task
+      meeting?: Meeting
+      check_in?: InstitutionCheckIn
+      resolved_by_request?: InstitutionActivityRequest
+      meetings?: Meeting[]
+      check_ins?: InstitutionCheckIn[]
+      // counts
+      meetings_count: number
+      check_ins_count: number
+      // exists
+      institution_exists: boolean
+      recipient_exists: boolean
+      requested_by_exists: boolean
+      task_exists: boolean
+      meeting_exists: boolean
+      check_in_exists: boolean
+      resolved_by_request_exists: boolean
+      meetings_exists: boolean
+      check_ins_exists: boolean
     }
 
     export interface InstitutionCheckIn {
@@ -2537,6 +2588,22 @@ declare global {
     } as const;
 
     export type GoalStatus = typeof GoalStatus[keyof typeof GoalStatus]
+
+    const InstitutionActivityAnswer = {
+      Met: 'met',
+      NotMet: 'not_met',
+      NotMine: 'not_mine',
+      Complete: 'complete',
+    } as const;
+
+    export type InstitutionActivityAnswer = typeof InstitutionActivityAnswer[keyof typeof InstitutionActivityAnswer]
+
+    const InstitutionActivityCampaign = {
+      ActivityConfirmation: 'activity_confirmation',
+      MissingMeetings: 'missing_meetings',
+    } as const;
+
+    export type InstitutionActivityCampaign = typeof InstitutionActivityCampaign[keyof typeof InstitutionActivityCampaign]
 
     const MeetingType = {
       InPerson: 'in-person',

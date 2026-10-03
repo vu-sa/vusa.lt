@@ -18,6 +18,7 @@ use App\Listeners\QueueNotificationForDigest;
 use App\Listeners\RecordDeviceLogin;
 use App\Listeners\ReservationResource\HandleReservationResourceCreated;
 use App\Listeners\ReservationResource\HandleReservationResourceStateChanged;
+use App\Listeners\ResolveInstitutionActivityRequests;
 use App\Listeners\SendMemberRegistrationNotification;
 use App\Listeners\SendStudentRepRegistrationNotification;
 use App\Listeners\SyncContactSearchIndexes;
@@ -118,6 +119,7 @@ class EventServiceProvider extends ServiceProvider
         ApprovalTaskSubscriber::class,
         MeetingTaskSubscriber::class,
         InstitutionCheckInTaskSubscriber::class,
+        ResolveInstitutionActivityRequests::class,
         // Notification subscribers
         ApprovalNotificationSubscriber::class,
         // Search index subscribers

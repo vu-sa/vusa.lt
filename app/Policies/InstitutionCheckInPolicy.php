@@ -42,6 +42,14 @@ class InstitutionCheckInPolicy
         return $this->administers($user, $institution);
     }
 
+    /**
+     * Email the institution's secretaries or representatives "Ar vyko posėdis?".
+     */
+    public function askAboutActivity(User $user, Institution $institution): bool
+    {
+        return $this->administers($user, $institution);
+    }
+
     private function isMember(User $user, Institution $institution): bool
     {
         return $institution->users()->whereKey($user->getKey())->exists();

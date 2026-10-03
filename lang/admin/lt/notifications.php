@@ -72,10 +72,18 @@ return [
     'overdue_tasks' => 'Vėluojančios užduotys',
     'periodicity_gap_title' => 'Laikas pranešti apie :institution veiklą',
     'periodicity_gap_question_title' => 'Ar vyko „:institution“ posėdis?',
-    'periodicity_gap_body' => 'Jei posėdis vyko, užfiksuok jį. Jei ne – vienu paspaudimu pasakyk, kad nevyko.',
-    'periodicity_gap_body_days' => 'Jau :days d. „:institution“ veiklos neužfiksuota. Jei posėdis vyko, užfiksuok jį. Jei ne – vienu paspaudimu pasakyk, kad nevyko.',
-    'action_register_meeting' => 'Taip, fiksuoti',
+    'periodicity_gap_body' => 'Ar „:institution“ posėdžiavo nuo :date? Atsakyk vienu paspaudimu – prisijungti nereikia.',
+    'periodicity_gap_body_days' => 'Jau :days d. „:institution“ veiklos neužfiksuota. Ar posėdžiavo nuo :date? Atsakyk vienu paspaudimu – prisijungti nereikia.',
+    'activity_request_multi_title' => 'Ar vyko tavo institucijų posėdžiai?',
+    'activity_request_multi_body' => 'Prie kiekvienos institucijos pasirink, ar ji posėdžiavo. Prisijungti nereikia.',
+    'activity_request_note' => ':name rašo: „:note“',
+    'action_register_meeting' => 'Taip, vyko',
     'action_report_activity' => 'Ne, nevyko',
+    'action_not_mine' => 'Tai ne mano institucija',
+    'action_answer' => 'Atsakyti',
+    'action_open_institution' => 'Atverti instituciją',
+    'activity_not_mine_title' => 'Patikrink „:institution“ atstovus',
+    'activity_not_mine_body' => ':name atsakė, kad neatstovauja „:institution“. Patikrink institucijos atstovus ir sekretorius.',
 
     // Registration notifications
     'member_registered_title' => 'Nauja nario registracija',
@@ -150,11 +158,10 @@ return [
     'action_view' => 'Peržiūrėti',
     'action_review' => 'Peržiūrėti',
 
-    // Email footer: signature and "why you got this"
+    // Email footer: sign-off and "why you got this"
     'mail' => [
         'why_received' => 'Gavai šį laišką, nes pranešimų nustatymuose įjungei kategorijos „:category“ laiškus.',
         'settings_link' => 'Keisti pranešimų nustatymus',
-        'signature_intro' => 'Klausimų? Rašyk:',
         'sign_off' => 'Mano VU SA',
     ],
 
@@ -176,6 +183,10 @@ return [
         'access_started' => 'Nuo :date turi',
         'access_ended' => 'Nuo :date nebeturi',
         'author' => 'Autorius',
+        'since' => 'Laikotarpis',
+        'since_value' => 'nuo :date',
+        'asked_by' => 'Klausia',
+        'answered_by' => 'Atsakė',
     ],
 
     // One entry per NotificationType
@@ -202,7 +213,11 @@ return [
         ],
         'institution_activity' => [
             'label' => 'Ar institucija posėdžiavo?',
-            'description' => 'Kai tavo institucija ilgai neturi užfiksuoto posėdžio. Atsakai vienu mygtuku.',
+            'description' => 'Kai tavo institucija ilgai neturi užfiksuoto posėdžio arba koordinatorius klausia, ar ji posėdžiavo. Atsakai vienu mygtuku, prisijungti nereikia.',
+        ],
+        'institution_activity_not_mine' => [
+            'label' => 'Laiškas pateko ne tam žmogui',
+            'description' => 'Kai laiško „Ar vyko posėdis?“ gavėjas atsako, kad institucijos neatstovauja.',
         ],
         'meeting_created' => [
             'label' => 'Sukurtas naujas posėdis',

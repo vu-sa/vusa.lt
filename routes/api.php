@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\Admin\EventTypeApiController;
 use App\Http\Controllers\Api\Admin\FileApiController;
 use App\Http\Controllers\Api\Admin\FormApiController;
 use App\Http\Controllers\Api\Admin\ImpersonateApiController;
+use App\Http\Controllers\Api\Admin\InstitutionActivityRequestApiController;
 use App\Http\Controllers\Api\Admin\InstitutionApiController;
 use App\Http\Controllers\Api\Admin\InstitutionSubscriptionApiController;
 use App\Http\Controllers\Api\Admin\MailQueueApiController;
@@ -156,6 +157,8 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
 
         // Guided action window ("Veiksmų langas") personalised choices
         Route::get('action-window/context', [ActionWindowApiController::class, 'context'])->name('actionWindow.context');
+        Route::get('activity-requests/candidates', [InstitutionActivityRequestApiController::class, 'candidates'])->name('activityRequests.candidates');
+        Route::post('activity-requests/preview', [InstitutionActivityRequestApiController::class, 'preview'])->name('activityRequests.preview');
         Route::get('merge-candidates/{type}', [MergeCandidateApiController::class, 'index'])->name('mergeCandidates.index');
 
         // Meetings

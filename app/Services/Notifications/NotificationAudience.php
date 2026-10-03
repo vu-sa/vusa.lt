@@ -5,6 +5,7 @@ namespace App\Services\Notifications;
 use App\Actions\GetResourceManagers;
 use App\Enums\NotificationType;
 use App\Enums\Responsibility;
+use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionSecretary;
 use App\Models\User;
 use App\Services\ResponsibilityResolver;
@@ -49,6 +50,8 @@ class NotificationAudience
             NotificationType::ApprovalRequested => $this->isResourceManager($user),
             NotificationType::MemberRegistration => $this->holdsRole($user, app(FormSettings::class)->member_registration_notification_recipient_role_id),
             NotificationType::StudentRepRegistration => $this->coordinates($user),
+            // Whoever may send "Ar vyko posėdis?" hears back when it reached the wrong person.
+            NotificationType::InstitutionActivityNotMine => $user->can('viewAny', InstitutionCheckIn::class),
             default => true,
         };
     }

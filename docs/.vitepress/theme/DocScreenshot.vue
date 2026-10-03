@@ -1,5 +1,5 @@
 <template>
-  <figure v-if="!missing" :class="['doc-screenshot', { 'doc-screenshot--narrow': narrow }]">
+  <figure v-if="!missing" :class="['doc-screenshot', { 'doc-screenshot--narrow': narrow, 'doc-screenshot--phone': phone }]">
     <img
       :src="withBase(`/screenshots/${locale}/${name}.png`)"
       :alt
@@ -27,6 +27,7 @@ defineProps<{
   href?: string
   /** For element shots (dialogs, panels) that would otherwise stretch to the full column. */
   narrow?: boolean
+  phone?: boolean
 }>()
 
 const { localeIndex } = useData()
@@ -40,11 +41,16 @@ const missing = ref(false)
 }
 
 .doc-screenshot img {
+  max-width: 100%;
   border: 1px solid var(--vp-c-divider);
 }
 
 .doc-screenshot--narrow {
   max-width: 420px;
+}
+
+.doc-screenshot--phone {
+  max-width: 280px;
 }
 
 .doc-screenshot figcaption {

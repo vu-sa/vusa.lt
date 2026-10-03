@@ -63,6 +63,7 @@ return [
         'new_meeting' => 'New meeting',
         'no_meeting' => 'No meetings',
         'complete_meeting' => 'Complete a meeting',
+        'ask_activity' => 'Ask about meetings',
     ],
     'institution' => [
         'title' => 'Which institution?',
@@ -132,6 +133,23 @@ return [
             'agenda_bulk' => 'Adding them right after creating',
             'submit' => 'Record meeting',
             'submitting' => 'Recording…',
+        ],
+    ],
+    'activity_request' => [
+        'institutions' => [
+            'title' => 'Which institutions to ask about?',
+            'subtitle' => 'Their secretaries or representatives get the email “Did the institution meet?” and can answer without signing in.',
+            'continue' => 'Continue (:count)',
+        ],
+        'review' => [
+            'title' => 'What we will send, and to whom',
+            'subtitle' => 'Each recipient gets one email about all of their institutions.',
+            'recipients' => 'To: :names · asking since :date',
+            'change_institutions' => 'Change institutions',
+            'note' => 'Message to recipients (optional)',
+            'note_placeholder' => 'E.g. “Please answer by Friday – we are preparing a report.”',
+            'no_sign_in' => 'The email has the buttons “Yes, it met”, “No, it did not” and “Not my institution”. A link opens the reply page; the answer is recorded only after the recipient confirms it.',
+            'submit' => 'Send questions (:count)',
         ],
     ],
     'check_in' => [

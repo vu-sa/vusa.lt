@@ -95,6 +95,16 @@ export enum GoalStatus {
     NotAchieved = 'not_achieved',
     Dropped = 'dropped',
 }
+export enum InstitutionActivityAnswer {
+    Met = 'met',
+    NotMet = 'not_met',
+    NotMine = 'not_mine',
+    Complete = 'complete',
+}
+export enum InstitutionActivityCampaign {
+    ActivityConfirmation = 'activity_confirmation',
+    MissingMeetings = 'missing_meetings',
+}
 export enum InstitutionActivityStatus {
     NoActivity = 'no_activity',
     Healthy = 'healthy',
@@ -170,6 +180,7 @@ export enum NotificationType {
     TaskAutoCompleted = 'task_auto_completed',
     MeetingReminder = 'meeting_reminder',
     InstitutionActivity = 'institution_activity',
+    InstitutionActivityNotMine = 'institution_activity_not_mine',
     MeetingCreated = 'meeting_created',
     MeetingAgendaCompleted = 'meeting_agenda_completed',
     FollowedInstitutionActivity = 'followed_institution_activity',

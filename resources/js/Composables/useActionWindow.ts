@@ -38,7 +38,10 @@ export type ScreenId
     | 'meeting.pick'
     | 'checkin.institution'
     | 'checkin.until'
-    | 'checkin.review';
+    | 'checkin.review'
+    | 'activity.campaign'
+    | 'activity.institutions'
+    | 'activity.review';
 
 export interface ScreenFrame {
   id: ScreenId;
@@ -67,12 +70,16 @@ export interface ActionWindowDraft {
   meeting: Partial<MeetingFormData>;
   agendaItems: AgendaItemFormData[];
   checkIn: { startDate?: string; endDate?: string; note: string };
+  /** A coordinator asking reps "Ar vyko posėdis?" by email. */
+  activityRequest: { institutions: ActionWindowInstitutionRef[]; pinned: ActionWindowInstitutionRef[]; campaignType: 'activity_confirmation' | 'missing_meetings' | null; note: string };
 }
 
 export interface OpenOptions {
   /** Jump straight into a flow instead of the persona screen. */
-  flow?: 'meeting.create' | 'check-in' | 'meeting.complete' | 'institution.report';
+  flow?: 'meeting.create' | 'check-in' | 'meeting.complete' | 'institution.report' | 'activity.request';
   institution?: ActionWindowInstitutionRef | null;
+  /** Institutions to ask about, for `activity.request`; skips the picker. */
+  institutions?: ActionWindowInstitutionRef[];
   suggestedAt?: Date | string | null;
   /**
    * Create the meeting from an existing announcement. The event's date becomes the
@@ -112,6 +119,7 @@ export interface ActionWindowContext {
   updateMeeting: (data: Partial<MeetingFormData>) => void;
   setAgendaItems: (items: AgendaItemFormData[]) => void;
   updateCheckIn: (data: Partial<ActionWindowDraft['checkIn']>) => void;
+  updateActivityRequest: (data: Partial<ActionWindowDraft['activityRequest']>) => void;
 }
 
 const ACTION_WINDOW_INJECTION_KEY: InjectionKey<ActionWindowContext> = Symbol('action-window');
@@ -122,6 +130,7 @@ const emptyDraft = (): ActionWindowDraft => ({
   meeting: { start_time: '', type: undefined, description: '', announce_in_calendar: false },
   agendaItems: [],
   checkIn: { startDate: undefined, endDate: undefined, note: '' },
+  activityRequest: { institutions: [], pinned: [], campaignType: null, note: '' },
 });
 
 const ROOT_FRAME: ScreenFrame = { id: 'persona' };
@@ -133,6 +142,8 @@ const ROOT_FRAME: ScreenFrame = { id: 'persona' };
  */
 function initialStack(options: OpenOptions | undefined, hasInstitution: boolean): ScreenFrame[] {
   switch (options?.flow) {
+    case 'activity.request':
+      return [{ id: 'activity.campaign' }];
     case 'meeting.create':
       return hasInstitution ? [{ id: 'meeting.type' }] : [{ id: 'meeting.institution' }];
     case 'check-in':
@@ -189,6 +200,11 @@ export function createActionWindowProvider(): ActionWindowContext {
       if (!Number.isNaN(date.getTime())) {
         draft.meeting.start_time = toLocalDateTime(date);
       }
+    }
+
+    if (options?.institutions) {
+      draft.activityRequest.institutions = [...options.institutions];
+      draft.activityRequest.pinned = [...options.institutions];
     }
 
     stack.splice(0, stack.length, ...initialStack(options, !!options?.institution));
@@ -269,6 +285,10 @@ export function createActionWindowProvider(): ActionWindowContext {
     Object.assign(draft.checkIn, data);
   };
 
+  const updateActivityRequest = (data: Partial<ActionWindowDraft['activityRequest']>) => {
+    Object.assign(draft.activityRequest, data);
+  };
+
   const context: ActionWindowContext = {
     isOpen,
     stack,
@@ -290,6 +310,7 @@ export function createActionWindowProvider(): ActionWindowContext {
     updateMeeting,
     setAgendaItems,
     updateCheckIn,
+    updateActivityRequest,
   };
 
   provide(ACTION_WINDOW_INJECTION_KEY, context);
@@ -334,5 +355,6 @@ export function useActionWindow(): ActionWindowContext {
     updateMeeting: noop,
     setAgendaItems: noop,
     updateCheckIn: noop,
+    updateActivityRequest: noop,
   };
 }

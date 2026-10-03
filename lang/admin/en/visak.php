@@ -156,4 +156,9 @@ return [
         'loading_meetings' => 'Loading meetings…',
         'meetings_load_failed' => 'Failed to load meetings. Please try again.',
     ],
+    'activity_request' => [
+        'ask' => 'Ask the representatives',
+        'spotlight_title' => 'Ask the representatives in one email',
+        'spotlight_body' => 'Representatives get the email “Did the institution meet?” and answer in one tap, without signing in. Answers are recorded automatically.',
+    ],
 ];

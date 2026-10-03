@@ -46,6 +46,14 @@ Route::get('/d/{code}', [Public\DocumentRedirectController::class, 'redirect'])
     ->where('code', '[0-9A-Za-z]+')
     ->name('document.short');
 
+// "Ar vyko posėdis?" answers from email, without signing in: the signed link is the authorization.
+Route::get('/atsakymas/{activityRequest}', [InstitutionActivityAnswerController::class, 'show'])
+    ->middleware('signed')
+    ->name('activityAnswers.show');
+Route::post('/atsakymas/{activityRequest}', [InstitutionActivityAnswerController::class, 'store'])
+    ->middleware(['signed', 'throttle:20,1'])
+    ->name('activityAnswers.store');
+
 // Sitemap routes (outside language group)
 Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function (): void {
     Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap.index');

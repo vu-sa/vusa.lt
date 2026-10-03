@@ -11,6 +11,7 @@ use App\Models\EventType;
 use App\Models\Form;
 use App\Models\Goal;
 use App\Models\Institution;
+use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Navigation;
@@ -45,7 +46,7 @@ use Illuminate\Support\Facades\Cache;
 class AdminNavigationCatalog
 {
     /** Bump the suffix when the payload shape or a gate changes, so a deploy never serves the old menu from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v8-';
+    public const string CACHE_PREFIX = 'admin-navigation-v9-';
 
     private const int CACHE_TTL = 1800;
 
@@ -205,6 +206,7 @@ class AdminNavigationCatalog
                 CreateAction::screen('new_meeting', 'shell.actions.new_meeting.title', 'shell.actions.new_meeting.description', 'meeting', 'meeting.institution', Visibility::can('create', Meeting::class)),
                 CreateAction::screen('no_meeting', 'shell.actions.no_meeting.title', 'shell.actions.no_meeting.description', 'meeting', 'checkin.institution', Visibility::can('create', Meeting::class)),
                 CreateAction::screen('complete_meeting', 'shell.actions.complete_meeting.title', 'shell.actions.complete_meeting.description', 'meeting', 'meeting.pick', Visibility::can('create', Meeting::class)),
+                CreateAction::screen('ask_activity', 'shell.actions.ask_activity.title', 'shell.actions.ask_activity.description', 'institution', 'activity.campaign', Visibility::can('viewAny', InstitutionCheckIn::class)),
                 CreateAction::route('new_problem', 'shell.actions.new_problem.title', 'shell.actions.new_problem.description', 'problem', 'problems.create', Visibility::can('create', Problem::class)),
                 CreateAction::route('new_goal', 'shell.actions.new_goal.title', 'shell.actions.new_goal.description', 'goal', 'goals.create', Visibility::can('create', Goal::class)),
             ],

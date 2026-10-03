@@ -63,6 +63,7 @@ return [
         'new_meeting' => 'Naujas posėdis',
         'no_meeting' => 'Posėdžio nebus',
         'complete_meeting' => 'Papildyti posėdį',
+        'ask_activity' => 'Klausti apie posėdžius',
     ],
     'institution' => [
         'title' => 'Kuriai institucijai?',
@@ -132,6 +133,23 @@ return [
             'agenda_bulk' => 'Surašysiu sukūrus posėdį',
             'submit' => 'Fiksuoti posėdį',
             'submitting' => 'Fiksuojama…',
+        ],
+    ],
+    'activity_request' => [
+        'institutions' => [
+            'title' => 'Apie kurias institucijas klausti?',
+            'subtitle' => 'Jų sekretoriai arba atstovai gaus laišką „Ar vyko posėdis?“ ir galės atsakyti neprisijungę.',
+            'continue' => 'Toliau (:count)',
+        ],
+        'review' => [
+            'title' => 'Ką ir kam išsiųsime',
+            'subtitle' => 'Kiekvienas gavėjas gaus vieną laišką apie visas savo institucijas.',
+            'recipients' => 'Gaus: :names · klausiame nuo :date',
+            'change_institutions' => 'Keisti institucijas',
+            'note' => 'Žinutė gavėjams (nebūtina)',
+            'note_placeholder' => 'Pvz., „Prašau atsakyti iki penktadienio – ruošiame ataskaitą.“',
+            'no_sign_in' => 'Laiške bus mygtukai „Taip, vyko“, „Ne, nevyko“ ir „Tai ne mano institucija“. Nuoroda atvers atsakymo puslapį; atsakymas įrašomas tik gavėjui jį patvirtinus.',
+            'submit' => 'Išsiųsti klausimus (:count)',
         ],
     ],
     'check_in' => [

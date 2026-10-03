@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\ActivityRequests\GetInstitutionActivityRequestHistory;
 use App\Actions\GetInstitutionSecretaries;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetTypeFiles;
@@ -213,6 +214,9 @@ class InstitutionController extends AdminController
                 'sharepointPath' => $readOnly() ? null : SharepointFileService::pathOrNull($institution),
                 'sharepointFolderUrl' => $readOnly() ? null : SharepointFileService::folderUrlOrNull($institution),
             ],
+            'canViewActivityRequests' => app(GetInstitutionActivityRequestHistory::class)->visible($institution, request()->user()),
+            'activityRequests' => Inertia::defer(fn () => app(GetInstitutionActivityRequestHistory::class)
+                ->execute($institution, request()->user(), max(1, request()->integer('activity_requests_page', 1))), 'activityRequests'),
             'readOnly' => fn () => $readOnly(),
             'overview' => fn () => [
                 // The status is read off the meetings, so it is withheld with them.
@@ -277,6 +281,7 @@ class InstitutionController extends AdminController
                 'recordMeeting' => ! $readOnly() && ((bool) $user()?->can('createFor', [Meeting::class, $institution])),
                 'createProblem' => (bool) $user()?->can('create', Problem::class),
                 'reportActivity' => ! $readOnly() && ((bool) $user()?->can('create', [InstitutionCheckIn::class, $institution])),
+                'askAboutActivity' => ! $readOnly() && ((bool) $user()?->can('askAboutActivity', [InstitutionCheckIn::class, $institution])),
             ],
             // Terms and secretary rosters are associations, edited on the record rather than in the
             // form (O22, Forms rule 15). Only someone who may update the institution needs them.

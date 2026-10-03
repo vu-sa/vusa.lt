@@ -28,6 +28,13 @@
       />
     </template>
 
+    <template #activityRequests>
+      <Deferred data="activityRequests">
+        <template #fallback><div class="h-32 animate-pulse border-y border-border bg-secondary" /></template>
+        <InstitutionActivityRequestHistory v-if="activityRequests" :key="institution.id" :history="activityRequests" />
+      </Deferred>
+    </template>
+
     <template #duties>
       <Deferred data="duties">
         <template #fallback>
@@ -197,6 +204,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
+import InstitutionActivityRequestHistory, { type ActivityRequestHistory } from '@/Components/Institutions/InstitutionActivityRequestHistory.vue';
 import { Deferred, Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
@@ -209,6 +217,7 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
+  MailQuestion,
   Plus,
   UserCheck,
 } from 'lucide-vue-next';
@@ -251,10 +260,13 @@ import type {
 import type { CadenceRow } from '@/Components/Cadences';
 import type { DutyWithUsers, UserWithPivot } from '@/Components/AdminForms/DutyCard.vue';
 
+
 const props = defineProps<{
   institution: InstitutionPageData & { tenant?: { id: number; shortname: string } | null };
   overview: InstitutionOverviewData;
-  can: { update: boolean; delete: boolean; recordMeeting: boolean; reportActivity: boolean; createProblem?: boolean };
+  activityRequests?: ActivityRequestHistory;
+  canViewActivityRequests: boolean;
+  can: { update: boolean; delete: boolean; recordMeeting: boolean; reportActivity: boolean; askAboutActivity?: boolean; createProblem?: boolean };
   duties?: InstitutionPageDuty[];
   meetings?: InstitutionPageMeeting[];
   /** Deferred (`institutionPanels`). */
@@ -304,6 +316,7 @@ const tabs = computed<RecordPageSection[]>(() => {
       ...(props.institution.has_public_meetings
         ? [{ value: 'meetings', label: $t('Posėdžiai'), count: props.institution.meetings_count }]
         : []),
+      ...(props.canViewActivityRequests ? [{ value: 'activityRequests', label: $t('activity_requests.history_title') }] : []),
       ...problemsTab.value,
     ];
   }
@@ -318,6 +331,7 @@ const tabs = computed<RecordPageSection[]>(() => {
       : []),
     ...problemsTab.value,
     { value: 'files', label: $t('Failai') },
+    ...(props.canViewActivityRequests ? [{ value: 'activityRequests', label: $t('activity_requests.history_title') }] : []),
     { value: 'tasks', label: $t('Užduotys'), count: countIncompleteTasks(props.tasks ?? []) },
   ];
 });
@@ -463,6 +477,10 @@ const overflowActions = computed<ActionDescriptor[]>(() => {
     actions.push({ key: 'check-in', label: $t('Pridėti pažymą'), icon: Clock });
   }
 
+  if (props.can.askAboutActivity) {
+    actions.push({ key: 'ask-activity', label: $t('shell.actions.ask_activity.title'), icon: MailQuestion });
+  }
+
   if (!props.readOnly) {
     actions.push({ key: 'timeline', label: $t('dutiables.timeline.open'), icon: CalendarRange });
   }
@@ -493,6 +511,9 @@ const handleRecordAction = (key: string) => {
       break;
     case 'check-in':
       openCheckInModal();
+      break;
+    case 'ask-activity':
+      actionWindow.open({ flow: 'activity.request', institutions: [{ id: props.institution.id, name: props.institution.name }] });
       break;
     case 'timeline':
       router.visit(route('dutiables.timeline', { institution: props.institution.id }));

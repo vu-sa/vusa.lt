@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Pranešimai
 coverage: ignore
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-03
 tests:
   - tests/Feature/Notifications/NotificationFiringTest.php
   - tests/Feature/Notifications/DigestSystemTest.php
@@ -10,6 +10,7 @@ tests:
   - tests/Feature/Notifications/PushDeliveryTest.php
   - tests/Feature/Notifications/MutingBehaviorTest.php
   - tests/Feature/Notifications/InstitutionActivityAnswerTest.php
+  - tests/Feature/Notifications/MailTemplateRenderTest.php
 ---
 
 # Pranešimai
@@ -78,14 +79,31 @@ visų rūšių pranešimams gauti.
 Kai atstovui paskiriama darbotvarkės rengimo užduotis, jis gauna užduoties pranešimą ir negauna
 papildomo bendro pranešimo apie tą patį naują posėdį.
 
-Jei institucija kurį laiką neužfiksavo posėdžio ar pranešimo, kad jo nebuvo, pagal jos posėdžių
-periodiškumą siunčiamas priminimas **„Ar vyko posėdis?“**. Jame gali pasirinkti:
+Pagal institucijos posėdžių periodiškumą gali gauti **„VU SA · Ar vyko posėdis?“** arba
+**„VU SA · Papildyk posėdžių įrašus“**. Tą patį gali inicijuoti koordinatorius.
+Užklausa nurodo tavo laikotarpį; jo pabaiga užfiksuota siunčiant.
 
-- **Taip, fiksuoti** – atverti posėdžio registravimo langą;
-- **Ne, nevyko** – pranešti, kad posėdžio nebuvo.
+- Veiklos užklausoje pridėk posėdžius arba pasirink **Ne, nevyko**.
+- Įrašų papildymo užklausoje matai jau vykusius posėdžius be darbotvarkės arba su neužpildytais
+  sprendimais. Atverk jų įrašus ir prisijungęs papildyk juos. **Viskas užfiksuota** patvirtinsi,
+  kai darbotvarkės ir sprendimai bus užpildyti. Jei trūksta paties posėdžio, gali jį pridėti.
+- Abiem atvejais gali pasirinkti **Tai ne mano institucija**, kad koordinatorius patikrintų duomenis.
 
-Užfiksavus posėdį ar pranešus, kad jo nebuvo, susijusi priminimo užduotis užbaigiama.
-Išsamiau skaityk [apie posėdžių periodiškumą](/visak/institucijos#periodiskumas).
+Atsakymo nuoroda galioja 14 dienų ir leidžia atsakyti neprisijungus. Vien jos atvėrimas nieko
+neįrašo. Vienu atsakymu gali įrašyti kelis posėdžius; sprendimams el. paštu laiko nereikia.
+Išsamiau skaityk [apie atsakymą iš laiško](/visak/institucijos#atsakymas).
+
+Šios užklausos laikosi tavo pranešimų nustatymų: **Laiškas iškart**, **Santraukoje** arba
+**Nesiųsti**. Nutildymas taip pat taikomas. Pasenę klausimai nesiunčiami, o „įtraukta į eilę“
+nereiškia, kad laiškas jau pristatytas. Užklausų istoriją rasi
+[institucijos puslapyje](/visak/institucijos#uzklausos).
+
+**Suvestinėje** kiekviena rodoma institucija turi savo laikotarpį ir pasirašytas atsakymo
+nuorodas: veiklos klausime **Taip, vyko** / **Ne, nevyko**, papildymo klausime **Papildyti įrašus** /
+**Viskas užfiksuota**, abiem atvejais **Tai ne mano institucija**. Papildymo klausime pateikiamos
+ir konkrečių neužpildytų posėdžių nuorodos. Jos yra ir tekstinėje laiško versijoje.
+
+Visi laiškai pasirašomi **Mano VU SA** vardu, ne koordinatoriaus.
 
 ## Kur rasti pranešimus ir nustatymus {#kur-rasti}
 
@@ -101,4 +119,4 @@ Išsamiau skaityk [apie posėdžių periodiškumą](/visak/institucijos#periodis
 - El. pašto suvestines kaupia `NotificationDigestQueue`, o išsiunčia konsolės komanda `notifications:send-digests`.
 - Kanalus ir nutildymą tikrina `BaseNotification::via()`. Ramybės valandos taikomos pranešimams į įrenginį per `BaseNotification::withDelay()` ir suvestinėms per `ProcessNotificationDigests`.
 - El. pašto ir įrenginio numatytosios parinktys nustatomos atskirai: `NotificationType::defaultEmail()` ir `defaultPush()`.
-- Periodiškumo priminimus generuoja `PeriodicityGapTaskHandler`, o pranešimą `InstitutionActivityNotification` siunčia `HandleTaskCreated` klausytojas. Šią elgseną tikrina `InstitutionActivityAnswerTest`.
+- Periodiškumo priminimus generuoja `PeriodicityGapTaskHandler`; `HandleTaskCreated` per `SendInstitutionActivityRequests` sukuria `InstitutionActivityRequest` kiekvienam gavėjui ir siunčia `InstitutionActivityNotification` su pasirašytomis atsakymo nuorodomis. Šią elgseną tikrina `InstitutionActivityAnswerTest`.

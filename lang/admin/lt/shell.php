@@ -195,6 +195,10 @@ return [
             'title' => 'Fiksuoti posėdį',
             'description' => 'Užfiksuok posėdį ir jo darbotvarkę',
         ],
+        'ask_activity' => [
+            'title' => 'Paklausti, ar vyko posėdžiai',
+            'description' => 'Atstovai atsakys laiške vienu paspaudimu',
+        ],
         'no_meeting' => [
             'title' => 'Posėdžio nebuvo',
             'description' => 'Pažymėk, kad institucija šį periodą nesirinko',

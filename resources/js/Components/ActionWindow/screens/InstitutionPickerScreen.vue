@@ -51,27 +51,18 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import {
-  CalendarCheck,
-  CalendarClock,
-  CalendarOff,
-  CircleAlert,
-  CircleHelp,
-  Landmark,
-  Search as SearchIcon,
-  type LucideIcon,
-} from 'lucide-vue-next';
+import { Landmark, Search as SearchIcon } from 'lucide-vue-next';
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
+import { institutionStatusStyle } from '../institutionStatusStyle';
 import { useWindowDates } from '../useWindowDates';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useActionWindowData, type ActionWindowInstitution } from '@/Composables/useActionWindowData';
 import { describeInstitutionActivity } from '@/Components/Institutions/institutionActivity';
 import { EmptyState } from '@/Components/Patterns';
-import type { StatusRole } from '@/Constants/statuses';
 import { Input } from '@/Components/ui/input';
 import { Skeleton } from '@/Components/ui/skeleton';
 
@@ -109,25 +100,7 @@ const emptyDescription = computed(() =>
   error.value || institutions.value.length === 0 ? '' : $t('action_window.institution.search'),
 );
 
-/**
- * Each activity status gets its own icon and status role: "overdue" and "covered by a
- * check-in" are opposite situations, and a single warning triangle for both was the
- * fastest way to make the list unreadable. Roles follow `institutionActivityStatuses`.
- */
-const STATUS_STYLES: Record<string, { icon: LucideIcon; tone: StatusRole }> = {
-  overdue: { icon: CircleAlert, tone: 'danger' },
-  approaching: { icon: CalendarClock, tone: 'attention' },
-  no_activity: { icon: CircleHelp, tone: 'neutral' },
-  covered_by_check_in: { icon: CalendarOff, tone: 'info' },
-  covered_by_upcoming_meeting: { icon: CalendarCheck, tone: 'info' },
-  // The healthy state is the ordinary one and carries no colour (status rule: don't paint every row).
-  healthy: { icon: Landmark, tone: 'neutral' },
-};
-
-const FALLBACK_STYLE: { icon: LucideIcon; tone: StatusRole } = { icon: Landmark, tone: 'neutral' };
-
-const statusStyle = (institution: ActionWindowInstitution) =>
-  STATUS_STYLES[institution.activity_status.status] ?? FALLBACK_STYLE;
+const statusStyle = (institution: ActionWindowInstitution) => institutionStatusStyle(institution.activity_status.status);
 
 const contextLine = (institution: ActionWindowInstitution): string =>
   describeInstitutionActivity(institution.activity_status, dates);

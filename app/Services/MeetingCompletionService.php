@@ -8,10 +8,24 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Vote;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
+use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 
 class MeetingCompletionService
 {
+    /** @param EloquentCollection<int, Meeting> $meetings
+     * @return EloquentCollection<int, Meeting>
+     */
+    public function incompleteInPeriod(EloquentCollection $meetings, CarbonInterface $start, CarbonInterface $end): EloquentCollection
+    {
+        $meetings = $meetings->filter(fn (Meeting $meeting) => $meeting->start_time->toDateString() >= $start->toDateString()
+            && $meeting->start_time->toDateString() <= $end->toDateString());
+        $meetings->loadMissing(['agendaItems.votes', 'institutions']);
+
+        return $meetings->reject(fn (Meeting $meeting) => $this->calculate($meeting) === 'complete');
+    }
+
     /**
      * Return the concrete work still required to complete a meeting agenda.
      *
@@ -146,7 +160,7 @@ class MeetingCompletionService
      * Kept here rather than on the model so the rule ("one external body is enough") lives in
      * one place — a joint VU/VU SA meeting still records how the students voted.
      *
-     * @param  Collection<int, Institution>|\Illuminate\Database\Eloquent\Collection<int, Institution>  $institutions
+     * @param  Collection<int, Institution>|EloquentCollection<int, Institution>  $institutions
      */
     public function institutionsRequireStudentPerspective($institutions): bool
     {

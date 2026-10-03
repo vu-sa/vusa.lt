@@ -47,14 +47,14 @@ test('duty update persists attributes institution and explicit and type-derived 
     ]));
 
     $updated = $duty->fresh();
-    expect($updated->getTranslations('name'))->toBe(['lt' => 'Atnaujintos pareigos', 'en' => 'Updated duty']);
-    expect($updated->getTranslation('description', 'en'))->toBe('<p>Description</p>');
-    expect($updated->institution_id)->toBe($institution->id);
-    expect($updated->email)->toBe('duty@example.com');
-    expect($updated->places_to_occupy)->toBe(2);
-    expect($updated->contacts_grouping)->toBe('tenant');
-    expect($updated->roles()->pluck('roles.id')->all())->toEqualCanonicalizing([$role->id, $typeRole->id]);
-    expect($updated->types()->pluck('duty_types.id')->all())->toBe([$type->id]);
+    expect($updated->getTranslations('name'))->toBe(['lt' => 'Atnaujintos pareigos', 'en' => 'Updated duty'])
+        ->and($updated->getTranslation('description', 'en'))->toBe('<p>Description</p>')
+        ->and($updated->institution_id)->toBe($institution->id)
+        ->and($updated->email)->toBe('duty@example.com')
+        ->and($updated->places_to_occupy)->toBe(2)
+        ->and($updated->contacts_grouping)->toBe('tenant')
+        ->and($updated->roles()->pluck('roles.id')->all())->toEqualCanonicalizing([$role->id, $typeRole->id])
+        ->and($updated->types()->pluck('duty_types.id')->all())->toBe([$type->id]);
 });
 
 test('duty update leaves omitted or null member lists alone and removes an empty list', function (array $overrides, ?string $expectedEndDate): void {
@@ -80,10 +80,10 @@ test('duty update clears omitted roles types targets and assignable tenants', fu
 
     app(UpdateDuty::class)->execute($duty, updateDutyActionData($duty));
 
-    expect($duty->roles()->count())->toBe(0);
-    expect($duty->types()->count())->toBe(0);
-    expect($duty->exOfficioTargetDuties()->count())->toBe(0);
-    expect($duty->assignableTenants()->count())->toBe(0);
+    expect($duty->roles()->count())->toBe(0)
+        ->and($duty->types()->count())->toBe(0)
+        ->and($duty->exOfficioTargetDuties()->count())->toBe(0)
+        ->and($duty->assignableTenants()->count())->toBe(0);
 });
 
 test('super admin role rejection rolls back attributes and membership writes', function (): void {
@@ -96,11 +96,10 @@ test('super admin role rejection rolls back attributes and membership writes', f
     expect(fn () => app(UpdateDuty::class)->execute($duty, updateDutyActionData($duty, [
         'roles' => [$superRole->id],
         'current_users' => [],
-    ])))->toThrow(HttpException::class, __('messages.role.not_assignable_to_duty'));
-
-    expect($duty->fresh()->getTranslations('name'))->toBe($originalName);
-    expect($row->fresh()->end_date)->toBeNull();
-    expect($duty->roles()->count())->toBe(0);
+    ])))->toThrow(HttpException::class, __('messages.role.not_assignable_to_duty'))
+        ->and($duty->fresh()->getTranslations('name'))->toBe($originalName)
+        ->and($row->fresh()->end_date)->toBeNull()
+        ->and($duty->roles()->count())->toBe(0);
 });
 
 test('assignable tenant removal ends all allocated seats while retained tenants sync manual representatives', function (): void {
@@ -120,12 +119,12 @@ test('assignable tenant removal ends all allocated seats while retained tenants 
         'assignable_tenants' => [['tenant_id' => $retainedTenant->id, 'quota' => 3, 'user_ids' => [$retained->dutiable_id]]],
     ]));
 
-    expect($removed->fresh()->end_date->toDateString())->toBe('2026-10-02');
-    expect($removedDerived->fresh()->end_date->toDateString())->toBe('2026-10-02');
-    expect($retainedDerived->fresh()->end_date)->toBeNull();
-    expect($retained->fresh()->end_date)->toBeNull();
-    expect($owning->fresh()->end_date)->toBeNull();
-    expect($duty->assignableTenants()->first()->pivot->quota)->toBe(3);
+    expect($removed->fresh()->end_date->toDateString())->toBe('2026-10-02')
+        ->and($removedDerived->fresh()->end_date->toDateString())->toBe('2026-10-02')
+        ->and($retainedDerived->fresh()->end_date)->toBeNull()
+        ->and($retained->fresh()->end_date)->toBeNull()
+        ->and($owning->fresh()->end_date)->toBeNull()
+        ->and($duty->assignableTenants()->first()->pivot->quota)->toBe(3);
 });
 
 test('target backfill waits for the outer transaction to commit', function (): void {
@@ -144,8 +143,8 @@ test('target backfill waits for the outer transaction to commit', function (): v
     }
 
     $derived = Dutiable::where('via_dutiable_id', $source->id)->firstOrFail();
-    expect($derived->duty_id)->toBe($target->id);
-    expect($derived->dutiable_id)->toBe($source->dutiable_id);
+    expect($derived->duty_id)->toBe($target->id)
+        ->and($derived->dutiable_id)->toBe($source->dutiable_id);
 });
 
 test('target unlink backfill waits for commit and keeps derived membership history', function (): void {
@@ -183,9 +182,9 @@ test('outer rollback discards duty changes and target backfill', function (): vo
     }
     DB::transaction(fn () => null);
 
-    expect($duty->fresh()->getTranslations('name'))->toBe($originalName);
-    expect($duty->exOfficioTargetDuties()->count())->toBe(0);
-    expect(Dutiable::where('via_dutiable_id', $source->id)->count())->toBe(0);
+    expect($duty->fresh()->getTranslations('name'))->toBe($originalName)
+        ->and($duty->exOfficioTargetDuties()->count())->toBe(0)
+        ->and(Dutiable::where('via_dutiable_id', $source->id)->count())->toBe(0);
 });
 
 test('unchanged ex officio targets do not queue a backfill', function (): void {

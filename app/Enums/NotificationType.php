@@ -18,6 +18,7 @@ enum NotificationType: string
 
     case MeetingReminder = 'meeting_reminder';
     case InstitutionActivity = 'institution_activity';
+    case InstitutionActivityNotMine = 'institution_activity_not_mine';
     case MeetingCreated = 'meeting_created';
     case MeetingAgendaCompleted = 'meeting_agenda_completed';
     case FollowedInstitutionActivity = 'followed_institution_activity';
@@ -45,7 +46,7 @@ enum NotificationType: string
     {
         return match ($this) {
             self::TaskAssigned, self::TaskReminder, self::TaskOverdue, self::TaskAutoCompleted => NotificationCategory::Task,
-            self::MeetingReminder, self::InstitutionActivity, self::MeetingCreated,
+            self::MeetingReminder, self::InstitutionActivity, self::InstitutionActivityNotMine, self::MeetingCreated,
             self::MeetingAgendaCompleted, self::FollowedInstitutionActivity => NotificationCategory::Meeting,
             self::ApprovalRequested, self::ReservationStatusChanged,
             self::AssignedToResource, self::ReservationDraftItemTaken => NotificationCategory::Reservation,
@@ -59,7 +60,7 @@ enum NotificationType: string
     public function urgency(): NotificationUrgency
     {
         return match ($this) {
-            self::TaskReminder, self::TaskOverdue, self::MeetingReminder, self::InstitutionActivity,
+            self::TaskReminder, self::TaskOverdue, self::MeetingReminder, self::InstitutionActivity, self::InstitutionActivityNotMine,
             self::ApprovalRequested, self::AssignedToResource, self::CommentMention, self::DutyExpiring,
             self::MemberRegistration, self::StudentRepRegistration,
             // The only notice a requester gets of an approval, rejection or pickup to make.

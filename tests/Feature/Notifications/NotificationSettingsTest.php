@@ -26,7 +26,7 @@ describe('which notifications a user sees', function (): void {
         $types = settingsTypesFor($this->user);
 
         expect($types)->toContain('task_reminder', 'meeting_reminder', 'comment_mention', 'followed_institution_activity')
-            ->not->toContain('approval_requested', 'member_registration', 'welcome', 'test_push');
+            ->not->toContain('approval_requested', 'member_registration', 'institution_activity_not_mine', 'welcome', 'test_push');
     });
 
     test('a resource manager also sees approval requests', function (): void {
@@ -39,7 +39,11 @@ describe('which notifications a user sees', function (): void {
         $duty = $this->user->duties()->firstOrFail();
         DutyResponsibility::factory()->for($duty)->forTenant($duty->institution->tenant)->create();
 
-        expect(settingsTypesFor($this->user))->toContain('student_rep_registration', 'meeting_created');
+        expect(settingsTypesFor($this->user))->toContain('student_rep_registration', 'meeting_created', 'institution_activity_not_mine');
+    });
+
+    test('whoever may ask about meetings by updating institutions hears when the email reached the wrong person', function (): void {
+        expect(settingsTypesFor(makeTenantUserWithRole('Komunikacijos koordinatorius')))->toContain('institution_activity_not_mine');
     });
 
     test('a super admin sees every configurable notification', function (): void {

@@ -165,7 +165,7 @@ function toCmarkerMarkdown(body: string, prefix: string, file: string): string {
         return []
       }
 
-      return [`<screenshot src="/docs/public/screenshots/lt/${name}.png"${caption ? ` caption="${caption}"` : ''}${/\snarrow\b/.test(line) ? ' narrow="narrow"' : ''}>`]
+      return [`<screenshot src="/docs/public/screenshots/lt/${name}.png"${caption ? ` caption="${caption}"` : ''}${/\snarrow\b/.test(line) ? ' narrow="narrow"' : ''}${/\sphone\b/.test(line) ? ' phone="phone"' : ''}>`]
     }
 
     return [linkAppPaths(line.replace(/\]\(([^)\s]+)\)/g, (_, target: string) => `](${rewriteLink(target, prefix)})`))]

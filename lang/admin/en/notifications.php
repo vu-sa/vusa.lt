@@ -72,10 +72,18 @@ return [
     'overdue_tasks' => 'Overdue Tasks',
     'periodicity_gap_title' => 'Time to report activity for :institution',
     'periodicity_gap_question_title' => 'Did “:institution” meet?',
-    'periodicity_gap_body' => 'If a meeting took place, record it. If not, tell us in one tap that it did not.',
-    'periodicity_gap_body_days' => 'No activity recorded for “:institution” in :days days. If a meeting took place, record it. If not, tell us in one tap that it did not.',
-    'action_register_meeting' => 'Yes, record it',
+    'periodicity_gap_body' => 'Has “:institution” met since :date? Answer in one tap – no sign-in needed.',
+    'periodicity_gap_body_days' => 'No activity recorded for “:institution” in :days days. Has it met since :date? Answer in one tap – no sign-in needed.',
+    'activity_request_multi_title' => 'Did your institutions meet?',
+    'activity_request_multi_body' => 'Choose an answer for each institution. No sign-in needed.',
+    'activity_request_note' => ':name writes: “:note”',
+    'action_register_meeting' => 'Yes, it met',
     'action_report_activity' => 'No, it did not',
+    'action_not_mine' => 'Not my institution',
+    'action_answer' => 'Answer',
+    'action_open_institution' => 'Open institution',
+    'activity_not_mine_title' => 'Check the representatives of “:institution”',
+    'activity_not_mine_body' => ':name answered that they do not represent “:institution”. Check its representatives and secretaries.',
 
     // Registration notifications
     'member_registered_title' => 'New Member Registration',
@@ -150,11 +158,10 @@ return [
     'action_view' => 'View',
     'action_review' => 'Review',
 
-    // Email footer: signature and "why you got this"
+    // Email footer: sign-off and "why you got this"
     'mail' => [
         'why_received' => 'You are getting this email because “:category” emails are turned on in your notification settings.',
         'settings_link' => 'Change notification settings',
-        'signature_intro' => 'Questions? Write to:',
         'sign_off' => 'Mano VU SA',
     ],
 
@@ -176,6 +183,10 @@ return [
         'access_started' => 'From :date you have',
         'access_ended' => 'From :date you no longer have',
         'author' => 'Author',
+        'since' => 'Period',
+        'since_value' => 'since :date',
+        'asked_by' => 'Asked by',
+        'answered_by' => 'Answered by',
     ],
 
     // One entry per NotificationType
@@ -202,7 +213,11 @@ return [
         ],
         'institution_activity' => [
             'label' => 'Did the institution meet?',
-            'description' => 'When your institution has had no recorded meeting for a long time. Answer with one button.',
+            'description' => 'When your institution has had no recorded meeting for a long time, or a coordinator asks whether it met. Answer with one button, no sign-in needed.',
+        ],
+        'institution_activity_not_mine' => [
+            'label' => 'Email reached the wrong person',
+            'description' => 'When someone asked “Did the institution meet?” answers that they do not represent it.',
         ],
         'meeting_created' => [
             'label' => 'New meeting created',
