@@ -47,17 +47,18 @@ Skilties gido puslapyje rasi šiuos skyrius. Sąvokų ir darbo eigos puslapiuose
 
 | Skyrius | Ką rasi |
 |---|---|
+| **Susitarimai** | Organizacinius susitarimus, kurių sistema automatiškai netikrina (pateikiami sąrašu) |
+| **Rekomendacijos** | Praktinius patarimus, kaip parengti turinį ar tvarkyti įrašus (išskirti rėmelyje) |
 | **Kaip tai veikia** | Sąvokas, būsenas ir taisykles, kurias taiko sistema |
-| **Rekomendacijos** | Praktinius patarimus, kaip parengti turinį ar tvarkyti įrašus |
 | **Veiksmai** | Ką ir kaip galima padaryti |
 | **Kas ką gali** | Kurios rolės ką leidžia |
 | **Pranešimai ir automatizavimas** | Kokius pranešimus ir užduotis sukuria sistema |
-| **Susitarimai** | Organizacinius susitarimus, kurių sistema automatiškai netikrina |
 | **Techninė informacija** | Tikslias teises, įgyvendinimo detales ir testus, kurie tai tikrina |
 
-**Rekomendacijos** pateikiamos prie praktinio turinio, prieš veiksmų aprašymus. Jos nėra
-privalomos organizacijos taisyklės ar sistemos apribojimai. **Susitarimai** pateikiami tik ten,
-kur aprašomas konkretus organizacinis susitarimas, pavyzdžiui, rezervacijų ar posėdžių tvarka.
+Po įvadinio teksto eiliškumas: **Susitarimai** pateikiami sąrašu tik ten, kur aprašomas konkretus
+organizacinis susitarimas, pavyzdžiui, rezervacijų ar posėdžių tvarka. Po jų seka **Rekomendacijos** –
+jos išskiriamos rėmelyje (`::: tip`), tai neprivalomi praktiniai patarimai, o ne privalomos
+organizacijos taisyklės ar sistemos apribojimai.
 
 Tik nebaigti puslapiai pažymėti būsena: **Dalinis** – aprašyta tik dalis temos;
 **Rašoma** – turinys dar neparuoštas. Šias žymas matai meniu ir puslapio pradžioje.
@@ -70,7 +71,7 @@ Pabaigoje gali išskleisti **Testų nuorodas**: serverio testai tikrina taisykle
 sąsajos bei naršyklės testai – atitinkamą ekrano elgseną. 
 
 Jei nori atlikti konkretų darbą, pradėk nuo [Darbų gido](/darbai).
-Iš jo nuorodos veda į darbo sričių žinyną, kuriame aprašytos taisyklės ir teisės.
+Iš jo nuorodos veda į darbo sričių gidą, kuriame aprašytos taisyklės ir teisės.
 
 ::: info Gidas ir PDF
 Šis gidas yra ir svetainė, ir [PDF dokumentas](/vusa-lt-gidas.pdf). Abu kuriami iš to paties

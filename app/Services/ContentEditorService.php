@@ -8,6 +8,7 @@ use App\Models\Content;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\User;
+use App\Services\Typesense\SyncContentSearch;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -100,6 +101,8 @@ class ContentEditorService
             if ($repairs) {
                 PairTranslatedRecord::execute($record, $data['other_lang_id']);
             }
+
+            SyncContentSearch::afterCommit((int) $record->content_id);
 
             return $record->fresh();
         }, 3);

@@ -3,8 +3,14 @@ doc_status: reviewed
 title: Pareigybės
 area: duties
 models: [Duty, Role, Tenant, Type, Institution, DutyResponsibility]
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-04
 tests:
+  - resources/js/Utils/__tests__/String.test.ts
+  - resources/js/Features/Admin/DutiableTimeline/__tests__/dutyNames.test.ts
+  - tests/Feature/Public/ContactEagerLoadingTest.php
+  - resources/js/Components/Public/__tests__/ContactWithPhoto.component.test.ts
+  - tests/Feature/Search/ContactSearchIndexSyncTest.php
+  - tests/Browser/DutyNamePresentationTest.php
   - tests/Feature/Duties/UpdateDutyTest.php
   - tests/Feature/Duties/DutyAssignmentServiceTest.php
   - tests/Feature/Admin/Management/DutyControllerTest.php
@@ -133,6 +139,21 @@ pirmininkas pagal pareigas yra ir padalinio tarybos narys.
 
 Lietuvių kalboje pareigybių pavadinimai kinta pagal einančio asmens įvardį arba vardo giminę (*Pirmininkas* /
 *Pirmininkė*, *Koordinatorius* / *Koordinatorė*).
+
+Bendras pareigybės pavadinimas antraštėse, sąrašuose ir peržiūrose kas kelias sekundes keičia
+vyriškąją ir moteriškąją galūnę. Keičiamą dalį žymi vientisas VU SA spalvos pabraukimas;
+antraštės dydis ir šriftas išlieka. Jei įrenginyje įjungtas sumažintas judesys, rodoma viena
+nejudanti vyriškoji forma. Angliški pavadinimai nekinta. Formoje antraštė
+keičiasi iškart, kai rašai pavadinimą ar perjungi LT / EN. Viršutinėje juostoje lieka išsaugotas
+pavadinimas be galūnių animacijos; kuriant naują įrašą – „Nauja pareigybė“. Po laukeliu lieka galūnių keitimo
+paaiškinimas, o pavadinimo peržiūra rodoma pačioje antraštėje.
+
+Prie konkretaus nario pavadinimas nekaitaliojamas: pirmiausia taikomi jo įvardžiai
+(**ji / she**, **jis / he**, **jie / they**). Jei dabartinės kalbos įvardžiai nenurodyti ar neatpažinti,
+sistema tikrina kitos kalbos įvardžius, tada – vardą. Kai vardo galūnė neleidžia atpažinti
+giminės, lieka įrašytas pavadinimas. Tai galioja dabartinėms, būsimoms ir buvusioms pareigoms,
+paieškai, laikotarpių tvarkyklei ir viešiems kontaktams. Laikotarpio parinktis
+**Pareigos pavadinimo galūnės negiminizavimas** išlaiko įrašytą formą.
 
 Kad duomenų bazėje nesidaugintų dubliuotos pareigybės:
 - Pareigybės pavadinimas kuriamas viena bendra forma.

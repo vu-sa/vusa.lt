@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import NotificationTypeRow from '../NotificationTypeRow.vue';
 
-import { Select } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 
 const type = {
   value: 'task_reminder',
@@ -21,13 +21,19 @@ const mountRow = (props: Record<string, unknown> = {}) => mount(NotificationType
 describe('NotificationTypeRow', () => {
   it('passes the email choice to the select and emits a new one', async () => {
     const wrapper = mountRow();
-    const select = wrapper.findComponent(Select);
+    const select = wrapper.findComponent(NativeSelect);
 
     expect(select.props('modelValue')).toBe('immediate');
 
     select.vm.$emit('update:modelValue', 'digest');
 
     expect(wrapper.emitted('update:email')?.[0]).toEqual(['digest']);
+  });
+
+  it('passes the active delivery icon to NativeSelect', () => {
+    const wrapper = mountRow({ email: 'immediate' });
+    const select = wrapper.findComponent(NativeSelect);
+    expect(select.props('icon')).toBeDefined();
   });
 
   it('toggles push while a device is connected', async () => {
@@ -45,6 +51,6 @@ describe('NotificationTypeRow', () => {
     const wrapper = mountRow({ type: { ...type, lockedEmail: 'immediate' } });
 
     expect(wrapper.find('[data-testid="email-locked"]').exists()).toBe(true);
-    expect(wrapper.findComponent(Select).exists()).toBe(false);
+    expect(wrapper.findComponent(NativeSelect).exists()).toBe(false);
   });
 });

@@ -130,20 +130,11 @@
 
       <FormPanel :title="$t('Rodymo nustatymai')" :icon="LayoutGrid" title-class="text-brand" flush>
         <div class="p-4">
-          <FormFieldWrapper
-            id="tenant_id"
-            :label="$t('Padalinys')"
-            :hint="$t('Padalinys, kuriam priklauso nuoroda')"
+          <TenantSelectField
+            v-model="form.tenant_id"
+            :tenants="tenantList"
             :error="form.errors.tenant_id"
-          >
-            <SingleSelect
-              v-model="selectedTenant"
-              :options="tenantOptions"
-              value-field="value"
-              label-field="label"
-              :placeholder="$t('Pasirinkti padalinį...')"
-            />
-          </FormFieldWrapper>
+          />
         </div>
 
         <FormToggleRow
@@ -185,6 +176,7 @@ import { computed, ref } from 'vue';
 import { ChevronDown, ExternalLink, Languages, LayoutGrid, Loader2, Star, Trash2 } from 'lucide-vue-next';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import FluentIconSelect from '@/Components/FormItems/FluentIconSelect.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormSegmentedControl, FormToggleRow, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
@@ -193,7 +185,6 @@ import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { SingleSelect } from '@/Components/ui/single-select';
 import { useApiMutation } from '@/Composables/useApi';
 import type { StatusPresentation } from '@/Constants/statuses';
 import { MultiCollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
@@ -231,7 +222,7 @@ const form = props.rememberKey
 const fieldIds = ['text', 'icon', 'link', 'lang', 'tenant_id', 'is_important'];
 
 const barTitle = computed(() =>
-  form.text?.trim() || (isCreate.value ? $t('Nauja greitoji nuoroda') : $t('Greitoji nuoroda')),
+  isCreate.value ? $t('Nauja greitoji nuoroda') : (props.quickLink.text?.trim() || $t('Greitoji nuoroda')),
 );
 
 const importantStatus: StatusPresentation = {
@@ -245,19 +236,7 @@ const langOptions: FormSegmentOption<'lt' | 'en'>[] = [
   { value: 'en', label: 'English' },
 ];
 
-const tenantOptions = computed(() =>
-  props.tenantOptions.map(padalinys => ({
-    value: padalinys.id,
-    label: padalinys.shortname,
-  })),
-);
-
-const selectedTenant = computed({
-  get: () => tenantOptions.value.find(opt => String(opt.value) === String(form.tenant_id)) ?? null,
-  set: (val: { value: string | number; label: string } | null) => {
-    form.tenant_id = (val?.value as number) ?? null;
-  },
-});
+const tenantList = computed(() => props.tenantOptions as unknown as App.Entities.Tenant[]);
 
 // --- Link target picker -----------------------------------------------------
 const pickerOpen = ref(false);

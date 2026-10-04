@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { usePage } from '@inertiajs/vue3';
+import type * as Inertia from '@inertiajs/vue3';
+import { useForm, usePage } from '@inertiajs/vue3';
 
 import UserForm from '@/Components/AdminForms/UserForm.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
@@ -18,7 +19,8 @@ vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () =>
 const stubs = {
   ...commonStubs,
   FormPage: {
-    props: ['title', 'mode'],
+    name: 'FormPage',
+    props: ['title', 'barTitle', 'mode'],
     emits: ['submit'],
     template: '<form data-testid="form-page" :data-mode="mode" @submit.prevent="$emit(\'submit\')"><h1>{{ title }}</h1><slot /><slot name="aside" /><slot name="footer-extra" /></form>',
   },
@@ -83,6 +85,18 @@ describe('UserForm.vue', () => {
   });
 
   describe('edit', () => {
+    it('updates the draft headline while keeping the saved title in the top bar', async () => {
+      const actual = await vi.importActual<typeof Inertia>('@inertiajs/vue3');
+      vi.mocked(useForm).mockImplementationOnce(actual.useForm);
+      vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { user: { isSuperAdmin: true } } }) as never);
+      wrapper = mountForm();
+      const barTitle = wrapper.findComponent({ name: 'FormPage' }).props('barTitle');
+      await wrapper.get('input#user-name').setValue('Ona Onaite');
+      expect(wrapper.findComponent({ name: 'FormPage' }).props('title')).toBe('Ona Onaite');
+      expect(wrapper.findComponent({ name: 'FormPage' }).props('barTitle')).toBe(barTitle);
+      expect(barTitle).not.toBe('Ona Onaite');
+    });
+
     it('edits in edit mode and asks only for the person\'s own attributes', () => {
       wrapper = mountForm();
 

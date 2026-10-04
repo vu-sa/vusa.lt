@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 import { router, usePage } from '@inertiajs/vue3';
 
 import ShowUser from '@/Pages/Admin/People/ShowUser.vue';
+import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -100,6 +101,31 @@ describe('ShowUser.vue', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage() as never);
     vi.mocked(router.post).mockClear?.();
     vi.mocked(router.get).mockClear?.();
+  });
+
+  it('inflects real current, upcoming, and previous duty rows using the holder and each assignment override', () => {
+    const wrapper = mount(ShowUser, {
+      props: {
+        user: {
+          ...baseUser,
+          pronouns: { lt: '', en: 'she/her' },
+          current_duties: [makeDuty()],
+          upcoming_duties: [makeDuty({ id: 'future', pivot: { id: 'future-term', start_date: '2999-01-01', use_original_duty_name: true } })],
+          previous_duties: [makeDuty({ id: 'past', name: 'Kuratorius', pivot: { id: 'past-term', start_date: '2020-01-01', end_date: '2021-01-01' } })],
+        } as never,
+        tasks: [], taskStats: { total: 0, completed: 0, pending: 0, overdue: 0, autoCompleting: 0 },
+        can: fullCan,
+      },
+      global: { stubs: { ...commonStubs, ...stubs, UserTermRow: false } },
+    });
+
+    const rows = wrapper.findAll('[data-slot="user-term-row"]');
+    expect(rows).toHaveLength(3);
+    expect(rows[0].text()).toContain('Koordinatorė');
+    expect(rows[1].text()).toContain('Koordinatorius');
+    expect(rows[2].text()).toContain('Kuratorė');
+    expect(wrapper.find('[data-testid="duty-ending-group"]').exists()).toBe(false);
+    wrapper.unmount();
   });
 
   it('counts current, upcoming, and previous assignments', () => {

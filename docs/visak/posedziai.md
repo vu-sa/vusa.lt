@@ -46,6 +46,17 @@ Posėdžių sąrašas pasiekiamas adresu `/mano/meetings`, o kiekvienas posėdis
 
 <DocScreenshot name="meeting-record" alt="Posėdžio puslapis: būsena „Neužpildyta“, matomumas, laikas, institucija, atstovai, protokolas ir ataskaita, nepilnų punktų sąrašas ir darbotvarkė" caption="Praėjęs posėdis: vienam darbotvarkės punktui dar trūksta informacijos." />
 
+## Susitarimai {#susitarimai}
+
+1. Apie posėdį pranešk **per 3 dienas** nuo tada, kai sužinai jo datą. Jei iki posėdžio liko mažiau
+   nei 3 dienos, pranešk nedelsdamas.
+   - Kai žinoma darbotvarkė, įkelk jos klausimus. Jei ji atnaujinama, atnaujink ir platformoje.
+2. Po posėdžio užfiksuok priimtus sprendimus:
+   - įkelk sekretoriaus atsiųstą **protokolą** ir savo parengtą **ataskaitą**;
+   - pažymėk, ar klausimas patvirtintas, kaip balsavo studentai ir ar sprendimas palankus studentams.
+3. **Elektroninis posėdis** (balsavimas el. paštu) fiksuojamas taip pat, kaip ir kiti posėdžiai.
+4. Jei institucijoje keli atstovai, susitarkite, kuris fiksuoja posėdį ir kelia dokumentus.
+
 ## Kaip tai veikia
 
 ### Posėdžio tipas ir pavadinimas
@@ -207,19 +218,6 @@ tik super administratorius.
 - Užregistravus posėdį, institucijos užduotis dėl periodiškumo užbaigiama.
 
 Plačiau apie užduotis – [Užduotys](/mano/uzduotys).
-
-## Susitarimai {#susitarimai}
-
-::: tip Studentų atstovų atsakomybės
-1. Apie posėdį pranešk **per 3 dienas** nuo tada, kai sužinai jo datą. Jei iki posėdžio liko mažiau
-   nei 3 dienos, pranešk nedelsdamas.
-   - Kai žinoma darbotvarkė, įkelk jos klausimus. Jei ji atnaujinama, atnaujink ir platformoje.
-2. Po posėdžio užfiksuok priimtus sprendimus:
-   - įkelk sekretoriaus atsiųstą **protokolą** ir savo parengtą **ataskaitą**;
-   - pažymėk, ar klausimas patvirtintas, kaip balsavo studentai ir ar sprendimas palankus studentams.
-3. **Elektroninis posėdis** (balsavimas el. paštu) fiksuojamas taip pat, kaip ir kiti posėdžiai.
-4. Jei institucijoje keli atstovai, susitarkite, kuris fiksuoja posėdį ir kelia dokumentus.
-:::
 
 ::: details Protokolas ar ataskaita?
 **Posėdžio protokolas** – oficialus sekretoriaus parengtas dokumentas su aptartais klausimais ir

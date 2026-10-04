@@ -1,6 +1,7 @@
 <template>
   <FormPage
     :title="isCreate ? $t('Nauja rolė') : form.name"
+    :bar-title="isCreate ? $t('Nauja rolė') : role.name"
     entity-type="role"
     :back-href="isCreate ? route('roles.index') : route('roles.show', role.id)"
     :processing="form.processing"

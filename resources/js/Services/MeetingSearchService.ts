@@ -48,6 +48,11 @@ export class MeetingSearchService {
     };
 
     // Build filter conditions
+    searchParams.facetFilters = Object.fromEntries([
+      ['tenant_shortname', this.buildFilterConditions({ ...filters, tenants: [] }).join(' && ')],
+      ['institution_type_title', this.buildFilterConditions({ ...filters, institutionTypes: [] }).join(' && ')],
+      ['year', this.buildFilterConditions({ ...filters, years: [] }).join(' && ')],
+    ]);
     const filterConditions = this.buildFilterConditions(filters);
     if (filterConditions.length > 0) {
       searchParams.filter_by = filterConditions.join(' && ');

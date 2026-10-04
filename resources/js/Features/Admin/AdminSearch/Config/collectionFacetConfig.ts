@@ -493,7 +493,7 @@ export function resolveSortValue(collection: string, sortBy: string): string {
   }
   const config = getCollectionFacetConfig(collection);
   const tiebreak = config?.defaultSortBy ?? 'created_at:desc';
-  return `_text_match(buckets:10):desc,${tiebreak}`;
+  return `_text_match:desc,${tiebreak}`;
 }
 
 /**

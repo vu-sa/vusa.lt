@@ -3,8 +3,10 @@ doc_status: reviewed
 title: Nariai
 area: users
 models: [User]
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-04
 tests:
+  - resources/js/Utils/__tests__/String.test.ts
+  - tests/Feature/Search/ContactSearchIndexSyncTest.php
   - tests/Feature/Admin/Management/UserControllerTest.php
   - tests/Feature/Admin/UserMergeTest.php
   - tests/Feature/Auth/UserUpdateAuthorizationTest.php
@@ -26,6 +28,14 @@ Mano VU SA. Kiekvienas narys turi profilį, kuriame matomi jo pareigybių laikot
 
 Narių sąrašas pasiekiamas adresu `/mano/users`, o kiekvieno nario profilio kortelė atveriama adresu
 `/mano/users/{id}`.
+
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+- **Naudok esamą paskyrą:** prieš kurdamas narį paieškok jo sąraše. Pradėjus eiti kitas pareigas ar perėjus į kitą padalinį, esamai paskyrai priskirk naują pareigybės laikotarpį.
+- **Asmeninis el. paštas:** prisijungimui rinkis paties nario naudojamą adresą, pvz., studentinį `@stud.vu.lt`. Pareigybės institucinį adresą nurodyk prie pareigybės, kad pasikeitus ją einančiam žmogui paskyros istorija liktų susieta su tuo pačiu asmeniu.
+- **Užbaik laikotarpį:** baigus eiti pareigas, paprastai pakanka užbaigti [pareigybės laikotarpį](/visak/pareigybiu-laikotarpiai). Vien dėl kadencijos pabaigos paskyros trinti nereikia.
+:::
 
 ## Kaip tai veikia
 
@@ -73,12 +83,6 @@ Siekiant apsaugoti narių paskyras nuo netyčinio ar piktavališko perėmimo, si
   perspėjamas tik tada, kai šalina savo Super Admin rolę.
 - **Savęs trynimo blokavimas**: administratorius negali ištrinti savo paties paskyros.
 
-## Rekomendacijos {#susitarimai}
-
-- **Naudok esamą paskyrą:** prieš kurdamas narį paieškok jo sąraše. Pradėjus eiti kitas pareigas ar perėjus į kitą padalinį, esamai paskyrai priskirk naują pareigybės laikotarpį.
-- **Asmeninis el. paštas:** prisijungimui rinkis paties nario naudojamą adresą, pvz., studentinį `@stud.vu.lt`. Pareigybės institucinį adresą nurodyk prie pareigybės, kad pasikeitus ją einančiam žmogui paskyros istorija liktų susieta su tuo pačiu asmeniu.
-- **Užbaik laikotarpį:** baigus eiti pareigas, paprastai pakanka užbaigti [pareigybės laikotarpį](/visak/pareigybiu-laikotarpiai). Vien dėl kadencijos pabaigos paskyros trinti nereikia.
-
 ## Veiksmai
 
 ### Narių sąrašas ir filtrai {#sarasas}
@@ -109,6 +113,10 @@ Profilis suskirstytas į skirtukus:
    - Rodomos tiesiogiai paskyrai priskirtos rolės (jei tokių yra). Kasdieniame darbe rolės gaunamos per pareigybes, todėl čia paprastai rodoma „Rolių nėra – prieiga suteikiama per pareigybes“. Tiesiogines roles keisti gali tik Superadministratorius.
 3. **Užduotys**:
    - Visi nariui priskirti darbai, jų terminai ir atlikimo būsenos (`TaskManager`).
+Pareigybių pavadinimai visose trijose grupėse pritaikomi pagal nario įvardžius, o jų nesant –
+pagal atpažįstamą vardo galūnę. Laikotarpio parinktis išlaikyti originalų pavadinimą turi pirmenybę.
+[Galūnių taisyklės](/organizacija/pareigybes#lytis-ir-dublikatai) taip pat taikomos paieškai ir viešiems kontaktams.
+
 Nario įrašo pakeitimų istoriją peržiūrėk veiklos žurnalo lange; tai nėra atskiras profilio skirtukas.
 
 Per meniu **⋯** profilio viršuje pasiekiami veiksmai: **Redaguoti**, laikotarpių tvarkyklė,

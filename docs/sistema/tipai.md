@@ -13,6 +13,13 @@ tests:
 
 # Tipai ir kategorijos
 
+Tipai ir kategorijos skirti institucijoms, pareigybėms, renginiams, ištekliams ir problemoms klasifikuoti bei valdyti. Skiltis pasiekiama adresu `/mano/types`.
+
+## Susitarimai {#susitarimai}
+
+- Institucijų ir pareigybių tipai yra atskiri sąrašai. Tipo rūšies redaguodamas nekeisk; sukurk tinkamos rūšies tipą ir susiek jam reikalingus įrašus.
+- Ištrintą tipą gali atkurti iš šiukšlinės. Visam laikui ištrinti nepavyks, kol su juo susieti įrašai, vaikiniai tipai arba pareigybės tipo rolės; tai galioja ir ištrintiems susietiems įrašams.
+
 ## Kaip tai veikia
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Atskiri institucijų ir pareigybių tipų sąrašai">
@@ -57,14 +64,6 @@ keisti bendro tipų sąrašo.
 - **Rolių suteikimas**: priskyrus pareigybės tipą pareigybei, jai automatiškai suteikiamos su tuo tipu susietos rolės. Pašalinus tipo priskyrimą pareigybei, su tuo tipu susietos rolės nuo pareigybės atjungiamos.
 - **Teisių atnaujinimas**: atnaujinus tipo roles ar susiejimus, išvaloma susijusių naudotojų prieigos ir navigacijos talpykla.
 - **Vientisumo apsauga**: visam laikui ištrinti tipą, turintį vaikinių tipų, susietų įrašų ar rolių, neleidžiama. Perkėlimui į šiukšlinę šis apribojimas netaikomas.
-
-## Susitarimai {#susitarimai}
-
-Institucijų ir pareigybių tipai yra atskiri sąrašai. Tipo rūšies redaguodamas nekeisk;
-sukurk tinkamos rūšies tipą ir susiek jam reikalingus įrašus.
-
-Ištrintą tipą gali atkurti iš šiukšlinės. Visam laikui ištrinti nepavyks, kol su juo susieti
-įrašai, vaikiniai tipai arba pareigybės tipo rolės; tai galioja ir ištrintiems susietiems įrašams.
 
 ## Techninė informacija {#technine-informacija}
 

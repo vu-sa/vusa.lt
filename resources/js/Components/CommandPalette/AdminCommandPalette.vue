@@ -217,10 +217,9 @@ const mapperCtx = computed<MapperContext>(() => ({
   ],
 }));
 
-// Flat, interleaved hits (relevance-sorted when a query is present); hits belonging to the
-// workspace the user is standing in come first, keeping relevance order within each group.
 const flatHits = computed<NormalizedSearchHit[]>(() => {
   const hits = collectAllTabHits(searchResults.value, { query: query.value, dutyCtx: mapperCtx.value });
+  if (query.value.trim()) return hits;
   const current = activeWorkspace.value?.key;
 
   return [...hits].sort((a, b) => {

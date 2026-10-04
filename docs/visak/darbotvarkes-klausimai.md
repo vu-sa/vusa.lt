@@ -47,6 +47,15 @@ savo puslapį `/mano/agendaItems/{id}`.
 
 <DocScreenshot name="agenda-item-record" alt="Darbotvarkės klausimo puslapis: būsena, institucija, posėdis, rezultato laukai Sprendimas, Studentų balsas ir Nauda studentams bei atstovų pastabos" caption="Klausimas, kuriam dar nepažymėta nauda studentams." />
 
+## Susitarimai {#susitarimai}
+
+- **Tik viduje** skirta darbo medžiagos skelbimui valdyti. Nekelk ir nesaugok perteklinės
+  asmeninės informacijos ar asmeninių failų — tai galioja ir vidaus klausimams bei pastaboms.
+- Viešą pavadinimą rinkis tokį, kurį galima skelbti. Nebūtina jame kartoti originalaus pavadinimo.
+- Atskirai paskelbti dokumentai, failų nuorodos ir į kitą turinį nukopijuotas tekstas turi savo
+  skelbimo nustatymus. Klausimo matomumo žyma jų nekeičia. Viešuose tiksluose su vidaus
+  klausimu susieti žingsniai nerodomi.
+
 ## Kaip tai veikia
 
 ### Matomumas: Tik viduje {#matomumas}
@@ -224,15 +233,6 @@ Kai darbotvarkėje yra vidaus klausimų, pranešimas apie jos užpildymą siunč
 skaityti galintiems gavėjams.
 
 Plačiau – [Posėdžiai](/visak/posedziai#pranesimai) ir [Užduotys](/mano/uzduotys).
-
-## Susitarimai {#susitarimai}
-
-- **Tik viduje** skirta darbo medžiagos skelbimui valdyti. Nekelk ir nesaugok perteklinės
-  asmeninės informacijos ar asmeninių failų — tai galioja ir vidaus klausimams bei pastaboms.
-- Viešą pavadinimą rinkis tokį, kurį galima skelbti. Nebūtina jame kartoti originalaus pavadinimo.
-- Atskirai paskelbti dokumentai, failų nuorodos ir į kitą turinį nukopijuotas tekstas turi savo
-  skelbimo nustatymus. Klausimo matomumo žyma jų nekeičia. Viešuose tiksluose su vidaus
-  klausimu susieti žingsniai nerodomi.
 
 ## Techninė informacija {#technine-informacija}
 

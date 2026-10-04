@@ -30,7 +30,9 @@
       <article class="flex min-h-16 items-start gap-3 px-4 py-4">
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-3">
-            <CollectionPrimaryCell :title="title(item)" :href="isDeleted ? undefined : route('duties.show', item.id)" />
+            <CollectionPrimaryCell :title="title(item)" :href="isDeleted ? undefined : route('duties.show', item.id)">
+              <InflectedDutyName :name="title(item)" />
+            </CollectionPrimaryCell>
             <span v-if="item.dutiables_count === 0" class="inline-flex shrink-0 items-center gap-1 text-xs text-status-attention"><CircleAlert class="size-3" aria-hidden="true" />{{ $t('Neužimta') }}</span>
           </div>
           <p v-if="institutionTitle(item)" class="mt-1 text-sm text-muted-foreground">
@@ -46,7 +48,9 @@
     </template>
 
     <template #cell="{ item, column }">
-      <CollectionPrimaryCell v-if="column.key === 'name'" :title="title(item)" :href="isDeleted ? undefined : route('duties.show', item.id)" />
+      <CollectionPrimaryCell v-if="column.key === 'name'" :title="title(item)" :href="isDeleted ? undefined : route('duties.show', item.id)">
+        <InflectedDutyName :name="title(item)" />
+      </CollectionPrimaryCell>
       <span v-else-if="column.key === 'institution'" class="text-muted-foreground">{{ institutionTitle(item) || '—' }}</span>
       <span v-else-if="column.key === 'email'" class="text-muted-foreground">{{ item.email || '—' }}</span>
       <span v-else-if="column.key === 'occupancy'" :class="item.dutiables_count === 0 ? 'text-status-attention' : 'text-muted-foreground'">{{ item.dutiables_count === 0 ? $t('Neužimta') : $tChoice('Narys|Nariai|Narių', item.dutiables_count, { count: item.dutiables_count }) }}</span>
@@ -60,7 +64,7 @@
             {{ $t('Pareigybė') }}
           </p>
           <Link :href="route('duties.show', item.id)" class="mt-1 block text-lg font-semibold hover:text-brand">
-            {{ title(item) }}
+            <InflectedDutyName :name="title(item)" />
           </Link>
           <p v-if="institutionTitle(item)" class="mt-1 text-sm text-muted-foreground">
             {{ institutionTitle(item) }}
@@ -130,6 +134,8 @@ import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell
 import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import { DutyIcon } from '@/Components/icons';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import MergeRecordsDialog, { type MergeRecord } from '@/Components/Merge/MergeRecordsDialog.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
@@ -184,7 +190,7 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true },
 ]);
 const dutyKey = (duty: Duty) => String(duty.id);
-const titleOf = (value: Translation | string | null | undefined) => typeof value === 'string' ? value : value?.lt || value?.en || '—';
+const titleOf = (value: Translation | string | null | undefined) => getTranslatedValue(value, undefined, '—');
 const title = (duty: Duty) => titleOf(duty.name);
 const institutionTitle = (duty: Duty) => titleOf(duty.institution?.short_name || duty.institution?.name);
 const toMergeRecords = (duties: Duty[]): MergeRecord[] =>

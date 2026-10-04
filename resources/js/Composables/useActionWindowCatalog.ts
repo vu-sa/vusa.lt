@@ -33,6 +33,7 @@ import {
 } from 'lucide-vue-next';
 
 import type { ScreenId } from '@/Composables/useActionWindow';
+import { changeDutyNameEndings } from '@/Utils/String';
 
 /** The subset of `auth.can` the catalogue reads. */
 export interface ActionWindowPermissions {
@@ -194,6 +195,7 @@ export function useActionWindowCatalog() {
     buildPersonas()
       .map(persona => ({
         ...persona,
+        title: changeDutyNameEndings(page.props.auth?.user, persona.title, page.props.app.locale),
         actions: persona.actions.flatMap((action) => {
           const catalogAction = catalogActions.value.get(action.key);
 

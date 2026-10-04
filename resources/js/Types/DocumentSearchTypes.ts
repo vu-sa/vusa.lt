@@ -30,7 +30,7 @@ export interface DocumentFacet {
   values: Array<{
     value: string;
     label: string;
-    count: number;
+    count: number | null;
     highlighted?: string;
     isSelected?: boolean;
     level?: number; // For hierarchical display (e.g., tenant hierarchy)
@@ -102,7 +102,7 @@ export interface SearchResponse {
     field_name: string;
     counts: Array<{
       value: string;
-      count: number;
+      count: number | null;
     }>;
   }>;
 }

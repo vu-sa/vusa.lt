@@ -1,7 +1,7 @@
 <template>
   <FormPage
     :title="isCreate ? $t('Nauja studijų programa') : (title || $t('Studijų programa'))"
-    :bar-title="isCreate ? undefined : (title || undefined)"
+    :bar-title="isCreate ? $t('Nauja studijų programa') : getTranslatedValue(studyProgram.name, undefined, $t('Studijų programa'))"
     :entity-type="ModelEnum.STUDY_PROGRAM"
     :back-href="route('studyPrograms.index')"
     :back-label="$t('Studijų programos')"
@@ -37,35 +37,22 @@
           required
           :error="form.errors.degree"
         >
-          <Select v-model="form.degree">
-            <SelectTrigger id="degree">
-              <SelectValue :placeholder="$t('forms.placeholders.select_degree')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="opt in degreeOptions" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <NativeSelect
+            id="degree"
+            v-model="form.degree"
+            :options="degreeOptions"
+            :placeholder="$t('forms.placeholders.select_degree')"
+          />
         </FormFieldWrapper>
 
-        <FormFieldWrapper
+        <TenantSelectField
           id="tenant_id"
+          v-model="form.tenant_id"
+          :tenants
           :label="$t('forms.fields.tenant')"
           required
           :error="form.errors.tenant_id"
-        >
-          <Select v-model="tenantIdString">
-            <SelectTrigger id="tenant_id">
-              <SelectValue :placeholder="$t('forms.placeholders.select_tenant')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="opt in tenantOptions" :key="opt.value" :value="String(opt.value)">
-                {{ opt.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </FormFieldWrapper>
+        />
       </FormPanel>
     </template>
 
@@ -110,13 +97,14 @@ import { GraduationCap, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
+import TenantSelectField from './TenantSelectField.vue';
 
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel } from '@/Components/Patterns';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import { Button } from '@/Components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { getDegreeOptions } from '@/Utils/Degrees';
 import { ModelEnum } from '@/Types/enums';
@@ -141,15 +129,4 @@ const form = props.rememberKey ? useForm(props.rememberKey, props.studyProgram) 
 const title = computed(() => getTranslatedValue(form.name));
 
 const degreeOptions = getDegreeOptions();
-
-const tenantOptions = computed(() => (props.tenants ?? []).map(tenant => ({
-  label: tenant.shortname,
-  value: tenant.id,
-})));
-
-// Shadcn Select requires string values
-const tenantIdString = computed({
-  get: () => (form.tenant_id != null ? String(form.tenant_id) : ''),
-  set: (val: string) => { form.tenant_id = val ? Number(val) : null; },
-});
 </script>

@@ -18,7 +18,7 @@ const stubs = {
     emits: ['action'],
     template: `
       <div>
-        <h1>{{ title }}</h1>
+        <h1><slot name="title">{{ title }}</slot></h1>
         <div v-for="f in facts" :key="f.key" :data-testid="'fact-' + f.key" :data-status="f.status?.label">{{ f.value ?? f.detail }}</div>
         <div data-testid="tabs">{{ sections.map(s => s.label + ':' + (s.count ?? '')).join('|') }}</div>
         <button v-if="primaryAction" data-testid="primary" @click="$emit('action', primaryAction.key)">{{ primaryAction.label }}</button>
@@ -75,6 +75,18 @@ describe('ShowDuty.vue', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it('renders both gender endings in the record heading', () => {
+    const wrapper = mount(ShowDuty, {
+      props: { duty: baseDuty, can: { update: true, managePeople: true } },
+      global: { stubs: { ...stubs, InflectedDutyName: false } },
+    });
+
+    expect(wrapper.get('h1 [data-testid="duty-ending-masculine"]').text()).toBe('ius');
+    expect(wrapper.get('h1 [data-testid="duty-ending-feminine"]').text()).toBe('ė');
+    expect(wrapper.get('h1 [data-testid="duty-ending-underline"]').classes()).toContain('bg-brand');
+    wrapper.unmount();
   });
 
   describe('?dutiable= (redirect from the retired edit page)', () => {

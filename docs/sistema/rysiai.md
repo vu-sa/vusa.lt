@@ -15,6 +15,14 @@ Skiltis **Ryšiai** (`/mano/relationships`) skirta institucijų ir jų tipų tar
 
 Ryšiais nustatoma, kaip institucijos bendradarbiauja, atsiskaito viena kitai ar dalijasi atstovavimo informacija. Šie ryšiai lemia institucijų atstovų prieigos teises prie posėdžių bei darbotvarkių ir yra vizualizuojami [Institucijų grafe](/visak/instituciju-grafas).
 
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+- Techninė žymė rašoma mažosiomis raidėmis, žodžius skiriant brūkšneliais.
+- Ryšius kurk tik tiems institucijų santykiams, kurie turi organizacinę atskaitomybės ar bendradarbiavimo reikšmę.
+- Prieš šalindamas ryšio tipą, patikrink susietų įrašų kortelę: pašalinus jungtis, institucijų atstovai gali prarasti teisę matyti susijusių posėdžių darbotvarkių klausimus.
+:::
+
 ## Kaip tai veikia
 
 Ryšių sistemą sudaro dvi dalys: **ryšio tipas** ir konkrečios **įrašų jungtys**.
@@ -89,12 +97,6 @@ Ryšių administravimas yra platformos lygmens veiksmas, prieinamas **superadmin
 - **El. laiškai**: jokie pranešimai el. paštu apie ryšių kūrimą ar keitimą nesiunčiami.
 - **Talpyklos atnaujinimas**: sukūrus, atnaujinus ar ištrynus jungtį, sistema išvalo susijusių institucijų ryšių talpyklą. Tiesioginių institucijų jungčių pakeitimai taip pat išvalo susijusių narių institucijų prieigos ir paieškos raktų talpyklas. Tipų jungčių pakeitimams toks narių talpyklų atnaujinimas nėra užtikrintas.
 - **Grafas**: atliktus jungčių pakeitimus pamatysi iš naujo įkėlęs [Institucijų grafo puslapį](/visak/instituciju-grafas).
-
-## Rekomendacijos {#susitarimai}
-
-- Techninė žymė rašoma mažosiomis raidėmis, žodžius skiriant brūkšneliais.
-- Ryšius kurk tik tiems institucijų santykiams, kurie turi organizacinę atskaitomybės ar bendradarbiavimo reikšmę.
-- Prieš šalindamas ryšio tipą, patikrink susietų įrašų kortelę: pašalinus jungtis, institucijų atstovai gali prarasti teisę matyti susijusių posėdžių darbotvarkių klausimus.
 
 ## Techninė informacija {#technine-informacija}
 

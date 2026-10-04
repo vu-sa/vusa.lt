@@ -82,3 +82,13 @@ test('the unread count covers notifications beyond the shared list', function ()
             ->where('auth.user.unreadNotificationsCount', HandleInertiaRequests::NOTIFICATION_PREVIEW_LIMIT + 1)
         );
 });
+
+test('admin pages share both pronoun translations for personalized labels', function (): void {
+    $this->user->update(['pronouns' => ['lt' => '', 'en' => 'she / her']]);
+
+    $this->actingAs($this->user)->get(route('dashboard'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('auth.user.pronouns', ['en' => 'she / her'])
+        );
+});

@@ -19,7 +19,7 @@
               {{ coordinator.name }}
             </p>
             <p v-if="coordinator.duty" class="line-clamp-2 text-xs text-muted-foreground">
-              {{ coordinator.duty }}
+              <InflectedDutyName :name="coordinator.duty" :holder="coordinator" :use-original-duty-name="coordinator.use_original_duty_name" />
             </p>
             <!-- Only worth saying when there is a choice of whom to ask. -->
             <p v-if="coordinators.length > 1 && coordinator.institutions?.length" class="line-clamp-2 text-xs text-muted-foreground">
@@ -44,6 +44,7 @@ import { Mail, UserRound } from 'lucide-vue-next';
 
 import type { HomeCoordinator } from './types';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { Button } from '@/Components/ui/button';

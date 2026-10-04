@@ -8,7 +8,7 @@ Kopijuok tik temai reikalingą šabloną. `last_reviewed` įrašyk po tikro turi
 jei dar netikrinai, lauką praleisk. `tests` turi nurodyti esamus failus, kurie tikrina aprašytas
 elgsenos dalis. Vien testų ar sėkmingo build neužtenka būsenai `reviewed`.
 
-## Skilties žinynas
+## Skilties gidas
 
 ```markdown
 ---
@@ -26,20 +26,21 @@ Kam ši skiltis skirta ir kaip ją atverti.
 Šio puslapio instrukcijos dar neparuoštos.
 :::
 
-## Kaip tai veikia
+## Susitarimai {#susitarimai}
 ## Rekomendacijos {#rekomendacijos}
+## Kaip tai veikia
 ## Veiksmai
 ## Kas ką gali {#teises}
 ## Pranešimai ir automatizavimas {#pranesimai}
-## Susitarimai {#susitarimai}
 ## Techninė informacija {#technine-informacija}
 ```
 
-**Rekomendacijos** – neprivalomi praktiniai patarimai. Pateik juos prieš veiksmų aprašymus,
-jei jie padeda pasirengti darbui. **Susitarimai** – tik konkretūs organizaciniai susitarimai,
-kurių sistema automatiškai netikrina. Nepaversk bendro patarimo tariama VU SA taisykle ir
-nepriskirk organizacijai dokumentais nepagrįstų reikalavimų, terminų ar skaičių.
-Jei tokių patarimų ar susitarimų nėra, atitinkamą skyrių praleisk; nerašyk „Nėra“.
+Po įvadinio teksto eiliškumas: **Susitarimai** (organizaciniai susitarimai, pateikiami sąrašu, o
+ne rėmelyje), po to **Rekomendacijos** (praktiniai patarimai, pateikiami `::: tip` rėmelyje), jei jų yra.
+**Susitarimai** – tik konkretūs organizaciniai susitarimai, kurių sistema automatiškai netikrina.
+**Rekomendacijos** – neprivalomi praktiniai patarimai, padedantys pasirengti darbui. Nepaversk bendro
+patarimo tariama VU SA taisykle ir nepriskirk organizacijai dokumentais nepagrįstų reikalavimų,
+terminų ar skaičių. Jei tokių patarimų ar susitarimų nėra, atitinkamą skyrių praleisk; nerašyk „Nėra“.
 Pervadindamas esamą skyrių išsaugok jo inkarą, kad ankstesnės nuorodos liktų veikti.
 
 Pildydamas naudok `partial` ir perspėjime įvardyk, kurios dalys jau aprašytos.
@@ -63,7 +64,7 @@ coverage: ignore
 ## Jei nepavyko
 ```
 
-Taisykles ir teisių lenteles susiek su autoritetingu skilties žinynu. Jei puslapis aprašo
+Taisykles ir teisių lenteles susiek su autoritetingu skilties gidu. Jei puslapis aprašo
 testuojamą funkciją, vietoje `coverage: ignore` deklaruok atitinkamą `area` ir įrodymų failus.
 
 ## Sąvoka arba darbo srities apžvalga
@@ -80,7 +81,7 @@ coverage: ignore
 Paaiškinimas paprastais žodžiais, apimtis ir nuorodos į susijusius puslapius.
 ```
 
-Pridėk tik reikalingas antraštes; visų žinyno skyrių čia nereikia.
+Pridėk tik reikalingas antraštes; visų gido skyrių čia nereikia.
 Apžvalgos peržiūros data nepatvirtina visų jos nuorodomis pasiekiamų puslapių.
 
 ## Patikrinimas prieš užbaigiant

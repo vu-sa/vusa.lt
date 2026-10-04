@@ -13,7 +13,7 @@
         <EntityTypeMark :type="ModelEnum.DUTY" size="md" />
         <div class="min-w-0">
           <p class="truncate text-sm font-medium text-foreground">
-            {{ modelValue.name }}
+            <InflectedDutyName :name="modelValue.name" />
           </p>
           <p v-if="modelValue.institutionName" class="truncate text-xs text-muted-foreground">
             {{ modelValue.institutionName }}
@@ -75,7 +75,7 @@
         >
           <div class="min-w-0">
             <p class="truncate text-sm font-medium text-foreground">
-              {{ hit.name }}
+              <InflectedDutyName :name="hit.name" />
             </p>
             <p v-if="hit.institutionName" class="truncate text-xs text-muted-foreground">
               {{ hit.institutionName }}
@@ -105,6 +105,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Loader2, Search, X } from 'lucide-vue-next';
 import { computed, ref, useId, watch } from 'vue';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';

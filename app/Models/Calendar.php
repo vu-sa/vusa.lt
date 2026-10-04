@@ -8,6 +8,7 @@ use App\Models\Traits\LogsModelActivity;
 use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\IcalendarService;
 use App\Services\PublicUrlService;
+use App\Services\Typesense\SearchText;
 use App\Support\LocalizedRouteSlugs;
 use Datetime;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -289,7 +290,7 @@ class Calendar extends Model implements HasMedia
 
     public function tags(): MorphToMany
     {
-        return $this->morphToMany(Tag::class, 'taggable');
+        return $this->morphToMany(Tag::class, 'taggable')->using(Taggable::class);
     }
 
     /** @return MorphMany<PublicUrl, $this> */
@@ -356,6 +357,7 @@ class Calendar extends Model implements HasMedia
     public function toSearchableArray(): array
     {
         return [
+            ...SearchText::forModel($this),
             'id' => (string) $this->id,
             'title' => $this->getTranslation('title', app()->getLocale()) ?: $this->getTranslation('title', 'lt') ?: $this->getTranslation('title', 'en'),
             'title_lt' => $this->getTranslation('title', 'lt'),

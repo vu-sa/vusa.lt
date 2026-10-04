@@ -40,6 +40,7 @@
       ]">
         {{ news.title }}
       </h3>
+      <SearchMatch :match="news._searchMatch" class="mt-2" />
       <div
         v-if="showExcerpt && news.short"
         :class="[
@@ -57,6 +58,8 @@
 </template>
 
 <script setup lang="ts">
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
+
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Image } from 'lucide-vue-next';
@@ -71,6 +74,7 @@ import IFluentArrowUpRight16Regular from '~icons/fluent/arrow-up-right-16-regula
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
 type PreviewNews = Pick<NewsItem, 'id' | 'title' | 'lang' | 'permalink' | 'image'> & {
+  _searchMatch?: NewsItem['_searchMatch'];
   short?: string;
   publish_time?: string | number | Date | null;
   public_url?: string | null;

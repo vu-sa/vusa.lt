@@ -17,6 +17,7 @@ beforeEach(function (): void {
     // The seeded role, not a hand-built one: what the window offers is decided by real
     // permissions, so the test should be wrong if that grant ever changes.
     $this->representative = makeUser(Tenant::query()->first());
+    $this->representative->update(['pronouns' => ['lt' => 'jis / jo', 'en' => 'he / him']]);
     $this->representative->duties()->first()->assignRole('Studentų atstovas');
 });
 
@@ -33,6 +34,7 @@ function actionWindowChoices($page): array
 }
 
 it('opens from the create button and offers only the actions the user may take', function (): void {
+    $this->representative->update(['name' => 'Jonas Jonaitis', 'pronouns' => ['lt' => '', 'en' => 'she / her']]);
     $page = loginAsAdmin($this->representative);
 
     waitForInertiaRender($page, CREATE_TRIGGER);
@@ -43,11 +45,11 @@ it('opens from the create button and offers only the actions the user may take',
 
     // No coordinator persona: a representative can manage neither duties nor settings.
     expect(actionWindowChoices($page))->toBe([
-        'Kaip studentų atstovas',
-        'Kaip VU SA narys',
+        'Kaip studentų atstovė',
+        'Kaip VU SA narė',
     ]);
 
-    $page->click('[data-slot="action-choice-button"]:has-text("Kaip studentų atstovas")');
+    $page->click('[data-slot="action-choice-button"]:has-text("Kaip studentų atstovė")');
     waitForInertiaRender($page, '[data-slot="action-choice-button"]:has-text("Fiksuoti posėdį")');
 
     expect(actionWindowChoices($page))->toBe([

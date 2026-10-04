@@ -55,7 +55,7 @@
 
         <!-- Checkbox List -->
         <template v-else-if="facet.type === 'checkbox'">
-          <CheckboxFilter
+          <CheckboxFilter :field="facet.field"
             :options="facet.values"
             :selected-values="getSelectedValues(facet.field) as string[]"
             :max-visible="facetConfig.fields.find(f => f.field === facet.field)?.maxValues"

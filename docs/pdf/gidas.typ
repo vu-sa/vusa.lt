@@ -6,7 +6,7 @@
 
 #title-page(
   title: title,
-  subtitle: "Mano VU SA platformos žinynas administratoriams",
+  subtitle: "Mano VU SA platformos gidas administratoriams",
   logo: "/public/logos/vusa.lin.hor.svg",
   date: datetime.today().display("[year]-[month]-[day]"),
 )

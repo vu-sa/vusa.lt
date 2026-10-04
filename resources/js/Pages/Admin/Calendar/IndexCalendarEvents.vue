@@ -49,23 +49,15 @@
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-          <Select
+          <NativeSelect
             v-if="canEdit && !isTrash"
+            size="sm"
+            class="w-44 text-xs"
+            :aria-label="$t('Renginio tipas')"
             :model-value="item.event_type_id == null ? 'none' : String(item.event_type_id)"
+            :options="eventTypeOptions"
             @update:model-value="value => updateType(item, String(value))"
-          >
-            <SelectTrigger :aria-label="$t('Renginio tipas')" class="h-9 w-44 border-border bg-background text-xs pointer-coarse:min-h-11">
-              <SelectValue :placeholder="$t('Be tipo')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">
-                {{ $t('Be tipo') }}
-              </SelectItem>
-              <SelectItem v-for="type in eventTypes" :key="type.id" :value="String(type.id)">
-                {{ getTranslatedValue(type.name) }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          />
           <CollectionRowActions :actions="actionsFor(item)" @select="key => select(key, item)" />
         </div>
       </article>
@@ -79,23 +71,15 @@
         :sub="item.tenant?.shortname"
       />
       <span v-else-if="column.key === 'date'" class="tabular-nums text-muted-foreground">{{ dateOf(item) }}</span>
-      <Select
+      <NativeSelect
         v-else-if="column.key === 'type' && canEdit && !isTrash"
+        size="sm"
+        class="w-full text-xs"
+        :aria-label="$t('Renginio tipas')"
         :model-value="item.event_type_id == null ? 'none' : String(item.event_type_id)"
+        :options="eventTypeOptions"
         @update:model-value="value => updateType(item, String(value))"
-      >
-        <SelectTrigger :aria-label="$t('Renginio tipas')" class="h-9 w-full border-border bg-background text-xs pointer-coarse:min-h-11">
-          <SelectValue :placeholder="$t('Be tipo')" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="none">
-            {{ $t('Be tipo') }}
-          </SelectItem>
-          <SelectItem v-for="type in eventTypes" :key="type.id" :value="String(type.id)">
-            {{ getTranslatedValue(type.name) }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      />
       <span v-else-if="column.key === 'type'" class="text-muted-foreground">{{ eventTypeOf(item) }}</span>
       <CollectionStatusMenu
         v-else-if="column.key === 'status'"
@@ -143,7 +127,7 @@ import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { contentStatuses } from '@/Constants/statuses';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { isTrashView, useDatabaseCollectionSource, type DatabaseFacetDefinition } from '@/Composables/useCollectionSource';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
@@ -167,6 +151,14 @@ const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?
 const canEdit = computed(() => canCreate.value);
 
 const eyebrow = computed(() => `${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.kalendorius')}`);
+
+const eventTypeOptions = computed(() => [
+  { value: 'none', label: $t('Be tipo') },
+  ...props.eventTypes.map(type => ({
+    value: String(type.id),
+    label: getTranslatedValue(type.name),
+  })),
+]);
 
 const statusOptions = [
   { value: 'published', status: contentStatuses.published },

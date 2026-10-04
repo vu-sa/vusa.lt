@@ -36,19 +36,13 @@
       <div class="space-y-3">
         <!-- Only worth showing once the reservation spans more than one unit. -->
         <div v-if="resourceTenants.length > 1" class="flex items-center justify-end">
-          <Select v-model="tenantFilter">
-            <SelectTrigger class="w-[170px]" :aria-label="$t('reservations.dashboard.filters.tenant')">
-              <SelectValue :placeholder="$t('reservations.dashboard.filters.tenant')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">
-                {{ $t('reservations.dashboard.filters.tenant_all') }}
-              </SelectItem>
-              <SelectItem v-for="tenant in resourceTenants" :key="tenant.id" :value="tenant.id">
-                {{ $t(tenant.shortname) }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <NativeSelect
+            v-model="tenantFilter"
+            class="w-[170px]"
+            data-testid="tenant-filter"
+            :aria-label="$t('reservations.dashboard.filters.tenant')"
+            :options="tenantFilterOptions"
+          />
         </div>
 
         <!-- The filter hid everything — distinct from a reservation that simply has no resources. -->
@@ -176,7 +170,7 @@ import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { useDocsHref } from '@/Composables/useDocsHref';
 import { RESERVATION_CARD_MODAL_TITLES } from '@/Constants/I18n/CardModalTitles';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
@@ -252,6 +246,14 @@ const resourceTenants = computed(() => {
 
   return [...tenants.values()];
 });
+
+const tenantFilterOptions = computed(() => [
+  { value: 'all', label: $t('reservations.dashboard.filters.tenant_all') },
+  ...resourceTenants.value.map(tenant => ({
+    value: tenant.id,
+    label: $t(tenant.shortname),
+  })),
+]);
 
 const visibleResources = computed(() => (props.reservation.resources ?? []).filter(
   resource => tenantFilter.value === 'all' || String(resource.tenant?.id) === tenantFilter.value,

@@ -2,7 +2,7 @@
   <FormPage
     :title="isEditing ? institutionTitle : $t('Nauja institucija')"
     :bar-title
-    :head-title="isEditing ? institutionTitle : $t('Nauja institucija')"
+    :head-title="barTitle"
     :lead="isEditing ? undefined : $t('Sukurk institucijos įrašą; pareigybes, kadencijas ir sekretorius pridėsi jos puslapyje.')"
     :entity-type="ModelEnum.INSTITUTION"
     :back-href="isEditing ? route('institutions.show', institution.id) : route('institutions.index')"
@@ -126,18 +126,13 @@
           :hint="$t('Neaktyvios institucijos nebelaukiamos posėdžių ir nerodomos viešame sąraše.')"
         />
 
-        <FormFieldWrapper id="institution-tenant" :label="$t('Padalinys')" required :error="form.errors.tenant_id">
-          <Select v-model="tenantIdString">
-            <SelectTrigger id="institution-tenant">
-              <SelectValue :placeholder="$t('Pasirink padalinį')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="tenant in assignableTenants" :key="tenant.id" :value="String(tenant.id)">
-                {{ tenant.shortname }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </FormFieldWrapper>
+        <TenantSelectField
+          id="institution-tenant"
+          v-model="form.tenant_id"
+          :tenants="assignableTenants"
+          required
+          :error="form.errors.tenant_id"
+        />
       </FormPanel>
 
       <FormPanel :title="$t('Tipas ir valdymas')" :icon="Layers" title-class="text-brand">
@@ -215,6 +210,7 @@ import { Building2, CircleCheck, CircleSlash, Layers, Trash2 } from 'lucide-vue-
 import { computed, ref } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import InstitutionScopeBadge from '@/Components/Institutions/InstitutionScopeBadge.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
@@ -227,9 +223,9 @@ import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { MultiSelect } from '@/Components/ui/multi-select';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
 import { ImageUpload } from '@/Components/ui/upload';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import type { StatusPresentation } from '@/Constants/statuses';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
 
@@ -290,7 +286,7 @@ const initial = () => ({
 const form = props.rememberKey ? useForm(props.rememberKey, initial()) : useForm(initial());
 
 const institutionTitle = computed(() => form.name.lt || form.name.en || '');
-const barTitle = computed(() => (isEditing.value ? (institutionTitle.value || $t('Institucija')) : $t('Nauja institucija')));
+const barTitle = computed(() => (isEditing.value ? (getTranslatedValue(props.institution.name) || $t('Institucija')) : $t('Nauja institucija')));
 
 // Error keys that are not the id of the field they belong to.
 const fieldIds = {
@@ -330,13 +326,6 @@ const institutionStatus = computed<StatusPresentation>(() => ({
   role: isActive.value ? 'success' : 'neutral',
   icon: isActive.value ? CircleCheck : CircleSlash,
 }));
-
-const tenantIdString = computed({
-  get: () => (form.tenant_id ? String(form.tenant_id) : ''),
-  set: (value: string) => {
-    form.tenant_id = value ? parseInt(value) : null;
-  },
-});
 
 const institutionTypeOptions = computed(() =>
   props.institutionTypes.map(type => ({ label: type.title, value: type.id })),

@@ -119,9 +119,8 @@ describe('FormForm.vue', () => {
     it('renders tenant select when assignable tenants exist', () => {
       wrapper = createWrapper();
 
-      // shadcn Select renders as a button trigger, not a native <select>
-      const selectTriggers = wrapper.findAll('[data-slot="select-trigger"]');
-      expect(selectTriggers.length).toBeGreaterThan(0);
+      const selects = wrapper.findAll('select');
+      expect(selects.length).toBeGreaterThan(0);
     });
 
     it('renders form fields table', () => {

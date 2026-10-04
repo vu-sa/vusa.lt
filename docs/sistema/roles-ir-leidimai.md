@@ -21,6 +21,13 @@ platformos prieigos teisėms tvarkyti.
 administratoriams. Kaip veikia teisės ir bazinė nario prieiga, skaityk
 [Teisėse ir rolėse](/pagrindai/teises).
 
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+Prieš kurdamas naują rolę, patikrink, ar darbui pakanka esamos. Suteik tik reikalingus veiksmus ir
+pasirink siauriausią tinkamą apimtį. Prieš trindamas rolę, patikrink, kurios pareigybės ją naudoja.
+:::
+
 ## Kaip tai veikia
 
 Prieigą aprašo leidimai ir rolės:
@@ -40,11 +47,6 @@ galiojimo apimtis: **tavo padalinyje**, **tik su tavimi susijusiuose įrašuose*
 **visoje platformoje**. Pavyzdžiui, fakulteto komunikacijos koordinatorius gali redaguoti tik savo
 padalinio naujienas, o Centrinio biuro koordinatorius – visų padalinių naujienas.
 :::
-
-## Rekomendacijos {#susitarimai}
-
-Prieš kurdamas naują rolę, patikrink, ar darbui pakanka esamos. Suteik tik reikalingus veiksmus ir
-pasirink siauriausią tinkamą apimtį. Prieš trindamas rolę, patikrink, kurios pareigybės ją naudoja.
 
 ## Veiksmai
 

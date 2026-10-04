@@ -349,17 +349,7 @@ const pronounsBadge = computed(() => {
   return typeof pronouns === 'string' ? pronouns : (getTranslatedValue(pronouns) || null);
 });
 
-/**
- * The person whose duties are listed — drives the duty-name ending inflection
- * ("Koordinatorius" → "Koordinatorė"), matching the public contacts page.
- */
-const dutyHolder = computed(() => {
-  const { locale } = usePage().props.app;
-  const raw = props.user.pronouns;
-  const pronouns = typeof raw === 'string' ? raw : (raw?.[locale as 'lt' | 'en'] ?? '');
-
-  return { name: props.user.name, pronouns };
-});
+const dutyHolder = computed(() => ({ name: props.user.name, pronouns: props.user.pronouns }));
 
 /** The headline role, not the contacts — those are key facts, labelled and actionable. */
 const subtitle = computed(() => {

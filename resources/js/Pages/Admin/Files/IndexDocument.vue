@@ -53,11 +53,11 @@
                 rel="noopener noreferrer"
                 class="inline-flex items-center gap-1.5 truncate font-medium hover:text-brand"
               >
-                <span class="truncate">{{ item.title || $t('Be pavadinimo') }}</span>
+                <span class="truncate"><SearchMatch inline :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" /></span>
                 <ExternalLink class="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
               </a>
               <span v-else class="truncate font-medium text-foreground">
-                {{ item.title || $t('Be pavadinimo') }}
+                <SearchMatch inline :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" />
               </span>
               <span
                 v-if="item.language"
@@ -66,6 +66,7 @@
                 {{ item.language === 'Lietuvių' ? 'LT' : item.language === 'Anglų' ? 'EN' : item.language }}
               </span>
             </div>
+            <SearchMatch compact :match="item._searchMatch" :title="item.title || $t('Be pavadinimo')" />
             <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span v-if="item.content_type" class="border border-border bg-muted/60 px-1 py-0.5">
                 {{ item.content_type }}
@@ -103,12 +104,13 @@
           rel="noopener noreferrer"
           class="inline-flex items-center gap-1.5 font-medium hover:text-brand"
         >
-          <span class="line-clamp-2">{{ item.title || $t('Be pavadinimo') }}</span>
+          <span class="line-clamp-2"><SearchMatch inline :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" /></span>
           <ExternalLink class="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
         </a>
         <span v-else class="line-clamp-2 font-medium">
-          {{ item.title || $t('Be pavadinimo') }}
+          <SearchMatch inline :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" />
         </span>
+        <SearchMatch compact :match="item._searchMatch" :title="item.title || $t('Be pavadinimo')" />
       </div>
 
       <span v-else-if="column.key === 'content_type'" class="truncate text-xs">
@@ -174,6 +176,8 @@
 </template>
 
 <script setup lang="ts">
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
+import { matchTitle } from '@/Shared/Search/matches';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Helpers\ShortUrlHelper;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\DocumentSharepointSyncService;
+use App\Services\Typesense\SearchText;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -116,6 +117,7 @@ class Document extends Model
         $calendarEvent = $this->meeting?->calendarEvent;
 
         $searchableArray = [
+            ...SearchText::forModel($this),
             'id' => (string) $this->id,
             'title' => $this->title,
             'summary' => $this->summary,

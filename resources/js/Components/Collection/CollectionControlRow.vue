@@ -30,21 +30,22 @@
 
     <div class="flex shrink-0 items-center gap-2">
       <!-- Filled only while the filters are showing; set filters are told by the count alone. -->
-      <button
-        v-if="hasFilters"
-        type="button"
-        :aria-label="$t('Filtrai')"
-        :aria-expanded="filtersOpen"
-        :class="[controlVariants({ active: filtersOpen, voice: 'sentence' }), 'max-md:px-3']"
-        data-slot="collection-filters-toggle"
-        @click="emit('toggleFilters')"
-      >
-        <SlidersHorizontal class="size-4" aria-hidden="true" />
-        <span class="sr-only md:not-sr-only">{{ $t('Filtrai') }}</span>
-        <span v-if="activeFilterCount > 0" :class="controlCountClass">
-          {{ activeFilterCount }}
-        </span>
-      </button>
+      <SpotlightPopover v-if="hasFilters" :is-dismissed="isDismissed" :title="$t('search.filters_spotlight_title')" :description="$t('search.facet_count_help')" @dismiss="dismiss">
+        <button
+          type="button"
+          :aria-label="$t('Filtrai')"
+          :aria-expanded="filtersOpen"
+          :class="[controlVariants({ active: filtersOpen, voice: 'sentence' }), 'max-md:px-3']"
+          data-slot="collection-filters-toggle"
+          @click="dismiss(); emit('toggleFilters')"
+        >
+          <SlidersHorizontal class="size-4" aria-hidden="true" />
+          <span class="sr-only md:not-sr-only">{{ $t('Filtrai') }}</span>
+          <span v-if="activeFilterCount > 0" :class="controlCountClass">
+            {{ activeFilterCount }}
+          </span>
+        </button>
+      </SpotlightPopover>
 
       <slot name="view-toggle" />
     </div>
@@ -52,6 +53,9 @@
 </template>
 
 <script setup lang="ts">
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+
 import { trans as $t } from 'laravel-vue-i18n';
 import { Search, SlidersHorizontal, X } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
@@ -73,6 +77,7 @@ const emit = defineEmits<{
 }>();
 
 const text = ref(props.query);
+const { isDismissed, dismiss } = useFeatureSpotlight('search-filters-v1');
 
 watch(() => props.query, (query) => {
   if (query !== text.value) {

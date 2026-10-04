@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\MeetingType;
 use App\Models\Pivots\AgendaItem;
 use App\Services\Typesense\MeetingSearchEngine;
+use App\Services\Typesense\SearchText;
 use App\Services\VoteStatisticsCalculator;
 use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
@@ -133,6 +134,7 @@ class PublicMeeting extends Meeting
         $voteStats = $this->calculateVoteStatistics();
 
         return [
+            ...SearchText::forModel($this),
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->getTranslation('description', 'lt'),

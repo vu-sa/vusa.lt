@@ -174,3 +174,12 @@ describe('the coordinator is one tap away on rep screens (R-g)', function (): vo
         );
     });
 });
+
+test('coordinator presentation retains pronouns and the assignment name override', function (): void {
+    $this->coordinator->update(['pronouns' => ['lt' => 'ji/jos', 'en' => 'she/her']]);
+    $this->coordinator->dutiables()->where('duty_id', $this->managerDuty->id)->firstOrFail()
+        ->update(['use_original_duty_name' => true]);
+
+    expect(coordinatorCardFor($this->institution))
+        ->toMatchArray(['pronouns' => ['lt' => 'ji/jos', 'en' => 'she/her'], 'use_original_duty_name' => true]);
+});

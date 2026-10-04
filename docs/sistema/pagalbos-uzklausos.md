@@ -16,6 +16,14 @@ Skiltis **Pagalbos užklausos** (`/mano/support-requests`) skirta pranešimams a
 
 Kiekvienas prisijungęs narys gali užregistruoti problemą, o platformos administratoriai šioje skiltyje peržiūri užklausų eilę, keičia jų būsenas ir paskiria atsakingus asmenis.
 
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+- Registruodamas klaidą, pateik kuo tikslesnę informaciją: kas įvyko, kokiame puslapyje (URL), kokius žingsnius atlikai ir prisek ekrano nuotrauką.
+- Parinktį „Visiems prisijungusiems“ naudok tik tiems patobulinimams, kuriuose nėra jautrių asmens ar organizacijos duomenų.
+- Užbaigdamas ar atmesdamas užklausą, komentare trumpai paaiškink priimtą sprendimą.
+:::
+
 ## Kaip tai veikia
 
 Užklausos pateikiamos per formą `/mano/my-support-requests/create`. Užklausą sudaro pavadinimas, detalus aprašymas, pasirinktas tipas, veiklos sritis, matomumo lygis ir prisegtos ekrano nuotraukos. Gali pridėti iki penkių JPEG, PNG arba WebP vaizdų, kiekvieną iki 10 MB.
@@ -94,12 +102,6 @@ Užklausos puslapyje:
 - **Būsenos pasikeitimo pranešimas**: administratoriui pakeitus užklausos būseną, autorius automatiškai gauna pranešimą sistemoje su nuoroda į užklausą.
 - **Sprendimo laiko fiksavimas**: nustačius būseną „Išspręsta“ arba „Atmesta“, automatiškai užfiksuojamas sprendimo laikas. Užklausą atvėrus pakartotinai, sprendimo laikas išvalomas.
 - **Šalinimas**: pašalinta užklausa saugoma duomenų bazėje; jos atkūrimo maršrutas skirtas administravimui ir sąraše nepateikiamas.
-
-## Rekomendacijos {#susitarimai}
-
-- Registruodamas klaidą, pateik kuo tikslesnę informaciją: kas įvyko, kokiame puslapyje (URL), kokius žingsnius atlikai ir prisek ekrano nuotrauką.
-- Parinktį „Visiems prisijungusiems“ naudok tik tiems patobulinimams, kuriuose nėra jautrių asmens ar organizacijos duomenų.
-- Užbaigdamas ar atmesdamas užklausą, komentare trumpai paaiškink priimtą sprendimą.
 
 ## Techninė informacija {#technine-informacija}
 

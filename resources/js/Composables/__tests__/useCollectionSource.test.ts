@@ -33,7 +33,7 @@ function makeController(filters: Record<string, unknown> = { query: '' }) {
     isLoadingMore: ref(false),
     hasMoreResults: ref(false),
     facets: computed(() => [
-      { field: 'completion_status', label: 'Būsena', type: 'checkbox', values: [{ value: 'incomplete', count: 3, isSelected: true }] },
+      { field: 'completion_status', remote: true, label: 'Būsena', type: 'checkbox', values: [{ value: 'incomplete', count: 3, isSelected: true }] },
       { field: 'date-range', label: 'x', type: 'date-range', values: [] },
     ]),
     sortBy: ref('start_time:desc'),
@@ -100,7 +100,7 @@ describe('useTypesenseCollectionSource', () => {
     const { source } = build();
 
     expect(source.facets.value).toEqual([
-      { field: 'completion_status', label: 'Būsena', type: 'checkbox', values: [{ value: 'incomplete', label: 'Neužpildyta', count: 3, isSelected: true }] },
+      { field: 'completion_status', remote: true, label: 'Būsena', type: 'checkbox', values: [{ value: 'incomplete', label: 'Neužpildyta', count: 3, isSelected: true }] },
     ]);
   });
 

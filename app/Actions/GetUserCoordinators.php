@@ -15,7 +15,7 @@ use App\Models\User;
 class GetUserCoordinators
 {
     /**
-     * @return list<array{id: string, name: string, email: string|null, profile_photo_path: string|null, duty: string|null, institutions: list<string>}>
+     * @return list<array{id: string, name: string, email: string|null, profile_photo_path: string|null, duty: string|null, pronouns: array<string, string>, use_original_duty_name: bool, institutions: list<string>}>
      */
     public static function execute(User $user): array
     {

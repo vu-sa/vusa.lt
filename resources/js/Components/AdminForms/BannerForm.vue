@@ -152,7 +152,7 @@ const form = props.rememberKey
 const fieldIds = ['title', 'link_url', 'is_active', 'image_url'];
 
 const barTitle = computed(() =>
-  form.title?.trim() || (isCreate.value ? $t('Naujas baneris') : $t('Baneris')),
+  isCreate.value ? $t('Naujas baneris') : (props.banner.title?.trim() || $t('Baneris')),
 );
 
 const currentStatusPresentation = computed<StatusPresentation>(() =>

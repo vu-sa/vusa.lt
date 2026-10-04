@@ -18,6 +18,14 @@ Baneriai – grafiniai skydeliai su nuorodomis, viešos svetainės apačioje rod
 
 Skiltis pasiekiama adresu `/mano/banners`.
 
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+- **Aiškus vaizdas:** parink paveikslėlį, kuriame logotipas ar pagrindinė žinutė būtų įskaitomi ir telefone. Apkarpydamas vaizdą patikrink, ar nenukerpi svarbių jo dalių.
+- **Veikianti nuoroda:** prieš skelbdamas atverk banerio nuorodą ir patikrink, ar ji veda į numatytą puslapį. Jei svetainė palaiko HTTPS, naudok adresą su `https://`.
+- **Aktualumas:** pasibaigus akcijai arba kai banerio informacija nebeaktuali, pažymėk jį kaip neaktyvų arba pašalink.
+:::
+
 ## Kaip tai veikia
 
 ### Rodymas svetainėje ir prioritetas
@@ -36,12 +44,6 @@ Kiekvienas baneris turi vieną iš dviejų būsenų:
 |---|---|---|
 | **Aktyvus** (`active`) | Baneris įtrauktas į viešą karuselę. | Matomas viešoje svetainėje. |
 | **Neaktyvus** (`inactive`) | Baneris išsaugotas sistemoje, bet nerodomas lankytojams. | Matomas tik administravimo sąraše. |
-
-## Rekomendacijos {#susitarimai}
-
-- **Aiškus vaizdas:** parink paveikslėlį, kuriame logotipas ar pagrindinė žinutė būtų įskaitomi ir telefone. Apkarpydamas vaizdą patikrink, ar nenukerpi svarbių jo dalių.
-- **Veikianti nuoroda:** prieš skelbdamas atverk banerio nuorodą ir patikrink, ar ji veda į numatytą puslapį. Jei svetainė palaiko HTTPS, naudok adresą su `https://`.
-- **Aktualumas:** pasibaigus akcijai arba kai banerio informacija nebeaktuali, pažymėk jį kaip neaktyvų arba pašalink.
 
 ## Veiksmai
 

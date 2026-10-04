@@ -132,7 +132,7 @@
           <!-- Padalinys Filter Popover -->
           <PublicFilterPopover
             :label="$t('Padalinys')"
-            :options="tenantOptions"
+            :options="tenantOptions" field="tenant_shortname"
             :selected="selectedTenants"
             searchable
             :search-placeholder="`${$t('news.archive.search_unit')}...`"
@@ -144,7 +144,7 @@
           <!-- Year Filter Popover -->
           <PublicFilterPopover
             :label="$t('Metai')"
-            :options="yearOptions"
+            :options="yearOptions" field="year"
             :selected="selectedYears"
             searchable
             :search-placeholder="`${$t('news.archive.search_year')}...`"
@@ -157,7 +157,7 @@
           <PublicFilterPopover
             v-if="tagOptions.length > 0"
             :label="$t('Žymos')"
-            :options="tagOptions"
+            :options="tagOptions" field="tag_names"
             :selected="selectedTags"
             searchable
             :search-placeholder="`${$t('news.archive.search_tag')}...`"
@@ -472,8 +472,6 @@ const getSortIcon = (mode: NewsSearchSort) => {
 const currentSortIcon = computed(() => getSortIcon(sortBy.value));
 
 // The backend's `allTenants` is the full list regardless of filters; Typesense's facet
-// counts, once a tenant is selected, only cover the now-filtered subset (Typesense counts
-// facet values *within* the active filter, so every other tenant would otherwise drop out
 // of the list the moment one is picked). Use `allTenants` for which options exist, and
 // overlay live counts from the facet response where available.
 const tenantOptions = computed<FilterOption[]>(() => {
@@ -499,7 +497,7 @@ const yearOptions = computed<FilterOption[]>(() => {
     fallback.push({
       label: String(y),
       value: String(y),
-      count: 0,
+      count: null,
     });
   }
   return fallback;

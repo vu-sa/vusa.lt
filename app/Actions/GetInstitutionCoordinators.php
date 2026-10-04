@@ -17,13 +17,13 @@ class GetInstitutionCoordinators
 {
     /**
      * @param  iterable<Institution>  $institutions
-     * @return list<array{id: string, name: string, email: string|null, profile_photo_path: string|null, duty: string|null, institutions: list<string>}>
+     * @return list<array{id: string, name: string, email: string|null, profile_photo_path: string|null, duty: string|null, pronouns: array<string, string>, use_original_duty_name: bool, institutions: list<string>}>
      */
     public static function execute(iterable $institutions, ?User $except = null): array
     {
         $resolver = app(ResponsibilityResolver::class);
 
-        /** @var array<string, array{id: string, name: string, email: string|null, profile_photo_path: string|null, duty: string|null, institutions: list<string>}> $coordinators */
+        /** @var array<string, array{id: string, name: string, email: string|null, profile_photo_path: string|null, duty: string|null, pronouns: array<string, string>, use_original_duty_name: bool, institutions: list<string>}> $coordinators */
         $coordinators = [];
 
         foreach ($institutions as $institution) {
@@ -46,6 +46,8 @@ class GetInstitutionCoordinators
                         'email' => self::emailFor($duty, $user),
                         'profile_photo_path' => $user->profile_photo_path,
                         'duty' => (string) $duty->getTranslation('name', app()->getLocale()),
+                        'pronouns' => $user->getTranslations('pronouns'),
+                        'use_original_duty_name' => (bool) $user->pivot?->use_original_duty_name,
                         'institutions' => [],
                     ];
 

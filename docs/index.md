@@ -7,11 +7,11 @@ coverage: ignore
 
 hero:
   name: "vusa.lt gidas"
-  tagline: Mano VU SA platformos žinynas administratoriams – kaip veikia kiekviena darbo sritis, puslapis ir teisė
+  tagline: Mano VU SA platformos gidas administratoriams – kaip veikia kiekviena darbo sritis, puslapis ir teisė
   actions:
     - theme: brand
-      text: Rasti savo darbą
-      link: /darbai
+      text: Peržiūrėk
+      link: /ivadas
     - theme: alt
       text: Atsisiųsti PDF
       link: /docs/vusa-lt-gidas.pdf

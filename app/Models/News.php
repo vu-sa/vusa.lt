@@ -9,6 +9,7 @@ use App\Models\Traits\LogsModelActivity;
 use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\HtmlSanitizerService;
 use App\Services\PublicUrlService;
+use App\Services\Typesense\SearchText;
 use App\Support\LocalizedRouteSlugs;
 use App\Support\PublicCacheTags;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -253,7 +254,7 @@ class News extends Model implements Feedable, Sitemapable
     /** @return MorphToMany<Tag, $this> */
     public function tags(): MorphToMany
     {
-        return $this->morphToMany(Tag::class, 'taggable');
+        return $this->morphToMany(Tag::class, 'taggable')->using(Taggable::class);
     }
 
     public function content(): BelongsTo
@@ -547,6 +548,7 @@ class News extends Model implements Feedable, Sitemapable
         $publishTimestamp = $this->publish_time ? $this->publish_time->timestamp : $this->created_at->timestamp;
 
         return [
+            ...SearchText::forModel($this),
             'id' => (string) $this->id,
             'title' => $this->title,
             'short' => $this->short,

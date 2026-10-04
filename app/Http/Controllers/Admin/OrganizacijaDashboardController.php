@@ -99,12 +99,12 @@ class OrganizacijaDashboardController extends AdminController
 
     /**
      * @param  Builder<Dutiable>  $ending
-     * @return list<array{id: string, duty_id: string, duty: string, user: string|null, ends_on: string|null}>
+     * @return list<array{id: string, duty_id: string, duty: string, user: string|null, pronouns: array<string, string>|null, use_original_duty_name: bool, ends_on: string|null}>
      */
     private function serializeEnding(Builder $ending): array
     {
         $terms = $ending
-            ->with(['duty:id,name', 'user:id,name'])
+            ->with(['duty:id,name', 'user:id,name,pronouns'])
             ->orderBy('end_date')
             ->take(self::LIST_SIZE)
             ->get();
@@ -117,6 +117,8 @@ class OrganizacijaDashboardController extends AdminController
                 'duty_id' => (string) $dutiable->duty?->id,
                 'duty' => (string) $dutiable->duty?->name,
                 'user' => $dutiable->user?->name,
+                'pronouns' => $dutiable->user?->getTranslations('pronouns'),
+                'use_original_duty_name' => (bool) $dutiable->use_original_duty_name,
                 'ends_on' => $dutiable->end_date?->toDateString(),
             ];
         }

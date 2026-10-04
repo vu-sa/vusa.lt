@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center gap-3 w-full min-w-0">
+  <div class="flex items-center gap-3 w-full min-w-0" data-slot="search-hit-row" :data-collection="hit.collection">
     <div
       v-if="hit.imageUrl && !hit.isRecent"
       class="size-10 shrink-0 overflow-hidden border border-border bg-muted"
@@ -15,7 +15,9 @@
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2 min-w-0">
         <span class="min-w-0 flex-1 truncate font-medium text-sm">
-          {{ hit.title }}
+          <InflectedDutyName v-if="hit.collection === 'duties'" :name="hit.title" :matches="matches._searchTitleMatches" />
+          <SearchMatch v-else-if="titleMatch" inline :match="titleMatch" />
+          <template v-else>{{ hit.title }}</template>
         </span>
 
         <Badge v-if="hit.isRecent" variant="outline" class="shrink-0 text-xs font-medium" :title="$t('Neseniai žiūrėtas')">
@@ -39,6 +41,7 @@
           {{ hit.statusBadge.label }}
         </Badge>
       </div>
+      <SearchMatch compact :match="matches._searchMatch" :title="hit.title" />
       <div class="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5 min-w-0">
         <span v-if="hit.subtitle" class="min-w-0 truncate">{{ hit.subtitle }}</span>
         <span v-if="hit.subtitle && hit.meta" class="shrink-0 text-muted-foreground/40">•</span>
@@ -90,15 +93,22 @@ import { ChevronRight, Link as LinkIcon, Clock, Eye, Pencil } from 'lucide-vue-n
 import { toneClass, toneIcon } from '../Utils/searchBadges';
 import type { NormalizedSearchHit, SearchCollectionKey } from '../Utils/searchHitMappers';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
+import { matchTitle, type SearchMatchDocument } from '@/Shared/Search/matches';
+import { computed } from 'vue';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { Badge } from '@/Components/ui/badge';
 
-defineProps<{
+const props = defineProps<{
   hit: NormalizedSearchHit;
   selected?: boolean;
   /** Renders View/Edit icon buttons instead of the chevron (command palette rows). */
   showActions?: boolean;
 }>();
+
+const matches = computed(() => props.hit.raw as SearchMatchDocument);
+const titleMatch = computed(() => matchTitle(props.hit.title, matches.value._searchTitleMatches));
 
 defineEmits<{
   view: [];

@@ -2,7 +2,7 @@
   <FormPage
     :title="isEditing ? problemTitle : $t('Nauja problema')"
     :bar-title
-    :head-title="isEditing ? problemTitle : $t('Nauja problema')"
+    :head-title="barTitle"
     :lead="isEditing ? undefined : $t('Užregistruok problemą, su kuria susidūrė studentai.')"
     :entity-type="ModelEnum.PROBLEM"
     :back-href="isEditing && form.id ? route('problems.show', form.id) : route('problems.index')"
@@ -311,6 +311,7 @@ import { useApi } from '@/Composables/useApi';
 import { problemStatuses } from '@/Constants/statuses';
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { ModelEnum } from '@/Types/enums';
 
 interface Translated {
@@ -387,7 +388,7 @@ const form = props.rememberKey ? useForm(props.rememberKey, initial()) : useForm
 const isEditing = computed(() => Boolean(form.id));
 
 const problemTitle = computed(() => form.title.lt || form.title.en || '');
-const barTitle = computed(() => (isEditing.value ? (problemTitle.value || $t('Problema')) : $t('Nauja problema')));
+const barTitle = computed(() => (isEditing.value ? (getTranslatedValue(source.title) || $t('Problema')) : $t('Nauja problema')));
 
 const fieldIds = {
   'title.lt': 'problem-title',

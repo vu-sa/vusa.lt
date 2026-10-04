@@ -22,6 +22,7 @@ use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionScopeResolver;
 use App\Services\RelationshipService;
+use App\Services\Typesense\SearchText;
 use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -348,6 +349,7 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
             ->all();
 
         return [
+            ...SearchText::forModel($this),
             'id' => (string) $this->id,
             'name_lt' => $this->getTranslation('name', 'lt') ?? '',
             'name_en' => $this->getTranslation('name', 'en'),

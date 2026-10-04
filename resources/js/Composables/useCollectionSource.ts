@@ -11,11 +11,12 @@ export interface CollectionFacetValue {
   value: string;
   label: string;
   /** Undefined when the source has not counted it (yet); the panel then shows no number. */
-  count?: number;
+  count?: number | null;
   isSelected: boolean;
 }
 
 export interface CollectionFacet {
+  remote?: boolean;
   field: string;
   label: string;
   type: 'checkbox' | 'year-pills';
@@ -225,6 +226,7 @@ export function useTypesenseCollectionSource<T = unknown>(options: TypesenseSour
       .filter(facet => facet.type === 'checkbox' || facet.type === 'year-pills')
       .map(facet => ({
         field: facet.field,
+        remote: true,
         label: facet.label,
         type: facet.type as CollectionFacet['type'],
         values: facet.values.map(value => ({

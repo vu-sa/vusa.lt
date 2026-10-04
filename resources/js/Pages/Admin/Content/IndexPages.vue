@@ -43,7 +43,7 @@
     <template #row="{ item, view }">
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
-          <CollectionPrimaryCell
+          <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
             :title="item.title"
             :href="isTrash ? undefined : route('pages.edit', item.id)"
             :clickable="isTrash && view === 'preview'"
@@ -137,7 +137,7 @@
     </template>
 
     <template #cell="{ item, column }">
-      <CollectionPrimaryCell
+      <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
         v-if="column.key === 'title'"
         :title="item.title"
         :title-lines="2"

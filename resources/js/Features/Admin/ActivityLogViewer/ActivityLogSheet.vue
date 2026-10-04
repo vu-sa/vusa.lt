@@ -35,23 +35,15 @@
         </Button>
 
         <!-- Only once the feed has mixed subject types (useActivityLog's knownSubjectTypes). -->
-        <Select
+        <NativeSelect
           v-if="availableSubjectTypeOptions.length > 1"
+          size="sm"
+          class="ml-auto w-auto min-w-32"
+          :aria-label="$t('activity.filter.subject_type')"
           :model-value="subjectTypeFilter"
-          @update:model-value="(value) => setSubjectType(value as string)"
-        >
-          <SelectTrigger size="sm" class="ml-auto w-auto min-w-32">
-            <SelectValue :placeholder="$t('activity.filter.subject_type')" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">
-              {{ $t('activity.filter.all_types') }}
-            </SelectItem>
-            <SelectItem v-for="option in availableSubjectTypeOptions" :key="option.value" :value="option.value">
-              {{ option.label }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
+          :options="[{ value: 'all', label: $t('activity.filter.all_types') }, ...availableSubjectTypeOptions]"
+          @update:model-value="(value) => setSubjectType(String(value))"
+        />
       </div>
 
       <ScrollArea class="min-h-0 flex-1 px-6">
@@ -78,7 +70,7 @@ import ActivityLogFeed from './ActivityLogFeed.vue';
 
 import { Button } from '@/Components/ui/button';
 import { ScrollArea } from '@/Components/ui/scroll-area';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/Components/ui/sheet';
 import { useActivityLog } from '@/Composables/useActivityLog';
 import { useIsMobile } from '@/Composables/useIsMobile';

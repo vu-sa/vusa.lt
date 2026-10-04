@@ -177,6 +177,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import SingleSelect from '@/Components/ui/single-select/SingleSelect.vue';
 import { Textarea } from '@/Components/ui/textarea';
 import { goalStatuses, statusRoleClasses } from '@/Constants/statuses';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { GoalStatus, ModelEnum } from '@/Types/enums';
 
 interface Translated { lt: string; en: string }
@@ -225,7 +226,7 @@ const form = useForm({
 
 const isEditing = computed(() => Boolean(form.id));
 const goalTitle = computed(() => form.title.lt || form.title.en);
-const barTitle = computed(() => (isEditing.value ? goalTitle.value || $t('goals.new') : $t('goals.new')));
+const barTitle = computed(() => (isEditing.value ? getTranslatedValue(source.title) || $t('goals.new') : $t('goals.new')));
 
 const fieldIds = {
   'title.lt': 'goal-title',

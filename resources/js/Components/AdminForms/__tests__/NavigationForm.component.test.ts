@@ -64,15 +64,6 @@ const formStubs = {
     template: '<div><slot /></div>',
   },
   ToggleGroupItem: { props: ['value'], template: '<button type="button" @click="$parent.$emit(\'update:modelValue\', value)"><slot /></button>' },
-  Select: {
-    props: ['modelValue'],
-    emits: ['update:modelValue'],
-    template: '<select :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"><slot /></select>',
-  },
-  SelectTrigger: { template: '<div><slot /></div>' },
-  SelectValue: { template: '<div />' },
-  SelectContent: { template: '<slot />' },
-  SelectItem: { props: ['value'], template: '<option :value="value"><slot /></option>' },
   SingleSelect: { template: '<div />' },
   FocalPointPicker: { template: '<div data-testid="focal-point-picker" />' },
   FluentIconSelect: { template: '<div />' },
@@ -201,6 +192,18 @@ describe('NavigationForm.vue', () => {
     expect(executeResolveUrl).toHaveBeenCalled();
     const urlInput = wrapper.find('#url');
     expect((urlInput.element as HTMLInputElement).value).toBe('/lt/tema/renginiai');
+  });
+
+  it('updates column and col_span via segmented controls', async () => {
+    wrapper = createWrapper();
+
+    const columnButton = wrapper.find('[data-testid="navigation-column-2"]');
+    await columnButton.trigger('click');
+    expect(capturedForm?.extra_attributes.column).toBe(2);
+
+    const colSpanButton = wrapper.find('[data-testid="navigation-col-span-3"]');
+    await colSpanButton.trigger('click');
+    expect(capturedForm?.extra_attributes.col_span).toBe(3);
   });
 
   describe('footer mode', () => {

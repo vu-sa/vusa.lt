@@ -172,7 +172,7 @@
           <!-- Effect Status Filter: defaults to Galioja + Nenustatyta, hiding "Negalioja" -->
           <PublicFilterPopover
             :label="$t('Galiojimas')"
-            :options="effectStatusOptions"
+            :options="effectStatusOptions" field="is_in_effect"
             :selected="filters.effectStatuses || []"
             trigger-class="h-9 px-3"
             @toggle="toggleEffectStatusOption"
@@ -182,7 +182,7 @@
           <!-- Content Type Filter Popover -->
           <PublicFilterPopover
             :label="$t('search.document_type')"
-            :options="contentTypeOptions"
+            :options="contentTypeOptions" field="content_type"
             :selected="filters.contentTypes || []"
             searchable
             :search-placeholder="`${$t('Ieškoti tipo')}...`"
@@ -194,7 +194,7 @@
           <!-- Padalinys Filter Popover -->
           <PublicFilterPopover
             :label="$t('Padalinys')"
-            :options="tenantOptions"
+            :options="tenantOptions" field="tenant_shortname"
             :selected="filters.tenants || []"
             searchable
             :search-placeholder="`${$t('Ieškoti padalinio')}...`"
@@ -206,7 +206,7 @@
           <!-- Language Filter Popover -->
           <PublicFilterPopover
             :label="$t('search.language')"
-            :options="languageOptions"
+            :options="languageOptions" field="language"
             :selected="filters.languages || []"
             trigger-class="h-9 px-3"
             @toggle="searchController.toggleLanguage"

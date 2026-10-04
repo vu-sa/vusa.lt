@@ -86,9 +86,9 @@ class BuildDutiableTimeline
             ->with([
                 'duty:id,name,institution_id,places_to_occupy,order',
                 'duty.institution:id,name,alias,tenant_id',
-                'user:id,name,profile_photo_path',
+                'user:id,name,profile_photo_path,pronouns',
                 'tenant:id,shortname',
-                'viaDutiable:id,duty_id,dutiable_id',
+                'viaDutiable:id,duty_id,dutiable_id,use_original_duty_name',
                 'viaDutiable.duty:id,name',
                 'study_program:id,name',
             ]);
@@ -212,6 +212,8 @@ class BuildDutiableTimeline
             'institution_name' => $row->duty?->institution?->name,
             'holder_id' => $row->dutiable_id,
             'holder_name' => $row->user?->name,
+            'holder_pronouns' => $row->user?->getTranslations('pronouns'),
+            'use_original_duty_name' => (bool) $row->use_original_duty_name,
             'holder_photo' => $row->user?->profile_photo_path,
             'tenant_id' => $row->tenant_id,
             'tenant_shortname' => $row->tenant?->shortname,
@@ -222,7 +224,7 @@ class BuildDutiableTimeline
             'via_dutiable_id' => $row->via_dutiable_id,
             'extras' => self::extras($row),
             'source' => $isDerived && $row->viaDutiable
-                ? ['id' => $row->viaDutiable->id, 'duty_name' => $row->viaDutiable->duty?->name]
+                ? ['id' => $row->viaDutiable->id, 'duty_name' => $row->viaDutiable->duty?->name, 'use_original_duty_name' => (bool) $row->viaDutiable->use_original_duty_name]
                 : null,
             'derived_ids' => $derivedBySource->get($row->id, collect())->pluck('id')->all(),
             'is_derived' => $isDerived,

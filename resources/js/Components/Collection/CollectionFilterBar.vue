@@ -46,12 +46,13 @@
       </SheetHeader>
 
       <div class="flex flex-col gap-5 px-4 pb-4">
+        <FacetCountHelp v-if="facets.length" />
         <CollectionQuickFilters :filters="quickFilters" wrap @toggle="id => emit('quickFilter', id)" />
         <section v-for="facet in facets" :key="facet.field">
           <h3 class="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">
             {{ facet.label }}
           </h3>
-          <CollectionFacetOptions :facet @toggle="(field, value) => emit('toggle', field, value)" />
+          <CollectionFacetOptions :facet :show-count-help="false" @toggle="(field, value) => emit('toggle', field, value)" />
         </section>
         <button
           v-if="trash"
@@ -87,6 +88,7 @@ import CollectionQuickFilters from './CollectionQuickFilters.vue';
 import type { CollectionQuickFilter, CollectionTrash } from './types';
 
 import { Button } from '@/Components/ui/button';
+import FacetCountHelp from '@/Components/ui/FacetCountHelp.vue';
 import { controlCountClass, controlVariants } from '@/Components/ui/control';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import {

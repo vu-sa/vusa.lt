@@ -63,7 +63,8 @@
               data-card-link
               class="line-clamp-2 text-base font-medium text-foreground outline-none after:absolute after:inset-0 after:content-[''] group-hover:text-brand"
             >
-              {{ nameOf(item) }}
+              <SearchMatch inline :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
+              <SearchMatch compact :match="item._searchMatch" :title="nameOf(item)" />
             </Link>
             <p class="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
               <span v-if="item.category_name">{{ item.category_name }}</span>
@@ -106,7 +107,8 @@
             <EntityTypeMark v-else type="resource" size="lg" icon-only class="size-12 justify-center" />
             <span class="min-w-0 flex-1">
               <span class="block truncate text-base font-medium text-foreground">
-                {{ nameOf(item) }}
+                <SearchMatch inline :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
+              <SearchMatch compact :match="item._searchMatch" :title="nameOf(item)" />
               </span>
               <span class="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
                 <span v-if="item.category_name">{{ item.category_name }}</span>
@@ -136,7 +138,8 @@
           prefetch
           class="font-medium hover:text-brand"
         >
-          {{ nameOf(item) }}
+          <SearchMatch inline :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
+              <SearchMatch compact :match="item._searchMatch" :title="nameOf(item)" />
         </Link>
         <template v-else-if="column.key === 'category'">
           {{ item.category_name ?? '—' }}
@@ -199,6 +202,8 @@
 </template>
 
 <script setup lang="ts">
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
+import { matchTitle } from '@/Shared/Search/matches';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Ban, CalendarClock, Plus } from 'lucide-vue-next';

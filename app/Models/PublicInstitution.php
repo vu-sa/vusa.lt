@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Pivots\InstitutionInstitutionType;
 use App\Models\Pivots\Relationshipable;
 use App\Services\PublicInstitutionSearchIndexBuilder;
+use App\Services\Typesense\SearchText;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
@@ -153,7 +154,7 @@ class PublicInstitution extends Institution
     #[\Override]
     public function toSearchableArray(): array
     {
-        return app(PublicInstitutionSearchIndexBuilder::class)->build($this);
+        return [...app(PublicInstitutionSearchIndexBuilder::class)->build($this), ...SearchText::forModel($this)];
     }
 
     /**

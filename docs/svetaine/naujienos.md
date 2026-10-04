@@ -1,7 +1,8 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-04
 tests:
+  - tests/Feature/Search/SearchExperienceTest.php
   - tests/Feature/Api/Admin/ContentEditorTest.php
   - tests/Feature/Admin/Content/NewsControllerTest.php
   - tests/Browser/RichContentFullscreenEditorTest.php
@@ -17,7 +18,18 @@ Naujienos skirtos organizacijos ir padalinių veiklų ataskaitoms, pranešimams 
 
 Skiltis pasiekiama adresu `/mano/news`.
 
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+- **Glaustas įvadas:** trumpai įvardyk svarbiausią žinią. Jei aktualu, atsakyk, kas, kur ir kada vyksta. Įvadas turi tilpti į [200 matomų simbolių ribą](#issaugojimas).
+- **Įskaitomas viršelis:** rinkis aiškią nuotrauką ir patikrink jos apkarpymą. Plakatą su smulkiu tekstu geriau pateikti straipsnyje, o svarbiausią informaciją pakartoti tekstu.
+- **Struktūra:** ilgą straipsnį skaidyk trumpomis pastraipomis ir prasmingomis paantraštėmis. Paryškink tik svarbiausias mintis.
+:::
+
 ## Kaip tai veikia
+
+Paieška randa išsaugotą pavadinimą, aprašymą, žymas ir turinio tekstą. Ištrauka po rezultato pavadinimu padeda suprasti atitikimą. Viešoje paieškoje išlieka tik viešai skelbiami įrašai. [Paieška ir filtrų skaičiai](/pagrindai/platforma#paieska-ir-pasirinkimas).
+
 
 ### Naujienos duomenys ir skelbimo laikas
 
@@ -58,12 +70,6 @@ Nepavykęs išsaugojimas palieka tavo pakeitimus formoje. Jei kolega jau išsaug
 Redaguojant saugomos privačios įrenginio bei serverio atkūrimo kopijos. Jos nepaskelbia naujienos. Grįžęs į formą pasirink **Atkurti kopiją**; jei išsaugota versija pasikeitė, **Peržiūrėti dabartinę versiją** leidžia pasirinkti, kurią kopiją tęsti. [Atkūrimo eiga](/svetaine/puslapiai#atkurimas) vienoda puslapiams ir naujienoms.
 
 **Palyginti ir redaguoti** atveria abi kalbas greta, o telefone leidžia persijungti. Kiekviena versija turi savo įvadą, svarbiausius punktus, paskelbimo laiką ir išsaugojimą. **Sukurti versiją kita kalba** atveria tuščią juodraštį, į kurį gali nukopijuoti dabartinį turinį; išsaugojus versijos susiejamos. [Kalbų versijų eiga](/svetaine/puslapiai#kalbu-versijos).
-
-## Rekomendacijos {#susitarimai}
-
-- **Glaustas įvadas:** trumpai įvardyk svarbiausią žinią. Jei aktualu, atsakyk, kas, kur ir kada vyksta. Įvadas turi tilpti į [200 matomų simbolių ribą](#issaugojimas).
-- **Įskaitomas viršelis:** rinkis aiškią nuotrauką ir patikrink jos apkarpymą. Plakatą su smulkiu tekstu geriau pateikti straipsnyje, o svarbiausią informaciją pakartoti tekstu.
-- **Struktūra:** ilgą straipsnį skaidyk trumpomis pastraipomis ir prasmingomis paantraštėmis. Paryškink tik svarbiausias mintis.
 
 ## Veiksmai
 

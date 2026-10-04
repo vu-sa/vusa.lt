@@ -16,7 +16,7 @@
         :href="route('duties.show', duty.id)"
         class="text-base font-semibold leading-snug text-foreground no-underline transition-colors after:absolute after:inset-0 after:content-[''] group-hover:text-primary"
       >
-        {{ displayName }}
+        <InflectedDutyName :name="duty.name" :holder :use-original-duty-name="effectiveUseOriginal" />
       </Link>
     </div>
 
@@ -54,10 +54,11 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Building2, Calendar, Mail } from 'lucide-vue-next';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { interactiveCardClass } from '@/Utils/interactiveCard';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { LocaleEnum } from '@/Types/enums';
-import { changeDutyNameEndings } from '@/Utils/String';
+import type { DutyNameHolder } from '@/Utils/String';
 
 export interface SummaryDuty {
   id: string | number;
@@ -68,11 +69,7 @@ export interface SummaryDuty {
   pivot?: { start_date?: string; end_date?: string | null; additional_email?: string; use_original_duty_name?: boolean } | null;
 }
 
-export interface DutySummaryHolder {
-  name?: string | null;
-  /** Pronouns as a locale string ("jis/jo") or a { lt, en } map. */
-  pronouns?: string | { lt?: string; en?: string } | null;
-}
+export type DutySummaryHolder = DutyNameHolder;
 
 const props = withDefaults(defineProps<{
   duty: SummaryDuty;
@@ -100,21 +97,6 @@ const locale = computed(() => (usePage().props.app.locale as LocaleEnum) ?? Loca
 // `use_original_duty_name` on the pivot takes precedence over the caller-supplied
 // prop, since it is the per-assignment setting that actually governs inflection.
 const effectiveUseOriginal = computed(() => props.duty.pivot?.use_original_duty_name ?? props.useOriginalDutyName);
-
-const displayName = computed(() => {
-  if (!props.holder) return props.duty.name;
-  const rawPronouns = props.holder.pronouns;
-  const pronouns = typeof rawPronouns === 'string'
-    ? rawPronouns
-    : (rawPronouns?.[locale.value as 'lt' | 'en'] ?? '');
-  return changeDutyNameEndings(
-    { name: props.holder.name ?? '' } as App.Entities.User,
-    props.duty.name,
-    locale.value,
-    pronouns,
-    effectiveUseOriginal.value,
-  );
-});
 
 /** The assignment's own contact address wins over the duty's shared one. */
 const contactEmail = computed(() => props.duty.pivot?.additional_email || props.duty.email || '');

@@ -14,7 +14,7 @@
     <template #row="{ item }">
       <div class="flex items-center gap-4 px-4 py-4">
         <div class="min-w-0 flex-1">
-          <CollectionPrimaryCell :title="item.title || $t('Be pavadinimo')" :href="route('agendaItems.edit', item.id)" :sub="item.meeting_title" />
+          <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title || $t('Be pavadinimo')" :href="route('agendaItems.edit', item.id)" :sub="item.meeting_title" />
           <p v-if="item.institution_name_lt || item.institution_name_en" class="mt-1 text-xs text-muted-foreground">
             {{ item.institution_name_lt || item.institution_name_en }}
           </p>
@@ -24,7 +24,7 @@
     </template>
 
     <template #cell="{ item, column }">
-      <CollectionPrimaryCell v-if="column.key === 'title'" :title="item.title || $t('Be pavadinimo')" :href="route('agendaItems.edit', item.id)" />
+      <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" v-if="column.key === 'title'" :title="item.title || $t('Be pavadinimo')" :href="route('agendaItems.edit', item.id)" />
       <span v-else-if="column.key === 'meeting'">{{ item.meeting_title || '—' }}</span>
       <span v-else-if="column.key === 'institution'">{{ item.institution_name_lt || item.institution_name_en || '—' }}</span>
       <CollectionRowActions v-else-if="column.key === 'actions'" :actions="openActions(item)" />

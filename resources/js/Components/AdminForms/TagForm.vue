@@ -96,6 +96,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import type { StatusPresentation } from '@/Constants/statuses';
 import { formatDate } from '@/Utils/dateTime';
 
@@ -146,7 +147,7 @@ const titleText = computed(() => {
 });
 
 const barTitle = computed(() =>
-  titleText.value.trim() || (isCreate.value ? $t('Nauja žyma') : $t('Žyma')),
+  isCreate.value ? $t('Nauja žyma') : getTranslatedValue(props.postTag.name, undefined, $t('Žyma')),
 );
 
 const topicStatus: StatusPresentation = {

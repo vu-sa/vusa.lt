@@ -13,6 +13,20 @@ describe('FormPage.vue', () => {
     EntityTypeMark: { template: '<div data-testid="entity-type-mark" />' },
   };
 
+  it('renders rich title and bar slots while keeping the plain browser title', () => {
+    const wrapper = mount(FormPage, {
+      props: { title: 'Koordinatorius' },
+      slots: { title: '<span data-testid="rich-title">Koordinatorė</span>', 'bar-title': '<span>Koordinatorė</span>' },
+      global: { stubs },
+    });
+
+    expect(wrapper.get('h1 [data-testid="rich-title"]').text()).toBe('Koordinatorė');
+    expect(wrapper.get('h1').classes()).toContain('u-display');
+    expect(wrapper.get('[data-testid="form-page-bar-title"]').text()).toBe('Koordinatorė');
+    expect(wrapper.get('title').text()).toContain('Koordinatorius');
+    wrapper.unmount();
+  });
+
   it('renders form header with title, lead, and entity type mark', () => {
     const wrapper = mount(FormPage, {
       props: {

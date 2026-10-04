@@ -1,7 +1,7 @@
 <template>
   <FormPage
     :title="isCreate ? $t('Naujas padalinys') : (form.fullname || $t('Padalinys'))"
-    :bar-title="isCreate ? undefined : form.fullname"
+    :bar-title="isCreate ? $t('Naujas padalinys') : (tenant.fullname || $t('Padalinys'))"
     :entity-type="ModelEnum.TENANT"
     :back-href="route('tenants.index')"
     :back-label="$t('Padaliniai')"
@@ -70,16 +70,12 @@
           required
           :error="form.errors.type"
         >
-          <Select v-model="form.type">
-            <SelectTrigger id="type">
-              <SelectValue :placeholder="$t('forms.placeholders.select_type')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="option in typeOptions" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <FormSegmentedControl
+            v-model="form.type"
+            :options="typeOptions"
+            :aria-label="$t('forms.fields.type_label')"
+            test-id-prefix="tenant-type"
+          />
         </FormFieldWrapper>
 
         <FormFieldWrapper
@@ -154,6 +150,7 @@ import FormFieldWrapper from './FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel } from '@/Components/Patterns';
 import FormSection from '@/Components/Patterns/FormSection.vue';
+import FormSegmentedControl from '@/Components/Patterns/FormSegmentedControl.vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';

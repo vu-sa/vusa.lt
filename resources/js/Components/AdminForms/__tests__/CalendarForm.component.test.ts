@@ -78,7 +78,6 @@ describe('CalendarForm.vue — create tenant default', () => {
     ] as App.Entities.Tenant[], 'CreateCalendarOptionalEventType');
 
     const vm = wrapper.vm as unknown as {
-      eventTypeIdString: string;
       form: { event_type_id: number | null; title: { lt: string } };
     };
 
@@ -87,7 +86,8 @@ describe('CalendarForm.vue — create tenant default', () => {
     await wrapper.vm.$nextTick();
     expect(vm.form.event_type_id).toBe(5);
 
-    vm.eventTypeIdString = '__none__';
+    vm.form.event_type_id = null;
+    await wrapper.vm.$nextTick();
     expect(vm.form.event_type_id).toBeNull();
   });
 });

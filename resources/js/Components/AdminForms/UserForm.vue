@@ -1,8 +1,8 @@
 <template>
   <FormPage
     :title="isCreating ? $t('Naujas narys (-ė)') : userTitle"
-    :bar-title="isCreating ? undefined : userTitle"
-    :head-title="isCreating ? $t('Naujas narys (-ė)') : userTitle"
+    :bar-title="isCreating ? $t('Naujas narys (-ė)') : user.name"
+    :head-title="isCreating ? $t('Naujas narys (-ė)') : user.name"
     :lead="isCreating ? $t('Sukurk profilį ir iškart priskirk bent vieną pareigybę — kitas galėsi pridėti asmens puslapyje.') : undefined"
     :entity-type="ModelEnum.USER"
     :back-href="isCreating ? route('users.index') : route('users.show', user.id)"
@@ -63,7 +63,13 @@
           </p>
           <ul class="space-y-0.5">
             <li v-for="duty in currentDutiesWithVusaEmail" :key="duty.id" class="flex items-center gap-1.5">
-              <span class="truncate font-medium text-foreground">{{ duty.name }}</span>
+              <span class="truncate font-medium text-foreground">
+                <InflectedDutyName
+                  :name="duty.name"
+                  :holder="{ name: form.name, pronouns: form.pronouns }"
+                  :use-original-duty-name="duty.pivot?.use_original_duty_name"
+                />
+              </span>
               <span aria-hidden="true">→</span>
               <code class="text-[12px]">{{ duty.email }}</code>
             </li>
@@ -219,6 +225,7 @@ import { Briefcase, Clock, Lock, UserCheck } from 'lucide-vue-next';
 import DuplicateUserWarning from './DuplicateUserWarning.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { FormPanel } from '@/Components/Patterns';
@@ -258,7 +265,7 @@ const emit = defineEmits<(event: 'submit:form', form: unknown) => void>();
 const isCreating = computed(() => !props.user.id);
 const isSuperAdmin = computed(() => usePage().props.auth?.user?.isSuperAdmin ?? false);
 
-const userTitle = computed(() => props.user.name);
+const userTitle = computed(() => form.name || props.user.name);
 
 // Duties and roles of an existing person are edited on the record, so only the fields the form
 // owns are sent; a create adds the first duties (and, for a super admin, roles).

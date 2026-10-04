@@ -164,3 +164,16 @@ describe('ShowSvetaine numbers', () => {
     expect(wrapper.find('[data-number="pages"]').exists()).toBe(true);
   });
 });
+
+describe('ShowSvetaine tenant picker', () => {
+  it('renders tenant options in native select', () => {
+    const wrapper = mountPage();
+    const select = wrapper.find('select');
+    expect(select.exists()).toBe(true);
+    expect(select.element.value).toBe('1');
+
+    const options = select.findAll('option');
+    expect(options).toHaveLength(2); // placeholder + 1 tenant
+    expect(options[1].text()).toBe('VU SA MIF');
+  });
+});

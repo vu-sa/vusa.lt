@@ -13,6 +13,7 @@ use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\ContactSearchIndexSynchronizer;
 use App\Services\NotificationRouter;
+use App\Services\Typesense\SearchText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -192,6 +193,7 @@ class User extends Authenticatable implements GuardsForceDelete
         $tenantShortname = $currentDuties->first()?->institution?->tenant?->shortname;
 
         return [
+            ...SearchText::forModel($this),
             'id' => (string) $this->id,
             'name' => $this->name,
             'email' => $this->email,
@@ -201,6 +203,14 @@ class User extends Authenticatable implements GuardsForceDelete
             'institution_ids' => $institutionIds,
             // Current duties are indexed (and weighted) above previous ones for search relevance.
             // Names + ids are kept index-aligned so the detail pane can render clickable links.
+            'pronouns_lt' => $this->getTranslation('pronouns', 'lt', false),
+            'pronouns_en' => $this->getTranslation('pronouns', 'en', false),
+            'current_duty_names_lt' => $currentDuties->map(fn (Duty $duty) => $duty->getTranslation('name', 'lt'))->all(),
+            'current_duty_names_en' => $currentDuties->map(fn (Duty $duty) => $duty->getTranslation('name', 'en'))->all(),
+            'current_duty_use_original_names' => $currentDuties->map(fn (Duty $duty) => (bool) $duty->pivot?->use_original_duty_name)->all(),
+            'previous_duty_names_lt' => $previousDuties->map(fn (Duty $duty) => $duty->getTranslation('name', 'lt'))->all(),
+            'previous_duty_names_en' => $previousDuties->map(fn (Duty $duty) => $duty->getTranslation('name', 'en'))->all(),
+            'previous_duty_use_original_names' => $previousDuties->map(fn (Duty $duty) => (bool) $duty->pivot?->use_original_duty_name)->all(),
             'current_duty_names' => $currentDuties->pluck('name')->values()->all(),
             'current_duty_ids' => $currentDuties->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
             'previous_duty_names' => $previousDuties->pluck('name')->values()->all(),

@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\GetRecentAccessChanges;
+use App\Actions\GetUserAccessSummary;
 use App\Enums\EmailDelivery;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -153,4 +154,14 @@ describe('the history on Mano rolės', function (): void {
 
         asUser($this->user)->get(route('profile.roles'))->assertInertia(fn (Assert $page) => $page->has('access.history', 0));
     });
+});
+
+test('own duty summaries and history retain the original name override', function (): void {
+    $duty = giveTerm($this->user, $this->tenant, '2026-09-20');
+    $this->user->dutiables()->where('duty_id', $duty->id)->firstOrFail()->update(['use_original_duty_name' => true]);
+
+    $summary = GetUserAccessSummary::execute($this->user);
+
+    expect($summary['current'][0]['useOriginalDutyName'])->toBeTrue()
+        ->and($summary['history'][0]['useOriginalDutyName'])->toBeTrue();
 });

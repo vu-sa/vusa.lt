@@ -54,7 +54,7 @@
                     {{ change.holder_name ?? '—' }}
                   </p>
                   <p class="truncate text-xs text-muted-foreground">
-                    {{ change.duty_name ?? '—' }}
+                    {{ timelineDutyName(change, usePage().props.app.locale) }}
                   </p>
                 </div>
                 <Badge v-if="change.blocked" variant="destructive" class="shrink-0 text-xs">
@@ -72,7 +72,7 @@
 
               <ul v-if="change.derived.length > 0" class="mt-1 space-y-0.5 pl-4">
                 <li v-for="derived in change.derived" :key="derived.id" class="text-xs text-muted-foreground">
-                  ↳ {{ derived.duty_name ?? '—' }} · {{ formatPeriod(derived) }}
+                  ↳ {{ timelineDutyName({ ...change, duty_name: derived.duty_name, use_original_duty_name: derived.use_original_duty_name }, usePage().props.app.locale) }} · {{ formatPeriod(derived) }}
                 </li>
               </ul>
             </li>
@@ -93,9 +93,11 @@
 </template>
 
 <script setup lang="ts">
+import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { ArrowRight, TriangleAlert } from 'lucide-vue-next';
 
+import { timelineDutyName } from './dutyNames';
 import type { TimelinePlanPayload } from './types';
 
 import { Alert, AlertDescription } from '@/Components/ui/alert';

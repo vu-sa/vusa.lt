@@ -34,7 +34,6 @@ interface StudySetFormVm {
       [key: string]: unknown;
     }>;
   };
-  tenantIdString: string;
   activeLocale: 'lt' | 'en';
   addCourse: () => void;
   removeCourse: (index: number) => void;
@@ -89,17 +88,6 @@ describe('StudySetForm.vue', () => {
           Textarea: {
             template: '<textarea data-testid="textarea" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
             props: ['modelValue'],
-          },
-          Select: {
-            template: '<select data-testid="select" :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"><slot /></select>',
-            props: ['modelValue'],
-          },
-          SelectTrigger: { template: '<div><slot /></div>' },
-          SelectValue: { template: '<span>{{ placeholder }}</span>', props: ['placeholder'] },
-          SelectContent: { template: '<div><slot /></div>' },
-          SelectItem: {
-            template: '<option :value="value"><slot /></option>',
-            props: ['value'],
           },
           Input: {
             template: '<input data-testid="input" :id="id" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
@@ -270,27 +258,26 @@ describe('StudySetForm.vue', () => {
   });
 
   describe('tenant select', () => {
-    it('converts tenant_id to string for select and back to number', async () => {
+    it('binds tenant_id to select element and updates on change', async () => {
       wrapper = createWrapper();
       const vm = wrapper.vm as unknown as StudySetFormVm;
+      const select = wrapper.find('select#tenant_id');
 
-      expect(vm.tenantIdString).toBe('1');
+      expect(select.exists()).toBe(true);
+      expect(select.element.value).toBe('1');
+      expect(vm.form.tenant_id).toBe(1);
 
-      vm.tenantIdString = '2';
-      await nextTick();
-
+      await select.setValue('2');
       expect(vm.form.tenant_id).toBe(2);
     });
 
-    it('handles null tenant_id', async () => {
+    it('handles null tenant_id', () => {
       wrapper = createWrapper({ studySet: { ...defaultStudySet, tenant_id: null } });
       const vm = wrapper.vm as unknown as StudySetFormVm;
+      const select = wrapper.find('select#tenant_id');
 
-      expect(vm.tenantIdString).toBe('');
-
-      vm.tenantIdString = '';
-      await nextTick();
-
+      expect(select.exists()).toBe(true);
+      expect(select.element.value).toBe('');
       expect(vm.form.tenant_id).toBeNull();
     });
   });

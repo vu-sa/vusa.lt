@@ -2,8 +2,15 @@
 doc_status: reviewed
 title: Platforma
 area: actionWindow
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-04
 tests:
+  - tests/Feature/System/SharedInertiaPropsTest.php
+  - resources/js/Composables/__tests__/useActionWindowCatalog.test.ts
+  - tests/Feature/Search/SearchExperienceTest.php
+  - tests/Browser/SearchExperienceTest.php
+  - resources/js/Shared/Search/__tests__/SearchExperience.test.ts
+  - resources/js/Components/CommandPalette/__tests__/AdminCommandPalette.component.test.ts
+  - resources/js/Shared/Search/__tests__/FacetOptions.component.test.ts
   - resources/js/__tests__/designTokens.test.ts
   - resources/js/Components/Patterns/__tests__/StatusBadge.component.test.ts
   - resources/js/Components/AdminForms/__tests__/DuplicateDutyWarning.component.test.ts
@@ -12,6 +19,10 @@ tests:
   - resources/js/Features/Admin/AdminSearch/Components/__tests__/SearchHitRow.component.test.ts
   - resources/js/Features/Admin/AdminSearch/Components/__tests__/SearchSplitView.component.test.ts
   - tests/Browser/ActionWindowTest.php
+  - resources/js/Components/AdminForms/__tests__/InstitutionForm.component.test.ts
+  - resources/js/Components/AdminForms/__tests__/ResourceForm.component.test.ts
+  - resources/js/Components/AdminForms/__tests__/UserForm.component.test.ts
+  - resources/js/Components/AdminForms/__tests__/StudyProgramForm.component.test.ts
   - tests/Browser/AdminDesignSurfaceTest.php
   - tests/Browser/AdminSearchPickerLayoutTest.php
   - tests/Browser/AdminAccessibilityTest.php
@@ -32,6 +43,10 @@ Kiekviena sritis turi skiltis. Viršutinė juosta leidžia perjungti sritis, o m
 atveria langą su visais tau leidžiamais kūrimo veiksmais.
 
 <DocScreenshot name="action-window" narrow alt="Langas „Ką norėtum padaryti?“, atidaromas mygtuku „+ Sukurti“" caption="Mygtukas „+ Sukurti“ viršutinėje juostoje atveria šį langą." />
+
+Lango pasirinkimų „Kaip studentų atstovas“, „Kaip VU SA narys“ ir „Kaip koordinatorius“ galūnės
+pritaikomos pagal tavo profilio įvardžius, o jų nesant – pagal vardą. Pavyzdžiui, pasirinkus
+„ji / jos“, matysi „Kaip studentų atstovė“ ir „Kaip koordinatorė“.
 
 ::: info Ko nematai – to neturi
 Sritys, skiltys ir veiksmai rodomi tik tada, kai turi teisę jais naudotis. Jie niekada nerodomi
@@ -65,9 +80,16 @@ Viršutinėje juostoje atverk paiešką arba spausk **⌘/Ctrl + K** – atsidar
 Joje rasi tau prieinamas skiltis, veiksmus ir įrašų paiešką. Žvaigždute prisek dažnai naudojamą
 puslapį; prisegtos nuorodos rodomos paletės pradžioje. Telefone paiešką pasieksi iš navigacijos.
 
-Atskiras **Paieška** puslapis (`/mano/search`) grupuoja rezultatus pagal įrašo rūšį.
-**Rodyti visus** nuveda į atitinkamą sąrašą, kuriame gali tikslinti paiešką ir filtrus.
+Paletėje rezultatai grupuojami pagal įrašo rūšį. **Rodyti visus** nuveda į atitinkamą sąrašą, kuriame gali tikslinti paiešką ir filtrus.
 Paieška nesuteikia naujų teisių: kitų įrašų ar jų veiksmų prieiga priklauso nuo tavo pareigų ir rolių.
+
+<ChangelogNote version="v3.0" date="2026-10-02" title="Paieška turinyje ir aiškesni filtrai">
+
+Puslapius ir naujienas rasi pagal išsaugotą turinio tekstą. Rezultato ištrauka parodo, kur sutapo paieška. Lietuvių ir anglų tekstuose paieška atpažįsta ir skirtingas žodžio formas. Pagal aktualumą rikiuojami teksto atitikmenys; pasirinktą rikiavimą pagal datą ar pavadinimą taikysi tiesiogiai.
+
+Pirmiausia rodomi atitikmenys paties įrašo varde ar pavadinime. Ieškodamas žmogaus vardo pirmiau rasi jo profilį, o pareigybės pavadinimo, pavyzdžiui, „Prezidentė“ – pareigybę. Susijusių žmonių, pareigybių ir institucijų paminėjimai turi mažesnį svorį; dabartinė darbo sritis nekeičia paieškos rezultatų eilės. Sutapęs vardas ar pavadinimas paryškinamas pačioje antraštėje. Trumpa turinio ištrauka pateikiama mažesniu šriftu tik tada, kai nekartoja vardo ar pavadinimo; HTML žymos nerodomos.
+
+</ChangelogNote>
 
 ### Grįžti prie sąrašo {#sarasai}
 
@@ -75,11 +97,20 @@ Sąrašo paieška ir filtrai veikia tik tos rūšies įrašams. Pakeitęs filtru
 atvėręs įrašą, grįžk atgal – sąrašas išlaiko tavo pasirinktą būklę. **Išvalyti filtrus** naudok,
 jei tikėtino įrašo nematai. Prieš kartodamas kūrimą patikrink, ar jis jau nėra sąraše.
 
+Filtro parinkties skaičius rodo įrašus, atitinkančius paiešką ir **kitus filtrus**, neįskaitant to filtro pasirinkimo. Pavyzdžiui, pasirinkęs vieną padalinį vis dar matai kitų padalinių skaičius pagal pasirinktą kalbą ir paieškos tekstą. Kelios vieno filtro reikšmės praplečia rezultatus, o skirtingi filtrai taikomi kartu. Įrašai gali patekti į kelias parinktis, todėl skaičių nesudėk. Brūkšnys reiškia, kad skaičius nežinomas.
+
+Ilgesniame parinkčių sąraše įrašyk ieškomą reikšmę į filtro paiešką. Ji ieško ir tarp iš pradžių nematomų parinkčių; tavo pasirinkimai lieka matomi ir juos gali pašalinti. Ši laikina paieška nekeičia pagrindinės frazės, filtrų ar puslapio adreso. Tie patys susitarimai galioja svetainės archyvuose ir susijusių įrašų pasirinkimo languose.
+
 ### Pasirinkti susijusį įrašą
 
 Kai forma prašo susieti kitą įrašą, pasirinkimo lange gali ieškoti, filtruoti ir peržiūrėti radinį prieš jį pridėdamas. Pažymėtus įrašus patvirtini lango apačioje; jei laukas neprivalomas, pasirinkimą gali išvalyti. Telefone peržiūrėjęs radinį mygtuku „Atgal į sąrašą“ grįši prie rezultatų. Nepasiekiamą išteklių gali peržiūrėti, bet negali pasirinkti.
 
 Kuriant narį ar pareigybę, perspėjimas apie galimą dublikatą parodo sutapimus ir galimus veiksmus. Tai patarimas: sutampantys vardai savaime neuždraudžia išsaugoti įrašo. Atverti ar sujungti kitą įrašą siūloma tik tada, kai turi teisę jį tvarkyti.
+
+### Formų antraštės {#formu-antrastes}
+
+Redaguojant įrašo pavadinimą, didžioji formos antraštė iškart atspindi rašomą tekstą. Viršutinėje
+juostoje lieka išsaugotas įrašo pavadinimas, o kuriant – formos paskirtis, pvz., „Nauja naujiena“.
 
 ## Bendrosios platformos galimybės {#bendrosios-galimybes}
 
@@ -151,6 +182,11 @@ Kai viskas gerai, ženkliuko dažniausiai nėra – rodoma tik tai, į ką verta
 
 
 ## Techninė informacija {#technine-informacija}
+
+Typesense laukų svoriai ir schemos aprašyti `config/scout.php`; naršyklė gauna patikrintus kolekcijų paieškos profilius. `search:reindex` atkuria kiekvienos kolekcijos schemą, patikrina laukus ir tik tada įjungia tos kolekcijos antrą profilio versiją. Iki atkūrimo naudojami ankstesnės schemos laukai. `TYPESENSE_SEARCH_PROFILE_VERSION=1` ir konfigūracijos podėlio atnaujinimas grąžina ankstesnius paieškos laukus nekeičiant duomenų. Po Redis podėlio išvalymo profilio įjungimą atkurk tuo pačiu indeksavimo veiksmu.
+
+Turinio tekstas įtraukiamas po patvirtintų pakeitimų; dinaminiai blokų sąrašai, formų pateikimai ir PDF failų tekstas neišplečiami. Lietuvių ir anglų kamienų laukai naudoja tik tikrus tos kalbos vertimus ar įrašo kalbą. Filtro skaičiavimo ir parinkčių paieškos užklausos išlaiko kolekcijos prieigos raktą ir privalomus pagrindinius filtrus.
+
 
 ::: details Kuriantiems platformą
 Spalvos aprašytos kaip kintamieji `resources/css/theme/design-tokens.css` ir

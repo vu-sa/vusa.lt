@@ -50,6 +50,34 @@ const mountCard = (contact: any, duties: any[], options: Record<string, unknown>
 describe('ContactWithPhoto', () => {
   let wrapper: ReturnType<typeof mount>;
 
+  it('uses the holder’s pronouns for duty and email labels without animation', () => {
+    wrapper = mount(ContactCard, {
+      props: {
+        contact: makeContact({ name: 'Jonas Jonaitis', pronouns: 'ji / jos' }),
+        duties: [
+          makeDuty({ id: 'd1', email: 'pirm@vusa.lt' }),
+          makeDuty({ id: 'd2', name: 'Koordinatorius', email: 'antr@vusa.lt', pivot: { use_original_duty_name: true } }),
+        ],
+      },
+      global: { stubs: { ...stubs, PopoverContent: { template: '<div><slot /></div>' } } },
+    });
+
+    expect(wrapper.text().match(/Pirmininkė/g)).toHaveLength(2);
+    expect(wrapper.text().match(/Koordinatorius/g)).toHaveLength(2);
+    expect(wrapper.find('[data-testid="duty-ending-trigger"]').exists()).toBe(false);
+    wrapper.unmount();
+  });
+
+  it('falls back to the other locale’s pronouns before guessing from the name', () => {
+    wrapper = mountCard(makeContact({
+      name: 'Jonas Jonaitis', pronouns: '', duty_pronouns: { lt: '', en: 'she / her' },
+    }), [makeDuty()]);
+
+    expect(wrapper.text()).toContain('Pirmininkė');
+    expect(wrapper.find('[data-testid="duty-ending-trigger"]').exists()).toBe(false);
+    wrapper.unmount();
+  });
+
   describe('duty info popover', () => {
     it('hides the popover when the pivot description is an empty paragraph', () => {
       // Regression: duty.description is non-empty, so the old v-if showed the button,

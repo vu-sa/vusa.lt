@@ -7,6 +7,7 @@ import {
   formatSearchDate,
   formatSearchDateTime,
   normalizeHit,
+  getUserDuties,
 } from '../searchHitMappers';
 
 import type { MultiSearchResults } from '@/Shared/Search/types';
@@ -194,5 +195,25 @@ describe('collectAllTabHits', () => {
     // No query: meetings precede institutions regardless of relevance score.
     expect(hits[0].collection).toBe('meetings');
     expect(hits[1].collection).toBe('institutions');
+  });
+});
+
+
+describe('holder-aware search duty names', () => {
+  it('keeps links and overrides aligned while selecting the display locale', () => {
+    const user = {
+      id: 'user-1', name: 'Petras Petraitis', pronouns_lt: '', pronouns_en: 'she/her',
+      current_duty_names: ['Koordinatorius', 'Kuratorius'], current_duty_ids: ['d1', 'd2'],
+      current_duty_names_lt: ['Koordinatorius', 'Kuratorius'], current_duty_names_en: ['Coordinator', 'Mentor'],
+      current_duty_use_original_names: [false, true],
+    };
+
+    expect(getUserDuties(user, 'current', 'lt')).toEqual([{ id: 'd1', name: 'Koordinatorė' }, { id: 'd2', name: 'Kuratorius' }]);
+    expect(getUserDuties(user, 'current', 'en')).toEqual([{ id: 'd1', name: 'Coordinator' }, { id: 'd2', name: 'Mentor' }]);
+  });
+
+  it('supports old documents with only stored duty names', () => {
+    expect(getUserDuties({ id: 'u', name: 'Petras', previous_duty_names: ['Koordinatorė'] }, 'previous', 'lt'))
+      .toEqual([{ id: undefined, name: 'Koordinatorius' }]);
   });
 });

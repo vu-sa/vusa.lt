@@ -91,10 +91,12 @@
 </template>
 
 <script setup lang="ts">
+import { usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronRight, Wrench } from 'lucide-vue-next';
 
+import { timelineDutyName } from './dutyNames';
 import { fixOperationFor } from './composables/useDutiableDiagnostics';
 import type { ParsedRow, TimelineDiagnostic, TimelineOperation } from './types';
 
@@ -247,7 +249,7 @@ function subjectFor(finding: TimelineDiagnostic): string | null {
 
   if (!row) return null;
 
-  return [row.holder_name, row.duty_name].filter(Boolean).join(' · ') || null;
+  return [row.holder_name, timelineDutyName(row, usePage().props.app.locale)].filter(Boolean).join(' · ') || null;
 }
 
 /** What it would actually write. Every detail below already ships in the payload. */

@@ -195,7 +195,7 @@
           <!-- Year Filter Popover -->
           <CalendarFilterPopover
             :label="$t('Metai')"
-            :options="yearOptions"
+            :options="yearOptions" field="year"
             :selected="selectedYears"
             searchable
             :search-placeholder="`${$t('calendar.filters.search_year')}...`"
@@ -207,7 +207,7 @@
           <!-- Event Type Filter Popover -->
           <CalendarFilterPopover
             :label="$t('Tipas')"
-            :options="eventTypeOptions"
+            :options="eventTypeOptions" field="event_type_name"
             :selected="selectedEventTypes"
             trigger-class="h-9 px-3"
             @toggle="toggleEventType"
@@ -217,7 +217,7 @@
           <!-- Tenant/Padalinys Filter Popover -->
           <CalendarFilterPopover
             :label="$t('Padalinys')"
-            :options="tenantOptions"
+            :options="tenantOptions" field="tenant_shortname"
             :selected="selectedTenants"
             searchable
             :search-placeholder="`${$t('calendar.filters.search_unit')}...`"
@@ -541,8 +541,6 @@ const eventTypeOptions = computed<FilterOption[]>(() => {
 });
 
 // The backend's `allTenants` is the full list regardless of filters; Typesense's facet
-// counts, once a tenant is selected, only cover the now-filtered subset (Typesense counts
-// facet values *within* the active filter, so every other tenant would otherwise drop out
 // of the list the moment one is picked — see PadalinysSelector's auto-filter above). Use
 // `allTenants` for which options exist, and overlay live counts where available.
 const tenantOptions = computed<FilterOption[]>(() => {
@@ -568,7 +566,7 @@ const yearOptions = computed<FilterOption[]>(() => {
     fallback.push({
       label: String(y),
       value: String(y),
-      count: 0,
+      count: null,
     });
   }
   return fallback;

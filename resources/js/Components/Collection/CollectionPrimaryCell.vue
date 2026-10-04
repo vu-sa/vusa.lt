@@ -11,7 +11,7 @@
         titleLines === 2 ? 'line-clamp-2' : 'truncate',
       ]"
     >
-      <slot>{{ title }}</slot>
+      <slot><SearchMatch inline :match="titleMatch" :title /></slot>
     </Link>
     <button
       v-else-if="clickable"
@@ -24,11 +24,13 @@
       ]"
       @click="emit('open')"
     >
-      <slot>{{ title }}</slot>
+      <slot><SearchMatch inline :match="titleMatch" :title /></slot>
     </button>
     <p v-else :class="['font-bold text-foreground', titleLines === 2 ? 'line-clamp-2' : 'truncate']">
-      <slot>{{ title }}</slot>
+      <slot><SearchMatch inline :match="titleMatch" :title /></slot>
     </p>
+
+    <SearchMatch compact :match :title />
 
     <p
       v-if="sub || $slots.sub"
@@ -42,6 +44,10 @@
 </template>
 
 <script setup lang="ts">
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
+import { matchTitle, type SearchMatch as SearchMatchData } from '@/Shared/Search/matches';
+import { computed } from 'vue';
+
 import { Link } from '@inertiajs/vue3';
 
 /**
@@ -49,7 +55,9 @@ import { Link } from '@inertiajs/vue3';
  * line that tells two similar rows apart (a path, an email, a unit). Used by both the table and
  * the rows view so the two read as the same list.
  */
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
+  match?: SearchMatchData;
+  titleMatches?: SearchMatchData[];
   title?: string;
   titleLines?: 1 | 2;
   /** Resolved URL of the record; the link doubles as the preview opener (`data-collection-open`). */
@@ -67,6 +75,8 @@ withDefaults(defineProps<{
   sub: undefined,
   mono: false,
 });
+
+const titleMatch = computed(() => matchTitle(props.title ?? '', props.titleMatches));
 
 const emit = defineEmits<{
   open: [];

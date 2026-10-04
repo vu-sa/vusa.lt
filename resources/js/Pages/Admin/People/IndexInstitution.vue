@@ -28,7 +28,7 @@
     <template #row="{ item }">
       <div class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center" data-slot="institution-collection-row">
         <div class="min-w-0 flex-1">
-          <CollectionPrimaryCell :title="nameOf(item)" :href="isTrash ? undefined : route('institutions.show', item.id)" />
+          <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="nameOf(item)" :href="isTrash ? undefined : route('institutions.show', item.id)" />
           <p class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span v-if="item.tenant_shortname">{{ item.tenant_shortname }}</span>
             <span v-if="item.type_titles?.length">{{ item.type_titles.join(', ') }}</span>
@@ -46,7 +46,7 @@
     </template>
 
     <template #cell="{ item, column }">
-      <CollectionPrimaryCell
+      <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
         v-if="column.key === 'name'"
         :title="nameOf(item)"
         :href="isTrash ? undefined : route('institutions.show', item.id)"

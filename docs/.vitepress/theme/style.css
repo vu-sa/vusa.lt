@@ -326,6 +326,10 @@
   font-weight: 700;
 }
 
+.vp-doc .custom-block-title-default {
+  display: none;
+}
+
 .vp-doc .custom-block p,
 .vp-doc .custom-block li {
   line-height: 1.7;

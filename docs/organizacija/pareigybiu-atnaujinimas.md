@@ -19,6 +19,14 @@ prideda esamus ar naujus narius ir leidžia suderinti jų datas. Kitai pareigybe
 
 Atverk **+ Sukurti → Pareigybių atnaujinimas** arba `/mano/duties-update-users`.
 
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+Po rinkimų atnaujink, kas eina pareigas, patikrink tikras kadencijos datas ir atskirk asmeninį
+nario el. paštą nuo pareigybės institucinio adreso. Renkamosioms pareigoms rekomenduojama
+nurodyti pabaigos datą. Tai patarimai, kurių vedlys automatiškai nepritaiko.
+:::
+
 ## Kaip tai veikia
 
 Vedlį sudaro keturi žingsniai: **Institucija → Pareigybė → Narių priskyrimas → Peržiūra**.
@@ -55,12 +63,6 @@ liepos 1 d. įrašius kaip pabaigą, ši diena taip pat bus aktyvi.
 Patikrink, kas baigia pareigas, kas paskiriamas, jų datas ir naujų narių kontaktus.
 Patvirtinus įrašomi pasirinktos pareigybės pakeitimai. Jei išsaugoti nepavyksta,
 pataisyk rodomas klaidas ir bandyk dar kartą.
-
-## Rekomendacijos {#susitarimai}
-
-Po rinkimų atnaujink, kas eina pareigas, patikrink tikras kadencijos datas ir atskirk asmeninį
-nario el. paštą nuo pareigybės institucinio adreso. Renkamosioms pareigoms rekomenduojama
-nurodyti pabaigos datą. Tai patarimai, kurių vedlys automatiškai nepritaiko.
 
 ## Veiksmai
 

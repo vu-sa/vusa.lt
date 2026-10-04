@@ -8,6 +8,7 @@
  */
 
 import type { Component } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type { AdminCollection } from '../Types/AdminSearchTypes';
@@ -15,6 +16,8 @@ import { getFacetValueLabel } from '../Config/collectionFacetConfig';
 
 import { completionTone, voteTone, type BadgeTone } from './searchBadges';
 
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import { changeDutyNameEndings } from '@/Utils/String';
 import {
   AgendaItemIcon,
   CalendarIcon,
@@ -40,6 +43,19 @@ import type {
   ResourceSearchResult,
   UserSearchResult,
 } from '@/Shared/Search/types';
+
+export function getUserDuties(user: UserSearchResult, kind: 'current' | 'previous', locale: string) {
+  return (user[`${kind}_duty_names`] ?? []).map((storedName, index) => ({
+    id: user[`${kind}_duty_ids`]?.[index],
+    name: changeDutyNameEndings(
+      user,
+      getTranslatedValue({ lt: user[`${kind}_duty_names_lt`]?.[index], en: user[`${kind}_duty_names_en`]?.[index] }, locale, storedName),
+      locale,
+      { lt: user.pronouns_lt, en: user.pronouns_en },
+      user[`${kind}_duty_use_original_names`]?.[index] ?? false,
+    ),
+  }));
+}
 
 /** Canonical collection keys, matching MultiSearchResults result arrays. */
 export type SearchCollectionKey
@@ -294,7 +310,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
       : d.type_titles?.[0];
     return {
       recordId: String(d.id),
-      title: d.name_lt || d.name_en || $t('Be pavadinimo'),
+      title: getTranslatedValue({ lt: d.name_lt, en: d.name_en }, undefined, $t('Be pavadinimo')),
       subtitle: d.institution_name_lt || d.institution_name_en,
       badge: d.tenant_shortname,
       meta: memberMeta,
@@ -352,7 +368,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     title: u.name || $t('Be pavadinimo'),
     subtitle: u.email,
     badge: u.tenant_shortname,
-    meta: u.current_duty_names?.[0],
+    meta: getUserDuties(u, 'current', usePage().props.app.locale)[0]?.name,
     href: route('users.show', u.id),
     viewHref: route('users.show', u.id),
     editHref: route('users.edit', u.id),

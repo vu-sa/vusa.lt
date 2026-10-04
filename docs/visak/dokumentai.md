@@ -18,6 +18,25 @@ Dokumentai – viešai skelbiami VU SA ir padalinių nuostatai, ataskaitos, veik
 protokolai. Archyvą atverk per **ViSAK → Dokumentai** (`/mano/documents`). Dokumentus
 tvarkantiems jis taip pat pasiekiamas Svetainės srityje.
 
+## Susitarimai {#susitarimai}
+
+### Ką keliame į dokumentų naršyklę
+
+- VU SA P nuostatus;
+- VU SA P tarpines ir metines ataskaitas;
+- VU SA P metų veiklos planus;
+- ataskaitinių-rinkiminių, neeilinių rinkiminių ir neeilinių ataskaitinių-rinkiminių konferencijų
+  protokolus;
+- kolegialaus valdymo organo (Valdybos, VU SA MIF atveju – Tarybos) protokolus.
+
+### Kaip keliame
+
+- Dokumentus kelia VU SA P administratoriai. Studentų iniciatyvos dokumentų kol kas nekelia.
+- Protokolai keliami į archyvą ir svetainę **.pdf** formatu. Šablonai gali būti .docx ar kito
+  formato.
+- Jei padalinyje veikia tarptautiniai studentai, dokumentai keliami lietuvių ir anglų kalbomis.
+- Pastebėjus klaidą įkeltame dokumente, jis ištrinamas, pataisomas ir įkeliamas iš naujo.
+
 ## Kaip tai veikia
 
 ### Archyvas ir susieti failai {#archyvas}
@@ -97,25 +116,6 @@ jis nėra dabartinio sąrašo filtrų veiksmas.
 Sinchronizavimo užduotys vykdomos fone. Jos atnaujina duomenis ir būseną;
 į eilę įtrauktas dokumentas, ištrintas iki užduoties vykdymo, nebeatkuriamas.
 Dokumentą pašalinus, atskira užduotis atšaukia SharePoint viešos prieigos leidimą.
-
-## Susitarimai {#susitarimai}
-
-::: tip Ką keliame į dokumentų naršyklę
-- VU SA P nuostatus;
-- VU SA P tarpines ir metines ataskaitas;
-- VU SA P metų veiklos planus;
-- ataskaitinių-rinkiminių, neeilinių rinkiminių ir neeilinių ataskaitinių-rinkiminių konferencijų
-  protokolus;
-- kolegialaus valdymo organo (Valdybos, VU SA MIF atveju – Tarybos) protokolus.
-:::
-
-::: tip Kaip keliame
-- Dokumentus kelia VU SA P administratoriai. Studentų iniciatyvos dokumentų kol kas nekelia.
-- Protokolai keliami į archyvą ir svetainę **.pdf** formatu. Šablonai gali būti .docx ar kito
-  formato.
-- Jei padalinyje veikia tarptautiniai studentai, dokumentai keliami lietuvių ir anglų kalbomis.
-- Pastebėjus klaidą įkeltame dokumente, jis ištrinamas, pataisomas ir įkeliamas iš naujo.
-:::
 
 ## Techninė informacija {#technine-informacija}
 

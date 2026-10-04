@@ -1,5 +1,6 @@
 <template>
   <div class="h-full">
+    <SearchMatch compact v-if="hit" :match="(hit.raw as { _searchMatch?: SearchMatchData })._searchMatch" :title="hit.title" class="px-4 pt-3" />
     <!-- Empty state -->
     <div v-if="!hit" class="flex h-full flex-col items-center justify-center px-6 text-center">
       <div class="mb-4 flex size-12 items-center justify-center rounded-full bg-muted/50">
@@ -77,6 +78,9 @@
 </template>
 
 <script setup lang="ts">
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
+import type { SearchMatch as SearchMatchData } from '@/Shared/Search/matches';
+
 import { trans as $t } from 'laravel-vue-i18n';
 import { MousePointerClick } from 'lucide-vue-next';
 

@@ -29,7 +29,7 @@
       <article class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
           <div class="flex items-start justify-between gap-3">
-            <CollectionPrimaryCell :title="item.title" :href="isTrash ? undefined : route('news.edit', item.id)" :sub="item.short" />
+            <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title" :href="isTrash ? undefined : route('news.edit', item.id)" :sub="item.short" />
             <CollectionStatusMenu
               v-if="!isTrash"
               :status="newsStatus(item)"
@@ -52,7 +52,7 @@
     </template>
 
     <template #cell="{ item, column }">
-      <CollectionPrimaryCell
+      <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
         v-if="column.key === 'title'"
         :title="item.title"
         :title-lines="2"

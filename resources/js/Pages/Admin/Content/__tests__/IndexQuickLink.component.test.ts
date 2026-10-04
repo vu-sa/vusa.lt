@@ -67,8 +67,8 @@ function createWrapper(props: Record<string, unknown> = {}) {
         SheetForm: SheetFormStub,
         CollectionConfirmAction: true,
         CollectionRowActions: true,
-        SingleSelect: {
-          name: 'SingleSelect',
+        NativeSelect: {
+          name: 'NativeSelect',
           props: ['modelValue', 'options'],
           emits: ['update:modelValue'],
           template: '<div data-testid="tenant-select" />',
@@ -115,7 +115,7 @@ describe('IndexQuickLink.vue', () => {
       window.history.replaceState({}, '', '/mano/quickLinks?showDeleted=true');
       wrapper = createWrapper();
 
-      wrapper.findComponent({ name: 'SingleSelect' }).vm.$emit('update:modelValue', tenants[1]);
+      wrapper.findComponent({ name: 'NativeSelect' }).vm.$emit('update:modelValue', tenants[1].id);
       await nextTick();
 
       expect(router.get).toHaveBeenCalledWith(

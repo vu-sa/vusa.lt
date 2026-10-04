@@ -20,6 +20,15 @@ Kalendorius skirtas VU SA, padalinių ir studentų programų, klubų bei projekt
 
 Skiltis pasiekiama adresu `/mano/calendar`.
 
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+- **Kalendorius ar naujiena:** konkrečiu laiku vykstančią veiklą skelbk kalendoriuje, o bendro pobūdžio pranešimą – [naujienose](/svetaine/naujienos).
+- **Kalbos:** jei renginys skirtas ir tarptautiniams studentams, pateik pavadinimą, vietą bei aprašymą anglų kalba.
+- **Tiksli vieta:** nurodyk adresą ir auditoriją, o nuotoliniam renginiui pridėk prisijungimo nuorodą.
+- **Įskaitomas viršelis:** patikrink, kaip paveikslėlis atrodo telefone. Svarbią informaciją pateik ir aprašyme, kad jos nereikėtų skaityti vien iš plakato.
+:::
+
 ## Kaip tai veikia
 
 ### Viešas kalendorius ir iCal prenumerata
@@ -38,13 +47,6 @@ Kiekvienas kalendoriaus įrašas susideda iš:
 - **Žymų:** teminių etikečių, siejančių renginį su kitomis naujienomis ir puslapiais.
 - **Vaizdų:** pagrindinio viršelio paveikslėlio ir papildomų nuotraukų galerijos.
 - **Priklausomybės padaliniui:** renginį skelbiančio VU SA padalinio arba centrinio biuro.
-
-## Rekomendacijos {#susitarimai}
-
-- **Kalendorius ar naujiena:** konkrečiu laiku vykstančią veiklą skelbk kalendoriuje, o bendro pobūdžio pranešimą – [naujienose](/svetaine/naujienos).
-- **Kalbos:** jei renginys skirtas ir tarptautiniams studentams, pateik pavadinimą, vietą bei aprašymą anglų kalba.
-- **Tiksli vieta:** nurodyk adresą ir auditoriją, o nuotoliniam renginiui pridėk prisijungimo nuorodą.
-- **Įskaitomas viršelis:** patikrink, kaip paveikslėlis atrodo telefone. Svarbią informaciją pateik ir aprašyme, kad jos nereikėtų skaityti vien iš plakato.
 
 ## Veiksmai
 

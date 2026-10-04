@@ -18,6 +18,7 @@ use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\MeetingCompletionService;
 use App\Services\MeetingRepresentativeResolver;
 use App\Services\Typesense\MeetingSearchEngine;
+use App\Services\Typesense\SearchText;
 use App\Services\VoteStatisticsCalculator;
 use App\Support\MeetingTitle;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
@@ -245,6 +246,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
         );
 
         return [
+            ...SearchText::forModel($this),
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->getTranslation('description', 'lt'),

@@ -93,9 +93,15 @@
                 class="truncate hover:underline"
                 :title="lane.group.label"
               >
-                {{ lane.group.label }}
+                <InflectedDutyName v-if="lane.group.kind === 'duty'" :name="lane.group.label" />
+                <template v-else>
+                  {{ lane.group.label }}
+                </template>
               </Link>
-              <span v-else class="truncate" :title="lane.group.label">{{ lane.group.label }}</span>
+              <span v-else class="truncate" :title="lane.group.label"><InflectedDutyName v-if="lane.group.kind === 'duty'" :name="lane.group.label" />
+                <template v-else>
+                  {{ lane.group.label }}
+                </template></span>
               <span
                 v-if="lane.group.sublabel"
                 class="truncate text-xs font-normal text-muted-foreground"
@@ -200,10 +206,11 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, shallowRef, watch, nextTick } from 'vue';
 import * as d3 from 'd3';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowDownNarrowWide, ChevronRight, ChevronsDownUp, ChevronsUpDown, Link2 } from 'lucide-vue-next';
 
+import { timelineDutyName } from './dutyNames';
 import { formatDuration } from './duration';
 import { getTimelineColors } from './timelineColors';
 import DutiableExtrasBadge from './DutiableExtrasBadge.vue';
@@ -219,6 +226,7 @@ import { toDateString } from './composables/useDutiableTimelineData';
 import { TIMELINE_HEADER_HEIGHT as HEADER_HEIGHT, DEFAULT_MONTH_WIDTH } from './constants';
 import type { ParsedCadence, ParsedRow, StagedDates, TimelineLayoutRow } from './types';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { renderTodayLine } from '@/Components/Graphs/renderers/renderTodayLine';
 import { renderBackground } from '@/Components/Graphs/renderers/renderBackground';
 import { useColumnResize } from '@/Components/Graphs/composables/useColumnResize';
@@ -325,7 +333,7 @@ const scale = computed(() => d3.scaleTime().domain(props.domain).range([0, chart
 function laneLabel(lane: TimelineLayoutRow): string {
   // A duty-scoped chart groups by holder, so the lane names the duty, and vice versa.
   return lane.group.kind === 'user'
-    ? (lane.row?.duty_name ?? '—')
+    ? (lane.row ? timelineDutyName(lane.row, usePage().props.app.locale) : '—')
     : (lane.row?.holder_name ?? '—');
 }
 

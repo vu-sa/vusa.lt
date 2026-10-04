@@ -13,6 +13,13 @@ tests:
 
 Skiltis **Sistemos būsena** (`/mano/system-status`) skirta platformos techninių paslaugų ir integracijų veikimo būklei stebėti, prisijungimų statistikai peržiūrėti ir priežiūros veiksmams vykdyti.
 
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+- Priežiūros veiksmus, kurie gali laikinai sulėtinti sistemą ar išvalyti talpyklą, vykdyk tik esant būtinybei arba ne piko metu.
+- Jei paslauga rodo būseną „Neveikia“, pirmiausia paspausk **Atnaujinti** ir patikrink, ar tai nebuvo trumpalaikis tinklo trukdis.
+:::
+
 ## Kaip tai veikia
 
 Puslapyje pateikiama trijų rūšių informacija: paslaugų sveikatos patikros, priežiūros veiksmai ir prisijungimų pagal įrenginius statistika.
@@ -98,11 +105,6 @@ Skiltis matoma tik nariams, turintiems teisę peržiūrėti roles. Priežiūros 
 
 - **Foninės užduotys**: ilgiau trunkančios komandos (paieškos perindeksavimas, failų sinchronizavimas) automatiškai siunčiamos į foninę eilę, kad neužblokuotų sistemos.
 - **Laiko žyma**: po paslaugų kortelėmis nurodomas tikslus paskutinio duomenų patikrinimo laikas.
-
-## Rekomendacijos {#susitarimai}
-
-- Priežiūros veiksmus, kurie gali laikinai sulėtinti sistemą ar išvalyti talpyklą, vykdyk tik esant būtinybei arba ne piko metu.
-- Jei paslauga rodo būseną „Neveikia“, pirmiausia paspausk **Atnaujinti** ir patikrink, ar tai nebuvo trumpalaikis tinklo trukdis.
 
 ## Techninė informacija {#technine-informacija}
 

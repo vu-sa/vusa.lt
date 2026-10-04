@@ -52,6 +52,8 @@ export interface HomeCoordinator {
   email: string | null;
   profile_photo_path: string | null;
   duty: string | null;
+  pronouns?: string | { lt?: string; en?: string } | null;
+  use_original_duty_name?: boolean;
   /** The rep's institutions this coordinator covers (GetUserCoordinators). */
   institutions?: string[];
 }
@@ -75,6 +77,7 @@ export interface HomeHeroImage {
 export interface HomeAccessChange {
   kind: 'started' | 'ended';
   dutyName: string;
+  useOriginalDutyName?: boolean;
   institutionName: string | null;
   date: string;
   effectiveOn: string;

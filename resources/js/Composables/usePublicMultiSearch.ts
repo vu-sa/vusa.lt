@@ -1,3 +1,5 @@
+import { buildProfileParams, type SearchProfileConfig } from '@/Shared/Search/profiles';
+import { documentWithMatch, type HighlightedHit } from '@/Shared/Search/matches';
 /**
  * Public Multi-Search Composable
  *
@@ -35,7 +37,7 @@ interface TypesenseNode {
   path?: string;
 }
 
-interface TypesenseConfig {
+interface TypesenseConfig extends SearchProfileConfig {
   apiKey: string;
   nodes: TypesenseNode[];
   collections?: Record<string, string>;
@@ -259,7 +261,7 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
   const runMultiSearch = async (
     searches: Array<Record<string, unknown>>,
     signal?: AbortSignal,
-  ): Promise<{ results?: Array<{ hits?: Array<{ document: any; text_match?: number }>; found?: number; error?: string }> }> => {
+  ): Promise<{ results?: Array<{ hits?: Array<HighlightedHit & { text_match?: number }>; found?: number; error?: string }> }> => {
     const cfg = config();
     const node = cfg?.nodes?.[0];
     if (!cfg?.apiKey || !node) {
@@ -273,7 +275,10 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
         'X-TYPESENSE-API-KEY': cfg.apiKey,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ searches }),
+      body: JSON.stringify({ searches: searches.map((search) => {
+        const base = Object.entries(cfg.collections ?? {}).find(([, name]) => name === search.collection)?.[0] ?? String(search.collection);
+        return buildProfileParams(cfg.searchProfiles?.[base], search, locale());
+      }) }),
       signal,
     });
 
@@ -287,7 +292,7 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
 
   const applyResult = (
     id: SearchCollectionId,
-    result: { hits?: Array<{ document: any; text_match?: number }>; found?: number; error?: string } | undefined,
+    result: { hits?: Array<HighlightedHit & { text_match?: number }>; found?: number; error?: string } | undefined,
     append: boolean,
   ): void => {
     const section = sections[id];
@@ -302,7 +307,7 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
       return;
     }
 
-    const hits = (result.hits ?? []).map(hit => hit.document);
+    const hits = (result.hits ?? []).map(hit => documentWithMatch(hit));
     section.totalHits = result.found ?? 0;
 
     if (append) {
@@ -371,6 +376,7 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
       // can keep showing accurate counts for collections the user has toggled off.
       const searches = COLLECTIONS.map(def => buildSearch(def, trimmed, 1));
       const data = await runMultiSearch(searches, signal);
+      if (signal.aborted) return;
 
       COLLECTIONS.forEach((def, index) => {
         applyResult(def.id, data.results?.[index], false);
@@ -389,8 +395,10 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
       searchError.value = ErrorUtils.fromError(error, 'multi-search').userMessage;
     }
     finally {
-      isSearching.value = false;
-      abortController = null;
+      if (abortController?.signal === signal) {
+        isSearching.value = false;
+        abortController = null;
+      }
     }
   };
 

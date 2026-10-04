@@ -58,7 +58,8 @@ describe('ResourceForm.vue', () => {
         stubs: {
           ...commonStubs,
           FormPage: {
-            props: ['title', 'mode'],
+            name: 'FormPage',
+            props: ['title', 'barTitle', 'mode'],
             template: '<form data-testid="form-page" :data-mode="mode" @submit.prevent><slot /><slot name="aside" /><slot name="advanced" /><slot name="danger-zone" /></form>',
           },
           FormPanel: { template: '<div data-testid="form-panel"><slot /></div>' },
@@ -112,6 +113,13 @@ describe('ResourceForm.vue', () => {
 
   afterEach(() => {
     wrapper?.unmount();
+  });
+
+  it('updates the draft headline while keeping the saved title in the top bar', async () => {
+    wrapper = createWrapper();
+    await wrapper.get('input#resource-name').setValue('Naujas pavadinimas');
+    expect(wrapper.findComponent({ name: 'FormPage' }).props('title')).toBe('Naujas pavadinimas');
+    expect(wrapper.findComponent({ name: 'FormPage' }).props('barTitle')).toBe('Testinis išteklius');
   });
 
   it('renders the form', () => {

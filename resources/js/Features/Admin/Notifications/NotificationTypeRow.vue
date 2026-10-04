@@ -25,25 +25,17 @@
         <Lock class="size-3.5 shrink-0" aria-hidden="true" />
         {{ $t('notifications.preferences.email_locked') }}
       </p>
-      <Select
+      <NativeSelect
         v-else
+        size="sm"
+        class="w-40"
+        data-testid="email-select"
+        :icon="selectedOption.icon"
+        :aria-label="`${$t('notifications.preferences.email_label')}: ${$t(`notifications.types.${type.value}.label`)}`"
         :model-value="email"
+        :options="emailOptions"
         @update:model-value="value => emit('update:email', value as EmailDeliveryValue)"
-      >
-        <SelectTrigger
-          size="sm"
-          class="w-40 pointer-coarse:h-11"
-          data-testid="email-select"
-          :aria-label="`${$t('notifications.preferences.email_label')}: ${$t(`notifications.types.${type.value}.label`)}`"
-        >
-          <SelectValue :icon="selectedOption.icon" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem v-for="option in emailOptions" :key="option.value" :value="option.value" :icon="option.icon">
-            {{ option.label }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      />
 
       <button
         type="button"
@@ -67,7 +59,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { BellOff, BellRing, Lock } from 'lucide-vue-next';
 
 import { controlVariants } from '@/Components/ui/control';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { emailDeliveryOptions, type EmailDeliveryValue } from '@/Features/Admin/Notifications/emailDelivery';
 
 export interface NotificationTypeOption {

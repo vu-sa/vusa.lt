@@ -1,3 +1,5 @@
+import type { SearchProfileConfig } from '@/Shared/Search/profiles';
+import { provideFacetSearch } from '@/Shared/Search/facets';
 import { ref, type Ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
@@ -9,7 +11,7 @@ interface TypesenseNode {
   port: number;
 }
 
-interface TypesenseConfig {
+interface TypesenseConfig extends SearchProfileConfig {
   apiKey: string;
   nodes: TypesenseNode[];
   collections?: Record<string, string>;
@@ -35,6 +37,7 @@ interface TypesenseClientOptions {
 export const createTypesenseClients = (
   typesenseConfig: TypesenseConfig,
   options: TypesenseClientOptions,
+  locale = 'lt',
 ) => {
   if (!typesenseConfig.nodes?.length) {
     throw new Error('No Typesense nodes configured');
@@ -42,6 +45,9 @@ export const createTypesenseClients = (
 
   const typesenseClient = SearchClientFactory.createTypesenseClient({
     apiKey: typesenseConfig.apiKey,
+    searchProfiles: typesenseConfig.searchProfiles,
+    locale,
+    collections: typesenseConfig.collections,
     nodes: typesenseConfig.nodes,
     connectionTimeoutSeconds: options.connectionTimeoutSeconds ?? 10,
   });
@@ -57,6 +63,7 @@ export const useSearchClient = () => {
   const typesenseClient = ref<TypesenseClient | null>(null);
   const isInitialized = ref(false);
   const initializationError = ref<string | null>(null);
+  provideFacetSearch(async (field, query, signal) => typesenseClient.value?.searchFacet(field, query, signal) ?? []);
 
   const initializeSearchClient = () => {
     const page = usePage();
@@ -70,7 +77,7 @@ export const useSearchClient = () => {
     try {
       const clients = createTypesenseClients(typesenseConfig, {
         additionalSearchParameters: {},
-      });
+      }, (page.props.app as { locale?: string })?.locale);
 
       searchClient.value = clients.searchClient;
       typesenseClient.value = clients.typesenseClient;

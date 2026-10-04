@@ -14,7 +14,7 @@ export interface InstitutionFacet {
   values: Array<{
     value: string;
     label: string;
-    count: number;
+    count: number | null;
     highlighted?: string;
     isSelected?: boolean;
     level?: number;

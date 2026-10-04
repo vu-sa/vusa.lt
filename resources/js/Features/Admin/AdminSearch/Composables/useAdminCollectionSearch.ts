@@ -1,3 +1,4 @@
+import { provideFacetSearch } from '@/Shared/Search/facets';
 /**
  * Admin Collection Search Composable
  *
@@ -215,7 +216,14 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   /**
    * Perform search with current filters
    */
+  provideFacetSearch(async (field, text, signal) => {
+    const filterBy = [baseFilterBy.value, buildFilterString({ ...filters.value, [field]: undefined }, facetConfig)].filter(Boolean).join(' && ');
+    return adminSearch.searchFacetValues(collection, field, text, { query: query.value || '*', filterBy, queryBy: facetConfig.queryBy, signal });
+  });
+
+  let searchGeneration = 0;
   const performSearch = async (isLoadMore = false) => {
+    const generation = ++searchGeneration;
     // Clear previous error
     if (!isLoadMore) {
       clearError();
@@ -243,12 +251,18 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     try {
       const searchResult = await adminSearch.searchWithFacets(collection, query.value || '*', {
         filterBy: filterString || undefined,
+        facetFilters: Object.fromEntries(facetConfig.fields.filter((field) => {
+          const value = filters.value[field.field];
+          return Array.isArray(value) ? value.length > 0 : value !== undefined && value !== null;
+        }).map(field => [field.field, [baseFilterBy.value, buildFilterString({ ...filters.value, [field.field]: undefined }, facetConfig)].filter(Boolean).join(' && ')])),
         sortBy: effectiveSortBy,
         facetBy: facetConfig.facetBy,
         queryBy: facetConfig.queryBy,
         perPage,
         page: currentPage.value,
       });
+
+      if (generation !== searchGeneration) return;
 
       // Update results
       if (isLoadMore) {
@@ -275,6 +289,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       }
     }
     catch (err) {
+      if (generation !== searchGeneration) return;
       console.error('Search failed:', err);
 
       // Don't show error for aborted requests
@@ -297,7 +312,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       }
     }
     finally {
-      status.value = 'idle';
+      if (generation === searchGeneration) status.value = 'idle';
     }
   };
 

@@ -71,8 +71,8 @@ test('search matches active duty names and returns each user\'s current duties',
     $activeDuty = Duty::factory()->for($institution)->create(['name' => ['lt' => 'Koordinatorė', 'en' => 'Coordinator']]);
     $endedDuty = Duty::factory()->for($institution)->create(['name' => ['lt' => 'Iždininkė', 'en' => 'Treasurer']]);
 
-    $current = User::factory()->create(['name' => 'Ona Dabartinė']);
-    $current->duties()->attach($activeDuty, ['start_date' => now()->subMonth()]);
+    $current = User::factory()->create(['name' => 'Ona Dabartinė', 'pronouns' => ['lt' => 'ji/jos', 'en' => 'she/her']]);
+    $current->duties()->attach($activeDuty, ['start_date' => now()->subMonth(), 'use_original_duty_name' => true]);
 
     $former = User::factory()->create(['name' => 'Ieva Buvusi']);
     $former->duties()->attach($endedDuty, ['start_date' => now()->subYear(), 'end_date' => now()->subDay()]);
@@ -82,7 +82,9 @@ test('search matches active duty names and returns each user\'s current duties',
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.id', $current->id)
         ->assertJsonPath('data.0.current_duties.0.name', 'Koordinatorė')
-        ->assertJsonPath('data.0.current_duties.0.institution', 'MIF SA');
+        ->assertJsonPath('data.0.current_duties.0.institution', 'MIF SA')
+        ->assertJsonPath('data.0.pronouns.lt', 'ji/jos')
+        ->assertJsonPath('data.0.current_duties.0.use_original_duty_name', true);
 
     asUser($actor)->getJson(route('api.v1.admin.impersonate.search', ['search' => 'Treasurer']))
         ->assertOk()

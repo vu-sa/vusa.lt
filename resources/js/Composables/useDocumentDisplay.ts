@@ -6,6 +6,7 @@ import { trackEvent } from '@/Plugins/umami';
 
 // Document interface
 export interface DocumentDisplayItem {
+  _searchMatch?: import('@/Shared/Search/matches').SearchMatch;
   id: string | number;
   title: string;
   summary?: string;

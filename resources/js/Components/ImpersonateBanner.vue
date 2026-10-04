@@ -106,7 +106,8 @@
                 data-slot="impersonation-duty"
                 class="text-xs text-foreground/80"
               >
-                {{ duty.name }}<template v-if="duty.institution"> · {{ duty.institution }}</template>
+                <InflectedDutyName :name="duty.name" :holder="user" :use-original-duty-name="duty.use_original_duty_name" />
+                <template v-if="duty.institution"> · {{ duty.institution }}</template>
               </span>
             </button>
           </div>
@@ -133,6 +134,7 @@ import { useDebounceFn, useFetch } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { LogOut, UserCog, X } from 'lucide-vue-next';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
@@ -149,7 +151,8 @@ interface SearchUser {
   id: string;
   name: string;
   email: string;
-  current_duties: Array<{ id: string; name: string; institution: string | null }>;
+  pronouns?: string | { lt?: string; en?: string } | null;
+  current_duties: Array<{ id: string; name: string; institution: string | null; use_original_duty_name?: boolean }>;
 }
 
 const dismissed = ref(false);

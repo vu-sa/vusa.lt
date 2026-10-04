@@ -7,6 +7,7 @@ use App\Enums\PageLayoutEnum;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\PublicUrlService;
+use App\Services\Typesense\SearchText;
 use App\Settings\SiteSettings;
 use App\Support\PublicCacheTags;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
@@ -310,7 +311,7 @@ class Page extends Model implements Sitemapable
 
     public function tags(): MorphToMany
     {
-        return $this->morphToMany(Tag::class, 'taggable');
+        return $this->morphToMany(Tag::class, 'taggable')->using(Taggable::class);
     }
 
     /** @return BelongsTo<Content, $this> */
@@ -355,12 +356,13 @@ class Page extends Model implements Sitemapable
      */
     protected function makeAllSearchableUsing(Builder $query)
     {
-        return $query->with(['tenant', 'tags']);
+        return $query->with(['tenant', 'tags', 'content.parts']);
     }
 
     public function toSearchableArray(): array
     {
         return [
+            ...SearchText::forModel($this),
             'id' => (string) $this->id,
             'title' => $this->title,
             'permalink' => $this->permalink,

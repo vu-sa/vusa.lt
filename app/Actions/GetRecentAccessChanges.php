@@ -21,7 +21,7 @@ class GetRecentAccessChanges
     public const string ENDED = 'ended';
 
     /**
-     * @return list<array{kind: string, dutyName: string, institutionName: string|null, date: string, effectiveOn: string, isExOfficio: bool}>
+     * @return list<array{kind: string, dutyName: string, institutionName: string|null, date: string, effectiveOn: string, isExOfficio: bool, useOriginalDutyName: bool}>
      */
     public static function execute(User $user, int $days, ?CarbonInterface $now = null, ?int $limit = null): array
     {
@@ -63,13 +63,14 @@ class GetRecentAccessChanges
     }
 
     /**
-     * @return array{kind: string, dutyName: string, institutionName: string|null, date: string, effectiveOn: string, isExOfficio: bool}
+     * @return array{kind: string, dutyName: string, institutionName: string|null, date: string, effectiveOn: string, isExOfficio: bool, useOriginalDutyName: bool}
      */
     private static function change(Dutiable $term, string $kind, CarbonInterface $date, CarbonInterface $effectiveOn): array
     {
         return [
             'kind' => $kind,
             'dutyName' => (string) $term->duty->name,
+            'useOriginalDutyName' => (bool) $term->use_original_duty_name,
             'institutionName' => $term->duty->institution?->name,
             'date' => $date->toDateString(),
             'effectiveOn' => $effectiveOn->toDateString(),

@@ -1,6 +1,7 @@
 <template>
   <FormPage
     :title="isCreate ? $t('Naujas ryšys') : (form.name || $t('Ryšys'))"
+    :bar-title="isCreate ? $t('Naujas ryšys') : (relationship.name || $t('Ryšys'))"
     :entity-type="ModelEnum.RELATIONSHIP"
     :back-href="route('relationships.index')"
     :back-label="$t('Ryšiai')"

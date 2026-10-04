@@ -315,15 +315,6 @@ pranešimus „Posėdžio nebuvo“ tvarko ir atstovų apie posėdžius klausia 
 - Veiklos būklė sąrašui perskaičiuojama kas naktį, o užregistravus posėdį ar pranešimą –
   iš karto.
 
-## Susitarimai {#susitarimai}
-
-::: tip Institucijų tvarkymas
-- Jei institucija nebesirenka (pvz., panaikinta), išjunk **Aktyvi institucija** – neištrink jos:
-  jos posėdžių istorija lieka.
-- Jei institucijoje keli atstovai, susitark su kitais, kuris fiksuoja posėdžius, arba paskirk
-  kadencijos sekretorių.
-:::
-
 ## Techninė informacija {#technine-informacija}
 
 ### Teisės

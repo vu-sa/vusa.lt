@@ -25,6 +25,7 @@
             >
               {{ document.title }}
             </h3>
+            <SearchMatch :match="document._searchMatch" />
 
             <!-- Actions. A plain flex row with a small gap, not ButtonGroup — connected
                  buttons share a border pixel with their neighbour, so hovering the middle
@@ -171,6 +172,7 @@
 </template>
 
 <script setup lang="ts">
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { router } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { Icon } from '@iconify/vue';

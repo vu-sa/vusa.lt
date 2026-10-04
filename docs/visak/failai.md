@@ -123,13 +123,6 @@ Kas mato ir redaguoja posėdžius bei institucijas, aprašyta puslapiuose
 - Jei atveriant failą paaiškėja, kad jo SharePoint nebėra, failas pažymimas ir rodomas
   pranešimas.
 
-## Susitarimai {#susitarimai}
-
-- Protokolą ir ataskaitą įkelk kuo greičiau po posėdžio – tai matoma posėdžio būsenoje.
-- Failus SharePoint tvarkyk per platformą. Rankiniu būdu perkeltas ar pervadintas aplankas
-  nebesutaps su įrašu.
-- Kopijuotą nuorodą siųsk tik tiems, kam failas skirtas; abejodamas – atšauk ją.
-
 ## Techninė informacija {#technine-informacija}
 
 - Modelis: `FileableFile` (`fileable_files`), įrašams – `HasSharepointFiles` ir

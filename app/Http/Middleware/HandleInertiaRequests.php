@@ -141,6 +141,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => fn () => [
                     // Relations loaded on the request user by policies or controllers are not shared.
                     ...$user->withoutRelations()->toArray(),
+                    'pronouns' => $onAdmin ? $user->getTranslations('pronouns') : $user->pronouns,
                     ...($onAdmin ? $this->getOpenTaskCounts($user) : []),
                     'isSuperAdmin' => $user->isSuperAdmin(),
                     'tenants' => $onAdmin

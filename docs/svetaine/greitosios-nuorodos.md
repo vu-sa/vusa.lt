@@ -20,6 +20,15 @@ Greitosios nuorodos – po pagrindiniu svetainės meniu rodoma horizontali nuoro
 
 Skiltis pasiekiama adresu `/mano/quickLinks`.
 
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+- **Atranka:** pateik dažniausiai reikalingas nuorodas. Patikrink telefone, ar svarbiausius puslapius lengva rasti ir ar juosta nėra perkrauta.
+- **Trumpi užrašai:** naudok aiškius pavadinimus, pvz., „Kuratoriai“, „DUK“, „Stipendijos“.
+- **Piktogramos:** parink su turiniu susijusią piktogramą, tačiau pasirūpink, kad nuorodos paskirtis būtų aiški ir iš teksto.
+- **Aktualumas:** peržiūrėk nuorodas pasikeitus studentams aktualiai informacijai, pavyzdžiui, prieš mokslo metų pradžią ar sesiją.
+:::
+
 ## Kaip tai veikia
 
 ### Padalinių ir kalbų atskyrimas
@@ -39,13 +48,6 @@ Viešo meniu kalba ir greitųjų nuorodų piktogramos paruošiamos kartu su pusl
 Nuorodas ir jų piktogramas svetainė pateikia kartu su puslapiu. Piktogramos pasirinkimo keisti nereikia. Jei piktograma dar nepalaikoma vietiniame rinkinyje, ji įkeliama atskirai; nuoroda veikia ir be jos.
 
 Angliškame puslapyje meniu vertimai paruošiami prieš jį parodant, taip pat kai esi prisijungęs. Padalinio logotipas pradedamas įkelti iš anksto, pagal dabartinį padalinį ir puslapio kalbą.
-
-## Rekomendacijos {#susitarimai}
-
-- **Atranka:** pateik dažniausiai reikalingas nuorodas. Patikrink telefone, ar svarbiausius puslapius lengva rasti ir ar juosta nėra perkrauta.
-- **Trumpi užrašai:** naudok aiškius pavadinimus, pvz., „Kuratoriai“, „DUK“, „Stipendijos“.
-- **Piktogramos:** parink su turiniu susijusią piktogramą, tačiau pasirūpink, kad nuorodos paskirtis būtų aiški ir iš teksto.
-- **Aktualumas:** peržiūrėk nuorodas pasikeitus studentams aktualiai informacijai, pavyzdžiui, prieš mokslo metų pradžią ar sesiją.
 
 ## Veiksmai
 

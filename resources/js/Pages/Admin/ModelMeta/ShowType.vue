@@ -46,7 +46,7 @@
           <ul class="divide-y divide-border">
             <li v-for="item in responsibleDuties" :key="item.id">
               <Link :href="route('duties.show', item.duty_id)" class="flex min-h-11 flex-col justify-center py-2 hover:bg-secondary">
-                <span class="text-sm font-medium">{{ item.duty }}</span>
+                <span class="text-sm font-medium"><InflectedDutyName :name="item.duty" /></span>
                 <span class="text-xs text-muted-foreground">{{ item.label }}</span>
               </Link>
             </li>
@@ -141,6 +141,7 @@ import { Deferred, Link, router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { Compass, Edit, FileText, Link2, Shield, Trash2 } from 'lucide-vue-next';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
 import { ConfirmDialog, OverviewSection, SheetForm } from '@/Components/Patterns';

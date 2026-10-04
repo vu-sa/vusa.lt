@@ -1,7 +1,7 @@
 <template>
   <FormPage
     :title="isCreate ? $t(`types.${typeKind}.create`) : (localizedTitle || $t('Tipas'))"
-    :bar-title="isCreate ? $t(`types.${typeKind}.create`) : (localizedTitle || undefined)"
+    :bar-title="isCreate ? $t(`types.${typeKind}.create`) : getTranslatedValue(type.title, undefined, $t('Tipas'))"
     :entity-type
     :back-href="route(`${resource}.index`)"
     :back-label="$t(`types.${typeKind}.title`)"

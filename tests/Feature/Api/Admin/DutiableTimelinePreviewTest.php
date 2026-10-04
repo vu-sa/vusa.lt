@@ -134,3 +134,21 @@ test('someone else row is not self affecting', function (): void {
 
     expect($response->json('data.self_affecting'))->toBeFalse();
 });
+
+test('preview carries holder pronouns and the independent overrides of derived terms', function (): void {
+    $this->holder->update(['pronouns' => ['lt' => 'ji/jos', 'en' => 'she/her']]);
+    $this->row->update(['use_original_duty_name' => true]);
+    Dutiable::factory()->create([
+        'duty_id' => $this->duty->id, 'dutiable_id' => $this->holder->id,
+        'via_dutiable_id' => $this->row->id, 'start_date' => '2024-05-18', 'use_original_duty_name' => false,
+    ]);
+
+    $response = previewTimeline([[
+        'type' => 'set_dates', 'row_ids' => [$this->row->id], 'start_date' => '2024-07-18',
+    ]])->assertOk();
+    $change = collect($response->json('data.changes'))->firstWhere('row_id', $this->row->id);
+
+    expect($change['holder_pronouns'])->toBe(['lt' => 'ji/jos', 'en' => 'she/her'])
+        ->and($change['use_original_duty_name'])->toBeTrue()
+        ->and($change['derived'][0]['use_original_duty_name'])->toBeFalse();
+});

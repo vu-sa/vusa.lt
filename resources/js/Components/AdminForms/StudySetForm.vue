@@ -1,7 +1,7 @@
 <template>
   <FormPage
     :title="isCreate ? $t('Naujas individualių studijų komplektas') : (getTranslatedValue(form.name) || $t('Komplektas'))"
-    :bar-title="isCreate ? $t('Naujas individualių studijų komplektas') : (getTranslatedValue(form.name) || undefined)"
+    :bar-title="isCreate ? $t('Naujas individualių studijų komplektas') : getTranslatedValue(studySet.name, undefined, $t('Komplektas'))"
     :entity-type="ModelEnum.STUDY_SET"
     :back-href="route('studySets.index')"
     :back-label="$t('Individualių studijų komplektai')"
@@ -74,19 +74,12 @@
 
           <div class="grid gap-4 sm:grid-cols-4">
             <FormFieldWrapper :id="`course-semester-${index}`" :label="$t('Semestras')">
-              <Select v-model="course.semester">
-                <SelectTrigger :id="`course-semester-${index}`">
-                  <SelectValue :placeholder="$t('Pasirink')" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="autumn">
-                    {{ $t("Rudens") }}
-                  </SelectItem>
-                  <SelectItem value="spring">
-                    {{ $t("Pavasario") }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <FormSegmentedControl
+                :id="`course-semester-${index}`"
+                v-model="course.semester"
+                :options="semesterOptions"
+                :aria-label="$t('Semestras')"
+              />
             </FormFieldWrapper>
 
             <FormFieldWrapper :id="`course-credits-${index}`" :label="$t('Kreditai')">
@@ -134,16 +127,12 @@
           </div>
 
           <FormFieldWrapper :id="`review-course-${index}`" :label="$t('Dalykas')" required>
-            <Select v-model="review.study_set_course_id">
-              <SelectTrigger :id="`review-course-${index}`">
-                <SelectValue :placeholder="$t('Pasirink dalyką')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem v-for="course in savedCourses" :key="course.id" :value="course.id">
-                  {{ getCourseName(course) }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <NativeSelect
+              :id="`review-course-${index}`"
+              v-model="review.study_set_course_id"
+              :options="savedCourses.map(course => ({ value: course.id!, label: getCourseName(course) }))"
+              :placeholder="$t('Pasirink dalyką')"
+            />
           </FormFieldWrapper>
 
           <FormFieldWrapper
@@ -183,18 +172,13 @@
           :hint="$t('Ar šis komplektas rodomas viešai studentams.')"
         />
 
-        <FormFieldWrapper id="tenant_id" :label="$t('Padalinys')" required :error="form.errors.tenant_id">
-          <Select v-model="tenantIdString">
-            <SelectTrigger id="tenant_id">
-              <SelectValue :placeholder="$t('Pasirink padalinį')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="tenant in tenants" :key="tenant.id" :value="String(tenant.id)">
-                {{ tenant.shortname }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </FormFieldWrapper>
+        <TenantSelectField
+          id="tenant_id"
+          v-model="form.tenant_id"
+          :tenants
+          required
+          :error="form.errors.tenant_id"
+        />
 
         <FormFieldWrapper id="order" :label="$t('Eilės nr.')" :error="form.errors.order">
           <Input id="order" v-model.number="form.order" type="number" min="0" :class="fieldSurfaceClass" />
@@ -233,17 +217,19 @@ import { Plus, SlidersHorizontal, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
+import TenantSelectField from './TenantSelectField.vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
+import FormSegmentedControl, { type FormSegmentOption } from '@/Components/Patterns/FormSegmentedControl.vue';
 import FormToggleRow from '@/Components/Patterns/FormToggleRow.vue';
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import { Button } from '@/Components/ui/button';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { Switch } from '@/Components/ui/switch';
 import { Textarea } from '@/Components/ui/textarea';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
@@ -347,10 +333,10 @@ const missingLocaleCounts = computed(() => {
   };
 });
 
-const tenantIdString = computed({
-  get: () => form.tenant_id != null ? String(form.tenant_id) : '',
-  set: (val: string) => { form.tenant_id = val ? Number(val) : null; },
-});
+const semesterOptions = computed<FormSegmentOption<string>[]>(() => [
+  { value: 'autumn', label: $t('Rudens') },
+  { value: 'spring', label: $t('Pavasario') },
+]);
 
 const savedCourses = computed(() =>
   form.courses.filter(c => c.id),

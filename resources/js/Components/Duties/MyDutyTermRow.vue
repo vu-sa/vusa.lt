@@ -2,9 +2,9 @@
   <li class="flex flex-col gap-1 py-3" data-slot="my-duty-term">
     <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
       <Link v-if="term.dutyHref" :href="term.dutyHref" class="font-medium hover:text-brand">
-        {{ term.dutyName }}
+        <InflectedDutyName :name="term.dutyName" :holder="$page.props.auth?.user ?? {}" :use-original-duty-name="term.useOriginalDutyName" />
       </Link>
-      <span v-else class="font-medium">{{ term.dutyName }}</span>
+      <span v-else class="font-medium"><InflectedDutyName :name="term.dutyName" :holder="$page.props.auth?.user ?? {}" :use-original-duty-name="term.useOriginalDutyName" /></span>
 
       <span class="text-sm text-muted-foreground">
         <Link v-if="term.institutionHref" :href="term.institutionHref" class="underline-offset-4 hover:underline">
@@ -36,9 +36,12 @@
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import InflectedDutyName from './InflectedDutyName.vue';
+
 export interface MyDutyTerm {
   id: string | number;
   dutyName: string;
+  useOriginalDutyName?: boolean;
   dutyHref: string | null;
   institutionName: string | null;
   institutionHref: string | null;

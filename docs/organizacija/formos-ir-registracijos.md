@@ -26,6 +26,15 @@ tests:
 
 Formų sąrašas pasiekiamas adresu `/mano/forms`, o kiekviena forma atveriama adresu `/mano/forms/{id}`.
 
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+- **Aiškus adresas:** formos nuorodai parink trumpą, suprantamą kelią, pvz., `mokymai-2026`.
+- **Reikalingi duomenys:** apgalvok, kokių atsakymų reikia registracijai ar apklausai. Neklausk asmens duomenų vien dėl to, kad jie gali praversti ateityje.
+- **Atsakymų prieiga:** eksportuotus failus laikyk ten, kur juos gali pasiekti tik su registracijomis dirbantys žmonės.
+- **Klausimų patikra:** prieš dalydamasis nuoroda peržiūrėk klausimus, atsakymų parinktis ir privalomus laukus. Gavus atsakymų, [laukų pridėjimas ir šalinimas ribojami](#vientisumas).
+:::
+
 ## Kaip tai veikia
 
 ### Formos struktūra ir viešinimas {#struktura}
@@ -80,13 +89,6 @@ Dvi formos sistemoje atlieka ypatingą vaidmenį ir yra susietos su automatiniai
 
 Jei naudotojas turi teisę peržiūrėti šias anketas, jos automatiškai atsiranda kairiajame naršymo meniu
 kaip atskiri skyriai: **Narių registracija** (`registracija_nariai`) ir **Studentų atstovų registracija** (`registracija_atstovai`).
-
-## Rekomendacijos {#susitarimai}
-
-- **Aiškus adresas:** formos nuorodai parink trumpą, suprantamą kelią, pvz., `mokymai-2026`.
-- **Reikalingi duomenys:** apgalvok, kokių atsakymų reikia registracijai ar apklausai. Neklausk asmens duomenų vien dėl to, kad jie gali praversti ateityje.
-- **Atsakymų prieiga:** eksportuotus failus laikyk ten, kur juos gali pasiekti tik su registracijomis dirbantys žmonės.
-- **Klausimų patikra:** prieš dalydamasis nuoroda peržiūrėk klausimus, atsakymų parinktis ir privalomus laukus. Gavus atsakymų, [laukų pridėjimas ir šalinimas ribojami](#vientisumas).
 
 ## Veiksmai
 

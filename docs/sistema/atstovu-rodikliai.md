@@ -74,11 +74,6 @@ Skiltis skirta platformos ir organizacijos lygmens procesų priežiūrai, todėl
 
 - **Automatinis skaičiavimas**: rodikliai generuojami automatiškai pagal narių atliekamus veiksmus ir posėdžių fiksavimą. Papildomai pildyti ataskaitų nereikia.
 
-## Rekomendacijos {#susitarimai}
-
-- Rodiklius naudok atstovavimo spragoms pastebėti ir pagalbai planuoti.
-- Prieš vertindamas procentą, patikrink jo imtį ir duomenų pilnumą: neužfiksuotas veiksmas nebūtinai reiškia, kad jis nebuvo atliktas.
-
 ## Techninė informacija {#technine-informacija}
 
 - Valdiklis: `RepMetricsController` (`GET /mano/rep-metrics`).

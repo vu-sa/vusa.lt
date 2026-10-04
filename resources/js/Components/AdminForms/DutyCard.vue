@@ -2,7 +2,7 @@
   <div class="py-3" data-slot="duty-card">
     <div class="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
       <Link :href="route('duties.show', duty.id)" class="font-medium text-foreground hover:text-brand hover:underline">
-        {{ duty.name }}
+        <InflectedDutyName :name="duty.name" />
       </Link>
       <span class="flex items-center gap-3 text-xs text-muted-foreground">
         <span v-if="duty.places_to_occupy" class="tabular-nums">
@@ -67,6 +67,7 @@ import { CalendarCog, UserPlus } from 'lucide-vue-next';
 
 import UserPopover from '../Avatars/UserPopover.vue';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Button } from '@/Components/ui/button';
 import { formatDate as formatIsoDate } from '@/Utils/dateTime';
 

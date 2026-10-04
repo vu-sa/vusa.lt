@@ -12,6 +12,7 @@ use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\AgendaItemPresenter;
 use App\Services\ContactPresentationService;
 use App\Services\PublicAssetService;
 use App\Settings\AtstovavimasSettings;
@@ -297,6 +298,7 @@ class ContactController extends PublicController
                     'profile_photo_path' => $contact->profile_photo_path,
                     'profile_photo_focal_point' => $contact->profile_photo_focal_point,
                     'pronouns' => $contact->pronouns,
+                    'duty_pronouns' => $contact->getTranslations('pronouns'),
                     'show_pronouns' => $contact->show_pronouns,
                 ];
             })->values();
@@ -324,10 +326,14 @@ class ContactController extends PublicController
                             'email' => $item['user']->email,
                             'phone' => $item['user']->phone,
                             'facebook_url' => $item['user']->facebook_url,
-                            'duties' => [$item['duty']->only(['id', 'name', 'description'])],
+                            'duties' => [[
+                                ...$item['duty']->only(['id', 'name', 'description']),
+                                'pivot' => ['use_original_duty_name' => (bool) $item['user']->pivot?->use_original_duty_name],
+                            ]],
                             'profile_photo_path' => $item['user']->profile_photo_path,
                             'profile_photo_focal_point' => $item['user']->profile_photo_focal_point,
                             'pronouns' => $item['user']->pronouns,
+                            'duty_pronouns' => $item['user']->getTranslations('pronouns'),
                             'show_pronouns' => $item['user']->show_pronouns,
                         ])->values()->toArray(),
                     ];
@@ -348,10 +354,14 @@ class ContactController extends PublicController
                         'email' => $item['user']->email,
                         'phone' => $item['user']->phone,
                         'facebook_url' => $item['user']->facebook_url,
-                        'duties' => [$item['duty']->only(['id', 'name', 'description'])],
+                        'duties' => [[
+                            ...$item['duty']->only(['id', 'name', 'description']),
+                            'pivot' => ['use_original_duty_name' => (bool) $item['user']->pivot?->use_original_duty_name],
+                        ]],
                         'profile_photo_path' => $item['user']->profile_photo_path,
                         'profile_photo_focal_point' => $item['user']->profile_photo_focal_point,
                         'pronouns' => $item['user']->pronouns,
+                        'duty_pronouns' => $item['user']->getTranslations('pronouns'),
                         'show_pronouns' => $item['user']->show_pronouns,
                     ])->values()->toArray(),
                 ];
@@ -422,7 +432,7 @@ class ContactController extends PublicController
         );
 
         return Inertia::render('Public/Meetings/ShowMeeting', [
-            'meeting' => \App\Services\AgendaItemPresenter::publicMeeting($meeting),
+            'meeting' => AgendaItemPresenter::publicMeeting($meeting),
             'institution' => $primaryInstitution,
             'representatives' => $representatives,
             'previousMeeting' => $previousMeeting,
@@ -584,7 +594,7 @@ class ContactController extends PublicController
             $yearData = [
                 'year_key' => $year,
                 'year_label' => $year.' mokslo metai',
-                'meetings' => $yearMeetings->map(fn (Meeting $meeting): array => \App\Services\AgendaItemPresenter::publicMeeting($meeting))->values(),
+                'meetings' => $yearMeetings->map(fn (Meeting $meeting): array => AgendaItemPresenter::publicMeeting($meeting))->values(),
             ];
 
             if ($year === $currentAcademicYear) {

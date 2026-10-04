@@ -309,65 +309,54 @@ const inflectDutyName = (name: string, gender: DutyNameGender): string => {
   return name.slice(0, head.start + head.stem.length) + ending + name.slice(head.end);
 };
 
+export type DutyPronouns = string | { lt?: string | null; en?: string | null } | null | undefined;
+
+export interface DutyNameHolder {
+  name?: string | null;
+  pronouns?: DutyPronouns;
+}
+
+const pronounGender = (pronouns: string | null | undefined): DutyNameGender | null => {
+  const first = pronouns?.split('/')[0]?.trim().toLowerCase();
+  if (first === 'ji' || first === 'she') return 'feminine';
+  if (first === 'jis' || first === 'he') return 'masculine';
+  if (first === 'jie' || first === 'they') return 'plural';
+  return null;
+};
+
+export const resolveDutyPronouns = (pronouns: DutyPronouns, locale: string): string => {
+  if (typeof pronouns === 'string') return pronouns;
+  const preferred = pronouns?.[locale === 'en' ? 'en' : 'lt'];
+  if (pronounGender(preferred)) return preferred ?? '';
+  return [pronouns?.lt, pronouns?.en].find(value => pronounGender(value)) ?? '';
+};
+
 export const changeDutyNameEndings = (
-  contact: App.Entities.User | null | undefined,
-  dutyName: App.Entities.Duty['name'],
+  contact: DutyNameHolder | null | undefined,
+  dutyName: string,
   locale: string,
-  pronouns: string,
-  useOriginalDutyName: boolean,
-) => {
-  if (locale === 'en') {
-    return dutyName;
+  pronouns: DutyPronouns = contact?.pronouns,
+  useOriginalDutyName = false,
+): string => {
+  if (locale !== 'lt' || useOriginalDutyName) return dutyName;
+
+  const explicitGender = pronounGender(resolveDutyPronouns(pronouns, locale));
+  if (explicitGender) return inflectDutyName(dutyName, explicitGender);
+
+  const name = contact?.name?.trim().toLowerCase();
+  if (!name) return dutyName;
+
+  const firstName = name.split(/\s+/)[0];
+  if (firstName === 'katrin') return inflectDutyName(dutyName, 'feminine');
+  if (firstName === 'german') return dutyName;
+
+  // A recognisable first name wins over a surname shared by people of different genders.
+  for (const word of [firstName, name.split(/\s+/).at(-1) ?? '']) {
+    if (/(as|is|ys|us)$/.test(word)) return inflectDutyName(dutyName, 'masculine');
+    if (/[aė]$/.test(word)) return inflectDutyName(dutyName, 'feminine');
   }
 
-  // check if duty name should not be explicitly changed
-  if (useOriginalDutyName) return dutyName;
-
-  const splitPronouns = pronouns?.split('/');
-
-  const womanizedTitle = inflectDutyName(dutyName, 'feminine');
-  const pluralizedTitle = inflectDutyName(dutyName, 'plural');
-  const masculinedTitle = inflectDutyName(dutyName, 'masculine');
-
-  if (Array.isArray(splitPronouns) && splitPronouns.length > 1) {
-    if (splitPronouns[0] === 'ji' || splitPronouns[0] === 'she') {
-      return womanizedTitle;
-    }
-    else if (splitPronouns[0] === 'jie' || splitPronouns[0] === 'they') {
-      return pluralizedTitle;
-    }
-    else if (splitPronouns[0] === 'jis' || splitPronouns[0] === 'he') {
-      return masculinedTitle;
-    }
-  }
-
-  // If no pronouns are set, try to guess based on the name
-  if (!contact) {
-    return dutyName;
-  }
-
-  const firstName = contact.name.split(' ')[0];
-
-  const namesToWomanize = ['Katrin'];
-  if (namesToWomanize.includes(firstName)) {
-    return womanizedTitle;
-  }
-
-  const namesNotToWomanize = ['German'];
-  if (namesNotToWomanize.includes(firstName)) {
-    return dutyName;
-  }
-
-  if (contact.name.endsWith('ė') || firstName.endsWith('ė')) {
-    return womanizedTitle;
-  }
-
-  // check for first name ending with 's'
-  if (contact.name.endsWith('a') && !firstName.endsWith('s')) {
-    return womanizedTitle;
-  }
-
-  return dutyName ?? '';
+  return dutyName;
 };
 
 export interface DutyNameGenderVariants {

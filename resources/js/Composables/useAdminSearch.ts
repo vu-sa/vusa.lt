@@ -1,3 +1,6 @@
+import { buildProfileParams } from '@/Shared/Search/profiles';
+import { documentWithMatch, type HighlightedHit } from '@/Shared/Search/matches';
+import { facetSearches, mergeDisjunctiveFacets } from '@/Shared/Search/facets';
 import { ref, computed, onMounted } from 'vue';
 
 import { buildInfix } from '@/Features/Admin/AdminSearch/Utils/searchParams';
@@ -48,7 +51,7 @@ interface AdminSearchResult {
 
 /** The part of a Typesense search result the admin search reads. */
 interface CollectionSearchResult {
-  hits?: { document: unknown }[];
+  hits?: HighlightedHit[];
   found?: number;
   page?: number;
   facet_counts?: Array<{ field_name: string; counts: Array<{ value: string; count: number }> }>;
@@ -305,7 +308,11 @@ export const useAdminSearch = () => {
     apiKey: string,
     params: URLSearchParams,
     signal?: AbortSignal,
+    facetFilters: Record<string, string> = {},
   ): Promise<{ status: number; data?: CollectionSearchResult; errorText?: string; retryAfter?: string | null }> => {
+    const base = Object.entries(config.value?.collections ?? {}).find(([, entry]) => entry.name === collectionName)?.[0] ?? collectionName;
+    const profiled = buildProfileParams(config.value?.searchProfiles?.[base], Object.fromEntries(params), config.value?.searchLocale);
+    const searches = facetSearches(profiled, facetFilters).map(search => ({ 'collection': collectionName, 'x-typesense-api-key': apiKey, ...search }));
     const response = await fetch(`${baseUrl}/multi_search`, {
       method: 'POST',
       headers: {
@@ -313,7 +320,7 @@ export const useAdminSearch = () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        searches: [{ 'collection': collectionName, 'x-typesense-api-key': apiKey, ...Object.fromEntries(params) }],
+        searches,
       }),
       signal,
     });
@@ -322,13 +329,15 @@ export const useAdminSearch = () => {
       return { status: response.status, errorText: await response.text(), retryAfter: response.headers.get('retry-after') };
     }
 
-    const result = (await response.json())?.results?.[0];
+    const results = (await response.json())?.results ?? [];
+    const result = results[0];
 
     // multi_search answers 200 and reports each search's failure inside its result.
     if (!result || result.error) {
       return { status: result?.code ?? 500, errorText: result?.error ?? 'Empty search response' };
     }
 
+    if (Object.keys(facetFilters).length) result.facet_counts = mergeDisjunctiveFacets(result.facet_counts ?? [], Object.keys(facetFilters), results.slice(1));
     return { status: 200, data: result };
   };
 
@@ -420,7 +429,7 @@ export const useAdminSearch = () => {
 
       const data = response.data ?? {};
 
-      searchState.value.results = (data.hits?.map(hit => hit.document) || []) as AdminSearchResult[];
+      searchState.value.results = (data.hits?.map(hit => documentWithMatch(hit)) || []) as AdminSearchResult[];
       searchState.value.totalHits = data.found || 0;
     }
     catch (error: unknown) {
@@ -577,7 +586,7 @@ export const useAdminSearch = () => {
     const hasQuery = !!query && query.trim() !== '';
     const relevanceSort = (dateField: string, direction: 'asc' | 'desc' = 'desc'): string =>
       hasQuery
-        ? `_text_match(buckets:10):desc,${dateField}:${direction}`
+        ? `_text_match:desc,${dateField}:${direction}`
         : `${dateField}:${direction}`;
 
     // Relevance tuning shared by every sub-search (mirrors config/scout.php
@@ -762,7 +771,10 @@ export const useAdminSearch = () => {
           'X-TYPESENSE-API-KEY': headerApiKey,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ searches }),
+        body: JSON.stringify({ searches: searches.map((search) => {
+          const base = Object.entries(config.value?.collections ?? {}).find(([, entry]) => entry.name === search.collection)?.[0];
+          return buildProfileParams(base ? config.value?.searchProfiles?.[base] : undefined, search, config.value?.searchLocale);
+        }) }),
         signal,
       });
 
@@ -825,10 +837,11 @@ export const useAdminSearch = () => {
         const hits = searchResult?.hits?.map(
           (hit: {
             document: Record<string, unknown>;
+            highlights?: HighlightedHit['highlights'];
             text_match?: number;
             text_match_info?: { score?: string };
           }) => ({
-            ...hit.document,
+            ...documentWithMatch(hit),
             _text_match: hit.text_match_info?.score
               ?? (hit.text_match != null ? String(hit.text_match) : '0'),
           }),
@@ -862,6 +875,7 @@ export const useAdminSearch = () => {
     query: string,
     options: {
       filterBy?: string; // Additional filters from facet selection
+      facetFilters?: Record<string, string>;
       sortBy?: string; // Sort order
       facetBy: string; // Comma-separated facet fields
       queryBy?: string; // Fields to search (defaults by collection)
@@ -956,7 +970,7 @@ export const useAdminSearch = () => {
     }
 
     try {
-      const response = await postCollectionSearch(baseUrl, collectionName, apiKey, searchParams, signal);
+      const response = await postCollectionSearch(baseUrl, collectionName, apiKey, searchParams, signal, options.facetFilters);
 
       if (response.status !== 200) {
         // Handle 401 - expired or invalid key (retry once)
@@ -981,10 +995,11 @@ export const useAdminSearch = () => {
         throw new Error(`Search failed: ${response.status} - ${response.errorText}`);
       }
 
+      if (signal.aborted) throw new DOMException('Search was cancelled', 'AbortError');
       const data = response.data ?? {};
 
       return {
-        hits: (data.hits?.map(hit => hit.document) || []) as T[],
+        hits: (data.hits?.map(hit => documentWithMatch(hit)) || []) as T[],
         totalHits: data.found || 0,
         facets: data.facet_counts || [],
         page: data.page || page,
@@ -994,14 +1009,14 @@ export const useAdminSearch = () => {
     catch (error: unknown) {
       // Don't throw for aborted requests
       if (ErrorUtils.isAbortError(error)) {
-        return { hits: [], totalHits: 0, facets: [], page: 1, totalPages: 0 };
+        throw error;
       }
       // Re-throw with consistent error handling
       const searchError = ErrorUtils.fromError(error, 'faceted-search');
       throw new Error(searchError.userMessage);
     }
     finally {
-      searchAbortController = null;
+      if (searchAbortController?.signal === signal) searchAbortController = null;
     }
   };
 
@@ -1129,6 +1144,18 @@ export const useAdminSearch = () => {
     return config.value?.collections?.[collection]?.directInstitutionIds || [];
   };
 
+  const searchFacetValues = async (collection: string, field: string, text: string, options: { query: string; filterBy?: string; queryBy?: string; signal?: AbortSignal }) => {
+    if (!config.value || hasExpired.value) await refreshConfig();
+    const cfg = config.value;
+    const entry = cfg?.collections[collection];
+    const node = cfg?.nodes[0];
+    if (!entry?.key || !node) throw new Error('Search configuration unavailable');
+    const params = new URLSearchParams({ q: options.query, query_by: options.queryBy || 'title', facet_by: field, facet_query: `${field}:${text}`, per_page: '0', max_facet_values: '100', filter_by: options.filterBy || '' });
+    const response = await postCollectionSearch(`${node.protocol}://${node.host}:${node.port}`, entry.name, entry.key, params, options.signal);
+    if (response.status !== 200) throw new Error(response.errorText || 'Facet search failed');
+    return response.data?.facet_counts?.find(facet => facet.field_name === field)?.counts ?? [];
+  };
+
   return {
     // State
     config,
@@ -1154,6 +1181,7 @@ export const useAdminSearch = () => {
 
     // Faceted search methods
     searchWithFacets,
+    searchFacetValues,
     loadInitialFacets,
 
     // Per-collection helpers

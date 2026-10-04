@@ -76,6 +76,13 @@ export default defineConfig({
   // Markdown configuration
   markdown: {
     lineNumbers: true,
+    container: {
+      tipLabel: 'Patarimas',
+      infoLabel: 'Informacija',
+      warningLabel: 'Dėmesio',
+      dangerLabel: 'Svarbu',
+      detailsLabel: 'Plačiau',
+    },
     config(md) {
       md.renderer.rules.table_open = (_tokens, _idx, _options, env) => {
         const label = env.relativePath?.startsWith('en/') ? 'Scrollable table' : 'Slenkama lentelė'

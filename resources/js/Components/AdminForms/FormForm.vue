@@ -1,8 +1,7 @@
 <template>
   <FormPage
     :title="isEditing ? formTitle : $t('Nauja registracijos forma')"
-    :bar-title="isEditing ? formTitle : undefined"
-    :head-title="isEditing ? formTitle : $t('Nauja registracijos forma')"
+    :bar-title="isEditing ? getTranslatedValue(props.form.name, undefined, $t('Forma')) : $t('Nauja registracijos forma')"
     :lead="isEditing ? undefined : $t('Kurk naują registracijos formą studentams ir nariams.')"
     :entity-type="ModelEnum.FORM"
     :activity-subject="isEditing && form.id ? { type: 'form', id: String(form.id) } : undefined"
@@ -296,6 +295,7 @@ import { Button } from '@/Components/ui/button';
 import { DateTimePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
 import { formFieldTemplate } from '@/Types/formTemplates';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { ModelEnum } from '@/Types/enums';
 import { localizedSlug } from '@/Utils/LocalizedRoutes';
 import { generateSlug } from '@/Utils/String';

@@ -27,6 +27,8 @@ export interface TimelineRow {
   institution_name: string | null;
   holder_id: string;
   holder_name: string | null;
+  holder_pronouns?: string | { lt?: string; en?: string } | null;
+  use_original_duty_name?: boolean;
   holder_photo: string | null;
   tenant_id: number | null;
   tenant_shortname: string | null;
@@ -52,7 +54,7 @@ export interface TimelineRow {
     description?: string;
     original_duty_name?: boolean;
   } | null;
-  source: { id: string; duty_name: string | null } | null;
+  source: { id: string; duty_name: string | null; use_original_duty_name?: boolean } | null;
   derived_ids: string[];
   is_derived: boolean;
   editable: boolean;
@@ -103,11 +105,13 @@ export interface TimelineChange {
   row_id: string;
   holder_id: string;
   holder_name: string | null;
+  holder_pronouns?: string | { lt?: string; en?: string } | null;
+  use_original_duty_name?: boolean;
   duty_name: string | null;
   before: { start_date: string; end_date: string | null };
   after: { start_date: string; end_date: string | null };
   reasons: string[];
-  derived: Array<{ id: string; duty_name: string | null; start_date: string; end_date: string | null }>;
+  derived: Array<{ id: string; duty_name: string | null; use_original_duty_name?: boolean; start_date: string; end_date: string | null }>;
   blocked: string | null;
 }
 

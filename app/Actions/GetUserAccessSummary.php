@@ -71,6 +71,7 @@ class GetUserAccessSummary
             return [
                 'id' => $term->id,
                 'dutyName' => $duty->name,
+                'useOriginalDutyName' => (bool) $term->use_original_duty_name,
                 'dutyHref' => $user->can('view', $duty) ? route('duties.show', $duty) : null,
                 'institutionName' => $institution?->name,
                 'institutionHref' => $institution !== null && $user->can('view', $institution)

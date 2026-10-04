@@ -15,6 +15,11 @@ VU SA per „Microsoft Graph“ sąsają juos įkelia, atveria ir susieja su pla
 SharePoint failų naršyklės platformoje nėra: aplankus tiesiogiai tvarko VU SA „Microsoft“
 paskyrą turintys žmonės pačiame SharePoint.
 
+## Susitarimai {#susitarimai}
+
+- Netrink ir nepervadink šakninių aplankų (`General`, `Padaliniai`, padalinių santrumpų), nes
+  pagal juos sudaromi įrašų aplankai.
+
 ## Kaip tai veikia
 
 SharePoint naudojamas dviem tikslais:
@@ -38,11 +43,6 @@ diskas. Veiksmas nėra imituojamas ir automatiškai nenukreipiamas į kitą disk
 - Įrašų failai kartą per savaitę sutikrinami su SharePoint: atnaujinami jų duomenys, o
   SharePoint nebesantys failai pašalinami iš sąrašų.
 - Dokumentų archyvo sinchronizavimas aprašytas puslapyje [Dokumentai](/visak/dokumentai).
-
-## Susitarimai {#susitarimai}
-
-- Netrink ir nepervadink šakninių aplankų (`General`, `Padaliniai`, padalinių santrumpų), nes
-  pagal juos sudaromi įrašų aplankai.
 
 ## Techninė informacija {#technine-informacija}
 

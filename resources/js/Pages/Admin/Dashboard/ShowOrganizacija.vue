@@ -21,7 +21,7 @@
               class="flex items-center gap-3 px-1 py-3 hover:bg-secondary pointer-coarse:py-4"
             >
               <span class="min-w-0 flex-1">
-                <span class="block truncate font-medium">{{ term.duty }}</span>
+                <span class="block truncate font-medium"><InflectedDutyName :name="term.duty" :holder="{ name: term.user, pronouns: term.pronouns }" :use-original-duty-name="term.use_original_duty_name" /></span>
                 <span v-if="term.user" class="block truncate text-sm text-muted-foreground">{{ term.user }}</span>
               </span>
               <span v-if="term.ends_on" class="shrink-0 text-sm text-status-attention">
@@ -66,6 +66,7 @@ import { Deferred, Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import type { HomeRecentRecord } from '@/Components/Home/types';
 import RecentlyEditedList from '@/Components/Home/RecentlyEditedList.vue';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
@@ -76,7 +77,7 @@ import { formatNearDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
   counts: { endingSoon: number | null; emptyDuties: number | null; duties: number | null; members: number | null };
-  endingTerms: { id: string; duty_id: string; duty: string; user: string | null; ends_on: string | null }[];
+  endingTerms: { id: string; duty_id: string; duty: string; user: string | null; pronouns?: string | { lt?: string; en?: string } | null; use_original_duty_name?: boolean; ends_on: string | null }[];
   coordinatorGaps: { id: number; shortname: string }[];
   recentlyEdited?: HomeRecentRecord[];
 }>();

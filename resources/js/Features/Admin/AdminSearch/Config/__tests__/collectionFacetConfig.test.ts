@@ -45,11 +45,11 @@ describe('news facets', () => {
 });
 
 describe('resolveSortValue', () => {
-  it('expands the relevance sentinel into a bucketed text_match sort with a date tiebreak', () => {
+  it('expands the relevance sentinel into a text_match sort with a date tiebreak', () => {
     expect(resolveSortValue('meetings', RELEVANCE_SORT_VALUE))
-      .toBe('_text_match(buckets:10):desc,start_time:desc');
+      .toBe('_text_match:desc,start_time:desc');
     expect(resolveSortValue('institutions', RELEVANCE_SORT_VALUE))
-      .toBe('_text_match(buckets:10):desc,created_at:desc');
+      .toBe('_text_match:desc,created_at:desc');
   });
 
   it('passes concrete sort values through unchanged', () => {

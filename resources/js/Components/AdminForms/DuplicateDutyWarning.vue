@@ -6,7 +6,7 @@
     <AlertDescription class="text-foreground">
       <ul class="space-y-2">
         <li v-for="match in matches.same_institution" :key="match.id" class="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span class="font-medium">{{ match.name }}</span>
+          <span class="font-medium"><InflectedDutyName :name="match.name" /></span>
 
           <span v-if="match.current_holder_names.length" class="text-muted-foreground">
             {{ match.current_holder_names.join(', ') }}
@@ -53,6 +53,7 @@ import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { TriangleAlert } from 'lucide-vue-next';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';

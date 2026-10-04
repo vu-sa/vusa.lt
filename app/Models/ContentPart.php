@@ -6,6 +6,7 @@ use App\Enums\ContentPartEnum;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\ContentService;
 use App\Services\HtmlSanitizerService;
+use App\Services\Typesense\SyncContentSearch;
 use App\Support\PublicCacheTags;
 use App\Tiptap\TiptapEditor;
 use Illuminate\Contracts\Support\Arrayable;
@@ -143,8 +144,14 @@ class ContentPart extends Model
             }
         });
 
-        static::saved(fn (self $part) => $part->forgetPublicContentCaches());
-        static::deleted(fn (self $part) => $part->forgetPublicContentCaches());
+        static::saved(function (self $part): void {
+            $part->forgetPublicContentCaches();
+            SyncContentSearch::afterCommit((int) $part->content_id);
+        });
+        static::deleted(function (self $part): void {
+            $part->forgetPublicContentCaches();
+            SyncContentSearch::afterCommit((int) $part->content_id);
+        });
     }
 
     private function forgetPublicContentCaches(): void

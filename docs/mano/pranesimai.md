@@ -22,6 +22,12 @@ arba paspausk varpelį viršutinėje juostoje (telefone – apatinėje).
 patvirtinimo laukiančias rezervacijas, komentarus ir paminėjimus. Kaip pranešimai siunčiami el. paštu ir
 į telefoną, aprašyta [Pranešimų pagrinduose](/pagrindai/pranesimai).
 
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+Pažymėti pranešimą kaip skaitytą ir atlikti jame nurodytą darbą – atskiri veiksmai.
+:::
+
 ## Kaip tai veikia
 
 Pranešimų puslapyje rodomi tau skirti pranešimai, naujausi – pirmiausia:
@@ -35,11 +41,6 @@ Pranešimų puslapyje rodomi tau skirti pranešimai, naujausi – pirmiausia:
 - **Greitieji filtrai viršuje**:
   - **Neskaityti** (su skaitliuku) – rodo tik naujus, dar neperžiūrėtus pranešimus. Tai numatytasis rodinys.
   - **Visi** – rodo ir skaitytus, ir neskaitytus pranešimus.
-
-## Rekomendacijos {#susitarimai}
-
-Pažymėti pranešimą kaip skaitytą ir atlikti jame nurodytą darbą – atskiri veiksmai.
-Užduotį užbaik jos puslapyje, o rezervacijos sprendimą priimk rezervacijos puslapyje.
 
 ## Veiksmai
 

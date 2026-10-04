@@ -30,7 +30,7 @@
         <TransferList v-if="can.update" v-model="dutyIds" :options="dutyOptions" />
         <ul v-else class="divide-y divide-border">
           <li v-for="duty in role.duties ?? []" :key="duty.id" class="py-3 text-sm font-medium">
-            {{ duty.name }}
+            <InflectedDutyName :name="duty.name" />
           </li>
           <li v-if="!role.duties?.length" class="py-5 text-sm text-muted-foreground">
             {{ $t('Pareigybių nepriskirta.') }}
@@ -78,6 +78,7 @@ import { router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { Briefcase, Edit, Tags, Trash2 } from 'lucide-vue-next';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import RolePermissionForms from '@/Components/AdminForms/RolePermissionForms.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { ConfirmDialog, OverviewSection } from '@/Components/Patterns';

@@ -75,7 +75,7 @@
                 {{ $t('dutiables.timeline.actions.merge_description', {
                   count: selectedRows.length,
                   holder: selectedRows[0].holder_name ?? '—',
-                  duty: selectedRows[0].duty_name ?? '—',
+                  duty: timelineDutyName(selectedRows[0], usePage().props.app.locale),
                   start: mergedSpan.start,
                   end: mergedSpan.end,
                 }) }}
@@ -114,13 +114,13 @@
           <DutiableExtrasBadge v-if="row.extras" :extras="row.extras" />
         </div>
         <Link :href="route('duties.show', row.duty_id)" class="block truncate text-xs text-muted-foreground hover:underline">
-          {{ row.duty_name }}
+          {{ timelineDutyName(row, usePage().props.app.locale) }}
         </Link>
       </div>
 
       <Alert v-if="row.is_derived" class="py-2">
         <AlertDescription class="space-y-1.5 text-xs">
-          <p>{{ $t('dutiables.timeline.inspector.ex_officio_managed', { duty: row.source?.duty_name ?? '—' }) }}</p>
+          <p>{{ $t('dutiables.timeline.inspector.ex_officio_managed', { duty: timelineSourceDutyName(row, usePage().props.app.locale) }) }}</p>
           <Button v-if="row.source" size="xs" variant="outline" @click="emit('select-source', row.source.id)">
             {{ $t('dutiables.timeline.inspector.select_source') }}
           </Button>
@@ -264,7 +264,7 @@
               <AlertDialogDescription>
                 {{ $t('dutiables.timeline.actions.remove_description', {
                   holder: row.holder_name ?? '—',
-                  duty: row.duty_name ?? '—',
+                  duty: timelineDutyName(row, usePage().props.app.locale),
                 }) }}
               </AlertDialogDescription>
             </AlertDialogHeader>
@@ -286,9 +286,10 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { CalendarCheck, CalendarX, ExternalLink, Merge, Trash2 } from 'lucide-vue-next';
 
+import { timelineDutyName, timelineSourceDutyName } from './dutyNames';
 import DutiableExtrasBadge from './DutiableExtrasBadge.vue';
 import TimelineDateField from './TimelineDateField.vue';
 import { resolveCadenceFor } from './composables/useDutiableDiagnostics';

@@ -97,11 +97,6 @@ redaguoti galintis narys arba visos platformos komentarų moderatorius.
 - **Realaus laiko atnaujinimai**: diskusijų skydelis palaiko tiesioginį ryšį – nauji komentarai, atsakymai,
   reakcijos ir apklausų balsai ekrane atsinaujina iš karto, be puslapio perkrovimo.
 
-## Susitarimai {#susitarimai}
-
-- Komentarai skirti darbinei diskusijai ir klausimų derinimui. Oficialūs kolegialių organų sprendimai fiksuojami posėdžių protokoluose ir darbotvarkės klausimų nutarimuose, o ne komentaruose.
-- Išsprendus klausimą, giją rekomenduojama pažymėti išspręsta, kad kitiems kolegoms būtų aišku, kurie klausimai dar laukia dėmesio.
-
 ## Techninė informacija {#technine-informacija}
 
 - Komentavimo galimybę palaiko šie modeliai (`Commentables::TYPES`): `Meeting`, `AgendaItem`, `Institution`, `Duty`, `Form`, `Problem`, `Reservation`, `SupportRequest`.

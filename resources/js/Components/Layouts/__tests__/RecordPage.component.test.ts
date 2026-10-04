@@ -32,6 +32,19 @@ const createWrapper = () => mount(RecordPage, {
 });
 
 describe('RecordPage', () => {
+  it('renders rich title content inside the existing heading and keeps the plain browser title', () => {
+    const wrapper = mount(RecordPage, {
+      props: { title: 'Koordinatorius', entityType: 'duty' },
+      slots: { title: '<span data-testid="rich-title">Koordinatorė</span>' },
+      global: { stubs: commonStubs },
+    });
+
+    expect(wrapper.get('h1 [data-testid="rich-title"]').text()).toBe('Koordinatorė');
+    expect(wrapper.get('h1').classes()).toContain('u-display');
+    expect(wrapper.get('title').text()).toContain('Koordinatorius');
+    wrapper.unmount();
+  });
+
   it('renders the canonical record anatomy', () => {
     const wrapper = createWrapper();
 

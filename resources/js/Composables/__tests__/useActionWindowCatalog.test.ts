@@ -7,6 +7,7 @@ import { createMockPage } from '@/tests/helpers/createMockPage';
 import { useActionWindowCatalog } from '@/Composables/useActionWindowCatalog';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+vi.mock('laravel-vue-i18n', () => import('@/mocks/i18n'));
 
 const action = (key: string, target: { kind: 'route'; routeName: string } | { kind: 'screen'; screen: string }) => ({
   key,
@@ -22,11 +23,35 @@ const catalog = (actions: ReturnType<typeof action>[]) => ({
 
 const resolveCatalog = () => {
   let resolved!: ReturnType<typeof useActionWindowCatalog>;
-  mount(defineComponent({ setup: () => { resolved = useActionWindowCatalog(); return () => h('div'); } }));
+  mount(defineComponent({
+    setup: () => {
+      resolved = useActionWindowCatalog();
+      return () => h('div');
+    },
+  }));
   return resolved;
 };
 
 describe('useActionWindowCatalog', () => {
+  it.each([
+    ['ji / jos', 'Jonas Jonaitis', ['Kaip studentų atstovė', 'Kaip VU SA narė', 'Kaip koordinatorė']],
+    ['jis / jo', 'Ieva Ievaitė', ['Kaip studentų atstovas', 'Kaip VU SA narys', 'Kaip koordinatorius']],
+    ['they / them', 'Jonas Jonaitis', ['Kaip studentų atstovai', 'Kaip VU SA nariai', 'Kaip koordinatoriai']],
+    [{ lt: '', en: 'she / her' }, 'Jonas Jonaitis', ['Kaip studentų atstovė', 'Kaip VU SA narė', 'Kaip koordinatorė']],
+    [null, 'Ieva Ievaitė', ['Kaip studentų atstovė', 'Kaip VU SA narė', 'Kaip koordinatorė']],
+  ])('uses %s and the user’s name for persona labels', (pronouns, name, titles) => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      auth: { user: { name, pronouns } },
+      adminNavigation: catalog([
+        action('new_meeting', { kind: 'screen', screen: 'meeting.institution' }),
+        action('new_reservation', { kind: 'route', routeName: 'reservations.create' }),
+        action('new_news', { kind: 'route', routeName: 'news.create' }),
+      ]),
+    }));
+
+    expect(resolveCatalog().personas.value.map(persona => persona.title)).toEqual(titles);
+  });
+
   it('has no actions when the server supplies no create actions', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: { workspaces: [] } }));
     expect(resolveCatalog().personas.value).toEqual([]);

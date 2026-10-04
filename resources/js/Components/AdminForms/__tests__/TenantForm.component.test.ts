@@ -1,10 +1,21 @@
+import type * as Inertia from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import TenantForm from '@/Components/AdminForms/TenantForm.vue';
 import { commonStubs } from '@/tests/stubs';
 
-vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+vi.mock('@inertiajs/vue3', async () => {
+  const actual = await vi.importActual<typeof Inertia>('@inertiajs/vue3');
+  return {
+    ...actual,
+    usePage: () => ({
+      props: {
+        app: { locale: 'lt' },
+      },
+    }),
+  };
+});
 
 vi.stubGlobal('route', (name?: string, id?: string | number) => (name === undefined ? { current: () => false } : `/mocked/${name}${id ? `/${id}` : ''}`));
 
@@ -75,5 +86,15 @@ describe('TenantForm.vue', () => {
     expect(asidePanel.exists()).toBe(true);
     expect(asidePanel.find('[data-field="type"]').exists()).toBe(true);
     expect(asidePanel.find('[data-field="primary_institution_id"]').exists()).toBe(true);
+  });
+
+  it('picks the tenant type from a segmented control', async () => {
+    const wrapper = mountForm();
+
+    expect(wrapper.find('[data-testid="tenant-type-padalinys"]').attributes('aria-pressed')).toBe('true');
+
+    await wrapper.find('[data-testid="tenant-type-pagrindinis"]').trigger('click');
+
+    expect(wrapper.find('[data-testid="tenant-type-pagrindinis"]').attributes('aria-pressed')).toBe('true');
   });
 });

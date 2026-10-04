@@ -23,6 +23,14 @@ gali visi platformos naudotojai, o tvarko **išteklio padalinio** valdytojai.
 
 <DocScreenshot name="resources-index" alt="Išteklių sąrašas kortelėmis: nuotrauka, padalinys, laisvas kiekis ir mygtukas Pridėti" caption="Ištekliai kortelėmis – laisvas kiekis rodomas pasirinktam rezervacijos laikotarpiui." href="/mano/resources" />
 
+## Susitarimai {#susitarimai}
+
+- Išteklių duomenis atnaujiname **du kartus per metus**: iki rugpjūčio 1 d. ir iki kovo 1 d.
+- Įrašome tikslų pavadinimą, kuo išsamesnį aprašymą, nuotrauką (-as), tikslų kiekį ir pažymime, ar
+  daiktą galima skolinti.
+- Į sistemą keliame **visus** padalinio daiktus, nepriklausomai nuo to, ar jie skolinami.
+- Pavadinimą ir aprašymą pateikiame lietuvių ir anglų kalbomis.
+
 ## Kaip tai veikia
 
 ### Išteklio duomenys
@@ -94,17 +102,6 @@ Išteklio redagavimo teisė ir padaro žmogų
 [išteklių administratoriumi](/rezervacijos/#istekliu-administratorius): jis gauna tvirtinimo
 užduotis ir sprendžia padalinio daiktų rezervacijas. Skirk rolę tik tiems, kas iš tikrųjų tvarko
 daiktus.
-:::
-
-
-## Susitarimai {#susitarimai}
-
-::: tip Išteklių administravimas
-- Išteklių duomenis atnaujiname **du kartus per metus**: iki rugpjūčio 1 d. ir iki kovo 1 d.
-- Įrašome tikslų pavadinimą, kuo išsamesnį aprašymą, nuotrauką (-as), tikslų kiekį ir pažymime, ar
-  daiktą galima skolinti.
-- Į sistemą keliame **visus** padalinio daiktus, nepriklausomai nuo to, ar jie skolinami.
-- Pavadinimą ir aprašymą pateikiame lietuvių ir anglų kalbomis.
 :::
 
 ## Techninė informacija {#technine-informacija}

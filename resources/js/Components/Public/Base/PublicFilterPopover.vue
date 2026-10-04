@@ -42,16 +42,20 @@
         </button>
       </div>
 
+      <FacetCountHelp />
+      <p v-if="loading" role="status" class="px-3 text-xs text-muted-foreground">{{ $t('search.facet_search_loading') }}</p>
+      <p v-if="failed" role="status" class="px-3 text-xs text-muted-foreground">{{ $t('search.facet_search_error') }}</p>
       <!-- Optional search for long lists (e.g. Padaliniai) -->
-      <div v-if="searchable || options.length > 6" class="relative border-b border-border px-3 py-2">
+      <div v-if="searchable || options.length > 8" class="relative border-b border-border px-3 py-2">
         <IFluentSearch16Regular class="absolute left-5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
         <input
           v-model="searchTerm"
-          type="text"
+          type="search"
+          :aria-label="$t('search.facet_search')"
           :placeholder="searchPlaceholder || `${$t('Ieškoti')}...`"
           :class="[
-            'w-full border border-border bg-secondary/50 py-1 pl-8 pr-7 text-xs text-foreground',
-            'placeholder:text-muted-foreground transition-colors focus:border-brand focus:outline-none',
+            'w-full border border-border bg-secondary/50 min-h-11 py-1 pl-8 pr-7 text-xs text-foreground',
+            'placeholder:text-muted-foreground transition-colors focus:border-brand focus:outline-none [&::-webkit-search-cancel-button]:hidden',
           ]"
         >
         <button
@@ -75,7 +79,7 @@
             role="checkbox"
             :aria-checked="isSelected(option.value)"
             :class="[
-              'flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-secondary/60',
+              'flex w-full items-center justify-between gap-3 min-h-11 px-3.5 py-2.5 text-left transition-colors hover:bg-secondary/60',
               'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
             ]"
             @click="emit('toggle', option.value)"
@@ -88,8 +92,8 @@
             </span>
 
             <div class="flex items-center gap-2 shrink-0">
-              <span v-if="option.count !== undefined" class="text-xs font-mono text-muted-foreground">
-                {{ option.count }}
+              <span v-if="field || option.count !== undefined" class="text-xs font-mono text-muted-foreground">
+                {{ option.count ?? '–' }}
               </span>
 
               <span
@@ -115,9 +119,12 @@
 </template>
 
 <script setup lang="ts">
+import FacetCountHelp from '@/Components/ui/FacetCountHelp.vue';
+import { useFacetOptions } from '@/Shared/Search/useFacetOptions';
+
 import type { HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 
 import { controlCountClass, controlVariants } from '@/Components/ui/control';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
@@ -131,12 +138,13 @@ import IFluentStar16Filled from '~icons/fluent/star-16-filled';
 export interface FilterOption {
   label: string;
   value: string;
-  count?: number;
+  count?: number | null;
   /** Marks an editorially-important option (e.g. a document type) with a star. */
   starred?: boolean;
 }
 
 const props = withDefaults(defineProps<{
+  field?: string;
   label: string;
   options: FilterOption[];
   selected: string[];
@@ -154,13 +162,8 @@ const emit = defineEmits<{
 }>();
 
 const isOpen = ref(false);
-const searchTerm = ref('');
+const { term: searchTerm, values: filteredOptions, loading, failed } = useFacetOptions(() => props.field, () => props.options, () => props.selected);
 
 const isSelected = (value: string): boolean => props.selected.includes(value);
 
-const filteredOptions = computed(() => {
-  if (!searchTerm.value.trim()) return props.options;
-  const term = searchTerm.value.toLowerCase().trim();
-  return props.options.filter(opt => opt.label.toLowerCase().includes(term));
-});
 </script>

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\HasTranslations;
+use App\Services\Typesense\SyncContentSearch;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -93,6 +94,19 @@ class Tag extends Model
             }
         });
 
+        static::saved(function (self $tag): void {
+            if ($tag->wasChanged('name')) {
+                $tag->syncTaggedSearch();
+            }
+        });
+        static::deleting(fn (self $tag) => $tag->setRelation('searchOwners', collect(self::TAGGABLE_RELATIONS)->flatMap(fn ($relation) => $tag->{$relation}()->get())));
+        static::deleted(function (self $tag): void {
+            foreach ($tag->getRelation('searchOwners') as $model) {
+                SyncContentSearch::taggableAfterCommit($model->getMorphClass(), $model->getKey());
+            }
+        });
+        static::restored(fn (self $tag) => $tag->syncTaggedSearch());
+
         static::saved(fn () => Cache::forget('all-tags-for-inertia'));
         static::deleted(fn () => Cache::forget('all-tags-for-inertia'));
         static::restored(fn () => Cache::forget('all-tags-for-inertia'));
@@ -100,6 +114,15 @@ class Tag extends Model
         // Force-deleting a tag cascades the `taggables.tag_id` FK automatically — no manual
         // detach needed here (contrast News/Page/Calendar, whose side of the morph pivot has
         // no DB-level FK to cascade through).
+    }
+
+    private function syncTaggedSearch(): void
+    {
+        foreach (self::TAGGABLE_RELATIONS as $relation) {
+            $this->{$relation}()->each(function ($model): void {
+                SyncContentSearch::taggableAfterCommit($model->getMorphClass(), $model->getKey());
+            });
+        }
     }
 
     /**
@@ -112,17 +135,17 @@ class Tag extends Model
 
     public function news(): MorphToMany
     {
-        return $this->morphedByMany(News::class, 'taggable');
+        return $this->morphedByMany(News::class, 'taggable')->using(Taggable::class);
     }
 
     public function pages(): MorphToMany
     {
-        return $this->morphedByMany(Page::class, 'taggable');
+        return $this->morphedByMany(Page::class, 'taggable')->using(Taggable::class);
     }
 
     public function calendars(): MorphToMany
     {
-        return $this->morphedByMany(Calendar::class, 'taggable');
+        return $this->morphedByMany(Calendar::class, 'taggable')->using(Taggable::class);
     }
 
     /**

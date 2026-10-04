@@ -166,6 +166,30 @@ describe('generateSlug', () => {
 });
 
 describe('changeDutyNameEndings', () => {
+  it.each([
+    ['Petras Petraitis', 'Koordinatorė', '', 'Koordinatorius'],
+    ['Ona Onaitė', 'Koordinatorius', '', 'Koordinatorė'],
+    ['Petras Petraitis', 'Koordinatorius', ' Ji / jos ', 'Koordinatorė'],
+    ['Ona Onaitė', 'Koordinatorė', ' HE / him ', 'Koordinatorius'],
+    ['Ona Onaitė', 'Koordinatorius', 'they/them', 'Koordinatoriai'],
+    ['Alex Smith', 'Koordinatorė', '', 'Koordinatorė'],
+    ['Jonas Jonaitė', 'Koordinatorė', '', 'Koordinatorius'],
+    ['Katrin Smith', 'Koordinatorius', '', 'Koordinatorė'],
+    ['German Smith', 'Koordinatorė', '', 'Koordinatorė'],
+  ])('resolves %s holding %s with pronouns %s', (name, duty, pronouns, expected) => {
+    expect(changeDutyNameEndings({ name }, duty, 'lt', pronouns)).toBe(expected);
+  });
+
+  it('uses recognized pronouns from the other translation before name inference', () => {
+    expect(changeDutyNameEndings({ name: 'Petras Petraitis' }, 'Koordinatorius', 'lt', { lt: '', en: 'she/her' })).toBe('Koordinatorė');
+    expect(changeDutyNameEndings({ name: 'Ona Onaitė' }, 'Koordinatorius', 'lt', { lt: 'jis/jo', en: 'she/her' })).toBe('Koordinatorius');
+  });
+
+  it('preserves English titles and explicit assignment overrides', () => {
+    expect(changeDutyNameEndings({ name: 'Ona Onaitė' }, 'Coordinator', 'en', 'she/her')).toBe('Coordinator');
+    expect(changeDutyNameEndings({ name: 'Ona Onaitė' }, 'Koordinatorius', 'lt', 'ji/jos', true)).toBe('Koordinatorius');
+  });
+
   const masculinize = (name: string) => changeDutyNameEndings(null, name, 'lt', 'jis/jo', false);
   const feminize = (name: string) => changeDutyNameEndings(null, name, 'lt', 'ji/jos', false);
 

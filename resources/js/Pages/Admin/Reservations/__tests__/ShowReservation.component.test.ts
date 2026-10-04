@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type * as VueUse from '@vueuse/core';
 import { mount } from '@vue/test-utils';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 
 import ShowReservation from '@/Pages/Admin/Reservations/ShowReservation.vue';
@@ -7,7 +8,7 @@ import ShowReservation from '@/Pages/Admin/Reservations/ShowReservation.vue';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 vi.mock('@vueuse/core', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@vueuse/core')>();
+  const actual = await importOriginal<typeof VueUse>();
 
   return {
     ...actual,
@@ -93,25 +94,6 @@ const stubs = {
   MultiSelect: {
     props: ['modelValue', 'options'],
     template: '<div data-testid="multi-select" />',
-  },
-  // reka-ui's Select relies on popper positioning, so drive the selection through a plain stub.
-  Select: {
-    props: ['modelValue'],
-    emits: ['update:modelValue'],
-    provide() {
-      return {
-        selectValue: (value: string) => (this as unknown as { $emit: (e: string, v: string) => void }).$emit('update:modelValue', value),
-      };
-    },
-    template: '<div data-testid="tenant-filter"><slot /></div>',
-  },
-  SelectTrigger: { template: '<div><slot /></div>' },
-  SelectValue: { props: ['placeholder'], template: '<span />' },
-  SelectContent: { template: '<div><slot /></div>' },
-  SelectItem: {
-    props: ['value'],
-    inject: ['selectValue'],
-    template: '<button class="select-item" :data-value="value" @click="selectValue(value)"><slot /></button>',
   },
 };
 
@@ -202,7 +184,7 @@ describe('ShowReservation.vue', () => {
     expect(wrapper.find('[data-testid="tenant-filter"]').exists()).toBe(true);
     expect(visibleIds(wrapper)).toEqual(['r1', 'r2', 'r3']);
 
-    await wrapper.find('[data-value="tenant-2"]').trigger('click');
+    await wrapper.find('[data-testid="tenant-filter"] select').setValue('tenant-2');
 
     expect(visibleIds(wrapper)).toEqual(['r2', 'r3']);
   });

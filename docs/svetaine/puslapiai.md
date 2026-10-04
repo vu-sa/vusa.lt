@@ -1,7 +1,8 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-04
 tests:
+  - tests/Feature/Search/SearchExperienceTest.php
   - tests/Feature/Api/Admin/ContentEditorTest.php
   - tests/Browser/RichContentFullscreenEditorTest.php
   - tests/Feature/Admin/Content/PageControllerTest.php
@@ -16,7 +17,19 @@ Puslapiai – pagrindiniai ilgalaikio svetainės turinio vienetai su tekstine, v
 
 Skiltis pasiekiama adresu `/mano/pages`.
 
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+- **Puslapis ar naujiena:** ilgalaikei informacijai, pvz., stipendijų ar atstovavimo tvarkai, kurk puslapį. Laikiniems pranešimams ir ataskaitoms naudok [naujienas](/svetaine/naujienos).
+- **Antraštės:** pagrindinius teksto skyrius žymėk antrojo lygio antraštėmis (H2), poskyrius – trečiojo (H3). Pirmąjį lygį (H1) palik puslapio pavadinimui.
+- **Skaitomas tekstas:** rašyk trumpomis pastraipomis, o veiksmus ar lygiaverčius punktus pateik sąrašu. Patikrink, kaip tekstas atrodo telefone.
+- **Iliustracijos:** naudok turinį papildančius vaizdus, o svarbią informaciją pateik ir tekstu.
+:::
+
 ## Kaip tai veikia
+
+Paieška randa išsaugotą pavadinimą, aprašymą, žymas ir turinio tekstą. Ištrauka po rezultato pavadinimu padeda suprasti atitikimą. Viešoje paieškoje išlieka tik viešai skelbiami įrašai. [Paieška ir filtrų skaičiai](/pagrindai/platforma#paieska-ir-pasirinkimas).
+
 
 ### Struktūra ir hierarchija
 
@@ -89,13 +102,6 @@ Susiejimas išsaugomas kartu su forma. Jei pasirinkta versija jau susieta su kit
 ### Automatiškai pildomi blokai {#automatiniai-blokai}
 
 Naujienų, renginių, nuorodų ir institucijų sąrašų blokai pasipildo patys. Paskelbta naujiena, renginys ar pakeistas puslapis juose matomi iš karto. Praėjęs renginys iš artėjančių sąrašo dingsta per 10 minučių.
-
-## Rekomendacijos {#susitarimai}
-
-- **Puslapis ar naujiena:** ilgalaikei informacijai, pvz., stipendijų ar atstovavimo tvarkai, kurk puslapį. Laikiniems pranešimams ir ataskaitoms naudok [naujienas](/svetaine/naujienos).
-- **Antraštės:** pagrindinius teksto skyrius žymėk antrojo lygio antraštėmis (H2), poskyrius – trečiojo (H3). Pirmąjį lygį (H1) palik puslapio pavadinimui.
-- **Skaitomas tekstas:** rašyk trumpomis pastraipomis, o veiksmus ar lygiaverčius punktus pateik sąrašu. Patikrink, kaip tekstas atrodo telefone.
-- **Iliustracijos:** naudok turinį papildančius vaizdus, o svarbią informaciją pateik ir tekstu.
 
 ## Veiksmai
 

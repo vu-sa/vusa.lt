@@ -20,6 +20,7 @@ use App\Services\AgendaItemPresenter;
 use App\Services\MeetingCompletionService;
 use App\Services\Typesense\MeetingSearchEngine;
 use App\Services\Typesense\MeetingSearchLock;
+use App\Services\Typesense\SearchText;
 use App\Services\VoteStatisticsCalculator;
 use Database\Factories\AgendaItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -273,6 +274,7 @@ class AgendaItem extends Pivot implements Commentable
         // Build base array that is always returned (prevents false-positive schema
         // mismatches when the model is validated without a loaded meeting)
         $searchableArray = [
+            ...SearchText::forModel($this),
             'id' => $this->id,
             'title' => $this->getTranslation('title', 'lt'),
             'description' => $this->getTranslation('description', 'lt'),

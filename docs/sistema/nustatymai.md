@@ -92,11 +92,6 @@ Adresas: `/mano/settings/documents`. Čia pažymimi **svarbūs dokumentų turini
 Adresas: `/mano/settings/site`. Čia nurodomi privatumo politikos puslapiai lietuvių ir anglų kalbomis.
 Puslapių pasirinkimo laukas ne superadministratoriams rodo tik jų pačių padalinio puslapius.
 
-## Rekomendacijos {#susitarimai}
-
-Prieš keisdamas bendrus nustatymus, įvertink poveikį visiems padaliniams. Institucijai su kitokiu
-rinkimų ciklu kurk savas kadencijas, o bendrąsias keisk tik tada, kai pokytis taikomas visai organizacijai.
-
 ## Veiksmai
 
 1. Atverk **Nustatymai** ir pasirink reikiamą sritį.

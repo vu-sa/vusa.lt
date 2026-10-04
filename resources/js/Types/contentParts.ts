@@ -313,6 +313,7 @@ export interface TextBox {
  * Matches the shape from NewsCollection::toPublicArray()
  */
 export interface NewsItem {
+  _searchMatch?: import('@/Shared/Search/matches').SearchMatch;
   id: number;
   title: string;
   lang: string;

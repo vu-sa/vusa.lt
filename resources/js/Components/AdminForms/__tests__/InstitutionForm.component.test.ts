@@ -1,3 +1,5 @@
+import type * as Inertia from '@inertiajs/vue3';
+import { useForm } from '@inertiajs/vue3';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
@@ -12,7 +14,8 @@ vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () =>
 const stubs = {
   ...commonStubs,
   FormPage: {
-    props: ['title', 'mode', 'errors'],
+    name: 'FormPage',
+    props: ['title', 'barTitle', 'mode', 'errors'],
     emits: ['submit'],
     template: '<form data-testid="form-page" :data-mode="mode" @submit.prevent="$emit(\'submit\')"><h1>{{ title }}</h1><slot /><slot name="aside" /><slot name="advanced" /><slot name="danger-zone" /></form>',
   },
@@ -22,11 +25,6 @@ const stubs = {
   ImageUpload: true,
   InstitutionScopeBadge: true,
   ConfirmDialog: true,
-  Select: { template: '<div><slot /></div>' },
-  SelectTrigger: { template: '<div><slot /></div>' },
-  SelectValue: true,
-  SelectContent: { template: '<div><slot /></div>' },
-  SelectItem: true,
 };
 
 const types = [
@@ -58,6 +56,17 @@ describe('InstitutionForm.vue', () => {
 
   afterEach(() => {
     wrapper?.unmount();
+  });
+
+  it('updates the draft headline while keeping the saved title in the top bar', async () => {
+    const actual = await vi.importActual<typeof Inertia>('@inertiajs/vue3');
+    vi.mocked(useForm).mockImplementationOnce(actual.useForm);
+    wrapper = mountForm();
+    const barTitle = wrapper.findComponent({ name: 'FormPage' }).props('barTitle');
+    await wrapper.get('input#institution-name').setValue('VU SA MIF');
+    expect(wrapper.findComponent({ name: 'FormPage' }).props('title')).toBe('VU SA MIF');
+    expect(wrapper.findComponent({ name: 'FormPage' }).props('barTitle')).toBe(barTitle);
+    expect(barTitle).not.toBe('VU SA MIF');
   });
 
   it('edits in edit mode and creates in create mode', () => {
@@ -93,6 +102,24 @@ describe('InstitutionForm.vue', () => {
     await wrapper.find('[data-testid="form-page"]').trigger('submit');
 
     expect(wrapper.emitted('submit:form')).toHaveLength(1);
+  });
+
+  it('renders assignable tenants in the tenant picker', () => {
+    wrapper = mountForm({
+      assignableTenants: [
+        { id: 1, shortname: 'Centrinis biuras' },
+        { id: 2, shortname: 'FF' },
+      ],
+    });
+
+    const select = wrapper.find('select#institution-tenant');
+    expect(select.exists()).toBe(true);
+    expect(select.element.value).toBe('2');
+
+    const options = select.findAll('option');
+    expect(options).toHaveLength(3); // placeholder + 2 tenants
+    expect(options[1].text()).toBe('Centrinis biuras');
+    expect(options[2].text()).toBe('FF');
   });
 
   it('offers deletion only when the page enables it', () => {

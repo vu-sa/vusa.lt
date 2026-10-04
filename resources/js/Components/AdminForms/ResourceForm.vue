@@ -1,8 +1,7 @@
 <template>
   <FormPage
     :title="isEditing ? resourceTitle : $t('Naujas išteklius')"
-    :bar-title="isEditing ? resourceTitle : undefined"
-    :head-title="isEditing ? resourceTitle : $t('Naujas išteklius')"
+    :bar-title="isEditing ? getTranslatedValue(resource.name, undefined, $t('Išteklius')) : $t('Naujas išteklius')"
     :lead="isEditing ? undefined : $t('Pridėk ištekliaus pavadinimą, vietą ir kiekį — nuotraukas ir aprašymą galėsi papildyti vėliau.')"
     :entity-type="ModelEnum.RESOURCE"
     :back-href="route('resources.index')"
@@ -222,6 +221,7 @@ import { NumberField } from '@/Components/ui/number-field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { Textarea } from '@/Components/ui/textarea';
 import { ImageUpload } from '@/Components/ui/upload';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { RESOURCE_PLACEHOLDERS } from '@/Constants/I18n/Placeholders';
 import type { ResourceCreationTemplate, ResourceMediaEntry } from '@/Pages/Admin/Reservations/CreateResource.vue';
 import type { ResourceEditType } from '@/Pages/Admin/Reservations/EditResource.vue';
@@ -247,7 +247,7 @@ const isEditing = computed(() => !props.rememberKey);
 const activeLocale = ref<'lt' | 'en'>('lt');
 const deleteConfirmOpen = ref(false);
 
-const resourceTitle = computed(() => props.resource.name?.[activeLocale.value] || props.resource.name?.lt || '');
+const resourceTitle = computed(() => form.name?.[activeLocale.value] || form.name?.lt || '');
 
 const categoriesOptions = computed(() => props.categories.map(category => ({
   value: category.id,

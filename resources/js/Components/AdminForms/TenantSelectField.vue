@@ -7,16 +7,14 @@
     :valid
     :invalid
   >
-    <Select v-model="tenantIdString" :disabled>
-      <SelectTrigger :id :class="['h-11 w-full', fieldSurfaceClass]">
-        <SelectValue :placeholder="$t('forms.placeholders.select_tenant')" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem v-for="tenant in tenants" :key="tenant.id" :value="String(tenant.id)">
-          {{ tenant.shortname }}
-        </SelectItem>
-      </SelectContent>
-    </Select>
+    <NativeSelect
+      :id
+      v-model="model"
+      :options="tenantOptions"
+      :placeholder="$t('forms.placeholders.select_tenant')"
+      :disabled
+      :error="Boolean(error || invalid)"
+    />
   </FormFieldWrapper>
 </template>
 
@@ -32,10 +30,9 @@ import { computed } from 'vue';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
-import { fieldSurfaceClass } from '@/Components/ui/control';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   tenants: App.Entities.Tenant[];
   id?: string;
   disabled?: boolean;
@@ -49,11 +46,10 @@ withDefaults(defineProps<{
 
 const model = defineModel<number | null>({ default: null });
 
-// shadcn Select only takes string values.
-const tenantIdString = computed({
-  get: () => (model.value ? String(model.value) : ''),
-  set: (value: string) => {
-    model.value = value ? Number(value) : null;
-  },
-});
+const tenantOptions = computed(() =>
+  props.tenants.map(tenant => ({
+    value: tenant.id,
+    label: tenant.shortname,
+  })),
+);
 </script>

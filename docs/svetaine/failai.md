@@ -20,6 +20,15 @@ Failų skiltyje tvarkomi svetainės dokumentai, nuotraukos, skaidrės ir kiti la
 
 Skiltis pasiekiama adresu `/mano/files`. Failų tvarkyklę taip pat gali atverti teksto redaktoriuje.
 
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+- **Aiškūs pavadinimai:** rinkis failo turinį nusakantį pavadinimą, pvz., `ataskaita-2026.pdf`. Venk tokių pavadinimų kaip `FINAL-naujas-2.pdf`, iš kurių neaišku, kuri versija galutinė.
+- **Tinkamas formatas:** skaityti skirtiems dokumentams patogu naudoti PDF. Jei kolegos turės dokumentą pildyti ar redaguoti, pateik ir redaguojamą failą.
+- **Nuotraukų dydis:** prieš įkeldamas sumažink nereikalingai dideles nuotraukas, išlaikydamas pakankamą kokybę. Taip puslapis greičiau įsikraus ir naudojant mobilųjį ryšį.
+- **Aplankų tvarka:** failus grupuok pagal metus ar projektus, kad juos būtų lengva rasti.
+:::
+
 ## Kaip tai veikia
 
 ### Padalinių katalogų atskyrimas
@@ -30,13 +39,6 @@ Kad skirtingų padalinių failai nesusimaišytų ir nebūtų atsitiktinai perra�
 - Padalinio koordinatorius, atvėręs failų naršyklę, iškart mato savo padalinio aplanką ir kuria jame poaplankius (pvz., `dokumentai`, `nuotraukos`, `archyvas`).
 - **Bendrieji aplankai:** formų viršeliams ir baneriams skirtos nuotraukos automatiškai saugomos į bendrus sistemos aplankus (`banners`, `news`, `pages`, `calendar`).
 - **Saugūs failų keliai:** visi įkėlimai ir aplankų veiksmai tikrinami saugumo mechanizmais (`StoragePath`), neleidžiančiais išeiti už leistino aplanko ribų.
-
-## Rekomendacijos {#susitarimai}
-
-- **Aiškūs pavadinimai:** rinkis failo turinį nusakantį pavadinimą, pvz., `ataskaita-2026.pdf`. Venk tokių pavadinimų kaip `FINAL-naujas-2.pdf`, iš kurių neaišku, kuri versija galutinė.
-- **Tinkamas formatas:** skaityti skirtiems dokumentams patogu naudoti PDF. Jei kolegos turės dokumentą pildyti ar redaguoti, pateik ir redaguojamą failą.
-- **Nuotraukų dydis:** prieš įkeldamas sumažink nereikalingai dideles nuotraukas, išlaikydamas pakankamą kokybę. Taip puslapis greičiau įsikraus ir naudojant mobilųjį ryšį.
-- **Aplankų tvarka:** failus grupuok pagal metus ar projektus, kad juos būtų lengva rasti.
 
 ## Veiksmai
 

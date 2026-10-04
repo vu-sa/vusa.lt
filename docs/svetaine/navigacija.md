@@ -18,6 +18,14 @@ Navigacija – pagrindinis svetainės viršutinis meniu (antraštė) ir svetain�
 
 Skiltis pasiekiama adresu `/mano/navigation`.
 
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+- **Aiški struktūra:** susijusias nuorodas grupuok po jas apibūdinančia skiltimi. Patikrink, ar reikiamą puslapį lengva rasti ir telefone.
+- **Trumpi pavadinimai:** rinkis lankytojui suprantamus užrašus, pvz., „Kontaktai“, „Naujienos“, „DUK“.
+- **Poraštė:** nuorodas grupuok pagal paskirtį, pvz., informaciją apie VU SA, informaciją studentams, dokumentus ir kontaktus. Nebūtina užpildyti visų keturių galimų stulpelių.
+:::
+
 ## Kaip tai veikia
 
 Svetainės navigaciją sudaro dvi atskiros zonos, valdomos toje pačioje sistemoje: **Antraštė (Header)** ir **Poraštė (Footer)**.
@@ -34,12 +42,6 @@ Svetainės navigaciją sudaro dvi atskiros zonos, valdomos toje pačioje sistemo
 - **Stulpelių sistema:** poraštėje rodomi iki **4 stulpelių** su nuorodomis.
 - **Stulpelio antraštė:** kiekvienas stulpelis turi savo pavadinimą. Jei nurodomas adresas, antraštė veikia kaip nuoroda; jei laukas tuščias arba įrašyta `#`, ji pateikiama kaip paprastas antraštinis tekstas.
 - **Nuorodos stulpelyje:** po kiekviena antrašte pateikiamas plokščias nuorodų sąrašas (pvz., kontaktai, teisinė informacija, svarbios nuorodos).
-
-## Rekomendacijos {#susitarimai}
-
-- **Aiški struktūra:** susijusias nuorodas grupuok po jas apibūdinančia skiltimi. Patikrink, ar reikiamą puslapį lengva rasti ir telefone.
-- **Trumpi pavadinimai:** rinkis lankytojui suprantamus užrašus, pvz., „Kontaktai“, „Naujienos“, „DUK“.
-- **Poraštė:** nuorodas grupuok pagal paskirtį, pvz., informaciją apie VU SA, informaciją studentams, dokumentus ir kontaktus. Nebūtina užpildyti visų keturių galimų stulpelių.
 
 ## Veiksmai
 

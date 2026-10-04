@@ -27,6 +27,7 @@
             >
               {{ document.title }}
             </h3>
+            <SearchMatch :match="document._searchMatch" />
           </div>
           <!-- External Link / Shortcut Icon -->
           <component
@@ -78,6 +79,7 @@
           >
             {{ document.title }}
           </h3>
+            <SearchMatch :match="document._searchMatch" />
         </div>
 
         <!-- Compact Metadata -->
@@ -121,6 +123,7 @@
 </template>
 
 <script setup lang="ts">
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import { trans as $t } from 'laravel-vue-i18n';

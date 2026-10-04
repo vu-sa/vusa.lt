@@ -13,6 +13,13 @@
     @action="handleAction"
   >
 
+    <template v-if="goal.responsible_duty" #fact-duty>
+      <Link :href="route('duties.show', goal.responsible_duty.id)" class="hover:underline">
+        <InflectedDutyName :name="goal.responsible_duty.name" />
+      </Link>
+      <span v-if="goal.responsible_duty.holders.length"> · {{ goal.responsible_duty.holders.join(' · ') }}</span>
+    </template>
+
     <template #veiksmai>
       <GoalStepList
         :steps
@@ -127,6 +134,7 @@ import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel
 import { ClipboardCheck, ExternalLink, FileText, ListChecks, Pencil, Plus, Target, Trash2 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { ProblemIcon } from '@/Components/icons';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { ConfirmDialog, EmptyState, OverviewSection, StatusBadge } from '@/Components/Patterns';

@@ -6,16 +6,14 @@
     :lead="$t('svetaine.overview.lead')"
   >
     <template v-if="tenants.length > 0" #actions>
-      <Select :model-value="selectedTenantId" @update:model-value="handleTenantUpdateValue">
-        <SelectTrigger class="w-48 pointer-coarse:h-11" :aria-label="$t('svetaine.overview.tenant')">
-          <SelectValue :placeholder="$t('svetaine.overview.tenant')" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem v-for="tenant in tenants" :key="tenant.id" :value="String(tenant.id)">
-            {{ tenant.shortname }}
-          </SelectItem>
-        </SelectContent>
-      </Select>
+      <NativeSelect
+        class="w-48"
+        :aria-label="$t('svetaine.overview.tenant')"
+        :placeholder="$t('svetaine.overview.tenant')"
+        :model-value="selectedTenantId"
+        :options="tenantOptions"
+        @update:model-value="handleTenantUpdateValue"
+      />
     </template>
 
     <OverviewNumbers v-if="numbers.length > 0" :numbers />
@@ -83,7 +81,7 @@ import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/
 import WorkspaceSectionTiles from '@/Components/Overview/WorkspaceSectionTiles.vue';
 import OverviewScopeSwitch from '@/Components/Overview/OverviewScopeSwitch.vue';
 import { EmptyState, OverviewSection } from '@/Components/Patterns';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { useApi } from '@/Composables/useApi';
 import type { AnalyticsOverviewData } from '@/Types/api.d';
@@ -94,10 +92,19 @@ const props = defineProps<{
   counts: { newsDrafts: number | null; calendarDrafts: number | null; news: number | null; pages: number | null };
 }>();
 
-const selectedTenantId = computed(() => props.providedTenant?.id ? String(props.providedTenant.id) : undefined);
+const tenantOptions = computed(() =>
+  props.tenants.map(tenant => ({
+    value: tenant.id,
+    label: tenant.shortname,
+  })),
+);
 
-const handleTenantUpdateValue = (value: string) => {
-  router.reload({ data: { tenant_id: Number(value) } });
+const selectedTenantId = computed(() => props.providedTenant?.id ?? undefined);
+
+const handleTenantUpdateValue = (value: number | string | null) => {
+  if (value != null && value !== '') {
+    router.reload({ data: { tenant_id: Number(value) } });
+  }
 };
 
 // Each number opens the list it counts, narrowed to the same unit (O17).

@@ -2,9 +2,13 @@
   <DetailLayout
     :icon="DutyIcon"
     :kicker="$t('Pareigybė')"
-    :title="duty.name_lt || duty.name_en || $t('Be pavadinimo')"
+    :title="dutyTitle"
     :subtitle="institutionName"
   >
+    <template #title>
+      <InflectedDutyName :name="dutyTitle" />
+    </template>
+
     <template #badges>
       <Badge v-if="duty.tenant_shortname" :variant="isExternal ? 'default' : 'outline'">
         {{ duty.tenant_shortname }}
@@ -126,6 +130,8 @@ import { Building2, Eye, Pencil } from 'lucide-vue-next';
 import DetailLayout from './DetailLayout.vue';
 import DetailRow from './DetailRow.vue';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { DutyIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -141,7 +147,8 @@ const props = defineProps<{
   isExternal?: boolean;
 }>();
 
-const institutionName = computed(() => props.duty.institution_name_lt || props.duty.institution_name_en);
+const dutyTitle = computed(() => getTranslatedValue({ lt: props.duty.name_lt, en: props.duty.name_en }, undefined, $t('Be pavadinimo')));
+const institutionName = computed(() => getTranslatedValue({ lt: props.duty.institution_name_lt, en: props.duty.institution_name_en }));
 
 interface MemberChip {
   name: string;

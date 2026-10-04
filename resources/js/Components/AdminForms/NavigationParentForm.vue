@@ -90,7 +90,7 @@ const isCreate = computed(() => !form.id);
 const isDeleteDialogOpen = ref(false);
 
 const barTitle = computed(() =>
-  form.name?.trim() || (isCreate.value ? $t('navigation.builder.add_root') : $t('navigation.title')),
+  isCreate.value ? $t('navigation.builder.add_root') : (props.navigation.name?.trim() || $t('navigation.title')),
 );
 
 defineExpose({

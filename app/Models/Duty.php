@@ -15,6 +15,7 @@ use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\ContactSearchIndexSynchronizer;
+use App\Services\Typesense\SearchText;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
@@ -168,6 +169,7 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
             ->get(['users.id', 'name']);
 
         return [
+            ...SearchText::forModel($this),
             'id' => (string) $this->id,
             'name_lt' => $this->getTranslation('name', 'lt') ?? '',
             'name_en' => $this->getTranslation('name', 'en'),

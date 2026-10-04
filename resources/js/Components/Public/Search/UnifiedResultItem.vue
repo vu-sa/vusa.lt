@@ -20,6 +20,11 @@
       </div>
     </template>
 
+    <template #meta>
+      <SearchMatch :match="doc._searchMatch" />
+      {{ metaText }}
+    </template>
+
     <template #trailing>
       <component
         :is="isExternal ? IFluentArrowUpRight16Regular : IFluentArrowRight16Regular"
@@ -33,6 +38,7 @@
 import { computed, ref, type Component } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import HairlineRow from '@/Components/Public/Base/HairlineRow.vue';
 import { getDocumentTargetUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import type { SearchCollectionId } from '@/Composables/usePublicMultiSearch';

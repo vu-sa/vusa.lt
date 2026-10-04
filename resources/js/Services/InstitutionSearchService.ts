@@ -51,7 +51,7 @@ interface SearchResponse {
 }
 
 interface SearchClient {
-  search: (collection: string, searchParams: SearchParams) => Promise<SearchResponse>;
+  search: (collection: string, searchParams: SearchParams, signal?: AbortSignal) => Promise<SearchResponse>;
 }
 
 interface ContactHit {
@@ -124,22 +124,14 @@ export class InstitutionSearchService {
     // Cancel previous request
     this.cancelCurrentSearch();
     this.abortController = new AbortController();
+    const controller = this.abortController;
 
     // Build search parameters
     const searchParams = this.buildSearchParams(filters, perPage, isLoadMore, currentPage, locale);
 
     try {
-      // Execute search with timeout
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Search request timed out')), 10000);
-      });
-
-      const searchPromise = this.typesenseClient.search(this.collectionName, searchParams);
-      const response = await Promise.race([searchPromise, timeoutPromise]);
-
-      if (this.abortController?.signal.aborted) {
-        throw new Error('Search was cancelled');
-      }
+      const response = await this.typesenseClient.search(this.collectionName, searchParams, controller.signal);
+      if (controller.signal.aborted) throw new DOMException('Search was cancelled', 'AbortError');
 
       // Process results — normalize Typesense flat fields into the shape components expect
       const hits = response.hits?.map(hit => this.normalizeDocument(hit.document, locale)) || [];
@@ -207,6 +199,11 @@ export class InstitutionSearchService {
     };
 
     // Build filter conditions
+    searchParams.facetFilters = Object.fromEntries([
+      ['tenant_shortname', this.buildFilterConditions({ ...filters, tenants: [] }).join(' && ')],
+      ['type_slugs', this.buildFilterConditions({ ...filters, types: [] }).join(' && ')],
+      ['has_contacts', this.buildFilterConditions({ ...filters, hasContacts: null }).join(' && ')],
+    ]);
     const filterConditions = this.buildFilterConditions(filters);
     if (filterConditions.length > 0) {
       searchParams.filter_by = filterConditions.join(' && ');

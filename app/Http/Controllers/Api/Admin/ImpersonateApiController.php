@@ -34,7 +34,7 @@ class ImpersonateApiController extends ApiController
         $locale = app()->getLocale();
 
         $users = User::query()
-            ->select(['id', 'name', 'email'])
+            ->select(['id', 'name', 'email', 'pronouns'])
             ->where(fn (Builder $query) => $query
                 ->where('name', 'like', $term)
                 ->orWhere('email', 'like', $term)
@@ -54,9 +54,11 @@ class ImpersonateApiController extends ApiController
             'id' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
+            'pronouns' => $user->getTranslations('pronouns'),
             'current_duties' => $user->current_duties->map(fn (Duty $duty): array => [
                 'id' => $duty->id,
                 'name' => $duty->getTranslation('name', $locale),
+                'use_original_duty_name' => (bool) $duty->pivot?->use_original_duty_name,
                 'institution' => $duty->institution?->getTranslation('short_name', $locale) ?: null,
             ])->values()->all(),
         ])->all());

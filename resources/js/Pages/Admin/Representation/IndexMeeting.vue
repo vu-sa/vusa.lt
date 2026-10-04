@@ -25,7 +25,7 @@
     <template #row="{ item, pinned }">
       <div v-if="isTrash" class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
-          <CollectionPrimaryCell :title="item.title" :sub="item.institution_name_lt || item.institution_name_en" />
+          <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title" :sub="item.institution_name_lt || item.institution_name_en" />
           <p class="mt-2 text-xs tabular-nums text-muted-foreground">
             {{ formatDate(new Date((item.start_time ?? 0) * 1000)) }}
           </p>
@@ -39,7 +39,7 @@
       <template v-if="column.key === 'date'">
         <span class="tabular-nums">{{ formatDate(new Date((item.start_time ?? 0) * 1000)) }}</span>
       </template>
-      <CollectionPrimaryCell
+      <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
         v-else-if="column.key === 'title'"
         :title="item.title"
         :href="isTrash ? undefined : route('meetings.show', item.id)"

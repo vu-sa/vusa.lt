@@ -349,19 +349,15 @@
           :valid="form.valid('event_type_id')"
           :invalid="form.invalid('event_type_id')"
         >
-          <Select v-model="eventTypeIdString" :disabled="readOnly" @update:model-value="form.validate('event_type_id')">
-            <SelectTrigger id="event_type" :class="['h-11 w-full', fieldSurfaceClass]" :disabled="readOnly">
-              <SelectValue :placeholder="$t('Pasirinkti renginio tipą...')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem :value="NO_EVENT_TYPE_VALUE">
-                {{ $t('Nenurodyta') }}
-              </SelectItem>
-              <SelectItem v-for="type in eventTypes" :key="type.id" :value="String(type.id)">
-                {{ type.name }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <NativeSelect
+            id="event_type"
+            v-model="form.event_type_id"
+            :options="eventTypeOptions"
+            :placeholder="$t('Pasirinkti renginio tipą...')"
+            placeholder-selectable
+            :disabled="readOnly"
+            @update:model-value="form.validate('event_type_id')"
+          />
         </FormFieldWrapper>
 
         <FormFieldWrapper
@@ -474,7 +470,7 @@ import { fieldSurfaceClass } from '@/Components/ui/control';
 import { DateTimePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { Switch } from '@/Components/ui/switch';
 import { ImageUpload } from '@/Components/ui/upload';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
@@ -741,15 +737,12 @@ const defaultOrganizer = computed(() => {
   );
 });
 
-const NO_EVENT_TYPE_VALUE = '__none__';
-
-// Handle event_type_id as string for Select component
-const eventTypeIdString = computed({
-  get: () => form.event_type_id ? String(form.event_type_id) : NO_EVENT_TYPE_VALUE,
-  set: (val: string) => {
-    form.event_type_id = val === NO_EVENT_TYPE_VALUE ? null : parseInt(val);
-  },
-});
+const eventTypeOptions = computed(() =>
+  props.eventTypes.map(type => ({
+    value: type.id,
+    label: type.name,
+  })),
+);
 
 const audienceOptions = computed<FormSegmentOption<boolean>[]>(() => [
   { value: true, label: $t('Visi studentai'), icon: Globe, testId: 'audience-all' },

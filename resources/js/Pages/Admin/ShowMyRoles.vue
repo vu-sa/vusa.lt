@@ -84,7 +84,7 @@
         >
           <span class="w-28 shrink-0 text-sm tabular-nums text-muted-foreground">{{ change.date }}</span>
           <span class="min-w-0 flex-1 text-sm">
-            <span class="font-medium">{{ $t(`access.history.${change.kind}`, { duty: change.dutyName }) }}</span>
+            <span class="font-medium">{{ $t(`access.history.${change.kind}`, { duty: historyDutyName(change) }) }}</span>
             <span v-if="change.institutionName" class="text-muted-foreground"> · {{ change.institutionName }}</span>
           </span>
         </li>
@@ -104,6 +104,14 @@ import type { MyDutyTerm } from '@/Components/Duties/MyDutyTermRow.vue';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { OverviewSection } from '@/Components/Patterns';
 import { sectionHref } from '@/Composables/useAdminNavigation';
+import { changeDutyNameEndings } from '@/Utils/String';
+
+const page = usePage();
+
+const historyDutyName = (change: HomeAccessChange) => changeDutyNameEndings(
+  page.props.auth?.user, change.dutyName, page.props.app.locale,
+  page.props.auth?.user?.pronouns, change.useOriginalDutyName,
+);
 
 defineProps<{
   access: {

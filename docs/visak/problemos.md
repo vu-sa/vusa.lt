@@ -179,16 +179,6 @@ pranešimo negauna. Automatiškai tik užpildoma ar išvaloma išsprendimo data 
 [Būsenos](#busenos)). Aptarti problemą su kolegomis galima jos puslapio skiltyje **Veikla** (žr.
 [Komentarai](/visak/komentarai)).
 
-## Susitarimai {#susitarimai}
-
-::: tip Kad žinių bazė būtų naudinga
-- Registruok problemą, kai ji pasikartoja ar liečia daugiau nei vieną studentą, net jei dar
-  nežinai, kaip ją spręsti.
-- Kai problemą keli posėdyje, susiek ją su darbotvarkės klausimu – taip kiti matys, kur ji
-  svarstyta.
-- Išsprendęs problemą, aprašyk **sprendimą**: būtent jis padeda kitiems padaliniams.
-:::
-
 ## Techninė informacija {#technine-informacija}
 
 ### Teisės

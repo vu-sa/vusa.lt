@@ -91,7 +91,7 @@
           <!-- Tenant / Padalinys Filter Popover -->
           <PublicFilterPopover
             :label="$t('Padalinys')"
-            :options="tenantOptions"
+            :options="tenantOptions" field="tenant_shortname"
             :selected="filters.tenants || []"
             searchable
             :search-placeholder="`${$t('Ieškoti padalinio')}...`"
@@ -104,7 +104,7 @@
           <PublicFilterPopover
             v-if="typeOptions.length > 0"
             :label="$t('search.institution_type')"
-            :options="typeOptions"
+            :options="typeOptions" field="type_slugs"
             :selected="filters.types || []"
             searchable
             :search-placeholder="`${$t('Ieškoti tipo')}...`"

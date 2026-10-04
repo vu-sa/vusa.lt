@@ -20,14 +20,11 @@
   >
     <template #actions>
       <div v-if="tenants.length > 1" class="w-full sm:w-56">
-        <SingleSelect
-          :model-value="selectedTenant"
-          :options="tenants"
-          value-field="id"
-          label-field="shortname"
+        <NativeSelect
+          :model-value="tenant?.id"
+          :options="tenantOptions"
           :aria-label="$t('Padalinys')"
-          :placeholder="$t('Pasirinkti padalinį...')"
-          @update:model-value="tenant => tenant && changeScope({ tenant: tenant.id })"
+          @update:model-value="id => id && changeScope({ tenant: Number(id) })"
         />
       </div>
       <Button
@@ -159,7 +156,7 @@ import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Colle
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState, SheetForm, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { SingleSelect } from '@/Components/ui/single-select';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { isTrashView, useLocalCollectionSource } from '@/Composables/useCollectionSource';
 import type { StatusPresentation } from '@/Constants/statuses';
@@ -190,7 +187,9 @@ const QuickLinkIconMark: FunctionalComponent<{ icon?: string | null }> = ({ icon
 
 // --- Scope: tenant and language decide what the server sends, and what order means --------
 
-const selectedTenant = computed(() => props.tenants.find(t => t.id === props.tenant?.id) ?? null);
+const tenantOptions = computed(() =>
+  props.tenants.map(t => ({ value: t.id, label: t.shortname })),
+);
 
 const languageFilters = computed<CollectionQuickFilter[]>(() => [
   { id: 'lt', label: 'LT', active: props.currentLang === 'lt' },

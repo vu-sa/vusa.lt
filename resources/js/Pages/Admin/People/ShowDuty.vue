@@ -11,6 +11,10 @@
     actions-beside-title
     @action="handleRecordAction"
   >
+    <template #title>
+      <InflectedDutyName :name="dutyTitle" />
+    </template>
+
     <template #fact-email>
       <a v-if="duty.email" :href="`mailto:${duty.email}`" class="underline underline-offset-4">
         {{ duty.email }}
@@ -249,6 +253,7 @@ import {
 
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
 import { ConfirmDialog, OverviewSection } from '@/Components/Patterns';
@@ -314,11 +319,7 @@ const historicalHolders = computed(() => holdersWhere('ended'));
 const currentHolderIds = computed(() => currentHolders.value.map(user => String(user.id)));
 const isVacant = computed(() => currentHolders.value.length === 0);
 
-const dutyTitle = computed(() => {
-  if (typeof props.duty.name === 'string') return props.duty.name;
-  const nameObj = props.duty.name as TranslatableText | undefined;
-  return nameObj?.lt || nameObj?.en || '';
-});
+const dutyTitle = computed(() => getTranslatedValue(props.duty.name));
 
 // The healthy state (occupied) gets no badge — only what needs attention is painted.
 const dutyStatus = computed<StatusPresentation | undefined>(() =>

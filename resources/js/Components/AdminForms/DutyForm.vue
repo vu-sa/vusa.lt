@@ -1,8 +1,8 @@
 <template>
   <FormPage
-    :title="isEditing ? dutyTitle : $t('Nauja pareigybė')"
-    :bar-title="isEditing ? dutyTitle : undefined"
-    :head-title="isEditing ? dutyTitle : $t('Nauja pareigybė')"
+    :title="dutyTitle"
+    :bar-title
+    :head-title="barTitle"
     :lead="isEditing ? (duty?.institution?.short_name ?? duty?.institution?.name) : $t('Sukurk naują pareigybę institucijoje')"
     :entity-type="ModelEnum.DUTY"
     :activity-subject="duty?.id ? { type: 'duty', id: duty.id } : undefined"
@@ -21,6 +21,10 @@
     @update:locale="activeLocale = $event"
     @submit="emit('submit:form', form)"
   >
+    <template #title>
+      <InflectedDutyName :name="dutyTitle" :locale="activeLocale" />
+    </template>
+
     <!-- Cross tenant duty alert -->
     <div
       v-if="!canEditDuty"
@@ -43,10 +47,6 @@
           v-model="form.name[activeLocale]"
           :placeholder="activeLocale === 'lt' ? $t('Pirmininkas, Koordinatorius…') : 'Chair, Coordinator…'"
         />
-        <!-- Inflected preview for Lithuanian -->
-        <div v-if="form.name.lt" class="mt-2 text-sm">
-          <InflectedDutyName :name="form.name.lt" locale="lt" class="font-medium text-foreground" />
-        </div>
       </FormFieldWrapper>
 
       <!-- Duplicate Duty Warning -->
@@ -121,43 +121,32 @@
           />
         </FormFieldWrapper>
 
-        <!-- Places to occupy & Contacts grouping -->
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormFieldWrapper
+        <!-- Places to occupy -->
+        <FormFieldWrapper
+          id="places_to_occupy"
+          :label="$t('Kiek vietų')"
+          :error="form.errors.places_to_occupy"
+        >
+          <NumberField
             id="places_to_occupy"
-            :label="$t('Kiek vietų')"
-            :error="form.errors.places_to_occupy"
-          >
-            <NumberField
-              id="places_to_occupy"
-              v-model="form.places_to_occupy"
-              :min="1"
-            />
-          </FormFieldWrapper>
+            v-model="form.places_to_occupy"
+            :min="1"
+          />
+        </FormFieldWrapper>
 
-          <FormFieldWrapper
-            id="contacts_grouping"
-            :label="$t('Kontaktų grupavimas')"
-            :error="form.errors.contacts_grouping"
-          >
-            <Select v-model="form.contacts_grouping">
-              <SelectTrigger id="contacts_grouping">
-                <SelectValue :placeholder="$t('forms.placeholders.select_grouping')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">
-                  {{ $t('Be grupavimo') }}
-                </SelectItem>
-                <SelectItem value="study_program">
-                  {{ $t('Pagal studijų programą') }}
-                </SelectItem>
-                <SelectItem value="tenant">
-                  {{ $t('Pagal padalinį') }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </FormFieldWrapper>
-        </div>
+        <!-- Contacts grouping -->
+        <FormFieldWrapper
+          id="contacts_grouping"
+          :label="$t('Kontaktų grupavimas')"
+          :error="form.errors.contacts_grouping"
+        >
+          <FormSegmentedControl
+            v-model="form.contacts_grouping"
+            :options="contactsGroupingOptions"
+            :aria-label="$t('Kontaktų grupavimas')"
+            test-id-prefix="contacts-grouping"
+          />
+        </FormFieldWrapper>
 
         <!-- Categories / Types -->
         <FormFieldWrapper
@@ -202,6 +191,7 @@
         <div v-if="allowExternal || !canEditDuty" class="space-y-3 pt-2">
           <MultiSelect
             v-if="canEditDuty"
+            id="assignable-tenants"
             v-model="selectedAssignableTenants"
             :options="assignableTenants"
             label-field="shortname"
@@ -358,7 +348,7 @@ import { Label } from '@/Components/ui/label';
 import { Button } from '@/Components/ui/button';
 import { Switch } from '@/Components/ui/switch';
 import { NumberField } from '@/Components/ui/number-field';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import FormSegmentedControl, { type FormSegmentOption } from '@/Components/Patterns/FormSegmentedControl.vue';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import InstitutionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/InstitutionSelectDialog.vue';
 import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';
@@ -366,6 +356,7 @@ import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import DuplicateDutyWarning from '@/Components/AdminForms/DuplicateDutyWarning.vue';
 import { useDuplicateDutyCheck } from '@/Composables/useDuplicateDutyCheck';
+import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { ModelEnum } from '@/Types/enums';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 
@@ -383,7 +374,7 @@ interface DutyPropType {
   places_to_occupy?: number;
   contacts_grouping?: string;
   types?: Array<{ id: number; title?: string }>;
-  roles?: Array<{ id: number; name?: string }>;
+  roles?: Array<{ id: string | number; name?: string }>;
   ex_officio_target_duties?: Array<{ id: string; name?: string }>;
   assignable_tenants?: Array<{ id: number; shortname?: string; pivot?: { quota?: number | null } }>;
   created_at?: string | null;
@@ -445,11 +436,6 @@ const emit = defineEmits<{
 
 const isEditing = computed(() => !!props.duty?.id);
 
-const dutyTitle = computed(() => {
-  if (typeof props.duty?.name === 'string') return props.duty.name;
-  return props.duty?.name?.lt || props.duty?.name?.en || '';
-});
-
 const activeLocale = ref<'lt' | 'en'>('lt');
 const deleteConfirmOpen = ref(false);
 
@@ -481,13 +467,20 @@ const form = useForm({
     en: (typeof props.duty?.description === 'object' ? props.duty?.description?.en : '') ?? '',
   },
   types: (props.duty?.types?.map((t: { id: number }) => t.id) ?? []) as number[],
-  roles: (props.duty?.roles?.map((r: { id: number }) => r.id) ?? []) as number[],
+  roles: (props.duty?.roles?.map((r: { id: string | number }) => String(r.id)) ?? []) as string[],
   ex_officio_target_duty_ids: (props.duty?.ex_officio_target_duties?.map((d: { id: string }) => d.id) ?? []) as string[],
   assignable_tenants: (props.duty?.assignable_tenants?.map((t: { id: number; pivot?: { quota?: number | null } }) => ({
     tenant_id: t.id,
     quota: t.pivot?.quota ?? null,
   })) ?? []) as AssignableTenantRow[],
 });
+
+const barTitle = computed(() => isEditing.value
+  ? getTranslatedValue(props.duty.name, undefined, $t('Pareigybė'))
+  : $t('Nauja pareigybė'));
+
+const dutyTitle = computed(() => form.name[activeLocale.value].trim()
+  || (isEditing.value ? $t('Pareigybė') : $t('Nauja pareigybė')));
 
 // Missing translation counts
 const missingLocaleCounts = computed(() => ({
@@ -529,22 +522,58 @@ const onInstitutionConfirm = (hits: NormalizedSearchHit[]) => {
   }
 };
 
+const contactsGroupingOptions = computed<FormSegmentOption<string>[]>(() => [
+  { value: 'none', label: $t('Be grupavimo') },
+  { value: 'study_program', label: $t('Pagal studijų programą') },
+  { value: 'tenant', label: $t('Pagal padalinį') },
+]);
+
 // Categories / Types
 const selectedTypes = computed({
-  get: () => form.types,
-  set: (val: number[]) => {
-    form.types = val;
+  get: () => {
+    const ids = new Set((form.types ?? []).map(Number));
+    const allTypes = [...(props.dutyTypes ?? []), ...((props.duty?.types ?? []) as App.Entities.DutyType[])];
+    const seen = new Set<number>();
+    return allTypes.filter((t) => {
+      const id = Number(t.id);
+      if (ids.has(id) && !seen.has(id)) {
+        seen.add(id);
+        return true;
+      }
+      return false;
+    });
+  },
+  set: (items: App.Entities.DutyType[]) => {
+    form.types = (items ?? []).map(t =>
+      typeof t === 'object' && t !== null ? Number(t.id) : Number(t),
+    );
   },
 });
 
 // Roles (Superadmin only)
-const rolesOptions = computed(() =>
-  (props.roles ?? []).map(r => ({ label: r.name, value: r.id })),
-);
+const rolesOptions = computed(() => {
+  const allRoles = [...(props.roles ?? []), ...((props.duty?.roles ?? []) as App.Entities.Role[])];
+  const seen = new Set<string>();
+  const result: Array<{ label: string; value: string }> = [];
+  for (const role of allRoles) {
+    const id = String(role.id);
+    if (id && !seen.has(id)) {
+      seen.add(id);
+      result.push({ label: role.name, value: id });
+    }
+  }
+  return result;
+});
+
 const selectedRoles = computed({
-  get: () => form.roles,
-  set: (val: number[]) => {
-    form.roles = val;
+  get: () => {
+    const ids = new Set((form.roles ?? []).map(String));
+    return rolesOptions.value.filter(option => ids.has(String(option.value)));
+  },
+  set: (items: Array<{ label: string; value: string } | string>) => {
+    form.roles = (items ?? []).map(item =>
+      typeof item === 'object' && item !== null ? String(item.value) : String(item),
+    );
   },
 });
 

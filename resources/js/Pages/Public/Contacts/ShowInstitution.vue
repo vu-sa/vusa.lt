@@ -134,8 +134,9 @@
           <div v-for="section in contactSections" :key="section.dutyName">
             <!-- Section header -->
             <div class="mb-5 border-b border-border pb-2">
+              <!-- eslint-disable-next-line vuejs-accessibility/heading-has-content -- InflectedDutyName supplies a stable screen-reader label. -->
               <h3 class="text-lg font-bold text-foreground">
-                {{ institutionDutyName(section.dutyName) }}
+                <InflectedDutyName :name="institutionDutyName(section.dutyName)" />
               </h3>
             </div>
 
@@ -293,6 +294,7 @@ import { computed, ref } from 'vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';

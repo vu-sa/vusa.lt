@@ -33,6 +33,29 @@ Rezervacija yra užklausa pasiskolinti vieną ar kelis išteklius tam tikram lai
 Rezervacijų sąrašas pasiekiamas adresu `/mano/reservations`, o kiekviena rezervacija turi savo
 puslapį `/mano/reservations/{id}`.
 
+## Susitarimai {#susitarimai}
+
+Šie susitarimai yra organizaciniai: sistema jų neužtikrina, bet valdytojai jų laikosi.
+
+### Rezervacijos atlikimas
+
+- Daiktus rezervuok likus **bent 7 darbo dienoms** iki renginio ar mokymų.
+- Pavadinime įrašyk tikslų renginio ar mokymų pavadinimą.
+- Aprašyme nurodyk, kam skirti daiktai, kada planuoji juos atsiimti ir kas atsiims.
+- Laikotarpis – nuo atsiėmimo iki grąžinimo.
+- Daiktus iš kelių padalinių (VU SA CB, VU SA P, studentų iniciatyvų) rinkis į vieną rezervaciją.
+  Atskirų kurti nereikia.
+- Pateikdamas rezervaciją patvirtini, kad visiškai atsakai už daiktų grąžinimą sutartu laiku, jų
+  būklę ir žalos atlyginimą, jei ji padaryta. Perdavimo akto pasirašyti nebereikia, nes jis
+  skaitmenizuotas.
+
+### Rezervacijos administravimas
+
+- Valdytojas užklausą patvirtina arba atmeta per **1–2 darbo dienas**.
+- Komentaruose valdytojas nurodo, kada daiktas bus paruoštas atsiimti, ir daiktą perduosiančio
+  žmogaus kontaktus.
+- Atmesdamas valdytojas visada nurodo priežastį.
+
 ## Kaip tai veikia
 
 ### Krepšelis
@@ -215,29 +238,6 @@ pranešimus ir užduotis apie CB daiktus, o kitų padalinių užklausas mato ap�
 
 Užduočių eiga (pvz., „2 iš 3“) skaičiuojama pagal išteklių būsenas. Rankiniu būdu jų užbaigti
 nereikia. Plačiau apie užduotis – [Užduotys](/mano/uzduotys).
-
-## Susitarimai {#susitarimai}
-
-Šie susitarimai yra organizaciniai: sistema jų neužtikrina, bet valdytojai jų laikosi.
-
-::: tip Rezervacijos atlikimas
-- Daiktus rezervuok likus **bent 7 darbo dienoms** iki renginio ar mokymų.
-- Pavadinime įrašyk tikslų renginio ar mokymų pavadinimą.
-- Aprašyme nurodyk, kam skirti daiktai, kada planuoji juos atsiimti ir kas atsiims.
-- Laikotarpis – nuo atsiėmimo iki grąžinimo.
-- Daiktus iš kelių padalinių (VU SA CB, VU SA P, studentų iniciatyvų) rinkis į vieną rezervaciją.
-  Atskirų kurti nereikia.
-- Pateikdamas rezervaciją patvirtini, kad visiškai atsakai už daiktų grąžinimą sutartu laiku, jų
-  būklę ir žalos atlyginimą, jei ji padaryta. Perdavimo akto pasirašyti nebereikia, nes jis
-  skaitmenizuotas.
-:::
-
-::: tip Rezervacijos administravimas
-- Valdytojas užklausą patvirtina arba atmeta per **1–2 darbo dienas**.
-- Komentaruose valdytojas nurodo, kada daiktas bus paruoštas atsiimti, ir daiktą perduosiančio
-  žmogaus kontaktus.
-- Atmesdamas valdytojas visada nurodo priežastį.
-:::
 
 ::: details Dažni klausimai
 **Ar yra limitas, kiek daiktų galima skolintis?** Ne. Galima skolintis tiek, kiek įkelta į sistemą

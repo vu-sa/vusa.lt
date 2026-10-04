@@ -32,7 +32,7 @@
               ]"
               data-slot="record-title"
             >
-              {{ title }}
+              <slot name="title">{{ title }}</slot>
             </h1>
             <button
               v-if="titleOverflows || titleExpanded"

@@ -54,16 +54,14 @@
 
             <span class="text-xs text-muted-foreground">{{ $t('navigation.form.or') }}</span>
 
-            <Select :model-value="topicSelectValue" @update:model-value="onTopicSelected">
-              <SelectTrigger class="w-auto min-w-40">
-                <SelectValue :placeholder="$t('navigation.form.link_target_topic')" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem v-for="topic in topicOptions" :key="topic.id" :value="String(topic.id)">
-                  {{ topic.name }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <NativeSelect
+              class="w-auto min-w-40"
+              size="sm"
+              :placeholder="$t('navigation.form.link_target_topic')"
+              :model-value="topicSelectValue"
+              :options="topicSelectOptions"
+              @update:model-value="onTopicSelected"
+            />
 
             <Loader2 v-if="isResolvingUrl" class="size-4 animate-spin text-muted-foreground" />
           </div>
@@ -261,35 +259,23 @@
                  IS a root, so neither concept applies there (see FooterNavigationManager.vue). -->
             <div v-if="!isFooter" class="grid gap-3 lg:grid-cols-2">
               <FormFieldWrapper id="column" :label="$t('navigation.form.column')">
-                <Select
-                  :model-value="form.extra_attributes.column != null ? String(form.extra_attributes.column) : undefined"
+                <FormSegmentedControl
+                  :model-value="form.extra_attributes.column ?? 1"
+                  :options="columnOptions"
+                  :aria-label="$t('navigation.form.column')"
+                  test-id-prefix="navigation-column"
                   @update:model-value="val => form.extra_attributes.column = Number(val)"
-                >
-                  <SelectTrigger id="column">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem v-for="opt in [1, 2, 3]" :key="opt" :value="String(opt)">
-                      {{ opt }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                />
               </FormFieldWrapper>
 
               <FormFieldWrapper v-if="!isNameless" id="col_span" :label="$t('navigation.form.col_span')">
-                <Select
-                  :model-value="form.extra_attributes.col_span != null ? String(form.extra_attributes.col_span) : '1'"
+                <FormSegmentedControl
+                  :model-value="form.extra_attributes.col_span ?? 1"
+                  :options="columnOptions"
+                  :aria-label="$t('navigation.form.col_span')"
+                  test-id-prefix="navigation-col-span"
                   @update:model-value="val => form.extra_attributes.col_span = Number(val)"
-                >
-                  <SelectTrigger id="col_span">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem v-for="opt in [1, 2, 3]" :key="opt" :value="String(opt)">
-                      {{ opt }}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                />
               </FormFieldWrapper>
             </div>
 
@@ -343,6 +329,7 @@ import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog } from '@/Components/Patterns';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
+import FormSegmentedControl, { type FormSegmentOption } from '@/Components/Patterns/FormSegmentedControl.vue';
 import FormToggleRow from '@/Components/Patterns/FormToggleRow.vue';
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
@@ -353,7 +340,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Component
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { SingleSelect } from '@/Components/ui/single-select';
 import { Switch } from '@/Components/ui/switch';
 import { Textarea } from '@/Components/ui/textarea';
@@ -400,7 +387,7 @@ const isDeleteDialogOpen = ref(false);
 const fieldIds = ['name', 'url', 'parent_id', 'is_active'];
 
 const barTitle = computed(() =>
-  form.name?.trim() || form.url?.trim() || (isCreate.value ? $t('navigation.form.new_link') : $t('navigation.form.edit_link')),
+  isCreate.value ? $t('navigation.form.new_link') : (props.navigation.name?.trim() || props.navigation.url?.trim() || $t('navigation.form.edit_link')),
 );
 
 // Footer links only ever take two fixed shapes — see NavigationRequest, which is the
@@ -505,6 +492,16 @@ const onTargetConfirm = (hits: NormalizedSearchHit[]) => {
   }
   resolveAndFillUrl(hit.collection, hit.recordId, hit.title);
 };
+
+const columnOptions: FormSegmentOption<number>[] = [
+  { value: 1, label: '1' },
+  { value: 2, label: '2' },
+  { value: 3, label: '3' },
+];
+
+const topicSelectOptions = computed(() =>
+  props.topicOptions.map(t => ({ value: String(t.id), label: t.name })),
+);
 
 const topicSelectValue = ref<string | undefined>(undefined);
 const onTopicSelected = (val: unknown) => {

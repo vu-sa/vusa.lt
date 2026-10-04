@@ -1,3 +1,6 @@
+import { buildProfileParams, type SearchProfileConfig } from '../profiles';
+import { documentWithMatch, type HighlightedHit } from '../matches';
+import { facetSearches, mergeDisjunctiveFacets, type FacetSearch } from '../facets';
 /**
  * SearchClientFactory - Unified search client factory
  *
@@ -17,6 +20,7 @@ import type { TypesenseConfig, TypesenseNode } from '../types';
 export interface TypesenseClient {
   apiKey: string;
   nodes: TypesenseNode[];
+  searchFacet: FacetSearch;
   search: (
     collection: string,
     searchParams: Record<string, unknown>,
@@ -28,7 +32,7 @@ export interface TypesenseClient {
  * Typesense search response
  */
 export interface TypesenseSearchResponse {
-  hits?: Array<{ document: Record<string, unknown>; highlights?: unknown[] }>;
+  hits?: Array<{ document: Record<string, unknown>; highlights?: HighlightedHit['highlights'] }>;
   found?: number;
   page?: number;
   search_time_ms?: number;
@@ -41,7 +45,9 @@ export interface TypesenseSearchResponse {
 /**
  * Options for creating a search client
  */
-export interface ClientFactoryOptions {
+export interface ClientFactoryOptions extends SearchProfileConfig {
+  collections?: Record<string, string | undefined>;
+  locale?: string;
   /** API key (for public) or scoped key (for admin) */
   apiKey: string;
   /** Typesense nodes */
@@ -70,7 +76,19 @@ export class SearchClientFactory {
       throw new Error('No Typesense nodes configured');
     }
 
-    return {
+    let lastSearch: { collection: string; params: Record<string, unknown> } | undefined;
+    const profileFor = (collection: string) => {
+      const base = Object.entries(options.collections ?? {}).find(([, name]) => name === collection)?.[0] ?? collection;
+      return options.searchProfiles?.[base];
+    };
+    const client: TypesenseClient = {
+      searchFacet: async (field, query, signal) => {
+        if (!lastSearch) return [];
+        const { collection, params } = lastSearch;
+        const filters = params.facetFilters as Record<string, string> | undefined;
+        const result = await client.search(collection, { ...params, filter_by: filters?.[field] ?? params.filter_by, facetFilters: undefined, facet_by: field, facet_query: `${field}:${query}`, per_page: 0, page: 1 }, signal);
+        return result.facet_counts?.find(facet => facet.field_name === field)?.counts ?? [];
+      },
       apiKey,
       nodes,
       search: async (
@@ -78,13 +96,19 @@ export class SearchClientFactory {
         searchParams: Record<string, unknown>,
         abortSignal?: AbortSignal,
       ): Promise<TypesenseSearchResponse> => {
+        const inputParams = searchParams;
+        searchParams = buildProfileParams(profileFor(collection), searchParams, options.locale);
+        if (!inputParams.facet_query && Number(inputParams.per_page) > 0) lastSearch = { collection, params: searchParams };
+        const allFacetFilters = (inputParams.facetFilters ?? {}) as Record<string, string>;
+        const facetFilters = Object.fromEntries(Object.entries(allFacetFilters).filter(([, filter]) => filter !== String(inputParams.filter_by ?? '')));
+        const searches = facetSearches(searchParams, facetFilters);
         const node = nodes[0];
         const baseUrl = `${node.protocol}://${node.host}:${node.port}`;
         const url = new URL(`${baseUrl}/collections/${collection}/documents/search`);
 
         // Build query parameters
         for (const [key, value] of Object.entries(searchParams)) {
-          if (value !== undefined && value !== null && value !== '') {
+          if (key !== 'facetFilters' && value !== undefined && value !== null && value !== '') {
             url.searchParams.append(key, String(value));
           }
         }
@@ -93,13 +117,15 @@ export class SearchClientFactory {
         const timeoutId = setTimeout(() => controller.abort(), connectionTimeoutSeconds * 1000);
 
         try {
-          const response = await fetch(url.toString(), {
-            method: 'GET',
+          const disjunctive = Object.keys(facetFilters).length > 0;
+          const response = await fetch(disjunctive ? `${baseUrl}/multi_search` : url.toString(), {
+            method: disjunctive ? 'POST' : 'GET',
+            body: disjunctive ? JSON.stringify({ searches: searches.map(params => ({ collection, ...params })) }) : undefined,
             headers: {
               'X-TYPESENSE-API-KEY': apiKey,
               'Content-Type': 'application/json',
             },
-            signal: abortSignal || controller.signal,
+            signal: abortSignal ? AbortSignal.any([abortSignal, controller.signal]) : controller.signal,
           });
 
           if (!response.ok) {
@@ -107,21 +133,30 @@ export class SearchClientFactory {
             throw new Error(`Typesense API error: ${response.status} - ${errorText}`);
           }
 
-          return await response.json();
+          const data = await response.json();
+          const result = disjunctive ? data.results?.[0] : data;
+          if (!result || result.error) throw new Error(result?.error ?? 'Empty search response');
+          if (disjunctive) result.facet_counts = mergeDisjunctiveFacets(result.facet_counts ?? [], Object.keys(facetFilters), data.results.slice(1));
+          if (result.hits) result.hits = result.hits.map((hit: HighlightedHit) => ({ ...hit, document: documentWithMatch(hit) }));
+          return result;
         }
         finally {
           clearTimeout(timeoutId);
         }
       },
     };
+    return client;
   }
 
   /**
    * Create a public search client from page props config
    */
-  static createPublicClient(config: TypesenseConfig): TypesenseClient {
+  static createPublicClient(config: TypesenseConfig, locale = 'lt'): TypesenseClient {
     return this.createTypesenseClient({
       apiKey: config.apiKey,
+      searchProfiles: config.searchProfiles,
+      collections: config.collections,
+      locale,
       nodes: config.nodes,
     });
   }

@@ -17,18 +17,20 @@ Renginių tipai skirti viešo kalendoriaus renginiams grupuoti ir lankytojams pa
 
 Skiltis pasiekiama adresu `/mano/eventTypes`.
 
+## Rekomendacijos {#rekomendacijos}
+
+::: tip
+- **Aiški paskirtis:** tipą rinkis renginių grupei, pvz., „Mokymai“, o konkretaus renginio pavadinimą įrašyk pačiame renginyje.
+- **Esami tipai:** prieš kurdamas naują tipą patikrink, ar tinka jau esantis. Atskirą renginio temą gali nurodyti [žyma](/svetaine/zymos).
+- **Nuorodos stabilumas:** be reikalo nekeisk tipo nuorodos trumpinio, kad nereikėtų atnaujinti jau pasidalytų kalendoriaus filtravimo nuorodų.
+:::
+
 ## Kaip tai veikia
 
 - **Bendra klasifikacija:** renginių tipai yra bendri visiems VU SA padaliniams ir rodomi viešo kalendoriaus filtro pasirinkimuose.
 - **Dvikalbiškumas:** kiekvienas renginio tipas turi lietuvišką ir anglišką pavadinimą bei aprašymą, todėl kalendoriaus filtrai automatiškai prisitaiko prie lankytojo pasirinktos kalbos.
 - **Rikiavimas (`sort_order`):** nustato eiliškumą, kuria tvarka tipai pateikiami viešuose filtruose ir renginio kūrimo formoje.
 - **Būsena (`is_active`):** leidžia laikinai paslėpti nebeaktualius tipus iš pasirinkimų sąrašo, neištrinant jų iš ankstesnių renginių istorijos.
-
-## Rekomendacijos {#susitarimai}
-
-- **Aiški paskirtis:** tipą rinkis renginių grupei, pvz., „Mokymai“, o konkretaus renginio pavadinimą įrašyk pačiame renginyje.
-- **Esami tipai:** prieš kurdamas naują tipą patikrink, ar tinka jau esantis. Atskirą renginio temą gali nurodyti [žyma](/svetaine/zymos).
-- **Nuorodos stabilumas:** be reikalo nekeisk tipo nuorodos trumpinio, kad nereikėtų atnaujinti jau pasidalytų kalendoriaus filtravimo nuorodų.
 
 ## Veiksmai
 

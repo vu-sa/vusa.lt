@@ -78,9 +78,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Eye, Pencil } from 'lucide-vue-next';
+
+import { getUserDuties } from '../../Utils/searchHitMappers';
 
 import DetailLayout from './DetailLayout.vue';
 import DetailRow from './DetailRow.vue';
@@ -100,10 +102,10 @@ const props = defineProps<{
 }>();
 
 const currentDuties = computed<DutyChip[]>(() =>
-  (props.user.current_duty_names ?? []).map((name, i) => ({ name, id: props.user.current_duty_ids?.[i] })),
+  getUserDuties(props.user, 'current', usePage().props.app.locale),
 );
 
 const previousDuties = computed<DutyChip[]>(() =>
-  (props.user.previous_duty_names ?? []).map((name, i) => ({ name, id: props.user.previous_duty_ids?.[i] })),
+  getUserDuties(props.user, 'previous', usePage().props.app.locale),
 );
 </script>
