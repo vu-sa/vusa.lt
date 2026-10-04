@@ -106,10 +106,13 @@ describe('authorized access', function (): void {
         Form::factory()->for($this->tenant)->create([
             'name' => ['lt' => 'My Form', 'en' => 'My Form'],
             'publish_time' => now()->addDay(),
+            'updated_at' => now(),
         ]);
+        // The index sorts by updated_at desc; same-second timestamps would leave the order to chance.
         Form::factory()->for($otherTenant)->create([
             'name' => ['lt' => 'Other Form', 'en' => 'Other Form'],
             'publish_time' => now(),
+            'updated_at' => now()->subMinute(),
         ]);
 
         // Use Super Admin user for cross-tenant access

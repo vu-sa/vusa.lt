@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamp('resolved_at')->nullable();
             $table->foreignUlid('meeting_id')->nullable()->constrained('meetings')->nullOnDelete();
             $table->foreignUlid('check_in_id')->nullable()->constrained('institution_check_ins')->nullOnDelete();
-            $table->timestamp('expires_at');
+            $table->dateTime('expires_at');
             $table->timestamps();
 
             $table->index(['institution_id', 'resolved_at']);

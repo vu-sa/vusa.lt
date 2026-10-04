@@ -180,6 +180,8 @@ test('document recommendations match word forms, prefixes and any words of a phr
     $settings = app(DocumentSettings::class);
     $service = app(DocumentRecommendations::class);
     $rule = ['document_id' => (string) $statutes->id, 'phrases' => ['VU SA įstatai'], 'enabled' => true, 'show_without_query' => false];
+    // Earlier tests in this process leave phrases under the same prefix, and document ids repeat.
+    $service->synchronize();
     expect($service->matchingIds('įstatai'))->toBeEmpty();
     $settings->recommendations = [$rule];
     $settings->save();
