@@ -7,11 +7,18 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Uri;
 use Inertia\Ssr\SsrState;
 
 pest()->use(RefreshDatabase::class);
 
 it('hydrates an anonymous public page without losing its published content', function (): void {
+    // CI starts the renderer (ci.yml) and must fail without it; locally it is opt-in.
+    $renderer = Uri::of(config('inertia.ssr.url'));
+    if (! env('CI') && ! @fsockopen($renderer->host(), $renderer->port(), timeout: 0.5)) {
+        $this->markTestSkipped('SSR renderer not running: sail npm run build:ssr && sail exec -d laravel.test node bootstrap/ssr/ssr.js');
+    }
+
     config(['inertia.ssr.enabled' => false, 'inertia.devtools.enabled' => false]);
     $content = Content::factory()->create();
     ContentPart::factory()->create([

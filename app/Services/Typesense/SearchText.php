@@ -3,6 +3,7 @@
 namespace App\Services\Typesense;
 
 use App\Models\Calendar;
+use App\Models\Content;
 use App\Models\News;
 use App\Models\Page;
 use App\Services\ContentService;
@@ -22,7 +23,8 @@ class SearchText
         $result = [];
         if ($model instanceof News || $model instanceof Page) {
             $model->loadMissing('content.parts', 'tags');
-            $result['body'] = self::plain($model->content ? app(ContentService::class)->generateSearchableContent($model->content) : '');
+            $content = $model->getRelation('content');
+            $result['body'] = self::plain($content instanceof Content ? app(ContentService::class)->generateSearchableContent($content) : '');
         }
 
         $fields = match (class_basename($model)) {
@@ -43,7 +45,7 @@ class SearchText
                 if (! array_key_exists($field, $model->getAttributes())) {
                     continue;
                 }
-                if (method_exists($model, 'isTranslatableAttribute') && $model->isTranslatableAttribute($field)) {
+                if (method_exists($model, 'isTranslatableAttribute') && method_exists($model, 'getTranslations') && $model->isTranslatableAttribute($field)) {
                     $parts[] = $model->getTranslations($field)[$locale] ?? '';
                 } elseif (($model->getAttributes()['lang'] ?? self::documentLocale($model)) === $locale) {
                     $value = $model->getAttribute($field);

@@ -46,7 +46,9 @@
           {{ $t('meetings.privacy.details_label') }}
         </summary>
         <div class="mt-3 space-y-3 text-sm text-muted-foreground">
-          <p v-if="!isPublic">{{ $t('meetings.privacy.nonpublic_hint') }}</p>
+          <p v-if="!isPublic">
+            {{ $t('meetings.privacy.nonpublic_hint') }}
+          </p>
           <p>{{ $t('meetings.privacy.audience') }}</p>
           <p>{{ $t('meetings.privacy.no_personal_data') }}</p>
         </div>
@@ -70,7 +72,9 @@
         </p>
         <span class="text-xs text-muted-foreground">{{ $t('meetings.privacy.internal_only') }}</span>
       </div>
-      <p v-else-if="form.is_private" class="text-sm text-status-attention">{{ $t('meetings.privacy.publish_hint') }}</p>
+      <p v-else-if="form.is_private" class="text-sm text-status-attention">
+        {{ $t('meetings.privacy.publish_hint') }}
+      </p>
     </div>
 
     <FormFieldWrapper id="agenda-item-title" :label="$t('meetings.item.title_label')" :error="titleError" required>

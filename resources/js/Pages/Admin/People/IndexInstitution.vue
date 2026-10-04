@@ -46,8 +46,8 @@
     </template>
 
     <template #cell="{ item, column }">
-      <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
-        v-if="column.key === 'name'"
+      <CollectionPrimaryCell v-if="column.key === 'name'" :match="item._searchMatch"
+        :title-matches="item._searchTitleMatches"
         :title="nameOf(item)"
         :href="isTrash ? undefined : route('institutions.show', item.id)"
       />

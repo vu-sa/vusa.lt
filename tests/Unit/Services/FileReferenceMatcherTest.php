@@ -40,13 +40,13 @@ dataset('stored forms', [
     'raw plain column' => fn (string $url): string => $url,
     'without leading slash' => fn (string $url): string => ltrim($url, '/'),
     'tiptap json (json_encode default)' => fn (string $url): string => json_encode(['type' => 'image', 'attrs' => ['src' => $url]]),
-    'sanitized html (news.short)' => fn (string $url): string => sanitizedLink($url),
+    'sanitized html (news.short)' => sanitizedLink(...),
     'sanitized html in spatie translation' => fn (string $url): string => json_encode(['lt' => sanitizedLink($url)], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
     'sanitized html in escaped json' => fn (string $url): string => json_encode(['lt' => sanitizedLink($url)]),
     'percent-encoded by a browser' => fn (string $url): string => implode('/', array_map(rawurlencode(...), explode('/', $url))),
     'absolute www url' => fn (string $url): string => 'https://www.vusa.lt'.$url,
     'absolute tenant url' => fn (string $url): string => 'http://mif.vusa.lt'.$url,
-    'decomposed (NFD) letters' => fn (string $url): string => nfd($url),
+    'decomposed (NFD) letters' => nfd(...),
     'decomposed letters in escaped json' => fn (string $url): string => json_encode(['src' => nfd($url)]),
     'with query string' => fn (string $url): string => $url.'?v=2',
     'inside plain text' => fn (string $url): string => 'Atsisiųsk: '.$url.' šiandien',
@@ -56,13 +56,13 @@ dataset('stored forms', [
 test('every stored form of a reference matches', function (string $relativePath, Closure $store): void {
     $stored = $store(uploadUrl($relativePath));
 
-    expect((new FileReferenceMatcher($relativePath, matchLegacyPath: true))->matches($stored))->toBeTrue();
+    expect(new FileReferenceMatcher($relativePath, matchLegacyPath: true)->matches($stored))->toBeTrue();
 })->with('file paths')->with('stored forms');
 
 test('the SQL pre-filter needles survive every stored form', function (string $relativePath, Closure $store): void {
     $stored = $store(uploadUrl($relativePath));
 
-    foreach ((new FileReferenceMatcher($relativePath, matchLegacyPath: true))->coarseNeedles() as $needle) {
+    foreach (new FileReferenceMatcher($relativePath, matchLegacyPath: true)->coarseNeedles() as $needle) {
         expect($stored)->toContain($needle);
     }
 })->with('file paths')->with('stored forms');
@@ -80,7 +80,7 @@ test('pre-filter needles are the longest runs that survive encoding', function (
 });
 
 test('a reference to another file does not match', function (string $relativePath, string $stored): void {
-    expect((new FileReferenceMatcher($relativePath, matchLegacyPath: false))->matches($stored))->toBeFalse();
+    expect(new FileReferenceMatcher($relativePath, matchLegacyPath: false)->matches($stored))->toBeFalse();
 })->with([
     'same path on a foreign host' => ['foto.jpg', 'https://cdn.example.com/uploads/files/foto.jpg'],
     'host that only ends in vusa.lt' => ['foto.jpg', 'https://evilvusa.lt/uploads/files/foto.jpg'],

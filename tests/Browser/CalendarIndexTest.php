@@ -21,9 +21,9 @@ it('edits event type and status in the table and offers meeting creation in the 
     $page->navigate('/mano/calendar');
     waitForInertiaRender($page, '[data-slot=collection-table]');
 
-    $page->click('button[aria-label="Renginio tipas"]');
-    $page->click('[role=option]:has-text("Seminaras")');
-    $page->assertSee('Seminaras');
+    $page->select('[data-slot=collection-table] select[aria-label="Renginio tipas"]', 'Seminaras');
+    // The toast only renders once the in-process server has answered the PATCH.
+    waitForInertiaRender($page, '[data-sonner-toast][data-type=success]');
     $this->assertDatabaseHas('calendar', ['id' => $event->id, 'event_type_id' => $type->id]);
 
     $page->click('[data-slot=collection-status-menu]');

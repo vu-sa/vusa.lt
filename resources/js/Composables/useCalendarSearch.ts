@@ -1,8 +1,8 @@
-import { provideFacetSearch } from '@/Shared/Search/facets';
 import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 
+import { provideFacetSearch } from '@/Shared/Search/facets';
 import { SearchClientFactory, type TypesenseClient } from '@/Shared/Search/services/SearchClientFactory';
 
 export interface CalendarEventDocument {

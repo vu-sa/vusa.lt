@@ -173,13 +173,13 @@
 </template>
 
 <script setup lang="ts">
-import SearchMatch from '@/Components/ui/SearchMatch.vue';
-import { matchTitle } from '@/Shared/Search/matches';
 import { router } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { matchTitle } from '@/Shared/Search/matches';
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { useDocumentDisplay, getDocumentTargetUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import { useToasts } from '@/Composables/useToasts';
 import { Button } from '@/Components/ui/button';

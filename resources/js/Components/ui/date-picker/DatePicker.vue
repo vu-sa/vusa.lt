@@ -1,7 +1,7 @@
 <template>
   <Input
     v-if="isCoarsePointer"
-    :id="id"
+    :id
     :model-value="dateValue"
     type="date"
     :min="minDateValue"
@@ -14,7 +14,7 @@
   />
   <div v-else :class="cn('flex w-full items-center gap-2', props.class)">
     <Input
-      :id="id"
+      :id
       :model-value="dateValue"
       inputmode="numeric"
       :placeholder="placeholder ?? 'YYYY-MM-DD'"
@@ -33,7 +33,7 @@
         <Calendar
           :model-value="calendarValue"
           initial-focus
-          :locale="locale"
+          :locale
           :week-starts-on="1"
           :min-date
           :max-date

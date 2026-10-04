@@ -8,8 +8,9 @@
 </template>
 
 <script setup lang="ts">
-import type { SearchMatch } from '@/Shared/Search/matches';
 import { computed } from 'vue';
+
+import type { SearchMatch } from '@/Shared/Search/matches';
 
 const props = defineProps<{ match?: SearchMatch; compact?: boolean; inline?: boolean; title?: string }>();
 const text = computed(() => props.match?.segments.map(segment => segment.text).join(''));

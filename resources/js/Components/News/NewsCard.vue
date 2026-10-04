@@ -58,13 +58,13 @@
 </template>
 
 <script setup lang="ts">
-import SearchMatch from '@/Components/ui/SearchMatch.vue';
 
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Image } from 'lucide-vue-next';
 import { computed } from 'vue';
 
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import MediaFrame from '@/Components/Brand/MediaFrame.vue';
 import type { NewsItem } from '@/Types/contentParts';
 import { formatStaticTime } from '@/Utils/IntlTime';

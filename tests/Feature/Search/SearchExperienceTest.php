@@ -93,7 +93,7 @@ test('profiles activate new fields only after the collection has been rebuilt', 
     $current = SearchProfiles::all()['public_pages'];
     expect($current['version'])->toBe(2)
         ->and($current['parameters']['query_by'])->toContain('body,search_text_lt,search_text_en')
-        ->and(explode(',', $current['parameters']['query_by']))->toHaveCount(count(explode(',', $current['parameters']['query_by_weights'])))
+        ->and(explode(',', $current['parameters']['query_by']))->toHaveSameSize(explode(',', $current['parameters']['query_by_weights']))
         ->and($current['parameters']['exclude_fields'])->toContain('body');
     Cache::forever(SearchProfiles::cacheKey('public_pages'), (string) SearchProfiles::VERSION);
     expect(SearchProfiles::all()['public_pages']['version'])->toBe(2);
@@ -130,13 +130,10 @@ test('committed block edits and removals update admin and public bodies', functi
     foreach ([$model, $mirror] as $class) {
         expect($client->collections[(new $class)->searchableAs()]->documents[(string) $record->id]->retrieve()['body'])->toBe('pakeistasturinys');
     }
-    try {
-        DB::transaction(function () use ($part): void {
-            $part->update(['json_content' => ['type' => 'doc', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'rollbackturinys']]]]]]);
-            throw new RuntimeException('Roll back the body edit');
-        });
-    } catch (RuntimeException) {
-    }
+    expect(fn () => DB::transaction(function () use ($part): void {
+        $part->update(['json_content' => ['type' => 'doc', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'rollbackturinys']]]]]]);
+        throw new RuntimeException('Roll back the body edit');
+    }))->toThrow(RuntimeException::class);
     foreach ([$model, $mirror] as $class) {
         expect($client->collections[(new $class)->searchableAs()]->documents[(string) $record->id]->retrieve()['body'])->toBe('pakeistasturinys');
     }
@@ -159,9 +156,9 @@ test('real Typesense ranks title matches above body matches and returns safe bod
         ...$profile['parameters'], 'q' => 'Bendrabučių', 'sort_by' => '_text_match:desc,created_at:desc',
         'filter_by' => 'id:=['.$title->id.','.$body->id.']',
     ]);
-    expect(array_column(array_column($result['hits'], 'document'), 'id'))->toBe([(string) $title->id, (string) $body->id]);
-    expect($result['hits'][1]['document'])->not->toHaveKey('body');
-    expect(collect($result['hits'][1]['highlights'])->firstWhere('field', 'body')['snippet'])->toContain('⟦Bendrabučių⟧');
+    expect(array_column(array_column($result['hits'], 'document'), 'id'))->toBe([(string) $title->id, (string) $body->id])
+        ->and($result['hits'][1]['document'])->not->toHaveKey('body')
+        ->and(collect($result['hits'][1]['highlights'])->firstWhere('field', 'body')['snippet'])->toContain('⟦Bendrabučių⟧');
 });
 
 test('native Lithuanian and English stemming finds inflected words', function (): void {
@@ -183,16 +180,16 @@ test('document recommendations match word forms, prefixes and any words of a phr
     $settings = app(DocumentSettings::class);
     $service = app(DocumentRecommendations::class);
     $rule = ['document_id' => (string) $statutes->id, 'phrases' => ['VU SA įstatai'], 'enabled' => true, 'show_without_query' => false];
-    expect($service->matchingIds('įstatai'))->toBe([]);
+    expect($service->matchingIds('įstatai'))->toBeEmpty();
     $settings->recommendations = [$rule];
     $settings->save();
-    expect($service->matchingIds('įstatai'))->toBe([]);
+    expect($service->matchingIds('įstatai'))->toBeEmpty();
     $service->synchronize();
     foreach (['įstat', 'įstatai', 'įstatų', 'įstatus', 'SA įstat', 'VU SA įstatų'] as $query) {
         expect($service->matchingIds($query))->toBe([(string) $statutes->id]);
     }
     foreach (['', '*', 'įstatymas', 'pakeisti įstatai'] as $query) {
-        expect($service->matchingIds($query))->toBe([]);
+        expect($service->matchingIds($query))->toBeEmpty();
     }
     $this->getJson(route('api.v1.documents.recommendations', ['q' => 'įstatų']))->assertOk()->assertJsonPath('data.ids', [(string) $statutes->id]);
     $this->getJson(route('api.v1.documents.recommendations', ['q' => str_repeat('a', 201)]))->assertUnprocessable();
@@ -208,11 +205,11 @@ test('document recommendations match word forms, prefixes and any words of a phr
     $statutes->update(['is_active' => false]);
     expect($service->matchingIds('įstatai'))->toBe([(string) $other->id]);
     $other->delete();
-    expect($service->matchingIds('įstatai'))->toBe([]);
+    expect($service->matchingIds('įstatai'))->toBeEmpty();
     $settings->recommendations = [[...$rule, 'enabled' => false]];
     $settings->save();
     $service->synchronize();
-    expect($service->matchingIds('įstatai'))->toBe([]);
+    expect($service->matchingIds('įstatai'))->toBeEmpty();
 });
 
 test('important document types break relevance ties and pinned documents obey search filters', function (): void {
@@ -222,8 +219,8 @@ test('important document types break relevance ties and pinned documents obey se
     $ordinary = Document::factory()->create([...$attributes, 'content_type' => 'Nutarimai', 'document_date' => '2026-01-01']);
     $collection = app(Client::class)->collections[$important->searchableAs()];
     $params = ['q' => 'dokumentas', 'query_by' => 'title', 'filter_by' => 'id:=['.$important->id.','.$ordinary->id.']', 'sort_by' => '_text_match:desc,_eval(content_type:=[`Įstatai`,`Šablonai`]):desc,document_date:desc'];
-    expect($collection->documents->search($params)['hits'][0]['document']['id'])->toBe((string) $important->id);
-    expect($collection->documents->search([...$params, 'sort_by' => 'document_date:desc'])['hits'][0]['document']['id'])->toBe((string) $ordinary->id);
+    expect($collection->documents->search($params)['hits'][0]['document']['id'])->toBe((string) $important->id)
+        ->and($collection->documents->search([...$params, 'sort_by' => 'document_date:desc'])['hits'][0]['document']['id'])->toBe((string) $ordinary->id);
     $pins = ['pinned_hits' => $important->id.':1', 'filter_curated_hits' => true];
     $result = $collection->documents->search([...$params, ...$pins, 'filter_by' => 'id:=['.$important->id.','.$ordinary->id.'] && content_type:=Nutarimai']);
     expect(array_column(array_column($result['hits'], 'document'), 'id'))->toBe([(string) $ordinary->id]);
@@ -303,8 +300,9 @@ test('facet counts and facet queries retain the scoped key and mandatory publica
         [...$params, 'filter_by' => $base],
         [...$params, 'filter_by' => $base, 'facet_query' => 'lang:en'],
     ]]);
-    expect($result['results'][0]['found'])->toBe(1);
-    expect(collect($result['results'][1]['facet_counts'][0]['counts'])->pluck('count', 'value')->all())->toHaveCount(2)->toMatchArray(['en' => 1, 'lt' => 1]);
-    expect($result['results'][2]['facet_counts'][0]['counts'])->toHaveCount(1)
+    expect($result['results'][0]['found'])->toBe(1)
+        ->and(collect($result['results'][1]['facet_counts'][0]['counts'])->pluck('count', 'value')->all())->toHaveCount(2)
+        ->toMatchArray(['en' => 1, 'lt' => 1])
+        ->and($result['results'][2]['facet_counts'][0]['counts'])->toHaveCount(1)
         ->and($result['results'][2]['facet_counts'][0]['counts'][0])->toMatchArray(['value' => 'en', 'count' => 1]);
 });

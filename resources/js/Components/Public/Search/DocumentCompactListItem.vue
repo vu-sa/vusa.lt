@@ -79,9 +79,9 @@
             :title="document.title"
           >
             <SearchMatch v-if="titleMatch" inline :match="titleMatch" />
-              <template v-else>{{ document.title }}</template>
+            <template v-else>{{ document.title }}</template>
           </h3>
-            <SearchMatch :match="document._searchMatch" :title="document.title" />
+          <SearchMatch :match="document._searchMatch" :title="document.title" />
         </div>
 
         <!-- Compact Metadata -->
@@ -125,12 +125,12 @@
 </template>
 
 <script setup lang="ts">
-import SearchMatch from '@/Components/ui/SearchMatch.vue';
-import { matchTitle } from '@/Shared/Search/matches';
 import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { matchTitle } from '@/Shared/Search/matches';
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { useDocumentDisplay, getDocumentTargetUrl, parseDocumentDate, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import { TagChip } from '@/Components/Public/Base';
 import IFluentLink20Regular from '~icons/fluent/link-20-regular';

@@ -1,8 +1,8 @@
-import type { SearchProfileConfig } from '@/Shared/Search/profiles';
-import { provideFacetSearch } from '@/Shared/Search/facets';
 import { ref, type Ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
+import type { SearchProfileConfig } from '@/Shared/Search/profiles';
+import { provideFacetSearch } from '@/Shared/Search/facets';
 import { SearchClientFactory, type TypesenseClient } from '@/Shared/Search/services/SearchClientFactory';
 
 interface TypesenseNode {

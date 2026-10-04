@@ -2,8 +2,12 @@
   <div class="space-y-2" :class="containerClass">
     <FacetCountHelp />
     <input v-if="options.length > 8" v-model="term" type="search" :aria-label="$t('search.facet_search')" :placeholder="$t('search.facet_search')" class="min-h-11 w-full border border-border bg-background px-3 text-sm text-foreground">
-    <p v-if="loading" role="status" class="text-xs text-muted-foreground">{{ $t('search.facet_search_loading') }}</p>
-    <p v-if="failed" role="status" class="text-xs text-muted-foreground">{{ $t('search.facet_search_error') }}</p>
+    <p v-if="loading" role="status" class="text-xs text-muted-foreground">
+      {{ $t('search.facet_search_loading') }}
+    </p>
+    <p v-if="failed" role="status" class="text-xs text-muted-foreground">
+      {{ $t('search.facet_search_error') }}
+    </p>
     <!-- No options state -->
     <div v-if="options.length === 0" class="text-sm text-muted-foreground p-3 text-center italic">
       {{ emptyText }}
@@ -62,8 +66,6 @@
 </template>
 
 <script setup lang="ts">
-import FacetCountHelp from '@/Components/ui/FacetCountHelp.vue';
-import { useFacetOptions } from '@/Shared/Search/useFacetOptions';
 
 import { ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -71,6 +73,8 @@ import { ChevronDown } from 'lucide-vue-next';
 
 import type { FilterOption, FacetValue } from './types';
 
+import { useFacetOptions } from '@/Shared/Search/useFacetOptions';
+import FacetCountHelp from '@/Components/ui/FacetCountHelp.vue';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
@@ -129,7 +133,7 @@ const normalizedOptions = computed(() => {
     const isFacetValue = !('label' in opt);
     const { value } = opt;
     const label = isFacetValue ? props.labelFormatter(String(opt.value)) : opt.label;
-    const count = opt.count;
+    const { count } = opt;
     const isSelected = props.selectedValues.includes(value);
 
     return { value, label, count, isSelected };

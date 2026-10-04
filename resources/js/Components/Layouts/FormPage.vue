@@ -28,7 +28,9 @@
         <div class="min-w-0 flex-1 border-l border-border pl-3">
           <div class="flex items-center gap-2 min-w-0">
             <p class="truncate text-sm font-bold text-foreground" data-testid="form-page-bar-title">
-              <slot name="bar-title">{{ barTitle ?? title }}</slot>
+              <slot name="bar-title">
+                {{ barTitle ?? title }}
+              </slot>
             </p>
             <slot name="title-status" />
           </div>
@@ -87,7 +89,9 @@
       </div>
 
       <h1 class="u-display text-balance text-4xl leading-[0.95] text-foreground sm:text-5xl">
-        <slot name="title">{{ title }}</slot>
+        <slot name="title">
+          {{ title }}
+        </slot>
       </h1>
       <p v-if="lead" class="max-w-xl text-pretty leading-relaxed text-muted-foreground">
         {{ lead }}

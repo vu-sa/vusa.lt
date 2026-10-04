@@ -89,6 +89,7 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronRight, Link as LinkIcon, Clock, Eye, Pencil } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 import { toneClass, toneIcon } from '../Utils/searchBadges';
 import type { NormalizedSearchHit, SearchCollectionKey } from '../Utils/searchHitMappers';
@@ -96,7 +97,6 @@ import type { NormalizedSearchHit, SearchCollectionKey } from '../Utils/searchHi
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { matchTitle, type SearchMatchDocument } from '@/Shared/Search/matches';
-import { computed } from 'vue';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { Badge } from '@/Components/ui/badge';
 

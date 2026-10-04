@@ -24,7 +24,7 @@
     </template>
 
     <template #cell="{ item, column }">
-      <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" v-if="column.key === 'title'" :title="item.title || $t('Be pavadinimo')" :href="route('agendaItems.edit', item.id)" />
+      <CollectionPrimaryCell v-if="column.key === 'title'" :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title || $t('Be pavadinimo')" :href="route('agendaItems.edit', item.id)" />
       <span v-else-if="column.key === 'meeting'">{{ item.meeting_title || '—' }}</span>
       <span v-else-if="column.key === 'institution'">{{ item.institution_name_lt || item.institution_name_en || '—' }}</span>
       <CollectionRowActions v-else-if="column.key === 'actions'" :actions="openActions(item)" />

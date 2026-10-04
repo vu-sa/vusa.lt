@@ -12,11 +12,14 @@
     </ActionChoiceList>
   </ActionWindowScreen>
 </template>
+
 <script setup lang="ts">
 import { MailQuestion } from 'lucide-vue-next';
+
 import ActionWindowScreen from '../ActionWindowScreen.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';
 import ActionChoiceButton from '../ActionChoiceButton.vue';
+
 import { useActionWindow } from '@/Composables/useActionWindow';
 
 const { draft, advance, updateActivityRequest } = useActionWindow();

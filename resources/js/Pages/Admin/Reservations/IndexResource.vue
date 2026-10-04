@@ -108,7 +108,7 @@
             <span class="min-w-0 flex-1">
               <span class="block truncate text-base font-medium text-foreground">
                 <SearchMatch inline :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
-              <SearchMatch compact :match="item._searchMatch" :title="nameOf(item)" />
+                <SearchMatch compact :match="item._searchMatch" :title="nameOf(item)" />
               </span>
               <span class="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
                 <span v-if="item.category_name">{{ item.category_name }}</span>
@@ -139,7 +139,7 @@
           class="font-medium hover:text-brand"
         >
           <SearchMatch inline :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
-              <SearchMatch compact :match="item._searchMatch" :title="nameOf(item)" />
+          <SearchMatch compact :match="item._searchMatch" :title="nameOf(item)" />
         </Link>
         <template v-else-if="column.key === 'category'">
           {{ item.category_name ?? '—' }}
@@ -202,13 +202,13 @@
 </template>
 
 <script setup lang="ts">
-import SearchMatch from '@/Components/ui/SearchMatch.vue';
-import { matchTitle } from '@/Shared/Search/matches';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Ban, CalendarClock, Plus } from 'lucide-vue-next';
 import { capitalize, computed, onMounted, watch } from 'vue';
 
+import { matchTitle } from '@/Shared/Search/matches';
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { ResourceIcon } from '@/Components/icons';

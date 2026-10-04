@@ -60,6 +60,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property-read Content $content
  * @property-read News|null $other_language_news
  * @property-read Collection<int, PublicUrl> $publicUrls
+ * @property-read Taggable|null $pivot
  * @property-read Collection<int, Tag> $tags
  * @property-read Tenant $tenant
  * @property-read User|null $user
@@ -251,7 +252,7 @@ class News extends Model implements Feedable, Sitemapable
         return $this->hasOne(News::class, 'id', 'other_lang_id');
     }
 
-    /** @return MorphToMany<Tag, $this> */
+    /** @return MorphToMany<Tag, $this, Taggable> */
     public function tags(): MorphToMany
     {
         return $this->morphToMany(Tag::class, 'taggable')->using(Taggable::class);

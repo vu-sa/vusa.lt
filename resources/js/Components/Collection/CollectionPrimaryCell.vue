@@ -44,11 +44,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { Link } from '@inertiajs/vue3';
+
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { matchTitle, type SearchMatch as SearchMatchData } from '@/Shared/Search/matches';
-import { computed } from 'vue';
-
-import { Link } from '@inertiajs/vue3';
 
 /**
  * The first cell of every collection row: a bold title that opens the record, over one quiet

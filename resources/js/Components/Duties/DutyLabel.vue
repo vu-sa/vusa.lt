@@ -1,6 +1,6 @@
 <template>
   <span class="inline-flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
-    <InflectedDutyName :name="duty.name" :holder :use-original-duty-name="useOriginalDutyName" class="font-medium" />
+    <InflectedDutyName :name="duty.name" :holder :use-original-duty-name class="font-medium" />
     <span v-if="duty.institution?.name" class="truncate text-xs text-muted-foreground">
       {{ duty.institution.name }}
     </span>

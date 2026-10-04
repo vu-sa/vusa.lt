@@ -43,8 +43,12 @@
       </div>
 
       <FacetCountHelp />
-      <p v-if="loading" role="status" class="px-3 text-xs text-muted-foreground">{{ $t('search.facet_search_loading') }}</p>
-      <p v-if="failed" role="status" class="px-3 text-xs text-muted-foreground">{{ $t('search.facet_search_error') }}</p>
+      <p v-if="loading" role="status" class="px-3 text-xs text-muted-foreground">
+        {{ $t('search.facet_search_loading') }}
+      </p>
+      <p v-if="failed" role="status" class="px-3 text-xs text-muted-foreground">
+        {{ $t('search.facet_search_error') }}
+      </p>
       <!-- Optional search for long lists (e.g. Padaliniai) -->
       <div v-if="searchable || options.length > 8" class="relative border-b border-border px-3 py-2">
         <IFluentSearch16Regular class="absolute left-5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
@@ -119,13 +123,13 @@
 </template>
 
 <script setup lang="ts">
-import FacetCountHelp from '@/Components/ui/FacetCountHelp.vue';
-import { useFacetOptions } from '@/Shared/Search/useFacetOptions';
 
 import type { HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref } from 'vue';
 
+import { useFacetOptions } from '@/Shared/Search/useFacetOptions';
+import FacetCountHelp from '@/Components/ui/FacetCountHelp.vue';
 import { controlCountClass, controlVariants } from '@/Components/ui/control';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { cn } from '@/Utils/Shadcn/utils';

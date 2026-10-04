@@ -80,7 +80,7 @@
           {{ eventTitle }}
         </component>
       </h3>
-        <SearchMatch :match="(event as CalendarEventLike)._searchMatch" />
+      <SearchMatch :match="(event as CalendarEventLike)._searchMatch" />
 
       <!-- Metadata -->
       <div class="mt-2 flex flex-col gap-1 text-sm text-muted-foreground">
@@ -114,11 +114,11 @@
 </template>
 
 <script setup lang="ts">
-import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import DatePlate from '@/Components/Public/Base/DatePlate.vue';
 import { formatEventDateSpan } from '@/Utils/IntlTime';
 import { getCalendarEvent2Route } from '@/Utils/Route';

@@ -176,8 +176,6 @@
 </template>
 
 <script setup lang="ts">
-import SearchMatch from '@/Components/ui/SearchMatch.vue';
-import { matchTitle } from '@/Shared/Search/matches';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
@@ -192,6 +190,8 @@ import {
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
+import { matchTitle } from '@/Shared/Search/matches';
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import { DocumentIcon } from '@/Components/icons';

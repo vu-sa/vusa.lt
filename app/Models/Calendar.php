@@ -67,6 +67,7 @@ use Spatie\SchemaOrg\Place;
  * @property-read MediaCollection<int, Media> $media
  * @property-read Meeting|null $meeting
  * @property-read Collection<int, PublicUrl> $publicUrls
+ * @property-read Taggable|null $pivot
  * @property-read Collection<int, Tag> $tags
  * @property-read Tenant $tenant
  * @property-read mixed $translations

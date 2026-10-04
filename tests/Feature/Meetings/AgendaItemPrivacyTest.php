@@ -168,8 +168,8 @@ test('a failed search eviction refuses a restrictive save before changing the da
     app(EngineManager::class)->extend('typesense', fn () => $engine);
     app(EngineManager::class)->forgetDrivers();
 
-    expect(fn () => $this->item->update(['is_private' => true]))->toThrow(RuntimeException::class, 'Search unavailable');
-    expect($this->item->fresh()->is_private)->toBeFalse();
+    expect(fn () => $this->item->update(['is_private' => true]))->toThrow(RuntimeException::class, 'Search unavailable')
+        ->and($this->item->fresh()->is_private)->toBeFalse();
 });
 
 test('private relationships and copied step content do not disclose information to public-only readers', function (): void {
@@ -183,19 +183,19 @@ test('private relationships and copied step content do not disclose information 
         'title' => $this->item->getTranslations('title'),
         'description' => $this->item->getTranslations('description'),
     ])->load(StepResource::RELATIONS);
-    $resource = (new StepResource($step))->resolve(request());
+    $resource = new StepResource($step)->resolve(request());
     expect(json_encode($resource))->not->toContain('Originalus neviešas pavadinimas', 'Neviešo turinio žymuo')
         ->and($resource['agenda_item'])->toBeNull();
 });
 
 test('shared meeting statistics omit private votes for public-only readers', function (): void {
     asUser($this->outsider);
-    $resource = (new InstitutionMeetingResource($this->meeting->load('agendaItems.votes')))->resolve(request());
+    $resource = new InstitutionMeetingResource($this->meeting->load('agendaItems.votes'))->resolve(request());
     expect($resource['vote_matches'])->toBe(0)->and($resource['agenda_item_titles'])->toBe(['Darbo klausimas']);
 
     asUser($this->coordinator);
     request()->setUserResolver(fn () => $this->coordinator);
-    $resource = (new InstitutionMeetingResource($this->meeting))->resolve(request());
+    $resource = new InstitutionMeetingResource($this->meeting)->resolve(request());
     expect($resource['vote_matches'])->toBe(1);
 });
 

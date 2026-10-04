@@ -33,7 +33,10 @@ class SyncContentSearch
     {
         DB::afterCommit(function () use ($contentId): void {
             $content = Content::find($contentId);
-            $owner = $content?->news ?? $content?->page;
+            if ($content === null) {
+                return;
+            }
+            $owner = $content->news ?? $content->page;
             if (! ($owner instanceof News || $owner instanceof Page)) {
                 return;
             }

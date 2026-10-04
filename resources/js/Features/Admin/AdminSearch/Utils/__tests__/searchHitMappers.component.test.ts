@@ -198,7 +198,6 @@ describe('collectAllTabHits', () => {
   });
 });
 
-
 describe('holder-aware search duty names', () => {
   it('keeps links and overrides aligned while selecting the display locale', () => {
     const user = {

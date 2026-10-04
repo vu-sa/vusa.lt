@@ -12,7 +12,7 @@ use Typesense\Exceptions\ObjectNotFound;
 
 class DocumentRecommendations
 {
-    public function __construct(private Client $client, private DocumentSettings $settings) {}
+    public function __construct(private readonly Client $client, private readonly DocumentSettings $settings) {}
 
     /** @return string[] */
     public function matchingIds(string $query): array
@@ -91,7 +91,7 @@ class DocumentRecommendations
         return config('scout.prefix').'document_recommendation_phrases';
     }
 
-    /** @return Collection<int, array{document_id: string, phrases: string[], enabled: bool, show_without_query: bool}> */
+    /** @return Collection<int, array{document_id: string, phrases: string[], enabled: true, show_without_query: bool}> */
     private function enabledRules(): Collection
     {
         return collect($this->settings->recommendations)->filter(fn ($rule) => $rule['enabled'])->values();

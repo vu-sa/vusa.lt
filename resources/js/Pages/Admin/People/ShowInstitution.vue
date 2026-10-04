@@ -30,7 +30,9 @@
 
     <template #activityRequests>
       <Deferred data="activityRequests">
-        <template #fallback><div class="h-32 animate-pulse border-y border-border bg-secondary" /></template>
+        <template #fallback>
+          <div class="h-32 animate-pulse border-y border-border bg-secondary" />
+        </template>
         <InstitutionActivityRequestHistory v-if="activityRequests" :key="institution.id" :history="activityRequests" />
       </Deferred>
     </template>
@@ -204,7 +206,6 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
-import InstitutionActivityRequestHistory, { type ActivityRequestHistory } from '@/Components/Institutions/InstitutionActivityRequestHistory.vue';
 import { Deferred, Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
@@ -222,6 +223,7 @@ import {
   UserCheck,
 } from 'lucide-vue-next';
 
+import InstitutionActivityRequestHistory, { type ActivityRequestHistory } from '@/Components/Institutions/InstitutionActivityRequestHistory.vue';
 import { CadenceSection } from '@/Components/Cadences';
 import InstitutionDutiesSection from '@/Components/Institutions/InstitutionDutiesSection.vue';
 import InstitutionMeetingsList from '@/Components/Institutions/InstitutionMeetingsList.vue';
@@ -259,7 +261,6 @@ import type {
 } from '@/Types/InstitutionPage';
 import type { CadenceRow } from '@/Components/Cadences';
 import type { DutyWithUsers, UserWithPivot } from '@/Components/AdminForms/DutyCard.vue';
-
 
 const props = defineProps<{
   institution: InstitutionPageData & { tenant?: { id: number; shortname: string } | null };

@@ -1,26 +1,48 @@
 <template>
   <SectionCard data-slot="activity-request-history" :title="$t('activity_requests.history_title')">
-    <p v-if="!batches.length" class="text-sm text-muted-foreground">{{ $t('activity_requests.history_empty') }}</p>
+    <p v-if="!batches.length" class="text-sm text-muted-foreground">
+      {{ $t('activity_requests.history_empty') }}
+    </p>
     <div v-for="batch in batches" :key="batch.id" class="border-b border-border py-4">
       <div v-for="(requests, campaign) in batch.campaigns" :key="campaign" class="space-y-3">
-        <h3 class="text-xs font-bold uppercase tracking-wide">{{ $t(`activity_requests.campaigns.${campaign}`) }}</h3>
+        <h3 class="text-xs font-bold uppercase tracking-wide">
+          {{ $t(`activity_requests.campaigns.${campaign}`) }}
+        </h3>
         <article v-for="request in requests" :key="request.id" class="space-y-1 border-l border-border pl-3 text-sm">
           <p>{{ request.recipient }} · {{ $t(`activity_requests.${request.status}`) }}</p>
-          <p class="text-xs text-muted-foreground">{{ request.period_start }} – {{ request.period_end ?? $t('activity_requests.legacy_period') }}</p>
-          <p class="text-xs text-muted-foreground">{{ request.requester ?? $t('activity_requests.automatic') }} · {{ dates.dayWithTime(request.created_at) }}</p>
-          <p v-if="request.note">{{ request.note }}</p>
-          <p v-if="request.answer">{{ $t(`activity_requests.done.${request.answer}`) }} · {{ request.answered_at ? dates.dayWithTime(request.answered_at) : '' }}</p>
-          <p v-if="request.resolved_at" class="text-xs text-muted-foreground">{{ $t(`activity_requests.resolution.${request.resolution_source ?? 'meeting'}`) }} · {{ dates.dayWithTime(request.resolved_at) }}</p>
-          <p class="text-xs text-muted-foreground">{{ $t('activity_requests.valid_until') }}: {{ dates.dayWithTime(request.expires_at) }}</p>
+          <p class="text-xs text-muted-foreground">
+            {{ request.period_start }} – {{ request.period_end ?? $t('activity_requests.legacy_period') }}
+          </p>
+          <p class="text-xs text-muted-foreground">
+            {{ request.requester ?? $t('activity_requests.automatic') }} · {{ dates.dayWithTime(request.created_at) }}
+          </p>
+          <p v-if="request.note">
+            {{ request.note }}
+          </p>
+          <p v-if="request.answer">
+            {{ $t(`activity_requests.done.${request.answer}`) }} · {{ request.answered_at ? dates.dayWithTime(request.answered_at) : '' }}
+          </p>
+          <p v-if="request.resolved_at" class="text-xs text-muted-foreground">
+            {{ $t(`activity_requests.resolution.${request.resolution_source ?? 'meeting'}`) }} · {{ dates.dayWithTime(request.resolved_at) }}
+          </p>
+          <p class="text-xs text-muted-foreground">
+            {{ $t('activity_requests.valid_until') }}: {{ dates.dayWithTime(request.expires_at) }}
+          </p>
           <template v-for="meeting in request.meetings" :key="meeting.id">
-            <Link v-if="meeting.url" :href="meeting.url" class="inline-flex min-h-11 items-center text-brand underline">{{ meeting.date }}</Link>
+            <Link v-if="meeting.url" :href="meeting.url" class="inline-flex min-h-11 items-center text-brand underline">
+              {{ meeting.date }}
+            </Link>
             <span v-else class="inline-block py-2">{{ meeting.date }}</span>
           </template>
-          <p v-for="checkIn in request.check_ins" :key="checkIn.id" class="text-xs text-muted-foreground">{{ $t('activity_requests.no_meetings') }}: {{ checkIn.start }} – {{ checkIn.end }}</p>
+          <p v-for="checkIn in request.check_ins" :key="checkIn.id" class="text-xs text-muted-foreground">
+            {{ $t('activity_requests.no_meetings') }}: {{ checkIn.start }} – {{ checkIn.end }}
+          </p>
         </article>
       </div>
     </div>
-    <Button v-if="history.next_page" variant="outline" voice="sentence" class="mt-4 min-h-11" :disabled="loading" @click="loadMore">{{ $t('Rodyti daugiau') }}</Button>
+    <Button v-if="history.next_page" variant="outline" voice="sentence" class="mt-4 min-h-11" :disabled="loading" @click="loadMore">
+      {{ $t('Rodyti daugiau') }}
+    </Button>
   </SectionCard>
 </template>
 

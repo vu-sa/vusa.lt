@@ -12,7 +12,6 @@
     actions-beside-title
     @action="handleAction"
   >
-
     <template v-if="goal.responsible_duty" #fact-duty>
       <Link :href="route('duties.show', goal.responsible_duty.id)" class="hover:underline">
         <InflectedDutyName :name="goal.responsible_duty.name" />

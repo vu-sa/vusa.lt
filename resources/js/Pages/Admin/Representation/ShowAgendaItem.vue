@@ -146,7 +146,9 @@
     </template>
 
     <template #item>
-      <p v-if="isRedacted" class="text-sm text-muted-foreground" data-testid="agenda-item-private-placeholder">{{ $t('meetings.privacy.placeholder') }}</p>
+      <p v-if="isRedacted" class="text-sm text-muted-foreground" data-testid="agenda-item-private-placeholder">
+        {{ $t('meetings.privacy.placeholder') }}
+      </p>
       <div v-else class="space-y-10">
         <AgendaItemBody
           v-model:type-open="typeOpen"

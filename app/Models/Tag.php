@@ -25,6 +25,7 @@ use Illuminate\Support\Str;
  * @property array|string|null $name
  * @property array|string|null $description
  * @property Carbon|null $deleted_at
+ * @property-read Taggable|null $pivot
  * @property-read Collection<int, Calendar> $calendars
  * @property-read array $translatable_columns_from
  * @property-read Collection<int, News> $news

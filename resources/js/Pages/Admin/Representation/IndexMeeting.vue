@@ -39,8 +39,8 @@
       <template v-if="column.key === 'date'">
         <span class="tabular-nums">{{ formatDate(new Date((item.start_time ?? 0) * 1000)) }}</span>
       </template>
-      <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
-        v-else-if="column.key === 'title'"
+      <CollectionPrimaryCell v-else-if="column.key === 'title'" :match="item._searchMatch"
+        :title-matches="item._searchTitleMatches"
         :title="item.title"
         :href="isTrash ? undefined : route('meetings.show', item.id)"
       />

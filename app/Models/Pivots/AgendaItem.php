@@ -39,6 +39,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -49,14 +50,14 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property int $order
  * @property bool $brought_by_students
- * @property bool $is_private
- * @property array|string|null $public_title
  * @property AgendaItemType|null $type
  * @property string|null $start_time
  * @property string|null $end_time
  * @property array|string|null $title
  * @property array|string|null $description
  * @property array|string|null $student_position
+ * @property bool $is_private
+ * @property array|string|null $public_title
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, Vote> $additionalVotes
  * @property-read Collection<int, Comment> $comments
@@ -70,6 +71,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
  * @property-read Collection<int, Vote> $votes
+ * @property-read int|null $institutions_count
+ * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\AgendaItemFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem newModelQuery()
@@ -102,7 +105,9 @@ class AgendaItem extends Pivot implements Commentable
     public function setAttribute($key, $value): static
     {
         if ($key === 'public_title' && $value === null) {
-            return $this->setTranslations($key, []);
+            $this->setTranslations($key, []);
+
+            return $this;
         }
 
         return $this->translatedSetAttribute($key, $value);
@@ -226,12 +231,12 @@ class AgendaItem extends Pivot implements Commentable
         return $this->belongsToMany(Problem::class, 'agenda_item_problem', 'agenda_item_id', 'problem_id')->withTimestamps();
     }
 
-    public function institutions()
+    public function institutions(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->meeting(), (new Meeting)->institutions());
     }
 
-    public function tenants()
+    public function tenants(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->tenant());
     }

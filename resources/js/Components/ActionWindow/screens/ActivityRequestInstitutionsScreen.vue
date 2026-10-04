@@ -4,12 +4,18 @@
     :subtitle="$t('action_window.activity_request.institutions.subtitle')"
   >
     <div class="space-y-3 pb-3">
-      <Input :model-value="controller.query.value" @update:model-value="controller.search(String($event))" :placeholder="$t('action_window.institution.search')" />
+      <Input :model-value="controller.query.value" :placeholder="$t('action_window.institution.search')" @update:model-value="controller.search(String($event))" />
       <select v-model="tenant" class="min-h-11 w-full border border-border bg-background px-3" :aria-label="$t('activity_requests.all_tenants')">
-        <option value="">{{ $t('activity_requests.all_tenants') }}</option>
-        <option v-for="item in tenants" :key="item.id" :value="String(item.id)">{{ item.name }}</option>
+        <option value="">
+          {{ $t('activity_requests.all_tenants') }}
+        </option>
+        <option v-for="item in tenants" :key="item.id" :value="String(item.id)">
+          {{ item.name }}
+        </option>
       </select>
-      <p class="text-xs text-muted-foreground" role="status">{{ $t('activity_requests.selection_limit') }} ({{ selected.length }}/100)</p>
+      <p class="text-xs text-muted-foreground" role="status">
+        {{ $t('activity_requests.selection_limit') }} ({{ selected.length }}/100)
+      </p>
     </div>
 
     <div v-if="isFetching && !candidates" class="flex flex-col gap-2">
@@ -42,7 +48,9 @@
       </ActionChoiceButton>
     </ActionChoiceList>
 
-    <Button v-if="controller.hasMoreResults.value" variant="ghost" voice="sentence" class="mt-2 w-full" @click="controller.loadMore">{{ $t('Rodyti daugiau') }}</Button>
+    <Button v-if="controller.hasMoreResults.value" variant="ghost" voice="sentence" class="mt-2 w-full" @click="controller.loadMore">
+      {{ $t('Rodyti daugiau') }}
+    </Button>
     <template #footer>
       <ActionWindowPrimaryButton :disabled="selected.length === 0 || selected.length > 100" @click="advance('activity.review')">
         {{ $t('action_window.activity_request.institutions.continue', { count: String(selected.length) }) }}

@@ -1,8 +1,8 @@
+import { ref, computed, onMounted } from 'vue';
+
 import { buildProfileParams } from '@/Shared/Search/profiles';
 import { documentWithMatch, type HighlightedHit } from '@/Shared/Search/matches';
 import { facetSearches, mergeDisjunctiveFacets } from '@/Shared/Search/facets';
-import { ref, computed, onMounted } from 'vue';
-
 import { buildInfix } from '@/Features/Admin/AdminSearch/Utils/searchParams';
 import { ErrorUtils } from '@/Shared/Search/services/SearchErrorUtils';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';

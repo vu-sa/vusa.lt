@@ -53,6 +53,8 @@ declare global {
       additional_votes?: Vote[]
       note?: AgendaItemNote
       problems?: Problem[]
+      institutions?: Institution
+      tenants?: Tenant
       comments?: Comment[]
       root_comments?: Comment[]
       activities_as_subject?: Activity[]
@@ -2656,3 +2658,4 @@ declare global {
 
   }
 }
+

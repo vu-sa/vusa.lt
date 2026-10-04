@@ -16,7 +16,7 @@ describe('FormPage.vue', () => {
   it('renders rich title and bar slots while keeping the plain browser title', () => {
     const wrapper = mount(FormPage, {
       props: { title: 'Koordinatorius' },
-      slots: { title: '<span data-testid="rich-title">Koordinatorė</span>', 'bar-title': '<span>Koordinatorė</span>' },
+      slots: { 'title': '<span data-testid="rich-title">Koordinatorė</span>', 'bar-title': '<span>Koordinatorė</span>' },
       global: { stubs },
     });
 

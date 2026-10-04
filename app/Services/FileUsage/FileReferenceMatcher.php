@@ -14,16 +14,16 @@ use Normalizer;
  * every encoding of the path, the stored value is decoded back to plain text
  * and compared once.
  */
-final class FileReferenceMatcher
+final readonly class FileReferenceMatcher
 {
     /** Characters that survive every encoding above unchanged. */
     private const string INVARIANT_RUN = '/[A-Za-z0-9._-]{2,}/';
 
     private const int MAX_NEEDLES = 4;
 
-    private readonly string $relativePath;
+    private string $relativePath;
 
-    private readonly string $pattern;
+    private string $pattern;
 
     /**
      * @param  string  $relativePath  path below `public/files/`, e.g. `padaliniai/vusamif/foto.jpg`

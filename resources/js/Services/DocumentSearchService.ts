@@ -199,7 +199,7 @@ export class DocumentSearchService {
         return 'document_date:desc,created_at:desc';
       default: {
         const types = this.curation.importantContentTypes ?? [];
-        const promotion = types.length ? `_eval(content_type:=[${types.map(type => '`' + type.replace(/\\/g, '\\\\').replace(/`/g, '\\`') + '`').join(',')}]):desc,` : '';
+        const promotion = types.length ? `_eval(content_type:=[${types.map(type => `\`${type.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',')}]):desc,` : '';
         return (query && query !== '*') ? `_text_match:desc,${promotion}document_date:desc` : 'document_date:desc,created_at:desc';
       }
     }

@@ -25,7 +25,9 @@
         <p class="text-sm font-medium leading-snug text-foreground">
           {{ item.title || $t('meetings.privacy.hidden_title') }}
         </p>
-        <p v-if="item.is_private && item.title !== $t('meetings.privacy.internal_only')" class="mt-0.5 text-xs text-muted-foreground">{{ $t('meetings.privacy.internal_only') }}</p>
+        <p v-if="item.is_private && item.title !== $t('meetings.privacy.internal_only')" class="mt-0.5 text-xs text-muted-foreground">
+          {{ $t('meetings.privacy.internal_only') }}
+        </p>
         <p
           v-if="showStatus || (!item.is_private && item.brought_by_students) || isExpandable"
           class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground"

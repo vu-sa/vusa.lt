@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import SearchHitRow from '../SearchHitRow.vue';
 import type { NormalizedSearchHit } from '../../Utils/searchHitMappers';
+
 import { documentWithMatch } from '@/Shared/Search/matches';
 
 const hit = {

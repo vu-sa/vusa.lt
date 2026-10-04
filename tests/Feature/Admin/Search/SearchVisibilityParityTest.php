@@ -189,16 +189,12 @@ test('real scoped keys conceal private items and the transport key cannot bypass
     expect($result['results'][0]['found'])->toBe(1);
 
     $indexedMeeting = (new Client($config))->collections[$meeting->searchableAs()]->documents[$meeting->id]->retrieve();
-    expect($indexedMeeting['vote_matches'])->toBe(0);
-    expect($indexedMeeting)->not->toHaveKey('completion_status');
-
-    try {
-        DB::transaction(function () use ($item): void {
+    expect($indexedMeeting['vote_matches'])->toBe(0)
+        ->and($indexedMeeting)->not->toHaveKey('completion_status')
+        ->and(fn () => DB::transaction(function () use ($item): void {
             $item->update(['is_private' => false]);
             throw new RuntimeException('Cancel publication');
-        });
-    } catch (RuntimeException) {
-    }
+        }))->toThrow(RuntimeException::class);
     $indexedItem = (new Client($config))->collections[$collection]->documents[$item->id]->retrieve();
     expect($item->fresh()->is_private)->toBeTrue()->and($indexedItem['is_private'])->toBeTrue();
 });

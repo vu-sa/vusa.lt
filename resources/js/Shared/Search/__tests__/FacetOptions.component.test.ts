@@ -2,8 +2,9 @@ import { mount, flushPromises } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
 import { afterEach, expect, it, vi } from 'vitest';
 
-import CollectionFacetOptions from '@/Components/Collection/CollectionFacetOptions.vue';
 import { provideFacetSearch, type FacetSearch } from '../facets';
+
+import CollectionFacetOptions from '@/Components/Collection/CollectionFacetOptions.vue';
 
 afterEach(() => vi.useRealTimers());
 

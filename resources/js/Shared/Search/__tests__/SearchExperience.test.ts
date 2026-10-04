@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
-import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { buildProfileParams, splitSortExpressions, type SearchProfile } from '../profiles';
 import { documentWithMatch, matchTitle, type SearchMatchDocument } from '../matches';
 import { SearchClientFactory } from '../services/SearchClientFactory';
+
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
 
 const profile: SearchProfile = {
   version: 2,
@@ -135,7 +136,7 @@ it('matches pinned records normally in the same scoped request to recover title 
   expect(fetch).toHaveBeenCalledTimes(1);
   const request = fetch.mock.calls[0][1];
   expect(request.headers['X-TYPESENSE-API-KEY']).toBe('scoped-key');
-  const searches = JSON.parse(request.body).searches;
+  const { searches } = JSON.parse(request.body);
   expect(searches).toHaveLength(2);
   expect(searches[1]).toMatchObject({ filter_by: '(is_active:=true && language_code:=lt) && id:=[`42`]', enable_overrides: false, per_page: 1 });
   expect(searches[1]).not.toHaveProperty('pinned_hits');

@@ -1,4 +1,3 @@
-import { provideFacetSearch } from '@/Shared/Search/facets';
 /**
  * Admin Collection Search Composable
  *
@@ -32,6 +31,7 @@ import {
 import { mergeFacets, sortFacetsByConfig } from '../Services/AdminFacetMerger';
 import { getCollectionFacetConfig, getCollectionSortOptions, resolveSortValue, RELEVANCE_SORT_VALUE } from '../Config/collectionFacetConfig';
 
+import { provideFacetSearch } from '@/Shared/Search/facets';
 import { useAdminSearch } from '@/Composables/useAdminSearch';
 import { useCollectionFilterMemory } from '@/Composables/collectionFilterMemory';
 

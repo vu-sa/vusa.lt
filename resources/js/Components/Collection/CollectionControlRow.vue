@@ -30,7 +30,7 @@
 
     <div class="flex shrink-0 items-center gap-2">
       <!-- Filled only while the filters are showing; set filters are told by the count alone. -->
-      <SpotlightPopover v-if="hasFilters" :is-dismissed="isDismissed" :title="$t('search.filters_spotlight_title')" :description="$t('search.facet_count_help')" @dismiss="dismiss">
+      <SpotlightPopover v-if="hasFilters" :is-dismissed :title="$t('search.filters_spotlight_title')" :description="$t('search.facet_count_help')" @dismiss="dismiss">
         <button
           type="button"
           :aria-label="$t('Filtrai')"
@@ -53,13 +53,13 @@
 </template>
 
 <script setup lang="ts">
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 import { trans as $t } from 'laravel-vue-i18n';
 import { Search, SlidersHorizontal, X } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { controlCountClass, controlVariants, searchFieldClass } from '@/Components/ui/control';
 
 const props = defineProps<{

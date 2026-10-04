@@ -56,6 +56,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property-read Page|null $otherLanguagePage
  * @property-read Page|null $parent
  * @property-read Collection<int, PublicUrl> $publicUrls
+ * @property-read Taggable|null $pivot
  * @property-read Collection<int, Tag> $tags
  * @property-read Tenant $tenant
  *

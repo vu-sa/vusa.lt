@@ -34,7 +34,7 @@ class MeetingSearchEngine extends TypesenseEngine
                 // A worker may have loaded its model before a restrictive save took the lock.
                 $fresh = $model->fresh();
 
-                if ($fresh === null || ($fresh instanceof Meeting && $fresh->trashed()) || ! $fresh->shouldBeSearchable()) {
+                if ($fresh === null || ($fresh instanceof Meeting && $fresh->trashed()) || (method_exists($fresh, 'shouldBeSearchable') && ! $fresh->shouldBeSearchable())) {
                     parent::delete(new Collection([$model]));
 
                     return;
