@@ -23,9 +23,10 @@
             <h3
               class="text-pretty text-base font-bold leading-snug text-foreground transition-colors group-hover:text-brand sm:text-lg"
             >
-              {{ document.title }}
+              <SearchMatch v-if="titleMatch" inline :match="titleMatch" />
+              <template v-else>{{ document.title }}</template>
             </h3>
-            <SearchMatch :match="document._searchMatch" />
+            <SearchMatch :match="document._searchMatch" :title="document.title" />
 
             <!-- Actions. A plain flex row with a small gap, not ButtonGroup — connected
                  buttons share a border pixel with their neighbour, so hovering the middle
@@ -173,6 +174,7 @@
 
 <script setup lang="ts">
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
+import { matchTitle } from '@/Shared/Search/matches';
 import { router } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
@@ -198,6 +200,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const titleMatch = computed(() => matchTitle(props.document.title, props.document._searchTitleMatches));
 const toasts = useToasts();
 
 // Use shared document display logic - use simple date format for list view

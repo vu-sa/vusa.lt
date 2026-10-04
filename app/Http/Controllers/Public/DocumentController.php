@@ -45,6 +45,7 @@ class DocumentController extends PublicController
             'tenantSwitchTarget' => 'same-page',
             'allContentTypes' => $staticData['contentTypes'],
             'importantContentTypes' => $documentSettings->getImportantContentTypes()->toArray(),
+            'hasDocumentRecommendations' => collect($documentSettings->recommendations)->contains(fn ($rule) => $rule['enabled']),
         ]);
     }
 }

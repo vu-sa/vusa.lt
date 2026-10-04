@@ -81,6 +81,14 @@ export function documentWithMatch(hit: HighlightedHit): Record<string, unknown> 
       return identityFields.has(item.field!) && typeof value === 'string' ? fullTitleMatch(value, match) : match;
     }).filter(match => match.segments.some(segment => segment.matched));
   });
+  for (const match of [...titleMatches].filter(item => item.field.startsWith('search_text_'))) {
+    for (const field of identityFields) {
+      const value = hit.document[field];
+      if (typeof value !== 'string') continue;
+      const titleMatch = fullTitleMatch(value, match);
+      if (titleMatch.segments.some(segment => segment.matched)) titleMatches.push(titleMatch);
+    }
+  }
   const document = titleMatches.length ? { ...hit.document, _searchTitleMatches: titleMatches } : hit.document;
   const titles = [...identityFields].map(field => hit.document[field]).filter((value): value is string => typeof value === 'string').map(value => plainSnippet(value).toLocaleLowerCase());
   const highlights = (hit.highlights ?? []).filter(item => item.field && !identityFields.has(item.field) && !item.field.startsWith('search_text_'));

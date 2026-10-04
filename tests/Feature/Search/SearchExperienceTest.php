@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Document;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\News;
@@ -10,15 +11,33 @@ use App\Models\Resource;
 use App\Models\Tag;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Typesense\DocumentRecommendations;
 use App\Services\Typesense\SearchProfiles;
 use App\Services\Typesense\SearchText;
 use App\Services\Typesense\TypesenseCollectionConfig;
+use App\Settings\DocumentSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Typesense\Client;
 
 pest()->use(RefreshDatabase::class);
+
+test('document search finds statutes first when only the word prefix is entered', function (): void {
+    usesTypesense();
+    $institution = Institution::factory()->create();
+    $attributes = ['institution_id' => $institution->id, 'language' => 'Lietuvių', 'is_active' => true, 'summary' => '', 'effective_date' => null, 'expiration_date' => null];
+    $statutes = Document::factory()->create([...$attributes, 'title' => 'VU SA Įstatai (nuo 2025 m.)', 'content_type' => 'Veiklą reglamentuojantys dokumentai', 'document_date' => '2025-05-17']);
+    $resolution = Document::factory()->create([...$attributes, 'title' => 'VU SA Parlamento nutarimas dėl įstatų keitimo', 'content_type' => 'VU SA Parlamento nutarimai', 'document_date' => '2026-05-17']);
+    $result = app(Client::class)->collections[$statutes->searchableAs()]->documents->search([
+        ...SearchProfiles::all()['documents']['parameters'],
+        'q' => 'įstat', 'sort_by' => '_text_match:desc,document_date:desc',
+        'filter_by' => 'is_active:=true && id:=['.$statutes->id.','.$resolution->id.']',
+    ]);
+    expect($result['found'])->toBe(2)
+        ->and($result['hits'][0]['document']['id'])->toBe((string) $statutes->id)
+        ->and(collect($result['hits'][0]['highlights'])->firstWhere('field', 'title')['snippet'])->toContain('⟦');
+});
 
 test('admin ranking prefers the record identity over names and positions mentioned in related records', function (): void {
     usesTypesense();
@@ -76,6 +95,8 @@ test('profiles activate new fields only after the collection has been rebuilt', 
         ->and($current['parameters']['query_by'])->toContain('body,search_text_lt,search_text_en')
         ->and(explode(',', $current['parameters']['query_by']))->toHaveCount(count(explode(',', $current['parameters']['query_by_weights'])))
         ->and($current['parameters']['exclude_fields'])->toContain('body');
+    Cache::forever(SearchProfiles::cacheKey('public_pages'), (string) SearchProfiles::VERSION);
+    expect(SearchProfiles::all()['public_pages']['version'])->toBe(2);
     config(['scout.typesense.search-profile-version' => 1]);
     expect(SearchProfiles::all()['public_pages']['version'])->toBe(1);
     Cache::forget(SearchProfiles::cacheKey('public_pages'));
@@ -153,6 +174,65 @@ test('native Lithuanian and English stemming finds inflected words', function ()
         $result = $collection->documents->search(['q' => $query, 'query_by' => $field, 'num_typos' => 0, 'prefix' => false, 'filter_by' => 'id:='.$page->id]);
         expect($result['found'])->toBe(1);
     }
+});
+
+test('document recommendations match word forms, prefixes and any words of a phrase while respecting settings and publication', function (): void {
+    usesTypesense();
+    $statutes = Document::factory()->create(['title' => 'VU SA Įstatai', 'language' => 'Lietuvių', 'is_active' => true]);
+    $other = Document::factory()->create(['title' => 'VU SA nuostatai', 'language' => 'Lietuvių', 'is_active' => true]);
+    $settings = app(DocumentSettings::class);
+    $service = app(DocumentRecommendations::class);
+    $rule = ['document_id' => (string) $statutes->id, 'phrases' => ['VU SA įstatai'], 'enabled' => true, 'show_without_query' => false];
+    expect($service->matchingIds('įstatai'))->toBe([]);
+    $settings->recommendations = [$rule];
+    $settings->save();
+    expect($service->matchingIds('įstatai'))->toBe([]);
+    $service->synchronize();
+    foreach (['įstat', 'įstatai', 'įstatų', 'įstatus', 'SA įstat', 'VU SA įstatų'] as $query) {
+        expect($service->matchingIds($query))->toBe([(string) $statutes->id]);
+    }
+    foreach (['', '*', 'įstatymas', 'pakeisti įstatai'] as $query) {
+        expect($service->matchingIds($query))->toBe([]);
+    }
+    $this->getJson(route('api.v1.documents.recommendations', ['q' => 'įstatų']))->assertOk()->assertJsonPath('data.ids', [(string) $statutes->id]);
+    $this->getJson(route('api.v1.documents.recommendations', ['q' => str_repeat('a', 201)]))->assertUnprocessable();
+
+    $settings->recommendations = [
+        [...$rule, 'document_id' => (string) $other->id, 'phrases' => ['įstatai'], 'show_without_query' => true],
+        $rule,
+    ];
+    $settings->save();
+    $service->synchronize();
+    expect($service->matchingIds('įstatų'))->toBe([(string) $other->id, (string) $statutes->id])
+        ->and($service->matchingIds(''))->toBe([(string) $other->id]);
+    $statutes->update(['is_active' => false]);
+    expect($service->matchingIds('įstatai'))->toBe([(string) $other->id]);
+    $other->delete();
+    expect($service->matchingIds('įstatai'))->toBe([]);
+    $settings->recommendations = [[...$rule, 'enabled' => false]];
+    $settings->save();
+    $service->synchronize();
+    expect($service->matchingIds('įstatai'))->toBe([]);
+});
+
+test('important document types break relevance ties and pinned documents obey search filters', function (): void {
+    usesTypesense();
+    $attributes = ['title' => 'VU SA dokumentas', 'summary' => '', 'language' => 'Lietuvių', 'is_active' => true];
+    $important = Document::factory()->create([...$attributes, 'content_type' => 'Įstatai', 'document_date' => '2024-01-01']);
+    $ordinary = Document::factory()->create([...$attributes, 'content_type' => 'Nutarimai', 'document_date' => '2026-01-01']);
+    $collection = app(Client::class)->collections[$important->searchableAs()];
+    $params = ['q' => 'dokumentas', 'query_by' => 'title', 'filter_by' => 'id:=['.$important->id.','.$ordinary->id.']', 'sort_by' => '_text_match:desc,_eval(content_type:=[`Įstatai`,`Šablonai`]):desc,document_date:desc'];
+    expect($collection->documents->search($params)['hits'][0]['document']['id'])->toBe((string) $important->id);
+    expect($collection->documents->search([...$params, 'sort_by' => 'document_date:desc'])['hits'][0]['document']['id'])->toBe((string) $ordinary->id);
+    $pins = ['pinned_hits' => $important->id.':1', 'filter_curated_hits' => true];
+    $result = $collection->documents->search([...$params, ...$pins, 'filter_by' => 'id:=['.$important->id.','.$ordinary->id.'] && content_type:=Nutarimai']);
+    expect(array_column(array_column($result['hits'], 'document'), 'id'))->toBe([(string) $ordinary->id]);
+    $result = $collection->documents->search([...$params, ...$pins]);
+    expect(array_column(array_column($result['hits'], 'document'), 'id'))->toBe([(string) $important->id, (string) $ordinary->id]);
+    Cache::forever(SearchProfiles::cacheKey('documents'), SearchProfiles::VERSION);
+    $match = $collection->documents->search([...SearchProfiles::all()['documents']['parameters'], 'q' => 'dokumentų', 'filter_by' => 'id:='.$important->id]);
+    expect($match['found'])->toBe(1)
+        ->and(collect($match['hits'][0]['highlights'])->firstWhere('field', 'title')['snippet'])->toContain('⟦dokumentas⟧');
 });
 
 test('tag attachment removal and renaming keep body owners searchable in both indexes', function (): void {

@@ -87,7 +87,7 @@ Paieška nesuteikia naujų teisių: kitų įrašų ar jų veiksmų prieiga prikl
 
 Puslapius ir naujienas rasi pagal išsaugotą turinio tekstą. Rezultato ištrauka parodo, kur sutapo paieška. Lietuvių ir anglų tekstuose paieška atpažįsta ir skirtingas žodžio formas. Pagal aktualumą rikiuojami teksto atitikmenys; pasirinktą rikiavimą pagal datą ar pavadinimą taikysi tiesiogiai.
 
-Pirmiausia rodomi atitikmenys paties įrašo varde ar pavadinime. Ieškodamas žmogaus vardo pirmiau rasi jo profilį, o pareigybės pavadinimo, pavyzdžiui, „Prezidentė“ – pareigybę. Susijusių žmonių, pareigybių ir institucijų paminėjimai turi mažesnį svorį; dabartinė darbo sritis nekeičia paieškos rezultatų eilės. Sutapęs vardas ar pavadinimas paryškinamas pačioje antraštėje. Trumpa turinio ištrauka pateikiama mažesniu šriftu tik tada, kai nekartoja vardo ar pavadinimo; HTML žymos nerodomos.
+Pirmiausia rodomi atitikmenys paties įrašo varde ar pavadinime. Ieškodamas žmogaus vardo pirmiau rasi jo profilį, o pareigybės pavadinimo, pavyzdžiui, „Prezidentė“ – pareigybę. Susijusių žmonių, pareigybių ir institucijų paminėjimai turi mažesnį svorį; dabartinė darbo sritis nekeičia paieškos rezultatų eilės. Sutapęs vardas ar pavadinimas paryškinamas pačioje antraštėje, taip pat viešoje dokumentų paieškoje. Dokumento pavadinimą rasi ir pradėjęs rašyti žodį, pavyzdžiui, „įstat“. Trumpa turinio ištrauka pateikiama mažesniu šriftu tik tada, kai nekartoja vardo ar pavadinimo; HTML žymos nerodomos.
 
 </ChangelogNote>
 

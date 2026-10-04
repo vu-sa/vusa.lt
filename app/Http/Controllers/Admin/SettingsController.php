@@ -18,6 +18,7 @@ use App\Models\PublicInstitution;
 use App\Models\PublicMeeting;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\Typesense\DocumentRecommendations;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\DocumentSettings;
 use App\Settings\FormSettings;
@@ -215,6 +216,9 @@ class SettingsController extends AdminController
 
         return $this->inertiaResponse('Admin/Settings/EditDocumentSettings', [
             'selected_content_types' => $documentSettings->getImportantContentTypes()->toArray(),
+            'recommendations' => $documentSettings->recommendations,
+            'selected_documents' => Document::query()->whereIn('id', array_column($documentSettings->recommendations, 'document_id'))
+                ->get(['id', 'title', 'is_active'])->map(fn ($document) => ['id' => (string) $document->id, 'title' => $document->title, 'is_active' => $document->is_active])->values(),
             'available_content_types' => Document::query()
                 ->select('content_type')
                 ->whereNotNull('content_type')
@@ -229,12 +233,20 @@ class SettingsController extends AdminController
     /**
      * Update document settings.
      */
-    public function updateDocumentSettings(UpdateDocumentSettingsRequest $request, DocumentSettings $documentSettings, SettingsSettings $settingsSettings)
+    public function updateDocumentSettings(UpdateDocumentSettingsRequest $request, DocumentSettings $documentSettings, SettingsSettings $settingsSettings, DocumentRecommendations $recommendations)
     {
         $this->authorizeSettingsAccess($settingsSettings);
 
         $documentSettings->setImportantContentTypes($request->input('important_content_types', []));
+        $documentSettings->recommendations = collect($request->validated('recommendations'))->map(fn ($recommendation) => [
+            'document_id' => (string) $recommendation['document_id'],
+            'phrases' => array_values(array_unique(array_filter(array_map(trim(...), $recommendation['phrases'])))),
+            'enabled' => (bool) $recommendation['enabled'],
+            'show_without_query' => (bool) $recommendation['show_without_query'],
+        ])->all();
         $documentSettings->save();
+        // The rules are saved either way; a Typesense outage only delays them until `typesense:apply-search-config`.
+        rescue(fn () => $recommendations->synchronize());
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));
     }

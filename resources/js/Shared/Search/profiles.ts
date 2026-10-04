@@ -12,6 +12,26 @@ export interface SearchProfileConfig {
   searchLocale?: string;
 }
 
+export function splitSortExpressions(value: string): string[] {
+  const result: string[] = [];
+  let depth = 0;
+  let quoted = false;
+  let start = 0;
+  for (let index = 0; index < value.length; index++) {
+    const character = value[index];
+    if (character === '`' && value[index - 1] !== '\\') quoted = !quoted;
+    if (quoted) continue;
+    if (character === '(' || character === '[') depth++;
+    if (character === ')' || character === ']') depth--;
+    if (character === ',' && depth === 0) {
+      result.push(value.slice(start, index));
+      start = index + 1;
+    }
+  }
+  result.push(value.slice(start));
+  return result;
+}
+
 export function buildProfileParams(profile: SearchProfile | undefined, input: Record<string, unknown>, locale = 'lt'): Record<string, unknown> {
   if (!profile) return { ...input };
   const parameters = { ...input, ...profile.parameters };
@@ -29,7 +49,7 @@ export function buildProfileParams(profile: SearchProfile | undefined, input: Re
   const query = String(input.q ?? '*').trim();
   const suppliedSort = String(input.sort_by ?? '');
   const relevanceTieBreak = suppliedSort.startsWith('_text_match')
-    ? suppliedSort.split(',').slice(1).join(',') || profile.defaultSort
+    ? splitSortExpressions(suppliedSort).slice(1).join(',') || profile.defaultSort
     : profile.defaultSort;
   parameters.sort_by = suppliedSort && !suppliedSort.startsWith('_text_match')
     ? suppliedSort
@@ -39,7 +59,9 @@ export function buildProfileParams(profile: SearchProfile | undefined, input: Re
       if (!profile.facetFields.includes(field)) throw new Error(`Invalid facet field: ${field}`);
     }
   }
-  for (const expression of String(parameters.sort_by).split(',')) {
+  for (const expression of splitSortExpressions(String(parameters.sort_by))) {
+    const promotion = expression.match(/^_eval\((\w+):=\[.*\]\):desc$/);
+    if (promotion && profile.facetFields.includes(promotion[1])) continue;
     const field = expression.split(':')[0];
     if (field !== '_text_match' && !profile.sortFields.includes(field)) throw new Error(`Invalid sort field: ${field}`);
   }

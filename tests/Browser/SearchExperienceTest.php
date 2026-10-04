@@ -1,13 +1,16 @@
 <?php
 
+use App\Models\Document;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\News;
 use App\Models\Tag;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Typesense\DocumentRecommendations;
 use App\Services\Typesense\SearchProfiles;
 use App\Services\Typesense\TypesenseCollectionConfig;
+use App\Settings\DocumentSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Typesense\Client;
@@ -39,6 +42,62 @@ function seedSearchExperience(): void
         $news->tags()->attach(Tag::factory()->create(['name' => ['lt' => 'Tema '.$index, 'en' => 'Topic '.$index]]));
     }
 }
+
+it('renders document prefix search across widths and themes without JavaScript errors', function (): void {
+    seedSearchExperience();
+    $document = Document::factory()->create([
+        'title' => 'VU SA Įstatai (nuo 2025 m.)', 'language' => 'Lietuvių',
+        'content_type' => 'Veiklą reglamentuojantys dokumentai', 'is_active' => true,
+        'effective_date' => null, 'expiration_date' => null,
+    ]);
+    $settings = app(DocumentSettings::class);
+    $settings->recommendations = [['document_id' => (string) $document->id, 'phrases' => ['įstatai'], 'enabled' => true, 'show_without_query' => true]];
+    $settings->save();
+    app(DocumentRecommendations::class)->synchronize();
+    $page = visitPublicSubdomain('www', '/lt/dokumentai?q=įstatų');
+    $page->assertVisible('[data-slot="recommended-documents"]');
+    $page->assertVisible('h3 mark:visible');
+    expect($page->script('document.querySelectorAll("[data-slot=recommended-documents] li").length'))->toBe(1);
+    $page->click('[data-slot="cookie-consent"] button:has-text("Supratau")');
+    foreach ([false, true] as $dark) {
+        $page->script('document.documentElement.classList.toggle("dark", '.($dark ? 'true' : 'false').')');
+        foreach ([390, 820, 1180, 1440] as $width) {
+            $page->resize($width, 844);
+            expect($page->script('document.documentElement.scrollWidth > innerWidth + 1'))->toBeFalse();
+            if (getenv('SEARCH_SCREENSHOTS') && $dark && in_array($width, [390, 1440], true)) {
+                $page->screenshot(fullPage: false, filename: 'document-highlight-'.$width);
+            }
+        }
+    }
+    $page->assertNoJavaScriptErrors();
+    $page->navigate('/lt/dokumentai');
+    $page->assertVisible('[data-slot="recommended-documents"]');
+    $page->click('button[aria-label="Rikiuoti"]');
+    $page->assertVisible('button[role="radio"][aria-checked="true"]:has-text("Naujausi pirmi")');
+    $page->click('button[role="radio"]:has-text("Naujausi pirmi")');
+    $page->assertVisible('[data-slot="recommended-documents"]');
+});
+
+it('saves a selected document recommendation through the settings form', function (): void {
+    seedSearchExperience();
+    Document::factory()->create(['title' => 'VU SA Įstatai', 'language' => 'Lietuvių', 'is_active' => true]);
+    $page = loginAsAdmin(makeAdminUser());
+    $page->navigate('/mano/settings/documents');
+    $page->click('[data-testid="add-document-recommendation"]');
+    $page->fill('[data-slot="dialog-content"] input[type="text"]', 'įstatai');
+    $page->click('[data-slot="search-hit-row"]');
+    $page->click('[data-slot="dialog-content"] button:has-text("Pridėti pasirinktus")');
+    $page->fill('#recommendation-phrases-0', 'įstatai, VU SA įstatai');
+    $page->click('[data-testid="form-page-save"]');
+    $page->assertDontSee('Pasirinkta recommendations');
+    $page->navigate('/mano/settings/documents');
+    $page->assertValue('#recommendation-phrases-0', 'įstatai, VU SA įstatai');
+    foreach ([390, 820, 1440] as $width) {
+        $page->resize($width, 844);
+        expect($page->script('document.documentElement.scrollWidth > innerWidth + 1'))->toBeFalse();
+    }
+    $page->assertNoJavaScriptErrors();
+});
 
 it('renders searchable public filters and body excerpts across widths and themes', function (): void {
     seedSearchExperience();

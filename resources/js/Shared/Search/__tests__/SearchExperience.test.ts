@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
-import { buildProfileParams, type SearchProfile } from '../profiles';
+import { buildProfileParams, splitSortExpressions, type SearchProfile } from '../profiles';
 import { documentWithMatch, matchTitle, type SearchMatchDocument } from '../matches';
 import { SearchClientFactory } from '../services/SearchClientFactory';
 
@@ -15,6 +15,22 @@ const profile: SearchProfile = {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('search profiles and matches', () => {
+  it('preserves type promotion expressions containing multiple or comma-containing labels', () => {
+    const sort = '_text_match:desc,_eval(content_type:=[`Įstatai`,`Planai, ataskaitos`]):desc,created_at:desc';
+    const documentProfile = { ...profile, facetFields: ['content_type'] };
+    expect(splitSortExpressions(sort)).toHaveLength(3);
+    expect(buildProfileParams(documentProfile, { q: 'įstat', sort_by: sort }).sort_by).toBe(sort);
+    expect(() => buildProfileParams(profile, { q: 'įstat', sort_by: sort })).toThrow('Invalid sort');
+  });
+
+  it('highlights inflected title words from stemmed fields without adding an excerpt', () => {
+    const title = 'VU SA Įstatai (nuo 2025 m.)';
+    const doc = documentWithMatch({ document: { title }, highlights: [{ field: 'search_text_lt', snippet: 'VU SA ⟦Įstatai⟧ (nuo 2025 m.)' }] }) as SearchMatchDocument;
+    const wrapper = mount(SearchMatch, { props: { match: matchTitle(title, doc._searchTitleMatches), inline: true } });
+    expect(wrapper.text()).toBe(title);
+    expect(wrapper.get('mark').text()).toBe('Įstatai');
+    expect(doc._searchMatch).toBeUndefined();
+  });
   it('keeps locale fields aligned with weights and flags, with relevance before recency', () => {
     const result = buildProfileParams(profile, { q: 'students', query_by: 'title' }, 'en');
     expect(result.query_by).toBe('description_en,search_text_en,title,description_lt,body,search_text_lt');
@@ -106,4 +122,23 @@ it('does not retain misleading counts when a facet query fails', async () => {
   const client = SearchClientFactory.createTypesenseClient({ apiKey: 'key', nodes: [{ protocol: 'https', host: 'search.example.com', port: 443 }] });
   const result = await client.search('documents', { q: '*', per_page: 20, facet_by: 'lang', filter_by: 'lang:=lt', facetFilters: { lang: '' } });
   expect(result.facet_counts).toEqual([]);
+});
+
+it('matches pinned records normally in the same scoped request to recover title highlights', async () => {
+  const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ results: [
+    { hits: [{ document: { id: '42', title: 'VU SA Įstatai' }, highlights: [] }], found: 1 },
+    { hits: [{ document: { id: '42', title: 'VU SA Įstatai' }, highlights: [{ field: 'search_text_lt', snippet: 'VU SA ⟦Įstatai⟧' }] }] },
+  ] }) });
+  vi.stubGlobal('fetch', fetch);
+  const client = SearchClientFactory.createTypesenseClient({ apiKey: 'scoped-key', nodes: [{ protocol: 'https', host: 'search.example.com', port: 443 }] });
+  const result = await client.search('documents', { q: 'įstatų', per_page: 24, pinned_hits: '42:1', filter_by: 'is_active:=true && language_code:=lt' });
+  expect(fetch).toHaveBeenCalledTimes(1);
+  const request = fetch.mock.calls[0][1];
+  expect(request.headers['X-TYPESENSE-API-KEY']).toBe('scoped-key');
+  const searches = JSON.parse(request.body).searches;
+  expect(searches).toHaveLength(2);
+  expect(searches[1]).toMatchObject({ filter_by: '(is_active:=true && language_code:=lt) && id:=[`42`]', enable_overrides: false, per_page: 1 });
+  expect(searches[1]).not.toHaveProperty('pinned_hits');
+  const doc = result.hits?.[0].document as SearchMatchDocument;
+  expect(matchTitle('VU SA Įstatai', doc._searchTitleMatches)?.segments).toContainEqual({ text: 'Įstatai', matched: true });
 });

@@ -4,6 +4,7 @@ import { mount } from '@vue/test-utils';
 import DocumentCompactListItem from '../DocumentCompactListItem.vue';
 
 import { stubIcon } from '@/tests/stubs';
+import { documentWithMatch, type SearchMatchDocument } from '@/Shared/Search/matches';
 import type { DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 
 // Icons are stubbed per the project's "real components by default" policy —
@@ -19,6 +20,23 @@ const baseDocument: DocumentDisplayItem = {
 };
 
 describe('DocumentCompactListItem', () => {
+  test('highlights the matching title in place without a duplicate excerpt', () => {
+    const title = 'VU SA Įstatai (nuo 2025 m.)';
+    const matches = documentWithMatch({ document: { title }, highlights: [
+      { field: 'title', snippet: 'VU SA ⟦Įstat⟧ai (nuo 2025 m.)' },
+      { field: 'summary', snippet: 'VU SA ⟦Įstat⟧ai (nuo 2025 m.)' },
+    ] }) as SearchMatchDocument;
+    const wrapper = mount(DocumentCompactListItem, {
+      props: { document: { ...baseDocument, ...matches, title } },
+      global: { stubs },
+    });
+    for (const heading of wrapper.findAll('h3')) {
+      expect(heading.text()).toBe(title);
+      expect(heading.get('mark').text()).toBe('Įstat');
+    }
+    expect(wrapper.find('[data-slot="search-match"]').exists()).toBe(false);
+  });
+
   test('links to link_url for a resolved shortcut document', () => {
     const wrapper = mount(DocumentCompactListItem, {
       props: {

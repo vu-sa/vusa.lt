@@ -102,6 +102,19 @@ export class SearchClientFactory {
         const allFacetFilters = (inputParams.facetFilters ?? {}) as Record<string, string>;
         const facetFilters = Object.fromEntries(Object.entries(allFacetFilters).filter(([, filter]) => filter !== String(inputParams.filter_by ?? '')));
         const searches = facetSearches(searchParams, facetFilters);
+        const query = String(searchParams.q ?? '').trim();
+        const pinnedIds = query && query !== '*' && Number(searchParams.per_page) > 0
+          ? String(searchParams.pinned_hits ?? '').split(',').filter(Boolean).map(pin => pin.split(':')[0])
+          : [];
+        // Curated hits omit highlights, so match those records normally in the same request.
+        if (pinnedIds.length) {
+          const idFilter = `id:=[${pinnedIds.map(id => `\`${id.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',')}]`;
+          searches.push({
+            ...searchParams, pinned_hits: undefined, facet_by: undefined, facetFilters: undefined,
+            enable_overrides: false, page: 1, per_page: pinnedIds.length,
+            filter_by: searchParams.filter_by ? `(${searchParams.filter_by}) && ${idFilter}` : idFilter,
+          });
+        }
         const node = nodes[0];
         const baseUrl = `${node.protocol}://${node.host}:${node.port}`;
         const url = new URL(`${baseUrl}/collections/${collection}/documents/search`);
@@ -117,7 +130,7 @@ export class SearchClientFactory {
         const timeoutId = setTimeout(() => controller.abort(), connectionTimeoutSeconds * 1000);
 
         try {
-          const disjunctive = Object.keys(facetFilters).length > 0;
+          const disjunctive = Object.keys(facetFilters).length > 0 || pinnedIds.length > 0;
           const response = await fetch(disjunctive ? `${baseUrl}/multi_search` : url.toString(), {
             method: disjunctive ? 'POST' : 'GET',
             body: disjunctive ? JSON.stringify({ searches: searches.map(params => ({ collection, ...params })) }) : undefined,
@@ -136,7 +149,16 @@ export class SearchClientFactory {
           const data = await response.json();
           const result = disjunctive ? data.results?.[0] : data;
           if (!result || result.error) throw new Error(result?.error ?? 'Empty search response');
-          if (disjunctive) result.facet_counts = mergeDisjunctiveFacets(result.facet_counts ?? [], Object.keys(facetFilters), data.results.slice(1));
+          if (Object.keys(facetFilters).length) {
+            result.facet_counts = mergeDisjunctiveFacets(result.facet_counts ?? [], Object.keys(facetFilters), data.results.slice(1, 1 + Object.keys(facetFilters).length));
+          }
+          if (pinnedIds.length) {
+            const matches: HighlightedHit[] = data.results.at(-1)?.hits ?? [];
+            result.hits = result.hits?.map((hit: HighlightedHit) => {
+              const match = matches.find(candidate => candidate.document.id === hit.document.id);
+              return match ? { ...hit, highlights: match.highlights } : hit;
+            });
+          }
           if (result.hits) result.hits = result.hits.map((hit: HighlightedHit) => ({ ...hit, document: documentWithMatch(hit) }));
           return result;
         }

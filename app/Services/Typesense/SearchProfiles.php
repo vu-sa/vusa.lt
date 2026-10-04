@@ -26,7 +26,7 @@ class SearchProfiles
                 continue;
             }
             $ready = config('scout.typesense.search-profile-version', self::VERSION) >= self::VERSION
-                && ($versions[self::cacheKey($collection)] ?? null) === self::VERSION;
+                && (int) ($versions[self::cacheKey($collection)] ?? 0) === self::VERSION;
             $schema = collect($settings['collection-schema']['fields'])->keyBy('name');
             $params = $settings['search-parameters'];
             $fields = explode(',', $params['query_by']);
@@ -52,9 +52,9 @@ class SearchProfiles
                 $params['text_match_type'] = 'max_weight';
                 $params['drop_tokens_threshold'] = 0;
             }
-            $params['prefix'] = $collection !== 'documents';
+            $params['prefix'] = true;
             $params['exclude_fields'] = 'body,search_text_lt,search_text_en';
-            $params['highlight_fields'] = implode(',', array_filter($fields, fn ($field) => ! str_starts_with($field, 'search_text_')));
+            $params['highlight_fields'] = implode(',', $fields);
             $params['highlight_start_tag'] = '⟦';
             $params['highlight_end_tag'] = '⟧';
             $params['snippet_threshold'] = 24;

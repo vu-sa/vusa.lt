@@ -95,10 +95,23 @@ return [
     // Document settings page
     'document_settings' => [
         'important_types_title' => 'Svarbiausi dokumentų tipai',
-        'important_types_description' => 'Pasirink, kurie dokumentų tipai bus rodomi pirmi filtre kaip "Svarbiausi".',
+        'important_types_description' => 'Pasirink tipus, kuriuos rodyti pirmus filtre ir aukščiau tarp vienodai aktualių paieškos rezultatų.',
         'important_types_label' => 'Dokumentų tipai',
         'important_types_placeholder' => 'Pasirinkti dokumentų tipus',
         'no_types_found' => 'Dokumentų tipų nerasta.',
+        'recommendations_title' => 'Rekomenduojami dokumentai',
+        'recommendations_description' => 'Rekomendacija rodoma virš paieškos rezultatų, kai visi ieškomi žodžiai yra vienoje jos frazėje, pvz., „įstat“ atitinka „VU SA įstatai“. Frazes atskirk kableliais; galūnės atpažįstamos automatiškai.',
+        'choose_document' => 'Pasirink dokumentą',
+        'move_up' => 'Perkelti aukštyn',
+        'move_down' => 'Perkelti žemyn',
+        'remove' => 'Pašalinti',
+        'phrases_label' => 'Rodyti ieškant',
+        'add_recommendation' => 'Pridėti rekomendaciją',
+        'when_empty' => 'Rodyti ir tuščioje paieškoje',
+        'pause' => 'Laikinai išjungti',
+        'phrases_placeholder' => 'frazės per kablelį, pvz., įstatai, VU SA įstatai',
+        'change_document' => 'keisti dokumentą',
+        'phrases_required' => 'Įrašyk bent vieną frazę arba pažymėk „Rodyti ir tuščioje paieškoje“.',
     ],
 
     // Messages

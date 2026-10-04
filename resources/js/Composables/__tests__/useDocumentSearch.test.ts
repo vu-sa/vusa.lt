@@ -136,6 +136,28 @@ describe('useDocumentSearch (refactored)', () => {
     });
   });
 
+  describe('sorting', () => {
+    it('browses newest first and switches to relevance once a query is entered', async () => {
+      const { useDocumentSearch } = await import('../useDocumentSearch');
+      const controller = useDocumentSearch();
+      expect(controller.activeSort.value).toBe('date_desc');
+      controller.setSortBy('date_desc');
+      expect(controller.filters.value.sort).toBe('relevance');
+      controller.filters.value.query = 'įstatai';
+      expect(controller.activeSort.value).toBe('relevance');
+    });
+
+    it('keeps an explicit date choice once a query exists', async () => {
+      const { useDocumentSearch } = await import('../useDocumentSearch');
+      const controller = useDocumentSearch();
+      controller.setSortBy('date_asc');
+      controller.filters.value.query = 'įstatai';
+      expect(controller.activeSort.value).toBe('date_asc');
+      controller.setSortBy('date_desc');
+      expect(controller.activeSort.value).toBe('date_desc');
+    });
+  });
+
   describe('searchState computed', () => {
     it('computes searchState correctly', async () => {
       const { useDocumentSearch } = await import('../useDocumentSearch');

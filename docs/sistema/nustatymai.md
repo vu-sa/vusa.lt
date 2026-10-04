@@ -3,13 +3,16 @@ doc_status: reviewed
 title: Nustatymai
 area: settings
 models: [Cadence]
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-04
 tests:
   - tests/Feature/Admin/Settings/CadenceControllerTest.php
   - tests/Feature/Admin/People/CadenceResolutionTest.php
   - tests/Feature/Admin/People/ResolveCadenceForInstitutionTest.php
   - tests/Feature/Admin/Core/AtstovavimasSettingsTest.php
   - tests/Feature/Admin/Core/SiteSettingsTest.php
+  - tests/Feature/Admin/Core/DocumentSettingsTest.php
+  - tests/Feature/Search/SearchExperienceTest.php
+  - tests/Browser/SearchExperienceTest.php
   - tests/Feature/Public/PublicMeetingVisibilityTest.php
 ---
 
@@ -84,8 +87,34 @@ nuo kurio pradedama atstovavimo institucijų hierarchija.
 Adresas: `/mano/settings/documents`. Čia pažymimi **svarbūs dokumentų turinio tipai**. Šie tipai tiesiogiai veikia dviejose vietose:
 
 - **Viešojoje dokumentų paieškoje**: jie siūlomi kaip greitieji filtrai, padedantys
-  atsirinkti svarbiausius dokumentus (pvz., įstatus, darbo reglamentus).
+  atsirinkti svarbiausius dokumentus (pvz., įstatus, darbo reglamentus). Vienodai aktualūs
+  šių tipų rezultatai rodomi aukščiau. Be paieškos frazės bendras sąrašas rodomas nuo naujausių.
 - **Vidiniame dokumentų sąraše** (`/mano/documents`): jie siūlomi kaip greitojo filtravimo parinktys.
+
+<ChangelogNote version="v3.0" date="2026-10-02" title="Rekomenduojami dokumentai paieškoje">
+
+Tame pačiame puslapyje pridėk rekomendaciją ir pasirink dokumentą (paspaudęs pavadinimą, jį
+pakeisi). Kiekviena rekomendacija rodoma dviem atskirais atvejais:
+
+- **Rodyti ieškant** – frazės per kablelį, pvz., VU SA įstatams – **VU SA įstatai**.
+  Rekomendacija rodoma, kai visi įvesti žodžiai yra frazėje: **įstat**, **įstatų** ar
+  **SA įstatus** ją suaktyvina, o **pakeisti įstatai** – ne, nes žodžio **pakeisti** frazėje nėra;
+  tokiai užklausai pridėk atskirą frazę. Lietuviškos žodžio formos ir pradėtas rašyti žodis
+  atpažįstami automatiškai. Be frazių rekomendacija paieškos metu nerodoma.
+- **Rodyti ir tuščioje paieškoje** – rekomendacija rodoma atidarius dokumentų paiešką, kol nieko
+  neįvesta (naujoms rekomendacijoms pažymėta).
+
+**Laikinai išjungti** paslepia rekomendaciją jos neištrinant. Rodyklėmis pakeisk
+rekomendacijų eilę. Išsaugojus ji rodoma viešos paieškos skiltyje
+**Rekomenduojami dokumentai**, nesikartodama bendrame sąraše. Filtrai galioja ir rekomendacijoms;
+neaktyvūs ar pašalinti dokumentai nerodomi. Pradiniame rodinyje rekomendacijos yra virš
+nuo naujausių rikiuojamo bendro sąrašo; **Naujausi pirmi** pažymėta ir rikiavimo valdiklyje.
+Įvedus paiešką sąrašas savaime rikiuojamas **Pagal aktualumą** (ši parinktis siūloma tik tada),
+nebent pasirinkai rikiavimą pagal datą. Rekomendacijos lieka virš bendro sąrašo ir rikiuojant
+**Naujausi pirmi**. Pasirinkus **Seniausi pirmi**
+rekomendacijos nerodomos. Abu rikiavimai pagal datą netaiko svarbių tipų pirmumo.
+
+</ChangelogNote>
 
 ### Svetainės nustatymai {#svetaine}
 

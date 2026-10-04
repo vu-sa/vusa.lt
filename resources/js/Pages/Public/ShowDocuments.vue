@@ -117,7 +117,7 @@
                     :key="option.value"
                     type="button"
                     role="radio"
-                    :aria-checked="filters.sort === option.value"
+                    :aria-checked="activeSort === option.value"
                     :class="[
                       'flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left text-sm font-medium',
                       'text-foreground transition-colors hover:bg-secondary/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
@@ -132,7 +132,7 @@
                       <span>{{ option.label }}</span>
                     </div>
                     <IFluentCheckmark16Filled
-                      v-if="filters.sort === option.value"
+                      v-if="activeSort === option.value"
                       class="size-4 text-brand"
                     />
                   </button>
@@ -327,17 +327,28 @@
 
         <!-- Document Results List -->
         <div v-else>
-          <HairlineList as="ul">
+          <section
+            v-if="recommendedDocuments.length" class="mb-8 border border-border bg-secondary/40 px-4"
+            aria-labelledby="recommended-documents-title" data-slot="recommended-documents"
+          >
+            <h2 id="recommended-documents-title" class="flex items-center gap-2 border-b border-border py-4 text-sm font-semibold">
+              <IFluentPin24Regular class="size-4 text-brand" aria-hidden="true" />{{ $t('search.recommended_documents') }}
+            </h2>
+            <HairlineList as="ul">
+              <DocumentCompactListItem v-for="item in recommendedDocuments" :key="item.id" :document="item" />
+            </HairlineList>
+          </section>
+          <HairlineList v-if="ordinaryDocuments.length" as="ul">
             <template v-if="viewMode === 'list'">
               <DocumentListItem
-                v-for="item in documents"
+                v-for="item in ordinaryDocuments"
                 :key="item.id"
                 :document="item"
               />
             </template>
             <template v-else>
               <DocumentCompactListItem
-                v-for="item in documents"
+                v-for="item in ordinaryDocuments"
                 :key="item.id"
                 :document="item"
               />
@@ -404,6 +415,7 @@ import IFluentDocumentMultiple24Regular from '~icons/fluent/document-multiple-24
 import IFluentFilter20Regular from '~icons/fluent/filter-20-regular';
 import IFluentList20Regular from '~icons/fluent/text-bullet-list-square-20-regular';
 import IFluentRowChild20Regular from '~icons/fluent/row-child-20-regular';
+import IFluentPin24Regular from '~icons/fluent/pin24-regular';
 import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
 import IFluentStar16Filled from '~icons/fluent/star-16-filled';
 
@@ -449,8 +461,13 @@ const {
   totalHits,
   facets,
   filters,
+  hasQuery,
+  activeSort,
   viewMode,
 } = searchController;
+
+const recommendedDocuments = computed(() => documents.value.filter(item => item._searchRecommended));
+const ordinaryDocuments = computed(() => documents.value.filter(item => !item._searchRecommended));
 
 const searchInput = ref(
   filters.value.query && filters.value.query !== '*' ? filters.value.query : '',
@@ -466,11 +483,12 @@ function applyCurrentTenantFilter(): void {
   filters.value.tenants = [tenant.shortname];
 }
 
-const sortOptions: Array<{ value: DocumentSearchSort; label: string }> = [
-  { value: 'relevance', label: $t('Pagal aktualumą') },
+// Without a query there is nothing to rank by, so relevance is only offered once one exists.
+const sortOptions = computed<Array<{ value: DocumentSearchSort; label: string }>>(() => [
+  ...(hasQuery.value ? [{ value: 'relevance' as const, label: $t('Pagal aktualumą') }] : []),
   { value: 'date_desc', label: $t('Naujausi pirmi') },
   { value: 'date_asc', label: $t('Seniausi pirmi') },
-];
+]);
 
 const selectSort = (newSortBy: DocumentSearchSort) => {
   searchController.setSortBy(newSortBy);
@@ -489,7 +507,7 @@ const getSortIcon = (mode: DocumentSearchSort | undefined) => {
   }
 };
 
-const currentSortIcon = computed(() => getSortIcon(filters.value.sort));
+const currentSortIcon = computed(() => getSortIcon(activeSort.value));
 
 // Sync search input with debounce to controller
 const debouncedSearch = useDebounceFn((query: string) => {

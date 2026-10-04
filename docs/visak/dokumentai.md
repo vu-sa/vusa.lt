@@ -3,13 +3,15 @@ doc_status: reviewed
 title: Dokumentai
 area: documents
 models: [Document]
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-04
 tests:
   - tests/Feature/Admin/Resources/DocumentControllerTest.php
   - tests/Feature/DocumentSyncTest.php
   - tests/Feature/DocumentPermissionRevocationTest.php
   - tests/Feature/DocumentSyncMissingModelTest.php
   - tests/Feature/Meetings/MeetingDocumentTest.php
+  - tests/Feature/Search/SearchExperienceTest.php
+  - tests/Browser/SearchExperienceTest.php
 ---
 
 # Dokumentai
@@ -66,6 +68,19 @@ Paspaudęs viešą nuorodą turintį pavadinimą, atversi failą naujame naršyk
 Jei nuorodos nėra, pavadinimas nėra aktyvus. Dokumentų valdytojai papildomai mato
 sinchronizavimo būseną: **Laukiama**, **Importuota**, **Sinchronizuojama**,
 **Sinchronizuota** arba **Nepavyko**.
+
+### Vieša dokumentų paieška {#viesa-paieska}
+
+Svetainės dokumentų paieška atpažįsta žodžių formas: **įstatai** randa ir **įstatų**, o
+**įstat** ieško pagal rašomo žodžio pradžią. Sutapimas paryškinamas pačiame pavadinime.
+Svarbių tipų dokumentai rodomi aukščiau tarp vienodai aktualių rezultatų.
+
+Nustatymų valdytojas gali pasirinkti dokumentus ir frazes skiltyje
+[Dokumentų nustatymai](/sistema/nustatymai#dokumentai). Jie rodomi atskiroje skiltyje
+**Rekomenduojami dokumentai** ir nekartojami bendrame sąraše. Pasirinkti filtrai taikomi ir
+rekomendacijoms. Pradinė bendro sąrašo tvarka – **Naujausi pirmi**, pažymėta ir rikiavimo
+valdiklyje; rekomendacijos lieka virš jo. Įvedus paiešką sąrašas savaime rikiuojamas
+**Pagal aktualumą**. **Seniausi pirmi** rodo vien chronologinį sąrašą.
 
 ## Veiksmai {#veiksmai}
 

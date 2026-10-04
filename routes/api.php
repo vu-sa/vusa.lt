@@ -86,6 +86,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
     */
 
     Route::get('documents', [DocumentController::class, 'index'])->name('documents.index');
+    Route::get('documents/recommendations', [DocumentController::class, 'recommendations'])->middleware('throttle:60,1')->name('documents.recommendations');
 
     // Typesense configuration for frontend search
     Route::get('typesense/config', fn () => response()->json(TypesenseManager::getFrontendConfig()))->name('typesense.config');

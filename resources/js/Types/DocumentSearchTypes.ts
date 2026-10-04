@@ -1,3 +1,5 @@
+import type { ComputedRef } from 'vue';
+
 export type DocumentSearchSort = 'relevance' | 'date_desc' | 'date_asc';
 
 /**
@@ -171,6 +173,8 @@ export interface DocumentSearchController {
   results: any;
   facets: any;
   filters: any;
+  hasQuery: ComputedRef<boolean>;
+  activeSort: ComputedRef<DocumentSearchSort>;
   viewMode: any;
   recentSearches: any;
 
