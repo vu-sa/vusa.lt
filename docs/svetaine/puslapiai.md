@@ -79,6 +79,8 @@ Pakeitimus paskelbi arba išsaugai kaip juodraštį paspaudęs **Išsaugoti**. K
 
 Grįžęs į redagavimą gali pamatyti **Tęsk nebaigtus pakeitimus**. Pasirink įrenginio arba serverio kopiją ir spausk **Atkurti kopiją**. Jei kopijos skiriasi, jos rodomos atskirai. **Atsisakyti atkūrimo kopijų** prašo patvirtinimo ir nepakeičia išsaugoto puslapio. Neatnaujintos kopijos saugomos iki 30 dienų.
 
+<DocScreenshot name="page-recovery" alt="Puslapio formoje rodomas blokas „Tęsk nebaigtus pakeitimus“ su serverio kopija, jos pavadinimu, laiku ir mygtuku Atkurti kopiją" caption="Grįžus į redagavimą: serverio kopija su nebaigtais pakeitimais ir mygtukas Atkurti kopiją." />
+
 Jei neveikia ryšys, tęsk darbą šiame įrenginyje. Prisijungus serverio saugojimas bandomas vėl. Jei naršyklė negali saugoti kopijų, formoje matai paaiškinimą – palik ją atvertą, kol pavyks išsaugoti. Nepavykus išsaugoti pakeitimai lieka formoje.
 
 Jei kitas redaktorius išsaugojo naujesnę puslapio versiją, tavo pakeitimai jos neperrašo. Spausk **Peržiūrėti dabartinę versiją**, pasirink, kurią kopiją tęsti, ir išsaugok dar kartą.

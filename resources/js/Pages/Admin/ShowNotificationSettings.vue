@@ -246,7 +246,8 @@ const props = defineProps<{
 const howKeys = ['how_list', 'how_bell', 'how_email', 'how_tasks', 'how_meetings', 'how_followed', 'how_reservations', 'how_self', 'how_quiet', 'how_mute'];
 const howOpen = ref(false);
 
-const emailOptions = emailDeliveryOptions();
+// Computed: the admin bundle mounts before its translations load.
+const emailOptions = computed(() => emailDeliveryOptions());
 
 const { hasAnyPushSubscription } = usePWA();
 const pushAvailable = computed(() => hasAnyPushSubscription.value);

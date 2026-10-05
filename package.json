@@ -17,7 +17,7 @@
     "coverage:ci": "vitest run --coverage --project unit --project component --reporter=default --reporter=junit --outputFile=test-results.junit.xml --coverage.reporter=text-summary --coverage.reporter=lcov --coverage.reporter=clover",
     "docs:dev": "vitepress dev docs --port 8081",
     "docs:build": "vitepress build docs",
-    "docs:pdf": "node docs/pdf/build.ts",
+    "docs:pdf": "node docs/pdf/build.ts && node docs/pdf/build-release.ts",
     "docs:preview": "vitepress preview docs --port 8086",
     "docs:screenshots": "DOCS_SCREENSHOTS=1 vendor/bin/pest tests/Browser --parallel --compact; mkdir -p docs/public/screenshots && cp -r tests/Browser/Screenshots/docs/. docs/public/screenshots/",
     "storybook": "STORYBOOK=true storybook dev -p 6006 --no-open",

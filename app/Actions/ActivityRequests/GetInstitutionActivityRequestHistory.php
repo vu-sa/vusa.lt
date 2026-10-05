@@ -27,7 +27,7 @@ class GetInstitutionActivityRequestHistory
         $batches = $this->query($institution, $user)->select('send_id')->selectRaw('MAX(created_at) AS sent_at')
             ->groupBy('send_id')->orderByDesc('sent_at')->orderByDesc('send_id')->paginate(20, page: max(1, $page));
         $requests = $this->query($institution, $user)->whereIn('send_id', $batches->getCollection()->pluck('send_id'))
-            ->with(['recipient:id,name', 'requestedBy:id,name', 'meetings:id,start_time', 'checkIns', 'meeting:id,start_time', 'checkIn'])->get()->groupBy('send_id');
+            ->with(['recipient:id,name', 'requestedBy:id,name', 'meetings:id,start_time', 'checkIns', 'meeting:id,start_time', 'checkIn', 'resolvedByRequest:id,recipient_id', 'resolvedByRequest.recipient:id,name'])->get()->groupBy('send_id');
 
         return ['data' => $batches->getCollection()->map(fn ($batch) => [
             'id' => $batch->send_id,
@@ -40,6 +40,7 @@ class GetInstitutionActivityRequestHistory
                 'created_at' => $request->created_at?->toISOString(), 'answered_at' => $request->answered_at?->toISOString(),
                 'resolved_at' => $request->resolved_at?->toISOString(), 'expires_at' => $request->expires_at->toISOString(),
                 'resolution_source' => $request->resolution_source,
+                'resolved_by' => $request->resolvedByRequest?->recipient?->name,
                 'status' => match (true) {
                     $request->answered_at !== null => 'answered', $request->resolved_at !== null => 'resolved', $request->expires_at->isPast() => 'expired', default => 'pending'
                 },

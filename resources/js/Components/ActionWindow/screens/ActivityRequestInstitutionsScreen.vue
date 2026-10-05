@@ -39,7 +39,7 @@
         :icon="institutionStatusStyle(institution.activity_status.status).icon"
         :tone="institutionStatusStyle(institution.activity_status.status).tone"
         :selected="isSelected(institution.id)"
-        :disabled="selected.length >= 100 && !isSelected(institution.id)"
+        :disabled="!isSelected(institution.id) && (selected.length >= 100 || !!rowState(institution.id)?.blocked)"
         @click="toggle(institution)"
       >
         <template #description>
@@ -60,14 +60,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Landmark } from 'lucide-vue-next';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';
 import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';
 import { institutionStatusStyle } from '../institutionStatusStyle';
+import { skipLabel, useActivityRequestAskability } from '../useActivityRequestAskability';
 import { useWindowDates } from '../useWindowDates';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
@@ -104,6 +106,25 @@ const visible = computed(() => {
   return [...pinned, ...hits];
 });
 
+const askability = useActivityRequestAskability(computed(() => draft.activityRequest.campaignType));
+watch(() => visible.value.map(item => item.id), ids => askability.ensure(ids), { immediate: true });
+// Institutions handed in by the caller (e.g. Reikia dėmesio) are unpicked once we know nobody there can be asked.
+watch(() => selected.value.filter(item => askability.entries.get(item.id)?.skip_reason).map(item => item.id), (blocked) => {
+  if (blocked.length > 0) {
+    updateActivityRequest({ institutions: selected.value.filter(item => !blocked.includes(item.id)) });
+  }
+});
+
+const rowState = (id: string): { blocked: boolean; note: string } | null => {
+  const entry = askability.entries.get(id);
+  if (!entry) return null;
+  if (entry.skip_reason) return { blocked: true, note: skipLabel(entry.skip_reason) };
+  const left = (entry.excluded_recipients ?? []).filter(recipient => recipient.skip_reason).length;
+  if (left === 0) return null;
+  const asked = entry.recipients.length;
+  return { blocked: false, note: $t('activity_requests.partial_recipients', { asked: String(asked), total: String(asked + left) }) };
+};
+
 const isSelected = (id: string) => selected.value.some(institution => institution.id === id);
 
 const toggle = (institution: Candidate) => {
@@ -115,8 +136,12 @@ const toggle = (institution: Candidate) => {
   });
 };
 
-const contextLine = (institution: Candidate): string => [
-  institution.tenant_shortname,
-  describeInstitutionActivity(institution.activity_status, dates),
-].filter(Boolean).join(' · ');
+const contextLine = (institution: Candidate): string => {
+  const state = rowState(institution.id);
+  return [
+    institution.tenant_shortname,
+    state?.blocked ? null : describeInstitutionActivity(institution.activity_status, dates),
+    state?.note,
+  ].filter(Boolean).join(' · ');
+};
 </script>

@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-06
 tests:
   - tests/Feature/Admin/Management/InstitutionControllerTest.php
   - tests/Feature/Admin/Management/InstitutionCheckInTest.php
@@ -154,18 +154,30 @@ ir atsakymus rasi institucijos skiltyje **Užklausos atstovams**.
 </ChangelogNote>
 
 Pirmiausia pasirink **Ar vyko posėdis?** arba **Papildyk posėdžių įrašus** – net jei institucijos
-jau pasirinktos. Vienu kartu gali pasirinkti iki **100 institucijų**. Filtruok pagal padalinį arba
-ieškok pavadinimo; prieš atveriant langą pasirinktos institucijos lieka sąrašo pradžioje.
+jau pasirinktos. Tada pasirink, kaip rinksiesi gavėjus:
 
-Peržiūroje **Ką ir kam išsiųsime** matai kiekvieną gavėją ir jo laikotarpį.
+- **Pagal institucijas** – klausiame institucijos studentų atstovų.
+  Filtruok pagal padalinį arba ieškok pavadinimo; prieš atveriant langą pasirinktos institucijos
+  (pvz., iš **Reikia dėmesio**) lieka sąrašo pradžioje, o tų, kurių paklausti nebūtų ko, žymėjimas
+  nuimamas.
+- **Pagal atstovus** – pasirink atstovus; kiekvieno klausime apie visas jo institucijas. Ieškok
+  pagal vardą arba institucijos pavadinimą.
+
+Vienu kartu gali apimti iki **100 institucijų**. Institucija ar žmogus, kurių paklausti nebūtų ko
+(pvz., jau paklausta, posėdis jau užfiksuotas), sąraše rodomi neaktyvūs su priežastimi, savo vietoje.
+Jei klausime tik dalies gavėjų ar institucijų, eilutėje parašyta, kiek jų liks.
+
+Peržiūroje **Ką ir kam išsiųsime** gavėjai sugrupuoti taip, kaip rinkaisi: pagal institucijas arba
+pagal atstovus. Kiekviena eilutė turi žymimąjį langelį – nužymėk tuos, kurių šįkart klausti nenori.
 **Kam laiško nesiųsime** paaiškina praleistas institucijas ir gavėjų pranešimų nustatymus:
 laiškas dabar, santrauka, išjungtas el. paštas ar nutildyti pranešimai. Gali pridėti žinutę iki 500
 simbolių. Patvirtinus rodoma, kiek užklausų ir laiškų įtraukta į eilę; tai dar nėra pristatymo patvirtinimas.
 
 <DocScreenshot name="activity-request-review" narrow alt="Veiksmų lango peržiūra prieš siunčiant veiklos užklausas" caption="Veiksmų lango peržiūra: gavėjų sąrašas, laikotarpis ir koordinatoriaus žinutė prieš išsiunčiant užklausas." />
 
-Užklausa skiriama dabartinės kadencijos sekretoriams, o jei jų nėra – dabartiniams studentų
-atstovams. Tau pačiam užklausos nesiunčiame. Laikotarpis prasideda nuo institucijos dabartinės
+Užklausa skiriama dabartiniams institucijos studentų atstovams. Jei kadencijai paskirtas
+[sekretorius](#sekretoriai) (dažniausiai VU SA vidinėse institucijose), renkantis pagal institucijas
+klausiame jo, o ne atstovų; atstovą, kurį pasirinkai pats, klausiame bet kuriuo atveju. Tau pačiam užklausos nesiunčiame. Laikotarpis prasideda nuo institucijos dabartinės
 kadencijos pradžios, bet atstovui negali prasidėti anksčiau už jo pareigybės laikotarpį. Jei dabartinės
 kadencijos nėra, naudojama atstovo pareigų pradžia. Paskutinė pareigų diena dar yra galiojanti.
 Laikotarpio pabaiga užfiksuojama siunčiant ir vėliau nesikeičia.
@@ -210,6 +222,17 @@ Užfiksuotas posėdis gali užbaigti tik to laikotarpio veiklos užklausą. Įra
 kitiems gavėjams užbaigia tik **Viskas užfiksuota**, kai tavo patvirtintas laikotarpis apima jų
 klausiamą laikotarpį. Senas, nesusijęs posėdis ar pranešimas dabartinės priminimo užduoties neužbaigia.
 
+#### Kai institucijoje keli atstovai {#keli-atstovai}
+
+Kiekvienas atstovas gauna savo užklausą, bet atsakymai pildo tą patį institucijos įrašą. Kai vienas
+atstovas užfiksuoja posėdį ar patvirtina, kad jo nebuvo, kitų užklausos užsibaigia. Atvėręs savo
+nuorodą matai, kas ir kada atsakė, bei skiltį **Jau užfiksuota** su laikotarpio posėdžiais ir
+patvirtintais tarpais be posėdžių. Jei žinai apie posėdį, kurio kolega neįrašė, pridėk jį ten pat
+(**Žinai apie kitą posėdį? Pridėk jį.**); tą patį posėdį pakartotinai įrašius, dublikatas nesukuriamas.
+Patvirtinti, kad posėdžio nebuvo, kai kolega jau įrašė posėdį, negalima. Jei tavo laikotarpis
+prasidėjo anksčiau nei kolegos, puslapis rodo, kurią laikotarpio dalį dar liko patvirtinti.
+Kolegos atsakymai laiškais nesiunčiami.
+
 ### Užklausos atstovams {#uzklausos}
 
 Institucijos puslapyje atverk **Užklausos atstovams**. Koordinatorius mato visas institucijos
@@ -217,9 +240,11 @@ užklausas, gavėjas – tik savąsias; kiti skaitytojai jų nemato. Naujausios 
 pirmos, pagal užklausos rūšį. Matai siuntėją arba automatinį šaltinį, laikotarpį, žinutę, gavėją,
 atsakymą, laikus ir užfiksuotus rezultatus. Koordinatoriui nerodomos gavėjo atsakymo nuorodos.
 
+<DocScreenshot name="activity-request-history" alt="Institucijos skiltis Užklausos atstovams: užklausos rūšis, gavėjas, būsena, laikotarpis, siuntėjas, žinutė ir galiojimo pabaiga" caption="Koordinatoriaus vaizdas: kam ir kada išsiųsta užklausa ir ar jau atsakyta." />
+
 Istorija įkeliama atskirai, po 20 siuntimo grupių; senesnes atverk mygtuku **Rodyti daugiau**.
-Būsena rodo, ar dar laukiama atsakymo, jau atsakyta, veikla patvirtinta kitu įrašu, ar nuorodos
-galiojimas baigėsi. Ankstesnės užklausos be užfiksuotos pabaigos išlaiko laikotarpį iki atsakymo dienos.
+Būsena rodo, ar dar laukiama atsakymo, jau atsakyta, veikla patvirtinta kitu įrašu (ir kuris
+kolega atsakė), ar nuorodos galiojimas baigėsi. Ankstesnės užklausos be užfiksuotos pabaigos išlaiko laikotarpį iki atsakymo dienos.
 
 ### Sekretoriai {#sekretoriai}
 
@@ -304,7 +329,7 @@ pranešimus „Posėdžio nebuvo“ tvarko ir atstovų apie posėdžius klausia 
 
 | Kada | Kas gauna | Ką |
 |---|---|---|
-| Kasdien, kai būklė „Artėja terminas“ arba „Vėluoja“ | Kadencijos sekretoriai, o jei jų nėra – dabartiniai atstovai | Užduotį **„Pranešti apie veiklą“** ir laišką „Ar vyko posėdis?“, į kurį [atsakoma neprisijungus](#atsakymas) |
+| Kasdien, kai būklė „Artėja terminas“ arba „Vėluoja“ | Dabartiniai studentų atstovai (jei paskirtas – kadencijos sekretorius) | Užduotį **„Pranešti apie veiklą“** ir laišką „Ar vyko posėdis?“, į kurį [atsakoma neprisijungus](#atsakymas) |
 | Koordinatorius [paklausia atstovų](#paklausti) | Tie patys | Vieną laišką „Ar vyko posėdis?“ apie visas jų institucijas, su koordinatoriaus žinute |
 | Gavėjas atsako „Nesu šio organo narys (-ė)“ | Klausęs koordinatorius, o automatinio priminimo atveju – institucijos koordinatoriai | Pranešimą patikrinti institucijos atstovus |
 | Užregistruojamas dabartinį veiklos laikotarpį apimantis posėdis arba pranešimas „Posėdžio nebuvo“ | – | Periodiškumo užduotis pažymima atlikta automatiškai |

@@ -319,3 +319,58 @@ test('record completion targets missing agendas and excludes empty or completed 
         'institution_ids' => [$this->institution->id], 'campaign_type' => 'missing_meetings',
     ])->assertOk()->assertJsonPath('data.0.skip_reason', 'records_complete');
 });
+
+describe('picking people', function (): void {
+    test('a picked representative is asked even when the term has a named secretary, and nobody else is', function (): void {
+        $cadence = Cadence::factory()->create(['institution_id' => $this->institution->id, 'start_date' => today()->subMonth(), 'end_date' => today()->addMonth()]);
+        $secretary = User::factory()->create();
+        InstitutionSecretary::create(['institution_id' => $this->institution->id, 'cadence_id' => $cadence->id, 'user_id' => $secretary->id]);
+        $other = activityRequestRep($this->institution);
+
+        asUser($this->coordinator)->post(route('institutions.activity-requests.store'), [
+            'campaign_type' => 'activity_confirmation', 'institution_ids' => [$this->institution->id],
+            'recipients' => [['institution_id' => $this->institution->id, 'user_id' => $this->rep->id]],
+        ])->assertRedirect()->assertSessionHas('success');
+
+        expect(InstitutionActivityRequest::query()->pluck('recipient_id')->all())->toBe([$this->rep->id]);
+        Notification::assertNotSentTo([$secretary, $other], InstitutionActivityNotification::class);
+    });
+
+    test('unticked rows are not asked, and a pair naming someone outside the institution asks nobody', function (): void {
+        $outsider = User::factory()->create();
+        activityRequestRep($this->otherInstitution, $this->rep);
+
+        asUser($this->coordinator)->post(route('institutions.activity-requests.store'), [
+            'campaign_type' => 'activity_confirmation', 'institution_ids' => [$this->institution->id, $this->otherInstitution->id],
+            'recipients' => [
+                ['institution_id' => $this->otherInstitution->id, 'user_id' => $this->rep->id],
+                ['institution_id' => $this->institution->id, 'user_id' => $outsider->id],
+            ],
+        ])->assertRedirect();
+
+        expect(InstitutionActivityRequest::query()->get(['institution_id', 'recipient_id'])->map->only(['institution_id', 'recipient_id'])->all())
+            ->toBe([['institution_id' => $this->otherInstitution->id, 'recipient_id' => $this->rep->id]]);
+    });
+
+    test('a picked pair must belong to an institution in the request', function (): void {
+        asUser($this->coordinator)->post(route('institutions.activity-requests.store'), [
+            'campaign_type' => 'activity_confirmation', 'institution_ids' => [$this->institution->id],
+            'recipients' => [['institution_id' => $this->otherInstitution->id, 'user_id' => $this->rep->id]],
+        ])->assertSessionHasErrors('recipients.0.institution_id');
+    });
+
+    test('the people list names reachable representatives and secretaries with their institutions only', function (): void {
+        activityRequestRep($this->otherInstitution, $this->rep);
+        $foreignRep = activityRequestRep(Institution::factory()->for(Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail())->create());
+
+        $people = asUser($this->coordinator)->getJson(route('api.v1.admin.activityRequests.people'))->assertOk()->json('data');
+
+        expect(collect($people)->pluck('id')->all())->toContain($this->rep->id)->not->toContain($foreignRep->id)
+            ->and(collect(collect($people)->firstWhere('id', $this->rep->id)['institutions'])->pluck('id')->sort()->values()->all())
+            ->toBe(collect([$this->institution->id, $this->otherInstitution->id])->sort()->values()->all());
+    });
+
+    test('a representative cannot list people', function (): void {
+        asUser($this->rep)->getJson(route('api.v1.admin.activityRequests.people'))->assertForbidden();
+    });
+});

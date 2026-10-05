@@ -136,15 +136,31 @@ return [
         ],
     ],
     'activity_request' => [
+        'mode' => [
+            'title' => 'What will you pick?',
+            'subtitle' => 'Pick institutions or specific people.',
+            'institutions' => 'By institution',
+            'institutions_hint' => 'We ask their student representatives.',
+            'people' => 'By representative',
+            'people_hint' => 'We ask the representatives you pick about all of their institutions.',
+        ],
+        'people' => [
+            'title' => 'Whom to ask?',
+            'subtitle' => 'Student representatives in your institutions. Each gets one email about all of their institutions.',
+            'search' => 'Search by name or institution',
+            'empty' => 'No representatives found',
+            'continue' => 'Continue (:count)',
+        ],
         'institutions' => [
             'title' => 'Which institutions to ask about?',
-            'subtitle' => 'Their secretaries or representatives get the email “Did the institution meet?” and can answer without signing in.',
+            'subtitle' => 'Their student representatives get the email “Did the institution meet?” and can answer without signing in.',
             'continue' => 'Continue (:count)',
         ],
         'review' => [
             'title' => 'What we will send, and to whom',
             'subtitle' => 'Each recipient gets one email about all of their institutions.',
             'recipients' => 'To: :names · asking since :date',
+            'change_people' => 'Change representatives',
             'change_institutions' => 'Change institutions',
             'note' => 'Message to recipients (optional)',
             'note_placeholder' => 'E.g. “Please answer by Friday – we are preparing a report.”',

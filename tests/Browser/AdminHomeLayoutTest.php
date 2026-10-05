@@ -29,6 +29,12 @@ it('keeps the home layout within the viewport at the redesign widths', function 
             if (! $dark && $width === 1440) {
                 $page->resize(1440, 840);
                 docsScreenshot($page, 'admin-home');
+                docsScreenshot($page, 'v3-workspaces', highlights: [
+                    '[data-slot=workspace-picker]',
+                    '[data-tour=command-palette]',
+                    '[data-tour=action-create]',
+                    '[data-slot=section-tabs]',
+                ]);
                 $page->resize(1440, 900);
             }
 

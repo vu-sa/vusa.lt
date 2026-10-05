@@ -101,6 +101,6 @@ tests/Browser/Screenshots
 # Docs screenshots come from CI browser tests at deploy time (tests/Browser/README.md)
 docs/public/screenshots
 
-# The PDF guide is built at deploy time (docs/pdf/build.ts)
+# The PDF guide and release notes are built at deploy time (docs/pdf/build.ts, build-release.ts)
 docs/pdf/.build
-docs/public/vusa-lt-gidas.pdf
+docs/public/vusa-lt-*.pdf

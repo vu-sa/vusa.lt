@@ -84,7 +84,8 @@ const emit = defineEmits<{
   'update:push': [value: boolean];
 }>();
 
-const emailOptions = emailDeliveryOptions();
+// Computed: the admin bundle mounts before its translations load.
+const emailOptions = computed(() => emailDeliveryOptions());
 
-const selectedOption = computed(() => emailOptions.find(option => option.value === props.email) ?? emailOptions[0]);
+const selectedOption = computed(() => emailOptions.value.find(option => option.value === props.email) ?? emailOptions.value[0]);
 </script>

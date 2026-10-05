@@ -22,10 +22,10 @@ import ActionChoiceButton from '../ActionChoiceButton.vue';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
 
-const { draft, advance, updateActivityRequest } = useActionWindow();
+const { advance, updateActivityRequest } = useActionWindow();
 const campaigns = ['activity_confirmation', 'missing_meetings'] as const;
 const choose = (campaignType: typeof campaigns[number]) => {
   updateActivityRequest({ campaignType });
-  advance(draft.activityRequest.institutions.length > 0 && draft.activityRequest.institutions.length <= 100 ? 'activity.review' : 'activity.institutions');
+  advance('activity.mode');
 };
 </script>

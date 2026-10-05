@@ -144,6 +144,10 @@ A test can also save a reference frame for the VitePress docs with
 
 - Embed with `<DocScreenshot name="name" alt="…" />`; a missing frame hides, and `docs:build`
   lists it. Renaming a frame breaks the docs page silently otherwise.
+- `highlights: ['[data-slot=…]', …]` draws a numbered red box over each element (pass
+  `['selector' => …, 'label' => 'A']` for a custom badge). It does not scroll, and throws if a
+  selector matches nothing on screen. Take annotated frames as a separate `vN-<topic>` name next to the
+  clean one; they belong to the changelog (`.ai/rules/changelog.md`).
 - Only take one where the docs use it — the default light theme, desktop (or `-phone` at 390).
 - Seed `DocsSeeder` for realistic Lithuanian content instead of faker names.
 - A page that searches Typesense from the browser (admin collections such as `/mano/resources`)

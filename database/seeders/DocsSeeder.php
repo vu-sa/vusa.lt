@@ -89,10 +89,12 @@ class DocsSeeder extends Seeder
         // A VU body type, so the institution frame shows its governance scope instead of a dash.
         $council->types()->attach(InstitutionType::query()->where('slug', 'studentu-atstovu-organas')->firstOrFail());
 
-        foreach ([$council, $senate, $committee] as $institution) {
+        // Duty inboxes show up in the notification settings frame; faker addresses read as placeholders.
+        foreach (['chgf.taryba@vusa.lt' => $council, 'senatas@vusa.lt' => $senate, 'chemija.spk@vusa.lt' => $committee] as $email => $institution) {
             $duty = Duty::factory()->for($institution)->create([
                 'name' => ['lt' => 'Studentų atstovė', 'en' => 'Student representative'],
                 'description' => ['lt' => '', 'en' => ''],
+                'email' => $email,
             ]);
             $representative->duties()->attach($duty, ['start_date' => now()->subYear()]);
             $duty->types()->attach($representativeType);

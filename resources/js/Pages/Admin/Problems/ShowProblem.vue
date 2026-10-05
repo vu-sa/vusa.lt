@@ -272,17 +272,18 @@ const tabs = computed<RecordPageSection[]>(() => [
   ...(props.goalsExperiment ? [{ value: 'tikslai', label: $t('goals.problem_panel.goals'), count: props.goalLinks?.goals.length }] : []),
 ]);
 
-const allStatusDefinitions = [
+// Computed: the admin bundle mounts before its translations load, and a one-off $t() would keep the raw key.
+const allStatusDefinitions = computed(() => [
   { value: 'open', label: $t('problems.show.status_open'), icon: CircleDot },
   { value: 'in_progress', label: $t('problems.show.status_in_progress'), icon: LoaderCircle },
   { value: 'resolved', label: $t('problems.show.status_resolved'), icon: CircleCheck },
-];
+]);
 
 const statusOrder = ['open', 'in_progress', 'resolved'];
 
 const statusSteps = computed(() => {
   const currentIndex = statusOrder.indexOf(props.problem.status);
-  return allStatusDefinitions.map((s, index) => ({
+  return allStatusDefinitions.value.map((s, index) => ({
     ...s,
     isActive: s.value === props.problem.status,
     isCompleted: index < currentIndex,
@@ -305,7 +306,7 @@ const overflowActions = computed<RecordAction[]>(() => {
   const actions: RecordAction[] = [];
 
   if (props.canUpdate) {
-    allStatusDefinitions
+    allStatusDefinitions.value
       .filter(s => s.value !== props.problem.status)
       .forEach((s) => {
         actions.push({

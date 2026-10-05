@@ -136,15 +136,31 @@ return [
         ],
     ],
     'activity_request' => [
+        'mode' => [
+            'title' => 'Ką rinksiesi?',
+            'subtitle' => 'Gali pasirinkti institucijas arba konkrečius žmones.',
+            'institutions' => 'Pagal institucijas',
+            'institutions_hint' => 'Klausime jų studentų atstovų.',
+            'people' => 'Pagal atstovus',
+            'people_hint' => 'Klausime pasirinktų atstovų apie visas jų institucijas.',
+        ],
+        'people' => [
+            'title' => 'Ko klausti?',
+            'subtitle' => 'Studentų atstovai tavo institucijose. Kiekvienas gaus vieną laišką apie visas savo institucijas.',
+            'search' => 'Ieškok pagal vardą ar instituciją',
+            'empty' => 'Atstovų nerasta',
+            'continue' => 'Toliau (:count)',
+        ],
         'institutions' => [
             'title' => 'Apie kurias institucijas klausti?',
-            'subtitle' => 'Jų sekretoriai arba atstovai gaus laišką „Ar vyko posėdis?“ ir galės atsakyti neprisijungę.',
+            'subtitle' => 'Jų studentų atstovai gaus laišką „Ar vyko posėdis?“ ir galės atsakyti neprisijungę.',
             'continue' => 'Toliau (:count)',
         ],
         'review' => [
             'title' => 'Ką ir kam išsiųsime',
             'subtitle' => 'Kiekvienas gavėjas gaus vieną laišką apie visas savo institucijas.',
             'recipients' => 'Gaus: :names · klausiame nuo :date',
+            'change_people' => 'Keisti atstovus',
             'change_institutions' => 'Keisti institucijas',
             'note' => 'Žinutė gavėjams (nebūtina)',
             'note_placeholder' => 'Pvz., „Prašau atsakyti iki penktadienio – ruošiame ataskaitą.“',

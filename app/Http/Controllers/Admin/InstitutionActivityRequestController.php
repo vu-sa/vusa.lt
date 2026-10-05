@@ -16,7 +16,7 @@ class InstitutionActivityRequestController extends AdminController
         /** @var User $user */
         $user = $request->user();
 
-        $result = $send->send($request->institutions(), $user, $request->validated('note'), InstitutionActivityCampaign::from($request->validated('campaign_type')));
+        $result = $send->send($request->institutions(), $user, $request->validated('note'), InstitutionActivityCampaign::from($request->validated('campaign_type')), $request->pairs());
         $sent = $result['queued_requests'];
 
         return back()->with('success', __('activity_requests.queued', ['count' => $sent, 'recipients' => $result['queued_recipients'], 'emails' => $result['queued_emails']]));

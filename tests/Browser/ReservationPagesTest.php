@@ -68,6 +68,11 @@ it('opens the checkout with the representative\'s saved cart', function (): void
 
     $page->resize(1440, 900);
     docsScreenshot($page, 'reservation-form');
+    docsScreenshot($page, 'v3-reservation-cart', highlights: [
+        '[data-testid=form-page-bar] [data-slot=status-badge]',
+        '[data-testid=form-page-aside] > :first-child',
+        '[data-testid=form-page-save]',
+    ]);
 
     $page->assertNoJavaScriptErrors();
 });

@@ -63,6 +63,7 @@ it('shows a padalinys coordinator the statistics of their padalinys', function (
 
     $page->resize(1440, 1200);
     docsScreenshot($page, 'visak-padaliniai');
+    docsScreenshot($page, 'v3-ask-representatives', highlights: ['[data-slot=institutions-needing-attention-ask]']);
 
     $page->assertNoJavaScriptErrors();
 });

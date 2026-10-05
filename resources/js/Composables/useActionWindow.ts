@@ -40,7 +40,9 @@ export type ScreenId
     | 'checkin.until'
     | 'checkin.review'
     | 'activity.campaign'
+    | 'activity.mode'
     | 'activity.institutions'
+    | 'activity.people'
     | 'activity.review';
 
 export interface ScreenFrame {
@@ -54,6 +56,13 @@ export interface ActionWindowInstitutionRef {
   name: string;
   /** Only VU SA's own bodies may be announced in the calendar; undefined until known. */
   isInternal?: boolean;
+}
+
+/** A representative or secretary a coordinator can ask, with the institutions they would be asked about. */
+export interface ActionWindowPersonRef {
+  id: string;
+  name: string;
+  institutions: ActionWindowInstitutionRef[];
 }
 
 /** The calendar announcement a meeting is being created from, when there is one. */
@@ -70,8 +79,19 @@ export interface ActionWindowDraft {
   meeting: Partial<MeetingFormData>;
   agendaItems: AgendaItemFormData[];
   checkIn: { startDate?: string; endDate?: string; note: string };
-  /** A coordinator asking reps "Ar vyko posėdis?" by email. */
-  activityRequest: { institutions: ActionWindowInstitutionRef[]; pinned: ActionWindowInstitutionRef[]; campaignType: 'activity_confirmation' | 'missing_meetings' | null; note: string };
+  /**
+   * A coordinator asking reps "Ar vyko posėdis?" by email, picking either institutions or people.
+   * `unchecked` holds the review rows ("institutionId:userId") the coordinator unticked.
+   */
+  activityRequest: {
+    mode: 'institutions' | 'people';
+    institutions: ActionWindowInstitutionRef[];
+    pinned: ActionWindowInstitutionRef[];
+    people: ActionWindowPersonRef[];
+    unchecked: string[];
+    campaignType: 'activity_confirmation' | 'missing_meetings' | null;
+    note: string;
+  };
 }
 
 export interface OpenOptions {
@@ -130,7 +150,7 @@ const emptyDraft = (): ActionWindowDraft => ({
   meeting: { start_time: '', type: undefined, description: '', announce_in_calendar: false },
   agendaItems: [],
   checkIn: { startDate: undefined, endDate: undefined, note: '' },
-  activityRequest: { institutions: [], pinned: [], campaignType: null, note: '' },
+  activityRequest: { mode: 'institutions', institutions: [], pinned: [], people: [], unchecked: [], campaignType: null, note: '' },
 });
 
 const ROOT_FRAME: ScreenFrame = { id: 'persona' };

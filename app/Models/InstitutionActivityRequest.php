@@ -158,6 +158,36 @@ class InstitutionActivityRequest extends Model
         return $this->answered_at === null && $this->resolved_at === null && $this->expires_at->isFuture();
     }
 
+    /** A colleague's answer closes the question, but a meeting they did not know about can still be added. */
+    public function acceptsMeetings(): bool
+    {
+        return $this->answered_at === null && $this->expires_at->isFuture();
+    }
+
+    /**
+     * Stretches of the period, from $start on, that no check-in covers yet.
+     *
+     * @return list<array{Carbon, Carbon}>
+     */
+    public function uncoveredPeriods(?Carbon $start = null): array
+    {
+        $cursor = ($start ?? $this->period_start)->copy();
+        $end = $this->periodEnd();
+        $covered = $this->institution->checkIns()->whereDate('end_date', '>=', $cursor)->whereDate('start_date', '<=', $end)->orderBy('start_date')->get();
+        $gaps = [];
+        foreach ($covered as $checkIn) {
+            if ($cursor->lt($checkIn->start_date)) {
+                $gaps[] = [$cursor->copy(), $checkIn->start_date->copy()->subDay()->min($end)];
+            }
+            $cursor = $cursor->max($checkIn->end_date->copy()->addDay());
+        }
+        if ($cursor->lte($end)) {
+            $gaps[] = [$cursor, $end];
+        }
+
+        return $gaps;
+    }
+
     /**
      * The page a link in the email opens. It only shows the question; answering is a POST.
      */

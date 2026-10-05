@@ -105,6 +105,7 @@ it('reviews incomplete records for the sending representative without overflow i
     $page->click('[data-testid=record-overflow-trigger]');
     $page->click('[role=menuitem]:has-text("Paklausti, ar vyko posėdžiai")');
     $page->click('[data-slot=action-choice-button]:has-text("Papildyk posėdžių įrašus")');
+    pickPreselectedInstitutions($page);
     $page->page()->waitForSelector('[data-slot=activity-request-preview]', ['timeout' => 15000]);
     $page->assertPresent('[data-slot=activity-request-preview]')->assertNoJavaScriptErrors();
     foreach ([390, 820, 1180, 1440] as $width) {
@@ -135,6 +136,7 @@ it('captures documentation reference frames for activity requests', function ():
     $page->click('[data-testid=record-overflow-trigger]');
     $page->click('[role=menuitem]:has-text("Paklausti, ar vyko posėdžiai")');
     $page->click('[data-slot=action-choice-button]:has-text("Ar vyko posėdis?")');
+    pickPreselectedInstitutions($page);
     $page->page()->waitForSelector('[data-slot=activity-request-preview]', ['timeout' => 15000]);
     $page->fill('#activity-request-note', 'Ar per pastarąjį mėnesį vyko Chemijos SPK posėdis? Laukiame informacijos apie priimtus sprendimus.');
     docsScreenshot($page, 'activity-request-review', selector: '[role="dialog"]');
@@ -152,14 +154,39 @@ it('captures documentation reference frames for activity requests', function ():
         'locale' => 'lt',
     ]);
 
-    // 2. Email notification
+    // 2. Request history on the institution record, with an earlier automatic request already answered
+    $meeting = app(RecordMeeting::class)->execute($committee, now()->subMonths(2)->subWeek());
+    InstitutionActivityRequest::factory()->create([
+        'institution_id' => $committee->id,
+        'recipient_id' => $representative->id,
+        'requested_by_id' => null,
+        'campaign_type' => InstitutionActivityCampaign::ActivityConfirmation,
+        'period_start' => now()->subMonths(3),
+        'period_end' => now()->subMonths(2),
+        'answer' => InstitutionActivityAnswer::Met,
+        'answered_at' => now()->subMonths(2)->addDay(),
+        'meeting_id' => $meeting->id,
+        'note' => null,
+        'created_at' => now()->subMonths(2),
+    ]);
+    $page->navigate(route('institutions.show', $committee));
+    waitForInertiaRender($page, '[data-slot=admin-shell]');
+    $page->click('[role=tab]:has-text("Užklausos atstovams")');
+    waitForInertiaRender($page, '[data-slot=activity-request-history]');
+    $page->resize(1180, 900);
+    docsScreenshot($page, 'activity-request-history', selector: '[data-slot=activity-request-history]');
+    $page->resize(1440, 1100);
+    $page->script('document.querySelector("[data-slot=admin-scroll-area]")?.scrollTo(0, 0)');
+    docsScreenshot($page, 'v3-request-history', highlights: ['[data-slot=activity-request-history]']);
+
+    // 3. Email notification
     $notification = new InstitutionActivityNotification(new Collection([$request]));
     $mail = $notification->toMail($representative);
     $page->resize(640, 750);
     $page->page()->setContent((string) $mail->render());
     docsScreenshot($page, 'activity-request-email');
 
-    // 3. Public non-login answer page
+    // 4. Public non-login answer page
     app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));
     $page->navigate($request->answerUrl(InstitutionActivityAnswer::Met));
     $page->page()->waitForSelector('#activity-reply form', ['timeout' => 15000]);
@@ -167,3 +194,11 @@ it('captures documentation reference frames for activity requests', function ():
     docsScreenshot($page, 'activity-request-reply', selector: 'main');
     $page->assertNoJavaScriptErrors();
 });
+
+/** "Pagal institucijas", then continue with the institutions the window was opened on. */
+function pickPreselectedInstitutions($page): void
+{
+    $page->click('[data-slot=action-choice-button]:has-text("Pagal institucijas")');
+    waitForInertiaRender($page, '[data-slot=action-window-primary]:not([disabled])');
+    $page->click('[data-slot=action-window-primary]');
+}

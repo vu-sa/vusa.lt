@@ -363,3 +363,52 @@ test('history handles soft-deleted result meetings without exposing broken links
     $history = app(GetInstitutionActivityRequestHistory::class)->execute($this->institution, $this->recipient);
     expect($history['data'][0]['campaigns']['activity_confirmation'][0]['meetings'])->toBe([]);
 });
+
+describe('several representatives of one institution', function (): void {
+    beforeEach(function (): void {
+        $this->colleague = InstitutionActivityRequest::factory()->create([
+            'send_id' => $this->activityRequest->send_id,
+            'institution_id' => $this->institution->id,
+            'period_start' => today()->subMonth(),
+        ]);
+    });
+
+    test('a colleague sees who recorded the meeting and when it was', function (): void {
+        $date = today()->subWeek();
+        $this->post($this->activityRequest->submitUrl(), ['answer' => 'met', 'meetings' => [['date' => $date->toDateString(), 'type' => 'in-person', 'time' => '15:30']]]);
+
+        expect($this->colleague->fresh()->resolved_by_request_id)->toBe($this->activityRequest->id);
+        $this->get($this->colleague->answerUrl())->assertOk()
+            ->assertSee($this->recipient->name)
+            ->assertSee(__('activity_requests.history.meeting', ['date' => $date->toDateString()]))
+            ->assertSee(__('activity_requests.another_meeting'))
+            ->assertDontSee(__('activity_requests.confirm_not_met'));
+        expect(app(GetInstitutionActivityRequestHistory::class)->execute($this->institution, $this->colleague->recipient)['data'][0]['campaigns']['activity_confirmation'][0]['resolved_by'])
+            ->toBe($this->recipient->name);
+    });
+
+    test('a colleague can still add a meeting nobody recorded, but cannot deny one', function (): void {
+        $first = ['date' => today()->subWeek()->toDateString(), 'type' => 'in-person', 'time' => '15:30'];
+        $this->post($this->activityRequest->submitUrl(), ['answer' => 'met', 'meetings' => [$first]]);
+
+        $this->post($this->colleague->submitUrl(), ['answer' => 'not_met'])->assertRedirect($this->colleague->answerUrl());
+        expect(InstitutionCheckIn::query()->count())->toBe(0);
+
+        $this->post($this->colleague->submitUrl(), ['answer' => 'met', 'meetings' => [$first, ['date' => today()->subDays(2)->toDateString(), 'type' => 'email']]])
+            ->assertSessionHasNoErrors();
+
+        expect(Meeting::query()->count())->toBe(2)
+            ->and($this->colleague->fresh())->answer->toBe(InstitutionActivityAnswer::Met)->resolved_at->toBeNull();
+    });
+
+    test('a colleague whose term started earlier is asked only about the part nobody confirmed', function (): void {
+        $this->colleague->update(['period_start' => today()->subMonths(2)]);
+
+        $this->post($this->activityRequest->submitUrl(), ['answer' => 'not_met']);
+
+        expect($this->colleague->fresh()->isOpen())->toBeTrue();
+        $this->get($this->colleague->answerUrl())->assertOk()->assertSee(__('activity_requests.uncovered', [
+            'periods' => today()->subMonths(2)->toDateString().' – '.today()->subMonth()->subDay()->toDateString(),
+        ]));
+    });
+});

@@ -35,7 +35,9 @@ export const ACTION_WINDOW_SCREENS: Record<ScreenId, Component> = {
   'checkin.until': screen(() => import('./screens/CheckInUntilScreen.vue')),
   'checkin.review': screen(() => import('./screens/CheckInReviewScreen.vue')),
   'activity.campaign': screen(() => import('./screens/ActivityRequestCampaignScreen.vue')),
+  'activity.mode': screen(() => import('./screens/ActivityRequestModeScreen.vue')),
   'activity.institutions': screen(() => import('./screens/ActivityRequestInstitutionsScreen.vue')),
+  'activity.people': screen(() => import('./screens/ActivityRequestPeopleScreen.vue')),
   'activity.review': screen(() => import('./screens/ActivityRequestReviewScreen.vue')),
 };
 
@@ -65,7 +67,8 @@ const CHECK_IN_FLOW: ScreenId[][] = [
 
 const ACTIVITY_REQUEST_FLOW: ScreenId[][] = [
   ['activity.campaign'],
-  ['activity.institutions'],
+  ['activity.mode'],
+  ['activity.institutions', 'activity.people'],
   ['activity.review'],
 ];
 

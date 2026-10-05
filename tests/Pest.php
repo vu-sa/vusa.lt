@@ -270,8 +270,10 @@ function productTourIds(): array
  *
  * Only runs with DOCS_SCREENSHOTS set (CI's browser job). The name is the contract with
  * `<DocScreenshot name="…">` in docs/ — see tests/Browser/README.md "Docs screenshots".
+ *
+ * @param  list<string|array{selector: string, label?: string}>  $highlights  boxed and numbered 1, 2, … in order
  */
-function docsScreenshot(PendingAwaitablePage|AwaitableWebpage $page, string $name, string $locale = 'lt', ?string $selector = null): void
+function docsScreenshot(PendingAwaitablePage|AwaitableWebpage $page, string $name, string $locale = 'lt', ?string $selector = null, array $highlights = []): void
 {
     if (! env('DOCS_SCREENSHOTS')) {
         return;
@@ -305,6 +307,10 @@ function docsScreenshot(PendingAwaitablePage|AwaitableWebpage $page, string $nam
     $wasDark = $page->script('document.documentElement.classList.contains("dark")');
     $page->script('document.documentElement.classList.remove("dark")');
 
+    if ($highlights !== []) {
+        annotateDocsScreenshot($page, $highlights);
+    }
+
     @mkdir(base_path("tests/Browser/Screenshots/docs/{$locale}"), 0755, true);
     $filename = "docs/{$locale}/{$name}";
 
@@ -312,8 +318,72 @@ function docsScreenshot(PendingAwaitablePage|AwaitableWebpage $page, string $nam
         ? $page->screenshot(fullPage: false, filename: $filename)
         : $page->screenshotElement($selector, $filename);
 
+    $page->script('document.querySelectorAll("[data-docs-annotation]").forEach(node => node.remove())');
+
     if ($wasDark) {
         $page->script('document.documentElement.classList.add("dark")');
+    }
+}
+
+/**
+ * Draw a red box and a numbered badge over each highlighted element, in viewport coordinates so
+ * full-page and element captures both include it. A selector matching nothing on screen throws:
+ * a renamed hook must fail the test, not ship a frame with no box.
+ *
+ * @param  list<string|array{selector: string, label?: string}>  $highlights
+ */
+function annotateDocsScreenshot(PendingAwaitablePage|AwaitableWebpage $page, array $highlights): void
+{
+    $marks = array_map(
+        fn (string|array $highlight, int $index): array => is_string($highlight)
+            ? ['selector' => $highlight, 'label' => (string) ($index + 1)]
+            : ['selector' => $highlight['selector'], 'label' => $highlight['label'] ?? (string) ($index + 1)],
+        $highlights,
+        array_keys($highlights),
+    );
+
+    $missing = $page->script(sprintf(<<<'JS'
+        (() => {
+            const missing = [];
+            // Many admin actions render twice (desktop and phone bar); box the one on screen.
+            // Scrolling here would push earlier marks out of frame, so the test positions the page.
+            const visible = selector => [...document.querySelectorAll(selector)].find(node => {
+                const box = node.getBoundingClientRect();
+                return box.width > 0 && box.height > 0 && getComputedStyle(node).visibility !== 'hidden'
+                    && box.bottom > 0 && box.right > 0 && box.top < innerHeight && box.left < innerWidth;
+            });
+            const marks = %s;
+            for (const { selector, label } of marks) {
+                const node = visible(selector);
+                if (!node) { missing.push(selector); continue; }
+                const box = node.getBoundingClientRect();
+                // Kept inside the viewport, or a bar pinned to an edge loses three of its sides.
+                const left = Math.max(box.left - 4, 1), top = Math.max(box.top - 4, 1);
+                const right = Math.min(box.right + 4, innerWidth - 1), bottom = Math.min(box.bottom + 4, innerHeight - 1);
+                const frame = document.createElement('div');
+                frame.dataset.docsAnnotation = '';
+                Object.assign(frame.style, {
+                    position: 'fixed', zIndex: 2147483647, pointerEvents: 'none', boxSizing: 'border-box',
+                    left: `${left}px`, top: `${top}px`, width: `${right - left}px`, height: `${bottom - top}px`,
+                    border: '3px solid #e0162b', boxShadow: '0 0 0 1px rgba(255,255,255,.85)',
+                });
+                const badge = document.createElement('div');
+                badge.dataset.docsAnnotation = '';
+                badge.textContent = label;
+                Object.assign(badge.style, {
+                    position: 'fixed', zIndex: 2147483647, pointerEvents: 'none',
+                    left: `${Math.min(Math.max(left - 11, 2), innerWidth - 26)}px`, top: `${Math.min(Math.max(top - 11, 2), innerHeight - 26)}px`,
+                    width: '24px', height: '24px', borderRadius: '50%%', background: '#e0162b', color: '#fff',
+                    font: '700 13px/24px system-ui, sans-serif', textAlign: 'center', boxShadow: '0 0 0 2px #fff',
+                });
+                document.body.append(frame, badge);
+            }
+            return missing;
+        })()
+        JS, json_encode($marks, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)));
+
+    if ($missing !== []) {
+        throw new RuntimeException('Docs screenshot highlights matched nothing on screen: '.implode(', ', (array) $missing));
     }
 }
 

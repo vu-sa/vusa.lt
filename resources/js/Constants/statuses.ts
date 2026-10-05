@@ -175,6 +175,15 @@ export const institutionActivityStatuses: Record<InstitutionActivityStatus, Stat
   [InstitutionActivityStatus.CoveredByCheckIn]: status('Užfiksuotas kontaktas', 'info', CalendarCheck),
 };
 
+export type ActivityRequestStatus = 'pending' | 'answered' | 'resolved' | 'expired';
+
+export const activityRequestStatuses: Record<ActivityRequestStatus, StatusPresentation> = {
+  pending: status('activity_requests.pending', 'attention', Clock3),
+  answered: status('activity_requests.answered', 'success', CircleCheck),
+  resolved: status('activity_requests.resolved', 'success', CalendarCheck),
+  expired: status('activity_requests.expired', 'neutral', CircleSlash),
+};
+
 function status(label: string, role: StatusRole, icon: LucideIcon, uppercase = false): StatusPresentation {
   return uppercase ? { label, role, icon, uppercase } : { label, role, icon };
 }

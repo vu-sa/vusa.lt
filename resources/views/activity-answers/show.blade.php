@@ -5,6 +5,9 @@
     $since = $activityRequest->period_start->toDateString();
     $missing = $activityRequest->campaign_type === \App\Enums\InstitutionActivityCampaign::MissingMeetings;
     $isOpen = $activityRequest->isOpen();
+    $canAddMeeting = ! $isOpen && $activityRequest->acceptsMeetings();
+    $resolvedBy = $activityRequest->answer === null ? $activityRequest->resolvedByRequest?->recipient : null;
+    $remaining = collect($uncovered)->map(fn ($gap) => $gap[0]->toDateString().' – '.$gap[1]->toDateString())->join(', ');
     $inputClass = 'mt-1 block w-full h-11 border border-border bg-background px-3 text-foreground';
     $buttonClass = 'inline-flex h-11 items-center justify-center px-4 text-xs font-bold uppercase tracking-wide';
 @endphp
@@ -31,6 +34,9 @@
                             {{ __('activity_requests.done.resolved', ['institution' => $institution->name]) }}
                         @endif
                     </p>
+                    @if ($resolvedBy !== null)
+                        <p class="mt-1 text-sm text-muted-foreground">{{ __('activity_requests.resolved_by', ['name' => $resolvedBy->name, 'date' => $activityRequest->resolved_at->toDateString()]) }}</p>
+                    @endif
                     @if ($activityRequest->meeting !== null)
                         <a class="mt-3 inline-block text-brand underline-offset-4 hover:underline" href="{{ route('meetings.show', $activityRequest->meeting) }}">
                             {{ __('activity_requests.add_agenda') }}
@@ -39,6 +45,9 @@
                 </div>
             @else
                 <p class="mt-3 text-muted-foreground">{{ __('activity_requests.fixed_period', ['start' => $since, 'end' => $activityRequest->periodEnd()->toDateString()]) }}</p>
+                @if ($remaining !== '' && $remaining !== $since.' – '.$activityRequest->periodEnd()->toDateString())
+                    <p class="mt-1">{{ __('activity_requests.uncovered', ['periods' => $remaining]) }}</p>
+                @endif
 
                 @if ($missing)
                     <section class="mt-6 border-y border-border py-4">
@@ -60,6 +69,26 @@
                         <p class="mt-1">{{ $activityRequest->note }}</p>
                     </blockquote>
                 @endif
+            @endif
+
+            @if (! ($missing && $isOpen) && ($knownMeetings->isNotEmpty() || $knownCheckIns->isNotEmpty()))
+                <section class="mt-6 border-y border-border py-4">
+                    <h2 class="text-sm font-bold">{{ __('activity_requests.already_recorded') }}</h2>
+                    <ul class="mt-2 space-y-1 text-sm">
+                        @foreach ($knownMeetings as $meeting)
+                            <li><a class="inline-flex min-h-11 items-center text-brand underline" href="{{ route('meetings.show', $meeting) }}">{{ __('activity_requests.history.meeting', ['date' => $meeting->start_time->toDateString()]) }}</a></li>
+                        @endforeach
+                        @foreach ($knownCheckIns as $checkIn)
+                            <li class="flex min-h-11 items-center">{{ $checkIn->start_date->toDateString() }} – {{ $checkIn->end_date->toDateString() }} · {{ __('activity_requests.no_meetings') }}</li>
+                        @endforeach
+                    </ul>
+                </section>
+            @endif
+
+            @if ($isOpen || $canAddMeeting)
+                @if (! $isOpen)
+                    <h2 class="mt-8 font-bold">{{ __('activity_requests.another_meeting') }}</h2>
+                @endif
 
                 @if ($errors->any())
                     <ul class="mt-6 border border-destructive/40 p-3 text-sm text-destructive">
@@ -77,6 +106,7 @@
                          'submit' => $missing ? __('activity_requests.complete') : __('activity_requests.confirm_not_met')],
                         ['value' => 'not_mine', 'label' => __('notifications.action_not_mine'), 'hint' => __('activity_requests.not_mine_hint'), 'submit' => __('activity_requests.confirm_not_mine')],
                     ];
+                    $choices = $isOpen ? $choices : array_slice($choices, 0, 1);
                     $replyProps = [
                         'action' => $activityRequest->submitUrl(), 'csrf' => csrf_token(), 'start' => $since, 'end' => $activityRequest->periodEnd()->toDateString(),
                         'locale' => app()->getLocale(), 'chosen' => old('answer', $chosen?->value), 'choices' => $choices,

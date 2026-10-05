@@ -33,8 +33,14 @@ class SendInstitutionActivityRequests
 
     public const string SKIP_ALREADY_ASKED = 'already_asked';
 
-    /** @param iterable<Institution> $institutions */
-    public function plan(iterable $institutions, ?User $requestedBy, InstitutionActivityCampaign $campaign = InstitutionActivityCampaign::ActivityConfirmation): array
+    /**
+     * Without $pairs each institution asks its term's secretaries, or its representatives when none
+     * are named. A coordinator who picks people ("institution_id:user_id") asks exactly them.
+     *
+     * @param  iterable<Institution>  $institutions
+     * @param  list<string>|null  $pairs
+     */
+    public function plan(iterable $institutions, ?User $requestedBy, InstitutionActivityCampaign $campaign = InstitutionActivityCampaign::ActivityConfirmation, ?array $pairs = null): array
     {
         $institutions = new EloquentCollection(collect($institutions)->all());
         $institutions->loadMissing(['meetings', 'checkIns']);
@@ -42,12 +48,7 @@ class SendInstitutionActivityRequests
             $institutions->loadMissing(['meetings.agendaItems.votes', 'meetings.institutions']);
         }
         $ids = $institutions->pluck('id');
-        $cadences = ResolveCadenceForInstitution::forInstitutions($ids);
-        $secretaries = InstitutionSecretary::query()->whereIn('institution_id', $ids)->with('user')->get()->groupBy('institution_id');
-        $assignments = Dutiable::query()->current()
-            ->where('dutiable_type', MorphMap::alias(User::class))
-            ->whereHas('duty', fn ($query) => $query->whereIn('institution_id', $ids)->whereHas('types', fn ($type) => $type->where('slug', 'studentu-atstovai')))
-            ->with(['duty', 'user'])->get()->groupBy('duty.institution_id');
+        $candidates = $this->candidates($ids);
         $existing = InstitutionActivityRequest::query()->whereIn('institution_id', $ids)->get()->groupBy('institution_id');
         $end = CarbonImmutable::today();
         $plan = [];
@@ -61,27 +62,10 @@ class SendInstitutionActivityRequests
 
                 continue;
             }
-            $cadence = $cadences[$institution->id] ?? null;
-            $nominated = $secretaries->get($institution->id, collect())->filter(fn ($row) => $cadence !== null && $row->cadence_id === $cadence->id && $row->user !== null);
-            $periods = [];
-            if ($nominated->isNotEmpty()) {
-                foreach ($nominated as $row) {
-                    $periods[$row->user_id] = ['user' => $row->user, 'start' => CarbonImmutable::instance($cadence->start_date)];
-                }
-            } else {
-                foreach ($assignments->get($institution->id, collect()) as $row) {
-                    if ($row->user === null) {
-                        continue;
-                    }
-                    $start = CarbonImmutable::instance($row->start_date);
-                    if ($cadence !== null) {
-                        $start = $start->max($cadence->start_date);
-                    }
-                    if (! isset($periods[$row->dutiable_id]) || $start->lt($periods[$row->dutiable_id]['start'])) {
-                        $periods[$row->dutiable_id] = ['user' => $row->user, 'start' => $start];
-                    }
-                }
-            }
+            ['secretaries' => $secretaries, 'representatives' => $representatives] = $candidates[$institution->id];
+            $periods = $pairs === null
+                ? ($secretaries ?: $representatives)
+                : array_filter($secretaries + $representatives, fn ($userId) => in_array($institution->id.':'.$userId, $pairs, true), ARRAY_FILTER_USE_KEY);
             foreach ($periods as $recipientId => ['user' => $recipient, 'start' => $start]) {
                 $knownMeetings = $institution->meetings->filter(fn ($meeting) => $meeting->start_time->toDateString() >= $start->toDateString() && $meeting->start_time->toDateString() <= $end->toDateString());
                 $incompleteMeetings = $campaign === InstitutionActivityCampaign::MissingMeetings
@@ -116,10 +100,74 @@ class SendInstitutionActivityRequests
         return $plan;
     }
 
-    /** @param iterable<Institution> $institutions */
-    public function send(iterable $institutions, User $requestedBy, ?string $note = null, InstitutionActivityCampaign $campaign = InstitutionActivityCampaign::ActivityConfirmation): array
+    /**
+     * The people a coordinator can pick: every institution's named secretaries and current representatives.
+     *
+     * @param  iterable<Institution>  $institutions
+     * @return list<array{id: string, name: string, institutions: list<array{id: string, name: string}>}>
+     */
+    public function people(iterable $institutions): array
     {
-        return $this->dispatch(collect($institutions), $requestedBy, $note, $campaign);
+        $institutions = collect($institutions)->keyBy('id');
+        $people = [];
+        foreach ($this->candidates($institutions->keys()) as $institutionId => $roles) {
+            $institution = $institutions[$institutionId];
+            foreach ($roles['secretaries'] + $roles['representatives'] as $userId => ['user' => $user]) {
+                $people[$userId] ??= ['id' => (string) $userId, 'name' => $user->name, 'institutions' => []];
+                $people[$userId]['institutions'][] = ['id' => (string) $institution->id, 'name' => is_string($institution->name) ? $institution->name : ''];
+            }
+        }
+
+        return collect($people)->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)->values()->all();
+    }
+
+    /**
+     * @param  Collection<int, string>  $ids
+     * @return array<string, array{secretaries: array<string, array{user: User, start: CarbonImmutable}>, representatives: array<string, array{user: User, start: CarbonImmutable}>}>
+     */
+    private function candidates(Collection $ids): array
+    {
+        $cadences = ResolveCadenceForInstitution::forInstitutions($ids);
+        $secretaries = InstitutionSecretary::query()->whereIn('institution_id', $ids)->with('user')->get()->groupBy('institution_id');
+        $assignments = Dutiable::query()->current()
+            ->where('dutiable_type', MorphMap::alias(User::class))
+            ->whereHas('duty', fn ($query) => $query->whereIn('institution_id', $ids)->whereHas('types', fn ($type) => $type->where('slug', 'studentu-atstovai')))
+            ->with(['duty', 'user'])->get()->groupBy('duty.institution_id');
+        $candidates = [];
+        foreach ($ids as $id) {
+            $cadence = $cadences[$id] ?? null;
+            $candidates[$id] = ['secretaries' => [], 'representatives' => []];
+            foreach ($secretaries->get($id, collect()) as $row) {
+                if ($cadence !== null && $row->cadence_id === $cadence->id && $row->user !== null) {
+                    $candidates[$id]['secretaries'][$row->user_id] = ['user' => $row->user, 'start' => CarbonImmutable::instance($cadence->start_date)];
+                }
+            }
+            foreach ($assignments->get($id, collect()) as $row) {
+                if ($row->user === null) {
+                    continue;
+                }
+                $start = CarbonImmutable::instance($row->start_date);
+                if ($cadence !== null) {
+                    $start = $start->max($cadence->start_date);
+                }
+                $current = $candidates[$id]['representatives'][$row->dutiable_id] ?? null;
+                if ($current === null || $start->lt($current['start'])) {
+                    $candidates[$id]['representatives'][$row->dutiable_id] = ['user' => $row->user, 'start' => $start];
+                }
+            }
+        }
+
+        return $candidates;
+    }
+
+    /** @param iterable<Institution> $institutions */
+    /**
+     * @param  iterable<Institution>  $institutions
+     * @param  list<string>|null  $pairs
+     */
+    public function send(iterable $institutions, User $requestedBy, ?string $note = null, InstitutionActivityCampaign $campaign = InstitutionActivityCampaign::ActivityConfirmation, ?array $pairs = null): array
+    {
+        return $this->dispatch(collect($institutions), $requestedBy, $note, $campaign, pairs: $pairs);
     }
 
     /** @param Collection<int, User> $recipients */
@@ -133,11 +181,12 @@ class SendInstitutionActivityRequests
         }
     }
 
-    private function dispatch(Collection $institutions, ?User $requestedBy, ?string $note, InstitutionActivityCampaign $campaign, ?Task $task = null, ?Collection $taskRecipients = null): array
+    /** @param list<string>|null $pairs */
+    private function dispatch(Collection $institutions, ?User $requestedBy, ?string $note, InstitutionActivityCampaign $campaign, ?Task $task = null, ?Collection $taskRecipients = null, ?array $pairs = null): array
     {
-        return DB::transaction(function () use ($institutions, $requestedBy, $note, $campaign, $task, $taskRecipients): array {
+        return DB::transaction(function () use ($institutions, $requestedBy, $note, $campaign, $task, $taskRecipients, $pairs): array {
             $locked = Institution::query()->whereIn('id', $institutions->pluck('id'))->orderBy('id')->lockForUpdate()->get();
-            $plan = $this->plan($locked, $requestedBy, $campaign);
+            $plan = $this->plan($locked, $requestedBy, $campaign, $pairs);
             $taskRequestRecipients = $task === null ? collect() : InstitutionActivityRequest::query()
                 ->where('task_id', $task->id)->whereIn('institution_id', $locked->modelKeys())
                 ->where('campaign_type', $campaign)->pluck('recipient_id');

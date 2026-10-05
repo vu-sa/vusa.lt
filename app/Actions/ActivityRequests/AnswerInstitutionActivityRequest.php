@@ -27,7 +27,8 @@ class AnswerInstitutionActivityRequest
         DB::transaction(function () use ($request, $answer, $meetingAt, $meetingType, $meetings): void {
             $institution = Institution::query()->lockForUpdate()->find($request->institution_id);
             $request = InstitutionActivityRequest::query()->lockForUpdate()->find($request->id);
-            if ($institution === null || $request === null || ! $request->isOpen() || $request->recipient === null) {
+            $accepts = $answer === InstitutionActivityAnswer::Met ? $request?->acceptsMeetings() : $request?->isOpen();
+            if ($institution === null || $request === null || ! $accepts || $request->recipient === null) {
                 return;
             }
             $request->setRelation('institution', $institution);
@@ -45,6 +46,7 @@ class AnswerInstitutionActivityRequest
                 throw ValidationException::withMessages(['answer' => __('activity_requests.incomplete_remaining')]);
             }
             if ($answer === InstitutionActivityAnswer::Met) {
+                $recorded = [];
                 if ($meetings === [] && $meetingAt !== null) {
                     $meetings = [['date' => $meetingAt->toDateString(), 'type' => ($meetingType ?? MeetingType::InPerson)->value, 'time' => $meetingAt->format('H:i')]];
                 }
@@ -57,17 +59,24 @@ class AnswerInstitutionActivityRequest
                     if ($at->toDateString() < $start->toDateString() || $at->toDateString() > $end->toDateString()) {
                         throw ValidationException::withMessages(['meetings' => __('activity_requests.outside_period')]);
                     }
-                    $meeting = $institution->meetings()->where('start_time', $at)->where('type', $type)->first()
-                        ?? $this->recordMeeting->execute($institution, $at, $type);
+                    $meeting = $institution->meetings()->where('start_time', $at)->where('type', $type)->first();
+                    if ($meeting === null) {
+                        $meeting = $this->recordMeeting->execute($institution, $at, $type);
+                        $recorded[] = $meeting->id;
+                    }
                     $request->meetings()->syncWithoutDetaching([$meeting->id]);
                     $request->meeting_id ??= $meeting->id;
                 }
+                // The meeting listener closes colleagues' questions; name who answered so they see it.
+                InstitutionActivityRequest::query()->whereKeyNot($request->id)->where('resolution_source', 'meeting')
+                    ->whereIn('meeting_id', $recorded)->whereNull('resolved_by_request_id')
+                    ->update(['resolved_by_request_id' => $request->id]);
             }
             if ($answer === InstitutionActivityAnswer::NotMet || $answer === InstitutionActivityAnswer::Complete) {
                 if ($answer === InstitutionActivityAnswer::Complete && $known->isNotEmpty()) {
                     $start = $known->first()->start_time->copy()->startOfDay()->addDay()->max($start);
                 }
-                $this->recordUncoveredGap($request, $start, $end);
+                $this->recordUncoveredGap($request, $start);
                 InstitutionActivityRequest::query()->open()->where('institution_id', $institution->id)
                     ->where('campaign_type', $request->campaign_type)->whereKeyNot($request->id)
                     ->whereDate('period_start', '>=', $request->period_start)
@@ -77,6 +86,8 @@ class AnswerInstitutionActivityRequest
             $request->answer = $answer;
             $request->answered_at = now();
             $request->resolved_at = null;
+            $request->resolution_source = null;
+            $request->resolved_by_request_id = null;
             $request->save();
             if ($answer === InstitutionActivityAnswer::NotMine) {
                 $coordinators = $request->requestedBy !== null ? collect([$request->requestedBy]) : GetInstitutionManagers::execute($institution);
@@ -86,18 +97,10 @@ class AnswerInstitutionActivityRequest
         });
     }
 
-    private function recordUncoveredGap(InstitutionActivityRequest $request, Carbon $start, Carbon $end): void
+    private function recordUncoveredGap(InstitutionActivityRequest $request, Carbon $start): void
     {
-        $covered = $request->institution->checkIns()->whereDate('end_date', '>=', $start)->whereDate('start_date', '<=', $end)->orderBy('start_date')->get();
-        $cursor = $start->copy();
-        foreach ($covered as $checkIn) {
-            if ($cursor->lt($checkIn->start_date)) {
-                $this->recordGap($request, $cursor, $checkIn->start_date->copy()->subDay()->min($end));
-            }
-            $cursor = $cursor->max($checkIn->end_date->copy()->addDay());
-        }
-        if ($cursor->lte($end)) {
-            $this->recordGap($request, $cursor, $end);
+        foreach ($request->uncoveredPeriods($start) as [$from, $to]) {
+            $this->recordGap($request, $from, $to);
         }
     }
 

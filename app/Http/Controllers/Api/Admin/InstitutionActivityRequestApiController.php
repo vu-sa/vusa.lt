@@ -18,8 +18,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 /**
- * Feeds the "Paklausti, ar vyko posėdžiai" action window flow: which institutions the caller may
- * ask about, and who would be emailed for each before they send.
+ * Feeds the "Paklausti, ar vyko posėdžiai" action window flow: which institutions and people the
+ * caller may ask, and who would be emailed for each before they send.
  */
 class InstitutionActivityRequestApiController extends ApiController
 {
@@ -32,18 +32,9 @@ class InstitutionActivityRequestApiController extends ApiController
         ResponsibilityResolver $responsibilities,
         InstitutionActivityStatusService $statuses,
     ): JsonResponse {
-        /** @var User $user */
-        $user = $request->user();
         $this->authorize('viewAny', InstitutionCheckIn::class);
 
-        $scope = $authorizer->scope($user, 'institutions.update.padalinys');
-        $coordinatedIds = $responsibilities->institutionIdsFor($user, Responsibility::StudentRepCoordination);
-
-        $institutions = Institution::query()
-            ->where('is_active', true)
-            ->when(! $scope->isAllScope, fn (Builder $query) => $query->where(fn (Builder $inner) => $inner
-                ->whereIn('tenant_id', $scope->tenantIds())
-                ->orWhereIn('id', $coordinatedIds)))
+        $institutions = $this->reachable($request, $authorizer, $responsibilities)
             ->with(['types', 'tenant', 'meetings:id,start_time', 'checkIns'])
             ->get();
 
@@ -67,6 +58,31 @@ class InstitutionActivityRequestApiController extends ApiController
     }
 
     /**
+     * @route GET /api/v1/admin/activity-requests/people
+     */
+    public function people(Request $request, ModelAuthorizer $authorizer, ResponsibilityResolver $responsibilities, SendInstitutionActivityRequests $send): JsonResponse
+    {
+        $this->authorize('viewAny', InstitutionCheckIn::class);
+
+        return $this->jsonSuccess($send->people($this->reachable($request, $authorizer, $responsibilities)->get(['id', 'name'])));
+    }
+
+    /** @return Builder<Institution> */
+    private function reachable(Request $request, ModelAuthorizer $authorizer, ResponsibilityResolver $responsibilities): Builder
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $scope = $authorizer->scope($user, 'institutions.update.padalinys');
+        $coordinatedIds = $responsibilities->institutionIdsFor($user, Responsibility::StudentRepCoordination);
+
+        return Institution::query()
+            ->where('is_active', true)
+            ->when(! $scope->isAllScope, fn (Builder $query) => $query->where(fn (Builder $inner) => $inner
+                ->whereIn('tenant_id', $scope->tenantIds())
+                ->orWhereIn('id', $coordinatedIds)));
+    }
+
+    /**
      * @route POST /api/v1/admin/activity-requests/preview
      */
     public function preview(PreviewInstitutionActivityRequestsRequest $request, SendInstitutionActivityRequests $send): JsonResponse
@@ -83,6 +99,6 @@ class InstitutionActivityRequestApiController extends ApiController
             'period_end' => $entry['period_end']->toDateString(),
             'period_start' => $entry['period_start']->toDateString(),
             'skip_reason' => $entry['skip_reason'],
-        ], $send->plan($request->institutions(), $user, InstitutionActivityCampaign::from($request->validated('campaign_type')))));
+        ], $send->plan($request->institutions(), $user, InstitutionActivityCampaign::from($request->validated('campaign_type')), $request->pairs())));
     }
 }

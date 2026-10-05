@@ -64,10 +64,17 @@ it('opens a problem with where it was discussed', function (): void {
 
     $page->assertSee(DocsSeeder::OPEN_PROBLEM)
         ->assertSee('Svarstyta posėdžiuose');
+    expectNoRawProblemKeys($page);
     expectProblemPageFits($page, 'record-facts');
 
     $page->resize(1440, 1000);
     docsScreenshot($page, 'problem-record');
+
+    $page->click('[role=tab]:has-text("Svarstyta posėdžiuose")');
+    docsScreenshot($page, 'v3-problem-meetings', highlights: [
+        '[role=tab][aria-selected=true]',
+        'section[aria-labelledby=record-section-posedziai]',
+    ]);
 
     $page->assertNoJavaScriptErrors();
 });

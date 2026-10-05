@@ -398,17 +398,13 @@ User-facing changes go in `docs/changelog/v3.md` (LT) **and** `docs/en/changelog
 
 Keep changes already on `main` in v2. The current `dev` release candidate is consolidated in v3.0; update its summary instead of adding entries for superseded candidate iterations. Its 2026-10-02 date is the documentation snapshot, not a production deployment date.
 
-Use exactly three emojis:
+Each entry is structured as numbered main features → one section per role (always all four, even when one
+has nothing new) → other changes and fixes, with annotated screenshots; the newest major also ships
+as a PDF (`docs/pdf/build-release.ts`). Template and rules: `.ai/rules/changelog.md`. Bullets use
+exactly three emojis:
 - ⭐ new feature
 - ✨ improvement / UX update
 - 🔧 bug fix
-
-```markdown
-## v1.X — Title (YYYY-MM-DD) {#v1-X}
-
-- 🔧 **Short title** — what changed and the user impact
-- ⭐ **Another change** — what users can now do
-```
 
 **The changelog says what changed; the guide says how it works now.** A user-facing change or fix
 also updates the guide page for that section (`docs/<workspace>/<section>.md`, see

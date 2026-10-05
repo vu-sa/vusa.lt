@@ -13,6 +13,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/Components/Public/Base/MediaFrame.vue | .ai/rules/base.md |
 | tests/Browser/** | .ai/rules/browser.md |
 | app/Models/Cadence.php,app/Policies/CadencePolicy.php,app/Actions/Cadences/**,app/Http/Requests/Cadences/**,resources/js/Components/Cadences/** | .ai/rules/cadences.md |
+| docs/changelog/**,docs/en/changelog/** | .ai/rules/changelog.md |
 | .github/workflows/deploy*.yml,app/Console/Commands/Deployment*.php,app/Console/Commands/StagingRefreshDatabase.php,deployment/** | .ai/rules/commands-console-commands.md |
 | app/Services/Typesense/**, app/Console/Commands/GenerateTypesenseSearchKey.php', app/Console/Commands/DocsCoverageCommand.php, app/Support/Docs/** | .ai/rules/commands.md |
 | resources/js/Pages/Admin/ShowAdminHome.vue,resources/js/Components/Home/** | .ai/rules/components-home.md |

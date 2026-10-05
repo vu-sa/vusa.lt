@@ -133,6 +133,9 @@ jobs:
       # only drops the download link's target; it never blocks the deploy.
       - name: Build docs PDF
         continue-on-error: true
+        env:
+          # Links in the PDFs point at this environment's app; REVERB_HOST is the app host on both.
+          APP_URL: ${{ vars.APP_URL || format('https://{0}', vars.REVERB_HOST) }}
         run: npm run docs:pdf
 
       - name: Build docs

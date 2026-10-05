@@ -112,6 +112,8 @@ Visi laiškai pasirašomi **Mano VU SA** vardu, ne koordinatoriaus.
   **Pranešimų nustatymai** (`/mano/profile/notifications`). Čia gali keisti kiekvienos skilties el. pašto ir
   pranešimų į įrenginį parinktis, suvestinės dažnumą bei valdyti susietus įrenginius.
 
+<DocScreenshot name="notification-preferences" alt="Pranešimų nustatymai: kiekvienam pranešimui pasirenkamas laiškas iškart, suvestinė arba be laiško ir push, šone laikinas išjungimas ir el. pašto adresai" caption="Pranešimų nustatymai: kiekvienai pranešimų rūšiai – laiškas, suvestinė ar išjungta; šone – nutildymas ir adresai." />
+
 ## Techninė informacija {#technine-informacija}
 
 - Pranešimai paveldi `BaseNotification` ir privalo nurodyti `NotificationType` reikšmę.

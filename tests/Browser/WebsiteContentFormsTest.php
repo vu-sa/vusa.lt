@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\ContentEditorDraft;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\User;
+use App\Services\ContentEditorService;
 use Database\Seeders\DocsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -30,6 +32,10 @@ it('opens a news item in its editor within the viewport', function (): void {
 
     $page->resize(1440, 1000);
     docsScreenshot($page, 'news-form');
+    docsScreenshot($page, 'v3-forms', highlights: [
+        '[data-testid=form-page-bar]',
+        '[data-testid=form-page-aside] > :first-child',
+    ]);
 
     $page->assertNoJavaScriptErrors();
 });
@@ -59,6 +65,35 @@ it('compares both language versions of a page side by side on a desktop', functi
     // The workspace fills the window; a shorter one keeps the frame from being mostly empty canvas.
     $page->resize(1440, 620);
     docsScreenshot($page, 'page-form');
+    docsScreenshot($page, 'v3-content-languages', highlights: [
+        '[data-testid=translation-pane-lt] > :first-child',
+        '[data-testid=translation-pane-en] > :first-child',
+        '[data-testid=translation-pane-lt] [data-testid=fullscreen-save]',
+        '[data-testid=translation-pane-en] [data-testid=fullscreen-save]',
+    ]);
+
+    $page->assertNoJavaScriptErrors();
+});
+
+it('offers to restore unsaved page changes kept on the server', function (): void {
+    $lithuanian = Page::query()->where('title', DocsSeeder::PAGE_TITLE)->firstOrFail();
+    $snapshot = app(ContentEditorService::class)->snapshot($lithuanian);
+    ContentEditorDraft::query()->create([
+        'user_id' => $this->coordinator->id,
+        'kind' => 'pages',
+        'identity' => "record-{$lithuanian->id}",
+        'snapshot' => [...$snapshot, 'title' => 'Kaip tapti studentų atstovu: rinkimai 2026'],
+        'revision' => 1,
+    ]);
+
+    $page = loginAsAdmin($this->coordinator);
+    $page->resize(1440, 900);
+    $page->navigate("/mano/pages/{$lithuanian->id}/edit");
+    waitForInertiaRender($page, '[data-testid=content-recovery] button:has-text("Atkurti kopiją")');
+
+    $page->assertSee('Kaip tapti studentų atstovu: rinkimai 2026');
+    $page->page()->locator('[data-testid=content-recovery]')->scrollIntoViewIfNeeded();
+    docsScreenshot($page, 'page-recovery');
 
     $page->assertNoJavaScriptErrors();
 });

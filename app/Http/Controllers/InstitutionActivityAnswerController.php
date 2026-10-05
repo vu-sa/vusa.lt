@@ -20,7 +20,7 @@ class InstitutionActivityAnswerController extends Controller
 {
     public function show(Request $request, InstitutionActivityRequest $activityRequest): View
     {
-        $activityRequest->load(['institution', 'recipient', 'requestedBy', 'meeting', 'checkIn', 'meetings']);
+        $activityRequest->load(['institution', 'recipient', 'requestedBy', 'meeting', 'checkIn', 'meetings', 'resolvedByRequest.recipient']);
         if ($activityRequest->institution === null || $activityRequest->recipient === null || $activityRequest->expires_at->isPast()) {
             return view('activity-answers.unavailable');
         }
@@ -42,6 +42,8 @@ class InstitutionActivityAnswerController extends Controller
             'others' => $others,
             'meetingTypes' => MeetingType::cases(),
             'knownMeetings' => $activityRequest->institution->meetings()->whereDate('start_time', '>=', $activityRequest->period_start)->whereDate('start_time', '<=', $activityRequest->periodEnd())->orderBy('start_time')->get(),
+            'knownCheckIns' => $activityRequest->institution->checkIns()->whereDate('end_date', '>=', $activityRequest->period_start)->whereDate('start_date', '<=', $activityRequest->periodEnd())->orderBy('start_date')->get(),
+            'uncovered' => $activityRequest->campaign_type === InstitutionActivityCampaign::ActivityConfirmation && $activityRequest->isOpen() ? $activityRequest->uncoveredPeriods() : [],
             'incompleteMeetings' => $activityRequest->campaign_type === InstitutionActivityCampaign::MissingMeetings ? $activityRequest->incompleteMeetings() : collect(),
         ]);
     }
@@ -51,11 +53,12 @@ class InstitutionActivityAnswerController extends Controller
         InstitutionActivityRequest $activityRequest,
         AnswerInstitutionActivityRequest $answer,
     ): RedirectResponse {
-        if (! $activityRequest->isOpen()) {
+        $chosen = InstitutionActivityAnswer::from($request->validated('answer'));
+        if (! ($chosen === InstitutionActivityAnswer::Met ? $activityRequest->acceptsMeetings() : $activityRequest->isOpen())) {
             return redirect()->to($activityRequest->answerUrl());
         }
 
-        $answer->execute($activityRequest, InstitutionActivityAnswer::from($request->validated('answer')), meetings: $request->validated('meetings', []));
+        $answer->execute($activityRequest, $chosen, meetings: $request->validated('meetings', []));
 
         return redirect()->to($activityRequest->answerUrl());
     }
