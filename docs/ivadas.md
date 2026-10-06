@@ -7,6 +7,11 @@ coverage: ignore
 
 # Įvadas
 
+::: warning Dar neįdiegta www.vusa.lt
+Gidas aprašo v3.0 versiją, kuri kol kas neveikia www.vusa.lt – ten vis dar naudojama ankstesnė
+platformos versija. Dalis aprašytų puslapių ir veiksmų ten atsiras tik įdiegus naują versiją.
+:::
+
 **Mano VU SA** (`vusa.lt/mano`) – vidinė VU SA platforma. Joje studentų atstovai fiksuoja posėdžius
 ir problemas, padaliniai skolina vieni kitiems daiktus, koordinatoriai tvarko svetainės turinį, o
 administratoriai – narius, pareigybes ir teises. Platforma taip pat saugo organizacijos

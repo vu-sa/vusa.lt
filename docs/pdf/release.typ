@@ -5,7 +5,7 @@
 #import "components/page.typ": guide-page
 
 #let major = sys.inputs.at("major", default: "v3")
-#let title = "Kas naujo " + major
+#let title = "Pagrindiniai atnaujinimai"
 
 #title-page(
   title: title,

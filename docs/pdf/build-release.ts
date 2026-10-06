@@ -55,7 +55,7 @@ const output = path.join(docsDir, 'public', `vusa-lt-${major}-atnaujinimai.pdf`)
 compileTypst(path.join(pdfDir, 'release.typ'), output, {
   source: `/docs/pdf/.build/release/${major}.md`,
   major,
-  subtitle: newest[2],
+  subtitle: `${newest[1]} — ${newest[2]}`,
   date: newest[3],
 })
 
