@@ -6,6 +6,7 @@ import AddToReservationButton from '@/Components/Reservations/AddToReservationBu
 import ReservationCartBar from '@/Components/Reservations/ReservationCartBar.vue';
 import ReservationCartItemRow from '@/Components/Reservations/ReservationCartItemRow.vue';
 import ReservationDraftSummary from '@/Components/Reservations/ReservationDraftSummary.vue';
+import { useReservationCart } from '@/Components/Reservations/useReservationCart';
 import type { ReservationCart, ReservationCartItem } from '@/Components/Reservations/types';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
@@ -44,6 +45,7 @@ describe('reservation cart', () => {
   beforeEach(() => {
     vi.mocked(router.post).mockClear();
     vi.mocked(router.patch).mockClear();
+    vi.mocked(router.put).mockClear();
     vi.mocked(router.delete).mockClear();
     vi.mocked(router.visit).mockClear();
   });
@@ -181,6 +183,23 @@ describe('reservation cart', () => {
       });
 
       expect(wrapper.text()).not.toContain('reservations.cart.conflicts_title');
+    });
+  });
+
+  describe('useReservationCart', () => {
+    it('cancels a period save still in flight when a newer period is picked', () => {
+      withCart([]);
+      const cancelFirst = vi.fn();
+      vi.mocked(router.put).mockImplementationOnce((_url, _data, options) => {
+        options?.onCancelToken?.({ cancel: cancelFirst });
+      });
+
+      const { setPeriod } = useReservationCart();
+      setPeriod(1, 2);
+      setPeriod(1, 3);
+
+      expect(cancelFirst).toHaveBeenCalledOnce();
+      expect(router.put).toHaveBeenLastCalledWith('/mocked/reservationCart.update', { start_time: 1, end_time: 3 }, expect.anything());
     });
   });
 });

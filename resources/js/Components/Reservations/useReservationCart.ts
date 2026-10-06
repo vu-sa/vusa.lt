@@ -11,6 +11,8 @@ const sheetOpen = ref(false);
 /** Cart writes still in flight; the checkout shows "Saugoma…" until they land. */
 const pendingWrites = ref(0);
 
+let cancelPeriodWrite: (() => void) | null = null;
+
 // Async: a debounced quantity or text save must not cancel another cart write in flight.
 const VISIT = {
   preserveScroll: true,
@@ -65,7 +67,12 @@ export function useReservationCart() {
   };
 
   const setPeriod = (start: number, end: number) => {
-    router.put(route('reservationCart.update'), { start_time: start, end_time: end }, VISIT);
+    // A newer pick supersedes the one in flight, whose late answer would otherwise undo it.
+    cancelPeriodWrite?.();
+    router.put(route('reservationCart.update'), { start_time: start, end_time: end }, {
+      ...VISIT,
+      onCancelToken: ({ cancel }) => { cancelPeriodWrite = cancel; },
+    });
   };
 
   const saveDetails = (details: { name?: string | null; description?: string | null }, onSaved?: () => void) => {

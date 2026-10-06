@@ -10,6 +10,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { initPWA } from './Composables/usePWA';
 import { initProgress } from './Composables/useTutorialProgress';
 import { useAccessibilityPreferences } from './Composables/useAccessibilityPreferences';
+import { wantsViewTransition } from './Utils/viewTransition';
 
 initPWA();
 
@@ -35,7 +36,7 @@ createInertiaApp({
   },
   defaults: {
     visitOptions: (href, options) => {
-      return { viewTransition: !isReduceMotionEnabled() };
+      return { viewTransition: !isReduceMotionEnabled() && wantsViewTransition(options) };
     },
   },
   resolve: (name) => {

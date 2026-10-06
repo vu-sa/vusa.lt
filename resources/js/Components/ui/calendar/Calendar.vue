@@ -10,11 +10,11 @@
     <CalendarHeader class="w-full justify-between gap-2 pb-2 border-b border-border/60">
       <CalendarHeading class="min-w-0 flex-1">
         <div class="flex items-center gap-1.5">
-          <div class="relative flex h-8 items-center border border-border bg-background pr-5 transition-colors hover:border-foreground/30 focus-within:border-brand">
+          <div class="relative flex h-8 items-center border border-border bg-background transition-colors hover:border-foreground/30 focus-within:border-brand">
             <select
               :value="String(currentPlaceholder.month)"
               aria-label="Mėnuo"
-              class="h-full appearance-none bg-transparent pl-2 pr-0 text-xs font-bold uppercase tracking-wider text-foreground outline-none cursor-pointer"
+              class="h-full appearance-none bg-transparent pl-2 pr-6 text-xs font-bold uppercase tracking-wider text-foreground outline-none cursor-pointer"
               @change="handleMonthSelect(($event.target as HTMLSelectElement).value)"
             >
               <option v-for="(month, index) in monthNames" :key="index" :value="String(index + 1)">
@@ -24,11 +24,11 @@
             <ChevronDown class="pointer-events-none absolute right-1 size-3 text-muted-foreground" aria-hidden="true" />
           </div>
 
-          <div class="relative flex h-8 items-center border border-border bg-background pr-5 transition-colors hover:border-foreground/30 focus-within:border-brand">
+          <div class="relative flex h-8 items-center border border-border bg-background transition-colors hover:border-foreground/30 focus-within:border-brand">
             <select
               :value="String(currentPlaceholder.year)"
               aria-label="Metai"
-              class="h-full appearance-none bg-transparent pl-2 pr-0 text-xs font-bold text-foreground outline-none cursor-pointer"
+              class="h-full appearance-none bg-transparent pl-2 pr-6 text-xs font-bold text-foreground outline-none cursor-pointer"
               @change="handleYearSelect(($event.target as HTMLSelectElement).value)"
             >
               <option v-for="year in years" :key="year" :value="String(year)">
@@ -77,7 +77,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, type HTMLAttributes } from 'vue';
+import { computed, ref, watch, type HTMLAttributes } from 'vue';
 import { CalendarRoot, type CalendarRootEmits, type CalendarRootProps, useForwardPropsEmits } from 'reka-ui';
 import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
 import { ChevronDown } from 'lucide-vue-next';
@@ -99,8 +99,9 @@ const props = withDefaults(defineProps<CalendarPropsExtended>(), {
 });
 const emits = defineEmits<CalendarRootEmits>();
 
+// placeholder only seeds currentPlaceholder; forwarding it would override the month/year selects.
 const delegatedProps = computed(() => {
-  const { class: _, yearRange: __, ...delegated } = props;
+  const { class: _, yearRange: __, placeholder: ___, ...delegated } = props;
   return delegated;
 });
 
@@ -110,9 +111,10 @@ const monthNames = computed(() => Array.from({ length: 12 }, (_, month) =>
   new Intl.DateTimeFormat(props.locale ?? 'lt-LT', { month: 'short', timeZone: 'UTC' }).format(new Date(Date.UTC(2020, month, 1))),
 ));
 
-// Generate years array from range
+// Widened to the shown year, so paging past the range never leaves the year select blank.
 const years = computed(() => {
-  const [start, end] = props.yearRange;
+  const start = Math.min(props.yearRange[0], currentPlaceholder.value.year);
+  const end = Math.max(props.yearRange[1], currentPlaceholder.value.year);
   return Array.from({ length: end - start + 1 }, (_, i) => start + i).reverse();
 });
 
@@ -137,6 +139,12 @@ const getInitialPlaceholder = (): CalendarDate => {
 
 // Track the current placeholder value for programmatic navigation
 const currentPlaceholder = ref<CalendarDate>(getInitialPlaceholder());
+
+watch(() => props.placeholder, (value) => {
+  if (value) {
+    currentPlaceholder.value = new CalendarDate(value.year, value.month, value.day);
+  }
+});
 
 // Update placeholder when it changes from CalendarRoot
 const handlePlaceholderChange = (value: CalendarDate) => {
