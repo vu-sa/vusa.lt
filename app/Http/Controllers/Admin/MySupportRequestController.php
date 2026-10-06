@@ -13,8 +13,10 @@ use App\Models\SupportRequestArea;
 use App\Models\SupportRequestType;
 use App\Models\SupportService;
 use App\Models\User;
+use App\Notifications\AssignedToResourceNotification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Inertia\Response;
 
 class MySupportRequestController extends AdminController
@@ -27,7 +29,7 @@ class MySupportRequestController extends AdminController
         $tab = $request->validated('tab', 'all');
         $allRequests = $this->visibleRequestsFor($user);
         $tabRequests = $tab === 'mine'
-            ? (clone $allRequests)->where('created_by', $user->id)
+            ? $this->whereMine(clone $allRequests, $user)
             : clone $allRequests;
         $filters = $request->getFilters();
 
@@ -45,6 +47,7 @@ class MySupportRequestController extends AdminController
         $this->applyDashboardFilters($tabRequests, $filters, includeStatus: true);
         $this->applySorting($tabRequests, $request->getSorting());
 
+        /** @var LengthAwarePaginator<int, SupportRequest> $requests */
         $requests = $tabRequests
             ->with([
                 'creator:id,name,profile_photo_path',
@@ -56,6 +59,13 @@ class MySupportRequestController extends AdminController
             ->paginate($request->getPerPage())
             ->withQueryString();
 
+        // toArray() snake-cases the assignedTo relation onto the assigned_to id column.
+        $requests->through(fn (SupportRequest $supportRequest): array => [
+            ...$supportRequest->toArray(),
+            'assigned_to' => $supportRequest->assigned_to,
+            'assignedTo' => $supportRequest->assignedTo,
+        ]);
+
         $assignees = User::query()
             ->whereIn('id', (clone $allRequests)->whereNotNull('assigned_to')->select('assigned_to'))
             ->orderBy('name')
@@ -66,7 +76,7 @@ class MySupportRequestController extends AdminController
             'currentTab' => $tab,
             'tabCounts' => [
                 'all' => (clone $allRequests)->count(),
-                'mine' => (clone $allRequests)->where('created_by', $user->id)->count(),
+                'mine' => $this->whereMine(clone $allRequests, $user)->count(),
             ],
             'statusCounts' => $statusCounts,
             'filters' => $filters,
@@ -92,6 +102,8 @@ class MySupportRequestController extends AdminController
 
         return $query->where(function (Builder $query) use ($user): void {
             $query->where('created_by', $user->id)
+                ->orWhere('assigned_to', $user->id)
+                ->orWhereHas('involvedUsers', fn (Builder $query) => $query->whereKey($user->id))
                 ->orWhere('visibility', SupportRequestVisibility::Public)
                 ->orWhere(function (Builder $query) use ($user): void {
                     $query->where('visibility', SupportRequestVisibility::Roles)
@@ -100,6 +112,17 @@ class MySupportRequestController extends AdminController
                                 ->orWhereHas('currentUsersThroughDuties', fn (Builder $query) => $query->whereKey($user->id));
                         });
                 });
+        });
+    }
+
+    /**
+     * Requests the user reported or was added to as an involved person.
+     */
+    private function whereMine(Builder $query, User $user): Builder
+    {
+        return $query->where(function (Builder $query) use ($user): void {
+            $query->where('created_by', $user->id)
+                ->orWhereHas('involvedUsers', fn (Builder $query) => $query->whereKey($user->id));
         });
     }
 
@@ -151,12 +174,15 @@ class MySupportRequestController extends AdminController
     {
         $this->authorize('create', SupportRequest::class);
 
-        return $this->inertiaResponse('Admin/SupportRequests/CreateSupportRequest', static::formOptions());
+        return $this->inertiaResponse('Admin/SupportRequests/CreateSupportRequest', [
+            ...static::formOptions(),
+            'users' => User::query()->orderBy('name')->get(['id', 'name', 'profile_photo_path']),
+        ]);
     }
 
     public function store(StoreSupportRequestRequest $request): RedirectResponse
     {
-        $data = $request->safe()->except(['roles', 'images']);
+        $data = $request->safe()->except(['roles', 'images', 'involved_users']);
         $area = SupportRequestArea::query()->findOrFail($data['support_request_area_id']);
 
         $supportRequest = SupportRequest::create([
@@ -168,6 +194,16 @@ class MySupportRequestController extends AdminController
 
         if ($request->validated('visibility') === 'roles') {
             $supportRequest->roles()->sync($request->validated('roles', []));
+        }
+
+        $involvedUserIds = collect($request->validated('involved_users', []))
+            ->reject(fn (string $id) => $id === $request->user()->id)
+            ->values();
+
+        if ($involvedUserIds->isNotEmpty()) {
+            $supportRequest->involvedUsers()->sync($involvedUserIds);
+            $notification = AssignedToResourceNotification::fromModel($supportRequest, $request->user());
+            User::query()->whereKey($involvedUserIds)->get()->each->notify($notification);
         }
 
         foreach ($request->file('images', []) as $image) {

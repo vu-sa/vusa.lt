@@ -164,6 +164,17 @@
             </p>
           </div>
         </div>
+
+        <FormFieldWrapper
+          v-if="!isEditing && users.length > 0"
+          id="involved_users"
+          :label="$t('Susiję žmonės')"
+          :helper-text="$t('Pridėti žmonės matys šį pranešimą, galės jį komentuoti ir gaus atnaujinimus.')"
+          :error="form.errors.involved_users"
+          class="pt-2 border-t"
+        >
+          <InvolvedUsersPicker v-model="involvedUsers" :users />
+        </FormFieldWrapper>
       </div>
     </FormElement>
 
@@ -326,6 +337,7 @@ import {
   SelectValue,
 } from '@/Components/ui/select';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import InvolvedUsersPicker from '@/Components/SupportRequests/InvolvedUsersPicker.vue';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import type {
   SupportRequestItem,
@@ -339,10 +351,12 @@ const props = withDefaults(defineProps<{
   types: SupportRequestTaxonomyItem[];
   areas: SupportRequestTaxonomyItem[];
   roles: SupportRequestRoleOption[];
+  users?: SupportRequestUser[];
   supportRequest?: SupportRequestItem | null;
   backUrl?: string;
   showCancel?: boolean;
 }>(), {
+  users: () => [],
   supportRequest: null,
   backUrl: undefined,
 });
@@ -422,9 +436,12 @@ const form = useForm({
   title: props.supportRequest?.title ?? '',
   description: props.supportRequest?.description ?? '',
   context_url: props.supportRequest?.context_url ?? '',
+  involved_users: [] as string[],
   images: [] as File[],
   deleted_media_ids: [] as number[],
 });
+
+const involvedUsers = ref<SupportRequestUser[]>([]);
 
 // Dynamic role users calculation
 const authorizedUsers = computed(() => {
@@ -525,6 +542,7 @@ function submit() {
     });
   }
   else {
+    form.involved_users = involvedUsers.value.map(user => user.id);
     form.post(route('mySupportRequests.store'), {
       forceFormData: true,
       onSuccess: () => {

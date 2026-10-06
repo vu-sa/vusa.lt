@@ -57,6 +57,21 @@
           </DropdownMenu>
           <span v-else class="font-medium text-foreground">{{ supportRequest.assignedTo?.name ?? $t('Nepriskirta') }}</span>
         </div>
+        <div v-if="involvedUsers.length > 0 || permissions.can_manage_involved" class="flex items-center gap-1.5">
+          <span>{{ $t('Susiję žmonės:') }}</span>
+          <UsersAvatarGroup v-if="involvedUsers.length > 0" :users="involvedUsers" :max="5" :size="20" />
+          <span v-else class="font-medium text-foreground">—</span>
+          <Button
+            v-if="permissions.can_manage_involved"
+            variant="ghost"
+            size="sm"
+            class="h-6 px-1.5 text-xs"
+            :aria-label="$t('Redaguoti susijusius žmones')"
+            @click="openInvolvedDialog"
+          >
+            <UserPlus class="size-3.5" />
+          </Button>
+        </div>
       </div>
     </template>
 
@@ -127,6 +142,25 @@
       </section>
     </div>
 
+    <Dialog v-model:open="isInvolvedDialogOpen">
+      <DialogContent class="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{{ $t('Redaguoti susijusius žmones') }}</DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4">
+          <p class="text-sm text-muted-foreground">
+            {{ $t('Pridėti žmonės matys šį pranešimą, galės jį komentuoti ir gaus atnaujinimus.') }}
+          </p>
+          <InvolvedUsersPicker v-model="selectedInvolvedUsers" :users="assignees" />
+          <div class="flex justify-end">
+            <Button :disabled="isSavingInvolved" @click="saveInvolvedUsers">
+              {{ $t('Išsaugoti') }}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+
     <Dialog v-model:open="isLightboxOpen">
       <DialogContent class="max-w-4xl bg-background/95 p-2 backdrop-blur-md">
         <DialogHeader class="px-3 pt-2">
@@ -150,26 +184,28 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
-import { CalendarDays, CheckCircle2, ChevronDown, Edit, ExternalLink, MoreHorizontal, Trash2 } from 'lucide-vue-next';
+import { CalendarDays, CheckCircle2, ChevronDown, Edit, ExternalLink, MoreHorizontal, Trash2, UserPlus } from 'lucide-vue-next';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import ShowPageLayout from '@/Components/Layouts/ShowPageLayout.vue';
 import { SectionCard } from '@/Components/Patterns';
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import InvolvedUsersPicker from '@/Components/SupportRequests/InvolvedUsersPicker.vue';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
 import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import type { SupportRequestItem, SupportRequestMediaFile } from '@/Types/supportRequests';
+import type { SupportRequestItem, SupportRequestMediaFile, SupportRequestUser } from '@/Types/supportRequests';
 
 const props = defineProps<{
   supportRequest: SupportRequestItem;
   availableStatuses: Array<{ value: string; label: string; badgeVariant: string }>;
-  assignees: Array<{ id: string; name: string; profile_photo_path?: string | null }>;
-  permissions: { can_update: boolean; can_update_status: boolean; can_assign: boolean; can_delete: boolean; can_restore: boolean };
+  assignees: SupportRequestUser[];
+  permissions: { can_update: boolean; can_update_status: boolean; can_assign: boolean; can_manage_involved: boolean; can_delete: boolean; can_restore: boolean };
 }>();
 
 const page = usePage();
@@ -197,6 +233,24 @@ const handleDelete = () => {
     router.delete(route('supportRequests.destroy', props.supportRequest.id));
   }
 };
+const involvedUsers = computed(() => props.supportRequest.involved_users ?? []);
+const isInvolvedDialogOpen = ref(false);
+const isSavingInvolved = ref(false);
+const selectedInvolvedUsers = ref<SupportRequestUser[]>([]);
+const openInvolvedDialog = () => {
+  selectedInvolvedUsers.value = props.assignees.filter(user => involvedUsers.value.some(involved => involved.id === user.id));
+  isInvolvedDialogOpen.value = true;
+};
+const saveInvolvedUsers = () => router.put(
+  route('supportRequests.involvedUsers.sync', props.supportRequest.id),
+  { involved_users: selectedInvolvedUsers.value.map(user => user.id) },
+  {
+    preserveScroll: true,
+    onStart: () => { isSavingInvolved.value = true; },
+    onFinish: () => { isSavingInvolved.value = false; },
+    onSuccess: () => { isInvolvedDialogOpen.value = false; },
+  },
+);
 const isLightboxOpen = ref(false);
 const activeLightboxImage = ref<SupportRequestMediaFile | null>(null);
 const openLightbox = (file: SupportRequestMediaFile) => {

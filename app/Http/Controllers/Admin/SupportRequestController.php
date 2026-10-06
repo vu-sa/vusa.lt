@@ -3,15 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\SupportRequestStatus;
-use App\Enums\SupportRequestVisibility;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\AssignSupportRequestRequest;
 use App\Http\Requests\IndexSupportRequestRequest;
+use App\Http\Requests\SyncSupportRequestInvolvedUsersRequest;
 use App\Http\Requests\UpdateSupportRequestRequest;
 use App\Http\Requests\UpdateSupportRequestStatusRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Models\SupportRequest;
 use App\Models\User;
+use App\Notifications\AssignedToResourceNotification;
 use App\Notifications\SupportRequestStatusChangedNotification;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
@@ -61,21 +62,15 @@ class SupportRequestController extends AdminController
             'service',
             'roles.users:users.id,users.name,users.profile_photo_path',
             'roles.currentUsersThroughDuties:users.id,users.name,users.profile_photo_path',
+            'involvedUsers:users.id,users.name,users.profile_photo_path',
             'media',
         ]);
 
-        $roleUsers = collect();
-        if ($supportRequest->visibility === SupportRequestVisibility::Roles) {
-            $roleUsers = $supportRequest->roles
-                ->flatMap(fn ($r) => $r->users->concat($r->currentUsersThroughDuties))
-                ->unique('id')
-                ->values()
-                ->map(fn ($u) => [
-                    'id' => $u->id,
-                    'name' => $u->name,
-                    'profile_photo_path' => $u->profile_photo_path,
-                ]);
-        }
+        $roleUsers = $supportRequest->roleUsers()->map(fn (User $u) => [
+            'id' => $u->id,
+            'name' => $u->name,
+            'profile_photo_path' => $u->profile_photo_path,
+        ]);
 
         $media = $supportRequest->getMedia('evidence')->map(fn (Media $m) => [
             'id' => $m->id,
@@ -97,6 +92,9 @@ class SupportRequestController extends AdminController
         return [
             'supportRequest' => [
                 ...$supportRequest->toArray(),
+                // toArray() snake-cases the assignedTo relation onto the assigned_to id column.
+                'assigned_to' => $supportRequest->assigned_to,
+                'assignedTo' => $supportRequest->assignedTo,
                 'media' => $media,
                 'role_users' => $roleUsers,
             ],
@@ -110,6 +108,7 @@ class SupportRequestController extends AdminController
                 'can_update' => $user?->can('update', $supportRequest) ?? false,
                 'can_update_status' => $user?->can('updateStatus', $supportRequest) ?? false,
                 'can_assign' => $user?->can('assign', $supportRequest) ?? false,
+                'can_manage_involved' => $user?->can('assign', $supportRequest) ?? false,
                 'can_delete' => $user?->can('delete', $supportRequest) ?? false,
                 'can_restore' => $user?->can('restore', $supportRequest) ?? false,
             ],
@@ -170,7 +169,27 @@ class SupportRequestController extends AdminController
 
     public function assign(AssignSupportRequestRequest $request, SupportRequest $supportRequest): RedirectResponse
     {
+        $previousAssignee = $supportRequest->assigned_to;
         $supportRequest->update(['assigned_to' => $request->validated('assigned_to')]);
+
+        $assignee = $supportRequest->assignedTo;
+        if ($assignee && $assignee->id !== $previousAssignee && $assignee->id !== $request->user()->id) {
+            $assignee->notify(AssignedToResourceNotification::fromModel($supportRequest, $request->user()));
+        }
+
+        return back()->with('success', $this->entityMessage('updated', 'supportRequest'));
+    }
+
+    public function syncInvolvedUsers(SyncSupportRequestInvolvedUsersRequest $request, SupportRequest $supportRequest): RedirectResponse
+    {
+        $changes = $supportRequest->involvedUsers()->sync($request->validated('involved_users'));
+
+        $notification = AssignedToResourceNotification::fromModel($supportRequest, $request->user());
+        User::query()
+            ->whereKey($changes['attached'])
+            ->whereKeyNot($request->user()->id)
+            ->get()
+            ->each->notify($notification);
 
         return back()->with('success', $this->entityMessage('updated', 'supportRequest'));
     }

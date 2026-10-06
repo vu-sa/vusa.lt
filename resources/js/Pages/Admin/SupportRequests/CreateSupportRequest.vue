@@ -11,6 +11,7 @@
         :types
         :areas
         :roles
+        :users
         :back-url="route('mySupportRequests.index')"
       />
     </FormUpsertLayout>
@@ -27,12 +28,14 @@ import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcru
 import type {
   SupportRequestRoleOption,
   SupportRequestTaxonomyItem,
+  SupportRequestUser,
 } from '@/Types/supportRequests';
 
 defineProps<{
   types: SupportRequestTaxonomyItem[];
   areas: SupportRequestTaxonomyItem[];
   roles: SupportRequestRoleOption[];
+  users: SupportRequestUser[];
   service?: SupportRequestTaxonomyItem;
 }>();
 

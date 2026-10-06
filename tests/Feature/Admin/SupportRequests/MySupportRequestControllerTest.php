@@ -9,8 +9,10 @@ use App\Models\SupportRequestArea;
 use App\Models\SupportRequestType;
 use App\Models\SupportService;
 use App\Models\Tenant;
+use App\Notifications\AssignedToResourceNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -96,6 +98,44 @@ describe('authenticated user index', function (): void {
                 ->where('tabCounts.all', 1)
                 ->where('tabCounts.mine', 0)
                 ->where('requests.data', fn ($requests) => collect($requests)->pluck('id')->contains($sharedRequest->id))
+            );
+    });
+});
+
+describe('involved people on the dashboard', function (): void {
+    test('a private request the user is involved in appears under all and mine', function (): void {
+        $involvedRequest = SupportRequest::factory()->create([
+            'created_by' => makeUser($this->tenant)->id,
+            'visibility' => SupportRequestVisibility::Private,
+        ]);
+        $involvedRequest->involvedUsers()->attach($this->user);
+
+        SupportRequest::factory()->create([
+            'created_by' => makeUser($this->tenant)->id,
+            'visibility' => SupportRequestVisibility::Private,
+        ]);
+
+        asUser($this->user)->get(route('mySupportRequests.index', ['tab' => 'mine']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('tabCounts.all', 1)
+                ->where('tabCounts.mine', 1)
+                ->where('requests.data.0.id', $involvedRequest->id)
+            );
+    });
+
+    test('a private request assigned to the user appears under all with its assignee', function (): void {
+        $assignedRequest = SupportRequest::factory()->create([
+            'created_by' => makeUser($this->tenant)->id,
+            'assigned_to' => $this->user->id,
+            'visibility' => SupportRequestVisibility::Private,
+        ]);
+
+        asUser($this->user)->get(route('mySupportRequests.index'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('tabCounts.all', 1)
+                ->where('requests.data.0.id', $assignedRequest->id)
+                ->where('requests.data.0.assigned_to', $this->user->id)
+                ->where('requests.data.0.assignedTo.name', $this->user->name)
             );
     });
 });
@@ -210,6 +250,37 @@ describe('creating and storing support requests', function (): void {
 
         // Check media attachment
         expect($supportRequest->getMedia('evidence'))->toHaveCount(1);
+    });
+
+    test('stores involved people without the reporter and notifies them', function (): void {
+        Notification::fake();
+        $colleague = makeUser($this->tenant);
+
+        asUser($this->user)->post(route('mySupportRequests.store'), [
+            'title' => 'Neveikia prisijungimas',
+            'description' => 'Keliems žmonėms nepavyksta prisijungti',
+            'support_request_type_id' => $this->type->id,
+            'support_request_area_id' => $this->area->id,
+            'visibility' => 'private',
+            'involved_users' => [$colleague->id, $this->user->id],
+        ])->assertRedirect();
+
+        $supportRequest = SupportRequest::where('created_by', $this->user->id)->latest()->first();
+
+        expect($supportRequest->involvedUsers()->pluck('users.id')->all())->toBe([$colleague->id]);
+        Notification::assertSentTo($colleague, AssignedToResourceNotification::class);
+        Notification::assertNotSentTo($this->user, AssignedToResourceNotification::class);
+    });
+
+    test('rejects unknown involved people', function (): void {
+        asUser($this->user)->post(route('mySupportRequests.store'), [
+            'title' => 'Klaida',
+            'description' => 'Aprašymas',
+            'support_request_type_id' => $this->type->id,
+            'support_request_area_id' => $this->area->id,
+            'visibility' => 'private',
+            'involved_users' => ['01nonexistentuserid000000000'],
+        ])->assertSessionHasErrors('involved_users.0');
     });
 
     test('does not accept selected text from the admin create form', function (): void {

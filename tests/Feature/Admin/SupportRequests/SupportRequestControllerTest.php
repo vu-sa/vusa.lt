@@ -11,6 +11,7 @@ use App\Models\SupportRequestType;
 use App\Models\SupportService;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\AssignedToResourceNotification;
 use App\Notifications\SupportRequestStatusChangedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -231,5 +232,75 @@ describe('role-based and public visibility', function (): void {
         $duty->assignRole($role);
 
         asUser($this->user)->get(route('supportRequests.show', $roleRequest->id))->assertStatus(200);
+    });
+});
+
+describe('involved people', function (): void {
+    test('an involved user can view a private support request', function (): void {
+        $involved = makeUser($this->tenant);
+
+        asUser($involved)->get(route('supportRequests.show', $this->supportRequest->id))->assertStatus(403);
+
+        $this->supportRequest->involvedUsers()->attach($involved);
+
+        asUser($involved)->get(route('supportRequests.show', $this->supportRequest->id))->assertStatus(200);
+    });
+
+    test('show page exposes the assignee and involved people', function (): void {
+        $involved = makeUser($this->tenant);
+        $this->supportRequest->update(['assigned_to' => $this->admin->id]);
+        $this->supportRequest->involvedUsers()->attach($involved);
+
+        asUser($this->admin)->get(route('supportRequests.show', $this->supportRequest->id))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('supportRequest.assignedTo.id', $this->admin->id)
+                ->where('supportRequest.involved_users.0.id', $involved->id)
+                ->where('permissions.can_manage_involved', true)
+            );
+    });
+
+    test('manager can sync involved people and only newly added people are notified', function (): void {
+        Notification::fake();
+        $kept = makeUser($this->tenant);
+        $added = makeUser($this->tenant);
+        $removed = makeUser($this->tenant);
+        $this->supportRequest->involvedUsers()->attach([$kept->id, $removed->id]);
+
+        asUser($this->admin)->put(route('supportRequests.involvedUsers.sync', $this->supportRequest->id), [
+            'involved_users' => [$kept->id, $added->id],
+        ])->assertRedirect();
+
+        expect($this->supportRequest->involvedUsers()->pluck('users.id')->sort()->values()->all())
+            ->toBe(collect([$kept->id, $added->id])->sort()->values()->all());
+
+        Notification::assertSentTo($added, AssignedToResourceNotification::class);
+        Notification::assertNotSentTo([$kept, $removed], AssignedToResourceNotification::class);
+    });
+
+    test('manager can clear involved people', function (): void {
+        $this->supportRequest->involvedUsers()->attach(makeUser($this->tenant));
+
+        asUser($this->admin)->put(route('supportRequests.involvedUsers.sync', $this->supportRequest->id), [
+            'involved_users' => [],
+        ])->assertRedirect();
+
+        expect($this->supportRequest->involvedUsers()->count())->toBe(0);
+    });
+
+    test('creator cannot change involved people', function (): void {
+        asUser($this->user)->put(route('supportRequests.involvedUsers.sync', $this->supportRequest->id), [
+            'involved_users' => [makeUser($this->tenant)->id],
+        ])->assertStatus(403);
+    });
+
+    test('a newly assigned user is notified', function (): void {
+        Notification::fake();
+        $assignee = makeUser($this->tenant);
+
+        asUser($this->admin)->patch(route('supportRequests.assign', $this->supportRequest->id), [
+            'assigned_to' => $assignee->id,
+        ])->assertRedirect();
+
+        Notification::assertSentTo($assignee, AssignedToResourceNotification::class);
     });
 });
