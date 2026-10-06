@@ -93,3 +93,15 @@ test('a reply notifies thread participants only, not the whole audience', functi
     Notification::assertNotSentTo($this->bystander, CommentPostedNotification::class);
     Notification::assertNotSentTo($this->author, CommentPostedNotification::class);
 });
+
+test('duty mailboxes of the audience are not emailed, current or ended', function (): void {
+    $endedDuty = Duty::factory()->for($this->institution)->create(['email' => 'old-role@vusa.lt']);
+    $this->rep->duties()->attach($endedDuty, ['start_date' => now()->subYear(), 'end_date' => now()->subMonth()]);
+    $this->actingAs($this->author);
+
+    $this->agendaItem->comment('<p>Anyone around?</p>');
+
+    Notification::assertSentTo($this->rep, CommentPostedNotification::class);
+    Notification::assertNotSentTo($endedDuty, CommentPostedNotification::class);
+    Notification::assertNotSentTo($this->rep->duties()->first(), CommentPostedNotification::class);
+});
