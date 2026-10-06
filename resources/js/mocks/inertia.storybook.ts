@@ -130,6 +130,7 @@ export const router = {
     console.log('Inertia router reload:', options);
     return Promise.resolve();
   }),
+  on: fn((_event: string, _callback: (event: CustomEvent) => void) => () => {}),
 };
 
 // Mock useForm for Inertia forms
