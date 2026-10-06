@@ -75,7 +75,7 @@
     </template>
 
     <template #activity>
-      <RecordActivity commentable-type="reservation" :commentable-id="reservation.id" />
+      <RecordActivity commentable-type="reservation" :commentable-id="reservation.id" :mentionables-key="reservation.users?.map(user => user.id).join(',')" />
     </template>
   </RecordPage>
 

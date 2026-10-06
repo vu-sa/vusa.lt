@@ -49,6 +49,18 @@ describe('RecordActivity', () => {
     expect(mockFetch).not.toHaveBeenCalled();
   });
 
+  it('refetches the mention list when the record\'s people change', async () => {
+    fetchThread.mockResolvedValue([]);
+
+    const wrapper = mountActivity();
+    await flushPromises();
+    await wrapper.setProps({ mentionablesKey: 'u1,u2' });
+    await flushPromises();
+
+    expect(fetchMentionables).toHaveBeenCalledTimes(2);
+    expect(fetchThread).toHaveBeenCalledTimes(1);
+  });
+
   it('invites the first comment when there are none', async () => {
     fetchThread.mockResolvedValue([]);
 

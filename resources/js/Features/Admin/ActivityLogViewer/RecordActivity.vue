@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { BarChart3, History } from 'lucide-vue-next';
@@ -102,6 +102,8 @@ import type { PollDraft } from '@/Types/discussions';
 const props = defineProps<{
   commentableType: string;
   commentableId: string;
+  /** Changes when the parent's people change, so the @mention list is refetched without a reload. */
+  mentionablesKey?: string;
 }>();
 
 const pollDialogOpen = ref(false);
@@ -123,6 +125,10 @@ const createPoll = async (html: string, poll: PollDraft) => {
     pollDialogOpen.value = false;
   }
 };
+
+watch(() => props.mentionablesKey, () => {
+  void discussion.reloadMentionables();
+});
 
 onMounted(() => {
   void discussion.load();
