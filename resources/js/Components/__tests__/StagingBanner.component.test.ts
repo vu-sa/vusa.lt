@@ -25,6 +25,7 @@ describe('StagingBanner', () => {
     const status = wrapper.get('[data-slot="staging-status"]');
 
     expect(status.text()).toContain('Bandomoji aplinka');
+    expect(status.text()).toContain('Pakeitimai nebus išsaugoti');
     expect(status.text()).toContain('Failų saugykla bendrinama');
     expect(status.text()).toContain('SharePoint bendrinama');
     expect(status.classes()).toContain('rounded-xl');

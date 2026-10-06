@@ -7,6 +7,7 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { appLinkPath } from '../.vitepress/appLinks.ts'
 
 export const pdfDir = path.dirname(fileURLToPath(import.meta.url))
 export const docsDir = path.resolve(pdfDir, '..')
@@ -20,7 +21,7 @@ function resolveAppUrl(): string {
   return (process.env.APP_URL || fromEnvFile || 'https://www.vusa.lt').replace(/\/+$/, '')
 }
 
-const appUrl = resolveAppUrl()
+export const appUrl = resolveAppUrl()
 export const siteUrl = `${appUrl}/docs`
 
 /** `/rezervacijos/` and `/rezervacijos/index` are the same page. */
@@ -83,6 +84,12 @@ export interface ConvertOptions {
 }
 
 function rewriteLink(target: string, { prefix, pagesInPdf }: ConvertOptions): string {
+  const appPath = appLinkPath(target)
+
+  if (appPath !== null) {
+    return `${appUrl}${appPath}`
+  }
+
   if (/^[a-z]+:/i.test(target)) {
     return target
   }
@@ -181,7 +188,9 @@ export function toCmarkerMarkdown(body: string, options: ConvertOptions): string
       return [`<screenshot src="/docs/public/screenshots/lt/${name}.png"${caption ? ` caption="${caption}"` : ''}${/\snarrow\b/.test(line) ? ' narrow="narrow"' : ''}${/\sphone\b/.test(line) ? ' phone="phone"' : ''}>`]
     }
 
-    return [linkAppPaths(line.replace(/\]\(([^)\s]+)\)/g, (_, target: string) => `](${rewriteLink(target, options)})`))]
+    const marked = line.replace(/\[([^\]]+)\]\((app:[^)\s]+)\)/g, '[$1 ↗]($2)')
+
+    return [linkAppPaths(marked.replace(/\]\(([^)\s]+)\)/g, (_, target: string) => `](${rewriteLink(target, options)})`))]
   })
 
   return lines.join('\n')

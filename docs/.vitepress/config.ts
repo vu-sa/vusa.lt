@@ -4,6 +4,7 @@ import path from 'node:path'
 import fs from 'node:fs'
 import lt from './lt.ts'
 import en from './en.ts'
+import { appLinkPath } from './appLinks.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -89,6 +90,24 @@ export default defineConfig({
         return `<div class="doc-table" tabindex="0" role="region" aria-label="${label}"><table>\n`
       }
       md.renderer.rules.table_close = () => '</table></div>\n'
+
+      // `app:/mano/…` links open the platform; the docs base would otherwise turn `/mano/` into the guide's own Mano section.
+      const linkOpen = md.renderer.rules.link_open
+      md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+        const token = tokens[idx]
+        const appPath = appLinkPath(token.attrGet('href') ?? '')
+
+        if (appPath === null) {
+          return linkOpen ? linkOpen(tokens, idx, options, env, self) : self.renderToken(tokens, idx, options)
+        }
+
+        token.attrSet('href', appPath)
+        token.attrSet('target', '_blank')
+        token.attrSet('rel', 'noopener')
+        token.attrJoin('class', 'app-link')
+
+        return self.renderToken(tokens, idx, options)
+      }
     },
   },
   

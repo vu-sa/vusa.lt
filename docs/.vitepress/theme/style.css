@@ -193,6 +193,11 @@
   color: var(--vp-c-text-1);
 }
 
+/* Links into Mano VU SA open in a new tab; the arrow tells them apart from guide links. */
+.vp-doc a.app-link::after {
+  content: ' ↗';
+}
+
 .vp-doc h1 {
   font-weight: 800 !important;
   letter-spacing: -0.02em !important;

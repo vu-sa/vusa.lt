@@ -9,7 +9,7 @@ export default {
   description: 'VU SR information and internal system guide - all necessary information about the mano.vusa.lt platform',
   themeConfig: mergeObjects(shared, {
     // https://vitepress.dev/reference/default-theme-config
-    // The guide itself is Lithuanian-only; English keeps the changelog the admin "What's new" link opens.
+    // The guide itself is Lithuanian-only; English keeps the changelog the admin Updates link opens.
     nav: [
       { text: 'Guide (LT)', link: '/ivadas' },
       { text: 'Updates', link: '/en/changelog/v3', activeMatch: '/en/changelog/' },

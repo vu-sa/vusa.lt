@@ -14,7 +14,7 @@ Controllers never hold user-facing sentences. CRUD flashes come from `$this->ent
 - TranslationIntegrityTest and AdminEntityTranslationsTest enforce lt/en key parity, that every referenced key resolves, and that genders resolve.
 
 ## Admin voice and glossary
-- Address the user as *tu* ("Pataisyk klaidas"). Buttons are verbs naming the result ("Fiksuoti posėdį", "Išsaugoti"). Source keys are Lithuanian.
+- Address the user as *tu* ("Pataisyk klaidas") in the interface; the guide uses a calmer, mixed register (docs.md). Buttons are verbs naming the result ("Fiksuoti posėdį", "Išsaugoti"). Source keys are Lithuanian.
 - Glossary (retired words in brackets): posėdis [susitikimas]; renginys [įvykis]; narys for a person record [vartotojas, except in Sistema/auth contexts where an account is meant]; išteklius [resursas]; sekretorius = `InstitutionSecretary`, the per-term nominee who records; koordinatorius = `Institution::managers()`, who reps ask for help.
 - ViSAK names the representation workspace, never the product. The product is **Mano VU SA**.
 - Email-type meetings read "sprendimas el. paštu", not posėdis.

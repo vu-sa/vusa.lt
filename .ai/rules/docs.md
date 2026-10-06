@@ -9,7 +9,7 @@ paths:
 In "Kas ką gali" and the rest of a guide page, say which role allows an action (the Lithuanian production name, e.g. „Komunikacijos koordinatorius“, „Studentų atstovų koordinatorius“), never a permission string like `duties.update.padalinys`. Permission strings appear only under "Techninė informacija". Check each named role against database/seeders/Role*Seeder.php; if a role the page names has no seeder, add one mirroring production so tests exercise the same role.
 
 ## Docs voice and shared glossary
-Address the reader as tu with direct verbs (Pasirink, Įrašyk, Patikrink). Follow .ai/rules/lang.md for the shared product glossary and copy actual interface labels. Distinguish pareigybė (position), pareigybės laikotarpis (one person's dated assignment), kadencija (institutional term), rolė (access bundle), atsakomybė (area of coordination), koordinatorius and sekretorius; define shared concepts once and link them.
+Direct tu with imperatives (Pasirink, Įrašyk, Patikrink) belongs in step-by-step parts — Veiksmai, task procedures, a single instruction. Explanations (Kaip tai veikia, Kas ką gali, statuses, Susitarimai, overviews) mostly describe in neutral or impersonal Lithuanian („Užklausa pradedama…“, „galima atkurti“, „rodoma“), keeping tu where it reads naturally („tavo užduotys“). Don't open every sentence with a command; the app UI stays fully tu (lang.md), the docs are a calmer register. Follow .ai/rules/lang.md for the shared product glossary and copy actual interface labels. Distinguish pareigybė (position), pareigybės laikotarpis (one person's dated assignment), kadencija (institutional term), rolė (access bundle), atsakomybė (area of coordination), koordinatorius and sekretorius; define shared concepts once and link them.
 Write for a layperson: never "paskyrimas/paskyrimai" (say pareigos, pareigybės laikotarpis or pareigų datos), never "kandidatas"/"pretendentas" (say studentas or registracijos pateikėjas; for a release, "nauja versija"), and no dev jargon such as `main` or "release candidate" outside Techninė informacija.
 
 ## Guide claims follow supported behaviour
@@ -26,3 +26,6 @@ Test citations identify existing files and support specific behaviour; they do n
 
 ## Reusable author templates and coverage limits
 Use docs/maintainers/authoring.md for reference, task and concept/overview templates. docs:coverage credits declared area/models even on draft pages; its documented percentage is not a completion score. Use doc_status to communicate readiness, and regenerate docs/maintainers/coverage.md through the command rather than editing it.
+
+## Links into the platform
+Guide pages name app addresses as code (`` `/mano/notifications` ``); the PDF turns them into links. To make a clickable platform link on the web too, write `[Pranešimai](app:/mano/notifications)` — it opens in a new tab marked ↗. A plain `[…](/mano/…)` link resolves to the guide's own Mano section, not the platform.

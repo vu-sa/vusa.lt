@@ -19,6 +19,7 @@
           >
             <template v-for="(warning, index) in warnings" :key="warning.label">
               <span class="inline-flex items-center gap-1">
+                <RotateCcw v-if="warning.kind === 'reset'" class="h-3 w-3" />
                 <FileWarning v-if="warning.kind === 'files'" class="h-3 w-3" />
                 <CloudOff v-if="warning.kind === 'sharepoint'" class="h-3 w-3" />
                 {{ $t(warning.label) }}
@@ -67,7 +68,7 @@
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
-import { AlertTriangle, X, FileWarning, CloudOff } from 'lucide-vue-next';
+import { AlertTriangle, X, FileWarning, CloudOff, RotateCcw } from 'lucide-vue-next';
 
 defineProps<{ dismissed?: boolean; compact?: boolean }>();
 const emit = defineEmits<{ 'update:dismissed': [value: boolean] }>();
@@ -83,7 +84,10 @@ const staging = computed(() => usePage().props.staging as StagingProps | undefin
 const isStaging = computed(() => staging.value?.isStaging ?? false);
 
 const warnings = computed(() => {
-  const list: { kind: 'files' | 'sharepoint'; label: string }[] = [];
+  const list: { kind: 'reset' | 'files' | 'sharepoint'; label: string }[] = [];
+  if (staging.value?.isStaging) {
+    list.push({ kind: 'reset', label: 'Pakeitimai nebus išsaugoti – rytoj duomenys bus atnaujinti' });
+  }
   if (staging.value?.filesReadOnly) {
     list.push({ kind: 'files', label: 'Failų saugykla bendrinama su tikrąja aplinka (tik skaitymui)' });
   }

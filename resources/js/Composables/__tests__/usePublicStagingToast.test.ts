@@ -43,7 +43,7 @@ describe('usePublicStagingToast', () => {
     const [title, options] = vi.mocked(toast).mock.calls[0]!;
     expect(title).toBe('STAGING ENVIRONMENT');
     expect(options.id).toBe('public-staging-status:1');
-    expect(options.description).toBe('File storage is shared with production (read-only) · SharePoint is shared with production (read-only)');
+    expect(options.description).toBe('Changes won\'t be saved — data is refreshed tomorrow · File storage is shared with production (read-only) · SharePoint is shared with production (read-only)');
     expect(options.duration).toBe(Infinity);
     expect(options.closeButton).toBe(true);
     expect(options.dismissible).toBe(true);

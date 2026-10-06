@@ -17,6 +17,7 @@ function stagingDescription(staging: PublicStagingState | null | undefined): str
   }
 
   const warnings = [
+    'Changes won\'t be saved — data is refreshed tomorrow',
     staging.filesReadOnly ? 'File storage is shared with production (read-only)' : null,
     staging.sharepointReadOnly ? 'SharePoint is shared with production (read-only)' : null,
   ].filter((warning): warning is string => warning !== null);
