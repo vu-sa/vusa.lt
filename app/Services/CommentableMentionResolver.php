@@ -9,6 +9,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Reservation;
+use App\Models\SupportRequest;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -26,7 +27,14 @@ class CommentableMentionResolver
      */
     public function resolve(Model $commentable): array
     {
-        return $this->audienceUsers($commentable)
+        $users = $this->audienceUsers($commentable);
+
+        // Role members can see a shared request, but every root comment would be noise for them.
+        if ($commentable instanceof SupportRequest) {
+            $users = $users->concat($commentable->roleUsers())->unique('id');
+        }
+
+        return $users
             ->map(fn ($user) => [
                 'id' => (string) $user->id,
                 'name' => $user->name,
@@ -47,7 +55,8 @@ class CommentableMentionResolver
             || $commentable instanceof AgendaItem
             || $commentable instanceof Institution
             || $commentable instanceof Reservation
-            || $commentable instanceof Duty;
+            || $commentable instanceof Duty
+            || $commentable instanceof SupportRequest;
     }
 
     /**
@@ -68,6 +77,7 @@ class CommentableMentionResolver
             // Current holders only: `$duty->users` is every person who ever held the seat.
             $commentable instanceof Duty => $commentable->current_users()->get(),
             $commentable instanceof Reservation => $commentable->users()->get(),
+            $commentable instanceof SupportRequest => $this->supportRequestUsers($commentable),
             default => collect(),
         };
 
@@ -99,6 +109,19 @@ class CommentableMentionResolver
     {
         return GetInstitutionMembers::execute($institution)
             ->concat(GetInstitutionSecretaries::execute($institution))
+            ->values();
+    }
+
+    /**
+     * The reporter, the assignee and the people added to the request.
+     *
+     * @return Collection<int, User>
+     */
+    private function supportRequestUsers(SupportRequest $supportRequest): Collection
+    {
+        return collect([$supportRequest->creator, $supportRequest->assignedTo])
+            ->concat($supportRequest->involvedUsers)
+            ->filter()
             ->values();
     }
 }

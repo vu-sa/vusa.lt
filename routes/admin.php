@@ -208,6 +208,7 @@ Route::post('my-support-requests', [MySupportRequestController::class, 'store'])
 
 Route::patch('support-requests/{supportRequest}/status', [SupportRequestController::class, 'updateStatus'])->name('supportRequests.status.update');
 Route::patch('support-requests/{supportRequest}/assign', [SupportRequestController::class, 'assign'])->name('supportRequests.assign');
+Route::put('support-requests/{supportRequest}/involved-users', [SupportRequestController::class, 'syncInvolvedUsers'])->name('supportRequests.involvedUsers.sync');
 Route::post('support-requests/{supportRequest}/restore', [SupportRequestController::class, 'restore'])->name('supportRequests.restore')->withTrashed();
 Route::resource('support-requests', SupportRequestController::class)
     ->names('supportRequests')

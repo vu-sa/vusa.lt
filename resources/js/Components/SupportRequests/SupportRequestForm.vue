@@ -276,6 +276,17 @@
             </p>
           </div>
         </div>
+
+        <FormFieldWrapper
+          v-if="!isEditing && users.length > 0"
+          id="involved_users"
+          :label="$t('Susiję žmonės')"
+          :helper-text="$t('Pridėti žmonės matys šį pranešimą, galės jį komentuoti ir gaus atnaujinimus.')"
+          :error="form.errors.involved_users"
+          class="pt-2 border-t"
+        >
+          <InvolvedUsersPicker v-model="involvedUsers" :users />
+        </FormFieldWrapper>
       </FormPanel>
     </template>
   </FormPage>
@@ -289,6 +300,7 @@ import { computed, onBeforeUnmount, ref } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
+import InvolvedUsersPicker from '@/Components/SupportRequests/InvolvedUsersPicker.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { FormSection } from '@/Components/Patterns';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
@@ -321,11 +333,13 @@ const props = withDefaults(defineProps<{
   types: SupportRequestTaxonomyItem[];
   areas: SupportRequestTaxonomyItem[];
   roles: SupportRequestRoleOption[];
+  users?: SupportRequestUser[];
   supportRequest?: SupportRequestItem | null;
   context?: { url?: string; viewport?: string; browser?: string };
   backUrl?: string;
   showCancel?: boolean;
 }>(), {
+  users: () => [],
   supportRequest: null,
   context: undefined,
   backUrl: undefined,
@@ -416,9 +430,12 @@ const form = useForm({
   description: props.supportRequest?.description ?? '',
   context_url: props.supportRequest?.context_url ?? props.context?.url ?? '',
   context: props.context ? { viewport: props.context.viewport, browser: props.context.browser } : null,
+  involved_users: [] as string[],
   images: [] as File[],
   deleted_media_ids: [] as number[],
 });
+
+const involvedUsers = ref<SupportRequestUser[]>([]);
 
 // Dynamic role users calculation
 const authorizedUsers = computed(() => {
@@ -504,6 +521,7 @@ onBeforeUnmount(() => {
 });
 
 function submit() {
+  form.involved_users = involvedUsers.value.map(user => user.id);
   form.defaults();
 
   if (isEditing.value && props.supportRequest?.id) {

@@ -3,6 +3,7 @@
     :types
     :areas
     :roles
+    :users
     :context="reportContext"
     :back-url="route('mySupportRequests.index')"
   />
@@ -16,12 +17,14 @@ import SupportRequestForm from '@/Components/SupportRequests/SupportRequestForm.
 import type {
   SupportRequestRoleOption,
   SupportRequestTaxonomyItem,
+  SupportRequestUser,
 } from '@/Types/supportRequests';
 
 defineProps<{
   types: SupportRequestTaxonomyItem[];
   areas: SupportRequestTaxonomyItem[];
   roles: SupportRequestRoleOption[];
+  users: SupportRequestUser[];
   service?: SupportRequestTaxonomyItem;
 }>();
 

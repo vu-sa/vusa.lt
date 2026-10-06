@@ -10,6 +10,7 @@ use App\Models\SupportRequestArea;
 use App\Models\SupportRequestType;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class BuildSupportRequestCollection
 {
@@ -34,6 +35,7 @@ class BuildSupportRequestCollection
         $this->applyDashboardFilters($tabRequests, $filters, includeStatus: true);
         $this->applySorting($tabRequests, $request->getSorting());
 
+        /** @var LengthAwarePaginator<int, SupportRequest> $requests */
         $requests = $tabRequests
             ->with([
                 'creator:id,name,profile_photo_path',
@@ -45,6 +47,13 @@ class BuildSupportRequestCollection
             ->paginate($request->getPerPage())
             ->withQueryString();
 
+        // toArray() snake-cases the assignedTo relation onto the assigned_to id column.
+        $requests->through(fn (SupportRequest $supportRequest): array => [
+            ...$supportRequest->toArray(),
+            'assigned_to' => $supportRequest->assigned_to,
+            'assignedTo' => $supportRequest->assignedTo,
+        ]);
+
         $assignees = User::query()
             ->whereIn('id', (clone $allRequests)->whereNotNull('assigned_to')->select('assigned_to'))
             ->orderBy('name')
@@ -55,7 +64,7 @@ class BuildSupportRequestCollection
             'currentTab' => $tab,
             'tabCounts' => [
                 'all' => (clone $allRequests)->count(),
-                'mine' => (clone $allRequests)->where('created_by', $user->id)->count(),
+                'mine' => $this->whereMine(clone $allRequests, $user)->count(),
             ],
             'statusCounts' => $statusCounts,
             'filters' => $filters,
@@ -96,7 +105,7 @@ class BuildSupportRequestCollection
     {
         $allRequests = $this->visibleRequestsFor($user);
         $tabRequests = $request->validated('tab', 'all') === 'mine'
-            ? (clone $allRequests)->where('created_by', $user->id)
+            ? $this->whereMine(clone $allRequests, $user)
             : clone $allRequests;
         $filters = $request->getFilters();
         $search = $request->validated('search');
@@ -119,6 +128,7 @@ class BuildSupportRequestCollection
 
         return $query->where(function (Builder $query) use ($user): void {
             $query->where('created_by', $user->id)
+                ->orWhereHas('involvedUsers', fn (Builder $query) => $query->whereKey($user->id))
                 ->orWhere('visibility', SupportRequestVisibility::Public)
                 ->orWhere(function (Builder $query) use ($user): void {
                     $query->where('visibility', SupportRequestVisibility::Roles)
@@ -127,6 +137,17 @@ class BuildSupportRequestCollection
                                 ->orWhereHas('currentUsersThroughDuties', fn (Builder $query) => $query->whereKey($user->id));
                         });
                 });
+        });
+    }
+
+    /**
+     * Requests the user reported or was added to as an involved person.
+     */
+    private function whereMine(Builder $query, User $user): Builder
+    {
+        return $query->where(function (Builder $query) use ($user): void {
+            $query->where('created_by', $user->id)
+                ->orWhereHas('involvedUsers', fn (Builder $query) => $query->whereKey($user->id));
         });
     }
 

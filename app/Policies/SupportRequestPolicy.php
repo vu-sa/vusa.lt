@@ -36,6 +36,10 @@ class SupportRequestPolicy
             return true;
         }
 
+        if ($supportRequest->involvedUsers()->whereKey($user->id)->exists()) {
+            return true;
+        }
+
         if ($supportRequest->visibility !== SupportRequestVisibility::Roles) {
             return false;
         }

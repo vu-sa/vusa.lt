@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection as SupportCollection;
 use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -51,6 +52,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property-read User|null $assignedTo
  * @property-read Collection<int, Comment> $comments
  * @property-read User|null $creator
+ * @property-read Collection<int, User> $involvedUsers
  * @property-read MediaCollection<int, Media> $media
  * @property-read Collection<int, Role> $roles
  * @property-read Collection<int, Comment> $rootComments
@@ -137,6 +139,37 @@ class SupportRequest extends Model implements Commentable, HasMedia
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'role_support_request');
+    }
+
+    /**
+     * People the reporter or a manager added because the problem concerns them too.
+     */
+    public function involvedUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'support_request_user')->withTimestamps();
+    }
+
+    /**
+     * Members of the selected roles, directly or through a current duty. Empty unless the
+     * request is shared with roles.
+     *
+     * @return SupportCollection<int, User>
+     */
+    public function roleUsers(): SupportCollection
+    {
+        if ($this->visibility !== SupportRequestVisibility::Roles) {
+            return collect();
+        }
+
+        $this->loadMissing([
+            'roles.users:users.id,users.name,users.profile_photo_path',
+            'roles.currentUsersThroughDuties:users.id,users.name,users.profile_photo_path',
+        ]);
+
+        return $this->roles
+            ->flatMap(fn (Role $role) => $role->users->concat($role->currentUsersThroughDuties))
+            ->unique('id')
+            ->values();
     }
 
     public function registerMediaCollections(): void

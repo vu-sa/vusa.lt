@@ -9,9 +9,11 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Reservation;
+use App\Models\Role;
 use App\Models\SupportRequest;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\CommentRecipientResolver;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
@@ -385,6 +387,57 @@ describe('support request', function (): void {
 
         Event::assertDispatched(CommentBroadcast::class, fn ($event) => $event->action === 'created'
             && $event->channelName === "comments.supportRequest.{$supportRequest->id}");
+    });
+
+    test('mentionables include the reporter, assignee, involved people and role members', function (): void {
+        $creator = makeUser($this->tenant);
+        $assignee = makeUser($this->tenant);
+        $involved = makeUser($this->tenant);
+        $roleMember = makeUser($this->tenant);
+        $role = Role::create(['name' => 'Support Mentions', 'guard_name' => 'web']);
+        $roleMember->assignRole($role);
+
+        $supportRequest = SupportRequest::factory()->create([
+            'created_by' => $creator->id,
+            'assigned_to' => $assignee->id,
+            'visibility' => 'roles',
+        ]);
+        $supportRequest->roles()->attach($role);
+        $supportRequest->involvedUsers()->attach($involved);
+
+        $ids = asUser($involved)
+            ->getJson(route('api.v1.admin.comments.mentionables', ['commentableType' => 'supportRequest', 'commentableId' => $supportRequest->id]))
+            ->assertOk()
+            ->collect('data')
+            ->pluck('id');
+
+        expect($ids->sort()->values()->all())
+            ->toBe(collect([$creator->id, $assignee->id, $involved->id, $roleMember->id])->sort()->values()->all());
+    });
+
+    test('a root comment reaches the reporter, assignee and involved people but not role members', function (): void {
+        $creator = makeUser($this->tenant);
+        $assignee = makeUser($this->tenant);
+        $involved = makeUser($this->tenant);
+        $roleMember = makeUser($this->tenant);
+        $role = Role::create(['name' => 'Support Audience', 'guard_name' => 'web']);
+        $roleMember->assignRole($role);
+
+        $supportRequest = SupportRequest::factory()->create([
+            'created_by' => $creator->id,
+            'assigned_to' => $assignee->id,
+            'visibility' => 'roles',
+        ]);
+        $supportRequest->roles()->attach($role);
+        $supportRequest->involvedUsers()->attach($involved);
+
+        $this->actingAs($involved);
+        $comment = $supportRequest->comment('<p>Man irgi neveikia</p>');
+
+        $audience = app(CommentRecipientResolver::class)->audience($comment)->pluck('id');
+
+        expect($audience->sort()->values()->all())
+            ->toBe(collect([$creator->id, $assignee->id])->sort()->values()->all());
     });
 });
 

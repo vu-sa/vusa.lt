@@ -48,6 +48,8 @@ class StoreSupportRequestRequest extends FormRequest
                     }
                 },
             ],
+            'involved_users' => ['nullable', 'array', 'max:20'],
+            'involved_users.*' => ['string', 'distinct', Rule::exists('users', 'id')],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:10000'],
             'context_url' => ['nullable', 'string', 'max:2000'],

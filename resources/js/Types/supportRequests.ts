@@ -55,6 +55,7 @@ export interface SupportRequestItem {
   service?: SupportRequestTaxonomyItem;
   roles?: Array<{ id: string; name: string }>;
   role_users?: SupportRequestUser[];
+  involved_users?: SupportRequestUser[];
   media?: SupportRequestMediaFile[];
   comments_count?: number;
 }

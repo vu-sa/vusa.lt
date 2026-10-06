@@ -12,6 +12,7 @@ use App\Models\SupportRequestArea;
 use App\Models\SupportRequestType;
 use App\Models\SupportService;
 use App\Models\User;
+use App\Notifications\AssignedToResourceNotification;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Response;
 
@@ -26,12 +27,15 @@ class MySupportRequestController extends AdminController
     {
         $this->authorize('create', SupportRequest::class);
 
-        return $this->inertiaResponse('Admin/SupportRequests/CreateSupportRequest', static::formOptions());
+        return $this->inertiaResponse('Admin/SupportRequests/CreateSupportRequest', [
+            ...static::formOptions(),
+            'users' => User::query()->orderBy('name')->get(['id', 'name', 'profile_photo_path']),
+        ]);
     }
 
     public function store(StoreSupportRequestRequest $request): RedirectResponse
     {
-        $data = $request->safe()->except(['roles', 'images']);
+        $data = $request->safe()->except(['roles', 'images', 'involved_users']);
         $area = SupportRequestArea::query()->findOrFail($data['support_request_area_id']);
 
         $supportRequest = SupportRequest::create([
@@ -43,6 +47,16 @@ class MySupportRequestController extends AdminController
 
         if ($request->validated('visibility') === 'roles') {
             $supportRequest->roles()->sync($request->validated('roles', []));
+        }
+
+        $involvedUserIds = collect($request->validated('involved_users', []))
+            ->reject(fn (string $id) => $id === $request->user()->id)
+            ->values();
+
+        if ($involvedUserIds->isNotEmpty()) {
+            $supportRequest->involvedUsers()->sync($involvedUserIds);
+            $notification = AssignedToResourceNotification::fromModel($supportRequest, $request->user());
+            User::query()->whereKey($involvedUserIds)->get()->each->notify($notification);
         }
 
         foreach ($request->file('images', []) as $image) {

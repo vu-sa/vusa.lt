@@ -1265,5 +1265,8 @@
   "Pasiektas": "Achieved",
   "Nepasiektas": "Not achieved",
   "Atsisakyta": "Dropped",
-  "Atšaukti nuorodą": "Revoke link"
+  "Atšaukti nuorodą": "Revoke link",
+  "Susiję žmonės": "People involved",
+  "Redaguoti susijusius žmones": "Edit people involved",
+  "Pridėti žmonės matys šį pranešimą, galės jį komentuoti ir gaus atnaujinimus.": "People you add will see this report, can comment on it and will get updates."
 }

@@ -1,7 +1,10 @@
 <template>
   <RecordPage v-model:section="section" :title="supportRequest.title" entity-type="support_request" :facts :sections :primary-action :overflow-actions actions-beside-title @action="handleAction">
     <template #alert>
-      <div v-if="permissions.can_update_status || permissions.can_assign" class="flex flex-wrap items-center gap-3 border border-border bg-card p-3">
+      <div
+        v-if="permissions.can_update_status || permissions.can_assign || permissions.can_manage_involved"
+        class="flex flex-wrap items-center gap-3 border border-border bg-card p-3"
+      >
         <label v-if="permissions.can_update_status" class="flex items-center gap-2 text-sm font-medium">
           {{ $t('Būsena') }}
           <Select :model-value="statusValue" @update:model-value="changeStatus">
@@ -16,6 +19,10 @@
             <SelectContent><SelectItem value="unassigned">{{ $t('Nepriskirta') }}</SelectItem><SelectItem v-for="assignee in assignees" :key="assignee.id" :value="assignee.id">{{ assignee.name }}</SelectItem></SelectContent>
           </Select>
         </label>
+        <Button v-if="permissions.can_manage_involved" variant="outline" voice="sentence" @click="openInvolvedSheet">
+          <UserPlus class="size-4" />
+          {{ $t('Susiję žmonės') }}
+        </Button>
       </div>
     </template>
     <template #description>
@@ -46,6 +53,15 @@
       <DiscussionPanel commentable-type="supportRequest" :commentable-id="supportRequest.id" />
     </template>
   </RecordPage>
+  <SheetForm
+    v-model:open="involvedSheetOpen"
+    :title="$t('Redaguoti susijusius žmones')"
+    :description="$t('Pridėti žmonės matys šį pranešimą, galės jį komentuoti ir gaus atnaujinimus.')"
+    :processing="savingInvolved"
+    @submit="saveInvolvedUsers"
+  >
+    <InvolvedUsersPicker v-model="selectedInvolvedUsers" :users="assignees" />
+  </SheetForm>
   <ConfirmDialog v-model:open="deleteOpen" :title="$t('Šalinti pranešimą?')" :description="$t('Pranešimas bus perkeltas į šiukšlinę.')" :confirm-label="$t('Šalinti')" destructive @confirm="router.delete(route('supportRequests.destroy', supportRequest.id))" />
 </template>
 
@@ -53,22 +69,24 @@
 import { computed, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Edit, Trash2 } from 'lucide-vue-next';
+import { Edit, Trash2, UserPlus } from 'lucide-vue-next';
 
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
-import { ConfirmDialog } from '@/Components/Patterns';
+import { ConfirmDialog, SheetForm } from '@/Components/Patterns';
+import InvolvedUsersPicker from '@/Components/SupportRequests/InvolvedUsersPicker.vue';
+import { Button } from '@/Components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { supportRequestStatuses } from '@/Constants/statuses';
 import type { SupportRequestStatus } from '@/Types/enums';
-import type { SupportRequestItem } from '@/Types/supportRequests';
+import type { SupportRequestItem, SupportRequestUser } from '@/Types/supportRequests';
 import { formatDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
   supportRequest: SupportRequestItem;
   availableStatuses: Array<{ value: string; label: string; badgeVariant: string }>;
-  assignees: Array<{ id: string; name: string }>;
-  permissions: { can_update: boolean; can_update_status: boolean; can_assign: boolean; can_delete: boolean; can_restore: boolean };
+  assignees: SupportRequestUser[];
+  permissions: { can_update: boolean; can_update_status: boolean; can_assign: boolean; can_manage_involved: boolean; can_delete: boolean; can_restore: boolean };
 }>();
 const section = ref('description');
 const deleteOpen = ref(false);
@@ -76,12 +94,14 @@ const statusValue = computed(() => typeof props.supportRequest.status === 'objec
 const statusPresentation = computed(() => supportRequestStatuses[statusValue.value as SupportRequestStatus]);
 const page = usePage();
 const locale = computed(() => (page.props as { app?: { locale?: string } }).app?.locale ?? 'lt');
+const involvedUsers = computed(() => props.supportRequest.involved_users ?? []);
 const creatorName = computed(() => props.supportRequest.creator?.name ?? props.supportRequest.reporter_name ?? $t('Svečias'));
 const facts = computed<RecordFact[]>(() => [
   { key: 'status', label: $t('Būsena'), status: statusPresentation.value },
   { key: 'creator', label: $t('Pateikė'), value: creatorName.value },
   { key: 'created', label: $t('Pateikta'), value: formatDate(props.supportRequest.created_at) },
   { key: 'assignee', label: $t('Priskirta'), value: props.supportRequest.assignedTo?.name ?? $t('Nepriskirta') },
+  ...(involvedUsers.value.length > 0 ? [{ key: 'involved', label: $t('Susiję žmonės'), value: involvedUsers.value.map(user => user.name).join(', ') }] : []),
   { key: 'type', label: $t('Tipas'), value: typeof props.supportRequest.type?.name === 'string' ? props.supportRequest.type.name : props.supportRequest.type?.name?.[locale.value] ?? '—' },
 ]);
 const sections = computed<RecordPageSection[]>(() => [
@@ -98,6 +118,21 @@ function changeStatus(value: string): void {
 }
 function assign(value: string): void {
   router.patch(route('supportRequests.assign', props.supportRequest.id), { assigned_to: value === 'unassigned' ? null : value }, { preserveScroll: true });
+}
+const involvedSheetOpen = ref(false);
+const savingInvolved = ref(false);
+const selectedInvolvedUsers = ref<SupportRequestUser[]>([]);
+function openInvolvedSheet(): void {
+  selectedInvolvedUsers.value = props.assignees.filter(user => involvedUsers.value.some(involved => involved.id === user.id));
+  involvedSheetOpen.value = true;
+}
+function saveInvolvedUsers(): void {
+  router.put(route('supportRequests.involvedUsers.sync', props.supportRequest.id), { involved_users: selectedInvolvedUsers.value.map(user => user.id) }, {
+    preserveScroll: true,
+    onStart: () => { savingInvolved.value = true; },
+    onFinish: () => { savingInvolved.value = false; },
+    onSuccess: () => { involvedSheetOpen.value = false; },
+  });
 }
 function handleAction(action: string): void {
   if (action === 'edit') {
