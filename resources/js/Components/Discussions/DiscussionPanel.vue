@@ -110,7 +110,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { BarChart3, MessagesSquare } from 'lucide-vue-next';
@@ -135,8 +135,11 @@ const props = withDefaults(defineProps<{
   commentableId: string;
   /** Draw the composer and threads inside a card, for pages built out of framed sections. */
   framed?: boolean;
+  /** Changes when the parent's people change, so the @mention list is refetched without a reload. */
+  mentionablesKey?: string;
 }>(), {
   framed: false,
+  mentionablesKey: undefined,
 });
 
 const currentUser = computed(() => (usePage().props.auth as { user?: App.Entities.User } | undefined)?.user ?? null);
@@ -199,6 +202,10 @@ async function onUnresolve(id: string) {
 async function onToggleReaction(id: string, emoji: string) {
   await discussion.toggleReaction(id, emoji);
 }
+
+watch(() => props.mentionablesKey, () => {
+  void discussion.reloadMentionables();
+});
 
 onMounted(() => {
   void discussion.load();

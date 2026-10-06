@@ -50,7 +50,7 @@
       </div>
     </template>
     <template #discussion>
-      <DiscussionPanel commentable-type="supportRequest" :commentable-id="supportRequest.id" />
+      <DiscussionPanel commentable-type="supportRequest" :commentable-id="supportRequest.id" :mentionables-key />
     </template>
   </RecordPage>
   <SheetForm
@@ -101,6 +101,7 @@ const visibilityValue = computed(() => {
   return roleNames.length > 0 ? `${supportRequestVisibilityLabel(props.supportRequest)}: ${roleNames.join(', ')}` : supportRequestVisibilityLabel(props.supportRequest);
 });
 const involvedUsers = computed(() => props.supportRequest.involved_users ?? []);
+const mentionablesKey = computed(() => [props.supportRequest.assigned_to, ...involvedUsers.value.map(user => user.id)].join(','));
 const creatorName = computed(() => props.supportRequest.creator?.name ?? props.supportRequest.reporter_name ?? $t('Svečias'));
 const facts = computed<RecordFact[]>(() => [
   { key: 'status', label: $t('Būsena'), status: statusPresentation.value },

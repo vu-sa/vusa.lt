@@ -80,6 +80,23 @@ describe('DiscussionPanel', () => {
     mocks.fetchMentionables.mockResolvedValue([]);
   });
 
+  it('refetches the mention list when the parent\'s people change', async () => {
+    mocks.fetchThread.mockResolvedValue([]);
+
+    const wrapper = mount(DiscussionPanel, {
+      props: { commentableType: 'supportRequest', commentableId: 'sr1', mentionablesKey: 'u1' },
+      global: { stubs },
+    });
+    await flushPromises();
+    expect(mocks.fetchMentionables).toHaveBeenCalledTimes(1);
+
+    await wrapper.setProps({ mentionablesKey: 'u1,u2' });
+    await flushPromises();
+
+    expect(mocks.fetchMentionables).toHaveBeenCalledTimes(2);
+    expect(mocks.fetchThread).toHaveBeenCalledTimes(1);
+  });
+
   it('renders fetched threads with their replies', async () => {
     mocks.fetchThread.mockResolvedValue([
       makeComment({ id: 'root1', body: '<p>Root one</p>', replies: [makeComment({ id: 'rep1', parent_id: 'root1', thread_root_id: 'root1', body: '<p>A reply</p>' })] }),

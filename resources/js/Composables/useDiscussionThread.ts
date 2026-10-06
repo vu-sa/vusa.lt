@@ -150,6 +150,15 @@ export function useDiscussionThread(commentableType: string, commentableId: stri
     connect();
   }
 
+  async function reloadMentionables(): Promise<void> {
+    try {
+      mentionables.value = await api.fetchMentionables();
+    }
+    catch (error) {
+      toasts.error((error as Error).message);
+    }
+  }
+
   return {
     comments,
     mentionables,
@@ -159,6 +168,7 @@ export function useDiscussionThread(commentableType: string, commentableId: stri
     members,
     rootCount: computed(() => comments.value.length),
     load,
+    reloadMentionables,
     post,
     createPoll,
     update,
