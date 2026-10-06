@@ -9,7 +9,8 @@ use App\Models\SupportRequestArea;
 use App\Models\SupportRequestType;
 use App\Models\SupportService;
 use App\Models\Tenant;
-use App\Notifications\AssignedToResourceNotification;
+use App\Notifications\SupportRequestCreatedNotification;
+use App\Notifications\SupportRequestInvolvedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
@@ -285,8 +286,42 @@ describe('creating and storing support requests', function (): void {
         $supportRequest = SupportRequest::where('created_by', $this->user->id)->latest()->first();
 
         expect($supportRequest->involvedUsers()->pluck('users.id')->all())->toBe([$colleague->id]);
-        Notification::assertSentTo($colleague, AssignedToResourceNotification::class);
-        Notification::assertNotSentTo($this->user, AssignedToResourceNotification::class);
+        Notification::assertSentTo($colleague, SupportRequestInvolvedNotification::class);
+        Notification::assertNotSentTo($this->user, SupportRequestInvolvedNotification::class);
+    });
+
+    test('a new request notifies super admins once, whatever its visibility', function (): void {
+        Notification::fake();
+        $admin = makeAdminUser($this->tenant);
+        $reportingAdmin = makeAdminUser($this->tenant);
+
+        asUser($this->user)->post(route('mySupportRequests.store'), [
+            'title' => 'Neveikia paieška',
+            'description' => 'Paieška negrąžina rezultatų',
+            'support_request_type_id' => $this->type->id,
+            'support_request_area_id' => $this->area->id,
+            'visibility' => 'public',
+            'involved_users' => [$admin->id],
+        ])->assertRedirect();
+
+        Notification::assertSentTo([$admin, $reportingAdmin], SupportRequestCreatedNotification::class);
+        Notification::assertNotSentTo($admin, SupportRequestInvolvedNotification::class);
+        Notification::assertNotSentTo($this->user, SupportRequestCreatedNotification::class);
+    });
+
+    test('a super admin reporting a request is not notified about their own request', function (): void {
+        Notification::fake();
+        $admin = makeAdminUser($this->tenant);
+
+        asUser($admin)->post(route('mySupportRequests.store'), [
+            'title' => 'Klaida',
+            'description' => 'Aprašymas',
+            'support_request_type_id' => $this->type->id,
+            'support_request_area_id' => $this->area->id,
+            'visibility' => 'private',
+        ])->assertRedirect();
+
+        Notification::assertNotSentTo($admin, SupportRequestCreatedNotification::class);
     });
 
     test('rejects unknown involved people', function (): void {

@@ -31,7 +31,7 @@ Užklausos pateikiamos per formą `/mano/my-support-requests/create`. Užklausą
 
 ### Matomumo lygiai
 
-Kuriant užklausą nurodoma, kas ją gali matyti:
+Kuriant užklausą nurodoma, kas ją gali matyti. Pasirinktas matomumas rodomas užklausų sąraše ir užklausos puslapyje (rolėms skirtos užklausos – su rolių pavadinimais).
 
 - **Privatu** – užklausą mato jos autorius, užklausas administruojantys nariai ir paskirtas atsakingas asmuo. Tai tinkamiausias pasirinkimas pranešant apie asmenines problemas ar klaidų atvejus.
 - **Pasirinktoms rolėms** – užklausa matoma nariams, turintiems pasirinktas roles tiesiogiai arba per galiojančias pareigybes, bei administratoriams. Autorius gali pasirinkti tik tas roles, kurias pats turi tiesiogiai arba per galiojančias pareigybes.
@@ -108,8 +108,10 @@ Užklausos puslapyje:
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 
-- **Būsenos pasikeitimo pranešimas**: administratoriui pakeitus užklausos būseną, autorius automatiškai gauna pranešimą sistemoje su nuoroda į užklausą.
-- **Pridėjimo pranešimas**: pridėtas susijęs žmogus arba naujai priskirtas atsakingas asmuo gauna pranešimą su nuoroda į užklausą.
+- **Nauja užklausa**: pateikus užklausą, pranešimą gauna platformos administratoriai (Super Admin), nepriklausomai nuo matomumo. Visiems prisijungusiems nariams apie viešas užklausas nepranešama.
+- **Būsenos pasikeitimas**: administratoriui pakeitus užklausos būseną, pranešimą gauna autorius ir susiję žmonės (išskyrus tą, kuris būseną pakeitė).
+- **Priskyrimas ir pridėjimas**: naujai priskirtas atsakingas asmuo ir pridėtas susijęs žmogus gauna po pranešimą su nuoroda į užklausą. Administratorius, jau gavęs pranešimą apie naują užklausą, antro negauna.
+- Kaip gauti kiekvieną iš šių pranešimų (laiškas iškart, suvestinėje ar be laiško), pasirenkama **Pranešimų nustatymuose**, skiltyje *Sistema*.
 - **Komentarų pranešimai**: apie naują komentarą sužino autorius, atsakingas asmuo ir susiję žmonės; rolių nariai – tik kai juos paminėji.
 - **Sprendimo laiko fiksavimas**: nustačius būseną „Išspręsta“ arba „Atmesta“, automatiškai užfiksuojamas sprendimo laikas. Užklausą atvėrus pakartotinai, sprendimo laikas išvalomas.
 - **Šalinimas**: pašalinta užklausa saugoma duomenų bazėje; jos atkūrimo maršrutas skirtas administravimui ir sąraše nepateikiamas.
@@ -122,5 +124,5 @@ Užklausos puslapyje:
 - Prieigos politika: `SupportRequestPolicy` (`isManager` reikalauja `supportRequests.read.*` arba `supportRequests.update.*`).
 - Būsenos ir matomumas: `SupportRequestStatus`, `SupportRequestVisibility`.
 - Modeliai: `SupportRequest` (palaiko `SoftDeletes`, `LogsActivity`, `InteractsWithMedia`), `SupportRequestType`, `SupportRequestArea`, `SupportService`.
-- Pranešimai: `SupportRequestStatusChangedNotification`, `AssignedToResourceNotification`.
+- Pranešimai: `SupportRequestCreatedNotification`, `SupportRequestAssignedNotification`, `SupportRequestInvolvedNotification`, `SupportRequestStatusChangedNotification`; gavėjus administratorius grąžina `SupportRequest::managers()`.
 - Susiję žmonės: ryšys `SupportRequest::involvedUsers()` (lentelė `support_request_user`); komentarų adresatus ir paminėjimus sprendžia `CommentableMentionResolver`.

@@ -70,6 +70,7 @@ describe('support request dashboard', () => {
     ]);
     expect(wrapper.text()).toContain('Prisijungimo klaida');
     expect(wrapper.text()).toContain('Justinas Kavoliūnas');
+    expect(wrapper.text()).toContain('Privatu');
   });
 
   it('changes tabs through the collection quick filters', async () => {

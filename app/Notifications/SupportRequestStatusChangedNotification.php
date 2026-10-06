@@ -46,4 +46,10 @@ class SupportRequestStatusChangedNotification extends BaseNotification
     {
         return route('supportRequests.show', $this->supportRequest->id);
     }
+
+    #[\Override]
+    public function primaryAction(): ?array
+    {
+        return ['label' => __('notifications.action_open_support_request'), 'url' => $this->url()];
+    }
 }

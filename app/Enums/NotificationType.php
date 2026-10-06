@@ -37,6 +37,9 @@ enum NotificationType: string
     case MemberRegistration = 'member_registration';
     case StudentRepRegistration = 'student_rep_registration';
 
+    case SupportRequestCreated = 'support_request_created';
+    case SupportRequestAssigned = 'support_request_assigned';
+    case SupportRequestInvolved = 'support_request_involved';
     case SupportRequestStatusChanged = 'support_request_status_changed';
 
     case Welcome = 'welcome';
@@ -53,6 +56,7 @@ enum NotificationType: string
             self::CommentMention, self::CommentActivity => NotificationCategory::Comment,
             self::DutyExpiring, self::AccessChanged => NotificationCategory::Duty,
             self::MemberRegistration, self::StudentRepRegistration => NotificationCategory::Registration,
+            self::SupportRequestCreated, self::SupportRequestAssigned, self::SupportRequestInvolved,
             self::SupportRequestStatusChanged, self::Welcome, self::TestPush => NotificationCategory::System,
         };
     }
@@ -63,6 +67,7 @@ enum NotificationType: string
             self::TaskReminder, self::TaskOverdue, self::MeetingReminder, self::InstitutionActivity, self::InstitutionActivityNotMine,
             self::ApprovalRequested, self::AssignedToResource, self::CommentMention, self::DutyExpiring,
             self::MemberRegistration, self::StudentRepRegistration,
+            self::SupportRequestCreated, self::SupportRequestAssigned,
             // The only notice a requester gets of an approval, rejection or pickup to make.
             self::ReservationStatusChanged => NotificationUrgency::Act,
             self::TaskAutoCompleted => NotificationUrgency::Record,

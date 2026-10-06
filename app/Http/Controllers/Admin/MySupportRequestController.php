@@ -12,8 +12,10 @@ use App\Models\SupportRequestArea;
 use App\Models\SupportRequestType;
 use App\Models\SupportService;
 use App\Models\User;
-use App\Notifications\AssignedToResourceNotification;
+use App\Notifications\SupportRequestCreatedNotification;
+use App\Notifications\SupportRequestInvolvedNotification;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Response;
 
 class MySupportRequestController extends AdminController
@@ -49,14 +51,20 @@ class MySupportRequestController extends AdminController
             $supportRequest->roles()->sync($request->validated('roles', []));
         }
 
+        $managers = SupportRequest::managers()->reject(fn (User $manager) => $manager->is($request->user()));
+        Notification::send($managers, new SupportRequestCreatedNotification($supportRequest));
+
         $involvedUserIds = collect($request->validated('involved_users', []))
             ->reject(fn (string $id) => $id === $request->user()->id)
             ->values();
 
         if ($involvedUserIds->isNotEmpty()) {
             $supportRequest->involvedUsers()->sync($involvedUserIds);
-            $notification = AssignedToResourceNotification::fromModel($supportRequest, $request->user());
-            User::query()->whereKey($involvedUserIds)->get()->each->notify($notification);
+            // A manager already heard about this request from the notice above.
+            Notification::send(
+                User::query()->whereKey($involvedUserIds)->whereKeyNot($managers->modelKeys())->get(),
+                new SupportRequestInvolvedNotification($supportRequest, $request->user()),
+            );
         }
 
         foreach ($request->file('images', []) as $image) {

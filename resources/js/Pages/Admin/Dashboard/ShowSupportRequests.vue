@@ -30,7 +30,7 @@
             :sub="`${translatedName(item.type?.name)} · ${translatedName(item.area?.name)}`"
           />
           <p class="mt-2 text-xs text-muted-foreground">
-            {{ item.creator?.name ?? item.reporter_name ?? $t('Svečias') }} · {{ formatDate(item.created_at) }}
+            {{ item.creator?.name ?? item.reporter_name ?? $t('Svečias') }} · {{ formatDate(item.created_at) }} · {{ supportRequestVisibilityLabel(item) }}
           </p>
         </div>
         <StatusBadge :status="statusOf(item)" class="shrink-0" />
@@ -61,6 +61,7 @@ import { Button } from '@/Components/ui/button';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { supportRequestStatuses } from '@/Constants/statuses';
+import { supportRequestVisibilityLabel } from '@/Components/SupportRequests/visibility';
 import type { SupportRequestItem, SupportRequestTaxonomyItem } from '@/Types/supportRequests';
 
 const props = defineProps<{

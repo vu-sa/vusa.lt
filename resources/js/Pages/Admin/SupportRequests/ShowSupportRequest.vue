@@ -75,6 +75,7 @@ import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { ConfirmDialog, SheetForm } from '@/Components/Patterns';
 import InvolvedUsersPicker from '@/Components/SupportRequests/InvolvedUsersPicker.vue';
+import { supportRequestVisibility, supportRequestVisibilityLabel } from '@/Components/SupportRequests/visibility';
 import { Button } from '@/Components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { supportRequestStatuses } from '@/Constants/statuses';
@@ -94,12 +95,18 @@ const statusValue = computed(() => typeof props.supportRequest.status === 'objec
 const statusPresentation = computed(() => supportRequestStatuses[statusValue.value as SupportRequestStatus]);
 const page = usePage();
 const locale = computed(() => (page.props as { app?: { locale?: string } }).app?.locale ?? 'lt');
+const visibilityValue = computed(() => {
+  const roleNames = supportRequestVisibility(props.supportRequest) === 'roles' ? props.supportRequest.roles?.map(role => role.name) ?? [] : [];
+
+  return roleNames.length > 0 ? `${supportRequestVisibilityLabel(props.supportRequest)}: ${roleNames.join(', ')}` : supportRequestVisibilityLabel(props.supportRequest);
+});
 const involvedUsers = computed(() => props.supportRequest.involved_users ?? []);
 const creatorName = computed(() => props.supportRequest.creator?.name ?? props.supportRequest.reporter_name ?? $t('Svečias'));
 const facts = computed<RecordFact[]>(() => [
   { key: 'status', label: $t('Būsena'), status: statusPresentation.value },
   { key: 'creator', label: $t('Pateikė'), value: creatorName.value },
   { key: 'created', label: $t('Pateikta'), value: formatDate(props.supportRequest.created_at) },
+  { key: 'visibility', label: $t('Matomumas'), value: visibilityValue.value },
   { key: 'assignee', label: $t('Priskirta'), value: props.supportRequest.assignedTo?.name ?? $t('Nepriskirta') },
   ...(involvedUsers.value.length > 0 ? [{ key: 'involved', label: $t('Susiję žmonės'), value: involvedUsers.value.map(user => user.name).join(', ') }] : []),
   { key: 'type', label: $t('Tipas'), value: typeof props.supportRequest.type?.name === 'string' ? props.supportRequest.type.name : props.supportRequest.type?.name?.[locale.value] ?? '—' },

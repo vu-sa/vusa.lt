@@ -158,6 +158,13 @@ return [
     'action_view' => 'View',
     'action_review' => 'Review',
 
+    'action_open_support_request' => 'Open request',
+    'support_request_created_title' => 'New support request: :title',
+    'support_request_created_body' => ':user submitted the support request “:title”.',
+    'support_request_assigned_title' => 'Request assigned to you: :title',
+    'support_request_assigned_body' => ':user made you responsible for the support request “:title”.',
+    'support_request_involved_title' => 'You were added to a request: :title',
+    'support_request_involved_body' => ':user added you to the support request “:title”. You can see and comment on it.',
     // Email footer: sign-off and "why you got this"
     'mail' => [
         'why_received' => 'You are getting this email because “:category” emails are turned on in your notification settings.',
@@ -187,6 +194,8 @@ return [
         'since_value' => 'since :date',
         'asked_by' => 'Asked by',
         'answered_by' => 'Answered by',
+        'type' => 'Type',
+        'visibility' => 'Visibility',
     ],
 
     // One entry per NotificationType
@@ -271,9 +280,21 @@ return [
             'label' => 'Student representative registration',
             'description' => 'When someone registers to become a student representative in your unit.',
         ],
+        'support_request_created' => [
+            'label' => 'New support request',
+            'description' => 'When someone submits a support request. Sent to platform administrators.',
+        ],
+        'support_request_assigned' => [
+            'label' => 'Support request assigned to you',
+            'description' => 'When you are made responsible for a support request.',
+        ],
+        'support_request_involved' => [
+            'label' => 'Added to a support request',
+            'description' => 'When you are marked as one of the people involved in a support request.',
+        ],
         'support_request_status_changed' => [
             'label' => 'Support request status',
-            'description' => 'When the status of a support request you submitted changes.',
+            'description' => 'When the status of a support request you submitted or are involved in changes.',
         ],
     ],
 

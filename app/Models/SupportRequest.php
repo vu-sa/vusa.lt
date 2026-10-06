@@ -150,6 +150,19 @@ class SupportRequest extends Model implements Commentable, HasMedia
     }
 
     /**
+     * The people who triage the queue. No `supportRequests.*` permission is seeded, so in
+     * practice that is the super admins.
+     *
+     * @return Collection<int, User>
+     */
+    public static function managers(): Collection
+    {
+        return User::query()
+            ->whereHas('roles', fn (Builder $query) => $query->where('name', config('permission.super_admin_role_name')))
+            ->get();
+    }
+
+    /**
      * Members of the selected roles, directly or through a current duty. Empty unless the
      * request is shared with roles.
      *

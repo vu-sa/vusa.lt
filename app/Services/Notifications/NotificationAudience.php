@@ -7,6 +7,7 @@ use App\Enums\NotificationType;
 use App\Enums\Responsibility;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionSecretary;
+use App\Models\SupportRequest;
 use App\Models\User;
 use App\Services\ResponsibilityResolver;
 use App\Settings\AtstovavimasSettings;
@@ -52,6 +53,7 @@ class NotificationAudience
             NotificationType::StudentRepRegistration => $this->coordinates($user),
             // Whoever may send "Ar vyko posėdis?" hears back when it reached the wrong person.
             NotificationType::InstitutionActivityNotMine => $user->can('viewAny', InstitutionCheckIn::class),
+            NotificationType::SupportRequestCreated => $user->can('viewAny', SupportRequest::class),
             default => true,
         };
     }

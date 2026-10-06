@@ -158,6 +158,13 @@ return [
     'action_view' => 'Peržiūrėti',
     'action_review' => 'Peržiūrėti',
 
+    'action_open_support_request' => 'Atverti užklausą',
+    'support_request_created_title' => 'Nauja pagalbos užklausa: :title',
+    'support_request_created_body' => ':user pateikė pagalbos užklausą „:title“.',
+    'support_request_assigned_title' => 'Tau priskirta užklausa: :title',
+    'support_request_assigned_body' => ':user paskyrė tave atsakingu už pagalbos užklausą „:title“.',
+    'support_request_involved_title' => 'Tave pridėjo prie užklausos: :title',
+    'support_request_involved_body' => ':user pridėjo tave prie pagalbos užklausos „:title“. Gali ją matyti ir komentuoti.',
     // Email footer: sign-off and "why you got this"
     'mail' => [
         'why_received' => 'Gavai šį laišką, nes pranešimų nustatymuose įjungei kategorijos „:category“ laiškus.',
@@ -187,6 +194,8 @@ return [
         'since_value' => 'nuo :date',
         'asked_by' => 'Klausia',
         'answered_by' => 'Atsakė',
+        'type' => 'Tipas',
+        'visibility' => 'Matomumas',
     ],
 
     // One entry per NotificationType
@@ -271,9 +280,21 @@ return [
             'label' => 'Studentų atstovo registracija',
             'description' => 'Kai kas nors užsiregistruoja tapti studentų atstovu tavo padalinyje.',
         ],
+        'support_request_created' => [
+            'label' => 'Nauja pagalbos užklausa',
+            'description' => 'Kai kas nors pateikia pagalbos užklausą. Gauna platformos administratoriai.',
+        ],
+        'support_request_assigned' => [
+            'label' => 'Tau priskirta pagalbos užklausa',
+            'description' => 'Kai tave paskiria atsakingu už pagalbos užklausą.',
+        ],
+        'support_request_involved' => [
+            'label' => 'Tave pridėjo prie pagalbos užklausos',
+            'description' => 'Kai tave pažymi susijusiu žmogumi pagalbos užklausoje.',
+        ],
         'support_request_status_changed' => [
             'label' => 'Pagalbos užklausos būsena',
-            'description' => 'Kai pasikeičia tavo pateiktos pagalbos užklausos būsena.',
+            'description' => 'Kai pasikeičia tavo pateiktos ar su tavimi susijusios pagalbos užklausos būsena.',
         ],
     ],
 
