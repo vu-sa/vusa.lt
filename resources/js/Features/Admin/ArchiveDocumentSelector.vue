@@ -1,7 +1,7 @@
 <template>
-  <div class="space-y-4" data-document-selector>
+  <div ref="containerRef" class="space-y-4" data-document-selector>
     <div class="space-y-2">
-      <Label for="document-search">Pasirinkite dokumentą</Label>
+      <Label for="document-search">Pasirink dokumentą</Label>
 
       <!-- Simple search input -->
       <div class="relative">
@@ -9,7 +9,7 @@
           id="document-search"
           v-model="http.search"
           type="text"
-          placeholder="Ieškokite dokumento..."
+          placeholder="Ieškok dokumento..."
           class="pr-10"
           @input="handleSearch"
         />
@@ -34,7 +34,7 @@
 
         <!-- Search hint -->
         <div v-else-if="documents.length === 0 && http.search.length === 0" class="p-3 text-sm text-muted-foreground">
-          Pradėkite rašyti, kad ieškoti dokumentų...
+          Pradėk rašyti, kad ieškoti dokumentų...
         </div>
 
         <!-- Results -->
@@ -50,7 +50,7 @@
 
           <!-- Show more hint if we hit the limit -->
           <div v-if="documents.length >= 20" class="border-t px-3 py-2 text-xs text-muted-foreground">
-            Rodoma 20 rezultatų. Patikslinkite paiešką daugiau rezultatų.
+            Rodoma 20 rezultatų. Patikslink paiešką daugiau rezultatų.
           </div>
         </div>
       </div>
@@ -81,8 +81,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onUnmounted } from 'vue';
 import { useHttp } from '@inertiajs/vue3';
+import { onClickOutside } from '@vueuse/core';
 import { Search as SearchIcon, X as XIcon } from 'lucide-vue-next';
 
 import { Button } from '@/Components/ui/button';
@@ -99,9 +100,14 @@ const emit = defineEmits<{
   submit: [url: string];
 }>();
 
+const containerRef = ref<HTMLElement | null>(null);
 const selectedDocument = ref<Document | null>(null);
 const documents = ref<Document[]>([]);
 const showResults = ref(false);
+
+onClickOutside(containerRef, () => {
+  showResults.value = false;
+});
 
 const http = useHttp({
   search: '',
@@ -168,21 +174,7 @@ function handleSubmit() {
   }
 }
 
-// Close dropdown when clicking outside
-function handleClickOutside(event: Event) {
-  const target = event.target as HTMLElement;
-  if (!target.closest('[data-document-selector]')) {
-    showResults.value = false;
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
-});
-
 onUnmounted(() => {
-  // Clean up event listener and timeout
-  document.removeEventListener('click', handleClickOutside);
   if (searchTimeout) {
     clearTimeout(searchTimeout);
   }

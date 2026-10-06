@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
  * News::saved() and Page::saved() push a record into the public index as soon as
  * it is saved — but a scheduled article's shouldBeSearchable() only flips from
  * false to true once its publish_time passes, and nothing re-saves the model when
- * that clock ticks over. Without this sweep, scheduled news/pages would never
+ * that clock ticks over. Without this sweep, scheduled news would never
  * appear in public search until someone happened to edit them again.
  *
  * Similarly, institution search documents embed active contacts and representatives.
@@ -45,8 +45,8 @@ class SyncPublicSearchIndex extends Command
 
     public function handle(): int
     {
-        $newsSynced = $this->sync(PublicNews::query()->with('tenant'));
-        $pagesSynced = $this->sync(PublicPage::query()->with('tenant'));
+        $newsSynced = $this->sync(PublicNews::query()->with('tenant'), scheduled: true);
+        $pagesSynced = $this->sync(PublicPage::query()->with('tenant'), scheduled: false);
         $institutionsSynced = $this->syncInstitutions();
 
         $this->info("Synced {$newsSynced} news, {$pagesSynced} page(s), and {$institutionsSynced} institution(s) with the public search index.");
@@ -56,14 +56,15 @@ class SyncPublicSearchIndex extends Command
 
     /**
      * @param  Builder<PublicNews>|Builder<PublicPage>  $query
+     * @param  bool  $scheduled  Whether the model has a publish_time that can cross the boundary.
      */
-    private function sync(Builder $query): int
+    private function sync(Builder $query, bool $scheduled): int
     {
         $synced = 0;
 
-        $query->where(function (Builder $q): void {
-            $q->whereBetween('publish_time', [now()->subHours(self::WINDOW_HOURS), now()->addHours(self::WINDOW_HOURS)])
-                ->orWhere('updated_at', '>=', now()->subHours(self::WINDOW_HOURS));
+        $query->where(function (Builder $q) use ($scheduled): void {
+            $q->where('updated_at', '>=', now()->subHours(self::WINDOW_HOURS))
+                ->when($scheduled, fn (Builder $q) => $q->orWhereBetween('publish_time', [now()->subHours(self::WINDOW_HOURS), now()->addHours(self::WINDOW_HOURS)]));
         })->chunkById(200, function ($models) use (&$synced): void {
             [$in, $out] = $models->partition(fn ($model) => $model->shouldBeSearchable());
 

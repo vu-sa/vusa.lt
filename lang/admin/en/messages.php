@@ -25,6 +25,8 @@ return [
         'f' => ':Model restored successfully.',
         'm' => ':Model restored successfully.',
     ],
+    'bulk_updated' => 'Records updated: :count.',
+    'bulk_deleted' => 'Records deleted: :count.',
     'users_attached_to_reservation' => 'Users attached to reservation!',
 
     'auth' => [
@@ -123,9 +125,14 @@ return [
     ],
 
     'task' => [
-        'automatic_not_deletable' => 'This task completes automatically and cannot be deleted.',
         'automatic_not_markable' => 'This task completes automatically and cannot be marked manually.',
         'status_updated' => 'Task status updated successfully.',
+    ],
+
+    'system_maintenance' => [
+        'done' => 'Done.',
+        'queued' => 'The task is queued and will run within a few minutes.',
+        'failed' => 'The action failed. Check the log.',
     ],
 
     'mail_queue' => [
@@ -161,5 +168,12 @@ return [
         'file_deleted' => 'File deleted.',
         'invalid_request' => 'Invalid request. Please report this to an administrator.',
         'deleted_locally_only' => 'The file was marked as deleted, but the SharePoint operation failed.',
+        'uploaded_many' => 'Files uploaded: :count.',
+        'uploaded_partially' => 'Uploaded :uploaded of :total. Failed: :failed.',
+        'upload_failed' => 'Could not upload: :failed.',
+        'link_failed' => 'Could not open the file. Try again or contact an administrator.',
+        'file_missing' => 'This file is no longer in SharePoint.',
+        'link_revoked' => 'The link no longer works. Opening the file creates a new one.',
+        'link_revoke_failed' => 'Could not revoke the link. Try again or contact an administrator.',
     ],
 ];

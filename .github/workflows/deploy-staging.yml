@@ -26,7 +26,7 @@ on:
 
 jobs:
   resolve:
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success') }}
     runs-on: ubuntu-24.04
     outputs:
       sha: ${{ steps.resolve.outputs.sha }}
@@ -85,3 +85,4 @@ jobs:
       run-backup: false
       # Staging switches between arbitrary branches, so it accumulates files from the ones it left.
       clean-untracked: true
+      docs-screenshots-branch: ${{ github.event.inputs.branch || github.event.workflow_run.head_branch || 'dev' }}

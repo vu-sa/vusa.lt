@@ -49,35 +49,27 @@ trait HasSharepointFiles
             ->exists();
     }
 
-    /**
-     * Check if this model has a protocol file.
-     */
     public function getHasProtocolAttribute(): bool
     {
-        // Use cached relationship if loaded
-        if ($this->relationLoaded('fileableFiles')) {
-            return $this->fileableFiles
-                ->where('file_type', FileableFile::TYPE_PROTOCOL)
-                ->whereNull('deleted_externally_at')
-                ->isNotEmpty();
-        }
-
-        return $this->hasFileOfType(FileableFile::TYPE_PROTOCOL);
+        return $this->hasAvailableFileOfType(FileableFile::TYPE_PROTOCOL);
     }
 
-    /**
-     * Check if this model has a report file.
-     */
     public function getHasReportAttribute(): bool
+    {
+        return $this->hasAvailableFileOfType(FileableFile::TYPE_REPORT);
+    }
+
+    /** Answers from the loaded relation when present, so listings stay free of N+1 queries. */
+    private function hasAvailableFileOfType(string $type): bool
     {
         if ($this->relationLoaded('fileableFiles')) {
             return $this->fileableFiles
-                ->where('file_type', FileableFile::TYPE_REPORT)
+                ->where('file_type', $type)
                 ->whereNull('deleted_externally_at')
                 ->isNotEmpty();
         }
 
-        return $this->hasFileOfType(FileableFile::TYPE_REPORT);
+        return $this->hasFileOfType($type);
     }
 
     /**

@@ -17,7 +17,7 @@ beforeEach(function (): void {
     $this->user = makeUser($this->tenant);
 
     $this->resourceManager = makeUser($this->tenant);
-    $this->resourceManager->duties()->first()->assignRole('Resource Manager');
+    $this->resourceManager->duties()->first()->assignRole('Išteklių administratorius');
 
     $this->category = ResourceCategory::factory()->create();
     $this->resource = Resource::factory()->create([
@@ -60,6 +60,56 @@ describe('ApprovalController@store', function (): void {
             'decision' => ApprovalDecision::Approved->value,
             'user_id' => $this->resourceManager->id,
         ]);
+    });
+
+    test('resource manager can approve a reservation resource with a reduced quantity', function (): void {
+        $this->reservationResource->update(['quantity' => 3]);
+
+        asUser($this->resourceManager)
+            ->post(route('approvals.store'), [
+                'approvable_type' => 'reservation_resource',
+                'approvable_id' => (string) $this->reservationResource->id,
+                'decision' => 'approved',
+                'quantity' => 2,
+                'step' => 1,
+            ])
+            ->assertRedirect();
+
+        expect($this->reservationResource->fresh()->quantity)->toBe(2);
+
+        $this->assertDatabaseHas('approvals', [
+            'approvable_id' => (string) $this->reservationResource->id,
+            'decision' => ApprovalDecision::Approved->value,
+            'user_id' => $this->resourceManager->id,
+        ]);
+    });
+
+    test('partial approval rejects invalid quantities', function (): void {
+        $this->reservationResource->update(['quantity' => 3]);
+
+        asUser($this->resourceManager)
+            ->post(route('approvals.store'), [
+                'approvable_type' => 'reservation_resource',
+                'approvable_id' => (string) $this->reservationResource->id,
+                'decision' => 'approved',
+                'quantity' => 0,
+                'step' => 1,
+            ])
+            ->assertSessionHasErrors('quantity');
+
+        expect($this->reservationResource->fresh()->quantity)->toBe(3);
+
+        asUser($this->resourceManager)
+            ->post(route('approvals.store'), [
+                'approvable_type' => 'reservation_resource',
+                'approvable_id' => (string) $this->reservationResource->id,
+                'decision' => 'approved',
+                'quantity' => 5,
+                'step' => 1,
+            ])
+            ->assertSessionHas('error');
+
+        expect($this->reservationResource->fresh()->quantity)->toBe(3);
     });
 
     test('resource manager can reject a reservation resource', function (): void {
@@ -156,19 +206,16 @@ describe('ApprovalController@bulkStore', function (): void {
             'resource_category_id' => $this->category->id,
         ]);
 
-        $reservation2 = Reservation::factory()->create([
-            'start_time' => now()->addDays(2),
-            'end_time' => now()->addDays(2)->addHours(2),
-        ]);
-        $reservation2->resources()->attach($otherResource->id, [
+        // Same reservation as a managed item, so the manager may view it and only the approval check skips it.
+        $this->reservation->resources()->attach($otherResource->id, [
             'quantity' => 1,
-            'start_time' => $reservation2->start_time,
-            'end_time' => $reservation2->end_time,
+            'start_time' => $this->reservation->start_time,
+            'end_time' => $this->reservation->end_time,
             'state' => 'created',
         ]);
 
         $otherReservationResource = ReservationResource::query()
-            ->where('reservation_id', $reservation2->id)
+            ->where('reservation_id', $this->reservation->id)
             ->where('resource_id', $otherResource->id)
             ->first();
 
@@ -307,5 +354,84 @@ describe('ApprovalController@backtrack', function (): void {
             ->assertJsonPath('data.0.id', $approval->id)
             ->assertJsonPath('data.0.reverted_by.id', $this->resourceManager->id)
             ->assertJsonPath('data.0.reversion_notes', 'Wrong resource');
+    });
+});
+
+describe('ApprovalController@resolve', function (): void {
+    beforeEach(function (): void {
+        $this->foreignResource = Resource::factory()->for(Tenant::factory()->create())->create();
+    });
+
+    /** A fresh reservation whose only item is in the given state. */
+    $pivotIn = function (Resource $resource, string $state): ReservationResource {
+        $reservation = Reservation::factory()->create();
+        $reservation->resources()->attach($resource->id, [
+            'quantity' => 1,
+            'start_time' => now()->subDay(),
+            'end_time' => now()->addDays(3),
+            'state' => $state,
+        ]);
+
+        return $reservation->resources->first()->pivot;
+    };
+
+    test('drives a pending resource straight to returned in one request', function () use ($pivotIn): void {
+        $pivot = $pivotIn($this->resource, 'created');
+
+        asUser($this->resourceManager)->post(route('approvals.resolve'), [
+            'approvable_type' => 'reservation_resource',
+            'approvable_ids' => [(string) $pivot->id],
+            'notes' => 'Never collected, closing out.',
+        ])->assertRedirect();
+
+        $pivot->refresh();
+
+        expect($pivot->state->getValue())->toBe('returned')
+            ->and($pivot->returned_at)->not->toBeNull();
+        // Fast-forwarding must not skip the audit trail: created→reserved→lent→returned.
+        expect($pivot->approvals()->count())->toBe(3);
+        expect($pivot->approvals()->first()->notes)->toBe('Never collected, closing out.');
+    });
+
+    test('resolves a lent resource with the single remaining step', function () use ($pivotIn): void {
+        $pivot = $pivotIn($this->resource, 'lent');
+
+        asUser($this->resourceManager)->post(route('approvals.resolve'), [
+            'approvable_type' => 'reservation_resource',
+            'approvable_ids' => [(string) $pivot->id],
+        ])->assertRedirect();
+
+        $pivot->refresh();
+
+        expect($pivot->state->getValue())->toBe('returned')
+            ->and($pivot->approvals()->count())->toBe(1);
+    });
+
+    test('refuses to resolve a resource belonging to a tenant the user does not manage', function () use ($pivotIn): void {
+        $pivot = $pivotIn($this->foreignResource, 'created');
+
+        asUser($this->resourceManager)->post(route('approvals.resolve'), [
+            'approvable_type' => 'reservation_resource',
+            'approvable_ids' => [(string) $pivot->id],
+        ])->assertForbidden();
+
+        $pivot->refresh();
+
+        expect($pivot->state->getValue())->toBe('created')
+            ->and($pivot->approvals()->count())->toBe(0);
+    });
+
+    test('leaves an already terminal resource untouched', function () use ($pivotIn): void {
+        $pivot = $pivotIn($this->resource, 'returned');
+
+        asUser($this->resourceManager)->post(route('approvals.resolve'), [
+            'approvable_type' => 'reservation_resource',
+            'approvable_ids' => [(string) $pivot->id],
+        ])->assertRedirect();
+
+        $pivot->refresh();
+
+        expect($pivot->state->getValue())->toBe('returned')
+            ->and($pivot->approvals()->count())->toBe(0);
     });
 });

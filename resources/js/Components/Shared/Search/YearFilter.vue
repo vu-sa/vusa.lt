@@ -22,7 +22,7 @@
           isSelected(item.value) ? 'text-primary-foreground/80' : 'text-muted-foreground',
         ]"
       >
-        ({{ item.count }})
+        ({{ item.count ?? '–' }})
       </span>
     </button>
 

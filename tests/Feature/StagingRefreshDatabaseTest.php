@@ -1,9 +1,11 @@
 <?php
 
+use App\Models\FileableFile;
 use App\Models\Navigation;
 use App\Models\QuickLink;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\StagingAccountScrubber;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -130,6 +132,30 @@ describe('scrubbing personal data', function (): void {
         expect($kept->refresh()->email)->toBe('keep@vusa.lt');
     });
 
+    test('temporary email preservation still clears phones and remember tokens', function (): void {
+        $user = User::factory()->create([
+            'email' => 'student@stud.vu.lt',
+            'phone' => '+37060000000',
+            'remember_token' => 'production-token',
+        ]);
+
+        app(StagingAccountScrubber::class)->scrub(true);
+
+        expect($user->refresh()->email)->toBe('student@stud.vu.lt')
+            ->and($user->phone)->toBeNull()
+            ->and($user->remember_token)->toBeNull();
+    });
+
+    test('scrub-only rewrites emails even when temporary preservation is enabled', function (): void {
+        config(['app.staging_refresh.preserve_account_emails' => true]);
+        $user = User::factory()->create(['email' => 'student@stud.vu.lt']);
+
+        $this->artisan('staging:refresh-database', ['--scrub-only' => true, '--skip-reindex' => true])
+            ->assertExitCode(0);
+
+        expect($user->refresh()->email)->toBe("user{$user->id}@staging.invalid");
+    });
+
     test('it leaves no address that could reach a real person', function (): void {
         User::factory()->create(['email' => 'a@stud.vu.lt']);
         User::factory()->create(['email' => 'b@vusa.lt']);
@@ -172,6 +198,19 @@ describe('scrubbing personal data', function (): void {
         expect(DB::table('notifications')->count())->toBe(0)
             ->and(DB::table('push_subscriptions')->count())->toBe(0);
     });
+
+    test('it empties production fileable files only when staging SharePoint is writable', function (bool $readOnly, int $remaining): void {
+        config(['app.sharepoint_read_only' => $readOnly]);
+        FileableFile::factory()->create();
+
+        $this->artisan('staging:refresh-database', ['--scrub-only' => true, '--skip-reindex' => true])
+            ->assertExitCode(0);
+
+        expect(DB::table('fileable_files')->count())->toBe($remaining);
+    })->with([
+        'writable test site' => [false, 0],
+        'read-only' => [true, 1],
+    ]);
 
     test('it empties Telescope tables with a foreign-key relationship', function (): void {
         Schema::drop('telescope_entries_tags');

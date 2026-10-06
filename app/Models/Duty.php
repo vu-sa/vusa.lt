@@ -2,16 +2,20 @@
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
+use App\Models\Pivots\DutyDutyType;
+use App\Models\Traits\HasComments;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\ContactSearchIndexSynchronizer;
+use App\Services\Typesense\SearchText;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
@@ -50,7 +54,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read Collection<int, Tenant> $assignableTenants
  * @property-read Collection<int, FileableFile> $availableFiles
- * @property-read Typeable|Dutiable|null $pivot
+ * @property-read Collection<int, Comment> $comments
+ * @property-read DutyDutyType|Dutiable|null $pivot
  * @property-read Collection<int, User> $current_users
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $exOfficioSourceDuties
@@ -68,12 +73,14 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, User> $previous_users
  * @property-read Collection<int, Reservation> $reservations
  * @property-read Collection<int, \App\Models\Resource> $resources
+ * @property-read Collection<int, DutyResponsibility> $responsibilities
  * @property-read Collection<int, Role> $roles
+ * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Permission> $teams
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
- * @property-read Collection<int, Type> $types
+ * @property-read Collection<int, DutyType> $types
  * @property-read Collection<int, User> $users
  * @property-read int|null $tenants_count
  * @property-read int|null $meetings_count
@@ -106,9 +113,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
     'name', 'description', 'email', 'phone', 'order', 'is_active', 'institution_id', 'contacts_grouping', 'places_to_occupy',
 ])]
 #[Unguarded]
-class Duty extends Model implements AuthorizableContract, GuardsForceDelete, SharepointFileableContract
+class Duty extends Model implements AuthorizableContract, Commentable, GuardsForceDelete, SharepointFileableContract
 {
-    use Authorizable, HasFactory, HasRelationships, HasRoles, HasSharepointFiles, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Notifiable, Searchable, SoftDeletes;
+    use Authorizable, HasComments, HasFactory, HasRelationships, HasRoles, HasSharepointFiles, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Notifiable, Searchable, SoftDeletes;
 
     // Note: types are NOT auto-loaded to prevent N+1 in collections.
     // Load explicitly where needed: ->with('duties.types') or ->load('types').
@@ -162,6 +169,7 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
             ->get(['users.id', 'name']);
 
         return [
+            ...SearchText::forModel($this),
             'id' => (string) $this->id,
             'name_lt' => $this->getTranslation('name', 'lt') ?? '',
             'name_en' => $this->getTranslation('name', 'en'),
@@ -173,7 +181,7 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
             'institution_name_lt' => $this->institution?->getTranslation('name', 'lt'),
             'institution_name_en' => $this->institution?->getTranslation('name', 'en'),
             'type_titles' => $this->types
-                ->map(fn (Type $type) => $type->getTranslation('title', 'lt'))
+                ->map(fn (DutyType $type) => $type->getTranslation('title', 'lt'))
                 ->filter()
                 ->values()
                 ->all(),
@@ -236,7 +244,7 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
                 $query->whereDate('dutiables.start_date', '<=', now()->toDateString())
                     ->where(function ($q): void {
                         $q->whereNull('dutiables.end_date')
-                            ->orWhere('dutiables.end_date', '>=', now());
+                            ->orWhereDate('dutiables.end_date', '>=', today());
                     });
             })
             ->withTimestamps();
@@ -247,14 +255,24 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
         return $this->users()
             ->where(function ($query): void {
                 $query->whereNotNull('dutiables.end_date')
-                    ->where('dutiables.end_date', '<', now());
+                    ->whereDate('dutiables.end_date', '<', today());
             })
             ->withTimestamps();
     }
 
-    public function types(): MorphToMany
+    /**
+     * What this duty must handle, as opposed to what its roles allow it to do.
+     *
+     * @return HasMany<DutyResponsibility, $this>
+     */
+    public function responsibilities(): HasMany
     {
-        return $this->morphToMany(Type::class, 'typeable')->using(Typeable::class)->withPivot(['typeable_type']);
+        return $this->hasMany(DutyResponsibility::class);
+    }
+
+    public function types(): BelongsToMany
+    {
+        return $this->belongsToMany(DutyType::class)->using(DutyDutyType::class);
     }
 
     public function institution(): BelongsTo

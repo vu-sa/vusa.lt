@@ -1,13 +1,21 @@
 <template>
   <div class="space-y-4">
-    <div v-if="enableFiltering || enableColumnVisibility || (showSelectionCount && enableRowSelection && table.getSelectedRowModel().rows.length > 0)" class="flex flex-wrap items-center justify-between gap-2 w-full">
+    <div
+      v-if="enableFiltering || enableColumnVisibility || (showSelectionCount && enableRowSelection && table.getSelectedRowModel().rows.length > 0)"
+      class="flex w-full flex-wrap items-center justify-between gap-2"
+    >
       <div class="flex flex-wrap items-center gap-2">
         <!-- Show selection count when rows are selected (opt-in) -->
-        <div v-if="showSelectionCount && enableRowSelection && table.getSelectedRowModel().rows.length > 0" class="bg-muted rounded-md px-2 py-1 text-sm flex items-center">
-          {{ $t('tables.selected') }}: {{ table.getSelectedRowModel().rows.length }}
-          <Button variant="ghost" size="sm" class="ml-2 h-6 w-6 p-0" @click="table.resetRowSelection()">
+        <div
+          v-if="showSelectionCount && enableRowSelection && table.getSelectedRowModel().rows.length > 0"
+          class="inline-flex items-center gap-2 border border-border bg-secondary/50 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-foreground"
+        >
+          <span>
+            {{ $t('tables.selected') }}: <span class="tabular-nums text-brand">{{ table.getSelectedRowModel().rows.length }}</span>
+          </span>
+          <Button variant="ghost" size="sm" class="size-6 p-0" @click="table.resetRowSelection()">
             <span class="sr-only">{{ $t('tables.clear_selection') }}</span>
-            &times;
+            <span aria-hidden="true" class="text-base leading-none">&times;</span>
           </Button>
         </div>
 
@@ -30,12 +38,12 @@
         <DropdownMenu v-if="false">
           <DropdownMenuTrigger as-child>
             <Button variant="outline" size="sm" class="ml-auto">
-              <SlidersIcon class="mr-2 h-4 w-4" />
+              <Sliders class="mr-2 size-4" />
               {{ $t('tables.columns') }}
-              <ChevronDownIcon class="ml-2 h-4 w-4" />
+              <ChevronDown class="ml-2 size-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" class="bg-popover border border-border bg-white dark:bg-zinc-800">
+          <DropdownMenuContent align="end" class="bg-popover border border-border">
             <DropdownMenuCheckboxItem
               v-for="column in table.getAllColumns().filter((column) => column.getCanHide())"
               :key="column.id"
@@ -50,7 +58,7 @@
       </div>
     </div>
 
-    <div class="border rounded-md flex flex-col">
+    <div class="flex flex-col border border-border" data-slot="data-table">
       <div ref="tableScrollRef" class="w-full overflow-auto max-h-[50vh] md:max-h-[calc(100vh-360px)]">
         <Table class="w-full table-fixed isolate">
           <TableHeader>
@@ -58,23 +66,35 @@
               <TableHead
                 v-for="header in headerGroup.headers"
                 :key="header.id"
-                class="sticky top-0 z-10 bg-zinc-100 dark:bg-zinc-800 border-b border-border shadow-xs"
+                class="sticky top-0 z-10 border-b border-border bg-secondary/80 backdrop-blur-xs"
                 :class="{
-                  'cursor-pointer select-none hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors': header.column.getCanSort(),
-                  'bg-zinc-50 dark:bg-zinc-700': header.column.getIsSorted()
+                  'cursor-pointer select-none hover:bg-secondary transition-colors': header.column.getCanSort(),
                 }"
                 :style="{ width: header.column.columnDef.size ? `${header.column.columnDef.size}px` : 'auto' }"
-                @click="header.column.getToggleSortingHandler()?.({})"
+                :aria-sort="header.column.getIsSorted() ? (header.column.getIsSorted() === 'asc' ? 'ascending' : 'descending') : undefined"
+                @click="header.column.getCanSort() ? header.column.getToggleSortingHandler()?.($event) : undefined"
               >
                 <div class="flex items-center justify-between">
-                  <FlexRender
-                    v-if="!header.isPlaceholder" :render="header.column.columnDef.header"
-                    :props="header.getContext()"
-                  />
-                  <!-- Sorting indicators -->
-                  <div v-if="header.column.getCanSort() && header.column.getIsSorted()" class="flex items-center ml-1.5">
-                    <ChevronUpIcon v-if="header.column.getIsSorted() === 'asc'" class="size-3.5 text-primary" />
-                    <ChevronDownIcon v-else-if="header.column.getIsSorted() === 'desc'" class="size-3.5 text-primary" />
+                  <button
+                    v-if="header.column.getCanSort()"
+                    type="button"
+                    tabindex="-1"
+                    :class="[
+                      '-mx-1 inline-flex w-full items-center justify-between gap-1 px-1',
+                      'uppercase tracking-[inherit] hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring',
+                    ]"
+                  >
+                    <span class="truncate">
+                      <FlexRender v-if="!header.isPlaceholder" :header />
+                    </span>
+                    <span class="inline-flex shrink-0 items-center ml-1.5">
+                      <ArrowUp v-if="header.column.getIsSorted() === 'asc'" class="size-3.5 text-brand" aria-hidden="true" />
+                      <ArrowDown v-else-if="header.column.getIsSorted() === 'desc'" class="size-3.5 text-brand" aria-hidden="true" />
+                      <ArrowUpDown v-else class="size-3.5 opacity-50" aria-hidden="true" />
+                    </span>
+                  </button>
+                  <div v-else class="truncate">
+                    <FlexRender v-if="!header.isPlaceholder" :header />
                   </div>
                 </div>
               </TableHead>
@@ -83,11 +103,12 @@
           <TableBody>
             <template v-if="table.getRowModel().rows?.length">
               <TableRow
-                v-for="row in table.getRowModel().rows" :key="row.id"
+                v-for="row in table.getRowModel().rows"
+                :key="row.id"
                 :data-state="row.getIsSelected() ? 'selected' : undefined"
                 :class="[
+                  'group border-b border-border/60 transition-colors last:border-b-0 hover:bg-secondary/40 data-[state=selected]:bg-brand/5',
                   rowClassName ? rowClassName(row.original) : '',
-                  row.getIsSelected() ? 'bg-muted/50' : ''
                 ]"
               >
                 <TableCell
@@ -96,7 +117,7 @@
                   class="min-w-0"
                   :style="{ width: cell.column.columnDef.size ? `${cell.column.columnDef.size}px` : 'auto' }"
                 >
-                  <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+                  <FlexRender :cell />
                 </TableCell>
               </TableRow>
             </template>
@@ -115,45 +136,45 @@
 
       <!-- Use custom pagination slot if available (for server-side mode) -->
       <slot name="pagination">
-        <div v-if="pagination === true && table.getPageCount() > 1" class="flex flex-nowrap items-center justify-between gap-4 py-2 px-3 border-t overflow-hidden">
+        <div v-if="pagination === true && table.getPageCount() > 1" class="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-secondary/20 px-4 py-2.5">
           <div class="text-xs text-muted-foreground shrink-0 tabular-nums">
-            {{ table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1 }}
+            {{ paginationState.pageIndex * paginationState.pageSize + 1 }}
             –
-            {{ Math.min((table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize, table.getPrePaginationRowModel().rows.length) }}
-            / {{ table.getPrePaginationRowModel().rows.length }}
+            {{ Math.min((paginationState.pageIndex + 1) * paginationState.pageSize, table.getRowCount()) }}
+            / {{ table.getRowCount() }}
           </div>
           <Pagination
-            :items-per-page="table.getState().pagination.pageSize"
-            :total="table.getPrePaginationRowModel().rows.length"
+            :items-per-page="paginationState.pageSize"
+            :total="table.getRowCount()"
             class="min-w-0"
           >
             <PaginationContent class="gap-1">
               <PaginationItem :value="1">
-                <PaginationFirst :disabled="!table.getCanPreviousPage()" size="icon" @click="table.setPageIndex(0)">
-                  <ChevronsLeftIcon class="h-4 w-4" />
+                <PaginationFirst :disabled="!table.getCanPreviousPage()" size="icon-sm" @click="table.setPageIndex(0)">
+                  <ChevronsLeft class="size-4" />
                   <span class="sr-only">{{ $t('tables.first_page') }}</span>
                 </PaginationFirst>
               </PaginationItem>
-              <PaginationItem :value="table.getState().pagination.pageIndex">
-                <PaginationPrevious :disabled="!table.getCanPreviousPage()" size="icon" @click="table.previousPage()">
-                  <ChevronLeftIcon class="h-4 w-4" />
+              <PaginationItem :value="paginationState.pageIndex">
+                <PaginationPrevious :disabled="!table.getCanPreviousPage()" size="icon-sm" @click="table.previousPage()">
+                  <ChevronLeft class="size-4" />
                   <span class="sr-only">{{ $t('tables.previous_page') }}</span>
                 </PaginationPrevious>
               </PaginationItem>
 
-              <div class="flex items-center text-xs font-medium px-2 tabular-nums">
-                {{ table.getState().pagination.pageIndex + 1 }} / {{ table.getPageCount() }}
+              <div class="flex items-center text-xs font-bold px-2 tabular-nums">
+                {{ paginationState.pageIndex + 1 }} / {{ table.getPageCount() }}
               </div>
 
-              <PaginationItem :value="table.getState().pagination.pageIndex + 2">
-                <PaginationNext :disabled="!table.getCanNextPage()" size="icon" @click="table.nextPage()">
-                  <ChevronRightIcon class="h-4 w-4" />
+              <PaginationItem :value="paginationState.pageIndex + 2">
+                <PaginationNext :disabled="!table.getCanNextPage()" size="icon-sm" @click="table.nextPage()">
+                  <ChevronRight class="size-4" />
                   <span class="sr-only">{{ $t('tables.next_page') }}</span>
                 </PaginationNext>
               </PaginationItem>
               <PaginationItem :value="table.getPageCount()">
-                <PaginationLast :disabled="!table.getCanNextPage()" size="icon" @click="table.setPageIndex(table.getPageCount() - 1)">
-                  <ChevronsRightIcon class="h-4 w-4" />
+                <PaginationLast :disabled="!table.getCanNextPage()" size="icon-sm" @click="table.setPageIndex(table.getPageCount() - 1)">
+                  <ChevronsRight class="size-4" />
                   <span class="sr-only">{{ $t('tables.last_page') }}</span>
                 </PaginationLast>
               </PaginationItem>
@@ -166,24 +187,38 @@
 </template>
 
 <script setup lang="tsx" generic="TData, TValue">
-import type { ColumnDef, SortingState, VisibilityState, PaginationState, RowSelectionState } from '@tanstack/vue-table';
 import {
+  columnFilteringFeature,
+  columnVisibilityFeature,
+  createFilteredRowModel,
+  createPaginatedRowModel,
+  createSortedRowModel,
+  filterFn_includesString,
+  globalFilteringFeature,
+  rowPaginationFeature,
+  rowSelectionFeature,
+  rowSortingFeature,
+  tableFeatures,
+  useTable,
   FlexRender,
-  getCoreRowModel,
-  getSortedRowModel,
-  getPaginationRowModel,
-  getFilteredRowModel,
-  useVueTable,
+  type ColumnDef,
+  type PaginationState,
+  type RowSelectionState,
+  type SortingState,
+  type VisibilityState,
 } from '@tanstack/vue-table';
-import { ref, watch, computed, nextTick, onMounted } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  SlidersIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronsRightIcon,
-  ChevronsLeftIcon,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Sliders,
+  X,
 } from 'lucide-vue-next';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -198,7 +233,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  TableEmpty } from '@/Components/ui/table';
+} from '@/Components/ui/table';
 import {
   Pagination,
   PaginationContent,
@@ -207,11 +242,11 @@ import {
   PaginationPrevious,
   PaginationFirst,
   PaginationLast,
-  PaginationEllipsis,
 } from '@/Components/ui/pagination';
 
 const props = defineProps<{
-  columns: ColumnDef<TData, TValue>[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  columns: ColumnDef<any, TData, TValue>[];
   data: TData[];
   rowClassName?: (row: TData) => string;
   pageSize?: number;
@@ -229,10 +264,12 @@ const props = defineProps<{
   rowCount?: number;
   pageCount?: number;
   // Row selection props
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   enableRowSelection?: boolean | ((row: any) => boolean);
   enableMultiRowSelection?: boolean;
   initialRowSelection?: RowSelectionState;
   rowSelectionState?: RowSelectionState;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getRowId?: (originalRow: TData, index: number, parent?: any) => string;
   enableRowSelectionColumn?: boolean;
   showSelectionCount?: boolean;
@@ -245,9 +282,23 @@ const emit = defineEmits([
   'update:rowSelection',
 ]);
 
+const features = tableFeatures({
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  columnFilteringFeature,
+  filteredRowModel: createFilteredRowModel(),
+  globalFilteringFeature,
+  filterFns: {
+    includesString: filterFn_includesString,
+  },
+  rowPaginationFeature,
+  paginatedRowModel: createPaginatedRowModel(),
+  rowSelectionFeature,
+  columnVisibilityFeature,
+});
+
 // Use external sorting if provided, otherwise use initialSort or empty array
 const sorting = ref<SortingState>(props.externalSorting || props.initialSort || []);
-// TODO: doesn't work for client-side tables
 const globalFilter = ref(props.globalFilter || '');
 const columnVisibility = ref<VisibilityState>({});
 const rowSelection = ref<RowSelectionState>(props.rowSelectionState || props.initialRowSelection || {});
@@ -317,19 +368,23 @@ watch(() => props.rowSelectionState, (newVal) => {
 }, { immediate: true });
 
 // Generate a selection column definition
-const selectionColumn = computed<ColumnDef<TData, any>>(() => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const selectionColumn = computed<ColumnDef<typeof features, TData, any>>(() => {
   return {
     id: 'select',
-    header: ({ table }) => (
-      <div class="px-1">
-        <Checkbox
-          modelValue={table.getIsAllPageRowsSelected()}
-          onUpdate:modelValue={value => table.toggleAllPageRowsSelected(!!value)}
-          aria-label={$t('tables.select_all')}
-          class="data-[state=checked]:bg-primary"
-        />
-      </div>
-    ),
+    header: ({ table }) => {
+      const allSelected = table.getIsAllPageRowsSelected();
+      const someSelected = table.getIsSomePageRowsSelected() && !allSelected;
+      return (
+        <div class="px-1">
+          <Checkbox
+            modelValue={allSelected ? true : someSelected ? 'indeterminate' : false}
+            onUpdate:modelValue={value => table.toggleAllPageRowsSelected(!!value)}
+            aria-label={$t('tables.select_all')}
+          />
+        </div>
+      );
+    },
     cell: ({ row }) => (
       <div class="px-1">
         <Checkbox
@@ -337,7 +392,6 @@ const selectionColumn = computed<ColumnDef<TData, any>>(() => {
           onUpdate:modelValue={value => row.toggleSelected(!!value)}
           aria-label={$t('tables.select_row')}
           disabled={!row.getCanSelect()}
-          class="data-[state=checked]:bg-primary"
         />
       </div>
     ),
@@ -355,104 +409,74 @@ const tableColumns = computed(() => {
   return props.columns;
 });
 
-// Table options
-const tableOptions = computed(() => {
-  const options = {
-    get data() { return props.data; },
-    get columns() { return tableColumns.value; },
-    getCoreRowModel: getCoreRowModel(),
-
-    onSortingChange: (updaterOrValue) => {
-      if (typeof updaterOrValue === 'function') {
-        sorting.value = updaterOrValue(sorting.value);
-      }
-      else {
-        sorting.value = updaterOrValue;
-      }
-      emit('update:sorting', sorting.value);
-    },
-
-    onPaginationChange: (updaterOrValue) => {
-      if (typeof updaterOrValue === 'function') {
-        paginationState.value = updaterOrValue(paginationState.value);
-      }
-      else {
-        paginationState.value = updaterOrValue;
-      }
-      emit('update:pagination', paginationState.value);
-    },
-
-    onColumnVisibilityChange: (updaterOrValue) => {
-      if (typeof updaterOrValue === 'function') {
-        columnVisibility.value = updaterOrValue(columnVisibility.value);
-      }
-      else {
-        columnVisibility.value = updaterOrValue;
-      }
-    },
-
-    onGlobalFilterChange: (value) => {
-      globalFilter.value = value;
-      emit('update:global-filter', value);
-    },
-
-    onRowSelectionChange: (updaterOrValue) => {
-      if (typeof updaterOrValue === 'function') {
-        rowSelection.value = updaterOrValue(rowSelection.value);
-      }
-      else {
-        rowSelection.value = updaterOrValue;
-      }
-      emit('update:rowSelection', rowSelection.value);
-    },
-
-    state: {
-      get sorting() { return sorting.value; },
-      get globalFilter() { return globalFilter.value; },
-      get columnVisibility() { return columnVisibility.value; },
-      get pagination() { return paginationState.value; },
-      get rowSelection() { return rowSelection.value; },
-    },
-
-    // Row selection options - support both boolean and function
-    enableRowSelection: typeof props.enableRowSelection === 'function'
-      ? props.enableRowSelection
-      : props.enableRowSelection,
-    enableMultiRowSelection: props.enableMultiRowSelection !== false, // Default to true if not specified
-    getRowId: props.getRowId, // Custom row ID function if provided
-
-    // Manual flags for server-side operations
-    manualSorting: props.manualSorting || false,
-    manualFiltering: props.manualFiltering || false,
-    manualPagination: props.manualPagination || false,
-
-    // Total counts for pagination
-    pageCount: props.pageCount,
-    rowCount: props.rowCount,
-
-    // Define global filter function - default is text-based filtering
-    globalFilterFn: 'includesString',
-  };
-
-  // Include getFilteredRowModel only when not using manual filtering
-  if (!props.manualFiltering) {
-    options.getFilteredRowModel = getFilteredRowModel();
-  }
-
-  // Only include getSortedRowModel when NOT using manual sorting
-  if (!props.manualSorting) {
-    options.getSortedRowModel = getSortedRowModel();
-  }
-
-  // Only include pagination when needed and not manual
-  if (props.pagination && !props.manualPagination) {
-    options.getPaginationRowModel = getPaginationRowModel();
-  }
-
-  return options;
+const table = useTable<typeof features, TData>({
+  features,
+  get data() { return props.data; },
+  get columns() { return tableColumns.value; },
+  manualSorting: props.manualSorting || false,
+  manualFiltering: props.manualFiltering || false,
+  manualPagination: props.manualPagination || false,
+  pageCount: props.pageCount,
+  rowCount: props.rowCount,
+  enableRowSelection: typeof props.enableRowSelection === 'function'
+    ? props.enableRowSelection
+    : props.enableRowSelection,
+  enableMultiRowSelection: props.enableMultiRowSelection !== false,
+  getRowId: props.getRowId,
+  globalFilterFn: 'includesString',
+  state: {
+    get sorting() { return sorting.value; },
+    get globalFilter() { return globalFilter.value; },
+    get columnVisibility() { return columnVisibility.value; },
+    get pagination() { return paginationState.value; },
+    get rowSelection() { return rowSelection.value; },
+  },
+  onSortingChange: (updaterOrValue) => {
+    if (typeof updaterOrValue === 'function') {
+      sorting.value = updaterOrValue(sorting.value);
+    }
+    else {
+      sorting.value = updaterOrValue;
+    }
+    emit('update:sorting', sorting.value);
+  },
+  onPaginationChange: (updaterOrValue) => {
+    if (typeof updaterOrValue === 'function') {
+      paginationState.value = updaterOrValue(paginationState.value);
+    }
+    else {
+      paginationState.value = updaterOrValue;
+    }
+    emit('update:pagination', paginationState.value);
+  },
+  onColumnVisibilityChange: (updaterOrValue) => {
+    if (typeof updaterOrValue === 'function') {
+      columnVisibility.value = updaterOrValue(columnVisibility.value);
+    }
+    else {
+      columnVisibility.value = updaterOrValue;
+    }
+  },
+  onGlobalFilterChange: (value) => {
+    globalFilter.value = value;
+    emit('update:global-filter', value);
+  },
+  onRowSelectionChange: (updaterOrValue) => {
+    if (typeof updaterOrValue === 'function') {
+      rowSelection.value = updaterOrValue(rowSelection.value);
+    }
+    else {
+      rowSelection.value = updaterOrValue;
+    }
+    emit('update:rowSelection', rowSelection.value);
+  },
 });
 
-const table = useVueTable(tableOptions.value);
+// Backward compatibility aliases for v8
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(table as any).getPrePaginationRowModel = table.getPrePaginatedRowModel;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(table as any).getState = () => table.store.get();
 
 watch(() => props.pageSize, (newVal) => {
   if (newVal && !props.manualPagination) {

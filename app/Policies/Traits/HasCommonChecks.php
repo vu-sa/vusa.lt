@@ -63,23 +63,17 @@ trait HasCommonChecks
         }
 
         // Check for "own" scope - user's duties directly associated with the model
-        $ownScope = $authorizer->scope($user, $permissionBase.PermissionScopeEnum::OWN->label());
+        $ownPermission = $permissionBase.PermissionScopeEnum::OWN->label();
+        $ownScope = $authorizer->scope($user, $ownPermission);
 
         if ($ownScope->granted) {
             $permissableDuties = $ownScope->duties;
             $relationFromDuties = $resource;
 
-            if ($resource === 'duties') {
-                $permissableModels = $permissableDuties;
-            } else {
-                $permissableModels = $permissableDuties->loadMissing($relationFromDuties)
-                    ->pluck($relationFromDuties)
-                    ->flatten()
-                    ->filter(); // Remove null values from duties without the related model
-            }
+            $allowedIds = $authorizer->ownModelIds($user, $ownPermission, $permissableDuties, $relationFromDuties);
 
             // Check for direct relationship
-            if ($permissableModels->contains('id', $model->getKey())) {
+            if ($allowedIds->contains($model->getKey())) {
                 return true;
             }
 
@@ -89,7 +83,8 @@ trait HasCommonChecks
             if ($resource === 'institutions' && $model instanceof Institution) {
                 // For each of the user's institutions, check if the target institution
                 // is in their authorized related institutions
-                foreach ($permissableModels as $userInstitution) {
+                $userInstitutions = $permissableDuties->loadMissing('institution')->pluck('institution')->filter();
+                foreach ($userInstitutions as $userInstitution) {
                     if ($userInstitution instanceof Institution) {
                         $authorizedRelated = RelationshipService::getRelatedInstitutions($userInstitution, authorizedOnly: true);
                         if ($authorizedRelated->contains('id', $model->getKey())) {
@@ -111,7 +106,7 @@ trait HasCommonChecks
             return false;
         }
 
-        // Scoped by current_duties only. Never resolve this from $user->tenants(), a
+        // Scoped by non-ended duties only. Never resolve this from $user->tenants(), a
         // HasManyDeep relation that includes every duty the user has ever held — an ended
         // duty would grant padalinys-scope access through this branch.
         $padalinysScope = $authorizer->scope($user, $permissionBase.PermissionScopeEnum::PADALINYS->label());

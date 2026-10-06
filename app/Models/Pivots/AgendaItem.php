@@ -9,11 +9,18 @@ use App\Models\AgendaItemNote;
 use App\Models\Comment;
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\Problem;
+use App\Models\PublicMeeting;
 use App\Models\Tenant;
 use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Vote;
+use App\Services\AgendaItemPresenter;
+use App\Services\MeetingCompletionService;
+use App\Services\Typesense\MeetingSearchEngine;
+use App\Services\Typesense\MeetingSearchLock;
+use App\Services\Typesense\SearchText;
 use App\Services\VoteStatisticsCalculator;
 use Database\Factories\AgendaItemFactory;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -24,12 +31,15 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
-use Laravel\Scout\EngineManager;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 use Laravel\Scout\Searchable;
+use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -46,6 +56,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property array|string|null $title
  * @property array|string|null $description
  * @property array|string|null $student_position
+ * @property bool $is_private
+ * @property array|string|null $public_title
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, Vote> $additionalVotes
  * @property-read Collection<int, Comment> $comments
@@ -54,10 +66,13 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Vote|null $mainVote
  * @property-read Meeting|null $meeting
  * @property-read AgendaItemNote|null $note
+ * @property-read Collection<int, Problem> $problems
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
  * @property-read Collection<int, Vote> $votes
+ * @property-read int|null $institutions_count
+ * @property-read int|null $tenants_count
  *
  * @method static \Database\Factories\AgendaItemFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem newModelQuery()
@@ -75,13 +90,77 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 #[Unguarded]
 class AgendaItem extends Pivot implements Commentable
 {
-    use HasComments, HasFactory, HasRelationships, HasTranslations, HasUlids, LogsModelActivity, Searchable;
+    use HasComments, HasFactory, HasRelationships, HasUlids, LogsModelActivity, Searchable;
+    use HasTranslations {
+        toArray as private translatedArray;
+        setAttribute as private translatedSetAttribute;
+    }
 
     #[\Override]
     public $incrementing = true;
 
     /** @var list<string> */
-    public $translatable = ['title', 'description', 'student_position'];
+    public $translatable = ['title', 'description', 'student_position', 'public_title'];
+
+    public function setAttribute($key, $value): static
+    {
+        if ($key === 'public_title' && $value === null) {
+            $this->setTranslations($key, []);
+
+            return $this;
+        }
+
+        return $this->translatedSetAttribute($key, $value);
+    }
+
+    /** Default serialization must be safe even when a new surface forgets its audience. */
+    public function toArray(): array
+    {
+        return $this->is_private ? AgendaItemPresenter::redacted($this) : $this->translatedArray();
+    }
+
+    public function toInternalArray(): array
+    {
+        return $this->translatedArray();
+    }
+
+    public function save(array $options = []): bool
+    {
+        return app(MeetingSearchLock::class)->run((string) $this->meeting_id, function () use ($options): bool {
+            $visibilityChanged = $this->isDirty('is_private');
+            $meeting = ($visibilityChanged || $this->is_private) ? $this->meeting : null;
+            $publicMeeting = $meeting ? PublicMeeting::query()->find($meeting->id) : null;
+
+            if ($visibilityChanged && $this->is_private && $this->exists) {
+                // Evict before writing: a failed search connection must not leave old public content.
+                $this->searchableUsing()->delete(new Collection([$this]));
+                if ($meeting) {
+                    $meeting->searchableUsing()->delete(new Collection([$meeting]));
+                }
+                if ($publicMeeting) {
+                    $publicMeeting->searchableUsing()->delete(new Collection([$publicMeeting]));
+                }
+            }
+
+            $saved = parent::save($options);
+
+            if ($saved && ($visibilityChanged || $this->is_private)) {
+                $this->searchableUsing()->update(new Collection([$this]));
+                if ($meeting) {
+                    $meeting->searchableUsing()->update(new Collection([$meeting]));
+                }
+                if ($publicMeeting?->shouldBeSearchable()) {
+                    $publicMeeting->searchableUsing()->update(new Collection([$publicMeeting]));
+                }
+            }
+
+            if ($saved && $visibilityChanged) {
+                $this->getConnection()->afterCommit(fn () => Cache::forever('agenda-privacy-version', (string) Str::uuid()));
+            }
+
+            return $saved;
+        });
+    }
 
     /**
      * English agenda items are the exception, not the rule. Falling back to Lithuanian keeps
@@ -104,6 +183,7 @@ class AgendaItem extends Pivot implements Commentable
         return [
             'type' => AgendaItemType::class,
             'brought_by_students' => 'boolean',
+            'is_private' => 'boolean',
         ];
     }
 
@@ -146,12 +226,17 @@ class AgendaItem extends Pivot implements Commentable
         return $this->hasOne(AgendaItemNote::class, 'agenda_item_id', 'id');
     }
 
-    public function institutions()
+    public function problems(): BelongsToMany
+    {
+        return $this->belongsToMany(Problem::class, 'agenda_item_problem', 'agenda_item_id', 'problem_id')->withTimestamps();
+    }
+
+    public function institutions(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->meeting(), (new Meeting)->institutions());
     }
 
-    public function tenants()
+    public function tenants(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->tenant());
     }
@@ -174,6 +259,7 @@ class AgendaItem extends Pivot implements Commentable
         // Load required relationships
         $this->loadMissing([
             'meeting.institutions.tenant',
+            'meeting.institutions.types',
             'votes',
         ]);
 
@@ -183,8 +269,9 @@ class AgendaItem extends Pivot implements Commentable
         /** @var Vote|null $mainVote */
         $mainVote = $this->votes->firstWhere('is_main', true);
 
-        // Calculate vote statistics from all votes
-        $voteStats = $this->calculateVoteStatistics();
+        // An item without a meeting has no institutions to exempt it, so it keeps the full rule.
+        $requiresStudentPerspective = $meeting instanceof Meeting ? $meeting->requiresStudentPerspective() : true;
+        $voteStats = $this->calculateVoteStatistics($requiresStudentPerspective);
 
         $type = $this->getAttribute('type');
         $typeValue = $type instanceof AgendaItemType ? $type->value : 'voting';
@@ -192,10 +279,12 @@ class AgendaItem extends Pivot implements Commentable
         // Build base array that is always returned (prevents false-positive schema
         // mismatches when the model is validated without a loaded meeting)
         $searchableArray = [
+            ...SearchText::forModel($this),
             'id' => $this->id,
             'title' => $this->getTranslation('title', 'lt'),
             'description' => $this->getTranslation('description', 'lt'),
             'order' => $this->order,
+            'is_private' => (bool) $this->is_private,
 
             // New fields
             'type' => $typeValue,
@@ -226,12 +315,12 @@ class AgendaItem extends Pivot implements Commentable
             'has_student_vote' => $voteStats['has_any_student_vote'],
             'has_decision' => $voteStats['has_any_decision'],
             'has_student_benefit' => $voteStats['has_any_student_benefit'],
-            'is_complete' => $voteStats['all_votes_complete'],
+            'is_complete' => app(MeetingCompletionService::class)->itemIsComplete($this, $requiresStudentPerspective),
 
             // Vote alignment (based on all votes) - boolean for Typesense compatibility
             'vote_matches' => $voteStats['vote_matches'] > 0,
             'vote_mismatches' => $voteStats['vote_mismatches'] > 0,
-            'vote_alignment_status' => $this->calculateVoteAlignmentStatus(),
+            'vote_alignment_status' => $this->calculateVoteAlignmentStatus($requiresStudentPerspective),
 
             // Tenant / institution context — always present (empty defaults) so the
             // document satisfies the required schema fields even for agenda items
@@ -242,6 +331,7 @@ class AgendaItem extends Pivot implements Commentable
             'institution_name_lt' => null,
             'institution_name_en' => null,
             'institution_ids' => [],
+            'institution_type_ids' => [],
 
             'created_at' => $this->created_at->timestamp,
             'updated_at' => $this->updated_at->timestamp,
@@ -281,6 +371,14 @@ class AgendaItem extends Pivot implements Commentable
 
                 // All institutions (for .own scope filtering)
                 'institution_ids' => $meeting->institutions->pluck('id')->toArray(),
+
+                // Compared with the public meeting types when a scoped key is made (TypesenseScopedKeyService)
+                'institution_type_ids' => $meeting->institutions
+                    ->flatMap(fn ($institution) => $institution->types->pluck('id'))
+                    ->map(fn ($id) => (int) $id)
+                    ->unique()
+                    ->values()
+                    ->all(),
             ]);
         }
 
@@ -291,11 +389,11 @@ class AgendaItem extends Pivot implements Commentable
      * Calculate vote statistics from all votes for this agenda item.
      * Delegates to VoteStatisticsCalculator.
      */
-    protected function calculateVoteStatistics(): array
+    protected function calculateVoteStatistics(bool $requiresStudentPerspective = true): array
     {
         $votes = $this->relationLoaded('votes') ? $this->votes : $this->votes()->get();
 
-        return app(VoteStatisticsCalculator::class)->calculate($votes);
+        return app(VoteStatisticsCalculator::class)->calculate($votes, $requiresStudentPerspective);
     }
 
     /**
@@ -304,11 +402,11 @@ class AgendaItem extends Pivot implements Commentable
      *
      * @return string 'match', 'mismatch', 'mixed', 'incomplete', 'neutral'
      */
-    protected function calculateVoteAlignmentStatus(): string
+    protected function calculateVoteAlignmentStatus(bool $requiresStudentPerspective = true): string
     {
         $votes = $this->relationLoaded('votes') ? $this->votes : $this->votes()->get();
 
-        return app(VoteStatisticsCalculator::class)->alignmentStatus($votes);
+        return app(VoteStatisticsCalculator::class)->alignmentStatus($votes, $requiresStudentPerspective);
     }
 
     /**
@@ -316,6 +414,6 @@ class AgendaItem extends Pivot implements Commentable
      */
     public function searchableUsing()
     {
-        return app(EngineManager::class)->engine('typesense');
+        return MeetingSearchEngine::resolve();
     }
 }

@@ -1,8 +1,8 @@
 <template>
-  <div class="inline-flex flex-row items-center p-1" role="group" aria-label="Group of users">
+  <div data-slot="users-avatar-group" class="inline-flex flex-row items-center py-1" role="group" :aria-label="$t('Naudotojai')">
     <!-- Display avatars up to the maximum allowed -->
     <div v-for="(user, index) in visibleUsers" :key="user.id || index" class="relative flex items-center"
-      :class="[avatarWrapperClass, { '-ml-2': index > 0 }]" :style="{ zIndex: visibleUsers.length - index }">
+      :class="[avatarWrapperClass, index > 0 ? '-ml-2 [&_[data-slot=avatar]]:ring-2 [&_[data-slot=avatar]]:ring-background' : '']" :style="{ zIndex: visibleUsers.length - index }">
       <Link v-if="isClickable && user.id" :href="route('users.show', user.id)" class="contents">
         <UserPopover :user :size="avatarSize" :clickable="false">
           <template #additional-info>
@@ -26,13 +26,13 @@
             :interactive="true"
           >
             <AvatarFallback
-              class="text-foreground font-medium"
+              class="font-medium"
               :class="textSizeClass">
               +{{ remainingCount }}
             </AvatarFallback>
           </Avatar>
         </HoverCardTrigger>
-        <HoverCardContent class="p-3 w-auto min-w-48 max-h-[280px] overflow-y-auto">
+        <HoverCardContent class="w-auto min-w-48 max-h-[280px] overflow-y-auto p-3">
           <div class="space-y-3">
             <h4 class="text-sm font-medium text-muted-foreground">
               {{ $t('Other users') }}
@@ -63,7 +63,7 @@
       <PopoverTrigger as-child>
         <button
           type="button"
-          class="ml-1 flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          class="ml-1 flex size-7 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground pointer-coarse:size-11"
           :aria-label="$t('Rodyti visus')"
         >
           <ChevronDown class="h-4 w-4" />
@@ -94,6 +94,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
+import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
 import { ChevronDown } from 'lucide-vue-next';
 
 import UserPopover from './UserPopover.vue';
@@ -136,17 +137,18 @@ const isClickable = computed(() => {
   return isAdminContext.value && canViewUserProfile.value;
 });
 
+const breakpoints = useBreakpoints(breakpointsTailwind);
+const isSmallerThanSm = breakpoints.smaller('sm');
+const isSmallerThanMd = breakpoints.smaller('md');
+
 // Compute the maximum number of users to display, taking into account screen size if limitByScreen is true
 const maxVisibleUsers = computed(() => {
   const defaultMax = props.max ?? 4;
 
   if (!props.limitByScreen) return defaultMax;
 
-  // Check if the screen is small and adjust the max visible users accordingly
-  if (typeof window !== 'undefined') {
-    if (window.innerWidth < 640) return Math.min(defaultMax, 2); // sm
-    if (window.innerWidth < 768) return Math.min(defaultMax, 3); // md
-  }
+  if (isSmallerThanSm.value) return Math.min(defaultMax, 2);
+  if (isSmallerThanMd.value) return Math.min(defaultMax, 3);
 
   return defaultMax;
 });
@@ -188,11 +190,10 @@ const avatarWrapperClass = computed(() => {
   return avatarSizeClasses[avatarSize.value];
 });
 
-// Use a slightly smaller avatar size in the popup list for better UX
 const popoverAvatarSize = computed<AvatarSize>(() => {
-  const sizeOrder: AvatarSize[] = ['xs', 'sm', 'default', 'lg', 'xl'];
+  const sizeOrder: AvatarSize[] = ['xxs', 'xs', 'sm', 'default', 'lg', 'xl'];
   const currentIndex = sizeOrder.indexOf(avatarSize.value);
-  // Go one size smaller, but don't go below 'xs'
-  return sizeOrder[Math.max(0, currentIndex - 1)];
+  // Popup rows stay at least 24px to keep names readable.
+  return sizeOrder[Math.max(1, currentIndex - 1)];
 });
 </script>

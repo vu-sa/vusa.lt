@@ -5,10 +5,10 @@ namespace App\Services;
 use App\Enums\AllowedRelationshipablesEnum;
 use App\Enums\TenantType;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -49,10 +49,10 @@ class RelationshipService
         // Clear cache for the target institution
         self::clearRelatedInstitutionsCache($relationshipable->related_model_id);
 
-        // If this is a Type-based relationship, we need to clear all institutions of those types
-        if ($relationshipable->relationshipable_type === MorphMap::alias(Type::class)) {
-            $sourceType = Type::find($relationshipable->relationshipable_id);
-            $targetType = Type::find($relationshipable->related_model_id);
+        // If this is a InstitutionType-based relationship, we need to clear all institutions of those types
+        if ($relationshipable->relationshipable_type === MorphMap::alias(InstitutionType::class)) {
+            $sourceType = InstitutionType::find($relationshipable->relationshipable_id);
+            $targetType = InstitutionType::find($relationshipable->related_model_id);
 
             if ($sourceType) {
                 $sourceType->institutions()->pluck('id')->each(function ($id): void {
@@ -171,7 +171,7 @@ class RelationshipService
             }
         }
 
-        // Type-based outgoing relationships
+        // InstitutionType-based outgoing relationships
         // Handle both within-tenant and cross-tenant scopes
         $institution->load(['types.outgoingRelationships.pivot.related_model.institutions.tenant']);
 
@@ -179,7 +179,7 @@ class RelationshipService
             foreach ($type->outgoingRelationships as $relationship) {
                 /** @var Relationshipable $pivot */
                 $pivot = $relationship->getRelation('pivot');
-                /** @var Type|null $targetType */
+                /** @var InstitutionType|null $targetType */
                 $targetType = $pivot->related_model;
                 $scope = $pivot->scope ?? Relationshipable::SCOPE_WITHIN_TENANT;
                 $isBidirectional = $pivot->bidirectional ?? false;
@@ -206,7 +206,7 @@ class RelationshipService
             }
         }
 
-        // Type-based incoming relationships
+        // InstitutionType-based incoming relationships
         // Handle both within-tenant and cross-tenant scopes
         $institution->load(['types.incomingRelationships.pivot.relationshipable.institutions.tenant']);
 
@@ -214,7 +214,7 @@ class RelationshipService
             foreach ($type->incomingRelationships as $relationship) {
                 /** @var Relationshipable $pivot */
                 $pivot = $relationship->getRelation('pivot');
-                /** @var Type|null $sourceType */
+                /** @var InstitutionType|null $sourceType */
                 $sourceType = $pivot->relationshipable;
                 $scope = $pivot->scope ?? Relationshipable::SCOPE_WITHIN_TENANT;
                 $isBidirectional = $pivot->bidirectional ?? false;
@@ -252,7 +252,7 @@ class RelationshipService
             $siblingInstitutions = Institution::query()
                 ->where('tenant_id', $institution->tenant_id)
                 ->where('id', '!=', $sourceId)
-                ->whereHas('types', fn ($q) => $q->where('types.id', $type->id))
+                ->whereHas('types', fn ($q) => $q->where('institution_types.id', $type->id))
                 ->with('tenant')
                 ->get();
 
@@ -287,7 +287,7 @@ class RelationshipService
                 $crossTenantSiblings = Institution::query()
                     ->where('id', '!=', $sourceId)
                     ->whereHas('tenant', fn ($q) => $q->where('type', TenantType::Padalinys))
-                    ->whereHas('types', fn ($q) => $q->where('types.id', $type->id))
+                    ->whereHas('types', fn ($q) => $q->where('institution_types.id', $type->id))
                     ->with('tenant')
                     ->get();
 
@@ -306,7 +306,7 @@ class RelationshipService
                 $crossTenantSiblings = Institution::query()
                     ->where('id', '!=', $sourceId)
                     ->whereHas('tenant', fn ($q) => $q->where('type', TenantType::Pagrindinis))
-                    ->whereHas('types', fn ($q) => $q->where('types.id', $type->id))
+                    ->whereHas('types', fn ($q) => $q->where('institution_types.id', $type->id))
                     ->with('tenant')
                     ->get();
 
@@ -463,7 +463,7 @@ class RelationshipService
                 ->with([
                     'types',
                     'meetings:id,title,start_time,type',
-                    'meetings.agendaItems:id,meeting_id,title,type,brought_by_students',
+                    'meetings.agendaItems:id,meeting_id,title,type,brought_by_students,order,is_private,public_title',
                     'meetings.agendaItems.votes:id,agenda_item_id,title,decision,student_vote,student_benefit,is_main',
                     'meetings.fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
                     'tenant:id,shortname',
@@ -573,8 +573,6 @@ class RelationshipService
 
         $incomingDirectByType = $institution->load(['types.incomingRelationships.pivot.relationshipable.institutions.tenant'])->types->map(fn ($type) => $type->incomingRelationships)->flatten(1);
 
-        // dd($outgoingDirect, $incomingDirect->pluck('pivot.relationshipable'), $outgoingDirectByType, $incomingDirectByType->pluck('pivot.relationshipable.institutions'));
-
         return [
             'outgoingDirect' => $outgoingDirect,
             'incomingDirect' => $incomingDirect,
@@ -615,7 +613,7 @@ class RelationshipService
         $institutionRelationshipables = collect(Relationshipable::where('relationshipable_type', MorphMap::alias(Institution::class))->get(['relationshipable_id', 'related_model_id'])->toArray()); // OK
 
         // we need to get all institutions which are related to the institution
-        $typeRelationshipables = Relationshipable::where('relationshipable_type', MorphMap::alias(Type::class))->get()->map(fn ($relationshipable) => self::getGivenModelsFromModelType(Institution::class, $relationshipable))->flatten(1);
+        $typeRelationshipables = Relationshipable::where('relationshipable_type', MorphMap::alias(InstitutionType::class))->get()->map(fn ($relationshipable) => self::getGivenModelsFromModelType(Institution::class, $relationshipable))->flatten(1);
 
         // Within-type sibling relationships (institutions with same type + same tenant)
         $withinTypeRelationships = self::getWithinTypeSiblingRelationships();
@@ -657,8 +655,8 @@ class RelationshipService
                 ...self::relationshipMeta($relationshipable),
             ]);
 
-        // Type-based edges, expanded to concrete institution pairs (scope-aware)
-        $typeBased = Relationshipable::where('relationshipable_type', MorphMap::alias(Type::class))
+        // InstitutionType-based edges, expanded to concrete institution pairs (scope-aware)
+        $typeBased = Relationshipable::where('relationshipable_type', MorphMap::alias(InstitutionType::class))
             ->with('relationship:id,name,description')
             ->get()
             ->flatMap(fn (Relationshipable $relationshipable) => self::getGivenModelsFromModelType(Institution::class, $relationshipable, [
@@ -699,7 +697,7 @@ class RelationshipService
 
     /**
      * Build the type-relationship overview graph: nodes are all current institution
-     * types (including those without relations), edges are the concrete Type -> Type
+     * types (including those without relations), edges are the concrete InstitutionType -> InstitutionType
      * relationshipable definitions (with scope/bidirectional and relationship meta).
      *
      * @return array{
@@ -709,16 +707,16 @@ class RelationshipService
      */
     public static function getTypeRelationshipGraph(): array
     {
-        $relationshipables = Relationshipable::where('relationshipable_type', MorphMap::alias(Type::class))
+        $relationshipables = Relationshipable::where('relationshipable_type', MorphMap::alias(InstitutionType::class))
             ->with('relationship:id,name,description')
             ->get();
 
         // Show every current institution type as a node, even if it has no relations yet.
-        $types = Type::forInstitutions()
+        $types = InstitutionType::query()
             ->withCount('institutions')
             ->get();
 
-        $nodes = $types->map(fn (Type $type) => [
+        $nodes = $types->map(fn (InstitutionType $type) => [
             'id' => (string) $type->id,
             'name' => $type->title,
             'institutions_count' => (int) $type->institutions_count,
@@ -750,7 +748,7 @@ class RelationshipService
         $relationships = collect();
 
         // Find types that have sibling relationships enabled
-        $typesWithSiblings = Type::forInstitutions()
+        $typesWithSiblings = InstitutionType::query()
             ->whereJsonContains('extra_attributes->enable_sibling_relationships', true)
             ->with(['institutions' => fn ($q) => $q->select('institutions.id', 'institutions.tenant_id')])
             ->get();
@@ -816,13 +814,13 @@ class RelationshipService
         // get all giver models. You only need givers to get all relationships, as receivers will duplicate all given relationships
         // but through the other side
         $givers = $model_type::whereHas('types', function ($query) use ($relationshipable): void {
-            $query->where('types.id', $relationshipable->relationshipable_id);
+            $query->where('institution_types.id', $relationshipable->relationshipable_id);
         })->with('tenant')->get();
 
         // now, for all the givers, find candidates for possible receivers
         $givers->map(function ($giver) use (&$relationships, $model_type, $relationshipable, $scope, $meta): void {
             $query = $model_type::whereHas('types', function ($query) use ($relationshipable): void {
-                $query->where('types.id', $relationshipable->related_model_id);
+                $query->where('institution_types.id', $relationshipable->related_model_id);
             })->with('tenant');
 
             if ($scope === Relationshipable::SCOPE_WITHIN_TENANT) {

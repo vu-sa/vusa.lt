@@ -41,7 +41,8 @@ class ProblemRequest extends FormRequest
             'categories' => 'nullable|array',
             'categories.*' => 'integer|exists:problem_categories,id',
             'institutions' => 'nullable|array',
-            'institutions.*' => ['string', SoftDeleteRules::existsLive('institutions')],
+            // The picker filters by padalinys, but a crafted payload could still link another padalinys' institution.
+            'institutions.*' => ['string', SoftDeleteRules::existsLive('institutions')->where('tenant_id', $this->integer('tenant_id'))],
         ];
     }
 
@@ -62,7 +63,7 @@ class ProblemRequest extends FormRequest
             'resolved_at.after_or_equal' => trans('problems.validation.resolved_at_after'),
             'status.in' => trans('problems.validation.status_in'),
             'categories.*.exists' => trans('problems.validation.categories_exist'),
-            'institutions.*.exists' => trans('problems.validation.institutions_exist'),
+            'institutions.*.exists' => trans('problems.validation.institutions_in_tenant'),
         ];
     }
 }

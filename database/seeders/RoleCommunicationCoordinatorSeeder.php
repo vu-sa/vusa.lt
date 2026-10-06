@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\DutyType;
 use App\Models\Role;
-use App\Models\Type;
 use Illuminate\Database\Seeder;
 
 class RoleCommunicationCoordinatorSeeder extends Seeder
@@ -16,7 +16,7 @@ class RoleCommunicationCoordinatorSeeder extends Seeder
     public function run()
     {
         $role = Role::firstOrCreate([
-            'name' => 'Communication Coordinator',
+            'name' => 'Komunikacijos koordinatorius',
             'guard_name' => 'web',
         ]);
 
@@ -74,15 +74,14 @@ class RoleCommunicationCoordinatorSeeder extends Seeder
             'forms.update.padalinys',
             'forms.delete.padalinys',
             'problems.create.padalinys',
-            'problems.read.padalinys',
             'problems.update.padalinys',
             'problems.delete.padalinys',
         ]);
 
-        $role->attachable_types()->attach(Type::query()->where('slug', 'pirmininkas')->firstOrFail());
+        $role->attachable_types()->attach(DutyType::query()->where('slug', 'pirmininkas')->firstOrFail());
 
-        $role->attachable_types()->attach(Type::query()->where('slug', 'koordinatoriai')->firstOrFail());
+        $role->attachable_types()->attach(DutyType::query()->where('slug', 'koordinatoriai')->firstOrFail());
 
-        $role->attachable_types()->attach(Type::query()->where('slug', 'kuratoriai')->firstOrFail());
+        $role->attachable_types()->attach(DutyType::query()->where('slug', 'kuratoriai')->firstOrFail());
     }
 }

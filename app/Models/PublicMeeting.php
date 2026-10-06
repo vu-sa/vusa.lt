@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\MeetingType;
 use App\Models\Pivots\AgendaItem;
+use App\Services\Typesense\MeetingSearchEngine;
+use App\Services\Typesense\SearchText;
 use App\Services\VoteStatisticsCalculator;
 use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
@@ -12,9 +14,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
-use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 
 /**
@@ -55,7 +55,6 @@ use Laravel\Scout\Searchable;
  * @property-read mixed $translations
  * @property-read mixed $type_label
  * @property-read mixed $type_slug
- * @property-read Collection<int, Type> $types
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
  * @property-read int|null $tenants_count
@@ -98,15 +97,6 @@ class PublicMeeting extends Meeting
     }
 
     /**
-     * Override types relationship to use correct morph name
-     * Laravel would default to 'public_meeting' based on model name
-     */
-    public function types(): MorphToMany
-    {
-        return $this->morphToMany(Type::class, 'typeable');
-    }
-
-    /**
      * Override agendaItems relationship to use correct foreign key
      * Laravel would default to 'public_meeting_id' based on model name
      *
@@ -138,13 +128,13 @@ class PublicMeeting extends Meeting
             'institutions.types',
             'institutions.tenant',
             'agendaItems.votes',
-            'types',
         ]);
 
         // Aggregate vote statistics from agenda items' votes
         $voteStats = $this->calculateVoteStatistics();
 
         return [
+            ...SearchText::forModel($this),
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->getTranslation('description', 'lt'),
@@ -188,7 +178,7 @@ class PublicMeeting extends Meeting
      */
     protected function calculateVoteStatistics(): array
     {
-        $allVotes = $this->agendaItems->flatMap(fn ($item) => $item->votes);
+        $allVotes = $this->agendaItems->reject(fn ($item) => $item->is_private)->flatMap(fn ($item) => $item->votes);
 
         return app(VoteStatisticsCalculator::class)->calculate($allVotes);
     }
@@ -222,6 +212,6 @@ class PublicMeeting extends Meeting
     #[\Override]
     public function searchableUsing()
     {
-        return app(EngineManager::class)->engine('typesense');
+        return MeetingSearchEngine::resolve();
     }
 }

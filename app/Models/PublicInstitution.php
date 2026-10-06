@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\InstitutionInstitutionType;
 use App\Models\Pivots\Relationshipable;
 use App\Services\PublicInstitutionSearchIndexBuilder;
+use App\Services\Typesense\SearchText;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
@@ -43,8 +44,8 @@ use Laravel\Scout\Searchable;
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read Collection<int, InstitutionAdministrator> $administratorAssignments
- * @property-read Relationshipable|InstitutionFollow|InstitutionAdministrator|null $pivot
+ * @property-read Collection<int, InstitutionSecretary> $administratorAssignments
+ * @property-read InstitutionInstitutionType|Relationshipable|InstitutionFollow|InstitutionSecretary|null $pivot
  * @property-read Collection<int, User> $administrators
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Cadence> $cadences
@@ -67,12 +68,14 @@ use Laravel\Scout\Searchable;
  * @property-read Collection<int, Problem> $problems
  * @property-read mixed $related_institutions
  * @property-read Collection<int, Comment> $rootComments
+ * @property-read Collection<int, User> $secretaries
+ * @property-read Collection<int, InstitutionSecretary> $secretaryAssignments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Task> $tasksFromMeetings
  * @property-read Tenant|null $tenant
  * @property-read Tenant|null $tenants
  * @property-read mixed $translations
- * @property-read Collection<int, Type> $types
+ * @property-read Collection<int, InstitutionType> $types
  * @property-read Collection<int, User> $users
  * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
@@ -110,9 +113,9 @@ class PublicInstitution extends Institution
      * Laravel would default to 'public_institution' based on model name
      */
     #[\Override]
-    public function types(): MorphToMany
+    public function types(): BelongsToMany
     {
-        return $this->morphToMany(Type::class, 'typeable');
+        return $this->belongsToMany(InstitutionType::class, 'institution_institution_type', 'institution_id', 'institution_type_id')->using(InstitutionInstitutionType::class);
     }
 
     /**
@@ -151,7 +154,7 @@ class PublicInstitution extends Institution
     #[\Override]
     public function toSearchableArray(): array
     {
-        return app(PublicInstitutionSearchIndexBuilder::class)->build($this);
+        return [...app(PublicInstitutionSearchIndexBuilder::class)->build($this), ...SearchText::forModel($this)];
     }
 
     /**

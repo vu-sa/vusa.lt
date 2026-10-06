@@ -2,11 +2,8 @@
   <!-- Title band — the same masthead the news article opens with, so a page and an article read
        as the same kind of document. Suppressed entirely when the author has hidden the title
        (a page that opens directly on a hero block already carries one of its own); the trail
-       then falls back to PublicLayout's own bar. See `.band-masthead` for the grounds.
-
-       The `-mt-*` pull-up mirrors PublicLayout's content wrapper (`pt-4 md:pt-6 lg:pt-8`) so the
-       band sits flush against the fixed header instead of below a strip of page background. -->
-  <header v-if="showTitle" class="band-masthead rc-viewport -mt-4 border-b border-border md:-mt-6 lg:-mt-8">
+       then falls back to PublicLayout's own bar. See `.band-masthead` for the grounds. -->
+  <header v-if="showTitle" class="band-masthead border-b border-border">
     <div
       class="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-6 lg:px-8 lg:py-20"
       :class="page.featured_image && 'lg:grid-cols-2 lg:gap-16'"
@@ -143,7 +140,7 @@ const pageTitleClass = computed(() => [
 // The sidebar ToC only applies to the `default` layout, requires at least one anchor,
 // and can be turned off per-page (Advanced Settings in PageForm).
 const hasToc = computed(() =>
-  pageLayout.value === 'default' && props.page.show_table_of_contents !== false && anchorLinks.length > 0,
+  pageLayout.value === 'default' && props.page.show_table_of_contents !== false && anchorLinks.value.length > 0,
 );
 
 // An author can hide the page's own title — e.g. when the page opens directly on a
@@ -205,5 +202,5 @@ watchEffect(() => {
 // Tiptap h2/h3(/h4) headings + titled section blocks (hero, accordion, card-stack, …) —
 // see tocAnchors.ts. A page built entirely from section blocks used to get an empty
 // ToC because only tiptap headings were ever indexed.
-const anchorLinks = extractAnchorLinks(props.page.content?.parts as PageContentPart[] | undefined);
+const anchorLinks = computed(() => extractAnchorLinks(props.page.content?.parts as PageContentPart[] | undefined));
 </script>

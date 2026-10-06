@@ -13,6 +13,7 @@ use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\ContactSearchIndexSynchronizer;
 use App\Services\NotificationRouter;
+use App\Services\Typesense\SearchText;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -62,8 +64,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property bool $name_was_changed
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read InstitutionNotificationMute|InstitutionFollow|Dutiable|InstitutionAdministrator|null $pivot
+ * @property-read InstitutionNotificationMute|InstitutionFollow|Dutiable|InstitutionSecretary|null $pivot
  * @property-read Collection<int, Institution> $administeredInstitutions
+ * @property-read Collection<int, Duty> $authorization_duties
  * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $duties
@@ -77,12 +80,15 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Permission> $permissions
  * @property-read Collection<int, Duty> $previous_duties
  * @property-read Collection<int, PushSubscription> $pushSubscriptions
+ * @property-read ReservationDraft|null $reservationDraft
  * @property-read Collection<int, Reservation> $reservations
  * @property-read Collection<int, Role> $roles
+ * @property-read Collection<int, Institution> $secretariedInstitutions
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Permission> $teams
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
+ * @property-read Collection<int, Duty> $upcoming_duties
  * @property-read int|null $tenants_count
  * @property-read int|null $institutions_count
  *
@@ -187,6 +193,7 @@ class User extends Authenticatable implements GuardsForceDelete
         $tenantShortname = $currentDuties->first()?->institution?->tenant?->shortname;
 
         return [
+            ...SearchText::forModel($this),
             'id' => (string) $this->id,
             'name' => $this->name,
             'email' => $this->email,
@@ -196,6 +203,14 @@ class User extends Authenticatable implements GuardsForceDelete
             'institution_ids' => $institutionIds,
             // Current duties are indexed (and weighted) above previous ones for search relevance.
             // Names + ids are kept index-aligned so the detail pane can render clickable links.
+            'pronouns_lt' => $this->getTranslation('pronouns', 'lt', false),
+            'pronouns_en' => $this->getTranslation('pronouns', 'en', false),
+            'current_duty_names_lt' => $currentDuties->map(fn (Duty $duty) => $duty->getTranslation('name', 'lt'))->all(),
+            'current_duty_names_en' => $currentDuties->map(fn (Duty $duty) => $duty->getTranslation('name', 'en'))->all(),
+            'current_duty_use_original_names' => $currentDuties->map(fn (Duty $duty) => (bool) $duty->pivot?->use_original_duty_name)->all(),
+            'previous_duty_names_lt' => $previousDuties->map(fn (Duty $duty) => $duty->getTranslation('name', 'lt'))->all(),
+            'previous_duty_names_en' => $previousDuties->map(fn (Duty $duty) => $duty->getTranslation('name', 'en'))->all(),
+            'previous_duty_use_original_names' => $previousDuties->map(fn (Duty $duty) => (bool) $duty->pivot?->use_original_duty_name)->all(),
             'current_duty_names' => $currentDuties->pluck('name')->values()->all(),
             'current_duty_ids' => $currentDuties->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
             'previous_duty_names' => $previousDuties->pluck('name')->values()->all(),
@@ -213,10 +228,6 @@ class User extends Authenticatable implements GuardsForceDelete
         return Attribute::make(get: fn () => ! empty($this->getAttributeValue('password')));
     }
 
-    /**
-     * If the user has a duty, always send to current_duties if duty email ends with vusa.lt
-     * More on this: https://laravel.com/docs/10.x/notifications#customizing-the-recipient
-     */
     public function routeNotificationForMail(Notification $notification): array|string
     {
         return app(NotificationRouter::class)->routeForMail($this, $notification);
@@ -235,7 +246,7 @@ class User extends Authenticatable implements GuardsForceDelete
         return $this->duties()
             ->where(function ($query): void {
                 $query->whereNotNull('dutiables.end_date')
-                    ->where('dutiables.end_date', '<', now());
+                    ->whereDate('dutiables.end_date', '<', today());
             })
             ->withTimestamps();
     }
@@ -250,10 +261,25 @@ class User extends Authenticatable implements GuardsForceDelete
                 $query->whereDate('dutiables.start_date', '<=', now()->toDateString())
                     ->where(function ($q): void {
                         $q->whereNull('dutiables.end_date')
-                            ->orWhere('dutiables.end_date', '>=', now());
+                            ->orWhereDate('dutiables.end_date', '>=', today());
                     });
             })
             ->withTimestamps();
+    }
+
+    /** @return MorphToMany<Duty, $this, Dutiable, 'pivot'> */
+    public function authorization_duties(): MorphToMany
+    {
+        return $this->duties()
+            ->where(fn ($query) => $query->whereNull('dutiables.end_date')
+                ->orWhereDate('dutiables.end_date', '>=', today()));
+    }
+
+    /** @return MorphToMany<Duty, $this, Dutiable, 'pivot'> */
+    public function upcoming_duties(): MorphToMany
+    {
+        return $this->authorization_duties()
+            ->whereDate('dutiables.start_date', '>', now()->toDateString());
     }
 
     #[\Override]
@@ -296,19 +322,29 @@ class User extends Authenticatable implements GuardsForceDelete
     }
 
     /**
-     * Institutions this user has been nominated to look after for a term.
+     * Institutions this user is nominated to look after as secretary (O22).
      *
      * Grants the tasks, the notifications and `.own` visibility — never membership,
      * so this must not be merged into institutions()/duties() anywhere.
      *
-     * @return BelongsToMany<Institution, $this, InstitutionAdministrator, 'pivot'>
+     * @return BelongsToMany<Institution, $this, InstitutionSecretary, 'pivot'>
+     */
+    public function secretariedInstitutions(): BelongsToMany
+    {
+        return $this->belongsToMany(Institution::class, 'institution_secretaries')
+            ->using(InstitutionSecretary::class)
+            ->withPivot('cadence_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Backwards-compatibility alias for secretariedInstitutions().
+     *
+     * @return BelongsToMany<Institution, $this, InstitutionSecretary, 'pivot'>
      */
     public function administeredInstitutions(): BelongsToMany
     {
-        return $this->belongsToMany(Institution::class, 'institution_administrators')
-            ->using(InstitutionAdministrator::class)
-            ->withPivot('cadence_id')
-            ->withTimestamps();
+        return $this->secretariedInstitutions();
     }
 
     /**
@@ -373,6 +409,12 @@ class User extends Authenticatable implements GuardsForceDelete
     public function reservations()
     {
         return $this->belongsToMany(Reservation::class)->withTimestamps();
+    }
+
+    /** @return HasOne<ReservationDraft, $this> */
+    public function reservationDraft(): HasOne
+    {
+        return $this->hasOne(ReservationDraft::class);
     }
 
     public function isSuperAdmin(): bool

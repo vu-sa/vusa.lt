@@ -1,21 +1,15 @@
 import '../css/app.css';
 
-import { type DefineComponent, createApp, h } from 'vue';
+import { type DefineComponent, createApp, createSSRApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
 import { createInertiaApp } from '@inertiajs/vue3';
-import { defineAsyncComponent } from 'vue';
 import { i18nVue } from 'laravel-vue-i18n';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
-const PublicLayout = defineAsyncComponent(
-  () => import('./Layouts/PersistentPublicLayout.vue'),
-);
-
-// const metaTitle =
-//  window.document.getElementsByTagName("title")[0]?.innerText || "VU SA";
-//
-/// / get title from appTitle by removing the suffix
-// const pageTitle = metaTitle.replace(" - VU SA", "");
+// Static, as in ssr.ts: an async wrapper adds a boundary that shifts every `useId()` (reka ids,
+// aria-controls) away from the server-rendered values.
+import PublicLayout from './Layouts/PersistentPublicLayout.vue';
+import { mountTranslatedApp } from './Utils/mountTranslatedApp';
 
 createInertiaApp({
   // Title is owned server-side by Laravel Head (see PublicController::applyPageHead()
@@ -48,15 +42,19 @@ createInertiaApp({
       cacheFor: 5 * 60 * 1000, // 5 minutes in milliseconds
     },
   },
-  setup({ App, props, el, plugin }) {
+  async setup({ App, props, el, plugin }) {
     // https://github.com/inertiajs/inertia/discussions/372#discussioncomment-6052940
-    const application = createApp({ render: () => h(App, props) })
+    const hydrating = el.hasAttribute('data-server-rendered');
+    const { locale } = props.initialPage.props.app;
+    const create = hydrating ? createSSRApp : createApp;
+    const application = create({ render: () => h(App, props) })
       .use(plugin)
       .use(i18nVue, {
+        lang: locale,
         fallbackLang: 'en',
         resolve: async (lang: string) => {
           // Load JSON translations (shared between admin/public)
-          const jsonLangs = import.meta.glob(['../../lang/*.json', '!../../lang/php_admin_*.json']);
+          const jsonLangs = import.meta.glob(['../../lang/lt.json', '../../lang/en.json']);
           // Load public-specific PHP translations (shared + public combined)
           const phpLangs = import.meta.glob('../../lang/php_public_*.json');
 
@@ -64,8 +62,10 @@ createInertiaApp({
           const phpPath = `../../lang/php_public_${lang}.json`;
 
           // Load both translation sources
-          const jsonModule = jsonLangs[jsonPath] ? await jsonLangs[jsonPath]() : { default: {} };
-          const phpModule = phpLangs[phpPath] ? await phpLangs[phpPath]() : { default: {} };
+          const [jsonModule, phpModule] = await Promise.all([
+            jsonLangs[jsonPath] ? jsonLangs[jsonPath]() : { default: {} },
+            phpLangs[phpPath] ? phpLangs[phpPath]() : { default: {} },
+          ]);
 
           // Merge translations: JSON base + PHP compiled
           // Return in { default: {...} } format expected by laravel-vue-i18n
@@ -79,7 +79,7 @@ createInertiaApp({
       })
       .use(ZiggyVue);
 
-    application.mount(el);
+    await mountTranslatedApp(application, el, locale);
 
     delete el.dataset.page;
 

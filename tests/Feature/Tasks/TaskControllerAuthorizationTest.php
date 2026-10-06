@@ -11,7 +11,7 @@ pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
-    $this->admin = makeTenantUserWithRole('Student Representative Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
     $this->institution = Institution::factory()->for($this->tenant)->create();
 });
 
@@ -82,7 +82,7 @@ describe('tasks.store taskable handling', function (): void {
      * institution is precisely what the feature exists for.
      */
     test('a student representative can file a task on their own institution', function (): void {
-        $rep = makeTenantUserWithRole('Student Representative', $this->tenant);
+        $rep = makeTenantUserWithRole('Studentų atstovas', $this->tenant);
         $ownInstitution = $rep->duties()->first()->institution;
 
         asUser($rep)->post(route('tasks.store'), [

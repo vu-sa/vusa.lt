@@ -21,7 +21,6 @@ function mountToolbar(overrides: Record<string, unknown> = {}) {
   return mount(DutiableTimelineToolbar, {
     props: {
       scope: { type: 'institution' as const, id: 'inst-1', label: 'Parlamentas' },
-      visibleCount: 3,
       includeEnded: true,
       monthWidthPx: 64,
       timelineColors: getTimelineColors(false),
@@ -61,5 +60,31 @@ describe('DutiableTimelineToolbar', () => {
     const wrapper = mountToolbar({ scope: null });
 
     expect(wrapper.find('a').exists()).toBe(false);
+  });
+
+  it('leaves the scope to the page title band when told to', () => {
+    const wrapper = mountToolbar({ showScope: false });
+
+    expect(wrapper.find('a').exists()).toBe(false);
+    expect(wrapper.text()).not.toContain('Parlamentas');
+  });
+
+  it('puts the caller\'s actions at the end of the toolbar', () => {
+    const wrapper = mount(DutiableTimelineToolbar, {
+      props: {
+        scope: null,
+        includeEnded: true,
+        monthWidthPx: 64,
+        timelineColors: getTimelineColors(false),
+        cadenceOptions: [],
+        tenantOptions: [],
+        cadenceIds: [],
+        tenantKeys: [],
+      },
+      slots: { actions: '<button data-testid="save-cluster">Išsaugoti</button>' },
+      global: { stubs: commonStubs },
+    });
+
+    expect(wrapper.find('[data-testid="save-cluster"]').exists()).toBe(true);
   });
 });

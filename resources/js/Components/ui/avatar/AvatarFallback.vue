@@ -2,7 +2,7 @@
   <AvatarFallback
     data-slot="avatar-fallback"
     v-bind="delegatedProps"
-    :class="cn('bg-zinc-100 flex size-full items-center justify-center rounded-full dark:bg-zinc-800', props.class)"
+    :class="cn('bg-muted text-muted-foreground flex size-full items-center justify-center rounded-full', props.class)"
   >
     <slot />
   </AvatarFallback>

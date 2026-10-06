@@ -3,8 +3,12 @@ import { describe, expect, it } from 'vitest';
 import {
   getAgendaItemStatus,
   getAgendaItemStatusMeta,
+  getDecisionLabel,
   getMeetingStatusSummary,
+  getStudentBenefitLabel,
+  getStudentVoteLabel,
 } from '@/Composables/useAgendaItemStyling';
+import { getFacetValueLabel } from '@/Features/Admin/AdminSearch/Config/collectionFacetConfig';
 
 const vote = (overrides: Record<string, unknown> = {}) => ({
   id: 'v1',
@@ -117,5 +121,16 @@ describe('break agenda items', () => {
 
   it('does not drag the overall meeting status to incomplete', () => {
     expect(getMeetingStatusSummary([breakItem()] as never).overallStatus).not.toBe('incomplete');
+  });
+});
+
+describe('vote value labels', () => {
+  // The same words on the vote buttons, badges and the agenda list filters (VoteValue on the server).
+  it('names each value the same way the list filters do', () => {
+    for (const value of ['positive', 'negative', 'neutral'] as const) {
+      expect(getDecisionLabel(value)).toBe(getFacetValueLabel('decision', value));
+      expect(getStudentVoteLabel(value)).toBe(getFacetValueLabel('student_vote', value));
+      expect(getStudentBenefitLabel(value)).toBe(getFacetValueLabel('student_benefit', value));
+    }
   });
 });

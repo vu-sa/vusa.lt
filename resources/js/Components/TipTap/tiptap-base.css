@@ -164,23 +164,17 @@
   pointer-events: none;
 }
 
-/* Tables. On the prose surface the published cells carry the classes the render
-   presets bake (`border border-zinc-400 px-4 py-1 …`, see presets.ts /
-   App\Tiptap\TiptapEditor) — only the compact chrome is scoped away here.
-   `position: relative` stays unscoped: the selectedCell overlay anchors to it.
+/* Tables. The chrome (box, header row, row rules) lives with the rest of the rich-text
+   type in resources/css/public/typography.css, so an editor field and the published page
+   cannot drift apart. Only editing mechanics stay here: `position: relative` anchors the
+   selectedCell overlay.
 
    A resized table's explicit column widths can add up past the reading measure —
    every render path (the live NodeView, App\Tiptap\TiptapEditor::getHTML(), and
    generateHTMLfromTiptap's client-side fallback) wraps the table in a `.tableWrapper`
-   div so it scrolls horizontally instead of overflowing the page. Unscoped by
-   `.tiptap`/`.rc-prose`: the wrapper only ever exists around a table. */
+   div so it scrolls horizontally instead of overflowing the page. */
 .tableWrapper {
   overflow-x: auto;
-}
-
-.tiptap table {
-  border-collapse: collapse;
-  width: 100%;
 }
 
 .tiptap:not(.rc-prose-editing) table {
@@ -191,11 +185,8 @@
   z-index: 2;
   position: absolute;
   content: "";
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  background: rgba(189, 40, 53, 0.08);
+  inset: 0;
+  background: color-mix(in oklab, var(--brand) 10%, transparent);
   pointer-events: none;
 }
 
@@ -204,24 +195,19 @@
   position: relative;
 }
 
-.tiptap:not(.rc-prose-editing) th,
-.tiptap:not(.rc-prose-editing) td {
-  border: 1px solid #e2e8f0;
-  padding: 0.25rem 0.5rem;
+/* Tables are `resizable`, but without these the drag handle was invisible. */
+.tiptap .column-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -2px;
+  bottom: -2px;
+  width: 3px;
+  background-color: var(--brand);
+  pointer-events: none;
 }
 
-.dark .tiptap:not(.rc-prose-editing) th,
-.dark .tiptap:not(.rc-prose-editing) td {
-  border-color: #3f3f46;
-}
-
-.tiptap:not(.rc-prose-editing) th {
-  background-color: #f4f4f5;
-  font-weight: 600;
-}
-
-.dark .tiptap:not(.rc-prose-editing) th {
-  background-color: #27272a;
+.tiptap.resize-cursor {
+  cursor: col-resize;
 }
 
 /* Placeholder */
@@ -245,13 +231,7 @@
   border-top-color: #3f3f46;
 }
 
-/* YouTube/Video embeds */
+/* YouTube/Video embeds — the frame itself is in typography.css, shared with the published page. */
 .tiptap iframe {
   max-width: 100%;
-}
-
-/* The published embeds carry their own rounded-xl class (render presets); the
-   unlayered 0.5rem here would silently outrank it on the prose editing surface. */
-.tiptap:not(.rc-prose-editing) iframe {
-  border-radius: 0.5rem;
 }

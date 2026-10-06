@@ -30,7 +30,7 @@ describe('HeroButtons', () => {
     expect(classesOf(makeButton({ color: 'chartreuse' as HeroButton['color'] }))).toContain('bg-brand-fill');
   });
 
-  it('renders standard brand-outline on light surfaces by default', () => {
+  it('renders the hairline outline on light surfaces by default', () => {
     const classes = classesOf(makeButton({ variant: 'outline' }));
     expect(classes).toContain('border-border');
     expect(classes).toContain('text-foreground');
@@ -50,17 +50,13 @@ describe('HeroButtons', () => {
     expect(classes).toContain('text-white');
   });
 
-  /**
-   * The regression this guards: the shadcn variants these classes override ship
-   * `dark:bg-zinc-50`-style rules, and a `dark:`-prefixed class wins over an unprefixed one
-   * whatever the source order — so an override without its own `dark:` twin renders the
-   * variant's colour in dark mode instead of the authored one. jsdom cannot evaluate which
-   * rule wins, so this asserts the twin is present rather than the resulting colour.
-   */
-  it.each(['red', 'yellow', 'zinc', 'white'] as const)('repeats the %s fill under dark: so it survives the variant', (color) => {
+  // The regression this guarded — a variant's `dark:bg-zinc-50` beating an authored fill — is
+  // gone with the variants' raw colours; the fill is one token that already follows the theme.
+  it.each(['red', 'yellow', 'zinc', 'white'] as const)('gives the %s button the themed brand fill with no dark: override', (color) => {
     const classes = classesOf(makeButton({ color }));
 
-    expect(classes).toMatch(/\bdark:(bg|text)-/);
+    expect(classes).toContain('bg-brand-fill');
+    expect(classes).not.toMatch(/\bdark:bg-/);
   });
 
   it('renders nothing when there are no buttons', () => {

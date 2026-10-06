@@ -17,11 +17,11 @@ use Illuminate\Support\Collection;
  * 2. Tenant-level coordinators - users with tenant visibility roles (from AtstovavimasSettings)
  *    for the meeting's institution tenants
  * 3. Global overseers - users with global visibility roles (from AtstovavimasSettings)
- * 4. Institution administrators - people nominated to look after the institution for the
- *    term the meeting fell in ({@see GetInstitutionAdministrators})
+ * 4. Institution secretaries - people nominated to look after the institution for the
+ *    term the meeting fell in ({@see GetInstitutionSecretaries})
  *
  * Deliberately not called "administrators": that word names source 4 alone, a checkable row
- * in `institution_administrators`, and using it for the union of all four read as if
+ * in `institution_secretaries`, and using it for the union of all four read as if
  * nominating someone were what put a coordinator on this list. Callers want the whole
  * notification audience anyway — reach for {@see ResolveMeetingNotificationAudience}, which
  * adds the followers.
@@ -53,7 +53,7 @@ class GetMeetingOverseers
         $overseers = $overseers->merge(self::getGlobalOverseers($settings));
 
         // 4. People nominated for the term this meeting fell in
-        $overseers = $overseers->merge(GetInstitutionAdministrators::forMeeting($meeting));
+        $overseers = $overseers->merge(GetInstitutionSecretaries::forMeeting($meeting));
 
         // Return unique users by ID
         return $overseers->unique('id')->values();

@@ -13,7 +13,7 @@ pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
-    $this->admin = makeTenantUserWithRole('Global Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Centrinio biuro komunikacijos koordinatorius', $this->tenant);
 });
 
 describe('resolve-url endpoint', function (): void {

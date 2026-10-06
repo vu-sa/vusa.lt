@@ -3,13 +3,17 @@
 namespace App\Services\Typesense;
 
 use App\Models\Duty;
+use App\Models\Pivots\AgendaItem;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\InstitutionAccessService;
 use App\Services\ModelAuthorizer;
+use App\Settings\MeetingSettings;
+use App\Support\AuthorityCacheExpiry;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Gate;
 use Typesense\Client;
 
 /**
@@ -53,13 +57,34 @@ class TypesenseScopedKeyService
      * rather than returning a key that would return empty results.
      *
      * @param  User  $user  The user to generate keys for
-     * @return array{collections: array<string, array{key: string, tenant_ids: array<int>, institution_ids?: array<int>, direct_institution_ids?: array<int>, scope?: string, has_access: bool}>, expires_at: int, is_super_admin: bool, header_key?: string}
+     * @return array{collections: array<string, array{key: string, tenant_ids: array<int>, institution_ids?: array<int>, direct_institution_ids?: array<int>, scope?: string, has_access: bool}>, expires_at: int, is_super_admin: bool, header_key?: string, visibility_version: string}
      */
     public function generateScopedKeysForUser(User $user): array
     {
         $cacheKey = self::getCacheKey($user->id);
+        $cached = Cache::get($cacheKey);
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, fn () => $this->buildScopedKeys($user));
+        // Keys embed the public meeting types, so a settings change retires every cached key.
+        if (is_array($cached) && ($cached['visibility_version'] ?? null) === self::visibilityVersion()) {
+            return $cached;
+        }
+
+        $keys = [...$this->buildScopedKeys($user), 'visibility_version' => self::visibilityVersion()];
+        // Refreshed a little before the key itself expires, so the browser never holds a dead key.
+        Cache::put($cacheKey, $keys, max(1, $keys['expires_at'] - time() - (self::KEY_EXPIRY - self::CACHE_TTL)));
+
+        return $keys;
+    }
+
+    /** Changes whenever the settings that decide public rows do. */
+    public static function visibilityVersion(): string
+    {
+        return md5(implode(':', [
+            'agenda-privacy-v1',
+            config('scout.typesense.client-settings.admin_search_key'),
+            Cache::get('agenda-privacy-version', ''),
+            app(MeetingSettings::class)->getPublicMeetingInstitutionTypeIds()->sort()->implode(','),
+        ]));
     }
 
     /**
@@ -78,7 +103,8 @@ class TypesenseScopedKeyService
     {
         $parentKey = Config::get('scout.typesense.client-settings.admin_search_key')
             ?? Config::get('scout.typesense.client-settings.search_only_key');
-        $expiresAt = time() + self::KEY_EXPIRY;
+        // A key also dies when one of the user's duties ends: its filters carry their access.
+        $expiresAt = AuthorityCacheExpiry::for($user, self::KEY_EXPIRY)->timestamp;
         $prefix = config('scout.prefix', '');
 
         $isSuperAdmin = $user->isSuperAdmin();
@@ -90,6 +116,7 @@ class TypesenseScopedKeyService
             $permission = $config['permission'] ?? null;
             $ownPermission = $config['own_permission'] ?? null;
             $skipTenantFilter = $config['skip_tenant_filter'] ?? false;
+            $publicRows = $config['public_rows'] ?? null;
 
             // The prefixed collection name that exists in Typesense
             $prefixedCollectionName = $prefix.$collection;
@@ -107,6 +134,41 @@ class TypesenseScopedKeyService
                     'institution_ids' => [],
                     'has_access' => true,
                     'scope' => 'all',
+                ];
+            } elseif ($publicRows !== null) {
+                // Public rows for everyone; a permission the user lacks resolves to no ids and
+                // simply drops its clause.
+                $tenantIds = $permission ? $this->getTenantIdsForPermission($user, $permission) : collect();
+                $institutionIds = $ownPermission ? $this->getInstitutionIdsForOwnPermission($ownPermission, $user) : collect();
+
+                $filter = $this->buildCombinedFilterByClause($tenantIds, $institutionIds, $this->publicRowsClause($publicRows));
+                if ($collection === 'agenda_items') {
+                    $privateIds = AgendaItem::query()->where('is_private', true)
+                        ->with(['meeting.institutions.types', 'meeting.institutions.tenant', 'tenants'])
+                        ->get()->filter(fn (AgendaItem $item): bool => Gate::forUser($user)->allows('view', $item))
+                        ->pluck('id')->map(fn ($id): string => '`'.$id.'`')->implode(',');
+                    $clauses = $filter ? ['('.$filter.') && is_private:=false'] : [];
+                    if ($privateIds !== '') {
+                        $clauses[] = 'is_private:=true && id:=['.$privateIds.']';
+                    }
+                    $filter = $clauses ? '('.implode(' || ', $clauses).')' : 'id:=__no_access__';
+                }
+
+                $scopedKey = $this->client->getKeys()->generateScopedSearchKey($parentKey, [
+                    'collection' => $prefixedCollectionName,
+                    'filter_by' => $filter
+                        // Nothing public and no permissions: an empty list, not a missing collection.
+                        ?? 'tenant_ids:=-1',
+                    'expires_at' => $expiresAt,
+                ]);
+
+                $collections[$collection] = [
+                    'key' => $scopedKey,
+                    'tenant_ids' => $tenantIds->toArray(),
+                    'institution_ids' => $institutionIds->toArray(),
+                    'direct_institution_ids' => $this->institutionAccessService->getUserDutyInstitutionIds($user)->toArray(),
+                    'has_access' => true,
+                    'scope' => 'combined',
                 ];
             } elseif ($skipTenantFilter && ! $permission) {
                 // Collections that skip tenant filtering AND have no permission requirement
@@ -217,10 +279,9 @@ class TypesenseScopedKeyService
             // No access = collection is excluded entirely from response
         }
 
-        // Generate an unrestricted header key for multi_search endpoint authentication
-        // This key has no collection/filter restrictions - it's only for endpoint access
-        // Individual search requests use their own collection-scoped keys
+        // Without a per-search key, the transport credential must never return records.
         $headerKey = $this->client->getKeys()->generateScopedSearchKey($parentKey, [
+            'filter_by' => 'id:=__transport_only__',
             'expires_at' => $expiresAt,
         ]);
 
@@ -324,13 +385,14 @@ class TypesenseScopedKeyService
      * - Institution-based access (from relationships, coordinator access, and direct duties)
      *
      * Uses OR logic: documents matching EITHER the tenant filter OR the institution filter are returned.
+     * `$publicClause` adds the rows anyone may read to the alternatives.
      *
      * @param  Collection<int, int>  $tenantIds
      * @param  Collection<int, string>  $institutionIds
      */
-    protected function buildCombinedFilterByClause(Collection $tenantIds, Collection $institutionIds): ?string
+    protected function buildCombinedFilterByClause(Collection $tenantIds, Collection $institutionIds, ?string $publicClause = null): ?string
     {
-        $filters = [];
+        $filters = $publicClause !== null ? [$publicClause] : [];
 
         if ($tenantIds->isNotEmpty()) {
             $ids = $tenantIds->implode(',');
@@ -352,6 +414,23 @@ class TypesenseScopedKeyService
 
         // Combine with OR - documents matching either filter are returned
         return '('.implode(' || ', $filters).')';
+    }
+
+    /**
+     * The rows anyone may read, from the indexed facts and the current settings — the same
+     * inputs Meeting::isPubliclyVisible() and InstitutionPolicy::viewSummary() use.
+     *
+     * @param  'meeting_types'|'active'  $publicRows
+     */
+    protected function publicRowsClause(string $publicRows): ?string
+    {
+        if ($publicRows === 'active') {
+            return 'is_active:=true';
+        }
+
+        $typeIds = app(MeetingSettings::class)->getPublicMeetingInstitutionTypeIds();
+
+        return $typeIds->isEmpty() ? null : 'institution_type_ids:=['.$typeIds->implode(',').']';
     }
 
     /**

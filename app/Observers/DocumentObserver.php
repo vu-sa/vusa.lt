@@ -42,7 +42,7 @@ class DocumentObserver
      */
     private function dispatchRevocationIfNeeded(Document $document): void
     {
-        if (StagingProtection::sharepointIsReadOnly() || ! $document->sharepoint_permission_id || ! $document->anonymous_url) {
+        if (StagingProtection::sharepointIsReadOnly($document->sharepoint_site_id, config('filesystems.sharepoint.archive_drive_id')) || ! $document->sharepoint_permission_id || ! $document->anonymous_url) {
             return;
         }
 

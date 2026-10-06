@@ -1,9 +1,15 @@
-@import 'tailwindcss';
+@import 'tailwindcss' source(none);
 @import 'tw-animate-css';
 @import './theme/base-tokens.css';
 @import './theme/design-tokens.css';
+@import './theme/surface-palette.css';
 @import './base/reset.css';
 @import './base/view-transitions.css';
+/* admin before public: the rich-content editor renders a [data-surface="public"] preview
+   *inside* admin pages (BlockPreviewRenderer.vue, RCFullscreenEditor.vue, teleported popovers).
+   Both scopes have equal selector specificity, so import order is what keeps those nested
+   previews on the public palette rather than losing to whichever admin ancestor wraps them. */
+@import './admin/surface.css';
 @import './public/surface.css';
 @import './public/typography.css';
 @import './public/canvas.css';
@@ -13,3 +19,8 @@
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../js';
+
+@source not '../js/**/__tests__/**';
+@source not '../js/**/*.{test,spec}.{ts,js}';
+@source not '../js/mocks/**';
+@source not '../js/tests/**';

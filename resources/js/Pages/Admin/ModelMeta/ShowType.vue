@@ -1,0 +1,235 @@
+<template>
+  <RecordPage
+    v-model:section="section"
+    :title
+    :entity-type
+    :facts
+    :sections
+    :primary-action
+    :overflow-actions
+    actions-beside-title
+    @action="handleAction"
+  >
+    <template #overview>
+      <div class="grid gap-10 xl:grid-cols-2 xl:gap-16">
+        <OverviewSection variant="home" :title="$t('Aprašymas')" :icon="FileText">
+          <p class="whitespace-pre-wrap text-sm text-foreground">
+            {{ description || $t('Aprašymo nėra.') }}
+          </p>
+          <dl class="grid gap-4 pt-2 sm:grid-cols-2">
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {{ $t('Techninė žymė') }}
+              </dt>
+              <dd class="mt-1 text-sm font-medium">
+                {{ contentType.slug || '—' }}
+              </dd>
+            </div>
+            <div>
+              <dt class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {{ $t('Tėvinis tipas') }}
+              </dt>
+              <dd class="mt-1 text-sm font-medium">
+                {{ localized(contentType.parent?.title) || '—' }}
+              </dd>
+            </div>
+          </dl>
+        </OverviewSection>
+
+        <OverviewSection
+          v-if="responsibleDuties?.length"
+          variant="home"
+          :title="$t('responsibilities.label')"
+          :icon="Compass"
+          data-slot="type-responsible-duties"
+        >
+          <ul class="divide-y divide-border">
+            <li v-for="item in responsibleDuties" :key="item.id">
+              <Link :href="route('duties.show', item.duty_id)" class="flex min-h-11 flex-col justify-center py-2 hover:bg-secondary">
+                <span class="text-sm font-medium"><InflectedDutyName :name="item.duty" /></span>
+                <span class="text-xs text-muted-foreground">{{ item.label }}</span>
+              </Link>
+            </li>
+          </ul>
+        </OverviewSection>
+      </div>
+    </template>
+    <template #models>
+      <OverviewSection variant="home" :title="$t('Susieti įrašai')" :icon="Link2" :count="attachedModels.length" class="max-w-3xl">
+        <template v-if="can.update" #actions>
+          <Button variant="outline" size="sm" @click="openModels">
+            {{ $t('Tvarkyti susietus įrašus') }}
+          </Button>
+        </template>
+        <div class="divide-y divide-border">
+          <div v-for="model in attachedModels" :key="model.id" class="py-3 text-sm font-medium">
+            {{ model.name }}
+          </div>
+          <p v-if="!attachedModels.length" class="text-sm text-muted-foreground">
+            {{ $t('Susietų įrašų nėra.') }}
+          </p>
+        </div>
+      </OverviewSection>
+    </template>
+    <template #roles>
+      <OverviewSection variant="home" :title="$t('Rolės')" :icon="Shield" :count="contentType.roles?.length ?? 0" class="max-w-3xl">
+        <template v-if="can.update && typeKind === 'dutyType'" #actions>
+          <Button variant="outline" size="sm" @click="openRoles">
+            {{ $t('Tvarkyti roles') }}
+          </Button>
+        </template>
+        <div class="divide-y divide-border">
+          <div v-for="role in contentType.roles ?? []" :key="role.id" class="py-3 text-sm font-medium">
+            {{ role.name }}
+          </div>
+          <p v-if="!contentType.roles?.length" class="text-sm text-muted-foreground">
+            {{ $t('Rolių nepriskirta.') }}
+          </p>
+        </div>
+      </OverviewSection>
+    </template>
+    <template #files>
+      <div class="max-w-4xl">
+        <Deferred data="files">
+          <template #fallback>
+            <p class="py-6 text-sm text-muted-foreground">
+              {{ $t('Įkeliama…') }}
+            </p>
+          </template>
+          <FileableFilesPanel
+            :fileable="{ id: contentType.id, type: fileableType }"
+            :files
+            :can-upload="can.update && !!sharepointPath"
+            :folder-url="sharepointFolderUrl"
+            :can-delete="can.update"
+          />
+        </Deferred>
+      </div>
+    </template>
+  </RecordPage>
+  <SheetForm v-model:open="modelsOpen" :title="$t('Susieti įrašai')" :processing="modelsProcessing" :disabled="!modelOptions" @submit="saveModels">
+    <p v-if="!modelOptions" class="text-sm text-muted-foreground">
+      {{ $t('Įkeliama…') }}
+    </p>
+    <template v-else>
+      <Input v-model="modelSearch" :placeholder="$t('Ieškoti')" />
+      <div class="space-y-1">
+        <label v-for="model in filteredModelOptions" :key="model.id" class="flex min-h-11 items-center gap-3 border-b border-border py-2 text-sm">
+          <Checkbox :model-value="modelIds.includes(model.id)" @update:model-value="checked => toggleModel(model.id, Boolean(checked))" />
+          {{ localized(model.name ?? model.title) }}
+        </label>
+      </div>
+    </template>
+  </SheetForm>
+  <SheetForm v-model:open="rolesOpen" :title="$t('Rolės')" :processing="rolesProcessing" :disabled="!roleOptions" @submit="saveRoles">
+    <p v-if="!roleOptions" class="text-sm text-muted-foreground">
+      {{ $t('Įkeliama…') }}
+    </p>
+    <div v-else class="space-y-1">
+      <label v-for="role in roleOptions" :key="role.id" class="flex min-h-11 items-center gap-3 border-b border-border py-2 text-sm">
+        <Checkbox :model-value="roleIds.includes(role.id)" @update:model-value="checked => toggleRole(role.id, Boolean(checked))" />
+        {{ role.name }}
+      </label>
+    </div>
+  </SheetForm>
+  <ConfirmDialog v-model:open="deleteOpen" :title="$t('Šalinti tipą?')" :description="$t('Tipas bus perkeltas į šiukšlinę.')" :confirm-label="$t('Šalinti')" destructive @confirm="router.delete(route(`${resource}.destroy`, contentType.id))" />
+</template>
+
+<script setup lang="ts">
+import { computed, ref } from 'vue';
+import { Deferred, Link, router } from '@inertiajs/vue3';
+import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
+import { Compass, Edit, FileText, Link2, Shield, Trash2 } from 'lucide-vue-next';
+
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
+import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
+import { ConfirmDialog, OverviewSection, SheetForm } from '@/Components/Patterns';
+import { Button } from '@/Components/ui/button';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { Input } from '@/Components/ui/input';
+import { ModelEnum } from '@/Types/enums';
+
+type Translation = string | { lt?: string; en?: string } | null | undefined;
+const props = defineProps<{
+  typeKind: 'institutionType' | 'dutyType';
+  contentType: (App.Entities.InstitutionType | App.Entities.DutyType) & { parent?: { title?: Translation }; roles?: Array<{ id: string; name: string }> };
+  attachedModels: Array<{ id: string; name: string }>;
+  modelOptions?: Array<{ id: string; name?: string; title?: Translation }>;
+  roleOptions?: Array<{ id: string; name: string }>;
+  responsibleDuties?: Array<{ id: string; duty_id: string; duty: string; label: string }>;
+  sharepointPath?: string | null;
+  sharepointFolderUrl?: string | null;
+  /** Deferred (`files`). */
+  files?: FileableFileItem[];
+  can: { update: boolean; delete: boolean };
+}>();
+const resource = props.typeKind === 'institutionType' ? 'institutionTypes' : 'dutyTypes';
+const entityType = props.typeKind === 'institutionType' ? ModelEnum.INSTITUTION_TYPE : ModelEnum.DUTY_TYPE;
+const fileableType = props.typeKind === 'institutionType' ? 'InstitutionType' : 'DutyType';
+const section = ref('overview');
+const deleteOpen = ref(false);
+const modelsOpen = ref(false);
+const rolesOpen = ref(false);
+const modelsProcessing = ref(false);
+const rolesProcessing = ref(false);
+const modelSearch = ref('');
+const modelIds = ref(props.attachedModels.map(model => model.id));
+const roleIds = ref(props.contentType.roles?.map(role => role.id) ?? []);
+const localized = (value: Translation): string => typeof value === 'string' ? value : value?.[getActiveLanguage() as 'lt' | 'en'] ?? value?.lt ?? value?.en ?? '';
+const title = computed(() => localized(props.contentType.title));
+const description = computed(() => localized(props.contentType.description));
+const filteredModelOptions = computed(() => (props.modelOptions ?? []).filter(model =>
+  localized(model.name ?? model.title).toLocaleLowerCase().includes(modelSearch.value.toLocaleLowerCase()),
+));
+function toggleModel(id: string, checked: boolean): void {
+  modelIds.value = checked ? [...new Set([...modelIds.value, id])] : modelIds.value.filter(value => value !== id);
+}
+function toggleRole(id: string, checked: boolean): void {
+  roleIds.value = checked ? [...new Set([...roleIds.value, id])] : roleIds.value.filter(value => value !== id);
+}
+function openModels(): void {
+  modelIds.value = props.attachedModels.map(model => model.id);
+  modelsOpen.value = true;
+  router.reload({ only: ['modelOptions'] });
+}
+function openRoles(): void {
+  roleIds.value = props.contentType.roles?.map(role => role.id) ?? [];
+  rolesOpen.value = true;
+  router.reload({ only: ['roleOptions'] });
+}
+function saveModels(): void {
+  modelsProcessing.value = true;
+  router.put(route(`${resource}.models.sync`, props.contentType.id), { models: modelIds.value }, {
+    preserveScroll: true,
+    onSuccess: () => { modelsOpen.value = false; },
+    onFinish: () => { modelsProcessing.value = false; },
+  });
+}
+function saveRoles(): void {
+  rolesProcessing.value = true;
+  router.put(route('dutyTypes.roles.sync', props.contentType.id), { roles: roleIds.value }, {
+    preserveScroll: true,
+    onSuccess: () => { rolesOpen.value = false; },
+    onFinish: () => { rolesProcessing.value = false; },
+  });
+}
+const facts = computed<RecordFact[]>(() => [
+  { key: 'models', label: $t('Susieti įrašai'), value: String(props.attachedModels.length) },
+  ...(props.typeKind === 'dutyType' ? [{ key: 'roles', label: $t('Rolės'), value: String(props.contentType.roles?.length ?? 0) }] : []),
+]);
+const sections = computed<RecordPageSection[]>(() => [
+  { value: 'overview', label: $t('Apžvalga') },
+  { value: 'models', label: $t('Susieti įrašai'), count: props.attachedModels.length },
+  ...(props.typeKind === 'dutyType' ? [{ value: 'roles', label: $t('Rolės'), count: props.contentType.roles?.length }] : []),
+  // Type files are reference documents for every duty or institution of the type, so anyone who can
+  // see the type reads them; only uploading needs update and a folder.
+  { value: 'files', label: $t('Failai') },
+]);
+const primaryAction = computed<RecordAction | undefined>(() => props.can.update ? { key: 'edit', label: $t('Redaguoti'), icon: Edit } : undefined);
+const overflowActions = computed<RecordAction[]>(() => props.can.delete ? [{ key: 'delete', label: $t('Šalinti'), icon: Trash2, destructive: true }] : []);
+function handleAction(action: string): void {
+  if (action === 'edit') router.visit(route(`${resource}.edit`, props.contentType.id));
+  if (action === 'delete') deleteOpen.value = true;
+}
+</script>

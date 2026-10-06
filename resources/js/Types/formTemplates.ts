@@ -12,7 +12,6 @@ export const calendarTemplate: Omit<App.Entities.Calendar, 'created_at' | 'updat
   images: [],
   event_type_id: null,
   facebook_url: '',
-  video_url: '',
   is_draft: false,
   is_all_day: false,
   is_international: false,
@@ -101,15 +100,13 @@ export const pageTemplate = {
 };
 
 export const typeTemplate: Pick<
-  App.Entities.Type,
-  'title' | 'slug' | 'description' | 'model_type' | 'parent_id' | 'extra_attributes'
+  App.Entities.InstitutionType,
+  'title' | 'slug' | 'description' | 'parent_id' | 'extra_attributes'
 > = {
   title: { lt: '', en: '' },
   slug: '',
   description: { lt: '', en: '' },
-  model_type: '',
   parent_id: null,
-  roles: [],
   extra_attributes: {},
 };
 

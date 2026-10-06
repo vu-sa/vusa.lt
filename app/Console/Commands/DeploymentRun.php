@@ -22,7 +22,7 @@ class DeploymentRun extends Command
      *
      * `DeploymentResume` reads this to work out what comes next, so the two cannot drift.
      *
-     * @var array<string, array{name: string, command: string, args?: array<string, mixed>, critical: bool, stagingOnly?: bool}>
+     * @var array<string, array{name: string, command: string, args?: array<string, mixed>, critical: bool, stagingOnly?: bool, ssrOnly?: bool}>
      */
     public const array STEPS = [
         'isolation' => [
@@ -98,6 +98,13 @@ class DeploymentRun extends Command
             'critical' => true,
             'stagingOnly' => true,
         ],
+        'ssr' => [
+            'name' => 'Restart optional Inertia SSR renderer',
+            'command' => 'inertia:stop-ssr',
+            'args' => ['--graceful' => true],
+            'critical' => false,
+            'ssrOnly' => true,
+        ],
         // After `online`, unlike the queue workers: broadcasting is not needed for the site to serve
         // pages, so a Reverb hiccup should never hold the outage open or fail the deploy.
         'reverb' => [
@@ -154,7 +161,7 @@ class DeploymentRun extends Command
             }
 
             if ($this->shouldSkipStep($step)) {
-                $this->line("⏭ {$step['name']} only runs on staging.");
+                $this->line("⏭ {$step['name']} is not enabled in this environment.");
 
                 continue;
             }
@@ -226,7 +233,8 @@ class DeploymentRun extends Command
             }
 
             if ($this->shouldSkipStep($step)) {
-                $this->line("  <fg=gray>⏸ {$step['name']} (staging only)</>");
+                $reason = ($step['ssrOnly'] ?? false) ? 'SSR disabled' : 'staging only';
+                $this->line("  <fg=gray>⏸ {$step['name']} ({$reason})</>");
 
                 continue;
             }
@@ -245,11 +253,12 @@ class DeploymentRun extends Command
     }
 
     /**
-     * @param  array{stagingOnly?: bool}  $step
+     * @param  array{stagingOnly?: bool, ssrOnly?: bool}  $step
      */
     private function shouldSkipStep(array $step): bool
     {
-        return ($step['stagingOnly'] ?? false) && config('app.env') !== 'staging';
+        return (($step['stagingOnly'] ?? false) && config('app.env') !== 'staging')
+            || (($step['ssrOnly'] ?? false) && ! config('inertia.ssr.enabled'));
     }
 
     private function updateDeploymentState(string $step, string $status, ?string $error = null): void

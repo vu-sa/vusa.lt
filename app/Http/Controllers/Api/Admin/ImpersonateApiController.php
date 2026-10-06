@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\ImpersonateSearchRequest;
 use App\Http\Requests\Api\Admin\StartImpersonationRequest;
+use App\Models\Duty;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,15 +30,38 @@ class ImpersonateApiController extends ApiController
         $user = $this->requireAuth($request);
         $this->guardSuperAdmin($user);
 
+        $term = '%'.$request->validated('search').'%';
+        $locale = app()->getLocale();
+
         $users = User::query()
-            ->select(['id', 'name', 'email'])
-            ->where('name', 'like', '%'.$request->input('search').'%')
-            ->orWhere('email', 'like', '%'.$request->input('search').'%')
+            ->select(['id', 'name', 'email', 'pronouns'])
+            ->where(fn (Builder $query) => $query
+                ->where('name', 'like', $term)
+                ->orWhere('email', 'like', $term)
+                // JSON paths, so a term like "en" does not match the locale keys of every duty.
+                ->orWhereHas('current_duties', fn (Builder $duties) => $duties
+                    ->where(fn (Builder $names) => $names
+                        ->where('duties.name->lt', 'like', $term)
+                        ->orWhere('duties.name->en', 'like', $term))))
+            ->with(['current_duties' => fn ($duties) => $duties
+                ->select(['duties.id', 'duties.name', 'duties.institution_id'])
+                ->with('institution:id,short_name')])
             ->orderBy('name')
             ->limit(20)
             ->get();
 
-        return $this->jsonSuccess($users);
+        return $this->jsonSuccess($users->map(fn (User $user): array => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'pronouns' => $user->getTranslations('pronouns'),
+            'current_duties' => $user->current_duties->map(fn (Duty $duty): array => [
+                'id' => $duty->id,
+                'name' => $duty->getTranslation('name', $locale),
+                'use_original_duty_name' => (bool) $duty->pivot?->use_original_duty_name,
+                'institution' => $duty->institution?->getTranslation('short_name', $locale) ?: null,
+            ])->values()->all(),
+        ])->all());
     }
 
     /**
@@ -49,12 +74,11 @@ class ImpersonateApiController extends ApiController
         $user = $this->requireAuth($request);
         $this->guardSuperAdmin($user);
 
-        $target = User::findOrFail($request->input('user_id'));
-
-        if ($target->isSuperAdmin()) {
-            return $this->jsonError('Cannot impersonate a super admin.', 403);
+        if ($request->session()->has('impersonator_id')) {
+            return $this->jsonError('Stop the current impersonation before starting another.', 409);
         }
 
+        $target = User::findOrFail($request->validated('user_id'));
         $request->session()->put('impersonator_id', $user->id);
 
         Auth::login($target);

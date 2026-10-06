@@ -104,10 +104,10 @@
             </div>
             <div>
               <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                {{ isDragging ? $t('Paleiskite failą') : $t('Įkelti nuotrauką') }}
+                {{ isDragging ? $t('Paleisk failą') : $t('Įkelti nuotrauką') }}
               </p>
               <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                {{ $t('Vilkite arba spustelėkite') }}
+                {{ $t('Vilk arba spustelėk') }}
               </p>
             </div>
             <p class="text-xs text-zinc-400">
@@ -124,8 +124,12 @@
 import { ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
+import Upload from './Upload.vue';
+import UploadDropzone from './UploadDropzone.vue';
+import UploadPreview from './UploadPreview.vue';
+import type { UploadFile } from './variants';
+
 import { cn } from '@/Utils/Shadcn/utils';
-import { Upload, UploadDropzone, UploadPreview, type UploadFile } from '@/Components/ui/upload';
 import { Button } from '@/Components/ui/button';
 import { useToasts } from '@/Composables/useToasts';
 

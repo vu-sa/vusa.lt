@@ -4,8 +4,8 @@
       {{ emptyMessage }}
     </p>
 
-    <ul v-else-if="cadences.length" class="divide-y divide-border rounded-md border border-border">
-      <li v-for="cadence in cadences" :key="cadence.id" class="p-3">
+    <ul v-else-if="cadences.length" class="divide-y divide-border">
+      <li v-for="cadence in cadences" :key="cadence.id" class="py-3 first:pt-0">
         <CadenceRowForm
           v-if="editingId === cadence.id"
           :model-value="{
@@ -86,7 +86,7 @@
       </li>
     </ul>
 
-    <div v-if="adding" class="rounded-md border border-dashed border-border p-3">
+    <div v-if="adding" class="border border-dashed border-border p-3">
       <CadenceRowForm
         :model-value="prefill"
         :institution-id

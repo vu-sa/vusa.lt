@@ -1,6 +1,6 @@
 <template>
   <Spinner v-if="formDisabled">
-    <p>Netikėta klaida. Praneškite administratoriui.</p>
+    <p>Netikėta klaida. Pranešk administratoriui.</p>
   </Spinner>
   <table v-else class="w-full table-auto">
     <thead>
@@ -13,6 +13,7 @@
     <tbody class="border-t-8 border-transparent">
       <PermissionTableRow v-for="ability in abilities" :key="ability" :disabled="formDisabled"
         :default-value="permissionData[ability]" :permissions :icon :ability :available-permissions
+        :retired-scopes="retiredScopesFor(ability)" :baseline-note
         @update="(value) => handlePermissionUpdate(ability, value)" />
     </tbody>
   </table>
@@ -39,7 +40,14 @@ const props = defineProps<{
   modelType: string;
   icon: Component;
   availablePermissions: string[];
+  /** This model's permissions every member already has; their cells are locked on. */
+  retiredPermissions?: string[];
+  baselineNote?: string;
 }>();
+
+const retiredScopesFor = (ability: string): string[] => (props.retiredPermissions ?? [])
+  .filter(permission => permission.startsWith(`${props.modelType}.${ability}.`))
+  .map(permission => permission.split('.')[2] ?? '');
 
 const abilities = Object.values(CRUDEnum);
 const formDisabled = ref(false);
@@ -49,8 +57,8 @@ const loading = ref(false);
 const availableScopes = computed(() => {
   const scopes = new Set<string>();
 
-  // Extract scopes from available permissions
-  props.availablePermissions.forEach((permission) => {
+  // Retired scopes still get a column, so their locked cells line up under a header.
+  [...props.availablePermissions, ...(props.retiredPermissions ?? [])].forEach((permission) => {
     const parts = permission.split('.');
     if (parts.length === 3 && parts[2]) {
       scopes.add(parts[2]);

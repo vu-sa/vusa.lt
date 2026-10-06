@@ -69,12 +69,13 @@ class Banner extends Model
             }
         });
 
-        static::saved(function ($banner): void {
-            Cache::tags(['banners', "tenant_{$banner->tenant_id}"])->flush();
+        // Every tenant's cached banners include the main tenant's, so all are flushed.
+        static::saved(function (): void {
+            Cache::tags(['banners'])->flush();
         });
 
-        static::deleted(function ($banner): void {
-            Cache::tags(['banners', "tenant_{$banner->tenant_id}"])->flush();
+        static::deleted(function (): void {
+            Cache::tags(['banners'])->flush();
         });
     }
 

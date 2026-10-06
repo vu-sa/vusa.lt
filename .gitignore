@@ -18,10 +18,15 @@ test-results.junit.xml
 /storage/clockwork/
 /storage/backups
 coverage/*
+/.vitest
 
 # === Build outputs ===
 public/build
 public/hot
+/bootstrap/ssr
+/bootstrap/ssr.old
+/bootstrap/icons
+/bootstrap/icons.old
 
 # Deploy archives + the rotated-out vendor, all living at the repo root on the servers.
 /build.tar.gz
@@ -92,3 +97,10 @@ tests/Browser/Screenshots
 /.idea/vcs.xml
 /.idea/vusa.lt.iml
 /.idea/workspace.xml
+
+# Docs screenshots come from CI browser tests at deploy time (tests/Browser/README.md)
+docs/public/screenshots
+
+# The PDF guide and release notes are built at deploy time (docs/pdf/build.ts, build-release.ts)
+docs/pdf/.build
+docs/public/vusa-lt-*.pdf

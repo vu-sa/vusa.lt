@@ -15,8 +15,8 @@ use Illuminate\Support\Carbon;
 class ReservationTaskSynchronizer
 {
     public function __construct(
-        private PickupTaskHandler $pickupHandler,
-        private ReturnTaskHandler $returnHandler,
+        private readonly PickupTaskHandler $pickupHandler,
+        private readonly ReturnTaskHandler $returnHandler,
     ) {}
 
     public function sync(Reservation $reservation, bool $notifyCompletions): void
@@ -69,23 +69,21 @@ class ReservationTaskSynchronizer
             return;
         }
 
-        if ($task === null) {
-            $task = match ($actionType) {
-                ActionType::Pickup => $this->pickupHandler->findOrCreate(
-                    name: __('Atsiimti rezervacijos išteklius'),
-                    model: $reservation,
-                    users: $reservation->users,
-                    dueDate: $dueDate?->toString(),
-                ),
-                ActionType::Return => $this->returnHandler->findOrCreate(
-                    name: __('Grąžinti rezervacijos išteklius'),
-                    model: $reservation,
-                    users: $reservation->users,
-                    dueDate: $dueDate?->toString(),
-                ),
-                default => throw new \LogicException('Unsupported reservation task type.'),
-            };
-        }
+        $task ??= match ($actionType) {
+            ActionType::Pickup => $this->pickupHandler->findOrCreate(
+                name: __('Atsiimti rezervacijos išteklius'),
+                model: $reservation,
+                users: $reservation->users,
+                dueDate: $dueDate?->toString(),
+            ),
+            ActionType::Return => $this->returnHandler->findOrCreate(
+                name: __('Grąžinti rezervacijos išteklius'),
+                model: $reservation,
+                users: $reservation->users,
+                dueDate: $dueDate?->toString(),
+            ),
+            default => throw new \LogicException('Unsupported reservation task type.'),
+        };
 
         $wasCompleted = $task->completed_at !== null;
         $isCompleted = $total === 0 || $completed >= $total;

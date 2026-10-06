@@ -15,7 +15,14 @@ return [
     |
     */
 
-    'default' => env('APP_ENV') === 'staging' ? 'null' : env('BROADCAST_CONNECTION', 'reverb'),
+    'default' => env('APP_ENV') === 'staging' && ! env('STAGING_BROADCASTING_ENABLED', false)
+        ? 'null'
+        : env('BROADCAST_CONNECTION', 'reverb'),
+
+    // Hard-coded, not env-driven, so a production .env copied to staging still fails closed.
+    'production' => [
+        'reverb_port' => 6001,
+    ],
 
     /*
     |--------------------------------------------------------------------------

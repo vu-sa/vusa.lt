@@ -70,48 +70,14 @@ describe('PartnersBanner.vue', () => {
     }
   });
 
-  // jsdom cannot resolve Tailwind's `dark:` variant or render actual flex-wrap line breaks, so
-  // a short last row visually centering itself and a logo visibly inverting in dark mode can
-  // only be confirmed in a real browser (checked manually). These assert the wiring instead:
-  // the classes that produce those behaviors are actually present on the elements.
-  it('wires flex-wrap + justify-center on the grid, with a fixed basis per cell, so a short last row centers itself', () => {
+  it('uses the shared ruled grid to center incomplete rows', () => {
     const wrapper = mount(PartnersBanner, { props: { banners: [makeBanner()] } });
 
-    const grid = wrapper.find('[data-slot="section-band"] > div > div');
-    expect(grid.classes()).toEqual(expect.arrayContaining(['flex', 'flex-wrap', 'justify-center']));
-
-    const cell = wrapper.find('a');
-    expect(cell.classes()).toEqual(expect.arrayContaining(['shrink-0', 'grow-0', 'basis-1/2']));
-  });
-
-  it('puts the left rule on each cell instead of the grid container, so a centered row never strands it', () => {
-    const wrapper = mount(PartnersBanner, { props: { banners: [makeBanner()] } });
-
-    const grid = wrapper.find('[data-slot="section-band"] > div > div');
-    expect(grid.classes()).not.toContain('border-l');
-
-    const cell = wrapper.find('a');
-    expect(cell.classes()).toEqual(expect.arrayContaining(['border-l', 'border-b']));
-  });
-
-  // Which cell actually renders `border-r` is decided by real `:nth-child`/`:last-child` CSS
-  // matching against the column count active at the viewport's breakpoint — jsdom doesn't
-  // evaluate that, so it can't be asserted per-cell here (checked manually in a real browser:
-  // every row closes on the right, full or partial, with no doubled internal dividers). This
-  // only asserts the structural selectors themselves are wired identically on every cell.
-  it('wires the responsive nth-child/last-child selectors that close the right edge of every row', () => {
-    const banners = Array.from({ length: 3 }, (_, i) => makeBanner({ id: i + 1, title: `Partneris ${i + 1}` }));
-
-    const wrapper = mount(PartnersBanner, { props: { banners } });
-    const cells = wrapper.findAll('a');
-
-    for (const cell of cells) {
-      expect(cell.classes()).toEqual(expect.arrayContaining([
-        'max-sm:[&:is(:nth-child(2n),:last-child)]:border-r',
-        'sm:max-lg:[&:is(:nth-child(3n),:last-child)]:border-r',
-        'lg:[&:is(:nth-child(5n),:last-child)]:border-r',
-      ]));
-    }
+    const grid = wrapper.find('[data-slot="ruled-grid"]');
+    expect(grid.classes()).toEqual(expect.arrayContaining([
+      'flex', 'flex-wrap', 'justify-center', 'border-t',
+      '[&>*]:basis-1/2', 'sm:[&>*]:basis-1/3', 'lg:[&>*]:basis-1/5',
+    ]));
   });
 
   it('wires dark:invert on the logo image so a dark logo stays legible on the dark canvas', () => {

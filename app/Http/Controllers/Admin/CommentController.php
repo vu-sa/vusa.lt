@@ -10,7 +10,6 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
-use App\Models\SharepointFile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 
@@ -27,7 +26,6 @@ class CommentController extends AdminController
         'reservation-resource' => ReservationResource::class,
         'institution' => Institution::class,
         'meeting' => Meeting::class,
-        'sharepoint-file' => SharepointFile::class,
     ];
 
     /**
@@ -81,8 +79,7 @@ class CommentController extends AdminController
     {
         $this->handleAuthorization('delete', $comment);
 
-        // delete comment
-        $comment->delete();
+        $comment->erase();
 
         return back()->with('success', $this->entityMessage('deleted', 'comment'));
     }

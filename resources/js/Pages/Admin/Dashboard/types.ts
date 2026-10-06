@@ -1,11 +1,5 @@
-export interface InstitutionSubscription {
-  is_followed: boolean;
-  is_muted: boolean;
-  is_duty_based: boolean;
-}
-
-export type AtstovavimasUser = Omit<App.Entities.User, 'current_duties'> & {
-  current_duties?: Array<{
+export type AtstovavimasUser = Omit<App.Entities.User, 'authorization_duties'> & {
+  authorization_duties?: Array<{
     institution?: AtstovavimasInstitution;
   }>;
 };
@@ -31,11 +25,11 @@ export interface AtstovavimasInstitution {
   is_internal?: boolean;
   /** Reached through an administrator nomination, not a duty — the user is not a member. */
   is_administered?: boolean;
+  /** Counted in the padaliniai tiles and attention list; false for a type the settings exclude. */
+  in_summary?: boolean;
   meeting_periodicity_days?: number;
   // Duty members (Gantt coverage periods); tenant timeline only
   duties?: AtstovavimasDuty[];
-  // Subscription status for follow/mute UI
-  subscription?: InstitutionSubscription;
   // Related institution metadata (only present for related institutions)
   is_related?: boolean;
   relationship_direction?: 'outgoing' | 'incoming' | 'sibling';
@@ -74,6 +68,7 @@ export interface InstitutionCheckIn {
 
 export interface AtstovavimasMeeting {
   id: string;
+  title?: string;
   start_time: string;
   institution_id?: string;
   completion_status?: 'complete' | 'incomplete' | 'no_items';

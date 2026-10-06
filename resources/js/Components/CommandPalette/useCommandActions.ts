@@ -1,34 +1,13 @@
-/**
- * useCommandActions - Registry of static command palette actions
- *
- * Provides permission-aware quick actions for navigation and creation.
- * Actions are automatically filtered based on user permissions.
- */
-
 import { computed, type Component } from 'vue';
-import { usePage, router } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { Bell, Plus, Radio, Settings, ShieldCheck } from 'lucide-vue-next';
 
-// Import icons directly for tree-shaking
-import {
-  Home,
-  Search,
-  Settings,
-  Plus,
-  LayoutDashboard,
-} from 'lucide-vue-next';
-
-import {
-  MeetingIcon,
-  NewsIcon,
-  ReservationIcon,
-  InstitutionIcon,
-  UserIcon,
-  DutyIcon,
-  TaskIcon,
-  CalendarIcon,
-  AgendaItemIcon,
-} from '@/Components/icons';
+import { getEntityTypeDefinition } from '@/Constants/entityTypes';
+import { workspaceIcon } from '@/Constants/adminWorkspaces';
+import { useActionWindow, type OpenOptions } from '@/Composables/useActionWindow';
+import { sectionHref, useAdminNavigation } from '@/Composables/useAdminNavigation';
+import { useStartFm } from '@/Composables/useStartFm';
 
 export type ActionCategory = 'navigation' | 'create' | 'action';
 
@@ -40,274 +19,121 @@ export interface CommandAction {
   category: ActionCategory;
   action: () => void;
   shortcut?: string;
+  /** The catalog workspace this entry lives in: its secondary label, and what ranks it first. */
+  workspaceKey?: string;
+  workspaceLabel?: string;
+  /** Present on catalog sections, which can be pinned. */
+  page?: { routeName: string; href: string; title: string };
 }
 
-interface AuthCan {
-  create?: {
-    meeting?: boolean;
-    news?: boolean;
-    reservation?: boolean;
-    institution?: boolean;
-    duty?: boolean;
-    user?: boolean;
-  };
-  read?: {
-    meeting?: boolean;
-    user?: boolean;
-    institution?: boolean;
-    duty?: boolean;
-    task?: boolean;
-    reservation?: boolean;
-    calendar?: boolean;
-    news?: boolean;
-  };
-}
+/** Catalog `screen` targets are ActionWindow screens; each one is the first screen of a flow. */
+const flowForScreen: Record<string, OpenOptions['flow']> = {
+  'meeting.institution': 'meeting.create',
+  'checkin.institution': 'check-in',
+  'meeting.pick': 'meeting.complete',
+};
 
-/**
- * Returns computed list of available command actions based on permissions
- */
 export function useCommandActions() {
-  const page = usePage();
-
-  const can = computed<AuthCan>(() => {
-    return (page.props.auth as { can?: AuthCan })?.can || {};
-  });
+  const { workspaces, activeWorkspace } = useAdminNavigation();
+  const actionWindow = useActionWindow();
+  const startFm = useStartFm();
 
   const actions = computed<CommandAction[]>(() => {
-    const result: CommandAction[] = [];
+    const navigation = workspaces.value.flatMap(workspace => workspace.sections.map((section): CommandAction => {
+      const href = sectionHref(section);
+      const label = $t(section.label);
+      // Pins are stored by path (that is what visit tracking records), so pin by the relative URL.
+      const pinHref = route(section.routeName, section.routeParams, false);
 
-    // ==================
-    // Navigation Actions
-    // ==================
-
-    // Dashboard - always available
-    result.push({
-      id: 'nav-dashboard',
-      label: $t('Pradžia'),
-      keywords: ['home', 'dashboard', 'pradzia', 'pagrindinis'],
-      icon: Home,
-      category: 'navigation',
-      action: () => router.visit(route('dashboard')),
-    });
-
-    // Representation dashboard
-    result.push({
-      id: 'nav-representation',
-      label: $t('Atstovavimas'),
-      keywords: ['visak', 'representation', 'atstovavimas', 'posedziai'],
-      icon: LayoutDashboard,
-      category: 'navigation',
-      action: () => router.visit(route('dashboard.atstovavimas')),
-    });
-
-    // Meetings
-    if (can.value.read?.meeting) {
-      result.push({
-        id: 'nav-meetings',
-        label: $t('Posėdžiai'),
-        keywords: ['meetings', 'posedziai', 'susirinkimai'],
-        icon: MeetingIcon,
+      return {
+        id: `nav-${workspace.key}-${section.key}`,
+        label,
+        keywords: [section.key, section.routeName],
+        icon: (section.entityType && getEntityTypeDefinition(section.entityType)?.icon) || workspaceIcon(workspace.key),
         category: 'navigation',
-        action: () => router.visit(route('meetings.index')),
-      });
-    }
+        action: () => router.visit(href),
+        workspaceKey: workspace.key,
+        workspaceLabel: $t(workspace.label),
+        page: { routeName: section.routeName, href: pinHref, title: label },
+      };
+    }));
 
-    // Unified search page
-    result.push({
-      id: 'nav-search',
-      label: $t('Paieška'),
-      keywords: ['search', 'paieska', 'ieskoti', 'viskas', 'posedziai', 'institucijos', 'istekliai'],
-      icon: Search,
-      category: 'navigation',
-      action: () => router.visit(route('search.index')),
-    });
+    const create = workspaces.value.flatMap(workspace => workspace.createActions.map((action): CommandAction => ({
+      id: `create-${action.key}`,
+      label: $t(action.label),
+      keywords: [action.key, action.target.kind],
+      icon: (action.entityType && getEntityTypeDefinition(action.entityType)?.icon) || Plus,
+      category: 'create',
+      action: () => {
+        if (action.target.kind === 'route') {
+          router.visit(route(action.target.routeName));
+        }
+        else {
+          actionWindow.open({ flow: flowForScreen[action.target.screen] });
+        }
+      },
+      workspaceKey: workspace.key,
+      workspaceLabel: $t(workspace.label),
+    })));
 
-    // Institutions
-    if (can.value.read?.institution) {
-      result.push({
-        id: 'nav-institutions',
-        label: $t('Institucijos'),
-        keywords: ['institutions', 'institucijos', 'organizacijos'],
-        icon: InstitutionIcon,
+    return [
+      ...navigation,
+      ...create,
+      {
+        id: 'nav-profile',
+        label: $t('Profilis'),
+        keywords: ['profile', 'profilis'],
+        icon: Settings,
         category: 'navigation',
-        action: () => router.visit(route('institutions.index')),
-      });
-    }
-
-    // Users
-    if (can.value.read?.user) {
-      result.push({
-        id: 'nav-users',
-        label: $t('Naudotojai'),
-        keywords: ['users', 'naudotojai', 'vartotojai', 'zmones'],
-        icon: UserIcon,
+        action: () => router.visit(route('profile')),
+      },
+      {
+        id: 'nav-roles',
+        label: $t('shell.account.roles'),
+        keywords: ['roles', 'duties', 'permissions', 'roles ir pareigybes', 'teises'],
+        icon: ShieldCheck,
         category: 'navigation',
-        action: () => router.visit(route('users.index')),
-      });
-    }
-
-    // Duties
-    if (can.value.read?.duty) {
-      result.push({
-        id: 'nav-duties',
-        label: $t('Pareigybės'),
-        keywords: ['duties', 'pareigybes', 'pareigos'],
-        icon: DutyIcon,
+        action: () => router.visit(route('profile.roles')),
+      },
+      {
+        id: 'nav-profile-notifications',
+        label: $t('shell.account.notifications'),
+        keywords: ['notifications', 'pranesimai', 'nustatymai'],
+        icon: Bell,
         category: 'navigation',
-        action: () => router.visit(route('duties.index')),
-      });
-    }
-
-    // Tasks
-    if (can.value.read?.task) {
-      result.push({
-        id: 'nav-tasks',
-        label: $t('Užduotys'),
-        keywords: ['tasks', 'uzduotys', 'darbai'],
-        icon: TaskIcon,
-        category: 'navigation',
-        action: () => router.visit(route('userTasks')),
-      });
-    }
-
-    // Reservations
-    if (can.value.read?.reservation) {
-      result.push({
-        id: 'nav-reservations',
-        label: $t('Rezervacijos'),
-        keywords: ['reservations', 'rezervacijos', 'uzsakymai'],
-        icon: ReservationIcon,
-        category: 'navigation',
-        action: () => router.visit(route('reservations.index')),
-      });
-    }
-
-    // Calendar
-    if (can.value.read?.calendar) {
-      result.push({
-        id: 'nav-calendar',
-        label: $t('Kalendorius'),
-        keywords: ['calendar', 'kalendorius', 'ivykiai'],
-        icon: CalendarIcon,
-        category: 'navigation',
-        action: () => router.visit(route('calendar.index')),
-      });
-    }
-
-    // News
-    if (can.value.read?.news) {
-      result.push({
-        id: 'nav-news',
-        label: $t('Naujienos'),
-        keywords: ['news', 'naujienos', 'straipsniai'],
-        icon: NewsIcon,
-        category: 'navigation',
-        action: () => router.visit(route('news.index')),
-      });
-    }
-
-    // Profile - always available
-    result.push({
-      id: 'nav-profile',
-      label: $t('Profilis'),
-      keywords: ['profile', 'profilis', 'nustatymai', 'settings'],
-      icon: Settings,
-      category: 'navigation',
-      action: () => router.visit(route('profile')),
-    });
-
-    // ==================
-    // Create Actions
-    // ==================
-
-    // Create meeting
-    if (can.value.create?.meeting) {
-      result.push({
-        id: 'create-meeting',
-        label: $t('Naujas posėdis'),
-        keywords: ['create', 'new', 'meeting', 'naujas', 'posedis', 'sukurti'],
-        icon: Plus,
-        category: 'create',
-        action: () => router.visit(route('meetings.create')),
-      });
-    }
-
-    // Create news
-    if (can.value.create?.news) {
-      result.push({
-        id: 'create-news',
-        label: $t('Nauja naujiena'),
-        keywords: ['create', 'new', 'news', 'nauja', 'naujiena', 'sukurti', 'straipsnis'],
-        icon: Plus,
-        category: 'create',
-        action: () => router.visit(route('news.create')),
-      });
-    }
-
-    // Create reservation
-    if (can.value.create?.reservation) {
-      result.push({
-        id: 'create-reservation',
-        label: $t('Nauja rezervacija'),
-        keywords: ['create', 'new', 'reservation', 'nauja', 'rezervacija', 'sukurti'],
-        icon: Plus,
-        category: 'create',
-        action: () => router.visit(route('reservations.create')),
-      });
-    }
-
-    // Create institution
-    if (can.value.create?.institution) {
-      result.push({
-        id: 'create-institution',
-        label: $t('Nauja institucija'),
-        keywords: ['create', 'new', 'institution', 'nauja', 'institucija', 'sukurti'],
-        icon: Plus,
-        category: 'create',
-        action: () => router.visit(route('institutions.create')),
-      });
-    }
-
-    // Create duty
-    if (can.value.create?.duty) {
-      result.push({
-        id: 'create-duty',
-        label: $t('Nauja pareigybė'),
-        keywords: ['create', 'new', 'duty', 'nauja', 'pareigybe', 'sukurti'],
-        icon: Plus,
-        category: 'create',
-        action: () => router.visit(route('duties.create')),
-      });
-    }
-
-    return result;
+        action: () => router.visit(route('profile.notifications')),
+      },
+      {
+        id: 'action-start-fm',
+        label: $t('Klausyti START FM'),
+        keywords: ['start fm', 'radijas', 'radio'],
+        icon: Radio,
+        category: 'action',
+        action: startFm.open,
+      },
+    ];
   });
 
-  /**
-   * Filter actions by search query
-   */
+  /** Entries in the workspace the user is standing in come first; order is otherwise the catalog's. */
+  const rankByWorkspace = <T extends { workspaceKey?: string }>(items: T[]): T[] => {
+    const current = activeWorkspace.value?.key;
+
+    return [...items].sort((a, b) => Number(b.workspaceKey === current) - Number(a.workspaceKey === current));
+  };
+
   const filterActions = (query: string): CommandAction[] => {
-    if (!query.trim()) {
-      return actions.value;
-    }
+    const normalized = query.trim().toLowerCase();
+    const matching = normalized
+      ? actions.value.filter(action => [action.label, action.workspaceLabel ?? '', ...action.keywords]
+          .some(value => value.toLowerCase().includes(normalized)))
+      : actions.value;
 
-    const lowerQuery = query.toLowerCase().trim();
-
-    return actions.value.filter((action) => {
-      // Check label
-      if (action.label.toLowerCase().includes(lowerQuery)) {
-        return true;
-      }
-
-      // Check keywords
-      return action.keywords.some(keyword =>
-        keyword.toLowerCase().includes(lowerQuery),
-      );
-    });
+    return rankByWorkspace(matching);
   };
 
-  return {
-    actions,
-    filterActions,
-  };
+  /** The catalog workspace that owns an entity type, so search hits can rank by workspace too. */
+  const workspaceKeyForEntity = (entityType: string): string | undefined =>
+    workspaces.value.find(workspace => workspace.sections.some(section => section.entityType === entityType))?.key;
+
+  return { actions, filterActions, rankByWorkspace, workspaceKeyForEntity, activeWorkspace };
 }

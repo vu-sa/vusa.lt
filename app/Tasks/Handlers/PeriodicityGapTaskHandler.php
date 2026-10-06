@@ -5,6 +5,7 @@ namespace App\Tasks\Handlers;
 use App\Models\Institution;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\InstitutionActivityStatusService;
 use App\Support\MorphMap;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Enums\ActionType;
@@ -55,6 +56,11 @@ class PeriodicityGapTaskHandler extends BaseTaskHandler
 
     public function completeForInstitution(Institution $institution, ?string $reason = null): bool
     {
+        $institution->unsetRelation('meetings')->unsetRelation('checkIns');
+        $status = app(InstitutionActivityStatusService::class)->resolve($institution);
+        if ($status->toArray()['requires_action']) {
+            return false;
+        }
         $task = $this->findExistingTask($institution);
 
         if (! $task) {

@@ -2,7 +2,7 @@
 
 use App\Models\Tenant;
 use App\Models\User;
-use App\Notifications\TestPushNotification;
+use App\Notifications\AccessChangedNotification;
 use App\Notifications\WelcomeNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -29,7 +29,7 @@ describe('notifications index', function (): void {
     test('notifications page shows user notifications', function (): void {
         // Create some notifications for the user
         $this->user->notify(new WelcomeNotification);
-        $this->user->notify(new TestPushNotification);
+        $this->user->notify(new AccessChangedNotification([], now()->toDateString()));
 
         asUser($this->user)
             ->get(route('notifications.index'))
@@ -58,7 +58,7 @@ describe('mark as read', function (): void {
 
     test('user can mark all notifications as read', function (): void {
         $this->user->notify(new WelcomeNotification);
-        $this->user->notify(new TestPushNotification);
+        $this->user->notify(new AccessChangedNotification([], now()->toDateString()));
 
         expect($this->user->unreadNotifications()->count())->toBe(2);
 
@@ -74,7 +74,7 @@ describe('mark as read', function (): void {
 describe('delete single notification', function (): void {
     test('user can delete a single notification', function (): void {
         $this->user->notify(new WelcomeNotification);
-        $this->user->notify(new TestPushNotification);
+        $this->user->notify(new AccessChangedNotification([], now()->toDateString()));
 
         $notification = $this->user->notifications()->first();
         $notificationId = $notification->id;
@@ -92,7 +92,7 @@ describe('delete single notification', function (): void {
 
     test('deleting one notification does not delete others', function (): void {
         $this->user->notify(new WelcomeNotification);
-        $this->user->notify(new TestPushNotification);
+        $this->user->notify(new AccessChangedNotification([], now()->toDateString()));
         $this->user->notify(new WelcomeNotification);
 
         $notifications = $this->user->notifications()->get();
@@ -116,7 +116,7 @@ describe('delete read notifications', function (): void {
     test('user can delete only read notifications', function (): void {
         // Create 3 notifications - 2 unread, 1 read
         $this->user->notify(new WelcomeNotification);
-        $this->user->notify(new TestPushNotification);
+        $this->user->notify(new AccessChangedNotification([], now()->toDateString()));
         $this->user->notify(new WelcomeNotification);
 
         // Mark only one as read
@@ -142,7 +142,7 @@ describe('delete read notifications', function (): void {
     test('deleting read notifications does not affect unread', function (): void {
         // Create notifications
         $this->user->notify(new WelcomeNotification);
-        $this->user->notify(new TestPushNotification);
+        $this->user->notify(new AccessChangedNotification([], now()->toDateString()));
 
         // Mark one as read
         $this->user->notifications()->first()->update(['read_at' => now()]);
@@ -166,7 +166,7 @@ describe('delete read notifications', function (): void {
 describe('delete all notifications', function (): void {
     test('user can delete all notifications', function (): void {
         $this->user->notify(new WelcomeNotification);
-        $this->user->notify(new TestPushNotification);
+        $this->user->notify(new AccessChangedNotification([], now()->toDateString()));
         $this->user->notify(new WelcomeNotification);
 
         // Mark one as read
@@ -184,7 +184,7 @@ describe('delete all notifications', function (): void {
 
     test('delete all removes both read and unread notifications', function (): void {
         $this->user->notify(new WelcomeNotification);
-        $this->user->notify(new TestPushNotification);
+        $this->user->notify(new AccessChangedNotification([], now()->toDateString()));
 
         // Mark one as read
         $this->user->notifications()->first()->update(['read_at' => now()]);

@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\DB;
  * `demo-*` permalinks on the main ("pagrindinis") tenant, side by side with the real
  * ones, so they can be compared directly:
  *   /lt/demo-tapk-nariu            vs  /lt/tapk-nariu (MembershipPage.vue)
- *   /lt/demo-pirmakursiu-stovyklos vs  /lt/pirmakursiu-stovyklos (SummerCamps.vue)
+ *   /lt/demo-pirmakursiu-stovyklos vs  /lt/pirmakursiu-stovyklos (the live content page)
  *
  * Known gaps — things the static block system has no equivalent for, so the source
  * text/behaviour was adapted rather than copied verbatim:
@@ -34,8 +34,6 @@ use Illuminate\Support\Facades\DB;
  *    (`rcTag` mark, `plain`/`green`) and used below (part 3b) with static copy instead.
  *  - number-stat-section only stores static numbers, so the figures below are a
  *    plausible snapshot, not the live-queried figures.
- *  - SummerCamps' `isCurrentYear` copy switch and its live $tChoice camp/unit counts
- *    in the hero — the seeded hero always uses the "returning visitor" copy.
  *  - The FAQ (16 items) and photo gallery (16 images) are trimmed to a representative
  *    subset here — the accordion/gallery blocks handle either count identically, this
  *    is just about keeping the seeder itself readable.
@@ -50,8 +48,8 @@ use Illuminate\Support\Facades\DB;
  *    content-grid's own chrome — demonstrating a block wrapping others.
  *  - The overlay "Faktai / Fun Facts" card is contained within the image (not
  *    overhanging its corner) via `overlayCorner`, matching the source exactly.
- *  - SummerCamps' tenant group labels use `tenantLabelStyle: 'faculty'` (e.g.
- *    "VU Filologijos fakultetas"), matching `SummerCampCard`'s naming.
+ *  - Camp tenant group labels use `tenantLabelStyle: 'faculty'` (e.g.
+ *    "VU Filologijos fakultetas").
  */
 class RichContentDemoPagesSeeder extends Seeder
 {
@@ -588,7 +586,7 @@ class RichContentDemoPagesSeeder extends Seeder
             ->all();
 
         return [
-            // 1. Hero — panel, matching the SummerCamps.vue header exactly.
+            // 1. Hero — panel.
             [
                 'type' => 'hero',
                 'json_content' => [
@@ -603,8 +601,7 @@ class RichContentDemoPagesSeeder extends Seeder
                 'options' => ['variant' => 'panel'],
             ],
 
-            // 2. Event list — "Stovyklos pagal padalinius", grouped by tenant (the
-            // generalization of SummerCampCard/campsByTenant), pinned to $latestYear.
+            // 2. Event list — "Stovyklos pagal padalinius", grouped by tenant, pinned to $latestYear.
             [
                 'type' => 'event-list',
                 'json_content' => [],
@@ -677,7 +674,11 @@ class RichContentDemoPagesSeeder extends Seeder
                 'json_content' => [
                     'links' => collect($archiveYears)->map(fn (int $year) => [
                         'title' => $lt("{$year} m. pirmakursių stovyklos", "Freshmen camps {$year}"),
-                        'url' => route('pirmakursiuStovyklos', ['lang' => $locale, 'year' => $year]),
+                        'url' => route('page', [
+                            'subdomain' => 'www',
+                            'lang' => $locale,
+                            'permalink' => $lt('pirmakursiu-stovyklos', 'freshmen-camps')."-{$year}",
+                        ]),
                     ])->all(),
                 ],
                 'options' => [

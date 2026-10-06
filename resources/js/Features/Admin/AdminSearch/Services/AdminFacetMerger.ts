@@ -23,9 +23,15 @@ export function mergeFacets(
   filters: AdminSearchFilters,
   facetConfig: CollectionFacetConfig,
 ): AdminFacet[] {
-  // If no initial facets, use current facets
+  const fields = new Set([...initialFacets, ...currentFacets].map(facet => facet.field));
+  for (const field of facetConfig.fields) {
+    const selected = getSelectedValuesForField(field.field, filters);
+    if (selected.length && !fields.has(field.field)) {
+      initialFacets = [...initialFacets, { field: field.field, label: field.label, type: field.type, values: selected.map(value => ({ value, count: null, isSelected: true })) }];
+    }
+  }
   if (initialFacets.length === 0) {
-    return currentFacets.map(facet => addSelectionState(facet, filters));
+    initialFacets = currentFacets;
   }
 
   return initialFacets.map((initialFacet) => {
@@ -33,7 +39,7 @@ export function mergeFacets(
     const currentFacet = currentFacets.find(f => f.field === initialFacet.field);
 
     // Create a map of current values for quick lookup
-    const currentValueMap = new Map<string, number>();
+    const currentValueMap = new Map<string, number | null>();
     if (currentFacet) {
       currentFacet.values.forEach((value) => {
         currentValueMap.set(value.value, value.count);
@@ -45,7 +51,7 @@ export function mergeFacets(
 
     // Merge values: show ALL initial values with updated counts from current search
     const mergedValues = initialFacet.values.map((initialValue) => {
-      const currentCount = currentValueMap.get(initialValue.value) || 0;
+      const currentCount = currentValueMap.get(initialValue.value) ?? null;
       const isSelected = selectedValues.includes(initialValue.value);
 
       return {
@@ -71,6 +77,11 @@ export function mergeFacets(
     }
 
     // Sort: selected items first, then by count, then alphabetically
+    for (const value of selectedValues) {
+      if (!mergedValues.some(option => String(option.value) === String(value))) {
+        mergedValues.push({ value: String(value), label: String(value), count: null, isSelected: true });
+      }
+    }
     sortFacetValues(mergedValues, selectedValues);
 
     return {
@@ -114,29 +125,11 @@ function sortFacetValues(
     if (!aSelected && bSelected) return 1;
 
     // Then by count (descending)
-    if (a.count !== b.count) return b.count - a.count;
+    if (a.count !== b.count) return (b.count ?? -1) - (a.count ?? -1);
 
     // Finally alphabetically
     return a.value.localeCompare(b.value);
   });
-}
-
-/**
- * Add selection state to facet values based on current filters
- */
-function addSelectionState(
-  facet: AdminFacet,
-  filters: AdminSearchFilters,
-): AdminFacet {
-  const selectedValues = getSelectedValuesForField(facet.field, filters);
-
-  return {
-    ...facet,
-    values: facet.values.map(value => ({
-      ...value,
-      isSelected: selectedValues.includes(value.value),
-    })),
-  };
 }
 
 /**
@@ -149,7 +142,7 @@ export function filterEmptyFacets(
 ): AdminFacet[] {
   return facets.filter((facet) => {
     // Always show facets with values that have counts
-    if (facet.values.some(v => v.count > 0)) {
+    if (facet.values.some(v => v.count == null || v.count > 0)) {
       return true;
     }
 
@@ -178,7 +171,7 @@ export function calculateFacetStats(facets: AdminFacet[]): {
   let selectedValues = 0;
 
   facets.forEach((facet) => {
-    const hasActiveValues = facet.values.some(v => v.count > 0);
+    const hasActiveValues = facet.values.some(v => v.count == null || v.count > 0);
     if (hasActiveValues) activeFacets++;
 
     totalValues += facet.values.length;
@@ -290,25 +283,13 @@ export function processTenantFacetValues(
   });
 
   // Sort each group by count descending
-  const sortByCount = (a: AdminFacetValue, b: AdminFacetValue) => b.count - a.count;
+  const sortByCount = (a: AdminFacetValue, b: AdminFacetValue) => (b.count ?? -1) - (a.count ?? -1);
 
   return {
     main: main.sort(sortByCount),
     padaliniai: padaliniai.sort(sortByCount),
     pkp: pkp.sort(sortByCount),
   };
-}
-
-/**
- * Format completion status for display
- */
-export function formatCompletionStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    complete: 'Užbaigtas',
-    incomplete: 'Neužbaigtas',
-    partial: 'Dalinai užbaigtas',
-  };
-  return statusMap[status] || status;
 }
 
 /**

@@ -6,10 +6,11 @@
     :subtitle="resource.category_name"
   >
     <template #badges>
-      <Badge v-if="resource.tenant_shortname" variant="outline">
+      <Badge v-if="resource.tenant_shortname" variant="outline" class="text-xs">
         {{ resource.tenant_shortname }}
       </Badge>
-      <Badge :class="toneClass(resource.is_reservable ? 'success' : 'neutral')">
+      <Badge :class="['text-xs', toneClass(resource.is_reservable ? 'success' : 'neutral')]">
+        <component :is="toneIcon(resource.is_reservable ? 'success' : 'neutral')" class="size-3.5" aria-hidden="true" />
         {{ resource.is_reservable ? $t('Skolinamas') : $t('Neskolinamas') }}
       </Badge>
     </template>
@@ -19,11 +20,16 @@
         <DialogTrigger as-child>
           <button
             type="button"
-            class="group relative size-20 overflow-hidden rounded-lg border bg-muted transition-shadow hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/40"
+            class="group relative size-20 overflow-hidden border border-border bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-brand pointer-coarse:size-24"
             :aria-label="$t('Padidinti nuotrauką')"
           >
             <img :src="resource.image_url" :alt="imageAlt" class="size-full object-cover">
-            <span class="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/30 group-hover:opacity-100">
+            <span
+              :class="[
+                'absolute inset-0 flex items-center justify-center bg-ink/40 opacity-0 transition-opacity',
+                'group-hover:opacity-100 group-focus-visible:opacity-100 pointer-coarse:opacity-100',
+              ]"
+            >
               <Expand class="size-5 text-white" />
             </span>
           </button>
@@ -32,18 +38,18 @@
           <DialogTitle class="sr-only">
             {{ imageAlt || $t('Ištekliaus nuotrauka') }}
           </DialogTitle>
-          <img :src="resource.image_url" :alt="imageAlt" class="max-h-[80vh] w-full rounded-md object-contain">
+          <img :src="resource.image_url" :alt="imageAlt" class="max-h-[80vh] w-full object-contain">
         </DialogContent>
       </Dialog>
 
-      <div v-else class="size-20 overflow-hidden rounded-lg border bg-muted">
+      <div v-else class="size-20 overflow-hidden border border-border bg-muted">
         <img :src="resource.image_url" :alt="imageAlt" class="size-full object-cover">
       </div>
     </template>
 
     <template v-if="showActions" #actions>
       <Link :href="route('resources.edit', resource.id)">
-        <Button size="sm">
+        <Button size="sm" variant="outline" voice="sentence">
           <Pencil class="mr-2 size-4" />
           {{ $t('Redaguoti') }}
         </Button>
@@ -53,32 +59,32 @@
     <!-- Availability for the chosen reservation window -->
     <div
       v-if="showAvailabilityBox"
-      class="mb-4 rounded-lg border p-4"
+      class="mb-4 border p-4"
       :class="[
         isUnavailable
-          ? 'border-amber-300 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30'
+          ? 'border-status-attention-border bg-status-attention-surface'
           : hasDiscrepancies
-            ? 'border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20'
-            : 'bg-muted/30',
+            ? 'border-status-attention-border bg-status-attention-surface'
+            : 'border-border bg-secondary/50',
       ]"
     >
       <div class="flex items-center justify-between">
         <span class="text-sm font-medium">{{ $t('Laisva pasirinktu laiku') }}</span>
-        <span v-if="availability" class="text-lg font-semibold tabular-nums" :class="isUnavailable ? 'text-amber-700 dark:text-amber-400' : 'text-foreground'">
+        <span v-if="availability" class="text-lg font-semibold tabular-nums" :class="isUnavailable ? 'text-status-attention' : 'text-foreground'">
           {{ availability.lowestCapacityAtDateTimeRange }} / {{ availability.capacity }}
         </span>
         <span v-else class="text-sm text-muted-foreground">…</span>
       </div>
-      <p v-if="isUnavailable" class="mt-1 text-xs text-amber-700 dark:text-amber-400">
+      <p v-if="isUnavailable" class="mt-1 text-xs text-status-attention">
         {{ $t('Šiuo laikotarpiu išteklius nepasiekiamas.') }}
       </p>
-      <p v-else-if="hasDiscrepancies" class="mt-1 flex items-start gap-1.5 text-xs text-amber-700 dark:text-amber-400">
+      <p v-else-if="hasDiscrepancies" class="mt-1 flex items-start gap-1.5 text-xs text-status-attention">
         <AlertTriangle class="mt-0.5 size-3.5 shrink-0" />
         {{ $t('reservations.discrepancy.available_from_ended_reservations', { count: String(availability.discrepancies.length) }) }}
       </p>
     </div>
 
-    <div class="divide-y rounded-lg border px-4">
+    <div class="divide-y border border-border px-4">
       <DetailRow v-if="resource.category_name" :label="$t('Kategorija')" :value="resource.category_name" />
       <DetailRow v-if="resource.location" :label="$t('Vieta')" :value="resource.location" />
       <DetailRow v-if="resource.capacity != null" :label="$t('Kiekis')" :value="resource.capacity" />
@@ -94,13 +100,13 @@
         <div
           v-for="reservation in availability.reservations"
           :key="reservation.id"
-          class="flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-sm"
-          :class="isTimeEndedActiveReservation(reservation) ? 'border-amber-200 bg-amber-50/30 dark:border-amber-900 dark:bg-amber-950/20' : ''"
+          class="flex items-center justify-between gap-3 border border-border px-3 py-2 text-sm"
+          :class="isTimeEndedActiveReservation(reservation) ? 'border-status-attention-border bg-status-attention-surface' : ''"
         >
           <span class="flex min-w-0 items-center gap-2">
             <AlertTriangle
               v-if="isTimeEndedActiveReservation(reservation)"
-              class="size-3.5 shrink-0 text-amber-600 dark:text-amber-400"
+              class="size-3.5 shrink-0 text-status-attention"
             />
             <span class="truncate">{{ reservation.name }}</span>
           </span>
@@ -129,7 +135,7 @@
         <li
           v-for="reservation in data!.upcoming_reservations"
           :key="reservation.id"
-          class="flex flex-col gap-1.5 rounded-md border px-3 py-2 text-sm"
+          class="flex flex-col gap-1.5 border border-border px-3 py-2 text-sm"
         >
           <div class="flex items-center justify-between gap-3">
             <Link
@@ -168,7 +174,7 @@
         <li
           v-for="reservation in data!.previous_reservations"
           :key="reservation.id"
-          class="flex flex-col gap-1.5 rounded-md border px-3 py-2 text-sm"
+          class="flex flex-col gap-1.5 border border-border px-3 py-2 text-sm"
         >
           <div class="flex items-center justify-between gap-3">
             <Link
@@ -210,7 +216,7 @@ import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, Expand, Pencil } from 'lucide-vue-next';
 
-import { toneClass } from '../../Utils/searchBadges';
+import { toneClass, toneIcon } from '../../Utils/searchBadges';
 import { formatSearchDateTime } from '../../Utils/searchHitMappers';
 import type { ResourceAvailability } from '../../Composables/useResourceAvailability';
 

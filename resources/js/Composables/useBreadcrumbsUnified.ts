@@ -3,7 +3,6 @@ import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import Home24Filled from '~icons/fluent/home24-filled';
-import { TypeIcon } from '@/Components/icons';
 
 /**
  * Unified breadcrumb item interface for both admin and public
@@ -13,6 +12,14 @@ export interface BreadcrumbItem {
   icon?: Component;
   href?: string;
   prefetch?: boolean;
+}
+
+export interface NavigationTreeNode {
+  id: number;
+  name: string;
+  url?: string | null;
+  parent_id?: number | null;
+  links?: NavigationTreeNode[][] | null;
 }
 
 /**
@@ -32,7 +39,7 @@ export type BreadcrumbPlacement = 'layout' | 'band';
 
 // Global state for breadcrumbs
 const globalBreadcrumbs = ref<BreadcrumbItem[]>([]);
-const breadcrumbContext = ref<BreadcrumbContext>('admin');
+const breadcrumbContext = ref<BreadcrumbContext>('public');
 const globalPlacement = ref<BreadcrumbPlacement>('layout');
 
 /**
@@ -58,7 +65,7 @@ export function createBreadcrumbItem(
 export function createRouteBreadcrumb(
   label: string,
   routeName?: string,
-  params?: any,
+  params?: Record<string, unknown> | string | number,
   icon?: Component,
   prefetch: boolean = true,
 ): BreadcrumbItem {
@@ -73,7 +80,7 @@ export function createRouteBreadcrumb(
 /**
  * Get appropriate home breadcrumb based on context
  */
-export function getHomeBreadcrumb(context: BreadcrumbContext = 'admin'): BreadcrumbItem {
+export function getHomeBreadcrumb(context: BreadcrumbContext = 'public'): BreadcrumbItem {
   if (context === 'public') {
     const page = usePage();
     const { locale } = page.props.app;
@@ -98,7 +105,7 @@ export function getHomeBreadcrumb(context: BreadcrumbContext = 'admin'): Breadcr
 /**
  * Create global breadcrumb state
  */
-export function createBreadcrumbState(context: BreadcrumbContext = 'admin') {
+export function createBreadcrumbState(context: BreadcrumbContext = 'public') {
   breadcrumbContext.value = context;
 
   /**
@@ -170,7 +177,7 @@ export function useBreadcrumbs() {
     // Return a fallback breadcrumb state that does nothing but doesn't break
     return {
       breadcrumbs: readonly(ref([])),
-      context: readonly(ref('admin' as BreadcrumbContext)),
+      context: readonly(ref('public' as BreadcrumbContext)),
       placement: readonly(ref('layout' as BreadcrumbPlacement)),
       set: () => console.warn('🍞 [Breadcrumbs] set() called but no state provider found'),
       add: () => console.warn('🍞 [Breadcrumbs] add() called but no state provider found'),
@@ -178,7 +185,7 @@ export function useBreadcrumbs() {
       home: () => console.warn('🍞 [Breadcrumbs] home() called but no state provider found'),
       createBreadcrumbItem,
       createRouteBreadcrumb,
-      getHomeBreadcrumb: () => getHomeBreadcrumb('admin'),
+      getHomeBreadcrumb: () => getHomeBreadcrumb('public'),
       // Flag to indicate this is fallback mode
       __isFallback: true,
     };
@@ -274,32 +281,7 @@ export const BreadcrumbHelpers = {
   /**
    * Get the home breadcrumb item
    */
-  homeItem: () => getHomeBreadcrumb('admin'),
-
-  /**
-   * Generate admin form breadcrumbs (Create/Edit pages)
-   * @example BreadcrumbHelpers.adminForm('Naujienos', 'news.index', 'Nauja naujiena', Icons.NEWS)
-   */
-  adminForm(sectionName: string, indexRoute: string, currentTitle: string, icon?: Component): BreadcrumbItem[] {
-    return [
-      getHomeBreadcrumb('admin'),
-      createBreadcrumbItem('Administravimas', route('administration'), TypeIcon),
-      createRouteBreadcrumb(sectionName, indexRoute, undefined, icon),
-      createBreadcrumbItem(currentTitle, undefined, icon),
-    ];
-  },
-
-  /**
-   * Generate admin index breadcrumbs
-   * @example BreadcrumbHelpers.adminIndex('Naujienos', Icons.NEWS)
-   */
-  adminIndex(sectionName: string, icon?: Component): BreadcrumbItem[] {
-    return [
-      getHomeBreadcrumb('admin'),
-      createBreadcrumbItem('Administravimas', route('administration'), TypeIcon),
-      createBreadcrumbItem(sectionName, undefined, icon),
-    ];
-  },
+  homeItem: () => getHomeBreadcrumb('public'),
 
   /**
    * Generate public content breadcrumbs
@@ -317,11 +299,11 @@ export const BreadcrumbHelpers = {
    * @param navigationItemId The navigation item ID to build path from
    * @param mainNavigation The main navigation structure from page props
    */
-  buildNavigationPath(navigationItemId: number | null, mainNavigation: any[]): BreadcrumbItem[] {
+  buildNavigationPath(navigationItemId: number | null, mainNavigation: NavigationTreeNode[]): BreadcrumbItem[] {
     if (!navigationItemId) return [];
 
     const breadcrumbItems: BreadcrumbItem[] = [];
-    let currentId = navigationItemId;
+    let currentId: number | null = navigationItemId;
 
     // Build the breadcrumb path by traversing the navigation tree upwards
     while (currentId) {
@@ -338,7 +320,7 @@ export const BreadcrumbHelpers = {
       });
 
       // Move up to parent
-      currentId = navigationItem.parent_id;
+      currentId = navigationItem.parent_id ?? null;
     }
 
     return breadcrumbItems;
@@ -348,7 +330,7 @@ export const BreadcrumbHelpers = {
    * Helper to find navigation item by ID (for public pages)
    * @private
    */
-  findNavigationItem(navigation: any[], id: number): any {
+  findNavigationItem(navigation: NavigationTreeNode[], id: number): NavigationTreeNode | null {
     // First check root level items
     for (const item of navigation) {
       if (item.id === id) return item;
@@ -368,26 +350,5 @@ export const BreadcrumbHelpers = {
     }
 
     return null;
-  },
-
-  // eslint-disable-next-line no-secrets/no-secrets
-  /**
-   * Generate entity show breadcrumbs (Admin)
-   * @example BreadcrumbHelpers.adminShow('Naujienos', 'news.index', {}, 'Mano naujiena', Icons.NEWS, Icons.NEWS)
-   */
-  adminShow(
-    parentName: string,
-    parentRoute: string,
-    parentParams: any,
-    currentName: string,
-    parentIcon?: Component,
-    currentIcon?: Component,
-  ): BreadcrumbItem[] {
-    return [
-      getHomeBreadcrumb('admin'),
-      createBreadcrumbItem('Administravimas', route('administration'), TypeIcon),
-      createRouteBreadcrumb(parentName, parentRoute, parentParams, parentIcon),
-      createBreadcrumbItem(currentName, undefined, currentIcon),
-    ];
   },
 };

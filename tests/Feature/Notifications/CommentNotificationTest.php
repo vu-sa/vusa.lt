@@ -93,3 +93,38 @@ test('a reply notifies thread participants only, not the whole audience', functi
     Notification::assertNotSentTo($this->bystander, CommentPostedNotification::class);
     Notification::assertNotSentTo($this->author, CommentPostedNotification::class);
 });
+
+/**
+ * The root audience is the curated pool and nothing else. It used to fall back to the
+ * commentable's `users` relation when the pool was empty — for an institution or a duty,
+ * everyone who ever held a seat there.
+ */
+test('a duty root comment reaches its current holders, not former ones', function (): void {
+    $duty = Duty::factory()->for($this->institution)->create();
+
+    $current = User::factory()->create(['notification_preferences' => []]);
+    $current->duties()->attach($duty, ['start_date' => now()->subMonth(), 'end_date' => null]);
+
+    $former = User::factory()->create(['notification_preferences' => []]);
+    $former->duties()->attach($duty, ['start_date' => now()->subYears(3), 'end_date' => now()->subYears(2)]);
+
+    $this->actingAs($this->author);
+    $duty->comment('<p>Kas perima pareigas?</p>');
+
+    Notification::assertSentTo($current, CommentPostedNotification::class);
+    Notification::assertNotSentTo($former, CommentPostedNotification::class);
+});
+
+test('an institution with no current members notifies nobody, not its past members', function (): void {
+    $empty = Institution::factory()->for($this->tenant)->create();
+    $former = User::factory()->create(['notification_preferences' => []]);
+    $former->duties()->attach(
+        Duty::factory()->for($empty)->create(),
+        ['start_date' => now()->subYears(3), 'end_date' => now()->subYears(2)],
+    );
+
+    $this->actingAs($this->author);
+    $empty->comment('<p>Ar kas nors dar čia?</p>');
+
+    Notification::assertNotSentTo($former, CommentPostedNotification::class);
+});

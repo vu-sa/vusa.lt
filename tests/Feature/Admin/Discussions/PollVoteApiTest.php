@@ -36,7 +36,7 @@ function makePoll(AgendaItem $agendaItem, User $author, array $poll = []): Comme
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
-    $this->coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     $this->institution = Institution::factory()->for($this->tenant)->create();
 
     $this->meeting = Meeting::create([

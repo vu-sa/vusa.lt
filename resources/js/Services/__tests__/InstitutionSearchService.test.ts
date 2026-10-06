@@ -61,6 +61,7 @@ describe('InstitutionSearchService', () => {
         q: 'Mykolas',
         query_by: expect.stringContaining('current_user_names'),
       }),
+      expect.any(AbortSignal),
     );
 
     const callArgs = mockClient.search.mock.calls[0][1];

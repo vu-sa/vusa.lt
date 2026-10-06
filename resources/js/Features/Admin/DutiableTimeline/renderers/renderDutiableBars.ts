@@ -87,18 +87,21 @@ export function renderDutiableBars(ctx: DutiableBarContext): void {
     .attr('y', d => d.top + BAR_INSET / 2)
     .attr('width', barW)
     .attr('height', d => d.height - BAR_INSET)
-    .attr('rx', 3)
     .attr('fill', d => barFill(d.row, timelineColors, staged.get(d.row.id)))
-    // Selection wins the stroke; otherwise a cross-tenant representative is outlined, so
-    // tenant and active/former can be read off the same bar at once.
+    // Selection wins the stroke, then a cross-tenant representative's outline, so tenant and
+    // active/former read off the same bar at once. Ex officio is the dashed edge alone.
     .attr('stroke', (d) => {
       if (selectedIds.has(d.row.id)) return colors.todayLine;
+      if (d.row.tenant_id !== null) return timelineColors.crossTenantStroke;
 
-      return d.row.tenant_id !== null ? timelineColors.crossTenantStroke : 'none';
+      return d.row.is_derived ? timelineColors.derivedStroke : 'none';
     })
-    .attr('stroke-width', d => (selectedIds.has(d.row.id) ? 2 : (d.row.tenant_id !== null ? 1.5 : 0)))
-    .attr('stroke-dasharray', d => (d.row.is_derived ? '4,3' : null))
-    .attr('opacity', d => (d.row.is_derived ? 0.7 : 1));
+    .attr('stroke-width', (d) => {
+      if (selectedIds.has(d.row.id)) return 2;
+
+      return d.row.tenant_id !== null || d.row.is_derived ? 1.5 : 0;
+    })
+    .attr('stroke-dasharray', d => (d.row.is_derived ? '4,3' : null));
 
   groups.selectAll('polygon.open-ended-cap')
     .data(d => (resolved(d).end === null ? [d] : []))
@@ -165,9 +168,8 @@ function parseLocal(value: string): Date {
  * Status, in priority order: an unsaved edit outranks everything (it is what the user is
  * looking at), then whether the seat is still held, then ex-officio.
  *
- * Ended outranks ex-officio deliberately. Amber is a "this one is live and mirrored from
- * somewhere else" signal; on a seat that ended in 2019 it made history shout louder than
- * the present. The dashed stroke still says ex-officio either way.
+ * Ended outranks ex-officio deliberately: a mirrored seat that ended in 2019 is history
+ * like any other. The dashed stroke still says ex-officio either way.
  */
 export function barFill(row: ParsedRow, colors: TimelineColors, staged: StagedDates | undefined): string {
   if (staged?.projected) return colors.projected;

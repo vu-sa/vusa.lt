@@ -38,10 +38,6 @@ beforeEach(() => {
       auth: {
         user: {
           ui_preferences: {
-            sidebar: {
-              sections: { followed_institutions: false },
-              order: ['secondary', 'followed_institutions'],
-            },
             recent_pages: [
               { route: 'meetings.index', params: {}, visited_at: '2026-05-19T10:00:00Z' },
               { route: 'gone.route', params: {}, visited_at: '2026-05-19T09:00:00Z' },
@@ -51,62 +47,6 @@ beforeEach(() => {
       },
     }) as any,
   );
-});
-
-describe('section visibility', () => {
-  it('seeds from server prefs, defaulting missing keys to visible', () => {
-    const ctx = mountProvider();
-    expect(ctx.isSectionVisible('followed_institutions')).toBe(false);
-    expect(ctx.isSectionVisible('secondary')).toBe(true);
-  });
-
-  it('setSectionVisibility updates locally and persists via fetch (not Inertia)', () => {
-    const ctx = mountProvider();
-    ctx.setSectionVisibility('start_fm', false);
-
-    expect(ctx.isSectionVisible('start_fm')).toBe(false);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-
-    const { url, body } = lastFetch();
-    expect(url).toContain('api.v1.admin.user-preferences.update');
-    expect(body.sidebar.sections.start_fm).toBe(false);
-    expect(Array.isArray(body.sidebar.order)).toBe(true);
-  });
-});
-
-describe('section order', () => {
-  it('weaves missing sections in at their canonical position, keeping chosen order', () => {
-    const ctx = mountProvider();
-    const order = ctx.orderedSections.value;
-
-    // `pinned` (canonical first) is inserted at the front even though the stored
-    // order didn't include it; the user's relative order of present sections
-    // (secondary before followed_institutions) is preserved.
-    expect(order[0]).toBe('pinned');
-    expect(order.indexOf('secondary')).toBeLessThan(order.indexOf('followed_institutions'));
-    expect(order).toHaveLength(6);
-    expect(new Set(order).size).toBe(order.length);
-    expect(order).toContain('recently_visited');
-    expect(order).toContain('spacer');
-  });
-
-  it('setSectionOrder reorders and persists', () => {
-    const ctx = mountProvider();
-    ctx.setSectionOrder([
-      'recently_visited', 'pinned', 'followed_institutions', 'spacer', 'start_fm', 'secondary',
-    ] as any);
-
-    expect(ctx.orderedSections.value[0]).toBe('recently_visited');
-    const { body } = lastFetch();
-    expect(body.sidebar.order[0]).toBe('recently_visited');
-  });
-
-  it('resetSections restores default order and visibility', () => {
-    const ctx = mountProvider();
-    ctx.resetSections();
-    expect(ctx.isSectionVisible('followed_institutions')).toBe(true);
-    expect(ctx.orderedSections.value[0]).toBe('pinned');
-  });
 });
 
 describe('recentPages', () => {
@@ -217,31 +157,5 @@ describe('pinned pages', () => {
     expect(ctx.isPinned({ routeName: 'news.index', href: '/mano/news' })).toBe(false);
     ({ body } = lastFetch());
     expect(body.pinned_pages).toHaveLength(0);
-  });
-});
-
-describe('density', () => {
-  it('seeds from server prefs and setDensity persists appearance.density', () => {
-    const ctx = mountProvider();
-    expect(ctx.density.value).toBe('comfortable');
-
-    ctx.setDensity('compact');
-    expect(ctx.density.value).toBe('compact');
-    const { url, body } = lastFetch();
-    expect(url).toContain('api.v1.admin.user-preferences.update');
-    expect(body.appearance.density).toBe('compact');
-  });
-});
-
-describe('sidebar collapsed', () => {
-  it('setSidebarCollapsed persists sidebar.collapsed', () => {
-    const ctx = mountProvider();
-    expect(ctx.sidebarCollapsed.value).toBe(false);
-
-    ctx.setSidebarCollapsed(true);
-    expect(ctx.sidebarCollapsed.value).toBe(true);
-    const { url, body } = lastFetch();
-    expect(url).toContain('api.v1.admin.user-preferences.update');
-    expect(body.sidebar.collapsed).toBe(true);
   });
 });

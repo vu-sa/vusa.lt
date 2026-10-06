@@ -1,20 +1,23 @@
 <template>
-  <div data-slot="dutiable-timeline-toolbar" class="flex flex-wrap items-center justify-between gap-3">
+  <!--
+    Three groups that wrap as units: filters, view controls, then actions. On a phone the
+    actions take their own full-width line instead of scattering between the others.
+  -->
+  <div data-slot="dutiable-timeline-toolbar" class="flex flex-wrap items-center gap-2">
     <div class="flex min-w-0 flex-wrap items-center gap-2" data-tour="timeline-filters">
-      <!-- The heading names a record, so it opens it: reading a term off the chart and then
-           hunting for the institution in the sidebar was the commonest detour here. -->
-      <Link v-if="scopeHref" :href="scopeHref" class="truncate text-sm font-semibold hover:underline">
-        {{ scope?.label ?? '—' }}
-      </Link>
-      <h2 v-else class="truncate text-sm font-semibold">
-        {{ scope?.label ?? '—' }}
-      </h2>
-      <Badge v-if="scope?.sublabel" variant="secondary" class="shrink-0 text-[10px]">
-        {{ scope.sublabel }}
-      </Badge>
-      <Badge variant="outline" class="shrink-0 text-[10px]">
-        {{ $t('dutiables.timeline.row_count', { count: visibleCount }) }}
-      </Badge>
+      <!-- The page names its institution in the title band; the dialog has no band, so the
+           heading opens the record here instead. -->
+      <template v-if="showScope">
+        <Link v-if="scopeHref" :href="scopeHref" class="truncate text-sm font-semibold hover:underline">
+          {{ scope?.label ?? '—' }}
+        </Link>
+        <h2 v-else class="truncate text-sm font-semibold">
+          {{ scope?.label ?? '—' }}
+        </h2>
+        <span v-if="scope?.sublabel" class="shrink-0 text-xs text-muted-foreground">
+          {{ scope.sublabel }}
+        </span>
+      </template>
 
       <DutiableTimelineFilterMenu
         :label="$t('dutiables.timeline.filters.cadence')"
@@ -28,7 +31,7 @@
         <template #indicator>
           <EyeOff
             v-if="!includeEnded"
-            class="size-3 text-amber-600 dark:text-amber-400"
+            class="size-3 text-status-attention"
             :aria-label="$t('dutiables.timeline.ended_hidden')"
           />
         </template>
@@ -60,40 +63,27 @@
       />
     </div>
 
-    <div class="flex flex-wrap items-center gap-3">
-      <div class="flex items-center gap-1">
-        <Button
-          type="button"
-          size="icon-xs"
-          variant="ghost"
-          :disabled="monthWidthPx <= MIN_MONTH_WIDTH"
-          :aria-label="$t('dutiables.timeline.zoom.out')"
-          @click="step(-ZOOM_STEP)"
-        >
-          <ZoomOut class="size-3.5" />
-        </Button>
-        <Slider
-          :model-value="[monthWidthPx]"
-          :min="MIN_MONTH_WIDTH"
-          :max="MAX_MONTH_WIDTH"
-          :step="ZOOM_STEP"
-          class="w-24"
-          :aria-label="$t('dutiables.timeline.zoom.label')"
-          @update:model-value="value => value && emit('update:monthWidthPx', value[0])"
-        />
-        <Button
-          type="button"
-          size="icon-xs"
-          variant="ghost"
-          :disabled="monthWidthPx >= MAX_MONTH_WIDTH"
-          :aria-label="$t('dutiables.timeline.zoom.in')"
-          @click="step(ZOOM_STEP)"
-        >
-          <ZoomIn class="size-3.5" />
-        </Button>
-      </div>
+    <div class="ml-auto flex items-center gap-1.5" data-slot="dutiable-timeline-view-controls">
+      <GanttZoomControl
+        bordered
+        :model-value="monthWidthPx"
+        :min="MIN_MONTH_WIDTH"
+        :max="MAX_MONTH_WIDTH"
+        :step="ZOOM_STEP"
+        @update:model-value="emit('update:monthWidthPx', $event)"
+      />
 
       <DutiableTimelineLegend :colors="timelineColors" />
+
+      <slot name="view" />
+    </div>
+
+    <div
+      v-if="$slots.actions"
+      class="flex w-full items-center justify-end gap-2 sm:w-auto"
+      data-slot="dutiable-timeline-actions"
+    >
+      <slot name="actions" />
     </div>
   </div>
 </template>
@@ -101,7 +91,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { EyeOff, ZoomIn, ZoomOut } from 'lucide-vue-next';
+import { EyeOff } from 'lucide-vue-next';
 
 import DutiableTimelineFilterMenu, { type FilterOption } from './DutiableTimelineFilterMenu.vue';
 import DutiableTimelineLegend from './DutiableTimelineLegend.vue';
@@ -109,17 +99,16 @@ import { MAX_MONTH_WIDTH, MIN_MONTH_WIDTH } from './constants';
 import type { TimelineColors } from './timelineColors';
 import type { TimelineScope } from './types';
 
-import { Slider } from '@/Components/ui/slider';
+import GanttZoomControl from '@/Components/Graphs/GanttZoomControl.vue';
 import { DropdownMenuCheckboxItem, DropdownMenuLabel } from '@/Components/ui/dropdown-menu';
-import { Button } from '@/Components/ui/button';
-import { Badge } from '@/Components/ui/badge';
 
 /** One slider notch. Eight px is roughly one readable step at either end of the range. */
 const ZOOM_STEP = 8;
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   scope: TimelineScope | null;
-  visibleCount: number;
+  /** Off where the page's title band already names the scope. */
+  showScope?: boolean;
   includeEnded: boolean;
   monthWidthPx: number;
   timelineColors: TimelineColors;
@@ -127,7 +116,9 @@ const props = defineProps<{
   tenantOptions: FilterOption[];
   cadenceIds: string[];
   tenantKeys: string[];
-}>();
+}>(), {
+  showScope: true,
+});
 
 const emit = defineEmits<{
   'update:includeEnded': [value: boolean];
@@ -147,11 +138,4 @@ const scopeHref = computed<string | null>(() => {
     default: return null;
   }
 });
-
-function step(delta: number): void {
-  emit(
-    'update:monthWidthPx',
-    Math.min(MAX_MONTH_WIDTH, Math.max(MIN_MONTH_WIDTH, props.monthWidthPx + delta)),
-  );
-}
 </script>

@@ -50,6 +50,6 @@ describe('FacetMerger.mergeFacetsWithSelectionMap', () => {
 
     const typeFacet = merged.find(facet => facet.field === 'type_slugs');
     expect(typeFacet).toBeTruthy();
-    expect(typeFacet?.values.find(value => value.value === 'department')?.count).toBe(0);
+    expect(typeFacet?.values.find(value => value.value === 'department')?.count).toBeNull();
   });
 });

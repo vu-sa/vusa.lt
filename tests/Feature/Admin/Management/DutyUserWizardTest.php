@@ -2,10 +2,10 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Role;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,7 +17,7 @@ beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
     // Create role if it doesn't exist and sync permissions (replaces existing permissions)
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->syncPermissions([
         'duties.read.padalinys',
         'duties.create.padalinys',
@@ -30,7 +30,7 @@ beforeEach(function (): void {
     $this->regularUser = makeUser($this->tenant);
     $this->dutyManager = makeUser($this->tenant);
     $this->dutyManagerDuty = $this->dutyManager->duties()->first();
-    $this->dutyManagerDuty->assignRole('Communication Coordinator');
+    $this->dutyManagerDuty->assignRole('Komunikacijos koordinatorius');
 
     // Create institution with duty for testing
     $this->institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
@@ -94,9 +94,8 @@ describe('wizard page access', function (): void {
 
     test('wizard includes institution types for creation', function (): void {
         // Create some institution types
-        $type = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
-            'title' => ['lt' => 'Test Type', 'en' => 'Test Type'],
+        $type = InstitutionType::factory()->create([
+            'title' => ['lt' => 'Test InstitutionType', 'en' => 'Test InstitutionType'],
         ]);
 
         $response = asUser($this->dutyManager)->get(route('duties.updateUsersWizard'));

@@ -1,18 +1,20 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import type * as Inertia from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
-import { ref, nextTick } from 'vue';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { nextTick, ref } from 'vue';
 
 import DutyForm from '@/Components/AdminForms/DutyForm.vue';
 import type { DutySimilarityMatches } from '@/Components/AdminForms/DuplicateDutyWarning.vue';
 import { commonStubs } from '@/tests/stubs';
 
 // Use the real Inertia useForm (reactive) rather than the global plain-object mock —
-// the genderization preview must react to typing, which only a reactive form gives us.
+// the reactive headline must react to typing, which only a reactive form gives us.
 // Same pattern as NewsForm.component.test.ts.
 vi.mock('@inertiajs/vue3', async () => {
-  const actual = await vi.importActual('@inertiajs/vue3');
+  const actual = await vi.importActual<typeof Inertia>('@inertiajs/vue3');
   return {
     ...actual,
+    Head: { name: 'Head', template: '<div style="display:none"><slot /></div>' },
     usePage: () => ({
       props: {
         app: { locale: 'lt', url: 'https://vusa.test' },
@@ -40,19 +42,15 @@ vi.mock('@/Composables/useDuplicateDutyCheck', () => ({
 
 const stubs = {
   ...commonStubs,
+  Head: true,
+  AdminContentPage: { template: '<div><slot /></div>' },
   AdminForm: { template: '<form @submit.prevent><slot name="status-header" /><slot /></form>' },
   FormElement: { template: '<section><slot name="title" /><slot name="description" /><slot /></section>' },
-  FormFieldWrapper: { template: '<div><slot /></div>' },
+  FormFieldWrapper: { props: ['hint'], template: '<div data-slot="form-field"><slot /><p>{{ hint }}</p></div>' },
   Alert: { template: '<div><slot /></div>' },
-  AlertDescription: { template: '<div><slot /></div>' },
-  MultiSelect: { name: 'MultiSelect', props: ['modelValue', 'options'], template: '<div />' },
+  MultiSelect: { name: 'MultiSelect', props: ['modelValue', 'options', 'id'], template: '<div :id="id" />' },
   SingleSelect: { template: '<div />' },
   NumberField: { template: '<input type="number" />' },
-  Select: { template: '<div><slot /></div>' },
-  SelectContent: { template: '<div><slot /></div>' },
-  SelectItem: { template: '<div><slot /></div>' },
-  SelectTrigger: { template: '<div><slot /></div>' },
-  SelectValue: { template: '<div />' },
   InstitutionSelectDialog: { template: '<div><slot name="trigger" /></div>' },
   CollectionSelectDialog: { template: '<div><slot name="trigger" /></div>' },
   // Props are declared so tests can read what the form hands each picker.
@@ -102,38 +100,53 @@ const mountForm = (duty = emptyDuty(), extraProps: Record<string, unknown> = {})
       assignableDuties: [],
       ...extraProps,
     },
-    global: { stubs },
+    global: {
+      stubs,
+      mocks: {
+        $page: {
+          props: {
+            app: { locale: 'lt', url: 'https://vusa.test' },
+            auth: { user: { isSuperAdmin: true } },
+          },
+        },
+      },
+    },
   });
 
-describe('DutyForm.vue — genderization preview', () => {
+describe('DutyForm.vue — reactive headline', () => {
   let wrapper: ReturnType<typeof mount>;
 
   afterEach(() => {
     wrapper?.unmount();
   });
 
-  it('shows no preview before a name has been typed', () => {
+  it('keeps a generic headline before a name has been typed', () => {
     wrapper = mountForm();
 
     // Regression guard: the preview used to read the (empty, on create) `duty` prop
     // instead of the live `form` state, so it silently rendered nothing forever.
     expect(wrapper.find('[data-testid="duty-ending-masculine"]').exists()).toBe(false);
     expect(wrapper.text()).not.toContain('jie (they)');
+    expect(wrapper.get('h1').text()).toBe('Nauja pareigybė');
   });
 
-  it('previews the live masculine/feminine inflection as the admin types', async () => {
+  it('updates the headline with live masculine/feminine inflection as the admin types', async () => {
     wrapper = mountForm();
 
     const nameInput = wrapper.find('input[placeholder]');
     await nameInput.setValue('Komunikacijos koordinatorius');
     await nextTick();
 
-    expect(wrapper.text()).toContain('Komunikacijos koordinator');
+    expect(wrapper.get('h1').text()).toContain('Komunikacijos koordinator');
+    expect(wrapper.get('[data-testid="form-page-bar-title"]').text()).toBe('Nauja pareigybė');
+    const field = wrapper.get('input#duty-name').element.closest('[data-slot="form-field"]');
+    expect(field?.querySelector('[data-testid="duty-ending-trigger"]')).toBeNull();
+    expect(wrapper.text()).toContain('forms.helpers.duty_name_inflected_hint');
     expect(wrapper.find('[data-testid="duty-ending-masculine"]').text()).toBe('ius');
     expect(wrapper.find('[data-testid="duty-ending-feminine"]').text()).toBe('ė');
   });
 
-  it('updates the preview live as the typed name keeps changing', async () => {
+  it('updates the headline live as the typed name keeps changing', async () => {
     wrapper = mountForm();
 
     const nameInput = wrapper.find('input[placeholder]');
@@ -148,11 +161,36 @@ describe('DutyForm.vue — genderization preview', () => {
     expect(wrapper.text()).not.toContain('Pirminink');
   });
 
-  it('previews an existing duty being edited immediately, without typing', () => {
+  it('shows an existing duty in the headline immediately, without typing', () => {
     wrapper = mountForm(emptyDuty({ id: 'duty-1', name: { lt: 'Vadovas', en: 'Head' } }));
 
     expect(wrapper.find('[data-testid="duty-ending-masculine"]').text()).toBe('as');
     expect(wrapper.find('[data-testid="duty-ending-feminine"]').text()).toBe('ė');
+  });
+
+  it('animates only the headline and keeps the saved name in the form bar', () => {
+    wrapper = mountForm(emptyDuty({ id: 'duty-1', name: { lt: 'Vadovas', en: 'Head' } }));
+
+    expect(wrapper.get('h1 [data-testid="duty-ending-masculine"]').text()).toBe('as');
+    expect(wrapper.get('h1 [data-testid="duty-ending-feminine"]').text()).toBe('ė');
+    expect(wrapper.get('h1').classes()).toContain('u-display');
+    expect(wrapper.get('h1 [data-testid="duty-ending-underline"]').classes()).toContain('bg-brand');
+    expect(wrapper.get('[data-testid="form-page-bar-title"]').text()).toBe('Vadovas');
+    expect(wrapper.find('[data-testid="form-page-bar-title"] [data-testid="duty-ending-trigger"]').exists()).toBe(false);
+  });
+
+  it('updates the edit headline and follows the selected language', async () => {
+    wrapper = mountForm(emptyDuty({ id: 'duty-1', name: { lt: 'Vadovas', en: 'Head' } }));
+    await wrapper.get('input#duty-name').setValue('Sekretorius');
+    expect(wrapper.get('h1 [data-testid="duty-ending-masculine"]').text()).toBe('ius');
+
+    await wrapper.findComponent({ name: 'FormPage' }).vm.$emit('update:locale', 'en');
+    await nextTick();
+    expect(wrapper.get('h1').text()).toBe('Head');
+    expect(wrapper.find('[data-testid="duty-ending-trigger"]').exists()).toBe(false);
+    await wrapper.get('input#duty-name').setValue('Coordinator');
+    expect(wrapper.get('h1').text()).toBe('Coordinator');
+    expect(wrapper.get('[data-testid="form-page-bar-title"]').text()).toBe('Vadovas');
   });
 });
 
@@ -297,9 +335,7 @@ describe('DutyForm.vue — ex-officio seats in the assignable-tenants section', 
     expect(wrapper.find(`[data-testid="tenant-occupancy-${tenant.id}"]`).text()).toBe('2 / ∞');
   });
 
-  it('keeps ex-officio holders out of the owning-tenant member selection', () => {
-    // They already hold the seat through their source duty, so offering them
-    // in the picker would let an admin "add" a row that already exists.
+  it('does not render TransferList for member associations (Decision O21 / Forms rule 1 & 15)', () => {
     wrapper = mountForm(emptyDuty({ id: 'duty-1' }), {
       assignableUsers: [
         { id: 'user-ex', name: 'Jonas Jonaitis', is_recent: true },
@@ -308,12 +344,7 @@ describe('DutyForm.vue — ex-officio seats in the assignable-tenants section', 
       exOfficioMembers: [{ ...exOfficioMember, tenant_id: null }],
     });
 
-    const transferList = wrapper.findComponent({ name: 'TransferList' });
-    const options = transferList.props('options') as Array<{ value: string }>;
-    const locked = transferList.props('lockedOptions') as Array<{ value: string }>;
-
-    expect(options.map(o => o.value)).toEqual(['user-a']);
-    expect(locked.map(o => o.value)).toEqual(['user-ex']);
+    expect(wrapper.findComponent({ name: 'TransferList' }).exists()).toBe(false);
   });
 });
 
@@ -323,10 +354,9 @@ describe('DutyForm.vue — picking which tenants may assign representatives', ()
   const tenantA = { id: 11, shortname: 'VU SA MIF', type: 'padalinys' };
   const tenantB = { id: 12, shortname: 'VU SA TSPMI', type: 'padalinys' };
 
-  /** The tenant picker is the last MultiSelect on the form (after types and roles). */
+  /** The tenant picker MultiSelect on the form. */
   const tenantPicker = (w: ReturnType<typeof mount>) => {
-    const pickers = w.findAllComponents({ name: 'MultiSelect' });
-    return pickers[pickers.length - 1];
+    return w.findAllComponents({ name: 'MultiSelect' }).find(c => c.props('id') === 'assignable-tenants')!;
   };
 
   const mountWithRows = () => mountForm(
@@ -376,5 +406,66 @@ describe('DutyForm.vue — picking which tenants may assign representatives', ()
 
     expect(wrapper.find(`[data-testid="tenant-occupancy-${tenantA.id}"]`).exists()).toBe(false);
     expect(wrapper.find(`[data-testid="tenant-occupancy-${tenantB.id}"]`).text()).toBe('2 / ∞');
+  });
+
+  it('updates contacts grouping via segmented control', async () => {
+    wrapper = mountForm(emptyDuty({ contacts_grouping: 'none' }));
+
+    const programOption = wrapper.find('[data-testid="contacts-grouping-study_program"]');
+    expect(programOption.exists()).toBe(true);
+
+    await programOption.trigger('click');
+    expect(programOption.attributes('aria-pressed')).toBe('true');
+  });
+
+  it('passes mapped type objects to the duty types MultiSelect, not raw IDs', async () => {
+    const dutyType1 = { id: 1, title: 'Valdyba' };
+    const dutyType2 = { id: 2, title: 'Kuratorius' };
+    wrapper = mountForm(
+      emptyDuty({
+        id: 'duty-1',
+        types: [dutyType1],
+      }),
+      {
+        dutyTypes: [dutyType1, dutyType2],
+      },
+    );
+
+    const typePicker = wrapper.findAllComponents({ name: 'MultiSelect' }).find(c => c.props('id') === 'duty-types');
+    expect(typePicker).toBeDefined();
+    expect(typePicker!.props('modelValue')).toEqual([dutyType1]);
+
+    typePicker!.vm.$emit('update:modelValue', [dutyType1, dutyType2]);
+    await nextTick();
+
+    const { form } = wrapper.vm as unknown as { form: { types: number[] } };
+    expect(form.types).toEqual([1, 2]);
+  });
+
+  it('passes mapped role objects to the administrative roles MultiSelect, not raw IDs', async () => {
+    const role1 = { id: '01gxtwdayy2t13j51wg035f8n0', name: 'Komunikacijos koordinatorius' };
+    const role2 = { id: '01h6hzfefycaz9bnqpkanp6bn4', name: 'Išteklių administratorius' };
+    wrapper = mountForm(
+      emptyDuty({
+        id: 'duty-1',
+        roles: [role1],
+      }),
+      {
+        roles: [role1, role2],
+      },
+    );
+
+    const rolePicker = wrapper.findAllComponents({ name: 'MultiSelect' }).find(c => c.props('id') === 'admin_role');
+    expect(rolePicker).toBeDefined();
+    expect(rolePicker!.props('modelValue')).toEqual([{ label: role1.name, value: role1.id }]);
+
+    rolePicker!.vm.$emit('update:modelValue', [
+      { label: role1.name, value: role1.id },
+      { label: role2.name, value: role2.id },
+    ]);
+    await nextTick();
+
+    const { form } = wrapper.vm as unknown as { form: { roles: string[] } };
+    expect(form.roles).toEqual([role1.id, role2.id]);
   });
 });

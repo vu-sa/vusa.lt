@@ -1,5 +1,6 @@
 <template>
   <article
+    data-slot="public-contact-card"
     class="group relative flex flex-col bg-white/40 p-5 sm:p-6 transition-colors hover:bg-black/[0.03] dark:bg-black/40 dark:hover:bg-black/55"
   >
     <!-- Photo section (no avatars, no initials overlay) -->
@@ -35,7 +36,7 @@
             class="flex items-center gap-1 text-sm leading-relaxed text-muted-foreground"
           >
             <span class="min-w-0">
-              {{ changeDutyNameEndings(contact, duty.name, $page.props.app.locale, contact.pronouns, duty.pivot?.use_original_duty_name) }}
+              <InflectedDutyName :name="duty.name" :holder="dutyHolder" :use-original-duty-name="duty.pivot?.use_original_duty_name" />
               <span v-if="showAdditionalInfo(duty)" class="text-muted-foreground/70">
                 {{ showAdditionalInfo(duty) }}
               </span>
@@ -140,24 +141,31 @@
 </template>
 
 <script setup lang="ts">
+import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 import InfoPopover from '../Buttons/InfoPopover.vue';
 
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
-import { changeDutyNameEndings } from '@/Utils/String';
+import { changeDutyNameEndings, type DutyPronouns } from '@/Utils/String';
 import IFluentMail20Regular from '~icons/fluent/mail-20-regular';
 import IFluentPhone20Regular from '~icons/fluent/phone-20-regular';
 import IFluentPerson24Regular from '~icons/fluent/person-24-regular';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 
 const props = defineProps<{
-  contact: App.Entities.User;
+  contact: App.Entities.User & { duty_pronouns?: DutyPronouns };
   duties: App.Entities.Duty[];
   /** Hide duty names — used when contacts are already sectioned by duty. */
   hideDutyNames?: boolean;
 }>();
+
+const dutyHolder = computed(() => ({
+  name: props.contact.name,
+  pronouns: props.contact.duty_pronouns ?? props.contact.pronouns,
+}));
 
 // Pivot-level description takes precedence over the duty-level one, matching the
 // data model where a duty assigned to a specific user can override the generic text.
@@ -182,7 +190,10 @@ const hasDutyDescription = (duty: App.Entities.Duty): boolean => {
 // alongside the email
 const shownContactEmail = computed(() => {
   return props.duties.reduce<{ name: string; email: string }[]>((acc, duty) => {
-    acc.push({ name: duty.name, email: duty.pivot?.additional_email ?? duty.email ?? props.contact.email });
+    acc.push({
+      name: changeDutyNameEndings(dutyHolder.value, duty.name, usePage().props.app.locale, dutyHolder.value.pronouns, duty.pivot?.use_original_duty_name),
+      email: duty.pivot?.additional_email ?? duty.email ?? props.contact.email,
+    });
     return acc;
   }, []);
 });

@@ -6,11 +6,11 @@
         <!-- Add filter count badge -->
         <div
           v-if="isActive"
-          class="ml-1.5 flex items-center justify-center h-5 min-w-5 rounded-full bg-primary text-primary-foreground text-xs font-medium"
+          class="ml-1.5 flex h-4 min-w-4 items-center justify-center border border-border bg-secondary px-1 text-[10px] font-bold tabular-nums text-foreground"
         >
           {{ filterCount }}
         </div>
-        <ChevronDownIcon class="ml-2 h-4 w-4" />
+        <ChevronDown class="ml-2 size-4" />
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="start" :class="[searchable ? 'w-[240px]' : 'w-[200px]', 'p-2 max-h-[350px]']">
@@ -93,7 +93,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDownIcon } from 'lucide-vue-next';
+import { ChevronDown } from 'lucide-vue-next';
 import { CheckboxGroupRoot } from 'reka-ui';
 
 import { Button } from '@/Components/ui/button';

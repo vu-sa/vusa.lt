@@ -7,6 +7,7 @@
     the menu behind a back button and read as a different surface from the site around it.
   -->
   <Button
+    voice="brand"
     variant="ghost"
     size="icon"
     :class="props.class"
@@ -18,7 +19,8 @@
     <span class="sr-only">{{ $t('navigation.menu') }}</span>
   </Button>
 
-  <Teleport to="body">
+  <!-- After mount only: SSR drops teleported markup, so hydrating a body teleport eats <body>'s first node. -->
+  <Teleport v-if="mounted" to="body">
     <div
       v-if="open"
       class="fixed inset-0 z-[60] flex flex-col bg-background lg:hidden [[data-a11y-font-scale=xl]_&]:!flex"
@@ -42,6 +44,7 @@
 
         <Button
           ref="closeButtonRef"
+          voice="brand"
           variant="ghost"
           size="icon"
           class="border border-border text-foreground/70 transition-colors hover:border-brand hover:bg-transparent hover:text-brand dark:hover:bg-transparent dark:hover:text-brand"
@@ -56,8 +59,8 @@
         <MobileNavRootPanel @close="close" />
 
         <div class="flex items-center gap-3 p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <LocaleButton :locale="page.props.app.locale" size="public-sm" class="h-9 flex-1 border border-border" />
-          <SearchButton size="public-sm" :class="cn(mobileNavButtonClass, 'h-9 flex-1')" @click="close">
+          <LocaleButton :locale="page.props.app.locale" size="sm" class="h-9 flex-1 border border-border" />
+          <SearchButton size="sm" :class="cn(mobileNavButtonClass, 'h-9 flex-1')" @click="close">
             {{ $t('Paieška') }}
           </SearchButton>
           <AccessibilityMenu :class="mobileNavButtonClass" />
@@ -65,7 +68,7 @@
         </div>
 
         <div class="border-t border-border p-4">
-          <Button as-child variant="brand-outline" size="public-sm" class="h-11 w-full text-foreground/70">
+          <Button voice="brand" as-child variant="outline" size="sm" class="h-11 w-full text-foreground/70">
             <a
               :href="page.props.auth?.user ? route('dashboard') : route('login')"
               :title="page.props.auth?.user ? page.props.auth.user?.name : $t('auth.login')"
@@ -94,6 +97,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch, type HTMLAttributes } from 'vue';
 import { usePage } from '@inertiajs/vue3';
+import { useMounted } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import SmartLink from '../../SmartLink.vue';
@@ -122,6 +126,7 @@ const mobileNavButtonClass = 'border border-border text-foreground/70 transition
 const page = usePage();
 
 const open = ref(false);
+const mounted = useMounted();
 const closeButtonRef = ref<{ $el?: HTMLElement } | null>(null);
 
 const close = () => {

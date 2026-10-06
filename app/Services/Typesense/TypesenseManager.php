@@ -39,6 +39,9 @@ class TypesenseManager
             'apiKey' => $searchOnlyKey,
             'nodes' => self::getBrowserNodes($nodes),
             'collections' => $collections,
+            'searchProfiles' => SearchProfiles::all(),
+            'searchProfileVersion' => SearchProfiles::VERSION,
+            'searchLocale' => app()->getLocale(),
         ];
     }
 
@@ -151,6 +154,9 @@ class TypesenseManager
 
         return [
             'collections' => $collections,
+            'searchProfiles' => SearchProfiles::all(admin: true),
+            'searchProfileVersion' => SearchProfiles::VERSION,
+            'searchLocale' => app()->getLocale(),
             'headerKey' => $scopedKeysData['header_key'] ?? '',
             'expiresAt' => $scopedKeysData['expires_at'],
             'isSuperAdmin' => $scopedKeysData['is_super_admin'],

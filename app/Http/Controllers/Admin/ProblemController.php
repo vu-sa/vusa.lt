@@ -2,20 +2,29 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\BuildProblemIndexQuery;
 use App\Actions\GetTenantsForUpserts;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexProblemRequest;
 use App\Http\Requests\StoreProblemRequest;
 use App\Http\Requests\UpdateProblemRequest;
 use App\Http\Requests\UpdateProblemStatusRequest;
+use App\Http\Resources\StepResource;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
+use App\Models\Goal;
 use App\Models\Institution;
+use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
 use App\Models\ProblemCategory;
+use App\Services\AgendaItemPresenter;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\TanstackTableService;
+use App\Support\Experiments\GoalsExperiment;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
 
 class ProblemController extends AdminController
 {
@@ -33,14 +42,7 @@ class ProblemController extends AdminController
     {
         $this->handleAuthorization('viewAny', Problem::class);
 
-        $query = Problem::query()->with(['tenant', 'createdBy', 'responsibleUser', 'categories', 'institutions']);
-
-        $query = $this->tableService->applyPermissionFiltering(
-            $query,
-            'tenant',
-            'problems.read.padalinys',
-            $this->authorizer
-        );
+        $query = BuildProblemIndexQuery::execute($request);
 
         $query = $this->applyTanstackFilters(
             $query,
@@ -50,28 +52,15 @@ class ProblemController extends AdminController
             ['applySortBeforePagination' => true]
         );
 
-        $filters = $request->getFilters();
-
-        if (isset($filters['status']) && ! empty($filters['status'])) {
-            $query->whereIn('status', (array) $filters['status']);
-        }
-
-        if (isset($filters['category']) && ! empty($filters['category'])) {
-            $categoryValues = (array) $filters['category'];
-            $query->whereHas('categories', fn ($q) => $q->whereIn('problem_categories.id', $categoryValues));
-        }
-
-        if (isset($filters['institution']) && ! empty($filters['institution'])) {
-            $institutionValues = (array) $filters['institution'];
-            $query->whereHas('institutions', fn ($q) => $q->whereIn('institutions.id', $institutionValues));
-        }
-
         $deletedCount = $this->getTrashedCount($query);
 
         $problems = $query->paginate($request->getPerPage())->withQueryString();
 
         return $this->inertiaResponse('Admin/Problems/IndexProblem', [
-            'data' => $problems->items(),
+            'data' => $problems->getCollection()->map(fn (Problem $problem): array => [
+                ...$problem->toArray(),
+                'can_update' => $request->user()->can('update', $problem),
+            ])->values(),
             'meta' => [
                 'total' => $problems->total(),
                 'per_page' => $problems->perPage(),
@@ -92,21 +81,25 @@ class ProblemController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $this->handleAuthorization('create', Problem::class);
 
         $tenants = GetTenantsForUpserts::execute('problems.create.padalinys', $this->authorizer);
-        $tenantIds = collect($tenants)->pluck('id')->toArray();
+
+        // Opened from an institution's Problemos tab: start in its padalinys, already linked, if the user may write there.
+        $institution = $request->filled('institution')
+            ? Institution::query()->find($request->string('institution')->toString())
+            : null;
+        $prefill = $institution !== null && $tenants->contains('id', $institution->tenant_id)
+            ? $institution
+            : null;
 
         return $this->inertiaResponse('Admin/Problems/CreateProblem', [
             'tenants' => $tenants,
             'categories' => ProblemCategory::orderBy('slug')->get()->map(fn ($category) => $category->toArray()),
-            'institutions' => Institution::select('id', 'name', 'tenant_id')
-                ->whereIn('tenant_id', $tenantIds)
-                ->orderBy('name')
-                ->get()
-                ->map(fn ($institution) => $institution->toArray()),
+            'problem' => $prefill ? ['tenant_id' => $prefill->tenant_id, 'institutions' => [$prefill->id]] : null,
+            'institutions' => $prefill ? [$prefill->only(['id', 'name', 'tenant_id'])] : [],
         ]);
     }
 
@@ -155,9 +148,63 @@ class ProblemController extends AdminController
                     'institutions',
                 ])->toFullArray(),
             ],
+            'agendaItems' => $this->discussedIn($problem),
             'canUpdate' => $user->can('update', $problem),
             'canDelete' => $user->can('delete', $problem),
+            // Goals pilot: absent outside it, so the page renders exactly as before.
+            ...(GoalsExperiment::enabledForUser($user) && GoalsExperiment::enabledForTenant($problem->tenant) ? [
+                'goalsExperiment' => true,
+                'goalLinks' => Inertia::defer(fn (): array => $this->goalLinks($problem)),
+            ] : []),
         ]);
+    }
+
+    /**
+     * @return array{goals: list<array<string, mixed>>, steps: array<int, mixed>}
+     */
+    private function goalLinks(Problem $problem): array
+    {
+        return [
+            'goals' => $problem->goals()
+                ->whereHas('tenant', fn ($query) => $query->where('goals_enabled', true))
+                ->with('tenant:id,shortname')->get()->map(fn (Goal $goal): array => [
+                    'id' => $goal->id,
+                    'title' => $goal->title,
+                    'status' => $goal->status->value,
+                    'tenant' => $goal->tenant->shortname,
+                ])->values()->all(),
+            'steps' => StepResource::collection($problem->steps()
+                ->where(fn ($query) => $query->whereNull('goal_id')
+                    ->orWhereHas('goal.tenant', fn ($query) => $query->where('goals_enabled', true)))
+                ->with(StepResource::RELATIONS)->get()
+                ->filter(fn ($step) => ! $step->agendaItem?->is_private || AgendaItemPresenter::canRead($step->agendaItem, request()->user()))
+                ->values())->resolve(),
+        ];
+    }
+
+    /**
+     * The agenda items where the problem was raised, newest meeting first. Every member may read a
+     * problem, but not every meeting, so an item the reader cannot open is left out.
+     *
+     * @return list<array{id: string, title: mixed, meeting_id: string, start_time: string|null, institutions: list<string>}>
+     */
+    private function discussedIn(Problem $problem): array
+    {
+        return $problem->agendaItems()
+            ->with('meeting.institutions:id,name')
+            ->get()
+            ->filter(fn (AgendaItem $item): bool => $item->meeting !== null && Gate::allows('viewSummary', $item)
+                && (! $item->is_private || Gate::allows('view', $item)))
+            ->sortByDesc(fn (AgendaItem $item) => $item->meeting->start_time)
+            ->map(fn (AgendaItem $item): array => [
+                'id' => $item->id,
+                'title' => AgendaItemPresenter::forUser($item, request()->user())['title'],
+                'meeting_id' => $item->meeting_id,
+                'start_time' => $item->meeting->start_time->toISOString(),
+                'institutions' => $item->meeting->institutions->pluck('name')->values()->all(),
+            ])
+            ->values()
+            ->all();
     }
 
     /**
@@ -172,7 +219,6 @@ class ProblemController extends AdminController
         $problemData['institutions'] = $problem->institutions->pluck('id')->toArray();
 
         $tenants = GetTenantsForUpserts::execute('problems.update.padalinys', $this->authorizer);
-        $tenantIds = collect($tenants)->pluck('id')->toArray();
 
         return $this->inertiaResponse('Admin/Problems/EditProblem', [
             'problem' => $problemData,
@@ -181,11 +227,8 @@ class ProblemController extends AdminController
             'initialResponsibleUser' => $problem->responsibleUser
                 ? ['id' => $problem->responsibleUser->id, 'name' => $problem->responsibleUser->name]
                 : null,
-            'institutions' => Institution::select('id', 'name', 'tenant_id')
-                ->whereIn('tenant_id', $tenantIds)
-                ->orderBy('name')
-                ->get()
-                ->map(fn ($institution) => $institution->toArray()),
+            'institutions' => $problem->institutions
+                ->map(fn (Institution $institution) => $institution->only(['id', 'name', 'tenant_id'])),
         ]);
     }
 
@@ -226,19 +269,7 @@ class ProblemController extends AdminController
     {
         $this->handleAuthorization('update', $problem);
 
-        $validated = $request->validated();
-
-        $data = ['status' => $validated['status']];
-
-        if ($validated['status'] === 'resolved' && ! $problem->resolved_at) {
-            $data['resolved_at'] = now();
-        }
-
-        if ($validated['status'] !== 'resolved') {
-            $data['resolved_at'] = null;
-        }
-
-        $problem->update($data);
+        $problem->update(['status' => $request->validated('status')]);
 
         return back()->with('success', $this->entityMessage('updated', 'problem'));
     }

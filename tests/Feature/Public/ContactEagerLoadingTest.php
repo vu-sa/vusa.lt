@@ -2,10 +2,11 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Tenant;
-use App\Models\Type;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
@@ -16,8 +17,8 @@ beforeEach(function (): void {
         'tenant_id' => $this->tenant->id,
     ]);
 
-    $this->type = Type::factory()->create([
-        'title' => ['lt' => 'Test Type', 'en' => 'Test Type'],
+    $this->type = InstitutionType::factory()->create([
+        'title' => ['lt' => 'Test InstitutionType', 'en' => 'Test InstitutionType'],
     ]);
 
     $this->duty = Duty::factory()->create([
@@ -84,3 +85,22 @@ describe('contact eager loading with types', function (): void {
         expect($contact->filtered_current_duties)->not->toBeEmpty();
     });
 });
+
+test('public contacts preserve cross-locale pronouns and the assignment name override', function (string $grouping, string $contactPath): void {
+    $this->user->update(['name' => 'Jonas Jonaitis', 'pronouns' => ['lt' => '', 'en' => 'she / her']]);
+    $this->duty->update(['name' => ['lt' => 'Koordinatorius', 'en' => 'Coordinator'], 'contacts_grouping' => $grouping]);
+    $this->duty->users()->updateExistingPivot($this->user->id, ['use_original_duty_name' => true]);
+
+    $this->get(route('contacts.institution', [
+        'subdomain' => 'www', 'lang' => 'lt', 'contactsString' => 'kontaktai', 'institution' => $this->institution->id,
+    ]))->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('Public/Contacts/ShowInstitution')
+        ->where($contactPath.'.name', 'Jonas Jonaitis')
+        ->where($contactPath.'.duty_pronouns.en', 'she / her')
+        ->where($contactPath.'.duties.0.pivot.use_original_duty_name', true)
+    );
+})->with([
+    'ungrouped' => ['none', 'contacts.0'],
+    'grouped by tenant' => ['tenant', 'contactSections.0.groups.0.contacts.0'],
+    'group fallback' => ['study_program', 'contactSections.0.contacts.0'],
+]);

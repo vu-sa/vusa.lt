@@ -6,9 +6,12 @@ use App\Actions\PairTranslatedRecord;
 use App\Feed\FeedHtml;
 use App\Feed\FeedItem;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\HtmlSanitizerService;
 use App\Services\PublicUrlService;
+use App\Services\Typesense\SearchText;
 use App\Support\LocalizedRouteSlugs;
+use App\Support\PublicCacheTags;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
@@ -57,6 +60,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property-read Content $content
  * @property-read News|null $other_language_news
  * @property-read Collection<int, PublicUrl> $publicUrls
+ * @property-read Taggable|null $pivot
  * @property-read Collection<int, Tag> $tags
  * @property-read Tenant $tenant
  * @property-read User|null $user
@@ -123,8 +127,8 @@ class News extends Model implements Feedable, Sitemapable
         });
 
         static::saved(function ($news): void {
-            // Clear sitemap cache when news is updated
-            Cache::tags(['sitemap', 'news', "tenant_{$news->tenant_id}"])->flush();
+            Cache::tags(PublicCacheTags::newsOf($news))->flush();
+            Cache::tags([ContentPartResolver::CACHE_TAG])->flush();
 
             // A freshly inserted row's `lang` attribute isn't hydrated from the column's DB
             // default until the model is refreshed — guard here rather than in publicUrl(),
@@ -156,8 +160,8 @@ class News extends Model implements Feedable, Sitemapable
         static::saved(fn (News $news) => $news->syncPublicSearchIndex());
 
         static::deleted(function ($news): void {
-            // Clear sitemap cache when news is deleted
-            Cache::tags(['sitemap', 'news', "tenant_{$news->tenant_id}"])->flush();
+            Cache::tags(PublicCacheTags::newsOf($news))->flush();
+            Cache::tags([ContentPartResolver::CACHE_TAG])->flush();
         });
 
         static::deleted(fn (News $news) => $news->publicSearchModel()->unsearchable());
@@ -248,10 +252,10 @@ class News extends Model implements Feedable, Sitemapable
         return $this->hasOne(News::class, 'id', 'other_lang_id');
     }
 
-    /** @return MorphToMany<Tag, $this> */
+    /** @return MorphToMany<Tag, $this, Taggable> */
     public function tags(): MorphToMany
     {
-        return $this->morphToMany(Tag::class, 'taggable');
+        return $this->morphToMany(Tag::class, 'taggable')->using(Taggable::class);
     }
 
     public function content(): BelongsTo
@@ -545,6 +549,7 @@ class News extends Model implements Feedable, Sitemapable
         $publishTimestamp = $this->publish_time ? $this->publish_time->timestamp : $this->created_at->timestamp;
 
         return [
+            ...SearchText::forModel($this),
             'id' => (string) $this->id,
             'title' => $this->title,
             'short' => $this->short,

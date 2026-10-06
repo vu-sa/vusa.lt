@@ -3,10 +3,10 @@
 use App\Enums\InstitutionScope;
 use App\Enums\MeetingType;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,7 +96,7 @@ describe('meeting pattern', function (): void {
 
 test('it reports whether an institution may be announced in the calendar', function (): void {
     $this->institution->types()->attach(
-        Type::factory()->forInstitutions(InstitutionScope::University)->create()
+        InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create()
     );
 
     $response = asUser($this->user)
@@ -173,7 +173,7 @@ describe('wider institution search', function (): void {
     });
 
     test('it opens, scoped to their tenants, for a tenant-wide coordinator', function (): void {
-        $coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
         $response = asUser($coordinator)
             ->getJson(route('api.v1.admin.actionWindow.context'))

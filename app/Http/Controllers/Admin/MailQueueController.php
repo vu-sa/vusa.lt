@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\BuildMailQueuePage;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\IndexMailQueueRequest;
 use App\Models\NotificationDigestQueue;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Response;
@@ -20,55 +21,18 @@ use Inertia\Response;
  */
 class MailQueueController extends AdminController
 {
-    public function index(): Response
+    public function index(IndexMailQueueRequest $request, BuildMailQueuePage $builder): Response
     {
         $this->handleAuthorization('viewAny', Role::class);
 
-        $recipients = NotificationDigestQueue::query()
-            ->with('user:id,name,email,profile_photo_path')
-            ->orderByDesc('created_at')
-            ->get()
-            ->groupBy('user_id')
-            ->map(fn (Collection $items): array => $this->describeRecipient($items))
-            ->sortByDesc('items_count')
-            ->values();
-
         return $this->inertiaResponse('Admin/MailQueue', [
-            'recipients' => $recipients,
+            'recipients' => $builder->execute($request),
             'canManage' => Auth::user()->isSuperAdmin(),
             'totals' => [
-                'items' => $recipients->sum('items_count'),
-                'recipients' => $recipients->count(),
+                'items' => NotificationDigestQueue::query()->count(),
+                'recipients' => NotificationDigestQueue::query()->distinct('user_id')->count('user_id'),
             ],
         ]);
-    }
-
-    /**
-     * One recipient's pending digest: who it is for, and the lines it will contain.
-     *
-     * @param  Collection<int, NotificationDigestQueue>  $items
-     * @return array<string, mixed>
-     */
-    private function describeRecipient(Collection $items): array
-    {
-        $first = $items->first();
-
-        return [
-            'user_id' => $first->user_id,
-            'user' => $first->user?->only(['id', 'name', 'email', 'profile_photo_path']),
-            'items_count' => $items->count(),
-            'oldest_at' => $items->min('created_at')?->toISOString(),
-            'newest_at' => $items->max('created_at')?->toISOString(),
-            'items' => $items->map(fn (NotificationDigestQueue $item): array => [
-                'id' => $item->id,
-                'category' => $item->category,
-                'notification_class' => class_basename($item->notification_class),
-                'title' => $item->data['title'] ?? null,
-                'body' => $item->data['body'] ?? null,
-                'url' => $item->data['url'] ?? null,
-                'created_at' => $item->created_at?->toISOString(),
-            ])->values()->all(),
-        ];
     }
 
     /**

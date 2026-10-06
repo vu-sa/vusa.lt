@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
+use App\Models\Traits\HasComments;
 use App\Models\Traits\HasTranslations;
 use Database\Factories\FormFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -25,10 +27,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
+ * @property-read Collection<int, Comment> $comments
  * @property-read Collection<int, FormField> $formFields
  * @property-read string|null $force_delete_blocked_reason
  * @property-read array $translatable_columns_from
  * @property-read Collection<int, Registration> $registrations
+ * @property-read Collection<int, Comment> $rootComments
  * @property-read Tenant $tenant
  * @property-read mixed $translations
  *
@@ -52,10 +56,10 @@ use Illuminate\Support\Carbon;
     'path',
     'publish_time',
 ])]
-class Form extends Model implements GuardsForceDelete
+class Form extends Model implements Commentable, GuardsForceDelete
 {
     /** @use HasFactory<FormFactory> */
-    use GuardsForceDeleteWhenReferenced, HasFactory, HasTranslations, HasUlids, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasComments, HasFactory, HasTranslations, HasUlids, SoftDeletes;
 
     public $translatable = [
         'name',

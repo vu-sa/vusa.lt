@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'recommended_documents' => 'Recommended documents',
+    'facet_count_help' => 'Counts include the search and other filters, ignoring this filter’s selection. Selecting several values broadens the results. Records can overlap, so do not add the counts. A dash means the count is unknown.',
+    'facet_search' => 'Search filter options',
+    'facet_search_error' => 'Option search failed. Try again.',
+    'facet_search_loading' => 'Searching options…',
+    'filters_spotlight_title' => 'Search within filters',
     // Search interface
     'search' => 'Search',
     'search_placeholder' => 'Search for news, pages, documents, events...',
@@ -155,6 +161,9 @@ return [
     'document_link_badge' => 'Link',
     'document_link_hint' => 'This entry points to an external website',
     'document_link_unresolved' => 'This entry is a link to an external website, but its address has not been resolved yet — a SharePoint preview will open instead.',
+    'document_copy_link' => 'Copy link',
+    'document_copy_link_success' => 'Link copied to clipboard!',
+    'document_copy_link_error' => 'Failed to copy link',
 
     // Search input specific
     'search_documents_placeholder' => 'Search documents by title...',

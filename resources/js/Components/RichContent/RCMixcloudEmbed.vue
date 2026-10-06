@@ -3,7 +3,7 @@
        audio player reads as a ruled block on the page rather than a floating rounded card. -->
   <div class="my-8 w-full border border-border">
     <iframe
-      :src="embedUrl"
+      :src="mounted ? embedUrl : undefined"
       frameborder="0"
       allow="encrypted-media; fullscreen; autoplay; idle-detection; speaker-selection; web-share;"
       title="Mixcloud Embed"
@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useDark } from '@vueuse/core';
+import { useDark, useMounted } from '@vueuse/core';
 
 import { toMixcloudEmbedUrl } from './embedUrl';
 
@@ -25,6 +25,9 @@ const props = defineProps<{
 }>();
 
 const isDark = useDark();
+// No src until mount: the theme param comes from the visitor's stored preference, so the
+// server can't know it, and setting it after hydration would load the player twice.
+const mounted = useMounted();
 
 const embedUrl = computed(() => toMixcloudEmbedUrl(props.element.json_content.url, isDark.value));
 </script>

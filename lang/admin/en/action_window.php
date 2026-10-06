@@ -3,10 +3,6 @@
 return [
     'trigger' => 'Quick actions',
     'trigger_short' => 'Actions',
-    'spotlight' => [
-        'title' => 'Not sure where to start?',
-        'description' => 'Click here for the most common actions — report a meeting, note that there will be no meetings, or fill in a meeting that already happened.',
-    ],
     'personas' => [
         'title' => 'What would you like to do?',
         'representative' => [
@@ -41,7 +37,7 @@ return [
         ],
         'new_reservation' => [
             'title' => 'Reserve equipment',
-            'description' => 'Borrow a VU SR item or room.',
+            'description' => 'Borrow VU SR equipment or an item.',
         ],
         'duty_update' => [
             'title' => 'Update duties',
@@ -51,6 +47,23 @@ return [
             'title' => 'Manage duty periods',
             'description' => 'Set when people hold their duties, on a timeline.',
         ],
+    ],
+    'report' => [
+        'title' => 'Report activity',
+        'meeting' => [
+            'title' => 'Record a meeting',
+            'description' => 'A meeting took place or is coming up — record it and its agenda.',
+        ],
+        'no_meeting' => [
+            'title' => 'There was / will be no meeting',
+            'description' => 'Mark a period without meetings so you do not get needless reminders.',
+        ],
+    ],
+    'flows' => [
+        'new_meeting' => 'New meeting',
+        'no_meeting' => 'No meetings',
+        'complete_meeting' => 'Complete a meeting',
+        'ask_activity' => 'Ask about meetings',
     ],
     'institution' => [
         'title' => 'Which institution?',
@@ -76,8 +89,10 @@ return [
             'other' => 'None of these fit.',
         ],
         'when' => [
-            'title' => 'When will the meeting happen?',
-            'subtitle' => 'Suggested from when this institution has met so far.',
+            'title' => 'When was or will the meeting be?',
+            'subtitle' => 'Today, yesterday, or suggested from when this institution has met so far.',
+            'today' => 'Today',
+            'yesterday' => 'Yesterday',
             'usual_hint' => 'The next usual slot',
             'week_after_hint' => 'A week later',
             'custom' => 'Pick another date…',
@@ -85,6 +100,7 @@ return [
         'date' => [
             'title' => 'Which day?',
             'subtitle' => 'You can pick a past day too, if the meeting already happened.',
+            'label' => 'Date',
         ],
         'time' => [
             'title' => 'At what time?',
@@ -115,8 +131,41 @@ return [
             'agenda' => 'Agenda',
             'agenda_count' => '{0} No questions|{1} :count question|[2,*] :count questions',
             'agenda_bulk' => 'Adding them right after creating',
-            'submit' => 'Create meeting',
-            'submitting' => 'Creating…',
+            'submit' => 'Record meeting',
+            'submitting' => 'Recording…',
+        ],
+    ],
+    'activity_request' => [
+        'mode' => [
+            'title' => 'What will you pick?',
+            'subtitle' => 'Pick institutions or specific people.',
+            'institutions' => 'By institution',
+            'institutions_hint' => 'We ask their student representatives.',
+            'people' => 'By representative',
+            'people_hint' => 'We ask the representatives you pick about all of their institutions.',
+        ],
+        'people' => [
+            'title' => 'Whom to ask?',
+            'subtitle' => 'Student representatives in your institutions. Each gets one email about all of their institutions.',
+            'search' => 'Search by name or institution',
+            'empty' => 'No representatives found',
+            'continue' => 'Continue (:count)',
+        ],
+        'institutions' => [
+            'title' => 'Which institutions to ask about?',
+            'subtitle' => 'Their student representatives get the email “Did the institution meet?” and can answer without signing in.',
+            'continue' => 'Continue (:count)',
+        ],
+        'review' => [
+            'title' => 'What we will send, and to whom',
+            'subtitle' => 'Each recipient gets one email about all of their institutions.',
+            'recipients' => 'To: :names · asking since :date',
+            'change_people' => 'Change representatives',
+            'change_institutions' => 'Change institutions',
+            'note' => 'Message to recipients (optional)',
+            'note_placeholder' => 'E.g. “Please answer by Friday – we are preparing a report.”',
+            'no_sign_in' => 'The email has the buttons “Yes, it met”, “No, it did not” and “Not my institution”. A link opens the reply page; the answer is recorded only after the recipient confirms it.',
+            'submit' => 'Send questions (:count)',
         ],
     ],
     'check_in' => [
@@ -155,6 +204,8 @@ return [
         'close' => 'Close',
         'change' => 'Change',
         'continue' => 'Continue',
+        'step' => 'Step',
+        'review' => 'Review',
         'loading' => 'Loading…',
         'error' => 'Could not load the data. Please try again.',
     ],

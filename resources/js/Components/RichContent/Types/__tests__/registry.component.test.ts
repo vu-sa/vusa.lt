@@ -92,7 +92,7 @@ describe('contentTypeRegistry', () => {
     // spotify-embed has no bespoke skeleton registered.
     const skeleton = getSkeletonForType('spotify-embed');
     expect(skeleton.height).toBeTruthy();
-    expect(skeleton.template).toBeTruthy();
+    expect(skeleton.height).toBe('min-h-[100px]');
   });
 
   it('getAllContentTypes returns one entry per registered type', () => {

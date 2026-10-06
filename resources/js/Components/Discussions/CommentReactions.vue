@@ -5,10 +5,10 @@
         <button
           type="button"
           :class="[
-            'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors',
+            'inline-flex items-center gap-1 border px-2 py-0.5 text-xs transition-colors pointer-coarse:min-h-11',
             tally.reacted_by_me
-              ? 'border-vusa-red/40 bg-vusa-red/10 text-vusa-red'
-              : 'border-zinc-200 bg-zinc-50 text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
+              ? 'border-brand/40 bg-brand/10 text-brand'
+              : 'border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground',
           ]"
           @click="$emit('toggle', tally.emoji)"
         >
@@ -25,7 +25,7 @@
       <PopoverTrigger as-child>
         <button
           type="button"
-          class="inline-flex h-6 w-6 items-center justify-center rounded-full text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800"
+          class="inline-flex size-7 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground pointer-coarse:size-11"
           :title="$t('Pridėti reakciją')"
         >
           <SmilePlus class="h-3.5 w-3.5" />
@@ -37,7 +37,7 @@
             v-for="emoji in allowedReactions"
             :key="emoji"
             type="button"
-            class="flex h-8 w-8 items-center justify-center rounded-md text-base transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            class="flex size-9 items-center justify-center text-base transition-colors hover:bg-accent pointer-coarse:size-11"
             @click="$emit('toggle', emoji)"
           >
             {{ emoji }}

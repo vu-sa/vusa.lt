@@ -37,8 +37,8 @@ export function resolveTranslatable(value: unknown): string {
 export function createIdColumn<T>(options: {
   width?: number;
   enableSorting?: boolean;
-  cell?: ColumnDef<T, any>['cell'];
-} = {}): ColumnDef<T, any> {
+  cell?: ColumnDef<any, T, any>['cell'];
+} = {}): ColumnDef<any, T, any> {
   return {
     accessorKey: 'id',
     header: () => 'ID',
@@ -57,8 +57,8 @@ export function createTitleColumn<T extends { id: string | number }>(options: {
   width?: number;
   enableSorting?: boolean;
   lines?: 1 | 2 | 3;
-  cell?: ColumnDef<T, any>['cell'];
-} = {}): ColumnDef<T, any> {
+  cell?: ColumnDef<any, T, any>['cell'];
+} = {}): ColumnDef<any, T, any> {
   const accessorKey = options.accessorKey || 'name';
   const routeName = options.routeName || 'edit';
 
@@ -91,8 +91,8 @@ export function createTimestampColumn<T>(accessorKey: string, options: {
   width?: number;
   enableSorting?: boolean;
   sortDescFirst?: boolean;
-  cell?: ColumnDef<T, any>['cell'];
-} = {}): ColumnDef<T, any> {
+  cell?: ColumnDef<any, T, any>['cell'];
+} = {}): ColumnDef<any, T, any> {
   return {
     accessorKey,
     header: () => options.title || $t(accessorKey),
@@ -135,8 +135,8 @@ export function createDateColumn<T>(accessorKey: string, options: {
   format?: Intl.DateTimeFormatOptions;
   width?: number;
   enableSorting?: boolean;
-  cell?: ColumnDef<T, any>['cell'];
-} = {}): ColumnDef<T, any> {
+  cell?: ColumnDef<any, T, any>['cell'];
+} = {}): ColumnDef<any, T, any> {
   return {
     accessorKey,
     header: () => options.title || $t(accessorKey),
@@ -161,8 +161,8 @@ export function createDateColumn<T>(accessorKey: string, options: {
 export function createTenantColumn<T>(options: {
   width?: number;
   enableSorting?: boolean;
-  cell?: ColumnDef<T, any>['cell'];
-} = {}): ColumnDef<T, any> {
+  cell?: ColumnDef<any, T, any>['cell'];
+} = {}): ColumnDef<any, T, any> {
   return {
     accessorKey: 'tenant',
     id: 'tenant.name',
@@ -184,8 +184,8 @@ export function createTenantColumn<T>(options: {
 export function createLanguageColumn<T>(options: {
   width?: number;
   enableSorting?: boolean;
-  cell?: ColumnDef<T, any>['cell'];
-} = {}): ColumnDef<T, any> {
+  cell?: ColumnDef<any, T, any>['cell'];
+} = {}): ColumnDef<any, T, any> {
   return {
     accessorKey: 'language',
     header: () => $t('Kalba'),
@@ -204,8 +204,8 @@ export function createBooleanColumn<T>(accessorKey: string, options: {
   falseLabel?: string;
   width?: number;
   enableSorting?: boolean;
-  cell?: ColumnDef<T, any>['cell'];
-} = {}): ColumnDef<T, any> {
+  cell?: ColumnDef<any, T, any>['cell'];
+} = {}): ColumnDef<any, T, any> {
   return {
     accessorKey,
     header: () => options.title || $t(accessorKey),
@@ -234,8 +234,8 @@ export function createTagsColumn<T>(accessorKey: string, options: {
   maxVisible?: number;
   width?: number;
   enableSorting?: boolean;
-  cell?: ColumnDef<T, any>['cell'];
-} = {}): ColumnDef<T, any> {
+  cell?: ColumnDef<any, T, any>['cell'];
+} = {}): ColumnDef<any, T, any> {
   return {
     accessorKey,
     header: () => options.title || $t(accessorKey),
@@ -263,8 +263,8 @@ export function createTextColumn<T>(accessorKey: string, options: {
   width?: number;
   enableSorting?: boolean;
   lines?: 1 | 2 | 3;
-  cell?: ColumnDef<T, any>['cell'];
-} = {}): ColumnDef<T, any> {
+  cell?: ColumnDef<any, T, any>['cell'];
+} = {}): ColumnDef<any, T, any> {
   return {
     accessorKey,
     header: () => options.title || $t(accessorKey),
@@ -285,8 +285,8 @@ export function createBadgeColumn<T>(accessorKey: string, options: {
   width?: number;
   enableSorting?: boolean;
   variant?: BadgeVariants['variant'];
-  cell?: ColumnDef<T, any>['cell'];
-} = {}): ColumnDef<T, any> {
+  cell?: ColumnDef<any, T, any>['cell'];
+} = {}): ColumnDef<any, T, any> {
   return {
     accessorKey,
     header: () => options.title || $t(accessorKey),

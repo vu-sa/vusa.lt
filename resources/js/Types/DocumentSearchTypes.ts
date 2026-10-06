@@ -1,3 +1,5 @@
+import type { ComputedRef } from 'vue';
+
 export type DocumentSearchSort = 'relevance' | 'date_desc' | 'date_asc';
 
 /**
@@ -30,7 +32,7 @@ export interface DocumentFacet {
   values: Array<{
     value: string;
     label: string;
-    count: number;
+    count: number | null;
     highlighted?: string;
     isSelected?: boolean;
     level?: number; // For hierarchical display (e.g., tenant hierarchy)
@@ -102,7 +104,7 @@ export interface SearchResponse {
     field_name: string;
     counts: Array<{
       value: string;
-      count: number;
+      count: number | null;
     }>;
   }>;
 }
@@ -171,6 +173,8 @@ export interface DocumentSearchController {
   results: any;
   facets: any;
   filters: any;
+  hasQuery: ComputedRef<boolean>;
+  activeSort: ComputedRef<DocumentSearchSort>;
   viewMode: any;
   recentSearches: any;
 

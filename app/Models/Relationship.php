@@ -20,9 +20,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $type
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property-read Collection<int, InstitutionType> $institutionTypes
  * @property-read Collection<int, Institution> $institutions
  * @property-read Collection<int, Relationshipable> $relationshipables
- * @property-read Collection<int, Type> $types
  *
  * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Relationship newModelQuery()
  * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Relationship newQuery()
@@ -68,8 +68,8 @@ class Relationship extends Model
         return $this->hasMany(Relationshipable::class);
     }
 
-    public function types()
+    public function institutionTypes()
     {
-        return $this->morphedByMany(Type::class, 'relationshipable');
+        return $this->morphedByMany(InstitutionType::class, 'relationshipable');
     }
 }

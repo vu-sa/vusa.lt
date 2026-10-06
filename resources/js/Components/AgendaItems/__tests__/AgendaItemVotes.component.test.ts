@@ -19,12 +19,9 @@ const recordedVote = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
-const emptyVote = (overrides: Record<string, unknown> = {}) => ({
+const emptyVote = (overrides: Record<string, unknown> = {}) => recordedVote({
   id: '2',
   is_main: false,
-  is_consensus: false,
-  title: { lt: '', en: '' },
-  note: { lt: '', en: '' },
   student_vote: null,
   decision: null,
   student_benefit: null,
@@ -38,164 +35,139 @@ function factory(props: Record<string, unknown> = {}) {
     votes: (props.votes as unknown[]) ?? [recordedVote()],
   });
   const wrapper = mount(AgendaItemVotes, {
-    props: { form, editing: false, ...props },
-    global: {
-      stubs: {
-        ...commonStubs,
-        AdminVotingHelpButton: { template: '<div class="help-stub" />' },
-      },
-    },
+    props: { form, editable: true, ...props },
+    global: { stubs: commonStubs },
   });
   return { wrapper, form };
 }
 
-const buttonWithTitle = (wrapper: ReturnType<typeof mount>, title: string) =>
-  wrapper.findAll('button').filter(b => b.attributes('title') === title);
+const buttonWithText = (wrapper: ReturnType<typeof mount>, text: string) =>
+  wrapper.findAll('button').find(button => button.text().includes(text));
 
 describe('AgendaItemVotes', () => {
-  describe('collapsing', () => {
-    it('summarises a fully recorded vote instead of expanding it', () => {
+  it('records an answer with one tap', async () => {
+    const { wrapper, form } = factory({ votes: [emptyVote({ is_main: true })] });
+
+    await wrapper.find('[data-testid="vote-decision-negative"]').trigger('click');
+
+    expect(form.votes[0].decision).toBe('negative');
+  });
+
+  it('collapses an answered row to its answer, and reopens it to change it', async () => {
+    const { wrapper, form } = factory();
+
+    expect(wrapper.find('[data-testid="vote-decision-negative"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="vote-decision-answer"]').text()).toContain('Priimtas');
+
+    await wrapper.find('[data-testid="vote-decision-answer"]').trigger('click');
+    await wrapper.find('[data-testid="vote-decision-negative"]').trigger('click');
+
+    expect(form.votes[0].decision).toBe('negative');
+    expect(wrapper.find('[data-testid="vote-decision-negative"]').exists()).toBe(false);
+  });
+
+  it('can take an answer back to "not recorded"', async () => {
+    const { wrapper, form } = factory();
+
+    await wrapper.find('[data-testid="vote-decision-answer"]').trigger('click');
+    await wrapper.find('[data-testid="vote-decision-clear"]').trigger('click');
+
+    expect(form.votes[0].decision).toBeNull();
+    expect(wrapper.find('[data-testid="vote-decision-positive"]').exists()).toBe(true);
+  });
+
+  it('shows a vote title as text, leaving its editing to the votes sheet', () => {
+    const { wrapper } = factory({ votes: [recordedVote({ title: { lt: 'Dėl biudžeto', en: '' } })] });
+
+    expect(wrapper.text()).toContain('Dėl biudžeto');
+    expect(wrapper.find('input').exists()).toBe(false);
+  });
+
+  it('reads each answer as a status badge for someone who cannot edit', () => {
+    const { wrapper } = factory({ editable: false, votes: [emptyVote({ is_main: true, decision: 'positive' })] });
+
+    expect(wrapper.find('[data-testid="vote-decision-positive"]').exists()).toBe(false);
+    expect(wrapper.findAll('[data-slot="status-badge"]').map(badge => badge.text())).toEqual(['Priimtas', 'Nebalsuota', 'Nežinoma']);
+    expect(buttonWithText(wrapper, 'meetings.item.add_vote')).toBeUndefined();
+  });
+
+  describe('several votes', () => {
+    it('keeps ordering, main and removal out of the cards', () => {
+      const { wrapper } = factory({ votes: [recordedVote(), emptyVote()] });
+
+      expect(wrapper.find('[aria-label="Perkelti žemyn"]').exists()).toBe(false);
+      expect(wrapper.find('[aria-label="meetings.item.remove_vote"]').exists()).toBe(false);
+      expect(buttonWithText(wrapper, 'meetings.item.make_main')).toBeUndefined();
+    });
+
+    it('asks the page to open the votes sheet', async () => {
       const { wrapper } = factory();
 
-      expect(wrapper.text()).toContain('Priimtas');
-      expect(wrapper.text()).toContain('Pritarė');
-      expect(wrapper.text()).toContain('Palanku');
-      // The label→options grid stays closed while nothing is missing.
-      expect(wrapper.text()).not.toContain('Rezultatas');
+      await buttonWithText(wrapper, 'meetings.item.manage_votes')!.trigger('click');
+
+      expect(wrapper.emitted('manage')).toHaveLength(1);
     });
 
-    it('opens a vote that still misses an answer', () => {
-      const { wrapper } = factory({ votes: [emptyVote({ is_main: true })] });
-      expect(wrapper.text()).toContain('Rezultatas');
-    });
+    it('adds a vote that is not the main one', async () => {
+      const { wrapper, form } = factory();
 
-    it('expands and collapses on the header toggle', async () => {
-      const { wrapper } = factory();
-      const toggle = wrapper.find('button[aria-expanded]');
-
-      expect(toggle.attributes('aria-expanded')).toBe('false');
-      await toggle.trigger('click');
-      expect(wrapper.text()).toContain('Rezultatas');
-
-      await wrapper.find('button[aria-expanded]').trigger('click');
-      expect(wrapper.text()).not.toContain('Rezultatas');
-    });
-  });
-
-  describe('main vote', () => {
-    it('marks another vote as main by hand', async () => {
-      const { wrapper, form } = factory({
-        editing: true,
-        votes: [recordedVote(), recordedVote({ id: '2', is_main: false })],
-      });
-
-      await buttonWithTitle(wrapper, 'Žymėti pagrindiniu')[0].trigger('click');
-
-      expect(form.votes[0].is_main).toBe(false);
-      expect(form.votes[1].is_main).toBe(true);
-    });
-
-    it('does not offer main selection in view mode', () => {
-      const { wrapper } = factory({
-        editing: false,
-        votes: [recordedVote(), recordedVote({ id: '2', is_main: false })],
-      });
-
-      expect(buttonWithTitle(wrapper, 'Žymėti pagrindiniu').every(b => b.attributes('disabled') !== undefined)).toBe(true);
-    });
-  });
-
-  describe('reordering', () => {
-    it('shows drag handles only while editing more than one vote', () => {
-      expect(factory({ editing: true, votes: [recordedVote()] }).wrapper.find('.vote-drag-handle').exists()).toBe(false);
-      expect(factory({ editing: false, votes: [recordedVote(), recordedVote({ id: '2', is_main: false })] })
-        .wrapper.find('.vote-drag-handle').exists()).toBe(false);
-      expect(factory({ editing: true, votes: [recordedVote(), recordedVote({ id: '2', is_main: false })] })
-        .wrapper.find('.vote-drag-handle').exists()).toBe(true);
-    });
-  });
-
-  describe('editing', () => {
-    it('adds a voting question', async () => {
-      const { wrapper, form } = factory({ editing: true });
-      const addButton = wrapper.findAll('button').find(b => b.text().includes('Pridėti balsavimo klausimą'));
-
-      await addButton!.trigger('click');
+      await buttonWithText(wrapper, 'meetings.item.add_vote')!.trigger('click');
 
       expect(form.votes).toHaveLength(2);
+      expect(form.votes[1].is_main).toBe(false);
+    });
+  });
+
+  describe('consensus', () => {
+    it('switches off once the students\' vote parts from the decision', async () => {
+      const { wrapper, form } = factory({ votes: [recordedVote({ is_consensus: true })] });
+
+      await wrapper.find('[data-testid="vote-student_vote-answer"]').trigger('click');
+      await wrapper.find('[data-testid="vote-student_vote-negative"]').trigger('click');
+
+      expect(form.votes[0]).toMatchObject({ is_consensus: false, student_vote: 'negative' });
     });
 
-    it('removing the main vote promotes the next one', async () => {
-      const { wrapper, form } = factory({
-        editing: true,
-        votes: [emptyVote({ id: '1', is_main: true }), emptyVote({ id: '2' })],
-      });
+    it('switches off once the decision is no longer adopted', async () => {
+      const { wrapper, form } = factory({ votes: [recordedVote({ is_consensus: true })] });
 
-      await buttonWithTitle(wrapper, 'Šalinti balsavimą')[0].trigger('click');
+      await wrapper.find('[data-testid="vote-decision-answer"]').trigger('click');
+      await wrapper.find('[data-testid="vote-decision-neutral"]').trigger('click');
 
-      expect(form.votes).toHaveLength(1);
-      expect(form.votes[0].id).toBe('2');
-      expect(form.votes[0].is_main).toBe(true);
+      expect(form.votes[0].is_consensus).toBe(false);
     });
 
-    it('leaves a voting item with no votes at all when the last one is removed', async () => {
-      const { wrapper, form } = factory({ editing: true, votes: [emptyVote({ is_main: true })] });
+    it('survives a change to the student benefit alone', async () => {
+      const { wrapper, form } = factory({ votes: [recordedVote({ is_consensus: true })] });
 
-      await buttonWithTitle(wrapper, 'Šalinti balsavimą')[0].trigger('click');
+      await wrapper.find('[data-testid="vote-student_benefit-answer"]').trigger('click');
+      await wrapper.find('[data-testid="vote-student_benefit-neutral"]').trigger('click');
 
-      expect(form.votes).toHaveLength(0);
-    });
-
-    it('does not render an add-vote button in view mode', () => {
-      const { wrapper } = factory({ editing: false });
-      expect(wrapper.findAll('button').some(b => b.text().includes('Pridėti balsavimo klausimą'))).toBe(false);
-    });
-
-    /** Same markup in both modes, so the page does not shift when the toggle flips. */
-    it('locks the value buttons in view mode rather than replacing them', () => {
-      const editingButton = factory({ editing: true, votes: [emptyVote({ is_main: true })] })
-        .wrapper.findAll('button').find(b => b.text() === 'Atmestas');
-      const lockedButton = factory({ editing: false, votes: [emptyVote({ is_main: true })] })
-        .wrapper.findAll('button').find(b => b.text() === 'Atmestas');
-
-      expect(editingButton!.attributes('disabled')).toBeUndefined();
-      expect(lockedButton!.attributes('disabled')).toBeDefined();
-    });
-
-    it('shows a "not discussed" state for a voting item with no votes', () => {
-      const { wrapper } = factory({ editing: false, votes: [] });
-      expect(wrapper.text()).toContain('Neaptarta');
+      expect(form.votes[0].is_consensus).toBe(true);
     });
   });
 
   describe('governance scope', () => {
-    it('records the student position for an external body', () => {
-      const { wrapper } = factory({ requiresStudentPerspective: true, votes: [emptyVote({ is_main: true })] });
-      expect(wrapper.text()).toContain('Rezultatas');
-      expect(wrapper.text()).toContain('Studentai');
-      expect(wrapper.text()).toContain('Nauda');
+    it('records the student position and benefit for an external body', () => {
+      const { wrapper } = factory();
+
+      expect(wrapper.find('[data-testid="vote-row-student_vote"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="vote-row-student_benefit"]').exists()).toBe(true);
     });
 
     it('asks a VU SA body only for the outcome', () => {
-      const { wrapper } = factory({ requiresStudentPerspective: false, votes: [emptyVote({ is_main: true })] });
-      expect(wrapper.text()).toContain('Rezultatas');
-      expect(wrapper.text()).not.toContain('Studentai');
-      expect(wrapper.text()).not.toContain('Nauda');
+      const { wrapper } = factory({ requiresStudentPerspective: false });
+
+      expect(wrapper.find('[data-testid="vote-row-decision"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="vote-row-student_vote"]').exists()).toBe(false);
     });
 
     it('consensus only sets the outcome for a VU SA body', async () => {
-      const { wrapper, form } = factory({
-        editing: true,
-        requiresStudentPerspective: false,
-        votes: [emptyVote({ is_main: true })],
-      });
+      const { wrapper, form } = factory({ requiresStudentPerspective: false, votes: [emptyVote({ is_main: true })] });
 
-      const switches = wrapper.findAllComponents({ name: 'Switch' });
-      await switches[switches.length - 1].vm.$emit('update:modelValue', true);
+      await wrapper.findComponent({ name: 'Switch' }).vm.$emit('update:modelValue', true);
 
-      expect(form.votes[0].decision).toBe('positive');
-      expect(form.votes[0].student_vote).toBeNull();
-      expect(form.votes[0].student_benefit).toBeNull();
+      expect(form.votes[0]).toMatchObject({ is_consensus: true, decision: 'positive', student_vote: null });
     });
   });
 });

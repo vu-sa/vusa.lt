@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
  * Sibling to MergeUsers and StudyProgramController::mergeStudyPrograms(), but a
  * duty carries far more than either: assignments (dutiables), cross-tenant
  * quotas (duty_tenant), ex-officio links (ex_officio_duties), content types and
- * and admin roles (typeables / model_has_roles). Every one of them is repointed
+ * and admin roles (duty_duty_type / model_has_roles). Every one of them is repointed
  * here, in a single transaction.
  * Sources are soft-deleted, not force-deleted — recoverable, like the other
  * merge actions in this app.
@@ -36,7 +36,7 @@ class MergeDuties
             $summary = [
                 'moved_assignments' => $movedAssignments,
                 'collapsed_assignments' => CollapseOverlappingDutiables::execute($kept),
-                'moved_types' => self::repointMorphPivot('typeables', 'typeable_id', 'typeable_type', 'type_id', $kept, $sourceIds),
+                'moved_types' => self::repointTypes($kept, $sourceIds),
                 'moved_roles' => self::repointMorphPivot('model_has_roles', 'model_id', 'model_type', 'role_id', $kept, $sourceIds),
                 'moved_ex_officio' => self::mergeExOfficioLinks($kept, $sourceIds),
                 'moved_tenant_quotas' => self::mergeDutyTenantQuotas($kept, $sourceIds),
@@ -129,14 +129,21 @@ class MergeDuties
         return $moved;
     }
 
-    /**
-     * Shared shape for typeables and model_has_roles: a polymorphic
-     * pivot keyed on (model id, model type, other id). Repoints a source's row
-     * onto the kept duty unless the kept duty already has that same pairing, in
-     * which case the source's row is a pure duplicate and is simply dropped.
-     *
-     * @param  list<string>  $sourceIds
-     */
+    /** @param list<string> $sourceIds */
+    private static function repointTypes(Duty $kept, array $sourceIds): int
+    {
+        $moved = 0;
+        foreach (DB::table('duty_duty_type')->whereIn('duty_id', $sourceIds)->get() as $row) {
+            $moved += DB::table('duty_duty_type')->insertOrIgnore([
+                'duty_id' => $kept->id,
+                'duty_type_id' => $row->duty_type_id,
+            ]);
+        }
+        DB::table('duty_duty_type')->whereIn('duty_id', $sourceIds)->delete();
+
+        return $moved;
+    }
+
     private static function repointMorphPivot(
         string $table,
         string $modelIdColumn,

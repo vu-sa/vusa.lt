@@ -3,22 +3,24 @@
 namespace App\Http\Controllers\Public;
 
 use App\Actions\GetPublicMeetingDocuments;
-use App\Collections\NewsCollection;
 use App\Enums\LocaleEnum;
 use App\Helpers\ContentHelper;
 use App\Http\Controllers\PublicController;
 use App\Http\Requests\IndexPublicCalendarRequest;
 use App\Models\Calendar;
 use App\Models\Content;
+use App\Models\ContentPart;
 use App\Models\EventType;
+use App\Models\Institution;
 use App\Models\Navigation;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
+use App\Services\AgendaItemPresenter;
 use App\Services\LocationGeocoder;
 use App\Services\PublicUrlService;
-use App\Services\ResourceServices\InstitutionService;
 use App\Support\LocalizedRouteSlugs;
+use App\Support\PublicCacheTags;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
@@ -29,39 +31,11 @@ use Inertia\Inertia;
 
 class PublicPageController extends PublicController
 {
-    protected function getEventsForCalendar()
-    {
-        $locale = app()->getLocale();
-        $cacheKey = "calendar_events_{$locale}";
-
-        return Cache::tags(['calendar', "locale_{$locale}"])
-            ->remember($cacheKey, 1800, function () use ($locale) { // 30 minutes TTL
-                if ($locale === 'en') {
-                    return Calendar::query()->with(['eventType', 'media'])->where('is_international', true)->where('is_draft', false)
-                        ->orderBy('date', 'desc')->take(100)->get()->map(fn ($event) => [
-                            ...$event->toArray(),
-                            'images' => $event->getMedia('images'),
-                            'googleLink' => $event->googleLink(),
-                            'public_url' => $event->publicUrl($locale),
-                        ]);
-                } else {
-                    return Calendar::query()->with(['eventType', 'media'])->where('is_draft', false)
-                        ->orderBy('date', 'desc')->take(100)->get()->map(fn ($event) => [
-                            ...$event->toArray(),
-                            'images' => $event->getMedia('images'),
-                            'googleLink' => $event->googleLink(),
-                            'public_url' => $event->publicUrl($locale),
-                        ]);
-                }
-            });
-    }
-
     public function home()
     {
         // Get shared data (these are cached internally)
         $this->getBanners();
         $this->getTenantLinks();
-        $this->getNavigation();
 
         // Share other language URL for locale switching
         $this->shareOtherLangURL('home', $this->subdomain);
@@ -70,43 +44,37 @@ class PublicPageController extends PublicController
         $locale = app()->getLocale();
         $cacheKey = "homepage_content_{$this->tenant->id}_{$locale}";
 
-        $content = Cache::tags(['homepage', "tenant_{$this->tenant->id}", "locale_{$locale}"])
+        $content = Cache::tags(['homepage'])
             ->remember($cacheKey, 3600, fn () => $this->homepageContentForLocale($this->tenant, $locale)
                 ?? $this->homepageContentForLocale(Tenant::main(), $locale));
-
-        // Fetch news for homepage to enable LCP image preloading (eliminates API waterfall)
-        $newsCacheKey = "homepage_news_{$this->tenant->id}_{$locale}";
 
         // Only authenticated users pay for edit-link resolution.
         if (Auth::check()) {
             $this->sharePublicEditLink($this->tenant);
         }
 
-        $news = Cache::tags(['news', "tenant_{$this->tenant->id}", "locale_{$locale}"])
-            ->remember($newsCacheKey, 1800, fn () => NewsCollection::getPublishedForTenant(
-                $this->tenant->id,
-                $locale
-            )->toPublicArray());
-
-        // Fetch calendar events for homepage (reduces API calls)
-        $calendarEvents = $this->getEventsForCalendar();
-
         $this->applyPageHead(contentTenant: $this->tenant, title: __('Pagrindinis puslapis'));
 
-        // Get first news image URL for LCP preload hint
-        $firstNewsImageUrl = $news[0]['image'] ?? null;
+        $resolvedParts = $this->resolveContentParts($content);
 
         return Inertia::render('Public/HomePage', [
             'tenantSwitchTarget' => 'same-page',
             'content' => $content,
-            // `news`/`calendarEvents` stay as-is (HomePage's LCP tuning is built on this
-            // exact prop shape); `resolvedParts` only carries the newer dynamic types
-            // (link-list, event-list) a homepage content block might use.
-            'resolvedParts' => (object) $this->resolveContentParts($content),
-            'news' => $news,
-            'calendarEvents' => $calendarEvents,
-            'firstNewsImageUrl' => $firstNewsImageUrl,
+            'resolvedParts' => (object) $resolvedParts,
+            'firstNewsImageUrl' => $this->firstNewsImageUrl($content, $resolvedParts),
         ]);
+    }
+
+    /**
+     * The first news card's image, preloaded as the likely LCP element.
+     *
+     * @param  array<int, array<string, mixed>>  $resolvedParts
+     */
+    private function firstNewsImageUrl(?Content $content, array $resolvedParts): ?string
+    {
+        $newsPart = $content?->parts->first(fn (ContentPart $part) => $part->type === 'news');
+
+        return $newsPart ? ($resolvedParts[$newsPart->id]['items'][0]['image'] ?? null) : null;
     }
 
     private function homepageContentForLocale(?Tenant $tenant, string $locale): ?Content
@@ -132,11 +100,14 @@ class PublicPageController extends PublicController
     public function page(?PublicUrlService $publicUrls = null)
     {
         $publicUrls ??= app(PublicUrlService::class);
-        // HACK: At first, since for PKP we want to redirect old pages to contacts page, we check in this function
-        $pkps = (new InstitutionService)->getInstitutionsByTypeSlug('pkp');
-        $institution = $pkps->firstWhere('alias', request()->permalink);
 
-        if ($institution) {
+        // Old PKP pages live on as contacts pages.
+        $isPkpAlias = Institution::query()
+            ->where('alias', request()->permalink)
+            ->whereHas('types', fn (Builder $query) => $query->where('slug', 'pkp'))
+            ->exists();
+
+        if ($isPkpAlias) {
             return redirect()->route('contacts.alias', ['subdomain' => $this->subdomain, 'lang' => app()->getLocale(), 'institution' => request()->permalink]);
         }
 
@@ -149,7 +120,7 @@ class PublicPageController extends PublicController
         $locale = app()->getLocale();
         $cacheKey = "page_content_{$this->tenant->id}_{$locale}_".md5(request()->permalink);
 
-        $pageData = Cache::tags(['pages', "tenant_{$this->tenant->id}", "locale_{$locale}"])
+        $pageData = Cache::tags(['pages', PublicCacheTags::pages($this->tenant->id, $locale)])
             ->remember($cacheKey, 3600, function () {
                 $page = Page::query()->where([
                     ['permalink', '=', request()->permalink],
@@ -157,9 +128,13 @@ class PublicPageController extends PublicController
                     ['is_active', '=', true],
                 ])->first();
 
+                // false, not null: the cache treats a stored null as a miss, and page saves
+                // flush this entry when the permalink appears.
                 if ($page === null) {
-                    return null;
+                    return false;
                 }
+
+                $page->load(['tenant', 'content']);
 
                 $navigation_item = Navigation::query()->where('name', $page->title)->first();
                 $other_lang_page = $page->getOtherLanguage();
@@ -181,10 +156,11 @@ class PublicPageController extends PublicController
                     'other_lang_page' => $other_lang_page,
                     'ancestors' => $page->ancestors(),
                     'children' => $children,
+                    'seo_description' => ContentHelper::getDescriptionForSeo($page),
                 ];
             });
 
-        if ($pageData === null) {
+        if ($pageData === false) {
             $publicUrl = $publicUrls->resolve(request()->url());
             $destination = $publicUrl === null ? null : $publicUrls->destinationFor($publicUrl);
 
@@ -218,7 +194,7 @@ class PublicPageController extends PublicController
         $this->applyPageHead(
             contentTenant: $page->tenant,
             title: $page->title,
-            description: ContentHelper::getDescriptionForSeo($page),
+            description: $pageData['seo_description'] ?? ContentHelper::getDescriptionForSeo($page),
         );
 
         // Generate breadcrumb schema
@@ -275,14 +251,6 @@ class PublicPageController extends PublicController
                         'permalink' => $ancestor->permalink,
                     ]),
                 ], $ancestors),
-                /* 'content' => [ */
-                /*    ...$page->content->toArray(), */
-                /*    'parts' => $page->content->parts->map(function ($part) { */
-                /*        return [ */
-                /*            ...$part->parseTipTapElements()->toArray(), */
-                /*        ]; */
-                /*    }), */
-                /* ] */
             ],
         ])->withViewData([
             'JSONLD_Schemas' => [$this->getBreadcrumbSchema($breadcrumbs)],
@@ -304,7 +272,7 @@ class PublicPageController extends PublicController
         // destination resolves against `www` regardless of which subdomain was requested.
         $destination = match ($alias) {
             'red', 'yellow', 'grey' => LocalizedRouteSlugs::route('newsArchive', ['subdomain' => 'www'], $locale),
-            'freshmen-camps' => LocalizedRouteSlugs::route('pirmakursiuStovyklos', [], $locale),
+            'freshmen-camps' => LocalizedRouteSlugs::route('page', ['subdomain' => 'www', 'permalink' => $locale === 'en' ? 'freshmen-camps' : 'pirmakursiu-stovyklos'], $locale),
             'vu-sa-conferences' => LocalizedRouteSlugs::route('calendar.list', ['type' => 'konferencija'], $locale),
             'stipendijos' => LocalizedRouteSlugs::route('topic', ['tag' => 'finansine-parama-stipendijos'], $locale),
             'vu-sa-dokumentai' => LocalizedRouteSlugs::route('documents', [], $locale),
@@ -314,85 +282,6 @@ class PublicPageController extends PublicController
         abort_if($destination === null, 404);
 
         return redirect()->away($destination, 301);
-    }
-
-    public function summerCamps(string $lang, string $summerCampsString, ?string $year = null)
-    {
-        $this->getBanners();
-        $this->getTenantLinks();
-        $this->shareOtherLangURL('pirmakursiuStovyklos');
-
-        if ($year == null) {
-            $year = intval(date('Y'));
-        } else {
-            $year = intval($year);
-        }
-
-        // TODO: add slug in global settings instead
-        // The event type is a grouping key here, not a publication gate: trashing the
-        // "stovykla" event type must not silently empty this public archive.
-        $events = Calendar::query()->whereHas('eventType', function (Builder $query): void {
-            /** @var Builder<EventType> $query */
-            $query->withTrashed()->where('slug', '=', 'stovykla');
-        })->with('tenant:id,alias,fullname')->whereYear('date', $year)
-            ->with(['media']);
-
-        // Filter by locale - only show international events for English users
-        if (app()->getLocale() === 'en') {
-            $events->where('is_international', true);
-        }
-
-        // Grouped by faculty on the page, chronological within each faculty — a faculty
-        // may run more than one camp.
-        $events = $events->get()->sortBy([
-            ['tenant.alias', 'asc'],
-            ['date', 'asc'],
-        ])->values();
-
-        if ($events->isEmpty() && $year != intval(date('Y'))) {
-            return redirect()->route('pirmakursiuStovyklos', ['lang' => app()->getLocale(), 'year' => null]);
-        }
-
-        $yearsWhenEventsExist = Calendar::query()->whereHas('eventType', function (Builder $query): void {
-            /** @var Builder<EventType> $query */
-            $query->withTrashed()->where('slug', '=', 'stovykla');
-        });
-
-        // Filter by locale for years when events exist
-        if (app()->getLocale() === 'en') {
-            $yearsWhenEventsExist->where('is_international', true);
-        }
-
-        // Grouped in PHP rather than with a `YEAR()` expression, which is MySQL-specific.
-        $yearsWhenEventsExist = $yearsWhenEventsExist
-            ->orderByDesc('date')
-            ->pluck('date')
-            ->map(fn ($date) => Carbon::parse($date)->year)
-            ->unique()
-            ->values();
-
-        // Global content - use main vusa tenant (null defaults to current tenant).
-        // This route only exists on the www domain group, so the derived " - VU SA"
-        // suffix matches what was previously hardcoded here.
-        $this->applyPageHead(
-            contentTenant: null,
-            title: $year == intval(date('Y')) ? 'Pirmakursių stovyklos' : $year.' m. pirmakursių stovyklos',
-            description: 'Universiteto tvarka niekada su ja nesusidūrusiam žmogui gali pasirodyti labai sudėtinga ir būtent dėl to jau prieš septyniolika metų Vilniaus universiteto Studentų atstovybė (VU SA) surengė pirmąją pirmakursių stovyklą.',
-            image: config('app.url').'/images/photos/stovykla.jpg',
-        );
-
-        return Inertia::render('Public/SummerCamps',
-            [
-                // `location` is shown on the camp cards; `description` stays hidden because
-                // the cards never render it and it is heavy rich text.
-                'events' => $events->makeHidden(['description', 'user_id'])
-                    ->map(fn (Calendar $event) => [
-                        ...$event->toArray(),
-                        'public_url' => $event->publicUrl(app()->getLocale()),
-                    ])->values()->all(),
-                'year' => $year,
-                'yearsWhenEventsExist' => $yearsWhenEventsExist,
-            ]);
     }
 
     public function individualStudies()
@@ -443,7 +332,7 @@ class PublicPageController extends PublicController
 
         // Create base query with common filters
         $query = Calendar::query()
-            ->with(['eventType', 'tenant:id,alias,shortname,fullname'])
+            ->with(['eventType', 'media', 'tenant:id,alias,shortname,fullname'])
             ->where('is_draft', false);
 
         // Filter by locale
@@ -505,6 +394,17 @@ class PublicPageController extends PublicController
      * "VU SA" for "Upcoming") even after switching to "Past" in the browser.
      */
     private function getCalendarFilterOptions(): array
+    {
+        $locale = app()->getLocale();
+
+        return Cache::tags(['calendar'])->remember("calendar_filter_options_{$locale}", 3600,
+            fn () => $this->queryCalendarFilterOptions());
+    }
+
+    /**
+     * @return array{eventTypes: array<int, mixed>, tenants: array<int, mixed>}
+     */
+    private function queryCalendarFilterOptions(): array
     {
         $eventTypes = EventType::query()
             ->whereHas('calendarEvents', function ($query): void {
@@ -639,7 +539,7 @@ class PublicPageController extends PublicController
         return [
             'id' => $meeting->id,
             'start_time' => $meeting->start_time,
-            'agenda_items' => $meeting->agendaItems,
+            'agenda_items' => $meeting->agendaItems->map(fn ($item): array => AgendaItemPresenter::publicItem($item))->all(),
             'requires_student_perspective' => $meeting->requiresStudentPerspective(),
             'documents' => GetPublicMeetingDocuments::execute($meeting),
             'institution' => $institution?->only(['id', 'name', 'alias']),
@@ -690,10 +590,6 @@ class PublicPageController extends PublicController
     /**
      * The events offered alongside this one: the soonest still to come first, topped up
      * with the most recent past ones when little is coming.
-     *
-     * Not `getEventsForCalendar()` — that sorts the whole calendar newest-first, so
-     * reading from its top surfaced whatever is furthest in the future rather than what
-     * is about to happen.
      *
      * @return array<int, array<string, mixed>>
      */

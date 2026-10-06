@@ -5,25 +5,30 @@ use App\Actions\GetMeetingOverseers;
 use App\Enums\AgendaItemType;
 use App\Enums\InstitutionScope;
 use App\Events\MeetingFullyCreated;
+use App\Models\Cadence;
 use App\Models\Duty;
+use App\Models\DutyResponsibility;
+use App\Models\DutyType;
 use App\Models\Institution;
+use App\Models\InstitutionSecretary;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
-use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Models\User;
 use App\Models\Vote;
 use App\Notifications\MeetingAgendaCompletedNotification;
 use App\Notifications\MeetingCreatedNotification;
-use App\Settings\AtstovavimasSettings;
+use App\Notifications\TaskAssignedNotification;
+use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 use App\Tasks\Handlers\AgendaCreationTaskHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use NotificationChannels\WebPush\WebPushChannel;
 use Tests\Feature\Tasks\MeetingTaskTestHelpers;
 
 pest()->use(RefreshDatabase::class, MeetingTaskTestHelpers::class);
@@ -44,8 +49,8 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->create();
 
             // Create student rep type
-            $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-                ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
+            $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
+                ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
             // Create a duty with student rep type
             $duty = Duty::factory()
@@ -297,15 +302,9 @@ describe('MeetingTaskSubscriber', function (): void {
 
             $institution = Institution::factory()->for($tenant)->create();
 
-            // Create and configure institution manager role via settings
-            $managerRole = Role::factory()->create(['guard_name' => 'web']);
-            $settings = app(AtstovavimasSettings::class);
-            $settings->setInstitutionManagerRoleId($managerRole->id);
-            $settings->save();
-
-            // Create admin with institution manager role
+            // Create an admin who coordinates the padalinys
             $duty = Duty::factory()->for($institution)->create();
-            $duty->roles()->attach($managerRole);
+            DutyResponsibility::factory()->for($duty)->forTenant($duty->institution->tenant)->create();
 
             $admin = User::factory()->create();
             $admin->duties()->attach($duty, [
@@ -330,15 +329,9 @@ describe('MeetingTaskSubscriber', function (): void {
 
             $institution = Institution::factory()->for($tenant)->create();
 
-            // Create and configure institution manager role via settings
-            $managerRole = Role::factory()->create(['guard_name' => 'web']);
-            $settings = app(AtstovavimasSettings::class);
-            $settings->setInstitutionManagerRoleId($managerRole->id);
-            $settings->save();
-
-            // Create coordinator with institution manager role
+            // Create a coordinator of the padalinys
             $coordinatorDuty = Duty::factory()->for($institution)->create();
-            $coordinatorDuty->roles()->attach($managerRole);
+            DutyResponsibility::factory()->for($coordinatorDuty)->forTenant($coordinatorDuty->institution->tenant)->create();
 
             $coordinator = User::factory()->create();
             $coordinator->duties()->attach($coordinatorDuty, [
@@ -347,8 +340,8 @@ describe('MeetingTaskSubscriber', function (): void {
             ]);
 
             // Create student rep type and duty
-            $studentRepType = Type::query()->where('slug', 'studentu-atstovai')->first()
-                ?? Type::factory()->create(['slug' => 'studentu-atstovai', 'model_type' => MorphMap::alias(Duty::class)]);
+            $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
+                ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
 
             $repDuty = Duty::factory()
                 ->for($institution)
@@ -398,18 +391,12 @@ describe('MeetingTaskSubscriber', function (): void {
             $institution1 = Institution::factory()->for($tenant)->create();
             $institution2 = Institution::factory()->for($tenant)->create();
 
-            // Create and configure institution manager role via settings
-            $managerRole = Role::factory()->create(['guard_name' => 'web']);
-            $settings = app(AtstovavimasSettings::class);
-            $settings->setInstitutionManagerRoleId($managerRole->id);
-            $settings->save();
-
-            // Create user with manager role in both institutions
+            // Create a user who coordinates the padalinys of both institutions
             $duty1 = Duty::factory()->for($institution1)->create();
-            $duty1->roles()->attach($managerRole);
+            DutyResponsibility::factory()->for($duty1)->forTenant($duty1->institution->tenant)->create();
 
             $duty2 = Duty::factory()->for($institution2)->create();
-            $duty2->roles()->attach($managerRole);
+            DutyResponsibility::factory()->for($duty2)->forTenant($duty2->institution->tenant)->create();
 
             $admin = User::factory()->create();
             $admin->duties()->attach([$duty1->id, $duty2->id], [
@@ -429,11 +416,29 @@ describe('MeetingTaskSubscriber', function (): void {
             Notification::assertSentToTimes($admin, MeetingCreatedNotification::class, 1);
         });
 
+        test('a secretary who carries the agenda task is not also sent the overseer notice', function (): void {
+            $institution = Institution::factory()->for(Tenant::query()->first())->create();
+            $cadence = Cadence::factory()->create([
+                'institution_id' => $institution->id,
+                'start_date' => now()->subMonth()->toDateString(),
+                'end_date' => now()->addMonth()->toDateString(),
+            ]);
+            $secretary = User::factory()->create();
+            InstitutionSecretary::create(['institution_id' => $institution->id, 'cadence_id' => $cadence->id, 'user_id' => $secretary->id]);
+
+            $meeting = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()]);
+            event(new MeetingFullyCreated($meeting));
+
+            Notification::assertSentTo($secretary, TaskAssignedNotification::class);
+            Notification::assertNotSentTo($secretary, MeetingCreatedNotification::class);
+        });
+
         test('notifies followers when meeting is created', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
             $institution = Institution::factory()->for($tenant)->create();
+            publishInstitutionMeetings($institution);
 
             // Create a follower who is not an admin
             $follower = User::factory()->create();
@@ -447,7 +452,32 @@ describe('MeetingTaskSubscriber', function (): void {
             // Dispatch the event
             event(new MeetingFullyCreated($meeting));
 
-            Notification::assertSentTo($follower, MeetingCreatedNotification::class);
+            // They asked to hear about it, so a follower's notice pushes, unlike the overseers'.
+            Notification::assertSentTo(
+                $follower,
+                MeetingCreatedNotification::class,
+                fn ($notification, array $channels): bool => in_array(WebPushChannel::class, $channels, true),
+            );
+        });
+
+        test('a follower who turned followed-institution push off gets the notice without a push', function (): void {
+            $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
+                ?? Tenant::factory()->create(['type' => 'padalinys']);
+
+            $institution = Institution::factory()->for($tenant)->create();
+            publishInstitutionMeetings($institution);
+            $follower = User::factory()->create(['notification_preferences' => ['types' => ['followed_institution_activity' => ['push' => false]]]]);
+            $follower->followedInstitutions()->attach($institution);
+
+            $meeting = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()]);
+            event(new MeetingFullyCreated($meeting));
+
+            Notification::assertSentTo(
+                $follower,
+                MeetingCreatedNotification::class,
+                fn ($notification, array $channels): bool => in_array('database', $channels, true)
+                    && ! in_array(WebPushChannel::class, $channels, true),
+            );
         });
 
         test('does not notify followers who have muted the institution', function (): void {
@@ -455,6 +485,7 @@ describe('MeetingTaskSubscriber', function (): void {
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
             $institution = Institution::factory()->for($tenant)->create();
+            publishInstitutionMeetings($institution);
 
             // Create a follower who has muted the institution
             $mutedFollower = User::factory()->create();
@@ -477,7 +508,9 @@ describe('MeetingTaskSubscriber', function (): void {
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
             $institution1 = Institution::factory()->for($tenant)->create();
+            publishInstitutionMeetings($institution1);
             $institution2 = Institution::factory()->for($tenant)->create();
+            publishInstitutionMeetings($institution2);
 
             // Create a follower who follows both institutions
             $follower = User::factory()->create();
@@ -499,18 +532,11 @@ describe('MeetingTaskSubscriber', function (): void {
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
             $institution = Institution::factory()->for($tenant)->create();
+            publishInstitutionMeetings($institution);
 
-            // Create the institution-manager-role type for GetInstitutionManagers
-            $institutionManagerType = Type::query()->where('slug', 'institution-manager-role')->first()
-                ?? Type::factory()->create(['slug' => 'institution-manager-role', 'model_type' => MorphMap::alias(Role::class)]);
-
-            // Create a role attached to the institution manager type
-            $managerRole = Role::factory()->create(['guard_name' => 'web']);
-            $managerRole->types()->attach($institutionManagerType);
-
-            // Create duty with the manager role
+            // Create a duty coordinating the padalinys
             $duty = Duty::factory()->for($institution)->create();
-            $duty->roles()->attach($managerRole);
+            DutyResponsibility::factory()->for($duty)->forTenant($duty->institution->tenant)->create();
 
             $manager = User::factory()->create();
             $manager->duties()->attach($duty, [
@@ -530,15 +556,84 @@ describe('MeetingTaskSubscriber', function (): void {
             event(new MeetingFullyCreated($meeting));
 
             Notification::assertSentToTimes($manager, MeetingCreatedNotification::class, 1);
+            // Their seat, not the follow, is why they hear about it: no push.
+            Notification::assertSentTo(
+                $manager,
+                MeetingCreatedNotification::class,
+                fn ($notification, array $channels): bool => ! in_array(WebPushChannel::class, $channels, true),
+            );
+        });
+
+        test('agenda completion pushes to followers too', function (): void {
+            $follower = User::factory()->create();
+            $meeting = Meeting::factory()->create();
+
+            expect(new MeetingAgendaCompletedNotification($meeting)->viaFollow()->via($follower))->toContain(WebPushChannel::class)
+                ->and(new MeetingAgendaCompletedNotification($meeting)->via($follower))->not->toContain(WebPushChannel::class);
         });
     });
 
     describe('GetInstitutionFollowersToNotify', function (): void {
+        test('stops notifying a follower whose duty was ended', function (): void {
+            $follower = makeTenantUserWithRole('Studentų atstovas');
+            $duty = $follower->duties()->first();
+            $follower->followedInstitutions()->attach($duty->institution_id);
+
+            $before = Meeting::factory()->hasAttached($duty->institution)->create(['start_time' => now()]);
+            expect(GetInstitutionFollowersToNotify::execute($before)->pluck('id'))->toContain($follower->id);
+
+            $duty->pivot->end_date = now()->subDay();
+            $duty->pivot->save();
+            // A later request or queued job starts without this request's resolved permissions.
+            app()->forgetScopedInstances();
+
+            $after = Meeting::factory()->hasAttached($duty->institution)->create(['start_time' => now()]);
+            expect(GetInstitutionFollowersToNotify::execute($after))->toBeEmpty();
+        });
+
+        test('stops notifying a follower the moment their duty runs out on its own', function (): void {
+            $tenant = Tenant::query()->first();
+            // Access through a cached permission (meetings.read.padalinys), not as a participant
+            // of the followed institution — the participant check is a live query anyway.
+            $follower = makeUser($tenant);
+            $duty = $follower->duties()->first();
+            $duty->givePermissionTo('meetings.read.padalinys');
+            // The end date is the last day in office, so today's date ends access at midnight.
+            $duty->pivot->end_date = now()->toDateString();
+            $duty->pivot->save();
+
+            $followed = Institution::factory()->for($tenant)->create();
+            $follower->followedInstitutions()->attach($followed);
+
+            $this->travelTo(now()->endOfDay()->subMinutes(10));
+            $before = Meeting::factory()->hasAttached($followed)->create(['start_time' => now()]);
+            expect(GetInstitutionFollowersToNotify::execute($before)->pluck('id'))->toContain($follower->id);
+
+            // Fifteen minutes on — well inside the permission caches' hour — and past the end.
+            // No event marks it; the caches were set to expire at that boundary.
+            $this->travel(15)->minutes();
+            app()->forgetScopedInstances();
+
+            $after = Meeting::factory()->hasAttached($followed)->create(['start_time' => now()]);
+            expect(GetInstitutionFollowersToNotify::execute($after))->toBeEmpty();
+        });
+
+        test('leaves out followers who may not read the meeting', function (): void {
+            $institution = Institution::factory()->for(Tenant::query()->first())->create();
+            $follower = User::factory()->create();
+            $follower->followedInstitutions()->attach($institution);
+
+            $meeting = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()]);
+
+            expect(GetInstitutionFollowersToNotify::execute($meeting))->toBeEmpty();
+        });
+
         test('returns followers who have not muted the institution', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
             $institution = Institution::factory()->for($tenant)->create();
+            publishInstitutionMeetings($institution);
 
             // Create a follower
             $follower = User::factory()->create();
@@ -564,7 +659,9 @@ describe('MeetingTaskSubscriber', function (): void {
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
             $institution1 = Institution::factory()->for($tenant)->create();
+            publishInstitutionMeetings($institution1);
             $institution2 = Institution::factory()->for($tenant)->create();
+            publishInstitutionMeetings($institution2);
 
             // Create a user who follows both institutions
             $follower = User::factory()->create();
@@ -590,15 +687,9 @@ describe('MeetingTaskSubscriber', function (): void {
             $institution1 = Institution::factory()->for($tenant)->create();
             $institution2 = Institution::factory()->for($tenant)->create();
 
-            // Create and configure institution manager role via settings
-            $managerRole = Role::factory()->create(['guard_name' => 'web']);
-            $settings = app(AtstovavimasSettings::class);
-            $settings->setInstitutionManagerRoleId($managerRole->id);
-            $settings->save();
-
             // Create manager for first institution
             $duty1 = Duty::factory()->for($institution1)->create();
-            $duty1->roles()->attach($managerRole);
+            DutyResponsibility::factory()->for($duty1)->forTenant($duty1->institution->tenant)->create();
             $manager1 = User::factory()->create();
             $manager1->duties()->attach($duty1, [
                 'start_date' => now()->subMonth(),
@@ -607,7 +698,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Create manager for second institution
             $duty2 = Duty::factory()->for($institution2)->create();
-            $duty2->roles()->attach($managerRole);
+            DutyResponsibility::factory()->for($duty2)->forTenant($duty2->institution->tenant)->create();
             $manager2 = User::factory()->create();
             $manager2->duties()->attach($duty2, [
                 'start_date' => now()->subMonth(),
@@ -972,4 +1063,62 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->and($completionTask->completed_at)->toBeNull();
         });
     });
+
+    describe('due dates', function (): void {
+        test('creating the agenda is due 3 days after the meeting', function (): void {
+            [$meeting, $creationTask] = $this->createMeetingWithCreationTask();
+
+            expect($creationTask->due_date->toDateString())->toBe($meeting->start_time->addDays(3)->toDateString());
+        });
+
+        test('filling in an agenda recorded with the meeting is due 7 days after it', function (): void {
+            [$meeting, $completionTask] = $this->createMeetingWithCompletionTask(1);
+
+            expect($completionTask->due_date->toDateString())->toBe($meeting->start_time->addDays(7)->toDateString());
+        });
+
+        test('an agenda added later is due 7 days after the meeting', function (): void {
+            [$meeting] = $this->createMeetingWithCreationTask();
+
+            AgendaItem::factory()->create(['meeting_id' => $meeting->id, 'order' => 1]);
+
+            $completionTask = Task::query()
+                ->where('taskable_id', $meeting->id)
+                ->where('action_type', ActionType::AgendaCompletion)
+                ->firstOrFail();
+
+            expect($completionTask->due_date->toDateString())->toBe($meeting->start_time->addDays(7)->toDateString());
+        });
+    });
+
+    test('recording the vote on the agenda item page advances the task', function (): void {
+        [$meeting, $task] = $this->createMeetingWithCompletionTask(1);
+        $item = $meeting->agendaItems->first();
+
+        asUser(makeAdminUser())
+            ->patch(route('agendaItems.update', $item), [
+                'type' => AgendaItemType::Voting->value,
+                'votes' => [[
+                    'is_main' => true,
+                    'decision' => 'positive',
+                    'student_vote' => 'positive',
+                    'student_benefit' => 'positive',
+                ]],
+            ])
+            ->assertSessionHasNoErrors();
+
+        $task->refresh();
+
+        expect($task->metadata['items_completed'])->toBe(1)
+            ->and($task->completed_at)->not->toBeNull();
+    });
 });
+
+/** Anyone may follow an active institution, so a follower hears only about meetings they may read. */
+function publishInstitutionMeetings(Institution $institution): void
+{
+    $type = InstitutionType::factory()->create();
+    $settings = app(MeetingSettings::class);
+    $settings->fill(['public_meeting_institution_type_ids' => [...$settings->public_meeting_institution_type_ids, $type->id]])->save();
+    $institution->types()->attach($type);
+}

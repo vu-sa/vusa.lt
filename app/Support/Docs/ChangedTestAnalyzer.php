@@ -27,9 +27,9 @@ class ChangedTestAnalyzer
         $changed = [];
 
         foreach ($this->changedTestFiles($baseRef) as $path) {
-            $before = $this->scanner->testNamesIn($this->fileAtRef($baseRef, $path) ?? '<?php');
+            $before = $this->testNamesIn($path, $this->fileAtRef($baseRef, $path) ?? '');
             $after = is_file(base_path($path))
-                ? $this->scanner->testNamesIn((string) file_get_contents(base_path($path)))
+                ? $this->testNamesIn($path, (string) file_get_contents(base_path($path)))
                 : [];
 
             $added = array_values(array_diff($after, $before));
@@ -77,8 +77,25 @@ class ChangedTestAnalyzer
 
         return array_values(array_filter(
             array_map(trim(...), explode("\n", $output)),
-            fn (string $p) => $p !== '' && str_starts_with($p, 'tests/') && str_ends_with($p, '.php'),
+            fn (string $p) => $p !== '' && DocClaimScanner::isTestPath($p),
         ));
+    }
+
+    /**
+     * Pest names come from the PHP AST (escaped apostrophes defeat a regex there); Vitest names
+     * from a quote-aware match, which TS string literals do not trip up.
+     *
+     * @return list<string>
+     */
+    private function testNamesIn(string $path, string $source): array
+    {
+        if (str_ends_with($path, '.php')) {
+            return $this->scanner->testNamesIn($source !== '' ? $source : '<?php');
+        }
+
+        preg_match_all('/\b(?:it|test)(?:\.\w+)*\(\s*([\'"`])((?:\\\\.|(?!\1).)*)\1/s', $source, $matches);
+
+        return array_values(array_unique($matches[2]));
     }
 
     private function fileAtRef(string $ref, string $path): ?string

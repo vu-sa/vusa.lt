@@ -1,21 +1,9 @@
 <template>
-  <div class="space-y-2">
-    <div class="flex items-center justify-between">
-      <Label :for="id" class="flex items-center gap-1.5">
+  <div class="flex flex-col gap-2" data-slot="form-field">
+    <div class="flex items-baseline justify-between gap-2">
+      <Label :for="id" :class="cn('flex items-center gap-1.5 text-sm font-bold text-muted-foreground', labelClass)">
         {{ label }}
-        <span v-if="required" class="text-red-500">*</span>
-        <TooltipProvider v-if="hint">
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <button type="button" class="inline-flex">
-                <IFluentInfo16Regular class="h-3.5 w-3.5 cursor-help text-muted-foreground" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="top" class="max-w-xs">
-              {{ hint }}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <span v-if="required" class="text-destructive">*</span>
         <!-- Validation status indicators -->
         <span
           v-if="validating"
@@ -28,34 +16,34 @@
         </span>
         <span
           v-else-if="valid"
-          class="ml-1 text-green-600 dark:text-green-400"
+          class="ml-1 text-[var(--status-success)]"
           role="status"
           aria-live="polite"
           :aria-label="$t('validation.valid')"
         >
-          <IFluentCheckmarkCircle16Filled class="h-3.5 w-3.5" aria-hidden="true" />
+          <CheckCircle2 class="size-3.5" aria-hidden="true" />
         </span>
         <span
           v-else-if="invalid"
-          class="ml-1 text-red-600 dark:text-red-400"
+          class="ml-1 text-destructive"
           role="status"
           aria-live="polite"
           :aria-label="$t('validation.invalid')"
         >
-          <IFluentErrorCircle16Filled class="h-3.5 w-3.5" aria-hidden="true" />
+          <AlertCircle class="size-3.5" aria-hidden="true" />
         </span>
       </Label>
-      <span v-if="charCount !== undefined" class="text-xs" :class="charCountClass">
+      <span v-if="charCount !== undefined" class="text-[11px] font-bold tabular-nums" :class="charCountClass">
         {{ charCount }}<span v-if="maxLength">/{{ maxLength }}</span>
       </span>
     </div>
 
     <slot />
 
-    <p v-if="helperText" class="text-xs text-muted-foreground">
-      {{ helperText }}
+    <p v-if="hint || helperText" class="max-w-prose text-xs leading-snug text-pretty text-muted-foreground">
+      {{ hint ?? helperText }}
     </p>
-    <p v-if="error" class="text-xs text-red-600 dark:text-red-400">
+    <p v-if="error" class="text-xs text-destructive">
       {{ error }}
     </p>
   </div>
@@ -63,15 +51,19 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { AlertCircle, CheckCircle2 } from 'lucide-vue-next';
+import { trans as $t } from 'laravel-vue-i18n';
 
 import { Label } from '@/Components/ui/label';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import Spinner from '@/Components/ui/spinner/Spinner.vue';
+import { cn } from '@/Utils/Shadcn/utils';
 
 const props = defineProps<{
   id: string;
   label: string;
+  labelClass?: string;
   required?: boolean;
+  /** One line under the field — never hover-only (.ai/rules/admin-forms.md). */
   hint?: string;
   helperText?: string;
   error?: string;
@@ -91,13 +83,13 @@ const charCountClass = computed(() => {
   const ratio = props.charCount / props.maxLength;
 
   if (ratio > 1) {
-    return 'text-red-600 dark:text-red-400 font-medium';
+    return 'text-destructive font-medium';
   }
   if (ratio >= 0.8) {
-    return 'text-amber-600 dark:text-amber-400';
+    return 'text-[var(--status-attention)]';
   }
   if (ratio >= 0.5) {
-    return 'text-green-600 dark:text-green-400';
+    return 'text-[var(--status-success)]';
   }
   return 'text-muted-foreground';
 });

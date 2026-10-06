@@ -1,6 +1,45 @@
 <template>
-  <PageContent :title="$t('files.ui.root')">
+  <div class="space-y-6">
+    <Head :title="$t('shell.sections.failai')" />
+
+    <div class="flex flex-col gap-6 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <div class="max-w-2xl">
+        <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-brand">
+          <HardDrive class="size-3.5" aria-hidden="true" />
+          {{ $t('shell.workspaces.svetaine.title') }} · {{ $t('shell.sections.failai') }}
+        </span>
+        <h1 class="u-display mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          {{ $t('shell.sections.failai') }}
+        </h1>
+        <p class="mt-2 text-sm leading-relaxed text-muted-foreground text-pretty">
+          {{ $t('Viešų ir vidinių svetainės failų naršymas, įkėlimas ir valdymas.') }}
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="brand"
+          @click="fileManagerRef?.openUpload()"
+        >
+          <Upload class="size-4" aria-hidden="true" />
+          {{ $t('files.ui.upload') }}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          voice="sentence"
+          :aria-label="$t('files.ui.add_folder')"
+          @click="fileManagerRef?.openCreateFolder()"
+        >
+          <FolderPlus class="size-4" aria-hidden="true" />
+          <span class="hidden sm:inline">{{ $t('files.ui.add_folder') }}</span>
+        </Button>
+      </div>
+    </div>
+
     <FileManager
+      ref="fileManagerRef"
       :files="props.files"
       :directories="props.directories"
       :path="props.path"
@@ -13,17 +52,21 @@
       @update="handleUpdate"
       @search="handleSearch"
     />
-  </PageContent>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
+import { trans as $t } from 'laravel-vue-i18n';
+import { FolderPlus, HardDrive, Upload } from 'lucide-vue-next';
+import { ref } from 'vue';
 
 import FileManager from '@/Features/Admin/FileManager/FileManager.vue';
 import { useFileSearch } from '@/Features/Admin/FileManager/useFileSearch';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
+import { Button } from '@/Components/ui/button';
+
+const fileManagerRef = ref<InstanceType<typeof FileManager> | null>(null);
 
 const props = defineProps<{
   directories: Array<{ path: string; name: string; type: string }>;

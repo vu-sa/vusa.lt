@@ -4,7 +4,9 @@ use App\Events\CommentPosted;
 use App\Events\TaskCreated;
 use App\Models\Comment;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
+use App\Models\InstitutionActivityRequest;
 use App\Models\Meeting;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Task;
@@ -82,14 +84,14 @@ describe('task notifications', function (): void {
         Notification::assertNothingSent();
     });
 
-    test('periodicity tasks send one specialized activity notification', function (): void {
+    test('periodicity tasks send one activity question the recipient can answer without signing in', function (): void {
         $user = $this->createUserWithPreferences();
         $institution = Institution::factory()->create();
 
         // Periodicity tasks are only ever assigned to the body's current holders, and the
         // notification audience checks that (see ResolveTaskAudience).
         $user->duties()->attach(
-            Duty::factory()->for($institution)->create(),
+            Duty::factory()->for($institution)->hasAttached(DutyType::query()->firstOrCreate(['slug' => 'studentu-atstovai'], ['name' => ['lt' => 'Studentų atstovai', 'en' => 'Student representatives']]), [], 'types')->create(),
             ['start_date' => now()->subYear(), 'end_date' => null],
         );
 
@@ -108,14 +110,18 @@ describe('task notifications', function (): void {
         Notification::assertSentTo(
             $user,
             InstitutionActivityNotification::class,
-            function (InstitutionActivityNotification $notification) use ($user, $institution): bool {
+            function (InstitutionActivityNotification $notification) use ($user): bool {
                 $data = $notification->toArray($user);
 
-                return $data['title'] === __('visak.activity.activity_status.approaching')
-                    && str_contains($data['body'], $institution->name)
+                return $data['title'] === 'VU SA · '.__('activity_requests.campaigns.activity_confirmation')
+                    && $data['body'] === __('activity_requests.email.activity_confirmation')
                     && count($data['actions']) === 2;
             }
         );
+
+        expect(InstitutionActivityRequest::query()->where('recipient_id', $user->id)->sole())
+            ->institution_id->toBe($institution->id)
+            ->task_id->toBe($task->id);
     });
 });
 
@@ -131,18 +137,18 @@ describe('meeting reminder notifications', function (): void {
             'start_date' => now()->subMonth(),
             'end_date' => null,
         ]);
-        $user->setMeetingReminderHours([6]);
+        $user->update(['notification_preferences' => ['reminder_settings' => ['meeting_reminder_hours' => [12]]]]);
 
         Meeting::factory()
             ->hasAttached($institution)
-            ->create(['start_time' => now()->addHours(6)]);
+            ->create(['start_time' => now()->addHours(12)]);
 
         $this->artisan('notifications:meeting-reminders')->assertExitCode(0);
 
         Notification::assertSentTo(
             $user,
             MeetingReminderNotification::class,
-            fn (MeetingReminderNotification $notification): bool => str_contains($notification->body($user), '6')
+            fn (MeetingReminderNotification $notification): bool => str_contains($notification->body($user), '12')
         );
     });
 });

@@ -28,13 +28,13 @@ beforeEach(function (): void {
         }
     }
 
-    $coordinatorRole = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $coordinatorRole = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $coordinatorRole->givePermissionTo(['files.read.padalinys', 'files.create.padalinys', 'files.update.padalinys', 'files.delete.padalinys']);
 
     $this->fileManager = User::factory()->create();
     $duty = Duty::factory()->create(['institution_id' => $this->institution->id, 'name' => 'File Manager']);
     $this->fileManager->duties()->attach($duty, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)]);
-    $duty->assignRole('Communication Coordinator');
+    $duty->assignRole('Komunikacijos koordinatorius');
 
     $this->allowedPath = 'public/files/padaliniai/vusa'.$this->tenant->alias;
     Storage::makeDirectory('public/files/padaliniai/vusa'.$this->tenant->alias);

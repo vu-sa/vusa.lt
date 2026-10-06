@@ -1,5 +1,5 @@
 <template>
-  <div :class="cn(badgeVariants({ variant, size }), props.class)">
+  <div :class="cn(badgeVariants({ variant, size, voice }), props.class)">
     <slot />
   </div>
 </template>
@@ -15,6 +15,7 @@ import { cn } from '@/Utils/Shadcn/utils';
 const props = defineProps<{
   variant?: BadgeVariants['variant'];
   size?: BadgeVariants['size'];
+  voice?: BadgeVariants['voice'];
   class?: HTMLAttributes['class'];
 }>();
 </script>

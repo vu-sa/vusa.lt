@@ -33,6 +33,7 @@ vi.mock('@/Components/Discussions/CommentComposer.vue', () => ({
     name: 'CommentComposer',
     emits: ['submit', 'cancel'],
     props: ['collapsible'],
+    methods: { reset: vi.fn() },
     template: '<button class="composer-stub" @click="$emit(\'submit\', \'<p>new</p>\')">composer</button>',
   },
 }));
@@ -46,6 +47,7 @@ function makeComment(overrides: Partial<CommentData> = {}): CommentData {
     thread_root_id: null,
     kind: 'comment',
     body: '<p>Root body</p>',
+    is_erased: false,
     metadata: null,
     user: { id: 'u1', name: 'Author', profile_photo_path: null },
     created_at: new Date().toISOString(),
@@ -76,6 +78,23 @@ describe('DiscussionPanel', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.fetchMentionables.mockResolvedValue([]);
+  });
+
+  it('refetches the mention list when the parent\'s people change', async () => {
+    mocks.fetchThread.mockResolvedValue([]);
+
+    const wrapper = mount(DiscussionPanel, {
+      props: { commentableType: 'supportRequest', commentableId: 'sr1', mentionablesKey: 'u1' },
+      global: { stubs },
+    });
+    await flushPromises();
+    expect(mocks.fetchMentionables).toHaveBeenCalledTimes(1);
+
+    await wrapper.setProps({ mentionablesKey: 'u1,u2' });
+    await flushPromises();
+
+    expect(mocks.fetchMentionables).toHaveBeenCalledTimes(2);
+    expect(mocks.fetchThread).toHaveBeenCalledTimes(1);
   });
 
   it('renders fetched threads with their replies', async () => {
@@ -126,10 +145,37 @@ describe('DiscussionPanel', () => {
     expect(wrapper.html()).toContain('Done thread');
 
     // Toggle to "open only".
-    await wrapper.findAll('button').find(b => b.text().includes('Rodyti tik neišspręstus'))!.trigger('click');
+    await wrapper.findAll('button').find(b => b.text().includes('discussions.filter_unresolved_only'))!.trigger('click');
     await flushPromises();
 
     expect(wrapper.html()).toContain('Open thread');
     expect(wrapper.html()).not.toContain('Done thread');
+  });
+
+  it('leaves a "Komentaras ištrintas" placeholder where a deleted comment was, replies kept', async () => {
+    const reply = makeComment({ id: 'rep1', parent_id: 'root1', thread_root_id: 'root1', body: '<p>Rugsėjo 30 d.</p>' });
+    mocks.fetchThread.mockResolvedValue([
+      makeComment({ id: 'root1', body: '<p>Kada kitas posėdis?</p>', can: { update: true, delete: true, resolve: true }, replies: [reply] }),
+    ]);
+    mocks.deleteComment.mockResolvedValue(makeComment({
+      id: 'root1', body: '', is_erased: true, user: { id: null, name: null, profile_photo_path: null },
+      can: { update: false, delete: false, resolve: false },
+      // The destroy endpoint returns the comment alone; its replies stay where they are.
+      replies: undefined,
+    }));
+
+    const wrapper = mount(DiscussionPanel, {
+      props: { commentableType: 'meeting', commentableId: 'm1' },
+      global: { stubs },
+    });
+    await flushPromises();
+
+    await wrapper.findAll('div').find(element => element.text() === 'Ištrinti')!.trigger('click');
+    await flushPromises();
+
+    expect(mocks.deleteComment).toHaveBeenCalledWith('root1');
+    expect(wrapper.find('[data-testid="comment-erased"]').text()).toContain('Komentaras ištrintas');
+    expect(wrapper.html()).not.toContain('Kada kitas posėdis?');
+    expect(wrapper.html()).toContain('Rugsėjo 30 d.');
   });
 });

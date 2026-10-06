@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexBannerRequest;
 use App\Http\Requests\StoreBannerRequest;
 use App\Http\Requests\UpdateBannerRequest;
+use App\Http\Requests\UpdateBannerStatusRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Banner;
@@ -131,6 +132,16 @@ class BannerController extends AdminController
         Cache::forget('banners-'.$banner->tenant_id);
 
         return $this->backResponse(['success' => $this->entityMessage('updated', 'banner')]);
+    }
+
+    public function updateStatus(UpdateBannerStatusRequest $request, Banner $banner): RedirectResponse
+    {
+        $banner->is_active = $request->validated('is_active');
+        $banner->save();
+
+        Cache::forget('banners-'.$banner->tenant_id);
+
+        return back()->with('success', $this->entityMessage('updated', 'banner'));
     }
 
     /**

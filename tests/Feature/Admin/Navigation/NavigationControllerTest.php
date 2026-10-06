@@ -10,7 +10,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Global Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Centrinio biuro komunikacijos koordinatorius', $this->tenant);
 
     $this->navigation = Navigation::factory()->create([
         'name' => 'Test Navigation',
@@ -111,7 +111,7 @@ describe('tenant isolation', function (): void {
     // scope to isolate — a role limited to a tenant-scoped permission is simply
     // denied outright, which is what this asserts.
     test('a tenant-scoped role without the .all permission cannot manage navigation', function (): void {
-        $tenantScopedUser = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $tenantScopedUser = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
         asUser($tenantScopedUser)
             ->get(route('navigation.index'))

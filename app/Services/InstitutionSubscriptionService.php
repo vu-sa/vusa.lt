@@ -7,6 +7,8 @@ use App\Models\InstitutionFollow;
 use App\Models\InstitutionNotificationMute;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 /**
  * Service for managing institution subscription preferences.
@@ -40,6 +42,35 @@ class InstitutionSubscriptionService
             'user_id' => $user->id,
             'institution_id' => $institution->id,
         ])->delete() > 0;
+    }
+
+    /**
+     * Follow several institutions at once; ones already followed are left as they are.
+     *
+     * @param  Collection<int, Institution>  $institutions
+     */
+    public function followMany(User $user, Collection $institutions): void
+    {
+        $now = Carbon::now();
+
+        InstitutionFollow::insertOrIgnore($institutions->map(fn (Institution $institution): array => [
+            'id' => strtolower((string) Str::ulid()),
+            'user_id' => $user->id,
+            'institution_id' => $institution->id,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ])->all());
+    }
+
+    /**
+     * Unfollow several institutions at once, clearing their mutes as {@see unfollow()} does.
+     *
+     * @param  array<int, string>  $institutionIds
+     */
+    public function unfollowMany(User $user, array $institutionIds): void
+    {
+        InstitutionNotificationMute::where('user_id', $user->id)->whereIn('institution_id', $institutionIds)->delete();
+        InstitutionFollow::where('user_id', $user->id)->whereIn('institution_id', $institutionIds)->delete();
     }
 
     /**

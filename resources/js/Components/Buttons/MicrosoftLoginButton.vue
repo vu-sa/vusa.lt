@@ -1,28 +1,39 @@
 <template>
-  <Button
-    size="lg"
-    class="w-full bg-gradient-to-r from-vusa-red to-red-600 hover:from-vusa-red/90 hover:to-red-600/90 text-white font-medium shadow-lg transition-all duration-200 focus:ring-2 focus:ring-vusa-red/20 disabled:opacity-70 disabled:cursor-not-allowed"
+  <button
+    type="button"
+    :class="[
+      'flex w-full items-center justify-center gap-3',
+      'border border-foreground bg-foreground px-4 py-3',
+      'text-sm font-bold text-background transition-colors',
+      'hover:bg-foreground/90 disabled:opacity-70 rounded-none min-h-[44px]',
+      'cursor-pointer disabled:cursor-not-allowed',
+    ]"
     :disabled="loading"
     @click="handleLogin"
   >
-    <span v-if="loading" class="flex items-center">
-      <div class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
-      {{ $t("auth.continue_microsoft") }}
-    </span>
-    <span v-else class="flex items-center">
-      <ISimpleIconsMicrosoft class="w-5 h-5 mr-2" />
-      {{ $t("auth.continue_microsoft") }}
-    </span>
-  </Button>
+    <Loader2 v-if="loading" class="size-5 animate-spin" />
+    <svg
+      v-else
+      viewBox="0 0 21 21"
+      class="size-5 shrink-0"
+      aria-hidden="true"
+      fill="none"
+    >
+      <rect x="1" y="1" width="9" height="9" fill="#F25022" />
+      <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
+      <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
+      <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
+    </svg>
+    <span>{{ $t('auth.continue_microsoft') }}</span>
+  </button>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { router } from '@inertiajs/vue3';
+import { Loader2 } from 'lucide-vue-next';
 
-import { Button } from '@/Components/ui/button';
 import { usePWA } from '@/Composables/usePWA';
-import ISimpleIconsMicrosoft from '~icons/simple-icons/microsoft';
 
 const loading = ref(false);
 const { isPWA } = usePWA();

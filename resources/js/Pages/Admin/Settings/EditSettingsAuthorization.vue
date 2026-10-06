@@ -1,61 +1,54 @@
 <template>
-  <PageContent :title="$t('settings.pages.authorization.title')" :back-url="route('settings.index')">
-    <UpsertModelLayout>
-      <AdminForm :model="form" @submit:form="handleFormSubmit">
-        <FormElement>
-          <template #title>
-            {{ $t('settings.authorization_form.role_label') }}
-          </template>
-          <template #description>
-            {{ $t('settings.authorization_form.role_description') }}
-          </template>
+  <FormPage
+    :title="$t('settings.pages.authorization.title')"
+    :back-href="route('settings.index')"
+    :back-label="$t('settings.title')"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :available-locales="[]"
+    @submit="handleFormSubmit"
+  >
+    <FormSection
+      :title="$t('settings.authorization_form.role_label')"
+      :description="$t('settings.authorization_form.role_description')"
+    >
+      <FormFieldWrapper
+        id="settings_manager_role_id"
+        :label="$t('settings.authorization_form.role_label')"
+        :error="form.errors.settings_manager_role_id"
+      >
+        <Select v-model="selectedRoleId">
+          <SelectTrigger id="settings_manager_role_id">
+            <SelectValue :placeholder="$t('settings.authorization_form.role_placeholder')" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem :value="NONE_VALUE">
+              {{ $t('settings.authorization_form.role_placeholder') }}
+            </SelectItem>
+            <SelectItem v-for="role in roles" :key="role.id" :value="role.id">
+              {{ role.name }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </FormFieldWrapper>
 
-          <div class="space-y-4">
-            <div class="space-y-2">
-              <Label class="inline-flex items-center gap-1">
-                <component :is="RoleIcon" class="h-4 w-4" />
-                {{ $t('settings.authorization_form.role_label') }}
-              </Label>
-              <Select v-model="selectedRoleId">
-                <SelectTrigger>
-                  <SelectValue :placeholder="$t('settings.authorization_form.role_placeholder')" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">
-                    {{ $t('settings.authorization_form.role_placeholder') }}
-                  </SelectItem>
-                  <SelectItem v-for="role in roles" :key="role.id" :value="role.id">
-                    {{ role.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Alert>
-              <InfoIcon class="h-4 w-4" />
-              <AlertDescription>
-                {{ $t('settings.authorization_form.super_admin_note') }}
-              </AlertDescription>
-            </Alert>
-          </div>
-        </FormElement>
-      </AdminForm>
-    </UpsertModelLayout>
-  </PageContent>
+      <p class="flex items-start gap-2 border-l-2 border-status-info bg-status-info-surface px-4 py-3 text-sm text-status-info">
+        <Info class="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+        {{ $t('settings.authorization_form.super_admin_note') }}
+      </p>
+    </FormSection>
+  </FormPage>
 </template>
 
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
-import { InfoIcon } from 'lucide-vue-next';
+import { Info } from 'lucide-vue-next';
 
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import AdminForm from '@/Components/AdminForms/AdminForm.vue';
-import FormElement from '@/Components/AdminForms/FormElement.vue';
-import { Alert, AlertDescription } from '@/Components/ui/alert';
-import { Label } from '@/Components/ui/label';
-import { RoleIcon } from '@/Components/icons';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import FormSection from '@/Components/Patterns/FormSection.vue';
 import {
   Select,
   SelectContent,

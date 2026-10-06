@@ -43,7 +43,7 @@ describe('action type presentation', () => {
 
   it('falls back to the neutral palette for an unknown action type', () => {
     expect(getTaskActionBadgeClasses('something-new')).toBe(getTaskActionBadgeClasses(null));
-    expect(getTaskActionBadgeClasses(null)).toContain('zinc');
+    expect(getTaskActionBadgeClasses(null)).toContain('muted-foreground');
   });
 
   it('labels only the action types the UI calls automatic', () => {
@@ -108,7 +108,7 @@ describe('due dates', () => {
     const inTwoDays = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
     const inTenDays = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString();
 
-    expect(getDueDateUrgencyClasses({ due_date: inTwoDays, is_overdue: false })).toContain('amber');
+    expect(getDueDateUrgencyClasses({ due_date: inTwoDays, is_overdue: false })).toContain('status-attention');
     expect(getDueDateUrgencyClasses({ due_date: inTenDays, is_overdue: false })).toBe('');
     expect(getDueDateUrgencyClasses({ due_date: inTwoDays, is_overdue: true })).toBe('');
   });

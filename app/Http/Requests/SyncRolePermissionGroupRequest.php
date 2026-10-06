@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use App\Enums\PermissionScopeEnum;
 use App\Models\Permission;
+use App\Support\Permissions\BaselineAccess;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
@@ -34,13 +36,21 @@ class SyncRolePermissionGroupRequest extends FormRequest
     {
         $scopes = array_map(fn (PermissionScopeEnum $scope) => $scope->label(), PermissionScopeEnum::cases());
 
-        return [
-            'create' => ['nullable', 'string', Rule::in($scopes)],
-            'read' => ['nullable', 'string', Rule::in($scopes)],
-            'update' => ['nullable', 'string', Rule::in($scopes)],
-            'delete' => ['nullable', 'string', Rule::in($scopes)],
-            'forceDelete' => ['nullable', 'string', Rule::in($scopes)],
-        ];
+        // A permission that does not exist used to be dropped silently, so the form claimed a save
+        // it never made. A retired one gets its own reason: every member already has it.
+        $grantable = function (string $attribute, mixed $value, Closure $fail): void {
+            $permission = $this->route('model').'.'.$attribute.'.'.$value;
+
+            if (BaselineAccess::isRetired($permission)) {
+                $fail(__('validation.permission_is_baseline'));
+            } elseif (! Permission::query()->where('name', $permission)->exists()) {
+                $fail(__('validation.permission_not_available'));
+            }
+        };
+
+        return collect(['create', 'read', 'update', 'delete', 'forceDelete'])
+            ->mapWithKeys(fn (string $ability): array => [$ability => ['nullable', 'string', Rule::in($scopes), $grantable]])
+            ->all();
     }
 
     /**

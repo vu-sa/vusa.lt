@@ -28,13 +28,14 @@ return [
 
     'institution' => [
         'title' => 'Cadences',
-        'description' => 'The dates this institution’s duty periods are aligned to.',
-        'override_active' => 'No longer applied',
-        'inherited' => 'Inherited shared cadences',
-        'inherited_hint' => 'These apply for as long as the institution has no cadence of its own.',
-        'own' => 'This institution’s cadences',
-        'override_warning' => 'Adding even one cadence of its own stops this institution using the shared ones entirely — including for years it has not described itself. Rarely needed.',
-        'timeline' => 'Manage periods',
+        'summary_global' => 'Shared cadences apply',
+        'summary_own' => 'Own cadences apply',
+        'now' => 'now :label',
+        'none_now' => 'none current',
+        'customize' => 'Set own cadences',
+        'manage' => 'Manage',
+        'done' => 'Done',
+        'override_warning' => 'An own cadence replaces all the shared ones — including for years you do not describe. Secretaries are carried over from the overlapping shared cadence. Rarely needed.',
     ],
 
     'fields' => [

@@ -35,29 +35,20 @@ describe('assignees', () => {
   });
 });
 
-describe('periodicity gap actions', () => {
-  it('offers the schedule and report actions for a periodicity gap task', () => {
-    // The predicate used to compare against 'PeriodicityGap', which the enum never emits,
-    // so this section never rendered.
+describe('periodicity gap action', () => {
+  it('offers one report action for a periodicity gap task and emits it', async () => {
     const wrapper = mountDialog(makeTask({ action_type: TaskActionType.PeriodicityGap }));
 
-    expect(wrapper.text()).toContain('tasks.periodicity_gap.schedule_meeting');
-    expect(wrapper.text()).toContain('tasks.periodicity_gap.report_no_meeting');
+    const report = wrapper.findAll('button')
+      .find(button => button.text().includes('tasks.periodicity_gap.report_no_meeting'));
+    await report!.trigger('click');
+
+    expect(wrapper.emitted('report')).toBeTruthy();
   });
 
-  it('leaves them out for any other task', () => {
+  it('leaves it out for any other task', () => {
     const wrapper = mountDialog(makeTask({ action_type: TaskActionType.Manual }));
 
-    expect(wrapper.text()).not.toContain('tasks.periodicity_gap.schedule_meeting');
-  });
-
-  it('emits scheduleMeeting when the action is taken', async () => {
-    const wrapper = mountDialog(makeTask({ action_type: TaskActionType.PeriodicityGap }));
-
-    const scheduleButton = wrapper.findAll('button')
-      .find(button => button.text().includes('tasks.periodicity_gap.schedule_meeting'));
-    await scheduleButton!.trigger('click');
-
-    expect(wrapper.emitted('scheduleMeeting')).toBeTruthy();
+    expect(wrapper.text()).not.toContain('tasks.periodicity_gap.report_no_meeting');
   });
 });

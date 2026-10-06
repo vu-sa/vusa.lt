@@ -21,6 +21,7 @@ use Pest\Browser\Api\AwaitableWebpage;
 use Pest\Browser\Api\PendingAwaitablePage;
 use Pest\Browser\Playwright\Page as PlaywrightPage;
 use Tests\TestCase;
+use Typesense\Client;
 
 pest()->extend(TestCase::class)->in('Feature', 'Unit', 'Browser');
 
@@ -47,9 +48,9 @@ pest()->browser()->timeout(15_000);
 $tia = pest()->tia()->locally();
 
 // Baseline fetching shells out to the GitHub CLI. Pest aborts the run (exit 1) when `gh` is
-// missing or unauthenticated, and the Sail container ships without it — so opt in only where
-// the CLI is actually resolvable.
-if (shell_exec('command -v gh 2>/dev/null') !== null) {
+// missing or unauthenticated (Sail ships without it; cloud sessions have it logged out), so opt
+// in only where it can actually fetch.
+if (shell_exec('gh auth status >/dev/null 2>&1 && echo ok') !== null) {
     $tia->baselined();
 }
 
@@ -203,12 +204,20 @@ function visitPublicSubdomain(string $subdomain, string $path): PendingAwaitable
  */
 function loginAsAdmin(User $user, string $password = 'password'): PendingAwaitablePage
 {
+    // Public subdomains persist across tests; loopback keeps secure browser APIs available.
+    pest()->browser()->withHost(null);
     app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));
+
+    // An auto-started tour overlays the page and swallows clicks (and would land in docs frames).
+    $user->forceFill(['tutorial_progress' => array_fill_keys(productTourIds(), now()->toISOString())])->save();
 
     // `/up` creates the browser context without loading admin.ts, so its next document gets the
     // service-worker stub before the login app can attempt a registration.
-    $page = visit('/up');
+    // Intl and toLocale* formatting as a Lithuanian user sees it. Native date inputs still follow
+    // the pre-launched Chromium's own language, which the plugin offers no way to set.
+    $page = visit('/up')->withLocale('lt-LT');
     disableServiceWorker($page);
+    ignoreResizeObserverLoopErrors($page);
 
     $page->navigate('/login');
     waitForInertiaRender($page);
@@ -221,9 +230,161 @@ function loginAsAdmin(User $user, string $password = 'password'): PendingAwaitab
     $page->click('button[type="submit"]');
 
     // The dashboard is a different code-split chunk; without this the next visit() races it.
-    waitForInertiaRender($page, '[data-sidebar="sidebar"]');
+    waitForInertiaRender($page, '[data-slot="admin-shell"]');
 
     return $page;
+}
+
+/**
+ * Every product tour and feature spotlight id in the frontend, in `tutorial_progress` key form.
+ *
+ * @return list<string>
+ */
+function productTourIds(): array
+{
+    static $ids = null;
+
+    if ($ids !== null) {
+        return $ids;
+    }
+
+    $ids = [];
+
+    foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(resource_path('js'), FilesystemIterator::SKIP_DOTS)) as $file) {
+        if (! preg_match('/\.(vue|ts)$/', $file->getFilename()) || str_contains($file->getPathname(), '__tests__')) {
+            continue;
+        }
+
+        $source = file_get_contents($file->getPathname());
+        preg_match_all("/tourId:\s*['\"]([\w-]+)['\"]/", $source, $tours);
+        preg_match_all("/useFeatureSpotlight\(\s*['\"]([\w-]+)['\"]/", $source, $spotlights);
+
+        array_push($ids, ...$tours[1], ...array_map(fn (string $id): string => "spotlight-{$id}", $spotlights[1]));
+    }
+
+    return $ids = array_values(array_unique($ids));
+}
+
+/**
+ * Save the docs' reference frame of the current page: light theme, at the page's current width.
+ *
+ * Only runs with DOCS_SCREENSHOTS set (CI's browser job). The name is the contract with
+ * `<DocScreenshot name="…">` in docs/ — see tests/Browser/README.md "Docs screenshots".
+ *
+ * @param  list<string|array{selector: string, label?: string}>  $highlights  boxed and numbered 1, 2, … in order
+ */
+function docsScreenshot(PendingAwaitablePage|AwaitableWebpage $page, string $name, string $locale = 'lt', ?string $selector = null, array $highlights = []): void
+{
+    if (! env('DOCS_SCREENSHOTS')) {
+        return;
+    }
+
+    // A frame of loading skeletons documents nothing; wait out the deferred props.
+    $page->script(<<<'JS'
+        new Promise(resolve => {
+            const started = Date.now();
+            const poll = setInterval(() => {
+                if (!document.querySelector('[data-slot=collection-skeleton]') || Date.now() - started > 10000) {
+                    clearInterval(poll);
+                    resolve(true);
+                }
+            }, 100);
+        })
+        JS);
+
+    // Public links are built from the test server's address; readers should see the real site.
+    $page->script(<<<'JS'
+        (() => {
+            const loopback = /127\.0\.0\.1:\d+/g;
+            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+            while (walker.nextNode()) {
+                walker.currentNode.nodeValue = walker.currentNode.nodeValue.replace(loopback, 'vusa.lt');
+            }
+            document.querySelectorAll('input').forEach(input => { input.value = input.value.replace(loopback, 'vusa.lt'); });
+        })()
+        JS);
+
+    $wasDark = $page->script('document.documentElement.classList.contains("dark")');
+    $page->script('document.documentElement.classList.remove("dark")');
+
+    if ($highlights !== []) {
+        annotateDocsScreenshot($page, $highlights);
+    }
+
+    @mkdir(base_path("tests/Browser/Screenshots/docs/{$locale}"), 0755, true);
+    $filename = "docs/{$locale}/{$name}";
+
+    $selector === null
+        ? $page->screenshot(fullPage: false, filename: $filename)
+        : $page->screenshotElement($selector, $filename);
+
+    $page->script('document.querySelectorAll("[data-docs-annotation]").forEach(node => node.remove())');
+
+    if ($wasDark) {
+        $page->script('document.documentElement.classList.add("dark")');
+    }
+}
+
+/**
+ * Draw a red box and a numbered badge over each highlighted element, in viewport coordinates so
+ * full-page and element captures both include it. A selector matching nothing on screen throws:
+ * a renamed hook must fail the test, not ship a frame with no box.
+ *
+ * @param  list<string|array{selector: string, label?: string}>  $highlights
+ */
+function annotateDocsScreenshot(PendingAwaitablePage|AwaitableWebpage $page, array $highlights): void
+{
+    $marks = array_map(
+        fn (string|array $highlight, int $index): array => is_string($highlight)
+            ? ['selector' => $highlight, 'label' => (string) ($index + 1)]
+            : ['selector' => $highlight['selector'], 'label' => $highlight['label'] ?? (string) ($index + 1)],
+        $highlights,
+        array_keys($highlights),
+    );
+
+    $missing = $page->script(sprintf(<<<'JS'
+        (() => {
+            const missing = [];
+            // Many admin actions render twice (desktop and phone bar); box the one on screen.
+            // Scrolling here would push earlier marks out of frame, so the test positions the page.
+            const visible = selector => [...document.querySelectorAll(selector)].find(node => {
+                const box = node.getBoundingClientRect();
+                return box.width > 0 && box.height > 0 && getComputedStyle(node).visibility !== 'hidden'
+                    && box.bottom > 0 && box.right > 0 && box.top < innerHeight && box.left < innerWidth;
+            });
+            const marks = %s;
+            for (const { selector, label } of marks) {
+                const node = visible(selector);
+                if (!node) { missing.push(selector); continue; }
+                const box = node.getBoundingClientRect();
+                // Kept inside the viewport, or a bar pinned to an edge loses three of its sides.
+                const left = Math.max(box.left - 4, 1), top = Math.max(box.top - 4, 1);
+                const right = Math.min(box.right + 4, innerWidth - 1), bottom = Math.min(box.bottom + 4, innerHeight - 1);
+                const frame = document.createElement('div');
+                frame.dataset.docsAnnotation = '';
+                Object.assign(frame.style, {
+                    position: 'fixed', zIndex: 2147483647, pointerEvents: 'none', boxSizing: 'border-box',
+                    left: `${left}px`, top: `${top}px`, width: `${right - left}px`, height: `${bottom - top}px`,
+                    border: '3px solid #e0162b', boxShadow: '0 0 0 1px rgba(255,255,255,.85)',
+                });
+                const badge = document.createElement('div');
+                badge.dataset.docsAnnotation = '';
+                badge.textContent = label;
+                Object.assign(badge.style, {
+                    position: 'fixed', zIndex: 2147483647, pointerEvents: 'none',
+                    left: `${Math.min(Math.max(left - 11, 2), innerWidth - 26)}px`, top: `${Math.min(Math.max(top - 11, 2), innerHeight - 26)}px`,
+                    width: '24px', height: '24px', borderRadius: '50%%', background: '#e0162b', color: '#fff',
+                    font: '700 13px/24px system-ui, sans-serif', textAlign: 'center', boxShadow: '0 0 0 2px #fff',
+                });
+                document.body.append(frame, badge);
+            }
+            return missing;
+        })()
+        JS, json_encode($marks, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)));
+
+    if ($missing !== []) {
+        throw new RuntimeException('Docs screenshot highlights matched nothing on screen: '.implode(', ', (array) $missing));
+    }
 }
 
 /**
@@ -274,6 +435,27 @@ function disableServiceWorker(PendingAwaitablePage|AwaitableWebpage $page): void
                 .catch(() => {});
         })()
         JS);
+}
+
+/**
+ * Keep Chromium's "ResizeObserver loop completed with undelivered notifications" out of
+ * assertNoJavaScriptErrors(): a benign layout-timing warning that users never see. Window listeners
+ * fire in registration order, so the plugin's collector has already pushed the entry and it is
+ * pruned in the same dispatch — a setTimeout prune raced javaScriptErrors() reads and flaked on CI.
+ */
+function ignoreResizeObserverLoopErrors(PendingAwaitablePage|AwaitableWebpage $page): void
+{
+    $filter = <<<'JS'
+        window.addEventListener('error', (event) => {
+            const collector = window.__pestBrowser;
+            if (collector && event.message?.startsWith('ResizeObserver loop')) {
+                collector.jsErrors = collector.jsErrors.filter((error) => !error.message?.startsWith('ResizeObserver loop'));
+            }
+        });
+        JS;
+
+    $page->script("(() => { {$filter} })()");
+    $page->page()->context()->addInitScript("(() => { {$filter} })()");
 }
 
 /**
@@ -371,6 +553,37 @@ function captureBrowserDiagnostics(PendingAwaitablePage|AwaitableWebpage $page):
 function usesTypesense(): void
 {
     app()->getProvider(TestingServiceProvider::class)->enableRealTypesense();
+}
+
+/**
+ * `usesTypesense()` for a page that searches Typesense from the browser (admin collections).
+ *
+ * The test browser runs inside the Sail network, where Typesense is `typesense`, not the
+ * host-published `localhost` the app hands browsers. And a search key bakes in its collection
+ * list, so the dev key cannot read the test's prefixed collections: this mints a throwaway
+ * search-only parent key for them and deletes it when the test ends.
+ */
+function usesTypesenseInBrowser(): void
+{
+    usesTypesense();
+
+    config(['scout.typesense.public-node' => ['host' => 'typesense', 'port' => 8108, 'protocol' => 'http']]);
+
+    $keys = app(Client::class)->keys;
+    $key = $keys->create([
+        'description' => 'browser test '.config('scout.prefix'),
+        'actions' => ['documents:search'],
+        'collections' => [config('scout.prefix').'.*'],
+        'expires_at' => now()->addHour()->timestamp,
+    ]);
+
+    // The search config endpoint answers 503 without a search-only key, and CI's .env has none.
+    config([
+        'scout.typesense.client-settings.admin_search_key' => $key['value'],
+        'scout.typesense.client-settings.search_only_key' => $key['value'],
+    ]);
+
+    test()->beforeApplicationDestroyed(fn () => $keys[$key['id']]->delete());
 }
 
 function makeUser(Tenant $tenant): User

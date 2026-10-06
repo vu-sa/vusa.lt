@@ -1,197 +1,115 @@
 <template>
-  <div
-    ref="triggerRef"
-    class="relative inline-block cursor-pointer"
-    @mouseenter="handleMouseEnter"
-    @mouseleave="handleMouseLeave"
-  >
-    <slot />
-
-    <!--
-      Larger hover area around badge for easier interaction. Non-float only: its `-top-3 -right-3`
-      offset relies on the trigger's own box, and an ancestor with `overflow: hidden` (e.g.
-      ShowPageHero's rounded card) would otherwise clip it.
-    -->
-    <div
-      v-if="showBadge && !isDismissed && !float"
-      class="absolute -top-3 -right-3 z-10 h-8 w-8 flex items-center justify-center"
-    >
-      <span class="relative flex h-3 w-3">
-        <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/75 opacity-75" />
-        <span class="relative inline-flex h-3 w-3 rounded-full bg-primary" />
-      </span>
-    </div>
-
-    <!-- float: teleport the badge alongside the panel so the same overflow-hidden ancestor can't clip it -->
-    <Teleport v-if="float" to="body">
+  <Popover :open="isOpen && !isDismissed" @update:open="handleOpenChange">
+    <PopoverAnchor as-child>
       <div
-        v-if="showBadge && !isDismissed"
-        class="fixed z-50 h-8 w-8 flex items-center justify-center"
-        :style="badgeStyle"
+        ref="anchorRef"
+        :class="cn('relative inline-block', props.class)"
+        data-slot="spotlight-popover"
+        v-bind="$attrs"
+        @pointerenter="handlePointerEnter"
+        @pointerleave="handlePointerLeave"
       >
-        <span class="relative flex h-3 w-3">
-          <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/75 opacity-75" />
-          <span class="relative inline-flex h-3 w-3 rounded-full bg-primary" />
-        </span>
+        <slot />
+
+        <!-- Inset, not an outline offset, so an overflow-hidden ancestor cannot clip the frame. -->
+        <template v-if="showBadge && !isDismissed">
+          <span
+            class="pointer-events-none absolute inset-0 border border-brand bg-brand/4"
+            aria-hidden="true"
+            data-slot="spotlight-frame"
+          />
+          <button
+            type="button"
+            class="absolute top-0 right-0 z-10 flex size-6 items-start justify-end pointer-coarse:size-11"
+            :aria-label="$t('tutorials.spotlight_what_is_new')"
+            data-slot="spotlight-notch"
+            @click.stop.prevent="openNow"
+          >
+            <span
+              :class="[
+                'size-2.5 origin-top-right bg-brand-fill [clip-path:polygon(0_0,100%_0,100%_100%)] transition-transform duration-200 ease-out',
+                isOpen ? 'scale-150' : 'animate-spotlight-breathe motion-reduce:animate-none',
+              ]"
+            />
+          </button>
+        </template>
       </div>
-    </Teleport>
+    </PopoverAnchor>
 
-    <!--
-      When `float` is set the panel is teleported to the body and positioned from the trigger's
-      bounding rect. An ancestor with `overflow: auto` (the sidebar's scroll container) clips an
-      absolutely positioned panel, which would otherwise render offscreen and look like nothing
-      happened on hover.
-    -->
-    <Teleport v-if="float" to="body">
-      <Transition
-        enter-active-class="transition-all duration-300 ease-out"
-        enter-from-class="opacity-0 scale-95"
-        enter-to-class="opacity-100 scale-100"
-        leave-active-class="transition-all duration-200 ease-in"
-        leave-from-class="opacity-100 scale-100"
-        leave-to-class="opacity-0 scale-95"
-      >
-        <div
-          v-if="isOpen"
-          class="fixed z-50 w-80 max-w-[calc(100vw-2rem)]"
-          :style="floatingStyle"
-          @mouseenter="handleMouseEnter"
-          @mouseleave="handleMouseLeave"
-          @click.stop
-        >
-          <div class="space-y-3 rounded-lg border bg-popover p-4 shadow-lg">
-            <div class="flex items-start gap-3">
-              <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                <Sparkles class="h-4 w-4 text-primary" />
-              </div>
-              <div class="space-y-1.5">
-                <h4 class="text-base font-semibold leading-tight">
-                  {{ title }}
-                </h4>
-                <p class="text-sm leading-relaxed text-muted-foreground">
-                  {{ description }}
-                </p>
-              </div>
-            </div>
-
-            <div class="flex justify-end">
-              <Button size="sm" type="button" @click.stop="handleDismiss">
-                {{ computedDismissText }}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
-
-    <Transition
-      v-else
-      enter-active-class="transition-all duration-300 ease-out"
-      enter-from-class="opacity-0 scale-95"
-      enter-to-class="opacity-100 scale-100"
-      leave-active-class="transition-all duration-200 ease-in"
-      leave-from-class="opacity-100 scale-100"
-      leave-to-class="opacity-0 scale-95"
+    <PopoverContent
+      :side
+      :align
+      :side-offset="8"
+      :collision-padding="12"
+      class="w-80 max-w-[calc(100vw-1.5rem)] rounded-none border border-t-2 border-border border-t-brand p-0 shadow-none"
+      @open-auto-focus="handleOpenAutoFocus"
+      @close-auto-focus.prevent
+      @pointerenter="handlePointerEnter"
+      @pointerleave="handlePointerLeave"
+      @click.stop
     >
-      <div
-        v-if="isOpen"
-        :class="[
-          'absolute z-50 w-80 max-w-[calc(100vw-2rem)]',
-          positionClasses,
-        ]"
-        @click.stop
-      >
-        <div class="rounded-lg border bg-popover p-4 shadow-lg space-y-3">
-          <!-- Header with title and sparkle icon -->
-          <div class="flex items-start gap-3">
-            <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-              <Sparkles class="h-4 w-4 text-primary" />
-            </div>
-            <div class="space-y-1.5">
-              <h4 class="font-semibold text-base leading-tight">
-                {{ title }}
-              </h4>
-              <p class="text-sm text-muted-foreground leading-relaxed">
-                {{ description }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Action button -->
-          <div class="flex justify-end">
-            <Button size="sm" type="button" @click.stop="handleDismiss">
-              {{ computedDismissText }}
-            </Button>
-          </div>
-        </div>
+      <div class="space-y-1.5 p-4">
+        <EyebrowLabel :text="$t('tutorials.spotlight_eyebrow')" />
+        <p class="text-base font-semibold leading-tight">
+          {{ title }}
+        </p>
+        <p class="text-sm leading-relaxed text-muted-foreground">
+          {{ description }}
+        </p>
       </div>
-    </Transition>
-  </div>
+      <div class="flex justify-end border-t border-border px-4 py-2.5">
+        <Button size="sm" variant="outline" voice="sentence" type="button" @click.stop="handleDismiss">
+          {{ computedDismissText }}
+        </Button>
+      </div>
+    </PopoverContent>
+  </Popover>
 </template>
 
-<script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import { trans as $t } from 'laravel-vue-i18n';
-import { Sparkles } from 'lucide-vue-next';
+<script lang="ts">
+/** One auto-opened panel per page at a time, so several spotlights in view don't pile up. */
+let autoOpenOwner: symbol | null = null;
+</script>
 
+<script setup lang="ts">
+import { computed, onUnmounted, ref, type HTMLAttributes } from 'vue';
+import { trans as $t } from 'laravel-vue-i18n';
+import { useIntersectionObserver, useMediaQuery } from '@vueuse/core';
+
+import { EyebrowLabel } from '@/Components/Brand';
 import { Button } from '@/Components/ui/button';
+import { Popover, PopoverAnchor, PopoverContent } from '@/Components/ui/popover';
+import { cn } from '@/Utils/Shadcn/utils';
+
+defineOptions({ inheritAttrs: false });
 
 interface Props {
-  /**
-   * Title of the spotlight
-   */
   title: string;
-
-  /**
-   * Description of the spotlight
-   */
   description: string;
-
-  /**
-   * Position of the tooltip
-   */
-  position?: 'top' | 'bottom' | 'left' | 'right' | 'top-right' | 'bottom-right';
-
-  /**
-   * Whether to show the pulsing badge
-   */
+  /** Preferred side; collision handling flips and shifts it to stay in the viewport. */
+  side?: 'top' | 'right' | 'bottom' | 'left';
+  align?: 'start' | 'center' | 'end';
+  /** Show the brand frame and corner notch around the trigger. */
   showBadge?: boolean;
-
-  /**
-   * Whether the spotlight has been dismissed
-   */
   isDismissed?: boolean;
-
-  /**
-   * Custom dismiss button text
-   */
   dismissText?: string;
-
-  /**
-   * Delay before showing tooltip (ms)
-   */
   showDelay?: number;
-
-  /**
-   * Delay before hiding tooltip (ms)
-   */
   hideDelay?: number;
-
-  /**
-   * Teleport the panel to the body and position it from the trigger's rect. Required when an
-   * ancestor scroll container (`overflow: auto`) would otherwise clip it — e.g. the sidebar nav.
-   */
-  float?: boolean;
+  /** How long the trigger must rest in view on a hover-less device before the panel opens itself. */
+  autoOpenDelay?: number;
+  class?: HTMLAttributes['class'];
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  position: 'right',
+  side: 'bottom',
+  align: 'start',
   showBadge: true,
   isDismissed: false,
   dismissText: undefined,
-  showDelay: 150,
+  showDelay: 0,
   hideDelay: 400,
-  float: false,
+  autoOpenDelay: 700,
+  class: undefined,
 });
 
 const emit = defineEmits<{
@@ -199,124 +117,154 @@ const emit = defineEmits<{
 }>();
 
 const isOpen = ref(false);
-const triggerRef = ref<HTMLElement | null>(null);
-const floatingStyle = ref<Record<string, string>>({});
-const badgeStyle = ref<Record<string, string>>({});
+/** Only an explicit notch press moves focus into the panel; hover must not steal it from the page. */
+const openedByNotch = ref(false);
 let showTimeout: ReturnType<typeof setTimeout> | null = null;
 let hideTimeout: ReturnType<typeof setTimeout> | null = null;
 
-const PANEL_WIDTH = 320;
-const GAP = 12;
-/** Half the badge's own box (`h-8 w-8`), so it centers on the trigger's corner. */
-const BADGE_HALF = 16;
+const computedDismissText = computed(() => props.dismissText ?? $t('tutorials.spotlight_got_it'));
 
-/** Anchor the teleported panel to the trigger, keeping it inside the viewport. */
-function positionFloatingPanel() {
-  const trigger = triggerRef.value;
+const anchorRef = ref<HTMLElement | null>(null);
+const instanceId = Symbol('spotlight');
+const canHover = useMediaQuery('(hover: hover)');
+/** Hover-less devices get the panel once per visit, when the trigger settles in view, instead of on hover. */
+const openedAutomatically = ref(false);
+let hasAutoOpened = false;
+let autoOpenTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  if (!trigger) {
-    return;
+function clearAutoOpenTimer() {
+  if (autoOpenTimeout) {
+    clearTimeout(autoOpenTimeout);
+    autoOpenTimeout = null;
   }
-
-  const rect = trigger.getBoundingClientRect();
-  const overflowsRight = rect.right + GAP + PANEL_WIDTH > window.innerWidth;
-
-  const left = overflowsRight
-    ? Math.max(GAP, rect.left - GAP - PANEL_WIDTH)
-    : rect.right + GAP;
-
-  floatingStyle.value = {
-    left: `${left}px`,
-    top: `${Math.max(GAP, Math.min(rect.top, window.innerHeight - 200))}px`,
-  };
 }
 
-/** Anchor the teleported badge to the trigger's top-right corner (mirrors `-top-3 -right-3`). */
-function positionBadge() {
-  const trigger = triggerRef.value;
+function releaseAutoOpen() {
+  openedAutomatically.value = false;
 
-  if (!trigger) {
-    return;
+  if (autoOpenOwner === instanceId) {
+    autoOpenOwner = null;
   }
-
-  const rect = trigger.getBoundingClientRect();
-
-  badgeStyle.value = {
-    left: `${rect.right - BADGE_HALF}px`,
-    top: `${rect.top - BADGE_HALF}px`,
-  };
 }
 
-const computedDismissText = computed(() => props.dismissText ?? $t('tutorials.done'));
+function isComfortablyInView(entry: IntersectionObserverEntry): boolean {
+  if (!entry.isIntersecting) return false;
 
-const positionClasses = computed(() => {
-  switch (props.position) {
-    case 'top':
-      return 'bottom-full left-1/2 -translate-x-1/2 mb-3 origin-bottom';
-    case 'top-right':
-      // Anchored to the left edge, opening up and to the right — avoids
-      // clipping against the viewport's left edge (e.g. the sidebar footer).
-      return 'bottom-full left-0 mb-3 origin-bottom-left';
-    case 'bottom':
-      return 'top-full left-1/2 -translate-x-1/2 mt-3 origin-top';
-    case 'bottom-right':
-      // Anchored to the right edge, opening down and to the left — for a trigger pushed to the
-      // far right of its row (e.g. `class="ml-auto"`), where a centered panel would overflow the
-      // viewport's right edge.
-      return 'top-full right-0 mt-3 origin-top-right';
-    case 'left':
-      return 'right-full top-0 mr-3 origin-right';
-    case 'right':
-      return 'left-full top-0 ml-3 origin-left';
-    default:
-      return 'left-full top-0 ml-3 origin-left';
-  }
-});
+  // A trigger taller than the band never reaches the ratio, so filling half of it counts too.
+  const bandHeight = entry.rootBounds?.height ?? window.innerHeight;
 
-// The badge (unlike the panel) is visible whenever not dismissed, not only on hover, so it
-// needs a position as soon as it can render — and to follow the trigger if the layout shifts.
-if (props.float) {
-  onMounted(() => {
-    positionBadge();
-    window.addEventListener('resize', positionBadge);
-  });
-
-  onUnmounted(() => {
-    window.removeEventListener('resize', positionBadge);
-  });
-
-  watch([() => props.showBadge, () => props.isDismissed], () => positionBadge());
+  return entry.intersectionRatio >= 0.9 || entry.intersectionRect.height >= bandHeight / 2;
 }
 
-function handleMouseEnter() {
-  if (props.isDismissed) return;
+useIntersectionObserver(
+  anchorRef,
+  ([entry]) => {
+    if (!entry || canHover.value || props.isDismissed) return;
 
-  if (hideTimeout) {
-    clearTimeout(hideTimeout);
-    hideTimeout = null;
-  }
+    if (isComfortablyInView(entry)) {
+      if (hasAutoOpened || isOpen.value || autoOpenTimeout) return;
 
-  showTimeout = setTimeout(() => {
-    if (props.float) {
-      positionFloatingPanel();
+      autoOpenTimeout = setTimeout(() => {
+        autoOpenTimeout = null;
+
+        if (autoOpenOwner !== null || isOpen.value || props.isDismissed) return;
+
+        autoOpenOwner = instanceId;
+        hasAutoOpened = true;
+        openedByNotch.value = false;
+        openedAutomatically.value = true;
+        isOpen.value = true;
+      }, props.autoOpenDelay);
+
+      return;
     }
-    isOpen.value = true;
-  }, props.showDelay);
-}
 
-function handleMouseLeave() {
+    // Scrolling past is not a dismissal: the panel just steps aside and the notch still reopens it.
+    clearAutoOpenTimer();
+
+    if (openedAutomatically.value && !entry.isIntersecting) {
+      isOpen.value = false;
+      releaseAutoOpen();
+    }
+  },
+  // The band keeps the panel off the sticky header and out of the thumb zone at the bottom.
+  { rootMargin: '-15% 0px -25% 0px', threshold: [0, 0.5, 0.9, 1] },
+);
+
+function clearTimers() {
   if (showTimeout) {
     clearTimeout(showTimeout);
     showTimeout = null;
   }
 
+  if (hideTimeout) {
+    clearTimeout(hideTimeout);
+    hideTimeout = null;
+  }
+}
+
+function handlePointerEnter(event: PointerEvent) {
+  // Touch fires pointerenter on tap too; there the notch is the way in, so the trigger keeps its action.
+  if (props.isDismissed || event.pointerType !== 'mouse') return;
+
+  clearTimers();
+
+  if (isOpen.value) return;
+
+  if (props.showDelay <= 0) {
+    openedByNotch.value = false;
+    isOpen.value = true;
+
+    return;
+  }
+
+  showTimeout = setTimeout(() => {
+    openedByNotch.value = false;
+    isOpen.value = true;
+  }, props.showDelay);
+}
+
+function handlePointerLeave(event: PointerEvent) {
+  if (event.pointerType !== 'mouse' || openedByNotch.value) return;
+
+  clearTimers();
   hideTimeout = setTimeout(() => {
     isOpen.value = false;
   }, props.hideDelay);
 }
 
+function openNow() {
+  clearTimers();
+  releaseAutoOpen();
+  openedByNotch.value = true;
+  isOpen.value = true;
+}
+
+function handleOpenChange(open: boolean) {
+  clearTimers();
+  isOpen.value = open;
+
+  if (!open) {
+    releaseAutoOpen();
+  }
+}
+
+function handleOpenAutoFocus(event: Event) {
+  if (!openedByNotch.value) {
+    event.preventDefault();
+  }
+}
+
 function handleDismiss() {
+  clearTimers();
   isOpen.value = false;
+  releaseAutoOpen();
   emit('dismiss');
 }
+
+onUnmounted(() => {
+  clearTimers();
+  clearAutoOpenTimer();
+  releaseAutoOpen();
+});
 </script>

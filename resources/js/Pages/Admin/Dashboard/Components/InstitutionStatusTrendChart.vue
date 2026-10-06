@@ -4,14 +4,15 @@
       <p class="text-sm text-muted-foreground">
         {{ $t('visak.institution_summary.trend_description') }}
       </p>
-      <div class="flex gap-1 rounded-lg border bg-background p-1 text-xs font-medium">
+      <div class="flex gap-1 border border-border bg-background p-1 text-xs font-medium">
         <button
           v-for="option in rangeOptions"
           :key="option"
           type="button"
           :data-testid="`trend-range-${option}`"
-          class="rounded-md px-2.5 py-1 transition-colors"
-          :class="days === option ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'"
+          class="px-2.5 py-1 transition-colors pointer-coarse:min-h-11 pointer-coarse:px-4"
+          :class="days === option ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-accent'"
+          :aria-pressed="days === option"
           @click="$emit('update:days', option)"
         >
           {{ $t('visak.institution_summary.trend_range_days', { days: option }) }}
@@ -19,21 +20,29 @@
       </div>
     </div>
 
-    <div v-if="loading && data.length === 0" class="flex h-64 items-center justify-center rounded-lg border">
-      <Loader2 class="h-6 w-6 animate-spin text-muted-foreground" />
+    <div v-if="loading && data.length === 0" class="flex h-64 flex-col justify-between border border-border bg-card p-4" data-slot="institution-trend-skeleton" aria-hidden="true">
+      <div class="flex flex-1 items-end border-b border-border pb-3">
+        <Skeleton
+          class="h-3/4 w-full"
+          :style="{ clipPath: skeletonAreaClipPath }"
+        />
+      </div>
+      <div class="flex justify-between gap-4 pt-3">
+        <Skeleton v-for="tick in 4" :key="tick" class="h-3 w-10" />
+      </div>
     </div>
     <div
       v-else-if="data.length === 0"
-      class="flex h-64 items-center justify-center rounded-lg border text-sm text-muted-foreground"
+      class="flex h-64 items-center justify-center border border-border text-sm text-muted-foreground"
     >
       {{ $t('visak.institution_summary.trend_empty') }}
     </div>
-    <div v-else ref="wrapper" class="relative h-64 w-full rounded-lg border bg-card">
+    <div v-else ref="wrapper" class="relative h-64 w-full border border-border bg-card">
       <svg ref="svgRef" data-testid="trend-chart-svg" class="size-full" />
 
       <div
         v-if="tooltip.visible"
-        class="pointer-events-none absolute z-10 min-w-40 rounded-md border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md"
+        class="pointer-events-none absolute z-10 min-w-40 border border-border bg-popover px-3 py-2 text-xs text-popover-foreground"
         :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }"
       >
         <p class="mb-1 font-semibold">
@@ -42,7 +51,7 @@
         <ul class="space-y-0.5">
           <li v-for="entry in tooltip.entries" :key="entry.key" class="flex items-center justify-between gap-3">
             <span class="flex items-center gap-1.5">
-              <span class="inline-block h-2 w-2 rounded-sm" :class="entry.swatchClass" />
+              <span class="inline-block size-2" :class="entry.swatchClass" />
               {{ $t(entry.labelKey) }}
             </span>
             <span class="tabular-nums">{{ entry.value }}</span>
@@ -53,7 +62,7 @@
 
     <div class="flex flex-wrap gap-3 text-xs text-muted-foreground">
       <span v-for="series in seriesConfig" :key="series.key" class="flex items-center gap-1.5">
-        <span class="inline-block h-2.5 w-2.5 rounded-sm" :class="series.swatchClass" />
+        <span class="inline-block size-2.5" :class="series.swatchClass" />
         {{ $t(series.labelKey) }}
       </span>
     </div>
@@ -78,9 +87,10 @@ import {
   timeFormat,
 } from 'd3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Loader2 } from 'lucide-vue-next';
 
 import type { InstitutionStatusHistoryPoint } from '../types';
+
+import { Skeleton } from '@/Components/ui/skeleton';
 
 type StatusKey = 'current' | 'approaching' | 'overdue' | 'no_activity';
 
@@ -95,13 +105,15 @@ defineEmits<{
 }>();
 
 const rangeOptions = [30, 90, 180] as const;
+const skeletonAreaClipPath = 'polygon(0 55%, 12% 48%, 24% 58%, 36% 35%, 48% 42%, 60% 28%, 72% 40%, 84% 20%, 100% 32%, 100% 100%, 0 100%)';
 
-// Bottom-to-top: healthy baseline first, escalating severity stacked above it.
+// Bottom-to-top: healthy baseline first, escalating severity stacked above it. The series are
+// statuses, so they use the status roles, not the categorical `--cat-*` hues (visual.md).
 const seriesConfig: Array<{ key: StatusKey; labelKey: string; fillClass: string; swatchClass: string }> = [
-  { key: 'current', labelKey: 'visak.institution_summary.current', fillClass: 'fill-emerald-400/80 dark:fill-emerald-500/60', swatchClass: 'bg-emerald-400 dark:bg-emerald-500' },
-  { key: 'approaching', labelKey: 'visak.institution_summary.approaching', fillClass: 'fill-amber-400/80 dark:fill-amber-500/60', swatchClass: 'bg-amber-400 dark:bg-amber-500' },
-  { key: 'overdue', labelKey: 'visak.institution_summary.overdue', fillClass: 'fill-orange-400/80 dark:fill-orange-500/60', swatchClass: 'bg-orange-400 dark:bg-orange-500' },
-  { key: 'no_activity', labelKey: 'visak.institution_summary.no_activity', fillClass: 'fill-zinc-400/70 dark:fill-zinc-600/70', swatchClass: 'bg-zinc-400 dark:bg-zinc-600' },
+  { key: 'current', labelKey: 'visak.institution_summary.current', fillClass: 'fill-status-success/70', swatchClass: 'bg-status-success' },
+  { key: 'approaching', labelKey: 'visak.institution_summary.approaching', fillClass: 'fill-status-attention/70', swatchClass: 'bg-status-attention' },
+  { key: 'overdue', labelKey: 'visak.institution_summary.overdue', fillClass: 'fill-status-danger/70', swatchClass: 'bg-status-danger' },
+  { key: 'no_activity', labelKey: 'visak.institution_summary.no_activity', fillClass: 'fill-status-neutral/60', swatchClass: 'bg-status-neutral' },
 ];
 
 const wrapper = ref<HTMLDivElement | null>(null);

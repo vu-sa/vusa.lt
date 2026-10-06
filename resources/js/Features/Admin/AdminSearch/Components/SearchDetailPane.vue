@@ -1,12 +1,13 @@
 <template>
   <div class="h-full">
+    <SearchMatch v-if="hit" compact :match="(hit.raw as { _searchMatch?: SearchMatchData })._searchMatch" :title="hit.title" class="px-4 pt-3" />
     <!-- Empty state -->
     <div v-if="!hit" class="flex h-full flex-col items-center justify-center px-6 text-center">
       <div class="mb-4 flex size-12 items-center justify-center rounded-full bg-muted/50">
         <MousePointerClick class="size-6 text-muted-foreground/50" />
       </div>
       <p class="text-sm font-medium text-foreground">
-        {{ $t('Pasirinkite rezultatą') }}
+        {{ $t('Pasirink rezultatą') }}
       </p>
       <p class="mt-1 text-xs text-muted-foreground">
         {{ $t('Peržiūra bus rodoma čia') }}
@@ -77,6 +78,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { trans as $t } from 'laravel-vue-i18n';
 import { MousePointerClick } from 'lucide-vue-next';
 
@@ -94,6 +96,8 @@ import CalendarDetailPreview from './Detail/CalendarDetailPreview.vue';
 import UserDetailPreview from './Detail/UserDetailPreview.vue';
 import GenericDetailPreview from './Detail/GenericDetailPreview.vue';
 
+import type { SearchMatch as SearchMatchData } from '@/Shared/Search/matches';
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import type {
   AgendaItemSearchResult,
   CalendarSearchResult,

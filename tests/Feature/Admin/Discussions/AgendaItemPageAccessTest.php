@@ -3,10 +3,12 @@
 use App\Enums\MeetingType;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Settings\MeetingSettings;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -15,7 +17,7 @@ pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
-    $this->coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     $this->institution = Institution::factory()->for($this->tenant)->create();
 
@@ -37,29 +39,50 @@ beforeEach(function (): void {
     );
 });
 
-test('a coordinator opens the agenda item page with canUpdate true', function (): void {
+test('a coordinator opens the agenda item page with the outcome controls live', function (): void {
     asUser($this->coordinator)
-        ->get(route('agendaItems.edit', $this->agendaItem))
+        ->get(route('agendaItems.show', $this->agendaItem))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/Representation/EditAgendaItem')
-            ->where('canUpdate', true)
+            ->component('Admin/Representation/ShowAgendaItem')
+            ->where('abilities.update', true)
+            ->where('publicUrl', null)
         );
 });
 
-test('a view-only participant opens the page read-only (canUpdate false)', function (): void {
-    asUser($this->viewer)
-        ->get(route('agendaItems.edit', $this->agendaItem))
+test('a public agenda item links to its meeting on the institution subdomain', function (): void {
+    $type = InstitutionType::factory()->withGovernanceScope()->create();
+    $this->institution->types()->attach($type);
+    app(MeetingSettings::class)->fill([
+        'public_meeting_institution_type_ids' => [$type->id],
+    ])->save();
+
+    asUser($this->coordinator)
+        ->get(route('agendaItems.show', $this->agendaItem))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/Representation/EditAgendaItem')
-            ->where('canUpdate', false)
+            ->component('Admin/Representation/ShowAgendaItem')
+            ->where('publicUrl', route('publicMeetings.show', [
+                'subdomain' => $this->tenant->subdomain(),
+                'lang' => app()->getLocale(),
+                'meeting' => $this->meeting,
+            ]))
+        );
+});
+
+test('a view-only participant opens the page read-only', function (): void {
+    asUser($this->viewer)
+        ->get(route('agendaItems.show', $this->agendaItem))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Admin/Representation/ShowAgendaItem')
+            ->where('abilities.update', false)
         );
 });
 
 test('an outsider cannot open the page (403)', function (): void {
     asUser($this->outsider)
-        ->get(route('agendaItems.edit', $this->agendaItem))
+        ->get(route('agendaItems.show', $this->agendaItem))
         ->assertStatus(403);
 });
 

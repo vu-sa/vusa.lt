@@ -167,18 +167,19 @@ describe('the label is derived from the dates', function (): void {
 describe('institution overrides', function (): void {
     beforeEach(function (): void {
         $this->institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
-        $this->institutionEditor = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->institutionEditor = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
-    test('an institution editor may add an override for their own institution', function (): void {
-        asUser($this->institutionEditor)->post(route('settings.cadences.store'), [
+    /** The roles the guide's Kadencijos section names as the ones who add overrides. */
+    test('an institution editor may add an override for their own institution', function (string $role): void {
+        asUser(makeTenantUserWithRole($role, $this->tenant))->post(route('settings.cadences.store'), [
             'institution_id' => $this->institution->id,
             'start_date' => '2025-05-18',
             'end_date' => '2026-05-17',
         ])->assertRedirect()->assertSessionHasNoErrors();
 
         expect(Cadence::forInstitution($this->institution->id)->count())->toBe(1);
-    });
+    })->with(['Komunikacijos koordinatorius', 'Studentų atstovų koordinatorius']);
 
     test('an institution editor may delete an override for their own institution', function (): void {
         $cadence = Cadence::factory()->forYear(2025)->create(['institution_id' => $this->institution->id]);
@@ -296,7 +297,7 @@ describe('meeting anchors', function (): void {
     // The picker only ever offers what the user's scoped search key returns; the rule is what
     // stops a crafted id reaching a sitting they were never shown.
     test('a sitting the editor cannot see is refused', function (): void {
-        $editor = makeTenantUser('Communication Coordinator', $this->tenant);
+        $editor = makeTenantUser('Komunikacijos koordinatorius', $this->tenant);
 
         $otherTenant = Tenant::factory()->create();
         $hidden = Institution::factory()->create(['tenant_id' => $otherTenant->id]);

@@ -222,7 +222,7 @@ import { TenantType } from '@/Types/enums';
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
-import StudentRepInstitutionCard from '@/Components/Cards/StudentRepInstitutionCard.vue';
+import StudentRepInstitutionCard from '@/Components/Public/Institutions/StudentRepInstitutionCard.vue';
 import PadalinysSelector from '@/Components/Public/Nav/PadalinysSelector.vue';
 import { pluralizeLithuanian } from '@/Utils/String';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
@@ -234,7 +234,7 @@ import IFluentPeople16Regular from '~icons/fluent/people-16-regular';
 import IFluentArrowRight16Regular from '~icons/fluent/arrow-right-16-regular';
 
 const props = defineProps<{
-  types: App.Entities.Type[];
+  types: App.Entities.InstitutionType[];
   categoryType?: { id: number; slug: string; title: string; description?: string };
   showAllTenants?: boolean;
 }>();

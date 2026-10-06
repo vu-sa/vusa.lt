@@ -16,22 +16,16 @@
       <RichContentBlock
         v-for="(child, childIndex) in group.children" :key="child.id ?? childIndex"
         :element="child" :html
-        :is-first-element="false"
         :resolved="resolvedFor(child)"
         :band="bandFor(child)"
-        :news="child.type === 'news' ? news : undefined"
-        :calendar-events="child.type === 'calendar' ? calendarEvents : undefined"
       />
     </SectionDisplay>
 
     <RichContentBlock
       v-else
       :element="group.element" :html
-      :is-first-element="index === 0"
       :resolved="resolvedFor(group.element)"
       :band="bandFor(group.element)"
-      :news="group.element.type === 'news' ? news : undefined"
-      :calendar-events="group.element.type === 'calendar' ? calendarEvents : undefined"
     />
   </template>
 </template>
@@ -45,13 +39,14 @@
  */
 import { computed } from 'vue';
 
-import { getContentType } from './Types';
+import { groupContent } from './groupContent';
+import { getDisplayType } from './Types/display';
 import { blockLayoutClasses } from './blockLayout';
 import { endsSectionWrapping, resolveBandRole, resolveBands, type BandResolution } from './bandLayout';
 import RichContentBlock from './RichContentBlock.vue';
 import SectionDisplay from './RCSection/SectionDisplay.vue';
 
-import type { NewsItem, Section } from '@/Types/contentParts';
+import type { Section } from '@/Types/contentParts';
 
 const props = defineProps<{
   content: models.ContentPart[];
@@ -59,9 +54,6 @@ const props = defineProps<{
   class?: string;
   /** Server-resolved payloads keyed by content-part id (PublicController::resolveContentParts). */
   resolved?: Record<number, unknown>;
-  /** @deprecated Superseded by `resolved` — only HomePage still supplies these directly. */
-  news?: NewsItem[];
-  calendarEvents?: Array<Record<string, unknown>>;
 }>();
 
 /**
@@ -70,7 +62,7 @@ const props = defineProps<{
  * stringify into the DOM (`resolved="[object Object]"`).
  */
 function resolvedFor(element: models.ContentPart): unknown {
-  if (!getContentType(element.type).serverResolved) return undefined;
+  if (!getDisplayType(element.type).serverResolved) return undefined;
 
   return props.resolved?.[element.id];
 }
@@ -93,45 +85,5 @@ function bandFor(element: models.ContentPart): BandResolution | undefined {
   return bandMap.value.get(element);
 }
 
-type ContentGroup
-  = | { kind: 'block'; element: models.ContentPart }
-    | { kind: 'section'; element: models.ContentPart; children: models.ContentPart[] };
-
-/**
- * Splits `content` into top-level render groups: a plain block, or a `section` marker
- * plus every part that follows it up to the next `section` marker, an independent
- * self-spaced band, or the end.
- * `options.wraps: 'none'` makes a section render header-only — it still opens a group
- * (so it gets its own chrome/anchor), but doesn't absorb anything after it; the very
- * next element (section or not) starts fresh, exactly as if this section didn't exist
- * for grouping purposes. This is also what makes a `wraps: 'none'` section act as an
- * implicit terminator for whatever section came before it — a new section element
- * always ends the previous group regardless of its own `wraps` value.
- */
-const groupedContent = computed<ContentGroup[]>(() => {
-  const groups: ContentGroup[] = [];
-  let active: { kind: 'section'; element: models.ContentPart; children: models.ContentPart[] } | null = null;
-
-  for (const element of props.content) {
-    if (element.type === 'section') {
-      const group: ContentGroup = { kind: 'section', element, children: [] };
-      groups.push(group);
-      active = element.options?.wraps === 'none' ? null : (group as typeof active);
-      continue;
-    }
-
-    if (active && endsSectionWrapping(element)) {
-      active = null;
-    }
-
-    if (active) {
-      active.children.push(element);
-    }
-    else {
-      groups.push({ kind: 'block', element });
-    }
-  }
-
-  return groups;
-});
+const groupedContent = computed(() => groupContent(props.content));
 </script>

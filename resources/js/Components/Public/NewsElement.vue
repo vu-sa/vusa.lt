@@ -123,14 +123,10 @@ import { BAND_GROUND_CLASS, BAND_PADDING } from '@/Components/RichContent/sectio
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
 // Props - element is from content parts. `resolved` is the server-resolved payload
-// (ContentPartResolver, via RichContentParser's `resolved` prop); `prefetchedNews` is
-// the older homepage-only prop, kept as a fallback until HomePage moves onto the
-// resolver too (see RichContentParser.vue).
+// (ContentPartResolver, via RichContentParser's `resolved` prop).
 const props = defineProps<{
   element: News;
   resolved?: { type: string; items: NewsItem[] } | null;
-  /** @deprecated Superseded by `resolved` — only HomePage still supplies this directly. */
-  prefetchedNews?: NewsItem[];
   /** Full-screen editor mode: the title and eyebrow become click-to-edit. */
   editable?: boolean;
   /** Declared (but unused) purely to intercept `BlockPreviewRenderer`'s generic
@@ -154,7 +150,7 @@ function updateEyebrow(eyebrow: string): void {
 
 const page = usePage();
 
-const serverNews = computed<NewsItem[] | undefined>(() => props.resolved?.items ?? props.prefetchedNews);
+const serverNews = computed<NewsItem[] | undefined>(() => props.resolved?.items);
 
 /**
  * Presence, not emptiness. `[]` from the resolver means "the server looked and there is nothing
@@ -164,7 +160,7 @@ const serverNews = computed<NewsItem[] | undefined>(() => props.resolved?.items 
 const hasPrefetchedNews = computed(() => serverNews.value !== undefined);
 
 // Only use API fetch if no server-provided news is available (prevents waterfall on
-// pages that already got it from ContentPartResolver or the homepage prefetch).
+// pages that already got it from ContentPartResolver).
 const { news: apiFetchedNews, loading: apiLoading, error: apiError } = hasPrefetchedNews.value
   ? { news: ref([]), loading: ref(false), error: ref(null) }
   : useNewsFetch();

@@ -57,37 +57,26 @@ class TiptapEditor extends Editor
                     ],
                 ]),
 
-                // Table components with Tailwind classes
+                // Table chrome comes from `.rc-table` in typography.css, not baked
+                // utilities, so already-stored tables restyle along with new ones.
                 new Table([
                     'HTMLAttributes' => [
-                        'class' => 'border-collapse table-auto w-full tracking-normal',
+                        'class' => 'rc-table',
                     ],
                 ]),
-                new TableCell([
-                    'HTMLAttributes' => [
-                        'class' => 'border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left tracking-normal [&[align=center]]:text-center [&[align=right]]:text-right',
-                    ],
-                ]),
-                new TableHeader([
-                    'HTMLAttributes' => [
-                        'class' => 'border border-zinc-400 dark:border-zinc-500 px-4 py-1 text-left font-bold tracking-normal [&[align=center]]:text-center [&[align=right]]:text-right',
-                    ],
-                ]),
-                new TableRow([
-                    'HTMLAttributes' => [
-                        'class' => 'm-0 border-t p-0 even:bg-zinc-100 dark:even:bg-zinc-800/20',
-                    ],
-                ]),
+                new TableCell,
+                new TableHeader,
+                new TableRow,
 
                 // Media nodes
                 new Youtube([
                     'HTMLAttributes' => [
-                        'class' => 'aspect-video h-auto w-full rounded-xl shadow-lg',
+                        'class' => 'rc-embed',
                     ],
                 ]),
                 new Video([
                     'HTMLAttributes' => [
-                        'class' => 'aspect-video h-auto w-full rounded-xl shadow-lg',
+                        'class' => 'rc-embed',
                     ],
                 ]),
 

@@ -10,11 +10,11 @@
   >
     <SliderTrack
       data-slot="slider-track"
-      class="bg-zinc-100 relative grow overflow-hidden rounded-full data-[orientation=horizontal]:h-1.5 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1.5 dark:bg-zinc-800"
+      class="relative grow overflow-hidden bg-input data-[orientation=horizontal]:h-1 data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-1"
     >
       <SliderRange
         data-slot="slider-range"
-        class="bg-zinc-900 absolute data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full dark:bg-zinc-50"
+        class="absolute bg-foreground data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full"
       />
     </SliderTrack>
 
@@ -22,7 +22,7 @@
       v-for="(_, key) in modelValue"
       :key
       data-slot="slider-thumb"
-      class="border-zinc-900 bg-white ring-zinc-950/50 block size-4 shrink-0 rounded-full border border-zinc-200 shadow-sm transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 dark:border-zinc-50 dark:bg-zinc-950 dark:ring-zinc-300/50 dark:border-zinc-800"
+      class="block size-4 shrink-0 cursor-grab rounded-full border-2 border-foreground bg-background transition-[color,box-shadow] outline-none hover:ring-[3px] hover:ring-ring/20 focus-visible:ring-[3px] focus-visible:ring-ring/40 active:cursor-grabbing disabled:pointer-events-none disabled:opacity-50 pointer-coarse:size-6"
     />
   </SliderRoot>
 </template>

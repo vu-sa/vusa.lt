@@ -72,7 +72,7 @@ describe('Calendar/CalendarFilterPopover.vue', () => {
     const wrapper = mountComponent({ searchable: true });
     await wrapper.find('button').trigger('click');
 
-    const searchInput = document.body.querySelector('[role="dialog"] input[type="text"]') as HTMLInputElement;
+    const searchInput = document.body.querySelector('[role="dialog"] input[type="search"]') as HTMLInputElement;
     expect(searchInput).not.toBeNull();
 
     searchInput.value = 'Fizikos';

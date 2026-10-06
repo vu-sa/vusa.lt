@@ -40,7 +40,6 @@ final class LocalizedRouteSlugs
         'newsString' => ['lt' => 'naujiena', 'en' => 'news'],
         'registrationString' => ['lt' => 'registracija', 'en' => 'registration'],
         'calendarString' => ['lt' => 'kalendorius', 'en' => 'calendar'],
-        'summerCampsString' => ['lt' => 'pirmakursiu-stovyklos', 'en' => 'freshmen-camps'],
         'pkpString' => ['lt' => 'programos-klubai-projektai', 'en' => 'programs-clubs-projects'],
         'categoryString' => ['lt' => 'kategorija', 'en' => 'category'],
         'topicString' => ['lt' => 'tema', 'en' => 'topic'],
@@ -51,6 +50,7 @@ final class LocalizedRouteSlugs
         'contactsString' => ['lt' => 'kontaktai', 'en' => 'contacts'],
         'studentRepsString' => ['lt' => 'studentu-atstovai', 'en' => 'student-representatives'],
         'contactCategoryString' => ['lt' => 'kategorija', 'en' => 'category'],
+        'goalsString' => ['lt' => 'tikslai', 'en' => 'goals'],
     ];
 
     /**

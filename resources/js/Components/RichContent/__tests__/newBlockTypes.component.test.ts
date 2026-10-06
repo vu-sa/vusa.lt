@@ -182,6 +182,22 @@ describe('carousel-slide-deck', () => {
 });
 
 describe('photo-gallery', () => {
+  it('exposes gallery layout options as labelled pressed controls', async () => {
+    const item = createContentItem('photo-gallery');
+    const wrapper = mount(PhotoGalleryGridEditor, {
+      props: { modelValue: item.json_content, options: item.options },
+      global: { stubs: { TiptapImageButton: true } },
+    });
+
+    const columns = wrapper.find('[aria-label="rich-content.columns"]');
+    const twoColumns = columns.findAll('button').find(button => button.text() === '2')!;
+    await twoColumns.trigger('click');
+
+    expect(twoColumns.attributes('aria-pressed')).toBe('true');
+    expect((item.options as { columns: string }).columns).toBe('2');
+    expect(wrapper.find('label[for]').text()).toContain('rich-content.enable_lightbox');
+  });
+
   it('editor adds an image via v-model', async () => {
     // photo-gallery now shares RCImageTileGrid with image-grid: adding a tile goes
     // through the TiptapImageButton picker (stubbed here to emit immediately) instead

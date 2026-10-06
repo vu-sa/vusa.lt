@@ -3,20 +3,67 @@ import { mount } from '@vue/test-utils';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { commonStubs } from '@/tests/stubs';
+import { documentWithMatch, type SearchMatchDocument } from '@/Shared/Search/matches';
 
-// The visual roll itself (opacity/translate easing, the gradient's swept background
-// position) is intentionally not asserted — jsdom has no layout/animation engine to verify
-// it against, and it can't tell whether a long name actually wraps either. What's covered
-// instead is the wiring: which ending is "active" per the shared class binding, that it
-// flips when the shared timer fires, and that the last stem word is grouped with the ending
-// so wrapping can't split them. See resources/js/CLAUDE.md.
 describe('InflectedDutyName.vue', () => {
   let wrapper: ReturnType<typeof mount>;
+
+  it('highlights a duty name in place while preserving both gender endings', () => {
+    const doc = documentWithMatch({ document: { name_lt: 'Prezidentas' }, highlights: [{ field: 'name_lt', snippet: '⟦Prezidentas⟧' }] }) as SearchMatchDocument;
+    wrapper = mount(InflectedDutyName, { props: { name: 'Prezidentas', matches: doc._searchTitleMatches }, global: { stubs: commonStubs } });
+    expect(wrapper.get('[data-testid="duty-ending-group"] > span mark').text()).toBe('Prezident');
+    expect(wrapper.get('[data-testid="duty-ending-masculine"] mark').text()).toBe('as');
+    expect(wrapper.get('[data-testid="duty-ending-feminine"] mark').text()).toBe('ė');
+    expect(wrapper.find('[data-slot="search-match"]').exists()).toBe(false);
+    expect(wrapper.get('[data-testid="duty-gender-pair"]').classes()).toContain('sr-only');
+  });
 
   afterEach(() => {
     wrapper?.unmount();
     vi.useRealTimers();
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it('uses a solid branded underline and inherits the surrounding text color', () => {
+    wrapper = mount(InflectedDutyName, { props: { name: 'Koordinatorius' }, global: { stubs: commonStubs } });
+
+    expect(wrapper.get('[data-testid="duty-ending-underline"]').classes()).toEqual(expect.arrayContaining(['bg-brand', 'self-end']));
+    expect(wrapper.html()).not.toContain('gradient');
+    expect(wrapper.get('[data-testid="duty-ending-masculine"]').classes()).toContain('motion-reduce:transition-none');
+  });
+
+  it('keeps a holder static and only subscribes to the timer when the holder is removed', async () => {
+    vi.useFakeTimers();
+    wrapper = mount(InflectedDutyName, {
+      props: { name: 'Koordinatorius', holder: { name: 'Ona', pronouns: { en: 'she/her' } } },
+      global: { stubs: commonStubs },
+    });
+
+    expect(wrapper.text()).toBe('Koordinatorė');
+    expect(vi.getTimerCount()).toBe(0);
+    await wrapper.setProps({ holder: null });
+    expect(wrapper.find('[data-testid="duty-ending-group"]').exists()).toBe(true);
+    expect(vi.getTimerCount()).toBe(1);
+    await wrapper.setProps({ holder: { name: 'Ona' }, useOriginalDutyName: true });
+    expect(wrapper.text()).toBe('Koordinatorius');
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('keeps reduced motion on the masculine form without a timer', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('matchMedia', vi.fn(() => ({
+      matches: true, media: '(prefers-reduced-motion: reduce)', onchange: null,
+      addEventListener: vi.fn(), removeEventListener: vi.fn(),
+      addListener: vi.fn(), removeListener: vi.fn(), dispatchEvent: vi.fn(),
+    })));
+    wrapper = mount(InflectedDutyName, { props: { name: 'Koordinatorė' }, global: { stubs: commonStubs } });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.get('[data-testid="duty-ending-masculine"]').classes()).toContain('opacity-100');
+    expect(vi.getTimerCount()).toBe(0);
+    await vi.advanceTimersByTimeAsync(10000);
+    expect(wrapper.get('[data-testid="duty-ending-masculine"]').classes()).toContain('opacity-100');
   });
 
   it('renders plain text for a name with no detectable gendered ending', () => {
@@ -144,9 +191,6 @@ describe('InflectedDutyName.vue', () => {
 
     expect(masculine()).toContain('opacity-100');
     expect(feminine()).toContain('opacity-0');
-    // The settled ending sits at the end of its gradient, i.e. the inherited text colour.
-    expect(masculine()).toContain('bg-right');
-    expect(feminine()).toContain('bg-left');
     expect(otherMasculine()).toContain('opacity-100');
 
     // Just short of the flip interval, nothing has changed yet.
@@ -157,17 +201,16 @@ describe('InflectedDutyName.vue', () => {
 
     expect(masculine()).toContain('opacity-0');
     expect(feminine()).toContain('opacity-100');
-    // Both endings move the same way (up) on this flip, and the gradient sweeps with them.
+    // The ending moves while the rest of the name stays fixed.
     expect(masculine()).toContain('-translate-y-[0.12em]');
     expect(feminine()).toContain('translate-y-0');
-    expect(feminine()).toContain('bg-right');
     // Both instances share one timer, so they flip in the same tick.
     expect(otherMasculine()).toContain('opacity-0');
 
     other.unmount();
   });
 
-  it('starts with the feminine ending active when the weighted roll lands feminine', () => {
+  it('starts with the feminine ending active when the weighted roll lands feminine', async () => {
     // Math.random() < 0.71 → feminine; a low return value pins it. See useDutyGenderFlip.
     vi.spyOn(Math, 'random').mockReturnValue(0.1);
 
@@ -175,6 +218,8 @@ describe('InflectedDutyName.vue', () => {
       props: { name: 'Koordinatorius', locale: 'lt' },
       global: { stubs: commonStubs },
     });
+
+    await wrapper.vm.$nextTick();
 
     expect(wrapper.get('[data-testid="duty-ending-masculine"]').classes()).toContain('opacity-0');
     expect(wrapper.get('[data-testid="duty-ending-feminine"]').classes()).toContain('opacity-100');

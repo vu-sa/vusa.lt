@@ -62,6 +62,8 @@ return [
         'model' => '{1} tag|[2,*] tags',
         'gender' => 'f',
     ],
+    'institutionType' => ['gender' => 'm', 'model' => '{1} institution type|[2,*] institution types', 'genitive' => 'institution type', 'accusative' => 'institution type'],
+    'dutyType' => ['gender' => 'm', 'model' => '{1} duty type|[2,*] duty types', 'genitive' => 'duty type', 'accusative' => 'duty type'],
     'type' => [
         'model' => '{1} content type|[2,*] content types',
         'gender' => 'm',
@@ -142,6 +144,10 @@ return [
         'model' => '{1} resource|[2,*] resources',
         'gender' => 'm',
     ],
+    'problemCategory' => [
+        'model' => '{1} problem category|[2,*] problem categories',
+        'gender' => 'f',
+    ],
     'resourceCategory' => [
         'model' => '{1} resource category|[2,*] resource categories',
         'gender' => 'f',
@@ -195,6 +201,27 @@ return [
             'in_progress' => 'In progress',
             'resolved' => 'Resolved',
         ],
+    ],
+
+    'goal' => [
+        'model' => '{1} goal|[2,*] goals',
+        'gender' => 'm',
+        'title' => 'goal title',
+        'description' => 'description',
+        'expected_result' => 'expected result',
+        'evaluation' => 'year-end evaluation',
+        'status' => 'status',
+        'is_public' => 'shown on vusa.lt',
+        'cadence' => 'term',
+        'responsible_duty' => 'responsible duty',
+    ],
+
+    'step' => [
+        'model' => '{1} step|[2,*] steps',
+        'gender' => 'm',
+        'title' => 'what was done',
+        'description' => 'details',
+        'happened_on' => 'date',
     ],
 
     'contentPart' => [

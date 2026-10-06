@@ -14,7 +14,7 @@ use App\Models\PublicNews;
 use App\Models\PublicPage;
 use App\Models\User;
 
-return [
+$settings = [
 
     /*
     |--------------------------------------------------------------------------
@@ -131,6 +131,7 @@ return [
     */
 
     'typesense' => [
+        'search-profile-version' => (int) env('TYPESENSE_SEARCH_PROFILE_VERSION', 2),
         'client-settings' => [
             'api_key' => env('TYPESENSE_API_KEY'),
             'search_only_key' => env('TYPESENSE_SEARCH_ONLY_KEY'),
@@ -221,7 +222,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,short,tenant_name,tenant_shortname,tag_names',
-                    'query_by_weights' => '10,4,2,2,3',
+                    'query_by_weights' => '127,16,6,6,24',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -229,19 +230,20 @@ return [
                 ],
             ],
 
-            // Static Pages - Admin index: everything non-trashed, inactive and
-            // scheduled pages included. See PublicPage below for the public index.
+            // Static Pages - Admin index: everything non-trashed, inactive pages
+            // included. See PublicPage below for the public index.
             Page::class => [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
-                        ['name' => 'title', 'type' => 'string', 'infix' => true],
+                        ['name' => 'title', 'type' => 'string', 'infix' => true, 'sort' => true],
                         ['name' => 'permalink', 'type' => 'string', 'optional' => true],
                         ['name' => 'meta_description', 'type' => 'string', 'optional' => true, 'infix' => true],
                         ['name' => 'lang', 'type' => 'string', 'facet' => true],
                         ['name' => 'tenant_id', 'type' => 'int32', 'facet' => true],
                         ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true],
                         ['name' => 'tenant_name', 'type' => 'string', 'facet' => true],
+                        ['name' => 'tenant_shortname', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'tag_names', 'type' => 'string[]', 'facet' => true, 'optional' => true],
                         ['name' => 'is_active', 'type' => 'bool', 'facet' => true],
                         ['name' => 'created_at', 'type' => 'int64'],
@@ -251,7 +253,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,meta_description,tag_names',
-                    'query_by_weights' => '10,4,3',
+                    'query_by_weights' => '127,16,24',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -285,7 +287,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,short,tenant_name,tenant_shortname,tag_names',
-                    'query_by_weights' => '10,4,2,2,3',
+                    'query_by_weights' => '127,16,6,6,24',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -293,8 +295,7 @@ return [
                 ],
             ],
 
-            // Public Pages - Only active, published pages. Field shape mirrors
-            // Page::class above minus the admin-only `is_active` facet.
+            // Public Pages - Only active, published pages. Admin-only fields are omitted.
             PublicPage::class => [
                 'collection-schema' => [
                     'fields' => [
@@ -314,7 +315,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,meta_description,tag_names',
-                    'query_by_weights' => '10,4,3',
+                    'query_by_weights' => '127,16,24',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -357,7 +358,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,title_lt,title_en,description,location,tag_names',
-                    'query_by_weights' => '10,8,8,3,2,3',
+                    'query_by_weights' => '127,127,127,12,8,24',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -401,7 +402,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,summary,content_type,institution_name_lt,institution_name_en,document_year,document_date_formatted',
-                    'query_by_weights' => '10,3,2,3,2,6,4',
+                    'query_by_weights' => '127,16,12,6,6,80,80',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -444,7 +445,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,description,institution_name_lt,institution_name_en',
-                    'query_by_weights' => '10,5,3,3',
+                    'query_by_weights' => '127,12,6,6',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -500,7 +501,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,name_lt,name_en,short_name_lt,short_name_en,alias,current_user_names',
-                    'query_by_weights' => '10,10,8,6,4,3,2',
+                    'query_by_weights' => '127,127,127,110,110,100,6',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -525,6 +526,10 @@ return [
                         ['name' => 'type_titles', 'type' => 'string[]', 'facet' => true, 'optional' => true],
                         // Self-referential institution_ids for .own permission filtering
                         ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true],
+                        // Refreshed nightly (institutions:refresh-activity-status) and on meeting/check-in changes
+                        ['name' => 'activity_status', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'is_active', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'type_ids', 'type' => 'int32[]', 'optional' => true],
                         // Linked members and duties for discoverability
                         ['name' => 'current_user_names', 'type' => 'string[]', 'optional' => true],
                         ['name' => 'duty_names', 'type' => 'string[]', 'optional' => true],
@@ -535,7 +540,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'name_lt,name_en,short_name_lt,short_name_en,alias,email,current_user_names,duty_names',
-                    'query_by_weights' => '10,8,6,4,3,2,4,5',
+                    'query_by_weights' => '127,127,110,110,100,110,6,6',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -590,8 +595,8 @@ return [
                         ['name' => 'vote_alignment_status', 'type' => 'string', 'facet' => true],
 
                         // Status fields
-                        ['name' => 'completion_status', 'type' => 'string', 'facet' => true],
-                        ['name' => 'is_public', 'type' => 'bool', 'facet' => true],
+                        ['name' => 'completion_status', 'type' => 'string', 'facet' => true, 'optional' => true],
+                        ['name' => 'institution_type_ids', 'type' => 'int32[]', 'optional' => true],
                         ['name' => 'is_recent', 'type' => 'bool', 'facet' => true],
 
                         // Representatives attending the meeting
@@ -605,7 +610,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,description,institution_name_lt,institution_name_en,institution_names,tenant_shortnames,user_names',
-                    'query_by_weights' => '10,5,4,4,3,3,4',
+                    'query_by_weights' => '127,12,6,6,6,6,6',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -618,6 +623,7 @@ return [
                 'collection-schema' => [
                     'fields' => [
                         ['name' => 'id', 'type' => 'string'],
+                        ['name' => 'is_private', 'type' => 'bool', 'facet' => true],
                         ['name' => 'title', 'type' => 'string', 'infix' => true, 'sort' => true],
                         ['name' => 'description', 'type' => 'string', 'optional' => true, 'infix' => true],
                         ['name' => 'order', 'type' => 'int32', 'sort' => true],
@@ -645,6 +651,7 @@ return [
                         ['name' => 'institution_name_lt', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'institution_name_en', 'type' => 'string', 'facet' => true, 'optional' => true],
                         ['name' => 'institution_ids', 'type' => 'string[]', 'facet' => true], // ULIDs for .own scope filtering
+                        ['name' => 'institution_type_ids', 'type' => 'int32[]', 'optional' => true],
 
                         // Completion indicators
                         ['name' => 'has_student_vote', 'type' => 'bool', 'facet' => true],
@@ -664,7 +671,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'title,description,student_benefit,meeting_title,institution_name_lt,institution_name_en',
-                    'query_by_weights' => '10,6,5,4,3,3',
+                    'query_by_weights' => '127,12,12,6,6,6',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -704,7 +711,7 @@ return [
                 ],
                 'search-parameters' => [
                     'query_by' => 'name_lt,name_en,description_lt,description_en,location,category_name',
-                    'query_by_weights' => '10,10,5,5,3,4',
+                    'query_by_weights' => '127,127,12,12,8,12',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -752,7 +759,7 @@ return [
                 'search-parameters' => [
                     // Current members are weighted above previous ones for relevance.
                     'query_by' => 'name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
-                    'query_by_weights' => '10,8,4,4,3,6,4',
+                    'query_by_weights' => '127,127,110,6,6,6,3',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -778,6 +785,14 @@ return [
 
                         // Duties (for search + the detail pane). Current duties are weighted
                         // above previous ones; parallel id arrays stay index-aligned for links.
+                        ['name' => 'pronouns_lt', 'type' => 'string', 'index' => false, 'optional' => true],
+                        ['name' => 'pronouns_en', 'type' => 'string', 'index' => false, 'optional' => true],
+                        ['name' => 'current_duty_names_lt', 'type' => 'string[]', 'index' => false, 'optional' => true],
+                        ['name' => 'current_duty_names_en', 'type' => 'string[]', 'index' => false, 'optional' => true],
+                        ['name' => 'current_duty_use_original_names', 'type' => 'bool[]', 'index' => false, 'optional' => true],
+                        ['name' => 'previous_duty_names_lt', 'type' => 'string[]', 'index' => false, 'optional' => true],
+                        ['name' => 'previous_duty_names_en', 'type' => 'string[]', 'index' => false, 'optional' => true],
+                        ['name' => 'previous_duty_use_original_names', 'type' => 'bool[]', 'index' => false, 'optional' => true],
                         ['name' => 'current_duty_names', 'type' => 'string[]', 'facet' => true, 'optional' => true],
                         ['name' => 'current_duty_ids', 'type' => 'string[]', 'index' => false, 'optional' => true],
                         ['name' => 'previous_duty_names', 'type' => 'string[]', 'facet' => true, 'optional' => true],
@@ -792,7 +807,7 @@ return [
                 'search-parameters' => [
                     // Current duties are weighted above previous ones for relevance.
                     'query_by' => 'name,email,phone,current_duty_names,previous_duty_names',
-                    'query_by_weights' => '10,6,4,3,2',
+                    'query_by_weights' => '127,110,100,6,3',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,
@@ -803,3 +818,23 @@ return [
     ],
 
 ];
+
+foreach ($settings['typesense']['model-settings'] as $model => &$modelSettings) {
+    $fields = &$modelSettings['collection-schema']['fields'];
+    foreach (['lt', 'en'] as $locale) {
+        $fields[] = ['name' => 'search_text_'.$locale, 'type' => 'string', 'optional' => true, 'stem' => true, 'locale' => $locale];
+    }
+    if (in_array($model, [News::class, Page::class, PublicNews::class, PublicPage::class], true)) {
+        $fields[] = ['name' => 'body', 'type' => 'string', 'optional' => true];
+        foreach ($fields as &$field) {
+            if ($field['name'] === 'title') {
+                $field['sort'] = true;
+            }
+        }
+        unset($field);
+    }
+    unset($fields);
+}
+unset($modelSettings);
+
+return $settings;

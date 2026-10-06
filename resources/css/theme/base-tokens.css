@@ -15,7 +15,7 @@
 }
 
 /* Brand accent. Deliberately NOT shadcn's `--accent`: that slot means "hover/muted surface"
-   (`focus:bg-accent` on every dropdown item, `hover:bg-accent` on ghost buttons, the sidebar),
+   (`focus:bg-accent` on every dropdown item, `hover:bg-accent` on ghost buttons),
    so painting the brand colour into it turns every hover row solid red. The brand is
    theme-aware by design — VU SA red on a light canvas, amber on near-black, where red loses
    too much contrast as small text. */
@@ -70,14 +70,56 @@
      mega menu's featured card, the podcast panel. Deliberately NOT theme-swapped: the scrim
      is what keeps the copy legible, so it has to stay dark in light mode too. */
   --ink: oklch(0.11 0.004 70);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.21 0.006 285.885);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.705 0.015 286.067);
+
+  /* ------------------------------------------------------------------------------------------
+     Colour system (.ai/rules/css.md) — six status roles
+     + eight categories, shared by the admin and public surfaces (unlike --background etc., these
+     are NOT re-scoped per [data-surface]). Meaning is carried by shape as well as hue: solid fill
+     = brand, tinted badge + icon + label = status (these tokens), small mark = category.
+     `-border` is the text/icon colour at ~35% alpha, per rule 1's "usually the text colour at
+     30-40% alpha" — color-mix rather than a fourth hand-picked value, so it can never drift from
+     its own role's hue. Values are the first pass from the colour-system design (2026-09-18);
+     see designTokens.test.ts for the completeness guard and Storybook's ColourSystem story
+     (a11y: 'error') for the contrast check. */
+  --status-neutral: oklch(0.45 0.01 80);
+  --status-neutral-surface: oklch(0.93 0.005 80);
+  --status-neutral-border: color-mix(in oklab, var(--status-neutral) 35%, transparent);
+  --status-info: oklch(0.5 0.13 245);
+  --status-info-surface: oklch(0.95 0.03 245);
+  --status-info-border: color-mix(in oklab, var(--status-info) 35%, transparent);
+  --status-progress: oklch(0.5 0.16 300);
+  --status-progress-surface: oklch(0.95 0.035 300);
+  --status-progress-border: color-mix(in oklab, var(--status-progress) 35%, transparent);
+  --status-attention: oklch(0.55 0.16 55);
+  --status-attention-surface: oklch(0.96 0.04 60);
+  --status-attention-border: color-mix(in oklab, var(--status-attention) 35%, transparent);
+  --status-success: oklch(0.5 0.13 150);
+  --status-success-surface: oklch(0.95 0.035 150);
+  --status-success-border: color-mix(in oklab, var(--status-success) 35%, transparent);
+  --status-danger: oklch(0.52 0.19 25);
+  --status-danger-surface: oklch(0.95 0.04 25);
+  --status-danger-border: color-mix(in oklab, var(--status-danger) 35%, transparent);
+
+  /* Eight categorical hues, one lightness/chroma pair per theme (chroma .11 both) — entity
+     types, event types, units, chart series. Small marks only, always with a label, never for
+     status. `-surface` mixes against --background (rather than a fixed pale tint) so it resolves
+     correctly on both canvases without eight more hand-tuned values. */
+  --cat-1: oklch(0.52 0.11 195);
+  --cat-1-surface: color-mix(in oklab, var(--cat-1) 14%, var(--background));
+  --cat-2: oklch(0.52 0.11 225);
+  --cat-2-surface: color-mix(in oklab, var(--cat-2) 14%, var(--background));
+  --cat-3: oklch(0.52 0.11 265);
+  --cat-3-surface: color-mix(in oklab, var(--cat-3) 14%, var(--background));
+  --cat-4: oklch(0.52 0.11 300);
+  --cat-4-surface: color-mix(in oklab, var(--cat-4) 14%, var(--background));
+  --cat-5: oklch(0.52 0.11 335);
+  --cat-5-surface: color-mix(in oklab, var(--cat-5) 14%, var(--background));
+  --cat-6: oklch(0.52 0.11 45);
+  --cat-6-surface: color-mix(in oklab, var(--cat-6) 14%, var(--background));
+  --cat-7: oklch(0.52 0.11 95);
+  --cat-7-surface: color-mix(in oklab, var(--cat-7) 14%, var(--background));
+  --cat-8: oklch(0.52 0.11 170);
+  --cat-8-surface: color-mix(in oklab, var(--cat-8) 14%, var(--background));
 }
 
 .dark {
@@ -109,14 +151,29 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.274 0.006 286.033);
-  --sidebar-ring: oklch(0.442 0.017 285.786);
+
+  /* Colour system, dark values — see the :root block above for the full explanation. */
+  --status-neutral: oklch(0.72 0.01 80);
+  --status-neutral-surface: oklch(0.26 0.008 80);
+  --status-info: oklch(0.78 0.1 240);
+  --status-info-surface: oklch(0.28 0.05 245);
+  --status-progress: oklch(0.78 0.12 300);
+  --status-progress-surface: oklch(0.28 0.06 300);
+  --status-attention: oklch(0.8 0.13 60);
+  --status-attention-surface: oklch(0.3 0.07 55);
+  --status-success: oklch(0.78 0.12 155);
+  --status-success-surface: oklch(0.27 0.05 150);
+  --status-danger: oklch(0.75 0.16 25);
+  --status-danger-surface: oklch(0.28 0.07 25);
+
+  --cat-1: oklch(0.76 0.11 195);
+  --cat-2: oklch(0.76 0.11 225);
+  --cat-3: oklch(0.76 0.11 265);
+  --cat-4: oklch(0.76 0.11 300);
+  --cat-5: oklch(0.76 0.11 335);
+  --cat-6: oklch(0.76 0.11 45);
+  --cat-7: oklch(0.76 0.11 95);
+  --cat-8: oklch(0.76 0.11 170);
 }
 
 html.dark {

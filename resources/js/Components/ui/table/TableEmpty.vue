@@ -3,7 +3,7 @@
     <TableCell
       :class="
         cn(
-          'p-4 whitespace-nowrap align-middle text-sm text-zinc-950 dark:text-zinc-50',
+          'p-4 whitespace-nowrap align-middle text-sm text-foreground',
           props.class,
         )
       "

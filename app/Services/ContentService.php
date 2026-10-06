@@ -50,6 +50,7 @@ class ContentService
             }
 
             $id = $partData['id'] ?? null;
+            abort_if($id && ! isset($existingPartsById[$id]), 403, 'Content part does not belong to this record.');
 
             // Validate content type — must hold for updates too, not just new parts.
             // Form Request validation already covers this on the store/update HTTP

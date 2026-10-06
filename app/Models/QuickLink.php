@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\PublicCacheTags;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -43,12 +44,12 @@ class QuickLink extends Model
     #[\Override]
     protected static function booted()
     {
-        static::saved(function ($quickLink): void {
-            Cache::tags(['quick_links', "tenant_{$quickLink->tenant_id}", "locale_{$quickLink->lang}"])->flush();
+        static::saved(function (QuickLink $quickLink): void {
+            Cache::tags(PublicCacheTags::quickLinksOf($quickLink))->flush();
         });
 
-        static::deleted(function ($quickLink): void {
-            Cache::tags(['quick_links', "tenant_{$quickLink->tenant_id}", "locale_{$quickLink->lang}"])->flush();
+        static::deleted(function (QuickLink $quickLink): void {
+            Cache::tags(PublicCacheTags::quickLinksOf($quickLink))->flush();
         });
     }
 

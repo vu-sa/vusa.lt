@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Institution;
 use App\Models\User;
 use App\Settings\AtstovavimasSettings;
+use App\Support\AuthorityCacheExpiry;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -59,7 +60,7 @@ class InstitutionAccessService
     ): Collection {
         $cacheKey = self::getAccessCacheKey($user->id, $includeRelated);
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($user, $includeRelated) {
+        return Cache::remember($cacheKey, fn () => AuthorityCacheExpiry::for($user, self::CACHE_TTL), function () use ($user, $includeRelated) {
             $institutionIds = collect();
 
             // 1. Direct duty institutions
@@ -88,7 +89,7 @@ class InstitutionAccessService
      */
     public function getUserDutyInstitutionIds(User $user): Collection
     {
-        return $user->current_duties()
+        return $user->authorization_duties()
             ->whereNotNull('institution_id')
             ->pluck('institution_id')
             ->filter()

@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property string $user_id
+ * @property string|null $notification_id
  * @property string $notification_class
  * @property string $category
  * @property array<array-key, mixed> $data
@@ -29,6 +30,7 @@ use Illuminate\Support\Carbon;
  */
 #[Fillable([
     'user_id',
+    'notification_id',
     'notification_class',
     'category',
     'data',

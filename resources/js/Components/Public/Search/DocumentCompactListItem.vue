@@ -25,8 +25,10 @@
               class="text-sm font-semibold text-foreground group-hover:text-brand transition-colors line-clamp-2 leading-tight"
               :title="document.title"
             >
-              {{ document.title }}
+              <SearchMatch v-if="titleMatch" inline :match="titleMatch" />
+              <template v-else>{{ document.title }}</template>
             </h3>
+            <SearchMatch :match="document._searchMatch" :title="document.title" />
           </div>
           <!-- External Link / Shortcut Icon -->
           <component
@@ -76,8 +78,10 @@
             class="text-base font-semibold text-foreground group-hover:text-brand transition-colors line-clamp-1"
             :title="document.title"
           >
-            {{ document.title }}
+            <SearchMatch v-if="titleMatch" inline :match="titleMatch" />
+            <template v-else>{{ document.title }}</template>
           </h3>
+          <SearchMatch :match="document._searchMatch" :title="document.title" />
         </div>
 
         <!-- Compact Metadata -->
@@ -125,6 +129,8 @@ import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { matchTitle } from '@/Shared/Search/matches';
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { useDocumentDisplay, getDocumentTargetUrl, parseDocumentDate, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import { TagChip } from '@/Components/Public/Base';
 import IFluentLink20Regular from '~icons/fluent/link-20-regular';
@@ -137,6 +143,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const titleMatch = computed(() => matchTitle(props.document.title, props.document._searchTitleMatches));
 
 // Use shared document display logic
 const {

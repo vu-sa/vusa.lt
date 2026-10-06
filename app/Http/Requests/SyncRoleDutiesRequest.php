@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class SyncRoleDutiesRequest extends FormRequest
 {
@@ -22,6 +23,7 @@ class SyncRoleDutiesRequest extends FormRequest
     {
         return [
             'duties' => 'present|array',
+            'duties.*' => ['string', Rule::exists('duties', 'id')],
         ];
     }
 }

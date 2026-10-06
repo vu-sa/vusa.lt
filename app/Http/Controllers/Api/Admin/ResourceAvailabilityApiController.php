@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\SerializeResourceAvailability;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\ResourceAvailabilityRequest;
 use App\Models\Resource;
@@ -40,9 +41,6 @@ class ResourceAvailabilityApiController extends ApiController
             ->get();
 
         $data = $resources->map(function (Resource $resource) use ($start, $end, $rangeStart, $rangeEnd) {
-            $strictCapacityTimeline = $resource->getCapacityAtDateTimeRange($start, $end);
-            $flexibleCapacityTimeline = $resource->getCapacityAtDateTimeRange($start, $end, [], [], true);
-
             $overlappingReservations = $resource->active_reservations
                 ->filter(function ($reservation) use ($rangeStart, $rangeEnd) {
                     $pivotStart = $reservation->pivot->start_time;
@@ -54,37 +52,14 @@ class ResourceAvailabilityApiController extends ApiController
 
                     return $pivotStart->lt($rangeEnd) && $pivotEnd->gt($rangeStart);
                 })
-                ->map(fn ($reservation) => [
-                    'id' => (string) $reservation->id,
-                    'name' => $reservation->name,
-                    'quantity' => (int) $reservation->pivot->quantity,
-                    'state' => $reservation->pivot->state,
-                    'start_time' => $reservation->pivot->start_time?->timestamp,
-                    'end_time' => $reservation->pivot->end_time?->timestamp,
-                ])
-                ->values()
-                ->all();
-
-            $discrepancies = $resource->findTimeEndedActiveReservations($start, $end)
-                ->map(fn ($reservation) => [
-                    'id' => (string) $reservation->id,
-                    'name' => $reservation->name,
-                    'quantity' => (int) $reservation->pivot->quantity,
-                    'state' => $reservation->pivot->state,
-                    'start_time' => $reservation->pivot->start_time?->timestamp,
-                    'end_time' => $reservation->pivot->end_time?->timestamp,
-                ])
+                ->map(fn ($reservation) => SerializeResourceAvailability::reservationRow($reservation))
                 ->values()
                 ->all();
 
             return [
                 'id' => (string) $resource->id,
-                'capacity' => $resource->capacity,
-                'is_reservable' => $resource->is_reservable,
-                'lowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($flexibleCapacityTimeline),
-                'strictLowestCapacityAtDateTimeRange' => $resource->lowestCapacityAtDateTimeRange($strictCapacityTimeline),
+                ...SerializeResourceAvailability::execute($resource, $start, $end),
                 'reservations' => $overlappingReservations,
-                'discrepancies' => $discrepancies,
             ];
         })->keyBy('id');
 

@@ -12,6 +12,8 @@ function makeForm(overrides: Record<string, unknown> = {}) {
     brought_by_students: false,
     student_position: { lt: '', en: '' },
     description: { lt: '', en: '' },
+    start_time: null,
+    end_time: null,
     votes: [
       { id: '1', is_main: true, is_consensus: false, title: { lt: '', en: '' }, note: { lt: '', en: '' }, student_vote: 'positive', decision: 'positive', student_benefit: 'positive', order: 0 },
     ],
@@ -19,96 +21,89 @@ function makeForm(overrides: Record<string, unknown> = {}) {
   });
 }
 
-function factory(props: Record<string, unknown> = {}) {
-  const form = makeForm((props.formOverrides as Record<string, unknown>) ?? {});
+function factory(props: Record<string, unknown> = {}, formOverrides: Record<string, unknown> = {}) {
+  const form = makeForm(formOverrides);
   const wrapper = mount(AgendaItemBody, {
-    props: { form, editing: false, ...props },
+    props: { form, editable: true, ...props },
     global: {
       stubs: {
         ...commonStubs,
         AdminVotingHelpButton: { template: '<div class="help-stub" />' },
+        TimePicker: { props: ['modelValue'], template: '<div class="time-picker" />' },
       },
     },
   });
   return { wrapper, form };
 }
 
-const typeButton = (wrapper: ReturnType<typeof mount>, label: string) =>
-  wrapper.findAll('button').find(b => b.text() === label);
+const typeButton = (wrapper: ReturnType<typeof mount>, value: string) =>
+  wrapper.find(`[data-testid="agenda-item-type-${value}"]`);
 
 describe('AgendaItemBody', () => {
-  /**
-   * Swapping the controls for a read-only rendering shifted the whole page as the
-   * edit toggle flipped, so both modes render the same markup.
-   */
-  describe('stable layout across modes', () => {
-    it('renders the same settings card in both modes', () => {
-      for (const editing of [true, false]) {
-        const { wrapper } = factory({ editing });
-        expect(wrapper.text()).toContain('Klausimo tipas');
-        expect(wrapper.text()).toContain('Laikas');
-        expect(wrapper.text()).toContain('Atstovų iškeltas klausimas');
-      }
-    });
+  it('offers the four item types, a break included, as big taps', () => {
+    const { wrapper } = factory();
 
-    it('locks the type control instead of hiding it', () => {
-      expect(typeButton(factory({ editing: true }).wrapper, 'Informacinis')!.attributes('disabled')).toBeUndefined();
-      expect(typeButton(factory({ editing: false }).wrapper, 'Informacinis')!.attributes('disabled')).toBeDefined();
-    });
-
-    it('keeps the description editable only while editing', () => {
-      expect(factory({ editing: true }).wrapper.find('textarea').attributes('readonly')).toBeUndefined();
-      expect(factory({ editing: false }).wrapper.find('textarea').attributes('readonly')).toBeDefined();
+    ['voting', 'informational', 'deferred', 'break'].forEach((value) => {
+      expect(typeButton(wrapper, value).exists()).toBe(true);
     });
   });
 
-  describe('type', () => {
-    it('sets the item type from the segmented control', async () => {
-      const { wrapper, form } = factory({ editing: true, formOverrides: { type: null, votes: [] } });
+  it('records the type on the form', async () => {
+    const { wrapper, form } = factory();
 
-      await typeButton(wrapper, 'Informacinis')!.trigger('click');
+    await typeButton(wrapper, 'break').trigger('click');
 
-      expect(form.type).toBe('informational');
-    });
-
-    it('does not render the voting section for informational items', () => {
-      const { wrapper } = factory({ editing: false, formOverrides: { type: 'informational', votes: [] } });
-      expect(wrapper.text()).not.toContain('Balsavimo klausimai');
-    });
-
-    it('does not render its own save button (lives in the page action bar)', () => {
-      const { wrapper } = factory({ editing: true });
-      expect(wrapper.find('button[type="submit"]').exists()).toBe(false);
-    });
+    expect(form.type).toBe('break');
   });
 
-  describe('governance scope', () => {
-    it('hides the student position tab for a VU SA body', () => {
-      expect(factory({ editing: true, requiresStudentPerspective: true }).wrapper.text())
-        .toContain('Išsakyta studentų pozicija');
-      expect(factory({ editing: true, requiresStudentPerspective: false }).wrapper.text())
-        .not.toContain('Išsakyta studentų pozicija');
-    });
+  /** Choosing "Balsavimas" should make the outcome the next tap, not an "add a vote" step. */
+  it('opens the first vote as soon as the item becomes a vote', async () => {
+    const { wrapper, form } = factory({}, { type: null, votes: [] });
+
+    await typeButton(wrapper, 'voting').trigger('click');
+
+    expect(form.votes).toHaveLength(1);
+    expect(form.votes[0].is_main).toBe(true);
   });
 
-  describe('agenda item types', () => {
-    it('offers a break alongside the other types', () => {
-      const { wrapper } = factory({ editing: true });
+  it('shows the outcome only for a voting item', () => {
+    expect(factory().wrapper.find('#agenda-item-votes').exists()).toBe(true);
+    expect(factory({}, { type: 'informational' }).wrapper.find('#agenda-item-votes').exists()).toBe(false);
+  });
 
-      // A pause is part of the agenda; without the option editors mistyped it as something else.
-      expect(wrapper.text()).toContain('Pertrauka');
-      expect(wrapper.text()).toContain('Balsavimas');
-      expect(wrapper.text()).toContain('Informacinis');
-      expect(wrapper.text()).toContain('Atidėtas');
-    });
+  it('lets the type picker itself ask for a type, without a hint paragraph', () => {
+    const pending = factory({}, { type: null, votes: [] }).wrapper;
+    expect(pending.find('[data-testid="agenda-item-type-pending"]').exists()).toBe(true);
+    expect(pending.find('[data-slot="form-segmented-control"]').classes()).toContain('border-status-attention-border');
 
-    it('records the break type on the form', async () => {
-      const { wrapper, form } = factory({ editing: true });
+    const chosen = factory({}, { type: 'informational' }).wrapper;
+    expect(chosen.find('[data-testid="agenda-item-type-pending"]').exists()).toBe(false);
+    expect(chosen.find('[data-slot="form-segmented-control"]').classes()).not.toContain('border-status-attention-border');
+  });
 
-      const breakButton = wrapper.findAll('button').find(b => b.text().includes('Pertrauka'));
-      await breakButton?.trigger('click');
+  it('lets a chosen type be collapsed, but not an unset one', async () => {
+    const { wrapper } = factory();
 
-      expect(form.type).toBe('break');
-    });
+    await wrapper.find('[data-testid="agenda-item-type-collapse"]').trigger('click');
+    expect(wrapper.emitted('update:typeOpen')).toEqual([[false]]);
+
+    const pending = factory({}, { type: null, votes: [] }).wrapper;
+    expect(pending.find('[data-testid="agenda-item-type-collapse"]').exists()).toBe(false);
+  });
+
+  it('hides the picker while collapsed', () => {
+    expect(factory({ typeOpen: false }).wrapper.find('#agenda-item-type').exists()).toBe(false);
+  });
+
+  it('reads the type as text for someone who cannot edit', () => {
+    const { wrapper } = factory({ editable: false }, { type: 'informational' });
+
+    expect(typeButton(wrapper, 'voting').exists()).toBe(false);
+    expect(wrapper.text()).toContain('Informacinis');
+  });
+
+  /** Time is a fact of the record, edited in the sheet — not a live control among the taps. */
+  it('has no time controls', () => {
+    expect(factory().wrapper.find('.time-picker').exists()).toBe(false);
   });
 });

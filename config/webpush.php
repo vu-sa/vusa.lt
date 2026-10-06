@@ -2,6 +2,8 @@
 
 use NotificationChannels\WebPush\PushSubscription;
 
+$pushDisabled = env('APP_ENV') === 'staging' && ! env('STAGING_PUSH_ENABLED', false);
+
 return [
 
     /**
@@ -9,10 +11,10 @@ return [
      * These keys must be safely stored and should not change.
      */
     'vapid' => [
-        'subject' => env('APP_ENV') === 'staging' ? null : env('VAPID_SUBJECT'),
-        'public_key' => env('APP_ENV') === 'staging' ? null : env('VAPID_PUBLIC_KEY'),
-        'private_key' => env('APP_ENV') === 'staging' ? null : env('VAPID_PRIVATE_KEY'),
-        'pem_file' => env('APP_ENV') === 'staging' ? null : env('VAPID_PEM_FILE'),
+        'subject' => $pushDisabled ? null : env('VAPID_SUBJECT'),
+        'public_key' => $pushDisabled ? null : env('VAPID_PUBLIC_KEY'),
+        'private_key' => $pushDisabled ? null : env('VAPID_PRIVATE_KEY'),
+        'pem_file' => $pushDisabled ? null : env('VAPID_PEM_FILE'),
     ],
 
     /**

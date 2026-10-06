@@ -17,6 +17,8 @@ use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\MeetingCompletionService;
 use App\Services\MeetingRepresentativeResolver;
+use App\Services\Typesense\MeetingSearchEngine;
+use App\Services\Typesense\SearchText;
 use App\Services\VoteStatisticsCalculator;
 use App\Support\MeetingTitle;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
@@ -29,7 +31,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
-use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -208,7 +209,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
      */
     public function searchableUsing()
     {
-        return app(EngineManager::class)->engine('typesense');
+        return MeetingSearchEngine::resolve();
     }
 
     /**
@@ -239,9 +240,13 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             ->values()
             ->toArray();
 
-        $voteStats = $this->voteStatistics();
+        $voteStats = app(VoteStatisticsCalculator::class)->calculate(
+            $this->agendaItems->reject(fn ($item) => $item->is_private)->flatMap(fn ($item) => $item->votes),
+            $this->requiresStudentPerspective(),
+        );
 
         return [
+            ...SearchText::forModel($this),
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->getTranslation('description', 'lt'),
@@ -277,11 +282,18 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             'incomplete_vote_data' => $voteStats['incomplete_vote_data'],
             'vote_alignment_status' => $this->calculateVoteAlignmentStatus($voteStats),
 
-            'completion_status' => $this->completion_status,
+            'completion_status' => $this->agendaItems->contains(fn ($item) => $item->is_private) ? null : $this->completion_status,
 
             'governance_scope' => $this->institutions->first()?->governance_scope->value,
 
-            'is_public' => $this->is_public,
+            // A fact, not the settings-dependent `is_public`: the scoped key compares these with the
+            // public types at key time, so a settings change needs no reindex.
+            'institution_type_ids' => $this->institutions
+                ->flatMap(fn (Institution $institution) => $institution->types->pluck('id'))
+                ->map(fn ($id) => (int) $id)
+                ->unique()
+                ->values()
+                ->all(),
             'is_recent' => $this->start_time->isAfter(now()->subMonths(6)),
 
             'user_names' => $this->users->pluck('name')->filter()->unique()->values()->all(),
@@ -325,6 +337,22 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     public function users(): HasManyDeep
     {
         return $this->hasManyDeepFromRelations($this->institutions(), (new Institution)->users());
+    }
+
+    /**
+     * Whether the user held a duty in one of the meeting's institutions on the meeting's date —
+     * a participant. Not `users()`: that spans every term, so a former member would reach every
+     * later meeting too.
+     */
+    public function hadMemberAtTheTime(User $user): bool
+    {
+        $date = $this->start_time->toDateString();
+
+        return $user->duties()
+            ->whereIn('duties.institution_id', $this->institutions()->select('institutions.id'))
+            ->whereDate('dutiables.start_date', '<=', $date)
+            ->where(fn ($query) => $query->whereNull('dutiables.end_date')->orWhereDate('dutiables.end_date', '>=', $date))
+            ->exists();
     }
 
     /**

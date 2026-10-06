@@ -1,60 +1,53 @@
 <template>
-  <div v-if="matches.length" class="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs dark:border-amber-800 dark:bg-amber-950">
-    <p class="mb-2 flex items-center gap-1.5 font-medium text-amber-900 dark:text-amber-200">
-      <TriangleAlert class="size-3.5 shrink-0" />
+  <Alert v-if="matches.length" class="border-status-attention-border bg-status-attention-surface text-status-attention">
+    <TriangleAlert class="size-4 shrink-0" aria-hidden="true" />
+    <AlertTitle>
       {{ $t('users.duplicate_warning_title') }}
-    </p>
+    </AlertTitle>
 
-    <ul class="space-y-1.5">
-      <li v-for="match in matches" :key="match.id" class="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span class="font-medium text-amber-900 dark:text-amber-100">{{ match.name }}</span>
+    <AlertDescription class="text-foreground">
+      <ul class="space-y-2">
+        <li v-for="match in matches" :key="match.id" class="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span class="font-medium">{{ match.name }}</span>
 
-        <span v-if="match.tenants.length" class="text-amber-700 dark:text-amber-300">
-          {{ match.tenants.join(', ') }}
-        </span>
-        <span v-else class="text-amber-700 dark:text-amber-300">
-          {{ $t('users.no_tenant') }}
-        </span>
-
-        <code class="rounded bg-amber-100 px-1 py-0.5 text-[10px] text-amber-900 dark:bg-amber-900 dark:text-amber-100">
-          {{ match.email_masked }}
-        </code>
-
-        <Badge v-if="match.reason === 'email'" variant="destructive" class="text-[10px]">
-          {{ $t('users.duplicate_reason_email') }}
-        </Badge>
-
-        <span class="ml-auto flex items-center gap-1">
-          <Button v-if="showUseAction" size="xs" variant="secondary" @click="$emit('use', match)">
-            {{ $t('users.duplicate_use_profile') }}
-          </Button>
-          <Button v-else-if="match.can_manage" size="xs" variant="outline" as="a"
-            :href="route('users.edit', match.id)" target="_blank" rel="noopener noreferrer">
-            {{ $t('users.duplicate_open_profile') }}
-          </Button>
-          <!-- Without can_manage there is nothing this admin can do to the record
-               directly, so point them at the people who can rather than at a 403. -->
-          <span v-else class="text-amber-700 dark:text-amber-300">
-            {{ $t('users.duplicate_contact_admins') }}
+          <span class="text-muted-foreground">
+            {{ match.tenants.length ? match.tenants.join(', ') : $t('users.no_tenant') }}
           </span>
-        </span>
-      </li>
-    </ul>
-  </div>
+
+          <code class="bg-secondary px-1 py-0.5 text-xs text-foreground">{{ match.email_masked }}</code>
+
+          <Badge v-if="match.reason === 'email'" variant="destructive" class="text-xs">
+            {{ $t('users.duplicate_reason_email') }}
+          </Badge>
+
+          <span class="ml-auto flex flex-wrap items-center gap-1">
+            <Button v-if="showUseAction" size="sm" voice="sentence" variant="secondary" @click="$emit('use', match)">
+              {{ $t('users.duplicate_use_profile') }}
+            </Button>
+            <Button
+              v-else-if="match.can_manage"
+              size="sm" voice="sentence" variant="outline" as="a"
+              :href="route('users.edit', match.id)" target="_blank" rel="noopener noreferrer"
+            >
+              {{ $t('users.duplicate_open_profile') }}
+            </Button>
+            <span v-else class="text-muted-foreground">{{ $t('users.duplicate_contact_admins') }}</span>
+          </span>
+        </li>
+      </ul>
+    </AlertDescription>
+  </Alert>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { TriangleAlert } from 'lucide-vue-next';
 
+import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 
-/**
- * Warns that the person being created may already have an account, usually in a unit
- * this admin cannot see. Advisory only — names genuinely repeat, and a wrong guess
- * must never block a legitimate create.
- */
+/** Advisory only: names repeat, so a possible match must never block creation. */
 export interface DuplicateUserMatch {
   id: string;
   name: string;

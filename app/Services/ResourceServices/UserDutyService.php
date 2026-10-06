@@ -76,7 +76,7 @@ class UserDutyService
                     ->where('duty_id', $dutyId)
                     ->where('dutiable_type', MorphMap::alias(User::class))
                     ->where('dutiable_id', $user->id)
-                    ->where(fn ($q) => $q->whereNull('end_date')->orWhere('end_date', '>=', now()))
+                    ->where(fn ($q) => $q->whereNull('end_date')->orWhereDate('end_date', '>=', today()))
                     ->exists();
 
                 if (! $alreadyActive) {
@@ -93,7 +93,7 @@ class UserDutyService
                     ->where('dutiable_id', $user->id)
                     ->where(function ($query): void {
                         $query->whereNull('end_date')
-                            ->orWhere('end_date', '>=', now());
+                            ->orWhereDate('end_date', '>=', today());
                     })
                     ->get()
                     ->each(fn (Dutiable $dutiable) => $dutiable->update(['end_date' => now()->subDay()]));

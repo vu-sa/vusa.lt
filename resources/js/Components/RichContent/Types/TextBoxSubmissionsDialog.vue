@@ -1,39 +1,45 @@
 <template>
   <Dialog v-model:open="open">
     <DialogTrigger as-child>
-      <button
-        class="flex items-center gap-2 rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm font-semibold text-green-700 shadow-sm transition-colors hover:border-green-400 hover:bg-green-100 dark:border-green-700 dark:bg-green-950/40 dark:text-green-300 dark:hover:border-green-600 dark:hover:bg-green-950/60"
+      <Button
+        variant="outline"
+        size="sm"
+        class="w-full justify-between"
         @click="onOpen"
       >
         <span class="flex items-center gap-2">
-          <IFluentCommentIcon class="h-4 w-4 text-green-500 dark:text-green-400" />
+          <MessageSquare class="size-4" />
           {{ $t('rich-content.text_box_view_answers') }}
           <span
             v-if="totalCount !== null"
-            class="rounded-full bg-green-200 px-2 py-0.5 text-xs font-semibold tabular-nums text-green-700 dark:bg-green-900 dark:text-green-200"
+            class="border border-border bg-secondary px-2 py-0.5 text-xs tabular-nums text-muted-foreground"
           >
             {{ totalCount }}
           </span>
         </span>
-        <IFluentChevronRightIcon class="h-4 w-4 text-green-400 dark:text-green-500" />
-      </button>
+        <ChevronRight class="size-4 text-muted-foreground" />
+      </Button>
     </DialogTrigger>
 
-    <DialogScrollContent class="flex max-h-[85vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
+    <DialogContent
+      class="top-auto bottom-0 left-0 flex h-[92dvh] w-full max-w-none translate-x-0 translate-y-0 flex-col gap-0 overflow-hidden p-0 md:top-1/2 md:bottom-auto md:left-1/2 md:h-[min(85vh,46rem)] md:w-[min(96vw,42rem)] md:-translate-x-1/2 md:-translate-y-1/2 sm:max-w-none"
+      :style="isMobile ? { top: 'auto', bottom: '0', left: '0', translate: 'none' } : undefined"
+      :show-close-button="false"
+    >
       <!-- Modal header -->
-      <div class="border-b border-zinc-100 px-6 py-5 pr-14 dark:border-zinc-800">
-        <div class="flex items-start justify-between gap-4">
+      <div class="border-b border-border px-4 py-4 md:px-6">
+        <div class="flex flex-wrap items-start justify-between gap-4">
           <div class="flex items-center gap-3">
-            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-950/60">
-              <IFluentCommentIcon class="h-5 w-5 text-green-600 dark:text-green-400" />
+            <div class="flex size-10 shrink-0 items-center justify-center border border-border bg-secondary">
+              <MessageSquare class="size-5 text-muted-foreground" />
             </div>
             <div>
-              <DialogTitle class="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+              <DialogTitle class="text-base font-semibold text-foreground">
                 {{ $t('rich-content.text_box_answers_title') }}
               </DialogTitle>
-              <DialogDescription class="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+              <DialogDescription class="mt-0.5 text-xs text-muted-foreground">
                 {{ $t('rich-content.text_box_answers_description') }}
-                <span v-if="totalCount !== null" class="ml-1 font-semibold text-zinc-700 dark:text-zinc-200">
+                <span v-if="totalCount !== null" class="ml-1 font-semibold text-foreground">
                   {{ totalCount }} {{ totalCount === 1 ? $t('rich-content.text_box_answer_singular') : $t('rich-content.text_box_answer_plural') }}
                 </span>
               </DialogDescription>
@@ -41,25 +47,31 @@
           </div>
 
           <!-- Actions toolbar -->
-          <div class="flex shrink-0 items-center gap-2">
+          <Button variant="ghost" size="icon" class="ml-auto" :aria-label="$t('rich-content.close_answers')" @click="open = false">
+            <X class="size-4" />
+          </Button>
+          <div class="flex w-full flex-wrap items-center gap-2">
             <a
               :href="exportUrl"
               target="_blank"
-              class="flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-600 shadow-sm transition-colors hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+              rel="noopener"
+              :class="buttonVariants({ variant: 'outline', size: 'sm' })"
             >
-              <IFluentArrowDownloadIcon class="h-3.5 w-3.5" />
+              <Download class="size-4" />
               {{ $t('rich-content.text_box_export_excel') }}
             </a>
 
             <AlertDialog v-if="totalCount" v-model:open="deleteAllOpen">
               <AlertDialogTrigger as-child>
-                <button
-                  class="flex items-center gap-1.5 rounded-md border border-red-200 bg-white px-2.5 py-1.5 text-xs font-medium text-red-500 shadow-sm transition-colors hover:border-red-300 hover:bg-red-50 dark:border-red-900 dark:bg-zinc-800 dark:text-red-400 dark:hover:bg-red-950/20"
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="text-destructive hover:text-destructive"
                   :disabled="isDeletingAll"
                 >
-                  <IFluentDeleteIcon class="h-3.5 w-3.5" />
+                  <Trash2 class="size-4" />
                   {{ $t('rich-content.text_box_delete_all') }}
-                </button>
+                </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -69,7 +81,7 @@
                 <AlertDialogFooter>
                   <AlertDialogCancel>{{ $t('rich-content.cancel') }}</AlertDialogCancel>
                   <AlertDialogAction
-                    class="bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+                    class="bg-destructive text-white hover:bg-destructive/90"
                     @click="handleDeleteAll"
                   >
                     {{ $t('rich-content.text_box_delete_all') }}
@@ -82,70 +94,69 @@
       </div>
 
       <!-- Body -->
-      <div class="min-h-0 flex-1 overflow-y-auto px-6 py-4">
+      <div class="min-h-0 flex-1 overflow-y-auto px-4 py-4 md:px-6">
         <!-- Loading skeleton -->
         <div v-if="isFetching" class="space-y-3">
           <div v-for="i in 4" :key="i" class="flex gap-3">
-            <Skeleton class="h-8 w-8 shrink-0 rounded-full" />
+            <Skeleton class="size-8 shrink-0" />
             <div class="flex-1 space-y-2 pt-0.5">
               <div class="flex items-center gap-2">
                 <Skeleton class="h-3 w-24" />
                 <Skeleton class="h-3 w-16" />
               </div>
-              <Skeleton class="h-14 w-full rounded-lg" />
+              <Skeleton class="h-14 w-full" />
             </div>
           </div>
         </div>
 
         <!-- Empty state -->
         <div v-else-if="!submissions?.length" class="flex flex-col items-center justify-center py-14 text-center">
-          <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-            <IFluentCommentOffIcon class="h-8 w-8 text-zinc-400 dark:text-zinc-500" />
+          <div class="mb-4 flex size-16 items-center justify-center border border-border bg-secondary">
+            <MessageSquareOff class="size-8 text-muted-foreground" />
           </div>
-          <p class="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+          <p class="text-sm font-medium text-foreground">
             {{ $t('rich-content.text_box_no_answers') }}
           </p>
-          <p class="mt-1 text-xs text-zinc-400 dark:text-zinc-600">
+          <p class="mt-1 text-xs text-muted-foreground">
             {{ $t('rich-content.text_box_no_answers_hint') }}
           </p>
         </div>
 
         <!-- Submissions list -->
-        <div v-else class="space-y-3">
+        <div v-else class="divide-y divide-border border-y border-border">
           <div
-            v-for="(submission, i) in submissions"
+            v-for="submission in submissions"
             :key="submission.id"
-            class="group relative"
+            class="group relative py-4"
           >
             <div class="flex gap-3">
               <!-- Avatar -->
-              <div
-                class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold uppercase"
-                :class="avatarClass(i)"
-              >
+              <div class="flex size-8 shrink-0 items-center justify-center border border-border bg-secondary text-xs font-bold uppercase text-muted-foreground">
                 {{ submission.submitted_by.charAt(0) }}
               </div>
 
               <!-- Card -->
-              <div class="flex-1 rounded-xl border border-zinc-200 bg-white p-3.5 shadow-xs dark:border-zinc-700 dark:bg-zinc-800/60">
+              <div class="min-w-0 flex-1">
                 <!-- Meta row -->
                 <div class="mb-2 flex items-center justify-between gap-2">
                   <div class="flex items-center gap-2">
-                    <span class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">{{ submission.submitted_by }}</span>
-                    <span class="text-zinc-300 dark:text-zinc-600">·</span>
-                    <span class="text-xs text-zinc-400 dark:text-zinc-500">{{ formatDate(submission.created_at) }}</span>
+                    <span class="text-xs font-semibold text-foreground">{{ submission.submitted_by }}</span>
+                    <span class="text-muted-foreground">·</span>
+                    <span class="text-xs text-muted-foreground">{{ formatDate(submission.created_at) }}</span>
                   </div>
-                  <button
-                    class="rounded-md p-1 text-zinc-300 opacity-0 transition-all hover:bg-red-50 hover:text-red-500 group-hover:opacity-100 dark:text-zinc-600 dark:hover:bg-red-950/30 dark:hover:text-red-400"
-                    :title="$t('rich-content.text_box_delete')"
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="text-destructive hover:text-destructive"
+                    :aria-label="$t('rich-content.text_box_delete')"
                     @click="confirmDeleteOne(submission.id)"
                   >
-                    <IFluentDeleteIcon class="h-3.5 w-3.5" />
-                  </button>
+                    <Trash2 class="size-4" />
+                  </Button>
                 </div>
 
                 <!-- Text -->
-                <p class="whitespace-pre-wrap text-sm leading-relaxed text-zinc-800 dark:text-zinc-200">
+                <p class="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
                   {{ submission.text }}
                 </p>
               </div>
@@ -154,7 +165,7 @@
         </div>
 
         <!-- Pagination -->
-        <div v-if="lastPage > 1" class="mt-5 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+        <div v-if="lastPage > 1" class="mt-5 border-t border-border pt-4">
           <Pagination
             :total="totalCount ?? 0"
             :items-per-page="perPage"
@@ -164,28 +175,30 @@
             @update:page="goToPage"
           >
             <PaginationContent v-slot="{ items }" class="flex items-center justify-center gap-1">
-              <PaginationFirst />
-              <PaginationPrevious />
+              <PaginationFirst :aria-label="$t('rich-content.first_page')" />
+              <PaginationPrevious :aria-label="$t('rich-content.previous_page')" />
               <template v-for="item in items" :key="item.type === 'page' ? item.value : item.type">
                 <PaginationItem v-if="item.type === 'page'" :value="item.value" as-child>
                   <button
-                    class="inline-flex h-8 w-8 items-center justify-center rounded-md text-xs font-medium transition-colors"
+                    class="inline-flex size-9 items-center justify-center text-xs font-medium transition-colors pointer-coarse:size-11"
                     :class="item.value === currentPage
-                      ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
-                      : 'hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400'"
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-accent'"
+                    :aria-label="`${$t('rich-content.page')} ${item.value}`"
+                    :aria-current="item.value === currentPage ? 'page' : undefined"
                   >
                     {{ item.value }}
                   </button>
                 </PaginationItem>
                 <PaginationEllipsis v-else :key="item.type" :index="item.index" />
               </template>
-              <PaginationNext />
-              <PaginationLast />
+              <PaginationNext :aria-label="$t('rich-content.next_page')" />
+              <PaginationLast :aria-label="$t('rich-content.last_page')" />
             </PaginationContent>
           </Pagination>
         </div>
       </div>
-    </DialogScrollContent>
+    </DialogContent>
   </Dialog>
 
   <!-- Single delete confirmation -->
@@ -198,7 +211,7 @@
       <AlertDialogFooter>
         <AlertDialogCancel>{{ $t('rich-content.cancel') }}</AlertDialogCancel>
         <AlertDialogAction
-          class="bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+          class="bg-destructive text-white hover:bg-destructive/90"
           :disabled="isDeletingOne"
           @click="handleDeleteOne"
         >
@@ -211,15 +224,17 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import { ChevronRight, Download, MessageSquare, MessageSquareOff, Trash2, X } from 'lucide-vue-next';
 
 import { useApi, useApiMutation } from '@/Composables/useApi';
 import { useToasts } from '@/Composables/useToasts';
 import type { ApiResponse } from '@/Types/api.d';
 import { Skeleton } from '@/Components/ui/skeleton';
+import { Button, buttonVariants } from '@/Components/ui/button';
+import { useIsMobile } from '@/Composables/useIsMobile';
 import {
   Dialog,
-  DialogScrollContent,
-  DialogHeader,
+  DialogContent,
   DialogTitle,
   DialogDescription,
   DialogTrigger,
@@ -245,11 +260,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/Components/ui/pagination';
-import IFluentCommentIcon from '~icons/fluent/comment-24-regular';
-import IFluentCommentOffIcon from '~icons/fluent/comment-off-24-regular';
-import IFluentArrowDownloadIcon from '~icons/fluent/arrow-download24-regular';
-import IFluentDeleteIcon from '~icons/fluent/delete-24-regular';
-import IFluentChevronRightIcon from '~icons/fluent/chevron-right-24-regular';
 
 interface Submission {
   id: string;
@@ -258,15 +268,6 @@ interface Submission {
   created_at: string;
 }
 
-const AVATAR_COLORS = [
-  'bg-blue-100 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400',
-  'bg-violet-100 text-violet-600 dark:bg-violet-950/60 dark:text-violet-400',
-  'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400',
-  'bg-amber-100 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400',
-  'bg-rose-100 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400',
-  'bg-cyan-100 text-cyan-600 dark:bg-cyan-950/60 dark:text-cyan-400',
-];
-
 const PER_PAGE = 20;
 
 const props = defineProps<{
@@ -274,6 +275,7 @@ const props = defineProps<{
 }>();
 
 const toasts = useToasts();
+const isMobile = useIsMobile();
 
 const open = ref(false);
 const currentPage = ref(1);
@@ -330,10 +332,6 @@ const totalCount = computed(() => pagination.value?.total ?? null);
 const lastPage = computed(() => pagination.value?.last_page ?? 1);
 const perPage = computed(() => pagination.value?.per_page ?? PER_PAGE);
 
-function avatarClass(index: number): string {
-  return AVATAR_COLORS[index % AVATAR_COLORS.length];
-}
-
 function onOpen(): void {
   currentPage.value = 1;
   execute();
@@ -364,7 +362,9 @@ function confirmDeleteOne(id: string): void {
 
 async function handleDeleteOne(): Promise<void> {
   const id = pendingDeleteId.value;
-  if (!id) { return; }
+  if (!id) {
+    return;
+  }
 
   await executeDeleteOne();
 

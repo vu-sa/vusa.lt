@@ -6,12 +6,8 @@
     :subtitle="institutionName"
   >
     <template #badges>
-      <Badge v-if="meeting.completion_status" :class="toneClass(completionTone(meeting.completion_status))">
-        {{ getFacetValueLabel('completion_status', meeting.completion_status) }}
-      </Badge>
-      <Badge v-if="meeting.vote_alignment_status" variant="outline">
-        {{ getFacetValueLabel('vote_alignment_status', meeting.vote_alignment_status) }}
-      </Badge>
+      <StatusBadge v-if="completionStatus" :status="completionStatus" />
+      <StatusBadge v-if="alignmentStatus" :status="alignmentStatus" />
     </template>
 
     <template #actions>
@@ -30,7 +26,7 @@
     </template>
 
     <!-- Facts -->
-    <div class="divide-y rounded-lg border px-4">
+    <div class="divide-y divide-border border border-border px-4">
       <DetailRow :label="$t('Institucija')">
         <Link
           v-if="meeting.institution_ids?.length"
@@ -63,20 +59,18 @@
       </h3>
 
       <div v-if="isFetching && !data" class="space-y-2">
-        <div v-for="i in 3" :key="i" class="h-9 animate-pulse rounded-md bg-muted/50" />
+        <div v-for="i in 3" :key="i" class="h-9 animate-pulse bg-muted/50" />
       </div>
 
       <ol v-else-if="data?.agenda_items?.length" class="space-y-1.5">
         <li v-for="(item, index) in data.agenda_items" :key="item.id">
           <Link
             :href="route('agendaItems.show', item.id)"
-            :class="['group flex items-start gap-3 rounded-md border bg-card px-3 py-2', interactiveCardClass]"
+            class="group flex items-start gap-3 border border-border bg-card px-3 py-2 transition-colors hover:bg-secondary"
           >
             <span class="mt-0.5 text-xs tabular-nums text-muted-foreground">{{ index + 1 }}</span>
             <span class="min-w-0 flex-1 whitespace-normal break-words text-sm group-hover:text-foreground">{{ item.title }}</span>
-            <Badge v-if="item.decision" :class="toneClass(voteTone(item.decision))" class="mt-0.5 shrink-0">
-              {{ getFacetValueLabel('decision', item.decision) }}
-            </Badge>
+            <StatusBadge v-if="decisionStatus(item.decision)" :status="decisionStatus(item.decision)!" class="mt-0.5 shrink-0" />
           </Link>
         </li>
       </ol>
@@ -92,22 +86,27 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Eye, Pencil } from 'lucide-vue-next';
+import { Eye, Pencil, Vote } from 'lucide-vue-next';
 
-import { completionTone, toneClass, voteTone } from '../../Utils/searchBadges';
 import { formatSearchDate } from '../../Utils/searchHitMappers';
 import { getFacetValueLabel } from '../../Config/collectionFacetConfig';
 
 import DetailRow from './DetailRow.vue';
 import DetailLayout from './DetailLayout.vue';
 
-import { interactiveCardClass } from '@/Utils/interactiveCard';
 import { MeetingIcon } from '@/Components/icons';
-import { Badge } from '@/Components/ui/badge';
+import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { useApi } from '@/Composables/useApi';
+import {
+  meetingCompletionStatuses,
+  voteStatuses,
+  type MeetingCompletionStatus,
+  type StatusPresentation,
+} from '@/Constants/statuses';
 import type { MeetingSearchResult } from '@/Shared/Search/types';
+import type { VoteValue } from '@/Types/enums';
 
 interface MeetingPreviewData {
   institutions: Array<{ id: string; name: string }>;
@@ -126,6 +125,26 @@ const { data, isFetching } = useApi<MeetingPreviewData>(
 );
 
 const institutionName = computed(() => props.meeting.institution_name_lt || props.meeting.institution_name_en);
+
+// One name per state everywhere (U10): the same maps the collection row and the record page draw from.
+const completionStatus = computed<StatusPresentation | null>(() => {
+  const value = props.meeting.completion_status;
+
+  return value && value in meetingCompletionStatuses ? meetingCompletionStatuses[value as MeetingCompletionStatus] : null;
+});
+
+// No U10 map exists for vote alignment yet, so it is named neutrally rather than given an invented colour.
+const alignmentStatus = computed<StatusPresentation | null>(() => {
+  const value = props.meeting.vote_alignment_status;
+
+  return value
+    ? { label: getFacetValueLabel('vote_alignment_status', value), role: 'neutral', icon: Vote }
+    : null;
+});
+
+function decisionStatus(decision: string | null): StatusPresentation | null {
+  return decision && decision in voteStatuses ? voteStatuses[decision as VoteValue] : null;
+}
 
 const agendaCount = computed(() => {
   if (data.value?.agenda_items) {

@@ -5,10 +5,8 @@
  * These colors are defined using OKLCH format for perceptual uniformity
  * and support both light and dark modes.
  *
- * Colors are designed to be:
- * - Accessible with sufficient contrast
- * - Consistent with the application's design system
- * - Perceptually uniform across light/dark modes
+ * Chrome (axis, grid, tooltips, backgrounds) mirrors the admin surface tokens in
+ * `theme/surface-palette.css`; d3 needs literal values, so keep the two in step.
  */
 
 export interface GanttColors {
@@ -116,11 +114,11 @@ export const lightModeColors: GanttColors = {
   safetyBandFlat: 'oklch(0.696 0.17 162.48 / 12%)', // emerald-500/12% - flat low-opacity green
   safetyBandStroke: 'oklch(0.696 0.17 162.48 / 35%)', // emerald-500/35% - border stroke
 
-  // Today line - prominent blue
-  todayLine: 'oklch(0.623 0.214 259.815 / 80%)', // blue-500/80%
+  // Today line: the current-time marker is the brand's one mark (css.md)
+  todayLine: 'oklch(0.42 0.145 25 / 80%)', // --brand/80%
 
   // Hover effects
-  hoverLine: 'oklch(0.21 0.006 285.885 / 25%)', // zinc-900/25%
+  hoverLine: 'oklch(0.17 0.008 70 / 25%)', // --foreground/25%
   hoverCircle: 'oklch(0.623 0.214 259.815 / 90%)', // blue-500/90%
   rowHover: 'oklch(0.623 0.214 259.815 / 8%)', // blue-500/8%
 
@@ -133,36 +131,36 @@ export const lightModeColors: GanttColors = {
   vacationWinterStroke: 'oklch(0.809 0.105 251.813 / 25%)', // blue-300/25%
   vacationEasterStroke: 'oklch(0.811 0.111 293.571 / 25%)', // violet-300/25%
   vacationDefaultStroke: 'oklch(0.707 0.022 261.325 / 25%)', // gray-400/25%
-  vacationSolidBg: 'oklch(1 0 0)', // white - solid background to cover weekends
+  vacationSolidBg: 'oklch(0.965 0.006 85)', // --background, so weekends stay covered
 
   // Row backgrounds - very subtle to not compete with weekend bands
-  zebraEven: 'oklch(0.21 0.006 285.885 / 1%)', // zinc-900/1%
+  zebraEven: 'oklch(0.17 0.008 70 / 1%)', // --foreground/1%
   zebraOdd: 'transparent',
-  tenantRow: 'oklch(0.968 0.007 247.896 / 70%)', // slate-50/70%
+  tenantRow: 'oklch(0.93 0.006 85)', // --muted, as the label column's group row
 
   // Grid and axis
-  gridLine: 'oklch(0.552 0.016 285.938 / 10%)', // zinc-500/10%
-  sundayMark: 'oklch(0.552 0.016 285.938 / 6%)', // zinc-500/6% - subtle Sunday markers
-  yearMarker: 'oklch(0.21 0.006 285.885 / 18%)', // zinc-900/18%
-  axisText: 'oklch(0.552 0.016 285.938)', // zinc-500
+  gridLine: 'oklch(0.46 0.01 75 / 10%)', // --muted-foreground/10%
+  sundayMark: 'oklch(0.46 0.01 75 / 6%)', // --muted-foreground/6%
+  yearMarker: 'oklch(0.17 0.008 70 / 18%)', // --foreground/18%
+  axisText: 'oklch(0.46 0.01 75)', // --muted-foreground
 
   // Tooltips
-  tooltipBg: 'oklch(1 0 0 / 95%)', // white/95%
-  tooltipText: 'oklch(0.372 0.044 257.287)', // slate-700
-  tooltipBorder: 'oklch(0.21 0.006 285.885 / 5%)', // zinc-900/5%
+  tooltipBg: 'oklch(0.995 0.003 85)', // --popover
+  tooltipText: 'oklch(0.17 0.008 70)', // --popover-foreground
+  tooltipBorder: 'oklch(0.855 0.008 80)', // --border
 
   // Center line indicator
-  centerLine: 'oklch(0.637 0.237 25.331 / 60%)', // red-500/60%
-  centerDateBg: 'oklch(1 0 0 / 90%)', // white/90%
-  centerDateText: 'oklch(0.372 0.044 257.287)', // slate-700
-  centerDateBorder: 'oklch(0.21 0.006 285.885 / 15%)', // zinc-900/15%
+  centerLine: 'oklch(0.46 0.01 75 / 60%)', // --muted-foreground/60%, never confused with today
+  centerDateBg: 'oklch(0.995 0.003 85)', // --popover
+  centerDateText: 'oklch(0.17 0.008 70)', // --popover-foreground
+  centerDateBorder: 'oklch(0.855 0.008 80)', // --border
 
   // Month headers
-  monthHeaderBg: 'oklch(0.968 0.007 247.896 / 90%)', // slate-50/90%
-  monthHeaderText: 'oklch(0.446 0.043 257.281)', // slate-600
+  monthHeaderBg: 'oklch(0.93 0.006 85)', // --muted
+  monthHeaderText: 'oklch(0.46 0.01 75)', // --muted-foreground
 
   // Axis background (solid, for sticky header)
-  axisBg: 'oklch(1 0 0)', // white
+  axisBg: 'oklch(0.965 0.006 85)', // --background
 };
 
 /**
@@ -195,8 +193,8 @@ export const darkModeColors: GanttColors = {
   safetyBandFlat: 'oklch(0.65 0.12 163.223 / 6%)', // emerald dimmed/6% - flat low-opacity green
   safetyBandStroke: 'oklch(0.65 0.12 163.223 / 25%)', // emerald dimmed/25% - border stroke
 
-  // Today line - subtle blue
-  todayLine: 'oklch(0.65 0.12 254.624 / 60%)', // blue-400 dimmed/60%
+  // Today line: the brand's current-time marker
+  todayLine: 'oklch(0.82 0.152 72 / 70%)', // --brand (amber)/70%
 
   // Hover effects
   hoverLine: 'oklch(0.985 0 0 / 15%)', // white/15%
@@ -212,36 +210,36 @@ export const darkModeColors: GanttColors = {
   vacationWinterStroke: 'oklch(0.72 0.08 251.813 / 18%)', // blue-300/18%
   vacationEasterStroke: 'oklch(0.72 0.08 293.571 / 18%)', // violet-300/18%
   vacationDefaultStroke: 'oklch(0.65 0.01 286.067 / 18%)', // zinc-400/18%
-  vacationSolidBg: 'oklch(0.21 0.006 285.885)', // zinc-900 - solid background to cover weekends
+  vacationSolidBg: 'oklch(0.135 0.004 70)', // --background, so weekends stay covered
 
   // Row backgrounds - very subtle to not compete with weekend bands
   zebraEven: 'oklch(0.985 0 0 / 1%)', // white/1%
   zebraOdd: 'transparent',
-  tenantRow: 'oklch(0.274 0.006 286.033 / 60%)', // zinc-800/60%
+  tenantRow: 'oklch(0.225 0.006 70)', // --muted
 
   // Grid and axis
-  gridLine: 'oklch(0.65 0.01 286.067 / 6%)', // zinc-400 dimmed/6%
-  sundayMark: 'oklch(0.65 0.01 286.067 / 4%)', // zinc-400/4% - subtle Sunday markers
+  gridLine: 'oklch(0.68 0.008 78 / 8%)', // --muted-foreground/8%
+  sundayMark: 'oklch(0.68 0.008 78 / 4%)', // --muted-foreground/4%
   yearMarker: 'oklch(0.985 0 0 / 10%)', // white/10%
-  axisText: 'oklch(0.705 0.015 286.067)', // zinc-400
+  axisText: 'oklch(0.68 0.008 78)', // --muted-foreground
 
   // Tooltips
-  tooltipBg: 'oklch(0.21 0.006 285.885 / 95%)', // zinc-900/95%
-  tooltipText: 'oklch(0.929 0.013 255.508)', // slate-200
-  tooltipBorder: 'oklch(0.985 0 0 / 10%)', // white/10%
+  tooltipBg: 'oklch(0.165 0.005 70)', // --popover
+  tooltipText: 'oklch(0.955 0.004 85)', // --popover-foreground
+  tooltipBorder: 'oklch(1 0 0 / 12%)', // --border
 
   // Center line indicator
-  centerLine: 'oklch(0.712 0.194 13.428 / 50%)', // rose-400/50%
-  centerDateBg: 'oklch(0.274 0.006 286.033 / 90%)', // zinc-800/90%
-  centerDateText: 'oklch(0.929 0.013 255.508)', // slate-200
-  centerDateBorder: 'oklch(0.985 0 0 / 15%)', // white/15%
+  centerLine: 'oklch(0.68 0.008 78 / 50%)', // --muted-foreground/50%
+  centerDateBg: 'oklch(0.165 0.005 70)', // --popover
+  centerDateText: 'oklch(0.955 0.004 85)', // --popover-foreground
+  centerDateBorder: 'oklch(1 0 0 / 12%)', // --border
 
   // Month headers
-  monthHeaderBg: 'oklch(0.274 0.006 286.033 / 80%)', // zinc-800/80%
-  monthHeaderText: 'oklch(0.705 0.015 286.067)', // zinc-400
+  monthHeaderBg: 'oklch(0.225 0.006 70)', // --muted
+  monthHeaderText: 'oklch(0.68 0.008 78)', // --muted-foreground
 
   // Axis background (solid, for sticky header)
-  axisBg: 'oklch(0.21 0.006 285.885)', // zinc-900
+  axisBg: 'oklch(0.135 0.004 70)', // --background
 };
 
 /**

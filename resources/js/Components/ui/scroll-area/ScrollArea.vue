@@ -2,11 +2,14 @@
   <ScrollAreaRoot
     data-slot="scroll-area"
     v-bind="delegatedProps"
-    :class="cn('relative', props.class)"
+    :class="cn('relative overflow-hidden', props.class)"
   >
     <ScrollAreaViewport
       data-slot="scroll-area-viewport"
-      class="focus-visible:ring-zinc-950/50 size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1 dark:focus-visible:ring-zinc-300/50"
+      :class="[
+        'size-full rounded-[inherit] transition-[color,box-shadow] outline-none',
+        'focus-visible:ring-[3px] focus-visible:outline-1 focus-visible:ring-zinc-950/50 dark:focus-visible:ring-zinc-300/50',
+      ]"
     >
       <slot />
     </ScrollAreaViewport>

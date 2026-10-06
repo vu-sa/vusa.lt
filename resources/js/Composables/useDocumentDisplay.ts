@@ -2,10 +2,12 @@ import { computed } from 'vue';
 import { format, formatDistanceToNow } from 'date-fns';
 import { lt } from 'date-fns/locale';
 
+import type { SearchMatchDocument } from '@/Shared/Search/matches';
 import { trackEvent } from '@/Plugins/umami';
 
 // Document interface
-export interface DocumentDisplayItem {
+export interface DocumentDisplayItem extends SearchMatchDocument {
+  _searchRecommended?: boolean;
   id: string | number;
   title: string;
   summary?: string;

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Typesense\DocumentRecommendations;
 use App\Services\Typesense\TypesenseCollectionConfig;
 use App\Services\Typesense\TypesenseCuration;
 use App\Services\Typesense\TypesenseSynonyms;
@@ -25,7 +26,7 @@ class ApplyTypesenseSearchConfigCommand extends Command
      */
     private const int MAX_ATTEMPTS = 4;
 
-    public function handle(): int
+    public function handle(DocumentRecommendations $recommendations): int
     {
         if (config('app.env') === 'staging' && config('scout.prefix') !== 'staging_') {
             $this->error('Refused: staging Typesense operations require SCOUT_PREFIX=staging_.');
@@ -40,6 +41,9 @@ class ApplyTypesenseSearchConfigCommand extends Command
 
         $this->info('Upserting curation set ('.TypesenseCuration::setName().')...');
         TypesenseCuration::upsertCurationSet($client);
+
+        $this->info('Synchronizing document recommendation phrases...');
+        $recommendations->synchronize();
 
         $this->info('Attaching sets to collections...');
 

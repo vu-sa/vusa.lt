@@ -10,6 +10,7 @@ use App\Models\Pivots\ReservationResource;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasTranslations;
 use App\Services\ResourceCapacityCalculator;
+use App\Services\Typesense\SearchText;
 use App\ValueObjects\TimeRange;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -113,6 +114,7 @@ class Resource extends Model implements GuardsForceDelete, HasMedia
     public function toSearchableArray(): array
     {
         return [
+            ...SearchText::forModel($this),
             'id' => (string) $this->id,
             'name_lt' => $this->getTranslation('name', 'lt') ?? '',
             'name_en' => $this->getTranslation('name', 'en'),
@@ -148,7 +150,7 @@ class Resource extends Model implements GuardsForceDelete, HasMedia
     {
         return $this->belongsToMany(Reservation::class)
             ->using(ReservationResource::class)
-            ->withPivot(['state', 'start_time', 'end_time', 'quantity']);
+            ->withPivot(['id', 'state', 'start_time', 'end_time', 'quantity']);
     }
 
     /**

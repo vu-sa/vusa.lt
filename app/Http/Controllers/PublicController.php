@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Actions\GetAliasSubdomainForPublic;
 use App\Actions\GetPublicEditLink;
 use App\Http\Traits\ResolvesPublicContent;
-use App\Models\Navigation;
 use App\Models\QuickLink;
 use App\Models\Tenant;
+use App\Services\PublicAssetService;
 use App\Support\LocalizedRouteSlugs;
+use App\Support\PublicCacheTags;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
@@ -31,16 +33,11 @@ class PublicController extends Controller
 
     protected string $subdomain;
 
-    public function __construct()
+    public function __construct(private readonly PublicAssetService $publicAssets)
     {
-        /**
-         * Every public page requires an 'alias', which is basically the shortname of a tenant.
-         * Alias may decide in the controller, what kind of information is displayed.
-         *  */
         [$alias, $subdomain] = GetAliasSubdomainForPublic::execute();
 
-        // When we have the final alias, get the tenant that will be used in all of the public controllers
-        $tenant = Tenant::where('alias', $alias)->first();
+        $tenant = Tenant::forAlias($alias);
 
         // An unrecognized Host (e.g. the catch-all {permalink} route matching a request whose
         // domain isn't a known tenant subdomain) must 404, not crash with a TypeError trying to
@@ -49,11 +46,12 @@ class PublicController extends Controller
 
         $this->tenant = $tenant;
 
-        // We also need to use the subdomain in the public controllers
         $this->subdomain = $subdomain;
 
         $locale = request()->route('lang');
         $locale = is_string($locale) ? $locale : app()->getLocale();
+
+        Inertia::share('publicAssets.logoSrc', $this->publicAssets->logoSrc($this->tenant->alias, $locale));
 
         // Subdomain and alias won't be different, except when alias = 'vusa', then subdomain = 'www'
         Inertia::share('tenant', $this->tenant->only(['id', 'shortname', 'alias', 'type']) +
@@ -75,28 +73,14 @@ class PublicController extends Controller
 
     protected function getBanners()
     {
-        $cacheKey = "banners_{$this->tenant->id}";
-        $banners = Cache::tags(['banners', "tenant_{$this->tenant->id}"])
-            ->remember($cacheKey, 3600, function () {
-                $banners = Tenant::where('alias', 'vusa')->first()
-                    ->banners()
-                    ->inRandomOrder()
-                    ->where('is_active', 1)
-                    ->get();
+        // The tenant's own banners come first, each group in a fresh random order per request.
+        [$tenantBanners, $mainBanners] = Cache::tags(['banners'])
+            ->remember("banner_groups_{$this->tenant->id}", 3600, fn () => [
+                $this->tenant->isMain() ? new Collection : $this->tenant->banners()->where('is_active', 1)->get(),
+                Tenant::main()->banners()->where('is_active', 1)->get(),
+            ]);
 
-                if (! $this->tenant->isMain()) {
-                    $tenantBanners = $this->tenant
-                        ->banners()
-                        ->inRandomOrder()
-                        ->where('is_active', 1)
-                        ->get();
-                    $banners = $tenantBanners->merge($banners);
-                }
-
-                return $banners;
-            });
-
-        Inertia::share('tenant.banners', $banners);
+        Inertia::share('tenant.banners', $tenantBanners->shuffle()->merge($mainBanners->shuffle())->values());
     }
 
     protected function getTenantLinks()
@@ -104,7 +88,7 @@ class PublicController extends Controller
         $locale = app()->getLocale();
         $cacheKey = "tenant_links_{$this->tenant->id}_{$locale}";
 
-        $quickLinks = Cache::tags(['quick_links', "tenant_{$this->tenant->id}", "locale_{$locale}"])
+        $quickLinks = Cache::tags(['quick_links', PublicCacheTags::quickLinks($this->tenant->id, $locale)])
             ->remember($cacheKey, 3600, fn () => QuickLink::query()
                 ->where([
                     ['tenant_id', $this->tenant->id],
@@ -114,20 +98,9 @@ class PublicController extends Controller
                 ->get(['id', 'link', 'text', 'icon', 'is_important']));
 
         Inertia::share('tenant.links', $quickLinks);
-    }
-
-    protected function getNavigation()
-    {
-        $locale = app()->getLocale();
-        $cacheKey = "navigation_{$locale}";
-
-        $navigation = Cache::tags(['navigation', "locale_{$locale}"])
-            ->remember($cacheKey, 7200, fn () => Navigation::query()
-                ->where('lang', $locale)
-                ->orderBy('order')
-                ->get());
-
-        Inertia::share('navigation', $navigation);
+        Inertia::share('publicAssets.icons', fn () => (object) $this->publicAssets->icons(
+            $quickLinks->pluck('icon')->filter()->unique()->values()->all()
+        ));
     }
 
     /**
@@ -433,11 +406,8 @@ class PublicController extends Controller
             return $image;
         }
 
-        // Confirm the uploaded image still exists in storage before using it —
-        // guards against stale paths left behind by deleted uploads.
-        $storedImage = Storage::get(str_replace('uploads', 'public', $image));
-
-        return $storedImage !== null ? $image : $fallback;
+        // Guards against stale paths left behind by deleted uploads.
+        return Storage::exists(str_replace('uploads', 'public', $image)) ? $image : $fallback;
     }
 
     protected function getStructuredDataSchemas()
@@ -445,7 +415,7 @@ class PublicController extends Controller
         $locale = app()->getLocale();
         $cacheKey = "structured_schemas_{$locale}";
 
-        return Cache::tags(['schemas', "locale_{$locale}"])
+        return Cache::tags(['schemas'])
             ->remember($cacheKey, 86400, function () use ($locale) { // 24 hours TTL
                 $baseUrl = config('app.url');
 

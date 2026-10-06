@@ -12,9 +12,8 @@ use Illuminate\Support\Str;
 
 /**
  * Resolves `event-list` blocks: a filtered, optionally tenant-grouped list of Calendar
- * events (see RCEventList/EventListDisplay.vue). Modeled on
- * `PublicPageController::summerCamps()` — the `year` + `stovykla` event type +
- * tenant-grouping combination this block generalizes.
+ * events (see RCEventList/EventListDisplay.vue). The yearly summer camps pages are its
+ * reference use: `year` mode + `stovykla` event type + tenant grouping.
  */
 final class EventListResolver implements ResolvesContentPart
 {
@@ -46,10 +45,8 @@ final class EventListResolver implements ResolvesContentPart
         $tenantLabelPrefix = is_string($options['tenantLabelPrefix'] ?? null) ? $options['tenantLabelPrefix'] : '';
         // 'faculty' → "VU <nominative faculty>" (e.g. "VU Filologijos fakultetas"),
         // derived from the locative `fullname` by stripping the common VU SA prefix and
-        // reversing the locative ending. Mirrors the client-side `getFacultyName`
-        // (Utils/String.ts) used by SummerCampCard; kept in sync so the two surfaces
-        // agree. The central VU SA tenant has no faculty part, so it falls back to its
-        // fullname.
+        // reversing the locative ending. The central VU SA tenant has no faculty part,
+        // so it falls back to its fullname.
         $tenantLabelStyle = ($options['tenantLabelStyle'] ?? 'full') === 'faculty' ? 'faculty' : 'full';
 
         $slug = $options['eventTypeSlug'] ?? null;
@@ -170,10 +167,8 @@ final class EventListResolver implements ResolvesContentPart
             'isAllDay' => (bool) $event->is_all_day,
             'ctoUrl' => $event->cto_url,
             'imageUrl' => $event->main_image_url,
-            // 'www' matches the existing SummerCampCard.vue precedent for this route —
-            // it's a redirect route that resolves the event's real URL server-side
-            // regardless of which subdomain it was reached through. Falls back to the
-            // id-based redirect only when the event has no permalink for this locale yet.
+            // A redirect route that resolves the event's real URL server-side regardless
+            // of subdomain — only used when the event has no permalink for this locale yet.
             'href' => $event->publicUrl($context->locale)
                 ?? route('calendar.event', ['calendar' => $event->id, 'lang' => $context->locale, 'subdomain' => 'www']),
         ];
@@ -183,8 +178,6 @@ final class EventListResolver implements ResolvesContentPart
      * Derives a "VU <nominative faculty>" label from the locative tenant fullname,
      * e.g. "VU Filologijos fakultetas" from "... Studentų atstovybė Filologijos fakultete".
      *
-     * Server-side port of the client-side `getFacultyName` util (resources/js/Utils/String.ts) —
-     * the two must stay in lockstep so SummerCampCard and this resolver render the same names.
      * Tenants without a faculty part (the central VU SA tenant, clubs) fall back to
      * their fullname rather than a malformed "VU " prefix.
      */

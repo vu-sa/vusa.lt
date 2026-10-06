@@ -26,17 +26,15 @@ it('has API v1 routes registered', function (): void {
 });
 
 it('has public API routes', function (): void {
-    expect(Route::has('api.v1.types.index'))->toBeTrue()
+    expect(Route::has('api.v1.types.index'))->toBeFalse()
         ->and(Route::has('api.v1.documents.index'))->toBeTrue()
         ->and(Route::has('api.v1.typesense.config'))->toBeTrue();
 });
 
 it('has admin API routes', function (): void {
-    expect(Route::has('api.v1.admin.tasks.indicator'))->toBeTrue()
+    expect(Route::has('api.v1.admin.tasks.index'))->toBeTrue()
         ->and(Route::has('api.v1.admin.files.index'))->toBeTrue()
         ->and(Route::has('api.v1.admin.files.allowedTypes'))->toBeTrue()
-        ->and(Route::has('api.v1.admin.fileables.files'))->toBeTrue()
-        ->and(Route::has('api.v1.admin.sharepoint.potentialFileables'))->toBeTrue()
         ->and(Route::has('api.v1.admin.tutorials.progress'))->toBeTrue();
 });
 

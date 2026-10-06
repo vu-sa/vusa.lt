@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\BackfillExOfficioTargetDuty;
+use App\Actions\BuildDutyIndexQuery;
 use App\Actions\GetAttachableTypesForDuty;
 use App\Actions\GetTenantsForUpserts;
+use App\Actions\GetTypeFiles;
 use App\Actions\MergeDuties;
+use App\Actions\UpdateDuty;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\BatchUpdateDutyUsersRequest;
 use App\Http\Requests\IndexDutyRequest;
@@ -15,17 +17,19 @@ use App\Http\Requests\UpdateDutyRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\StudyProgram;
-use App\Models\Type;
 use App\Models\User;
+use App\Services\DutyAssignmentService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\DutyService;
+use App\Services\ResourceServices\SharepointFileService;
 use App\Services\TanstackTableService;
 use App\Support\MorphMap;
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -36,7 +40,7 @@ class DutyController extends AdminController
 {
     use HandlesSoftDeletes, HasTanstackTables;
 
-    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService) {}
+    public function __construct(public Authorizer $authorizer, private TanstackTableService $tableService, private DutyAssignmentService $assignments) {}
 
     /**
      * Display a listing of the resource.
@@ -45,39 +49,12 @@ class DutyController extends AdminController
     {
         $this->handleAuthorization('viewAny', Duty::class);
 
-        $query = Duty::query()->with([
-            'institution:id,name,short_name,tenant_id',
-            'institution.tenant:id,shortname',
-            'types:id,title',
-            // Feeds Duty::forceDeleteBlockedReason() without a query per row.
-        ])->withCount('dutiables');
-
-        $searchableColumns = ['name', 'email'];
-
-        // Search / sort / column filters / soft-delete only — tenant scoping is
-        // applied below so the assignable-tenants alternative is ORed with the
-        // read scope inside one group (not appended after the search filters).
-        $query = $this->applyTanstackFilters($query, $request, $this->tableService, $searchableColumns);
-
-        $this->applyDataQualityFilter($query, $request->getFilters()['data_quality'] ?? null);
-
-        $actor = $request->user();
-        $hasGlobalReadScope = $this->authorizer->allows($actor, 'duties.read.*') || $actor?->isSuperAdmin();
-
-        if (! $hasGlobalReadScope) {
-            $adminTenantIds = $this->authorizer->tenants($actor, 'duties.read.padalinys')->pluck('id')->all();
-            // Cross-tenant duties (the user's tenant is in assignableTenants) are
-            // included by default; the `show_external` table filter hides them.
-            $includeExternal = ($request->getFilters()['show_external'] ?? true) !== false;
-
-            $query->where(function ($q) use ($adminTenantIds, $includeExternal): void {
-                $q->whereHas('institution.tenant', fn ($t) => $t->whereIn('id', $adminTenantIds));
-
-                if ($includeExternal) {
-                    $q->orWhereHas('assignableTenants', fn ($a) => $a->whereIn('tenants.id', $adminTenantIds));
-                }
-            });
-        }
+        $query = $this->applyTanstackFilters(
+            BuildDutyIndexQuery::execute($request, $this->authorizer),
+            $request,
+            $this->tableService,
+            ['name', 'email'],
+        );
 
         $deletedCount = $this->getTrashedCount($query);
 
@@ -107,52 +84,6 @@ class DutyController extends AdminController
     }
 
     /**
-     * Narrow the index to a single data-quality slice. Surfaces the cheapest
-     * cleanup levers the duties table offers: duties nobody currently holds,
-     * duties missing a localized name (so they render blank in that locale), and
-     * duties where one person holds two concurrently-active rows — the residual
-     * cross-tenant pairs the de-duplication migration left for human review.
-     */
-    private function applyDataQualityFilter($query, ?string $dataQuality): void
-    {
-        match ($dataQuality) {
-            'vacant' => $query->whereDoesntHave('current_users'),
-            'missing_en_name' => $query->whereRaw($this->localeMissingClause('en')),
-            'missing_lt_name' => $query->whereRaw($this->localeMissingClause('lt')),
-            'duplicate_holders' => $query->whereExists(function ($q): void {
-                $q->select(DB::raw(1))
-                    ->from('dutiables as dup')
-                    ->whereColumn('dup.duty_id', 'duties.id')
-                    ->where('dup.dutiable_type', MorphMap::alias(User::class))
-                    ->where(function ($q): void {
-                        $q->whereNull('dup.end_date')->orWhere('dup.end_date', '>=', now());
-                    })
-                    ->groupBy('dup.dutiable_id')
-                    ->havingRaw('COUNT(*) > 1');
-            }),
-            default => null,
-        };
-    }
-
-    /**
-     * Raw SQL matching rows whose translatable `name` lacks a non-empty value
-     * for $locale. Spatie stores the field as JSON; the extractor differs by
-     * driver. "Blank" covers three storage shapes — key absent, an explicit
-     * JSON null (`{"lt":null}`, which JSON_UNQUOTE turns into the literal
-     * string "null" on MySQL), and an empty string.
-     */
-    private function localeMissingClause(string $locale): string
-    {
-        $path = "$.{$locale}";
-
-        return DB::getDriverName() === 'sqlite'
-            // SQLite's json_extract already collapses a JSON null to SQL NULL,
-            // so key-absent and explicit-null are both caught by IS NULL.
-            ? "(json_extract(name, '{$path}') IS NULL OR json_extract(name, '{$path}') = '')"
-            : "(JSON_EXTRACT(name, '{$path}') IS NULL OR JSON_TYPE(JSON_EXTRACT(name, '{$path}')) = 'NULL' OR JSON_UNQUOTE(JSON_EXTRACT(name, '{$path}')) = '')";
-    }
-
-    /**
      * Show the form for creating a new resource.
      */
     public function create(Request $request)
@@ -160,7 +91,7 @@ class DutyController extends AdminController
         $this->handleAuthorization('create', Duty::class);
 
         return $this->inertiaResponse('Admin/People/CreateDuty', [
-            'dutyTypes' => Type::where('model_type', MorphMap::alias(Duty::class))->get(),
+            'dutyTypes' => DutyType::query()->get(),
             'roles' => Role::all(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
             'assignableUsers' => $this->assignableUsersForDutyForm(),
@@ -182,9 +113,9 @@ class DutyController extends AdminController
 
         $duty->types()->sync($request->types);
         $duty->exOfficioTargetDuties()->sync($request->ex_officio_target_duty_ids ?? []);
-        $duty->assignableTenants()->sync($this->buildAssignableTenantsSync($request->assignable_tenants ?? []));
+        $duty->assignableTenants()->sync($this->assignments->buildAssignableTenantsSync($request->validated('assignable_tenants') ?? []));
 
-        $this->handleUsersUpdate(new Collection($duty->current_users->pluck('id')), new Collection($request->current_users), $duty);
+        $this->assignments->syncRepresentatives($duty, $request->validated('current_users') ?? []);
 
         // Load relationships needed for the response
         $duty->load('institution', 'types', 'current_users');
@@ -208,46 +139,62 @@ class DutyController extends AdminController
     {
         $this->handleAuthorization('view', $duty);
 
-        $duty->load('institution.tenant', 'users', 'types');
-
-        // Sibling duties for the sidebar (queried separately to keep the payload lean).
-        $otherDuties = $duty->institution
-            ? $duty->institution->duties()
-                ->where('id', '!=', $duty->id)
-                ->orderBy('order')
-                ->with('current_users:id,name,profile_photo_path')
-                ->get(['id', 'name', 'institution_id', 'places_to_occupy', 'order'])
-                ->map(fn (Duty $sibling) => $sibling->toArray())
-                ->values()
-            : collect();
-
-        // Next / last meeting (HasManyDeep through the institution).
-        $nextMeeting = $duty->meetings()
-            ->where('start_time', '>=', now())
-            ->orderBy('start_time')
-            ->first(['meetings.id', 'meetings.title', 'meetings.start_time']);
-
-        $lastMeeting = $duty->meetings()
-            ->where('start_time', '<', now())
-            ->orderByDesc('start_time')
-            ->first(['meetings.id', 'meetings.title', 'meetings.start_time']);
-
-        $user = request()->user();
+        $loadDuty = fn () => once(fn () => $duty->loadMissing('institution.tenant', 'users', 'types'));
+        $user = fn () => once(fn () => request()->user());
 
         return $this->inertiaResponse('Admin/People/ShowDuty', [
-            'duty' => array_merge($duty->toArray(), [
-                'sharepointPath' => $duty->institution?->tenant ? $duty->sharepoint_path() : null,
-                'other_duties' => $otherDuties,
-                'next_meeting' => $nextMeeting?->toArray(),
-                'last_meeting' => $lastMeeting?->toArray(),
+            'duty' => fn () => array_merge($loadDuty()->toArray(), [
+                'sharepointPath' => SharepointFileService::pathOrNull($duty),
+                'sharepointFolderUrl' => SharepointFileService::folderUrlOrNull($duty),
             ]),
+            'files' => Inertia::defer(fn () => $duty->availableFiles()->orderByDesc('file_date')->get(), 'files'),
+            'typeFiles' => Inertia::defer(fn () => GetTypeFiles::forFileable($duty), 'files'),
+
             // Per-record, not from `auth.can`: `duties.update.padalinys` is tenant-scoped,
             // so a single global boolean would be wrong for every cross-tenant case.
-            'can' => [
-                'update' => $user->can('update', $duty),
-                'managePeople' => $user->can('managePeople', $duty),
+            'can' => fn () => [
+                'update' => (bool) $user()?->can('update', $duty),
+                'managePeople' => (bool) $user()?->can('managePeople', $duty),
             ],
+            // Only the "Apie pareigybę" tab and the Priskirti sheet need these.
+            'otherDuties' => Inertia::defer(fn () => $duty->institution
+                ? $duty->institution->duties()
+                    ->where('id', '!=', $duty->id)
+                    ->orderBy('order')
+                    ->with('current_users:id,name,profile_photo_path')
+                    ->get(['id', 'name', 'institution_id', 'places_to_occupy', 'order'])
+                    ->map(fn (Duty $sibling) => $sibling->toArray())
+                    ->values()
+                    ->all()
+                : [], 'dutyPanels'),
+            'studyPrograms' => Inertia::defer(fn () => $this->studyProgramsFor($duty), 'dutyPanels'),
+            'responsibilities' => Inertia::defer(fn () => DutyResponsibilityController::payload($duty), 'dutyPanels'),
+            // Only the add sheet needs these; loaded when it opens.
+            'responsibilityOptions' => Inertia::optional(function () use ($user, $duty): array {
+                abort_unless($user()?->can('update', $duty), 403);
+
+                return DutyResponsibilityController::options($user());
+            }),
         ]);
+    }
+
+    /**
+     * Study programs of the duty's own tenant, for the assignment sheet's picker.
+     * Falls back to every programme when the tenant cannot be resolved.
+     *
+     * @return Collection<int, StudyProgram>
+     */
+    private function studyProgramsFor(Duty $duty): Collection
+    {
+        $tenantId = $duty->institution?->tenant_id;
+        // A programme already on an assignment stays selectable even from another tenant.
+        $inUse = $duty->users->map(fn (User $user) => $user->pivot?->study_program_id)->filter()->all();
+
+        return StudyProgram::query()
+            ->when($tenantId, fn ($query) => $query->where(
+                fn ($query) => $query->where('tenant_id', $tenantId)->orWhereIn('id', $inUse)
+            ))
+            ->get();
     }
 
     /**
@@ -283,8 +230,8 @@ class DutyController extends AdminController
 
         // Build a map { tenantId => [userId, ...] } for active cross-tenant reps so the
         // UI can pre-populate each assignable-tenant's user picker.
-        // Must match Duty::current_users() semantics: end_date >= now() (datetime) so
-        // a rep whose end_date is today is already considered inactive.
+        // Must match Duty::current_users() semantics: the end date is the last day in
+        // office, so a rep whose end_date is today is still active.
         // Ex-officio rows are left out — they are not the picker's to grant or revoke.
         $crossTenantRepsQuery = Dutiable::where('duty_id', $duty->id)
             ->where('dutiable_type', MorphMap::alias(User::class))
@@ -292,7 +239,7 @@ class DutyController extends AdminController
             ->whereNull('via_dutiable_id')
             ->where(function ($query): void {
                 $query->whereNull('end_date')
-                    ->orWhere('end_date', '>=', now());
+                    ->orWhereDate('end_date', '>=', today());
             });
 
         if (! $canEditDuty) {
@@ -322,105 +269,14 @@ class DutyController extends AdminController
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateDutyRequest $request, Duty $duty)
+    public function update(UpdateDutyRequest $request, Duty $duty, UpdateDuty $updateDuty): RedirectResponse
     {
         $this->handleAuthorization('update', $duty);
 
         $actor = $request->user();
 
-        $mutation = fn () => DB::transaction(function () use ($request, $duty): void {
-            $duty->update($request->safe()->only('name', 'description', 'email', 'places_to_occupy', 'contacts_grouping'));
-
-            // Only manage owning-tenant reps (tenant_id IS NULL) via the TransferList.
-            // Ex-officio rows are excluded to match DutyForm.vue, which filters them out
-            // of `current_users` before posting: counting them here made every save of a
-            // target duty read them as "removed" and end-date the whole ex-officio cohort.
-            $owningTenantCurrentIds = Dutiable::where('duty_id', $duty->id)
-                ->where('dutiable_type', MorphMap::alias(User::class))
-                ->whereNull('tenant_id')
-                ->whereNull('via_dutiable_id')
-                ->where(function ($query): void {
-                    $query->whereNull('end_date')
-                        ->orWhere('end_date', '>=', now());
-                })
-                ->pluck('dutiable_id');
-            $this->handleUsersUpdate(
-                new Collection($owningTenantCurrentIds),
-                new Collection($request->current_users),
-                $duty
-            );
-
-            $duty->institution()->disassociate();
-            $duty->institution()->associate($request->institution_id);
-            $duty->save();
-
-            if ($request->has('roles')) {
-                $roles = Role::find($request->roles);
-
-                foreach ($roles as $role) {
-                    if ($role->name == config('permission.super_admin_role_name')) {
-                        abort(403, __('messages.role.not_assignable_to_duty'));
-                    }
-                }
-
-                $duty->syncRoles($roles);
-            } else {
-                $duty->syncRoles([]);
-            }
-
-            $duty->types()->sync($request->types);
-
-            // Sync ex-officio target duties and backfill derived Dutiable rows.
-            $previousTargetIds = $duty->exOfficioTargetDuties()->pluck('duties.id')->all();
-            $newTargetIds = array_filter($request->ex_officio_target_duty_ids ?? []);
-            $duty->exOfficioTargetDuties()->sync($newTargetIds);
-
-            $addedTargetIds = array_values(array_diff($newTargetIds, $previousTargetIds));
-            $removedTargetIds = array_values(array_diff($previousTargetIds, $newTargetIds));
-
-            if ($addedTargetIds || $removedTargetIds) {
-                $dutyId = $duty->id;
-                dispatch(function () use ($dutyId, $addedTargetIds, $removedTargetIds): void {
-                    $duty = Duty::find($dutyId);
-                    if ($duty) {
-                        BackfillExOfficioTargetDuty::execute($duty, $addedTargetIds, $removedTargetIds);
-                    }
-                })->afterCommit();
-            }
-
-            // Sync assignable tenants (with per-tenant quota and per-tenant reps).
-            $previousTenantIds = $duty->assignableTenants()->pluck('tenants.id')->all();
-            $assignableTenantsInput = $request->assignable_tenants ?? [];
-            $newTenantIds = array_column($assignableTenantsInput, 'tenant_id');
-
-            // End-date reps of tenants that are being removed entirely.
-            $removedTenantIds = array_values(array_diff($previousTenantIds, $newTenantIds));
-            foreach ($removedTenantIds as $tenantId) {
-                $this->endDateDutiables(
-                    Dutiable::where('duty_id', $duty->id)
-                        ->where('dutiable_type', MorphMap::alias(User::class))
-                        ->where('tenant_id', $tenantId)
-                        ->where(function ($query): void {
-                            $query->whereNull('end_date')
-                                ->orWhere('end_date', '>=', now());
-                        }),
-                    now()->subDay()
-                );
-            }
-
-            $duty->assignableTenants()->sync($this->buildAssignableTenantsSync($assignableTenantsInput));
-
-            // Sync per-tenant representative lists.
-            foreach ($assignableTenantsInput as $row) {
-                if (isset($row['tenant_id'])) {
-                    $this->syncAssignableTenantUsers(
-                        $duty,
-                        (int) $row['tenant_id'],
-                        array_values(array_unique((array) ($row['user_ids'] ?? [])))
-                    );
-                }
-            }
-        });
+        $data = $request->validated();
+        $mutation = fn () => $updateDuty->execute($duty, $data);
 
         // The acting user holding this duty may lose access if its roles, types
         // or institution change beneath them.
@@ -429,7 +285,7 @@ class DutyController extends AdminController
                 ->where('dutiable_type', MorphMap::alias(User::class))
                 ->where('dutiable_id', $actor->id)
                 ->where(function ($query): void {
-                    $query->whereNull('end_date')->orWhere('end_date', '>=', now());
+                    $query->whereNull('end_date')->orWhereDate('end_date', '>=', today());
                 })
                 ->exists();
 
@@ -495,7 +351,7 @@ class DutyController extends AdminController
             ->whereNotNull('via_dutiable_id')
             ->where(function ($query): void {
                 $query->whereNull('end_date')
-                    ->orWhere('end_date', '>=', now());
+                    ->orWhereDate('end_date', '>=', today());
             });
 
         if ($limitToTenantIds !== null) {
@@ -520,126 +376,6 @@ class DutyController extends AdminController
     }
 
     /**
-     * Build the sync array for assignableTenants from the request payload.
-     *
-     * @param  array<array{tenant_id: int, quota: int|null}>  $items
-     * @return array<int, array{quota: int|null}>
-     */
-    private function buildAssignableTenantsSync(array $items): array
-    {
-        $sync = [];
-        foreach ($items as $item) {
-            $sync[$item['tenant_id']] = ['quota' => $item['quota'] ?? null];
-        }
-
-        return $sync;
-    }
-
-    /**
-     * End-date the matched dutiable rows through the model layer.
-     *
-     * A mass `update()` — on `DB::table()` or on an Eloquent builder — fires no
-     * model events, so `DutiableChanged` never reaches SyncExOfficioDutiables and
-     * the rows derived from an ended membership keep their open period forever.
-     * Saving row by row costs one write each and is always a handful of rows.
-     *
-     * A plain loop rather than `each()`: that helper treats a falsy return as
-     * "stop", so one refused save would silently skip every remaining row.
-     *
-     * @param  EloquentBuilder<Dutiable>  $query
-     */
-    private function endDateDutiables(EloquentBuilder $query, mixed $endDate): void
-    {
-        foreach ($query->get() as $dutiable) {
-            $dutiable->update(['end_date' => $endDate]);
-        }
-    }
-
-    private function handleUsersUpdate(Collection $existingUserIds, Collection $requestUserIds, Duty $duty)
-    {
-        $new = $requestUserIds->diff($existingUserIds);
-        $removed = $existingUserIds->diff($requestUserIds);
-
-        // Only touch owning-tenant rows (tenant_id IS NULL) — cross-tenant reps
-        // are managed separately via the per-tenant user_ids in assignable_tenants.
-        // Ex-officio rows are off-limits too: they end when their source does.
-        if ($removed->isNotEmpty()) {
-            $this->endDateDutiables(
-                Dutiable::where('duty_id', $duty->id)
-                    ->whereIn('dutiable_id', $removed->all())
-                    ->where('dutiable_type', MorphMap::alias(User::class))
-                    ->whereNull('tenant_id')
-                    ->whereNull('via_dutiable_id')
-                    ->where(function ($query): void {
-                        $query->whereNull('end_date')
-                            ->orWhere('end_date', '>=', now());
-                    }),
-                now()->subDay()
-            );
-        }
-
-        if ($new->isNotEmpty()) {
-            $attachData = $new->mapWithKeys(fn ($userId) => [
-                $userId => ['start_date' => now()->subDay(), 'tenant_id' => null],
-            ])->all();
-            $duty->attachAudited('users', $attachData);
-        }
-    }
-
-    /**
-     * Sync cross-tenant representatives for one assignable tenant.
-     * Diffs $requestedUserIds against the currently-active reps for that tenant
-     * (identified by `dutiables.tenant_id = $tenantId`), end-dates removed reps,
-     * and attaches new ones with the correct `tenant_id`.
-     *
-     * @param  array<string>  $requestedUserIds
-     */
-    private function syncAssignableTenantUsers(Duty $duty, int $tenantId, array $requestedUserIds): void
-    {
-        $today = now()->toDateString();
-
-        // Ex-officio rows are excluded on both sides: DutyController@edit keeps them
-        // out of the tenant's picker, so they must not read as "removed" here either.
-        $currentUserIds = Dutiable::where('duty_id', $duty->id)
-            ->where('dutiable_type', MorphMap::alias(User::class))
-            ->where('tenant_id', $tenantId)
-            ->whereNull('via_dutiable_id')
-            ->where(function ($query): void {
-                $query->whereNull('end_date')
-                    ->orWhere('end_date', '>=', now());
-            })
-            ->pluck('dutiable_id')
-            ->all();
-
-        $toAdd = array_values(array_diff($requestedUserIds, $currentUserIds));
-        $toRemove = array_values(array_diff($currentUserIds, $requestedUserIds));
-
-        if ($toRemove) {
-            $this->endDateDutiables(
-                Dutiable::where('duty_id', $duty->id)
-                    ->where('dutiable_type', MorphMap::alias(User::class))
-                    ->where('tenant_id', $tenantId)
-                    ->whereNull('via_dutiable_id')
-                    ->whereIn('dutiable_id', $toRemove)
-                    ->where(function ($query): void {
-                        $query->whereNull('end_date')
-                            ->orWhere('end_date', '>=', now());
-                    }),
-                now()->subDay()
-            );
-        }
-
-        if ($toAdd) {
-            $duty->attachAudited(
-                'users',
-                collect($toAdd)->mapWithKeys(fn ($userId) => [
-                    $userId => ['start_date' => now()->subDay(), 'tenant_id' => $tenantId],
-                ])->all()
-            );
-        }
-    }
-
-    /**
      * Remove the specified resource from storage.
      */
     public function destroy(Duty $duty)
@@ -654,31 +390,6 @@ class DutyController extends AdminController
     public function restore(Duty $duty): RedirectResponse
     {
         return $this->restoreModel($duty);
-    }
-
-    /**
-     * Show the form for merging duplicate duties into one.
-     *
-     * `target_duty_id` pre-selects the kept duty (arriving from the duties index
-     * row action or the duplicate-duty warning). The full duty list is sent, as
-     * MergeStudyPrograms does for study programs — institution scoping (a
-     * cross-institution merge is almost never intentional) happens client-side
-     * against `institution_id`, alongside the target selection.
-     */
-    public function merge(Request $request)
-    {
-        $this->handleAuthorization('viewAny', Duty::class);
-
-        $duties = Duty::query()
-            ->with(['institution:id,name,tenant_id', 'institution.tenant:id,shortname'])
-            ->withCount('dutiables')
-            ->orderBy('name')
-            ->get();
-
-        return $this->inertiaResponse('Admin/People/MergeDuty', [
-            'duties' => $duties->map->toFullArray(),
-            'targetDutyId' => $request->string('target_duty_id')->toString() ?: null,
-        ]);
     }
 
     /**
@@ -755,7 +466,7 @@ class DutyController extends AdminController
 
         // Get data needed for creating institutions and duties
         $assignableTenants = GetTenantsForUpserts::execute('institutions.create.padalinys', $this->authorizer);
-        $institutionTypes = Type::where('model_type', MorphMap::alias(Institution::class))->get();
+        $institutionTypes = InstitutionType::query()->get();
 
         return $this->inertiaResponse('Admin/People/DutyUserUpdateWizard', [
             // Immediate data for Step 1
@@ -860,7 +571,7 @@ class DutyController extends AdminController
                             ->whereNull('via_dutiable_id')
                             ->where(function ($query): void {
                                 $query->whereNull('end_date')
-                                    ->orWhere('end_date', '>=', now());
+                                    ->orWhereDate('end_date', '>=', today());
                             });
 
                         if ($actingTenantId !== null) {
@@ -869,7 +580,7 @@ class DutyController extends AdminController
                             $removeQuery->whereNull('tenant_id');
                         }
 
-                        $this->endDateDutiables($removeQuery, $change['end_date'] ?? now());
+                        $this->assignments->endDateDutiables($removeQuery, $change['end_date'] ?? now());
                     }
                 }
 

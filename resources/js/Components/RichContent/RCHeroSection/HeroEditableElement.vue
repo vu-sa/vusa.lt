@@ -1,5 +1,5 @@
 <template>
-  <HeroElement :element :is-first-element="false" :band>
+  <HeroElement :element :band>
     <template #eyebrow>
       <EyebrowLabel>
         <RCInlineText
@@ -90,10 +90,8 @@ const props = defineProps<{
   band?: BandResolution;
   /** This block's identity for hotspot ids (`${blockKey}:title`, `:image`, `:buttons:N`). */
   blockKey?: string;
-  /** BlockPreviewRenderer passes these to every display/editableDisplay uniformly; neither
-   *  is meaningful here (this component is never "first" on the real page, and Hero has no
-   *  server-resolved HTML) — declared only to keep them out of fallthrough attrs. */
-  isFirstElement?: boolean;
+  /** BlockPreviewRenderer passes this to every display uniformly; Hero has no server-resolved
+   *  HTML — declared only to keep it out of fallthrough attrs. */
   html?: boolean;
 }>();
 

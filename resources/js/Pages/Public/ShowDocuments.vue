@@ -33,12 +33,7 @@
             v-for="type in importantContentTypes"
             :key="`quick-${type}`"
             type="button"
-            :class="[
-              'h-8 px-3 text-xs font-bold uppercase tracking-wide transition-colors inline-flex items-center gap-1.5 border shrink-0',
-              isContentTypeSelected(type)
-                ? 'border-brand bg-brand/10 text-brand'
-                : 'border-border bg-background text-foreground hover:border-brand hover:text-brand',
-            ]"
+            :class="controlVariants({ size: 'sm', active: isContentTypeSelected(type) })"
             @click="searchController.toggleContentType(type)"
           >
             <span>{{ type }}</span>
@@ -58,10 +53,7 @@
               v-model="searchInput"
               type="text"
               :placeholder="`${$t('search.enter_search_or_browse')}...`"
-              :class="[
-                'h-11 w-full border border-border bg-background pl-10 pr-9 text-sm text-foreground',
-                'placeholder:text-muted-foreground/70 transition-colors focus:border-brand focus:outline-none',
-              ]"
+              :class="searchFieldClass"
             >
             <button
               v-if="searchInput"
@@ -78,19 +70,14 @@
             <!-- Filter Button (opens filter popovers row) -->
             <button
               type="button"
-              :class="[
-                'inline-flex h-11 items-center justify-center gap-2 border px-3 sm:px-5 text-xs font-bold uppercase tracking-wide transition-colors',
-                showFilterBar || activeFilterCount > 0
-                  ? 'border-brand text-brand bg-brand/5 hover:bg-brand/10'
-                  : 'border-border bg-background text-foreground hover:border-brand hover:text-brand',
-              ]"
+              :class="controlVariants({ active: showFilterBar || activeFilterCount > 0 })"
               @click="showFilterBar = !showFilterBar"
             >
               <IFluentFilter20Regular class="size-4" />
               <span class="max-[359px]:hidden">{{ $t('Filtrai') }}</span>
               <span
                 v-if="activeFilterCount > 0"
-                class="flex size-4 items-center justify-center bg-brand-fill text-brand-foreground text-[0.625rem] font-mono leading-none"
+                :class="controlCountClass"
               >
                 {{ activeFilterCount }}
               </span>
@@ -105,12 +92,7 @@
               <PopoverTrigger as-child>
                 <button
                   type="button"
-                  :class="[
-                    'inline-flex h-11 shrink-0 items-center justify-between gap-2 border px-3.5 text-xs font-bold uppercase tracking-wide transition-colors',
-                    filters.sort !== 'relevance'
-                      ? 'border-brand bg-brand/5 text-brand hover:bg-brand/10'
-                      : 'border-border bg-background text-foreground hover:border-brand hover:text-brand',
-                  ]"
+                  :class="controlVariants({ active: filters.sort !== 'relevance' })"
                   :aria-label="$t('Rikiuoti')"
                 >
                   <component :is="currentSortIcon" class="size-3.5" />
@@ -135,7 +117,7 @@
                     :key="option.value"
                     type="button"
                     role="radio"
-                    :aria-checked="filters.sort === option.value"
+                    :aria-checked="activeSort === option.value"
                     :class="[
                       'flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left text-sm font-medium',
                       'text-foreground transition-colors hover:bg-secondary/60 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
@@ -150,7 +132,7 @@
                       <span>{{ option.label }}</span>
                     </div>
                     <IFluentCheckmark16Filled
-                      v-if="filters.sort === option.value"
+                      v-if="activeSort === option.value"
                       class="size-4 text-brand"
                     />
                   </button>
@@ -159,15 +141,10 @@
             </Popover>
 
             <!-- View Mode Toggle -->
-            <div class="inline-flex h-11 border border-border bg-background p-0.5">
+            <div :class="segmentGroupClass">
               <button
                 type="button"
-                :class="[
-                  'h-full px-3 text-xs font-bold uppercase tracking-wide transition-colors flex items-center gap-1.5 justify-center',
-                  viewMode === 'list'
-                    ? 'bg-brand-fill text-brand-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
-                ]"
+                :class="segmentVariants({ active: viewMode === 'list' })"
                 :title="$t('search.view_mode_list')"
                 @click="searchController.setViewMode('list')"
               >
@@ -176,12 +153,7 @@
               </button>
               <button
                 type="button"
-                :class="[
-                  'h-full px-3 text-xs font-bold uppercase tracking-wide transition-colors flex items-center gap-1.5 justify-center',
-                  viewMode === 'compact'
-                    ? 'bg-brand-fill text-brand-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
-                ]"
+                :class="segmentVariants({ active: viewMode === 'compact' })"
                 :title="$t('search.view_mode_compact')"
                 @click="searchController.setViewMode('compact')"
               >
@@ -200,7 +172,7 @@
           <!-- Effect Status Filter: defaults to Galioja + Nenustatyta, hiding "Negalioja" -->
           <PublicFilterPopover
             :label="$t('Galiojimas')"
-            :options="effectStatusOptions"
+            :options="effectStatusOptions" field="is_in_effect"
             :selected="filters.effectStatuses || []"
             trigger-class="h-9 px-3"
             @toggle="toggleEffectStatusOption"
@@ -210,7 +182,7 @@
           <!-- Content Type Filter Popover -->
           <PublicFilterPopover
             :label="$t('search.document_type')"
-            :options="contentTypeOptions"
+            :options="contentTypeOptions" field="content_type"
             :selected="filters.contentTypes || []"
             searchable
             :search-placeholder="`${$t('Ieškoti tipo')}...`"
@@ -222,7 +194,7 @@
           <!-- Padalinys Filter Popover -->
           <PublicFilterPopover
             :label="$t('Padalinys')"
-            :options="tenantOptions"
+            :options="tenantOptions" field="tenant_shortname"
             :selected="filters.tenants || []"
             searchable
             :search-placeholder="`${$t('Ieškoti padalinio')}...`"
@@ -234,7 +206,7 @@
           <!-- Language Filter Popover -->
           <PublicFilterPopover
             :label="$t('search.language')"
-            :options="languageOptions"
+            :options="languageOptions" field="language"
             :selected="filters.languages || []"
             trigger-class="h-9 px-3"
             @toggle="searchController.toggleLanguage"
@@ -343,8 +315,9 @@
           </p>
           <div v-if="hasActiveFilters" class="mt-6">
             <Button
-              variant="brand-outline"
-              size="public-sm"
+              voice="brand"
+              variant="outline"
+              size="sm"
               @click="clearAllFilters"
             >
               {{ $t('Išvalyti filtrus') }}
@@ -354,17 +327,28 @@
 
         <!-- Document Results List -->
         <div v-else>
-          <HairlineList as="ul">
+          <section
+            v-if="recommendedDocuments.length" class="mb-8 border border-border bg-secondary/40 px-4"
+            aria-labelledby="recommended-documents-title" data-slot="recommended-documents"
+          >
+            <h2 id="recommended-documents-title" class="flex items-center gap-2 border-b border-border py-4 text-sm font-semibold">
+              <IFluentPin24Regular class="size-4 text-brand" aria-hidden="true" />{{ $t('search.recommended_documents') }}
+            </h2>
+            <HairlineList as="ul">
+              <DocumentCompactListItem v-for="item in recommendedDocuments" :key="item.id" :document="item" />
+            </HairlineList>
+          </section>
+          <HairlineList v-if="ordinaryDocuments.length" as="ul">
             <template v-if="viewMode === 'list'">
               <DocumentListItem
-                v-for="item in documents"
+                v-for="item in ordinaryDocuments"
                 :key="item.id"
                 :document="item"
               />
             </template>
             <template v-else>
               <DocumentCompactListItem
-                v-for="item in documents"
+                v-for="item in ordinaryDocuments"
                 :key="item.id"
                 :document="item"
               />
@@ -377,8 +361,9 @@
             class="mt-12 flex justify-center"
           >
             <Button
-              variant="brand-outline"
-              size="public"
+              voice="brand"
+              variant="outline"
+              size="lg"
               :disabled="isLoadingMore"
               @click="searchController.loadMore"
             >
@@ -406,13 +391,14 @@ import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcru
 import { useDocumentSearch } from '@/Composables/useDocumentSearch';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
-import TagChip from '@/Components/Public/Base/TagChip.vue';
+import TagChip from '@/Components/Brand/TagChip.vue';
 import HairlineList from '@/Components/Public/Base/HairlineList.vue';
 import PublicFilterPopover, { type FilterOption } from '@/Components/Public/Base/PublicFilterPopover.vue';
 import DocumentListItem from '@/Components/Public/Search/DocumentListItem.vue';
 import DocumentCompactListItem from '@/Components/Public/Search/DocumentCompactListItem.vue';
 import DocumentResultsSkeleton from '@/Components/Public/Search/DocumentResultsSkeleton.vue';
 import { Button } from '@/Components/ui/button';
+import { controlCountClass, controlVariants, searchFieldClass, segmentGroupClass, segmentVariants } from '@/Components/ui/control';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import type { DocumentFacet, DocumentSearchSort } from '@/Types/DocumentSearchTypes';
 import { TenantType } from '@/Types/enums';
@@ -429,6 +415,7 @@ import IFluentDocumentMultiple24Regular from '~icons/fluent/document-multiple-24
 import IFluentFilter20Regular from '~icons/fluent/filter-20-regular';
 import IFluentList20Regular from '~icons/fluent/text-bullet-list-square-20-regular';
 import IFluentRowChild20Regular from '~icons/fluent/row-child-20-regular';
+import IFluentPin24Regular from '~icons/fluent/pin24-regular';
 import IFluentSearch16Regular from '~icons/fluent/search-16-regular';
 import IFluentStar16Filled from '~icons/fluent/star-16-filled';
 
@@ -474,8 +461,13 @@ const {
   totalHits,
   facets,
   filters,
+  hasQuery,
+  activeSort,
   viewMode,
 } = searchController;
+
+const recommendedDocuments = computed(() => documents.value.filter(item => item._searchRecommended));
+const ordinaryDocuments = computed(() => documents.value.filter(item => !item._searchRecommended));
 
 const searchInput = ref(
   filters.value.query && filters.value.query !== '*' ? filters.value.query : '',
@@ -491,11 +483,12 @@ function applyCurrentTenantFilter(): void {
   filters.value.tenants = [tenant.shortname];
 }
 
-const sortOptions: Array<{ value: DocumentSearchSort; label: string }> = [
-  { value: 'relevance', label: $t('Pagal aktualumą') },
+// Without a query there is nothing to rank by, so relevance is only offered once one exists.
+const sortOptions = computed<Array<{ value: DocumentSearchSort; label: string }>>(() => [
+  ...(hasQuery.value ? [{ value: 'relevance' as const, label: $t('Pagal aktualumą') }] : []),
   { value: 'date_desc', label: $t('Naujausi pirmi') },
   { value: 'date_asc', label: $t('Seniausi pirmi') },
-];
+]);
 
 const selectSort = (newSortBy: DocumentSearchSort) => {
   searchController.setSortBy(newSortBy);
@@ -514,7 +507,7 @@ const getSortIcon = (mode: DocumentSearchSort | undefined) => {
   }
 };
 
-const currentSortIcon = computed(() => getSortIcon(filters.value.sort));
+const currentSortIcon = computed(() => getSortIcon(activeSort.value));
 
 // Sync search input with debounce to controller
 const debouncedSearch = useDebounceFn((query: string) => {

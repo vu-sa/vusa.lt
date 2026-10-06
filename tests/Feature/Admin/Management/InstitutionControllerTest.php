@@ -3,9 +3,11 @@
 use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionCheckIn;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
+use App\Models\Problem;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,7 +20,7 @@ beforeEach(function (): void {
 
 describe('reorderDuties', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
     test('persists the new order for each duty in a single batch', function (): void {
@@ -69,8 +71,55 @@ describe('unauthorized access', function (): void {
         asUser($this->user)->get(route('dashboard'))->assertStatus(200);
     });
 
-    test('cannot index institutions', function (): void {
-        asUser($this->user)->get(route('institutions.index'))->assertStatus(403);
+    test('browses institutions — active ones are public — starting on their padalinys', function (): void {
+        asUser($this->user)->get(route('institutions.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/IndexInstitution')
+                ->where('defaultTenantShortnames', [$this->tenant->shortname])
+            );
+    });
+
+    test('reads an active institution outside their reach as its public face only', function (): void {
+        $institution = Institution::factory()->for(Tenant::factory())->create(['is_active' => 1]);
+        $institution->tasks()->create(['name' => 'Internal task']);
+
+        asUser($this->user)->get(route('institutions.show', $institution))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/ShowInstitution')
+                ->where('readOnly', true)
+                ->where('can.update', false)
+                ->where('can.recordMeeting', false)
+                ->where('can.reportActivity', false)
+                ->where('files', [])
+                ->where('tasks', [])
+                ->where('relatedInstitutions', [])
+                ->where('institution.secretaries', [])
+                ->where('institution.sharepointPath', null)
+                ->where('overview.recentComments', [])
+            );
+    });
+
+    test('says the meetings exist but are hidden when they are not public', function (): void {
+        $institution = Institution::factory()->for(Tenant::factory())->create(['is_active' => 1]);
+        Meeting::factory()->hasAttached($institution)->create();
+
+        asUser($this->user)->get(route('institutions.show', $institution))
+            ->assertInertia(fn ($page) => $page
+                ->where('overview.meetings_hidden', true)
+                ->where('overview.recentMeetings', [])
+                ->where('overview.activity_status', null)
+                ->where('meetings', [])
+                // Nothing to hear about, so nothing to follow
+                ->where('subscription', null)
+            );
+    });
+
+    test('cannot open an inactive institution outside their reach', function (): void {
+        $institution = Institution::factory()->for(Tenant::factory())->create(['is_active' => 0]);
+
+        asUser($this->user)->get(route('institutions.show', $institution))->assertForbidden();
     });
 
     test('cannot access institution create page', function (): void {
@@ -112,7 +161,66 @@ describe('unauthorized access', function (): void {
 
 describe('authorized access', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
+    });
+
+    // Terms, secretary rosters and the sheet's programme picker are edited on the record, so they
+    // ride a deferred group: absent on the first paint, and only ever sent to someone who may update.
+    test('the record carries per-record permissions and defers the management group', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        asUser($this->admin)->get(route('institutions.show', $institution))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/ShowInstitution')
+                ->where('can.update', true)
+                ->where('can.recordMeeting', true)
+                ->missing('management')
+                ->loadDeferredProps('institutionPanels', fn ($panels) => $panels
+                    ->has('management.cadences')
+                    ->has('management.globalCadences')
+                    ->has('management.secretaryRosters')
+                    ->has('management.studyPrograms')));
+    });
+
+    test('someone who may only view the institution is never sent the management group', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $viewer = makeUser($this->tenant);
+        $viewer->duties()->first()->assignRole('Studentų atstovas');
+        $viewer->duties()->first()->update(['institution_id' => $institution->id]);
+
+        asUser($viewer)->get(route('institutions.show', $institution))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('can.update', false)
+                ->where('can.recordMeeting', true)
+                ->where('can.reportActivity', true)
+                ->loadDeferredProps('institutionPanels', fn ($panels) => $panels->where('management', null)));
+    });
+
+    test('the problems tab lists the institution\'s problems, unresolved first, after the first paint', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $resolved = Problem::factory()->resolved()->create(['tenant_id' => $this->tenant->id, 'occurred_at' => now()->subDay()]);
+        $open = Problem::factory()->create(['tenant_id' => $this->tenant->id, 'occurred_at' => now()->subMonth()]);
+        Problem::factory()->create(['tenant_id' => $this->tenant->id]);
+        $institution->problems()->attach([$resolved->id, $open->id]);
+
+        asUser($this->admin)->get(route('institutions.show', $institution))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('institution.problems_count', 2)
+                ->missing('problems')
+                ->loadDeferredProps('institutionPanels', fn ($panels) => $panels
+                    ->where('problems.0.id', $open->id)
+                    ->where('problems.1.id', $resolved->id)
+                    ->has('problems', 2)));
+    });
+
+    test('the record no longer sends the retired administrators alias', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        asUser($this->admin)->get(route('institutions.show', $institution))
+            ->assertInertia(fn ($page) => $page->has('institution.secretaries')->missing('institution.administrators'));
     });
 
     test('can show institution with tasks', function (): void {
@@ -168,7 +276,7 @@ describe('authorized access', function (): void {
     test('exposes institution type and recent comments for the overview', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
-        $type = Type::factory()->create(['model_type' => MorphMap::alias(Institution::class)]);
+        $type = InstitutionType::factory()->create([]);
         $institution->types()->attach($type);
 
         Comment::factory()->create([
@@ -216,31 +324,39 @@ describe('authorized access', function (): void {
         $response->assertInertia(fn ($page) => $page->component('Admin/People/IndexInstitution'));
     });
 
-    // The index cell shows only the first few meetings, so they must arrive
-    // newest first — an administrator is looking for what just happened.
-    test('indexes institution meetings newest first', function (): void {
-        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
-
-        Meeting::factory()->create(['start_time' => '2024-01-01 10:00:00'])
-            ->institutions()->attach($institution);
-        Meeting::factory()->create(['start_time' => '2026-01-01 10:00:00'])
-            ->institutions()->attach($institution);
-        Meeting::factory()->create(['start_time' => '2025-01-01 10:00:00'])
-            ->institutions()->attach($institution);
+    // The live list reads from Typesense; only what the user could restore is counted here.
+    test('the live index carries no rows, only the trash count', function (): void {
+        Institution::factory()->create(['tenant_id' => $this->tenant->id])->delete();
 
         asUser($this->admin)->get(route('institutions.index'))
             ->assertOk()
-            ->assertInertia(function ($page) use ($institution): void {
-                $meetings = collect($page->toArray()['props']['data'])
-                    ->firstWhere('id', $institution->id)['meetings'];
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/IndexInstitution')
+                ->where('deletedCount', 1)
+                ->missing('data'));
+    });
 
-                $years = array_map(
-                    fn (array $meeting): int => (int) substr((string) $meeting['start_time'], 0, 4),
-                    $meetings,
-                );
+    test('the index carries the ids the user follows, since Typesense cannot know them', function (): void {
+        $followed = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $this->admin->followedInstitutions()->attach($followed);
 
-                expect($years)->toBe([2026, 2025, 2024]);
-            });
+        asUser($this->admin)->get(route('institutions.index'))
+            ->assertInertia(fn ($page) => $page->where('followedInstitutionIds', [$followed->id]));
+    });
+
+    test('the trash is the same collection, fed from the database', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+        $institution->delete();
+
+        asUser($this->admin)->get(route('institutions.index', ['showDeleted' => 'true']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/People/IndexInstitution')
+                ->where('deletedCount', 1));
+
+        asUser($this->admin)->getJson(route('api.v1.admin.trash.index', ['collection' => 'institutions']))
+            ->assertOk()
+            ->assertJsonPath('data.items.0.id', (string) $institution->id);
     });
 
     test('can access institution create page', function (): void {
@@ -321,7 +437,7 @@ describe('authorized access', function (): void {
 
 describe('validation', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
     test('requires name for store', function (): void {
@@ -335,42 +451,44 @@ describe('validation', function (): void {
             ->assertSessionHasErrors('name.lt');
     });
 
-    test('requires short_name for store', function (): void {
-        $response = asUser($this->admin)->post(route('institutions.store'), [
-            'name' => ['lt' => 'Test Institution'],
-            'tenant_id' => $this->tenant->id,
-            'alias' => 'test-alias',
-        ]);
-
-        // Check if it actually gets created without short_name (might not be required)
-        if ($response->status() === 302 && ! $response->getSession()->get('errors')) {
-            // If no validation errors, then short_name is not required
-            $this->assertDatabaseHas('institutions', [
-                'alias' => 'test-alias',
-                'tenant_id' => $this->tenant->id,
-            ]);
-        } else {
-            $response->assertStatus(302)
-                ->assertSessionHasErrors('short_name.lt');
-        }
+    test('the short name is optional', function (): void {
+        asUser($this->admin)
+            ->post(route('institutions.store'), ['name' => ['lt' => 'Chemijos taryba'], 'tenant_id' => $this->tenant->id])
+            ->assertSessionHasNoErrors();
     });
 
-    test('requires alias for store', function (): void {
-        $response = asUser($this->admin)->post(route('institutions.store'), [
-            'name' => ['lt' => 'Test Institution'],
-            'short_name' => ['lt' => 'TI'],
-            'tenant_id' => $this->tenant->id,
-            // Deliberately omitting 'alias'
-        ]);
+    test('the alias is optional and made from the name', function (): void {
+        asUser($this->admin)
+            ->post(route('institutions.store'), ['name' => ['lt' => 'Chemijos studijų komitetas'], 'tenant_id' => $this->tenant->id])
+            ->assertSessionHasNoErrors();
 
-        // Debug what actually happens
-        if ($response->status() === 302 && ! $response->getSession()->get('errors')) {
-            // Institution was created successfully, alias is not required
-            expect(true)->toBeTrue(); // Pass the test
-        } else {
-            $response->assertStatus(302)
-                ->assertSessionHasErrors('alias');
-        }
+        expect(Institution::query()->where('name->lt', 'Chemijos studijų komitetas')->value('alias'))->toBe('chemijos-studiju-komitetas');
+    });
+
+    test('the name and short name must be unique among live institutions', function (): void {
+        Institution::factory()->create(['name' => ['lt' => 'Fakulteto taryba', 'en' => 'Faculty council'], 'short_name' => ['lt' => 'FT', 'en' => 'FC']]);
+        Institution::factory()->create(['name' => ['lt' => 'Ištrinta taryba', 'en' => 'Deleted council']])->delete();
+
+        asUser($this->admin)
+            ->post(route('institutions.store'), ['name' => ['lt' => 'Fakulteto taryba'], 'short_name' => ['lt' => 'FT'], 'tenant_id' => $this->tenant->id])
+            ->assertSessionHasErrors(['name.lt', 'short_name.lt']);
+
+        asUser($this->admin)
+            ->post(route('institutions.store'), ['name' => ['lt' => 'Ištrinta taryba'], 'tenant_id' => $this->tenant->id])
+            ->assertSessionHasNoErrors();
+    });
+
+    test('an edited institution keeps its own name but cannot take another\'s', function (): void {
+        Institution::factory()->for($this->tenant)->create(['name' => ['lt' => 'Fakulteto taryba', 'en' => 'Faculty council'], 'short_name' => ['lt' => 'FT', 'en' => 'FC']]);
+        $institution = Institution::factory()->for($this->tenant)->create(['name' => ['lt' => 'Studijų komitetas', 'en' => 'Study committee'], 'short_name' => ['lt' => 'SK', 'en' => 'SC']]);
+
+        asUser($this->admin)
+            ->put(route('institutions.update', $institution), ['name' => ['lt' => 'Studijų komitetas'], 'short_name' => ['lt' => 'SK'], 'tenant_id' => $this->tenant->id])
+            ->assertSessionHasNoErrors();
+
+        asUser($this->admin)
+            ->put(route('institutions.update', $institution), ['name' => ['lt' => 'Fakulteto taryba'], 'short_name' => ['lt' => 'FT'], 'tenant_id' => $this->tenant->id])
+            ->assertSessionHasErrors(['name.lt', 'short_name.lt']);
     });
 
     test('requires unique alias for store', function (): void {
@@ -403,7 +521,7 @@ describe('validation', function (): void {
 
 describe('relationships', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
     test('institution belongs to tenant', function (): void {
@@ -435,7 +553,7 @@ describe('relationships', function (): void {
 
 describe('meeting_periodicity_days', function (): void {
     beforeEach(function (): void {
-        $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     });
 
     test('can store institution with meeting_periodicity_days', function (): void {
@@ -521,8 +639,7 @@ describe('meeting_periodicity_days', function (): void {
     });
 
     test('accessor returns type periodicity when institution override is null', function (): void {
-        $type = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
+        $type = InstitutionType::factory()->create([
             'extra_attributes' => ['meeting_periodicity_days' => 14],
         ]);
 
@@ -536,12 +653,10 @@ describe('meeting_periodicity_days', function (): void {
     });
 
     test('accessor returns minimum type periodicity when multiple types', function (): void {
-        $type1 = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
+        $type1 = InstitutionType::factory()->create([
             'extra_attributes' => ['meeting_periodicity_days' => 30],
         ]);
-        $type2 = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
+        $type2 = InstitutionType::factory()->create([
             'extra_attributes' => ['meeting_periodicity_days' => 14],
         ]);
 
@@ -556,8 +671,7 @@ describe('meeting_periodicity_days', function (): void {
     });
 
     test('accessor returns default 30 when no override and no type periodicity', function (): void {
-        $type = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
+        $type = InstitutionType::factory()->create([
             'extra_attributes' => [], // No periodicity set
         ]);
 
@@ -595,8 +709,7 @@ describe('meeting_periodicity_days', function (): void {
     });
 
     test('show endpoint returns computed periodicity when override is null', function (): void {
-        $type = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
+        $type = InstitutionType::factory()->create([
             'extra_attributes' => ['meeting_periodicity_days' => 7],
         ]);
 
@@ -616,8 +729,7 @@ describe('meeting_periodicity_days', function (): void {
     });
 
     test('show endpoint states which governance world the body belongs to', function (): void {
-        $type = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
+        $type = InstitutionType::factory()->create([
             'extra_attributes' => ['governance_scope' => 'vusa'],
         ]);
 
@@ -679,5 +791,88 @@ describe('institution search indexing', function (): void {
         expect($searchable)->toHaveKeys(['name_lt', 'duty_names', 'current_user_names'])
             ->and($searchable['duty_names'])->toContain('Pirmininkas')
             ->and($searchable['current_user_names'])->toContain('Jonas Jonaitis');
+    });
+
+    test('searchable array carries the activity status the ViSAK numbers filter by', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+
+        expect($institution->fresh()->toSearchableArray()['activity_status'])->toBe('no_activity');
+
+        Meeting::factory()->hasAttached($institution)->create(['start_time' => now()->addWeek()]);
+
+        expect($institution->fresh()->toSearchableArray()['activity_status'])->toBe('covered_by_upcoming_meeting');
+    });
+});
+
+describe('padalinys, deletion and trash', function (): void {
+    beforeEach(function (): void {
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
+        $this->otherTenant = Tenant::factory()->create();
+    });
+
+    test('an institution cannot be created in a padalinys outside the editor\'s reach', function (): void {
+        asUser($this->admin)
+            ->post(route('institutions.store'), ['name' => ['lt' => 'Svetima taryba'], 'tenant_id' => $this->otherTenant->id])
+            ->assertSessionHasErrors('tenant_id');
+
+        expect(Institution::query()->where('name->lt', 'Svetima taryba')->exists())->toBeFalse();
+    });
+
+    test('only a super admin moves an institution to another padalinys', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $payload = ['name' => ['lt' => 'Perkelta taryba'], 'tenant_id' => $this->otherTenant->id];
+
+        asUser($this->admin)->put(route('institutions.update', $institution), $payload);
+
+        expect($institution->fresh()->tenant_id)->toBe($this->tenant->id);
+
+        asUser(makeAdminUser($this->tenant))->put(route('institutions.update', $institution), $payload);
+
+        expect($institution->fresh()->tenant_id)->toBe($this->otherTenant->id);
+    });
+
+    test('an editor cannot delete an institution they are a member of', function (): void {
+        $ownInstitution = $this->admin->duties()->first()->institution;
+
+        asUser($this->admin)
+            ->delete(route('institutions.destroy', $ownInstitution))
+            ->assertSessionHas('error');
+
+        expect($ownInstitution->fresh()->trashed())->toBeFalse();
+    });
+
+    test('a student representative coordinator creates and edits institutions but cannot delete them', function (): void {
+        $coordinator = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
+        $institution = Institution::factory()->for($this->tenant)->create();
+
+        asUser($coordinator)->get(route('institutions.create'))->assertOk();
+        asUser($coordinator)->get(route('institutions.edit', $institution))->assertOk();
+        asUser($coordinator)->delete(route('institutions.destroy', $institution))->assertForbidden();
+    });
+
+    test('a deleted institution can be restored from the trash', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $institution->delete();
+
+        asUser($this->admin)->patch(route('institutions.restore', $institution))->assertRedirect();
+
+        expect($institution->fresh()->trashed())->toBeFalse();
+    });
+
+    test('an institution with duties or check-ins cannot be deleted permanently', function (): void {
+        $superAdmin = makeAdminUser($this->tenant);
+        $withDuty = Institution::factory()->for($this->tenant)->has(Duty::factory())->create();
+        $withCheckIn = Institution::factory()->for($this->tenant)->create();
+        InstitutionCheckIn::factory()->for($withCheckIn)->create();
+
+        foreach ([$withDuty, $withCheckIn] as $institution) {
+            $institution->delete();
+
+            asUser($superAdmin)
+                ->delete(route('institutions.forceDelete', $institution))
+                ->assertSessionHas('error');
+
+            expect(Institution::withTrashed()->find($institution->id))->not->toBeNull();
+        }
     });
 });

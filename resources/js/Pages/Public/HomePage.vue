@@ -1,5 +1,4 @@
 <template>
-  <!-- <SummerCamps v-if="$page.props.app.locale === 'lt'" /> -->
   <Head v-if="firstNewsImageUrl">
     <link rel="preload" as="image" :href="firstNewsImageUrl" fetchpriority="high">
   </Head>
@@ -7,7 +6,7 @@
        rc-content/rc-wide/rc-full/rc-flush classes only mean anything inside an
        ancestor .rc-canvas grid — this provides that grid. -->
   <div class="rc-canvas" style="--rc-measure: 44rem">
-    <RichContentParser :content="(content as ContentWithParts)?.parts ?? []" :resolved="resolvedParts" :news :calendar-events />
+    <RichContentParser :content="(content as ContentWithParts)?.parts ?? []" :resolved="resolvedParts" />
   </div>
 </template>
 
@@ -15,7 +14,6 @@
 import { Head } from '@inertiajs/vue3';
 
 import RichContentParser from '@/Components/RichContent/RichContentParser.vue';
-import type { NewsItem } from '@/Types/contentParts';
 
 // Type for content with parts
 interface ContentWithParts {
@@ -27,15 +25,9 @@ defineProps<{
   content: ContentWithParts | null;
   /** Server-resolved dynamic blocks (link-list, event-list, …) keyed by content-part id. */
   resolvedParts?: Record<number, unknown>;
-  news?: NewsItem[];
-  calendarEvents?: Array<Record<string, unknown>>;
+  /** The first news block's lead image, preloaded as the likely LCP element. */
   firstNewsImageUrl?: string | null;
 }>();
 
 // Home page doesn't need breadcrumbs - they're cleared by PublicLayout
-
-// const SummerCamps = defineAsyncComponent(
-//  // eslint-disable-next-line no-secrets/no-secrets
-//  () => import("@/Components/Public/FullWidth/SummerCamps.vue"),
-// );
 </script>

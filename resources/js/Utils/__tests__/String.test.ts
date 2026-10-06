@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { translitLithuanian, latinizeId, slugify, generateSlug, getDutyNameGenderVariants, changeDutyNameEndings, stripHtmlTags, hasHtmlText } from '../String';
+import { translitLithuanian, latinizeId, slugify, generateSlug, getDutyNameGenderVariants, changeDutyNameEndings, stripHtmlTags, hasHtmlText, escapeHtml, camelCase } from '../String';
 
 describe('translitLithuanian', () => {
   it('transliterates all Lithuanian lowercase letters', () => {
@@ -166,6 +166,30 @@ describe('generateSlug', () => {
 });
 
 describe('changeDutyNameEndings', () => {
+  it.each([
+    ['Petras Petraitis', 'Koordinatorė', '', 'Koordinatorius'],
+    ['Ona Onaitė', 'Koordinatorius', '', 'Koordinatorė'],
+    ['Petras Petraitis', 'Koordinatorius', ' Ji / jos ', 'Koordinatorė'],
+    ['Ona Onaitė', 'Koordinatorė', ' HE / him ', 'Koordinatorius'],
+    ['Ona Onaitė', 'Koordinatorius', 'they/them', 'Koordinatoriai'],
+    ['Alex Smith', 'Koordinatorė', '', 'Koordinatorė'],
+    ['Jonas Jonaitė', 'Koordinatorė', '', 'Koordinatorius'],
+    ['Katrin Smith', 'Koordinatorius', '', 'Koordinatorė'],
+    ['German Smith', 'Koordinatorė', '', 'Koordinatorė'],
+  ])('resolves %s holding %s with pronouns %s', (name, duty, pronouns, expected) => {
+    expect(changeDutyNameEndings({ name }, duty, 'lt', pronouns)).toBe(expected);
+  });
+
+  it('uses recognized pronouns from the other translation before name inference', () => {
+    expect(changeDutyNameEndings({ name: 'Petras Petraitis' }, 'Koordinatorius', 'lt', { lt: '', en: 'she/her' })).toBe('Koordinatorė');
+    expect(changeDutyNameEndings({ name: 'Ona Onaitė' }, 'Koordinatorius', 'lt', { lt: 'jis/jo', en: 'she/her' })).toBe('Koordinatorius');
+  });
+
+  it('preserves English titles and explicit assignment overrides', () => {
+    expect(changeDutyNameEndings({ name: 'Ona Onaitė' }, 'Coordinator', 'en', 'she/her')).toBe('Coordinator');
+    expect(changeDutyNameEndings({ name: 'Ona Onaitė' }, 'Koordinatorius', 'lt', 'ji/jos', true)).toBe('Koordinatorius');
+  });
+
   const masculinize = (name: string) => changeDutyNameEndings(null, name, 'lt', 'jis/jo', false);
   const feminize = (name: string) => changeDutyNameEndings(null, name, 'lt', 'ji/jos', false);
 
@@ -348,5 +372,44 @@ describe('hasHtmlText', () => {
 
   it('is true once there is text to render', () => {
     expect(hasHtmlText('<p>Naujiena</p>')).toBe(true);
+  });
+});
+
+describe('escapeHtml', () => {
+  it('neutralises markup so it renders as text inside v-html', () => {
+    expect(escapeHtml('<img src=x onerror="alert(1)">')).toBe('&lt;img src=x onerror=&quot;alert(1)&quot;&gt;');
+  });
+
+  it('escapes ampersands first so existing entities are not left live', () => {
+    expect(escapeHtml('A &amp; B\'s')).toBe('A &amp;amp; B&#39;s');
+  });
+
+  it('renders nothing for missing values', () => {
+    expect(escapeHtml(null)).toBe('');
+    expect(escapeHtml(undefined)).toBe('');
+  });
+});
+
+describe('camelCase', () => {
+  it('converts snake_case to camelCase', () => {
+    expect(camelCase('agenda_item')).toBe('agendaItem');
+    expect(camelCase('study_program')).toBe('studyProgram');
+    expect(camelCase('sharepoint_file')).toBe('sharepointFile');
+  });
+
+  it('converts UPPER_CASE to camelCase', () => {
+    expect(camelCase('AGENDA_ITEM')).toBe('agendaItem');
+    expect(camelCase('BANNER')).toBe('banner');
+    expect(camelCase('STUDY_PROGRAM')).toBe('studyProgram');
+  });
+
+  it('converts kebab-case to camelCase', () => {
+    expect(camelCase('quick-link')).toBe('quickLink');
+    expect(camelCase('in-person-meeting')).toBe('inPersonMeeting');
+  });
+
+  it('leaves already camelCase or single words lowercased', () => {
+    expect(camelCase('banner')).toBe('banner');
+    expect(camelCase('user')).toBe('user');
   });
 });

@@ -1,12 +1,5 @@
 // Tree-shakable model icons with regular and filled variants
 
-import type { Component } from 'vue';
-
-import type { ModelEnum } from '../../Types/enums';
-
-// =============================================================================
-// REGULAR ICONS - Import each icon only ONCE
-// =============================================================================
 import DocumentBulletList24Regular from '~icons/fluent/document-bullet-list24-regular';
 import ImageArrowBack24Regular from '~icons/fluent/image-arrow-back24-regular';
 import CalendarLtr24Regular from '~icons/fluent/calendar-ltr24-regular';
@@ -34,10 +27,7 @@ import Notebook24Regular from '~icons/fluent/notebook24-regular';
 import DocumentSettings20Regular from '~icons/fluent/document-settings20-regular';
 import Person24Regular from '~icons/fluent/person24-regular';
 import Alert24Regular from '~icons/fluent/alert24-regular';
-
-// =============================================================================
-// FILLED ICONS - Import each icon only ONCE
-// =============================================================================
+import Target24Regular from '~icons/fluent/target24-regular';
 import DocumentBulletList24Filled from '~icons/fluent/document-bullet-list24-filled';
 import ImageArrowBack24Filled from '~icons/fluent/image-arrow-back24-filled';
 import CalendarLtr24Filled from '~icons/fluent/calendar-ltr24-filled';
@@ -60,9 +50,11 @@ import PersonBoard24Filled from '~icons/fluent/person-board24-filled';
 import BookOpenGlobe24Filled from '~icons/fluent/book-open-globe24-filled';
 import Tag24Filled from '~icons/fluent/tag24-filled';
 import TaskListSquareLtr24Filled from '~icons/fluent/task-list-square-ltr24-filled';
+import Notebook24Filled from '~icons/fluent/notebook24-filled';
 import DocumentSettings20Filled from '~icons/fluent/document-settings20-filled';
 import Person24Filled from '~icons/fluent/person24-filled';
 import Alert24Filled from '~icons/fluent/alert24-filled';
+import Target24Filled from '~icons/fluent/target24-filled';
 
 // =============================================================================
 // TREE-SHAKABLE EXPORTS - Clean, concise naming
@@ -75,8 +67,10 @@ export const CommentIcon = Comment24Regular;
 export const DocumentIcon = DocumentMultiple24Regular;
 export const DutiableIcon = PersonClock24Regular;
 export const DutyIcon = PuzzlePiece24Regular;
+export const EventTypeIcon = TextBulletListSquare24Regular;
 export const FileIcon = DocumentMultiple24Regular;
 export const FormIcon = DocumentBulletList24Regular;
+export const GoalIcon = Target24Regular;
 export const InstitutionIcon = PeopleTeam24Regular;
 export const MeetingIcon = DeviceMeetingRoomRemote24Regular;
 export const NavigationIcon = Navigation24Regular;
@@ -91,8 +85,6 @@ export const ReservationIcon = Bookmark24Regular;
 export const ReservationResourceIcon = Cube24Regular;
 export const ResourceIcon = Cube24Regular;
 export const RoleIcon = PersonBoard24Regular;
-export const SharepointFileIcon = DocumentMultiple24Regular;
-export const SharepointFileableIcon = DocumentMultiple24Regular;
 export const StudyProgramIcon = BookOpenGlobe24Regular;
 export const TagIcon = Tag24Regular;
 export const TaskIcon = TaskListSquareLtr24Regular;
@@ -109,8 +101,10 @@ export const CommentIconFilled = Comment24Filled;
 export const DocumentIconFilled = DocumentMultiple24Filled;
 export const DutiableIconFilled = PersonClock24Filled;
 export const DutyIconFilled = PuzzlePiece24Filled;
+export const EventTypeIconFilled = TextBulletListSquare24Filled;
 export const FileIconFilled = DocumentMultiple24Filled;
 export const FormIconFilled = DocumentBulletList24Filled;
+export const GoalIconFilled = Target24Filled;
 export const InstitutionIconFilled = PeopleTeam24Filled;
 export const MeetingIconFilled = DeviceMeetingRoomRemote24Filled;
 export const NavigationIconFilled = Navigation24Filled;
@@ -125,113 +119,10 @@ export const ReservationIconFilled = Bookmark24Filled;
 export const ReservationResourceIconFilled = Cube24Filled;
 export const ResourceIconFilled = Cube24Filled;
 export const RoleIconFilled = PersonBoard24Filled;
-export const SharepointFileIconFilled = DocumentMultiple24Filled;
-export const SharepointFileableIconFilled = DocumentMultiple24Filled;
 export const StudyProgramIconFilled = BookOpenGlobe24Filled;
 export const TagIconFilled = Tag24Filled;
 export const TaskIconFilled = TaskListSquareLtr24Filled;
 export const TenantIconFilled = PeopleSearch24Regular; // Note: No filled variant available
+export const StudySetIconFilled = Notebook24Filled;
 export const TypeIconFilled = DocumentSettings20Filled;
 export const UserIconFilled = Person24Filled;
-
-// =============================================================================
-// DYNAMIC ACCESS MAPPINGS (for backward compatibility and helper functions)
-// =============================================================================
-
-const modelIconMappingRegular: Record<keyof typeof ModelEnum, Component> = {
-  AGENDA_ITEM: AgendaItemIcon,
-  BANNER: BannerIcon,
-  CALENDAR: CalendarIcon,
-  CATEGORY: CategoryIcon,
-  COMMENT: CommentIcon,
-  DOCUMENT: DocumentIcon,
-  DUTIABLE: DutiableIcon,
-  DUTY: DutyIcon,
-  FILE: FileIcon,
-  FORM: FormIcon,
-  INSTITUTION: InstitutionIcon,
-  MEETING: MeetingIcon,
-  NAVIGATION: NavigationIcon,
-  NEWS: NewsIcon,
-  PAGE: PageIcon,
-  PERMISSION: PermissionIcon,
-  PROBLEM: ProblemIcon,
-  QUICK_LINK: QuickLinkIcon,
-  RELATIONSHIP: RelationshipIcon,
-  RELATIONSHIPABLE: RelationshipableIcon,
-  RESERVATION: ReservationIcon,
-  RESERVATION_RESOURCE: ReservationResourceIcon,
-  RESOURCE: ResourceIcon,
-  ROLE: RoleIcon,
-  SHAREPOINT_FILE: SharepointFileIcon,
-  SHAREPOINT_FILEABLE: SharepointFileableIcon,
-  STUDY_PROGRAM: StudyProgramIcon,
-  TAG: TagIcon,
-  TASK: TaskIcon,
-  TENANT: TenantIcon,
-  TYPE: TypeIcon,
-  USER: UserIcon,
-};
-
-const modelIconMappingFilled: Record<keyof typeof ModelEnum, Component> = {
-  AGENDA_ITEM: AgendaItemIconFilled,
-  BANNER: BannerIconFilled,
-  CALENDAR: CalendarIconFilled,
-  CATEGORY: CategoryIconFilled,
-  COMMENT: CommentIconFilled,
-  DOCUMENT: DocumentIconFilled,
-  DUTIABLE: DutiableIconFilled,
-  DUTY: DutyIconFilled,
-  FILE: FileIconFilled,
-  FORM: FormIconFilled,
-  INSTITUTION: InstitutionIconFilled,
-  MEETING: MeetingIconFilled,
-  NAVIGATION: NavigationIconFilled,
-  NEWS: NewsIconFilled,
-  PAGE: PageIconFilled,
-  PERMISSION: PermissionIconFilled,
-  PROBLEM: ProblemIconFilled,
-  QUICK_LINK: QuickLinkIconFilled,
-  RELATIONSHIP: RelationshipIconFilled,
-  RELATIONSHIPABLE: RelationshipableIconFilled,
-  RESERVATION: ReservationIconFilled,
-  RESERVATION_RESOURCE: ReservationResourceIconFilled,
-  RESOURCE: ResourceIconFilled,
-  ROLE: RoleIconFilled,
-  SHAREPOINT_FILE: SharepointFileIconFilled,
-  SHAREPOINT_FILEABLE: SharepointFileableIconFilled,
-  STUDY_PROGRAM: StudyProgramIconFilled,
-  TAG: TagIconFilled,
-  TASK: TaskIconFilled,
-  TENANT: TenantIconFilled,
-  TYPE: TypeIconFilled,
-  USER: UserIconFilled,
-};
-
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
-
-/**
- * Get model icon by enum key with variant support
- * @param modelKey - The model enum key
- * @param variant - Icon variant ('regular' or 'filled')
- * @returns Vue component for the icon
- */
-export function getModelIcon(
-  modelKey: keyof typeof ModelEnum,
-  variant: 'regular' | 'filled' = 'regular',
-): Component {
-  return variant === 'filled'
-    ? modelIconMappingFilled[modelKey]
-    : modelIconMappingRegular[modelKey];
-}
-
-const modelIconMapping = modelIconMappingRegular;
-
-// Export mappings for external use
-export {
-  modelIconMapping,
-  modelIconMappingRegular,
-  modelIconMappingFilled,
-};

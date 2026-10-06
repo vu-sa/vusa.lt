@@ -27,6 +27,17 @@ const choices = (wrapper: ReturnType<typeof mount>) =>
   wrapper.findAll('[data-slot="action-choice-button"]');
 
 describe('MeetingAgendaScreen.vue', () => {
+  it('explains later privacy editing without visibility controls during creation', async () => {
+    const { wrapper, window } = mountScreen();
+    await choices(wrapper)[0]!.trigger('click');
+    await wrapper.find('[data-slot="agenda-items-editor"] input').setValue('Vidaus klausimas');
+    expect(wrapper.find('[role="switch"]').exists()).toBe(false);
+    expect(wrapper.text()).toContain('meetings.privacy.creation_hint');
+    expect(wrapper.find('#agenda-item-public-title').exists()).toBe(false);
+    await wrapper.findAll('button').find(button => button.text().includes('action_window.common.continue'))!.trigger('click');
+    expect(window.draft.agendaItems).toEqual([{ title: 'Vidaus klausimas', description: '', order: 1, is_private: false }]);
+  });
+
   it('offers listing the questions, pasting them later, and skipping', () => {
     const { wrapper } = mountScreen();
 
@@ -74,7 +85,7 @@ describe('MeetingAgendaScreen.vue', () => {
     await wrapper.find('[data-slot="agenda-items-editor"] input').setValue('Studijų kokybė');
     await wrapper.findAll('button').find(button => button.text().includes('action_window.common.continue'))!.trigger('click');
 
-    expect(window.draft.agendaItems).toEqual([{ title: 'Studijų kokybė', description: '', order: 1 }]);
+    expect(window.draft.agendaItems).toEqual([{ title: 'Studijų kokybė', description: '', order: 1, is_private: false }]);
     expect(window.draft.meeting.open_bulk_agenda).toBe(false);
   });
 

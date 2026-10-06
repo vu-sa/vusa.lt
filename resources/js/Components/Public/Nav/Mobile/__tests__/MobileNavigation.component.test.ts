@@ -6,6 +6,7 @@ import { usePage } from '@inertiajs/vue3';
 import MobileNavigation from '../MobileNavigation.vue';
 
 import { createMockPage } from '@/tests/helpers/createMockPage';
+import { ssrRoundTrip } from '@/tests/helpers/ssrRoundTrip';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -183,5 +184,18 @@ describe('MobileNavigation.vue', () => {
     expect(accessibilityMenu.className).toContain('z-[70]');
 
     wrapper.unmount();
+  });
+
+  it('hydrates server markup without touching <body>, since SSR drops the teleported panel', async () => {
+    vi.mocked(usePage).mockReturnValue(buildMockPage());
+    const pageData = document.createElement('script');
+    document.body.prepend(pageData);
+
+    const { hydrationWarnings, unmount } = await ssrRoundTrip(MobileNavigation);
+
+    expect(hydrationWarnings).toEqual([]);
+    expect(pageData.isConnected).toBe(true);
+    unmount();
+    pageData.remove();
   });
 });

@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'record' => [
+        'privacy_note' => 'Files are never shown on vusa.lt. Opening a file creates a link that anyone holding it can use – you can revoke it.',
+        'open_in_sharepoint' => 'Open the folder in SharePoint (needs a VU SA Microsoft account)',
+        'revoke_title' => 'Revoke the link?',
+        'revoke_description' => 'Anyone you sent this link to will no longer be able to open the file. Opening the file next time creates a new link.',
+    ],
     'ui' => [
         'delete_folder_blocked' => 'This folder cannot be deleted: it still contains :count subfolders. Delete those first.',
         'no_files_here' => 'No files in this folder',
@@ -67,7 +73,6 @@ return [
         'type' => 'Type',
         'location' => 'Location',
         'file_properties' => 'File properties and actions',
-        'sharepoint_properties' => 'SharePoint file properties',
         'cannot_select_file_type' => 'This file type cannot be selected.',
     ],
     'validation' => [
@@ -107,6 +112,36 @@ return [
         'image_optimised' => 'Image optimised (:percent% saved).',
     ],
 
+    'usage' => [
+        'scan_done' => 'Check complete',
+        'scan_failed' => 'Could not check where the file is used',
+        'matched_blocks' => 'Content blocks: :count',
+        'models' => [
+            'page' => 'Page',
+            'pages' => 'Page',
+            'news' => 'News article',
+            'tenant' => 'Unit homepage',
+            'content' => 'Content block',
+            'banners' => 'Banner',
+            'institutions' => 'Institution',
+            'calendar' => 'Event',
+            'duties' => 'Duty',
+            'dutiables' => 'Duty period',
+            'institutionTypes' => 'Institution type',
+            'dutyTypes' => 'Duty type',
+            'forms' => 'Form',
+            'formFields' => 'Form field',
+            'problems' => 'Problem',
+            'goals' => 'Goal',
+            'steps' => 'Step',
+            'tags' => 'Tag',
+            'navigation' => 'Navigation item',
+            'quickLinks' => 'Quick link',
+            'users' => 'Member',
+            'contentEditorDrafts' => 'Unsaved draft',
+        ],
+    ],
+
     'errors' => [
         'no_filesystem_access' => 'You do not have permission to browse the file system. Contact an administrator about access rights.',
         'no_directory_access' => 'You do not have permission to view this folder.',
@@ -143,5 +178,14 @@ return [
         'no_scan_permission' => 'You do not have permission to scan this file\'s usage.',
         'upload_partial' => 'Failed to upload :count files.',
         'scan_failed' => 'Could not scan the file usage: :error',
+    ],
+
+    'optimize' => [
+        'dialog_title' => 'Optimize this image?',
+        'dialog_description' => 'The image will be overwritten.',
+        'action' => 'Optimize image',
+        'progress' => 'Optimizing image...',
+        'success' => 'Image optimized successfully',
+        'error' => 'Failed to optimize image',
     ],
 ];

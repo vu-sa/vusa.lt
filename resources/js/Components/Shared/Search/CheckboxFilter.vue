@@ -1,5 +1,13 @@
 <template>
   <div class="space-y-2" :class="containerClass">
+    <FacetCountHelp />
+    <input v-if="options.length > 8" v-model="term" type="search" :aria-label="$t('search.facet_search')" :placeholder="$t('search.facet_search')" class="min-h-11 w-full border border-border bg-background px-3 text-sm text-foreground">
+    <p v-if="loading" role="status" class="text-xs text-muted-foreground">
+      {{ $t('search.facet_search_loading') }}
+    </p>
+    <p v-if="failed" role="status" class="text-xs text-muted-foreground">
+      {{ $t('search.facet_search_error') }}
+    </p>
     <!-- No options state -->
     <div v-if="options.length === 0" class="text-sm text-muted-foreground p-3 text-center italic">
       {{ emptyText }}
@@ -58,17 +66,21 @@
 </template>
 
 <script setup lang="ts">
+
 import { ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown } from 'lucide-vue-next';
 
 import type { FilterOption, FacetValue } from './types';
 
+import { useFacetOptions } from '@/Shared/Search/useFacetOptions';
+import FacetCountHelp from '@/Components/ui/FacetCountHelp.vue';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 
 interface Props {
+  field?: string;
   /**
    * Options to display. Can be FilterOption[] with labels or FacetValue[] from search engine.
    */
@@ -121,12 +133,14 @@ const normalizedOptions = computed(() => {
     const isFacetValue = !('label' in opt);
     const { value } = opt;
     const label = isFacetValue ? props.labelFormatter(String(opt.value)) : opt.label;
-    const count = opt.count ?? 0;
+    const { count } = opt;
     const isSelected = props.selectedValues.includes(value);
 
     return { value, label, count, isSelected };
   });
 });
+
+const { term, values: searchedValues, loading, failed } = useFacetOptions(() => props.field, () => normalizedOptions.value, () => props.selectedValues);
 
 // Check if we have more options than maxVisible
 const hasMoreOptions = computed(() => {
@@ -140,13 +154,13 @@ const hiddenCount = computed(() => {
 
 // Options to display (limited or all)
 const displayedOptions = computed(() => {
-  if (props.maxVisible === 0 || showAll.value || !hasMoreOptions.value) {
-    return normalizedOptions.value;
+  if (term.value || props.maxVisible === 0 || showAll.value || !hasMoreOptions.value) {
+    return searchedValues.value;
   }
 
   // Always show selected options + fill remaining with unselected
-  const selected = normalizedOptions.value.filter(v => v.isSelected);
-  const unselected = normalizedOptions.value.filter(v => !v.isSelected);
+  const selected = searchedValues.value.filter(v => v.isSelected);
+  const unselected = searchedValues.value.filter(v => !v.isSelected);
 
   // If selected count is already at or above max, show all selected
   if (selected.length >= props.maxVisible) {
@@ -159,7 +173,8 @@ const displayedOptions = computed(() => {
 });
 
 // Format count for display
-const formatCount = (count: number): string => {
+const formatCount = (count: number | null | undefined): string => {
+  if (count == null) return '–';
   if (count >= 1000000) {
     return `${(count / 1000000).toFixed(1)}M`;
   }

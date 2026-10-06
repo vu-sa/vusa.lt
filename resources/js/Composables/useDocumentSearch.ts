@@ -11,6 +11,7 @@ import { usePage } from '@inertiajs/vue3';
 
 import type {
   DocumentSearchFilters,
+  DocumentSearchSort,
   DocumentFacet,
   DocumentSearchPreferences,
   DocumentSearchController,
@@ -193,7 +194,10 @@ export const useDocumentSearch = (): DocumentSearchController => {
       const collectionName = typesenseConfig.collections?.documents || 'documents';
 
       // Create document service and adapter
-      documentService.value = new DocumentSearchService(typesenseClient.value, collectionName);
+      documentService.value = new DocumentSearchService(typesenseClient.value, collectionName, {
+        importantContentTypes: page.props.importantContentTypes as string[] ?? [],
+        recommendationsUrl: page.props.hasDocumentRecommendations ? route('api.v1.documents.recommendations') : undefined,
+      });
       const adapter = new DocumentSearchServiceAdapter(documentService.value);
 
       // Set the service on base search
@@ -254,7 +258,20 @@ export const useDocumentSearch = (): DocumentSearchController => {
     baseSearch.debouncedSearch();
   };
 
-  const setSortBy = (sort: DocumentSearchFilters['sort']) => {
+  const hasQuery = computed(() => {
+    const query = baseSearch.filters.value.query.trim();
+    return query !== '' && query !== '*';
+  });
+
+  // 'relevance' is the automatic default: newest first while browsing, relevance once a query exists.
+  const activeSort = computed<DocumentSearchSort>(() => {
+    const sort = baseSearch.filters.value.sort ?? 'relevance';
+    return sort === 'relevance' && !hasQuery.value ? 'date_desc' : sort;
+  });
+
+  const setSortBy = (choice: DocumentSearchSort) => {
+    // Picking the browsing default must not opt out of switching to relevance on the next query.
+    const sort = choice === 'date_desc' && !hasQuery.value ? 'relevance' : choice;
     if (baseSearch.filters.value.sort === sort) return;
     baseSearch.filters.value = {
       ...baseSearch.filters.value,
@@ -557,6 +574,8 @@ export const useDocumentSearch = (): DocumentSearchController => {
     results: baseSearch.results,
     facets: baseSearch.mergedFacets, // Use merged facets
     filters: baseSearch.filters as unknown as ComputedRef<DocumentSearchFilters>,
+    hasQuery,
+    activeSort,
     viewMode: computed(() => documentPreferences.value.viewMode),
     recentSearches: computed(() => documentPreferences.value.recentSearches),
 

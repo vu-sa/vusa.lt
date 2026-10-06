@@ -25,4 +25,12 @@ class AtstovavimasTenantRequest extends FormRequest
             'refresh' => ['nullable', 'boolean'],
         ];
     }
+
+    /**
+     * @return list<int>
+     */
+    public function tenantIds(): array
+    {
+        return array_values(array_map(intval(...), $this->validated('tenant_ids')));
+    }
 }

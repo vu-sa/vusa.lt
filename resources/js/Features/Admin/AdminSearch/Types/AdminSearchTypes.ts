@@ -38,7 +38,7 @@ export type AdminCollection
  */
 export interface AdminFacetValue {
   value: string;
-  count: number;
+  count: number | null;
   isSelected?: boolean;
   label?: string; // Optional display label (for content types, etc.)
 }

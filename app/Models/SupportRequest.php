@@ -40,6 +40,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property string $title
  * @property string $description
  * @property string|null $context_url
+ * @property array<array-key, mixed>|null $context
  * @property string|null $selected_text
  * @property string $locale
  * @property Carbon|null $resolved_at
@@ -83,6 +84,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
     'title',
     'description',
     'context_url',
+    'context',
     'selected_text',
     'locale',
     'resolved_at',
@@ -105,6 +107,7 @@ class SupportRequest extends Model implements Commentable, HasMedia
             'status' => SupportRequestStatus::class,
             'visibility' => SupportRequestVisibility::class,
             'resolved_at' => 'datetime',
+            'context' => 'array',
         ];
     }
 
@@ -144,6 +147,19 @@ class SupportRequest extends Model implements Commentable, HasMedia
     public function involvedUsers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'support_request_user')->withTimestamps();
+    }
+
+    /**
+     * The people who triage the queue. No `supportRequests.*` permission is seeded, so in
+     * practice that is the super admins.
+     *
+     * @return Collection<int, User>
+     */
+    public static function managers(): Collection
+    {
+        return User::query()
+            ->whereHas('roles', fn (Builder $query) => $query->where('name', config('permission.super_admin_role_name')))
+            ->get();
     }
 
     /**

@@ -39,10 +39,12 @@ class UpdateDutyRequest extends FormRequest
             'description' => 'nullable',
             'email' => 'nullable|email',
             'current_users' => 'nullable|array',
+            'roles' => 'nullable|array',
             'institution_id' => 'required',
             'places_to_occupy' => 'required|numeric',
             'contacts_grouping' => 'required|in:none,study_program,tenant',
             'types' => 'nullable|array',
+            'types.*' => ['integer', 'distinct', SoftDeleteRules::existsLive('duty_types')],
             'ex_officio_target_duty_ids' => 'nullable|array',
             'ex_officio_target_duty_ids.*' => ['ulid', 'distinct', SoftDeleteRules::existsLive('duties'), 'not_in:'.$duty->id],
             'assignable_tenants' => 'nullable|array',
@@ -66,7 +68,7 @@ class UpdateDutyRequest extends FormRequest
             ->whereNotNull('tenant_id')
             ->where(function ($query): void {
                 $query->whereNull('end_date')
-                    ->orWhere('end_date', '>=', now());
+                    ->orWhereDate('end_date', '>=', today());
             })
             ->get(['tenant_id', 'dutiable_id'])
             ->groupBy('tenant_id')

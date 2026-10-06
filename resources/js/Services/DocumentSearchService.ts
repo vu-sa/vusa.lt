@@ -1,6 +1,10 @@
 import type { DocumentSearchFilters, DocumentFacet, SearchError } from '@/Types/DocumentSearchTypes';
 
 interface SearchParams {
+  pinned_hits?: string;
+  filter_curated_hits?: boolean;
+  enable_overrides?: boolean;
+  facetFilters?: Record<string, string>;
   q: string;
   query_by: string;
   query_by_weights?: string;
@@ -21,7 +25,7 @@ interface SearchParams {
 }
 
 interface SearchResponse {
-  hits?: Array<{ document: any }>;
+  hits?: Array<{ document: Record<string, unknown> }>;
   found?: number;
   facet_counts?: Array<{
     field_name: string;
@@ -33,15 +37,21 @@ interface SearchResponse {
 }
 
 interface SearchClient {
-  search: (collection: string, searchParams: SearchParams) => Promise<SearchResponse>;
+  search: (collection: string, searchParams: SearchParams, signal?: AbortSignal) => Promise<SearchResponse>;
+}
+
+export interface DocumentSearchCuration {
+  importantContentTypes?: string[];
+  recommendationsUrl?: string;
 }
 
 export class DocumentSearchService {
   private typesenseClient: SearchClient | null = null;
   private abortController: AbortController | null = null;
   private collectionName: string;
+  private recommendedIds: string[] = [];
 
-  constructor(typesenseClient: SearchClient | null, collectionName: string = 'documents') {
+  constructor(typesenseClient: SearchClient | null, collectionName: string = 'documents', private curation: DocumentSearchCuration = {}) {
     this.typesenseClient = typesenseClient;
     this.collectionName = collectionName;
   }
@@ -62,7 +72,7 @@ export class DocumentSearchService {
     isLoadMore = false,
     currentPage = 0,
   ): Promise<{
-    hits: any[];
+    hits: Record<string, unknown>[];
     totalHits: number;
     facets: DocumentFacet[];
     currentPage: number;
@@ -75,25 +85,38 @@ export class DocumentSearchService {
     // Cancel previous request
     this.cancelCurrentSearch();
     this.abortController = new AbortController();
+    const controller = this.abortController;
 
     // Build search parameters
     const searchParams = this.buildSearchParams(filters, perPage, isLoadMore, currentPage);
 
     try {
-      // Execute search with timeout
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Search request timed out')), 10000);
-      });
-
-      const searchPromise = this.typesenseClient.search(this.collectionName, searchParams);
-      const response = await Promise.race([searchPromise, timeoutPromise]);
-
-      if (this.abortController?.signal.aborted) {
-        throw new Error('Search was cancelled');
+      // Later pages must pin the same ids as the first, or Typesense's page offsets shift.
+      let recommendedIds = isLoadMore ? this.recommendedIds : [];
+      if (!isLoadMore && this.curation.recommendationsUrl && filters.sort !== 'date_asc') {
+        try {
+          const url = new URL(this.curation.recommendationsUrl, window.location.origin);
+          url.searchParams.set('q', filters.query.trim());
+          const response = await fetch(url, { signal: controller.signal, headers: { Accept: 'application/json' } });
+          if (response.ok) {
+            const result = await response.json() as { data: { ids: string[] } };
+            recommendedIds = result.data.ids;
+          }
+        }
+        catch (error) {
+          if (controller.signal.aborted) throw error;
+          console.warn('Document recommendations unavailable', error);
+        }
       }
+      if (!isLoadMore) this.recommendedIds = recommendedIds;
+      searchParams.enable_overrides = false;
+      searchParams.filter_curated_hits = true;
+      if (recommendedIds.length) searchParams.pinned_hits = recommendedIds.map((id, index) => `${id}:${index + 1}`).join(',');
+      const response = await this.typesenseClient.search(this.collectionName, searchParams, controller.signal);
+      if (controller.signal.aborted) throw new DOMException('Search was cancelled', 'AbortError');
 
       // Process results
-      const hits = response.hits?.map((hit: any) => hit.document) || [];
+      const hits = response.hits?.map(hit => recommendedIds.includes(String(hit.document.id)) ? { ...hit.document, _searchRecommended: true } : hit.document) || [];
       const totalHits = response.found || 0;
       const totalPages = Math.ceil(totalHits / perPage);
       const newCurrentPage = isLoadMore ? currentPage + 1 : 1;
@@ -125,7 +148,7 @@ export class DocumentSearchService {
   ): SearchParams {
     const query = filters.query.trim();
     const searchParams: SearchParams = {
-      q: query,
+      q: query || '*',
       query_by: 'title,summary,content_type,document_year,document_date_formatted',
       query_by_weights: '10,3,2,6,4',
       facet_by: [
@@ -139,7 +162,7 @@ export class DocumentSearchService {
       per_page: perPage,
       page: isLoadMore ? currentPage + 1 : 1,
       sort_by: this.buildSortExpression(filters, query),
-      prefix: false,
+      prefix: true,
       infix: 'fallback',
       prioritize_exact_match: true,
       prioritize_token_position: true,
@@ -150,6 +173,12 @@ export class DocumentSearchService {
     };
 
     // Build filter conditions
+    searchParams.facetFilters = Object.fromEntries([
+      ['tenant_shortname', this.buildFilterConditions({ ...filters, tenants: [] }).join(' && ')],
+      ['content_type', this.buildFilterConditions({ ...filters, contentTypes: [] }).join(' && ')],
+      ['language', this.buildFilterConditions({ ...filters, languages: [] }).join(' && ')],
+      ['is_in_effect', this.buildFilterConditions({ ...filters, effectStatuses: [] }).join(' && ')],
+    ]);
     const filterConditions = this.buildFilterConditions(filters);
     if (filterConditions.length > 0) {
       searchParams.filter_by = filterConditions.join(' && ');
@@ -168,8 +197,11 @@ export class DocumentSearchService {
         return 'document_date:asc,created_at:asc';
       case 'date_desc':
         return 'document_date:desc,created_at:desc';
-      default:
-        return (query && query !== '*') ? '_text_match:desc,document_date:desc' : 'document_date:desc,created_at:desc';
+      default: {
+        const types = this.curation.importantContentTypes ?? [];
+        const promotion = types.length ? `_eval(content_type:=[${types.map(type => `\`${type.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',')}]):desc,` : '';
+        return (query && query !== '*') ? `_text_match:desc,${promotion}document_date:desc` : 'document_date:desc,created_at:desc';
+      }
     }
   }
 

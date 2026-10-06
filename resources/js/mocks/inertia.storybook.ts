@@ -130,11 +130,13 @@ export const router = {
     console.log('Inertia router reload:', options);
     return Promise.resolve();
   }),
+  on: fn((_event: string, _callback: (event: CustomEvent) => void) => () => {}),
 };
 
 // Mock useForm for Inertia forms
 export const useForm = fn((data: Record<string, unknown> = {}) => ({
-  data,
+  ...data,
+  data: () => data,
   errors: {},
   hasErrors: false,
   processing: false,
@@ -159,7 +161,7 @@ export const useForm = fn((data: Record<string, unknown> = {}) => ({
  * Inertia v3's standalone XHR hook. Reactive so a component reading `http.processing` in a
  * computed re-renders; the request methods are no-op spies, so a story never reaches the network.
  * Mirrors `inertia.mock.ts` — a story importing a component that calls `useHttp` (TextBoxDisplay,
- * TasksIndicator, FileUploadArea) fails to import at all without this export.
+ * FileUploadArea) fails to import at all without this export.
  */
 export const useHttp = fn((data: Record<string, unknown> = {}) => reactive({
   ...data,

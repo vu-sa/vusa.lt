@@ -3,7 +3,7 @@
 namespace App\Models\Traits;
 
 /**
- * Trait for managing user UI preferences (sidebar customization + recently visited pages).
+ * Trait for managing user UI preferences (pinned and recently visited pages).
  *
  * Add to User model:
  * - Use this trait
@@ -14,31 +14,9 @@ namespace App\Models\Traits;
 trait HasUIPreferences
 {
     /**
-     * Toggleable sidebar sections. Anything not in this list is locked
-     * (header, account dropdown, main navigation) and cannot be hidden.
-     *
-     * @var list<string>
-     */
-    public static array $toggleableSidebarSections = [
-        'pinned',
-        'recently_visited',
-        'followed_institutions',
-        'spacer',
-        'start_fm',
-        'secondary',
-    ];
-
-    /**
      * Maximum number of pinned pages kept per user.
      */
     public static int $maxPinnedPages = 10;
-
-    /**
-     * Allowed sidebar density values.
-     *
-     * @var list<string>
-     */
-    public static array $densityValues = ['comfortable', 'compact'];
 
     /**
      * Default UI preferences structure.
@@ -48,30 +26,7 @@ trait HasUIPreferences
      */
     protected function getDefaultUIPreferences(): array
     {
-        $sections = [];
-        foreach (self::$toggleableSidebarSections as $section) {
-            $sections[$section] = true;
-        }
-
-        // Followed institutions is disabled by default.
-        $sections['followed_institutions'] = false;
-
         return [
-            'sidebar' => [
-                'sections' => $sections,
-                'order' => [
-                    'pinned',
-                    'recently_visited',
-                    'followed_institutions',
-                    'spacer',
-                    'start_fm',
-                    'secondary',
-                ],
-                'collapsed' => false,
-            ],
-            'appearance' => [
-                'density' => 'comfortable',
-            ],
             'pinned_pages' => [],
             'recent_pages' => [],
         ];
@@ -85,142 +40,6 @@ trait HasUIPreferences
         $preferences = $value ? (is_string($value) ? json_decode($value, true) : $value) : [];
 
         return array_replace_recursive($this->getDefaultUIPreferences(), $preferences);
-    }
-
-    /**
-     * Get the sidebar section visibility map (only toggleable sections).
-     *
-     * @return array<string, bool>
-     */
-    public function getSidebarSectionVisibility(): array
-    {
-        $stored = $this->ui_preferences['sidebar']['sections'] ?? [];
-
-        $visibility = [];
-        foreach (self::$toggleableSidebarSections as $section) {
-            $visibility[$section] = (bool) ($stored[$section] ?? true);
-        }
-
-        return $visibility;
-    }
-
-    /**
-     * Replace the sidebar section visibility map. Unknown keys are discarded.
-     *
-     * @param  array<string, mixed>  $sections
-     */
-    public function setSidebarSectionVisibility(array $sections): void
-    {
-        $preferences = $this->ui_preferences;
-
-        $visibility = $preferences['sidebar']['sections'] ?? [];
-        foreach ($sections as $key => $value) {
-            if (in_array($key, self::$toggleableSidebarSections, true)) {
-                $visibility[$key] = (bool) $value;
-            }
-        }
-
-        $preferences['sidebar']['sections'] = $visibility;
-        $this->update(['ui_preferences' => $preferences]);
-    }
-
-    /**
-     * Get the sidebar section order (all toggleable sections, sanitized, deduped).
-     *
-     * @return list<string>
-     */
-    public function getSidebarSectionOrder(): array
-    {
-        $stored = $this->ui_preferences['sidebar']['order'] ?? [];
-
-        $seen = [];
-        $ordered = [];
-
-        foreach ($stored as $key) {
-            if (in_array($key, self::$toggleableSidebarSections, true) && ! in_array($key, $seen, true)) {
-                $seen[] = $key;
-                $ordered[] = $key;
-            }
-        }
-
-        foreach (self::$toggleableSidebarSections as $section) {
-            if (! in_array($section, $seen, true)) {
-                $ordered[] = $section;
-            }
-        }
-
-        return $ordered;
-    }
-
-    /**
-     * Replace the sidebar section order. Unknown keys are discarded,
-     * duplicates are removed, and missing toggleable sections are appended.
-     *
-     * @param  array<int, mixed>  $order
-     */
-    public function setSidebarSectionOrder(array $order): void
-    {
-        $seen = [];
-        $sanitized = [];
-
-        foreach ($order as $key) {
-            if (is_string($key) && in_array($key, self::$toggleableSidebarSections, true) && ! in_array($key, $seen, true)) {
-                $seen[] = $key;
-                $sanitized[] = $key;
-            }
-        }
-
-        foreach (self::$toggleableSidebarSections as $section) {
-            if (! in_array($section, $seen, true)) {
-                $sanitized[] = $section;
-            }
-        }
-
-        $preferences = $this->ui_preferences;
-        $preferences['sidebar']['order'] = $sanitized;
-        $this->update(['ui_preferences' => $preferences]);
-    }
-
-    /**
-     * Get whether the sidebar is collapsed (icon-only) for this user.
-     */
-    public function getSidebarCollapsed(): bool
-    {
-        return (bool) ($this->ui_preferences['sidebar']['collapsed'] ?? false);
-    }
-
-    /**
-     * Persist the sidebar collapsed (icon-only) state.
-     */
-    public function setSidebarCollapsed(bool $collapsed): void
-    {
-        $preferences = $this->ui_preferences;
-        $preferences['sidebar']['collapsed'] = $collapsed;
-        $this->update(['ui_preferences' => $preferences]);
-    }
-
-    /**
-     * Get the sidebar density. Falls back to 'comfortable' for unknown values.
-     */
-    public function getDensity(): string
-    {
-        $density = $this->ui_preferences['appearance']['density'] ?? 'comfortable';
-
-        return in_array($density, self::$densityValues, true) ? $density : 'comfortable';
-    }
-
-    /**
-     * Persist the sidebar density. Unknown values are ignored.
-     */
-    public function setDensity(string $density): void
-    {
-        if (! in_array($density, self::$densityValues, true)) {
-            return;
-        }
-
-        $preferences = $this->ui_preferences;
-        $preferences['appearance']['density'] = $density;
-        $this->update(['ui_preferences' => $preferences]);
     }
 
     /**

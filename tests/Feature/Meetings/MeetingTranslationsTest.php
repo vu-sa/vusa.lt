@@ -6,10 +6,10 @@ use App\Enums\InstitutionScope;
 use App\Models\Calendar;
 use App\Models\Document;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Models\Vote;
 use App\Settings\MeetingSettings;
 use App\Support\LocalizedRouteSlugs;
@@ -22,14 +22,14 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
 
-    $this->vusaType = Type::factory()->forInstitutions(InstitutionScope::Vusa)->create();
+    $this->vusaType = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create();
     $this->institution = Institution::factory()->for($this->tenant)->create();
     $this->institution->types()->attach($this->vusaType);
 
     $this->meeting = Meeting::factory()->create(['start_time' => '2026-05-14 10:00:00']);
     $this->meeting->institutions()->attach($this->institution);
 
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 });
 
 /** The published announcement, which is what opens the agenda to the public. */
@@ -286,10 +286,10 @@ describe('admin editor payload', function (): void {
         ]);
 
         asUser($this->admin)
-            ->get(route('agendaItems.edit', $agendaItem->id))
+            ->get(route('agendaItems.show', $agendaItem->id))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Representation/EditAgendaItem')
+                ->component('Admin/Representation/ShowAgendaItem')
                 ->where('agendaItem.title.lt', 'Lietuviškas')
                 ->where('agendaItem.title.en', 'English')
                 ->where('agendaItem.votes.0.title.en', 'Vote')

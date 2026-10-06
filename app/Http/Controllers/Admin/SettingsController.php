@@ -12,20 +12,19 @@ use App\Http\Requests\UpdateSettingsAuthorizationRequest;
 use App\Http\Requests\UpdateSiteSettingsRequest;
 use App\Models\Document;
 use App\Models\Form;
-use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Page;
 use App\Models\PublicInstitution;
 use App\Models\PublicMeeting;
 use App\Models\Role;
-use App\Models\Type;
 use App\Models\User;
+use App\Services\Typesense\DocumentRecommendations;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\DocumentSettings;
 use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
 use App\Settings\SettingsSettings;
 use App\Settings\SiteSettings;
-use App\Support\MorphMap;
 use Illuminate\Support\Facades\Cache;
 
 class SettingsController extends AdminController
@@ -68,8 +67,8 @@ class SettingsController extends AdminController
             'student_rep_institution_type_ids' => $formSettings->getStudentRepInstitutionTypeIds()->toArray(),
             'forms' => Form::all(['id', 'name']),
             'roles' => Role::all(['id', 'name']),
-            'institution_types' => Type::query()
-                ->where('model_type', MorphMap::alias(Institution::class))
+            'institution_types' => InstitutionType::query()
+
                 ->get(['id', 'title', 'slug'])
                 ->map->toArray(),
         ]);
@@ -91,7 +90,7 @@ class SettingsController extends AdminController
 
         // The sidebar links to these forms, so every user's cached ids are now stale.
         User::query()->pluck('id')->each(
-            fn ($userId) => Cache::forget(HandleInertiaRequests::registrationFormsCacheKey($userId))
+            fn ($userId) => Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($userId))
         );
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));
@@ -107,8 +106,8 @@ class SettingsController extends AdminController
         return $this->inertiaResponse('Admin/Settings/EditMeetingSettings', [
             'selected_type_ids' => $meetingSettings->getPublicMeetingInstitutionTypeIds()->toArray(),
             'excluded_type_ids' => $meetingSettings->getExcludedInstitutionTypeIds()->toArray(),
-            'available_types' => Type::query()
-                ->where('model_type', MorphMap::alias(Institution::class))
+            'available_types' => InstitutionType::query()
+
                 ->get(['id', 'title', 'slug'])
                 ->map->toArray(),
         ]);
@@ -180,11 +179,9 @@ class SettingsController extends AdminController
         $this->authorizeSettingsAccess($settingsSettings);
 
         return $this->inertiaResponse('Admin/Settings/EditAtstovavimasSettings', [
-            'institution_manager_role_id' => $atstovavimasSettings->getInstitutionManagerRoleId(),
             'student_rep_root_type_id' => $atstovavimasSettings->student_rep_root_type_id,
-            'roles' => Role::all(['id', 'name']),
-            'institution_types' => Type::query()
-                ->where('model_type', MorphMap::alias(Institution::class))
+            'institution_types' => InstitutionType::query()
+
                 ->get(['id', 'title', 'slug'])
                 ->map->toArray(),
         ]);
@@ -197,20 +194,11 @@ class SettingsController extends AdminController
     {
         $this->authorizeSettingsAccess($settingsSettings);
 
-        $oldRoleId = $atstovavimasSettings->getInstitutionManagerRoleId();
-        $newRoleId = $request->input('institution_manager_role_id');
         $oldRootTypeId = $atstovavimasSettings->student_rep_root_type_id;
-        $newRootTypeId = $request->input('student_rep_root_type_id') ? (int) $request->input('student_rep_root_type_id') : null;
+        $newRootTypeId = $request->validated('student_rep_root_type_id') ? (int) $request->validated('student_rep_root_type_id') : null;
 
-        $atstovavimasSettings->institution_manager_role_id = $newRoleId;
         $atstovavimasSettings->student_rep_root_type_id = $newRootTypeId;
         $atstovavimasSettings->save();
-
-        // Clear cache if role changed
-        if ($oldRoleId !== $newRoleId) {
-            AtstovavimasSettings::clearManagerRoleCache($oldRoleId);
-            AtstovavimasSettings::clearManagerRoleCache($newRoleId);
-        }
 
         if ($oldRootTypeId !== $newRootTypeId) {
             AtstovavimasSettings::clearStudentRepTypeCache();
@@ -228,6 +216,9 @@ class SettingsController extends AdminController
 
         return $this->inertiaResponse('Admin/Settings/EditDocumentSettings', [
             'selected_content_types' => $documentSettings->getImportantContentTypes()->toArray(),
+            'recommendations' => $documentSettings->recommendations,
+            'selected_documents' => Document::query()->whereIn('id', array_column($documentSettings->recommendations, 'document_id'))
+                ->get(['id', 'title', 'is_active'])->map(fn ($document) => ['id' => (string) $document->id, 'title' => $document->title, 'is_active' => $document->is_active])->values(),
             'available_content_types' => Document::query()
                 ->select('content_type')
                 ->whereNotNull('content_type')
@@ -242,12 +233,20 @@ class SettingsController extends AdminController
     /**
      * Update document settings.
      */
-    public function updateDocumentSettings(UpdateDocumentSettingsRequest $request, DocumentSettings $documentSettings, SettingsSettings $settingsSettings)
+    public function updateDocumentSettings(UpdateDocumentSettingsRequest $request, DocumentSettings $documentSettings, SettingsSettings $settingsSettings, DocumentRecommendations $recommendations)
     {
         $this->authorizeSettingsAccess($settingsSettings);
 
         $documentSettings->setImportantContentTypes($request->input('important_content_types', []));
+        $documentSettings->recommendations = collect($request->validated('recommendations'))->map(fn ($recommendation) => [
+            'document_id' => (string) $recommendation['document_id'],
+            'phrases' => array_values(array_unique(array_filter(array_map(trim(...), $recommendation['phrases'])))),
+            'enabled' => (bool) $recommendation['enabled'],
+            'show_without_query' => (bool) $recommendation['show_without_query'],
+        ])->all();
         $documentSettings->save();
+        // The rules are saved either way; a Typesense outage only delays them until `typesense:apply-search-config`.
+        rescue(fn () => $recommendations->synchronize());
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));
     }

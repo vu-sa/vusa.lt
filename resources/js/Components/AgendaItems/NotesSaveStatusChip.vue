@@ -1,14 +1,14 @@
 <template>
   <Transition name="fade" mode="out-in">
-    <span v-if="status === 'saving'" key="saving" class="flex items-center gap-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+    <span v-if="status === 'saving'" key="saving" class="flex items-center gap-1 text-xs text-muted-foreground">
       <Loader2 class="h-3 w-3 animate-spin" />
       {{ $t('Saugoma…') }}
     </span>
-    <span v-else-if="status === 'dirty'" key="dirty" class="flex items-center gap-1 text-[11px] text-amber-600 dark:text-amber-400">
-      <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+    <span v-else-if="status === 'dirty'" key="dirty" class="flex items-center gap-1 text-xs text-status-attention">
+      <span class="size-1.5 animate-pulse bg-status-attention" />
       {{ $t('Neišsaugota') }}
     </span>
-    <span v-else-if="status === 'saved'" key="saved" class="flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400">
+    <span v-else-if="status === 'saved'" key="saved" class="flex items-center gap-1 text-xs text-status-success">
       <Check class="h-3 w-3" />
       {{ $t('Įrašyta') }}
     </span>

@@ -34,10 +34,10 @@ class StoreInstitutionRequest extends InstitutionRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            // No database unique index backs this, so a soft-deleted record must not
-            // reserve the value — `withoutTrashed()` is exactly right here.
-            'name.lt' => ['required', Rule::unique('institutions', 'name')->withoutTrashed()],
-            'short_name.lt' => ['nullable', Rule::unique('institutions', 'short_name')->withoutTrashed()],
+            // Compared on the Lithuanian value: the columns are JSON, so a bare column name never matches.
+            // No database unique index backs this, so a soft-deleted record must not reserve the value.
+            'name.lt' => ['required', Rule::unique('institutions', 'name->lt')->withoutTrashed()],
+            'short_name.lt' => ['nullable', Rule::unique('institutions', 'short_name->lt')->withoutTrashed()],
             'alias' => ['nullable', Rule::unique('institutions', 'alias')->withoutTrashed()],
         ]);
     }

@@ -12,16 +12,16 @@
 
       <template v-else-if="plan">
         <div class="flex flex-wrap gap-1 border-b border-border px-4 pb-3">
-          <Badge variant="secondary" class="text-[10px]">
+          <Badge variant="secondary" class="text-xs">
             {{ $t('dutiables.timeline.diff.changed', { count: plan.summary.changed }) }}
           </Badge>
-          <Badge v-if="plan.summary.blocked > 0" variant="destructive" class="text-[10px]">
+          <Badge v-if="plan.summary.blocked > 0" variant="destructive" class="text-xs">
             {{ $t('dutiables.timeline.diff.blocked', { count: plan.summary.blocked }) }}
           </Badge>
-          <Badge variant="outline" class="text-[10px]">
+          <Badge variant="outline" class="text-xs">
             {{ $t('dutiables.timeline.diff.unchanged', { count: plan.summary.unchanged }) }}
           </Badge>
-          <Badge v-if="plan.summary.derived > 0" variant="outline" class="text-[10px]">
+          <Badge v-if="plan.summary.derived > 0" variant="outline" class="text-xs">
             {{ $t('dutiables.timeline.diff.derived', { count: plan.summary.derived }) }}
           </Badge>
         </div>
@@ -54,25 +54,25 @@
                     {{ change.holder_name ?? '—' }}
                   </p>
                   <p class="truncate text-xs text-muted-foreground">
-                    {{ change.duty_name ?? '—' }}
+                    {{ timelineDutyName(change, usePage().props.app.locale) }}
                   </p>
                 </div>
-                <Badge v-if="change.blocked" variant="destructive" class="shrink-0 text-[10px]">
+                <Badge v-if="change.blocked" variant="destructive" class="shrink-0 text-xs">
                   {{ $t(`dutiables.timeline.blocked.${change.blocked}`) }}
                 </Badge>
               </div>
 
-              <div class="mt-1 flex flex-wrap items-center gap-2 font-mono text-[11px]">
+              <div class="mt-1 flex flex-wrap items-center gap-2 font-mono text-xs">
                 <span class="text-muted-foreground">{{ formatPeriod(change.before) }}</span>
                 <ArrowRight class="size-3 text-muted-foreground" />
-                <span :class="change.blocked ? 'text-muted-foreground line-through' : 'text-amber-600 dark:text-amber-400'">
+                <span :class="change.blocked ? 'text-muted-foreground line-through' : 'text-status-attention'">
                   {{ formatPeriod(change.after) }}
                 </span>
               </div>
 
               <ul v-if="change.derived.length > 0" class="mt-1 space-y-0.5 pl-4">
-                <li v-for="derived in change.derived" :key="derived.id" class="text-[11px] text-muted-foreground">
-                  ↳ {{ derived.duty_name ?? '—' }} · {{ formatPeriod(derived) }}
+                <li v-for="derived in change.derived" :key="derived.id" class="text-xs text-muted-foreground">
+                  ↳ {{ timelineDutyName({ ...change, duty_name: derived.duty_name, use_original_duty_name: derived.use_original_duty_name }, usePage().props.app.locale) }} · {{ formatPeriod(derived) }}
                 </li>
               </ul>
             </li>
@@ -93,9 +93,11 @@
 </template>
 
 <script setup lang="ts">
+import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { ArrowRight, TriangleAlert } from 'lucide-vue-next';
 
+import { timelineDutyName } from './dutyNames';
 import type { TimelinePlanPayload } from './types';
 
 import { Alert, AlertDescription } from '@/Components/ui/alert';

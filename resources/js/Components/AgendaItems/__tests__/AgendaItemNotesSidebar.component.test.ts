@@ -24,20 +24,8 @@ const notesState = {
   destroy: vi.fn(),
 };
 
-const dismiss = vi.fn();
-
 vi.mock('@/Composables/useAgendaItemNotes', () => ({
   useAgendaItemNotes: () => notesState,
-}));
-
-vi.mock('@/Composables/useFeatureSpotlight', () => ({
-  useFeatureSpotlight: () => ({
-    isVisible: ref(true),
-    isDismissed: ref(false),
-    targetRef: ref(null),
-    dismiss,
-    reset: vi.fn(),
-  }),
 }));
 
 function mountSidebar() {
@@ -47,7 +35,6 @@ function mountSidebar() {
       stubs: {
         ...commonStubs,
         AgendaItemNotesEditor: { name: 'AgendaItemNotesEditor', template: '<div class="notes-editor-stub" />' },
-        SpotlightPopover: { name: 'SpotlightPopover', template: '<div><slot /></div>' },
         UserAvatar: { name: 'UserAvatar', template: '<span class="user-avatar-stub" />' },
       },
     },
@@ -60,7 +47,6 @@ describe('AgendaItemNotesSidebar', () => {
     notesState.saveStatus.value = 'idle';
     notesState.isHydrating.value = false;
     notesState.notesHtml.value = '';
-    dismiss.mockClear();
   });
 
   it('shows the private notes header', () => {
@@ -98,11 +84,5 @@ describe('AgendaItemNotesSidebar', () => {
     await wrapper.vm.$nextTick();
     expect(wrapper.findAll('.user-avatar-stub').length).toBe(3);
     expect(wrapper.text()).toContain('+2');
-  });
-
-  it('dismisses the spotlight when the expand button is clicked', async () => {
-    const wrapper = mountSidebar();
-    await wrapper.find('button').trigger('click');
-    expect(dismiss).toHaveBeenCalled();
   });
 });

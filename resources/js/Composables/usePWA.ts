@@ -1,5 +1,9 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { toast } from 'vue-sonner';
+
+import { describeDevice } from '@/Utils/pushDevice';
 
 /**
  * PWA Composable
@@ -74,6 +78,7 @@ const isPWAMode = ref(false); // Reactive PWA mode state
 // Service worker update function (set after registration)
 let updateSW: ((reloadPage?: boolean) => Promise<void>) | undefined;
 let swRegistration: ServiceWorkerRegistration | undefined;
+const serviceWorkerReady = ref(false);
 
 /**
  * Check if running in standalone/installed PWA mode
@@ -175,8 +180,8 @@ export function usePWA() {
     if (currentBrowserEndpoint.value && endpoints.length > 0) {
       return endpoints.includes(currentBrowserEndpoint.value);
     }
-    // Last resort: check if any subscription exists
-    return (page.props.pwa as any)?.hasPushSubscription ?? false;
+    // Unknown: another device's subscription says nothing about this browser.
+    return false;
   });
 
   // Check if ANY device has push subscription (for showing device management)
@@ -229,28 +234,7 @@ export function usePWA() {
   };
 
   // Get device name from user agent
-  const getDeviceName = (): string => {
-    const ua = navigator.userAgent;
-
-    // Try to extract meaningful device info
-    if (/iPhone/.test(ua)) return 'iPhone';
-    if (/iPad/.test(ua)) return 'iPad';
-    if (/Android/.test(ua)) {
-      const match = ua.match(/Android[^;]*;\s*([^)]+)/);
-      return match?.[1]?.trim() ?? 'Android Device';
-    }
-    if (/Windows/.test(ua)) return 'Windows PC';
-    if (/Macintosh/.test(ua)) return 'Mac';
-    if (/Linux/.test(ua)) return 'Linux PC';
-
-    // Fallback to browser name
-    if (/Edge/.test(ua)) return 'Edge Browser';
-    if (/Chrome/.test(ua)) return 'Chrome Browser';
-    if (/Firefox/.test(ua)) return 'Firefox Browser';
-    if (/Safari/.test(ua)) return 'Safari Browser';
-
-    return 'Unknown Device';
-  };
+  const getDeviceName = (): string => describeDevice(navigator.userAgent);
 
   // Get CSRF token from Inertia page props
   const getCsrfToken = (): string => {
@@ -283,8 +267,12 @@ export function usePWA() {
 
   // Subscribe to push notifications
   const subscribeToPush = async (): Promise<boolean> => {
+    // The registration may not be stored yet (early click, or a worker registered in an earlier visit).
+    swRegistration ??= pushSupported.value ? await navigator.serviceWorker.getRegistration() : undefined;
+
     if (!pushSupported.value || !swRegistration) {
-      console.error('[PWA] Push not supported or SW not registered');
+      serviceWorkerReady.value = false;
+      toast.error($t('notifications.push_devices.worker_missing'));
       return false;
     }
 
@@ -346,6 +334,7 @@ export function usePWA() {
     }
     catch (error) {
       console.error('[PWA] Push subscription failed:', error);
+      toast.error($t('notifications.push_devices.subscribe_failed'));
       return false;
     }
     finally {
@@ -417,8 +406,11 @@ export function usePWA() {
         }
       }
 
-      console.warn('[PWA] No subscription found to unsubscribe');
-      return false;
+      // Nothing to remove in this browser: the "enabled" state was stale, so correct it.
+      currentBrowserSubscribed.value = false;
+      router.reload({ only: ['pwa'] });
+
+      return true;
     }
     catch (error) {
       console.error('[PWA] Push unsubscription failed:', error);
@@ -474,8 +466,9 @@ export function usePWA() {
         return [];
       }
 
-      const data = await response.json();
-      const subscriptions: PushSubscriptionDevice[] = data.subscriptions || [];
+      // ApiResponses shape: { success, data }.
+      const payload = await response.json() as { data?: PushSubscriptionDevice[] };
+      const subscriptions = payload.data ?? [];
 
       // Mark which subscription belongs to current browser
       if (currentBrowserEndpoint.value) {
@@ -559,6 +552,7 @@ export function usePWA() {
     unsubscribeFromPush,
     removeSubscriptionById,
     fetchPushSubscriptions,
+    serviceWorkerReady,
     checkCurrentBrowserSubscription,
     refreshSubscriptionStatus,
     // App badge
@@ -630,6 +624,7 @@ export async function initPWA() {
         const registration = await navigator.serviceWorker.getRegistration();
         if (registration) {
           swRegistration = registration;
+          serviceWorkerReady.value = true;
           const subscription = await registration.pushManager.getSubscription();
           currentBrowserSubscribed.value = subscription !== null;
           currentBrowserEndpoint.value = subscription?.endpoint ?? null;
@@ -656,6 +651,7 @@ export async function initPWA() {
     onRegisteredSW(swUrl: string, registration: ServiceWorkerRegistration | undefined) {
       console.log('[PWA] Service worker registered:', swUrl);
       swRegistration = registration;
+      serviceWorkerReady.value = registration !== undefined;
 
       // Update push permission state
       if ('Notification' in window) {

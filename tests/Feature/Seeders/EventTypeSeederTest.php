@@ -41,6 +41,6 @@ test('restores the canonical event type vocabulary when run repeatedly', functio
         ['slug' => 'rinkimai', 'name' => ['lt' => 'Rinkimai', 'en' => 'Elections'], 'is_active' => true, 'sort_order' => 6, 'deleted_at' => null],
         ['slug' => 'stovykla', 'name' => ['lt' => 'Stovykla', 'en' => 'Camp'], 'is_active' => true, 'sort_order' => 7, 'deleted_at' => null],
         ['slug' => 'terminas', 'name' => ['lt' => 'Terminas', 'en' => 'Deadline'], 'is_active' => true, 'sort_order' => 8, 'deleted_at' => null],
-    ]);
-    expect(Cache::has('all-event-types-for-inertia'))->toBeFalse();
+    ])
+        ->and(Cache::has('all-event-types-for-inertia'))->toBeFalse();
 });

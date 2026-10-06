@@ -31,7 +31,7 @@ function morphMapExemptClasses(): array
 }
 
 /** `*_type` columns that describe a file format or a behaviour, not a model. */
-const NON_POLYMORPHIC_TYPE_COLUMNS = ['action_type', 'content_type', 'file_type', 'mime_type'];
+const NON_POLYMORPHIC_TYPE_COLUMNS = ['action_type', 'campaign_type', 'content_type', 'file_type', 'mime_type'];
 
 /** Migrations are excluded: the ones predating the map wrote class names legitimately. */
 const MORPH_LITERAL_SCAN_PATHS = ['app', 'database/seeders', 'database/factories', 'tests'];

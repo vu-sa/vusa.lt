@@ -4,7 +4,7 @@ import { mount } from '@vue/test-utils';
 import ContentGridDisplay from '../ContentGridDisplay.vue';
 import { resolveBand } from '../../bandLayout';
 
-import DecorativeElement from '@/Components/ui/DecorativeElement.vue';
+import DecorativeElement from '@/Components/RichContent/DecorativeElement.vue';
 
 describe('ContentGridDisplay', () => {
   it('renders a card cell through RCFeatureCard', () => {

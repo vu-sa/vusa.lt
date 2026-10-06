@@ -89,9 +89,6 @@ class Dutiable extends MorphPivot
     use HasFactory, HasRelationships, HasTranslations, HasUlids;
 
     #[\Override]
-    protected $with = ['study_program'];
-
-    #[\Override]
     protected $dispatchesEvents = [
         'saved' => DutiableChanged::class,
         'deleted' => DutiableChanged::class,
@@ -145,6 +142,10 @@ class Dutiable extends MorphPivot
     }
 
     /**
+     * User-only by decision: the morph is a leftover from the removed Contact model, so do not
+     * add a second holder type. Alumni and login-less contacts stay User rows; the planned
+     * simplification is a plain `user_id` foreign key.
+     *
      * @return MorphTo<Model, $this>
      */
     public function dutiable(): MorphTo
@@ -208,7 +209,7 @@ class Dutiable extends MorphPivot
     /**
      * Rows that have not ended yet, matching what `Duty::current_users()` and every
      * quota check mean by "current" — a future-dated start still counts, because the
-     * seat is already allocated.
+     * seat is already allocated. The end date is the last day in office.
      */
     public function scopeCurrent($query)
     {

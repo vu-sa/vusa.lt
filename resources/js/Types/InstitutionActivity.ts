@@ -23,4 +23,8 @@ export interface InstitutionActivityStatus {
 export interface InstitutionActivityInsight extends InstitutionActivityStatus {
   id: string;
   name: string;
+  /** Named only where several padaliniai share one list. */
+  tenant_name?: string | null;
+  /** The user is its secretary, not a member. */
+  is_administered?: boolean;
 }

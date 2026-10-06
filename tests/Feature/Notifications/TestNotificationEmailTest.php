@@ -24,7 +24,7 @@ describe('profile.sendTestNotificationEmail', function (): void {
             ->assertOk()
             ->assertJson(['success' => true]);
 
-        Mail::assertSent(NotificationDigest::class, fn ($mail) => $mail->hasTo($user->getDigestEmails()[0]));
+        Mail::assertSent(NotificationDigest::class, fn ($mail) => $mail->hasTo($user->notificationEmails()[0]));
     });
 
     test('the sample digest carries an item, so the template renders', function (): void {

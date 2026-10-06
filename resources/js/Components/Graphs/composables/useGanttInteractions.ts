@@ -47,12 +47,8 @@ export interface GanttInteractionCallbacks {
   onDayWidthChange: (width: number) => void;
 }
 
-const MIN_DAY_WIDTH = 3;
-/**
- * Halved from 36: past ~18px a day column is wider than anything drawn in it, and the
- * chart stops showing a period you can take in at once.
- */
-const MAX_DAY_WIDTH = 18;
+const MIN_DAY_WIDTH = 1;
+const MAX_DAY_WIDTH = 9;
 
 export function useGanttInteractions(
   options: GanttInteractionOptions,
@@ -470,7 +466,7 @@ export function useGanttInteractions(
   /**
    * Zoom in (increase day width) by a step amount
    */
-  function zoomIn(step: number = 3) {
+  function zoomIn(step: number = 2) {
     const newWidth = Math.min(MAX_DAY_WIDTH, dayWidthPx.value + step);
     onScaleChange([newWidth]);
   }
@@ -478,7 +474,7 @@ export function useGanttInteractions(
   /**
    * Zoom out (decrease day width) by a step amount
    */
-  function zoomOut(step: number = 3) {
+  function zoomOut(step: number = 2) {
     const newWidth = Math.max(MIN_DAY_WIDTH, dayWidthPx.value - step);
     onScaleChange([newWidth]);
   }

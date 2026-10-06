@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\LocaleEnum;
 use App\Enums\TenantType;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Settings\SiteSettings;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,6 +30,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $address
  * @property string|null $shortname_vu
  * @property string|null $primary_institution_id
+ * @property bool $goals_enabled
  * @property-read Collection<int, Banner> $banners
  * @property-read Collection<int, Calendar> $calendar
  * @property-read Collection<int, Duty> $duties
@@ -57,32 +61,85 @@ class Tenant extends Model
 {
     use HasFactory, HasRelationships, Searchable;
 
+    private const string MAIN_CACHE_KEY = 'tenant:main';
+
+    private const string ALL_CACHE_KEY = 'tenant:all';
+
     #[\Override]
     protected function casts(): array
     {
         return [
             'type' => TenantType::class,
+            'goals_enabled' => 'boolean',
         ];
     }
 
     #[\Override]
     protected static function booted()
     {
-        static::saved(function ($tenant): void {
-            // Clear homepage cache when tenant content changes
-            Cache::tags(['homepage', "tenant_{$tenant->id}"])->flush();
+        static::saved(function (Tenant $tenant): void {
+            foreach (LocaleEnum::cases() as $locale) {
+                Cache::tags(['homepage'])->forget("homepage_content_{$tenant->id}_{$locale->value}");
+            }
+
+            $tenant->forgetLookupCaches();
         });
+
+        static::deleted(fn (Tenant $tenant) => $tenant->forgetLookupCaches());
     }
 
     /**
      * The single VU SA central-office tenant.
      *
-     * This lookup was hand-written in six places (controllers and Form Requests alike); it is
-     * cheap but it is also the sort of thing that should have exactly one spelling.
+     * Memoized per request (and cached across them) because `Page::publicUrl()` and
+     * `News::publicUrl()` call it once per item in listings.
      */
     public static function main(): ?self
     {
-        return static::query()->where('type', TenantType::Pagrindinis)->first();
+        return Cache::memo()->rememberForever(self::MAIN_CACHE_KEY,
+            fn () => static::query()->where('type', TenantType::Pagrindinis)->first());
+    }
+
+    /**
+     * Every tenant, for permission resolution. A fresh collection each call; the models are
+     * shared within the request.
+     *
+     * @return Collection<int, Tenant>
+     */
+    public static function allCached(): Collection
+    {
+        return new Collection(Cache::memo()->rememberForever(self::ALL_CACHE_KEY, fn () => static::all())->all());
+    }
+
+    /**
+     * The tenant a public request's host resolves to, looked up on every public page.
+     */
+    public static function forAlias(string $alias): ?self
+    {
+        return Cache::memo()->rememberForever(self::aliasCacheKey($alias),
+            fn () => static::query()->where('alias', $alias)->first());
+    }
+
+    private static function aliasCacheKey(string $alias): string
+    {
+        return "tenant:alias:{$alias}";
+    }
+
+    private function forgetLookupCaches(): void
+    {
+        $cache = Cache::memo();
+
+        $cache->forget(HandleInertiaRequests::TENANTS_CACHE_KEY);
+        $cache->forget(self::MAIN_CACHE_KEY);
+        $cache->forget(self::ALL_CACHE_KEY);
+        $cache->forget(self::aliasCacheKey((string) $this->alias));
+
+        if ($this->wasChanged('alias') && is_string($this->getOriginal('alias'))) {
+            $cache->forget(self::aliasCacheKey($this->getOriginal('alias')));
+        }
+
+        // The privacy page URL carries its tenant's subdomain.
+        SiteSettings::forgetCachedPrivacyPageUrls();
     }
 
     /**

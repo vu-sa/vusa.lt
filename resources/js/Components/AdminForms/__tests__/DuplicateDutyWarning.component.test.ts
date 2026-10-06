@@ -95,8 +95,7 @@ describe('DuplicateDutyWarning.vue', () => {
     });
 
     expect(wrapper.text()).not.toContain('forms.duty_duplicate.other_institutions');
-    // The informational note must not borrow the amber same-institution styling.
-    expect(wrapper.find('.border-amber-300').exists()).toBe(false);
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false);
   });
 
   it('renders same-institution tier without the disabled other-institution note', () => {
@@ -106,7 +105,7 @@ describe('DuplicateDutyWarning.vue', () => {
       other_institution_count: 3,
     });
 
-    expect(wrapper.find('.border-amber-300').exists()).toBe(true);
+    expect(wrapper.find('[role="alert"]').exists()).toBe(true);
     expect(wrapper.text()).not.toContain('forms.duty_duplicate.other_institutions');
   });
 });

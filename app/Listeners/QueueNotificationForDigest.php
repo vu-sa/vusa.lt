@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Enums\NotificationChannel;
+use App\Enums\EmailDelivery;
 use App\Models\NotificationDigestQueue;
 use App\Models\User;
 use App\Notifications\BaseNotification;
@@ -11,9 +11,7 @@ use Illuminate\Notifications\Events\NotificationSending;
 /**
  * Listener to queue notifications for email digest.
  *
- * This listener intercepts notifications before they are sent and
- * queues them for digest if the user has email digest enabled for
- * the notification category.
+ * Queues a notification for the email digest when the recipient chose "Suvestinėje" for its type.
  */
 class QueueNotificationForDigest
 {
@@ -56,24 +54,14 @@ class QueueNotificationForDigest
             return;
         }
 
-        // Check if this notification supports digest
-        if (! $notification->supportsEmailDigest()) {
-            return;
-        }
-
-        // Check if user has email digest enabled for this category
-        if (! $notifiable->shouldReceiveNotification($notification->category(), NotificationChannel::EmailDigest)) {
-            return;
-        }
-
-        // Check if user is globally muted
-        if ($notifiable->isNotificationMuted($notification)) {
+        if ($notifiable->isGloballyMuted() || $notifiable->emailDeliveryFor($notification->type()) !== EmailDelivery::Digest) {
             return;
         }
 
         // Queue for digest
         NotificationDigestQueue::create([
             'user_id' => $notifiable->id,
+            'notification_id' => $notification->id,
             'notification_class' => $notification::class,
             'category' => $notification->category()->value,
             'data' => $notification->toDigestItem($notifiable),

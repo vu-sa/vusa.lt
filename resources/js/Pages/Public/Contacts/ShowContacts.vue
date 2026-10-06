@@ -91,7 +91,7 @@
           <!-- Tenant / Padalinys Filter Popover -->
           <PublicFilterPopover
             :label="$t('Padalinys')"
-            :options="tenantOptions"
+            :options="tenantOptions" field="tenant_shortname"
             :selected="filters.tenants || []"
             searchable
             :search-placeholder="`${$t('Ieškoti padalinio')}...`"
@@ -104,7 +104,7 @@
           <PublicFilterPopover
             v-if="typeOptions.length > 0"
             :label="$t('search.institution_type')"
-            :options="typeOptions"
+            :options="typeOptions" field="type_slugs"
             :selected="filters.types || []"
             searchable
             :search-placeholder="`${$t('Ieškoti tipo')}...`"
@@ -287,11 +287,11 @@ import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcru
 import { useInstitutionSearch } from '@/Composables/useInstitutionSearch';
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
-import TagChip from '@/Components/Public/Base/TagChip.vue';
+import TagChip from '@/Components/Brand/TagChip.vue';
 import PublicFilterPopover, { type FilterOption } from '@/Components/Public/Base/PublicFilterPopover.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
-import NewInstitutionCard from '@/Components/Cards/NewInstitutionCard.vue';
-import StudentRepInstitutionCard from '@/Components/Cards/StudentRepInstitutionCard.vue';
+import NewInstitutionCard from '@/Components/Public/Institutions/NewInstitutionCard.vue';
+import StudentRepInstitutionCard from '@/Components/Public/Institutions/StudentRepInstitutionCard.vue';
 import InstitutionResultsSkeleton from '@/Components/Public/Search/InstitutionResultsSkeleton.vue';
 import { TenantType } from '@/Types/enums';
 import IFluentSearch16Regular from '~icons/fluent/search-16-regular';

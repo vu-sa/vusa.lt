@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 
+import { createActionWindowProvider, type ActionWindowContext } from '@/Composables/useActionWindow';
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import type { TaskDisplayData } from '@/Composables/useTaskPresentation';
 
@@ -16,36 +17,31 @@ const makeTask = (overrides: Partial<TaskDisplayData> = {}): TaskDisplayData => 
   ...overrides,
 });
 
-/** useActionWindow() needs an active component instance to inject from. */
+/** The composable injects the action window, so it needs a provider above it. */
 const withComposable = () => {
   let result!: ReturnType<typeof useTaskActionDialogs>;
+  let window!: ActionWindowContext;
 
-  mount(defineComponent({
+  const Child = defineComponent({
     setup() {
       result = useTaskActionDialogs();
       return () => h('div');
     },
+  });
+
+  mount(defineComponent({
+    setup() {
+      window = createActionWindowProvider();
+      return () => h(Child);
+    },
   }));
 
-  return result;
+  return { dialogs: result, window };
 };
 
 describe('useTaskActionDialogs', () => {
-  it('opens and closes the check-in dialog for the clicked task', () => {
-    const dialogs = withComposable();
-    const task = makeTask();
-
-    dialogs.openCheckInDialog(task);
-    expect(dialogs.showCheckInDialog.value).toBe(true);
-    expect(dialogs.selectedCheckInTask.value).toStrictEqual(task);
-
-    dialogs.closeCheckInDialog();
-    expect(dialogs.showCheckInDialog.value).toBe(false);
-    expect(dialogs.selectedCheckInTask.value).toBeNull();
-  });
-
   it('opens and closes the task detail dialog for the clicked task', () => {
-    const dialogs = withComposable();
+    const { dialogs } = withComposable();
     const task = makeTask();
 
     dialogs.openTaskDetail(task);
@@ -57,46 +53,31 @@ describe('useTaskActionDialogs', () => {
     expect(dialogs.selectedDetailTask.value).toBeNull();
   });
 
-  it('does nothing for openMeetingModal when the task has no subject left', () => {
-    // An orphaned task (its subject was hard-deleted) has nothing for the action window to
-    // open a meeting-creation flow against.
-    const dialogs = withComposable();
+  it('opens the action window on the report choice for the task\'s institution', () => {
+    const { dialogs, window } = withComposable();
 
-    expect(() => dialogs.openMeetingModal(makeTask({ taskable: null }))).not.toThrow();
+    dialogs.openReportWindow(makeTask());
+
+    expect(window.isOpen.value).toBe(true);
+    expect(window.current.value.id).toBe('institution.report');
+    expect(window.draft.institution).toEqual({ id: 'institution-1', name: 'MIF SA' });
   });
 
-  it('routes the detail dialog\'s "schedule meeting" into the meeting flow, closing detail first', () => {
-    const dialogs = withComposable();
-    const task = makeTask();
+  it('does nothing for a task whose subject is gone', () => {
+    const { dialogs, window } = withComposable();
 
-    dialogs.openTaskDetail(task);
-    dialogs.scheduleMeetingFromDetail();
+    dialogs.openReportWindow(makeTask({ taskable: null }));
+
+    expect(window.isOpen.value).toBe(false);
+  });
+
+  it('closes the detail dialog before reporting from it', () => {
+    const { dialogs, window } = withComposable();
+
+    dialogs.openTaskDetail(makeTask());
+    dialogs.reportFromDetail();
 
     expect(dialogs.showTaskDetail.value).toBe(false);
-    expect(dialogs.selectedDetailTask.value).toBeNull();
-  });
-
-  it('routes the detail dialog\'s "report no meeting" into the check-in dialog, closing detail first', () => {
-    const dialogs = withComposable();
-    const task = makeTask();
-
-    dialogs.openTaskDetail(task);
-    dialogs.reportNoMeetingFromDetail();
-
-    expect(dialogs.showTaskDetail.value).toBe(false);
-    expect(dialogs.showCheckInDialog.value).toBe(true);
-    expect(dialogs.selectedCheckInTask.value).toStrictEqual(task);
-  });
-
-  it('derives the check-in date range from the selected task, not a fixed window', () => {
-    const dialogs = withComposable();
-    const overdueTask = makeTask({
-      created_at: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-      metadata: { effective_days_since_activity: 120 },
-    });
-
-    dialogs.openCheckInDialog(overdueTask);
-
-    expect(dialogs.checkInStartDate.value.getTime()).toBeLessThanOrEqual(dialogs.checkInEndDate.value.getTime());
+    expect(window.current.value.id).toBe('institution.report');
   });
 });

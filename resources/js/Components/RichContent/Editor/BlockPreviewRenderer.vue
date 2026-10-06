@@ -6,11 +6,11 @@
     <!-- tiptap: when not inline-editable (e.g. BlockPickerDialog / static preview), render
          live json_content directly through RichContentTiptapHTML. When inline-editable,
          TiptapDisplay mounts the interactive editor canvas and smart toolbar. -->
-    <RichContentTiptapHTML v-if="element.type === 'tiptap' && !editableForElement" :json_content="element.json_content" />
+    <RichContentTiptapHTML v-if="element.type === 'tiptap' && !isEditingElement" :json_content="element.json_content" />
 
     <Suspense v-else>
       <template #default>
-        <component :is="displayComponent" :element :html="false" :is-first-element="true"
+        <component :is="displayComponent" :element :html="false"
           :resolved="resolvedForElement" :band="bandForElement"
           :editable="editableForElement" :active-inline-field="activeInlineFieldForElement"
           :block-key="blockKeyForElement"

@@ -68,7 +68,7 @@ class FormSettings extends Settings
             return true;
         }
 
-        return $user->current_duties()
+        return $user->authorization_duties()
             ->whereHas('roles', fn ($query) => $query->where('id', $roleId))
             ->exists();
     }
@@ -94,7 +94,7 @@ class FormSettings extends Settings
             return $user->tenants()->pluck('tenants.id')->unique()->values();
         }
 
-        return $user->current_duties()
+        return $user->authorization_duties()
             ->whereHas('roles', fn ($query) => $query->where('id', $roleId))
             ->with('institution:id,tenant_id')
             ->get()

@@ -110,7 +110,7 @@
 
             <iframe
               v-if="content.url"
-              :src="resolvedEmbedUrl"
+              :src="mounted ? resolvedEmbedUrl : undefined"
               frameborder="0"
               allowtransparency="true"
               :allow="isMixcloud ? 'encrypted-media; fullscreen; autoplay; idle-detection; speaker-selection; web-share;' : 'encrypted-media'"
@@ -146,7 +146,7 @@
  * page's automatic tint alternation exactly like every other band-capable block now.
  */
 import { computed, defineAsyncComponent } from 'vue';
-import { useDark } from '@vueuse/core';
+import { useDark, useMounted } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RichContentTiptapHTML from './RichContentTiptapHTML.vue';
@@ -194,6 +194,9 @@ const hasBody = computed(() => {
 const isMixcloud = computed(() => isMixcloudUrl(content.value.url));
 
 const isDark = useDark();
+// No src until mount: the theme param comes from the visitor's stored preference, so the
+// server can't know it, and setting it after hydration would load the player twice.
+const mounted = useMounted();
 
 const resolvedEmbedUrl = computed(() => (isMixcloud.value
   ? toMixcloudEmbedUrl(content.value.url, isDark.value)

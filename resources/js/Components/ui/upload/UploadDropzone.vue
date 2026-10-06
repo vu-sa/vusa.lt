@@ -25,7 +25,7 @@
 import type { HTMLAttributes } from 'vue';
 import { inject, computed } from 'vue';
 
-import { uploadVariants, type UploadVariants } from '.';
+import { uploadVariants, type UploadVariants } from './variants';
 
 import { cn } from '@/Utils/Shadcn/utils';
 

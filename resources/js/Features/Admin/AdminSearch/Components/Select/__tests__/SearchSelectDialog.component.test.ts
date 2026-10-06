@@ -129,4 +129,14 @@ describe('SearchSelectDialog', () => {
     expect(confirmEvents).toHaveLength(1);
     expect(confirmEvents![0][0]).toEqual([]);
   });
+
+  it('offers the clear action only when something is selected, and confirms empty', async () => {
+    expect(mountDialog({ clearLabel: 'Atsieti' }).find('[data-testid=search-select-clear]').exists()).toBe(false);
+
+    const wrapper = mountDialog({ clearLabel: 'Atsieti', initialHits: [hitA] });
+    await wrapper.find('[data-testid=search-select-clear]').trigger('click');
+
+    expect(wrapper.emitted('confirm')![0][0]).toEqual([]);
+    expect(wrapper.emitted('update:open')![0]).toEqual([false]);
+  });
 });

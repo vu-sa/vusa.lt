@@ -4,7 +4,10 @@ use App\Enums\MeetingType;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
+use App\Models\Permission;
 use App\Models\Pivots\AgendaItem;
+use App\Models\Problem;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use Carbon\Carbon;
@@ -17,7 +20,7 @@ beforeEach(function (): void {
     $this->tenant = Tenant::query()->inRandomOrder()->first();
 
     // A coordinator with read + update on agenda items within the tenant.
-    $this->coordinator = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     $this->institution = Institution::factory()->for($this->tenant)->create();
 
@@ -98,5 +101,45 @@ describe('comment policy follows the parent', function (): void {
 
         // The view-only participant cannot delete someone else's comment.
         expect(Gate::forUser($this->viewer)->allows('delete', $this->coordinatorComment))->toBeFalse();
+    });
+});
+
+describe('comment moderation permissions', function (): void {
+    /** A duty holding only the given comment permission, so update on the parent cannot be what lets them in. */
+    function commentModerator(Tenant $tenant, string $permission): User
+    {
+        $role = Role::create(['name' => "Moderatorius {$permission}", 'guard_name' => 'web']);
+        $role->givePermissionTo($permission);
+        $moderator = makeUser($tenant);
+        $moderator->duties()->first()->assignRole($role);
+
+        return $moderator;
+    }
+
+    beforeEach(function (): void {
+        $this->actingAs($this->viewer);
+        $this->meetingComment = $this->meeting->comment('<p>Posėdžio komentaras</p>');
+        $this->otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+        $this->foreignProblemComment = Problem::factory()->create(['tenant_id' => $this->otherTenant->id])->comment('<p>Kito padalinio</p>');
+    });
+
+    test('a padalinys moderator deletes others\' comments on their padalinys\' records only', function (): void {
+        $moderator = commentModerator($this->tenant, 'comments.delete.padalinys');
+
+        expect(Gate::forUser($moderator)->allows('update', $this->meeting))->toBeFalse()
+            ->and(Gate::forUser($moderator)->allows('delete', $this->meetingComment))->toBeTrue()
+            ->and(Gate::forUser($moderator)->allows('delete', $this->foreignProblemComment))->toBeFalse();
+    });
+
+    test('a global moderator deletes others\' comments anywhere', function (): void {
+        $moderator = commentModerator($this->tenant, 'comments.delete.*');
+
+        expect(Gate::forUser($moderator)->allows('delete', $this->meetingComment))->toBeTrue()
+            ->and(Gate::forUser($moderator)->allows('delete', $this->foreignProblemComment))->toBeTrue();
+    });
+
+    test('commenting, editing and deleting one\'s own need no permission, so none can be granted', function (): void {
+        expect(Permission::query()->where('name', 'like', 'comments.%')->pluck('name')->sort()->values()->all())
+            ->toBe(['comments.delete.*', 'comments.delete.padalinys']);
     });
 });

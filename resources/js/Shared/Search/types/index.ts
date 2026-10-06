@@ -1,3 +1,6 @@
+import type { SearchMatch } from '../matches';
+import type { SearchProfileConfig } from '../profiles';
+
 /**
  * Shared Search Types
  *
@@ -51,7 +54,7 @@ export interface SortOption {
 export interface FacetValue {
   value: string;
   label: string;
-  count: number;
+  count: number | null;
   highlighted?: string;
   isSelected?: boolean;
   level?: number; // For hierarchical display
@@ -193,7 +196,7 @@ export interface TypesenseCollections {
 /**
  * Base Typesense configuration
  */
-export interface TypesenseConfig {
+export interface TypesenseConfig extends SearchProfileConfig {
   apiKey: string;
   nodes: TypesenseNode[];
   collections?: TypesenseCollections;
@@ -215,7 +218,7 @@ export interface ScopedCollectionConfig {
 /**
  * Admin search configuration with scoped keys
  */
-export interface AdminSearchConfig {
+export interface AdminSearchConfig extends SearchProfileConfig {
   collections: Record<string, ScopedCollectionConfig>;
   headerKey: string;
   nodes: TypesenseNode[];
@@ -331,6 +334,8 @@ export interface SearchClients {
  * Meeting search result - used in admin search
  */
 export interface MeetingSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
   id: string;
   title: string;
   description?: string;
@@ -344,6 +349,10 @@ export interface MeetingSearchResult {
   vote_alignment_status?: string;
   institution_type_title?: string;
   agenda_items_count?: number;
+  votes_count?: number;
+  /** MeetingType value: `in-person`, `remote` or `email`. */
+  type?: string;
+  institution_type_ids?: number[];
   year?: number;
   user_names?: string[];
 }
@@ -352,6 +361,8 @@ export interface MeetingSearchResult {
  * Agenda item search result
  */
 export interface AgendaItemSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
   id: string;
   title: string;
   description?: string;
@@ -376,6 +387,8 @@ export interface AgendaItemSearchResult {
  * News search result
  */
 export interface NewsSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
   id: string;
   title: string;
   short?: string;
@@ -393,6 +406,8 @@ export interface NewsSearchResult {
  * Page search result
  */
 export interface PageSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
   id: string;
   title: string;
   permalink?: string;
@@ -400,6 +415,7 @@ export interface PageSearchResult {
   lang: string;
   tenant_id?: number;
   tenant_name?: string;
+  tenant_shortname?: string;
   /** Only present in the admin `pages` index — the public index drops it. */
   is_active?: boolean;
 }
@@ -408,6 +424,8 @@ export interface PageSearchResult {
  * Calendar event search result
  */
 export interface CalendarSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
   id: string;
   title: string;
   title_lt?: string;
@@ -423,6 +441,8 @@ export interface CalendarSearchResult {
  * Institution search result
  */
 export interface InstitutionSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
   id: string;
   name_lt?: string;
   name_en?: string;
@@ -435,12 +455,15 @@ export interface InstitutionSearchResult {
   type_titles?: string[];
   current_user_names?: string[];
   duty_names?: string[];
+  type_ids?: number[];
 }
 
 /**
  * Document search result
  */
 export interface DocumentSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
   id: string;
   title: string;
   summary?: string;
@@ -460,6 +483,8 @@ export interface DocumentSearchResult {
  * Resource search result
  */
 export interface ResourceSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
   id: string;
   name_lt?: string;
   name_en?: string;
@@ -480,6 +505,8 @@ export interface ResourceSearchResult {
  * Duty search result (admin search)
  */
 export interface DutySearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
   id: string;
   name_lt?: string;
   name_en?: string;
@@ -507,6 +534,8 @@ export interface DutySearchResult {
  * User search result (admin search)
  */
 export interface UserSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
   id: string;
   name: string;
   email?: string;
@@ -522,6 +551,14 @@ export interface UserSearchResult {
   previous_duty_ids?: string[];
   is_active?: boolean;
   created_at?: number;
+  pronouns_lt?: string;
+  pronouns_en?: string;
+  current_duty_names_lt?: string[];
+  current_duty_names_en?: string[];
+  current_duty_use_original_names?: boolean[];
+  previous_duty_names_lt?: string[];
+  previous_duty_names_en?: string[];
+  previous_duty_use_original_names?: boolean[];
 }
 
 /**

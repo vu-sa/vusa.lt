@@ -15,7 +15,9 @@
           </div>
 
           <h2 class="text-lg font-semibold leading-snug tracking-tight text-foreground">
-            {{ title }}
+            <slot name="title">
+              {{ title }}
+            </slot>
           </h2>
           <p v-if="subtitle" class="mt-1 text-sm text-muted-foreground">
             {{ subtitle }}

@@ -1,11 +1,13 @@
 import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { debounce } from 'lodash-es';
+import { useDebounceFn } from '@vueuse/core';
 
+import { provideFacetSearch } from '@/Shared/Search/facets';
 import { SearchClientFactory, type TypesenseClient } from '@/Shared/Search/services/SearchClientFactory';
 import type { NewsItem } from '@/Types/contentParts';
 
 export interface NewsDocument {
+  _searchMatch?: import('@/Shared/Search/matches').SearchMatch;
   id: string | number;
   title: string;
   short?: string;
@@ -92,7 +94,7 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
     if (!config?.apiKey || !config?.nodes?.length) {
       return null;
     }
-    client = SearchClientFactory.createPublicClient(config);
+    client = SearchClientFactory.createPublicClient(config, locale.value);
     return client;
   };
 
@@ -101,25 +103,27 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
     return config?.collections?.public_news || 'public_news';
   };
 
-  const buildFilterConditions = (): string[] => {
+  provideFacetSearch(async (field, text, signal) => getClient()?.searchFacet(field, text, signal) ?? []);
+
+  const buildFilterConditions = (excludeField?: string): string[] => {
     const conditions: string[] = [];
 
     // Locale condition
     conditions.push(`lang:=${locale.value}`);
 
     // Tenant filter
-    if (selectedTenants.value.length > 0) {
+    if (excludeField !== 'tenant_shortname' && selectedTenants.value.length > 0) {
       const escaped = selectedTenants.value.map(t => `\`${t.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',');
       conditions.push(`tenant_shortname:=[${escaped}]`);
     }
 
     // Year filter
-    if (selectedYears.value.length > 0) {
+    if (excludeField !== 'year' && selectedYears.value.length > 0) {
       conditions.push(`year:=[${selectedYears.value.join(',')}]`);
     }
 
     // Tag filter
-    if (selectedTags.value.length > 0) {
+    if (excludeField !== 'tag_names' && selectedTags.value.length > 0) {
       const escaped = selectedTags.value.map(t => `\`${t.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',');
       conditions.push(`tag_names:=[${escaped}]`);
     }
@@ -219,6 +223,7 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
     return {
       id: Number(doc.id),
       title: doc.title,
+      _searchMatch: doc._searchMatch,
       short: doc.short ?? '',
       permalink: doc.permalink ?? null,
       image: doc.image ?? '',
@@ -238,6 +243,7 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
       abortController.abort();
     }
     abortController = new AbortController();
+    const controller = abortController;
 
     if (isLoadMore) {
       isLoadingMore.value = true;
@@ -265,6 +271,7 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
       query_by_weights: '10,4,2,2,3',
       filter_by: filterConditions.join(' && '),
       sort_by: sortExpression,
+      facetFilters: Object.fromEntries(['tenant_shortname', 'year', 'tag_names'].map(field => [field, buildFilterConditions(field).join(' && ')])),
       facet_by: 'tenant_shortname,year,tag_names',
       max_facet_values: 50,
       per_page: perPage,
@@ -279,8 +286,9 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
       const response = await searchClient.search(
         getCollectionName(),
         searchParams,
-        abortController.signal,
+        controller.signal,
       );
+      if (controller.signal.aborted) return;
 
       const hits = (response.hits ?? []).map(h => documentToNewsItem(h.document as unknown as NewsDocument));
       totalHits.value = response.found ?? 0;
@@ -303,12 +311,14 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
       error.value = err instanceof Error ? err.message : 'Search failed';
     }
     finally {
-      isLoading.value = false;
-      isLoadingMore.value = false;
+      if (abortController === controller) {
+        isLoading.value = false;
+        isLoadingMore.value = false;
+      }
     }
   };
 
-  const debouncedSearch = debounce(() => {
+  const debouncedSearch = useDebounceFn(() => {
     performSearch(false);
   }, 300);
 

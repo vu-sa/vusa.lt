@@ -122,7 +122,13 @@ class DatabaseSeeder extends Seeder
         $this->call(RoleStudentRepresentativeCoordinatorSeeder::class);
         $this->call(RoleCommunicationCoordinatorSeeder::class);
         $this->call(RoleGlobalCommunicationCoordinatorSeeder::class);
+        $this->call(RoleCentralStudentRepresentativeCoordinatorSeeder::class);
         $this->call(RoleResourceManagerSeeder::class);
+        $this->call(RoleCentralResourceManagerSeeder::class);
+        $this->call(RolePageEditorSeeder::class);
+        $this->call(RoleProblemEditorSeeder::class);
+        $this->call(ProblemCategorySeeder::class);
+        $this->call(RoleDocumentManagerSeeder::class);
 
         foreach ($tenants as $tenant) {
             QuickLink::factory(6)

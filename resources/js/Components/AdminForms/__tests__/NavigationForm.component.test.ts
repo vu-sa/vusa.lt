@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { ref } from 'vue';
+import type * as Inertia from '@inertiajs/vue3';
 
 import NavigationForm from '@/Components/AdminForms/NavigationForm.vue';
 
@@ -10,10 +11,10 @@ import NavigationForm from '@/Components/AdminForms/NavigationForm.vue';
 // useForm is wrapped to capture the created instance, so a test can simulate a
 // server validation error via `capturedForm.errors = {...}` the way a failed
 // Inertia submission normally would.
-let capturedForm: Record<string, any> | null = null;
+let capturedForm: { errors: Record<string, string> } | null = null;
 
 vi.mock('@inertiajs/vue3', async () => {
-  const actual = await vi.importActual<typeof import('@inertiajs/vue3')>('@inertiajs/vue3');
+  const actual = await vi.importActual<typeof Inertia>('@inertiajs/vue3');
   return {
     ...actual,
     usePage: () => ({
@@ -22,7 +23,7 @@ vi.mock('@inertiajs/vue3', async () => {
     useForm: (...args: unknown[]) => {
       // @ts-expect-error — passthrough to the real implementation with variadic args
       const form = actual.useForm(...args);
-      capturedForm = form;
+      capturedForm = form as unknown as { errors: Record<string, string> };
       return form;
     },
   };
@@ -41,6 +42,8 @@ vi.mock('@/Composables/useApi', () => ({
 }));
 
 const formStubs = {
+  FormPage: { props: ['title', 'errors'], template: '<form @submit.prevent><slot name="header-actions" /><slot /><slot name="aside" /><slot name="danger-zone" /></form>' },
+  FormSection: { props: ['title'], template: '<section><h2>{{ title }}</h2><slot /></section>' },
   AdminForm: { props: ['model'], template: '<form @submit.prevent><slot /></form>' },
   FormElement: { template: '<section><slot name="title" /><slot /></section>' },
   FormFieldWrapper: {
@@ -61,15 +64,6 @@ const formStubs = {
     template: '<div><slot /></div>',
   },
   ToggleGroupItem: { props: ['value'], template: '<button type="button" @click="$parent.$emit(\'update:modelValue\', value)"><slot /></button>' },
-  Select: {
-    props: ['modelValue'],
-    emits: ['update:modelValue'],
-    template: '<select :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"><slot /></select>',
-  },
-  SelectTrigger: { template: '<div><slot /></div>' },
-  SelectValue: { template: '<div />' },
-  SelectContent: { template: '<slot />' },
-  SelectItem: { props: ['value'], template: '<option :value="value"><slot /></option>' },
   SingleSelect: { template: '<div />' },
   FocalPointPicker: { template: '<div data-testid="focal-point-picker" />' },
   FluentIconSelect: { template: '<div />' },
@@ -198,6 +192,18 @@ describe('NavigationForm.vue', () => {
     expect(executeResolveUrl).toHaveBeenCalled();
     const urlInput = wrapper.find('#url');
     expect((urlInput.element as HTMLInputElement).value).toBe('/lt/tema/renginiai');
+  });
+
+  it('updates column and col_span via segmented controls', async () => {
+    wrapper = createWrapper();
+
+    const columnButton = wrapper.find('[data-testid="navigation-column-2"]');
+    await columnButton.trigger('click');
+    expect(capturedForm?.extra_attributes.column).toBe(2);
+
+    const colSpanButton = wrapper.find('[data-testid="navigation-col-span-3"]');
+    await colSpanButton.trigger('click');
+    expect(capturedForm?.extra_attributes.col_span).toBe(3);
   });
 
   describe('footer mode', () => {

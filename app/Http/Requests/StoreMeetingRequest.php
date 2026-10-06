@@ -7,7 +7,7 @@ use App\Http\Requests\Concerns\NormalizesTranslatableInput;
 use App\Models\Calendar;
 use App\Models\Institution;
 use App\Models\Meeting;
-use App\Rules\WithinAuthorizedTenantScope;
+use Closure;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -56,9 +56,15 @@ class StoreMeetingRequest extends FormRequest
                 'required',
                 'ulid',
                 'exists:institutions,id',
-                // Meeting::create() is gated by the tenant-agnostic meetings.create check, so
-                // the institution the meeting is filed under has to be scoped here.
-                new WithinAuthorizedTenantScope(Institution::class, 'meetings.create.padalinys'),
+                // authorize() only asks whether the user may create meetings anywhere; this scopes
+                // the institution: their padalinys for coordinators, their own duties for a rep.
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    $institution = Institution::query()->find($value);
+
+                    if ($institution !== null && ! $this->user()->can('createFor', [Meeting::class, $institution])) {
+                        $fail(__('validation.meeting_institution_not_own'));
+                    }
+                },
             ],
             'type' => ['nullable', new Enum(MeetingType::class)],
             'description' => 'nullable|array',
@@ -79,6 +85,7 @@ class StoreMeetingRequest extends FormRequest
             'agendaItems.*.description' => 'nullable|string|max:1000',
             'agendaItems.*.order' => 'required|integer|min:1',
             'agendaItems.*.brought_by_students' => 'nullable|boolean',
+            'agendaItems.*.is_private' => 'sometimes|boolean',
             // Batch creation, unlike UpdateAgendaItemRequest's single-item form, has no
             // straightforward way to conditionally require `after:` only for rows that set a
             // start time — leave ordering a client-side concern here.

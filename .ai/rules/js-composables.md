@@ -9,7 +9,7 @@ paths:
 `voting` needs a recorded outcome; `informational`, `deferred` and `break` are complete on their own. That question used to be answered independently in three places, which had already drifted — `MeetingCompletionService` tested `=== 'informational'` (so a deferred item counted as incomplete) while `AgendaCompletionTaskHandler` accepted both. All three now go through the enum:
 
 - `AgendaItemType::requiresVote()` for a single item.
-- `AgendaItemType::voteFreeValues()` for the SQL filter in `MeetingController::incompleteAgendaItem()`, which cannot call a method per row.
+- `MeetingCompletionService::itemIsComplete()` builds on it and is the one "filled-in item" rule: the meeting status, the completion task and the agenda item search index (`is_complete`) all call it.
 
 Adding a type means editing the enum only. Do not reintroduce a literal `'informational'` / `'deferred'` comparison anywhere.
 

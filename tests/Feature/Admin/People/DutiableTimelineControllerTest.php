@@ -15,7 +15,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'duties.read.padalinys',
         'duties.update.padalinys',
@@ -27,7 +27,7 @@ beforeEach(function (): void {
 
     $this->manager = makeUser($this->tenant);
     $this->duty = $this->manager->duties()->first();
-    $this->duty->assignRole('Communication Coordinator');
+    $this->duty->assignRole('Komunikacijos koordinatorius');
 
     $this->holder = makeUser($this->tenant);
 
@@ -70,6 +70,86 @@ describe('authorization', function (): void {
 
         expect($this->row->fresh()->start_date->toDateString())->toBe('2024-05-18')
             ->and($strangerRow->fresh()->start_date->toDateString())->toBe('2024-07-01');
+    });
+});
+
+/**
+ * The roles the guide's "Kas ką gali" names, as seeded — so the page and this test cannot
+ * drift apart.
+ */
+describe('the roles the guide names', function (): void {
+    test('opens the tool and moves a period in their padalinys', function (string $role, bool $canOpen, bool $canEdit): void {
+        $actor = makeUser($this->tenant);
+        $actor->duties()->first()->syncRoles([$role]);
+
+        asUser($actor)->get(route('dutiables.timeline'))->assertStatus($canOpen ? 200 : 403);
+
+        asUser($actor)->post(route('dutiables.timeline.apply'), applyTimeline([[
+            'type' => 'set_dates', 'row_ids' => [$this->row->id], 'start_date' => '2024-07-01',
+        ]]))->assertStatus($canEdit ? 302 : 403);
+
+        expect($this->row->fresh()->start_date->toDateString())->toBe($canEdit ? '2024-07-01' : '2024-05-18');
+    })->with([
+        'Komunikacijos koordinatorius' => ['Komunikacijos koordinatorius', true, true],
+        'Studentų atstovų koordinatorius' => ['Studentų atstovų koordinatorius', true, true],
+        'Centrinio biuro komunikacijos koordinatorius' => ['Centrinio biuro komunikacijos koordinatorius', true, true],
+        'Centrinio biuro studentų atstovų koordinatorius' => ['Centrinio biuro studentų atstovų koordinatorius', true, true],
+        'Studentų atstovas' => ['Studentų atstovas', false, false],
+    ]);
+
+    test('a central office coordinator also moves periods in another padalinys', function (): void {
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $stranger = makeUser($otherTenant);
+        $strangerRow = Dutiable::factory()->create([
+            'duty_id' => $stranger->duties()->first()->id,
+            'dutiable_id' => $stranger->id,
+            'start_date' => '2024-05-18',
+        ]);
+
+        $central = makeUser($this->tenant);
+        $central->duties()->first()->syncRoles(['Centrinio biuro studentų atstovų koordinatorius']);
+
+        asUser($central)->post(route('dutiables.timeline.apply'), applyTimeline([[
+            'type' => 'set_dates', 'row_ids' => [$strangerRow->id], 'start_date' => '2024-07-01',
+        ]]))->assertRedirect();
+
+        expect($strangerRow->fresh()->start_date->toDateString())->toBe('2024-07-01');
+    });
+
+    test('an assignable tenant coordinator moves periods of their own tenant member on a cross-tenant duty', function (): void {
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $this->duty->assignableTenants()->attach($otherTenant->id);
+
+        $crossAdmin = makeUser($otherTenant);
+        $crossAdmin->duties()->first()->syncRoles(['Komunikacijos koordinatorius']);
+
+        $crossMember = makeUser($otherTenant);
+        $crossRow = Dutiable::factory()->create([
+            'duty_id' => $this->duty->id,
+            'dutiable_id' => $crossMember->id,
+            'start_date' => '2024-05-18',
+        ]);
+
+        asUser($crossAdmin)->post(route('dutiables.timeline.apply'), applyTimeline([[
+            'type' => 'set_dates', 'row_ids' => [$crossRow->id], 'start_date' => '2024-07-01',
+        ]]))->assertRedirect();
+
+        expect($crossRow->fresh()->start_date->toDateString())->toBe('2024-07-01');
+    });
+
+    test('an assignable tenant coordinator cannot move an owning-tenant member on that duty', function (): void {
+        $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $this->duty->assignableTenants()->attach($otherTenant->id);
+
+        $crossAdmin = makeUser($otherTenant);
+        $crossAdmin->duties()->first()->syncRoles(['Komunikacijos koordinatorius']);
+
+        // $this->row belongs to $this->holder who sits in $this->tenant (the owning tenant).
+        asUser($crossAdmin)->post(route('dutiables.timeline.apply'), applyTimeline([[
+            'type' => 'set_dates', 'row_ids' => [$this->row->id], 'start_date' => '2024-07-01',
+        ]]))->assertForbidden();
+
+        expect($this->row->fresh()->start_date->toDateString())->toBe('2024-05-18');
     });
 });
 
@@ -138,12 +218,11 @@ describe('the standalone page', function (): void {
                 ->count('userInstitutions', 2));
     });
 
-    test('an institution the actor may not view is left out of the shortcuts', function (): void {
-        // `institutions.read.padalinys` is tenant-scoped, so a seat in another tenant's body
-        // would otherwise be offered and then 403 on the first fetch.
+    test('a seat in another padalinys is offered too, since members read their own institution', function (): void {
         $foreign = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $foreignInstitution = Institution::factory()->for($foreign)->create();
         $this->manager->duties()->attach(
-            Duty::factory()->for(Institution::factory()->for($foreign))->create(),
+            Duty::factory()->for($foreignInstitution)->create(),
             ['start_date' => now()->subDay()],
         );
 
@@ -151,8 +230,8 @@ describe('the standalone page', function (): void {
             ->get(route('dutiables.timeline'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->where('initialInstitution.id', $this->duty->institution_id)
-                ->count('userInstitutions', 1));
+                ->where('userInstitutions', fn ($institutions): bool => collect($institutions)->pluck('id')->contains($foreignInstitution->id))
+                ->count('userInstitutions', 2));
     });
 
     test('an ended duty does not decide the default scope', function (): void {
@@ -382,10 +461,10 @@ describe('removing a row from the timeline', function (): void {
         expect(Dutiable::query()->whereKey($this->row->id)->exists())->toBeFalse();
     });
 
-    test('without it the dutiable edit page still leaves for the user', function (): void {
+    test('without it the deleted row returns to the user record', function (): void {
         asUserWithInertia($this->manager)
             ->delete(route('dutiables.destroy', $this->row))
-            ->assertRedirect(route('users.edit', $this->holder));
+            ->assertRedirect(route('users.show', $this->holder));
 
         expect(Dutiable::query()->whereKey($this->row->id)->exists())->toBeFalse();
     });

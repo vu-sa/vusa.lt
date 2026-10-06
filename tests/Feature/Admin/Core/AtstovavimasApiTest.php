@@ -1,17 +1,19 @@
 <?php
 
+use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Models\User;
 use App\Models\Vote;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\RelationshipService;
 use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -311,7 +313,9 @@ test('meetings requires an authenticated user', function (): void {
     ]))->assertUnauthorized();
 });
 
-test('meetings rejects tenants outside the visible scope', function (): void {
+test('meetings in a padalinys the user does not manage leave out its non-public bodies', function (): void {
+    $meeting = Meeting::factory()->create(['start_time' => now()->subDays(5)]);
+    $meeting->institutions()->attach($this->institution->id);
     $user = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
 
     asUser($user)
@@ -320,7 +324,8 @@ test('meetings rejects tenants outside the visible scope', function (): void {
             'from' => now()->subMonth()->toDateString(),
             'until' => now()->addMonth()->toDateString(),
         ]))
-        ->assertForbidden();
+        ->assertSuccessful()
+        ->assertJsonCount(0, 'data');
 });
 
 test('meetings validates the date window', function (): void {
@@ -446,14 +451,37 @@ test('representatives are searched and paginated without loading the full list',
         ->assertJsonPath('data.users.0.email', 'second-representative@example.test');
 });
 
+test('representative activity counts who acted today, this week, this month and never', function (): void {
+    $duty = Duty::factory()->for($this->institution)->create();
+    collect([now(), now()->subDays(3), now()->subDays(20), now()->subDays(60), null])
+        ->each(function ($lastAction) use ($duty): void {
+            $representative = User::factory()->create();
+            $representative->forceFill(['last_action' => $lastAction])->save();
+            $representative->duties()->attach($duty, ['start_date' => now()->subYear(), 'end_date' => null]);
+        });
+
+    asUser($this->admin)
+        ->getJson(route('api.v1.admin.visak.timeline', ['tenant_ids' => [$this->tenant->id]]))
+        ->assertJsonPath('data.representative_activity.stats', [
+            'total' => 5,
+            'activeToday' => 1,
+            'activeLast7Days' => 2,
+            'activeLast30Days' => 3,
+            'neverLoggedIn' => 1,
+        ]);
+
+    asUser($this->admin)
+        ->getJson(route('api.v1.admin.visak.representatives', ['tenant_ids' => [$this->tenant->id], 'category' => 'inactive']))
+        ->assertJsonPath('data.pagination.total', 2);
+});
+
 /**
  * VU SA's own bodies do meet, and dropping them server-side left the chart quietly
  * incomplete. They are marked instead, so the chart can offer to hide them.
  */
 describe('internal bodies', function (): void {
     beforeEach(function (): void {
-        $this->internalType = Type::factory()->create([
-            'model_type' => MorphMap::alias(Institution::class),
+        $this->internalType = InstitutionType::factory()->create([
             'extra_attributes' => ['governance_scope' => 'vusa'],
         ]);
 
@@ -489,5 +517,180 @@ describe('internal bodies', function (): void {
 
         expect($rows->get((string) $this->internalInstitution->id)['is_internal'])->toBeTrue()
             ->and($rows->get((string) $this->institution->id)['is_internal'])->toBeFalse();
+    });
+
+    test('the timeline leaves an excluded type out of the attention list as well as the numbers', function (): void {
+        $response = asUser($this->admin)->getJson(route('api.v1.admin.visak.timeline', [
+            'tenant_ids' => [$this->tenant->id],
+        ]));
+
+        $rows = collect($response->json('data.institutions'))->keyBy('id');
+        expect($rows->get((string) $this->internalInstitution->id)['in_summary'])->toBeFalse()
+            ->and($rows->get((string) $this->institution->id)['in_summary'])->toBeTrue()
+            ->and($response->json('data.institution_summary.all'))->toBe(1);
+    });
+});
+
+/**
+ * The padaliniai Gantt is open to every admin: public meetings anywhere, the user's own bodies,
+ * and whole padaliniai only where they manage them.
+ */
+describe('padaliniai gantt', function (): void {
+    beforeEach(function (): void {
+        $this->publicType = InstitutionType::factory()->create([]);
+
+        $settings = app(MeetingSettings::class);
+        $settings->public_meeting_institution_type_ids = [$this->publicType->id];
+        $settings->save();
+
+        $this->publicInstitution = Institution::factory()->for($this->tenant)->create();
+        $this->publicInstitution->types()->attach($this->publicType);
+
+        $this->rep = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
+        $this->ownInstitution = $this->rep->current_duties->first()->institution;
+
+        InstitutionCheckIn::factory()->for($this->publicInstitution)->create();
+        $this->publicInstitution->duties()->save(Duty::factory()->make())->users()->attach(User::factory()->create()->id, ['start_date' => now()->subYear()]);
+    });
+
+    test('a rep gets public bodies of other padaliniai and their own, trimmed to what they may read', function (): void {
+        $rows = collect(
+            asUser($this->rep)->getJson(route('api.v1.admin.visak.gantt', [
+                'tenant_ids' => [$this->tenant->id, $this->ownInstitution->tenant_id],
+            ]))->assertSuccessful()->json('data')
+        )->keyBy('id');
+
+        expect($rows->keys()->sort()->values()->all())
+            ->toEqual(collect([(string) $this->publicInstitution->id, (string) $this->ownInstitution->id])->sort()->values()->all());
+
+        $public = $rows->get((string) $this->publicInstitution->id);
+        expect($public['authorized'])->toBeFalse()
+            ->and($public['activity_status'])->toBeNull()
+            ->and($public['check_ins'])->toHaveCount(1)
+            ->and($public['duties'][0]['users'][0])->toHaveKeys(['id', 'name'])->not->toHaveKey('last_action')
+            ->and($rows->get((string) $this->ownInstitution->id))->not->toHaveKey('authorized')
+            ->and($rows->get((string) $this->ownInstitution->id)['activity_status'])->not->toBeNull();
+    });
+
+    test('a padalinys reader gets their padalinys in full and only public bodies elsewhere', function (): void {
+        $coordinator = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->ownInstitution->tenant);
+        $otherInstitution = Institution::factory()->for($this->ownInstitution->tenant)->create();
+
+        $rows = collect(
+            asUser($coordinator)->getJson(route('api.v1.admin.visak.gantt', [
+                'tenant_ids' => [$this->tenant->id, $this->ownInstitution->tenant_id],
+            ]))->assertSuccessful()->json('data')
+        )->keyBy('id');
+
+        expect($rows->has((string) $otherInstitution->id))->toBeTrue()
+            ->and($rows->get((string) $otherInstitution->id))->not->toHaveKey('authorized')
+            ->and($rows->has((string) $this->institution->id))->toBeFalse()
+            ->and($rows->get((string) $this->publicInstitution->id)['authorized'])->toBeFalse();
+    });
+
+    test('a rep sees public meetings without their recording state, and no meetings of closed bodies', function (): void {
+        $public = Meeting::factory()->create(['title' => 'Viešas', 'start_time' => now()->subDays(5)]);
+        $public->institutions()->attach($this->publicInstitution->id);
+        AgendaItem::factory()->for($public)->create();
+
+        $closed = Meeting::factory()->create(['title' => 'Uždaras', 'start_time' => now()->subDays(5)]);
+        $closed->institutions()->attach($this->institution->id);
+
+        $own = Meeting::factory()->create(['title' => 'Savas', 'start_time' => now()->subDays(5)]);
+        $own->institutions()->attach($this->ownInstitution->id);
+
+        $meetings = collect(
+            asUser($this->rep)->getJson(route('api.v1.admin.visak.meetings', [
+                'tenant_ids' => [$this->tenant->id, $this->ownInstitution->tenant_id],
+                'from' => now()->subMonth()->toDateString(),
+                'until' => now()->addMonth()->toDateString(),
+            ]))->assertSuccessful()->json('data')
+        )->keyBy('title');
+
+        expect($meetings->keys()->sort()->values()->all())->toEqual(['Savas', 'Viešas'])
+            ->and($meetings['Viešas']['completion_status'])->toBeNull()
+            ->and($meetings['Viešas']['has_report'])->toBeFalse()
+            ->and($meetings['Viešas']['agenda_items_count'])->toBe(1)
+            ->and($meetings['Savas']['completion_status'])->not->toBeNull();
+    });
+
+    test('a body that only links to the rep\'s own appears read-only, its meetings without agendas', function (): void {
+        $related = Institution::factory()->for($this->tenant)->create();
+        Relationshipable::query()->create([
+            'relationship_id' => Relationship::query()->create(['name' => 'Kuruoja', 'slug' => 'kuruoja'])->id,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
+            'relationshipable_id' => $related->id,
+            'related_model_id' => $this->ownInstitution->id,
+            'bidirectional' => false,
+        ]);
+        RelationshipService::clearRelatedInstitutionsCache($this->ownInstitution->id);
+        $meeting = Meeting::factory()->create(['title' => 'Susijęs', 'start_time' => now()->subDays(5)]);
+        $meeting->institutions()->attach($related->id);
+        AgendaItem::factory()->for($meeting)->create();
+        $tenantIds = [$this->tenant->id, $this->ownInstitution->tenant_id];
+
+        $rows = collect(asUser($this->rep)->getJson(route('api.v1.admin.visak.gantt', ['tenant_ids' => $tenantIds]))->json('data'))->keyBy('id');
+        $meetings = collect(asUser($this->rep)->getJson(route('api.v1.admin.visak.meetings', [
+            'tenant_ids' => $tenantIds,
+            'from' => now()->subMonth()->toDateString(),
+            'until' => now()->addMonth()->toDateString(),
+        ]))->json('data'))->keyBy('title');
+
+        expect($rows->get((string) $related->id)['authorized'])->toBeFalse()
+            ->and($meetings['Susijęs']['authorized'])->toBeFalse()
+            ->and($meetings['Susijęs']['agenda_items_count'])->toBe(0);
+    });
+
+    test('a body the rep\'s own links to appears in full', function (): void {
+        $related = Institution::factory()->for($this->tenant)->create();
+        Relationshipable::query()->create([
+            'relationship_id' => Relationship::query()->create(['name' => 'Kuruoja', 'slug' => 'kuruoja'])->id,
+            'relationshipable_type' => MorphMap::alias(Institution::class),
+            'relationshipable_id' => $this->ownInstitution->id,
+            'related_model_id' => $related->id,
+        ]);
+        RelationshipService::clearRelatedInstitutionsCache($this->ownInstitution->id);
+
+        $rows = collect(asUser($this->rep)->getJson(route('api.v1.admin.visak.gantt', [
+            'tenant_ids' => [$this->tenant->id, $this->ownInstitution->tenant_id],
+        ]))->json('data'))->keyBy('id');
+
+        expect($rows->get((string) $related->id))->not->toHaveKey('authorized')
+            ->and($rows->get((string) $related->id)['activity_status'])->not->toBeNull();
+    });
+
+    test('a body the user administers as secretary appears in full', function (): void {
+        $secretary = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
+        $administered = Institution::factory()->for($this->tenant)->create();
+        $secretary->secretariedInstitutions()->attach($administered, ['cadence_id' => Cadence::factory()->create()->id]);
+
+        $rows = collect(asUser($secretary)->getJson(route('api.v1.admin.visak.gantt', [
+            'tenant_ids' => [$this->tenant->id],
+        ]))->json('data'))->keyBy('id');
+
+        expect($rows->get((string) $administered->id))->not->toBeNull()->not->toHaveKey('authorized');
+    });
+
+    test('a cached window of full meetings is never served to a user who may only see them as public', function (): void {
+        $public = Meeting::factory()->create(['title' => 'Viešas', 'start_time' => now()->subDays(5)]);
+        $public->institutions()->attach($this->publicInstitution->id);
+        $params = [
+            'tenant_ids' => [$this->tenant->id],
+            'from' => now()->subMonth()->toDateString(),
+            'until' => now()->addMonth()->toDateString(),
+        ];
+        asUser($this->admin)->getJson(route('api.v1.admin.visak.meetings', $params))
+            ->assertJsonPath('data.0.completion_status', fn ($status) => $status !== null);
+
+        $response = asUser($this->rep)->getJson(route('api.v1.admin.visak.meetings', $params));
+
+        $response->assertJsonPath('data.0.title', 'Viešas')
+            ->assertJsonPath('data.0.completion_status', null);
+    });
+
+    test('the stats timeline stays closed to padaliniai the user does not manage', function (): void {
+        asUser($this->rep)
+            ->getJson(route('api.v1.admin.visak.timeline', ['tenant_ids' => [$this->tenant->id]]))
+            ->assertForbidden();
     });
 });

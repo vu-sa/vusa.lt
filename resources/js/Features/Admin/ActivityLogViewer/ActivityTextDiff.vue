@@ -1,17 +1,21 @@
 <template>
-  <p v-if="segments.length === 0" class="italic text-zinc-400 dark:text-zinc-500">
+  <p v-if="segments.length === 0" class="italic text-muted-foreground">
     {{ $t('activity.empty_value') }}
   </p>
   <p v-else class="break-words">
     <template v-for="segment in segments" :key="segment.id">
-      <ins v-if="segment.type === 'added'" class="rounded bg-green-100 text-green-800 no-underline dark:bg-green-950/40 dark:text-green-400">
+      <ins v-if="segment.type === 'added'" class="bg-status-success-surface text-status-success no-underline">
         <span class="sr-only">{{ $t('activity.diff.added') }}</span>{{ segment.text }}</ins>
-      <del v-else-if="segment.type === 'removed'" class="rounded bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-400">
+      <del v-else-if="segment.type === 'removed'" class="bg-status-danger-surface text-status-danger">
         <span class="sr-only">{{ $t('activity.diff.removed') }}</span>{{ segment.text }}</del>
       <template v-else-if="segment.type === 'common-collapsed'">
         {{ segment.head }}<button
           type="button"
-          class="mx-1 rounded px-1 text-xs text-zinc-400 underline decoration-dotted hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+          :class="[
+            'mx-1 inline-flex min-h-11 items-center px-2 text-xs font-medium text-foreground',
+            'underline decoration-dotted underline-offset-2 hover:bg-accent',
+            'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+          ]"
           :aria-expanded="expanded.has(segment.id)"
           @click="toggle(segment.id)"
         >

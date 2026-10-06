@@ -1,10 +1,10 @@
 <?php
 
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Pivots\Relationshipable;
 use App\Models\Relationship;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -39,7 +39,7 @@ beforeEach(function (): void {
     $this->relatedInstitution = Institution::factory()->for($this->tenant)->create();
 
     // Create test type for relationship modeling (Types are global, not tenant-specific)
-    $this->type = Type::factory()->create([
+    $this->type = InstitutionType::factory()->create([
         'title' => ['lt' => 'Test tipas', 'en' => 'Test type'],
     ]);
 });
@@ -103,8 +103,12 @@ describe('authorized access', function (): void {
     });
 
     test('can view relationship', function (): void {
-        // Note: ShowRelationship component doesn't exist, so we just test the response
-        asUser($this->admin)->get(route('relationships.show', $this->relationship))->assertStatus(200);
+        asUser($this->admin)->get(route('relationships.show', $this->relationship))->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ModelMeta/ShowRelationship')
+                ->has('relationship.relationshipables')
+                ->missing('relatedModels')
+            );
     });
 
     test('can access edit page', function (): void {
@@ -112,7 +116,6 @@ describe('authorized access', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ModelMeta/EditRelationship')
                 ->has('relationship')
-                // relatedModels might be lazy-loaded, so we just check the page loads
             );
     });
 
@@ -122,7 +125,6 @@ describe('authorized access', function (): void {
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ModelMeta/EditRelationship')
                 ->has('relationship')
-                // relatedModels might be lazy-loaded
             );
     });
 });
@@ -210,8 +212,10 @@ describe('relationship CRUD operations', function (): void {
     });
 
     test('can delete relationship', function (): void {
-        asUser($this->admin)->delete(route('relationships.destroy', $this->relationship))
-            ->assertRedirect()
+        asUser($this->admin)
+            ->from(route('relationships.edit', $this->relationship))
+            ->delete(route('relationships.destroy', $this->relationship))
+            ->assertRedirect(route('relationships.index'))
             ->assertSessionHas('success', 'Ryšio tipas tarp modelių ištrintas.');
 
         $this->assertDatabaseMissing('relationships', [
@@ -219,23 +223,19 @@ describe('relationship CRUD operations', function (): void {
         ]);
     });
 
-    test('deletion attempts to cascade to relationshipables', function (): void {
-        // Note: Controller has a bug where relationshipables deletion isn't executed properly
-        // This test demonstrates the current behavior rather than the expected behavior
-
-        // Create a relationship without relationshipables to avoid FK constraint error
-        $relationship = new Relationship([
-            'name' => 'Deletable Relationship',
-            'slug' => 'deletable-relationship',
-            'description' => 'Test deletion',
+    test('deleting a relationship deletes its relationshipables', function (): void {
+        $this->relationship->models(MorphMap::alias(Institution::class))->attach($this->institution->id, [
+            'related_model_id' => $this->relatedInstitution->id,
         ]);
-        $relationship->save();
 
-        asUser($this->admin)->delete(route('relationships.destroy', $relationship))
+        asUser($this->admin)->delete(route('relationships.destroy', $this->relationship))
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        $this->assertDatabaseMissing('relationships', ['id' => $relationship->id]);
+        $this->assertDatabaseMissing('relationships', ['id' => $this->relationship->id]);
+        $this->assertDatabaseMissing('relationshipables', [
+            'relationship_id' => $this->relationship->id,
+        ]);
     });
 });
 
@@ -248,7 +248,7 @@ describe('model relationship operations', function (): void {
         ];
 
         asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
-            ->assertRedirect(route('relationships.edit', $this->relationship))
+            ->assertRedirect(route('relationships.show', $this->relationship))
             ->assertSessionHas('success', 'Ryšys sėkmingai sukurtas.');
 
         $this->assertDatabaseHas('relationshipables', [
@@ -259,21 +259,45 @@ describe('model relationship operations', function (): void {
         ]);
     });
 
+    test('rejects model IDs that do not belong to the submitted relationship model type', function (): void {
+        asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), [
+            'model_id' => $this->institution->id,
+            'model_type' => MorphMap::alias(InstitutionType::class),
+            'related_model_id' => $this->relatedInstitution->id,
+        ])->assertSessionHasErrors(['model_id', 'related_model_id']);
+
+        $this->assertDatabaseMissing('relationshipables', [
+            'relationship_id' => $this->relationship->id,
+        ]);
+    });
+
+    test('rejects relationship model IDs that do not exist', function (): void {
+        asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), [
+            'model_id' => 'missing-source',
+            'model_type' => MorphMap::alias(Institution::class),
+            'related_model_id' => 'missing-target',
+        ])->assertSessionHasErrors(['model_id', 'related_model_id']);
+
+        $this->assertDatabaseMissing('relationshipables', [
+            'relationship_id' => $this->relationship->id,
+        ]);
+    });
+
     test('can store type relationship with scope', function (): void {
         $data = [
             'model_id' => $this->type->id,
-            'model_type' => MorphMap::alias(Type::class),
+            'model_type' => MorphMap::alias(InstitutionType::class),
             'related_model_id' => $this->type->id,
             'scope' => 'cross-tenant',
         ];
 
         asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
-            ->assertRedirect(route('relationships.edit', $this->relationship))
+            ->assertRedirect(route('relationships.show', $this->relationship))
             ->assertSessionHas('success', 'Ryšys sėkmingai sukurtas.');
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => MorphMap::alias(Type::class),
+            'relationshipable_type' => MorphMap::alias(InstitutionType::class),
             'relationshipable_id' => $this->type->id,
             'scope' => 'cross-tenant',
         ]);
@@ -282,17 +306,17 @@ describe('model relationship operations', function (): void {
     test('scope defaults to within-tenant for type relationships', function (): void {
         $data = [
             'model_id' => $this->type->id,
-            'model_type' => MorphMap::alias(Type::class),
+            'model_type' => MorphMap::alias(InstitutionType::class),
             'related_model_id' => $this->type->id,
             // No scope provided - should default to within-tenant
         ];
 
         asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
-            ->assertRedirect(route('relationships.edit', $this->relationship));
+            ->assertRedirect(route('relationships.show', $this->relationship));
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => MorphMap::alias(Type::class),
+            'relationshipable_type' => MorphMap::alias(InstitutionType::class),
             'relationshipable_id' => $this->type->id,
             'scope' => 'within-tenant',
         ]);
@@ -307,7 +331,7 @@ describe('model relationship operations', function (): void {
         ];
 
         asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
-            ->assertRedirect(route('relationships.edit', $this->relationship));
+            ->assertRedirect(route('relationships.show', $this->relationship));
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
@@ -327,7 +351,7 @@ describe('model relationship operations', function (): void {
         ];
 
         asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
-            ->assertRedirect(route('relationships.edit', $this->relationship));
+            ->assertRedirect(route('relationships.show', $this->relationship));
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
@@ -347,7 +371,7 @@ describe('model relationship operations', function (): void {
         ];
 
         asUser($this->admin)->post(route('relationships.storeModelRelationship', $this->relationship), $data)
-            ->assertRedirect(route('relationships.edit', $this->relationship));
+            ->assertRedirect(route('relationships.show', $this->relationship));
 
         $this->assertDatabaseHas('relationshipables', [
             'relationship_id' => $this->relationship->id,
@@ -361,7 +385,7 @@ describe('model relationship operations', function (): void {
     test('cannot store model relationship with invalid scope', function (): void {
         $data = [
             'model_id' => $this->type->id,
-            'model_type' => MorphMap::alias(Type::class),
+            'model_type' => MorphMap::alias(InstitutionType::class),
             'related_model_id' => $this->type->id,
             'scope' => 'invalid-scope',
         ];
@@ -432,7 +456,7 @@ describe('model relationship operations', function (): void {
         // Create a type-based relationshipable
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => MorphMap::alias(Type::class),
+            'relationshipable_type' => MorphMap::alias(InstitutionType::class),
             'relationshipable_id' => $this->type->id,
             'related_model_id' => $this->type->id,
             'scope' => 'within-tenant',
@@ -475,22 +499,21 @@ describe('relationship data handling', function (): void {
     });
 
     test('show page displays relationship correctly', function (): void {
-        // Note: ShowRelationship component doesn't exist, so we just test the response
         asUser($this->admin)->get(route('relationships.show', $this->relationship))->assertStatus(200);
     });
 
-    test('edit page loads relationship with related models', function (): void {
+    test('edit page loads relationship attributes only', function (): void {
         $response = asUser($this->admin)->get(route('relationships.edit', $this->relationship))->assertStatus(200);
 
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Admin/ModelMeta/EditRelationship')
             ->has('relationship')
             ->where('relationship.id', $this->relationship->id)
-            // relatedModels might be lazy-loaded
+            ->missing('relatedModels')
         );
     });
 
-    test('edit page with model type loads specific models', function (): void {
+    test('edit page ignores model type selection', function (): void {
         $modelType = urlencode(Institution::class);
 
         $response = asUser($this->admin)->get(route('relationships.edit', $this->relationship)."?modelType={$modelType}")
@@ -499,7 +522,7 @@ describe('relationship data handling', function (): void {
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Admin/ModelMeta/EditRelationship')
             ->has('relationship')
-            // relatedModels might be lazy-loaded
+            ->missing('relatedModels')
         );
     });
 
@@ -512,14 +535,13 @@ describe('relationship data handling', function (): void {
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Admin/ModelMeta/EditRelationship')
             ->has('relationship')
-            // relatedModels might be lazy-loaded
+            ->missing('relatedModels')
         );
     });
 });
 
 describe('relationship eager loading', function (): void {
-    test('edit page loads relationship with all necessary relations', function (): void {
-        // Create relationshipables for the relationship
+    test('show page loads connections while edit page stays attribute-only', function (): void {
         $relationshipable = new Relationshipable([
             'relationship_id' => $this->relationship->id,
             'relationshipable_type' => MorphMap::alias(Institution::class),
@@ -528,13 +550,19 @@ describe('relationship eager loading', function (): void {
         ]);
         $relationshipable->save();
 
+        asUser($this->admin)->get(route('relationships.show', $this->relationship))->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('Admin/ModelMeta/ShowRelationship')
+                ->has('relationship.relationshipables', 1)
+                ->missing('relatedModels')
+            );
+
         $response = asUser($this->admin)->get(route('relationships.edit', $this->relationship))->assertStatus(200);
 
         $response->assertInertia(fn (Assert $page) => $page
             ->component('Admin/ModelMeta/EditRelationship')
             ->has('relationship')
-            ->has('relationship.relationshipables')
-            // relatedModels might be lazy-loaded
+            ->missing('relationship.relationshipables')
         );
     });
 });

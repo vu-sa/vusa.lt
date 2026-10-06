@@ -30,6 +30,8 @@ describe('AgendaItemsEditor.vue', () => {
     const { wrapper } = mountEditor();
 
     expect(inputs(wrapper)).toHaveLength(1);
+    expect(wrapper.find('[role="switch"]').exists()).toBe(false);
+    expect(wrapper.text()).toContain('meetings.privacy.creation_hint');
   });
 
   it('renders one input per existing question, numbered', () => {

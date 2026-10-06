@@ -17,9 +17,11 @@
  * of crashing on `undefined` or flashing an incorrect empty state. See
  * `RCFullscreenEditor.vue`/`useLiveBlockPreview.ts` for the reference guard.
  */
-import { ref } from 'vue';
+import { inject, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
+
+import { CONTENT_EDITOR_CONTEXT } from '../contentEditorContext';
 
 export interface PreviewPartInput {
   key: string;
@@ -30,7 +32,9 @@ export interface PreviewPartInput {
 
 export type PreviewResolvedMap = Record<string, unknown | null>;
 
-export function useContentPartPreview(tenantId: () => number | null | undefined) {
+export function useContentPartPreview(tenantId: () => number | null | undefined, explicitContext?: () => { kind: string; record_id?: number; locale?: string } | undefined) {
+  const editorContext = inject(CONTENT_EDITOR_CONTEXT, null);
+  const getContext = () => explicitContext?.() ?? (editorContext ? { kind: editorContext.kind, record_id: editorContext.form.id, locale: editorContext.form.lang } : undefined);
   const page = usePage();
   const pending = ref(false);
   const error = ref<string | null>(null);
@@ -56,7 +60,7 @@ export function useContentPartPreview(tenantId: () => number | null | undefined)
       return {};
     }
 
-    const cacheKey = JSON.stringify({ id, parts });
+    const cacheKey = JSON.stringify({ id, parts, context: getContext() });
     const cached = cache.get(cacheKey);
     if (cached) {
       return cached;
@@ -81,7 +85,7 @@ export function useContentPartPreview(tenantId: () => number | null | undefined)
         },
         credentials: 'same-origin',
         signal: ownController.signal,
-        body: JSON.stringify({ tenant_id: id, locale: page.props.app?.locale, parts }),
+        body: JSON.stringify({ tenant_id: id, locale: getContext()?.locale ?? page.props.app?.locale, ...getContext(), parts }),
       });
 
       const json = await response.json().catch(() => null);

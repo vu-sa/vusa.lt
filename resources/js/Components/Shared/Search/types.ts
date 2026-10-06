@@ -10,7 +10,7 @@
 export interface FilterOption {
   value: string | number;
   label: string;
-  count?: number;
+  count?: number | null;
 }
 
 /**
@@ -18,7 +18,7 @@ export interface FilterOption {
  */
 export interface FacetValue {
   value: string;
-  count: number;
+  count: number | null;
 }
 
 /**

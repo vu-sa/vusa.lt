@@ -8,12 +8,16 @@ import { usePage } from '@inertiajs/vue3';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
 // Mock dependencies
-vi.mock('@vueuse/core', () => ({
-  useLocalStorage: vi.fn((key: string, defaultValue: Record<string, unknown>) => {
-    return { value: { ...defaultValue } };
-  }),
-  useOnline: vi.fn(() => ({ value: true })),
-}));
+vi.mock('@vueuse/core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@vueuse/core')>();
+  return {
+    ...actual,
+    useLocalStorage: vi.fn((key: string, defaultValue: Record<string, unknown>) => {
+      return { value: { ...defaultValue } };
+    }),
+    useOnline: vi.fn(() => ({ value: true })),
+  };
+});
 
 vi.mock('../useSearchClient', () => ({
   createTypesenseClients: vi.fn(() => ({
@@ -129,6 +133,28 @@ describe('useDocumentSearch (refactored)', () => {
       expect(controller.isOnline).toBeDefined();
       expect(controller.retryCount).toBeDefined();
       expect(controller.maxRetries).toBe(3);
+    });
+  });
+
+  describe('sorting', () => {
+    it('browses newest first and switches to relevance once a query is entered', async () => {
+      const { useDocumentSearch } = await import('../useDocumentSearch');
+      const controller = useDocumentSearch();
+      expect(controller.activeSort.value).toBe('date_desc');
+      controller.setSortBy('date_desc');
+      expect(controller.filters.value.sort).toBe('relevance');
+      controller.filters.value.query = 'įstatai';
+      expect(controller.activeSort.value).toBe('relevance');
+    });
+
+    it('keeps an explicit date choice once a query exists', async () => {
+      const { useDocumentSearch } = await import('../useDocumentSearch');
+      const controller = useDocumentSearch();
+      controller.setSortBy('date_asc');
+      controller.filters.value.query = 'įstatai';
+      expect(controller.activeSort.value).toBe('date_asc');
+      controller.setSortBy('date_desc');
+      expect(controller.activeSort.value).toBe('date_desc');
     });
   });
 

@@ -1,10 +1,13 @@
 <template>
-  <section data-tour="timeline-section" class="space-y-6" aria-labelledby="user-timeline-heading">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-      <h2 id="user-timeline-heading" class="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-        {{ $t('Tavo institucijos') }} — {{ $t('laiko juosta') }}
-      </h2>
-      <div class="flex items-center gap-2">
+  <FocusModeFrame v-slot="{ active, toggle }" v-model:active="fullscreen" :label="$t('visak.overview.timeline.title')">
+    <OverviewSection
+      :class="active && 'h-full'"
+      :title="$t('visak.overview.timeline.title')"
+      :icon="CalendarRange"
+      variant="home"
+      data-tour="timeline-section"
+    >
+      <template #actions>
         <GanttFilterDropdown
           :show-only-with-activity="filters.showOnlyWithActivityUser.value"
           :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
@@ -22,29 +25,30 @@
           @update:show-related-institutions="(val: boolean) => filters.showRelatedInstitutionsUser.value = val"
           @reset="filters.resetUserFilters()"
         />
-      </div>
-    </div>
+      </template>
 
-    <!-- Deferred Gantt chart rendering for better initial load performance -->
-    <TimelineGanttSkeleton v-if="!isReady" />
-    <TimelineGanttChart v-else :institutions="formattedInstitutions" :meetings="allMeetings" :gaps
-      :tenant-filter="[]"
-      :show-only-with-activity="filters.showOnlyWithActivityUser.value"
-      :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
-      :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
-      :institution-names="allInstitutionNames" :tenant-names :institution-tenant="allInstitutionTenant" :institution-has-public-meetings="allInstitutionHasPublicMeetings"
-      :institution-periodicity="allInstitutionPeriodicity"
-      :duty-members="mergedDutyMembers" :inactive-periods="mergedInactivePeriods"
-      :show-duty-members="filters.showDutyMembersUser.value" :day-width="dayWidthPx"
-      :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
-      @create-check-in="$emit('create-check-in', $event)"
-      @fullscreen="$emit('fullscreen')" @update:day-width="emit('update:dayWidth', $event)" />
-  </section>
+      <TimelineGanttSkeleton v-if="!isReady" />
+      <TimelineGanttChart v-else :class="active && 'min-h-0 flex-1'" :height="active ? '100%' : undefined" :fullscreen-active="active"
+        :institutions="formattedInstitutions" :meetings="allMeetings" :gaps
+        :tenant-filter="[]"
+        :show-only-with-activity="filters.showOnlyWithActivityUser.value"
+        :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
+        :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
+        :institution-names="allInstitutionNames" :tenant-names :institution-tenant="allInstitutionTenant" :institution-has-public-meetings="allInstitutionHasPublicMeetings"
+        :institution-periodicity="allInstitutionPeriodicity"
+        :duty-members="mergedDutyMembers" :inactive-periods="mergedInactivePeriods"
+        :show-duty-members="filters.showDutyMembersUser.value" :day-width="dayWidthPx"
+        :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
+        @create-check-in="$emit('create-check-in', $event)"
+        @fullscreen="toggle" @update:day-width="emit('update:dayWidth', $event)" />
+    </OverviewSection>
+  </FocusModeFrame>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, onMounted, watch, toRef } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
+import { CalendarRange } from 'lucide-vue-next';
 
 import type {
   AtstovavimasInstitution,
@@ -60,6 +64,9 @@ import { useUserTimelineData } from '../Composables/useUserTimelineData';
 import TimelineGanttChart from './TimelineGanttChart.vue';
 import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
+
+import FocusModeFrame from '@/Components/Patterns/FocusModeFrame.vue';
+import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
 interface Props {
   institutions: AtstovavimasInstitution[];
@@ -107,8 +114,10 @@ const emit = defineEmits<{
   'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date }];
   'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
   'update:dayWidth': [value: number];
-  'fullscreen': [];
 }>();
+
+// In place rather than a modal, so dialogs opened from the chart stack above it.
+const fullscreen = ref(false);
 
 // Check if we have any related institutions (or might have when lazy-loaded)
 const hasRelatedInstitutions = computed(() => {
