@@ -1,6 +1,7 @@
 <template>
   <span
     v-if="badge"
+    :key="pops"
     data-slot="task-count-badge"
     :data-status-role="badge.role"
     :class="[
@@ -9,6 +10,7 @@
       badge.role === 'danger'
         ? 'border-status-danger-border bg-status-danger-surface text-status-danger'
         : 'border-status-attention-border bg-status-attention-surface text-status-attention',
+      pops > 0 && 'animate-badge-pop',
     ]"
   >
     <span aria-hidden="true">{{ badge.count > 99 ? '99+' : badge.count }}</span>
@@ -17,6 +19,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from 'vue';
+
 import { useTaskBadge } from '@/Composables/useTaskBadge';
 
 defineProps<{
@@ -25,4 +29,13 @@ defineProps<{
 }>();
 
 const badge = useTaskBadge();
+
+// Re-keyed only on a rise, so the badge pops for a new task but not on every page it reappears on.
+const pops = ref(0);
+
+watch(() => badge.value?.count ?? 0, (next, previous) => {
+  if (next > previous) {
+    pops.value++;
+  }
+});
 </script>

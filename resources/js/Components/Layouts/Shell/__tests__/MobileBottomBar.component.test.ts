@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 
 import MobileBottomBar from '../MobileBottomBar.vue';
 
@@ -22,6 +22,12 @@ const mountBar = (props: Record<string, unknown> = {}) => mount(MobileBottomBar,
 
 const tabs = (wrapper: ReturnType<typeof mount>) => wrapper.findAll('a, button').map(node => node.text());
 
+const finish = (url: string, prefetch = false) => (router as unknown as { __trigger: (event: string, payload: unknown) => void })
+  .__trigger('finish', { detail: { visit: { url: new URL(url, window.location.origin), prefetch } } });
+
+const lit = (wrapper: ReturnType<typeof mount>) => wrapper.findAll('[data-active]')
+  .map(tab => tab.attributes('data-active') === 'true');
+
 describe('MobileBottomBar', () => {
   it('shows Pradžia, Užduotys, create, Pranešimai and Meniu', () => {
     const wrapper = mountBar();
@@ -41,19 +47,37 @@ describe('MobileBottomBar', () => {
   });
 
   it('lights exactly the Pradžia tab the user is on', () => {
-    const lit = (activeSection: unknown) => mountBar({ activeSection }).findAll('a')
-      .map(link => link.classes().includes('border-brand-fill'));
-
-    expect(lit(pradzia.sections[0])).toEqual([true, false, false]);
-    expect(lit(pradzia.sections[1])).toEqual([false, true, false]);
-    expect(lit(pradzia.sections[2])).toEqual([false, false, true]);
+    expect(lit(mountBar({ activeSection: pradzia.sections[0] }))).toEqual([true, false, false, false]);
+    expect(lit(mountBar({ activeSection: pradzia.sections[1] }))).toEqual([false, true, false, false]);
+    expect(lit(mountBar({ activeSection: pradzia.sections[2] }))).toEqual([false, false, true, false]);
   });
 
   it('lights Meniu while the user is in another workspace', () => {
     const wrapper = mountBar({ activeWorkspace: atstovavimas, activeSection: atstovavimas.sections[1] });
 
-    expect(wrapper.findAll('a').every(link => link.classes().includes('border-transparent'))).toBe(true);
-    expect(wrapper.findAll('button').at(-1)?.classes()).toContain('border-brand-fill');
+    expect(lit(wrapper)).toEqual([false, false, false, true]);
+  });
+
+  it('lights a tapped tab before the visit finishes, then follows the route again', async () => {
+    const wrapper = mountBar({ activeWorkspace: atstovavimas, activeSection: atstovavimas.sections[1] });
+
+    await wrapper.findAll('a')[1].trigger('click');
+    expect(lit(wrapper)).toEqual([false, true, false, false]);
+
+    finish(route('tasks.index'));
+    await wrapper.vm.$nextTick();
+    expect(lit(wrapper)).toEqual([false, false, false, true]);
+  });
+
+  it('keeps the tapped tab lit through prefetches and unrelated requests finishing', async () => {
+    const wrapper = mountBar({ activeWorkspace: atstovavimas, activeSection: atstovavimas.sections[1] });
+
+    await wrapper.findAll('a')[1].trigger('click');
+    finish(route('tasks.index'), true);
+    finish(route('dashboard'));
+    await wrapper.vm.$nextTick();
+
+    expect(lit(wrapper)).toEqual([false, true, false, false]);
   });
 
   it('counts unread notifications on the Pranešimai tab', () => {

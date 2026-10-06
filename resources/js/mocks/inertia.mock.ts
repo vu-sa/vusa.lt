@@ -95,7 +95,7 @@ export const usePage = mockFn(() => ({
 }));
 
 // Registry for router event listeners (used in tests)
-const beforeCallbacks: Array<(event: any) => void> = [];
+const listeners: Record<string, Array<(event: any) => void>> = {};
 
 // Mock router for Inertia
 export const router = {
@@ -128,19 +128,21 @@ export const router = {
     return Promise.resolve();
   }),
   on: mockFn((event: string, callback: any) => {
-    if (event === 'before') {
-      beforeCallbacks.push(callback);
-    }
+    (listeners[event] ??= []).push(callback);
     return () => {
-      const index = beforeCallbacks.indexOf(callback);
+      const callbacks = listeners[event] ?? [];
+      const index = callbacks.indexOf(callback);
       if (index > -1) {
-        beforeCallbacks.splice(index, 1);
+        callbacks.splice(index, 1);
       }
     };
   }),
-  // Test helper to trigger 'before' event callbacks
+  // Test helpers to fire router events at registered listeners
+  __trigger: (eventName: string, event?: any) => {
+    [...(listeners[eventName] ?? [])].forEach(cb => cb(event));
+  },
   __triggerBefore: (event: any) => {
-    beforeCallbacks.forEach(cb => cb(event));
+    [...(listeners.before ?? [])].forEach(cb => cb(event));
   },
 };
 
