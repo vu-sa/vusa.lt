@@ -4,6 +4,7 @@
     data-slot="fileable-files-panel"
     :class="['relative', isOverDropZone && canUpload && 'outline-1 outline-dashed outline-brand outline-offset-4']"
   >
+    <StagingNote v-if="canUpload" topic="sharepoint" class="mb-3" />
     <SectionCard
       :title="$t('Failai')"
       :icon="FolderOpen"
@@ -146,6 +147,7 @@ import FileableUploadSheet from './FileableUploadSheet.vue';
 import type { FileableFileItem } from './types';
 
 import { ConfirmDialog, EmptyState, SectionCard } from '@/Components/Patterns';
+import StagingNote from '@/Components/StagingNote.vue';
 import { Button } from '@/Components/ui/button';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { type FileableFileType, fileTypeLabel } from '@/Constants/fileTypes';

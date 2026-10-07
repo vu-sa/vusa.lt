@@ -22,6 +22,7 @@ class StagingEnvironmentWarnings
                 'isStaging' => true,
                 'filesReadOnly' => config('app.files_read_only', false),
                 'sharepointReadOnly' => (bool) config('app.sharepoint_read_only', false),
+                'mailToRequester' => true,
             ]);
         }
 

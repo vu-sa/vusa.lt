@@ -19,6 +19,7 @@ use App\Models\User;
 use App\Notifications\InstitutionActivityNotification;
 use App\Services\AdminNavigation\AdminNavigationCatalog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Notifications\ChannelManager;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia;
@@ -117,6 +118,22 @@ describe('authorized access', function (): void {
             ])
             ->assertSessionHasErrors('note');
     });
+});
+
+test('on staging the email reaches only the coordinator who sent it, never the representative', function (): void {
+    Notification::swap(new ChannelManager(app()));
+    config(['app.env' => 'staging', 'mail.mailers.smtp' => ['transport' => 'array']]);
+    app('mail.manager')->forgetMailers();
+
+    // Through the action rather than HTTP: staging's basic-auth middleware is not what is under test.
+    app(SendInstitutionActivityRequests::class)->send([$this->institution], $this->coordinator);
+
+    $sent = app('mail.manager')->mailer('smtp')->getSymfonyTransport()->messages();
+
+    expect($sent)->toHaveCount(1)
+        ->and(collect($sent->first()->getOriginalMessage()->getTo())->map->getAddress()->all())->toBe([$this->coordinator->email])
+        ->and($sent->first()->getOriginalMessage()->getSubject())->toStartWith('[Staging] ')
+        ->and(app('mail.manager')->mailer('array')->getSymfonyTransport()->messages())->toHaveCount(0);
 });
 
 describe('who is asked about what', function (): void {

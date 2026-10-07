@@ -5,54 +5,55 @@
     role="status"
     class="rounded-xl border border-amber-300/70 bg-amber-100 text-amber-950 shadow-sm print:hidden dark:border-amber-800/70 dark:bg-amber-950/60 dark:text-amber-100"
   >
-    <div class="flex min-h-11 items-center justify-between gap-3 px-3 py-2 text-sm sm:px-4">
-      <div class="flex min-w-0 items-start gap-3 sm:items-center">
-        <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-200/70 sm:mt-0 dark:bg-amber-900/70">
-          <AlertTriangle class="h-4 w-4 text-amber-800 dark:text-amber-300" />
-        </div>
-        <div class="flex min-w-0 flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
-          <span class="shrink-0 font-bold uppercase">{{ $t('Bandomoji aplinka') }}</span>
-          <span class="hidden text-amber-700 sm:inline dark:text-amber-300">|</span>
-          <span
-            v-if="hasSharedResources"
-            class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-amber-800 sm:text-sm dark:text-amber-200"
-          >
-            <template v-for="(warning, index) in warnings" :key="warning.label">
-              <span class="inline-flex items-center gap-1">
-                <RotateCcw v-if="warning.kind === 'reset'" class="h-3 w-3" />
-                <FileWarning v-if="warning.kind === 'files'" class="h-3 w-3" />
-                <CloudOff v-if="warning.kind === 'sharepoint'" class="h-3 w-3" />
-                {{ $t(warning.label) }}
-              </span>
-              <span v-if="index < warnings.length - 1" aria-hidden="true">•</span>
-            </template>
-          </span>
-          <span v-else class="text-xs text-amber-800 sm:text-sm dark:text-amber-200">
-            {{ $t('Bandomosios aplinkos duomenys gali skirtis nuo tikrosios') }}
-          </span>
-        </div>
+    <div class="flex min-h-11 items-center justify-between gap-2 px-3 py-1 text-sm sm:px-4">
+      <div class="flex min-w-0 items-center gap-3">
+        <AlertTriangle class="size-4 shrink-0 text-amber-800 dark:text-amber-300" aria-hidden="true" />
+        <span class="min-w-0 truncate">
+          <span class="font-bold uppercase">{{ $t('staging.title') }}</span>
+          <span class="hidden text-amber-800 sm:inline dark:text-amber-200"> · {{ $t('staging.summary') }}</span>
+        </span>
       </div>
-      <button
-        type="button"
-        :class="[
-          'flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-lg transition-colors',
-          'hover:bg-amber-200/70 dark:hover:bg-amber-900/60',
-          'focus-visible:outline-none focus-visible:ring-2',
-          'focus-visible:ring-amber-600 dark:focus-visible:ring-amber-400',
-        ]"
-        :aria-label="$t('Suskleisti bandomosios aplinkos įspėjimą')"
-        @click="emit('update:dismissed', true)"
-      >
-        <X class="h-4 w-4" />
-      </button>
+      <div class="flex shrink-0 items-center">
+        <button
+          type="button"
+          data-slot="staging-details-button"
+          :class="[actionClass, 'px-3 font-medium underline underline-offset-2']"
+          @click="detailsOpen = true"
+        >
+          {{ $t('staging.details') }}
+        </button>
+        <button
+          type="button"
+          :class="[actionClass, 'min-w-11 justify-center']"
+          :aria-label="$t('staging.collapse')"
+          @click="emit('update:dismissed', true)"
+        >
+          <X class="size-4" />
+        </button>
+      </div>
     </div>
+
+    <Dialog v-model:open="detailsOpen">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{{ $t('staging.details_title') }}</DialogTitle>
+          <DialogDescription>{{ $t('staging.details_description') }}</DialogDescription>
+        </DialogHeader>
+        <ul class="divide-y divide-border border-y border-border" data-slot="staging-details">
+          <li v-for="note in notes" :key="note.topic" class="flex items-start gap-3 py-3 text-sm">
+            <component :is="topicIcons[note.topic]" class="mt-0.5 size-4 shrink-0 text-status-attention" aria-hidden="true" />
+            {{ $t(note.key) }}
+          </li>
+        </ul>
+      </DialogContent>
+    </Dialog>
   </div>
   <button
     v-else-if="isStaging && compact && dismissed"
     type="button"
     data-slot="staging-warning-button"
-    :aria-label="`${$t('Atverti bandomosios aplinkos įspėjimą')}: ${warningText}`"
-    :title="`${$t('Bandomoji aplinka')}: ${warningText}`"
+    :aria-label="`${$t('staging.expand')}: ${$t('staging.summary')}`"
+    :title="`${$t('staging.title')}: ${$t('staging.summary')}`"
     :class="[
       'flex size-11 shrink-0 items-center justify-center',
       'border border-status-attention-border bg-status-attention-surface text-status-attention',
@@ -65,41 +66,24 @@
 </template>
 
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
-import { trans as $t } from 'laravel-vue-i18n';
-import { computed } from 'vue';
-import { AlertTriangle, X, FileWarning, CloudOff, RotateCcw } from 'lucide-vue-next';
+import { ref } from 'vue';
+import { AlertTriangle, X, FileWarning, CloudOff, RotateCcw, Mail } from 'lucide-vue-next';
+
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { useStaging, type StagingTopic } from '@/Composables/useStaging';
 
 defineProps<{ dismissed?: boolean; compact?: boolean }>();
 const emit = defineEmits<{ 'update:dismissed': [value: boolean] }>();
 
-interface StagingProps {
-  isStaging: boolean;
-  filesReadOnly: boolean;
-  sharepointReadOnly: boolean;
-}
+const { isStaging, notes } = useStaging();
+const detailsOpen = ref(false);
 
-const staging = computed(() => usePage().props.staging as StagingProps | undefined);
+const topicIcons: Record<StagingTopic, typeof Mail> = { reset: RotateCcw, files: FileWarning, sharepoint: CloudOff, mail: Mail };
 
-const isStaging = computed(() => staging.value?.isStaging ?? false);
-
-const warnings = computed(() => {
-  const list: { kind: 'reset' | 'files' | 'sharepoint'; label: string }[] = [];
-  if (staging.value?.isStaging) {
-    list.push({ kind: 'reset', label: 'Pakeitimai nebus išsaugoti – rytoj duomenys bus atnaujinti' });
-  }
-  if (staging.value?.filesReadOnly) {
-    list.push({ kind: 'files', label: 'Failų saugykla bendrinama su tikrąja aplinka (tik skaitymui)' });
-  }
-  if (staging.value?.sharepointReadOnly) {
-    list.push({ kind: 'sharepoint', label: 'SharePoint bendrinama su tikrąja aplinka (tik skaitymui)' });
-  }
-  else if (staging.value?.isStaging) {
-    list.push({ kind: 'sharepoint', label: 'SharePoint failai įkeliami į bandomąją svetainę' });
-  }
-  return list;
-});
-
-const warningText = computed(() => warnings.value.map(warning => $t(warning.label)).join('; '));
-const hasSharedResources = computed(() => warnings.value.length > 0);
+const actionClass = [
+  'flex min-h-11 items-center rounded-lg transition-colors',
+  'hover:bg-amber-200/70 dark:hover:bg-amber-900/60',
+  'focus-visible:outline-none focus-visible:ring-2',
+  'focus-visible:ring-amber-600 dark:focus-visible:ring-amber-400',
+];
 </script>

@@ -2,8 +2,13 @@
 
 use App\Http\Middleware\StagingReadOnlyMode;
 use App\Listeners\BlockExternalNotificationsOnStaging;
+use App\Models\InstitutionActivityRequest;
+use App\Models\User;
+use App\Notifications\InstitutionActivityNotification;
 use App\Notifications\WelcomeNotification;
 use App\Services\MediaLibrary\StagingAwareFileRemover;
+use App\Services\NotificationRouter;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Events\NotificationSending;
@@ -293,13 +298,17 @@ test('read only middleware blocks the real file and SharePoint mutation route na
 test('only database notification channels are allowed in staging by default', function (): void {
     $listener = new BlockExternalNotificationsOnStaging;
     $notification = new WelcomeNotification;
+    $requested = new InstitutionActivityNotification(new Collection([InstitutionActivityRequest::factory()->create(['requested_by_id' => User::factory()->create()->id])]));
+    $scheduled = new InstitutionActivityNotification(new Collection([InstitutionActivityRequest::factory()->create(['requested_by_id' => null])]));
 
     config(['app.env' => 'staging', 'app.staging_broadcasting_enabled' => false, 'app.staging_push_enabled' => false]);
 
     expect($listener->handle(new NotificationSending(new stdClass, $notification, 'database')))->toBeNull()
         ->and($listener->handle(new NotificationSending(new stdClass, $notification, 'mail')))->toBeFalse()
         ->and($listener->handle(new NotificationSending(new stdClass, $notification, 'broadcast')))->toBeFalse()
-        ->and($listener->handle(new NotificationSending(new stdClass, $notification, WebPushChannel::class)))->toBeFalse();
+        ->and($listener->handle(new NotificationSending(new stdClass, $notification, WebPushChannel::class)))->toBeFalse()
+        ->and($listener->handle(new NotificationSending(new stdClass, $requested, 'mail')))->toBeNull()
+        ->and($listener->handle(new NotificationSending(new stdClass, $scheduled, 'mail')))->toBeFalse();
 
     config(['app.staging_broadcasting_enabled' => true, 'app.staging_push_enabled' => true]);
 
@@ -310,6 +319,29 @@ test('only database notification channels are allowed in staging by default', fu
     config(['app.env' => 'production']);
 
     expect($listener->handle(new NotificationSending(new stdClass, $notification, 'mail')))->toBeNull();
+});
+
+test('staging mail reaches only the person who sent it, never the recipient or their duty inboxes', function (): void {
+    $requester = User::factory()->create(['email' => 'koordinatorius@example.com']);
+    $recipient = User::factory()->create(['email' => 'atstovas@example.com']);
+    $router = app(NotificationRouter::class);
+    $activity = fn (?User $by) => new InstitutionActivityNotification(new Collection([
+        InstitutionActivityRequest::factory()->create(['recipient_id' => $recipient->id, 'requested_by_id' => $by?->id]),
+    ]));
+
+    config(['app.env' => 'staging']);
+
+    expect($router->routeForMail($recipient, $activity($requester)))->toBe(['koordinatorius@example.com'])
+        ->and($router->routeForMail($recipient, $activity(null)))->toBe([])
+        ->and($router->routeForMail($recipient, new WelcomeNotification))->toBe([]);
+
+    $requester->update(['email' => 'user'.$requester->id.'@staging.invalid']);
+
+    expect($router->routeForMail($recipient, $activity($requester->fresh())))->toBe([]);
+
+    config(['app.env' => 'production']);
+
+    expect($router->routeForMail($recipient, $activity($requester)))->toBe($recipient->notificationEmails());
 });
 
 test('Media Library preserves shared files when staging deletes local media records', function (): void {

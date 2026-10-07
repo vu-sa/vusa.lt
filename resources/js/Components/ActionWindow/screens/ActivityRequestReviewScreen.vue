@@ -76,6 +76,7 @@
         {{ draft.activityRequest.campaignType === 'missing_meetings' ? $t('activity_requests.review_missing_hint') : $t('action_window.activity_request.review.no_sign_in') }}
       </p>
     </section>
+    <StagingNote topic="mail" class="mt-6" />
     <template #footer>
       <ActionWindowPrimaryButton :loading="submitting" :disabled="!ready" @click="submit">
         {{ $t('action_window.activity_request.review.submit', { count: String(checkedRows.length) }) }}
@@ -97,6 +98,7 @@ import { useWindowDates } from '../useWindowDates';
 
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useApiMutation } from '@/Composables/useApi';
+import StagingNote from '@/Components/StagingNote.vue';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Label } from '@/Components/ui/label';

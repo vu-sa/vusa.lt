@@ -13,6 +13,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | tests/Browser/** | .ai/rules/browser.md |
 | app/Models/Cadence.php, app/Policies/CadencePolicy.php, app/Actions/Cadences/**, app/Http/Requests/Cadences/**, resources/js/Components/Cadences/**, app/Http/Requests/UpdateInstitutionAdministratorsRequest.php, app/Actions/ResolveCadence*.php | .ai/rules/cadences.md |
 | docs/changelog/**, docs/en/changelog/** | .ai/rules/changelog.md |
+| resources/js/Components/Staging*.vue, resources/js/Composables/useStaging.ts, app/Http/Middleware/Staging*.php, app/Services/NotificationRouter.php, app/Listeners/BlockExternalNotificationsOnStaging.php | .ai/rules/staging.md |
 | config/vusa.php | .ai/rules/config.md |
 | resources/js/Components/Patterns/**, resources/js/Constants/** | .ai/rules/constants.md |
 | app/Http/Controllers/** | .ai/rules/controllers.md |

@@ -14,6 +14,7 @@
         <p class="mt-2 text-sm leading-relaxed text-muted-foreground text-pretty">
           {{ $t('Viešų ir vidinių svetainės failų naršymas, įkėlimas ir valdymas.') }}
         </p>
+        <StagingNote topic="files" class="mt-3" />
       </div>
 
       <div class="flex items-center gap-2">
@@ -64,6 +65,7 @@ import { ref } from 'vue';
 
 import FileManager from '@/Features/Admin/FileManager/FileManager.vue';
 import { useFileSearch } from '@/Features/Admin/FileManager/useFileSearch';
+import StagingNote from '@/Components/StagingNote.vue';
 import { Button } from '@/Components/ui/button';
 
 const fileManagerRef = ref<InstanceType<typeof FileManager> | null>(null);

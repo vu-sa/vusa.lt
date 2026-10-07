@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Notifications\Contracts\SendsMailOnStaging;
 use Illuminate\Notifications\Notification;
 
 class NotificationRouter
@@ -14,7 +15,24 @@ class NotificationRouter
      */
     public function routeForMail(User $user, Notification $notification): array
     {
+        if (config('app.env') === 'staging') {
+            $address = $this->stagingMailAddress($notification);
+
+            return $address === null ? [] : [$address];
+        }
+
         return $user->notificationEmails();
+    }
+
+    /**
+     * Staging mails only opted-in notifications, and only to whoever caused them. Duty inboxes are
+     * real addresses that the staging scrub leaves untouched, so they are never a staging target.
+     */
+    public function stagingMailAddress(Notification $notification): ?string
+    {
+        $email = $notification instanceof SendsMailOnStaging ? $notification->stagingMailRecipient()?->email : null;
+
+        return is_string($email) && $email !== '' && ! str_ends_with($email, '@staging.invalid') ? $email : null;
     }
 
     /**

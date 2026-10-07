@@ -29,3 +29,7 @@ Each action answers one checkable question; do not reuse a name for a union of t
 `institution_administrators` is `(institution_id, cadence_id, user_id)`. An administrator must never feed `Institution::users()`, `duties.current_users`, `toSearchableArray()['current_user_names']` or the public contacts. It does widen `InstitutionAccessService::getAccessibleInstitutionIds()` and the dashboard, flagged `is_administered`.
 
 Write rows through the `InstitutionAdministrator` model, never `administrators()->sync()/attach()/detach()` — BelongsToMany writes go through the raw query builder, so no model events fire and the access-cache invalidation in `booted()` is skipped. Same trap as the dutiables pivot (see app.md).
+
+## Staging mail is opt-in per notification and goes only to whoever caused it
+Staging's default mailer stays `log` (StagingIsolationService enforces it). A notification may mail on staging only by implementing `Contracts\SendsMailOnStaging`; NotificationRouter then routes it to `stagingMailRecipient()`'s users.email (never duty inboxes, which the scrub leaves real), BlockExternalNotificationsOnStaging drops it when that is null or @staging.invalid, and its toMail() names `->mailer('smtp')` on staging only.
+Return null for automatic sends (tasks, scheduler) so they never mail. Opting in also needs a `StagingNote topic="mail"` at the send point.

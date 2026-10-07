@@ -6,6 +6,8 @@ use App\Enums\InstitutionActivityAnswer;
 use App\Enums\InstitutionActivityCampaign;
 use App\Enums\NotificationType;
 use App\Models\InstitutionActivityRequest;
+use App\Models\User;
+use App\Notifications\Contracts\SendsMailOnStaging;
 use Illuminate\Contracts\Mail\Mailable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -15,7 +17,7 @@ use Illuminate\Support\Str;
  * "Ar vyko posėdis?" for one recipient: every institution from one send, each answerable from
  * the email without signing in (U21). Links open a confirmation page; nothing is recorded on GET.
  */
-class InstitutionActivityNotification extends BaseNotification
+class InstitutionActivityNotification extends BaseNotification implements SendsMailOnStaging
 {
     /**
      * @param  Collection<int, InstitutionActivityRequest>  $requests
@@ -57,6 +59,14 @@ class InstitutionActivityNotification extends BaseNotification
                     && $meeting->start_time->toDateString() <= $request->periodEnd()->toDateString()));
 
         return $this->requests->isNotEmpty() && ($channel !== 'mail' || (! $notifiable->isGloballyMuted() && $notifiable->emailDeliveryFor($this->type())->value === 'immediate'));
+    }
+
+    /**
+     * Whoever pressed send; task-triggered sends have nobody, so staging never mails them.
+     */
+    public function stagingMailRecipient(): ?User
+    {
+        return $this->first()->requestedBy;
     }
 
     public function url(): string
@@ -134,8 +144,11 @@ class InstitutionActivityNotification extends BaseNotification
     #[\Override]
     public function toMail(object $notifiable): MailMessage|Mailable
     {
+        $staging = config('app.env') === 'staging';
+
         return (new MailMessage)
-            ->subject(Str::limit($this->title($notifiable), 59, '…'))
+            ->mailer($staging ? 'smtp' : null)
+            ->subject(($staging ? '[Staging] ' : '').Str::limit($this->title($notifiable), 59, '…'))
             ->markdown('emails.institution-activity', [
                 'title' => $this->title($notifiable),
                 'body' => $this->body($notifiable),

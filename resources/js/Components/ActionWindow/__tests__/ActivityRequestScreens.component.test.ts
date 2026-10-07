@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { mount, flushPromises, enableAutoUnmount } from '@vue/test-utils';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { computed, defineComponent, h, ref, type Component } from 'vue';
 
 import ActivityRequestCampaignScreen from '@/Components/ActionWindow/screens/ActivityRequestCampaignScreen.vue';
@@ -10,6 +10,7 @@ import ActivityRequestReviewScreen from '@/Components/ActionWindow/screens/Activ
 import ActivityRequestModeScreen from '@/Components/ActionWindow/screens/ActivityRequestModeScreen.vue';
 import ActivityRequestPeopleScreen from '@/Components/ActionWindow/screens/ActivityRequestPeopleScreen.vue';
 import { createActionWindowProvider, type ActionWindowContext, type OpenOptions } from '@/Composables/useActionWindow';
+import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -117,6 +118,16 @@ describe('ActivityRequestReviewScreen.vue', () => {
     await wrapper.find('[data-slot="action-window-primary"]').trigger('click');
 
     expect(router.post).not.toHaveBeenCalled();
+  });
+
+  it('tells a staging tester the email comes only to them', () => {
+    const defaultPage = vi.mocked(usePage).getMockImplementation()!;
+    vi.mocked(usePage).mockReturnValue(createMockPage({ staging: { isStaging: true, filesReadOnly: true, sharepointReadOnly: true, mailToRequester: true } }));
+
+    const { wrapper } = mountScreen(ActivityRequestReviewScreen, { flow: 'activity.request', institutions: [institutions[0]!] });
+
+    expect(wrapper.get('[data-slot="staging-note"]').text()).toContain('staging.topics.mail');
+    vi.mocked(usePage).mockImplementation(defaultPage);
   });
 
   it('hides empty exclusions and uses bordered editing controls and branded section headings', async () => {
