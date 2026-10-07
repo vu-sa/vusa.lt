@@ -704,17 +704,6 @@ function getControllerTestData(string $controller): array
                 'url' => '',
             ],
         ],
-        'Relationship' => [
-            'valid' => [
-                'name' => 'Test Relationship Type',
-                'slug' => 'test-relationship-type',
-                'description' => 'Test relationship type description',
-            ],
-            'invalid' => [
-                'name' => '', // Required field empty
-                'slug' => '', // Required field empty
-            ],
-        ],
         default => [
             'valid' => ['name' => 'Test'],
             'invalid' => ['name' => ''],
@@ -728,7 +717,6 @@ function getControllerValidationErrors(string $controller): array
         'Page' => ['title', 'content.parts', 'lang'],
         'Banner' => ['title'],
         'Navigation' => ['name', 'url'],
-        'Relationship' => ['name', 'slug'],
         default => ['name'],
     };
 }

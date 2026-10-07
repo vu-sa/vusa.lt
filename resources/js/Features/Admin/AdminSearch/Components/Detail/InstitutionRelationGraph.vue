@@ -32,7 +32,7 @@
         :y2="edge.y2"
         :stroke="edge.color"
         stroke-width="1.4"
-        :stroke-dasharray="edge.direction === 'sibling' ? '4 3' : undefined"
+        :stroke-dasharray="edge.direction === 'mutual' ? '4 3' : undefined"
         stroke-opacity="0.5"
         :marker-end="edge.arrow === 'out' ? `url(#rel-arrow-${edge.direction})` : undefined"
         :marker-start="edge.arrow === 'in' ? `url(#rel-arrow-${edge.direction})` : undefined"
@@ -141,13 +141,15 @@ import { computed, reactive, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { DIRECTION_STYLES, directionStyle, EDGE_TYPE_STYLES, type RelationshipDirection, type RelationshipType } from '@/Components/Graphs/relationshipColors';
+import { DIRECTION_STYLES, directionStyle, EDGE_TYPE_STYLES, edgeCategory, type RelationshipDirection } from '@/Components/Graphs/relationshipColors';
 
 interface RelatedInstitution {
   id: string;
   name: string;
   direction: string;
-  type: string;
+  via?: string;
+  kind_label?: string;
+  cross_tenant?: boolean;
   authorized: boolean;
 }
 
@@ -160,10 +162,10 @@ const CENTER_R = 16;
 const LEAF_R = 10;
 /** Beyond this, the ring stays legible only by capping and showing a "+N" note. */
 const MAX_NODES = 16;
-const DIRECTION_ORDER: Record<string, number> = { outgoing: 0, incoming: 1, sibling: 2 };
+const DIRECTION_ORDER: Record<string, number> = { outgoing: 0, incoming: 1, mutual: 2 };
 
 function dirKey(direction: string): RelationshipDirection {
-  return direction in DIRECTION_STYLES ? (direction as RelationshipDirection) : 'sibling';
+  return direction in DIRECTION_STYLES ? (direction as RelationshipDirection) : 'mutual';
 }
 
 function truncate(name: string, max = 16): string {
@@ -261,10 +263,11 @@ const edges = computed(() => {
     return {
       id: node.id,
       name: node.name,
-      type: node.type,
+      type: edgeCategory(node),
+      kindLabel: node.kind_label,
       authorized: node.authorized,
       directionKey: node.labelKey,
-      direction: node.arrow === 'none' ? 'sibling' : dirKey(node.direction),
+      direction: dirKey(node.direction),
       arrow: node.arrow,
       color: node.color,
       // Offsets clear the center halo (CENTER_R + 4) and leaf circle so arrowheads show.
@@ -295,7 +298,7 @@ const usedDirections = computed<RelationshipDirection[]>(() => {
   return (Object.keys(DIRECTION_STYLES) as RelationshipDirection[]).filter(dir => present.has(dir));
 });
 
-/** Directions that actually draw an arrowhead (siblings are undirected). */
+/** Directions that actually draw an arrowhead (mutual links are undirected). */
 const arrowDirections = computed<RelationshipDirection[]>(() =>
   usedDirections.value.filter(dir => DIRECTION_STYLES[dir].arrow !== 'none'),
 );
@@ -325,14 +328,13 @@ const tooltip = reactive<{
   authorized: boolean;
 }>({ visible: false, x: 0, y: 0, title: '', subtitle: '', authorized: false });
 
-function showEdgeTooltip(event: MouseEvent, edge: { name: string; directionKey: string; type: string; authorized: boolean }) {
+function showEdgeTooltip(event: MouseEvent, edge: { name: string; directionKey: string; type: ReturnType<typeof edgeCategory>; kindLabel?: string; authorized: boolean }) {
   const bounds = root.value?.getBoundingClientRect();
   if (!bounds) {
     return;
   }
-  const typeKey = EDGE_TYPE_STYLES[edge.type as RelationshipType]?.labelKey ?? 'relationships.graph.type_direct';
   tooltip.title = edge.name;
-  tooltip.subtitle = `${$t(edge.directionKey)} · ${$t(typeKey)}`;
+  tooltip.subtitle = [edge.kindLabel, $t(edge.directionKey), $t(EDGE_TYPE_STYLES[edge.type].labelKey)].filter(Boolean).join(' · ');
   tooltip.authorized = edge.authorized;
   tooltip.x = event.clientX - bounds.left + 12;
   tooltip.y = event.clientY - bounds.top + 12;

@@ -92,19 +92,6 @@
         >
           <NumberField v-model="extraAttributesPeriodicityDays" :min="1" :max="365" />
         </FormFieldWrapper>
-
-        <div class="border border-border">
-          <FormToggleRow
-            v-model="enableSiblingRelationships"
-            :label="$t('forms.fields.enable_sibling_relationships')"
-            :hint="$t('forms.helpers.enable_sibling_hint')"
-          />
-          <FormToggleRow
-            v-model="enableCrossTenantSiblingRelationships"
-            :label="$t('forms.fields.enable_cross_tenant')"
-            :hint="$t('forms.helpers.enable_cross_tenant_hint')"
-          />
-        </div>
       </FormPanel>
     </template>
 
@@ -132,7 +119,6 @@ import TiptapEditor from '../TipTap/TiptapEditor.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { FormToggleRow } from '@/Components/Patterns';
 import FormPanel from '@/Components/Patterns/FormPanel.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import { fieldSurfaceClass } from '@/Components/ui/control';
@@ -225,32 +211,6 @@ const extraAttributesPeriodicityDays = computed({
     form.extra_attributes = {
       ...form.extra_attributes,
       meeting_periodicity_days: value,
-    };
-  },
-});
-
-const enableSiblingRelationships = computed({
-  get: () => form.extra_attributes?.enable_sibling_relationships ?? false,
-  set: (value) => {
-    if (!form.extra_attributes) {
-      form.extra_attributes = {};
-    }
-    form.extra_attributes = {
-      ...form.extra_attributes,
-      enable_sibling_relationships: value,
-    };
-  },
-});
-
-const enableCrossTenantSiblingRelationships = computed({
-  get: () => form.extra_attributes?.enable_cross_tenant_sibling_relationships ?? false,
-  set: (value) => {
-    if (!form.extra_attributes) {
-      form.extra_attributes = {};
-    }
-    form.extra_attributes = {
-      ...form.extra_attributes,
-      enable_cross_tenant_sibling_relationships: value,
     };
   },
 });

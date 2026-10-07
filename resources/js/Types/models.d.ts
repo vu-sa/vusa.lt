@@ -866,7 +866,6 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // mutators
-      related_institutions: unknown
       maybe_short_name: unknown
       governance_scope: unknown
       has_public_meetings: unknown
@@ -892,10 +891,10 @@ declare global {
       secretary_assignments?: InstitutionSecretary[]
       administrators?: User[]
       administrator_assignments?: InstitutionSecretary[]
+      outgoing_links?: InstitutionLink[]
+      incoming_links?: InstitutionLink[]
       comments?: Comment[]
       root_comments?: Comment[]
-      outgoing_relationships?: Relationship[]
-      incoming_relationships?: Relationship[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       tasks?: Task[]
@@ -913,10 +912,10 @@ declare global {
       secretary_assignments_count: number
       administrators_count: number
       administrator_assignments_count: number
+      outgoing_links_count: number
+      incoming_links_count: number
       comments_count: number
       root_comments_count: number
-      outgoing_relationships_count: number
-      incoming_relationships_count: number
       fileable_files_count: number
       available_files_count: number
       tasks_count: number
@@ -936,10 +935,10 @@ declare global {
       secretary_assignments_exists: boolean
       administrators_exists: boolean
       administrator_assignments_exists: boolean
+      outgoing_links_exists: boolean
+      incoming_links_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
-      outgoing_relationships_exists: boolean
-      incoming_relationships_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
       tasks_exists: boolean
@@ -1038,6 +1037,27 @@ declare global {
       institution_type_id: number
     }
 
+    export interface InstitutionLink {
+      // columns
+      id: number
+      source_institution_id: string
+      target_institution_id: string
+      kind: InstitutionRelationKind
+      mutual: boolean
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      source?: Institution
+      target?: Institution
+      activities_as_subject?: Activity[]
+      // counts
+      activities_as_subject_count: number
+      // exists
+      source_exists: boolean
+      target_exists: boolean
+      activities_as_subject_exists: boolean
+    }
+
     export interface InstitutionSecretary {
       // columns
       id: string
@@ -1076,8 +1096,8 @@ declare global {
       translations: unknown
       // relations
       institutions?: Institution[]
-      outgoing_relationships?: Relationship[]
-      incoming_relationships?: Relationship[]
+      outgoing_links?: InstitutionTypeLink[]
+      incoming_links?: InstitutionTypeLink[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       parent?: InstitutionType
@@ -1087,8 +1107,8 @@ declare global {
       activities_as_subject?: Activity[]
       // counts
       institutions_count: number
-      outgoing_relationships_count: number
-      incoming_relationships_count: number
+      outgoing_links_count: number
+      incoming_links_count: number
       fileable_files_count: number
       available_files_count: number
       descendants_count: number
@@ -1096,14 +1116,36 @@ declare global {
       activities_as_subject_count: number
       // exists
       institutions_exists: boolean
-      outgoing_relationships_exists: boolean
-      incoming_relationships_exists: boolean
+      outgoing_links_exists: boolean
+      incoming_links_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
       parent_exists: boolean
       descendants_exists: boolean
       recursive_descendants_exists: boolean
       recursive_parent_exists: boolean
+      activities_as_subject_exists: boolean
+    }
+
+    export interface InstitutionTypeLink {
+      // columns
+      id: number
+      source_type_id: number
+      target_type_id: number
+      kind: InstitutionRelationKind
+      mutual: boolean
+      cross_tenant: boolean
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      source?: InstitutionType
+      target?: InstitutionType
+      activities_as_subject?: Activity[]
+      // counts
+      activities_as_subject_count: number
+      // exists
+      source_exists: boolean
+      target_exists: boolean
       activities_as_subject_exists: boolean
     }
 
@@ -1443,7 +1485,6 @@ declare global {
       updated_at: string
       deleted_at?: string | null
       // mutators
-      related_institutions: unknown
       maybe_short_name: unknown
       governance_scope: unknown
       has_public_meetings: unknown
@@ -1469,10 +1510,10 @@ declare global {
       secretary_assignments?: InstitutionSecretary[]
       administrators?: User[]
       administrator_assignments?: InstitutionSecretary[]
+      outgoing_links?: InstitutionLink[]
+      incoming_links?: InstitutionLink[]
       comments?: Comment[]
       root_comments?: Comment[]
-      outgoing_relationships?: Relationship[]
-      incoming_relationships?: Relationship[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       tasks?: Task[]
@@ -1490,10 +1531,10 @@ declare global {
       secretary_assignments_count: number
       administrators_count: number
       administrator_assignments_count: number
+      outgoing_links_count: number
+      incoming_links_count: number
       comments_count: number
       root_comments_count: number
-      outgoing_relationships_count: number
-      incoming_relationships_count: number
       fileable_files_count: number
       available_files_count: number
       tasks_count: number
@@ -1513,10 +1554,10 @@ declare global {
       secretary_assignments_exists: boolean
       administrators_exists: boolean
       administrator_assignments_exists: boolean
+      outgoing_links_exists: boolean
+      incoming_links_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
-      outgoing_relationships_exists: boolean
-      incoming_relationships_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
       tasks_exists: boolean
@@ -1726,49 +1767,6 @@ declare global {
       // exists
       form_exists: boolean
       field_responses_exists: boolean
-    }
-
-    export interface Relationship {
-      // columns
-      id: number
-      name: string
-      slug: string
-      description?: string | null
-      type?: string | null
-      created_at: string
-      updated_at: string
-      // relations
-      institutions?: Institution[]
-      relationshipables?: Relationshipable[]
-      institution_types?: InstitutionType[]
-      // counts
-      institutions_count: number
-      relationshipables_count: number
-      institution_types_count: number
-      // exists
-      institutions_exists: boolean
-      relationshipables_exists: boolean
-      institution_types_exists: boolean
-    }
-
-    export interface Relationshipable {
-      // columns
-      id: number
-      relationship_id: number
-      relationshipable_type: string
-      relationshipable_id: string
-      related_model_id: string
-      scope: string
-      bidirectional: boolean
-      created_at: string
-      updated_at: string
-      // relations
-      relationshipable?: Relationshipable
-      related_model?: Relationshipable
-      relationship?: Relationship
-      // counts
-      // exists
-      relationship_exists: boolean
     }
 
     export interface Reservation {
@@ -2599,6 +2597,17 @@ declare global {
     } as const;
 
     export type InstitutionActivityCampaign = typeof InstitutionActivityCampaign[keyof typeof InstitutionActivityCampaign]
+
+    const InstitutionRelationKind = {
+      Advisory: 'advisory',
+      ApprovesComposition: 'approves_composition',
+      ForwardsIssues: 'forwards_issues',
+      Oversees: 'oversees',
+      Cooperates: 'cooperates',
+      Related: 'related',
+    } as const;
+
+    export type InstitutionRelationKind = typeof InstitutionRelationKind[keyof typeof InstitutionRelationKind]
 
     const MeetingType = {
       InPerson: 'in-person',

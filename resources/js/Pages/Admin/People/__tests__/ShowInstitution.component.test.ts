@@ -160,9 +160,10 @@ describe('ShowInstitution.vue', () => {
     expect(createWrapper(readOnly).find('[data-testid="overflow-timeline"]').exists()).toBe(false);
   });
 
-  it('offers the relations section only when there are related institutions', () => {
+  it('offers the relations section when there are related institutions, or to someone who can link them', () => {
     expect(tabs(createWrapper())).not.toContain('related');
     expect(tabs(createWrapper({ related_institutions_count: 2 }))).toContain('related');
+    expect(tabs(createWrapper({ can: { update: true, delete: true, recordMeeting: true, reportActivity: true, manageLinks: true } }))).toContain('related');
   });
 
   it('shows the tenant and the member count as key facts', () => {

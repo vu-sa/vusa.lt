@@ -76,10 +76,6 @@ return [
         'model' => '{1} ryšys|[2,9] ryšiai|[10,*] ryšių',
         'gender' => 'm',
     ],
-    'relationshipType' => [
-        'model' => '{1} ryšio tipas|[2,9] ryšio tipai|[10,*] ryšio tipų',
-        'gender' => 'm',
-    ],
     'calendar' => [
         'model' => '{1} renginys|[2,9] renginiai|[10,*] renginių',
         'gender' => 'm',

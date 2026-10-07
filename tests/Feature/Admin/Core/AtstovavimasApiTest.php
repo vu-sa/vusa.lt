@@ -4,18 +4,15 @@ use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
+use App\Models\InstitutionLink;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
-use App\Models\Pivots\Relationshipable;
-use App\Models\Relationship;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
 use App\Services\InstitutionActivityStatusService;
-use App\Services\RelationshipService;
 use App\Settings\MeetingSettings;
-use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -49,17 +46,8 @@ test('timeline returns direct institutions with summaries but no meetings or rel
     $relatedInstitution = Institution::factory()->for($relatedTenant)->create([
         'name' => ['lt' => 'Susijusi institucija', 'en' => 'Related institution'],
     ]);
-    $relationship = Relationship::query()->create([
-        'name' => 'Test relationship',
-        'slug' => 'test-relationship',
-    ]);
 
-    Relationshipable::query()->create([
-        'relationship_id' => $relationship->id,
-        'relationshipable_type' => MorphMap::alias(Institution::class),
-        'relationshipable_id' => $this->institution->id,
-        'related_model_id' => $relatedInstitution->id,
-    ]);
+    InstitutionLink::factory()->create(['source_institution_id' => $this->institution->id, 'target_institution_id' => $relatedInstitution->id]);
 
     $meeting = Meeting::factory()->create(['start_time' => now()->subDays(10)]);
     $meeting->institutions()->attach($this->institution->id);
@@ -616,14 +604,7 @@ describe('padaliniai gantt', function (): void {
 
     test('a body that only links to the rep\'s own appears read-only, its meetings without agendas', function (): void {
         $related = Institution::factory()->for($this->tenant)->create();
-        Relationshipable::query()->create([
-            'relationship_id' => Relationship::query()->create(['name' => 'Kuruoja', 'slug' => 'kuruoja'])->id,
-            'relationshipable_type' => MorphMap::alias(Institution::class),
-            'relationshipable_id' => $related->id,
-            'related_model_id' => $this->ownInstitution->id,
-            'bidirectional' => false,
-        ]);
-        RelationshipService::clearRelatedInstitutionsCache($this->ownInstitution->id);
+        InstitutionLink::factory()->create(['source_institution_id' => $related->id, 'target_institution_id' => $this->ownInstitution->id]);
         $meeting = Meeting::factory()->create(['title' => 'Susijęs', 'start_time' => now()->subDays(5)]);
         $meeting->institutions()->attach($related->id);
         AgendaItem::factory()->for($meeting)->create();
@@ -643,13 +624,7 @@ describe('padaliniai gantt', function (): void {
 
     test('a body the rep\'s own links to appears in full', function (): void {
         $related = Institution::factory()->for($this->tenant)->create();
-        Relationshipable::query()->create([
-            'relationship_id' => Relationship::query()->create(['name' => 'Kuruoja', 'slug' => 'kuruoja'])->id,
-            'relationshipable_type' => MorphMap::alias(Institution::class),
-            'relationshipable_id' => $this->ownInstitution->id,
-            'related_model_id' => $related->id,
-        ]);
-        RelationshipService::clearRelatedInstitutionsCache($this->ownInstitution->id);
+        InstitutionLink::factory()->create(['source_institution_id' => $this->ownInstitution->id, 'target_institution_id' => $related->id]);
 
         $rows = collect(asUser($this->rep)->getJson(route('api.v1.admin.visak.gantt', [
             'tenant_ids' => [$this->tenant->id, $this->ownInstitution->tenant_id],

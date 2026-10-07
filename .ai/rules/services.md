@@ -36,3 +36,10 @@ Two rules follow from this:
 - **Never cache or pass around a resolved scope as if it were the actor's scope generally.** It answers one permission. Resolve each permission you actually mean; the memo makes that free.
 
 Tenant access is derived from *current* duties only (`loadDuties()`), never from `User::tenants()`, which is a HasManyDeep over every duty the user has ever held.
+
+## Institution relationships resolve in one place, from two link tables
+`InstitutionRelationService` is the only code that expands `institution_links` / `institution_type_links` into related institutions; access (HasCommonChecks, InstitutionAccessService, Typesense keys), the Gantt and the graph all read it, so never re-derive pairs elsewhere.
+- Link S → T: S sees T (authorized); T lists S, authorized only when `mutual`. Kind (`InstitutionRelationKind`) is descriptive, never access.
+- Type link X → Y: same tenant; with `cross_tenant`, X in pagrindinis → Y in padaliniai. X = Y relates same-type institutions (replaces the old sibling flags).
+- Any change to what feeds it (a link, a type assignment, an institution's tenant or trash state, a tenant's type, a type's trash state) must call `InstitutionRelationService::flush()`; the version stamp is part of the access-cache key and Typesense `visibilityVersion()`, so that one bump retires every derived cache.
+- Managing links is the global `relationships.{create,update,delete}.*` permission only: a link grants data access across tenants.

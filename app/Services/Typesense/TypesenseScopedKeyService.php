@@ -7,6 +7,7 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\InstitutionAccessService;
+use App\Services\InstitutionRelationService;
 use App\Services\ModelAuthorizer;
 use App\Settings\MeetingSettings;
 use App\Support\AuthorityCacheExpiry;
@@ -76,13 +77,14 @@ class TypesenseScopedKeyService
         return $keys;
     }
 
-    /** Changes whenever the settings that decide public rows do. */
+    /** Changes whenever the settings that decide public rows, or the relationship graph, do. */
     public static function visibilityVersion(): string
     {
         return md5(implode(':', [
             'agenda-privacy-v1',
             config('scout.typesense.client-settings.admin_search_key'),
             Cache::get('agenda-privacy-version', ''),
+            InstitutionRelationService::version(),
             app(MeetingSettings::class)->getPublicMeetingInstitutionTypeIds()->sort()->implode(','),
         ]));
     }

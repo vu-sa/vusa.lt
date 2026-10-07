@@ -367,7 +367,7 @@ $formFieldFromDb = $form->formFields()->find($formField['id']);
 abort_if($formFieldFromDb === null, 403, 'Form field does not belong to this form.');
 ```
 
-**Never dispatch a method name built from request input.** `$model->{$request->model_type}()->sync(...)` reaches unintended relations and 500s on unknown values. Resolve through an allowlist — `Type::TYPEABLE_RELATIONS`, `AllowedRelationshipablesEnum` — and validate with `Rule::in(...)`.
+**Never dispatch a method name built from request input.** `$model->{$request->model_type}()->sync(...)` reaches unintended relations and 500s on unknown values. Resolve through an allowlist — `Type::TYPEABLE_RELATIONS`, `AllowedFileablesEnum` — and validate with `Rule::in(...)`.
 
 **No `$request->all()` into `create()`/`update()`.** Use a Form Request or explicit `->only([...])`. Never mass-assign a whole request onto a model whose `$guarded` is empty.
 

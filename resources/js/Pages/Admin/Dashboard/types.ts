@@ -32,11 +32,11 @@ export interface AtstovavimasInstitution {
   duties?: AtstovavimasDuty[];
   // Related institution metadata (only present for related institutions)
   is_related?: boolean;
-  relationship_direction?: 'outgoing' | 'incoming' | 'sibling';
-  relationship_type?: 'direct' | 'type-based' | 'within-type' | 'cross-tenant-sibling';
+  relationship_direction?: 'outgoing' | 'incoming' | 'mutual';
+  relationship_type?: 'direct' | 'type';
   source_institution_id?: string;
   // Whether the current user has authorization to access this institution's data
-  // true for outgoing and sibling directions, false for incoming
+  // true for outgoing and mutual directions, false for incoming
   authorized?: boolean;
 }
 
@@ -164,8 +164,8 @@ export interface GanttInstitution {
   is_internal?: boolean;
   // Related institution metadata
   is_related?: boolean;
-  relationship_direction?: 'outgoing' | 'incoming' | 'sibling';
-  relationship_type?: 'direct' | 'type-based' | 'within-type' | 'cross-tenant-sibling';
+  relationship_direction?: 'outgoing' | 'incoming' | 'mutual';
+  relationship_type?: 'direct' | 'type';
   source_institution_id?: string;
   // Whether the current user has authorization to access this institution's data
   authorized?: boolean;

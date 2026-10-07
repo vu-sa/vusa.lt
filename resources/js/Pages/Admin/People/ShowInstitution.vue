@@ -105,13 +105,24 @@
     </template>
 
     <template #related>
-      <Deferred data="relatedInstitutions">
+      <Deferred :data="['relatedInstitutions', 'institutionLinks']">
         <template #fallback>
           <div class="space-y-3">
             <div v-for="n in 3" :key="n" class="h-12 animate-pulse border border-border bg-secondary/60" />
           </div>
         </template>
-        <RelatedInstitutions :items="relatedInstitutions ?? []" />
+        <div class="grid gap-10 xl:grid-cols-2 xl:gap-16" data-testid="institution-relationships">
+          <RelatedInstitutions :items="relatedInstitutions ?? []" />
+          <RelationshipLinkList
+            v-if="can.manageLinks || institutionLinks?.length"
+            subject="institution"
+            :record-id="institution.id"
+            :record-name="institution.name"
+            :links="institutionLinks ?? []"
+            :can-manage="!!can.manageLinks"
+            :kinds="relationKinds ?? []"
+          />
+        </div>
       </Deferred>
     </template>
 
@@ -234,6 +245,7 @@ import RecordPage, { type RecordFact, type RecordPageSection } from '@/Component
 import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
 import { ConfirmDialog, EmptyState, OverviewSection } from '@/Components/Patterns';
 import ProblemSummaryList, { type ProblemSummary } from '@/Components/Problems/ProblemSummaryList.vue';
+import { RelationshipLinkList, type RelationKindOption, type RelationshipLinkRow } from '@/Components/Relationships';
 import { Button } from '@/Components/ui/button';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
@@ -265,13 +277,16 @@ const props = defineProps<{
   overview: InstitutionOverviewData;
   activityRequests?: ActivityRequestHistory;
   canViewActivityRequests: boolean;
-  can: { update: boolean; delete: boolean; recordMeeting: boolean; reportActivity: boolean; askAboutActivity?: boolean; createProblem?: boolean };
+  can: { update: boolean; delete: boolean; recordMeeting: boolean; reportActivity: boolean; askAboutActivity?: boolean; createProblem?: boolean; manageLinks?: boolean };
   duties?: InstitutionPageDuty[];
   meetings?: InstitutionPageMeeting[];
   /** Deferred (`institutionPanels`). */
   problems?: ProblemSummary[];
   tasks?: InstitutionPageTask[];
   relatedInstitutions?: InstitutionPageRelatedInstitution[];
+  /** Deferred (`institutionPanels`): the direct links, editable here. */
+  institutionLinks?: RelationshipLinkRow[];
+  relationKinds?: RelationKindOption[];
   /** Deferred (`files`). */
   files?: FileableFileItem[];
   typeFiles?: FileableFileItem[];
@@ -324,7 +339,7 @@ const tabs = computed<RecordPageSection[]>(() => {
     { value: 'duties', label: $t('Pareigybės'), count: props.institution.duties_count },
     { value: 'meetings', label: $t('Posėdžiai'), count: props.institution.meetings_count },
     ...(props.can.update ? [{ value: 'terms', label: $t('Kadencijos ir sekretoriai') }] : []),
-    ...(props.institution.related_institutions_count > 0
+    ...(props.institution.related_institutions_count > 0 || props.can.manageLinks
       ? [{ value: 'related', label: $t('Ryšiai'), count: props.institution.related_institutions_count }]
       : []),
     ...problemsTab.value,

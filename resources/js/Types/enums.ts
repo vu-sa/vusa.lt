@@ -20,10 +20,6 @@ export enum AllowedFileablesEnum {
     INSTITUTION_TYPE = 'InstitutionType',
     DUTY_TYPE = 'DutyType',
 }
-export enum AllowedRelationshipablesEnum {
-    INSTITUTION = 'INSTITUTION',
-    INSTITUTION_TYPE = 'INSTITUTION_TYPE',
-}
 export enum ApprovalDecision {
     Approved = 'approved',
     Rejected = 'rejected',
@@ -113,6 +109,14 @@ export enum InstitutionActivityStatus {
     CoveredByUpcomingMeeting = 'covered_by_upcoming_meeting',
     CoveredByCheckIn = 'covered_by_check_in',
 }
+export enum InstitutionRelationKind {
+    Advisory = 'advisory',
+    ApprovesComposition = 'approves_composition',
+    ForwardsIssues = 'forwards_issues',
+    Oversees = 'oversees',
+    Cooperates = 'cooperates',
+    Related = 'related',
+}
 export enum InstitutionScope {
     Vusa = 'vusa',
     University = 'vu',
@@ -151,7 +155,6 @@ export enum ModelEnum {
     PERMISSION = 'permission',
     PROBLEM = 'problem',
     RELATIONSHIP = 'relationship',
-    RELATIONSHIPABLE = 'relationshipable',
     RESERVATION = 'reservation',
     RESERVATION_RESOURCE = 'reservation_resource',
     RESOURCE = 'resource',

@@ -2,7 +2,7 @@
 
 namespace App\Models\Pivots;
 
-use App\Services\RelationshipService;
+use App\Services\InstitutionRelationService;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
@@ -21,9 +21,7 @@ class InstitutionInstitutionType extends Pivot
 {
     protected static function booted(): void
     {
-        $invalidate = fn (self $assignment) => RelationshipService::clearRelatedInstitutionsCache($assignment->institution_id);
-
-        static::saved($invalidate);
-        static::deleted($invalidate);
+        static::saved(fn () => InstitutionRelationService::flush());
+        static::deleted(fn () => InstitutionRelationService::flush());
     }
 }

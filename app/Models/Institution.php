@@ -9,10 +9,8 @@ use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Pivots\InstitutionInstitutionType;
-use App\Models\Pivots\Relationshipable;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasComments;
-use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
@@ -20,8 +18,8 @@ use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\InstitutionRelationService;
 use App\Services\InstitutionScopeResolver;
-use App\Services\RelationshipService;
 use App\Services\Typesense\SearchText;
 use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
@@ -64,7 +62,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, InstitutionSecretary> $administratorAssignments
- * @property-read InstitutionInstitutionType|Relationshipable|InstitutionFollow|InstitutionSecretary|null $pivot
+ * @property-read InstitutionInstitutionType|InstitutionFollow|InstitutionSecretary|null $pivot
  * @property-read Collection<int, User> $administrators
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Cadence> $cadences
@@ -80,12 +78,11 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read array $translatable_columns_from
  * @property-read mixed $governance_scope
  * @property-read mixed $has_public_meetings
- * @property-read Collection<int, Relationship> $incomingRelationships
+ * @property-read Collection<int, InstitutionLink> $incomingLinks
  * @property-read mixed $maybe_short_name
  * @property-read Collection<int, Meeting> $meetings
- * @property-read Collection<int, Relationship> $outgoingRelationships
+ * @property-read Collection<int, InstitutionLink> $outgoingLinks
  * @property-read Collection<int, Problem> $problems
- * @property-read mixed $related_institutions
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, User> $secretaries
  * @property-read Collection<int, InstitutionSecretary> $secretaryAssignments
@@ -117,7 +114,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 #[Unguarded]
 class Institution extends Model implements Commentable, GuardsForceDelete, SharepointFileableContract
 {
-    use GuardsForceDeleteWhenReferenced, HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
 
     public $translatable = ['name', 'short_name', 'description', 'address', 'working_hours'];
 
@@ -304,14 +301,16 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         return GetInstitutionManagers::execute($this);
     }
 
-    public function related_institution_relationshipables()
+    /** @return HasMany<InstitutionLink, $this> */
+    public function outgoingLinks(): HasMany
     {
-        return RelationshipService::getRelatedInstitutionRelations($this);
+        return $this->hasMany(InstitutionLink::class, 'source_institution_id');
     }
 
-    protected function relatedInstitutions(): Attribute
+    /** @return HasMany<InstitutionLink, $this> */
+    public function incomingLinks(): HasMany
     {
-        return Attribute::make(get: fn () => RelationshipService::getRelatedInstitutions($this));
+        return $this->hasMany(InstitutionLink::class, 'target_institution_id');
     }
 
     /**
@@ -417,6 +416,14 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
 
         // Duty::toSearchableArray() derives tenant_ids from its institution, so the
         // duties have to be reindexed when the institution's visibility changes.
+        static::updated(function (Institution $institution): void {
+            if ($institution->wasChanged('tenant_id')) {
+                InstitutionRelationService::flush();
+            }
+        });
+        static::deleted(fn () => InstitutionRelationService::flush());
+        static::restored(fn () => InstitutionRelationService::flush());
+
         static::deleted(fn (Institution $institution) => $institution->reindexDuties());
         static::restored(fn (Institution $institution) => $institution->reindexDuties());
 

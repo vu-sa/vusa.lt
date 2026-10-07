@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\InstitutionRelationKind;
 use App\Enums\ResponsibilityScope;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexTypeRequest;
@@ -12,6 +13,8 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\InstitutionType;
+use App\Models\InstitutionTypeLink;
+use App\Services\InstitutionRelationService;
 use App\Services\ResourceServices\SharepointFileService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -83,6 +86,8 @@ class InstitutionTypeController extends AdminController
             ];
         }
 
+        $canManageLinks = auth()->user()?->can('create', InstitutionTypeLink::class) ?? false;
+
         $type->load([
             'parent:id,title',
             'institutions' => fn ($query) => $query->select('id', 'name'),
@@ -101,9 +106,15 @@ class InstitutionTypeController extends AdminController
             'sharepointPath' => SharepointFileService::pathOrNull($type),
             'sharepointFolderUrl' => SharepointFileService::folderUrlOrNull($type),
             'files' => Inertia::defer(fn () => $type->availableFiles()->orderByDesc('file_date')->get(), 'files'),
+            'typeLinks' => app(InstitutionRelationService::class)->typeLinksOf($type),
+            'relationKinds' => fn () => $canManageLinks ? InstitutionRelationKind::options() : [],
+            'typeOptions' => fn () => $canManageLinks
+                ? InstitutionType::query()->orderBy('id')->get(['id', 'title'])->map(fn (InstitutionType $option) => ['id' => (string) $option->id, 'name' => $option->title])->values()
+                : [],
             'can' => [
                 'update' => auth()->user()?->can('update', $type) ?? false,
                 'delete' => auth()->user()?->can('delete', $type) ?? false,
+                'manageLinks' => $canManageLinks,
             ],
         ]);
     }

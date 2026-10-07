@@ -28,18 +28,12 @@ use App\Listeners\SyncRelationSearchIndex;
 use App\Listeners\UpdateSharepointFolder;
 use App\Models\Document;
 use App\Models\Duty;
-use App\Models\Institution;
-use App\Models\InstitutionType;
-use App\Models\Pivots\Relationshipable;
 use App\Models\Role;
 use App\Models\RoleType;
 use App\Models\User;
 use App\Notifications\Subscribers\ApprovalNotificationSubscriber;
 use App\Observers\DocumentObserver;
-use App\Observers\InstitutionObserver;
-use App\Observers\RelationshipableObserver;
 use App\Observers\RoleTypeObserver;
-use App\Observers\TypeObserver;
 use App\Observers\UserPermissionObserver;
 use App\Tasks\Subscribers\ApprovalTaskSubscriber;
 use App\Tasks\Subscribers\InstitutionCheckInTaskSubscriber;
@@ -137,9 +131,6 @@ class EventServiceProvider extends ServiceProvider
     {
         Document::observe(DocumentObserver::class);
         RoleType::observe(RoleTypeObserver::class);
-        InstitutionType::observe(TypeObserver::class);
-        Institution::observe(InstitutionObserver::class);
-        Relationshipable::observe(RelationshipableObserver::class);
         // Permission cache invalidation for users, roles, duties
         // Clears permission cache, Atstovavimas cache, and Typesense scoped keys
         User::observe(UserPermissionObserver::class);

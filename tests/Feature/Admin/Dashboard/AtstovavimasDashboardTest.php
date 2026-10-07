@@ -5,21 +5,19 @@ use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\FileableFile;
 use App\Models\Institution;
+use App\Models\InstitutionLink;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Permission;
 use App\Models\Pivots\AgendaItem;
-use App\Models\Pivots\Relationshipable;
 use App\Models\QuickLink;
-use App\Models\Relationship;
 use App\Models\Resource;
 use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\RelationshipService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -513,13 +511,6 @@ describe('atstovavimas tenant isolation', function (): void {
 
 describe('atstovavimas related institutions', function (): void {
     beforeEach(function (): void {
-        // Create a relationship type
-        $this->relationship = new Relationship([
-            'name' => 'Test Relationship',
-            'slug' => 'test-relationship-'.uniqid(),
-            'description' => 'Test relationship for dashboard',
-        ]);
-        $this->relationship->save();
 
         // Get user's institution
         $this->userInstitution = $this->user->current_duties->first()->institution;
@@ -542,17 +533,7 @@ describe('atstovavimas related institutions', function (): void {
 
     test('relatedInstitutions lazy load returns institutions with outgoing relationship', function (): void {
         // Create outgoing relationship (user's institution -> related)
-        $relationshipable = new Relationshipable([
-            'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => MorphMap::alias(Institution::class),
-            'relationshipable_id' => $this->userInstitution->id,
-            'related_model_id' => $this->relatedInstitution->id,
-            'bidirectional' => false,
-        ]);
-        $relationshipable->save();
-
-        // Clear cache
-        RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+        InstitutionLink::factory()->create(['source_institution_id' => $this->userInstitution->id, 'target_institution_id' => $this->relatedInstitution->id]);
 
         // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
         asUser($this->user)
@@ -587,17 +568,7 @@ describe('atstovavimas related institutions', function (): void {
 
     test('relatedInstitutions returns incoming relationships with authorized = false when not bidirectional', function (): void {
         // Create incoming relationship (related -> user's institution, NOT bidirectional)
-        $relationshipable = new Relationshipable([
-            'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => MorphMap::alias(Institution::class),
-            'relationshipable_id' => $this->relatedInstitution->id,
-            'related_model_id' => $this->userInstitution->id,
-            'bidirectional' => false,
-        ]);
-        $relationshipable->save();
-
-        // Clear cache
-        RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+        InstitutionLink::factory()->create(['source_institution_id' => $this->relatedInstitution->id, 'target_institution_id' => $this->userInstitution->id]);
 
         // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
         asUser($this->user)
@@ -631,17 +602,7 @@ describe('atstovavimas related institutions', function (): void {
 
     test('relatedInstitutions returns incoming relationships with authorized = true when bidirectional', function (): void {
         // Create incoming relationship (related -> user's institution, IS bidirectional)
-        $relationshipable = new Relationshipable([
-            'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => MorphMap::alias(Institution::class),
-            'relationshipable_id' => $this->relatedInstitution->id,
-            'related_model_id' => $this->userInstitution->id,
-            'bidirectional' => true,
-        ]);
-        $relationshipable->save();
-
-        // Clear cache
-        RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
+        InstitutionLink::factory()->create(['source_institution_id' => $this->relatedInstitution->id, 'target_institution_id' => $this->userInstitution->id, 'mutual' => true]);
 
         // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
         asUser($this->user)
@@ -664,10 +625,9 @@ describe('atstovavimas related institutions', function (): void {
                             return false;
                         }
 
-                        // Should be marked as incoming with authorized = true (bidirectional!)
                         return $found['is_related'] === true &&
                                $found['authorized'] === true &&
-                               $found['relationship_direction'] === 'incoming';
+                               $found['relationship_direction'] === 'mutual';
                     })
                 )
             );
@@ -675,14 +635,7 @@ describe('atstovavimas related institutions', function (): void {
 
     test('authorized related institutions include meetings with agenda items', function (): void {
         // Create outgoing relationship (authorized)
-        $relationshipable = new Relationshipable([
-            'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => MorphMap::alias(Institution::class),
-            'relationshipable_id' => $this->userInstitution->id,
-            'related_model_id' => $this->relatedInstitution->id,
-            'bidirectional' => false,
-        ]);
-        $relationshipable->save();
+        InstitutionLink::factory()->create(['source_institution_id' => $this->userInstitution->id, 'target_institution_id' => $this->relatedInstitution->id]);
 
         // Create meeting with agenda item
         $meeting = Meeting::factory()->create(['start_time' => now()]);
@@ -691,9 +644,6 @@ describe('atstovavimas related institutions', function (): void {
             'meeting_id' => $meeting->id,
             'title' => 'Test Agenda Item',
         ]);
-
-        // Clear cache
-        RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
 
         // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
         asUser($this->user)
@@ -728,14 +678,7 @@ describe('atstovavimas related institutions', function (): void {
 
     test('unauthorized related institutions include meetings but no agenda items', function (): void {
         // Create incoming relationship (NOT authorized because NOT bidirectional)
-        $relationshipable = new Relationshipable([
-            'relationship_id' => $this->relationship->id,
-            'relationshipable_type' => MorphMap::alias(Institution::class),
-            'relationshipable_id' => $this->relatedInstitution->id,
-            'related_model_id' => $this->userInstitution->id,
-            'bidirectional' => false,
-        ]);
-        $relationshipable->save();
+        InstitutionLink::factory()->create(['source_institution_id' => $this->relatedInstitution->id, 'target_institution_id' => $this->userInstitution->id]);
 
         // Create meeting and attach to related institution
         $meeting = Meeting::factory()->create(['start_time' => now()]);
@@ -746,9 +689,6 @@ describe('atstovavimas related institutions', function (): void {
             'meeting_id' => $meeting->id,
             'title' => 'Test Agenda Item',
         ]);
-
-        // Clear cache
-        RelationshipService::clearRelatedInstitutionsCache($this->userInstitution->id);
 
         // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
         asUser($this->user)

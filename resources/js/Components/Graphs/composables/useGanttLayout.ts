@@ -20,7 +20,7 @@ export type GanttRow
       key: string | number;
       institutionId: string | number;
       isRelated?: boolean;
-      relationshipDirection?: 'outgoing' | 'incoming' | 'sibling';
+      relationshipDirection?: 'outgoing' | 'incoming' | 'mutual';
       authorized?: boolean;
       sourceInstitutionId?: string;
     };
@@ -32,7 +32,7 @@ export interface LayoutRow {
   tenantId?: string | number;
   institutionId?: string | number;
   isRelated?: boolean;
-  relationshipDirection?: 'outgoing' | 'incoming' | 'sibling';
+  relationshipDirection?: 'outgoing' | 'incoming' | 'mutual';
   authorized?: boolean;
   sourceInstitutionId?: string;
   top: number;
@@ -59,7 +59,7 @@ export interface GanttLayoutData {
   institutionsMeta: () => Array<{
     id: string | number;
     is_related?: boolean;
-    relationship_direction?: 'outgoing' | 'incoming' | 'sibling';
+    relationship_direction?: 'outgoing' | 'incoming' | 'mutual';
     authorized?: boolean;
     source_institution_id?: string;
   }> | undefined;
@@ -88,7 +88,7 @@ export function useGanttLayout(
     // Create a map for quick lookup of institution metadata
     const institutionMeta = new Map<string | number, {
       is_related?: boolean;
-      relationship_direction?: 'outgoing' | 'incoming' | 'sibling';
+      relationship_direction?: 'outgoing' | 'incoming' | 'mutual';
       authorized?: boolean;
       source_institution_id?: string;
     }>();

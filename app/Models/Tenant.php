@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\LocaleEnum;
 use App\Enums\TenantType;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Services\InstitutionRelationService;
 use App\Settings\SiteSettings;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Attributes\WithoutTimestamps;
@@ -83,6 +84,11 @@ class Tenant extends Model
             }
 
             $tenant->forgetLookupCaches();
+
+            // Cross-tenant type links pair pagrindinis with padaliniai.
+            if ($tenant->wasChanged('type')) {
+                InstitutionRelationService::flush();
+            }
         });
 
         static::deleted(fn (Tenant $tenant) => $tenant->forgetLookupCaches());

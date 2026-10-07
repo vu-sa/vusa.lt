@@ -21,10 +21,10 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Services\AgendaItemPresenter;
 use App\Services\CheckInService;
+use App\Services\InstitutionRelationService;
 use App\Services\InstitutionScopeResolver;
 use App\Services\MeetingCompletionService;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\RelationshipService;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Support\MeetingTitle;
 use Illuminate\Http\RedirectResponse;
@@ -481,14 +481,8 @@ class MeetingController extends AdminController
             ->filter()
             ->unique();
 
-        $userInstitutions = Institution::whereIn('id', $userInstitutionIds)->get();
-
-        $relatedIds = collect();
-        foreach ($userInstitutions as $institution) {
-            foreach (RelationshipService::getRelatedInstitutionsCached($institution) as $item) {
-                $relatedIds->push($item['institution']->id);
-            }
-        }
+        $relations = app(InstitutionRelationService::class);
+        $relatedIds = $userInstitutionIds->flatMap(fn (string $id) => $relations->relatedTo($id)->pluck('institution_id'));
 
         $attachedIds = $meeting->institutions->pluck('id')->toArray();
 

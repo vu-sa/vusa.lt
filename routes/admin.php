@@ -292,10 +292,10 @@ Route::middleware('experiment.goals')->group(function (): void {
     });
 });
 
-Route::resource('relationships', RelationshipController::class);
-Route::post('relationships/{relationship}/storeModelRelationship', [RelationshipController::class, 'storeModelRelationship'])->name('relationships.storeModelRelationship');
-Route::patch('relationships/relationshipables/{relationshipable}', [RelationshipController::class, 'updateModelRelationship'])->name('relationships.updateModelRelationship');
-Route::delete('relationships/relationshipables/{relationshipable}', [RelationshipController::class, 'deleteModelRelationship'])->name('relationships.deleteModelRelationship');
+Route::post('institutions/{institution}/links', [InstitutionLinkController::class, 'store'])->name('institutions.links.store');
+Route::resource('institutionLinks', InstitutionLinkController::class)->only(['update', 'destroy']);
+Route::post('institutionTypes/{type}/links', [InstitutionTypeLinkController::class, 'store'])->name('institutionTypes.links.store');
+Route::resource('institutionTypeLinks', InstitutionTypeLinkController::class)->only(['update', 'destroy']);
 Route::resource('roles', RoleController::class);
 Route::patch('roles/{role}/attach/{model}/permissions', [RoleController::class, 'syncPermissionGroup'])->name('roles.syncPermissionGroup');
 Route::put('roles/{role}/sync/duties', [RoleController::class, 'syncDuties'])->name('roles.syncDuties');

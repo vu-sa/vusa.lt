@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Institution;
-use App\Services\RelationshipService;
+use App\Services\InstitutionRelationService;
 use Illuminate\Http\JsonResponse;
 
 class InstitutionApiController extends ApiController
@@ -52,14 +52,7 @@ class InstitutionApiController extends ApiController
                     'name' => $user->name,
                     'profile_photo_path' => $user->profile_photo_path,
                 ])->values(),
-            'related_institutions' => RelationshipService::getRelatedInstitutionsCached($institution)
-                ->map(fn ($item) => [
-                    'id' => (string) $item['institution']->id,
-                    'name' => $item['institution']->name,
-                    'direction' => $item['direction'],
-                    'type' => $item['type'],
-                    'authorized' => $item['authorized'],
-                ])->values(),
+            'related_institutions' => app(InstitutionRelationService::class)->summaryFor($institution),
         ]);
     }
 }

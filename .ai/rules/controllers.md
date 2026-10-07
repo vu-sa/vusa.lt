@@ -18,7 +18,7 @@ check what the controller *persists*, not just what it previously validated.
 
 Naming and layout follow what is already there: `Store*`/`Update*`/`Index*` flat in
 `app/Http/Requests`, sub-namespaced when a controller owns a cluster (`Files/`, `Approvals/`,
-`Relationships/`, `Comments/`, `Api/Admin/`). Shared rules go on an abstract parent the
+`InstitutionLinks/`, `Comments/`, `Api/Admin/`). Shared rules go on an abstract parent the
 `Store`/`Update` pair extends (`CalendarRequest`, `ProblemRequest`, `FilePathRequest`,
 `ApprovableRequest`).
 

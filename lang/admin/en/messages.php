@@ -105,10 +105,6 @@ return [
         'order_updated' => 'Quick link order updated successfully!',
     ],
 
-    'relationship' => [
-        'model_relation_deleted' => 'Relationship between models deleted.',
-        'type_model_relation_deleted' => 'Relationship type between models deleted.',
-    ],
 
     'role' => [
         'not_editable' => 'This role cannot be edited.',

@@ -43,7 +43,6 @@ import {
   PermissionIcon,
   ProblemIcon,
   QuickLinkIcon,
-  RelationshipIcon,
   ReservationIcon,
   ResourceIcon,
   RoleIcon,
@@ -350,7 +349,6 @@ const ROUTE_PREFIX_ICONS: Record<string, Component> = {
   quickLinks: QuickLinkIcon,
   navigation: NavigationIcon,
   tenants: TenantIcon,
-  relationships: RelationshipIcon,
 };
 
 /**

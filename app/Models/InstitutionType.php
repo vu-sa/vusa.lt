@@ -7,19 +7,19 @@ use App\Contracts\SharepointFileableContract;
 use App\Enums\InstitutionScope;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\InstitutionInstitutionType;
-use App\Models\Pivots\Relationshipable;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
-use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasTypeHierarchy;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\InstitutionRelationService;
 use App\Services\InstitutionScopeResolver;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -42,10 +42,10 @@ use Illuminate\Support\Facades\Cache;
  * @property-read bool $has_protocol
  * @property-read bool $has_report
  * @property-read array $translatable_columns_from
- * @property-read InstitutionInstitutionType|Relationshipable|null $pivot
- * @property-read Collection<int, Relationship> $incomingRelationships
+ * @property-read Collection<int, InstitutionTypeLink> $incomingLinks
+ * @property-read InstitutionInstitutionType|null $pivot
  * @property-read Collection<int, Institution> $institutions
- * @property-read Collection<int, Relationship> $outgoingRelationships
+ * @property-read Collection<int, InstitutionTypeLink> $outgoingLinks
  * @property-read InstitutionType|null $parent
  * @property-read Collection<int, InstitutionType> $recursiveDescendants
  * @property-read InstitutionType|null $recursiveParent
@@ -68,7 +68,7 @@ use Illuminate\Support\Facades\Cache;
 #[Fillable(['title', 'description', 'slug', 'parent_id', 'extra_attributes'])]
 class InstitutionType extends Model implements GuardsForceDelete, SharepointFileableContract
 {
-    use GuardsForceDeleteWhenReferenced, HasContentRelationships, HasFactory, HasSharepointFiles, HasTranslations, HasTypeHierarchy, LogsModelActivity, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasFactory, HasSharepointFiles, HasTranslations, HasTypeHierarchy, LogsModelActivity, SoftDeletes;
 
     protected $translatable = ['title', 'description'];
 
@@ -99,6 +99,9 @@ class InstitutionType extends Model implements GuardsForceDelete, SharepointFile
         static::deleted($flush);
         static::restored($flush);
         static::forceDeleted($flush);
+
+        static::deleted(fn () => InstitutionRelationService::flush());
+        static::restored(fn () => InstitutionRelationService::flush());
     }
 
     /** @return BelongsToMany<Institution, $this, InstitutionInstitutionType> */
@@ -119,14 +122,16 @@ class InstitutionType extends Model implements GuardsForceDelete, SharepointFile
         return app(InstitutionScopeResolver::class)->forType($this->id);
     }
 
-    public function hasSiblingRelationshipsEnabled(): bool
+    /** @return HasMany<InstitutionTypeLink, $this> */
+    public function outgoingLinks(): HasMany
     {
-        return (bool) ($this->extra_attributes['enable_sibling_relationships'] ?? false);
+        return $this->hasMany(InstitutionTypeLink::class, 'source_type_id');
     }
 
-    public function hasCrossTenantSiblingRelationshipsEnabled(): bool
+    /** @return HasMany<InstitutionTypeLink, $this> */
+    public function incomingLinks(): HasMany
     {
-        return (bool) ($this->extra_attributes['enable_cross_tenant_sibling_relationships'] ?? false);
+        return $this->hasMany(InstitutionTypeLink::class, 'target_type_id');
     }
 
     public function forceDeleteBlockedReason(): ?string

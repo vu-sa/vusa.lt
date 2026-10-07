@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Cache;
  *
  * Access Types:
  * 1. **Direct duty access**: Institutions where user has an active duty
- * 2. **Relationship access**: Institutions related via authorized relationships (outgoing/sibling)
+ * 2. **Relationship access**: Institutions related via authorized relationships (outgoing/mutual)
  *
  * Note: Tenant-level access (institutions.read.padalinys) is handled separately via
  * ModelAuthorizer and AtstovavimasSettings::getVisibleTenantIds().
@@ -28,9 +28,9 @@ use Illuminate\Support\Facades\Cache;
  * - All access computations are cached per-user with TTL of 1 hour
  * - Cache is invalidated via:
  *   - UserPermissionObserver (duty/role changes)
- *   - RelationshipableObserver (relationship changes) - triggers invalidation for affected institutions' users
+ *   - the InstitutionRelationService version stamp in the key (any relationship change)
  *
- * @see RelationshipService for institution relationship logic
+ * @see InstitutionRelationService for institution relationship logic
  * @see AtstovavimasSettings for institution manager role configuration
  */
 class InstitutionAccessService
@@ -144,19 +144,7 @@ class InstitutionAccessService
             return collect();
         }
 
-        $relatedIds = collect();
-
-        // Load user's institutions
-        $institutions = Institution::whereIn('id', $dutyInstitutionIds)->get();
-
-        foreach ($institutions as $institution) {
-            // Get related institutions with authorized access only
-            $related = RelationshipService::getRelatedInstitutions($institution, authorizedOnly: true);
-            $relatedIds = $relatedIds->merge($related->pluck('id'));
-        }
-
-        // Remove the user's own institutions from related (they're already included in direct access)
-        return $relatedIds
+        return app(InstitutionRelationService::class)->authorizedIdsFor($dutyInstitutionIds)
             ->diff($dutyInstitutionIds)
             ->unique()
             ->values();
@@ -207,7 +195,7 @@ class InstitutionAccessService
     {
         $suffix = $includeRelated ? 'r' : '';
 
-        return "institution_access:{$userId}:{$suffix}";
+        return "institution_access:{$userId}:{$suffix}:".InstitutionRelationService::version();
     }
 
     /**
@@ -215,39 +203,7 @@ class InstitutionAccessService
      */
     public static function invalidateForUser(string $userId): void
     {
-        // Invalidate all variants of the cache
-        $variants = ['r', ''];
-        foreach ($variants as $variant) {
-            Cache::forget("institution_access:{$userId}:{$variant}");
-        }
-    }
-
-    /**
-     * Invalidate access caches for all users with duties in a specific institution.
-     * Called when institution relationships change.
-     */
-    public static function invalidateForInstitution(string $institutionId): void
-    {
-        $institution = Institution::with('duties.users')->find($institutionId);
-
-        if (! $institution) {
-            return;
-        }
-
-        foreach ($institution->duties as $duty) {
-            foreach ($duty->users as $user) {
-                self::invalidateForUser($user->id);
-            }
-        }
-    }
-
-    /**
-     * Invalidate access caches for all users who might have access to institutions
-     * affected by a relationship change.
-     */
-    public static function invalidateForRelationshipChange(string $sourceInstitutionId, string $targetInstitutionId): void
-    {
-        self::invalidateForInstitution($sourceInstitutionId);
-        self::invalidateForInstitution($targetInstitutionId);
+        Cache::forget(self::getAccessCacheKey($userId));
+        Cache::forget(self::getAccessCacheKey($userId, includeRelated: false));
     }
 }

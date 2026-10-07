@@ -1,11 +1,8 @@
 <?php
 
 use App\Models\Institution;
-use App\Models\Pivots\Relationshipable;
-use App\Models\Relationship;
+use App\Models\InstitutionLink;
 use App\Models\Tenant;
-use App\Services\RelationshipService;
-use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 pest()->use(RefreshDatabase::class);
@@ -43,22 +40,9 @@ test('authorized admin receives the preview payload', function (): void {
 test('preview exposes related institutions with edge metadata', function (): void {
     $admin = makeAdminUser($this->tenant);
 
-    $relationship = new Relationship([
-        'name' => 'Test Relationship',
-        'slug' => 'test-relationship',
-    ]);
-    $relationship->save();
-
     $target = Institution::factory()->for($this->tenant)->create();
 
-    new Relationshipable([
-        'relationship_id' => $relationship->id,
-        'relationshipable_type' => MorphMap::alias(Institution::class),
-        'relationshipable_id' => $this->institution->id,
-        'related_model_id' => $target->id,
-    ])->save();
-
-    RelationshipService::clearRelatedInstitutionsCache($this->institution->id);
+    InstitutionLink::factory()->create(['source_institution_id' => $this->institution->id, 'target_institution_id' => $target->id]);
 
     asUser($admin)
         ->getJson(route('api.v1.admin.institutions.preview', $this->institution))
@@ -66,11 +50,11 @@ test('preview exposes related institutions with edge metadata', function (): voi
         ->assertJsonStructure([
             'data' => [
                 'related_institutions' => [
-                    ['id', 'name', 'direction', 'type', 'authorized'],
+                    ['id', 'name', 'direction', 'via', 'kind', 'kind_label', 'authorized'],
                 ],
             ],
         ])
         ->assertJsonPath('data.related_institutions.0.id', (string) $target->id)
         ->assertJsonPath('data.related_institutions.0.direction', 'outgoing')
-        ->assertJsonPath('data.related_institutions.0.type', 'direct');
+        ->assertJsonPath('data.related_institutions.0.via', 'direct');
 });

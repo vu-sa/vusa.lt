@@ -72,10 +72,6 @@ return [
         'model' => '{1} relationship|[2,*] relationships',
         'gender' => 'm',
     ],
-    'relationshipType' => [
-        'model' => '{1} relationship type|[2,*] relationship types',
-        'gender' => 'm',
-    ],
     'calendar' => [
         'model' => '{1} event|[2,*] events',
         'gender' => 'm',

@@ -7,6 +7,7 @@ use App\Actions\GetInstitutionSecretaries;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetTypeFiles;
 use App\Actions\GetUserTenantShortnames;
+use App\Enums\InstitutionRelationKind;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexInstitutionRequest;
 use App\Http\Requests\ReorderDutiesRequest;
@@ -21,14 +22,15 @@ use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
+use App\Models\InstitutionLink;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Problem;
 use App\Models\StudyProgram;
 use App\Models\Task;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\InstitutionRelationService;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\RelationshipService;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Settings\CadenceSettings;
 use App\Settings\MeetingSettings;
@@ -205,7 +207,7 @@ class InstitutionController extends AdminController
                 'meetings_count' => $loadInstitution()->meetings_count,
                 'problems_count' => $loadInstitution()->problems_count,
                 'tasks_count' => (int) $loadInstitution()->getAttribute('tasks_count') + (int) $loadInstitution()->getAttribute('tasks_from_meetings_count'),
-                'related_institutions_count' => RelationshipService::getRelatedInstitutionsCached($institution)->count(),
+                'related_institutions_count' => app(InstitutionRelationService::class)->relatedTo($institution->id)->count(),
                 'managers' => $managers(),
                 'secretaries' => $readOnly() ? [] : InstitutionSecretaryController::usersPayload(
                     GetInstitutionSecretaries::execute($institution)
@@ -263,16 +265,9 @@ class InstitutionController extends AdminController
                     ->orderByDesc('occurred_at')
                     ->get()
             )->resolve(), 'institutionPanels'),
-            'relatedInstitutions' => $readOnly() ? [] : Inertia::defer(fn () => RelationshipService::getRelatedInstitutionsCached($institution)
-                ->map(fn (array $item) => [
-                    'id' => $item['institution']->id,
-                    'name' => $item['institution']->name,
-                    'direction' => $item['direction'],
-                    'type' => $item['type'],
-                    'authorized' => $item['authorized'],
-                ])
-                ->values()
-                ->all(), 'institutionPanels'),
+            'relatedInstitutions' => $readOnly() ? [] : Inertia::defer(fn () => app(InstitutionRelationService::class)->summaryFor($institution), 'institutionPanels'),
+            'institutionLinks' => $readOnly() ? [] : Inertia::defer(fn () => app(InstitutionRelationService::class)->linksOf($institution), 'institutionPanels'),
+            'relationKinds' => fn () => (bool) $user()?->can('create', InstitutionLink::class) ? InstitutionRelationKind::options() : [],
             // Per-record, not from `auth.can`: `institutions.update.padalinys` is tenant-scoped.
             'can' => fn () => [
                 'update' => (bool) $user()?->can('update', $institution),
@@ -280,6 +275,7 @@ class InstitutionController extends AdminController
                 'recordMeeting' => ! $readOnly() && ((bool) $user()?->can('createFor', [Meeting::class, $institution])),
                 'createProblem' => (bool) $user()?->can('create', Problem::class),
                 'reportActivity' => ! $readOnly() && ((bool) $user()?->can('create', [InstitutionCheckIn::class, $institution])),
+                'manageLinks' => ! $readOnly() && ((bool) $user()?->can('create', InstitutionLink::class)),
                 'askAboutActivity' => ! $readOnly() && ((bool) $user()?->can('askAboutActivity', [InstitutionCheckIn::class, $institution])),
             ],
             // Terms and secretary rosters are associations, edited on the record rather than in the

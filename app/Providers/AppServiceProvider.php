@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Notifications\Channels\IdempotentDatabaseChannel;
+use App\Services\InstitutionRelationService;
 use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer;
 use App\Services\PermissionService;
@@ -44,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(InstitutionScopeResolver::class);
         $this->app->scoped(ResponsibilityResolver::class);
         $this->app->scoped(MeetingSearchLock::class);
+        $this->app->scoped(InstitutionRelationService::class);
 
         // Register our new permission service
         $this->app->scoped('permission.service', fn ($app) => new PermissionService($app->make(ModelAuthorizer::class)));

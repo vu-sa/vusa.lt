@@ -2,10 +2,10 @@
 doc_status: reviewed
 title: Institucijų grafas
 area: institutionGraph
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-07
 tests:
   - tests/Feature/Admin/Core/DashboardControllerTest.php
-  - tests/Feature/Services/RelationshipServiceTest.php
+  - tests/Feature/Services/InstitutionRelationServiceTest.php
 ---
 
 # Institucijų grafas
@@ -24,9 +24,9 @@ Viršuje galima pasirinkti vieną iš dviejų rodinių:
 - **Tipai** – institucijų tipai ir tarp jų nustatyti ryšiai. Mazgo dydį lemia to tipo
   institucijų skaičius.
 
-Linijų spalvas paaiškina legenda apačioje. Institucijų rodinyje skiriami tiesioginiai,
-pagal tipus nustatyti, to paties tipo ir tarp padalinių atsirandantys ryšiai.
-Rodyklė žymi kryptį, dvipusės rodyklės – ryšį abiem kryptimis, brūkšninė linija – lygiavertį ryšį.
+Linijų spalvas paaiškina legenda apačioje. Institucijų rodinyje skiriami tiesioginiai, per tipus
+atsirandantys ir Centrinio biuro su padaliniais siejantys ryšiai. Rodyklė žymi, kas ką mato,
+dvipusės rodyklės – abipusį ryšį. Užvedus žymeklį ant ryšio rodomas jo pobūdis.
 
 Grafas rodo ryšių struktūrą, o ne institucijos veiklos būklę ar naudotojo teises ją redaguoti.
 Ryšių taisykles ir jų apimtį paaiškina [Ryšių gidas](/sistema/rysiai).
@@ -39,8 +39,8 @@ Ryšių taisykles ir jų apimtį paaiškina [Ryšių gidas](/sistema/rysiai).
 - Paspaudus ryšį paryškinimas lieka. Paspausk jį dar kartą arba tuščią vietą, kad paryškinimą nuimtum.
 
 Norėdamas pakeisti institucijos duomenis, atverk [Institucijų sąrašą](/visak/institucijos).
-Tipus keisk per [Tipai ir kategorijos](/sistema/tipai), ryšius – jų
-[skiltyje](/sistema/rysiai). Mazgų pertempimas šių duomenų nekeičia.
+Tipus keisk per [Tipai ir kategorijos](/sistema/tipai), ryšius – institucijos ar tipo
+kortelės skirtuke **Ryšiai** (žr. [Ryšiai](/sistema/rysiai)). Mazgų pertempimas šių duomenų nekeičia.
 Tipo redagavimui rekomenduojama naudoti tipų katalogą: dabartinis dvigubas paspaudimas grafe jo neatveria.
 
 ## Kas ką gali {#teises}
@@ -62,7 +62,7 @@ puslapyje, grafą reikia atnaujinti.
 - Meniu nuorodą riboja `AdminNavigationCatalog` tikrinama `institutions.read.padalinys` teisė.
   Pats GET maršrutas turi prisijungimo apsaugą, bet valdiklis papildomos šios teisės patikros neatlieka;
   meniu matomumas nėra tiesioginio adreso autorizacijos įrodymas.
-- Vaizdą generuoja `InstitutionGraph.vue`; ryšius pateikia `RelationshipService`.
+- Vaizdą generuoja `InstitutionGraph.vue`; ryšius pateikia `InstitutionRelationService` – tas pats, kuris sprendžia prieigą.
 - Tipo dvigubo paspaudimo nuoroda dar naudoja pašalintą `types.edit` maršrutą.
 - `DashboardControllerTest` tikrina grafo atsakymą ir narių skaičius administratoriaus paskyrai;
-  `RelationshipServiceTest` – ryšių sudarymą. Šie testai nepatvirtina visų grafo valdiklių ar prieigos ribojimo.
+  `InstitutionRelationServiceTest` – ryšių sudarymą. Šie testai nepatvirtina visų grafo valdiklių ar prieigos ribojimo.

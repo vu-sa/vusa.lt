@@ -4,19 +4,16 @@ use App\Enums\InstitutionScope;
 use App\Models\Calendar;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionLink;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
-use App\Models\Pivots\Relationshipable;
-use App\Models\Relationship;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Settings\MeetingSettings;
-use App\Support\MorphMap;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Cache;
 
 pest()->use(RefreshDatabase::class);
 
@@ -582,19 +579,7 @@ describe('relationship-based meeting access', function (): void {
         $sourceInstitution = Institution::factory()->for($this->tenant)->create();
         $targetInstitution = Institution::factory()->for($this->tenant)->create();
 
-        // Create a relationship between them
-        $relationship = Relationship::create([
-            'name' => 'Test Advisory Relationship',
-            'slug' => 'test-advisory-'.uniqid(),
-        ]);
-        Relationshipable::create([
-            'relationship_id' => $relationship->id,
-            'relationshipable_type' => MorphMap::alias(Institution::class),
-            'relationshipable_id' => $sourceInstitution->id,
-            'related_model_id' => $targetInstitution->id,
-            'scope' => 'within-tenant',
-            'bidirectional' => false, // Outgoing only authorization
-        ]);
+        InstitutionLink::factory()->create(['source_institution_id' => $sourceInstitution->id, 'target_institution_id' => $targetInstitution->id]);
 
         // Create a meeting for the target institution
         $meeting = Meeting::factory()->create([
@@ -608,8 +593,6 @@ describe('relationship-based meeting access', function (): void {
         $duty->users()->attach($user->id, [
             'start_date' => Carbon::now()->subMonth(),
         ]);
-        // Clear relationship cache
-        Cache::forget("related_institutions_{$sourceInstitution->id}");
 
         // User should be able to view the meeting via authorized relationship
         $response = asUser($user)->get(route('meetings.show', $meeting->id));
@@ -622,19 +605,7 @@ describe('relationship-based meeting access', function (): void {
         $targetInstitution = Institution::factory()->for($this->tenant)->create();
 
         // Create a relationship where source -> target (source is authorized to see target's meetings)
-        // But NOT bidirectional, so target is NOT authorized to see source's meetings
-        $relationship = Relationship::create([
-            'name' => 'Test Advisory Relationship',
-            'slug' => 'test-advisory-'.uniqid(),
-        ]);
-        Relationshipable::create([
-            'relationship_id' => $relationship->id,
-            'relationshipable_type' => MorphMap::alias(Institution::class),
-            'relationshipable_id' => $sourceInstitution->id,
-            'related_model_id' => $targetInstitution->id,
-            'scope' => 'within-tenant',
-            'bidirectional' => false, // NOT bidirectional
-        ]);
+        InstitutionLink::factory()->create(['source_institution_id' => $sourceInstitution->id, 'target_institution_id' => $targetInstitution->id]);
 
         // Create a meeting for the SOURCE institution
         $meeting = Meeting::factory()->create([
@@ -648,8 +619,6 @@ describe('relationship-based meeting access', function (): void {
         $duty->users()->attach($user->id, [
             'start_date' => Carbon::now()->subMonth(),
         ]);
-        // Clear relationship cache
-        Cache::forget("related_institutions_{$targetInstitution->id}");
 
         // User should NOT be able to view the meeting (incoming relationship is not authorized)
         $response = asUser($user)->get(route('meetings.show', $meeting->id));
@@ -661,19 +630,7 @@ describe('relationship-based meeting access', function (): void {
         $sourceInstitution = Institution::factory()->for($this->tenant)->create();
         $targetInstitution = Institution::factory()->for($this->tenant)->create();
 
-        // Create a bidirectional relationship
-        $relationship = Relationship::create([
-            'name' => 'Test Advisory Relationship',
-            'slug' => 'test-advisory-'.uniqid(),
-        ]);
-        Relationshipable::create([
-            'relationship_id' => $relationship->id,
-            'relationshipable_type' => MorphMap::alias(Institution::class),
-            'relationshipable_id' => $sourceInstitution->id,
-            'related_model_id' => $targetInstitution->id,
-            'scope' => 'within-tenant',
-            'bidirectional' => true, // BIDIRECTIONAL - both sides authorized
-        ]);
+        InstitutionLink::factory()->create(['source_institution_id' => $sourceInstitution->id, 'target_institution_id' => $targetInstitution->id, 'mutual' => true]);
 
         // Create a meeting for the SOURCE institution
         $meeting = Meeting::factory()->create([
@@ -687,8 +644,6 @@ describe('relationship-based meeting access', function (): void {
         $duty->users()->attach($user->id, [
             'start_date' => Carbon::now()->subMonth(),
         ]);
-        // Clear relationship cache
-        Cache::forget("related_institutions_{$targetInstitution->id}");
 
         // User SHOULD be able to view the meeting (bidirectional = authorized)
         $response = asUser($user)->get(route('meetings.show', $meeting->id));

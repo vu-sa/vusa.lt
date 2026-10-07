@@ -303,8 +303,8 @@ class AtstovavimasDashboardService
 
         $candidates = $ownInstitutions->mapWithKeys(fn (Institution $institution) => [(string) $institution->id => self::PROJECTION_FULL])->all();
         foreach ($ownInstitutions as $institution) {
-            foreach (RelationshipService::getRelatedInstitutionsCached($institution) as $related) {
-                $relatedId = (string) $related['institution']->getKey();
+            foreach (app(InstitutionRelationService::class)->relatedTo($institution->id) as $related) {
+                $relatedId = $related['institution_id'];
 
                 if (($candidates[$relatedId] ?? null) !== self::PROJECTION_FULL) {
                     $candidates[$relatedId] = $related['authorized'] ? self::PROJECTION_FULL : self::PROJECTION_RESTRICTED;

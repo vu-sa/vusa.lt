@@ -28,8 +28,10 @@ import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 export interface RelatedInstitutionItem {
   id: string | number;
   name: string;
-  direction?: 'outgoing' | 'incoming' | 'sibling';
-  type?: 'direct' | 'type-based' | 'within-type' | 'cross-tenant-sibling';
+  direction?: 'outgoing' | 'incoming' | 'mutual';
+  via?: 'direct' | 'type';
+  kind_label?: string;
+  cross_tenant?: boolean;
   authorized?: boolean;
 }
 
@@ -37,12 +39,9 @@ const props = defineProps<{
   item: RelatedInstitutionItem;
 }>();
 
-const typeLabel = computed(() => {
-  switch (props.item.type) {
-    case 'within-type': return $t('Tos pačios rūšies');
-    case 'cross-tenant-sibling': return $t('Centrinis');
-    case 'type-based': return $t('Per tipą');
-    default: return null;
-  }
-});
+const typeLabel = computed(() => [
+  props.item.kind_label,
+  props.item.via === 'type' ? $t('Per tipą') : null,
+  props.item.cross_tenant ? $t('Centrinis') : null,
+].filter(Boolean).join(' · ') || null);
 </script>

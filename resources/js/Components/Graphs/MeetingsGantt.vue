@@ -129,7 +129,7 @@ import { useGanttSettings } from '@/Pages/Admin/Dashboard/Composables/useGanttSe
 const props = withDefaults(defineProps<{
   meetings: Array<{ id: string | number; start_time: string | Date; institution_id: string | number; title?: string; institution?: string; has_calendar_event?: boolean; calendar_event_is_draft?: boolean; type_slug?: string }>;
   gaps: Array<{ institution_id: string | number; from: string | Date; until: string | Date; mode?: 'heads_up' | 'no_meetings'; note?: string }>;
-  institutions?: Array<{ id: string | number; name?: string; tenant_id?: string | number; is_internal?: boolean; is_related?: boolean; relationship_direction?: 'outgoing' | 'incoming' | 'sibling'; relationship_type?: 'direct' | 'type-based' | 'within-type'; source_institution_id?: string; authorized?: boolean }>;
+  institutions?: Array<{ id: string | number; name?: string; tenant_id?: string | number; is_internal?: boolean; is_related?: boolean; relationship_direction?: 'outgoing' | 'incoming' | 'mutual'; relationship_type?: 'direct' | 'type'; source_institution_id?: string; authorized?: boolean }>;
   daysBefore?: number;
   daysAfter?: number;
   dayWidth?: number;

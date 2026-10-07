@@ -107,10 +107,6 @@ return [
         'order_updated' => 'Greitųjų nuorodų tvarka sėkmingai atnaujinta!',
     ],
 
-    'relationship' => [
-        'model_relation_deleted' => 'Ryšys tarp modelių ištrintas.',
-        'type_model_relation_deleted' => 'Ryšio tipas tarp modelių ištrintas.',
-    ],
 
     'role' => [
         'not_editable' => 'Negalima redaguoti šios rolės.',

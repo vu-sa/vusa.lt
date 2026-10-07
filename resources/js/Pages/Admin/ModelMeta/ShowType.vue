@@ -88,6 +88,19 @@
         </div>
       </OverviewSection>
     </template>
+    <template #relationships>
+      <div class="max-w-3xl">
+        <RelationshipLinkList
+          subject="type"
+          :record-id="String(contentType.id)"
+          :record-name="title"
+          :links="typeLinks ?? []"
+          :can-manage="!!can.manageLinks"
+          :kinds="relationKinds ?? []"
+          :type-options="typeOptions ?? []"
+        />
+      </div>
+    </template>
     <template #files>
       <div class="max-w-4xl">
         <Deferred data="files">
@@ -145,6 +158,7 @@ import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
 import { ConfirmDialog, OverviewSection, SheetForm } from '@/Components/Patterns';
+import { RelationshipLinkList, type RelationKindOption, type RelationshipLinkRow, type RelationshipTypeOption } from '@/Components/Relationships';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
@@ -162,7 +176,11 @@ const props = defineProps<{
   sharepointFolderUrl?: string | null;
   /** Deferred (`files`). */
   files?: FileableFileItem[];
-  can: { update: boolean; delete: boolean };
+  /** Institution types only. */
+  typeLinks?: RelationshipLinkRow[];
+  relationKinds?: RelationKindOption[];
+  typeOptions?: RelationshipTypeOption[];
+  can: { update: boolean; delete: boolean; manageLinks?: boolean };
 }>();
 const resource = props.typeKind === 'institutionType' ? 'institutionTypes' : 'dutyTypes';
 const entityType = props.typeKind === 'institutionType' ? ModelEnum.INSTITUTION_TYPE : ModelEnum.DUTY_TYPE;
@@ -222,6 +240,9 @@ const sections = computed<RecordPageSection[]>(() => [
   { value: 'overview', label: $t('Apžvalga') },
   { value: 'models', label: $t('Susieti įrašai'), count: props.attachedModels.length },
   ...(props.typeKind === 'dutyType' ? [{ value: 'roles', label: $t('Rolės'), count: props.contentType.roles?.length }] : []),
+  ...(props.typeKind === 'institutionType' && (props.typeLinks?.length || props.can.manageLinks)
+    ? [{ value: 'relationships', label: $t('Ryšiai'), count: props.typeLinks?.length ?? 0 }]
+    : []),
   // Type files are reference documents for every duty or institution of the type, so anyone who can
   // see the type reads them; only uploading needs update and a folder.
   { value: 'files', label: $t('Failai') },

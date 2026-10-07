@@ -68,8 +68,11 @@ export interface InstitutionPageTask {
 export interface InstitutionPageRelatedInstitution {
   id: string | number;
   name: string;
-  direction?: 'outgoing' | 'incoming' | 'sibling';
-  type?: 'direct' | 'type-based' | 'within-type' | 'cross-tenant-sibling';
+  direction?: 'outgoing' | 'incoming' | 'mutual';
+  via?: 'direct' | 'type';
+  kind?: string;
+  kind_label?: string;
+  cross_tenant?: boolean;
   authorized?: boolean;
 }
 

@@ -47,8 +47,6 @@ declare namespace App.Entities {
   export type Problem = models.Problem;
   export type ProblemCategory = models.ProblemCategory;
   export type Registration = models.Registration;
-  export type Relationship = models.Relationship;
-  export type Relationshipable = models.Relationshipable;
   export type Reservation
     = Omit<models.Reservation, 'resources' | 'users'> & {
       comments?: Array<models.Comment> | null;

@@ -20,7 +20,6 @@ use App\Models\Page;
 use App\Models\Permission;
 use App\Models\Problem;
 use App\Models\QuickLink;
-use App\Models\Relationship;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
@@ -384,7 +383,6 @@ class AdminNavigationCatalog
                 new Section('tipai', 'shell.sections.tipai', 'types.index', [], null, Visibility::callback(fn (User $user): bool => $this->taxonomyDestinations($user) !== []), matches: ['types.index'], descriptionKey: 'shell.section_descriptions.tipai'),
                 new Section('instituciju_tipai', 'shell.sections.instituciju_tipai', 'institutionTypes.index', [], 'institution_type', Visibility::can('viewAny', InstitutionType::class), descriptionKey: 'shell.section_descriptions.instituciju_tipai', taxonomy: true),
                 new Section('pareigybiu_tipai', 'shell.sections.pareigybiu_tipai', 'dutyTypes.index', [], 'duty_type', Visibility::can('viewAny', DutyType::class), descriptionKey: 'shell.section_descriptions.pareigybiu_tipai', taxonomy: true),
-                new Section('rysiai', 'shell.sections.rysiai', 'relationships.index', [], 'relationship', Visibility::can('viewAny', Relationship::class), descriptionKey: 'shell.section_descriptions.rysiai'),
                 new Section('nustatymai', 'shell.sections.nustatymai', 'settings.index', [], null, Visibility::gate('manage-settings'), descriptionKey: 'shell.section_descriptions.nustatymai'),
                 // Both gate on `viewAny(Role)` in the controller (SystemStatusController,
                 // MailQueueController) — not a distinct "super-admin" gate as the phase-0

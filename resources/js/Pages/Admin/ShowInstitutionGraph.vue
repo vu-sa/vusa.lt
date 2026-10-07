@@ -27,12 +27,11 @@ import Graph from '@/Components/Graphs/InstitutionGraph.vue';
 interface InstitutionGraphEdge {
   source: string;
   target: string;
-  direction: 'outgoing' | 'sibling';
-  type: 'direct' | 'type-based' | 'within-type' | 'cross-tenant-sibling';
-  scope: string;
-  bidirectional: boolean;
-  relationship_name: string | null;
-  relationship_description: string | null;
+  via?: 'direct' | 'type';
+  kind: string;
+  kind_label: string;
+  cross_tenant: boolean;
+  mutual: boolean;
 }
 
 interface TypeGraphNode {
@@ -48,5 +47,4 @@ defineProps<{
   typeRelationships: InstitutionGraphEdge[];
 }>();
 
-// Setup breadcrumbs for the Institution Graph page
 </script>

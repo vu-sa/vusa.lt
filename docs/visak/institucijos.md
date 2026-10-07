@@ -104,7 +104,7 @@ viešumas ir koordinatoriai. Skirtukai:
 | **Pareigybės** | Institucijos pareigybės ir jų nariai; čia keičiama pareigybių tvarka |
 | **Posėdžiai** | Visi institucijos posėdžiai |
 | **Kadencijos ir sekretoriai** | Kadencijos ir kiekvienos jų sekretoriai (tik galintiems redaguoti) |
-| **Ryšiai** | Susijusios institucijos (tik jei jų yra, žr. [Ryšiai](/sistema/rysiai)) |
+| **Ryšiai** | Susijusios institucijos ir tiesioginiai ryšiai; rodomas, kai ryšių yra arba juos gali tvarkyti (žr. [Ryšiai](/sistema/rysiai)) |
 | **Problemos** | Su institucija susietos problemos, pirmiau neišspręstos (tik jei jų yra, žr. [Problemos](/visak/problemos#posedziai)) |
 | **Failai** | Institucijos darbo failai SharePoint; viešai nerodomi (žr. [Įrašų failai](/visak/failai)) |
 | **Užduotys** | Institucijos ir jos posėdžių užduotys; skaičius rodo neatliktas |

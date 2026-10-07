@@ -15,9 +15,9 @@ use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\InstitutionRelationService;
 use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\RelationshipService;
 use App\Services\ResourceServices\DutyService;
 use App\Settings\AtstovavimasSettings;
 use Illuminate\Database\Eloquent\Collection;
@@ -106,9 +106,7 @@ class AtstovavimasDashboardController extends AdminController
             'relatedInstitutions' => Inertia::optional(function () use ($userInstitutions) {
                 /** @var Collection<int, Institution> $institutionCollection */
                 $institutionCollection = new Collection($userInstitutions()->values()->all());
-                $relatedInstitutions = RelationshipService::getRelatedInstitutionsForMultiple(
-                    $institutionCollection
-                );
+                $relatedInstitutions = app(InstitutionRelationService::class)->forMultiple($institutionCollection);
 
                 // Append computed attributes to related institution meetings
                 // Note: For unauthorized institutions, we skip completion_status as it triggers N+1 agendaItems load

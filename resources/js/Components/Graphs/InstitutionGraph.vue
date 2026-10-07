@@ -87,9 +87,6 @@
       <p class="text-muted-foreground">
         {{ tooltip.subtitle }}
       </p>
-      <p v-if="tooltip.description" class="mt-1 whitespace-normal text-muted-foreground">
-        {{ tooltip.description }}
-      </p>
       <p v-if="tooltip.bidirectional" class="mt-0.5 flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
         <ArrowLeftRight class="size-3" /> {{ $t('relationships.graph.bidirectional') }}
       </p>
@@ -121,7 +118,7 @@ import {
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowLeftRight, ArrowRight, Maximize, Minus, Plus } from 'lucide-vue-next';
 
-import { EDGE_TYPE_STYLES, edgeTypeColor, type RelationshipType, type RelationshipScope, SCOPE_STYLES, scopeColor } from './relationshipColors';
+import { EDGE_TYPE_STYLES, edgeCategory, edgeTypeColor, type RelationshipType, type RelationshipScope, SCOPE_STYLES, scopeColor } from './relationshipColors';
 
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 
@@ -136,12 +133,10 @@ interface GraphNode extends SimulationNodeDatum {
 interface GraphEdge extends SimulationLinkDatum<GraphNode> {
   source: string | GraphNode;
   target: string | GraphNode;
-  direction: string;
-  type: string;
-  scope: string;
-  bidirectional: boolean;
-  relationship_name: string | null;
-  relationship_description: string | null;
+  type: RelationshipType;
+  scope: RelationshipScope;
+  mutual: boolean;
+  kindLabel: string | null;
 }
 
 const props = defineProps<{
@@ -174,9 +169,8 @@ const tooltip = reactive<{
   y: number;
   title: string;
   subtitle: string;
-  description: string;
   bidirectional: boolean;
-}>({ visible: false, x: 0, y: 0, title: '', subtitle: '', description: '', bidirectional: false });
+}>({ visible: false, x: 0, y: 0, title: '', subtitle: '', bidirectional: false });
 
 /**
  * Legend entries: in institutions mode keyed by relationship type, in types mode
@@ -184,12 +178,12 @@ const tooltip = reactive<{
  */
 const legendEntries = computed(() => {
   if (mode.value === 'types') {
-    const present = new Set(activeEdgesRaw.value.map(r => r.scope));
+    const present = new Set(activeEdgesRaw.value.map(r => (r.cross_tenant ? 'cross-tenant' : 'within-tenant')));
     return (Object.keys(SCOPE_STYLES) as RelationshipScope[])
       .filter(scope => present.has(scope))
       .map(scope => ({ key: scope, ...SCOPE_STYLES[scope] }));
   }
-  const present = new Set(activeEdgesRaw.value.map(r => r.type));
+  const present = new Set(activeEdgesRaw.value.map(r => edgeCategory(r)));
   return (Object.keys(EDGE_TYPE_STYLES) as RelationshipType[])
     .filter(type => present.has(type))
     .map(type => ({ key: type, ...EDGE_TYPE_STYLES[type] }));
@@ -211,15 +205,13 @@ function buildNodes(): GraphNode[] {
 
 function buildEdges(nodeIds: Set<string>): GraphEdge[] {
   return activeEdgesRaw.value
-    .map(relationship => ({
-      source: String(relationship.source ?? relationship.relationshipable_id),
-      target: String(relationship.target ?? relationship.related_model_id),
-      direction: relationship.direction ?? 'outgoing',
-      type: relationship.type ?? 'direct',
-      scope: relationship.scope ?? 'within-tenant',
-      bidirectional: Boolean(relationship.bidirectional),
-      relationship_name: relationship.relationship_name ?? null,
-      relationship_description: relationship.relationship_description ?? null,
+    .map((relationship): GraphEdge => ({
+      source: String(relationship.source),
+      target: String(relationship.target),
+      type: edgeCategory(relationship),
+      scope: relationship.cross_tenant ? 'cross-tenant' : 'within-tenant',
+      mutual: Boolean(relationship.mutual),
+      kindLabel: relationship.kind_label ?? null,
     }))
     // Drop dangling edges that reference an institution not in the node set.
     .filter(edge => nodeIds.has(edge.source as string) && nodeIds.has(edge.target as string));
@@ -307,19 +299,9 @@ function showEdgeTooltip(event: MouseEvent, edge: GraphEdge) {
   const scopeKey = edge.scope === 'cross-tenant'
     ? 'relationships.graph.scope_cross_tenant'
     : 'relationships.graph.scope_within_tenant';
-  if (mode.value === 'types') {
-    tooltip.title = edge.relationship_name ?? $t('relationships.graph.type_type_based');
-    tooltip.subtitle = $t(scopeKey);
-  }
-  else {
-    const directionKey = edge.direction === 'sibling'
-      ? 'relationships.graph.direction_sibling'
-      : 'relationships.graph.direction_outgoing';
-    tooltip.title = edge.relationship_name ?? $t(EDGE_TYPE_STYLES[edge.type as RelationshipType]?.labelKey ?? 'relationships.graph.type_direct');
-    tooltip.subtitle = `${$t(directionKey)} · ${$t(scopeKey)}`;
-  }
-  tooltip.description = edge.relationship_description ?? '';
-  tooltip.bidirectional = edge.bidirectional;
+  tooltip.title = edge.kindLabel ?? $t(EDGE_TYPE_STYLES[edge.type].labelKey);
+  tooltip.subtitle = mode.value === 'types' ? $t(scopeKey) : `${$t(EDGE_TYPE_STYLES[edge.type].labelKey)} · ${$t(scopeKey)}`;
+  tooltip.bidirectional = edge.mutual;
   tooltip.x = event.clientX - bounds.left + 12;
   tooltip.y = event.clientY - bounds.top + 12;
   tooltip.visible = true;
@@ -414,9 +396,8 @@ function render() {
     .attr('stroke', d => colorForEdge(d))
     .attr('stroke-width', 1.8)
     .attr('stroke-opacity', 0.7)
-    .attr('stroke-dasharray', d => (d.direction === 'sibling' ? '4 3' : null))
-    .attr('marker-end', d => (d.direction === 'sibling' ? null : 'url(#graph-arrow-end)'))
-    .attr('marker-start', d => (d.bidirectional ? 'url(#graph-arrow-start)' : null));
+    .attr('marker-end', 'url(#graph-arrow-end)')
+    .attr('marker-start', d => (d.mutual ? 'url(#graph-arrow-start)' : null));
 
   linkSelection
     .append('line')
@@ -520,8 +501,8 @@ function render() {
       const dist = Math.hypot(tx - sx, ty - sy) || 1;
       const ux = (tx - sx) / dist;
       const uy = (ty - sy) / dist;
-      const sourcePad = nodeRadius(source) + (d.bidirectional ? ARROW_GAP : 1);
-      const targetPad = nodeRadius(target) + (d.direction === 'sibling' ? 1 : ARROW_GAP);
+      const sourcePad = nodeRadius(source) + (d.mutual ? ARROW_GAP : 1);
+      const targetPad = nodeRadius(target) + ARROW_GAP;
       select(this)
         .selectAll<SVGLineElement, GraphEdge>('line')
         .attr('x1', sx + ux * sourcePad)

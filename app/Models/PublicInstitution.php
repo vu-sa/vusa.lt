@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Models\Pivots\InstitutionInstitutionType;
-use App\Models\Pivots\Relationshipable;
 use App\Services\PublicInstitutionSearchIndexBuilder;
 use App\Services\Typesense\SearchText;
 use App\Support\MorphMap;
@@ -45,7 +44,7 @@ use Laravel\Scout\Searchable;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, InstitutionSecretary> $administratorAssignments
- * @property-read InstitutionInstitutionType|Relationshipable|InstitutionFollow|InstitutionSecretary|null $pivot
+ * @property-read InstitutionInstitutionType|InstitutionFollow|InstitutionSecretary|null $pivot
  * @property-read Collection<int, User> $administrators
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Cadence> $cadences
@@ -61,12 +60,11 @@ use Laravel\Scout\Searchable;
  * @property-read array $translatable_columns_from
  * @property-read mixed $governance_scope
  * @property-read mixed $has_public_meetings
- * @property-read Collection<int, Relationship> $incomingRelationships
+ * @property-read Collection<int, InstitutionLink> $incomingLinks
  * @property-read mixed $maybe_short_name
  * @property-read Collection<int, Meeting> $meetings
- * @property-read Collection<int, Relationship> $outgoingRelationships
+ * @property-read Collection<int, InstitutionLink> $outgoingLinks
  * @property-read Collection<int, Problem> $problems
- * @property-read mixed $related_institutions
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, User> $secretaries
  * @property-read Collection<int, InstitutionSecretary> $secretaryAssignments

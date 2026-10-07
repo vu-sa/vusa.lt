@@ -10,4 +10,4 @@ paths:
 
 Run `sail artisan typescript:transform` after touching an enum, and check the diff.
 
-Allowlists that resolve a class from user input belong on the enum (`AllowedFileablesEnum::classFor()`, `AllowedRelationshipablesEnum::modelClasses()`), not in a namespace-level `const` — there used to be two separate `ALLOWED_FILEABLE_TYPES` constants in different namespaces, free to drift.
+Allowlists that resolve a class from user input belong on the enum (`AllowedFileablesEnum::classFor()`), not in a namespace-level `const` — there used to be two separate `ALLOWED_FILEABLE_TYPES` constants in different namespaces, free to drift.

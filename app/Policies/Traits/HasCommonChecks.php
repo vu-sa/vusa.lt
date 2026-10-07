@@ -6,8 +6,8 @@ use App\Enums\CRUDEnum;
 use App\Enums\PermissionScopeEnum;
 use App\Models\Institution;
 use App\Models\User;
+use App\Services\InstitutionRelationService;
 use App\Services\ModelAuthorizer;
-use App\Services\RelationshipService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;
@@ -77,20 +77,12 @@ trait HasCommonChecks
                 return true;
             }
 
-            // Check related institutions (for institution model)
-            // User can access an institution if any of their own institutions have an
-            // authorized relationship TO the target institution
+            // An institution is also "own" when one of the user's institutions is authorized to see it.
             if ($resource === 'institutions' && $model instanceof Institution) {
-                // For each of the user's institutions, check if the target institution
-                // is in their authorized related institutions
-                $userInstitutions = $permissableDuties->loadMissing('institution')->pluck('institution')->filter();
-                foreach ($userInstitutions as $userInstitution) {
-                    if ($userInstitution instanceof Institution) {
-                        $authorizedRelated = RelationshipService::getRelatedInstitutions($userInstitution, authorizedOnly: true);
-                        if ($authorizedRelated->contains('id', $model->getKey())) {
-                            return true;
-                        }
-                    }
+                $userInstitutionIds = $permissableDuties->pluck('institution_id')->filter()->map(fn ($id) => (string) $id);
+
+                if (app(InstitutionRelationService::class)->authorizedIdsFor($userInstitutionIds)->contains((string) $model->getKey())) {
+                    return true;
                 }
             }
         }

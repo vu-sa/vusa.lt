@@ -26,7 +26,7 @@ const props = defineProps<{
   items: RelatedInstitutionItem[];
 }>();
 
-const ORDER = ['outgoing', 'incoming', 'sibling', 'other'] as const;
+const ORDER = ['outgoing', 'incoming', 'mutual', 'other'] as const;
 
 /** Who this body oversees, who oversees it, then peers — the question a reader arrives with. */
 const groups = computed(() => ORDER

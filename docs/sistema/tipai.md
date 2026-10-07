@@ -51,7 +51,7 @@ Pasirinktame sąraše taip pat gali spausti **Naujas institucijos tipas** arba
 
 Atidaręs tipo įrašą, skiltyje **Susieti įrašai** tvarkyk institucijas arba pareigybes.
 Viena institucija ar pareigybė gali turėti kelis tipus. Pareigybės tipo įraše atskirai tvarkyk
-roles. Failus rask tipo įrašo failų skiltyje; susieti įrašai gali paveldėti savo tipų ir jų tėvų failus.
+roles, o institucijos tipo įraše, skirtuke **Ryšiai**, – [tipų ryšius](/sistema/rysiai#tipu-rysio-kurimas). Failus rask tipo įrašo failų skiltyje; susieti įrašai gali paveldėti savo tipų ir jų tėvų failus.
 
 ## Kas ką gali {#teises}
 

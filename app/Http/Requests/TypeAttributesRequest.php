@@ -44,8 +44,6 @@ abstract class TypeAttributesRequest extends FormRequest
                 'extra_attributes' => ['nullable', 'array'],
                 'extra_attributes.meeting_periodicity_days' => ['nullable', 'integer', 'min:1', 'max:365'],
                 'extra_attributes.governance_scope' => ['nullable', Rule::enum(InstitutionScope::class)],
-                'extra_attributes.enable_sibling_relationships' => ['boolean'],
-                'extra_attributes.enable_cross_tenant_sibling_relationships' => ['boolean'],
             ];
         }
 

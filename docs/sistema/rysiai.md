@@ -1,109 +1,129 @@
 ---
 doc_status: reviewed
 title: Ryšiai
-area: relationships
-models: [Relationship, Relationshipable]
-last_reviewed: 2026-10-02
+area: institutionLinks
+models: [InstitutionLink, InstitutionTypeLink]
+last_reviewed: 2026-10-07
 tests:
-  - tests/Feature/Admin/Content/RelationshipControllerTest.php
-  - tests/Feature/Services/RelationshipServiceTest.php
+  - tests/Feature/Services/InstitutionRelationServiceTest.php
+  - tests/Feature/Admin/Management/InstitutionLinkControllerTest.php
+  - tests/Feature/Migrations/ReplaceRelationshipsWithInstitutionLinksTest.php
 ---
 
 # Ryšiai
 
-Skiltis **Ryšiai** (`/mano/relationships`) skirta institucijų ir jų tipų tarpusavio santykiams aprašyti.
+Ryšys nurodo, kad vienos institucijos nariai gali matyti kitos institucijos posėdžius ir darbotvarkes.
+Ryšiai lemia [institucijų prieigą](/visak/padaliniai), posėdžių sąrašą atstovavimo laiko juostoje
+ir yra vaizduojami [Institucijų grafe](/visak/instituciju-grafas).
 
-Ryšiais nustatoma, kaip institucijos bendradarbiauja, atsiskaito viena kitai ar dalijasi atstovavimo informacija. Šie ryšiai lemia institucijų atstovų prieigos teises prie posėdžių bei darbotvarkių ir yra vizualizuojami [Institucijų grafe](/visak/instituciju-grafas).
+<ChangelogNote version="v3.0" date="2026-10-02" title="Ryšiai tvarkomi kortelėse">
+
+Ryšiai kuriami ir keičiami institucijų ir institucijų tipų kortelėse, skirtuke **Ryšiai**.
+Atskiros skilties **Sistema → Ryšiai** ir ryšio tipų nebėra.
+
+</ChangelogNote>
 
 ## Rekomendacijos {#rekomendacijos}
 
 ::: tip
-- Techninė žymė rašoma mažosiomis raidėmis, žodžius skiriant brūkšneliais.
-- Ryšius verta kurti tik tiems institucijų santykiams, kurie turi organizacinę atskaitomybės ar bendradarbiavimo reikšmę.
-- Prieš šalinant ryšio tipą rekomenduojama patikrinti susietų įrašų kortelę: pašalinus jungtis, institucijų atstovai gali prarasti teisę matyti susijusių posėdžių darbotvarkių klausimus.
+- Ryšį verta kurti tik tada, kai vienos institucijos atstovams iš tiesų reikia matyti kitos posėdžius.
+- Kai tas pats santykis tinka visoms tam tikro tipo institucijoms, geriau kurti vieną tipų ryšį nei daug tiesioginių.
+- Pašalinus ryšį, nariai iš karto nustoja matyti susijusių posėdžių darbotvarkes.
 :::
 
 ## Kaip tai veikia
 
-Ryšių sistemą sudaro dvi dalys: **ryšio tipas** ir konkrečios **įrašų jungtys**.
+Ryšiai būna dviejų rūšių:
 
-1. **Ryšio tipas** – santykio apibrėžimas, turintis pavadinimą, unikalią techninę žymę ir aprašymą (pvz., *Atsiskaito institucijai*, *Kuruoja veiklą*).
-2. **Įrašų jungtys** – konkrečios sąsajos tarp dviejų platformos objektų. Jungtys gali būti sudaromos tik tarp šių rūšių modelių:
-   - **Institucija** – tiesioginis ryšys tarp dviejų konkrečių institucijų.
-   - **Institucijos tipas** – ryšys tarp institucijų tipų, automatiškai galiojantis visoms tiems tipams priklausančioms institucijoms.
+- **Tiesioginis ryšys** – tarp dviejų konkrečių institucijų.
+- **Tipų ryšys** – tarp dviejų institucijų tipų. Jis galioja visoms tų tipų institucijoms.
 
-### Jungties kryptis ir apimtis
+### Kryptis ir abipusiškumas {#kryptis}
 
-Kiekviena jungtis turi šaltinio ir tikslo įrašus bei papildomus parametrus:
+Kiekvienas ryšys turi šaltinį ir tikslą:
 
-- **Abipusis ryšys**:
-  - *Ne* (vienpusis) – ryšys nukreiptas iš šaltinio į tikslą. Šaltinio institucijos atstovai mato tikslo institucijos posėdžius ir klausimus, bet tikslo institucija šaltinio duomenų nemato.
-  - *Taip* (abipusis) – abi institucijos laiko viena kitą partnerėmis ir turi abipusį matomumą.
-- **Tipų ryšio apimtis**: taikoma, kai jungtis sudaroma tarp institucijų tipų:
-  - *Padalinio viduje* – ryšys galioja tik to paties padalinio institucijoms (numatytoji reikšmė). Pavyzdžiui, MIF programų komitetas atsiskaito tik MIF tarybai.
-  - *Tarp padalinių* – ryšys galioja ir tarp skirtingų padalinių institucijų (pvz., Centrinio biuro komitetas atsiskaito visų padalinių taryboms).
+- šaltinio nariai mato tikslo posėdžius ir darbotvarkes;
+- tikslo nariai šaltinį mato susijusių institucijų sąraše, o jo posėdžius – be darbotvarkių;
+- pažymėjus **Abipusis ryšys**, abiejų pusių nariai mato vieni kitų posėdžius ir darbotvarkes.
+
+Jei dvi institucijos susietos keliais būdais, galioja plačiausia prieiga.
+
+### Tipų ryšio apimtis {#apimtis}
+
+- Pagal nutylėjimą tipų ryšys galioja tame pačiame padalinyje. Pavyzdžiui, MIF studijų kolegija
+  susiejama tik su MIF studijų programų komitetais.
+- Įjungus **Centrinis → padaliniai**, šaltinio tipo institucijos Centriniame biure susiejamos su
+  tikslo tipo institucijomis visuose padaliniuose.
+- Tipas gali būti susietas ir su savimi („To paties tipo institucijos“). Abipusis ryšys tame pačiame
+  padalinyje susieja, pavyzdžiui, Senato komitetus tarpusavyje. Ryšys **Centrinis → padaliniai** be
+  abipusiškumo leidžia Centrinio biuro komisijai matyti padalinių komisijas, o padaliniai jos posėdžius
+  mato be darbotvarkių.
+
+### Ryšio pobūdis {#pobudis}
+
+Pobūdis paaiškina, ką ryšys reiškia, ir rodomas sąrašuose bei grafe. Matomumui jis įtakos neturi.
+Galimi pobūdžiai: *Patariamasis*, *Tvirtina sudėtį*, *Klausimai keliauja toliau*, *Kuruoja*,
+*Bendradarbiauja* ir *Susijusi*.
 
 ## Veiksmai
 
-### Ryšių sąrašas (`/mano/relationships`)
+### Tiesioginio ryšio kūrimas {#tiesioginio-rysio-kurimas}
 
-Sąraše pateikiami ryšių tipai, jų žymės ir aprašymai.
-- Naudok paieškos laukelį, norėdamas atsirinkti ryšį pagal pavadinimą ar žymę.
-- Rikiuok ryšius pagal pavadinimą (A–Z arba Z–A).
-- Pasirink ryšio pavadinimą, kad atvertum jo redagavimo puslapį.
+1. Atverk institucijos kortelę ir pereik į skirtuką **Ryšiai**.
+2. Skiltyje **Tiesioginiai ryšiai** spausk **Pridėti ryšį**.
+3. Pasirink kitą instituciją, kryptį („Ši → kita“ arba „Kita → ši“) ir ryšio pobūdį. Jei reikia,
+   pažymėk **Abipusis ryšys**.
+4. Spausk **Išsaugoti**.
 
-### Naujo ryšio tipo kūrimas
+Ryšys rodomas abiejų institucijų kortelėse ir tvarkomas iš bet kurios jų.
 
-1. Ryšių sąrašo viršuje paspausk **Naujas ryšys**.
-2. Įvesk **Pavadinimą** (pvz., *Atskaitinga institucija*).
-3. Įvesk unikalią **Techninę žymę** (pvz., `atskaitinga-institucija`).
-4. Įvesk **Aprašymą**, paaiškinantį, kam šis santykis naudojamas.
-5. Paspausk **Išsaugoti**.
+### Tipų ryšio kūrimas {#tipu-rysio-kurimas}
 
-### Jungčių kūrimas ir tvarkymas (`/mano/relationships/{id}`)
+1. Atverk institucijos tipo kortelę (**Sistema → Tipai ir kategorijos → Institucijų tipai**) ir pereik į
+   skirtuką **Ryšiai**.
+2. Spausk **Pridėti ryšį**.
+3. Pasirink kitą tipą (arba tą patį), kryptį, pobūdį, abipusiškumą ir, jei reikia, **Centrinis → padaliniai**.
+4. Spausk **Išsaugoti**.
 
-Atvėręs ryšio kortelę:
+### Ryšio keitimas ir šalinimas
 
-1. Pereik į skirtuką **Susieti įrašai**. Čia rodomas esamų jungčių sąrašas su šaltinio ir tikslo įrašais, krypties rodykle bei žymomis.
-2. Paspausk **Sukurti jungtį** (arba **Sukurti pirmąją jungtį**):
-   - Pasirink **Modelio rūšį**: *Institucija* arba *Institucijos tipas*.
-   - Pasirink **Šaltinį** (iš kurio išeina ryšys).
-   - Pasirink **Tikslą** (į kurį nukreiptas ryšys).
-   - Pažymėk langelį **Abipusis ryšys**, jei santykis lygiavertis.
-   - Jei pasirinkai institucijų tipus, nurodyk **Apimtį**: *Padalinio viduje* arba *Tarp padalinių*.
-   - Paspausk **Sukurti**.
-3. Norėdamas pakeisti esamos jungties abipusiškumą ar apimtį, prie jungties paspausk meniu **⋯** ir pasirink **Redaguoti**.
-4. Norėdamas pašalinti jungtį, meniu **⋯** pasirink **Šalinti**.
+Prie ryšio spausk **Redaguoti**, kad pakeistum pobūdį ar abipusiškumą. Norėdamas susieti kitą
+instituciją, pakeisti kryptį ar apimtį, pašalink ryšį (**Pašalinti**) ir sukurk naują.
+Šalinimas galutinis – šiukšlinė nenaudojama.
 
-### Ryšio redagavimas ir šalinimas
-
-- Norėdamas pakeisti ryšio pavadinimą, žymę ar aprašymą, ryšio kortelėje paspausk **Redaguoti**.
-- Norėdamas pašalinti visą ryšio tipą, veiksmų meniu pasirink **Šalinti**.
-  Patvirtinus langą **Šalinti ryšį?**, ryšys ir visos su juo susietos įrašų jungtys ištrinamos **iškart ir negrįžtamai** (šiukšlinė nenaudojama).
+Institucijos kortelės skirtukas **Ryšiai** rodo ir visas susijusias institucijas, taip pat atsiradusias
+per tipus. Jos pažymėtos „Per tipą“ ir keičiamos tipo kortelėje.
 
 ## Kas ką gali {#teises}
 
 | Veiksmas | Studentų atstovų koordinatorius | Super Admin |
 |---|---|---|
-| Matyti ryšių skiltį ir sąrašą | – | ✓ |
-| Kurti, redaguoti ir trinti ryšių tipus | – | ✓ |
-| Kurti, redaguoti ir trinti modelių jungtis | – | ✓ |
-| Matyti ryšių rezultatą Institucijų grafe | ✓ | ✓ |
+| Matyti susijusias institucijas institucijos kortelėje | ✓ | ✓ |
+| Kurti, keisti ir šalinti ryšius | – | ✓ |
+| Matyti ryšius Institucijų grafe | ✓ | ✓ |
 
-Ryšių administravimas yra platformos lygmens veiksmas, prieinamas **superadministratoriui** arba nariui, kurio rolei suteikti atitinkami visos platformos ryšių leidimai.
+Ryšius tvarkyti gali **Super Admin** arba narys, kurio rolei suteikti visos platformos ryšių leidimai.
+Teisė redaguoti instituciją ar tipą ryšių tvarkyti neleidžia, nes ryšys atveria kitų institucijų duomenis.
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 
-- **El. laiškai**: jokie pranešimai el. paštu apie ryšių kūrimą ar keitimą nesiunčiami.
-- **Talpyklos atnaujinimas**: sukūrus, atnaujinus ar ištrynus jungtį, sistema išvalo susijusių institucijų ryšių talpyklą. Tiesioginių institucijų jungčių pakeitimai taip pat išvalo susijusių narių institucijų prieigos ir paieškos raktų talpyklas. Tipų jungčių pakeitimams toks narių talpyklų atnaujinimas nėra užtikrintas.
-- **Grafas**: atlikti jungčių pakeitimai matomi iš naujo įkėlus [Institucijų grafo puslapį](/visak/instituciju-grafas).
+- **El. laiškai**: apie ryšių kūrimą ar keitimą nepranešama.
+- **Prieiga**: sukūrus, pakeitus ar pašalinus ryšį, priskyrus institucijai tipą ar perkėlus instituciją į
+  kitą padalinį, narių prieiga ir paieška atnaujinamos be laukimo – pakanka iš naujo atverti puslapį.
+- **Grafas**: pakeitimai matomi iš naujo įkėlus [Institucijų grafo puslapį](/visak/instituciju-grafas).
 
 ## Techninė informacija {#technine-informacija}
 
-- Valdiklis: `RelationshipController`, maršrutai `relationships.*` (`storeModelRelationship`, `updateModelRelationship`, `deleteModelRelationship`).
-- Politikos: `RelationshipPolicy`, `RelationshipablePolicy`.
-- Leidimai: `relationships.read.*`, `relationships.create.*`, `relationships.update.*`, `relationships.delete.*` bei `relationshipables.*.*`.
-- Leistini modeliai: `AllowedRelationshipablesEnum` (`INSTITUTION` → `Institution::class`, `INSTITUTION_TYPE` → `InstitutionType::class`). Kitos modelių klasės atmetamos validuojant užklausas.
-- Ryšių duomenų gavimas ir prieigos vertinimas: `RelationshipService` (`getRelatedInstitutionsCached`, `getRelatedInstitutionsFlat`).
-- Talpyklos valdymas: `RelationshipableObserver` iškviečia `RelationshipService::clearCacheForRelationshipable`, `InstitutionAccessService` ir `TypesenseScopedKeyService` valymą.
-- `Relationship` ir `Relationshipable` nenaudoja `SoftDeletes` – trynimas yra galutinis tiesioginis SQL `delete`.
+- Lentelės `institution_links` ir `institution_type_links`; modeliai `InstitutionLink`, `InstitutionTypeLink`;
+  pobūdžiai – `InstitutionRelationKind`.
+- Maršrutai: `institutions.links.store`, `institutionLinks.update|destroy`, `institutionTypes.links.store`,
+  `institutionTypeLinks.update|destroy`; valdikliai `InstitutionLinkController`, `InstitutionTypeLinkController`.
+- Leidimai: `relationships.create.*`, `relationships.update.*`, `relationships.delete.*`
+  (politikos `InstitutionLinkPolicy`, `InstitutionTypeLinkPolicy`).
+- Ryšius į institucijų poras išskleidžia `InstitutionRelationService`. Jo rezultatą naudoja prieigos patikros,
+  atstovavimo laiko juosta, posėdžio institucijų pasirinkimas ir grafas. Rezultatas saugomas talpykloje su
+  versijos žyme, kuri keičiama pasikeitus ryšiams, tipų priskyrimams, institucijos padaliniui ar padalinio tipui;
+  ta pati žymė įeina į narių prieigos ir paieškos raktų talpyklas.
+- Migracija `replace_relationships_with_institution_links` perkėlė senus `relationships` / `relationshipables`
+  įrašus ir tipų „sibling“ nustatymus į naujas lenteles. Seni tarp padalinių galiojantys tipų ryšiai tapo
+  dviem ryšiais (abiem kryptimis), kad prieiga nepasikeistų.

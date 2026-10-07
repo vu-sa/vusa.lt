@@ -38,7 +38,6 @@ enum ModelEnum: string
     case PERMISSION = 'permission';
     case PROBLEM = 'problem';
     case RELATIONSHIP = 'relationship';
-    case RELATIONSHIPABLE = 'relationshipable';
     case RESERVATION = 'reservation';
     case RESERVATION_RESOURCE = 'reservation_resource';
     case RESOURCE = 'resource';
@@ -93,6 +92,7 @@ enum ModelEnum: string
             'permissions' => ['*'],
             'roles' => ['*'],
             'navigations' => ['*'],
+            'relationships' => ['*'],
 
             // Models that belong to padaliniai but not to individual users
             'studyPrograms' => ['padalinys', '*'],

@@ -18,8 +18,8 @@ use App\Models\News;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\InstitutionRelationService;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\RelationshipService;
 use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
 use Illuminate\Support\Collection;
@@ -161,11 +161,12 @@ class DashboardController extends AdminController
         // Only the fields the graph actually renders (id, name, users_count, tenant for grouping).
         $institutions = Institution::withCount('users')->get(['id', 'name', 'tenant_id']);
 
-        $typeGraph = RelationshipService::getTypeRelationshipGraph();
+        $relations = app(InstitutionRelationService::class);
+        $typeGraph = $relations->typeGraph();
 
         return $this->inertiaResponse('Admin/ShowInstitutionGraph', [
             'institutions' => $institutions,
-            'institutionRelationships' => RelationshipService::getAllRelatedInstitutionsEnriched(),
+            'institutionRelationships' => $relations->institutionGraph(),
             'types' => $typeGraph['nodes'],
             'typeRelationships' => $typeGraph['edges'],
         ]);

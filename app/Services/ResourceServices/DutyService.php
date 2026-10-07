@@ -324,7 +324,7 @@ class DutyService
                 $query->whereIn('type', TenantType::representationalValues());
             })
             ->with([
-                'tenant:id,shortname,type', // type is needed for cross-tenant scope matching in RelationshipService
+                'tenant:id,shortname,type',
                 'types', // explicit since not auto-loaded
                 'meetings:id,title,start_time,type',
                 'meetings.institutions:id',
