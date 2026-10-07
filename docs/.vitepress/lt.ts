@@ -1,6 +1,6 @@
 import { shared } from './shared.ts'
 import { mergeObjects } from './utils.ts'
-import { guide, pdfFileName, sourceFile } from './structure.ts'
+import { developerGuide, guide, pdfFileName, sourceFile } from './structure.ts'
 import fs from 'node:fs'
 
 const sidebarPage = (page: { text: string, link: string }) => {
@@ -18,7 +18,8 @@ export default {
   themeConfig: mergeObjects(shared, {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
-      { text: 'Gidas', link: '/darbai', activeMatch: '^/(?!changelog)' },
+      { text: 'Gidas', link: '/darbai', activeMatch: '^/(?!changelog|kurejams)' },
+      { text: 'Kūrėjams', link: '/kurejams/', activeMatch: '/kurejams/' },
       { text: 'Atnaujinimai', link: '/changelog/v3', activeMatch: '/changelog/' },
       // A file, not a page: VitePress adds the `/docs/` base only to page links.
       { text: 'PDF', link: `/docs/${pdfFileName}`, target: '_blank' },
@@ -31,6 +32,12 @@ export default {
         collapsed: chapter.text !== 'Pradžia',
         items: chapter.pages.map(sidebarPage),
       })),
+      {
+        text: developerGuide.text,
+        link: developerGuide.index,
+        collapsed: true,
+        items: developerGuide.pages.map(sidebarPage),
+      },
       {
         text: 'Atnaujinimai',
         collapsed: true,

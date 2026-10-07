@@ -9,13 +9,23 @@ export default {
   description: 'VU SR information and internal system guide - all necessary information about the mano.vusa.lt platform',
   themeConfig: mergeObjects(shared, {
     // https://vitepress.dev/reference/default-theme-config
-    // The guide itself is Lithuanian-only; English keeps the changelog the admin Updates link opens.
+    // The user guide is Lithuanian-only; English keeps the changelog the admin Updates link opens
+    // and mirrors the developer chapter.
     nav: [
       { text: 'Guide (LT)', link: '/ivadas' },
       { text: 'Updates', link: '/en/changelog/v3', activeMatch: '/en/changelog/' },
+      { text: 'Developers', link: '/en/developers/', activeMatch: '/en/developers/' },
     ],
 
     sidebar: [
+      {
+        text: 'Developers',
+        link: '/en/developers/',
+        items: [
+          { text: 'Request lifecycle', link: '/en/developers/request-lifecycle' },
+          { text: 'Example: a calendar event', link: '/en/developers/example-calendar-event' },
+        ]
+      },
       {
         text: 'Updates',
         items: [

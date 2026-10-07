@@ -128,6 +128,17 @@ export const guide: GuideChapter[] = [
   },
 ]
 
+/** Developer onboarding: in the web sidebar only, kept out of `guide` so the user-guide PDF skips it. */
+export const developerGuide: GuideChapter = {
+  text: 'Kūrėjams',
+  description: 'Kaip užklausa keliauja per Laravel ir Vue',
+  index: '/kurejams/',
+  pages: [
+    { text: 'Užklausos kelias', link: '/kurejams/uzklausos-kelias' },
+    { text: 'Pavyzdys: renginys', link: '/kurejams/pavyzdys-renginys' },
+  ],
+}
+
 export const pdfFileName = 'vusa-lt-gidas.pdf'
 
 /** `/rezervacijos/` → `rezervacijos/index.md`, `/ivadas` → `ivadas.md`. */

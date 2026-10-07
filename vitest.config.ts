@@ -98,9 +98,11 @@ export default defineConfig({
         [
           'resources/js/**/__tests__/**/*.test.ts',
           'resources/js/**/*.test.ts',
+          'docs/.vitepress/theme/__tests__/**/*.test.ts',
         ],
         [
           'resources/js/**/*.component.test.ts',
+          'docs/.vitepress/theme/__tests__/**/*.component.test.ts',
           'resources/js/**/*.stories.ts',
         ],
       ),
