@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\DocumentStatus;
 use App\Models\Document;
 use App\Services\DocumentSharepointSyncService;
 use App\Services\SharepointGraphService;
@@ -267,5 +268,46 @@ describe('.url shortcut resolution during sync', function (): void {
         $document->refresh();
         expect($document->link_url)->toBe('https://ataskaita2023.vusa.lt')
             ->and($document->sync_status)->toBe('success');
+    });
+});
+
+describe('link readiness', function (): void {
+    test('an unchanged published file without a link is not marked as synced; its link is created', function (): void {
+        $document = Document::factory()->create(['name' => 'protokolas.pdf', 'eTag' => 'same', 'anonymous_url' => null, 'sync_status' => 'failed']);
+
+        $graph = Mockery::mock(SharepointGraphService::class);
+        $graph->shouldReceive('getListItem')->once()->andReturn(makeFieldValueSet(['@odata.etag' => 'same', 'Name' => 'protokolas.pdf']));
+        $graph->shouldReceive('getDriveItemByListItem')->once()->andReturn(makeDriveItem('drive-1', 'protokolas.pdf'));
+        $graph->shouldReceive('getDriveItemPublicLink')->once()->andReturn(null);
+        $graph->shouldReceive('createPublicPermission')->once()->andReturn(makePermission('perm-1', 'https://sharepoint.example.com/1'));
+
+        mockSyncServiceWithGraph($graph)->sync($document);
+
+        expect($document->refresh()->anonymous_url)->toBe('https://sharepoint.example.com/1')
+            ->and($document->sync_status)->toBe('success');
+    });
+});
+
+describe('publication changing during a sync', function (): void {
+    test('a link created while the document was being hidden is deleted again, not kept', function (): void {
+        $document = Document::factory()->create(['name' => 'protokolas.pdf', 'eTag' => 'old', 'anonymous_url' => null]);
+
+        $graph = Mockery::mock(SharepointGraphService::class);
+        $graph->shouldReceive('getListItem')->once()->andReturn(makeFieldValueSet(['@odata.etag' => 'new', 'Name' => 'protokolas.pdf']));
+        $graph->shouldReceive('getDriveItemByListItem')->once()->andReturn(makeDriveItem('drive-1', 'protokolas.pdf'));
+        $graph->shouldReceive('getDriveItemPublicLink')->once()->andReturn(null);
+        $graph->shouldReceive('createPublicPermission')->once()->andReturnUsing(function () use ($document) {
+            // A manager hides the document while SharePoint is creating its link.
+            Document::query()->whereKey($document->id)->update(['status' => DocumentStatus::Hidden->value]);
+
+            return makePermission('perm-new', 'https://sharepoint.example.com/new');
+        });
+        $graph->shouldReceive('deletePermission')->once()->with('drive-1', 'perm-new');
+
+        mockSyncServiceWithGraph($graph)->sync($document);
+
+        expect($document->refresh()->status)->toBe(DocumentStatus::Hidden)
+            ->and($document->anonymous_url)->toBeNull()
+            ->and($document->sharepoint_permission_id)->toBeNull();
     });
 });

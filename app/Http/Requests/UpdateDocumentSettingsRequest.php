@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\DocumentStatus;
 use App\Settings\SettingsSettings;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -21,7 +22,7 @@ class UpdateDocumentSettingsRequest extends FormRequest
             'important_content_types.*' => 'string|max:255',
             'recommendations' => 'present|array|max:20',
             'recommendations.*' => 'array:document_id,phrases,enabled,show_without_query',
-            'recommendations.*.document_id' => ['required', 'integer', 'distinct', Rule::exists('documents', 'id')->where('is_active', true)],
+            'recommendations.*.document_id' => ['required', 'integer', 'distinct', Rule::exists('documents', 'id')->where('status', DocumentStatus::Published->value)->whereNull('removed_from_sharepoint_at')],
             'recommendations.*.phrases' => 'present|array|max:10',
             'recommendations.*.phrases.*' => ['required', 'string', 'max:200', 'regex:/[\p{L}\p{N}]/u'],
             'recommendations.*.enabled' => 'required|boolean',

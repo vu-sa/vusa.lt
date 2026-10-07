@@ -142,7 +142,7 @@ class FilesController extends AdminController
         try {
             if ($this->isSharedImageFolder($path)) {
                 // Form images target shared folders rather than a tenant's file-manager tree.
-                if ($request->user()->cannot('create', File::class)) {
+                if (! $this->mayUploadToSharedFolder($request->user(), $path)) {
                     return response()->json(['error' => __('files.errors.no_upload_permission')], 403);
                 }
             } elseif (! $this->isTipTapUpload($path)) {
@@ -213,6 +213,15 @@ class FilesController extends AdminController
     protected function isSharedImageFolder(string $path): bool
     {
         return in_array($path, self::SHARED_IMAGE_FOLDERS, true);
+    }
+
+    /**
+     * Every member uploads their own profile photo to `contacts`, as do duty managers for
+     * occupancy photos, so that folder needs no file permission.
+     */
+    protected function mayUploadToSharedFolder(User $user, string $path): bool
+    {
+        return $path === 'contacts' || $user->can('create', File::class);
     }
 
     public function compressImage(FilePathRequest $request): RedirectResponse

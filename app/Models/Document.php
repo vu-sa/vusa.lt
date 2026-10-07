@@ -2,19 +2,23 @@
 
 namespace App\Models;
 
+use App\Enums\DocumentStatus;
 use App\Helpers\ShortUrlHelper;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\Documents\SharepointDocumentFields;
 use App\Services\DocumentSharepointSyncService;
+use App\Services\ModelAuthorizer;
 use App\Services\Typesense\SearchText;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Context;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Activitylog\Support\LogOptions;
@@ -35,17 +39,17 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $anonymous_url
  * @property string|null $link_url
  * @property string|null $sharepoint_permission_id
- * @property string $status
- * @property string|null $removed_from_sharepoint_at
- * @property string|null $published_at
+ * @property DocumentStatus $status
+ * @property Carbon|null $removed_from_sharepoint_at
+ * @property Carbon|null $published_at
  * @property string|null $published_by
- * @property string $sharepoint_site_id
- * @property string $sharepoint_list_id
  * @property string|null $sharepoint_drive_item_id
  * @property string|null $sharepoint_path
  * @property string|null $sharepoint_web_url
- * @property string|null $sharepoint_modified_at
+ * @property Carbon|null $sharepoint_modified_at
  * @property string|null $sharepoint_institution_label
+ * @property string $sharepoint_site_id
+ * @property string $sharepoint_list_id
  * @property Carbon $created_at
  * @property Carbon|null $checked_at
  * @property string $sync_status Status of SharePoint sync: pending, syncing, success, failed
@@ -66,10 +70,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Document query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document published()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Document manageableBy(User $user)
  *
  * @mixin \Eloquent
  */
-#[Hidden(['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'sharepoint_permission_id', 'created_at', 'updated_at'])]
+#[Hidden(['sharepoint_id', 'eTag', 'public_url_created_at', 'sharepoint_site_id', 'sharepoint_list_id', 'sharepoint_permission_id', 'sharepoint_drive_item_id', 'sharepoint_path', 'sharepoint_web_url', 'sharepoint_institution_label', 'published_by', 'created_at', 'updated_at'])]
 #[Unguarded]
 class Document extends Model
 {
@@ -79,7 +85,10 @@ class Document extends Model
     protected function casts(): array
     {
         return [
-            'is_active' => 'boolean',
+            'status' => DocumentStatus::class,
+            'removed_from_sharepoint_at' => 'datetime',
+            'published_at' => 'datetime',
+            'sharepoint_modified_at' => 'datetime',
             // The column is a DATE. Cast as plain `datetime` it serialized to a
             // Z-suffixed timestamp, which rendered in full and could shift the day by one
             // in a westward timezone.
@@ -92,14 +101,16 @@ class Document extends Model
     }
 
     /**
-     * eTag/checked_at/sync_* churn on every scheduled SharePoint sync run
-     * (see DocumentSharepointSyncService) — that's a robot, not a person, so
-     * exclude it from the human-facing change log.
+     * eTag/checked_at/sync_* and the SharePoint location churn on every scheduled sync or
+     * discovery run — that's a robot, not a person, so exclude it from the human-facing change log.
      */
     public function getActivitylogOptions(): LogOptions
     {
         return $this->defaultActivitylogOptions()
-            ->logExcept(['eTag', 'checked_at', 'sync_status', 'sync_error_message', 'sync_attempts', 'last_sync_attempt_at']);
+            ->logExcept([
+                'eTag', 'checked_at', 'sync_status', 'sync_error_message', 'sync_attempts', 'last_sync_attempt_at',
+                'sharepoint_drive_item_id', 'sharepoint_path', 'sharepoint_web_url', 'sharepoint_modified_at',
+            ]);
     }
 
     #[\Override]
@@ -116,6 +127,12 @@ class Document extends Model
 
     public function toSearchableArray(): array
     {
+        // Scout's queued MakeSearchable never re-asks shouldBeSearchable(); the engine skips an empty record,
+        // so a document hidden between the save and the job stays out of the index.
+        if (! $this->shouldBeSearchable()) {
+            return [];
+        }
+
         // Load the tenant relationship if not already loaded
         if (! $this->relationLoaded('institution') || ($this->institution && ! $this->institution->relationLoaded('tenant'))) {
             $this->load('institution.tenant');
@@ -141,7 +158,8 @@ class Document extends Model
             'link_url' => $this->link_url,
             'calendar_event_id' => $calendarEvent?->is_draft === false ? $calendarEvent->id : null,
             'calendar_event_public_url' => $calendarEvent?->is_draft === false ? $calendarEvent->publicUrl(app()->getLocale()) : null,
-            'is_active' => $this->is_active,
+            // Public search filters on `is_active`; only published rows are ever indexed.
+            'is_active' => $this->isPublished(),
             'sync_status' => $this->sync_status,
             'checked_at' => $this->checked_at ? $this->checked_at->timestamp : null,
             'is_in_effect' => $this->calculateIsInEffect(),
@@ -262,17 +280,96 @@ class Document extends Model
     }
 
     /**
-     * Determine if the model should be searchable.
+     * The admin and public search share one collection, so only what the public may see is indexed.
+     * Pending and hidden files are listed from the database instead.
      */
-    public function shouldBeSearchable()
+    public function shouldBeSearchable(): bool
     {
-        // For admin context, index all documents regardless of publication status
-        if (Context::get('search_context') === 'admin') {
-            return true;
+        return $this->isPublished() && ! empty($this->anonymous_url);
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->status === DocumentStatus::Published && $this->removed_from_sharepoint_at === null;
+    }
+
+    /**
+     * What the public site may show: published, still in SharePoint, and with a public link.
+     *
+     * @param  Builder<Document>  $query
+     */
+    #[Scope]
+    protected function published(Builder $query): void
+    {
+        $query->where('status', DocumentStatus::Published)
+            ->whereNull('removed_from_sharepoint_at')
+            ->whereNotNull('anonymous_url')
+            ->where('anonymous_url', '!=', '');
+    }
+
+    /**
+     * Documents whose publication this user may decide: their padaliniai's, or all with `*` scope.
+     * A file with no resolvable Padalinys belongs to no tenant, so only `*` scope reaches it.
+     *
+     * @param  Builder<Document>  $query
+     */
+    #[Scope]
+    protected function manageableBy(Builder $query, User $user): void
+    {
+        $scope = app(ModelAuthorizer::class)->scope($user, 'documents.update.padalinys');
+
+        if (! $scope->granted) {
+            $query->whereRaw('1 = 0');
+
+            return;
         }
 
-        // For public context, only index documents that have anonymous access
-        return ! empty($this->anonymous_url);
+        if (! $scope->isAllScope) {
+            $query->whereHas('institution', fn (Builder $institution) => $institution->whereIn('tenant_id', $scope->tenantIds()));
+        }
+    }
+
+    /**
+     * Files a meeting may link: its institutions' or any institution of their padaliniai. Deliberately
+     * lax: internal bodies (Parlamentas, Taryba) file their paperwork under the central institution.
+     *
+     * @param  Builder<Document>  $query
+     */
+    #[Scope]
+    protected function linkableTo(Builder $query, Meeting $meeting): void
+    {
+        $meeting->loadMissing('institutions');
+        $institutionIds = $meeting->institutions->pluck('id');
+        $tenantIds = $meeting->institutions->pluck('tenant_id')->filter()->unique();
+
+        $query->where(fn (Builder $query) => $query->whereIn('institution_id', $institutionIds)
+            ->orWhereHas('institution', fn (Builder $institution) => $institution->whereIn('tenant_id', $tenantIds)));
+    }
+
+    /**
+     * What the managers' document view lists: everything published, and the rest they may manage.
+     *
+     * @param  Builder<Document>  $query
+     */
+    #[Scope]
+    protected function browsableBy(Builder $query, User $user): void
+    {
+        $scope = app(ModelAuthorizer::class)->scope($user, 'documents.update.padalinys');
+
+        // An unrestricted manageableBy adds no condition, and an empty OR group would be dropped.
+        if ($scope->granted && $scope->isAllScope) {
+            return;
+        }
+
+        $query->where(fn (Builder $query) => $query->published()->orWhere(fn (Builder $query) => $query->manageableBy($user)));
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function metadataProblems(): array
+    {
+        return SharepointDocumentFields::problems($this);
     }
 
     /**
@@ -333,7 +430,6 @@ class Document extends Model
         return Attribute::make(get: fn () => $this->calculateIsInEffect());
     }
 
-    // Also used in SharepointGraphService::batchProcessDocuments
     public function refreshFromSharepoint(bool $force = false): ?self
     {
         return app(DocumentSharepointSyncService::class)->sync($this, $force);

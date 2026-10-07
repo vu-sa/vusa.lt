@@ -261,7 +261,7 @@ class Calendar extends Model implements HasMedia
 
         Document::query()
             ->whereIn('meeting_id', $meetingIds)
-            ->whereNotNull('anonymous_url')
+            ->published()
             ->get()
             ->each
             ->searchable();

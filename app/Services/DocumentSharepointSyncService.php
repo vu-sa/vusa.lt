@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Helpers\InternetShortcutParser;
+use App\Jobs\RevokeSharepointPermissionJob;
 use App\Models\Document;
-use App\Models\Institution;
+use App\Services\Documents\SharepointDocumentFields;
 use App\Support\StagingProtection;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Microsoft\Graph\Generated\Models\DriveItem;
 
@@ -28,9 +30,6 @@ class DocumentSharepointSyncService
         $document->save();
 
         try {
-            $contentField = 'Turinys';
-            $institutionField = 'Padalinys';
-
             $graph = $this->makeGraphService($document);
 
             $additionalData = $graph->getListItem(
@@ -44,6 +43,8 @@ class DocumentSharepointSyncService
             // A `.url` shortcut whose real destination we never resolved still needs
             // a full pass, even when SharePoint says nothing else has changed.
             $needsShortcutTarget = $document->isUrlShortcut() && empty($document->link_url);
+            // An unchanged file says nothing about a link that was never created.
+            $needsLink = $document->isPublished() && empty($document->anonymous_url);
 
             Log::info('Document sync eTag check', [
                 'document_id' => $document->id,
@@ -51,11 +52,12 @@ class DocumentSharepointSyncService
                 'url_masked' => $this->maskUrl($document->anonymous_url),
                 'has_folder_url' => $hasInvalidUrl,
                 'needs_shortcut_target' => $needsShortcutTarget,
+                'needs_link' => $needsLink,
                 'force' => $force,
-                'will_skip_permission_check' => ! $force && $eTagMatches && ! $hasInvalidUrl && ! $needsShortcutTarget,
+                'will_skip_permission_check' => ! $force && $eTagMatches && ! $hasInvalidUrl && ! $needsShortcutTarget && ! $needsLink,
             ]);
 
-            if (! $force && $eTagMatches && ! $hasInvalidUrl && ! $needsShortcutTarget) {
+            if (! $force && $eTagMatches && ! $hasInvalidUrl && ! $needsShortcutTarget && ! $needsLink) {
                 Log::info('SharePoint document was already up to date', ['document_id' => $document->id]);
                 $document->checked_at = Carbon::now();
                 $document->sync_status = 'success';
@@ -77,32 +79,18 @@ class DocumentSharepointSyncService
                 ]);
             }
 
-            $document->document_date = isset($additionalData['Date'])
-                ? Carbon::parseFromLocale(time: $additionalData['Date'], timezone: 'UTC')->setTimezone('Europe/Vilnius')
-                : $document->document_date;
-            $document->effective_date = isset($additionalData['Effective_x0020_Date'])
-                ? Carbon::parseFromLocale(time: $additionalData['Effective_x0020_Date'], timezone: 'UTC')->setTimezone('Europe/Vilnius')
-                : $document->effective_date;
-            $document->expiration_date = isset($additionalData['Expiration_x0020_Date0'])
-                ? Carbon::parseFromLocale(time: $additionalData['Expiration_x0020_Date0'], timezone: 'UTC')->setTimezone('Europe/Vilnius')
-                : $document->expiration_date;
-
+            SharepointDocumentFields::apply($document, $additionalData);
             $document->name = $additionalData['Name'] ?? $document->name;
-            $document->title = $additionalData['Title'] ?? $document->title;
             $document->eTag = $additionalData['@odata.etag'] ?? $document->eTag;
-            $document->language = $additionalData['Language'] ?? $document->language;
 
-            if (isset($additionalData[$institutionField]['Label'])) {
-                $document->institution()->associate(
-                    Institution::query()
-                        ->where('name->lt', $additionalData[$institutionField]['Label'])
-                        ->orWhere('short_name->lt', $additionalData[$institutionField]['Label'])
-                        ->first()
-                );
+            // Only a published document may carry a public link; the rest just track metadata.
+            if (! $document->isPublished()) {
+                $document->checked_at = Carbon::now();
+                $document->sync_status = 'success';
+                $document->save();
+
+                return $document;
             }
-
-            $document->content_type = $additionalData[$contentField]['Label'] ?? $document->content_type;
-            $document->summary = $additionalData['Summary'] ?? $document->summary;
 
             $driveItem = $graph->getDriveItemByListItem(
                 $document->sharepoint_site_id,
@@ -123,6 +111,7 @@ class DocumentSharepointSyncService
             $this->syncShortcutTarget($document, $graph, $driveItem);
 
             $anonymousPermission = $graph->getDriveItemPublicLink($driveItem->getId());
+            $createdPermission = false;
 
             Log::info('Permission lookup result', [
                 'document_id' => $document->id,
@@ -153,6 +142,7 @@ class DocumentSharepointSyncService
                     'reason' => 'No valid permission found',
                 ]);
 
+                $createdPermission = true;
                 $anonymousPermission = $graph->createPublicPermission(
                     siteId: $document->sharepoint_site_id,
                     driveItemId: $driveItem->getId(),
@@ -164,32 +154,62 @@ class DocumentSharepointSyncService
                     'document_id' => $document->id,
                     'url_changed' => $document->anonymous_url !== $newUrl,
                 ]);
-
-                $document->anonymous_url = $newUrl;
-                $document->sharepoint_permission_id = $anonymousPermission->getId();
             } else {
                 $newUrl = $anonymousPermission->getLink()->getWebUrl();
-                $urlChanged = $document->anonymous_url !== $newUrl;
 
                 Log::info('Using existing permission', [
                     'document_id' => $document->id,
-                    'url_changed' => $urlChanged,
+                    'url_changed' => $document->anonymous_url !== $newUrl,
                 ]);
 
-                if ($urlChanged) {
+                if ($document->anonymous_url !== $newUrl) {
                     Log::warning('Permission URL changed', [
                         'document_id' => $document->id,
                         'had_previous_url' => ! empty($document->anonymous_url),
                     ]);
                 }
-
-                $document->anonymous_url = $newUrl;
-                $document->sharepoint_permission_id = $anonymousPermission->getId();
             }
 
-            $document->checked_at = Carbon::now();
-            $document->sync_status = 'success';
-            $document->save();
+            $permissionId = $anonymousPermission->getId();
+
+            // The network calls above take a while; a manager may have hidden the document meanwhile.
+            // Re-check under a row lock, so a hide either lands before this save or sees its permission.
+            // The link only reaches the model here, so no other save can persist a link that was refused.
+            $stillPublished = DB::transaction(function () use ($document, $newUrl, $permissionId): bool {
+                $current = Document::query()->whereKey($document->getKey())->lockForUpdate()->first(['id', 'status', 'removed_from_sharepoint_at']);
+
+                if ($current === null || ! $current->isPublished()) {
+                    return false;
+                }
+
+                $document->anonymous_url = $newUrl;
+                $document->sharepoint_permission_id = $permissionId;
+                $document->checked_at = Carbon::now();
+                $document->sync_status = 'success';
+                $document->save();
+
+                return true;
+            });
+
+            if (! $stillPublished) {
+                Log::warning('Document was hidden while its public link was being prepared; not keeping the link', [
+                    'document_id' => $document->id,
+                    'revoking_new_link' => $createdPermission,
+                ]);
+
+                $document->refresh();
+
+                if ($createdPermission) {
+                    $this->deleteRefusedPermission($document, $graph, $driveItem->getId(), $permissionId);
+                }
+
+                $document->checked_at = Carbon::now();
+                $document->sync_status = 'success';
+                $document->save();
+
+                return $document;
+            }
+
             $document->refresh();
 
             return $document;
@@ -201,9 +221,7 @@ class DocumentSharepointSyncService
                     'title' => $document->title,
                 ]);
 
-                $document->sync_status = 'failed';
-                $document->sync_error_message = 'Document references a folder (folders not supported)';
-                $document->save();
+                $this->markFailed($document, 'Document references a folder (folders not supported)');
 
                 return null;
             }
@@ -217,9 +235,7 @@ class DocumentSharepointSyncService
                     'title' => $document->title,
                 ]);
 
-                $document->sync_status = 'failed';
-                $document->sync_error_message = 'SharePoint item not found (may have been deleted)';
-                $document->save();
+                $this->markFailed($document, 'SharePoint item not found (may have been deleted)');
 
                 return null;
             }
@@ -234,19 +250,56 @@ class DocumentSharepointSyncService
                 'sync_attempt' => $document->sync_attempts,
             ]);
 
-            if ($document->anonymous_url && str_contains($e->getMessage(), 'createLink')) {
-                Log::warning('Clearing stale anonymous_url due to permission creation failure', [
-                    'document_id' => $document->id,
-                    'had_url' => true,
-                ]);
-                $document->anonymous_url = null;
-            }
-
-            $document->sync_status = 'failed';
-            $document->sync_error_message = $e->getMessage();
-            $document->save();
+            $this->markFailed($document, $e->getMessage(), clearLink: str_contains($e->getMessage(), 'createLink'));
 
             throw $e;
+        }
+    }
+
+    /**
+     * Record a failure on the stored row, not on `$document`: the failed pass may have left metadata
+     * or a link on it that must not be saved.
+     */
+    private function markFailed(Document $document, string $message, bool $clearLink = false): void
+    {
+        $stored = $document->fresh();
+
+        if ($stored === null) {
+            return;
+        }
+
+        $document->setRawAttributes($stored->getAttributes(), sync: true);
+
+        if ($clearLink && $document->anonymous_url) {
+            Log::warning('Clearing stale anonymous_url due to permission creation failure', ['document_id' => $document->id]);
+            $document->anonymous_url = null;
+        }
+
+        $document->sync_status = 'failed';
+        $document->sync_error_message = $message;
+        $document->save();
+    }
+
+    /**
+     * A link created for a document hidden meanwhile must not survive; a failed delete is retried by the queue.
+     */
+    private function deleteRefusedPermission(Document $document, SharepointGraphService $graph, string $driveItemId, string $permissionId): void
+    {
+        try {
+            $graph->deletePermission($driveItemId, $permissionId);
+        } catch (\Throwable $e) {
+            Log::warning('Could not delete a refused public link; queueing its revocation', [
+                'document_id' => $document->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            RevokeSharepointPermissionJob::dispatch(
+                sharepointSiteId: $document->sharepoint_site_id,
+                sharepointListId: $document->sharepoint_list_id,
+                sharepointId: $document->sharepoint_id,
+                sharepointPermissionId: $permissionId,
+                documentId: $document->id,
+            );
         }
     }
 

@@ -15,8 +15,9 @@ use Illuminate\Support\Facades\Storage;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    // Set up test storage
+    // The controller writes through the default disk; faking only `public` wrote into real storage.
     Storage::fake('public');
+    Storage::fake('local');
 
     // Create test tenant and users
     $this->tenant = Tenant::factory()->create([
@@ -1000,6 +1001,17 @@ describe('Files Controller - Image Upload Path Hardening', function (): void {
             'file' => $image,
             'path' => 'banners',
         ])->assertStatus(403);
+    });
+
+    test('a user without file permissions can upload a contact photo', function (): void {
+        $image = UploadedFile::fake()->image('photo.jpg', 10, 10);
+
+        $response = asUser($this->regularUser)->postJson(route('files.uploadImage'), [
+            'file' => $image,
+            'path' => 'contacts',
+        ])->assertOk();
+
+        Storage::assertExists('public/contacts/'.$response->json('name'));
     });
 });
 

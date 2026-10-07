@@ -18,6 +18,8 @@
     </testsuites>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- Production's archive drive is read-only outside production; tests model a writable one. -->
+        <env name="SHAREPOINT_ARCHIVE_DRIVE_ID" value="test-archive-drive"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_DRIVER" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>

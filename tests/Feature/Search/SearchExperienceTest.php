@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\DocumentStatus;
 use App\Models\Document;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -26,7 +27,7 @@ pest()->use(RefreshDatabase::class);
 test('document search finds statutes first when only the word prefix is entered', function (): void {
     usesTypesense();
     $institution = Institution::factory()->create();
-    $attributes = ['institution_id' => $institution->id, 'language' => 'Lietuvių', 'is_active' => true, 'summary' => '', 'effective_date' => null, 'expiration_date' => null];
+    $attributes = ['institution_id' => $institution->id, 'language' => 'Lietuvių', 'status' => DocumentStatus::Published, 'summary' => '', 'effective_date' => null, 'expiration_date' => null];
     $statutes = Document::factory()->create([...$attributes, 'title' => 'VU SA Įstatai (nuo 2025 m.)', 'content_type' => 'Veiklą reglamentuojantys dokumentai', 'document_date' => '2025-05-17']);
     $resolution = Document::factory()->create([...$attributes, 'title' => 'VU SA Parlamento nutarimas dėl įstatų keitimo', 'content_type' => 'VU SA Parlamento nutarimai', 'document_date' => '2026-05-17']);
     $result = app(Client::class)->collections[$statutes->searchableAs()]->documents->search([
@@ -175,8 +176,8 @@ test('native Lithuanian and English stemming finds inflected words', function ()
 
 test('document recommendations match word forms, prefixes and any words of a phrase while respecting settings and publication', function (): void {
     usesTypesense();
-    $statutes = Document::factory()->create(['title' => 'VU SA Įstatai', 'language' => 'Lietuvių', 'is_active' => true]);
-    $other = Document::factory()->create(['title' => 'VU SA nuostatai', 'language' => 'Lietuvių', 'is_active' => true]);
+    $statutes = Document::factory()->create(['title' => 'VU SA Įstatai', 'language' => 'Lietuvių', 'status' => DocumentStatus::Published]);
+    $other = Document::factory()->create(['title' => 'VU SA nuostatai', 'language' => 'Lietuvių', 'status' => DocumentStatus::Published]);
     $settings = app(DocumentSettings::class);
     $service = app(DocumentRecommendations::class);
     $rule = ['document_id' => (string) $statutes->id, 'phrases' => ['VU SA įstatai'], 'enabled' => true, 'show_without_query' => false];
@@ -204,7 +205,7 @@ test('document recommendations match word forms, prefixes and any words of a phr
     $service->synchronize();
     expect($service->matchingIds('įstatų'))->toBe([(string) $other->id, (string) $statutes->id])
         ->and($service->matchingIds(''))->toBe([(string) $other->id]);
-    $statutes->update(['is_active' => false]);
+    $statutes->update(['status' => DocumentStatus::Hidden]);
     expect($service->matchingIds('įstatai'))->toBe([(string) $other->id]);
     $other->delete();
     expect($service->matchingIds('įstatai'))->toBeEmpty();
@@ -216,7 +217,7 @@ test('document recommendations match word forms, prefixes and any words of a phr
 
 test('important document types break relevance ties and pinned documents obey search filters', function (): void {
     usesTypesense();
-    $attributes = ['title' => 'VU SA dokumentas', 'summary' => '', 'language' => 'Lietuvių', 'is_active' => true];
+    $attributes = ['title' => 'VU SA dokumentas', 'summary' => '', 'language' => 'Lietuvių', 'status' => DocumentStatus::Published];
     $important = Document::factory()->create([...$attributes, 'content_type' => 'Įstatai', 'document_date' => '2024-01-01']);
     $ordinary = Document::factory()->create([...$attributes, 'content_type' => 'Nutarimai', 'document_date' => '2026-01-01']);
     $collection = app(Client::class)->collections[$important->searchableAs()];

@@ -42,7 +42,6 @@
         </button>
       </div>
 
-      <FacetCountHelp />
       <p v-if="loading" role="status" class="px-3 text-xs text-muted-foreground">
         {{ $t('search.facet_search_loading') }}
       </p>
@@ -129,7 +128,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ref } from 'vue';
 
 import { useFacetOptions } from '@/Shared/Search/useFacetOptions';
-import FacetCountHelp from '@/Components/ui/FacetCountHelp.vue';
 import { controlCountClass, controlVariants } from '@/Components/ui/control';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { cn } from '@/Utils/Shadcn/utils';

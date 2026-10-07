@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Schedulable\TaskNotifier;
+use App\Jobs\DiscoverSharepointDocumentsJob;
 use App\Jobs\SyncFileableFilesJob;
 use App\Jobs\SyncStaleDocumentsJob;
 use App\Models\ContentEditorDraft;
@@ -39,6 +40,13 @@ Schedule::job(new SyncStaleDocumentsJob)
     ->dailyAt('02:00')
     ->name('sync-stale-documents')
     ->withoutOverlapping(30); // Prevent overlapping runs, timeout after 30 minutes
+
+// SharePoint archive → Dokumentai: changes every 15 minutes; the job itself turns one run a week into
+// a full listing, which catches deletions older than the change feed's memory.
+Schedule::job(new DiscoverSharepointDocumentsJob)
+    ->everyFifteenMinutes()
+    ->name('discover-sharepoint-documents')
+    ->withoutOverlapping(30);
 
 // Weekly sync of FileableFiles to detect externally deleted files
 Schedule::job(new SyncFileableFilesJob)

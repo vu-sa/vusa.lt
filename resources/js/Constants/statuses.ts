@@ -27,7 +27,7 @@ import {
   TriangleAlert,
 } from 'lucide-vue-next';
 
-import { GoalStatus, InstitutionActivityStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
+import { DocumentStatus, GoalStatus, InstitutionActivityStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
 
 export type StatusRole = 'neutral' | 'info' | 'progress' | 'attention' | 'success' | 'danger';
 
@@ -140,6 +140,14 @@ export const contentStatuses: Record<ContentStatus, StatusPresentation> = {
 export const bannerStatuses = {
   active: status('Aktyvus', 'success', Eye, true),
   inactive: status('Neaktyvus', 'neutral', CircleSlash, true),
+};
+
+/** A SharePoint archive file's publication on vusa.lt; `removed` overrides it once the file is gone. */
+export const documentStatuses: Record<DocumentStatus | 'removed', StatusPresentation> = {
+  [DocumentStatus.Pending]: status('Laukia', 'attention', Clock3),
+  [DocumentStatus.Published]: status('Paskelbtas', 'success', Eye),
+  [DocumentStatus.Hidden]: status('Paslėptas', 'neutral', CircleSlash),
+  removed: status('Pašalintas iš SharePoint', 'danger', CircleX),
 };
 
 export const problemStatuses: Record<ProblemStatus, StatusPresentation> = {

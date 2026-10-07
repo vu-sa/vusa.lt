@@ -3,7 +3,8 @@
  * so they work for any model the SharePoint integration knows about.
  */
 
+export { default as DocumentFolderBrowser } from './DocumentFolderBrowser.vue';
 export { default as FileableFilesPanel } from './FileableFilesPanel.vue';
 export { default as FileableUploadSheet } from './FileableUploadSheet.vue';
 export { default as ReferenceDocumentTiles } from './ReferenceDocumentTiles.vue';
-export type { FileableFileItem } from './types';
+export type { DocumentFolderListing, DocumentFolderRow, DocumentProblem, DocumentStatusFilter, FileableFileItem } from './types';

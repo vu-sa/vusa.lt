@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\DocumentStatus;
 use App\Models\Document;
 use App\Models\Duty;
 use App\Models\Institution;
@@ -47,7 +48,7 @@ it('renders document prefix search across widths and themes without JavaScript e
     seedSearchExperience();
     $document = Document::factory()->create([
         'title' => 'VU SA Įstatai (nuo 2025 m.)', 'language' => 'Lietuvių',
-        'content_type' => 'Veiklą reglamentuojantys dokumentai', 'is_active' => true,
+        'content_type' => 'Veiklą reglamentuojantys dokumentai', 'status' => DocumentStatus::Published,
         'effective_date' => null, 'expiration_date' => null,
     ]);
     $settings = app(DocumentSettings::class);
@@ -80,7 +81,7 @@ it('renders document prefix search across widths and themes without JavaScript e
 
 it('saves a selected document recommendation through the settings form', function (): void {
     seedSearchExperience();
-    Document::factory()->create(['title' => 'VU SA Įstatai', 'language' => 'Lietuvių', 'is_active' => true]);
+    Document::factory()->create(['title' => 'VU SA Įstatai', 'language' => 'Lietuvių', 'status' => DocumentStatus::Published]);
     $page = loginAsAdmin(makeAdminUser());
     $page->navigate('/mano/settings/documents');
     $page->click('[data-testid="add-document-recommendation"]');

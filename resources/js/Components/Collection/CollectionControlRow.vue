@@ -30,7 +30,7 @@
 
     <div class="flex shrink-0 items-center gap-2">
       <!-- Filled only while the filters are showing; set filters are told by the count alone. -->
-      <SpotlightPopover v-if="hasFilters" :is-dismissed :title="$t('search.filters_spotlight_title')" :description="$t('search.facet_count_help')" @dismiss="dismiss">
+      <SpotlightPopover v-if="hasFilters" :is-dismissed :title="$t('search.filters_spotlight_title')" :description="$t('search.filters_spotlight_description')" @dismiss="dismiss">
         <button
           type="button"
           :aria-label="$t('Filtrai')"

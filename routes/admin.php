@@ -232,9 +232,12 @@ Route::post('files/scan-usage', [FilesController::class, 'scanFileUsage'])->name
 Route::get('files', [FilesController::class, 'index'])->name('files.index');
 Route::post('files/compress', [FilesController::class, 'compressImage'])->name('files.compress');
 
-Route::resource('documents', DocumentController::class)->except('create', 'edit');
+// No destroy: SharePoint is the source, a deleted record would be rediscovered as a new one. Hide instead.
+Route::resource('documents', DocumentController::class)->only('index', 'show');
 Route::post('documents/{document}/refresh', [DocumentController::class, 'refresh'])->name('documents.refresh');
-Route::post('documents/bulk-sync', [DocumentController::class, 'bulkSync'])->name('documents.bulk-sync');
+Route::post('documents/status', [DocumentController::class, 'updateStatus'])->name('documents.status');
+Route::post('documents/discover', [DocumentController::class, 'discover'])->name('documents.discover');
+Route::post('documents/pick', [DocumentController::class, 'pick'])->name('documents.pick');
 
 /** @deprecated Merge records from the duties list instead. */
 Route::get('duties/merge', fn () => to_route('duties.index')->with('info', __('shell.merge.redirect')))->name('duties.merge');

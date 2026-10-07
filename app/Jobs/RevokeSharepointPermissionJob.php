@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\Document;
 use App\Services\SharepointGraphService;
 use App\Support\StagingProtection;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -15,9 +16,11 @@ class RevokeSharepointPermissionJob implements ShouldQueue
     use InteractsWithQueue, Queueable;
 
     /**
-     * The number of times the job may be attempted.
+     * Waiting for the document's lock releases the job, which counts as an attempt; `$maxExceptions` caps real failures.
      */
-    public int $tries = 3;
+    public int $tries = 15;
+
+    public int $maxExceptions = 3;
 
     /**
      * The maximum number of seconds the job can run before timing out.
@@ -35,8 +38,14 @@ class RevokeSharepointPermissionJob implements ShouldQueue
         public string $sharepointId,
         public string $sharepointPermissionId,
         public int $documentId,
-    ) {
-        $this->queue = 'sharepoint-sync';
+    ) {}
+
+    /**
+     * @return array<int, object>
+     */
+    public function middleware(): array
+    {
+        return [DocumentSharepointLock::for($this->documentId)];
     }
 
     /**
@@ -48,6 +57,15 @@ class RevokeSharepointPermissionJob implements ShouldQueue
             return;
         }
 
+        // Republishing soon after a hide finds and reuses this same link; deleting it would break the published document.
+        $document = Document::query()->find($this->documentId, ['id', 'status', 'removed_from_sharepoint_at', 'sharepoint_permission_id']);
+
+        if ($document?->isPublished() && $document->sharepoint_permission_id === $this->sharepointPermissionId) {
+            Log::info('Permission is in use by the republished document, skipping revocation', ['document_id' => $this->documentId]);
+
+            return;
+        }
+
         Log::info('Revoking SharePoint permission for document', [
             'document_id' => $this->documentId,
             'permission_id' => $this->sharepointPermissionId,
@@ -55,11 +73,7 @@ class RevokeSharepointPermissionJob implements ShouldQueue
         ]);
 
         try {
-            $graph = new SharepointGraphService(
-                siteId: $this->sharepointSiteId,
-                driveId: config('filesystems.sharepoint.archive_drive_id'),
-                listId: $this->sharepointListId,
-            );
+            $graph = $this->makeGraphService();
 
             $driveItem = $graph->getDriveItemByListItem(
                 $this->sharepointSiteId,
@@ -101,6 +115,18 @@ class RevokeSharepointPermissionJob implements ShouldQueue
     }
 
     /**
+     * Extracted so tests can stub it.
+     */
+    protected function makeGraphService(): SharepointGraphService
+    {
+        return new SharepointGraphService(
+            siteId: $this->sharepointSiteId,
+            driveId: config('filesystems.sharepoint.archive_drive_id'),
+            listId: $this->sharepointListId,
+        );
+    }
+
+    /**
      * Handle a job failure.
      */
     public function failed(\Throwable $exception): void
@@ -109,7 +135,7 @@ class RevokeSharepointPermissionJob implements ShouldQueue
             'document_id' => $this->documentId,
             'permission_id' => $this->sharepointPermissionId,
             'error' => $exception->getMessage(),
-            'attempts' => $this->tries,
+            'attempts' => $this->attempts(),
         ]);
     }
 }

@@ -10,6 +10,7 @@ tests:
   - tests/Feature/Admin/Management/InstitutionCheckInTest.php
   - tests/Feature/Meetings/MeetingCalendarEventTest.php
   - tests/Feature/Meetings/MeetingDocumentTest.php
+  - tests/Feature/Admin/Resources/DocumentPickTest.php
   - tests/Feature/Meetings/MeetingStudentPerspectiveTest.php
   - tests/Feature/Meetings/MeetingTranslationsTest.php
   - tests/Feature/Public/PublicMeetingVisibilityTest.php
@@ -167,7 +168,14 @@ darbotvarkės gale. Kaip pildyti punktus, aprašyta puslapyje
   Paskelbtas renginys rodo posėdžio darbotvarkę, bet pats posėdis viešu netampa (žr.
   [Matomumas](#matomumas)).
 - **Dokumentai** – susieti institucijos (ar kitos to paties padalinio institucijos) dokumentus.
-  Atsiejus dokumentas lieka dokumentų naršyklėje.
+  Atsiejus dokumentas lieka dokumentų naršyklėje. Skiltyje **Laukia SharePoint** rodomi dar
+  nepaskelbti to padalinio failai (pirmiausia – posėdžio dienos): **Paskelbti ir susieti** failą
+  paskelbia vusa.lt ir susieja su posėdžiu. Kai siūlomų failų daug, kitų galima ieškoti pagal
+  pavadinimą. Jau su kitu posėdžiu susietas dokumentas nesusiejamas – pirma jį atsiek ten. Skiltį
+  mato tie, kas gali redaguoti posėdį ir tvarkyti padalinio dokumentus. **Pasirinkti iš SharePoint**
+  atveria SharePoint langą: pasirinkti archyvo failai susiejami su posėdžiu, o dar neperžiūrėti
+  ir paskelbiami. Failas turi priklausyti posėdžio institucijos padaliniui (padalinys nurodomas
+  SharePoint).
 - **Ištrinti** – posėdis patenka į [šiukšlinę](/pagrindai/platforma#siuksline) kartu su
   darbotvarke, balsavimais ir pastabomis. Atkūrus grįžta viskas.
 

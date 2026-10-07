@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\DocumentStatus;
 use App\Models\Document;
 
 test('document calculates in effect status correctly', function (): void {
@@ -36,19 +37,14 @@ test('document calculates in effect status correctly', function (): void {
     expect($document->calculateIsInEffect())->toBeFalse();
 });
 
-test('document should be searchable only when it has anonymous url', function (): void {
-    // Document without anonymous URL should not be searchable (not public)
-    $document = new Document(['anonymous_url' => null]);
-    expect($document->shouldBeSearchable())->toBeFalse();
+test('document should be searchable only when published with an anonymous url', function (): void {
+    $published = ['status' => DocumentStatus::Published];
 
-    $document = new Document(['anonymous_url' => '']);
-    expect($document->shouldBeSearchable())->toBeFalse();
-
-    // Document with anonymous URL should be searchable (public)
-    $document = new Document([
-        'anonymous_url' => 'https://sharepoint.com/public/document',
-    ]);
-    expect($document->shouldBeSearchable())->toBeTrue();
+    expect(new Document([...$published, 'anonymous_url' => null])->shouldBeSearchable())->toBeFalse()
+        ->and(new Document([...$published, 'anonymous_url' => ''])->shouldBeSearchable())->toBeFalse()
+        ->and(new Document([...$published, 'anonymous_url' => 'https://sharepoint.com/public/document'])->shouldBeSearchable())->toBeTrue()
+        // A pending file never reaches the shared search collection, even if a link exists.
+        ->and(new Document(['status' => DocumentStatus::Pending, 'anonymous_url' => 'https://sharepoint.com/public/document'])->shouldBeSearchable())->toBeFalse();
 });
 
 test('isUrlShortcut detects .url files case-insensitively', function (): void {

@@ -51,7 +51,20 @@ class DocumentPolicy extends ModelPolicy
     #[\Override]
     public function view(User $user, Model $model): bool
     {
+        // A file nobody has published yet is a manager's decision, not something to browse.
+        if ($model instanceof Document && ! $model->isPublished()) {
+            return $this->update($user, $model);
+        }
+
         return $this->commonChecker($user, $model, CRUDEnum::READ->label(), $this->pluralModelName, false);
+    }
+
+    /**
+     * Publishing or hiding is an edit of the document within the manager's padaliniai.
+     */
+    public function publish(User $user, Document $document): bool
+    {
+        return $this->update($user, $document);
     }
 
     /**

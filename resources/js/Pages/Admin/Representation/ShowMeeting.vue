@@ -118,9 +118,10 @@
         <MeetingDocumentsPanel
           :meeting-id="meeting.id"
           :documents="documents ?? []"
+          :pending-documents
           :institution-ids
           :tenant-shortnames
-          can-update
+          :can-update="abilities.update"
         />
       </Deferred>
     </template>
@@ -330,7 +331,7 @@ import AnnounceMeetingDialog from '@/Components/Meetings/AnnounceMeetingDialog.v
 import MeetingPublicVisibilityDialog from '@/Components/Meetings/MeetingPublicVisibilityDialog.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import MeetingDocumentsPanel from '@/Components/Meetings/MeetingDocumentsPanel.vue';
-import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
+import { FileableFilesPanel, type DocumentFolderRow, type FileableFileItem } from '@/Components/Files';
 import { MEETING_PRIMARY_FILE_TYPES, type FileableFileType } from '@/Constants/fileTypes';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
@@ -362,6 +363,8 @@ const props = withDefaults(defineProps<{
   recordNavigation?: RecordNavigationContext;
   tasks?: InstanceType<typeof TaskManager>['$props']['tasks'];
   documents?: NonNullable<App.Entities.Meeting['documents']>;
+  /** Unpublished SharePoint files this meeting could link. */
+  pendingDocuments?: DocumentFolderRow[];
   recentAgendas?: RecentAgenda[] | null;
   files?: FileableFileItem[];
   /** A public meeting outside the user's reach: its agenda only (MeetingPolicy::viewSummary). */
@@ -381,6 +384,7 @@ const props = withDefaults(defineProps<{
   recordNavigation: undefined,
   tasks: undefined,
   documents: undefined,
+  pendingDocuments: () => [],
   recentAgendas: undefined,
   files: () => [],
 });

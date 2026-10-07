@@ -39,7 +39,7 @@ Kad skirtingų padalinių failai nesusimaišytų ir nebūtų atsitiktinai perra�
 
 - **Padalinio katalogas:** kiekvienas padalinys turi savo numatytąjį katalogą `padaliniai/{padalinys}` (pvz., `padaliniai/vusapadalinys` arba `padaliniai/vusa-mif`).
 - Padalinio koordinatorius, atvėręs failų naršyklę, iškart mato savo padalinio aplanką ir kuria jame poaplankius (pvz., `dokumentai`, `nuotraukos`, `archyvas`).
-- **Bendrieji aplankai:** formų viršeliams ir baneriams skirtos nuotraukos automatiškai saugomos į bendrus sistemos aplankus (`banners`, `news`, `pages`, `calendar`).
+- **Bendrieji aplankai:** formų viršeliams ir baneriams skirtos nuotraukos automatiškai saugomos į bendrus sistemos aplankus (`banners`, `news`, `pages`, `calendar`). Į juos įkelti gali tik turintys teisę kurti failus. Išimtis – narių nuotraukos (`contacts`): savo profilio ar pareigų nuotrauką įkelti gali kiekvienas, kuris gali redaguoti tą formą.
 - **Saugūs failų keliai:** įkėlimai ir aplankų veiksmai negali išeiti už leistino aplanko ribų. Keliai, bandantys pasiekti aukštesnį aplanką, atmetami.
 
 ### Įkėlimų apdorojimas {#ikelimas}

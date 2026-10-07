@@ -1,7 +1,6 @@
 <?php
 
 use App\Exceptions\StagingResourceReadOnlyException;
-use App\Models\Document;
 use App\Services\SharepointGraphService;
 use App\Support\StagingProtection;
 use Illuminate\Http\UploadedFile;
@@ -49,6 +48,17 @@ test('a writable staging only writes to an allowlisted site outside production d
     'unknown target' => [null, null, true],
 ]);
 
+test('only production writes to the live document archive', function (string $environment, bool $readOnly): void {
+    config(['app.env' => $environment, 'app.sharepoint_read_only' => false]);
+
+    expect(StagingProtection::sharepointIsReadOnly('any-site', 'b!pMfaXjYdIEy8zqO3LWICz9geSweNHJhMi7VW4z5KDW0k2jqzC_i8TaX9RPnDbkJq'))->toBe($readOnly)
+        // A local copy keeps writing to its own test drive.
+        ->and(StagingProtection::sharepointIsReadOnly('test-site', 'test-drive'))->toBeFalse();
+})->with([
+    'local' => ['local', true],
+    'production' => ['production', false],
+]);
+
 test('the global read-only flag blocks even the test site', function (): void {
     config(['filesystems.sharepoint.writable_site_ids' => ['test-site']]);
 
@@ -71,41 +81,4 @@ test('every direct SharePoint mutator refuses to run in staging', function (): v
     ];
 
     expect($operations)->each->toThrow(StagingResourceReadOnlyException::class);
-});
-
-test('a read only batch import preserves an existing local public link when SharePoint has none', function (): void {
-    $document = new Document;
-    $document->sharepoint_id = 'item';
-    $document->title = 'Document';
-    $document->anonymous_url = 'https://example.sharepoint.com/:b:/existing';
-    $document->sharepoint_permission_id = 'permission';
-
-    $service = sharepointServiceWithoutGraph();
-    $method = new ReflectionMethod(SharepointGraphService::class, 'applyImportedPublicLink');
-    $method->invoke($service, $document, null);
-
-    expect($document->anonymous_url)->toBe('https://example.sharepoint.com/:b:/existing')
-        ->and($document->sharepoint_permission_id)->toBe('permission')
-        ->and($document->sync_status)->toBe('failed');
-});
-
-test('a production batch import clears an obsolete local public link when SharePoint has none', function (): void {
-    config([
-        'app.env' => 'production',
-        'app.sharepoint_read_only' => false,
-    ]);
-
-    $document = new Document;
-    $document->sharepoint_id = 'item';
-    $document->title = 'Document';
-    $document->anonymous_url = 'https://example.sharepoint.com/:b:/obsolete';
-    $document->sharepoint_permission_id = 'permission';
-
-    $service = sharepointServiceWithoutGraph();
-    $method = new ReflectionMethod(SharepointGraphService::class, 'applyImportedPublicLink');
-    $method->invoke($service, $document, null);
-
-    expect($document->anonymous_url)->toBeNull()
-        ->and($document->sharepoint_permission_id)->toBeNull()
-        ->and($document->sync_status)->toBe('failed');
 });

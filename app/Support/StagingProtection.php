@@ -12,11 +12,20 @@ final class StagingProtection
     }
 
     /**
-     * In staging, a write is allowed only to an allowlisted test site and never to a production drive.
-     * Omitting the site ID means the target is unknown, so it is treated as read-only.
+     * Outside production, production's drives are never written — local and staging may only read
+     * the live document archive. In staging, a write is also allowed only to an allowlisted test site;
+     * omitting the site ID there means the target is unknown, so it is treated as read-only.
      */
     public static function sharepointIsReadOnly(?string $siteId = null, ?string $driveId = null): bool
     {
+        if (config('app.env') === 'production') {
+            return false;
+        }
+
+        if (in_array($driveId, config('filesystems.sharepoint.production.drive_ids', []), true)) {
+            return true;
+        }
+
         if (config('app.env') !== 'staging') {
             return false;
         }

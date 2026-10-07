@@ -3,7 +3,6 @@
 use App\Enums\SharepointConfigEnum;
 use App\Services\SharepointGraphService;
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Sleep;
 use Microsoft\Graph\GraphServiceClient;
@@ -499,55 +498,6 @@ describe('SharePoint Service Robustness', function (): void {
             // These are unit tests for the logic, not integration tests
         });
 
-        test('batchProcessDocuments handles empty collections', function (): void {
-            $emptyCollection = new Collection([]);
-
-            // Should return empty collection when no documents to process
-            $result = $this->service->batchProcessDocuments($emptyCollection);
-
-            expect($result)->toBeInstanceOf(Collection::class)
-                ->and($result->isEmpty())->toBeTrue();
-        });
-
-        test('filterProcessableDriveItems rejects folders and failed batch sub-requests', function (): void {
-            $reflection = new ReflectionClass($this->service);
-            $method = $reflection->getMethod('filterProcessableDriveItems');
-
-            $driveItemCollections = collect([
-                'good-item' => ['id' => 'drive-item-1', 'permissions' => []],
-                'folder-item' => ['id' => 'drive-item-2', 'folder' => ['childCount' => 3]],
-                'failed-item' => ['error' => ['code' => 'itemNotFound', 'message' => 'Item not found']],
-            ]);
-
-            Log::shouldReceive('warning')
-                ->with('Batch processing encountered folders instead of files', Mockery::on(fn ($context) => $context['folder_count'] === 1 && $context['folder_ids'] === ['folder-item']))
-                ->once();
-
-            Log::shouldReceive('warning')
-                ->with('Batch processing encountered failed drive item requests', Mockery::on(fn ($context) => $context['failed_count'] === 1 && $context['failed_ids'] === ['failed-item']))
-                ->once();
-
-            $result = $method->invoke($this->service, $driveItemCollections);
-
-            expect($result->keys()->all())->toBe(['good-item']);
-        });
-
-        test('filterProcessableDriveItems returns items unchanged when all are processable', function (): void {
-            $reflection = new ReflectionClass($this->service);
-            $method = $reflection->getMethod('filterProcessableDriveItems');
-
-            $driveItemCollections = collect([
-                'good-item-1' => ['id' => 'drive-item-1', 'permissions' => []],
-                'good-item-2' => ['id' => 'drive-item-2', 'permissions' => []],
-            ]);
-
-            Log::shouldReceive('warning')->never();
-
-            $result = $method->invoke($this->service, $driveItemCollections);
-
-            expect($result->keys()->all())->toBe(['good-item-1', 'good-item-2']);
-        });
-
         test('updateDriveItemByPath validates input parameters', function (): void {
             // Test that the method exists and has proper structure
             expect(method_exists($this->service, 'updateDriveItemByPath'))->toBeTrue();
@@ -647,21 +597,6 @@ describe('SharePoint Service Robustness', function (): void {
     });
 
     describe('error handling edge cases', function (): void {
-        test('handles invalid SharePoint field values', function (): void {
-            // Test various SharePoint field scenarios that might cause issues
-            $problematicValues = [
-                null,
-                '',
-                [],
-                ['malformed' => 'data'],
-                'invalid-date-string',
-            ];
-
-            // These would be handled in the batchProcessDocuments method
-            // We can verify the method structure handles these cases
-            expect(method_exists($this->service, 'batchProcessDocuments'))->toBeTrue();
-        });
-
         test('validates SharePoint configuration before operations', function (): void {
             // Test that the service validates required configuration
             $requiredConfigs = [
@@ -680,7 +615,7 @@ describe('SharePoint Service Robustness', function (): void {
 
     describe('integration points', function (): void {
         test('integrates with Document model correctly', function (): void {
-            // Test that batchProcessDocuments works with Document model structure
+            // The fields SharepointDocumentFields maps onto a Document
             $documentFields = [
                 'name', 'title', 'eTag', 'document_date', 'effective_date',
                 'expiration_date', 'language', 'content_type', 'summary',

@@ -84,7 +84,7 @@ class GoalController extends PublicController
                 'url' => $step->url,
                 // Only what a visitor could reach anyway: a public meeting page, a shared document.
                 'meeting_url' => $this->publicMeetingUrl($step),
-                'document' => $step->document?->anonymous_url ? [
+                'document' => $step->document?->shouldBeSearchable() ? [
                     'title' => $step->document->title,
                     'url' => ShortUrlHelper::documentUrl($step->document->id),
                 ] : null,

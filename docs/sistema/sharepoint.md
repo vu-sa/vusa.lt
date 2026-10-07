@@ -1,7 +1,7 @@
 ---
 doc_status: reviewed
 title: SharePoint integracija
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-07
 tests:
   - tests/Feature/SharepointStagingProtectionTest.php
   - tests/Feature/SyncFileableFilesJobTest.php
@@ -11,9 +11,12 @@ tests:
 # SharePoint integracija
 
 Platforma nesaugo dokumentų savo serveryje – jie laikomi VU SA „Microsoft 365“ SharePoint. Mano
-VU SA per „Microsoft Graph“ sąsają juos įkelia, atveria ir susieja su platformos įrašais. Bendros
-SharePoint failų naršyklės platformoje nėra: aplankus tiesiogiai tvarko VU SA „Microsoft“
-paskyrą turintys žmonės pačiame SharePoint.
+VU SA per „Microsoft Graph“ sąsają juos įkelia, atveria ir susieja su platformos įrašais. Aplankus ir
+failus tvarko VU SA „Microsoft“ paskyrą turintys žmonės pačiame SharePoint. Platforma tik rodo aplanko
+**Dokumentų sistema** failus Dokumentuose (sąrašu arba SharePoint aplankais), kad dokumentų
+valdytojai nuspręstų, kurie rodomi vusa.lt – žr. [Dokumentai](/visak/dokumentai#laukia). Failą
+galima pasirinkti ir SharePoint lange (**Pasirinkti iš SharePoint**); jam reikia https ir VU SA
+„Microsoft“ paskyros.
 
 ## Susitarimai {#susitarimai}
 
@@ -52,3 +55,10 @@ diskas. Veiksmas nėra imituojamas ir automatiškai nenukreipiamas į kitą disk
   `UpdateSharepointFolder`; sinchronizavimas – `SyncFileableFilesJob`.
 - Apsauga: `StagingProtection::ensureSharepointIsWritable()`; platformos užklausas atskirai riboja
   `StagingReadOnlyMode`.
+- Eilės: trumpos SharePoint užduotys (nuorodų kūrimas ir atšaukimas, naktinis nuorodų patikrinimas)
+  vykdomos numatytojoje eilėje; to paties dokumento nuorodos užduotys laukia viena kitos
+  (`DocumentSharepointLock`). Ilgos – dokumentų archyvo tikrinimas ir `SyncFileableFilesJob` –
+  `long-running` ryšiu, kurio `retry_after` ilgesnis už jų laiko limitą; jam reikia atskiro
+  `queue:work long-running` proceso (`deployment/supervisor/README.md`).
+- Failų langas (`Features/Admin/SharepointFilePicker`, MSAL): `VITE_SHAREPOINT_CLIENT_ID` ir
+  `VITE_SHAREPOINT_TENANT_ID` statymo metu, aplinkos adresas – Entra programos SPA peradresavimo URI.

@@ -107,6 +107,12 @@ return [
         // Production's document archive everywhere; staging's Entra app may only read it.
         'archive_drive_id' => env('SHAREPOINT_ARCHIVE_DRIVE_ID', 'b!pMfaXjYdIEy8zqO3LWICz9geSweNHJhMi7VW4z5KDW0k2jqzC_i8TaX9RPnDbkJq'),
 
+        // Graph's change feed only works on a library's root, so files outside this folder are filtered out.
+        'document_discovery_folder' => env('SHAREPOINT_DOCUMENT_DISCOVERY_FOLDER', 'Dokumentų sistema'),
+        // Only these file types become documents; photos, videos, design files and archives stay out.
+        // Explained in docs/visak/dokumentai.md#laukia — keep the two in step.
+        'document_discovery_extensions' => ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'ods', 'odp', 'rtf', 'txt', 'url'],
+
         // Staging may only write to these sites (the test site). Empty everywhere else.
         'writable_site_ids' => array_values(array_filter(explode(',', (string) env(
             'SHAREPOINT_WRITABLE_SITE_IDS',

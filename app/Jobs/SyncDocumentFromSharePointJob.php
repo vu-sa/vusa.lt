@@ -14,14 +14,16 @@ class SyncDocumentFromSharePointJob implements ShouldQueue
     use InteractsWithQueue, Queueable, SerializesModels;
 
     /**
-     * The number of times the job may be attempted.
+     * Waiting for the document's lock releases the job, which counts as an attempt; `$maxExceptions` caps real failures.
      */
-    public $tries = 3;
+    public $tries = 15;
+
+    public int $maxExceptions = 3;
 
     /**
-     * The maximum number of seconds the job can run before timing out.
+     * Below the default connections' retry_after (90 s), or a second worker would start the same sync.
      */
-    public $timeout = 120;
+    public $timeout = 80;
 
     /**
      * Delete this job silently instead of failing when the Document was deleted before this
@@ -36,9 +38,14 @@ class SyncDocumentFromSharePointJob implements ShouldQueue
     public function __construct(
         public Document $document,
         public bool $force = false,
-    ) {
-        // Set queue name for better organization
-        $this->queue = 'sharepoint-sync';
+    ) {}
+
+    /**
+     * @return array<int, object>
+     */
+    public function middleware(): array
+    {
+        return [DocumentSharepointLock::for($this->document->getKey())];
     }
 
     /**
@@ -94,13 +101,13 @@ class SyncDocumentFromSharePointJob implements ShouldQueue
         Log::error('SharePoint sync job failed permanently', [
             'document_id' => $this->document->id,
             'error' => $exception->getMessage(),
-            'attempts' => $this->tries,
+            'attempts' => $this->attempts(),
         ]);
 
-        // Update document status to indicate permanent failure
-        $this->document->update([
+        // Not through the job's model: a failed pass may have left a refused link on it.
+        Document::query()->whereKey($this->document->getKey())->update([
             'sync_status' => 'failed',
-            'sync_error_message' => 'Job failed after '.$this->tries.' attempts: '.$exception->getMessage(),
+            'sync_error_message' => 'Job failed after '.$this->attempts().' attempts: '.$exception->getMessage(),
         ]);
     }
 }

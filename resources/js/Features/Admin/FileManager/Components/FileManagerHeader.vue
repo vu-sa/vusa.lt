@@ -163,30 +163,12 @@
 
         <nav aria-label="Failų kelias" class="flex flex-wrap items-center gap-1 text-sm min-w-0">
           <template v-if="activeView === 'browse' && !search">
-            <button
-              type="button"
-              :class="[
-                'inline-flex min-h-11 items-center gap-1.5 px-1.5 py-0.5 font-medium transition-colors hover:text-brand',
-                path === 'public/files' ? 'text-brand font-semibold' : 'text-muted-foreground',
-              ]"
-              @click="$emit('navigateToPath', 'public/files')"
-            >
-              <Home class="size-3.5 shrink-0" aria-hidden="true" />
-              <span>{{ $t('files.ui.root') }}</span>
-            </button>
-            <template v-for="(part, index) in breadcrumbParts" :key="part.path">
-              <ChevronRight class="size-3.5 text-muted-foreground shrink-0" aria-hidden="true" />
-              <button
-                type="button"
-                :class="[
-                  'inline-flex min-h-11 max-w-[160px] items-center truncate px-1.5 py-0.5 font-medium transition-colors hover:text-brand',
-                  index === breadcrumbParts.length - 1 ? 'text-foreground font-semibold' : 'text-muted-foreground',
-                ]"
-                @click="$emit('navigateToPath', part.path)"
-              >
-                {{ part.name }}
-              </button>
-            </template>
+            <PathBreadcrumb
+              :crumbs="breadcrumbParts"
+              :root-label="$t('files.ui.root')"
+              root-path="public/files"
+              @navigate="$emit('navigateToPath', $event)"
+            />
           </template>
           <span v-else class="px-1.5 py-0.5 font-medium text-foreground">
             {{ searchTitle }}
@@ -245,9 +227,7 @@ import {
   ArrowUpDown,
   Check,
   CheckSquare,
-  ChevronRight,
   Filter,
-  Home,
   LayoutGrid,
   List,
   Search,
@@ -259,6 +239,8 @@ import {
 } from 'lucide-vue-next';
 
 import type { ActiveView, SortDir, SortKey, TypeFilter } from '../types';
+
+import PathBreadcrumb from './PathBreadcrumb.vue';
 
 import { Checkbox } from '@/Components/ui/checkbox';
 import {

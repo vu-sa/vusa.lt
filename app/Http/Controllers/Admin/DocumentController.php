@@ -2,17 +2,20 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Documents\ResolvePickedDocuments;
+use App\Actions\Documents\UpdateDocumentStatus;
 use App\Actions\GetUserTenantShortnames;
+use App\Enums\DocumentStatus;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexDocumentRequest;
-use App\Http\Requests\StoreDocumentRequest;
-use App\Http\Requests\UpdateDocumentRequest;
+use App\Http\Requests\PickSharepointDocumentsRequest;
+use App\Http\Requests\UpdateDocumentStatusRequest;
+use App\Jobs\DiscoverSharepointDocumentsJob;
 use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Models\Document;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\SharepointGraphService;
+use App\Settings\DocumentDiscoverySettings;
 use App\Settings\DocumentSettings;
-use Illuminate\Database\Eloquent\Collection;
 use Inertia\Inertia;
 
 class DocumentController extends AdminController
@@ -27,13 +30,34 @@ class DocumentController extends AdminController
         $this->handleAuthorization('viewAny', Document::class);
 
         $user = $request->user();
+        $canCreate = $user->can('create', Document::class);
+
+        // The old separate views are now filters of the one manager view.
+        if ($canCreate && ($request->filled('queue') || $request->filled('browse'))) {
+            return redirect()->route('documents.index', array_filter([
+                'status' => $request->validated('queue'),
+                'layout' => $request->validated('browse') === 'folders' ? 'folders' : ($request->filled('queue') ? 'list' : null),
+            ]));
+        }
+
+        $updateScope = $this->authorizer->scope($user, 'documents.update.padalinys');
+        $manageable = fn () => Document::query()->manageableBy($user);
 
         return $this->inertiaResponse('Admin/Files/IndexDocument', [
             'importantContentTypes' => $documentSettings->getImportantContentTypes()->toArray(),
+            // Managers get the database-backed view of every file; others browse the published archive.
+            'discovery' => $canCreate ? [
+                'lastRunAt' => app(DocumentDiscoverySettings::class)->last_run_at,
+                'counts' => [
+                    'pending' => $manageable()->whereNull('removed_from_sharepoint_at')->where('status', DocumentStatus::Pending)->count(),
+                    'removed' => $manageable()->whereNotNull('removed_from_sharepoint_at')->count(),
+                ],
+            ] : null,
             'abilities' => [
-                'create' => $user->can('create', Document::class),
-                'update' => $this->authorizer->allows($user, 'documents.update.padalinys'),
-                'delete' => $this->authorizer->allows($user, 'documents.delete.padalinys'),
+                'create' => $canCreate,
+                'update' => $updateScope->granted,
+                // Archive rows come from search, so their actions are decided by padalinys in the browser; null is every one.
+                'updateTenantShortnames' => $updateScope->isAllScope ? null : $updateScope->tenants->pluck('shortname')->values()->all(),
             ],
             // Central office documents matter to everyone, so VU SA joins the user's own padaliniai.
             'defaultTenantShortnames' => GetUserTenantShortnames::execute($user, withMainTenant: true),
@@ -41,35 +65,42 @@ class DocumentController extends AdminController
     }
 
     /**
-     * Store multiple documents in storage.
+     * Publish (queues the public link) or hide (revokes it, see DocumentObserver) SharePoint files.
      */
-    public function store(StoreDocumentRequest $request)
+    public function updateStatus(UpdateDocumentStatusRequest $request)
     {
-        $documentCollection = new Collection;
-        $model = null; // Initialize model variable
+        return back()->with('success', UpdateDocumentStatus::executeWithMessage($request->documents(), $request->status(), $request->user()));
+    }
 
-        foreach ($request->documents as $document) {
-            $model = new Document;
+    /**
+     * Publish files chosen in SharePoint's own picker, importing any discovery has not reached yet.
+     */
+    public function pick(PickSharepointDocumentsRequest $request)
+    {
+        $documents = ResolvePickedDocuments::execute($request->pickedItems(), $request->user());
+        UpdateDocumentStatus::execute($documents, DocumentStatus::Published, $request->user());
 
-            $model->name = $document['name'];
-            $model->title = $document['name'];
-            $model->sharepoint_id = $document['list_item_unique_id'];
-            $model->sharepoint_site_id = $document['site_id'];
-            $model->sharepoint_list_id = $document['list_id'];
+        // The picker gives no chance to warn before publishing, so the missing data is named afterwards.
+        $incomplete = $documents->filter(fn (Document $document): bool => $document->metadataProblems() !== []);
 
-            $documentCollection->push($model);
-        }
+        return back()->with(array_filter([
+            'success' => __('messages.document.picked_published', ['count' => $documents->count()]),
+            'toast_description' => $incomplete->isEmpty() ? null : __('messages.document.picked_incomplete', [
+                'titles' => $incomplete->map(fn (Document $document): string => $document->title ?: $document->name)->join(', '),
+            ]),
+        ]));
+    }
 
-        // Check if documents array is not empty
-        if ($model === null) {
-            return redirect()->route('documents.index')->with('info', __('messages.document.none_to_process'));
-        }
+    /**
+     * Read new and changed files from SharePoint now instead of waiting for the 15-minute run.
+     */
+    public function discover()
+    {
+        $this->authorize('create', Document::class);
 
-        $graph = new SharepointGraphService(siteId: $model->sharepoint_site_id, driveId: config('filesystems.sharepoint.archive_drive_id'));
+        DiscoverSharepointDocumentsJob::dispatch();
 
-        $documentCollection = $graph->batchProcessDocuments($documentCollection);
-
-        return redirect()->route('documents.index')->with('success', __('messages.document.stored'));
+        return back()->with('success', __('messages.document.discovery_queued'));
     }
 
     public function refresh(Document $document)
@@ -77,32 +108,10 @@ class DocumentController extends AdminController
         $this->handleAuthorization('update', $document);
 
         // Dispatch sync job to background instead of synchronous processing
-        SyncDocumentFromSharePointJob::dispatch($document);
+        // Forced: a person asking for a refresh means "check the link too", not "unless the eTag matches".
+        SyncDocumentFromSharePointJob::dispatch($document, force: true);
 
         return back()->with('success', __('messages.document.refresh_queued'));
-    }
-
-    /**
-     * Bulk sync all documents from SharePoint
-     */
-    public function bulkSync()
-    {
-        // Not `viewAny`: every admin may browse documents, only managers queue syncs.
-        $this->authorize('create', Document::class);
-
-        // Get all documents that need syncing (failed, pending, or outdated)
-        $documents = Document::where(function ($query): void {
-            $query->where('sync_status', '!=', 'success')
-                ->orWhere('checked_at', '<', now()->subHours(24))
-                ->orWhereNull('checked_at');
-        })->get();
-
-        // Dispatch sync jobs for each document
-        foreach ($documents as $document) {
-            SyncDocumentFromSharePointJob::dispatch($document);
-        }
-
-        return back()->with('success', __('messages.document.bulk_sync_queued', ['count' => $documents->count()]));
     }
 
     /**
@@ -117,25 +126,5 @@ class DocumentController extends AdminController
         }
 
         return redirect()->route('documents.index')->with('info', __('Dokumentas neturi viešosios nuorodos.'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateDocumentRequest $request, Document $document)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Document $document)
-    {
-        $this->handleAuthorization('delete', $document);
-
-        $document->delete();
-
-        return redirect()->route('documents.index')->with('success', $this->entityMessage('deleted', 'document'));
     }
 }

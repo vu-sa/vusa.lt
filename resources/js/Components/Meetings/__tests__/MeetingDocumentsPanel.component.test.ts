@@ -1,7 +1,10 @@
 import { mount } from '@vue/test-utils';
+import { router, usePage } from '@inertiajs/vue3';
 import { describe, expect, it, vi } from 'vitest';
 
 import MeetingDocumentsPanel from '../MeetingDocumentsPanel.vue';
+
+import { createMockPage } from '@/tests/helpers/createMockPage';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -15,8 +18,8 @@ const dialogStub = {
 
 const stubs = {
   CollectionSelectDialog: dialogStub,
+  FilePicker: { name: 'FilePicker', template: '<div />', emits: ['pick'] },
   SectionCard: { template: '<section><slot name="action" /><slot name="empty" /><slot /></section>' },
-  FilePicker: { template: '<div />', props: ['loading'], emits: ['pick'] },
 };
 
 const factory = (props: Record<string, unknown> = {}) =>
@@ -96,6 +99,66 @@ describe('MeetingDocumentsPanel', () => {
       expect(wrapper.text()).toContain('2026-07-23');
       expect(wrapper.text()).not.toContain('00:00:00');
       expect(wrapper.text()).not.toContain('T00:00');
+    });
+  });
+
+  describe('pending SharePoint files', () => {
+    const pending = {
+      id: 42, title: 'Tarybos protokolas', name: 'protokolas.pdf', status: 'pending', content_type: null, language: null,
+      document_date: '2026-09-14', institution: null, sharepoint_institution_label: null, sharepoint_path: 'VU SA/Protokolai',
+      sharepoint_web_url: null, sharepoint_modified_at: null, removed_from_sharepoint_at: null, problems: [],
+      sync_status: 'success', sync_error_message: null, public_url: null, can: { update: true },
+    };
+
+    it('offers a search for the rest only when the suggestions may not be all', () => {
+      const few = factory({ pendingDocuments: [pending] });
+      const full = factory({ pendingDocuments: Array.from({ length: 8 }, (_, index) => ({ ...pending, id: index + 1 })) });
+
+      expect(few.find('[data-slot="meeting-pending-search"]').exists()).toBe(false);
+      expect(full.find('[data-slot="meeting-pending-search"]').exists()).toBe(true);
+    });
+
+    it('lists them and links one by publishing it', async () => {
+      vi.mocked(router.post).mockClear();
+      const wrapper = factory({ pendingDocuments: [pending] });
+
+      const section = wrapper.get('[data-slot="meeting-pending-documents"]');
+      expect(section.text()).toContain('Tarybos protokolas');
+
+      await section.get('button').trigger('click');
+
+      expect(router.post).toHaveBeenCalledWith('/mocked/meetings.documents.store', { document_id: 42 }, expect.objectContaining({ preserveScroll: true }));
+    });
+
+    it('hides the list from someone who cannot link documents', () => {
+      expect(factory({ pendingDocuments: [pending], canUpdate: false }).find('[data-slot="meeting-pending-documents"]').exists()).toBe(false);
+    });
+  });
+
+  describe('SharePoint file picker', () => {
+    it('links the picked files by their SharePoint list item', () => {
+      const wasSecure = window.isSecureContext;
+      vi.stubGlobal('isSecureContext', true);
+      vi.mocked(usePage).mockReturnValue(createMockPage({ app: { url: 'https://www.vusa.test' } }));
+      vi.mocked(router.post).mockClear();
+      const wrapper = factory();
+
+      wrapper.findComponent({ name: 'FilePicker' }).vm.$emit('pick', [
+        { name: 'Protokolas.pdf', sharepointIds: { siteId: 'site', listId: 'list', listItemUniqueId: 'unique' } },
+      ]);
+
+      expect(router.post).toHaveBeenCalledWith(
+        '/mocked/meetings.documents.storeFromSharepoint',
+        { documents: [{ site_id: 'site', list_id: 'list', list_item_unique_id: 'unique' }] },
+        expect.any(Object),
+      );
+      vi.stubGlobal('isSecureContext', wasSecure);
+    });
+
+    it('is not offered over plain http, where SharePoint sign-in cannot run', () => {
+      vi.mocked(usePage).mockReturnValue(createMockPage({ app: { url: 'http://www.vusa.test' } }));
+
+      expect(factory().findComponent({ name: 'FilePicker' }).exists()).toBe(false);
     });
   });
 });

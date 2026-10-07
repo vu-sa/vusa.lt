@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Admin\CommentReactionApiController;
 use App\Http\Controllers\Api\Admin\ContentEditorApiController;
 use App\Http\Controllers\Api\Admin\ContentEditorDraftApiController;
 use App\Http\Controllers\Api\Admin\ContentPartPreviewApiController;
+use App\Http\Controllers\Api\Admin\DocumentFolderApiController;
 use App\Http\Controllers\Api\Admin\DutiableTimelineApiController;
 use App\Http\Controllers\Api\Admin\DutyApiController;
 use App\Http\Controllers\Api\Admin\DutySearchApiController;
@@ -132,6 +133,11 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         Route::get('banners', [BannerApiController::class, 'index'])->name('banners.index');
         Route::get('eventTypes', [EventTypeApiController::class, 'index'])->name('eventTypes.index');
         Route::get('calendar', [CalendarApiController::class, 'index'])->name('calendar.index');
+        // Unpublished SharePoint files: the documents search index only holds published ones.
+        Route::get('documents/folder', [DocumentFolderApiController::class, 'index'])->name('documents.folder');
+        Route::delete('documents', [DocumentFolderApiController::class, 'destroy'])->name('documents.destroyRemoved');
+        Route::post('documents/status', [DocumentFolderApiController::class, 'updateStatus'])->name('documents.status');
+        Route::post('documents/{document}/refresh', [DocumentFolderApiController::class, 'refresh'])->name('documents.refresh');
         // Trash of the Typesense-backed collections: the index holds no deleted rows.
         Route::get('trash/{collection}', [TrashApiController::class, 'index'])
             ->whereIn('collection', array_keys(TrashApiController::COLLECTIONS))
@@ -166,6 +172,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // Meetings
         Route::get('meetings/recent', [MeetingApiController::class, 'recent'])->name('meetings.recent');
         Route::get('meetings/{meeting}/preview', [MeetingApiController::class, 'preview'])->name('meetings.preview');
+        Route::get('meetings/{meeting}/pending-documents', [MeetingApiController::class, 'pendingDocuments'])->name('meetings.pendingDocuments');
         Route::get('meetings/{meeting}/agenda-items', [MeetingApiController::class, 'agendaItems'])->name('meetings.agendaItems');
 
         // Institutions

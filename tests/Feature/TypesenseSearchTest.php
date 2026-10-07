@@ -100,10 +100,7 @@ test('search arrays contain required fields', function (): void {
 
 test('draft/inactive documents and calendar events are not searchable', function (): void {
     // Test that inactive documents are not searchable
-    $inactiveDocument = Document::factory()->create([
-        'is_active' => false,
-        'anonymous_url' => null, // This makes it not searchable
-    ]);
+    $inactiveDocument = Document::factory()->inactive()->create();
     expect($inactiveDocument->shouldBeSearchable())->toBeFalse();
 
     // Test that draft calendar events are not searchable

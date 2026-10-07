@@ -2,8 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Enums\DocumentStatus;
 use App\Models\Document;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
@@ -19,20 +21,16 @@ class SyncStaleDocumentsJob implements ShouldQueue
     public $tries = 1;
 
     /**
-     * The maximum number of seconds the job can run before timing out.
+     * Only selects and dispatches; it must finish well inside the queue's retry_after.
      */
-    public $timeout = 600; // 10 minutes for bulk operation
+    public $timeout = 60;
 
     /**
-     * Create a new job instance.
+     * @param  int  $spacingMilliseconds  delay between the per-document jobs, so SharePoint sees a trickle, not a burst
      */
     public function __construct(
-        public int $dispatchDelayMicroseconds = 250000,
-        public int $batchDelaySeconds = 2,
-    ) {
-        // Set queue name for better organization
-        $this->queue = 'sharepoint-sync';
-    }
+        public int $spacingMilliseconds = 500,
+    ) {}
 
     /**
      * Execute the job.
@@ -60,33 +58,22 @@ class SyncStaleDocumentsJob implements ShouldQueue
         $successCount = 0;
         $skippedCount = 0;
 
-        // Process documents in batches to avoid overwhelming SharePoint API
-        $documentsToRefresh->chunk(10)->each(function ($batch) use (&$successCount, &$skippedCount): void {
-            foreach ($batch as $document) {
-                // Skip documents that have failed too many times recently
-                if ($this->shouldSkipDocument($document)) {
-                    $skippedCount++;
-                    Log::debug('Skipping document due to recent failures', [
-                        'document_id' => $document->id,
-                        'sync_attempts' => $document->sync_attempts,
-                    ]);
+        foreach ($documentsToRefresh->values() as $document) {
+            // Skip documents that have failed too many times recently
+            if ($this->shouldSkipDocument($document)) {
+                $skippedCount++;
+                Log::debug('Skipping document due to recent failures', [
+                    'document_id' => $document->id,
+                    'sync_attempts' => $document->sync_attempts,
+                ]);
 
-                    continue;
-                }
-
-                // Dispatch individual sync job
-                SyncDocumentFromSharePointJob::dispatch($document);
-                $successCount++;
-
-                // Small delay to be respectful to SharePoint API
-                usleep($this->dispatchDelayMicroseconds);
+                continue;
             }
 
-            // Longer delay between batches
-            if (! $batch->isEmpty() && $this->batchDelaySeconds > 0) {
-                sleep($this->batchDelaySeconds);
-            }
-        });
+            SyncDocumentFromSharePointJob::dispatch($document)
+                ->delay(now()->addMilliseconds($successCount * $this->spacingMilliseconds));
+            $successCount++;
+        }
 
         Log::info('Completed rolling document refresh dispatch', [
             'dispatched' => $successCount,
@@ -105,25 +92,18 @@ class SyncStaleDocumentsJob implements ShouldQueue
 
         Log::info('Calculated daily refresh quota', [
             'daily_quota' => $dailyQuota,
-            'total_documents' => Document::count(),
+            'total_documents' => $this->refreshable()->count(),
         ]);
 
         // Priority 1: Documents older than 14 days (critical refresh needed)
-        $criticalDocs = Document::query()
+        $criticalDocs = $this->refreshable()
             ->where(function ($query): void {
                 $query->whereNull('checked_at')
                     ->orWhere('checked_at', '<', now()->subDays(14));
             })
             ->where('sync_status', '!=', 'syncing')
-            // Prioritize active and public documents within critical group
-            ->orderByRaw('
-                CASE 
-                    WHEN is_active = 1 AND anonymous_url IS NOT NULL THEN 1
-                    WHEN is_active = 1 THEN 2
-                    WHEN anonymous_url IS NOT NULL THEN 3
-                    ELSE 4
-                END
-            ')
+            // Documents that already have a public link come first
+            ->orderByRaw('CASE WHEN anonymous_url IS NOT NULL THEN 1 ELSE 2 END')
             ->orderBy('checked_at', 'asc') // Oldest first within each priority
             ->limit($dailyQuota)
             ->get();
@@ -132,7 +112,7 @@ class SyncStaleDocumentsJob implements ShouldQueue
 
         // Priority 2: Fill remaining quota with documents from 7-14 day range (random selection)
         if ($remaining > 0) {
-            $additionalDocs = Document::query()
+            $additionalDocs = $this->refreshable()
                 ->whereBetween('checked_at', [now()->subDays(14), now()->subDays(7)])
                 ->where('sync_status', '!=', 'syncing')
                 ->inRandomOrder()
@@ -156,11 +136,23 @@ class SyncStaleDocumentsJob implements ShouldQueue
     }
 
     /**
+     * Only published documents keep a public link to verify; discovery keeps the rest current.
+     *
+     * @return Builder<Document>
+     */
+    private function refreshable(): Builder
+    {
+        return Document::query()
+            ->where('status', DocumentStatus::Published)
+            ->whereNull('removed_from_sharepoint_at');
+    }
+
+    /**
      * Calculate dynamic daily quota for 14-day rolling refresh cycle
      */
     private function calculateDynamicDailyQuota(): int
     {
-        $totalDocs = Document::count();
+        $totalDocs = $this->refreshable()->count();
         $refreshCycleDays = 14; // Could be moved to config in future
 
         // Calculate base quota (documents per day to refresh all docs in 14 days)

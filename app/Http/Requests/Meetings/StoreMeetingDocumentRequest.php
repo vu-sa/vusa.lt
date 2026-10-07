@@ -5,14 +5,16 @@ namespace App\Http\Requests\Meetings;
 use App\Models\Document;
 use App\Models\Meeting;
 use Illuminate\Contracts\Validation\ValidationRule;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 /**
  * Link a nutarimas / protokolas to the meeting that produced it.
  */
 class StoreMeetingDocumentRequest extends FormRequest
 {
+    private ?Document $document = null;
+
     public function authorize(): bool
     {
         $user = $this->user();
@@ -33,28 +35,37 @@ class StoreMeetingDocumentRequest extends FormRequest
     }
 
     /**
-     * Resolved through the meeting's own institutions — or any institution of their tenants.
-     * Deliberately lax: internal bodies (Parliament, Board) have their paperwork filed under
-     * the central institution of the same tenant, not under the body itself.
+     * Moving a document between meetings is a deliberate unlink-then-link, never a side effect.
+     *
+     * @return array<int, callable>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                $linkedMeetingId = $this->resolveDocument()->meeting_id;
+
+                if ($linkedMeetingId !== null && $linkedMeetingId !== $this->meeting()->id) {
+                    $validator->errors()->add('document_id', __('messages.meeting.document_linked_elsewhere'));
+                }
+            },
+        ];
+    }
+
+    /**
+     * Resolved through the meeting's institutions and their padaliniai (Document::linkableTo).
      */
     public function resolveDocument(): Document
     {
-        $meeting = $this->meeting();
-        $meeting->loadMissing('institutions');
+        if ($this->document !== null) {
+            return $this->document;
+        }
 
-        $institutionIds = $meeting->institutions->pluck('id');
-        $tenantIds = $meeting->institutions->pluck('tenant_id')->filter()->unique();
-
-        $document = Document::query()
-            ->where(function (Builder $query) use ($institutionIds, $tenantIds): void {
-                $query->whereIn('institution_id', $institutionIds)
-                    ->orWhereHas('institution', fn ($institution) => $institution->whereIn('tenant_id', $tenantIds));
-            })
-            ->find($this->input('document_id'));
+        $document = Document::query()->linkableTo($this->meeting())->find($this->input('document_id'));
 
         abort_if($document === null, 403, 'Document does not belong to this meeting\'s institutions or tenants.');
 
-        return $document;
+        return $this->document = $document;
     }
 
     public function meeting(): Meeting

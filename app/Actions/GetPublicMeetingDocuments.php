@@ -20,8 +20,7 @@ class GetPublicMeetingDocuments
     public static function execute(Meeting $meeting): array
     {
         $documents = $meeting->documents()
-            ->whereNotNull('anonymous_url')
-            ->where('anonymous_url', '!=', '')
+            ->published()
             ->orderBy('document_date')
             ->orderBy('title')
             ->get(['id', 'title', 'name', 'content_type', 'document_date', 'anonymous_url', 'language']);

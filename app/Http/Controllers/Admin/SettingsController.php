@@ -218,7 +218,7 @@ class SettingsController extends AdminController
             'selected_content_types' => $documentSettings->getImportantContentTypes()->toArray(),
             'recommendations' => $documentSettings->recommendations,
             'selected_documents' => Document::query()->whereIn('id', array_column($documentSettings->recommendations, 'document_id'))
-                ->get(['id', 'title', 'is_active'])->map(fn ($document) => ['id' => (string) $document->id, 'title' => $document->title, 'is_active' => $document->is_active])->values(),
+                ->get(['id', 'title', 'status', 'removed_from_sharepoint_at'])->map(fn (Document $document) => ['id' => (string) $document->id, 'title' => $document->title, 'is_active' => $document->isPublished()])->values(),
             'available_content_types' => Document::query()
                 ->select('content_type')
                 ->whereNotNull('content_type')

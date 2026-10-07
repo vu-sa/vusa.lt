@@ -2,15 +2,38 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\Documents\PendingMeetingDocuments;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Meetings\IndexMeetingPendingDocumentsRequest;
+use App\Http\Resources\DocumentRowResource;
 use App\Models\Meeting;
 use App\Services\AgendaItemPresenter;
 use App\Services\ResourceServices\DutyService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class MeetingApiController extends ApiController
 {
+    /**
+     * Unpublished SharePoint files this meeting could link, by title or file name.
+     *
+     * @route GET /api/v1/admin/meetings/{meeting}/pending-documents
+     */
+    public function pendingDocuments(IndexMeetingPendingDocumentsRequest $request, Meeting $meeting): JsonResponse
+    {
+        $search = (string) $request->validated('search');
+
+        $documents = PendingMeetingDocuments::query($meeting, $request->user())
+            ->when($search !== '', fn (Builder $query) => $query->where(
+                fn (Builder $query) => $query->where('title', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")
+            ))
+            ->limit(20)
+            ->get();
+
+        return $this->jsonSuccess(DocumentRowResource::collection($documents)->resolve($request));
+    }
+
     /**
      * Lightweight meeting detail used by the admin search preview pane.
      * Returns the agenda items, institutions and representatives that are not

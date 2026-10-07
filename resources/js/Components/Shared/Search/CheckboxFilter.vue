@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-2" :class="containerClass">
-    <FacetCountHelp />
     <input v-if="options.length > 8" v-model="term" type="search" :aria-label="$t('search.facet_search')" :placeholder="$t('search.facet_search')" class="min-h-11 w-full border border-border bg-background px-3 text-sm text-foreground">
     <p v-if="loading" role="status" class="text-xs text-muted-foreground">
       {{ $t('search.facet_search_loading') }}
@@ -74,7 +73,6 @@ import { ChevronDown } from 'lucide-vue-next';
 import type { FilterOption, FacetValue } from './types';
 
 import { useFacetOptions } from '@/Shared/Search/useFacetOptions';
-import FacetCountHelp from '@/Components/ui/FacetCountHelp.vue';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';

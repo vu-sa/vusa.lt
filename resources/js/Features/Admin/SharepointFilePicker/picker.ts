@@ -639,3 +639,20 @@ export interface FilePickerOptions {
     };
   };
 }
+
+/**
+ * MSAL needs a secure context (crypto.subtle); app.url can claim https while the page is actually
+ * opened over http in local dev, so the browser decides.
+ */
+export function isPickerAvailable(appUrl: unknown): boolean {
+  return typeof window !== 'undefined' && window.isSecureContext && String(appUrl ?? '').startsWith('https');
+}
+
+/** What the server needs to find a picked file among the documents: its SharePoint list item. */
+export function pickedDocuments(items: Item[]): { site_id?: string | null; list_id?: string | null; list_item_unique_id?: string | null }[] {
+  return items.map(item => ({
+    site_id: item.sharepointIds?.siteId,
+    list_id: item.sharepointIds?.listId,
+    list_item_unique_id: item.sharepointIds?.listItemUniqueId,
+  }));
+}

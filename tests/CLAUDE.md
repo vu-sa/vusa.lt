@@ -213,18 +213,7 @@ Use `--filter=testName` when iterating on one failing test, not as the default.
 
 These come from real profiling of this suite. Follow them to keep it fast.
 
-**No real `sleep()`/`usleep()` in code paths tests invoke.** Jobs and commands that throttle API calls (e.g. SharePoint sync) must take their delays as constructor parameters with production defaults, so tests can pass zero:
-
-```php
-// app/Jobs/SyncStaleDocumentsJob.php — reference implementation
-public function __construct(
-    public int $dispatchDelayMicroseconds = 250000,
-    public int $batchDelaySeconds = 2,
-) { ... }
-
-// In tests:
-$job = new SyncStaleDocumentsJob(dispatchDelayMicroseconds: 0, batchDelaySeconds: 0);
-```
+**No real `sleep()`/`usleep()` in code paths tests invoke.** A job that throttles API calls spaces out the jobs it dispatches with `->delay()` instead of sleeping (see `SyncStaleDocumentsJob`), so it finishes in seconds and tests need no zeroed-out delays. Where a sleep is unavoidable, take it as a constructor parameter with a production default, so tests can pass zero.
 
 **Search indexing is nulled by default — opt in with `usesTypesense()`.** ~14 models hardcode the Typesense engine in `searchableUsing()`, so `SCOUT_DRIVER=database` in phpunit.xml never applies to them; with `scout.queue` on the sync connection, every `create()` for one of those models used to pay a real, synchronous HTTP round trip. Measured: `makeUser()` (User+Duty+Institution) dropped from **35ms to 6ms**; `News`/`Page` creates from **~16ms to ~3ms**. `TestingServiceProvider` now defaults every test to Scout's `NullEngine` — factories still run, but nothing is indexed and no Typesense connection is required. Call `usesTypesense()` (`tests/Pest.php`) in `beforeEach()` only when the test actually asserts on search results or index state (`::search()->raw()`, `->searchable()`, `TypesenseTestIsolationTest`-style checks) — most tests that merely create searchable models don't need it. Once opted in, the same prefix isolation as before applies (`testing_{token}_` per process under `--parallel`, `testing_sequential_` otherwise), stale collections are cleared once per process, and a real Typesense connection is required (Sail provides one locally, CI starts one).
 

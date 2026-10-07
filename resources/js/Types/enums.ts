@@ -75,6 +75,11 @@ export enum DegreeEnum {
     PROFESSIONAL_PEDAGOGY = 'PROFESSIONAL_PEDAGOGY',
     OTHER = 'OTHER',
 }
+export enum DocumentStatus {
+    Pending = 'pending',
+    Published = 'published',
+    Hidden = 'hidden',
+}
 export enum EmailDelivery {
     Immediate = 'immediate',
     Digest = 'digest',

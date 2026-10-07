@@ -33,6 +33,7 @@ class DocumentController extends PublicController
                 // 2 hours TTL
                 fn () => [
                     'contentTypes' => Document::query()
+                        ->published()
                         ->select('content_type')
                         ->whereNotNull('content_type')
                         ->distinct()

@@ -1,5 +1,4 @@
 <template>
-  <FacetCountHelp v-if="showCountHelp" />
   <input
     v-if="facet.type !== 'year-pills' && facet.values.length > 8"
     v-model="term"
@@ -56,15 +55,13 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { Check } from 'lucide-vue-next';
 
-import FacetCountHelp from '@/Components/ui/FacetCountHelp.vue';
 import { useFacetOptions } from '@/Shared/Search/useFacetOptions';
 import { controlVariants } from '@/Components/ui/control';
 import type { CollectionFacet } from '@/Composables/useCollectionSource';
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   facet: CollectionFacet;
-  showCountHelp?: boolean;
-}>(), { showCountHelp: true });
+}>();
 
 const { term, values: searchedValues, loading, failed } = useFacetOptions(
   () => props.facet.remote ? props.facet.field : undefined,

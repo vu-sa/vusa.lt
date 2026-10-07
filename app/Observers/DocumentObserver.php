@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Enums\DocumentStatus;
 use App\Jobs\RevokeSharepointPermissionJob;
 use App\Models\Document;
 use App\Support\StagingProtection;
@@ -25,11 +26,11 @@ class DocumentObserver
     /**
      * Handle the Document "updating" event.
      *
-     * When is_active changes from true to false, revoke access and clear the URL.
+     * When a published document is hidden (or sent back to pending), revoke access and clear the URL.
      */
     public function updating(Document $document): void
     {
-        if ($document->isDirty('is_active') && $document->getOriginal('is_active') === true && $document->is_active === false) {
+        if ($document->isDirty('status') && $document->getOriginal('status') === DocumentStatus::Published && $document->status !== DocumentStatus::Published) {
             $this->dispatchRevocationIfNeeded($document);
 
             $document->anonymous_url = null;
@@ -52,6 +53,6 @@ class DocumentObserver
             sharepointId: $document->sharepoint_id,
             sharepointPermissionId: $document->sharepoint_permission_id,
             documentId: $document->id,
-        );
+        )->afterCommit();
     }
 }

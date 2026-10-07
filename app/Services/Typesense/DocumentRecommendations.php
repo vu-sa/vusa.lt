@@ -2,6 +2,7 @@
 
 namespace App\Services\Typesense;
 
+use App\Enums\DocumentStatus;
 use App\Models\Document;
 use App\Settings\DocumentSettings;
 use Illuminate\Support\Collection;
@@ -38,7 +39,7 @@ class DocumentRecommendations
             $ids = collect($result['hits'])->pluck('document.document_id')->unique()->values()->all();
         }
 
-        $activeIds = Document::query()->whereIn('id', $ids)->where('is_active', true)->pluck('id')->map(strval(...))->all();
+        $activeIds = Document::query()->whereIn('id', $ids)->where('status', DocumentStatus::Published)->whereNull('removed_from_sharepoint_at')->pluck('id')->map(strval(...))->all();
 
         return array_values(array_intersect($ids, $activeIds, $rules->pluck('document_id')->all()));
     }

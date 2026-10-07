@@ -7,9 +7,10 @@ the deploy went years without restarting them.
 
 | Program | procs | What it runs |
 |---|---|---|
-| `laravel-worker` | 2 | production `queue:work` |
-| `laravel-sharepoint-worker` | 1 | production `queue:work --queue=sharepoint-sync` |
+| `laravel-worker` | 2 | production `queue:work` (including SharePoint link publishing and revoking) |
+| `laravel-long-running-worker` | 1 | production `queue:work long-running` (SharePoint document discovery, weekly file check; up to 30 min per job) — **to be installed** |
 | `staging-laravel-worker` | 1 | staging `queue:work` |
+| `staging-long-running-worker` | 1 | staging equivalent of the above — **to be installed** |
 | `reverb` | 1 | production `reverb:start` (WebSockets) |
 | `staging-reverb` | 1 | staging `reverb:start` on `127.0.0.1:6002`, only with `STAGING_BROADCASTING_ENABLED=true` |
 | `staging-inertia-ssr` | 1 | staging Node SSR renderer on `127.0.0.1:13715`, used only with `INERTIA_SSR_ENABLED=true` |
@@ -139,3 +140,27 @@ counter stayed at 137931. The renderer used 59.7 CPU seconds across the run (abo
 This supports a single-worker anonymous-public pilot at the sampled load, with fallback for bursts;
 it does not measure long-term peaks or the application's PHP request time. The temporary worker
 and files were removed. Live production SSR was not enabled.
+
+## Long-running worker
+
+Jobs that can run for half an hour (SharePoint document discovery, `SyncFileableFilesJob`) use the
+`long-running` connection. Its `retry_after` (2100 s) is above their 1800 s timeout, so a job still in
+progress is never handed to a second worker, and they never occupy a default worker. Everything else
+SharePoint does — publishing and revoking links, the nightly link check — is short and runs on the
+default queue. Without this program the long jobs simply wait in their queue.
+
+Its queue is `long-running` in production and `staging-long-running` on staging, like the default
+Redis queue, so the two environments never take each other's jobs even on a shared backend.
+
+### Replacing `laravel-sharepoint-worker` (one-off, as root)
+
+That program served a `sharepoint-sync` queue nothing dispatches to any more. Install the new program
+first, let the old one drain, then remove it:
+
+```bash
+sudo cp deployment/supervisor/laravel-long-running-worker.conf /etc/supervisor/conf.d/
+sudo supervisorctl reread && sudo supervisorctl update
+# after the deploy, once `sharepoint-sync` is empty:
+sudo rm /etc/supervisor/conf.d/laravel-sharepoint-worker.conf
+sudo supervisorctl reread && sudo supervisorctl update
+```

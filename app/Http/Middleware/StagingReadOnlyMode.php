@@ -35,8 +35,9 @@ class StagingReadOnlyMode
      * SharePoint-related routes that should be blocked when SHAREPOINT_READ_ONLY=true
      * Only routes that WRITE to SharePoint are blocked
      *
-     * Note: documents.update, documents.destroy, documents.refresh, documents.bulk-sync
-     * are ALLOWED because they only modify local database or READ from SharePoint
+     * Note: documents.refresh, documents.status, documents.discover
+     * are ALLOWED: they only modify the local database or READ from SharePoint (publishing guards its
+     * link creation itself through StagingProtection)
      */
     protected array $sharepointWriteRoutes = [
         'fileableFiles.store',                    // Upload files TO SharePoint
@@ -50,11 +51,9 @@ class StagingReadOnlyMode
     protected array $sharepointReadRoutes = [
         'documents.index',       // List documents (read DB)
         'documents.show',        // View document (read DB)
-        'documents.store',       // Add document reference to DB from SharePoint picker
-        'documents.update',      // Update document metadata in DB only
-        'documents.destroy',     // Delete document reference from DB only (not SharePoint)
         'documents.refresh',     // Refresh document FROM SharePoint (read)
-        'documents.bulk-sync',   // Bulk sync FROM SharePoint (read)
+        'documents.status',      // Publish/hide; link creation is guarded by StagingProtection
+        'documents.discover',    // Read the archive FROM SharePoint
     ];
 
     /**

@@ -2,14 +2,16 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\DocumentStatus;
 use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Jobs\SyncStaleDocumentsJob;
 use App\Models\Document;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\Builder;
 
-#[Description('Sync documents from SharePoint with various options')]
+#[Description('Check and repair the public SharePoint links of published documents (discovery keeps everything else current)')]
 #[Signature('sharepoint:sync-documents
                             {--all : Sync all documents regardless of staleness}
                             {--failed : Only sync documents with failed status}
@@ -44,7 +46,7 @@ class SyncDocumentsCommand extends Command
         $this->info('Dispatching stale documents sync job...');
 
         if ($this->option('dry-run')) {
-            $staleCount = Document::query()
+            $staleCount = $this->linkable()
                 ->where(function ($query): void {
                     $query->whereNull('checked_at')
                         ->orWhere('checked_at', '<', now()->subDay());
@@ -65,7 +67,7 @@ class SyncDocumentsCommand extends Command
 
     private function syncAllDocuments()
     {
-        $query = Document::query()
+        $query = $this->linkable()
             ->where('sync_status', '!=', 'syncing')
             ->orderBy('checked_at', 'asc');
 
@@ -111,10 +113,10 @@ class SyncDocumentsCommand extends Command
         $bar = $this->output->createProgressBar($documents->count());
         $bar->start();
 
-        foreach ($documents as $document) {
-            SyncDocumentFromSharePointJob::dispatch($document, $force);
+        foreach ($documents->values() as $index => $document) {
+            // Spaced out in the queue rather than here, so SharePoint sees a trickle and the command returns at once.
+            SyncDocumentFromSharePointJob::dispatch($document, $force)->delay(now()->addMilliseconds($index * 100));
             $bar->advance();
-            usleep(100000); // 100ms delay between dispatches
         }
 
         $bar->finish();
@@ -128,7 +130,7 @@ class SyncDocumentsCommand extends Command
     {
         $limit = $this->option('limit') ? (int) $this->option('limit') : 50;
 
-        $query = Document::query()
+        $query = $this->linkable()
             ->where('sync_status', 'failed')
             ->where('sync_attempts', '<', 5) // Don't retry documents that have failed too many times
             ->orderBy('last_sync_attempt_at', 'asc')
@@ -164,14 +166,25 @@ class SyncDocumentsCommand extends Command
 
         $this->info("Retrying sync for {$failedDocuments->count()} failed documents...".($force ? ' (force mode)' : ''));
 
-        foreach ($failedDocuments as $document) {
-            SyncDocumentFromSharePointJob::dispatch($document, $force);
+        foreach ($failedDocuments->values() as $index => $document) {
+            SyncDocumentFromSharePointJob::dispatch($document, $force)->delay(now()->addMilliseconds($index * 200));
             $this->line("Dispatched retry for: {$document->title}");
-            usleep(200000); // 200ms delay for retries
         }
 
         $this->info('All retry jobs dispatched successfully');
 
         return 0;
+    }
+
+    /**
+     * Only a published document has a public link to keep; unpublished ones are discovery's.
+     *
+     * @return Builder<Document>
+     */
+    private function linkable(): Builder
+    {
+        return Document::query()
+            ->where('status', DocumentStatus::Published)
+            ->whereNull('removed_from_sharepoint_at');
     }
 }

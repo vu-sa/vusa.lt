@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\AnnounceMeetingInCalendar;
+use App\Actions\Documents\PendingMeetingDocuments;
 use App\Actions\GetRecentlyChangedMeetings;
 use App\Actions\GetUserTenantShortnames;
 use App\Enums\InstitutionScope;
@@ -12,10 +13,12 @@ use App\Http\Requests\AttachMeetingInstitutionRequest;
 use App\Http\Requests\IndexMeetingRequest;
 use App\Http\Requests\StoreMeetingRequest;
 use App\Http\Requests\UpdateMeetingRequest;
+use App\Http\Resources\DocumentRowResource;
 use App\Http\Resources\TaskResource;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Calendar;
+use App\Models\Document;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -276,15 +279,34 @@ class MeetingController extends AdminController
             'tasks' => $readOnly() ? [] : Inertia::defer(fn () => TaskResource::collection(
                 $meeting->tasks()->with('users:id,name,email,profile_photo_path', 'taskable', 'tenants')->get()
             )->resolve(), 'meetingPanels'),
+            // A linked document that is not published reaches only those who may decide on it.
             'documents' => $readOnly() ? [] : Inertia::defer(fn () => $meeting->documents()
+                ->with('institution.tenant')
                 ->orderBy('document_date')
                 ->orderBy('title')
                 ->get()
+                ->filter(fn (Document $document): bool => $document->isPublished() || request()->user()->can('view', $document))
                 ->each->append('language_code')
+                ->values()
                 ->toArray(), 'meetingPanels'),
+            'pendingDocuments' => $readOnly()
+                ? []
+                : Inertia::defer(fn () => $this->pendingDocumentsFor($meeting), 'meetingPanels'),
             // Loaded only when "Iš ankstesnio posėdžio" is opened in the add-items sheet.
             'recentAgendas' => Inertia::optional(fn () => $readOnly() ? [] : $this->recentAgendasFor($meeting)),
         ]);
+    }
+
+    /**
+     * The first few unpublished files this meeting could link; the panel searches for the rest.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function pendingDocumentsFor(Meeting $meeting): array
+    {
+        return DocumentRowResource::collection(
+            PendingMeetingDocuments::query($meeting, request()->user())->limit(8)->get()
+        )->resolve(request());
     }
 
     /**
