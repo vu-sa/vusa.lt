@@ -17,13 +17,13 @@ test('same-second collisions preserve every file and its readable name', functio
     $second = $writer->write('public/files/reports', 'ataskaita.pdf', 'second');
     $third = $writer->write('public/files/reports', 'ataskaita.pdf', 'third');
 
-    expect($first['name'])->toBe('ataskaita.pdf');
-    expect($second['name'])->toBe('ataskaita_'.now()->timestamp.'.pdf');
-    expect($third['name'])->toBe('ataskaita_'.now()->timestamp.'_2.pdf');
-    expect(Storage::get($first['path']))->toBe('first');
-    expect(Storage::get($second['path']))->toBe('second');
-    expect(Storage::get($third['path']))->toBe('third');
-    expect($first['url'])->toBe('/uploads/files/reports/ataskaita.pdf');
+    expect($first['name'])->toBe('ataskaita.pdf')
+        ->and($second['name'])->toBe('ataskaita_'.now()->timestamp.'.pdf')
+        ->and($third['name'])->toBe('ataskaita_'.now()->timestamp.'_2.pdf')
+        ->and(Storage::get($first['path']))->toBe('first')
+        ->and(Storage::get($second['path']))->toBe('second')
+        ->and(Storage::get($third['path']))->toBe('third')
+        ->and($first['url'])->toBe('/uploads/files/reports/ataskaita.pdf');
 });
 
 test('filenames without an extension keep readable collision suffixes', function (): void {
@@ -34,8 +34,8 @@ test('filenames without an extension keep readable collision suffixes', function
 
     $stored = $writer->write('public/files/reports', 'README', 'new');
 
-    expect($stored['name'])->toBe('README_'.now()->timestamp);
-    expect(Storage::get('public/files/reports/README'))->toBe('original');
+    expect($stored['name'])->toBe('README_'.now()->timestamp)
+        ->and(Storage::get('public/files/reports/README'))->toBe('original');
 });
 
 test('unsafe upload filenames cannot write outside the destination', function (string $filename): void {

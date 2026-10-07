@@ -63,7 +63,6 @@ const ADMIN_PAGES = [
     '/mano/roles',
     '/mano/permissions',
     '/mano/types',
-    '/mano/relationships',
     '/mano/studyPrograms',
     '/mano/studySets',
     '/mano/users?showDeleted=true',

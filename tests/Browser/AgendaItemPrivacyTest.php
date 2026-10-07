@@ -30,6 +30,7 @@ test('privacy can be saved from the responsive editor and public pages show only
     }
     $page->script('document.documentElement.classList.add("dark")');
     $page->click('[data-slot=sheet-form] button[type=submit]');
+    $page->page()->locator('[data-slot=sheet-form]')->waitFor(['state' => 'detached', 'timeout' => 15_000]);
     $page->assertNotPresent('[data-slot=sheet-form]');
     expect($item->fresh()->is_private)->toBeTrue()
         ->and($item->fresh()->getTranslation('public_title', 'lt'))->toBe('Darbo klausimas');

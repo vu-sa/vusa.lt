@@ -332,12 +332,12 @@ test('staging mail reaches only the person who sent it, never the recipient or t
     config(['app.env' => 'staging']);
 
     expect($router->routeForMail($recipient, $activity($requester)))->toBe(['koordinatorius@example.com'])
-        ->and($router->routeForMail($recipient, $activity(null)))->toBe([])
-        ->and($router->routeForMail($recipient, new WelcomeNotification))->toBe([]);
+        ->and($router->routeForMail($recipient, $activity(null)))->toBeEmpty()
+        ->and($router->routeForMail($recipient, new WelcomeNotification))->toBeEmpty();
 
     $requester->update(['email' => 'user'.$requester->id.'@staging.invalid']);
 
-    expect($router->routeForMail($recipient, $activity($requester->fresh())))->toBe([]);
+    expect($router->routeForMail($recipient, $activity($requester->fresh())))->toBeEmpty();
 
     config(['app.env' => 'production']);
 

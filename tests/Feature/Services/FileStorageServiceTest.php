@@ -23,7 +23,19 @@ test('file paths retain relative fragments and Unicode names', function (string 
 test('invalid paths cannot escape or imitate the file-manager root', function (string $path): void {
     expect(fn () => app(FileStorageService::class)->normalizeFilePath($path))
         ->toThrow(InvalidArgumentException::class);
-})->with(['', '.', '..', '../outside', 'public/files/../outside', 'public/files-backup', 'public/news', '/etc/passwd', "public/files/bad\x01", "public/files/bad\xff"]);
+})->with([
+    'empty' => [''],
+    'dot' => ['.'],
+    'parent' => ['..'],
+    'outside' => ['../outside'],
+    'traversal' => ['public/files/../outside'],
+    'sibling prefix' => ['public/files-backup'],
+    'other public dir' => ['public/news'],
+    'absolute' => ['/etc/passwd'],
+    // Named so the raw bytes stay out of paratest's JUnit XML, which rejects invalid UTF-8.
+    'control char' => ["public/files/bad\x01"],
+    'invalid utf-8' => ["public/files/bad\xff"],
+]);
 
 test('listing naturally sorts names and exposes working public URLs', function (): void {
     Storage::fake();
@@ -35,11 +47,11 @@ test('listing naturally sorts names and exposes working public URLs', function (
 
     $listing = app(FileStorageService::class)->listDirectory('public/files/reports', ['txt']);
 
-    expect(array_column($listing['files'], 'name'))->toBe(['2. ataskaita.txt', '10. ataskaita.txt']);
-    expect(array_column($listing['directories'], 'name'))->toBe(['2. folder', '10. folder']);
-    expect($listing['path'])->toBe('public/files/reports');
-    expect($listing['files'][0]['url'])->toBe('/uploads/files/reports/2. ataskaita.txt');
-    expect($listing['files'][0])->toHaveKeys(['path', 'name', 'type', 'size', 'modified', 'mimeType', 'url']);
+    expect(array_column($listing['files'], 'name'))->toBe(['2. ataskaita.txt', '10. ataskaita.txt'])
+        ->and(array_column($listing['directories'], 'name'))->toBe(['2. folder', '10. folder'])
+        ->and($listing['path'])->toBe('public/files/reports')
+        ->and($listing['files'][0]['url'])->toBe('/uploads/files/reports/2. ataskaita.txt')
+        ->and($listing['files'][0])->toHaveKeys(['path', 'name', 'type', 'size', 'modified', 'mimeType', 'url']);
 });
 
 test('batch storage preserves successful files when one image cannot be decoded', function (): void {
@@ -51,8 +63,8 @@ test('batch storage preserves successful files when one image cannot be decoded'
 
     $result = app(FileStorageService::class)->storeMany($files, 'public/files/reports');
 
-    expect(array_column($result['uploaded'], 'name'))->toBe(['report.txt']);
-    expect($result['failed'])->toBe([['name' => 'broken.png', 'reason' => __('files.errors.upload_failed')]]);
+    expect(array_column($result['uploaded'], 'name'))->toBe(['report.txt'])
+        ->and($result['failed'])->toBe([['name' => 'broken.png', 'reason' => __('files.errors.upload_failed')]]);
     Storage::assertMissing('public/files/reports/broken.webp');
     expect(Storage::get('public/files/reports/report.txt'))->toBe('good');
 });
@@ -66,9 +78,9 @@ test('GIF and SVG batch uploads retain their original bytes', function (): void 
 
     $result = app(FileStorageService::class)->storeMany($files, 'public/files/images');
 
-    expect(array_column($result['uploaded'], 'name'))->toBe(['animated.gif', 'vector.svg']);
-    expect(Storage::get('public/files/images/animated.gif'))->toBe('GIF89a original animation');
-    expect(Storage::get('public/files/images/vector.svg'))->toBe('<svg xmlns="http://www.w3.org/2000/svg"/>');
+    expect(array_column($result['uploaded'], 'name'))->toBe(['animated.gif', 'vector.svg'])
+        ->and(Storage::get('public/files/images/animated.gif'))->toBe('GIF89a original animation')
+        ->and(Storage::get('public/files/images/vector.svg'))->toBe('<svg xmlns="http://www.w3.org/2000/svg"/>');
 });
 
 test('converted images and single-image uploads share collision protection', function (): void {
@@ -86,9 +98,9 @@ test('converted images and single-image uploads share collision protection', fun
 
     expect(array_column($batch['uploaded'], 'name'))->toBe([
         'picture_'.now()->timestamp.'.webp', 'picture_'.now()->timestamp.'_2.webp',
-    ]);
-    expect($single['name'])->toBe('picture_'.now()->timestamp.'_3.webp');
-    expect(Storage::get('public/files/images/picture.webp'))->toBe('original');
+    ])
+        ->and($single['name'])->toBe('picture_'.now()->timestamp.'_3.webp')
+        ->and(Storage::get('public/files/images/picture.webp'))->toBe('original');
     Storage::assertExists($single['path']);
 });
 
@@ -102,9 +114,7 @@ test('a false image write is reported as a batch failure', function (): void {
     $result = app(FileStorageService::class)->storeMany([
         UploadedFile::fake()->image('photo.png', 10, 10),
     ], 'public/files/images');
-
-    expect($result['uploaded'])->toBe([]);
-    expect($result['failed'])->toBe([['name' => 'photo.png', 'reason' => __('files.errors.upload_failed')]]);
+    expect($result)->toMatchArray(['uploaded' => [], 'failed' => [['name' => 'photo.png', 'reason' => __('files.errors.upload_failed')]]]);
     $disk->assertMissing('public/files/images/photo.webp');
 });
 

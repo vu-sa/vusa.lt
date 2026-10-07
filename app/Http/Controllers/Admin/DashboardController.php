@@ -76,7 +76,7 @@ class DashboardController extends AdminController
             ->with('taskable')
             ->take(10)
             ->get()
-            ->map(fn ($task) => [
+            ->map(fn (Task $task) => [
                 'id' => $task->id,
                 'name' => $task->name,
                 'due_date' => $task->due_date?->toISOString(),

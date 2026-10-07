@@ -48,8 +48,8 @@ test('converts only matching muted follows to unfollows and drops the mute table
             ->toEqualCanonicalizing([
                 ['user_id' => $user->id, 'institution_id' => $otherInstitution->id],
                 ['user_id' => $otherUser->id, 'institution_id' => $institution->id],
-            ]);
-        expect(Schema::hasTable('institution_notification_mutes'))->toBeFalse();
+            ])
+            ->and(Schema::hasTable('institution_notification_mutes'))->toBeFalse();
 
         $migration->up();
 
@@ -65,8 +65,8 @@ test('rollback restores the empty mute schema without reintroducing preferences'
 
     try {
         expect(Schema::getColumnListing('institution_notification_mutes'))
-            ->toBe(['id', 'user_id', 'institution_id', 'muted_at', 'created_at', 'updated_at']);
-        expect(DB::table('institution_notification_mutes')->count())->toBe(0);
+            ->toBe(['id', 'user_id', 'institution_id', 'muted_at', 'created_at', 'updated_at'])
+            ->and(DB::table('institution_notification_mutes')->count())->toBe(0);
     } finally {
         $migration->up();
     }

@@ -183,6 +183,8 @@ it('captures documentation reference frames for activity requests', function ():
     $notification = new InstitutionActivityNotification(new Collection([$request]));
     $mail = $notification->toMail($representative);
     $page->resize(640, 750);
+    // setContent over the admin shell never reaches "load"; start from a bare page.
+    $page->navigate('/up');
     $page->page()->setContent((string) $mail->render());
     docsScreenshot($page, 'activity-request-email');
 

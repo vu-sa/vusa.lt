@@ -141,8 +141,8 @@ describe('institution follow API', function (): void {
                 'message' => __('visak.institution_unfollowed'),
             ]]);
 
-        expect($this->reader->follows($this->institution))->toBeFalse();
-        expect($this->user->follows($this->institution))->toBeTrue();
+        expect($this->reader->follows($this->institution))->toBeFalse()
+            ->and($this->user->follows($this->institution))->toBeTrue();
     });
 
     test('follows every institution in one request and ignores ones already followed', function (): void {

@@ -99,7 +99,7 @@ class FormSettings extends Settings
             ->with('institution:id,tenant_id')
             ->get()
             ->map(fn ($duty) => $duty->institution?->tenant_id)
-            ->filter()
+            ->filter(fn (?int $tenantId): bool => $tenantId !== null)
             ->unique()
             ->values();
     }

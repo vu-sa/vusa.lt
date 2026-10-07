@@ -23,7 +23,7 @@ class ContentEditorDraftApiController extends ApiController
             // Serializes the first insert too, when no draft row exists yet.
             $request->user()->newQuery()->whereKey($request->user()->id)->lockForUpdate()->firstOrFail();
             $draft = ContentEditorDraft::where('user_id', $request->user()->id)->where('kind', $kind)->where('identity', $identity)->lockForUpdate()->first();
-            if (($draft?->revision ?? 0) !== (int) $request->validated('revision')) {
+            if (($draft->revision ?? 0) !== (int) $request->validated('revision')) {
                 return response()->json(['success' => false, 'code' => 'draft_conflict', 'data' => $draft], 409);
             }
             if ($request->isMethod('DELETE')) {

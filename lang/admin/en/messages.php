@@ -105,7 +105,6 @@ return [
         'order_updated' => 'Quick link order updated successfully!',
     ],
 
-
     'role' => [
         'not_editable' => 'This role cannot be edited.',
         'not_deletable' => 'This role cannot be deleted.',

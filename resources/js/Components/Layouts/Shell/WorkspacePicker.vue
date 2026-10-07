@@ -14,7 +14,6 @@
           variant="ghost"
           size="xs"
           class="gap-2 border border-border px-3 text-xs font-bold uppercase tracking-wide pointer-coarse:h-11 hover:border-brand hover:bg-transparent hover:text-brand"
-          :aria-label="triggerLabel"
         >
           <component :is="workspaceIcon(activeWorkspace?.key ?? 'pradzia')" class="size-4 text-brand" />
           <span>{{ activeWorkspace ? $t(activeWorkspace.label) : $t('shell.chrome.workspaces') }}</span>
@@ -120,7 +119,6 @@ import {
   type AdminWorkspace,
 } from '@/Composables/useAdminNavigation';
 import { useHoverPopover } from '@/Composables/useHoverPopover';
-import { useTaskBadge } from '@/Composables/useTaskBadge';
 import { ariaCurrent } from '@/Utils/ariaCurrent';
 
 const props = defineProps<{
@@ -131,15 +129,8 @@ const props = defineProps<{
   showAllSections?: boolean;
 }>();
 
-const taskBadge = useTaskBadge();
-
-// The count belongs to Mano alone, so the trigger carries it only there; an `aria-label`
-// replaces the content, so the badge's text has to be folded in.
+// The count belongs to Mano alone, so the trigger carries it only there.
 const onPradzia = computed(() => props.activeWorkspace?.key === 'pradzia');
-
-const triggerLabel = computed(() => onPradzia.value && taskBadge.value
-  ? `${$t('shell.chrome.workspaces')}, ${taskBadge.value.label}`
-  : $t('shell.chrome.workspaces'));
 
 const { open, openedByHover, openNow, cancelClose, close, scheduleClose, onOpenChange } = useHoverPopover();
 

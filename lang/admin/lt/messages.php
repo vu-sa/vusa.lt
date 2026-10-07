@@ -107,7 +107,6 @@ return [
         'order_updated' => 'Greitųjų nuorodų tvarka sėkmingai atnaujinta!',
     ],
 
-
     'role' => [
         'not_editable' => 'Negalima redaguoti šios rolės.',
         'not_deletable' => 'Negalima ištrinti šios rolės.',

@@ -133,7 +133,7 @@ test('on staging the email reaches only the coordinator who sent it, never the r
     expect($sent)->toHaveCount(1)
         ->and(collect($sent->first()->getOriginalMessage()->getTo())->map->getAddress()->all())->toBe([$this->coordinator->email])
         ->and($sent->first()->getOriginalMessage()->getSubject())->toStartWith('[Staging] ')
-        ->and(app('mail.manager')->mailer('array')->getSymfonyTransport()->messages())->toHaveCount(0);
+        ->and(app('mail.manager')->mailer('array')->getSymfonyTransport()->messages())->toBeEmpty();
 });
 
 describe('who is asked about what', function (): void {

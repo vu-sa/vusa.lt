@@ -99,9 +99,9 @@ class ActionWindowApiController extends ApiController
                 'activity_status' => $activityStatus->resolve($institution)->toArray(),
             ])
             ->sortBy([
-                fn (array $a, array $b) => ($b['activity_status']['requires_action'] ?? false) <=> ($a['activity_status']['requires_action'] ?? false),
-                fn (array $a, array $b) => ($b['activity_status']['priority'] ?? 0) <=> ($a['activity_status']['priority'] ?? 0),
-                fn (array $a, array $b) => strcasecmp($a['name'] ?? '', $b['name'] ?? ''),
+                fn (array $a, array $b) => $b['activity_status']['requires_action'] <=> $a['activity_status']['requires_action'],
+                fn (array $a, array $b) => $b['activity_status']['priority'] <=> $a['activity_status']['priority'],
+                fn (array $a, array $b) => strcasecmp($a['name'], $b['name']),
             ])
             ->values()
             ->all();
