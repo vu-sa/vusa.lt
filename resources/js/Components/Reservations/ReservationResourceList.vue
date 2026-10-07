@@ -42,11 +42,11 @@
           <div class="flex flex-wrap items-center gap-1">
             <ReservationRowActions
               :reservation="rowTarget(resource)"
-              :extra-actions="canEdit && isEditable(resource)"
+              :extra-actions="canEdit && isRemovable(resource)"
               @decide="onDecide"
             >
-              <template v-if="canEdit && isEditable(resource)" #more-actions>
-                <DropdownMenuItem class="pointer-coarse:min-h-11" :aria-label="$t('Redaguoti')" @select="emit('edit', resource)">
+              <template v-if="canEdit && isRemovable(resource)" #more-actions>
+                <DropdownMenuItem v-if="isEditable(resource)" class="pointer-coarse:min-h-11" :aria-label="$t('Redaguoti')" @select="emit('edit', resource)">
                   <Pencil aria-hidden="true" />
                   {{ $t('Redaguoti') }}
                 </DropdownMenuItem>
@@ -153,11 +153,12 @@ const emit = defineEmits<{
 const statusOf = (resource: RecordResource) =>
   reservationResourceStatuses[resource.pivot.state as ReservationResourceStatus];
 
-/** Only an item still in flight can be changed; the rest is history. */
-const isEditable = (resource: RecordResource) => ['created', 'reserved'].includes(resource.pivot.state);
+const isEditable = (resource: RecordResource) => resource.pivot.state === 'created';
+
+const isRemovable = (resource: RecordResource) => ['created', 'reserved'].includes(resource.pivot.state);
 
 const isOverbooked = (resource: RecordResource) =>
-  isEditable(resource) && (resource.lowestCapacityAtDateTimeRange ?? 0) < 0;
+  isRemovable(resource) && (resource.lowestCapacityAtDateTimeRange ?? 0) < 0;
 
 const approvalsOf = (resource: RecordResource) => resource.pivot.approvals ?? [];
 

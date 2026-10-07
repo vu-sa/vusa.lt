@@ -17,10 +17,11 @@ class EnsureReservationCapacity
      *
      * @throws ValidationException
      */
-    public static function execute(array $lines, Carbon $start, Carbon $end): void
+    public static function execute(array $lines, Carbon $start, Carbon $end, ?int $excludedReservationResourceId = null): void
     {
         $resources = Resource::query()
             ->whereIn('id', array_column($lines, 'id'))
+            ->orderBy('id')
             ->lockForUpdate()
             ->get()
             ->keyBy('id');
@@ -36,7 +37,7 @@ class EnsureReservationCapacity
                 continue;
             }
 
-            $available = max(0, SerializeResourceAvailability::available($resource, $start, $end));
+            $available = max(0, SerializeResourceAvailability::available($resource, $start, $end, $excludedReservationResourceId));
 
             if ((int) $line['quantity'] > $available) {
                 $errors["resources.{$index}.quantity"] = __('reservations.cart.capacity_exceeded', [

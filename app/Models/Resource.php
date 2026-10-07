@@ -263,12 +263,13 @@ class Resource extends Model implements GuardsForceDelete, HasMedia
         Carbon|string|int $to,
         array $exceptReservations = [],
         array $exceptResources = [],
-        bool $ignoreTimeEndedActive = false
+        bool $ignoreTimeEndedActive = false,
+        ?int $excludedReservationResourceId = null
     ): array {
         $timeRange = new TimeRange($from, $to);
         $calculator = new ResourceCapacityCalculator($this);
 
-        return $calculator->getCapacityTimeline($timeRange, $exceptReservations, $exceptResources, $ignoreTimeEndedActive);
+        return $calculator->getCapacityTimeline($timeRange, $exceptReservations, $exceptResources, $ignoreTimeEndedActive, $excludedReservationResourceId);
     }
 
     /**

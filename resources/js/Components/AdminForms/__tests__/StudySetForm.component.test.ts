@@ -173,11 +173,10 @@ describe('StudySetForm.vue', () => {
       expect(vm.form.courses).toHaveLength(0);
     });
 
-    it('disables add review button when no saved courses exist', () => {
+    it('hides add review button when no saved courses exist', () => {
       wrapper = createWrapper();
       const buttons = wrapper.findAll('button').filter(b => b.text().includes('Pridėti atsiliepimą'));
-      expect(buttons.length).toBe(1);
-      expect(buttons[0]!.attributes('disabled')).toBeDefined();
+      expect(buttons).toHaveLength(0);
     });
   });
 
@@ -309,5 +308,24 @@ describe('StudySetForm.vue', () => {
 
       expect(wrapper.emitted('delete')).toHaveLength(1);
     });
+  });
+  it('explains the save-first workflow and hides adding reviews without saved courses', () => {
+    wrapper = createWrapper();
+    expect(wrapper.text()).toContain('Pirmiausia išsaugok dalykus.');
+    expect(wrapper.findAll('button').some(button => button.text().includes('Pridėti atsiliepimą'))).toBe(false);
+  });
+
+  it('preserves saved reviews and removes them when their course is removed', async () => {
+    wrapper = createWrapper({ studySet: {
+      ...defaultStudySet,
+      courses: [{ id: 'course-1', name: { lt: 'Dalykas', en: 'Course' }, semester: 'autumn', credits: 5, order: 0, is_visible: true }],
+      reviews: [{ id: 'review-1', study_set_course_id: 'course-1', lecturer: { lt: 'Dėstytojas', en: 'Lecturer' }, comment: { lt: 'Komentaras', en: 'Comment' }, is_visible: true }],
+    } });
+    const vm = wrapper.vm as unknown as StudySetFormVm;
+    expect(vm.form.reviews).toHaveLength(1);
+    expect(wrapper.text()).not.toContain('Pirmiausia išsaugok dalykus.');
+    vm.removeCourse(0);
+    await nextTick();
+    expect(vm.form.reviews).toHaveLength(0);
   });
 });

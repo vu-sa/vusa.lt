@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\EnsureReservationCapacity;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreReservationResourceRequest;
+use App\Http\Requests\UpdateReservationResourceRequest;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
+use App\Models\Resource;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ReservationResourceController extends AdminController
 {
@@ -20,33 +24,59 @@ class ReservationResourceController extends AdminController
         return redirect()->route('reservations.show', $reservationResource->reservation);
     }
 
-    public function store(StoreReservationResourceRequest $request)
+    public function store(StoreReservationResourceRequest $request): RedirectResponse
     {
-        $reservationResource = new ReservationResource;
+        $attributes = $request->resourceAttributes();
 
-        $reservationResource->fill($request->validated());
-        $reservationResource->save();
+        DB::transaction(function () use ($request, $attributes): void {
+            $this->ensureCapacity($attributes);
+            $reservation = Reservation::query()->findOrFail($request->validated('reservation_id'));
+            $this->handleAuthorization('update', $reservation);
+
+            ReservationResource::create([...$attributes, 'reservation_id' => $reservation->id]);
+        }, 3);
 
         return back()->with('success', $this->entityMessage('created', 'reservationResource'));
     }
 
-    /**
-     * Only used to update the amount of a reservation resource.
-     */
-    public function update(Request $request, ReservationResource $reservationResource): RedirectResponse
+    public function update(UpdateReservationResourceRequest $request, ReservationResource $reservationResource): RedirectResponse
     {
-        $reservation = Reservation::query()->find($reservationResource->reservation_id);
+        $attributes = $request->resourceAttributes();
 
-        $this->handleAuthorization('update', $reservation);
+        DB::transaction(function () use ($reservationResource, $attributes): void {
+            $locked = ReservationResource::query()->lockForUpdate()->findOrFail($reservationResource->id);
+            Resource::query()->whereIn('id', [$locked->resource_id, $attributes['resource_id']])
+                ->orderBy('id')->lockForUpdate()->get();
 
-        $reservationResource->start_time = Carbon::createFromTimestampMs($request->start_time, 'Europe/Vilnius');
-        $reservationResource->end_time = Carbon::createFromTimestampMs($request->end_time, 'Europe/Vilnius');
-        $reservationResource->resource_id = $request->resource_id;
-        $reservationResource->quantity = $request->quantity;
+            if ((string) $locked->state !== 'created') {
+                throw new AuthorizationException(__('reservations.messages.edit_requires_created'));
+            }
 
-        $reservationResource->save();
+            $this->ensureCapacity($attributes, $locked->id);
+            $this->handleAuthorization('update', $locked->reservation);
+            $locked->update($attributes);
+        }, 3);
 
         return back()->with('success', $this->entityMessage('updated', 'reservationResource'));
+    }
+
+    private function ensureCapacity(array $attributes, ?int $excludedReservationResourceId = null): void
+    {
+        try {
+            EnsureReservationCapacity::execute(
+                [['id' => $attributes['resource_id'], 'quantity' => $attributes['quantity']]],
+                $attributes['start_time'],
+                $attributes['end_time'],
+                $excludedReservationResourceId,
+            );
+        } catch (ValidationException $exception) {
+            $errors = [];
+            foreach ($exception->errors() as $key => $messages) {
+                $errors[$key === 'resources.0.id' ? 'resource_id' : 'quantity'] = $messages;
+            }
+
+            throw ValidationException::withMessages($errors);
+        }
     }
 
     public function destroy(ReservationResource $reservationResource)

@@ -89,6 +89,18 @@ test('cannot update resource in invalid state', function () {
 
 ## Test Environment
 
+### Reservation row-lock tests
+
+The optional MariaDB tests use two connections to a temporary database to check competing capacity
+claims and approval permissions after an edit. They require Sail's database service and permission
+to create and drop databases; the generated database is removed after each test.
+
+```bash
+./vendor/bin/sail exec -e RUN_MYSQL_CONCURRENCY_TESTS=1 laravel.test php artisan test --compact tests/Feature/Admin/Reservations/ReservationResourceConcurrencyTest.php
+```
+
+They are skipped in the default SQLite suite, which cannot exercise MySQL row locks.
+
 ### Local Development
 - Uses Docker services via Laravel Sail (MySQL, Redis, Typesense)
 - Admin operations use database driver

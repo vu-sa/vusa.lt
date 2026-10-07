@@ -107,6 +107,7 @@ return [
         'reversion_reason' => 'Priežastis: :reason',
     ],
     'messages' => [
+        'edit_requires_created' => 'Išteklių galima redaguoti tik kol jis dar nepatvirtintas. Paprašyk administratoriaus grąžinti jį į pateiktą būseną arba atšauk ir pateik iš naujo.',
         'backtrack_forbidden' => 'Neturi teisės atšaukti šio rezervacijos veiksmo.',
         'backtrack_invalid_state' => 'Šioje būsenoje nėra veiksmo, kurį galima atšaukti.',
         'backtrack_missing_approval' => 'Nerastas aktyvus patvirtinimas, kurį galima atšaukti.',

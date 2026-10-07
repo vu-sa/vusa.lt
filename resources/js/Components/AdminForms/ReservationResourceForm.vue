@@ -10,6 +10,9 @@
 
     <!-- Form content -->
     <div v-else class="space-y-4">
+      <p v-for="(error, field) in reservationResourceForm.errors" :key="field" role="alert" class="text-sm text-destructive">
+        {{ error }}
+      </p>
       <!-- Date Range Picker -->
       <div class="space-y-2">
         <Label for="reservation-period">{{ capitalize($t('entities.reservation.period')) }} <span class="text-destructive">*</span></Label>

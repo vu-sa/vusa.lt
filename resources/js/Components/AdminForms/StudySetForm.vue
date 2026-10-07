@@ -154,12 +154,12 @@
       </ol>
 
       <div class="space-y-2">
-        <Button variant="outline" type="button" class="pointer-coarse:min-h-11" :disabled="savedCourses.length === 0" @click="addReview">
+        <Button v-if="savedCourses.length > 0" variant="outline" type="button" class="pointer-coarse:min-h-11" @click="addReview">
           <Plus class="size-4" />
           {{ $t("Pridėti atsiliepimą") }}
         </Button>
         <p v-if="savedCourses.length === 0" class="text-xs text-muted-foreground">
-          {{ $t("Pirmiausia pridėk ir išsaugok bent vieną dalyką.") }}
+          {{ $t('Pirmiausia išsaugok dalykus. Atsiliepimus galėsi pridėti redaguodamas rinkinį.') }}
         </p>
       </div>
     </FormSection>
@@ -356,6 +356,10 @@ const addCourse = () => {
 };
 
 const removeCourse = (index: number) => {
+  const course = form.courses[index];
+  if (course.id) {
+    form.reviews = form.reviews.filter(review => review.study_set_course_id !== course.id);
+  }
   form.courses.splice(index, 1);
 };
 

@@ -41,7 +41,7 @@ class StoreStudySetRequest extends FormRequest
             'courses.*.credits' => 'required|integer|min:1',
             'courses.*.order' => 'required|integer|min:0',
             'courses.*.is_visible' => 'boolean',
-            'reviews' => 'nullable|array',
+            'reviews' => 'nullable|array|max:0',
             'reviews.*.lecturer.lt' => 'required|string|max:255',
             'reviews.*.lecturer.en' => 'nullable|string|max:255',
             'reviews.*.comment.lt' => 'required|string|max:5000',

@@ -39,16 +39,17 @@ class ResourceCapacityCalculator
         string $symbolEnd = '>=',
         array $exceptReservations = [],
         array $exceptResources = [],
-        bool $ignoreTimeEndedActive = false
+        bool $ignoreTimeEndedActive = false,
+        ?int $excludedReservationResourceId = null
     ): int {
         $query = $this->buildActiveReservationsQuery($datetime, $symbolStart, $symbolEnd);
 
-        $this->applyExceptions($query, $exceptReservations, $exceptResources);
+        $this->applyExceptions($query, $exceptReservations, $exceptResources, $excludedReservationResourceId);
 
         $usedCapacity = $query->sum('quantity');
 
         if ($ignoreTimeEndedActive) {
-            $usedCapacity -= $this->calculateTimeEndedActiveCapacity($datetime, $symbolStart, $symbolEnd);
+            $usedCapacity -= $this->calculateTimeEndedActiveCapacity($datetime, $symbolStart, $symbolEnd, $exceptReservations, $exceptResources, $excludedReservationResourceId);
         }
 
         return $this->resource->capacity - $usedCapacity;
@@ -67,11 +68,12 @@ class ResourceCapacityCalculator
         Carbon $datetime,
         array $exceptReservations = [],
         array $exceptResources = [],
-        bool $ignoreTimeEndedActive = false
+        bool $ignoreTimeEndedActive = false,
+        ?int $excludedReservationResourceId = null
     ): array {
         return [
-            'before' => $this->calculateLeftCapacityAtTime($datetime, '<', '>=', $exceptReservations, $exceptResources, $ignoreTimeEndedActive),
-            'after' => $this->calculateLeftCapacityAtTime($datetime, '<=', '>', $exceptReservations, $exceptResources, $ignoreTimeEndedActive),
+            'before' => $this->calculateLeftCapacityAtTime($datetime, '<', '>=', $exceptReservations, $exceptResources, $ignoreTimeEndedActive, $excludedReservationResourceId),
+            'after' => $this->calculateLeftCapacityAtTime($datetime, '<=', '>', $exceptReservations, $exceptResources, $ignoreTimeEndedActive, $excludedReservationResourceId),
         ];
     }
 
@@ -88,17 +90,18 @@ class ResourceCapacityCalculator
         TimeRange $timeRange,
         array $exceptReservations = [],
         array $exceptResources = [],
-        bool $ignoreTimeEndedActive = false
+        bool $ignoreTimeEndedActive = false,
+        ?int $excludedReservationResourceId = null
     ): array {
-        $reservations = $this->getReservationsInRange($timeRange, $exceptReservations, $exceptResources);
+        $reservations = $this->getReservationsInRange($timeRange, $exceptReservations, $exceptResources, $excludedReservationResourceId);
 
         $capacityTimeline = [];
 
         // Add capacity points for each reservation start/end
-        $this->addReservationCapacityPoints($capacityTimeline, $reservations, $timeRange, $ignoreTimeEndedActive);
+        $this->addReservationCapacityPoints($capacityTimeline, $reservations, $timeRange, $ignoreTimeEndedActive, $exceptReservations, $exceptResources, $excludedReservationResourceId);
 
         // Add capacity points for range boundaries
-        $this->addRangeCapacityPoints($capacityTimeline, $timeRange, $exceptReservations, $exceptResources, $ignoreTimeEndedActive);
+        $this->addRangeCapacityPoints($capacityTimeline, $timeRange, $exceptReservations, $exceptResources, $ignoreTimeEndedActive, $excludedReservationResourceId);
 
         // Sort by timestamp
         ksort($capacityTimeline);
@@ -175,16 +178,22 @@ class ResourceCapacityCalculator
     private function calculateTimeEndedActiveCapacity(
         Carbon $datetime,
         string $symbolStart,
-        string $symbolEnd
+        string $symbolEnd,
+        array $exceptReservations,
+        array $exceptResources,
+        ?int $excludedReservationResourceId
     ): int {
         $now = Carbon::now();
 
-        return (int) $this->resource
+        $query = $this->resource
             ->active_reservations()
             ->wherePivot('start_time', $symbolStart, $datetime)
             ->wherePivot('end_time', $symbolEnd, $datetime)
-            ->wherePivot('end_time', '<', $now)
-            ->sum('quantity');
+            ->wherePivot('end_time', '<', $now);
+
+        $this->applyExceptions($query, $exceptReservations, $exceptResources, $excludedReservationResourceId);
+
+        return (int) $query->sum('quantity');
     }
 
     /**
@@ -210,10 +219,14 @@ class ResourceCapacityCalculator
      * @param  array<int, string>  $exceptReservations
      * @param  array<int, string>  $exceptResources
      */
-    private function applyExceptions($query, array $exceptReservations, array $exceptResources): void
+    private function applyExceptions($query, array $exceptReservations, array $exceptResources, ?int $excludedReservationResourceId = null): void
     {
         if (! empty($exceptReservations) && in_array($this->resource->id, $exceptResources)) {
             $query->whereNotIn('reservations.id', $exceptReservations);
+        }
+
+        if ($excludedReservationResourceId !== null) {
+            $query->wherePivot('id', '!=', $excludedReservationResourceId);
         }
     }
 
@@ -227,14 +240,15 @@ class ResourceCapacityCalculator
     private function getReservationsInRange(
         TimeRange $timeRange,
         array $exceptReservations,
-        array $exceptResources
+        array $exceptResources,
+        ?int $excludedReservationResourceId = null
     ): Collection {
         $query = $this->resource
             ->active_reservations()
             ->wherePivot('start_time', '<=', $timeRange->end)
             ->wherePivot('end_time', '>=', $timeRange->start);
 
-        $this->applyExceptions($query, $exceptReservations, $exceptResources);
+        $this->applyExceptions($query, $exceptReservations, $exceptResources, $excludedReservationResourceId);
 
         /** @var Collection<int, Reservation> $result */
         $result = $query->get();
@@ -252,9 +266,12 @@ class ResourceCapacityCalculator
         array &$capacityTimeline,
         Collection $reservations,
         TimeRange $timeRange,
-        bool $ignoreTimeEndedActive = false
+        bool $ignoreTimeEndedActive,
+        array $exceptReservations,
+        array $exceptResources,
+        ?int $excludedReservationResourceId
     ): void {
-        $reservations->each(function (Reservation $reservation) use (&$capacityTimeline, $timeRange, $ignoreTimeEndedActive): void {
+        $reservations->each(function (Reservation $reservation) use (&$capacityTimeline, $timeRange, $ignoreTimeEndedActive, $exceptReservations, $exceptResources, $excludedReservationResourceId): void {
             /** @var ReservationResource $pivot */
             $pivot = $reservation->pivot;
 
@@ -268,12 +285,12 @@ class ResourceCapacityCalculator
             $startKey = (string) $effectiveStart->getTimestampMs();
             $endKey = (string) $effectiveEnd->getTimestampMs();
 
-            $capacityTimeline[$startKey] = $this->calculateCapacityAtTimeArray($effectiveStart, [], [], $ignoreTimeEndedActive) + [
+            $capacityTimeline[$startKey] = $this->calculateCapacityAtTimeArray($effectiveStart, $exceptReservations, $exceptResources, $ignoreTimeEndedActive, $excludedReservationResourceId) + [
                 'reservation' => $this->formatReservationData($reservation),
                 'start' => true,
             ];
 
-            $capacityTimeline[$endKey] = $this->calculateCapacityAtTimeArray($effectiveEnd, [], [], $ignoreTimeEndedActive) + [
+            $capacityTimeline[$endKey] = $this->calculateCapacityAtTimeArray($effectiveEnd, $exceptReservations, $exceptResources, $ignoreTimeEndedActive, $excludedReservationResourceId) + [
                 'reservation' => $this->formatReservationData($reservation),
                 'end' => true,
             ];
@@ -292,13 +309,14 @@ class ResourceCapacityCalculator
         TimeRange $timeRange,
         array $exceptReservations,
         array $exceptResources,
-        bool $ignoreTimeEndedActive = false
+        bool $ignoreTimeEndedActive = false,
+        ?int $excludedReservationResourceId = null
     ): void {
         $startKey = (string) $timeRange->getStartTimestampMs();
         $endKey = (string) $timeRange->getEndTimestampMs();
 
-        $capacityTimeline[$startKey] = $this->calculateCapacityAtTimeArray($timeRange->start, $exceptReservations, $exceptResources, $ignoreTimeEndedActive);
-        $capacityTimeline[$endKey] = $this->calculateCapacityAtTimeArray($timeRange->end, $exceptReservations, $exceptResources, $ignoreTimeEndedActive);
+        $capacityTimeline[$startKey] = $this->calculateCapacityAtTimeArray($timeRange->start, $exceptReservations, $exceptResources, $ignoreTimeEndedActive, $excludedReservationResourceId);
+        $capacityTimeline[$endKey] = $this->calculateCapacityAtTimeArray($timeRange->end, $exceptReservations, $exceptResources, $ignoreTimeEndedActive, $excludedReservationResourceId);
     }
 
     /**

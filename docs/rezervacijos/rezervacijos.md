@@ -3,11 +3,12 @@ doc_status: reviewed
 title: Rezervacijos
 area: reservations
 models: [Reservation, ReservationResource, ReservationDraft, Approval]
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-08
 tests:
   - tests/Feature/Admin/Reservations/ReservationControllerTest.php
   - tests/Feature/Admin/Reservations/ReservationCartTest.php
   - tests/Feature/Admin/Reservations/ResourceReservationTest.php
+  - tests/Feature/Admin/Reservations/ReservationResourceConcurrencyTest.php
   - tests/Feature/Admin/Dashboard/ReservationsDashboardTest.php
   - tests/Feature/Approvals/ApprovalServiceTest.php
   - tests/Feature/Approvals/ApprovalControllerTest.php
@@ -184,7 +185,8 @@ ir netrukdomas atlikti sprendimus.
 
 - **Atšaukti** išteklių ar visą rezervaciją, kol daiktas neišduotas (būsena „pateikta“ arba
   „rezervuota“).
-- **Pridėti išteklių** prie jau sukurtos rezervacijos, pakeisti jo kiekį arba laiką. Norėdamas vienam
+- **Pridėti išteklių** prie jau sukurtos rezervacijos. Išteklį, jo kiekį ar laiką galima keisti tik būsenoje **pateikta**. Patvirtintą išteklį pirmiausia reikia grąžinti į pateiktą būseną (tai gali išteklio administratorius)
+  arba atšaukti ir pateikti iš naujo. Norėdamas vienam
   daiktui nustatyti kitą skolinimosi laiką nei visai rezervacijai, pridėk jį jau sukūręs rezervaciją.
 - **Pridėti kitus teikėjus.** Pridėti naudotojai gauna pranešimą ir tampa lygiaverčiais teikėjais:
   mato rezervaciją, gali ją keisti ir atšaukti.
@@ -193,6 +195,9 @@ ir netrukdomas atlikti sprendimus.
 
 Pačios rezervacijos (pavadinimo, laikotarpio) po pateikimo tiesiogiai redaguoti negalima. Keičiami
 tik jos ištekliai.
+
+Keičiant ar pridedant išteklių tikrinamas laisvas kiekis pasirinktu laikotarpiu. Jei jo neužtenka,
+pakeitimai neišsaugomi ir forma parodo klaidą. Galima rezervuoti ir kitų padalinių išteklius.
 
 ## Kas ką gali {#teises}
 

@@ -38,10 +38,10 @@ class SerializeResourceAvailability
     /**
      * The flexible free quantity alone, for callers that only need the number.
      */
-    public static function available(Resource $resource, Carbon|int $start, Carbon|int $end): int
+    public static function available(Resource $resource, Carbon|int $start, Carbon|int $end, ?int $excludedReservationResourceId = null): int
     {
         return $resource->lowestCapacityAtDateTimeRange(
-            $resource->getCapacityAtDateTimeRange($start, $end, [], [], true)
+            $resource->getCapacityAtDateTimeRange($start, $end, [], [], true, $excludedReservationResourceId)
         );
     }
 

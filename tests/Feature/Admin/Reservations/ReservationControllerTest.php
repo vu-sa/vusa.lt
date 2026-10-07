@@ -436,7 +436,7 @@ describe('reservationResources.store', function (): void {
      * somebody else's reservation.
      */
     test('a user attached to the reservation can add a resource to it', function (): void {
-        $resource = Resource::factory()->for($this->tenant)->create();
+        $resource = Resource::factory()->for($this->tenant)->create(['is_reservable' => true, 'capacity' => 1]);
 
         asUser($this->reservationManager)
             ->post(route('reservationResources.store'), [
@@ -446,7 +446,7 @@ describe('reservationResources.store', function (): void {
                 'start_time' => now()->addDay()->getTimestampMs(),
                 'end_time' => now()->addDay()->addHours(2)->getTimestampMs(),
             ])
-            ->assertRedirect();
+            ->assertRedirect()->assertSessionHasNoErrors();
 
         expect($this->reservation->resources()->where('resources.id', $resource->id)->exists())->toBeTrue();
     });

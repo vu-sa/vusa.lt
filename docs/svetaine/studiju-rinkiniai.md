@@ -3,8 +3,9 @@ doc_status: reviewed
 title: Studijų rinkiniai
 area: studySets
 models: [StudySet]
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-08
 tests:
+  - tests/Browser/StudySetReviewsTest.php
   - tests/Feature/Admin/StudySets/StudySetControllerTest.php
   - resources/js/Components/AdminForms/__tests__/StudySetForm.component.test.ts
 ---
@@ -43,9 +44,9 @@ Puslapio viršuje spausk **Naujas studijų rinkinys** (arba eik adresu `/mano/st
 5. **Matomumas** – pažymėk, ar rinkinys iškart matomas viešoje svetainėje.
 6. **Dalykų pridėjimas:**
    - Spausk **Pridėti dalyką**.
-   - Įvesk dalyko pavadinimą ir oficialų kodą.
-   - Jei turi atsiliepimų, prie dalyko pridėk atsiliepimą (atsiliepimo tekstas, dėstytojo vardas ir pavardė).
-7. Spausk **Išsaugoti**. Kartu išsaugomi dalykai ir atsiliepimai.
+   - Įvesk dalyko pavadinimą, semestrą ir kreditų skaičių.
+7. Spausk **Išsaugoti**. Išsaugomi rinkinys ir jo dalykai.
+8. Atverk išsaugotą rinkinį redaguoti ir pridėk atsiliepimus prie išsaugotų dalykų.
 
 ### Redagavimas
 
@@ -55,6 +56,9 @@ Paspausk rinkinio pavadinimo sąraše arba veiksmų meniu pasirink **Redaguoti**
 - Pridėti naujų dalykų ar pašalinti esamus.
 - Koreguoti dalykų eiliškumą.
 - Pridėti ar atnaujinti studentų atsiliepimus.
+
+Atsiliepimą galima susieti tik su išsaugotu šio rinkinio dalyku. Naują dalyką pirmiausia išsaugok,
+tada pridėk jo atsiliepimą. Pašalinus dalyką, pašalinami ir jo atsiliepimai.
 
 Atlikęs pakeitimus spausk **Išsaugoti**.
 

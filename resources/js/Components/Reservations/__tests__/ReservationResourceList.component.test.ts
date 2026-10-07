@@ -187,4 +187,10 @@ describe('ReservationResourceList', () => {
     expect(rows[0].findAll('details li span.line-through')).toHaveLength(1);
     expect(rows[1].find('details').exists()).toBe(false);
   });
+  it('hides editing for an approved item while retaining removal and backtracking', () => {
+    const wrapper = mountList([item('1', 'reserved', { approvable: true, backtrackable: true })]);
+    expect(wrapper.find('[aria-label="Redaguoti"]').exists()).toBe(false);
+    expect(wrapper.find('[aria-label="Pašalinti"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain('reservations.actions.backtrack');
+  });
 });

@@ -107,6 +107,7 @@ return [
         'reversion_reason' => 'Reason: :reason',
     ],
     'messages' => [
+        'edit_requires_created' => 'You can edit an item only before approval. Ask a resource manager to return it to the submitted state, or cancel it and submit it again.',
         'backtrack_forbidden' => 'You cannot undo this reservation action.',
         'backtrack_invalid_state' => 'There is no action to undo in the current state.',
         'backtrack_missing_approval' => 'No active approval was found to undo.',

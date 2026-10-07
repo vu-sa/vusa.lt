@@ -66,6 +66,7 @@ class StudySetCourse extends Model
         return $this->belongsTo(StudySet::class);
     }
 
+    /** @return HasMany<LecturerReview, $this> */
     public function reviews(): HasMany
     {
         return $this->hasMany(LecturerReview::class);
