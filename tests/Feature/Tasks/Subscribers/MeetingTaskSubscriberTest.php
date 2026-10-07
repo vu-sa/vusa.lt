@@ -21,6 +21,7 @@ use App\Models\Vote;
 use App\Notifications\MeetingAgendaCompletedNotification;
 use App\Notifications\MeetingCreatedNotification;
 use App\Notifications\TaskAssignedNotification;
+use App\Services\InstitutionSubscriptionService;
 use App\Settings\MeetingSettings;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
@@ -480,17 +481,17 @@ describe('MeetingTaskSubscriber', function (): void {
             );
         });
 
-        test('does not notify followers who have muted the institution', function (): void {
+        test('does not notify users who unfollowed the institution', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
             $institution = Institution::factory()->for($tenant)->create();
             publishInstitutionMeetings($institution);
 
-            // Create a follower who has muted the institution
-            $mutedFollower = User::factory()->create();
-            $mutedFollower->followedInstitutions()->attach($institution);
-            $mutedFollower->mutedInstitutions()->attach($institution, ['muted_at' => now()]);
+            // The user opted out before the meeting was created.
+            $formerFollower = User::factory()->create();
+            $formerFollower->followedInstitutions()->attach($institution);
+            app(InstitutionSubscriptionService::class)->unfollow($formerFollower, $institution);
 
             // Create meeting
             $meeting = Meeting::factory()
@@ -500,7 +501,7 @@ describe('MeetingTaskSubscriber', function (): void {
             // Dispatch the event
             event(new MeetingFullyCreated($meeting));
 
-            Notification::assertNotSentTo($mutedFollower, MeetingCreatedNotification::class);
+            Notification::assertNotSentTo($formerFollower, MeetingCreatedNotification::class);
         });
 
         test('follower only receives one notification even if they follow multiple meeting institutions', function (): void {
@@ -628,7 +629,7 @@ describe('MeetingTaskSubscriber', function (): void {
             expect(GetInstitutionFollowersToNotify::execute($meeting))->toBeEmpty();
         });
 
-        test('returns followers who have not muted the institution', function (): void {
+        test('returns only current followers of the institution', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -639,10 +640,10 @@ describe('MeetingTaskSubscriber', function (): void {
             $follower = User::factory()->create();
             $follower->followedInstitutions()->attach($institution);
 
-            // Create a muted follower
-            $mutedFollower = User::factory()->create();
-            $mutedFollower->followedInstitutions()->attach($institution);
-            $mutedFollower->mutedInstitutions()->attach($institution, ['muted_at' => now()]);
+            // The former follower opted out.
+            $formerFollower = User::factory()->create();
+            $formerFollower->followedInstitutions()->attach($institution);
+            app(InstitutionSubscriptionService::class)->unfollow($formerFollower, $institution);
 
             $meeting = Meeting::factory()
                 ->hasAttached($institution)

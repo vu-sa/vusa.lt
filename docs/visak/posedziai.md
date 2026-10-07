@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Posėdžiai
 area: meetings
 models: [Meeting]
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-07
 tests:
   - tests/Feature/Meetings/AgendaItemPrivacyTest.php
   - tests/Feature/Admin/Calendar/MeetingControllerTest.php
@@ -213,8 +213,9 @@ tik super administratorius.
   [sekretoriai](/visak/institucijos#sekretoriai) – tik jiems. Jei atstovų nėra, užduotys nekuriamos.
 - Priminimo laiką (24, 12 ar 1 val. prieš) galima pakeisti [pranešimų nustatymuose](/mano/pranesimai).
   Apie ištrintus posėdžius nepriminama.
-- Sekėjas, nutildęs instituciją arba nebegalintis matyti posėdžio, pranešimų negauna. Užduotį
-  gavęs žmogus apie tą patį posėdį atskiro pranešimo negauna.
+- Nebesekant institucijos arba nebegalint matyti posėdžio, sekėjams skirtų pranešimų negaunama.
+  Pranešimai dėl pareigų siunčiami atskirai. Užduotį gavęs žmogus apie tą patį posėdį atskiro
+  pranešimo negauna.
 - Užregistravus posėdį, institucijos užduotis dėl periodiškumo užbaigiama.
 
 Plačiau apie užduotis – [Užduotys](/mano/uzduotys).

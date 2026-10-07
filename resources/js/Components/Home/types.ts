@@ -29,7 +29,6 @@ export interface HomeMeeting {
 export interface HomeFollowedInstitution {
   id: string;
   name: string;
-  is_muted: boolean;
   activity_status: InstitutionActivityStatusName;
 }
 

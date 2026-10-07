@@ -1038,23 +1038,6 @@ declare global {
       institution_type_id: number
     }
 
-    export interface InstitutionNotificationMute {
-      // columns
-      id: string
-      user_id: string
-      institution_id: string
-      muted_at: string
-      created_at?: string | null
-      updated_at?: string | null
-      // relations
-      user?: User
-      institution?: Institution
-      // counts
-      // exists
-      user_exists: boolean
-      institution_exists: boolean
-    }
-
     export interface InstitutionSecretary {
       // columns
       id: string
@@ -2466,7 +2449,6 @@ declare global {
       secretaried_institutions?: Institution[]
       administered_institutions?: Institution[]
       followed_institutions?: Institution[]
-      muted_institutions?: Institution[]
       reservations?: Reservation[]
       reservation_draft?: ReservationDraft
       push_subscriptions?: PushSubscription[]
@@ -2486,7 +2468,6 @@ declare global {
       secretaried_institutions_count: number
       administered_institutions_count: number
       followed_institutions_count: number
-      muted_institutions_count: number
       reservations_count: number
       push_subscriptions_count: number
       roles_count: number
@@ -2505,7 +2486,6 @@ declare global {
       secretaried_institutions_exists: boolean
       administered_institutions_exists: boolean
       followed_institutions_exists: boolean
-      muted_institutions_exists: boolean
       reservations_exists: boolean
       reservation_draft_exists: boolean
       push_subscriptions_exists: boolean

@@ -234,19 +234,14 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // has to assemble Ziggy routes from raw record fields itself.
         Route::post('navigation/resolve-url', [NavigationLinkApiController::class, 'resolveUrl'])->name('navigation.resolveUrl');
 
-        // Institution subscription (follow/mute) management
+        // Institution follow management
         Route::prefix('institutions')->name('institutions.')->group(function (): void {
             Route::post('follows', [InstitutionSubscriptionApiController::class, 'followMany'])->name('follows.store');
             Route::delete('follows', [InstitutionSubscriptionApiController::class, 'unfollowMany'])->name('follows.destroy');
             Route::get('{institution}/subscription-status', [InstitutionSubscriptionApiController::class, 'status'])->name('subscription.status');
             Route::post('{institution}/follow', [InstitutionSubscriptionApiController::class, 'follow'])->name('follow');
             Route::delete('{institution}/follow', [InstitutionSubscriptionApiController::class, 'unfollow'])->name('unfollow');
-            Route::post('{institution}/mute', [InstitutionSubscriptionApiController::class, 'mute'])->name('mute');
-            Route::delete('{institution}/mute', [InstitutionSubscriptionApiController::class, 'unmute'])->name('unmute');
         });
-
-        // Notification subscription preferences
-        Route::post('notification-subscriptions/reset', [InstitutionSubscriptionApiController::class, 'reset'])->name('subscriptions.reset');
 
         // User preferences (sidebar customization, recent pages)
         Route::patch('user-preferences', [UserPreferencesApiController::class, 'updateUIPreferences'])->name('user-preferences.update');

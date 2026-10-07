@@ -361,7 +361,7 @@ return [
         'how_mute' => 'While muted, no emails, push or digests are sent, except registration emails to a duty inbox.',
         'how_tasks' => 'Task notifications go to the people the task is assigned to who still hold a duty in that institution. When secretaries are appointed for the term, meeting tasks go to them rather than to every representative.',
         'how_meetings' => 'Meeting reminders go to everyone holding a duty in the institution on the meeting day, and to that term\'s secretaries. Coordinators hear about a new meeting or a filled-in agenda; whoever carries the agenda task gets only the task notice.',
-        'how_followed' => 'Followed-institution notices reach you only when your duties do not already bring you the same news, and only if you have not muted the institution.',
+        'how_followed' => 'Followed-institution notices reach you only when your duties do not already bring you the same news. Unfollow the institution to stop receiving these notices.',
         'how_reservations' => 'Resource managers get only the approval request. The requester hears about the decision once — when the reservation\'s status changes.',
         'how_self' => 'You are never notified about your own action (an approval, closing a task, a status change).',
         'how_list' => 'You only see the notifications your duties and roles can bring you.',

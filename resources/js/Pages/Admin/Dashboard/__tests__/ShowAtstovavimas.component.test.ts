@@ -194,7 +194,7 @@ describe('layout', () => {
   it('shows followed institutions below the timeline', () => {
     wrapper = createWrapper(false, {
       total: 1,
-      items: [{ id: '5', name: 'VU SA', is_muted: false, activity_status: 'healthy' }],
+      items: [{ id: '5', name: 'VU SA', activity_status: 'healthy' }],
     });
 
     const timeline = wrapper.get('[data-slot="atstovavimas-timeline-phone-note"]');

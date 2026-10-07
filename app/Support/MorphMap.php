@@ -53,7 +53,6 @@ final class MorphMap
         'institution_activity_request' => Models\InstitutionActivityRequest::class,
         'institution_check_in' => Models\InstitutionCheckIn::class,
         'institution_follow' => Models\InstitutionFollow::class,
-        'institution_notification_mute' => Models\InstitutionNotificationMute::class,
         'lecturer_review' => Models\LecturerReview::class,
         'meeting' => Models\Meeting::class,
         'navigation' => Models\Navigation::class,

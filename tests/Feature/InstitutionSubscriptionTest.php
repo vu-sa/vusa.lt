@@ -32,14 +32,12 @@ describe('InstitutionSubscriptionService', function (): void {
             ->hasAttached($this->institution)
             ->create(['start_time' => '2025-10-01 10:00:00']);
         $this->service->follow($this->user, $this->institution);
-        $this->service->mute($this->user, $this->institution);
 
         $followed = GetFollowedInstitutions::execute($this->user);
 
         expect($followed['total'])->toBe(1)
             ->and($followed['items'][0]['id'])->toBe($this->institution->id)
-            ->and($followed['items'][0]['activity_status'])->toBe('overdue')
-            ->and($followed['items'][0]['is_muted'])->toBeTrue();
+            ->and($followed['items'][0]['activity_status'])->toBe('overdue');
     });
 
     test('followed institutions list is limited but counts them all', function (): void {
@@ -68,57 +66,12 @@ describe('InstitutionSubscriptionService', function (): void {
             ->and($this->user->followedInstitutions)->toBeEmpty();
     });
 
-    test('user can mute an institution', function (): void {
-        $this->service->mute($this->user, $this->institution);
-
-        expect($this->user->isInstitutionMuted($this->institution))->toBeTrue()
-            ->and($this->user->mutedInstitutions)->toHaveCount(1);
-    });
-
-    test('user can unmute an institution', function (): void {
-        $this->service->mute($this->user, $this->institution);
-        $this->service->unmute($this->user, $this->institution);
-
-        expect($this->user->isInstitutionMuted($this->institution))->toBeFalse()
-            ->and($this->user->mutedInstitutions)->toBeEmpty();
-    });
-
-    test('reset to defaults clears all mutes', function (): void {
-        // Follow and mute some institutions
-        $institution2 = Institution::factory()->for($this->tenant)->create();
-
-        $this->service->follow($this->user, $this->institution);
-        $this->service->mute($this->user, $this->institution);
-        $this->service->follow($this->user, $institution2);
-        $this->service->mute($this->user, $institution2);
-
-        // Reset with clearFollows = false
-        $this->service->resetToDefaults($this->user, clearFollows: false);
-
-        expect($this->user->mutedInstitutions()->count())->toBe(0)
-            ->and($this->user->followedInstitutions()->count())->toBe(2);
-    });
-
-    test('reset to defaults can clear follows too', function (): void {
-        $this->service->follow($this->user, $this->institution);
-        $this->service->mute($this->user, $this->institution);
-
-        // Reset with clearFollows = true
-        $this->service->resetToDefaults($this->user, clearFollows: true);
-
-        expect($this->user->mutedInstitutions()->count())->toBe(0)
-            ->and($this->user->followedInstitutions()->count())->toBe(0);
-    });
-
     test('get status returns correct values', function (): void {
         $this->service->follow($this->user, $this->institution);
-        $this->service->mute($this->user, $this->institution);
 
         $status = $this->service->getStatus($this->user, $this->institution);
 
-        expect($status['is_followed'])->toBeTrue()
-            ->and($status['is_muted'])->toBeTrue()
-            ->and($status['is_duty_based'])->toBeFalse();
+        expect($status)->toBe(['is_followed' => true, 'is_duty_based' => false]);
     });
 
     test('toggle follow works correctly', function (): void {
@@ -135,24 +88,9 @@ describe('InstitutionSubscriptionService', function (): void {
         expect($result)->toBeFalse()
             ->and($this->user->follows($this->institution))->toBeFalse();
     });
-
-    test('toggle mute works correctly', function (): void {
-        // Not muted initially
-        expect($this->user->isInstitutionMuted($this->institution))->toBeFalse();
-
-        // Toggle on
-        $result = $this->service->toggleMute($this->user, $this->institution);
-        expect($result)->toBeTrue()
-            ->and($this->user->isInstitutionMuted($this->institution))->toBeTrue();
-
-        // Toggle off
-        $result = $this->service->toggleMute($this->user, $this->institution);
-        expect($result)->toBeFalse()
-            ->and($this->user->isInstitutionMuted($this->institution))->toBeFalse();
-    });
 });
 
-describe('User follow/mute relationships', function (): void {
+describe('User follow relationships', function (): void {
     test('institution can have multiple followers', function (): void {
         $user2 = User::factory()->create();
 
@@ -170,31 +108,41 @@ describe('User follow/mute relationships', function (): void {
 
         expect($this->user->followedInstitutions)->toHaveCount(2);
     });
-
-    test('shouldNotifyForInstitution returns false when muted', function (): void {
-        $this->service->follow($this->user, $this->institution);
-        $this->service->mute($this->user, $this->institution);
-
-        expect($this->user->shouldNotifyForInstitution($this->institution))->toBeFalse();
-    });
-
-    test('shouldNotifyForInstitution returns true for followed institution', function (): void {
-        $this->service->follow($this->user, $this->institution);
-
-        expect($this->user->shouldNotifyForInstitution($this->institution))->toBeTrue();
-    });
-
-    test('shouldNotifyForInstitution returns false for unfollowed institution', function (): void {
-        expect($this->user->shouldNotifyForInstitution($this->institution))->toBeFalse();
-    });
 });
 
-describe('bulk follow API', function (): void {
+describe('institution follow API', function (): void {
     beforeEach(function (): void {
         $role = Role::firstOrCreate(['name' => 'Bulk Follow Reader', 'guard_name' => 'web']);
         $role->givePermissionTo(Permission::firstOrCreate(['name' => 'institutions.read.padalinys', 'guard_name' => 'web']));
         $this->reader = makeTenantUserWithRole($role->name, $this->tenant);
         $this->others = Institution::factory()->for($this->tenant)->count(2)->create();
+    });
+
+    test('single follow status and unfollow responses expose only follow state', function (): void {
+        asUser($this->reader)
+            ->postJson(route('api.v1.admin.institutions.follow', $this->institution))
+            ->assertOk()
+            ->assertJsonPath('data.is_followed', true);
+
+        expect($this->reader->follows($this->institution))->toBeTrue();
+
+        asUser($this->reader)
+            ->getJson(route('api.v1.admin.institutions.subscription.status', $this->institution))
+            ->assertOk()
+            ->assertExactJson(['success' => true, 'data' => ['is_followed' => true, 'is_duty_based' => false]]);
+
+        $this->service->follow($this->user, $this->institution);
+
+        asUser($this->reader)
+            ->deleteJson(route('api.v1.admin.institutions.unfollow', $this->institution))
+            ->assertOk()
+            ->assertExactJson(['success' => true, 'data' => [
+                'is_followed' => false,
+                'message' => __('visak.institution_unfollowed'),
+            ]]);
+
+        expect($this->reader->follows($this->institution))->toBeFalse();
+        expect($this->user->follows($this->institution))->toBeTrue();
     });
 
     test('follows every institution in one request and ignores ones already followed', function (): void {
@@ -243,9 +191,8 @@ describe('bulk follow API', function (): void {
         expect($this->reader->followedInstitutions()->count())->toBe(0);
     });
 
-    test('unfollows only the user\'s own follows and clears their mutes', function (): void {
+    test('unfollows only the user\'s own follows', function (): void {
         $this->others->each(fn (Institution $institution) => $this->service->follow($this->reader, $institution));
-        $this->service->mute($this->reader, $this->others[0]);
         $this->service->follow($this->user, $this->others[0]);
 
         asUser($this->reader)
@@ -255,7 +202,6 @@ describe('bulk follow API', function (): void {
             ->assertSuccessful();
 
         expect($this->reader->followedInstitutions()->count())->toBe(0)
-            ->and($this->reader->mutedInstitutions()->count())->toBe(0)
             ->and($this->user->follows($this->others[0]))->toBeTrue();
     });
 });

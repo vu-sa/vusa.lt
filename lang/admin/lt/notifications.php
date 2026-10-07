@@ -361,7 +361,7 @@ return [
         'how_mute' => 'Nutildžius nesiunčiami laiškai, push ir suvestinės, išskyrus registracijų laiškus pareigybės el. paštu.',
         'how_tasks' => 'Užduočių pranešimus gauna tie, kam užduotis priskirta ir kas vis dar turi pareigas toje institucijoje. Jei kadencijai paskirti sekretoriai, posėdžių užduotys tenka jiems, o ne visiems atstovams.',
         'how_meetings' => 'Posėdžių priminimai siunčiami visiems, kurie posėdžio dieną turi pareigas institucijoje, ir tos kadencijos sekretoriams. Apie naują posėdį ar užpildytą darbotvarkę sužino koordinatoriai; kam tenka darbotvarkės užduotis, gauna tik užduoties pranešimą.',
-        'how_followed' => 'Sekamų institucijų pranešimus gauni tik tada, kai tų pačių žinių negauni dėl pareigų, ir tik jei institucijos nenutildei.',
+        'how_followed' => 'Sekamų institucijų pranešimus gauni tik tada, kai tų pačių žinių negauni dėl pareigų. Nebenori jų gauti – nebesek institucijos.',
         'how_reservations' => 'Išteklių administratoriai gauna tik prašymą patvirtinti. Rezervavęs apie sprendimą sužino vieną kartą – kai pasikeičia rezervacijos būsena.',
         'how_self' => 'Apie savo paties veiksmą (patvirtinimą, užduoties uždarymą, būsenos pakeitimą) pranešimo negauni.',
         'how_list' => 'Čia matai tik tuos pranešimus, kuriuos gali gauti pagal savo pareigas ir roles.',

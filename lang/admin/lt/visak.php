@@ -11,11 +11,7 @@ return [
     'start_tour' => 'Pradėti turą',
     'institution_followed' => 'Seki instituciją',
     'institution_unfollowed' => 'Nebeseki institucijos',
-    'notifications_muted' => 'Pranešimai nutildyti',
-    'notifications_unmuted' => 'Pranešimai atstatyta',
-    'preferences_reset' => 'Nustatymai atstatyti',
     'cannot_unfollow_duty_institution' => 'Institucijos, kurioje atstovauji, nebesekti negalima',
-    'cannot_mute_duty_institution' => 'Institucijos, kurioje atstovauji, nutildyti negalima',
     'tenant_scope' => [
         'title' => 'Rodomi padaliniai',
         'description' => 'Pasirinkimas taikomas institucijų suvestinei, atstovų aktyvumui ir laiko juostai.',

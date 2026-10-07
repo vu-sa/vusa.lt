@@ -230,7 +230,7 @@ function markFollowed(ids: string[], followed: boolean): void {
 
 async function toggleFollow(institution: InstitutionRow): Promise<void> {
   const id = String(institution.id);
-  const followed = await subscriptions.toggleFollow(id, { is_followed: isFollowed(institution), is_muted: false, is_duty_based: false });
+  const followed = await subscriptions.toggleFollow(id, { is_followed: isFollowed(institution), is_duty_based: false });
   markFollowed([id], followed);
 }
 

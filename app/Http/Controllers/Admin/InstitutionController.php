@@ -183,7 +183,6 @@ class InstitutionController extends AdminController
 
             return $isFollowed || $u->can('follow', $institution) ? [
                 'is_followed' => $isFollowed,
-                'is_muted' => $u->isInstitutionMuted($institution),
                 'is_duty_based' => $u->hasInstitution($institution),
             ] : null;
         });

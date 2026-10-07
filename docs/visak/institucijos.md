@@ -3,12 +3,13 @@ doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-10-06
+last_reviewed: 2026-10-07
 tests:
   - tests/Feature/Admin/Management/InstitutionControllerTest.php
   - tests/Feature/Admin/Management/InstitutionCheckInTest.php
   - tests/Feature/Admin/People/InstitutionSecretaryTest.php
   - tests/Feature/InstitutionSubscriptionTest.php
+  - tests/Feature/Migrations/RemoveInstitutionNotificationMutesTest.php
   - tests/Feature/Institutions/InstitutionScopeTest.php
   - tests/Feature/Public/PublicMeetingVisibilityTest.php
   - tests/Feature/SoftDelete/ForceDeleteGuardsTest.php
@@ -280,7 +281,7 @@ Skirtuke **Pareigybės** matyti institucijos pareigybės ir jų nariai. Redaguot
 pareigybių tvarką (rodyklėmis, tada **Išsaugoti**) ir priskirti žmogų pareigybei. Pareigybės
 kuriamos ir tvarkomos [Pareigybių](/organizacija/pareigybes) skiltyje.
 
-### Sekti ir nutildyti {#sekti}
+### Sekti ir nebesekti {#sekti}
 
 Institucijas galima **sekti**: gausi pranešimus apie jos naujus posėdžius ir užpildytas
 darbotvarkes, o jos posėdžiai matysis tavo [Apžvalgoje](/visak/apzvalga). Sekti galima institucijos
@@ -289,8 +290,14 @@ puslapyje (**⋯ → Sekti**) arba sąraše, pažymėjus kelias institucijas. S�
 
 - Sekti galima institucijas, kurias galima matyti, ir kitų padalinių aktyvias institucijas, kurių
   posėdžiai vieši.
-- Savo institucijos sekamos automatiškai, kol jose einamos pareigos; to išjungti negalima.
-- **Nutildyti** – sekti toliau, bet pranešimų negauti.
+- **Nebesekti** – pašalinti instituciją iš sekamų sąrašo ir nebegauti jos sekėjams skirtų pranešimų.
+- Pranešimai dėl einamų pareigų nepriklauso nuo pasirinkimo sekti instituciją.
+
+<ChangelogNote version="v3.0" date="2026-10-02" title="Vienas pasirinkimas – sekti arba nebesekti">
+Atskiras institucijos nutildymas pašalintas. Anksčiau sektos ir nutildytos institucijos
+nebesekamos, kad jų pranešimai nebūtų vėl įjungti. Pranešimų nustatymuose išlieka laikinas
+visų pranešimų nutildymas ir siuntimo kanalų pasirinkimai.
+</ChangelogNote>
 
 ### Sukurti, redaguoti, ištrinti
 
@@ -333,7 +340,7 @@ pranešimus „Posėdžio nebuvo“ tvarko ir atstovų apie posėdžius klausia 
 | Koordinatorius [paklausia atstovų](#paklausti) | Tie patys | Vieną laišką „Ar vyko posėdis?“ apie visas jų institucijas, su koordinatoriaus žinute |
 | Gavėjas atsako „Nesu šio organo narys (-ė)“ | Klausęs koordinatorius, o automatinio priminimo atveju – institucijos koordinatoriai | Pranešimą patikrinti institucijos atstovus |
 | Užregistruojamas dabartinį veiklos laikotarpį apimantis posėdis arba pranešimas „Posėdžio nebuvo“ | – | Periodiškumo užduotis pažymima atlikta automatiškai |
-| Seki instituciją ir sukuriamas jos posėdis ar užpildoma darbotvarkė | Sekėjai, išskyrus nutildžiusius | Pranešimą |
+| Seki instituciją ir sukuriamas jos posėdis ar užpildoma darbotvarkė | Sekėjai, galintys matyti posėdį | Pranešimą |
 
 - Užduotis nekuriama per akademines atostogas, jei institucija turi suplanuotą posėdį ar galiojantį
   pranešimą, ir **neaktyvioms** institucijoms. Jos terminas nepatenka į atostogas.

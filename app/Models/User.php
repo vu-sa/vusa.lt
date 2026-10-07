@@ -64,7 +64,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property bool $name_was_changed
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read InstitutionNotificationMute|InstitutionFollow|Dutiable|InstitutionSecretary|null $pivot
+ * @property-read InstitutionFollow|Dutiable|InstitutionSecretary|null $pivot
  * @property-read Collection<int, Institution> $administeredInstitutions
  * @property-read Collection<int, Duty> $authorization_duties
  * @property-read Collection<int, Duty> $current_duties
@@ -75,7 +75,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read array $translatable_columns_from
  * @property-read mixed $has_password
  * @property-read Collection<int, Institution> $institutions
- * @property-read Collection<int, Institution> $mutedInstitutions
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read Collection<int, Permission> $permissions
  * @property-read Collection<int, Duty> $previous_duties
@@ -358,17 +357,6 @@ class User extends Authenticatable implements GuardsForceDelete
     }
 
     /**
-     * Institutions the user has muted notifications for.
-     */
-    public function mutedInstitutions(): BelongsToMany
-    {
-        return $this->belongsToMany(Institution::class, 'institution_notification_mutes')
-            ->using(InstitutionNotificationMute::class)
-            ->withPivot('muted_at')
-            ->withTimestamps();
-    }
-
-    /**
      * Check if the user is following a specific institution.
      */
     public function follows(Institution $institution): bool
@@ -377,33 +365,11 @@ class User extends Authenticatable implements GuardsForceDelete
     }
 
     /**
-     * Check if the user has muted a specific institution.
-     */
-    public function isInstitutionMuted(Institution $institution): bool
-    {
-        return $this->mutedInstitutions()->where('institution_id', $institution->id)->exists();
-    }
-
-    /**
      * Check if the user has a duty at a specific institution.
      */
     public function hasInstitution(Institution $institution): bool
     {
         return $this->institutions()->where('institutions.id', $institution->id)->exists();
-    }
-
-    /**
-     * Check if the user should receive notifications for a specific institution.
-     */
-    public function shouldNotifyForInstitution(Institution $institution): bool
-    {
-        // Check if explicitly muted
-        if ($this->isInstitutionMuted($institution)) {
-            return false;
-        }
-
-        // Notify if: user has duty at institution OR user follows institution
-        return $this->hasInstitution($institution) || $this->follows($institution);
     }
 
     public function reservations()

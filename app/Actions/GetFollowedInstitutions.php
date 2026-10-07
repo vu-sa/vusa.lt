@@ -27,7 +27,6 @@ class GetFollowedInstitutions
             $query->limit($limit);
         }
 
-        $mutedIds = $user->mutedInstitutions()->pluck('institutions.id');
         $activityStatusService = app(InstitutionActivityStatusService::class);
 
         // All check-ins, not only current ones: resolve() needs completed ones for lastActivityAt.
@@ -36,7 +35,6 @@ class GetFollowedInstitutions
             ->map(fn (Institution $institution): array => [
                 'id' => (string) $institution->id,
                 'name' => $institution->name,
-                'is_muted' => $mutedIds->contains($institution->id),
                 'activity_status' => $activityStatusService->resolve($institution)->status->value,
             ])
             ->values()

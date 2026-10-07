@@ -166,14 +166,13 @@ describe('FollowedInstitutionsList', () => {
     const wrapper = mount(FollowedInstitutionsList, {
       props: {
         followed: {
-          items: [{ id: 'i1', name: 'Senatas', is_muted: true, activity_status: 'healthy' }],
+          items: [{ id: 'i1', name: 'Senatas', activity_status: 'healthy' }],
           total: 12,
         },
       },
     });
 
     expect(wrapper.text()).toContain('Senatas');
-    expect(wrapper.find('[aria-label="Pranešimai nutildyti"]').exists()).toBe(true);
     expect(wrapper.find('header a').attributes('href')).toContain('institutions.index');
   });
 });

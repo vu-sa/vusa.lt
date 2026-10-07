@@ -16,11 +16,6 @@
         >
           {{ institution.name }}
         </Link>
-        <BellOff
-          v-if="institution.is_muted"
-          class="size-3.5 shrink-0 text-muted-foreground"
-          :aria-label="$t('Pranešimai nutildyti')"
-        />
         <StatusBadge :status="institutionActivityStatuses[institution.activity_status as InstitutionActivityStatus]" />
       </li>
     </ul>
@@ -30,7 +25,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { BellOff, Eye } from 'lucide-vue-next';
+import { Eye } from 'lucide-vue-next';
 
 import type { HomeFollowedInstitutions } from './types';
 

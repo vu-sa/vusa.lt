@@ -209,8 +209,6 @@ import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { Deferred, Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
-  Bell,
-  BellOff,
   Calendar as CalendarIcon,
   CalendarRange,
   Clock,
@@ -287,7 +285,6 @@ const props = defineProps<{
   } | null;
   subscription?: {
     is_followed: boolean;
-    is_muted: boolean;
     is_duty_based: boolean;
   } | null;
   /** An active institution outside the user's reach: its public face only (InstitutionPolicy::viewSummary). */
@@ -419,19 +416,17 @@ const recordFacts = computed<RecordFact[]>(() => {
 const permissions = computed(() => usePage().props.auth?.can as Record<string, boolean> | undefined);
 const canDeleteMeetings = computed(() => permissions.value?.['meetings.delete.padalinys'] ?? false);
 
-// --- Subscription (Sekti / Nutildyti) ---------------------------------------------------------
+// --- Subscription (Sekti / Nebesekti) ---------------------------------------------------------
 
 const isFollowed = ref(props.subscription?.is_followed ?? false);
-const isMuted = ref(props.subscription?.is_muted ?? false);
 const isDutyBased = computed(() => props.subscription?.is_duty_based ?? false);
 
 const subscriptionState = computed(() => ({
   is_followed: isFollowed.value,
-  is_muted: isMuted.value,
   is_duty_based: isDutyBased.value,
 }));
 
-const { toggleFollow: doToggleFollow, toggleMute: doToggleMute } = useInstitutionSubscription();
+const { toggleFollow: doToggleFollow } = useInstitutionSubscription();
 
 const toggleFollow = async () => {
   if (isDutyBased.value) {
@@ -440,18 +435,6 @@ const toggleFollow = async () => {
 
   const next = await doToggleFollow(String(props.institution.id), subscriptionState.value, ['subscription']);
   isFollowed.value = next;
-
-  if (!next) {
-    isMuted.value = false;
-  }
-};
-
-const toggleMute = async () => {
-  if (isDutyBased.value) {
-    return;
-  }
-
-  isMuted.value = await doToggleMute(String(props.institution.id), subscriptionState.value, ['subscription']);
 };
 
 // One primary action; everything else lives in ⋯ (.ai/rules/js-pages-admin.md).
@@ -493,10 +476,6 @@ const overflowActions = computed<ActionDescriptor[]>(() => {
       label: isFollowed.value ? $t('Nebesekti') : $t('Sekti'),
       icon: isFollowed.value ? EyeOff : Eye,
     });
-
-    if (isFollowed.value) {
-      actions.push({ key: 'mute', label: isMuted.value ? $t('Įjungti pranešimus') : $t('Nutildyti'), icon: isMuted.value ? Bell : BellOff });
-    }
   }
 
   return actions;
@@ -521,9 +500,6 @@ const handleRecordAction = (key: string) => {
       break;
     case 'follow':
       void toggleFollow();
-      break;
-    case 'mute':
-      void toggleMute();
       break;
   }
 };

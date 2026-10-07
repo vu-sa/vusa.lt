@@ -79,6 +79,7 @@ const createWrapper = (props: Record<string, unknown> = {}) => {
     overview = {},
     management = null,
     readOnly = false,
+    subscription = null,
     ...institution
   } = props;
 
@@ -101,6 +102,7 @@ const createWrapper = (props: Record<string, unknown> = {}) => {
       relatedInstitutions: [],
       management,
       readOnly,
+      subscription,
     },
     global: { stubs },
   });
@@ -235,6 +237,13 @@ describe('ShowInstitution.vue', () => {
     const wrapper = createWrapper({ can: { update: false, delete: false } });
 
     expect(wrapper.find('[data-testid="overflow-edit"]').exists()).toBe(false);
+  });
+
+  it.each([false, true])('offers follow or unfollow without a separate mute action (followed: %s)', (followed) => {
+    const wrapper = createWrapper({ subscription: { is_followed: followed, is_duty_based: false } });
+
+    expect(wrapper.find('[data-testid="overflow-follow"]').text()).toBe(followed ? 'Nebesekti' : 'Sekti');
+    expect(wrapper.find('[data-testid="overflow-mute"]').exists()).toBe(false);
   });
 
   it('passes the per-record permission down to the duties section, not a tenant-agnostic flag', () => {

@@ -11,11 +11,7 @@ return [
     'start_tour' => 'Start tour',
     'institution_followed' => 'Institution followed',
     'institution_unfollowed' => 'Institution unfollowed',
-    'notifications_muted' => 'Notifications muted',
-    'notifications_unmuted' => 'Notifications unmuted',
-    'preferences_reset' => 'Preferences reset',
     'cannot_unfollow_duty_institution' => 'Cannot unfollow an institution you represent',
-    'cannot_mute_duty_institution' => 'Cannot mute an institution you represent',
     'tenant_scope' => [
         'title' => 'Displayed units',
         'description' => 'This selection scopes the institution summary, representative activity, and timeline.',

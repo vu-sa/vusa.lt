@@ -53,11 +53,8 @@ const SELF_SCOPED_ROUTE_NAMES = [
     'api.v1.admin.user-preferences.update',
     'api.v1.admin.user-preferences.trackRecentPage',
     'api.v1.admin.search.refreshKey',
-    'api.v1.admin.subscriptions.reset',
-    // Removing your own follow/mute — the row is keyed on the acting user. (follow/mute, which
-    // create the row against a named institution, do authorize.)
+    // Removing your own follow only touches rows keyed on the acting user.
     'api.v1.admin.institutions.unfollow',
-    'api.v1.admin.institutions.unmute',
     // The login form itself; guarded by the `guest` middleware, not by a policy.
     'login',
     // Impersonation guards on env + super-admin inside the controller, not via a policy.

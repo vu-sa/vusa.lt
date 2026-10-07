@@ -15,9 +15,6 @@ class InstitutionSubscriptionApiController extends ApiController
         protected InstitutionSubscriptionService $subscriptionService,
     ) {}
 
-    /**
-     * Get subscription status for a specific institution.
-     */
     public function status(Request $request, Institution $institution): JsonResponse
     {
         $user = $this->requireAuth($request);
@@ -28,9 +25,6 @@ class InstitutionSubscriptionApiController extends ApiController
         );
     }
 
-    /**
-     * Follow an institution.
-     */
     public function follow(Request $request, Institution $institution): JsonResponse
     {
         $user = $this->requireAuth($request);
@@ -44,9 +38,6 @@ class InstitutionSubscriptionApiController extends ApiController
         ]);
     }
 
-    /**
-     * Unfollow an institution.
-     */
     public function unfollow(Request $request, Institution $institution): JsonResponse
     {
         $user = $this->requireAuth($request);
@@ -56,7 +47,6 @@ class InstitutionSubscriptionApiController extends ApiController
 
         return $this->jsonSuccess([
             'is_followed' => false,
-            'is_muted' => false,
             'message' => __('visak.institution_unfollowed'),
         ]);
     }
@@ -95,52 +85,6 @@ class InstitutionSubscriptionApiController extends ApiController
         return $this->jsonSuccess([
             'institution_ids' => $institutionIds,
             'is_followed' => false,
-        ]);
-    }
-
-    /**
-     * Mute notifications for an institution.
-     */
-    public function mute(Request $request, Institution $institution): JsonResponse
-    {
-        $user = $this->requireAuth($request);
-        $this->authorizeApi('follow', $institution);
-
-        $this->subscriptionService->mute($user, $institution);
-
-        return $this->jsonSuccess([
-            'is_muted' => true,
-            'message' => __('visak.notifications_muted'),
-        ]);
-    }
-
-    /**
-     * Unmute notifications for an institution.
-     */
-    public function unmute(Request $request, Institution $institution): JsonResponse
-    {
-        $user = $this->requireAuth($request);
-
-        $this->subscriptionService->unmute($user, $institution);
-
-        return $this->jsonSuccess([
-            'is_muted' => false,
-            'message' => __('visak.notifications_unmuted'),
-        ]);
-    }
-
-    /**
-     * Reset subscription preferences to defaults.
-     */
-    public function reset(Request $request): JsonResponse
-    {
-        $user = $this->requireAuth($request);
-        $clearFollows = $request->boolean('clear_follows', false);
-
-        $this->subscriptionService->resetToDefaults($user, $clearFollows);
-
-        return $this->jsonSuccess([
-            'message' => __('visak.preferences_reset'),
         ]);
     }
 }

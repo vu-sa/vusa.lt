@@ -5,7 +5,6 @@ import { router, usePage } from '@inertiajs/vue3';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';
 
-// Mock vue-sonner
 vi.mock('vue-sonner', () => ({
   toast: {
     success: vi.fn(),
@@ -13,8 +12,6 @@ vi.mock('vue-sonner', () => ({
     info: vi.fn(),
   },
 }));
-
-// Mock fetch globally
 const mockFetch = vi.fn();
 vi.stubGlobal('fetch', mockFetch);
 
@@ -33,7 +30,6 @@ describe('useInstitutionSubscription', () => {
       success: true,
       data: {
         is_followed: true,
-        is_muted: false,
         message: 'Institution followed',
       },
     };
@@ -47,21 +43,19 @@ describe('useInstitutionSubscription', () => {
       clone() { return this; },
     });
 
-    const { toggleFollow, isFollowLoading } = useInstitutionSubscription();
+    const { toggleFollow } = useInstitutionSubscription();
 
     const currentState = {
       is_followed: false,
-      is_muted: false,
       is_duty_based: false,
     };
 
     const result = await toggleFollow('test-institution-id', currentState, ['subscription']);
 
     await nextTick();
-
-    // Should return the new state (followed = true)
     expect(result).toBe(true);
-    expect(router.reload).toHaveBeenCalled();
+    expect(mockFetch.mock.calls[0][1].method).toBe('POST');
+    expect(router.reload).toHaveBeenCalledWith({ only: ['subscription'] });
   });
 
   test('toggleFollow should work when unfollowing an institution', async () => {
@@ -69,7 +63,6 @@ describe('useInstitutionSubscription', () => {
       success: true,
       data: {
         is_followed: false,
-        is_muted: false,
         message: 'Institucija nebestebima',
       },
     };
@@ -87,53 +80,33 @@ describe('useInstitutionSubscription', () => {
 
     const currentState = {
       is_followed: true,
-      is_muted: false,
       is_duty_based: false,
     };
 
     const result = await toggleFollow('test-institution-id', currentState, ['subscription']);
 
     await nextTick();
-
-    // Should return the new state (followed = false)
     expect(result).toBe(false);
-    expect(router.reload).toHaveBeenCalled();
+    expect(mockFetch.mock.calls[0][1].method).toBe('DELETE');
+    expect(router.reload).toHaveBeenCalledWith({ only: ['subscription'] });
   });
 
-  test('toggleMute should work when muting an institution', async () => {
-    const mockResponse = {
-      success: true,
-      data: {
-        is_followed: true,
-        is_muted: true,
-        message: 'Notifications muted',
-      },
-    };
-
+  test.each([false, true])('preserves follow state after a refused request (followed: %s)', async (followed) => {
+    const response = { success: false, message: 'Forbidden' };
     mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
+      ok: false,
+      status: 403,
       headers: new Headers({ 'content-type': 'application/json' }),
-      json: () => Promise.resolve(mockResponse),
-      text: () => Promise.resolve(JSON.stringify(mockResponse)),
+      json: () => Promise.resolve(response),
+      text: () => Promise.resolve(JSON.stringify(response)),
       clone() { return this; },
     });
 
-    const { toggleMute } = useInstitutionSubscription();
+    const { toggleFollow, isFollowLoading } = useInstitutionSubscription();
 
-    const currentState = {
-      is_followed: true,
-      is_muted: false,
-      is_duty_based: false,
-    };
-
-    const result = await toggleMute('test-institution-id', currentState, ['subscription']);
-
-    await nextTick();
-
-    // Should return the new state (muted = true)
-    expect(result).toBe(true);
-    expect(router.reload).toHaveBeenCalled();
+    expect(await toggleFollow('test-institution-id', { is_followed: followed, is_duty_based: false }, ['subscription'])).toBe(followed);
+    expect(isFollowLoading('test-institution-id')).toBe(false);
+    expect(router.reload).not.toHaveBeenCalled();
   });
 
   test('setFollowedMany sends every id in one request and reloads nothing', async () => {
