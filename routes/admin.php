@@ -229,9 +229,7 @@ Route::post('files/upload-image', [FilesController::class, 'uploadImage'])->name
 Route::delete('files/delete', [FilesController::class, 'delete'])->name('files.delete');
 Route::delete('files/bulk-delete', [FilesController::class, 'bulkDelete'])->name('files.bulkDelete');
 Route::post('files/scan-usage', [FilesController::class, 'scanFileUsage'])->name('files.scanUsage');
-// FilesController only implements index and store; the other resource verbs were
-// registered but had no method behind them.
-Route::resource('files', FilesController::class)->only(['index', 'store']);
+Route::get('files', [FilesController::class, 'index'])->name('files.index');
 Route::post('files/compress', [FilesController::class, 'compressImage'])->name('files.compress');
 
 Route::resource('documents', DocumentController::class)->except('create', 'edit');

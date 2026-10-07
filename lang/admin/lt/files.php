@@ -144,6 +144,8 @@ return [
     ],
 
     'errors' => [
+        'upload_busy' => 'Šis aplankas užimtas kitu įkėlimu. Bandyk dar kartą.',
+        'upload_failed' => 'Nepavyko išsaugoti failo. Bandyk dar kartą.',
         'no_filesystem_access' => 'Neturi teisių peržiūrėti failų sistemos. Kreipkis į administratorių dėl prieigos teisių.',
         'no_directory_access' => 'Neturi teisių peržiūrėti šio aplanko.',
         'fetch_failed' => 'Nepavyko gauti failų sąrašo. Bandyk dar kartą.',
@@ -153,7 +155,6 @@ return [
         'invalid_directory_path' => 'Neteisingas katalogo kelias.',
         'no_upload_permission' => 'Neturi teisių įkelti failų į šį aplanką.',
         'no_create_directory_permission' => 'Neturi teisių kurti aplankų šioje vietoje.',
-        'image_processing_failed' => 'Nepavyko apdoroti paveikslėlio: :error',
         'upload_all_failed' => 'Nepavyko įkelti nei vieno failo.',
         'create_directory_failed' => 'Nepavyko sukurti aplanko. Bandyk dar kartą.',
         'invalid_file_path' => 'Neteisingas failo kelias.',

@@ -6,7 +6,6 @@ use App\Support\StagingProtection;
 use App\Support\StoragePath;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Format;
 use Intervention\Image\Interfaces\EncodedImageInterface;
 use Intervention\Image\Interfaces\ImageInterface;
@@ -14,40 +13,29 @@ use Intervention\Image\Laravel\Facades\Image;
 
 class ImageUploadService
 {
-    /**
-     * Default image processing options
-     */
     protected array $defaultOptions = [
         'maxWidth' => 1600,
         'quality' => 75,
         'format' => 'webp',
     ];
 
-    public function __construct(protected array $options = [])
+    public function __construct(protected FileUploadWriter $writer, protected array $options = [])
     {
         $this->options = array_merge($this->defaultOptions, $options);
     }
 
-    /**
-     * Process an image file: scale down and convert to WebP
-     *
-     * @param  UploadedFile|string  $source  File upload or data URL/path
-     * @return array{image: ImageInterface|EncodedImageInterface, originalSize: int}
-     */
+    /** @return array{image: ImageInterface|EncodedImageInterface, originalSize: int} */
     public function processImage(UploadedFile|string $source, array $options = []): array
     {
         $opts = array_merge($this->options, $options);
 
-        // Get original size for compression statistics
         $originalSize = $source instanceof UploadedFile
             ? ($source->getSize() ?: 0)
             : strlen($source);
 
-        // Read and process image
         $image = Image::decode($source);
         $image = $image->scaleDown(width: $opts['maxWidth']);
 
-        // Convert to desired format
         if ($opts['format'] === 'webp') {
             $image = $image->encodeUsingFormat(Format::WEBP, quality: $opts['quality']);
         } elseif ($opts['format'] === 'jpeg' || $opts['format'] === 'jpg') {
@@ -62,11 +50,7 @@ class ImageUploadService
         ];
     }
 
-    /**
-     * Process and save an image to storage
-     *
-     * @return array{url: string, name: string, path: string, originalSize: int, compressedSize: int, compressionRatio: int}
-     */
+    /** @return array{url: string, name: string, path: string, renamed: bool, originalSize: int, compressedSize: int, compressionRatio: int} */
     public function processAndSave(
         UploadedFile|string $source,
         string $directory,
@@ -77,47 +61,28 @@ class ImageUploadService
 
         $opts = array_merge($this->options, $options);
 
-        // Get original filename
         if (! $filename) {
             $filename = $source instanceof UploadedFile
                 ? $source->getClientOriginalName()
                 : 'image.jpg';
         }
 
-        // Process image
         $result = $this->processImage($source, $opts);
         $image = $result['image'];
         $originalSize = $result['originalSize'];
 
-        // Get processed filename with correct extension
         $processedName = pathinfo($filename, PATHINFO_FILENAME).'.'.$opts['format'];
 
-        // Ensure directory exists
         $fullDirectoryPath = $this->normalizeDirectoryPath($directory);
-        if (! Storage::exists($fullDirectoryPath)) {
-            Storage::makeDirectory($fullDirectoryPath);
-        }
-
-        // Check if file exists and rename if needed
-        if (Storage::exists($fullDirectoryPath.'/'.$processedName)) {
-            $processedName = time().'_'.$processedName;
-        }
-
-        // Write through the Storage facade rather than storage_path(). save() reaches past the
-        // filesystem abstraction, so Storage::fake() never intercepted it and every image test
-        // wrote a real file into storage/app/public.
         $encoded = $image instanceof EncodedImageInterface ? $image : $image->encode();
         $contents = (string) $encoded;
-
-        Storage::put($fullDirectoryPath.'/'.$processedName, $contents);
+        $stored = $this->writer->write($fullDirectoryPath, $processedName, $contents);
+        $processedName = $stored['name'];
 
         $compressedSize = strlen($contents);
         $compressionRatio = $originalSize > 0
             ? round((1 - $compressedSize / $originalSize) * 100)
             : 0;
-
-        // Generate URL
-        $url = $this->generateUrl($directory, $processedName);
 
         Log::info('Image processed and saved', [
             'original_name' => $filename,
@@ -129,54 +94,28 @@ class ImageUploadService
         ]);
 
         return [
-            'url' => $url,
-            'name' => $processedName,
-            'path' => $fullDirectoryPath.'/'.$processedName,
+            ...$stored,
             'originalSize' => $originalSize,
             'compressedSize' => $compressedSize,
             'compressionRatio' => max(0, $compressionRatio),
         ];
     }
 
-    /**
-     * Normalize directory path for storage
-     */
     protected function normalizeDirectoryPath(string $directory): string
     {
-        // Drop traversal segments. Callers are expected to have rejected these already; this is
-        // the last line of defence before the path reaches storage_path(), so it must not be a
-        // single-pass str_replace (which `....//` walks straight through).
+        if (StoragePath::hasTraversal($directory) || ! StoragePath::isSafeRelative($directory)) {
+            throw new \InvalidArgumentException('Invalid image directory');
+        }
+
         $directory = StoragePath::normalizeRelative($directory);
 
         if (str_starts_with($directory, 'public/')) {
             return $directory;
         }
 
-        // Everything else — `files/...` subpaths and simple folder names alike — lives under
-        // the public disk root.
         return 'public/'.$directory;
     }
 
-    /**
-     * Generate public URL for a stored image
-     */
-    protected function generateUrl(string $directory, string $filename): string
-    {
-        // Handle different path patterns
-        if (str_starts_with($directory, 'public/')) {
-            $urlPath = str_replace('public/', '', $directory);
-        } elseif (str_starts_with($directory, 'files/')) {
-            $urlPath = $directory;
-        } else {
-            $urlPath = $directory;
-        }
-
-        return '/uploads/'.$urlPath.'/'.$filename;
-    }
-
-    /**
-     * Get human-readable file size
-     */
     public static function formatFileSize(int $bytes): string
     {
         if ($bytes === 0) {
@@ -190,9 +129,6 @@ class ImageUploadService
         return round($bytes / $k ** $i, 1).' '.$sizes[$i];
     }
 
-    /**
-     * Create a short display name for long filenames
-     */
     public static function shortenFilename(string $filename, int $maxLength = 20): string
     {
         $extension = pathinfo($filename, PATHINFO_EXTENSION);

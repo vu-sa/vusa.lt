@@ -3,10 +3,12 @@ doc_status: reviewed
 title: Failai
 area: files
 models: [File]
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-07
 tests:
   - tests/Feature/Admin/Resources/FilesControllerTest.php
   - tests/Feature/Api/Admin/FileApiControllerTest.php
+  - tests/Feature/Services/FileStorageServiceTest.php
+  - tests/Feature/Services/FileUploadWriterTest.php
   - tests/Feature/Services/FileUsageScannerTest.php
   - tests/Unit/Services/FileReferenceMatcherTest.php
   - resources/js/Features/Admin/FileManager/__tests__/FilePropertiesDrawer.component.test.ts
@@ -38,7 +40,20 @@ Kad skirtingų padalinių failai nesusimaišytų ir nebūtų atsitiktinai perra�
 - **Padalinio katalogas:** kiekvienas padalinys turi savo numatytąjį katalogą `padaliniai/{padalinys}` (pvz., `padaliniai/vusapadalinys` arba `padaliniai/vusa-mif`).
 - Padalinio koordinatorius, atvėręs failų naršyklę, iškart mato savo padalinio aplanką ir kuria jame poaplankius (pvz., `dokumentai`, `nuotraukos`, `archyvas`).
 - **Bendrieji aplankai:** formų viršeliams ir baneriams skirtos nuotraukos automatiškai saugomos į bendrus sistemos aplankus (`banners`, `news`, `pages`, `calendar`).
-- **Saugūs failų keliai:** visi įkėlimai ir aplankų veiksmai tikrinami saugumo mechanizmais (`StoragePath`), neleidžiančiais išeiti už leistino aplanko ribų.
+- **Saugūs failų keliai:** įkėlimai ir aplankų veiksmai negali išeiti už leistino aplanko ribų. Keliai, bandantys pasiekti aukštesnį aplanką, atmetami.
+
+### Įkėlimų apdorojimas {#ikelimas}
+
+<ChangelogNote version="v3.0" date="2026-10-02" title="Patikimesnis failų įkėlimas">
+
+Vieno pavadinimo failai neperrašo vienas kito, o neišsaugotas failas nepažymimas kaip sėkmingai įkeltas.
+
+</ChangelogNote>
+
+- Vienas failas gali būti iki **50 MB**. JPEG, PNG ir WebP paveikslėliai sumažinami iki 1600 px pločio ir saugomi WebP formatu. GIF animacijos, SVG ir kiti failai grupinio įkėlimo metu nekeičiami.
+- Jei pavadinimas jau užimtas, naujam failui pridedama laiko žyma, o prireikus – ir skaitiklis. Ankstesnis failas išlieka, net jei keli įkėlimai vyksta vienu metu.
+- Jei dalies failų išsaugoti nepavyksta, sėkmingai įkelti failai išlieka, o pranešime nurodomi nepavykę failai. Jei aplanką tuo metu naudoja kitas įkėlimas, galima bandyti dar kartą.
+- Prieiga peržiūrėti aplanką savaime nesuteikia teisės į jį įkelti failų. Įkėlimui tikrinamos būtent to aplanko kūrimo teisės.
 
 ## Veiksmai
 
@@ -112,6 +127,8 @@ Patikra randa failą visuose turinio blokuose, nuotraukų laukuose ir nuorodose,
 - Administravimo valdiklis: `App\Http\Controllers\Admin\FilesController`.
 - API valdiklis: `App\Http\Controllers\Api\Admin\FileApiController` (aptarnauja asinchroninę failų naršyklę, paiešką ir miniatiūrų teikimą).
 - Failų saugojimo šaknis: `storage/app/public/files/`.
-- Saugumo valdymas: `App\Support\StoragePath::normalizeRelative()` pašalina bet kokius bandymus išeiti iš katalogo (pvz., `../`), užkirsdamas kelią „Path Traversal“ atakoms.
+- Bendri keliai, failų sąrašai ir grupiniai įkėlimai: `App\Services\FileStorageService`. `normalizeFilePath()` atmeta `..` segmentus ir neleidžia failų tvarkyklės keliui išeiti už `public/files` šaknies.
+- Įkėlimo paskirtis ir kūrimo teisės: `StoreFilesRequest::uploadDirectory()`. Teksto redaktoriaus turinio aplankas nustatomas pagal kūrimo teisių apimtį.
+- Rašymas: `FileUploadWriter` vienodai tvarko paprastus ir optimizuotus failus, tikrina rašymo rezultatą ir naudoja aplanko užraktą pavadinimui parinkti bei failui išsaugoti.
 - Naudojimo paieška: `App\Services\FileUsageScanner` turi tikrinamų stulpelių sąrašą (`targets()`). SQL užklausa atrenka eilutes pagal kelio dalis, kurios nesikeičia jokioje koduotėje, o `App\Services\FileUsage\FileReferenceMatcher` kiekvieną reikšmę iškoduoja (JSON, HTML entities, `%20`, NFC/NFD) ir lygina visą kelią `/uploads/files/…`. Senasis kelias `/uploads/…` (be `files/`) skaičiuojamas tik tada, kai tokiu adresu nėra kito failo.
 - Paveikslėlių glaudinimas: atliekamas per `Intervention\Image` biblioteką valdiklio metode `compressImage()`.

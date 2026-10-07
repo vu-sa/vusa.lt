@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Files;
 
+use App\Http\Requests\StoreFilesRequest;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 class UploadImageRequest extends FilePathRequest
@@ -13,11 +14,8 @@ class UploadImageRequest extends FilePathRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            'image' => 'nullable|image|max:51200', // 50MB max
-            // The controller falls back to `file` when `image` is absent, so it needs the same
-            // rules — otherwise an upload sent under `file` skipped both the image check and the
-            // size cap entirely.
-            'file' => 'nullable|image|max:51200',
+            'image' => 'nullable|image|max:'.StoreFilesRequest::MAX_SIZE_KB,
+            'file' => 'nullable|image|max:'.StoreFilesRequest::MAX_SIZE_KB,
             'name' => 'nullable|string|max:255',
         ]);
     }

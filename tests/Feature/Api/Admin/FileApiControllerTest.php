@@ -6,6 +6,9 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\FileStorageService;
+use App\Services\ModelAuthorizer;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -97,6 +100,142 @@ test('directories are never filtered out by an extensions filter', function (): 
 test('unauthenticated users cannot list files', function (): void {
     $this->getJson(route('api.v1.admin.files.index', ['path' => $this->allowedPath]))
         ->assertUnauthorized();
+});
+
+test('batch uploads require create scope in the destination even when it is readable', function (): void {
+    $otherTenant = Tenant::query()->where('type', 'padalinys')->where('id', '!=', $this->tenant->id)->firstOrFail();
+    $institution = Institution::factory()->create(['tenant_id' => $otherTenant->id]);
+    $duty = Duty::factory()->create(['institution_id' => $institution->id]);
+    $readerRole = Role::create(['name' => 'File reader only', 'guard_name' => 'web']);
+    $readerRole->givePermissionTo('files.read.padalinys');
+    $duty->assignRole($readerRole);
+    $this->fileManager->duties()->attach($duty, ['start_date' => now()->subDay(), 'end_date' => now()->addDay()]);
+    $path = 'public/files/padaliniai/vusa'.$otherTenant->alias;
+
+    asUser($this->fileManager)->getJson(route('api.v1.admin.files.index', ['path' => $path]))->assertOk();
+    asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+        'path' => $path,
+        'files' => [['file' => UploadedFile::fake()->create('forbidden.txt', 1, 'text/plain')]],
+    ])->assertForbidden();
+
+    Storage::assertMissing($path.'/forbidden.txt');
+});
+
+test('create-only actors can upload using a relative destination', function (): void {
+    Role::where('name', 'Komunikacijos koordinatorius')->firstOrFail()->syncPermissions(['files.create.padalinys']);
+
+    asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+        'path' => 'padaliniai/vusa'.$this->tenant->alias.'/new-folder',
+        'files' => [['file' => UploadedFile::fake()->create('report.txt', 1, 'text/plain')]],
+    ])->assertOk()->assertJsonPath('data.path', $this->allowedPath.'/new-folder');
+
+    Storage::assertExists($this->allowedPath.'/new-folder/report.txt');
+});
+
+test('API batch uploads retain successful files and report processing failures', function (): void {
+    $response = asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+        'path' => $this->allowedPath,
+        'files' => [
+            ['file' => UploadedFile::fake()->create('broken.png', 1, 'image/png')],
+            ['file' => UploadedFile::fake()->create('report.txt', 1, 'text/plain')],
+        ],
+    ]);
+
+    $response->assertOk()->assertJsonPath('data.uploaded.0.name', 'report.txt')
+        ->assertJsonPath('data.failed.0.name', 'broken.png')
+        ->assertJsonPath('data.failed.0.reason', __('files.errors.upload_failed'));
+    Storage::assertExists($this->allowedPath.'/report.txt');
+    Storage::assertMissing($this->allowedPath.'/broken.webp');
+});
+
+test('API reports an all-failed batch as 422', function (): void {
+    asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+        'path' => $this->allowedPath,
+        'files' => [['file' => UploadedFile::fake()->create('broken.png', 1, 'image/png')]],
+    ])->assertUnprocessable()->assertJsonPath('success', false)
+        ->assertJsonPath('errors.files.0', __('files.errors.upload_failed'));
+
+    Storage::assertMissing($this->allowedPath.'/broken.webp');
+});
+
+test('staging blocks a batch with 403 before writing files', function (): void {
+    config(['app.env' => 'staging', 'app.files_read_only' => true, 'app.staging_basic_auth_enabled' => false]);
+
+    asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+        'path' => $this->allowedPath,
+        'files' => [['file' => UploadedFile::fake()->create('blocked.txt', 1, 'text/plain')]],
+    ])->assertForbidden();
+
+    Storage::assertMissing($this->allowedPath.'/blocked.txt');
+});
+
+test('an actor without create scope cannot resolve a global TipTap destination', function (): void {
+    $user = User::factory()->create();
+
+    expect(fn () => app(FileStorageService::class)->resolveTipTapDirectory($user, app(ModelAuthorizer::class)))
+        ->toThrow(AuthorizationException::class);
+});
+
+test('a global creator without a super-admin role uploads TipTap files into the global content directory', function (): void {
+    Permission::firstOrCreate(['name' => 'files.create.*', 'guard_name' => 'web']);
+    Role::where('name', 'Komunikacijos koordinatorius')->firstOrFail()->syncPermissions(['files.create.*']);
+    $this->freezeTime();
+
+    asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+        'path' => 'content/2020/01',
+        'files' => [['file' => UploadedFile::fake()->create('global.txt', 1, 'text/plain')]],
+    ])->assertOk()->assertJsonPath('data.path', 'public/files/content/'.now()->format('Y/m'));
+
+    Storage::assertExists('public/files/content/'.now()->format('Y/m').'/global.txt');
+});
+
+test('browsing rejects guests before validating malformed input', function (string $endpoint): void {
+    $this->getJson(route($endpoint, ['path' => ['invalid'], 'w' => [320]]))->assertUnauthorized();
+})->with(['listing' => 'api.v1.admin.files.index', 'thumbnail' => 'api.v1.admin.files.thumbnail']);
+
+test('API listing metadata uses public URLs', function (): void {
+    asUser($this->fileManager)->getJson(route('api.v1.admin.files.index', ['path' => $this->allowedPath]))
+        ->assertOk()->assertJsonPath('data.files.0.name', 'document.pdf')
+        ->assertJsonPath('data.files.0.url', '/uploads/files/padaliniai/vusa'.$this->tenant->alias.'/document.pdf');
+});
+
+test('listing input types are validated with 422', function (array $input, string $field): void {
+    asUser($this->fileManager)->getJson(route('api.v1.admin.files.index', $input))
+        ->assertUnprocessable()->assertJsonValidationErrors($field);
+})->with([
+    'path array' => [['path' => ['public/files']], 'path'],
+    'filter array' => [['extensions' => ['png']], 'extensions'],
+]);
+
+test('thumbnail input types are validated with 422', function (array $input, string $field): void {
+    asUser($this->fileManager)->getJson(route('api.v1.admin.files.thumbnail', [
+        'path' => $this->allowedPath.'/photo.jpg', ...$input,
+    ]))->assertUnprocessable()->assertJsonValidationErrors($field);
+})->with([
+    'path array' => [['path' => ['public/files']], 'path'],
+    'width array' => [['w' => [320]], 'w'],
+]);
+
+test('an image request with invalid thumbnail input gets 422 rather than a redirect', function (): void {
+    asUser($this->fileManager)->get(route('api.v1.admin.files.thumbnail', ['path' => $this->allowedPath.'/photo.jpg', 'w' => 'wide']), [
+        'Accept' => 'image/avif,image/webp,*/*',
+    ])->assertUnprocessable()->assertJsonPath('success', false)->assertJsonValidationErrors('w');
+});
+
+test('batch upload rejects traversal and misleading storage roots', function (string $path): void {
+    asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+        'path' => $path,
+        'files' => [['file' => UploadedFile::fake()->create('rejected.txt', 1, 'text/plain')]],
+    ])->assertStatus(400)->assertJsonPath('code', 'INVALID_PATH');
+
+    expect(collect(Storage::allFiles())->filter(fn (string $file) => str_ends_with($file, 'rejected.txt')))->toBeEmpty();
+})->with(['public/files/../outside', 'public/files-backup', 'public/news', 'content/../outside']);
+
+test('batch validation rejects non-file values instead of crashing', function (): void {
+    asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+        'path' => $this->allowedPath,
+        'files' => [['file' => 'not a file']],
+    ])->assertUnprocessable()->assertJsonValidationErrors('files.0.file');
 });
 
 describe('thumbnails', function (): void {
@@ -221,6 +360,34 @@ describe('batch upload', function (): void {
             ->and(collect(Storage::files($this->allowedPath))
                 ->filter(fn (string $p) => str_contains($p, 'document_'))
             )->toHaveCount(1);
+    });
+
+    test('converting an image to WebP is not reported as a rename', function (): void {
+        $response = asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+            'path' => $this->allowedPath,
+            'files' => [['file' => UploadedFile::fake()->image('fresh.png', 10, 10)]],
+        ])->assertOk()->assertJsonPath('data.uploaded.0.name', 'fresh.webp')
+            ->assertJsonPath('data.uploaded.0.renamed', false);
+
+        expect($response->json('message'))->toBe(trans_choice('files.messages.uploaded_count', 1, ['count' => 1]).'.');
+    });
+
+    test('a converted image that collides with an existing WebP is reported as a rename', function (): void {
+        Storage::put($this->allowedPath.'/photo.webp', 'existing');
+
+        asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+            'path' => $this->allowedPath,
+            'files' => [['file' => UploadedFile::fake()->image('photo.png', 10, 10)]],
+        ])->assertOk()->assertJsonPath('data.uploaded.0.renamed', true);
+
+        expect(Storage::get($this->allowedPath.'/photo.webp'))->toBe('existing');
+    });
+
+    test('an empty batch is rejected', function (): void {
+        asUser($this->fileManager)->postJson(route('api.v1.admin.files.store'), [
+            'path' => $this->allowedPath,
+            'files' => [],
+        ])->assertUnprocessable()->assertJsonValidationErrors('files');
     });
 
     test('a directory the user cannot write is refused', function (): void {

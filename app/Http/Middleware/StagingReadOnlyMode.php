@@ -22,7 +22,6 @@ class StagingReadOnlyMode
      * These are routes that modify files in storage/app/public
      */
     protected array $fileRoutes = [
-        'files.store',
         'files.delete',
         'files.deleteDirectory',
         'files.bulkDelete',

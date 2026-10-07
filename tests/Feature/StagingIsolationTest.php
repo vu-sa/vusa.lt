@@ -285,7 +285,6 @@ test('read only middleware blocks the real file and SharePoint mutation route na
     expect($response->getStatusCode())->toBe(403)
         ->and($response->getContent())->toContain('STAGING_READ_ONLY');
 })->with([
-    'admin file upload' => 'files.store',
     'API file upload' => 'api.v1.admin.files.store',
     'SharePoint public link revocation' => 'fileableFiles.revokePublicLink',
     'SharePoint file deletion' => 'fileableFiles.destroy',

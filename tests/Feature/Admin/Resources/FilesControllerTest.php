@@ -199,120 +199,6 @@ describe('Files Controller - Directory Listing', function (): void {
     });
 });
 
-describe('Files Controller - File Upload', function (): void {
-    test('file manager can upload files to allowed directory', function (): void {
-        $file = UploadedFile::fake()->create('test-upload.txt', 100, 'text/plain');
-
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => $file]],
-            'path' => $this->allowedPath,
-        ]);
-
-        expect($response->status())->toBe(302);
-        $response->assertSessionHas('success');
-
-        // Verify file was actually stored
-        Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/test-upload.txt');
-    });
-
-    test('file manager cannot upload files to forbidden directory', function (): void {
-        $file = UploadedFile::fake()->create('forbidden-upload.txt', 100, 'text/plain');
-
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => $file]],
-            'path' => $this->forbiddenPath,
-        ]);
-
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('permission');
-    });
-
-    test('duplicate files are renamed with timestamp', function (): void {
-        // First upload
-        $file1 = UploadedFile::fake()->create('duplicate.txt', 100, 'text/plain');
-        $response1 = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => $file1]],
-            'path' => $this->allowedPath,
-        ]);
-
-        expect($response1->status())->toBe(302)
-            ->and($response1->getSession()->has('success') || $response1->getSession()->has('warning'))->toBeTrue();
-
-        // Second upload with same name
-        $file2 = UploadedFile::fake()->create('duplicate.txt', 100, 'text/plain');
-        $response2 = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => $file2]],
-            'path' => $this->allowedPath,
-        ]);
-
-        expect($response2->status())->toBe(302)
-            ->and($response2->getSession()->has('success') || $response2->getSession()->has('warning'))->toBeTrue();
-
-        // The system should handle duplicates gracefully - either by renaming or warning
-        // We don't test the exact implementation, just that it doesn't crash
-    });
-
-    test('file upload validates file types', function (): void {
-        $file = UploadedFile::fake()->create('test.exe', 100, 'application/x-executable');
-
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => $file]],
-            'path' => $this->allowedPath,
-        ]);
-
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors(['files.0.file']);
-    });
-
-    test('file upload validates file size', function (): void {
-        $file = UploadedFile::fake()->create('huge.txt', 60000, 'text/plain'); // 60MB > 50MB limit
-
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => $file]],
-            'path' => $this->allowedPath,
-        ]);
-
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors(['files.0.file']);
-    });
-
-    test('a TipTap non-image upload lands where the editor /uploads URL points', function (): void {
-        // storeAs() writes to the default (local) disk, so the TipTap branch has to carry the
-        // `public/` prefix. Without it the file landed in storage/app/files/content/... and the
-        // /uploads/files/content/... link the editor inserts returned 404.
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => UploadedFile::fake()->create('handout.pdf', 20, 'application/pdf')]],
-            'path' => 'content/'.date('Y/m'),
-        ]);
-
-        expect($response->status())->toBe(302);
-
-        $expected = 'public/files/padaliniai/vusa'.$this->tenant->alias.'/content/'.date('Y/m').'/handout.pdf';
-
-        Storage::assertExists($expected);
-        Storage::assertMissing('files/padaliniai/vusa'.$this->tenant->alias.'/content/'.date('Y/m').'/handout.pdf');
-    });
-
-    test('multiple files can be uploaded simultaneously', function (): void {
-        $files = [
-            ['file' => UploadedFile::fake()->create('file1.txt', 100, 'text/plain')],
-            ['file' => UploadedFile::fake()->create('file2.txt', 100, 'text/plain')],
-            ['file' => UploadedFile::fake()->create('file3.pdf', 100, 'application/pdf')],
-        ];
-
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => $files,
-            'path' => $this->allowedPath,
-        ]);
-
-        expect($response->status())->toBe(302);
-
-        Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/file1.txt');
-        Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/file2.txt');
-        Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/file3.pdf');
-    });
-});
-
 describe('Files Controller - Directory Creation', function (): void {
     test('file manager can create directory in allowed path', function (): void {
         $response = asUser($this->fileManager)->post(route('files.createDirectory'), [
@@ -577,6 +463,18 @@ describe('Files Controller - Bulk Delete', function (): void {
 });
 
 describe('Files Controller - Image Upload', function (): void {
+    test('single image uploads preserve a nested folder named public', function (): void {
+        Storage::fake();
+        $directory = $this->allowedPath.'/public/photos';
+
+        asUser($this->fileManager)->postJson(route('files.uploadImage'), [
+            'file' => UploadedFile::fake()->image('photo.png', 10, 10),
+            'path' => $directory,
+        ])->assertOk()->assertJsonPath('url', '/uploads/'.substr($directory, strlen('public/')).'/photo.webp');
+
+        Storage::assertExists($directory.'/photo.webp');
+    });
+
     test('can upload and process image', function (): void {
         $image = UploadedFile::fake()->image('test.jpg', 2000, 2000);
 
@@ -785,18 +683,6 @@ describe('Files Controller - Security Tests', function (): void {
         }
     });
 
-    test('file uploads outside allowed directory are rejected', function (): void {
-        $file = UploadedFile::fake()->create('malicious.txt', 100, 'text/plain');
-
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => $file]],
-            'path' => '../../../tmp',
-        ]);
-
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors();
-    });
-
     test('directory creation outside allowed path is rejected', function (): void {
         $response = asUser($this->fileManager)->post(route('files.createDirectory'), [
             'path' => '../../../tmp',
@@ -828,16 +714,6 @@ describe('Files Controller - Error Handling', function (): void {
 
         expect($response->status())->toBe(302);
         $response->assertSessionHasErrors('name');
-    });
-
-    test('handles empty file uploads', function (): void {
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [],
-            'path' => $this->allowedPath,
-        ]);
-
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('files');
     });
 });
 

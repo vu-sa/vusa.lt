@@ -143,6 +143,8 @@ return [
     ],
 
     'errors' => [
+        'upload_busy' => 'Another upload is using this folder. Please try again.',
+        'upload_failed' => 'Could not save the file. Please try again.',
         'no_filesystem_access' => 'You do not have permission to browse the file system. Contact an administrator about access rights.',
         'no_directory_access' => 'You do not have permission to view this folder.',
         'fetch_failed' => 'Could not load the file list. Please try again.',
@@ -152,7 +154,6 @@ return [
         'invalid_directory_path' => 'Invalid folder path.',
         'no_upload_permission' => 'You do not have permission to upload files to this folder.',
         'no_create_directory_permission' => 'You do not have permission to create folders here.',
-        'image_processing_failed' => 'Could not process the image: :error',
         'upload_all_failed' => 'None of the files could be uploaded.',
         'create_directory_failed' => 'Could not create the folder. Please try again.',
         'invalid_file_path' => 'Invalid file path.',
