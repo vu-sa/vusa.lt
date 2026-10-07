@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Failai
 area: files
 models: [File]
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-08
 tests:
   - tests/Feature/Admin/Resources/FilesControllerTest.php
   - tests/Feature/Api/Admin/FileApiControllerTest.php
@@ -97,6 +97,17 @@ Patikra randa failą visuose turinio blokuose, nuotraukų laukuose ir nuorodose,
 
 ## Kas ką gali {#teises}
 
+Jei nėra prieigos prie failų tvarkyklės, tiesioginė nuoroda parodo prieigos klaidą.
+Turint prieigą prie savo padalinio aplanko, bendrojo aplanko nuoroda nukreipia į pasiekiamą aplanką.
+Vien teisė peržiūrėti failus nesuteikia teisės kurti aplankų, glaudinti paveikslėlių ar trinti.
+
+<ChangelogNote version="v3.0" date="2026-10-02" title="Grupinio trynimo teisės tikrinamos iš anksto">
+
+Jei bent vieno pasirinkto failo trinti negalima dėl teisių, netrinamas nė vienas pasirinktas failas.
+Sąsajoje parodoma prieigos klaida; pasirinkimą galima pakeisti ir bandyti dar kartą.
+
+</ChangelogNote>
+
 | Veiksmas | Padalinio koordinatorius | Centrinio biuro komunikacijos koordinatorius |
 |---|---|---|
 | Matyti savo padalinio aplanką | ✓ | ✓ |
@@ -116,6 +127,8 @@ Patikra randa failą visuose turinio blokuose, nuotraukų laukuose ir nuorodose,
 Šis skyrius skirtas administratoriams ir sistemos priežiūrai.
 
 ### Teisės
+
+- Tiesioginės užklausos be reikiamų teisių gauna HTTP 403. Inertia užklausos grąžinamos atgal su `error` pranešimu (302, trynimo veiksmams – 303).
 
 - Prieiga prie failų sistemos kontroliuojama per `files` leidimų grupę:
   - Padalinio teisės: `files.create.padalinys`, `files.read.padalinys`, `files.update.padalinys`, `files.delete.padalinys`.

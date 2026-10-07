@@ -7,6 +7,7 @@ use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
 use App\Models\Tenant;
+use App\Services\ApprovalService;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -314,7 +315,7 @@ describe('ApprovalController@backtrack', function (): void {
             ->and($this->reservationResource->approvals()->where('reversion_notes', 'Returned by mistake')->exists())->toBeTrue();
     });
 
-    test('user without resource management cannot undo an approval', function (): void {
+    test('user without resource management cannot undo an approval', function (bool $inertia): void {
         asUser($this->resourceManager)->post(route('approvals.store'), [
             'approvable_type' => 'reservation_resource',
             'approvable_id' => (string) $this->reservationResource->id,
@@ -322,17 +323,67 @@ describe('ApprovalController@backtrack', function (): void {
             'step' => 1,
         ]);
 
-        asUser($this->user)
+        $referrer = route('reservations.show', $this->reservation);
+        $client = $inertia ? asUserWithInertia($this->user) : asUser($this->user);
+
+        $response = $client->from($referrer)
             ->post(route('approvals.backtrack'), [
                 'approvable_type' => 'reservation_resource',
                 'approvable_ids' => [(string) $this->reservationResource->id],
-            ])
-            ->assertRedirect()
-            ->assertSessionHas('error');
+            ]);
+
+        if ($inertia) {
+            $response->assertRedirect($referrer)
+                ->assertStatus(302)
+                ->assertSessionHas('error', __('reservations.messages.backtrack_forbidden'));
+        } else {
+            $response->assertForbidden();
+        }
 
         expect($this->reservationResource->refresh()->state->getValue())->toBe('reserved')
             ->and($this->reservationResource->approvals()->whereNotNull('reverted_at')->exists())->toBeFalse();
-    });
+    })->with(['direct' => false, 'Inertia' => true]);
+
+    test('a forbidden last item prevents backtracking the whole selection', function (bool $inertia): void {
+        $service = app(ApprovalService::class);
+        $approval = $service->approve($this->reservationResource, $this->resourceManager, ApprovalDecision::Approved);
+        $foreignResource = Resource::factory()->for(Tenant::factory()->create())->create();
+        $this->reservation->resources()->attach($foreignResource->id, [
+            'quantity' => 1,
+            'start_time' => $this->reservation->start_time,
+            'end_time' => $this->reservation->end_time,
+            'state' => 'reserved',
+        ]);
+        $foreignPivot = ReservationResource::query()->where('reservation_id', $this->reservation->id)
+            ->where('resource_id', $foreignResource->id)->firstOrFail();
+        $foreignApproval = Approval::factory()->approved()->create([
+            'approvable_type' => MorphMap::alias(ReservationResource::class),
+            'approvable_id' => (string) $foreignPivot->id,
+            'user_id' => $this->resourceManager->id,
+        ]);
+        $referrer = route('reservations.show', $this->reservation);
+        $client = $inertia ? asUserWithInertia($this->resourceManager) : asUser($this->resourceManager);
+
+        $response = $client->from($referrer)->post(route('approvals.backtrack'), [
+            'approvable_type' => 'reservation_resource',
+            'approvable_ids' => [(string) $this->reservationResource->id, (string) $foreignPivot->id],
+        ]);
+
+        if ($inertia) {
+            $response->assertRedirect($referrer)
+                ->assertSessionHas('error', __('reservations.messages.backtrack_forbidden'));
+        } else {
+            $response->assertForbidden();
+        }
+        foreach ([$this->reservationResource, $foreignPivot] as $pivot) {
+            expect($pivot->refresh()->state->getValue())->toBe('reserved');
+        }
+        foreach ([$approval, $foreignApproval] as $record) {
+            expect($record->refresh()->reverted_at)->toBeNull()
+                ->and($record->reverted_by_id)->toBeNull()
+                ->and($record->reversion_notes)->toBeNull();
+        }
+    })->with(['direct' => false, 'Inertia' => true]);
 
     test('history identifies who undid an approval', function (): void {
         $approval = Approval::factory()->create([

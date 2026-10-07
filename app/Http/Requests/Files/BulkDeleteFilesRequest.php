@@ -5,10 +5,7 @@ namespace App\Http\Requests\Files;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * Authorization runs per path in the controller, since each file lives in its own directory
- * and is checked with `can('deleteInDirectory', ...)` as the loop walks the selection.
- */
+/** Each destination needs its directory's delete permission before any file is removed. */
 class BulkDeleteFilesRequest extends FormRequest
 {
     public function authorize(): bool
