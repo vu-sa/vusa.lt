@@ -380,9 +380,7 @@ class FilesController extends AdminController
             // Images can be uploaded as 1. files or as 2. data urls
             $file = $request->file('image') ?? $request->file('file');
             $data = $file ?? $request->image;
-            $originalName = $file !== null
-                ? $file->getClientOriginalName()
-                : $request->name;
+            $originalName = $file?->getClientOriginalName() ?? $request->name;
 
             if (! $data) {
                 return response()->json(['error' => __('files.errors.image_missing')], 400);

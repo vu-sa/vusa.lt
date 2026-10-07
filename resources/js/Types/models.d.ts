@@ -405,9 +405,17 @@ declare global {
       anonymous_url?: string | null
       link_url?: string | null
       sharepoint_permission_id?: string | null
-      is_active: boolean
+      status: string
+      removed_from_sharepoint_at?: string | null
+      published_at?: string | null
+      published_by?: string | null
       sharepoint_site_id?: string
       sharepoint_list_id?: string
+      sharepoint_drive_item_id?: string | null
+      sharepoint_path?: string | null
+      sharepoint_web_url?: string | null
+      sharepoint_modified_at?: string | null
+      sharepoint_institution_label?: string | null
       created_at?: string
       checked_at?: string | null
       sync_status: string
@@ -2128,12 +2136,14 @@ declare global {
       type?: SupportRequestType
       area?: SupportRequestArea
       roles?: Role[]
+      involved_users?: User[]
       comments?: Comment[]
       root_comments?: Comment[]
       media?: Media[]
       activities_as_subject?: Activity[]
       // counts
       roles_count: number
+      involved_users_count: number
       comments_count: number
       root_comments_count: number
       media_count: number
@@ -2145,6 +2155,7 @@ declare global {
       type_exists: boolean
       area_exists: boolean
       roles_exists: boolean
+      involved_users_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
       media_exists: boolean

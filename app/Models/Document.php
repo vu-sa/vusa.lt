@@ -35,9 +35,17 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $anonymous_url
  * @property string|null $link_url
  * @property string|null $sharepoint_permission_id
- * @property bool $is_active
+ * @property string $status
+ * @property string|null $removed_from_sharepoint_at
+ * @property string|null $published_at
+ * @property string|null $published_by
  * @property string $sharepoint_site_id
  * @property string $sharepoint_list_id
+ * @property string|null $sharepoint_drive_item_id
+ * @property string|null $sharepoint_path
+ * @property string|null $sharepoint_web_url
+ * @property string|null $sharepoint_modified_at
+ * @property string|null $sharepoint_institution_label
  * @property Carbon $created_at
  * @property Carbon|null $checked_at
  * @property string $sync_status Status of SharePoint sync: pending, syncing, success, failed

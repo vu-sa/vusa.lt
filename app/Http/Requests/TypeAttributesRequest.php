@@ -27,7 +27,7 @@ abstract class TypeAttributesRequest extends FormRequest
     {
         $class = $this->typeClass();
         $type = $this->route('type');
-        $excluded = $type === null ? [] : $type->getDescendantsAndSelf(withTrashed: true)->modelKeys();
+        $excluded = $type?->getDescendantsAndSelf(withTrashed: true)->modelKeys() ?? [];
 
         $rules = [
             'title.lt' => ['required', 'string'],
