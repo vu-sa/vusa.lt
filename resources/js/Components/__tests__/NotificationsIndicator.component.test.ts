@@ -1,12 +1,14 @@
 import { mount } from '@vue/test-utils';
-import { router, usePage } from '@inertiajs/vue3';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { nextTick } from 'vue';
+import { computed, nextTick } from 'vue';
 
 import NotificationsIndicator from '@/Components/NotificationsIndicator.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
+import { useRealtimeNotifications } from '@/Composables/useRealtimeNotifications';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+vi.mock('@/Composables/useRealtimeNotifications');
 
 const popoverStubs = {
   Popover: {
@@ -18,15 +20,19 @@ const popoverStubs = {
   PopoverContent: {
     template: '<div data-slot="popover-content" v-bind="$attrs"><slot /></div>',
   },
-  Link: {
-    props: ['href'],
-    template: '<a :href="href"><slot /></a>',
-  },
 };
 
 describe('NotificationsIndicator', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(useRealtimeNotifications).mockReturnValue({
+      isConnected: computed(() => false),
+      isConnecting: computed(() => false),
+      connectionError: computed(() => null),
+      hasNewNotification: computed(() => false),
+      connect: vi.fn().mockResolvedValue(undefined),
+      disconnect: vi.fn(),
+    });
     vi.stubGlobal('route', vi.fn((name: string, id?: string) => id ? `/routes/${name}/${id}` : `/routes/${name}`));
   });
 
@@ -172,7 +178,7 @@ describe('NotificationsIndicator', () => {
     );
   });
 
-  it('places an accessible icon action beside the read control and visits its own destination', async () => {
+  it('places an accessible icon action beside the read control and links to its own destination', async () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({
       auth: {
         user: {
@@ -184,8 +190,8 @@ describe('NotificationsIndicator', () => {
             data: {
               category: 'task',
               title: 'Užduotis',
-              url: '/record',
-              primaryAction: { label: 'Peržiūrėti užduotis', url: '/tasks' },
+              url: '/mano/record',
+              primaryAction: { label: 'Peržiūrėti užduotis', url: '/mano/tasks' },
             },
             read_at: null,
             created_at: '2026-09-24T12:00:00Z',
@@ -204,9 +210,44 @@ describe('NotificationsIndicator', () => {
     expect(controls.find('button[title="Pažymėti kaip skaitytą"]').exists()).toBe(true);
     await action.trigger('click');
 
-    expect(router.visit).toHaveBeenCalledTimes(1);
-    expect(router.visit).toHaveBeenCalledWith('/tasks');
+    expect(action.attributes('href')).toBe('/mano/tasks');
+    expect(action.findComponent(Link).exists()).toBe(true);
     expect(router.post).toHaveBeenCalledWith('/routes/notifications.markAsRead/notif-action', {}, expect.any(Object));
+  });
+
+  it.each([
+    '/atsakymas/1?expires=123&signature=abc',
+    `${window.location.origin}/atsakymas/1?expires=123&signature=abc`,
+    '/lt/naujiena/sveiki',
+    'https://other.example/mano/meetings/1',
+  ])('uses browser navigation for the bell entry and its action at %s', async (url) => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({
+      auth: { user: { unreadNotifications: [{
+        id: 'notif-answer',
+        type: 'App\\Notifications\\InstitutionActivityNotification',
+        data: {
+          title: 'Ar vyko posėdis?',
+          category: 'meeting',
+          url,
+          primaryAction: { label: 'Registruoti posėdį', url: `${url}&answer=met` },
+        },
+        read_at: null,
+        created_at: '2026-10-08T10:00:00Z',
+      }] } },
+    }));
+    const wrapper = mount(NotificationsIndicator, { global: { stubs: popoverStubs } });
+    const action = wrapper.get('[data-slot="notification-primary-action"]');
+    const entry = wrapper.findAll('a').find(link => link.attributes('href') === url)!;
+
+    expect(entry.findComponent(Link).exists()).toBe(false);
+    expect(action.findComponent(Link).exists()).toBe(false);
+    expect(action.attributes('href')).toBe(`${url}&answer=met`);
+    action.element.addEventListener('click', event => event.preventDefault());
+    await action.trigger('click');
+
+    expect(router.visit).not.toHaveBeenCalled();
+    expect(router.post).toHaveBeenCalledWith('/routes/notifications.markAsRead/notif-answer', {}, expect.any(Object));
+    expect(wrapper.findComponent(popoverStubs.Popover).props('open')).toBe(false);
   });
 
   it('provides a prominent link to all notifications page in footer', () => {

@@ -84,13 +84,10 @@
             </div>
 
             <!-- Content Area -->
-            <div
+            <NotificationLink
+              :href="getNotificationUrl(notification)"
               class="min-w-0 flex-1 cursor-pointer focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-brand"
-              role="button"
-              tabindex="0"
-              @click="navigateToNotification(notification)"
-              @keydown.enter="navigateToNotification(notification)"
-              @keydown.space.prevent="navigateToNotification(notification)"
+              @click="openNotification(notification)"
             >
               <!-- Eyebrow: Tag & Unread marker dot -->
               <div class="flex items-center gap-1.5">
@@ -133,11 +130,12 @@
               <p class="mt-1 text-xs text-muted-foreground">
                 {{ formatNotificationTime(notification) }}
               </p>
-            </div>
+            </NotificationLink>
 
             <div data-slot="notification-row-actions" class="flex shrink-0 items-center gap-1.5 self-start pt-0.5">
               <Button
                 v-if="getPrimaryAction(notification)"
+                as-child
                 data-slot="notification-primary-action"
                 variant="outline"
                 size="icon-sm"
@@ -145,9 +143,10 @@
                 class="size-7 text-muted-foreground hover:border-brand hover:text-foreground pointer-coarse:size-11"
                 :title="getPrimaryAction(notification)!.label"
                 :aria-label="getPrimaryAction(notification)!.label"
-                @click.stop="openAction(notification, getPrimaryAction(notification)!.url)"
               >
-                <component :is="getNotificationPrimaryActionIcon(notification)" class="size-3.5" aria-hidden="true" />
+                <NotificationLink :href="getPrimaryAction(notification)!.url" @click="openNotification(notification)">
+                  <component :is="getNotificationPrimaryActionIcon(notification)" class="size-3.5" aria-hidden="true" />
+                </NotificationLink>
               </Button>
               <button
                 v-if="!notification.read_at"
@@ -224,6 +223,7 @@ import {
   PopoverTrigger,
 } from '@/Components/ui/popover';
 import { Button } from '@/Components/ui/button';
+import NotificationLink from '@/Components/Notifications/NotificationLink.vue';
 
 const isOpen = ref(false);
 
@@ -238,19 +238,11 @@ const notifications = computed(() => {
 
 const unreadNotificationsCount = useUnreadNotificationCount();
 
-const navigateToNotification = (notification: Notification) => {
-  const url = getNotificationUrl(notification);
-  if (url) {
+const openNotification = (notification: Notification) => {
+  if (!notification.read_at) {
     markAsRead(notification.id);
-    isOpen.value = false;
-    router.visit(url);
   }
-};
-
-const openAction = (notification: Notification, url: string) => {
-  markAsRead(notification.id);
   isOpen.value = false;
-  router.visit(url);
 };
 
 const markAsRead = async (id: string) => {

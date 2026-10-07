@@ -2,9 +2,11 @@
 doc_status: reviewed
 title: Mano
 area: dashboard
-last_reviewed: 2026-09-27
+last_reviewed: 2026-10-08
 tests:
   - resources/js/Pages/Admin/__tests__/ShowAdminHome.component.test.ts
+  - resources/js/Components/Home/__tests__/SiteContentLists.component.test.ts
+  - tests/Browser/AdminPublicLinksTest.php
   - tests/Browser/AdminHomeLayoutTest.php
   - tests/Feature/Admin/Core/DashboardControllerTest.php
   - resources/js/Components/Layouts/Shell/__tests__/ShellAccountMenu.component.test.ts
@@ -28,6 +30,9 @@ Sritis rodoma **visiems** naudotojams.
 
 Pradžios puslapio turinys priklauso nuo tavo pareigybių: studentų atstovas mato savo institucijų
 posėdžius ir jų užduotis, išteklių valdytojas – tvirtinimo laukiančias rezervacijas.
+
+**Naujausios naujienos** ir **Artimiausi renginiai** veda į viešą svetainę. Paspaudus įrašą,
+jo viešas puslapis atveriamas tame pačiame naršyklės skirtuke; atgal galima grįžti naršyklės mygtuku.
 
 ## Pradėti ir grįžti prie darbo {#pradzia}
 

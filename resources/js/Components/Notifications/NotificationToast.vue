@@ -22,23 +22,23 @@
     </div>
 
     <!-- View action -->
-    <button
+    <NotificationLink
       v-if="url"
-      type="button"
+      :href="url"
       :aria-label="$t('Peržiūrėti')"
       class="inline-flex size-7 shrink-0 items-center justify-center border border-border text-muted-foreground transition-colors hover:border-brand hover:text-foreground"
-      @click="handleView"
     >
       <ArrowRight class="size-3.5" />
-    </button>
+    </NotificationLink>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, Bell } from 'lucide-vue-next';
+
+import NotificationLink from './NotificationLink.vue';
 
 import {
   getNotificationIcon,
@@ -54,12 +54,10 @@ const props = defineProps<{
   notification?: Notification;
 }>();
 
-// Helper to check if notification is valid
 const hasValidNotification = computed(() => {
   return props.notification && props.notification.data && typeof props.notification.data === 'object';
 });
 
-// Use computed to handle potentially undefined notification
 const colors = computed(() => {
   if (!hasValidNotification.value) {
     return notificationColors.neutral;
@@ -95,9 +93,4 @@ const url = computed(() => {
   return getNotificationUrl(props.notification!);
 });
 
-const handleView = () => {
-  if (url.value) {
-    router.visit(url.value);
-  }
-};
 </script>

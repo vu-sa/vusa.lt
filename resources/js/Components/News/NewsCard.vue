@@ -1,9 +1,9 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <component
-    :is="sameOrigin ? Link : 'a'"
+    :is="useInertia ? Link : 'a'"
     :href
-    :prefetch="sameOrigin ? true : undefined"
+    :prefetch="useInertia ? true : undefined"
     :class="[
       'group',
       size === 'featured' ? 'grid gap-6 lg:grid-cols-2 lg:gap-10' : size === 'compact' ? 'flex gap-4 py-4' : 'flex flex-col',
@@ -85,7 +85,12 @@ const props = withDefaults(defineProps<{
   size?: 'sm' | 'lg' | 'featured' | 'compact';
   showExcerpt?: boolean;
   eager?: boolean;
-}>(), { size: 'sm' });
+  inertia?: boolean;
+}>(), {
+  size: 'sm',
+  // eslint-disable-next-line vue/no-boolean-default
+  inertia: true,
+});
 
 const page = usePage<PageProps>();
 const showExcerpt = computed(() => props.showExcerpt ?? (props.size === 'lg' || props.size === 'featured'));
@@ -93,8 +98,8 @@ const href = computed(() => props.news.public_url ?? localizedRoute('news', {
   news: props.news.permalink ?? '',
   subdomain: page.props.tenant?.subdomain ?? 'www',
 }, props.news.lang));
-const sameOrigin = computed(() => {
-  if (typeof window === 'undefined' || !href.value) return false;
+const useInertia = computed(() => {
+  if (!props.inertia || typeof window === 'undefined' || !href.value) return false;
   return new URL(href.value, window.location.href).origin === window.location.origin;
 });
 

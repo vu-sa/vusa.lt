@@ -2,13 +2,13 @@
   <div v-if="events.length > 0 || news.length > 0" class="flex flex-col gap-10 lg:gap-14" data-slot="site-content">
     <OverviewSection v-if="events.length > 0" :title="$t('Artimiausi renginiai')" :icon="CalendarDays" variant="home">
       <div class="divide-y divide-border">
-        <EventCard v-for="event in events" :key="event.id" :event variant="compact" />
+        <EventCard v-for="event in events" :key="event.id" :event variant="compact" :inertia="false" />
       </div>
     </OverviewSection>
 
     <OverviewSection v-if="news.length > 0" :title="$t('Naujausios naujienos')" :icon="Megaphone" variant="home">
       <div class="divide-y divide-border">
-        <NewsCard v-for="item in news" :key="item.id" :news="item" size="compact" />
+        <NewsCard v-for="item in news" :key="item.id" :news="item" size="compact" :inertia="false" />
       </div>
     </OverviewSection>
   </div>

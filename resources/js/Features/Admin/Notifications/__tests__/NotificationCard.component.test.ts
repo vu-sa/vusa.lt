@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/vue3';
+import { Link, router } from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -11,7 +11,7 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 const make = (data: NotificationData, readAt: string | null = null): Notification => ({
   id: 'n1',
   type: 'App\\Notifications\\MeetingReminderNotification',
-  data: { category: 'meeting', title: 'Posėdis netrukus', body: 'Senatas', url: '/meetings/1', ...data },
+  data: { category: 'meeting', title: 'Posėdis netrukus', body: 'Senatas', url: '/mano/meetings/1', ...data },
   created_at: '2026-09-20T10:00:00Z',
   read_at: readAt,
 });
@@ -68,18 +68,19 @@ describe('NotificationCard', () => {
     expect(wrapper.find('[data-slot="notification-primary-action"]').attributes('aria-label')).toBe('Peržiūrėti');
   });
 
-  it('visits the action url, not the card url, and marks an unread card read', async () => {
-    const wrapper = mountCard(make({ primaryAction: { label: 'Registruoti posėdį', url: '/register' } }));
+  it('links to the action url, not the card url, and marks an unread card read', async () => {
+    const wrapper = mountCard(make({ primaryAction: { label: 'Registruoti posėdį', url: '/mano/register' } }));
 
-    await wrapper.find('[data-slot="notification-primary-action"]').trigger('click');
+    const action = wrapper.get('[data-slot="notification-primary-action"]');
+    await action.trigger('click');
 
-    expect(router.visit).toHaveBeenCalledTimes(1);
-    expect(router.visit).toHaveBeenCalledWith('/register');
+    expect(action.attributes('href')).toBe('/mano/register');
+    expect(action.findComponent(Link).exists()).toBe(true);
     expect(wrapper.emitted('markAsRead')).toEqual([['n1']]);
   });
 
   it('omits the open arrow when it duplicates the primary action destination', () => {
-    const wrapper = mountCard(make({ primaryAction: { label: 'Peržiūrėti', url: '/meetings/1' } }));
+    const wrapper = mountCard(make({ primaryAction: { label: 'Peržiūrėti', url: '/mano/meetings/1' } }));
 
     expect(wrapper.find('a[title="Atidaryti"]').exists()).toBe(false);
     expect(wrapper.find('[data-slot="notification-primary-action"]').exists()).toBe(true);
@@ -88,15 +89,42 @@ describe('NotificationCard', () => {
   it('keeps the open arrow when the primary action leads elsewhere', () => {
     const wrapper = mountCard(make({ primaryAction: { label: 'Registruoti', url: '/register' } }));
 
-    expect(wrapper.find('a[title="Atidaryti"]').attributes('href')).toBe('/meetings/1');
+    expect(wrapper.find('a[title="Atidaryti"]').attributes('href')).toBe('/mano/meetings/1');
   });
 
   it('does not re-mark an already read card when its action is used', async () => {
-    const wrapper = mountCard(make({ primaryAction: { label: 'Atidaryti', url: '/x' } }, '2026-09-20T11:00:00Z'));
+    const wrapper = mountCard(make({ primaryAction: { label: 'Atidaryti', url: '/mano/x' } }, '2026-09-20T11:00:00Z'));
 
     await wrapper.find('[data-slot="notification-primary-action"]').trigger('click');
 
     expect(wrapper.emitted('markAsRead')).toBeUndefined();
-    expect(router.visit).toHaveBeenCalledWith('/x');
+    expect(wrapper.get('[data-slot="notification-primary-action"]').attributes('href')).toBe('/mano/x');
+  });
+
+  it.each([
+    '/atsakymas/1?expires=123&signature=abc',
+    `${window.location.origin}/atsakymas/1?expires=123&signature=abc`,
+    '/lt/naujiena/sveiki',
+    'https://other.example/mano/meetings/1',
+  ])('uses native links for all notification destinations at %s', async (url) => {
+    const wrapper = mountCard(make({
+      title: 'Ar vyko posėdis?',
+      url,
+      primaryAction: { label: 'Registruoti posėdį', url: `${url}&answer=met` },
+      secondaryAction: { label: 'Pranešti apie veiklą', url: `${url}&answer=not_met` },
+    }));
+
+    expect(wrapper.findComponent(Link).exists()).toBe(false);
+    expect(wrapper.get('h4 a').attributes('href')).toBe(url);
+    expect(wrapper.get('[data-slot="notification-primary-action"]').attributes('href')).toBe(`${url}&answer=met`);
+    expect(wrapper.get('a[title="Atidaryti"]').attributes('href')).toBe(url);
+    expect(wrapper.findAll('a').map(link => link.attributes('href'))).toContain(`${url}&answer=not_met`);
+
+    const action = wrapper.get('[data-slot="notification-primary-action"]');
+    action.element.addEventListener('click', event => event.preventDefault());
+    await action.trigger('click');
+
+    expect(wrapper.emitted('markAsRead')).toEqual([['n1']]);
+    expect(router.visit).not.toHaveBeenCalled();
   });
 });

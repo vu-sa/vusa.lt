@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { usePage } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 
 import EventCard from '@/Components/Calendar/EventCard.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
@@ -93,5 +93,22 @@ describe('Calendar/EventCard.vue', () => {
     const wrapper = mountCard();
 
     expect(wrapper.find('a[href^="/mocked-route/calendar.event"]').exists()).toBe(true);
+  });
+
+  it('keeps same-origin public navigation in Inertia by default', () => {
+    const wrapper = mountCard({ event: makeEvent({ public_url: `${window.location.origin}/lt/renginys` }) });
+
+    expect(wrapper.findAllComponents(Link)).toHaveLength(3);
+  });
+
+  it.each(['upcoming', 'past', 'compact'])('uses native links throughout the %s variant when Inertia is disabled', (variant) => {
+    const wrapper = mountCard({
+      event: makeEvent({ public_url: `${window.location.origin}/lt/renginys` }),
+      inertia: false,
+      variant,
+    });
+
+    expect(wrapper.findComponent(Link).exists()).toBe(false);
+    expect(wrapper.findAll('a').every(link => link.attributes('href') === `${window.location.origin}/lt/renginys`)).toBe(true);
   });
 });

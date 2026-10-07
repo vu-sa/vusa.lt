@@ -5,7 +5,7 @@
     data-slot="event-card"
   >
     <component
-      :is="sameOrigin ? Link : 'a'"
+      :is="useInertia ? Link : 'a'"
       v-if="variant === 'compact'"
       :href="eventHref"
       class="flex items-center gap-4 border-b border-border py-4 hover:bg-secondary/40 pointer-coarse:min-h-11"
@@ -18,7 +18,7 @@
       <IFluentArrowUpRight20Regular class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
     </component>
     <!-- 16:10 fixed-ratio image frame per v0 design -->
-    <component :is="sameOrigin ? Link : 'a'"
+    <component :is="useInertia ? Link : 'a'"
       v-else
       :href="eventHref"
       class="relative aspect-[16/9] overflow-hidden border border-border bg-secondary"
@@ -76,7 +76,7 @@
     <div v-if="variant !== 'compact'" class="flex flex-1 flex-col pt-4">
       <!-- Title -->
       <h3 class="text-pretty text-lg font-bold leading-snug text-foreground transition-colors group-hover:text-brand">
-        <component :is="sameOrigin ? Link : 'a'" :href="eventHref">
+        <component :is="useInertia ? Link : 'a'" :href="eventHref">
           {{ eventTitle }}
         </component>
       </h3>
@@ -101,7 +101,7 @@
 
       <!-- Action -->
       <div class="mt-auto flex items-center justify-between gap-3 pt-4">
-        <component :is="sameOrigin ? Link : 'a'"
+        <component :is="useInertia ? Link : 'a'"
           :href="eventHref"
           class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-foreground transition-colors group-hover:text-brand"
         >
@@ -154,10 +154,13 @@ const props = withDefaults(defineProps<{
   event: CalendarEventLike | App.Entities.Calendar;
   variant?: 'upcoming' | 'past' | 'compact';
   showBadges?: boolean;
+  inertia?: boolean;
 }>(), {
   variant: 'upcoming',
   // eslint-disable-next-line vue/no-boolean-default
   showBadges: true,
+  // eslint-disable-next-line vue/no-boolean-default
+  inertia: true,
 });
 
 const imageLoadError = ref(false);
@@ -187,8 +190,8 @@ const tenantShortname = computed(() => {
 });
 
 const eventHref = computed(() => getCalendarEvent2Route(props.event, page.props.app.locale));
-const sameOrigin = computed(() => {
-  if (typeof window === 'undefined') return false;
+const useInertia = computed(() => {
+  if (!props.inertia || typeof window === 'undefined') return false;
   return new URL(eventHref.value, window.location.href).origin === window.location.origin;
 });
 

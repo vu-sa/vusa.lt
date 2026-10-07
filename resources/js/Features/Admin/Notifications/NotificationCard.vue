@@ -40,14 +40,14 @@
           class="text-sm leading-snug line-clamp-2 text-pretty"
           :class="notification.read_at ? 'font-medium text-muted-foreground' : 'font-semibold text-foreground'"
         >
-          <a
+          <NotificationLink
             v-if="url"
             :href="url"
             class="transition-colors hover:text-brand"
-            @click.prevent="handleNavigate"
+            @click="markRead"
           >
             {{ title }}
-          </a>
+          </NotificationLink>
           <span v-else>{{ title }}</span>
         </h4>
       </div>
@@ -77,13 +77,15 @@
 
       <div v-if="secondaryAction" class="pt-1.5">
         <Button
+          as-child
           variant="ghost"
           size="sm"
           voice="sentence"
           class="pointer-coarse:min-h-11"
-          @click="visit(secondaryAction.url)"
         >
-          {{ secondaryAction.label }}
+          <NotificationLink :href="secondaryAction.url" @click="markRead">
+            {{ secondaryAction.label }}
+          </NotificationLink>
         </Button>
       </div>
 
@@ -99,6 +101,7 @@
     <div data-slot="notification-row-actions" class="flex shrink-0 flex-wrap items-center gap-1.5 self-start pt-0.5">
       <Button
         v-if="primaryAction"
+        as-child
         data-slot="notification-primary-action"
         variant="outline"
         size="icon-sm"
@@ -106,9 +109,10 @@
         class="size-8 text-muted-foreground hover:border-brand hover:text-foreground pointer-coarse:size-11"
         :title="primaryAction.label"
         :aria-label="primaryAction.label"
-        @click="visit(primaryAction.url)"
       >
-        <component :is="getNotificationPrimaryActionIcon(notification)" class="size-3.5" aria-hidden="true" />
+        <NotificationLink :href="primaryAction.url" @click="markRead">
+          <component :is="getNotificationPrimaryActionIcon(notification)" class="size-3.5" aria-hidden="true" />
+        </NotificationLink>
       </Button>
       <button
         v-if="!notification.read_at"
@@ -134,7 +138,7 @@
         <Trash2 class="size-3.5" />
       </button>
 
-      <a
+      <NotificationLink
         v-if="url && url !== primaryAction?.url"
         :href="url"
         :class="[
@@ -143,17 +147,16 @@
         ]"
         :title="$t('Atidaryti')"
         :aria-label="$t('Atidaryti')"
-        @click.prevent="handleNavigate"
+        @click="markRead"
       >
         <ArrowRight class="size-3.5" />
-      </a>
+      </NotificationLink>
     </div>
   </article>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowRight, Check, Trash2 } from 'lucide-vue-next';
 
@@ -172,6 +175,7 @@ import {
   type Notification,
 } from '@/Composables/useNotificationFormatting';
 import { Button } from '@/Components/ui/button';
+import NotificationLink from '@/Components/Notifications/NotificationLink.vue';
 
 const props = defineProps<{
   notification: Notification;
@@ -193,16 +197,9 @@ const secondaryAction = computed(() => getNotificationSecondaryAction(props.noti
 const context = computed(() => getNotificationContext(props.notification));
 const formattedTime = computed(() => formatNotificationTime(props.notification));
 
-const visit = (target: string) => {
+const markRead = () => {
   if (!props.notification.read_at) {
     emit('markAsRead', props.notification.id);
-  }
-  router.visit(target);
-};
-
-const handleNavigate = () => {
-  if (url.value) {
-    visit(url.value);
   }
 };
 </script>

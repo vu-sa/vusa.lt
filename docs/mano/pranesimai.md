@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Pranešimai
 area: notifications
 models: [DatabaseNotification]
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-08
 tests:
   - tests/Feature/Notifications/NotificationCountTest.php
   - tests/Feature/Notifications/DigestSystemTest.php
@@ -11,6 +11,9 @@ tests:
   - resources/js/Pages/Admin/__tests__/ShowNotifications.component.test.ts
   - resources/js/Features/Admin/Notifications/__tests__/NotificationCard.component.test.ts
   - resources/js/Components/__tests__/NotificationsIndicator.component.test.ts
+  - resources/js/Components/Notifications/__tests__/NotificationLink.component.test.ts
+  - resources/js/Components/Notifications/__tests__/NotificationToast.component.test.ts
+  - tests/Browser/AdminPublicLinksTest.php
 ---
 
 # Pranešimai
@@ -38,6 +41,9 @@ Pranešimų puslapyje rodomi tau skirti pranešimai, naujausi – pirmiausia:
   *Peržiūrėti užduotis*, *Peržiūrėti rezervaciją*), leidžiantį vienu paspaudimu pereiti tiesiai prie darbo.
   Varpelio sąraše ir pranešimų puslapyje jis rodomas piktograma šalia skaitymo žymos. Piktograma
   atitinka veiksmą; užvedus žymeklį rodomas jo pavadinimas.
+- **Atsakymas į „Ar vyko posėdis?“**: pranešimo nuoroda ar veiksmas atveria atskirą atsakymo
+  puslapį tame pačiame naršyklės skirtuke. Vien jį atverti nepakanka – atsakymą reikia patvirtinti.
+  Nuorodas į viešą svetainę taip pat galima atverti iš pranešimų puslapio, varpelio ar iššokančio pranešimo.
 - **Greitieji filtrai viršuje**:
   - **Neskaityti** (su skaitliuku) – rodo tik naujus, dar neperžiūrėtus pranešimus. Tai numatytasis rodinys.
   - **Visi** – rodo ir skaitytus, ir neskaitytus pranešimus.
@@ -47,7 +53,7 @@ Pranešimų puslapyje rodomi tau skirti pranešimai, naujausi – pirmiausia:
 ### Pranešimo atidarymas ir atlikimas
 
 1. Paspausk pranešimo pavadinimą arba jo veiksmo mygtuką.
-2. Sistema atvers susijusį įrašą arba veiksmų langą.
+2. Sistema atvers susijusį įrašą, veiksmų langą arba atskirą atsakymo puslapį.
 3. Atidarytas pranešimas pažymimas kaip skaitytas.
 
 ### Skaitymo būsenos valdymas
