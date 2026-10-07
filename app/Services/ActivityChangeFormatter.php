@@ -129,10 +129,7 @@ class ActivityChangeFormatter
                 continue;
             }
 
-            // The display attribute is per (ownerClass, field), but a given
-            // target class is only ever paired with one display attribute in
-            // practice, so resolving it once via the first RELATIONS/GENERIC_RELATIONS
-            // match that points at this class is sufficient.
+            // Resolve display attribute once via first matching relation definition.
             $displayAttribute = $this->displayAttributeFor($targetClass);
 
             if ($displayAttribute === null) {
@@ -201,11 +198,7 @@ class ActivityChangeFormatter
             $oldRaw = $old[$key] ?? null;
             $newRaw = $attributes[$key] ?? null;
 
-            // A translatable field logged via useAttributeRawValues() (see
-            // Problem::getActivitylogOptions()) carries a {"lt":..,"en":..}
-            // JSON string rather than one locale's plain value -- split it
-            // into one row per locale that actually changed, so e.g. an
-            // EN-only edit doesn't also surface an unchanged LT row.
+            // Split translatable raw values into rows for only the locales that changed.
             $localeChanges = $this->localeMapChanges($ownerClass, $key, $oldRaw, $newRaw);
 
             if ($localeChanges !== null) {
@@ -315,19 +308,13 @@ class ActivityChangeFormatter
             $newPlain = $this->diffPlainText($ownerClass, $typeKey, $newRaw);
             $tooLong = mb_strlen($oldPlain ?? '') > self::DIFF_CHAR_CAP || mb_strlen($newPlain ?? '') > self::DIFF_CHAR_CAP;
 
-            // Never render a zero-highlight diff: a formatting-only edit
-            // (bolding a word, adding a link) changes the stored HTML but not
-            // its plain-text projection, so a diff here would render an
-            // unhighlighted paragraph that positively asserts "nothing
-            // changed" -- worse than the honest placeholder.
+            // Avoid diffs where HTML changed but plain text did not.
             if ($tooLong || $oldPlain === $newPlain) {
                 $type = 'rich';
             }
         }
 
-        // Nothing on the frontend reads change.old/.new for rich/diff types
-        // (only *_display), and today they'd otherwise carry the full
-        // unbounded HTML twice per row.
+        // Omit raw old/new HTML for rich/diff types to avoid payload bloat.
         $skipRaw = in_array($type, ['rich', 'diff'], true);
 
         return [
@@ -416,10 +403,7 @@ class ActivityChangeFormatter
                 return 'boolean';
             }
 
-            // in_array() alone misses object-cast classes like
-            // ArrayObject/AsCollection (e.g. ContentPart::options) -- those
-            // are class-strings, not the plain 'array'/'json'/'collection'
-            // cast names.
+            // Handle object-cast classes that represent array/json structures.
             if (
                 in_array($cast, ['array', 'json', 'collection'], true)
                 || str_starts_with($cast, AsArrayObject::class)

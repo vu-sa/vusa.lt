@@ -39,10 +39,7 @@ final readonly class FileReferenceMatcher
             $paths = '(?:'.$paths.'|'.preg_quote('uploads/'.$this->relativePath, '~').')';
         }
 
-        // A path counts at the start of a value, after an attribute/URL
-        // delimiter, or behind a vusa.lt host — never behind a foreign host,
-        // which serves a different copy of the file. It must also end there,
-        // so `foto.jpg` does not match `foto.jpg.webp`.
+        // Match delimited local paths or vusa.lt URLs to avoid prefix/extension false positives.
         $this->pattern = '~(?:^/?|["\'=(>\s]/?|//(?:[A-Za-z0-9-]+\.)*vusa\.lt/)'
             .$paths
             .'(?=$|[^\p{L}\p{N}._%-])~u';

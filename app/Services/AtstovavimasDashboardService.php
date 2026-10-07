@@ -166,10 +166,7 @@ class AtstovavimasDashboardService
     {
         $institutions = $institutions->values();
 
-        // Precompute once per institution: sorted meeting instants (as both raw
-        // timestamps, for cheap cursor comparisons, and reusable CarbonImmutable
-        // objects, so effectiveDaysBetween() never reconstructs the same instant
-        // twice), sorted check-in intervals, and the periodicity threshold.
+        // Precompute meeting instants and intervals to avoid redundant date reconstructions.
         $meetingTimestamps = [];
         $meetingInstants = [];
         $checkInIntervals = [];

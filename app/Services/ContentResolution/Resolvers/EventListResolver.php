@@ -43,10 +43,7 @@ final class EventListResolver implements ResolvesContentPart
         $groupByTenant = ($options['groupBy'] ?? 'none') === 'tenant';
         $style = in_array($options['style'] ?? null, ['cards', 'list'], true) ? $options['style'] : 'cards';
         $tenantLabelPrefix = is_string($options['tenantLabelPrefix'] ?? null) ? $options['tenantLabelPrefix'] : '';
-        // 'faculty' → "VU <nominative faculty>" (e.g. "VU Filologijos fakultetas"),
-        // derived from the locative `fullname` by stripping the common VU SA prefix and
-        // reversing the locative ending. The central VU SA tenant has no faculty part,
-        // so it falls back to its fullname.
+        // Derive nominative faculty name from locative fullname, falling back to fullname for central.
         $tenantLabelStyle = ($options['tenantLabelStyle'] ?? 'full') === 'faculty' ? 'faculty' : 'full';
 
         $slug = $options['eventTypeSlug'] ?? null;
@@ -68,9 +65,7 @@ final class EventListResolver implements ResolvesContentPart
         [$from, $to] = $this->resolveDateRange($mode, $options);
         $query->whereBetween('date', [$from, $to]);
 
-        // Grouped results need every event in every group up front (the display can't
-        // paginate a group), so the row cap is generous; ungrouped results respect the
-        // author's limit directly.
+        // Raise cap for grouped results to include full sets across tenants before client rendering.
         $rowCap = $groupByTenant ? self::MAX_ITEMS * 6 : $limit;
         $events = $query->orderBy('date')->limit($rowCap)->get();
 
@@ -87,10 +82,7 @@ final class EventListResolver implements ResolvesContentPart
                     'items' => $tenantEvents->sortBy('date')->values()->map(fn (Calendar $e) => $this->mapEvent($e, $context))->all(),
                 ];
             })
-                // Groups previously kept whichever order tenants first appeared in the
-                // date-sorted event list — "whoever has the earliest event first" —
-                // which reads as arbitrary in a grid of cards. Alphabetical by label is
-                // stable and predictable regardless of event dates.
+                // Sort groups alphabetically by label for predictable card grid ordering.
                 ->sortBy('label')
                 ->values()->all();
 

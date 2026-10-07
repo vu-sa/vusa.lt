@@ -326,13 +326,6 @@ class SharepointGraphService
         $permissions = collect($this->getDriveItemPermissions($driveItemId)->getValue());
 
         $permission = $permissions->filter(function (Models\Permission $permission) use ($driveItemId) {
-            // Filter criteria:
-            // 1. Must have a link (not SharePoint group permission)
-            // 2. Must be anonymous scope
-            // 3. Must NOT have expiration (our standard)
-            // 4. CRITICAL: Must NOT be inherited from parent folder
-            // 5. Must expose its webUrl (Graph omits it once an identity is granted on the link)
-            // 6. CRITICAL: Must be a file URL (:b: or :w:), not a folder URL (:f:)
             if (! $permission->getLink()
                 || $permission->getLink()->getScope() !== 'anonymous'
                 || $permission->getExpirationDateTime() !== null
@@ -342,8 +335,7 @@ class SharepointGraphService
 
             $url = $permission->getLink()->getWebUrl();
 
-            // A link whose address Graph withholds is useless to us, and treating it as
-            // the current one would overwrite a working anonymous_url with null.
+            // Treat links without webUrl as invalid to avoid overwriting a working anonymous_url.
             if ($url === null) {
                 $this->logWarning('Rejecting anonymous permission without a webUrl', [
                     'drive_item_id' => $driveItemId,

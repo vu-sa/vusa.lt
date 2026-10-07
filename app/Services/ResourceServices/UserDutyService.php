@@ -64,14 +64,10 @@ class UserDutyService
             ]);
         }
 
-        // Granting or revoking a duty is what moves a person in or out of a tenant, so
-        // it is logged as one relation_updated activity on the user.
+        // Log duty changes as a single relation_updated activity on the user.
         $user->auditRelationChange('current_duties', function () use ($newDutyIds, $removedDutyIds, $duties, $user): void {
             foreach ($newDutyIds as $dutyId) {
-                // Defensive backstop: a concurrent save or a stale current_duties
-                // snapshot can leave the user already active on this duty. Never
-                // attach a second concurrent row — the duty has no uniqueness
-                // constraint to catch it at the database level.
+                // Prevent duplicate active duty rows from concurrent saves.
                 $alreadyActive = Dutiable::query()
                     ->where('duty_id', $dutyId)
                     ->where('dutiable_type', MorphMap::alias(User::class))

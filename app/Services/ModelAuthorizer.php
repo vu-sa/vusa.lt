@@ -188,10 +188,7 @@ class ModelAuthorizer
             return new PermissionScope(true, true, new Collection, $this->allTenants());
         }
 
-        // A permission granted directly to the user, rather than through a duty. It is
-        // genuinely held, so it scopes to the tenants of that user's non-ended duties —
-        // narrowing it further is a separate policy decision that would lock out anyone
-        // holding a directly-assigned role today.
+        // Direct user permissions scope to all tenants of the user's active duties.
         if ($user->hasPermissionTo($permission)) {
             $isAllScope = $this->hasGlobalPermission($user, $permission);
 

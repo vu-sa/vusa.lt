@@ -23,12 +23,7 @@ final class LinkListResolver implements ResolvesContentPart
 
     public function resolve(Collection $parts, ResolutionContext $context): array
     {
-        // Batch the "pinned by id" sources across every link-list block on the page —
-        // one query each, regardless of how many blocks reference news/pages by id.
-        // `latest` mode stays a query per block: link-list blocks per page are rare
-        // (a handful at most) and each has its own category/tenant/limit combination,
-        // so batching them would trade a clear implementation for a saving that never
-        // materializes in practice.
+        // Batch pinned-by-id queries per page while keeping latest-mode queries per block.
         $newsIds = [];
         $pageIds = [];
         foreach ($parts as $part) {

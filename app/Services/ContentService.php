@@ -26,25 +26,17 @@ class ContentService
      */
     public function updateContentParts(Content $content, array $contentParts): Content
     {
-        // First, collect existing parts by ID for efficient lookup
         /** @var Collection<int, ContentPart> $existingPartsById */
         $existingPartsById = $content->parts()->get()->keyBy('id');
 
-        // Snapshotted separately from $existingPartsById: the loop below
-        // mutates those SAME ContentPart instances in place (order/type/etc.),
-        // so reading ->order off them afterwards would already reflect the
-        // NEW value, not what it was before this save.
+        // Snapshot original orders before in-place mutations to detect reorders later.
         $originalOrderById = $existingPartsById->map(fn (ContentPart $part) => $part->order)->all();
 
-        // Track which IDs we've processed, and the `order` each survivor ends
-        // up with -- used below to detect a reorder even when a part's
-        // position relative to its *siblings* is unchanged (inserting a new
-        // block at the front still renumbers every existing block's order).
+        // Track processed IDs and final positions to detect sibling shifts from insertions.
         $handledIds = [];
         $newOrderById = [];
 
         foreach ($contentParts as $index => $partData) {
-            // Skip null parts
             if (is_null($partData)) {
                 continue;
             }
@@ -52,16 +44,11 @@ class ContentService
             $id = $partData['id'] ?? null;
             abort_if($id && ! isset($existingPartsById[$id]), 403, 'Content part does not belong to this record.');
 
-            // Validate content type — must hold for updates too, not just new parts.
-            // Form Request validation already covers this on the store/update HTTP
-            // paths, but this method is also reachable directly (seeders, commands).
+            // Validate type for direct callers (seeders, commands) bypassing Form Requests.
             if (! in_array($partData['type'], ContentPartEnum::toArray())) {
                 Log::warning("Invalid content part type: {$partData['type']}");
 
-                // An existing part with a rejected update must still count as "handled",
-                // or it gets swept up by the deletion pass below for simply not having
-                // been touched — rejecting a bad edit should leave the part as-is, not
-                // delete it. Its order is untouched too, so record the unchanged value.
+                // Mark rejected updates as handled to protect existing parts from deletion pass.
                 if ($id && isset($existingPartsById[$id])) {
                     $handledIds[] = $id;
                     $newOrderById[$id] = $originalOrderById[$id];
