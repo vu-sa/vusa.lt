@@ -39,11 +39,11 @@ puslapį `/mano/reservations/{id}`.
 
 ### Rezervacijos atlikimas
 
-- Daiktus rezervuok likus **bent 7 darbo dienoms** iki renginio ar mokymų.
-- Pavadinime įrašyk tikslų renginio ar mokymų pavadinimą.
-- Aprašyme nurodyk, kam skirti daiktai, kada planuoji juos atsiimti ir kas atsiims.
+- Daiktai rezervuojami likus **bent 7 darbo dienoms** iki renginio ar mokymų.
+- Pavadinime nurodomas tikslus renginio ar mokymų pavadinimas.
+- Aprašyme nurodoma, kam skirti daiktai, kada planuojama juos atsiimti ir kas atsiims.
 - Laikotarpis – nuo atsiėmimo iki grąžinimo.
-- Daiktus iš kelių padalinių (VU SA CB, VU SA P, studentų iniciatyvų) rinkis į vieną rezervaciją.
+- Daiktai iš kelių padalinių (VU SA CB, VU SA P, studentų iniciatyvų) renkami į vieną rezervaciją.
   Atskirų kurti nereikia.
 - Pateikdamas rezervaciją patvirtini, kad visiškai atsakai už daiktų grąžinimą sutartu laiku, jų
   būklę ir žalos atlyginimą, jei ji padaryta. Perdavimo akto pasirašyti nebereikia, nes jis
@@ -217,7 +217,7 @@ yra MIF daiktas, bet tos pačios rezervacijos FSF daikto tvirtinti negali. Sąra
 
 ::: info Niekas negauna pranešimų?
 Pranešimus ir užduotis gauna visi, kas **šiuo metu** eina padalinio pareigybę su išteklių
-administratoriaus role. Jei niekas jų negauna, patikrink, ar pareigybė turi rolę ir ar pareigas
+administratoriaus role. Jei niekas jų negauna, verta patikrinti, ar pareigybė turi rolę ir ar pareigas
 einantis žmogus pridėtas prie pareigybės. **Centrinio biuro išteklių administratorius** gauna
 pranešimus ir užduotis apie CB daiktus, o kitų padalinių užklausas mato apžvalgoje (žr.
 [Centrinio biuro išteklių administratorius](/rezervacijos/#centrinio-biuro)).
@@ -243,11 +243,11 @@ nereikia. Plačiau apie užduotis – [Užduotys](/mano/uzduotys).
 **Ar yra limitas, kiek daiktų galima skolintis?** Ne. Galima skolintis tiek, kiek įkelta į sistemą
 ir laisva pasirinktu laikotarpiu.
 
-**Patvirtinau išteklį, bet negaliu jo paskolinti. Ką daryti?** Naudok **Atšaukti paskutinį
-veiksmą**: išteklius grįš į būseną „pateikta“, tada jį atmesk ir komentare nurodyk priežastį.
+**Patvirtinau išteklį, bet negaliu jo paskolinti. Ką daryti?** Galima naudoti veiksmą **Atšaukti paskutinį
+veiksmą**: išteklius grįš į būseną „pateikta“, tada jį galima atmesti ir komentare nurodyti priežastį.
 
-**Daiktas sugadintas prieš renginį, per jį ar po jo.** Pirmiausia informuok daikto padalinio
-išteklių administratorių (jei jo nėra – padalinio ar iniciatyvos vadovą) ir sutarkite, ar reikės
+**Daiktas sugadintas prieš renginį, per jį ar po jo.** Pirmiausia reikėtų informuoti daikto padalinio
+išteklių administratorių (jei jo nėra – padalinio ar iniciatyvos vadovą) ir sutarti, ar reikės
 atlyginti nuostolius.
 :::
 

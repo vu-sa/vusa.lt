@@ -19,8 +19,8 @@ Ryšiais nustatoma, kaip institucijos bendradarbiauja, atsiskaito viena kitai ar
 
 ::: tip
 - Techninė žymė rašoma mažosiomis raidėmis, žodžius skiriant brūkšneliais.
-- Ryšius kurk tik tiems institucijų santykiams, kurie turi organizacinę atskaitomybės ar bendradarbiavimo reikšmę.
-- Prieš šalindamas ryšio tipą, patikrink susietų įrašų kortelę: pašalinus jungtis, institucijų atstovai gali prarasti teisę matyti susijusių posėdžių darbotvarkių klausimus.
+- Ryšius verta kurti tik tiems institucijų santykiams, kurie turi organizacinę atskaitomybės ar bendradarbiavimo reikšmę.
+- Prieš šalinant ryšio tipą rekomenduojama patikrinti susietų įrašų kortelę: pašalinus jungtis, institucijų atstovai gali prarasti teisę matyti susijusių posėdžių darbotvarkių klausimus.
 :::
 
 ## Kaip tai veikia
@@ -96,7 +96,7 @@ Ryšių administravimas yra platformos lygmens veiksmas, prieinamas **superadmin
 
 - **El. laiškai**: jokie pranešimai el. paštu apie ryšių kūrimą ar keitimą nesiunčiami.
 - **Talpyklos atnaujinimas**: sukūrus, atnaujinus ar ištrynus jungtį, sistema išvalo susijusių institucijų ryšių talpyklą. Tiesioginių institucijų jungčių pakeitimai taip pat išvalo susijusių narių institucijų prieigos ir paieškos raktų talpyklas. Tipų jungčių pakeitimams toks narių talpyklų atnaujinimas nėra užtikrintas.
-- **Grafas**: atliktus jungčių pakeitimus pamatysi iš naujo įkėlęs [Institucijų grafo puslapį](/visak/instituciju-grafas).
+- **Grafas**: atlikti jungčių pakeitimai matomi iš naujo įkėlus [Institucijų grafo puslapį](/visak/instituciju-grafas).
 
 ## Techninė informacija {#technine-informacija}
 

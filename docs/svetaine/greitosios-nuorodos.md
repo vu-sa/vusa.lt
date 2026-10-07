@@ -23,10 +23,10 @@ Skiltis pasiekiama adresu `/mano/quickLinks`.
 ## Rekomendacijos {#rekomendacijos}
 
 ::: tip
-- **Atranka:** pateik dažniausiai reikalingas nuorodas. Patikrink telefone, ar svarbiausius puslapius lengva rasti ir ar juosta nėra perkrauta.
-- **Trumpi užrašai:** naudok aiškius pavadinimus, pvz., „Kuratoriai“, „DUK“, „Stipendijos“.
-- **Piktogramos:** parink su turiniu susijusią piktogramą, tačiau pasirūpink, kad nuorodos paskirtis būtų aiški ir iš teksto.
-- **Aktualumas:** peržiūrėk nuorodas pasikeitus studentams aktualiai informacijai, pavyzdžiui, prieš mokslo metų pradžią ar sesiją.
+- **Atranka:** pateikiamos dažniausiai reikalingos nuorodos. Verta patikrinti telefone, ar svarbiausius puslapius lengva rasti ir ar juosta nėra perkrauta.
+- **Trumpi užrašai:** naudojami aiškūs pavadinimai, pvz., „Kuratoriai“, „DUK“, „Stipendijos“.
+- **Piktogramos:** parenkama su turiniu susijusi piktograma, tačiau svarbu užtikrinti, kad nuorodos paskirtis būtų aiški ir iš teksto.
+- **Aktualumas:** nuorodos peržiūrimos pasikeitus studentams aktualiai informacijai, pavyzdžiui, prieš mokslo metų pradžią ar sesiją.
 :::
 
 ## Kaip tai veikia
@@ -41,7 +41,7 @@ Skiltis pasiekiama adresu `/mano/quickLinks`.
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Meniu paruošiamas prieš pirmą rodymą">
 
-Viešo meniu kalba ir greitųjų nuorodų piktogramos paruošiamos kartu su puslapiu. Nuorodų duomenis toliau tvarkyk šioje skiltyje.
+Viešo meniu kalba ir greitųjų nuorodų piktogramos paruošiamos kartu su puslapiu. Nuorodų duomenys toliau tvarkomi šioje skiltyje.
 
 </ChangelogNote>
 

@@ -93,24 +93,24 @@ Adresas: `/mano/settings/documents`. Čia pažymimi **svarbūs dokumentų turini
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Rekomenduojami dokumentai paieškoje">
 
-Tame pačiame puslapyje pridėk rekomendaciją ir pasirink dokumentą (paspaudęs pavadinimą, jį
-pakeisi). Kiekviena rekomendacija rodoma dviem atskirais atvejais:
+Tame pačiame puslapyje galima pridėti rekomendaciją ir pasirinkti dokumentą (paspaudus pavadinimą,
+jis pakeičiamas). Kiekviena rekomendacija rodoma dviem atskirais atvejais:
 
 - **Rodyti ieškant** – frazės per kablelį, pvz., VU SA įstatams – **VU SA įstatai**.
   Rekomendacija rodoma, kai visi įvesti žodžiai yra frazėje: **įstat**, **įstatų** ar
   **SA įstatus** ją suaktyvina, o **pakeisti įstatai** – ne, nes žodžio **pakeisti** frazėje nėra;
-  tokiai užklausai pridėk atskirą frazę. Lietuviškos žodžio formos ir pradėtas rašyti žodis
+  tokiai užklausai pridedama atskira frazė. Lietuviškos žodžio formos ir pradėtas rašyti žodis
   atpažįstami automatiškai. Be frazių rekomendacija paieškos metu nerodoma.
 - **Rodyti ir tuščioje paieškoje** – rekomendacija rodoma atidarius dokumentų paiešką, kol nieko
   neįvesta (naujoms rekomendacijoms pažymėta).
 
-**Laikinai išjungti** paslepia rekomendaciją jos neištrinant. Rodyklėmis pakeisk
+**Laikinai išjungti** paslepia rekomendaciją jos neištrinant. Rodyklėmis galima pakeisti
 rekomendacijų eilę. Išsaugojus ji rodoma viešos paieškos skiltyje
 **Rekomenduojami dokumentai**, nesikartodama bendrame sąraše. Filtrai galioja ir rekomendacijoms;
 neaktyvūs ar pašalinti dokumentai nerodomi. Pradiniame rodinyje rekomendacijos yra virš
 nuo naujausių rikiuojamo bendro sąrašo; **Naujausi pirmi** pažymėta ir rikiavimo valdiklyje.
 Įvedus paiešką sąrašas savaime rikiuojamas **Pagal aktualumą** (ši parinktis siūloma tik tada),
-nebent pasirinkai rikiavimą pagal datą. Rekomendacijos lieka virš bendro sąrašo ir rikiuojant
+nebent pasirenkamas rikiavimas pagal datą. Rekomendacijos lieka virš bendro sąrašo ir rikiuojant
 **Naujausi pirmi**. Pasirinkus **Seniausi pirmi**
 rekomendacijos nerodomos. Abu rikiavimai pagal datą netaiko svarbių tipų pirmumo.
 

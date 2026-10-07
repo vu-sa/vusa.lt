@@ -31,17 +31,18 @@ MIF institucijos atstovui, ji rodoma MIF suvestinėje. Todėl suvestinėje nerod
 - užduotys, kurioms niekas nepriskirtas;
 - užduotys, susijusios su žmogumi, o ne su posėdžiu, rezervacija ar institucija.
 
-Be to, užduotis rodoma tik tada, jei gali atidaryti ir jos **objektą**: posėdžio užduotį matai tik
-turėdamas teisę matyti to padalinio posėdžius. Taip užduotis neatskleidžia to, ko pats matyti
-negalėtum. Užduotys, kurių objektas ištrintas, lieka matomos, kad jas būtų galima sutvarkyti.
+Be to, užduotis rodoma tik tada, jei leidžiama atidaryti ir jos **objektą**: posėdžio užduotis matoma
+tik turint teisę matyti to padalinio posėdžius. Taip užduotis neatskleidžia informacijos, kurios
+pats naudotojas negalėtų matyti. Užduotys, kurių objektas ištrintas, lieka matomos, kad jas būtų
+galima sutvarkyti.
 
 ## Veiksmai
 
 Be bendrų [užduočių filtrų](/mano/uzduotys#filtrai) suvestinėje yra:
 
 - **Priskirtos man** – greitasis filtras su skaičiumi: tik tos padalinio užduotys, kurios priskirtos ir tau.
-- **Padalinys** – rodomas, jei gali matyti daugiau nei vieno padalinio užduotis. Galima rinktis tik
-  tuos padalinius, kurių užduotis matai.
+- **Padalinys** – rodomas, jei galima matyti daugiau nei vieno padalinio užduotis. Galima rinktis tik
+  tuos padalinius, kurių užduotys yra prieinamos.
 
 Suvestinę galima atidaryti ir iš [Padalinių apžvalgos](/visak/padaliniai) skaičiaus **Atviros
 užduotys**.
@@ -54,9 +55,9 @@ užduotys**.
 | Studentų atstovų koordinatorius, Studentų atstovas | Suvestinė neprieinama. Savo užduotis mato [Mano → Užduotys](/mano/uzduotys) |
 | Kiti nariai | Suvestinė neprieinama, skiltis nerodoma |
 
-Matyti užduotį suvestinėje dar nereiškia, kad gali ją pažymėti atlikta: varnelę matai tik prie
-užduočių, kurias gali keisti (esi atsakingas arba tavo rolė leidžia keisti padalinio užduotis).
-Plačiau – [Užduotys: Kas ką gali](/mano/uzduotys#teises).
+Matyti užduotį suvestinėje dar nereiškia, kad galima ją pažymėti atlikta: žymimasis langelis rodomas tik
+prie užduočių, kurias leidžiama keisti (naudotojas yra atsakingas arba jo rolė leidžia keisti padalinio
+užduotis). Plačiau – [Užduotys: Kas ką gali](/mano/uzduotys#teises).
 
 ## Techninė informacija {#technine-informacija}
 
@@ -64,4 +65,4 @@ Plačiau – [Užduotys: Kas ką gali](/mano/uzduotys#teises).
 - Užduočių aprėptis – `BuildTaskIndexQuery::tenantScope`: užduoties padaliniai gaunami per
   atsakinguosius (`Task::tenants()`). Objekto teisės tikrinamos pagal `meetings.read.padalinys`,
   `reservations.read.padalinys` ir `institutions.read.padalinys` tame padalinyje.
-- Pasirinkus padalinį, kurio užduočių matyti negali, sąrašas tampa tuščias (filtras neignoruojamas).
+- Pasirinkus padalinį, kurio užduočių matyti negalima, sąrašas tampa tuščias (filtras neignoruojamas).

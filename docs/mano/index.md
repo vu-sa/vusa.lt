@@ -33,7 +33,7 @@ posėdžius ir jų užduotis, išteklių valdytojas – tvirtinimo laukiančias 
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Pradžia rodo tai, ką turi padaryti">
 
-Užduotys ir artimiausi posėdžiai padeda grįžti prie darbo. Nebaigtą rezervaciją tęsk iš jos
+Užduotys ir artimiausi posėdžiai padeda grįžti prie darbo. Nebaigtą rezervaciją galima tęsti iš jos
 nuorodos; senasis pirmųjų žingsnių kontrolinis sąrašas ir pareigų pokyčių juosta pašalinti.
 
 </ChangelogNote>
@@ -45,9 +45,9 @@ juostai ir prieinamiems padalinių rodikliams.
 Jei pradėjai rezervaciją, bet jos nepateikei, Pradžioje gali ją tęsti. Krepšelis saugomas
 serveryje ir daiktų dar neužima (plačiau – [Rezervacijos](/rezervacijos/rezervacijos)).
 
-Pirmą kartą Pradžios turas parodo svarbiausias vietas. Jį vėl paleisi per paskyros meniu
-**Pagalba → Parodyk, kaip veikia**, kai puslapis turi turą. Savo pareigas ir prieigos pokyčių
-istoriją rasi [Paskyra ir prieiga](/mano/paskyra-ir-prieiga), o gautus pranešimus –
+Pirmą kartą Pradžios turas parodo svarbiausias vietas. Jį vėl galima paleisti per paskyros meniu
+**Pagalba → Parodyk, kaip veikia**, jei puslapis turi turą. Pareigos ir prieigos pokyčių
+istorija pateikiama puslapyje [Paskyra ir prieiga](/mano/paskyra-ir-prieiga), o gauti pranešimai –
 [Pranešimų puslapyje](/mano/pranesimai).
 
 ## Techninė informacija {#technine-informacija}

@@ -16,8 +16,8 @@ Skiltis **Sistemos būsena** (`/mano/system-status`) skirta platformos technini�
 ## Rekomendacijos {#rekomendacijos}
 
 ::: tip
-- Priežiūros veiksmus, kurie gali laikinai sulėtinti sistemą ar išvalyti talpyklą, vykdyk tik esant būtinybei arba ne piko metu.
-- Jei paslauga rodo būseną „Neveikia“, pirmiausia paspausk **Atnaujinti** ir patikrink, ar tai nebuvo trumpalaikis tinklo trukdis.
+- Priežiūros veiksmus, kurie gali laikinai sulėtinti sistemą ar išvalyti talpyklą, rekomenduojama vykdyti tik esant būtinybei arba ne piko metu.
+- Jei paslauga rodo būseną „Neveikia“, pirmiausia verta paspausti **Atnaujinti** ir patikrinti, ar tai nebuvo trumpalaikis tinklo trukdis.
 :::
 
 ## Kaip tai veikia
@@ -50,7 +50,7 @@ Kortelėje pateikiami iki keturių svarbiausių paslaugos parametrų (pvz., ryš
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Priežiūros veiksmus paleisk platformoje">
 
-Super administratorius gali paleisti šiame puslapyje pateiktus priežiūros veiksmus. Prieš patvirtindamas patikrink pasirinktą veiksmą; jo paleidimas įrašomas į veiklos žurnalą.
+Super administratorius gali paleisti šiame puslapyje pateiktus priežiūros veiksmus. Prieš patvirtinant verta patikrinti pasirinktą veiksmą; jo paleidimas įrašomas į veiklos žurnalą.
 
 </ChangelogNote>
 

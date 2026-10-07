@@ -48,14 +48,14 @@ Posėdžių sąrašas pasiekiamas adresu `/mano/meetings`, o kiekvienas posėdis
 
 ## Susitarimai {#susitarimai}
 
-1. Apie posėdį pranešk **per 3 dienas** nuo tada, kai sužinai jo datą. Jei iki posėdžio liko mažiau
-   nei 3 dienos, pranešk nedelsdamas.
-   - Kai žinoma darbotvarkė, įkelk jos klausimus. Jei ji atnaujinama, atnaujink ir platformoje.
-2. Po posėdžio užfiksuok priimtus sprendimus:
-   - įkelk sekretoriaus atsiųstą **protokolą** ir savo parengtą **ataskaitą**;
-   - pažymėk, ar klausimas patvirtintas, kaip balsavo studentai ir ar sprendimas palankus studentams.
+1. Apie posėdį rekomenduojama pranešti **per 3 dienas** nuo tada, kai sužinoma jo data. Jei iki posėdžio liko mažiau
+   nei 3 dienos, pranešama nedelsiant.
+   - Kai žinoma darbotvarkė, įkeliami jos klausimai. Jei ji atnaujinama, atnaujinama ir platformoje.
+2. Po posėdžio užfiksuojami priimti sprendimai:
+   - įkeliamas sekretoriaus atsiųstas **protokolas** ir parengta **ataskaita**;
+   - pažymima, ar klausimas patvirtintas, kaip balsavo studentai ir ar sprendimas palankus studentams.
 3. **Elektroninis posėdis** (balsavimas el. paštu) fiksuojamas taip pat, kaip ir kiti posėdžiai.
-4. Jei institucijoje keli atstovai, susitarkite, kuris fiksuoja posėdį ir kelia dokumentus.
+4. Jei institucijoje yra keli atstovai, rekomenduojama susitarti, kuris fiksuoja posėdį ir kelia dokumentus.
 
 ## Kaip tai veikia
 
@@ -76,7 +76,7 @@ dokumentai.
 Viešą posėdį gali atidaryti ir nariai, kurie jo tvarkyti negali: jie mato darbotvarkę, bet ne
 failus, užduotis, komentarus ir atstovų pastabas.
 
-Šalia matomumo paspaudęs **Kas rodoma?** pamatysi, kas iš posėdžio rodoma vusa.lt, o kas –
+Šalia matomumo paspaudus **Kas rodoma?**, pateikiama informacija, kas iš posėdžio rodoma vusa.lt, o kas –
 niekada. Skirtuko **Failai** failai viešai nerodomi niekada (žr.
 [Įrašų failai](/visak/failai#viesumas)).
 
@@ -112,7 +112,7 @@ Po būsena rodoma **Nepilnų punktų: N** su nuorodomis į kiekvieną nepilną p
 ### Po posėdžio: protokolas ir ataskaita {#protokolas}
 
 Laukas **Po posėdžio** rodo, ar įkelti posėdžio **protokolas** ir **ataskaita** (SharePoint failai
-su tipu „Protokolai“ arba „Ataskaitos“). Juos įkelk skirtuke **Failai** (žr. [Įrašų failai](/visak/failai)).
+su tipu „Protokolai“ arba „Ataskaitos“). Jie įkeliami skirtuke **Failai** (žr. [Įrašų failai](/visak/failai)).
 
 ### Skirtukai
 
@@ -142,7 +142,7 @@ Fiksuoti posėdį** (arba institucijos puslapyje **Fiksuoti veiklą**) ir veiksm
 Kiti **+ Sukurti** veiksmai:
 
 - **Posėdžio nebuvo** – pranešti, kad institucija kurį laiką nesirinks (žr.
-  [Institucijos](/visak/institucijos#posedzio-nebuvo)). Jei vėliau užregistruoji posėdį tame
+  [Institucijos](/visak/institucijos#posedzio-nebuvo)). Jei vėliau užregistruojamas posėdis tame
   laikotarpyje, pranešimas sutrumpinamas.
 - **Užbaigti posėdį** – papildyti jau užregistruotą praėjusį posėdį. Pirmiausia siūlomi posėdžiai
   be darbotvarkės; būsimi posėdžiai nesiūlomi.
@@ -211,7 +211,7 @@ tik super administratorius.
 
 - Užduotys skiriamos atstovams, kurie ėjo pareigas posėdžio dieną, o jei kadencijai paskirti
   [sekretoriai](/visak/institucijos#sekretoriai) – tik jiems. Jei atstovų nėra, užduotys nekuriamos.
-- Priminimo laiką (24, 12 ar 1 val. prieš) keisk [pranešimų nustatymuose](/mano/pranesimai).
+- Priminimo laiką (24, 12 ar 1 val. prieš) galima pakeisti [pranešimų nustatymuose](/mano/pranesimai).
   Apie ištrintus posėdžius nepriminama.
 - Sekėjas, nutildęs instituciją arba nebegalintis matyti posėdžio, pranešimų negauna. Užduotį
   gavęs žmogus apie tą patį posėdį atskiro pranešimo negauna.

@@ -15,10 +15,10 @@ tests:
 
 # Pranešimai
 
-Skiltyje **Pranešimai** rasi tau skirtus pranešimus. Ją atverk adresu `/mano/notifications`
-arba paspausk varpelį viršutinėje juostoje (telefone – apatinėje).
+Skiltyje **Pranešimai** rodomi tau skirti pranešimai. Ją galima pasiekti adresu `/mano/notifications`
+arba paspaudus varpelį viršutinėje juostoje (telefone – apatinėje).
 
-Čia rasi tau skirtus pranešimus: apie naujas ir vėluojančias užduotis, artėjančius posėdžius,
+Čia pateikiami pranešimai apie naujas ir vėluojančias užduotis, artėjančius posėdžius,
 patvirtinimo laukiančias rezervacijas, komentarus ir paminėjimus. Kaip pranešimai siunčiami el. paštu ir
 į telefoną, aprašyta [Pranešimų pagrinduose](/pagrindai/pranesimai).
 
@@ -37,7 +37,7 @@ Pranešimų puslapyje rodomi tau skirti pranešimai, naujausi – pirmiausia:
 - **Tiesioginis veiksmas**: dauguma pranešimų turi pagrindinį veiksmo mygtuką (pvz., *Peržiūrėti posėdį*,
   *Peržiūrėti užduotis*, *Peržiūrėti rezervaciją*), leidžiantį vienu paspaudimu pereiti tiesiai prie darbo.
   Varpelio sąraše ir pranešimų puslapyje jis rodomas piktograma šalia skaitymo žymos. Piktograma
-  atitinka veiksmą; užvedęs žymeklį pamatysi jo pavadinimą.
+  atitinka veiksmą; užvedus žymeklį rodomas jo pavadinimas.
 - **Greitieji filtrai viršuje**:
   - **Neskaityti** (su skaitliuku) – rodo tik naujus, dar neperžiūrėtus pranešimus. Tai numatytasis rodinys.
   - **Visi** – rodo ir skaitytus, ir neskaitytus pranešimus.
@@ -67,7 +67,7 @@ Pranešimų puslapyje rodomi tau skirti pranešimai, naujausi – pirmiausia:
 ### Nustatymų keitimas
 
 Viršuje esantis mygtukas **Pranešimų nustatymai** nukreipia į tavo profilio pranešimų nustatymus
-(`/mano/profile/notifications`), kur gali pasirinkti el. pašto laiškų dažnumą ir įjungti pranešimus į įrenginį.
+(`/mano/profile/notifications`), kur galima pasirinkti el. pašto laiškų dažnumą ir įjungti pranešimus į įrenginį.
 
 ## Kas ką gali {#teises}
 

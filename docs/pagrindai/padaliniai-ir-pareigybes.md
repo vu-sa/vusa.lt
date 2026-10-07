@@ -64,7 +64,7 @@ pasiruošti. Tačiau iki pradžios dienos jis nerodomas tarp pareigas einančių
 
 ## Dažnai painiojamos sąvokos {#savoku-skirtumai}
 
-Kad administravimas būtų tikslus, atskirk šias sąvokas:
+Kad administravimas būtų tikslus, svarbu atskirti šias sąvokas:
 
 | Sąvoka | Kas tai yra | Kur naudojama |
 |---|---|---|
@@ -82,14 +82,14 @@ pareigybių valdymo teisių. Šią prieigą kasdieniame darbe suteikia pareigybe
 
 ## Kur tai tvarkoma {#nuorodos}
 
-- **Padalinių duomenys**: peržiūrėk ir tvarkyk juos [Organizacija → Padaliniai](/organizacija/padaliniai).
-- **Padalinių atstovavimo rodikliai**: peržiūrėk juos [ViSAK → Padaliniai](/visak/padaliniai).
-- **Pareigybės**: kurk ir redaguok pareigybes [Organizacija → Pareigybės](/organizacija/pareigybes).
-- **Metinis narių keitimas**: naudok [Pareigybių atnaujinimo vedlį](/organizacija/pareigybiu-atnaujinimas).
-- **Masinis datų derinimas**: naudok [ViSAK → Laikotarpių tvarkyklę](/visak/pareigybiu-laikotarpiai).
-- **Teisės ir rolės**: išsamus prieigos modelio paaiškinimas pateiktas [Pagrindai → Teisės ir rolės](/pagrindai/teises).
-- **Atsakomybės**: koordinavimo taisykles rasi [Pagrindai → Atsakomybės](/pagrindai/atsakomybes).
-- **Kadencijos**: institucijų ciklus tvarkyk [Sistema → Nustatymai (Kadencijos)](/sistema/nustatymai#kadencijos).
+- **Padalinių duomenys**: tvarkomi skiltyje [Organizacija → Padaliniai](/organizacija/padaliniai).
+- **Padalinių atstovavimo rodikliai**: pateikiami skiltyje [ViSAK → Padaliniai](/visak/padaliniai).
+- **Pareigybės**: kuriamos ir redaguojamos skiltyje [Organizacija → Pareigybės](/organizacija/pareigybes).
+- **Metinis narių keitimas**: atliekamas per [Pareigybių atnaujinimo vedlį](/organizacija/pareigybiu-atnaujinimas).
+- **Masinis datų derinimas**: atliekamas per [ViSAK → Laikotarpių tvarkyklę](/visak/pareigybiu-laikotarpiai).
+- **Teisės ir rolės**: išsamus prieigos modelio paaiškinimas pateiktas skiltyje [Pagrindai → Teisės ir rolės](/pagrindai/teises).
+- **Atsakomybės**: koordinavimo taisyklės aprašytos skiltyje [Pagrindai → Atsakomybės](/pagrindai/atsakomybes).
+- **Kadencijos**: institucijų ciklai tvarkomi skiltyje [Sistema → Nustatymai (Kadencijos)](/sistema/nustatymai#kadencijos).
 
 ## Techninė informacija {#technine-informacija}
 

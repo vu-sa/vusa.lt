@@ -10,7 +10,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { guide, pdfFileName, sourceFile } from '../.vitepress/structure.ts'
-import { compileTypst, docsDir, labelPrefix, normaliseLink, pdfDir, repoRoot, splitFrontmatter, toCmarkerMarkdown, typstString } from './markdown.ts'
+import { compileTypst, docsDir, labelPrefix, normaliseLink, omitTechnicalInformation, pdfDir, repoRoot, splitFrontmatter, toCmarkerMarkdown, typstString } from './markdown.ts'
 
 const buildDir = path.join(pdfDir, '.build')
 
@@ -29,13 +29,8 @@ function renderPage(link: string, h1Level: number): string {
   const outFile = path.join(buildDir, 'pages', file)
 
   fs.mkdirSync(path.dirname(outFile), { recursive: true })
-  fs.writeFileSync(outFile, toCmarkerMarkdown(body, { prefix, file, pagesInPdf, missingScreenshots }))
+  fs.writeFileSync(outFile, toCmarkerMarkdown(omitTechnicalInformation(body), { prefix, file, pagesInPdf, missingScreenshots }))
 
-  if (frontmatter.tests.length > 0 && !/^## Techninė informacija/m.test(body)) {
-    console.warn(`${file}: cites tests but has no "## Techninė informacija" section to hold them`)
-  }
-
-  const tests = frontmatter.tests.map(typstString).join(', ')
   const status = { draft: 'Rašoma', partial: 'Dalinis' }[frontmatter.status ?? '']
   const lastUpdated = execFileSync('git', ['log', '-1', '--format=%cs', '--', `docs/${file}`], { cwd: repoRoot, encoding: 'utf8' }).trim()
 
@@ -44,7 +39,6 @@ function renderPage(link: string, h1Level: number): string {
     `#metadata(none) <${prefix}--top>`,
     ...(status ? [`#text(size: 9pt, ${typstString(status)})`] : []),
     `#guide-page(${typstString(`/docs/pdf/.build/pages/${file}`)}, h1-level: ${h1Level})`,
-    `#evidence(tests: (${tests}${frontmatter.tests.length === 1 ? ',' : ''}))`,
     ...(frontmatter.reviewed ? [`#text(size: 9pt, ${typstString(`Turinys peržiūrėtas ${frontmatter.reviewed}`)})`] : []),
     ...(lastUpdated ? [`#text(size: 9pt, ${typstString(`Failas pakeistas ${lastUpdated}`)})`] : []),
     '',
@@ -56,7 +50,6 @@ fs.mkdirSync(buildDir, { recursive: true })
 
 const content = [
   '#import "../components/page.typ": guide-page',
-  '#import "../components/evidence.typ": evidence',
   '#import "../templates/part-page.typ": part-page',
   '',
 ]

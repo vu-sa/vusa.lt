@@ -34,7 +34,7 @@ priklauso, jo tipą, datą ir dydį. Kiekvienas įrašas turi savo aplanką, pvz
 instituciją ar pareigybę, aplankas SharePoint pervadinamas kartu.
 
 Posėdžio aplankas sukuriamas tik tada, kai posėdis turi instituciją su padaliniu. Jei įkėlimo
-mygtuko nematai, patikrink, ar institucija priskirta padaliniui.
+mygtukas nerodomas, verta patikrinti, ar institucija priskirta padaliniui.
 
 ### Failų tipai
 
@@ -52,13 +52,13 @@ Dauguma atstovų neturi VU SA „Microsoft“ paskyros, todėl failas atveriamas
 prisijungti nereikia. Pirmą kartą atvėrus failą (ar nukopijavus jo nuorodą) platforma sukuria
 tokią nuorodą ir vėliau naudoja tą pačią.
 
-Nuoroda pati nenustoja galioti. Kiekvienas, kuriam ją persiuntei, gali atverti failą tol, kol
-nuorodos neatšauksi arba failo neištrinsi. Failų sąraše niekur viešai nėra, bet nuoroda yra
-tikras raktas į failą – siųsk ją tik tiems, kam failas skirtas.
+Nuoroda pati nenustoja galioti. Kiekvienas, gavęs nuorodą, gali atverti failą tol, kol
+nuoroda neatšaukiama arba failas neištrinamas. Failų sąrašo niekur viešai nėra, bet nuoroda veikia
+kaip tiesioginė prieiga prie failo – ją rekomenduojama siųsti tik tiems, kam failas skirtas.
 
 ### Viešas posėdis ir failai {#viesumas}
 
-Posėdžio lauke **Matomumas** paspaudęs **Kas rodoma?** pamatysi, kas iš posėdžio rodoma vusa.lt.
+Posėdžio lauke **Matomumas** paspaudus **Kas rodoma?**, pateikiama informacija, kas iš posėdžio rodoma vusa.lt.
 Viešame posėdžio puslapyje rodoma data, institucija, būsena, darbotvarkės klausimai su balsavimo
 rezultatais, tuo metu pareigas ėję atstovai ir skirtuko **Dokumentai** dokumentai, turintys viešą
 nuorodą. Failai, užduotys ir komentarai nerodomi niekada.
@@ -84,8 +84,7 @@ Jei nuoroda pateko ne tiems žmonėms ar failas nebeturi būti pasiekiamas buvus
 1. Failo eilutėje spausk **Atšaukti nuorodą** (rodoma tik failams, kurių nuoroda jau sukurta).
 2. Patvirtink. Senoji nuoroda nustoja veikti iš karto.
 
-Kitą kartą atvėrus failą sukuriama nauja nuoroda, todėl tie, kam failas vis dar reikalingas, gaus
-naują nuorodą iš tavęs.
+Kitą kartą atvėrus failą sukuriama nauja nuoroda, kuria prireikus galima pasidalyti iš naujo.
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Nuorodos atšaukimas">
 

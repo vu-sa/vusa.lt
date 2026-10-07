@@ -58,7 +58,8 @@ išjungti. Jei kolega mato skiltį, kurios tu nematai, skiriasi jūsų teisės (
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Viena kūrimo vieta ir darbo sričių navigacija">
 
-Vietoje seno administravimo meniu rinkis darbo sritį ir jos skiltį. **+ Sukurti** rodo tau leidžiamus kūrimo veiksmus; telefono juostose pasieksi tuos pačius pagrindinius darbus.
+Vietoje seno administravimo meniu pasirenkama darbo sritis ir jos skiltis. **+ Sukurti** rodo
+leidžiamus kūrimo veiksmus; telefono juostose pasiekiami tie patys pagrindiniai darbai.
 
 </ChangelogNote>
 
@@ -76,34 +77,34 @@ turi aiškų pavadinimą ekrano skaitytuvui, o telefone jų paspaudimo vieta yra
 
 ### Rasti skiltį ar įrašą {#bendra-paieska}
 
-Viršutinėje juostoje atverk paiešką arba spausk **⌘/Ctrl + K** – atsidarys komandų paletė.
-Joje rasi tau prieinamas skiltis, veiksmus ir įrašų paiešką. Žvaigždute prisek dažnai naudojamą
-puslapį; prisegtos nuorodos rodomos paletės pradžioje. Telefone paiešką pasieksi iš navigacijos.
+Viršutinėje juostoje paspaudus paiešką arba klavišus **⌘/Ctrl + K**, atidaroma komandų paletė.
+Joje pateikiamos prieinamos skiltys, veiksmai ir įrašų paieška. Žvaigždute galima prisegti dažnai
+naudojamą puslapį – prisegtos nuorodos rodomos paletės pradžioje. Telefone paieška pasiekiama iš navigacijos.
 
-Paletėje rezultatai grupuojami pagal įrašo rūšį. **Rodyti visus** nuveda į atitinkamą sąrašą, kuriame gali tikslinti paiešką ir filtrus.
+Paletėje rezultatai grupuojami pagal įrašo rūšį. **Rodyti visus** nuveda į atitinkamą sąrašą, kuriame galima tikslinti paiešką ir filtrus.
 Paieška nesuteikia naujų teisių: kitų įrašų ar jų veiksmų prieiga priklauso nuo tavo pareigų ir rolių.
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Paieška turinyje ir aiškesni filtrai">
 
-Puslapius ir naujienas rasi pagal išsaugotą turinio tekstą. Rezultato ištrauka parodo, kur sutapo paieška. Lietuvių ir anglų tekstuose paieška atpažįsta ir skirtingas žodžio formas. Pagal aktualumą rikiuojami teksto atitikmenys; pasirinktą rikiavimą pagal datą ar pavadinimą taikysi tiesiogiai.
+Puslapiai ir naujienos randami pagal išsaugotą turinio tekstą. Rezultato ištrauka parodo, kur sutapo paieška. Lietuvių ir anglų tekstuose paieška atpažįsta ir skirtingas žodžio formas. Pagal aktualumą rikiuojami teksto atitikmenys; pasirinktas rikiavimas pagal datą ar pavadinimą taikomas tiesiogiai.
 
-Pirmiausia rodomi atitikmenys paties įrašo varde ar pavadinime. Ieškodamas žmogaus vardo pirmiau rasi jo profilį, o pareigybės pavadinimo, pavyzdžiui, „Prezidentė“ – pareigybę. Susijusių žmonių, pareigybių ir institucijų paminėjimai turi mažesnį svorį; dabartinė darbo sritis nekeičia paieškos rezultatų eilės. Sutapęs vardas ar pavadinimas paryškinamas pačioje antraštėje, taip pat viešoje dokumentų paieškoje. Dokumento pavadinimą rasi ir pradėjęs rašyti žodį, pavyzdžiui, „įstat“. Trumpa turinio ištrauka pateikiama mažesniu šriftu tik tada, kai nekartoja vardo ar pavadinimo; HTML žymos nerodomos.
+Pirmiausia rodomi atitikmenys paties įrašo varde ar pavadinime. Ieškant žmogaus vardo pirmiausia pateikiamas jo profilis, o pagal pareigybės pavadinimą, pavyzdžiui, „Prezidentė“ – pareigybė. Susijusių žmonių, pareigybių ir institucijų paminėjimai turi mažesnį svorį; dabartinė darbo sritis nekeičia paieškos rezultatų eilės. Sutapęs vardas ar pavadinimas paryškinamas pačioje antraštėje, taip pat viešoje dokumentų paieškoje. Dokumento pavadinimas randamas ir pradėjus rašyti žodį, pavyzdžiui, „įstat“. Trumpa turinio ištrauka pateikiama mažesniu šriftu tik tada, kai nekartoja vardo ar pavadinimo; HTML žymos nerodomos.
 
 </ChangelogNote>
 
 ### Grįžti prie sąrašo {#sarasai}
 
-Sąrašo paieška ir filtrai veikia tik tos rūšies įrašams. Pakeitęs filtrus ar rikiavimą ir
-atvėręs įrašą, grįžk atgal – sąrašas išlaiko tavo pasirinktą būklę. **Išvalyti filtrus** naudok,
-jei tikėtino įrašo nematai. Prieš kartodamas kūrimą patikrink, ar jis jau nėra sąraše.
+Sąrašo paieška ir filtrai veikia tik tos rūšies įrašams. Pakeitus filtrus ar rikiavimą ir
+atvėrus įrašą, grįžus atgal sąrašas išlaiko pasirinktą būseną. Mygtukas **Išvalyti filtrus**
+praverčia, jei tikėtinas įrašas nerodomas. Prieš kartojant kūrimą verta patikrinti, ar įrašas jau nėra sukurtas.
 
-Filtro parinkties skaičius rodo įrašus, atitinkančius paiešką ir **kitus filtrus**, neįskaitant to filtro pasirinkimo. Pavyzdžiui, pasirinkęs vieną padalinį vis dar matai kitų padalinių skaičius pagal pasirinktą kalbą ir paieškos tekstą. Kelios vieno filtro reikšmės praplečia rezultatus, o skirtingi filtrai taikomi kartu. Įrašai gali patekti į kelias parinktis, todėl skaičių nesudėk. Brūkšnys reiškia, kad skaičius nežinomas.
+Filtro parinkties skaičius rodo įrašus, atitinkančius paiešką ir **kitus filtrus**, neįskaitant to filtro pasirinkimo. Pavyzdžiui, pasirinkus vieną padalinį vis dar rodomi kitų padalinių skaičiai pagal pasirinktą kalbą ir paieškos tekstą. Kelios vieno filtro reikšmės praplečia rezultatus, o skirtingi filtrai taikomi kartu. Įrašai gali patekti į kelias parinktis, todėl šie skaičiai nesumuojami. Brūkšnys reiškia, kad skaičius nežinomas.
 
-Ilgesniame parinkčių sąraše įrašyk ieškomą reikšmę į filtro paiešką. Ji ieško ir tarp iš pradžių nematomų parinkčių; tavo pasirinkimai lieka matomi ir juos gali pašalinti. Ši laikina paieška nekeičia pagrindinės frazės, filtrų ar puslapio adreso. Tie patys susitarimai galioja svetainės archyvuose ir susijusių įrašų pasirinkimo languose.
+Ilgesniame parinkčių sąraše ieškomą reikšmę galima įrašyti į filtro paieškos laukelį. Ji ieško ir tarp iš pradžių nematomų parinkčių; pasirinkimai lieka matomi ir juos galima pašalinti. Ši laikina paieška nekeičia pagrindinės frazės, filtrų ar puslapio adreso. Tie patys susitarimai galioja svetainės archyvuose ir susijusių įrašų pasirinkimo languose.
 
 ### Pasirinkti susijusį įrašą
 
-Kai forma prašo susieti kitą įrašą, pasirinkimo lange gali ieškoti, filtruoti ir peržiūrėti radinį prieš jį pridėdamas. Pažymėtus įrašus patvirtini lango apačioje; jei laukas neprivalomas, pasirinkimą gali išvalyti. Telefone peržiūrėjęs radinį mygtuku „Atgal į sąrašą“ grįši prie rezultatų. Nepasiekiamą išteklių gali peržiūrėti, bet negali pasirinkti.
+Kai forma prašo susieti kitą įrašą, pasirinkimo lange galima ieškoti, filtruoti ir peržiūrėti radinį prieš jį pridedant. Pažymėti įrašai patvirtinami lango apačioje; jei laukas neprivalomas, pasirinkimą galima išvalyti. Telefone peržiūrėjus radinį mygtuku „Atgal į sąrašą“ grįžtama prie rezultatų. Nepasiekiamą išteklių galima peržiūrėti, bet negalima pasirinkti.
 
 Kuriant narį ar pareigybę, perspėjimas apie galimą dublikatą parodo sutapimus ir galimus veiksmus. Tai patarimas: sutampantys vardai savaime neuždraudžia išsaugoti įrašo. Atverti ar sujungti kitą įrašą siūloma tik tada, kai turi teisę jį tvarkyti.
 
@@ -127,7 +128,7 @@ Turinio ir konfigūracijos įrašai (naujienos, puslapiai, baneriai, kalendoriau
 ### Daugiakalbiškumas ir vertimai {#vertimai}
 
 VU SA platforma yra dvikalbė (lietuvių ir anglų k.):
-- **Formose su verčiamais laukais** kalbas perjungi LT ir EN valdikliu. Privalomos kalbos ir laukai priklauso nuo įrašo rūšies – vadovaukis forma bei jos gidu.
+- **Formose su verčiamais laukais** kalbas perjungi LT ir EN valdikliu. Privalomos kalbos ir laukai priklauso nuo įrašo rūšies – vadovaujamasi forma bei jos gidu.
 - **Verčiamų laukų peržiūroje** rodoma pasirinkta kalba; trūkstamas vertimas gali būti pakeičiamas atsargine kalba. Puslapiai ir naujienos turi [atskirus susietus įrašus kiekvienai kalbai](/svetaine/puslapiai#kalbu-versijos), todėl jų vertimas savaime nesukuriamas.
 
 ## Spalvos, ženklai ir formos {#spalvos-zenklai-ir-formos}
@@ -173,7 +174,7 @@ Kai viskas gerai, ženkliuko dažniausiai nėra – rodoma tik tai, į ką verta
 ### Tema, dydis ir įrenginiai
 
 - Platforma pagal nutylėjimą atsidaro **šviesia tema**, net jei tavo įrenginys nustatytas tamsiai.
-  Tamsią temą įjungsi paspaudęs savo vardą → **Išvaizda → Tamsi tema**; pasirinkimas išsaugomas.
+  Tamsią temą galima įjungti pasirinkus savo vardą → **Išvaizda → Tamsi tema**; pasirinkimas išsaugomas.
 - **Išvaizda → Prieinamumas** leidžia padidinti tekstą, paryškinti linijas ir pabraukti nuorodas.
 - Telefone ir planšetėje galima atlikti tą patį, ką kompiuteryje: telefone mygtukas **+ Sukurti** ir
   pranešimai persikelia į apatinę juostą, o niekas nepasiekiama tik užvedus pelę.
@@ -183,7 +184,7 @@ Kai viskas gerai, ženkliuko dažniausiai nėra – rodoma tik tai, į ką verta
 
 ## Techninė informacija {#technine-informacija}
 
-Typesense laukų svoriai ir schemos aprašyti `config/scout.php`; naršyklė gauna patikrintus kolekcijų paieškos profilius. `search:reindex` atkuria kiekvienos kolekcijos schemą, patikrina laukus ir tik tada įjungia tos kolekcijos antrą profilio versiją. Iki atkūrimo naudojami ankstesnės schemos laukai. `TYPESENSE_SEARCH_PROFILE_VERSION=1` ir konfigūracijos podėlio atnaujinimas grąžina ankstesnius paieškos laukus nekeičiant duomenų. Po Redis podėlio išvalymo profilio įjungimą atkurk tuo pačiu indeksavimo veiksmu.
+Typesense laukų svoriai ir schemos aprašyti `config/scout.php`; naršyklė gauna patikrintus kolekcijų paieškos profilius. `search:reindex` atkuria kiekvienos kolekcijos schemą, patikrina laukus ir tik tada įjungia tos kolekcijos antrą profilio versiją. Iki atkūrimo naudojami ankstesnės schemos laukai. `TYPESENSE_SEARCH_PROFILE_VERSION=1` ir konfigūracijos podėlio atnaujinimas grąžina ankstesnius paieškos laukus nekeičiant duomenų. Po Redis podėlio išvalymo profilio įjungimas atkuriamas tuo pačiu indeksavimo veiksmu.
 
 Turinio tekstas įtraukiamas po patvirtintų pakeitimų; dinaminiai blokų sąrašai, formų pateikimai ir PDF failų tekstas neišplečiami. Lietuvių ir anglų kamienų laukai naudoja tik tikrus tos kalbos vertimus ar įrašo kalbą. Filtro skaičiavimo ir parinkčių paieškos užklausos išlaiko kolekcijos prieigos raktą ir privalomus pagrindinius filtrus.
 
@@ -193,7 +194,7 @@ Spalvos aprašytos kaip kintamieji `resources/css/theme/design-tokens.css` ir
 `resources/css/theme/base-tokens.css`: `--brand` / `--brand-fill` – VU SA spalva, `--status-*` –
 šešios būsenos, `--cat-1…8` – kategorijos. Taisyklės, kada kurį naudoti, – `.ai/rules/css.md` ir
 `.ai/rules/js-pages-admin.md`; kontrastą tikrina Storybook istorija `Patterns/ColourSystem`.
-Būseną visada rodyk per `StatusBadge`, o ne savo spalvomis.
+Būsena visada rodoma per `StatusBadge`, nenaudojant atskirų spalvų.
 :::
 
 - Spalvų kintamieji abiem temoms ir kategorijų atspalvių atstumai tikrinami `designTokens.test.ts`.

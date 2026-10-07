@@ -20,14 +20,14 @@ Kiekvienas prisijungęs narys gali užregistruoti problemą, o platformos admini
 ## Rekomendacijos {#rekomendacijos}
 
 ::: tip
-- Registruodamas klaidą, pateik kuo tikslesnę informaciją: kas įvyko, kokiame puslapyje (URL), kokius žingsnius atlikai ir prisek ekrano nuotrauką.
-- Parinktį „Visiems prisijungusiems“ naudok tik tiems patobulinimams, kuriuose nėra jautrių asmens ar organizacijos duomenų.
-- Užbaigdamas ar atmesdamas užklausą, komentare trumpai paaiškink priimtą sprendimą.
+- Registruojant klaidą verta pateikti kuo tikslesnę informaciją: kas įvyko, kokiame puslapyje (URL), kokie žingsniai atlikti, ir prisegti ekrano nuotrauką.
+- Parinktį „Visiems prisijungusiems“ rekomenduojama naudoti tik tiems patobulinimams, kuriuose nėra jautrių asmens ar organizacijos duomenų.
+- Užbaigiant ar atmetant užklausą, komentare pravartu trumpai paaiškinti priimtą sprendimą.
 :::
 
 ## Kaip tai veikia
 
-Užklausos pateikiamos per formą `/mano/my-support-requests/create`. Užklausą sudaro pavadinimas, detalus aprašymas, pasirinktas tipas, veiklos sritis, matomumo lygis ir prisegtos ekrano nuotraukos. Gali pridėti iki penkių JPEG, PNG arba WebP vaizdų, kiekvieną iki 10 MB.
+Užklausos pateikiamos per formą `/mano/my-support-requests/create`. Užklausą sudaro pavadinimas, detalus aprašymas, pasirinktas tipas, veiklos sritis, matomumo lygis ir prisegtos ekrano nuotraukos. Galima pridėti iki penkių JPEG, PNG arba WebP vaizdų, kiekvieną iki 10 MB.
 
 ### Matomumo lygiai
 
@@ -39,7 +39,7 @@ Kuriant užklausą nurodoma, kas ją gali matyti. Pasirinktas matomumas rodomas 
 
 ### Susiję žmonės {#susije-zmones}
 
-Jei problema liečia ne tik tave, kurdamas užklausą pridėk **susijusius žmones** – bet kuriuos platformos narius. Jie mato užklausą (net privačią), gali ją komentuoti ir gauna pranešimus apie naujus komentarus. Vėliau sąrašą gali keisti administratorius. Atsakingas asmuo vis tiek yra vienas.
+Jei problema aktuali keliems nariams, kuriant užklausą galima pridėti **susijusius žmones** – bet kuriuos platformos narius. Jie mato užklausą (net privačią), gali ją komentuoti ir gauna pranešimus apie naujus komentarus. Vėliau sąrašą gali keisti administratorius. Atsakingas asmuo vis tiek yra vienas.
 
 ### Būsenų ciklas
 
@@ -54,7 +54,7 @@ Užklausos sprendimo eigą rodo šios būsenos:
 
 ### Komentarai
 
-Užklausos puslapyje esančioje diskusijoje pateik patikslinimus ir aptark sprendimo eigą. Įrašęs `@`, gali paminėti užklausos autorių, atsakingą asmenį, susijusius žmones ir, jei užklausa matoma rolėms, tų rolių narius.
+Užklausos puslapyje esančioje diskusijoje galima pateikti patikslinimus ir aptarti sprendimo eigą. Įrašius `@`, galima paminėti užklausos autorių, atsakingą asmenį, susijusius žmones ir, jei užklausa matoma rolėms, tų rolių narius.
 
 ## Veiksmai
 
@@ -112,7 +112,7 @@ Užklausos puslapyje:
 - **Būsenos pasikeitimas**: administratoriui pakeitus užklausos būseną, pranešimą gauna autorius ir susiję žmonės (išskyrus tą, kuris būseną pakeitė).
 - **Priskyrimas ir pridėjimas**: naujai priskirtas atsakingas asmuo ir pridėtas susijęs žmogus gauna po pranešimą su nuoroda į užklausą. Administratorius, jau gavęs pranešimą apie naują užklausą, antro negauna.
 - Kaip gauti kiekvieną iš šių pranešimų (laiškas iškart, suvestinėje ar be laiško), pasirenkama **Pranešimų nustatymuose**, skiltyje *Sistema*.
-- **Komentarų pranešimai**: apie naują komentarą sužino autorius, atsakingas asmuo ir susiję žmonės; rolių nariai – tik kai juos paminėji.
+- **Komentarų pranešimai**: apie naują komentarą sužino autorius, atsakingas asmuo ir susiję žmonės; rolių nariai – tik kai jie paminimi.
 - **Sprendimo laiko fiksavimas**: nustačius būseną „Išspręsta“ arba „Atmesta“, automatiškai užfiksuojamas sprendimo laikas. Užklausą atvėrus pakartotinai, sprendimo laikas išvalomas.
 - **Šalinimas**: pašalinta užklausa saugoma duomenų bazėje; jos atkūrimo maršrutas skirtas administravimui ir sąraše nepateikiamas.
 

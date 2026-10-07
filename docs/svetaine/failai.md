@@ -18,15 +18,15 @@ tests:
 
 Failų skiltyje tvarkomi svetainės dokumentai, nuotraukos, skaidrės ir kiti lankytojams ar turinio rengimui reikalingi failai. Į įkeltus dokumentus galima sukurti nuorodas tekste, o nuotraukas – tiesiogiai įterpti į puslapių bei naujienų blokus.
 
-Skiltis pasiekiama adresu `/mano/files`. Failų tvarkyklę taip pat gali atverti teksto redaktoriuje.
+Skiltis pasiekiama adresu `/mano/files`. Failų tvarkyklę taip pat galima atverti teksto redaktoriuje.
 
 ## Rekomendacijos {#rekomendacijos}
 
 ::: tip
-- **Aiškūs pavadinimai:** rinkis failo turinį nusakantį pavadinimą, pvz., `ataskaita-2026.pdf`. Venk tokių pavadinimų kaip `FINAL-naujas-2.pdf`, iš kurių neaišku, kuri versija galutinė.
-- **Tinkamas formatas:** skaityti skirtiems dokumentams patogu naudoti PDF. Jei kolegos turės dokumentą pildyti ar redaguoti, pateik ir redaguojamą failą.
-- **Nuotraukų dydis:** prieš įkeldamas sumažink nereikalingai dideles nuotraukas, išlaikydamas pakankamą kokybę. Taip puslapis greičiau įsikraus ir naudojant mobilųjį ryšį.
-- **Aplankų tvarka:** failus grupuok pagal metus ar projektus, kad juos būtų lengva rasti.
+- **Aiškūs pavadinimai:** rekomenduojama rinktis failo turinį nusakantį pavadinimą, pvz., `ataskaita-2026.pdf`. Geriau nenaudoti tokių pavadinimų kaip `FINAL-naujas-2.pdf`, iš kurių neaišku, kuri versija galutinė.
+- **Tinkamas formatas:** skaityti skirtiems dokumentams patogu naudoti PDF. Jei kolegos turės dokumentą pildyti ar redaguoti, verta pateikti ir redaguojamą failą.
+- **Nuotraukų dydis:** prieš įkeliant rekomenduojama sumažinti per dideles nuotraukas, išlaikant pakankamą kokybę. Taip puslapis greičiau įsikrauna ir naudojant mobilųjį ryšį.
+- **Aplankų tvarka:** failus verta grupuoti pagal metus ar projektus, kad juos būtų lengva rasti.
 :::
 
 ## Kaip tai veikia

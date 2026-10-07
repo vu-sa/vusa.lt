@@ -17,8 +17,8 @@ tests:
 # Dokumentai
 
 Dokumentai – viešai skelbiami VU SA ir padalinių nuostatai, ataskaitos, veiklos planai ir
-protokolai. Archyvą atverk per **ViSAK → Dokumentai** (`/mano/documents`). Dokumentus
-tvarkantiems jis taip pat pasiekiamas Svetainės srityje.
+protokolai. Archyvas pasiekiamas per **ViSAK → Dokumentai** (`/mano/documents`). Dokumentus
+tvarkantiems nariams jis taip pat pasiekiamas Svetainės srityje.
 
 ## Susitarimai {#susitarimai}
 
@@ -53,18 +53,18 @@ Posėdžio dokumentų susiejimas aprašytas [Posėdžių gide](/visak/posedziai)
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Dokumentų archyvas pasiekiamas visiems nariams">
 
-Dokumentus naršyk be valdytojo rolės. Importavimo, sinchronizavimo ir šalinimo veiksmai lieka
+Dokumentus galima naršyti be valdytojo rolės. Importavimo, sinchronizavimo ir šalinimo veiksmai lieka
 juos tvarkantiems; pirmą kartą sąrašas atrenkamas pagal tavo padalinius ir centrinę VU SA.
 
 </ChangelogNote>
 
 ### Sąrašas ir peržiūra {#sarasas}
 
-Ieškok pagal pavadinimą, atverk filtrus arba pasirink greitąjį dokumentų rūšies filtrą.
-Pradinius padalinių filtrus gali pakeisti. Lentelėje matai datą, pavadinimą, rūšį, instituciją
-ir kalbą; peržiūros rodinyje – daugiau dokumento informacijos.
+Galima ieškoti pagal pavadinimą, atverti filtrus arba pasirinkti greitąjį dokumentų rūšies filtrą.
+Pradinius padalinių filtrus galima pakeisti. Lentelėje rodoma data, pavadinimas, rūšis, institucija
+ir kalba; peržiūros rodinyje – daugiau dokumento informacijos.
 
-Paspaudęs viešą nuorodą turintį pavadinimą, atversi failą naujame naršyklės lange.
+Paspaudus viešą nuorodą turintį pavadinimą, failas atveriamas naujame naršyklės lange.
 Jei nuorodos nėra, pavadinimas nėra aktyvus. Dokumentų valdytojai papildomai mato
 sinchronizavimo būseną: **Laukiama**, **Importuota**, **Sinchronizuojama**,
 **Sinchronizuota** arba **Nepavyko**.
@@ -91,8 +91,8 @@ valdiklyje; rekomendacijos lieka virš jo. Įvedus paiešką sąrašas savaime r
 3. Patvirtink pasirinkimą. Platforma importuoja jų duomenis ir parengia viešą prieigą.
 4. Patikrink pavadinimą, instituciją, kalbą ir viešą nuorodą.
 
-Jei importavimo mygtuko nematai, patikrink savo rolę. SharePoint pasirinkimo langui taip pat
-reikia saugaus HTTPS ryšio. Dokumento turinį ir archyvo metaduomenis keisk SharePoint;
+Jei importavimo mygtukas nematomas, verta patikrinti savo rolę. SharePoint pasirinkimo langui taip pat
+reikia saugaus HTTPS ryšio. Dokumento turinys ir archyvo metaduomenys keičiami SharePoint;
 sąraše atskiros dokumento redagavimo formos nėra.
 
 ### Atnaujinti duomenis {#sinchronizavimas}

@@ -18,7 +18,7 @@ tests:
 Platforma praneša apie įvykius, reikalaujančius tavo dėmesio, sprendimo ar atsakymo: naujas užduotis,
 artėjančius posėdžius, patvirtinimo laukiančias rezervacijas, komentarus ir paminėjimus.
 
-Pranešimų nustatymuose pasirink, apie ką ir kokiu būdu nori būti informuojamas.
+Pranešimų nustatymuose galima pasirinkti, apie ką ir kokiu būdu norima būti informuojamam.
 
 ## Pranešimų kanalai {#kanalai}
 
@@ -83,19 +83,19 @@ Pagal institucijos posėdžių periodiškumą gali gauti **„VU SA · Ar vyko p
 **„VU SA · Papildyk posėdžių įrašus“**. Tą patį gali inicijuoti koordinatorius.
 Užklausa nurodo tavo laikotarpį; jo pabaiga užfiksuota siunčiant.
 
-- Veiklos užklausoje pridėk posėdžius arba pasirink **Ne, nevyko**.
-- Įrašų papildymo užklausoje matai jau vykusius posėdžius be darbotvarkės arba su neužpildytais
-  sprendimais. Atverk jų įrašus ir prisijungęs papildyk juos. **Viskas užfiksuota** patvirtinsi,
-  kai darbotvarkės ir sprendimai bus užpildyti. Jei trūksta paties posėdžio, gali jį pridėti.
-- Abiem atvejais gali pasirinkti **Nesu šio organo narys (-ė)**, kad koordinatorius patikrintų duomenis.
+- Veiklos užklausoje galima pridėti posėdžius arba pasirinkti **Ne, nevyko**.
+- Įrašų papildymo užklausoje rodomi jau vykę posėdžiai be darbotvarkės arba su neužpildytais
+  sprendimais. Juos galima atverti ir prisijungus papildyti. Pasirinkus **Viskas užfiksuota**
+  patvirtinama, kad darbotvarkės ir sprendimai yra užpildyti. Jei trūksta paties posėdžio, galima jį pridėti.
+- Abiem atvejais galima pasirinkti **Nesu šio organo narys (-ė)**, kad koordinatorius patikrintų duomenis.
 
 Atsakymo nuoroda galioja 14 dienų ir leidžia atsakyti neprisijungus. Vien jos atvėrimas nieko
 neįrašo. Vienu atsakymu gali įrašyti kelis posėdžius; sprendimams el. paštu laiko nereikia.
-Išsamiau skaityk [apie atsakymą iš laiško](/visak/institucijos#atsakymas).
+Išsamiau aprašyta skyriuje [apie atsakymą iš laiško](/visak/institucijos#atsakymas).
 
 Šios užklausos laikosi tavo pranešimų nustatymų: **Laiškas iškart**, **Santraukoje** arba
 **Nesiųsti**. Nutildymas taip pat taikomas. Pasenę klausimai nesiunčiami, o „įtraukta į eilę“
-nereiškia, kad laiškas jau pristatytas. Užklausų istoriją rasi
+nereiškia, kad laiškas jau pristatytas. Užklausų istorija pateikiama
 [institucijos puslapyje](/visak/institucijos#uzklausos).
 
 **Suvestinėje** kiekviena rodoma institucija turi savo laikotarpį ir pasirašytas atsakymo
@@ -107,9 +107,9 @@ Visi laiškai pasirašomi **Mano VU SA** vardu, ne koordinatoriaus.
 
 ## Kur rasti pranešimus ir nustatymus {#kur-rasti}
 
-- **Tavo gauti pranešimai**: atverk [Mano → Pranešimai](/mano/pranesimai) (`/mano/notifications`).
-- **Tavo pranešimų nustatymai**: paspausk savo profilį viršuje dešinėje ir pasirink
-  **Pranešimų nustatymai** (`/mano/profile/notifications`). Čia gali keisti kiekvienos skilties el. pašto ir
+- **Tavo gauti pranešimai**: pasiekiami skiltyje [Mano → Pranešimai](/mano/pranesimai) (`/mano/notifications`).
+- **Tavo pranešimų nustatymai**: pasiekiami profilio meniu viršuje dešinėje pasirinkus
+  **Pranešimų nustatymai** (`/mano/profile/notifications`). Čia galima keisti kiekvienos skilties el. pašto ir
   pranešimų į įrenginį parinktis, suvestinės dažnumą bei valdyti susietus įrenginius.
 
 <DocScreenshot name="notification-preferences" alt="Pranešimų nustatymai: kiekvienam pranešimui pasirenkamas laiškas iškart, suvestinė arba be laiško ir push, šone laikinas išjungimas ir el. pašto adresai" caption="Pranešimų nustatymai: kiekvienai pranešimų rūšiai – laiškas, suvestinė ar išjungta; šone – nutildymas ir adresai." />

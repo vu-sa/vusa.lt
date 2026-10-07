@@ -91,7 +91,7 @@ Nuoroda į konkrečią užduotį (pvz., iš pranešimo) atidaro ją iš karto, n
 
 | Veiksmas | Kada rodomas |
 |---|---|
-| **Pranešti apie veiklą** | Neatlikta periodiškumo užduotis: registruoji posėdį arba pranešimą, kad posėdžio nebuvo |
+| **Pranešti apie veiklą** | Neatlikta periodiškumo užduotis: registruojamas posėdis arba pranešimas, kad posėdžio nebuvo |
 | **Pridėti darbotvarkės klausimą** / **Peržiūrėti darbotvarkę** | Neatlikta darbotvarkės užduotis: nuoroda į posėdžio darbotvarkę |
 | **Pažymėti atlikta** / **Grąžinti į neatliktas** | Tik rankinė užduotis |
 | **Ištrinti** | Tik jei turi teisę ją ištrinti |
@@ -122,7 +122,7 @@ institucijai užduoties sukurti negalima.
 
 | Kada | Kas gauna | Ką |
 |---|---|---|
-| Kasdien 8.00, likus 7, 3 ir 1 d. iki termino | Atsakingi | Priminimą. Kurių priminimų nori, pasirenki [pranešimų nustatymuose](/pagrindai/pranesimai) |
+| Kasdien 8.00, likus 7, 3 ir 1 d. iki termino | Atsakingi | Priminimą. Priminimų pasirinkimas valdomas [pranešimų nustatymuose](/pagrindai/pranesimai) |
 | Kiekvieną pirmadienį 9.00 | Žmonės, turintys vėluojančių užduočių | Suvestinę apie vėluojančias užduotis |
 
 Automatinių posėdžio ir institucijos užduočių priminimai siunčiami tik tiems atsakingiems, kurie

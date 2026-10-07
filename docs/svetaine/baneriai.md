@@ -21,16 +21,16 @@ Skiltis pasiekiama adresu `/mano/banners`.
 ## Rekomendacijos {#rekomendacijos}
 
 ::: tip
-- **Aiškus vaizdas:** parink paveikslėlį, kuriame logotipas ar pagrindinė žinutė būtų įskaitomi ir telefone. Apkarpydamas vaizdą patikrink, ar nenukerpi svarbių jo dalių.
-- **Veikianti nuoroda:** prieš skelbdamas atverk banerio nuorodą ir patikrink, ar ji veda į numatytą puslapį. Jei svetainė palaiko HTTPS, naudok adresą su `https://`.
-- **Aktualumas:** pasibaigus akcijai arba kai banerio informacija nebeaktuali, pažymėk jį kaip neaktyvų arba pašalink.
+- **Aiškus vaizdas:** rekomenduojama parinkti paveikslėlį, kuriame logotipas ar pagrindinė žinutė būtų įskaitomi ir telefone. Apkerpant vaizdą verta patikrinti, ar nenukerpamos svarbios jo dalys.
+- **Veikianti nuoroda:** prieš skelbiant verta atverti banerio nuorodą ir patikrinti, ar ji veda į numatytą puslapį. Jei svetainė palaiko HTTPS, rekomenduojama naudoti adresą su `https://`.
+- **Aktualumas:** pasibaigus akcijai arba kai banerio informacija nebeaktuali, baneris pažymimas kaip neaktyvus arba pašalinamas.
 :::
 
 ## Kaip tai veikia
 
 ### Rodymas svetainėje ir prioritetas
 
-Viešos svetainės puslapiuose baneriai pateikiami apačioje, virš poraštės. Karuselė slenka automatiškai; ją gali paslinkti ir pats:
+Viešos svetainės puslapiuose baneriai pateikiami apačioje, virš poraštės. Karuselė slenka automatiškai; ją galima paslinkti ir rankiniu būdu:
 
 - **Padalinio baneriai rodomi pirmiausia.** Jei tavo padalinys (pvz., VU SA MIF) turi aktyvių banerių, lankytojui MIF polapyje pirmiausia bus rodomi šie baneriai.
 - **Bendri VU SA baneriai rodomi visada.** Po padalinio banerių karuselėje rodomi bendri centrinio biuro paskelbti baneriai. Jei padalinys savų banerių neturi, rodomi tik bendri baneriai.

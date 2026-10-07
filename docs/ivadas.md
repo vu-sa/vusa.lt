@@ -26,8 +26,8 @@ Naudotojai pagrindinę informaciją gauna pačioje platformoje, bet gidą skaity
 
 Gidas sudarytas taip pat, kaip platforma: po bendrųjų [Pagrindų](/pagrindai/platforma) kiekvienai
 **darbo sričiai** (Mano, ViSAK, Rezervacijos, Svetainė, Organizacija, Sistema) skirtas atskiras
-skyrius, o kiekvienai sričiai priklausančiai skilčiai – atskiras puslapis. Skaityk tą skyrių, už
-kurį esi atsakingas (-a).
+skyrius, o kiekvienai sričiai priklausančiai skilčiai – atskiras puslapis. Verta skaityti
+skyrių, susijusį su savo atsakomybėmis.
 
 ## Kas pasikeitė nuo rugsėjo {#rugsejo-pokyciai}
 
@@ -35,7 +35,7 @@ Gidas aprašo dabartinį platformos **v3.0 variantą**, parengtą po rugsėjo ir
 pakeitimų. Jau įtraukti v2 atnaujinimai lieka
 [v2 istorijoje](/changelog/v2); o naujo paleidimo suvestinė – [v3.0](/changelog/v3#v3-0).
 
-Pirmiausia patikrink šias pasikeitusias platformos sritis:
+Svarbiausios pasikeitusios platformos sritys:
 
 - **Rasti veiksmą**: [darbo sritys, + Sukurti ir paieška](/pagrindai/platforma) pakeičia seną administravimo meniu.
 - **Suprasti savo prieigą**: [Paskyra ir prieiga](/mano/paskyra-ir-prieiga) parodo tavo pareigas, roles ir jų istoriją; [datos](/pagrindai/padaliniai-ir-pareigybes#datos) paaiškina, kodėl prieigą gali gauti dar prieš pareigų pradžią.
@@ -43,14 +43,14 @@ Pirmiausia patikrink šias pasikeitusias platformos sritis:
 - **Gauti pranešimus**: [kanalų parinktys](/pagrindai/pranesimai#kanalai) leidžia pasirinkti laiško pristatymą kiekvienam pranešimui; nutildymas nepaslepia darbo platformoje.
 - **Rezervuoti daiktus**: [krepšelis](/rezervacijos/rezervacijos) išlaiko pasirinkimą, bet jo nepateikus daiktai neužimami; rezervacijos trynimas yra negrįžtamas.
 
-Prie svarbiausių taisyklių rasi pažymėtus atnaujinimus su nuoroda į jų suvestinę.
+Prie svarbiausių taisyklių pažymėti atnaujinimai su nuoroda į jų suvestinę.
 Datos ties v3.0 rodo, kada aprašymas patikrintas.
 
 ## Kaip skaityti puslapius
 
-Skilties gido puslapyje rasi šiuos skyrius. Sąvokų ir darbo eigos puslapiuose paliekami tik reikalingi skyriai:
+Skilties gido puslapyje pateikiami šie skyriai. Sąvokų ir darbo eigos puslapiuose paliekami tik reikalingi skyriai:
 
-| Skyrius | Ką rasi |
+| Skyrius | Aprašymas |
 |---|---|
 | **Susitarimai** | Organizacinius susitarimus, kurių sistema automatiškai netikrina (pateikiami sąrašu) |
 | **Rekomendacijos** | Praktinius patarimus, kaip parengti turinį ar tvarkyti įrašus (išskirti rėmelyje) |
@@ -58,7 +58,7 @@ Skilties gido puslapyje rasi šiuos skyrius. Sąvokų ir darbo eigos puslapiuose
 | **Veiksmai** | Ką ir kaip galima padaryti |
 | **Kas ką gali** | Kurios rolės ką leidžia |
 | **Pranešimai ir automatizavimas** | Kokius pranešimus ir užduotis sukuria sistema |
-| **Techninė informacija** | Tikslias teises, įgyvendinimo detales ir testus, kurie tai tikrina |
+| **Techninė informacija** (tik svetainėje) | Tikslias teises, įgyvendinimo detales ir testus, kurie tai tikrina |
 
 Po įvadinio teksto eiliškumas: **Susitarimai** pateikiami sąrašu tik ten, kur aprašomas konkretus
 organizacinis susitarimas, pavyzdžiui, rezervacijų ar posėdžių tvarka. Po jų seka **Rekomendacijos** –
@@ -66,21 +66,21 @@ jos išskiriamos rėmelyje (`::: tip`), tai neprivalomi praktiniai patarimai, o 
 organizacijos taisyklės ar sistemos apribojimai.
 
 Tik nebaigti puslapiai pažymėti būsena: **Dalinis** – aprašyta tik dalis temos;
-**Rašoma** – turinys dar neparuoštas. Šias žymas matai meniu ir puslapio pradžioje.
+**Rašoma** – turinys dar neparuoštas. Šios žymos rodomos meniu ir puslapio pradžioje.
 Puslapio pabaigoje **Turinys peržiūrėtas** nurodo, kada tekstas patikrintas pagal sistemos
 veikimą. Ši data rodoma ir tada, kai puslapis neturi testų nuorodų. **Failas pakeistas**
 nurodo paskutinio į versijų istoriją įrašyto pakeitimo datą. Ji nėra turinio patikrinimo data.
 Abi datos taikomos tik tam puslapiui, o ne visai darbo sričiai.
 
-Pabaigoje gali išskleisti **Testų nuorodas**: serverio testai tikrina taisykles ir teises,
+Svetainėje puslapio pabaigoje galima išskleisti **Testų nuorodas**: serverio testai tikrina taisykles ir teises,
 sąsajos bei naršyklės testai – atitinkamą ekrano elgseną. 
 
-Jei nori atlikti konkretų darbą, pradėk nuo [Darbų gido](/darbai).
-Iš jo nuorodos veda į darbo sričių gidą, kuriame aprašytos taisyklės ir teisės.
+Konkretiems darbams atlikti skirtas [Darbų gidas](/darbai).
+Iš jo nuorodos veda į darbo sričių gidus, kuriuose aprašytos taisyklės ir teisės.
 
 ::: info Gidas ir PDF
 Šis gidas yra ir svetainė, ir [PDF dokumentas](/vusa-lt-gidas.pdf). Abu kuriami iš to paties
-teksto, todėl jų turinys sutampa.
+teksto, tačiau techninė informacija ir testų nuorodos pateikiamos tik svetainėje.
 :::
 
 ## Kodėl verta naudotis platforma

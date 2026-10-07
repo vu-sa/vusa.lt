@@ -68,11 +68,11 @@ iš naujo sudėlioti prieigos.
 3. Pasibaigus paskutinei pareigų dienai, prieiga iš šio laikotarpio nustoja galioti.
    Kitos pareigybės ir bazinė nario prieiga dėl to neišnyksta.
 
-::: tip Pareigos pasikeitė – pakeisk narį
+::: tip Pareigos pasikeitė – keičiamas narys
 Kai keičiasi padalinio pirmininkas ar koordinatorius, **nereikia kurti naujos pareigybės**.
 Pakanka senajam nariui nustatyti kadencijos pabaigos datą ir prie tos pačios pareigybės priskirti
 naująjį narį. Taip išsaugoma visa pareigybės istorija, instituciniai ryšiai ir el. pašto adresas.
-Masiniam narių keitimui naudok [Pareigybių atnaujinimo vedlį](/organizacija/pareigybiu-atnaujinimas).
+Masiniam narių keitimui skirtas [Pareigybių atnaujinimo vedlys](/organizacija/pareigybiu-atnaujinimas).
 :::
 
 ### Tipai ir automatinis rolių suteikimas {#tipai}
@@ -312,8 +312,8 @@ apie prieigos pokytį. Tai apsaugo administratorių nuo netyčinio prieigos prar
 
 ::: details Dažni klausimai
 **Ką daryti, jei koordinatorius atsistatydino viduryje kadencijos?**
-Nario kortelėje spausk **Redaguoti** ir nustatyk šiandienos datą kaip pabaigos datą. Tada
-prie tos pačios pareigybės priskirkite naują laikinąjį ar išrinktą narį.
+Nario kortelėje per **Redaguoti** nustatoma šiandienos data kaip pabaigos data. Tada
+prie tos pačios pareigybės priskiriamas naujas narys.
 
 **Ar galima pareigybei priskirti kelis el. pašto adresus?**
 Ne, pareigybė turi vieną pagrindinį institucinį el. paštą. Tačiau kiekvienas narys savo narystės

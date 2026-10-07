@@ -32,9 +32,9 @@ Narių sąrašas pasiekiamas adresu `/mano/users`, o kiekvieno nario profilio ko
 ## Rekomendacijos {#rekomendacijos}
 
 ::: tip
-- **Naudok esamą paskyrą:** prieš kurdamas narį paieškok jo sąraše. Pradėjus eiti kitas pareigas ar perėjus į kitą padalinį, esamai paskyrai priskirk naują pareigybės laikotarpį.
-- **Asmeninis el. paštas:** prisijungimui rinkis paties nario naudojamą adresą, pvz., studentinį `@stud.vu.lt`. Pareigybės institucinį adresą nurodyk prie pareigybės, kad pasikeitus ją einančiam žmogui paskyros istorija liktų susieta su tuo pačiu asmeniu.
-- **Užbaik laikotarpį:** baigus eiti pareigas, paprastai pakanka užbaigti [pareigybės laikotarpį](/visak/pareigybiu-laikotarpiai). Vien dėl kadencijos pabaigos paskyros trinti nereikia.
+- **Esama paskyra:** prieš kuriant narį verta paieškoti jo sąraše. Pradėjus eiti kitas pareigas ar perėjus į kitą padalinį, esamai paskyrai priskiriamas naujas pareigybės laikotarpis.
+- **Asmeninis el. paštas:** prisijungimui rekomenduojama rinktis paties nario naudojamą adresą, pvz., studentinį `@stud.vu.lt`. Pareigybės institucinis adresas nurodomas prie pareigybės, kad pasikeitus ją einančiam žmogui paskyros istorija liktų susieta su tuo pačiu asmeniu.
+- **Laikotarpio pabaiga:** baigus eiti pareigas, paprastai pakanka užbaigti [pareigybės laikotarpį](/visak/pareigybiu-laikotarpiai). Vien dėl kadencijos pabaigos paskyros trinti nereikia.
 :::
 
 ## Kaip tai veikia
@@ -117,7 +117,7 @@ Pareigybių pavadinimai visose trijose grupėse pritaikomi pagal nario įvardži
 pagal atpažįstamą vardo galūnę. Laikotarpio parinktis išlaikyti originalų pavadinimą turi pirmenybę.
 [Galūnių taisyklės](/organizacija/pareigybes#lytis-ir-dublikatai) taip pat taikomos paieškai ir viešiems kontaktams.
 
-Nario įrašo pakeitimų istoriją peržiūrėk veiklos žurnalo lange; tai nėra atskiras profilio skirtukas.
+Nario įrašo pakeitimų istorija peržiūrima veiklos žurnalo lange; tai nėra atskiras profilio skirtukas.
 
 Per meniu **⋯** profilio viršuje pasiekiami veiksmai: **Redaguoti**, laikotarpių tvarkyklė,
 **Generuoti naują slaptažodį** (tik Superadministratoriui) ir **Ištrinti narį**.

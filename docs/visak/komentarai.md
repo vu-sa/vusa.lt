@@ -15,8 +15,8 @@ tests:
 
 # Komentarai
 
-Komentaruose gali aptarti įrašą su kolegomis, užduoti klausimą ar suderinti kitą veiksmą.
-Komentarų skydelį rasi posėdžiuose, darbotvarkės klausimuose, problemose, institucijose, pareigybėse,
+Komentaruose galima aptarti įrašą su kolegomis, užduoti klausimą ar suderinti kitą veiksmą.
+Komentarų skydelis rodomas posėdžiuose, darbotvarkės klausimuose, problemose, institucijose, pareigybėse,
 formose, rezervacijose ir pagalbos užklausose.
 
 Komentaras priskiriamas jį parašiusiam asmeniui ir įrašui, prie kurio jis paliktas. Diskusijose galima
@@ -35,8 +35,8 @@ atsakyti į kitų komentarus, paminėti kolegas, rengti greitas apklausas ir pa�
 - **Apklausos**: komentare galima sukurti vieno ar kelių atsakymų apklausą, leidžiančią greitai
   surinkti kolegų nuomonę be atskiro posėdžio.
 - **Temos išsprendimas**: kai klausimas suderintas, giją galima pažymėti išspręsta.
-  Išspręsta gija pažymima žyma **Išspręsta**. Pasirinkęs **Rodyti tik neišspręstus**, gali paslėpti
-  jau užbaigtas temas; **Rodyti visus** grąžina jas į sąrašą.
+  Išspręsta gija pažymima žyma **Išspręsta**. Pasirinkus **Rodyti tik neišspręstus**, paslepiamos
+  jau užbaigtos temos; **Rodyti visus** grąžina jas į sąrašą.
 
 ## Veiksmai
 
@@ -91,9 +91,9 @@ redaguoti galintis narys arba visos platformos komentarų moderatorius.
 ## Pranešimai ir automatizavimas {#pranesimai}
 
 - **Paminėjimai**: paminėtas narys numatytai gauna laišką iškart ir pranešimą į įrenginį, jei jame suteikė leidimą.
-  Šias parinktis gali pakeisti [pranešimų nustatymuose](/pagrindai/pranesimai).
-- **Veikla temoje**: jei parašei komentarą ar atsakymą gijoje, apie kitų narių atsakymus toje pačioje temoje
-  numatytai gausi pranešimą el. pašto suvestinėje. Gali pakeisti siuntimo parinktis arba nutildyti temą.
+  Šias parinktis galima pakeisti [pranešimų nustatymuose](/pagrindai/pranesimai).
+- **Veikla temoje**: parašius komentarą ar atsakymą gijoje, apie kitų narių atsakymus toje pačioje temoje
+  numatytai siunčiamas pranešimas el. pašto suvestinėje. Galima pakeisti siuntimo parinktis arba nutildyti temą.
 - **Realaus laiko atnaujinimai**: diskusijų skydelis palaiko tiesioginį ryšį – nauji komentarai, atsakymai,
   reakcijos ir apklausų balsai ekrane atsinaujina iš karto, be puslapio perkrovimo.
 

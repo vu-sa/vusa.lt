@@ -21,9 +21,9 @@ Skiltis pasiekiama adresu `/mano/navigation`.
 ## Rekomendacijos {#rekomendacijos}
 
 ::: tip
-- **Aiški struktūra:** susijusias nuorodas grupuok po jas apibūdinančia skiltimi. Patikrink, ar reikiamą puslapį lengva rasti ir telefone.
-- **Trumpi pavadinimai:** rinkis lankytojui suprantamus užrašus, pvz., „Kontaktai“, „Naujienos“, „DUK“.
-- **Poraštė:** nuorodas grupuok pagal paskirtį, pvz., informaciją apie VU SA, informaciją studentams, dokumentus ir kontaktus. Nebūtina užpildyti visų keturių galimų stulpelių.
+- **Aiški struktūra:** susijusias nuorodas rekomenduojama grupuoti po jas apibūdinančia skiltimi. Verta patikrinti, ar reikiamą puslapį lengva rasti ir telefone.
+- **Trumpi pavadinimai:** pasirenkami lankytojui suprantami užrašai, pvz., „Kontaktai“, „Naujienos“, „DUK“.
+- **Poraštė:** nuorodos grupuojamos pagal paskirtį, pvz., informacija apie VU SA, informacija studentams, dokumentai ir kontaktai. Nebūtina užpildyti visų keturių galimų stulpelių.
 :::
 
 ## Kaip tai veikia
@@ -84,7 +84,7 @@ Navigacija daro įtaką visos organizacijos reprezentaciniam įvaizdžiui, todė
 | Šalinti ir atkurti elementus | – | ✓ |
 
 ::: warning Padalinio teisės
-Padalinių komunikacijos koordinatoriai negali tiesiogiai redaguoti bendros svetainės navigacijos. Jei padaliniui reikia naujo meniu punkto viršutinėje navigacijoje, kreipkis į Centrinio biuro komunikacijos koordinatorių. Konkretaus padalinio nuorodoms naudok [Greitąsias nuorodas](/svetaine/greitosios-nuorodos).
+Padalinių komunikacijos koordinatoriai negali tiesiogiai redaguoti bendros svetainės navigacijos. Jei padaliniui reikia naujo meniu punkto viršutinėje navigacijoje, galima kreiptis į Centrinio biuro komunikacijos koordinatorių. Konkretaus padalinio nuorodoms skirtos [Greitosios nuorodos](/svetaine/greitosios-nuorodos).
 :::
 
 ## Pranešimai ir automatizavimas {#pranesimai}

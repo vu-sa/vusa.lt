@@ -37,12 +37,12 @@ tests:
 
 # Laikotarpių tvarkyklė
 
-**Laikotarpių tvarkyklė** – įrankis, kuriuo vienoje laiko juostoje matai ir sutvarkai **visus
-vienos institucijos pareigybių laikotarpius**: kas, kada ir kiek laiko ėjo pareigas. Ji skirta
+**Laikotarpių tvarkyklė** – įrankis, kuriuo vienoje laiko juostoje rodomi ir sutvarkomi **visi
+vienos institucijos pareigybių laikotarpiai**: kas, kada ir kiek laiko ėjo pareigas. Ji skirta
 darbui su daug įrašų iš karto – pavyzdžiui, kadencijos pabaigoje ar tvarkant senus, netiksliai
 suvestus duomenis. Vieną laikotarpį patogiau pakeisti jo formoje (žr. žemiau).
 
-Tvarkyklę rasi:
+Tvarkyklė pasiekiama:
 
 - ViSAK → **Laikotarpių tvarkyklė** (`/mano/dutiables/timeline`);
 - per **+ Sukurti → Laikotarpių tvarkyklė**;
@@ -60,7 +60,7 @@ kadencijų), o perrinktas narys dažniausiai turi vieną laikotarpį per kelias 
 
 ### Vieno laikotarpio forma
 
-Pareigybės puslapio narių sąraše prie žmogaus spausk **Redaguoti** – atsidarys forma **Redaguoti
+Pareigybės puslapio narių sąraše prie žmogaus paspaudus **Redaguoti**, atsidaro forma **Redaguoti
 pareigybės laikotarpį** (telefone – iš apačios). Joje:
 
 - **Pradžios data** ir **Pabaigos data** (neprivaloma – be jos laikotarpis neterminuotas);
@@ -71,7 +71,7 @@ pareigybės laikotarpį** (telefone – iš apačios). Joje:
 - **Viešas aprašymas** ir ar viešai naudoti originalų pareigybės pavadinimą;
 - **Užbaigti pareigas šiandien** – nustato šiandienos pabaigos datą, kuri dar įskaitoma
   (žr. [laikotarpio datas](/organizacija/pareigybes#laikotarpio-datos)); **Ištrinti priskyrimą** –
-  pašalina laikotarpį visai (tai daryk tik klaidingai sukurtam įrašui).
+  pašalina laikotarpį visai (tai rekomenduojama daryti tik klaidingai sukurtam įrašui).
 
 <DocScreenshot name="dutiable-sheet" phone alt="Forma „Redaguoti pareigybės laikotarpį“: pareigybė, narys, pradžios ir pabaigos datos, papildomas el. paštas ir nuotrauka" caption="Vieno pareigybės laikotarpio forma pareigybės puslapyje." />
 
@@ -84,14 +84,14 @@ užbaigti ar ištrinti jo nesiūloma.
 
 ### Institucija
 
-Tvarkyklė visada rodo vieną instituciją – jos pavadinimas yra puslapio antraštė. Paspaudęs jį
-pasirinksi kitą: pirmiausia siūlomos institucijos, kuriose pats eini pareigas (daugiausia pareigų
-turinčios – viršuje), o **Ieškoti tarp visų institucijų…** leidžia rasti bet kurią, kurią gali
-matyti. Rodyklė šalia pavadinimo atveria institucijos puslapį.
+Tvarkyklė visada rodo vieną instituciją – jos pavadinimas yra puslapio antraštė. Paspaudus jį
+galima pasirinkti kitą: pirmiausia siūlomos institucijos, kuriose pats naudotojas eina pareigas (daugiausia pareigų
+turinčios – viršuje), o **Ieškoti tarp visų institucijų…** leidžia rasti bet kurią prieinamą
+instituciją. Rodyklė šalia pavadinimo atveria institucijos puslapį.
 
 - Pirmą kartą atidarius rodoma institucija, kurioje eini daugiausia pareigų.
 - Vėliau atsidaro ta, kurią žiūrėjai paskutinę, nebent adrese nurodyta kita
-  (`?institution=…`). Tokią nuorodą gali nusiųsti kolegai.
+  (`?institution=…`). Tokia nuoroda galima pasidalyti su kolegomis.
 
 ### Kaip skaityti juostas {#juostos}
 
@@ -104,7 +104,7 @@ duomenų (kontaktinę nuotrauką, el. paštą, studijų programą ar viešą apr
 | **Tamsi** | Dabartinės pareigos: pabaigos nėra arba ji dar neatėjo. |
 | **Pilka** | Pasibaigusios pareigos. |
 | **Blyški su punktyriniu kraštu** | *Ex officio* pareigos – jos sekamos iš kitos pareigybės. |
-| **Gintarinė** | Neišsaugotas pakeitimas. Blyškesnė gintarinė – *ex officio* laikotarpis, kuris pasikeis kartu su tavo keičiamu. |
+| **Gintarinė** | Neišsaugotas pakeitimas. Blyškesnė gintarinė – *ex officio* laikotarpis, kuris pasikeis kartu su keičiamu įrašu. |
 | **Su violetiniu kraštu** | Žmogus atstovauja kitam padaliniui. |
 | **Su rodykle dešinėje** | Laikotarpis neterminuotas. |
 | **Su įpjova ir punktyru** | Pradžia ar pabaiga ne mėnesio pradžioje / pabaigoje – data, pvz., 18 d., nurodyta sąmoningai. |
@@ -126,8 +126,8 @@ Pagal kadencijas pritraukiamos tempiamos juostos, siūlomi taisymai ir veikia my
 
 Kai kurios pareigybės suteikia kitas pareigas automatiškai (*ex officio*), pvz., pirmininkas kartu
 tampa kito organo nariu. Tokio laikotarpio datos visada sutampa su šaltinio laikotarpiu: pakeitus
-šaltinį, po kelių akimirkų pasikeičia ir *ex officio* laikotarpis. Pats jo tempti ar keisti negali –
-pažymėjęs jį, šoniniame skydelyje rasi mygtuką šaltinio įrašui pažymėti.
+šaltinį, po kelių akimirkų pasikeičia ir *ex officio* laikotarpis. Šio laikotarpio tempti ar keisti
+rankiniu būdu negalima – jį pažymėjus, šoniniame skydelyje pateikiamas mygtukas šaltinio įrašui pažymėti.
 
 ### Filtrai ir rodinys
 
@@ -135,9 +135,9 @@ pažymėjęs jį, šoniniame skydelyje rasi mygtuką šaltinio įrašui pažymė
   rodomas prie kiekvienos jų. Tame pačiame meniu pasirenkama, ar rodyti **pasibaigusius**
   laikotarpius; kai jie paslėpti, prie filtro matyti ženklas.
 - **Padalinys** – atsiranda tik tada, kai yra kitiems padaliniams atstovaujančių žmonių.
-- Mygtuku virš vardų suskleisi ar išskleisi visas pareigybes. Suskleista pareigybė rodo, kiek
+- Mygtuku virš vardų suskleidžiamos arba išskleidžiamos visos pareigybės. Suskleista pareigybė rodo, kiek
   laikotarpių joje yra ir kiek laiko ji buvo užimta.
-- Kur nurodytos studijų programos, įrašus gali surikiuoti pagal jas.
+- Kur nurodytos studijų programos, įrašus galima surikiuoti pagal jas.
 - Mastelis ir „rodyti pasibaigusius“ išsaugomi ir kitą kartą atsidaro tokie patys.
 
 ### Išdėstymas ir visas ekranas {#visas-ekranas}
@@ -155,7 +155,7 @@ Telefone ir planšetėje skydelis atsidaro iš apačios, kai pažymi juostą, ar
 pasiūlymai**.
 
 Mygtukas **⛶** išplečia grafiką per visą ekraną. Iš jo atidaryti langai ir meniu rodomi virš grafiko.
-Grįžti gali tuo pačiu mygtuku arba **Esc** (jei atidarytas langas ar meniu, pirmas **Esc** uždaro jį).
+Grįžti galima tuo pačiu mygtuku arba **Esc** (jei atidarytas langas ar meniu, pirmas **Esc** uždaro jį).
 
 ## Veiksmai
 
@@ -193,7 +193,7 @@ Pažymėk juostą grafike arba varnelę prie vardo (su **Ctrl / ⌘** – kelias
 
 Tvarkyklė pati randa neatitikimus. Ne kiekvienas jų – klaida: iš anksto pažymėti tik tie
 pataisymai, kurie laikotarpį **trumpina** ir todėl negali niekam netyčia grąžinti teisių. Kitus
-pažymėk pats ir spausk **Taikyti pažymėtus**. Paspaudus pasiūlymą, pažymimi su juo susiję įrašai.
+pataisymus galima pažymėti ranka ir paspausti **Taikyti pažymėtus**. Paspaudus pasiūlymą, pažymimi su juo susiję įrašai.
 
 | Pasiūlymas | Kada atsiranda | Pataisymas |
 |---|---|---|
@@ -205,11 +205,11 @@ pažymėk pats ir spausk **Taikyti pažymėtus**. Paspaudus pasiūlymą, pažymi
 | Neterminuota nuo ankstesnės kadencijos | Neterminuotas laikotarpis prasidėjo jau pasibaigusioje kadencijoje. Dažniausiai tai **perrinktas narys**, todėl pasiūlymai suskleisti į vieną eilutę. | Jei žmogus pareigų nebeeina – užbaigti tos kadencijos pabaiga. |
 | Perrinkta kelioms kadencijoms | Laikotarpis apima kelias kadencijas. Tai ne klaida, rodoma tik informacijai, suskleista. | Nėra. |
 | Užimta mažiau vietų, nei numatyta | Pareigybėje yra laisvų vietų. | Nėra – tai sprendimas apie žmones. |
-| Įtartinas *ex officio* įrašas be šaltinio | Žmogus turi pareigas pagal kitas pareigas (*ex officio*), bet pačių šaltinio pareigų nebeeina, o ryšys nutrūkęs. | Nėra – šie įrašai suteikia realias teises, todėl automatiškai neliesti. Paleisk komandą `duties:audit-ex-officio`. |
+| Įtartinas *ex officio* įrašas be šaltinio | Žmogus turi pareigas pagal kitas pareigas (*ex officio*), bet pačių šaltinio pareigų nebeeina, o ryšys nutrūkęs. | Nėra – šie įrašai suteikia realias teises, todėl automatiškai neliesti; paleidžiama komanda `duties:audit-ex-officio`. |
 
 ### Peržiūra ir išsaugojimas
 
-Kai yra neišsaugotų pakeitimų, įrankių juostoje matai jų skaičių ir tris mygtukus:
+Kai yra neišsaugotų pakeitimų, įrankių juostoje rodomas jų skaičius ir trys mygtukai:
 
 - **Atšaukti** – atmeta visus neišsaugotus pakeitimus;
 - **Peržiūrėti** – parodo, kaip įrašai atrodys po pakeitimų, kurie bus praleisti ir kiek *ex officio*
@@ -232,7 +232,7 @@ parodo peržiūrą.
 - Institucija rodoma tik tada, kai tavo rolė leidžia ją matyti.
 - Jei pareigybė leidžia į ją skirti ir kitų padalinių narius, tų padalinių koordinatoriai gali
   keisti **savo padalinio narių** laikotarpius joje.
-- Įrašai, kurių keisti negali, rodomi, bet jų tempti negalima, o skydelyje parašyta „Šio įrašo keisti
+- Įrašai, kurių keisti negali, rodomi, bet jų tempti negalima, o skydelyje nurodoma „Šio įrašo keisti
   negali“. Jei tarp keičiamų įrašų yra bent vienas, kurio keisti negali, visas pakeitimų rinkinys
   atmetamas.
 
@@ -240,7 +240,7 @@ parodo peržiūrą.
 
 | Kada | Kas nutinka |
 |---|---|
-| Išsaugai pakeitimą, liečiantį **tavo paties** pareigas | Pirmiausia parodomas įspėjimas, kad gali prarasti teises; pakeitimas įrašomas tik jį patvirtinus. |
+| Išsaugomas pakeitimas, liečiantis **tavo paties** pareigas | Pirmiausia parodomas įspėjimas, kad gali prarasti teises; pakeitimas įrašomas tik jį patvirtinus. |
 | Pasikeičia šaltinio laikotarpis | Susiję *ex officio* laikotarpiai atnaujinami automatiškai. |
 | Pasikeičia bet kuris laikotarpis | Teisės iš karto skaičiuojamos pagal naujas datas: pasibaigus pareigoms, su jomis suteiktos teisės dingsta. |
 

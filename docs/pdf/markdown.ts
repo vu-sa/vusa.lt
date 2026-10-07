@@ -83,6 +83,48 @@ export interface ConvertOptions {
   missingScreenshots: string[]
 }
 
+export function omitTechnicalInformation(body: string): string {
+  let omittedLevel: number | null = null
+  let fence: string | null = null
+
+  return body.split('\n').filter(line => {
+    if (fence !== null) {
+      const closing = line.match(/^ {0,3}(`{3,}|~{3,})\s*$/)
+
+      if (closing && closing[1][0] === fence[0] && closing[1].length >= fence.length) {
+        fence = null
+      }
+
+      return omittedLevel === null
+    }
+
+    const opening = line.match(/^ {0,3}(`{3,}|~{3,})/)
+
+    if (opening) {
+      fence = opening[1]
+
+      return omittedLevel === null
+    }
+
+    const heading = line.match(/^ {0,3}(#{1,6})\s+(.+?)\s*$/)
+
+    if (heading) {
+      const level = heading[1].length
+      const title = heading[2].replace(/\s+#+$/, '').replace(/\s*\{#[\p{L}\p{N}_-]+\}$/u, '').trim()
+
+      if (omittedLevel !== null && level <= omittedLevel) {
+        omittedLevel = null
+      }
+
+      if (omittedLevel === null && title === 'Techninė informacija') {
+        omittedLevel = level
+      }
+    }
+
+    return omittedLevel === null
+  }).join('\n')
+}
+
 function rewriteLink(target: string, { prefix, pagesInPdf }: ConvertOptions): string {
   const appPath = appLinkPath(target)
 

@@ -26,8 +26,8 @@ tests:
 kurioms institucijoms reikia dėmesio, kaip keičiasi jų būklė, kaip aktyvūs atstovai ir kada vyksta
 posėdžiai. Puslapį sudaro dvi dalys:
 
-- **Rodikliai** – skaičiai, dėmesio sąrašas, būklės pokyčiai ir atstovų aktyvumas. Juos matai tik
-  tų padalinių, kurių institucijas gali matyti.
+- **Rodikliai** – skaičiai, dėmesio sąrašas, būklės pokyčiai ir atstovų aktyvumas. Jie rodomi tik
+  tų padalinių, kurių institucijas naudotojas turi teisę matyti.
 - **Posėdžių laiko juosta** – ją mato **visi**, bet kiekvienas tik tiek, kiek jam leidžiama.
 
 <DocScreenshot name="visak-padaliniai" alt="Padalinių apžvalga: skaičiai, institucijos, kurioms reikia dėmesio, būklės pokyčių grafikas ir posėdžių laiko juosta" caption="Koordinatorės vaizdas: jos padalinio rodikliai ir posėdžių laiko juosta." href="/mano/dashboard/atstovavimas/padaliniai" />
@@ -36,12 +36,12 @@ posėdžiai. Puslapį sudaro dvi dalys:
 
 ### Kurių padalinių rodiklius matai {#rodikliai}
 
-Rodikliai rodomi tų padalinių, kurių institucijas gali matyti (žr. [Kas ką gali](#teises)). PKP
-rodikliai nerodomi. Jei nė vieno padalinio rodiklių matyti negali, puslapyje lieka tik posėdžių
+Rodikliai rodomi tų padalinių, kurių institucijas naudotojas gali matyti (žr. [Kas ką gali](#teises)). PKP
+rodikliai nerodomi. Jei nė vieno padalinio rodiklių matyti negalima, puslapyje lieka tik posėdžių
 laiko juosta.
 
-Viršuje esančiu pasirinkimu **Rodikliai** nurodai, kurių padalinių rodiklius rodyti. Pirmą kartą
-pasirenkamas vienas tavo padalinys. Bent vienas visada lieka pasirinktas, o pasirinkimas
+Viršuje esančiu pasirinkimu **Rodikliai** galima nurodyti, kurių padalinių rodiklius rodyti. Pirmą kartą
+pasirenkamas vienas naudotojo padalinys. Bent vienas visada lieka pasirinktas, o pasirinkimas
 įsimenamas.
 
 Institucijų būsenos skaičiuojamos taip pat kaip [Apžvalgoje](/visak/apzvalga#busenos).
@@ -52,7 +52,7 @@ rodomos laiko juostoje, bet neįskaičiuojamos nei į skaičius, nei į sąraš�
 
 | Institucija | Kaip rodoma |
 |---|---|
-| Visos padalinio institucijos, jei matai jo rodiklius | Pilnai |
+| Visos padalinio institucijos, jei rodomi jo rodikliai | Pilnai |
 | Tavo institucijos ir tos, kurias administruoji kaip sekretorius | Pilnai |
 | Institucijos, su kuriomis tavo institucija susieta [ryšiu](/sistema/rysiai) | Pilnai |
 | Institucijos, kurios pačios susietos su tavo institucija (vienpusiu ryšiu) | Tik skaitymui, posėdžiai be darbotvarkių |
@@ -115,8 +115,8 @@ Puslapį atidaryti gali **kiekvienas** prisijungęs narys.
 | Komunikacijos koordinatorius | Savo padalinio | Savo padalinys pilnai, kitur – viešos | – |
 | Centrinio biuro studentų atstovų koordinatorius | Visų padalinių | Visi padaliniai pilnai | ✓ |
 
-Laiko juosta pagal nutylėjimą atsidaro su padaliniais, kurių rodiklius matai. Jei tokių nėra – su
-tavo institucijų padaliniais.
+Laiko juosta pagal nutylėjimą atsidaro su padaliniais, kurių rodikliai rodomi. Jei tokių nėra – su
+naudotojo institucijų padaliniais.
 
 ## Techninė informacija {#technine-informacija}
 

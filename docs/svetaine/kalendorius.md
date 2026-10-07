@@ -23,10 +23,10 @@ Skiltis pasiekiama adresu `/mano/calendar`.
 ## Rekomendacijos {#rekomendacijos}
 
 ::: tip
-- **Kalendorius ar naujiena:** konkrečiu laiku vykstančią veiklą skelbk kalendoriuje, o bendro pobūdžio pranešimą – [naujienose](/svetaine/naujienos).
-- **Kalbos:** jei renginys skirtas ir tarptautiniams studentams, pateik pavadinimą, vietą bei aprašymą anglų kalba.
-- **Tiksli vieta:** nurodyk adresą ir auditoriją, o nuotoliniam renginiui pridėk prisijungimo nuorodą.
-- **Įskaitomas viršelis:** patikrink, kaip paveikslėlis atrodo telefone. Svarbią informaciją pateik ir aprašyme, kad jos nereikėtų skaityti vien iš plakato.
+- **Kalendorius ar naujiena:** konkrečiu laiku vykstančią veiklą rekomenduojama skelbti kalendoriuje, o bendro pobūdžio pranešimus – [naujienose](/svetaine/naujienos).
+- **Kalbos:** jei renginys skirtas ir tarptautiniams studentams, pavadinimas, vieta bei aprašymas pateikiami ir anglų kalba.
+- **Tiksli vieta:** nurodomas adresas ir auditorija, o nuotoliniam renginiui pridedama prisijungimo nuoroda.
+- **Įskaitomas viršelis:** verta patikrinti, kaip paveikslėlis atrodo telefone. Svarbią informaciją rekomenduojama pateikti ir aprašyme, kad jos nereikėtų skaityti vien iš plakato.
 :::
 
 ## Kaip tai veikia

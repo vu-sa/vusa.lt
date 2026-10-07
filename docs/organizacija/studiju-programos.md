@@ -49,7 +49,7 @@ Studijų programa yra glaudžiai susijusi su studentų atstovavimo istorija:
   jos **ištrinti negalima**.
 - Bandant ištrinti tokią programą, sistema veiksmą sustabdo ir parodo klaidos pranešimą su tiksliu
   susietų narių skaičiumi (pvz., *Studijų programa priskirta 3 narių laikotarpiams, todėl jos negalima ištrinti*).
-- Norint pašalinti pasenusią programą su istorija, naudok **programų sujungimą**.
+- Norint pašalinti pasenusią programą su istorija, naudojamas **programų sujungimas**.
 
 ## Veiksmai
 

@@ -18,14 +18,15 @@ Darbo srities **Sistema** skiltys **Rolės** (`/mano/roles`) ir **Leidimai** (`/
 platformos prieigos teisėms tvarkyti.
 
 Čia apibrėžiama, ką naudotojai gali matyti ir daryti sistemoje. Šios skiltys skirtos platformos
-administratoriams. Kaip veikia teisės ir bazinė nario prieiga, skaityk
+administratoriams. Kaip veikia teisės ir bazinė nario prieiga, aprašyta
 [Teisėse ir rolėse](/pagrindai/teises).
 
 ## Rekomendacijos {#rekomendacijos}
 
 ::: tip
-Prieš kurdamas naują rolę, patikrink, ar darbui pakanka esamos. Suteik tik reikalingus veiksmus ir
-pasirink siauriausią tinkamą apimtį. Prieš trindamas rolę, patikrink, kurios pareigybės ją naudoja.
+Prieš kuriant naują rolę verta patikrinti, ar darbui pakanka esamos. Rekomenduojama suteikti tik
+reikalingus veiksmus ir pasirinkti siauriausią tinkamą apimtį. Prieš trinant rolę pravartu patikrinti,
+kurios pareigybės ją naudoja.
 :::
 
 ## Kaip tai veikia
@@ -119,7 +120,7 @@ visos platformos prieigą, kuri nepriklauso nuo rolės teisių lentelėje pasiri
 ## Pranešimai ir automatizavimas {#pranesimai}
 
 - **Prieigos atnaujinimas**: keičiant roles, atnaujinama susijusių paskyrų prieigos ir navigacijos
-  talpykla. Pakeitęs teises, patikrink, ar jos atitinka numatytą darbą.
+  talpykla. Pakeitus teises verta patikrinti, ar jos atitinka numatytą darbą.
 - **Rolės pagal tipą**: priskyrus pareigybei leidžiamą tipą, jai suteikiamos su tuo tipu susietos rolės.
   Pašalinus tipą, su juo susietos rolės taip pat pašalinamos.
 

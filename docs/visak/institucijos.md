@@ -108,10 +108,10 @@ viešumas ir koordinatoriai. Skirtukai:
 | **Failai** | Institucijos darbo failai SharePoint; viešai nerodomi (žr. [Įrašų failai](/visak/failai)) |
 | **Užduotys** | Institucijos ir jos posėdžių užduotys; skaičius rodo neatliktas |
 
-**Savo** instituciją (kurioje eini ar netrukus pradėsi eiti pareigas) matai pilnai, net be rolės.
+**Savo** institucija (kurioje eini ar netrukus pradėsi eiti pareigas) matoma pilnai, net be rolės.
 **Kitą aktyvią** instituciją gali atidaryti kiekvienas narys, bet mato tik viešą jos pusę: apžvalgą, pareigybes ir – jei posėdžiai vieši – posėdžius. Jei posėdžiai nevieši,
-parašyta, kad jie yra, bet nerodomi, o veiklos būklė rodoma kaip „Nerodoma“. Failų, užduočių,
-komentarų ir sekretorių jis nemato.
+nurodoma, kad jie yra, bet nerodomi, o veiklos būklė rodoma kaip „Nerodoma“. Failų, užduočių,
+komentarų ir sekretorių toks lankytojas nemato.
 
 ## Veiksmai
 
@@ -141,7 +141,7 @@ arba institucijos meniu **⋯ → Pridėti pažymą**.
 ### Paklausti atstovų, ar vyko posėdis {#paklausti}
 
 Koordinatorius gali pats paklausti atstovų, ar institucija posėdžiavo – nelaukdamas automatinio
-priminimo. Klausimą siųsk iš:
+priminimo. Klausimą galima išsiųsti iš:
 
 - **ViSAK → Padaliniai**, sąrašo **Reikia dėmesio** mygtuko **Paklausti atstovų** (pasirinktos visos
   sąrašo institucijos);
@@ -149,42 +149,42 @@ priminimo. Klausimą siųsk iš:
 - institucijos meniu **⋯ → Paklausti, ar vyko posėdžiai**.
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Dvi atskiros užklausos ir atsakymų istorija">
-Pasirink, ar klausi apie institucijos veiklą, ar prašai papildyti posėdžių įrašus. Išsiųstas užklausas
-ir atsakymus rasi institucijos skiltyje **Užklausos atstovams**.
+Galima pasirinkti, ar klausiama apie institucijos veiklą, ar prašoma papildyti posėdžių įrašus. Išsiųstos užklausos
+ir atsakymai pateikiami institucijos skiltyje **Užklausos atstovams**.
 </ChangelogNote>
 
-Pirmiausia pasirink **Ar vyko posėdis?** arba **Papildyk posėdžių įrašus** – net jei institucijos
-jau pasirinktos. Tada pasirink, kaip rinksiesi gavėjus:
+Pirmiausia pasirenkama **Ar vyko posėdis?** arba **Papildyk posėdžių įrašus** – net jei institucijos
+jau pasirinktos. Tada pasirenkama, kaip bus renkami gavėjai:
 
-- **Pagal institucijas** – klausiame institucijos studentų atstovų.
-  Filtruok pagal padalinį arba ieškok pavadinimo; prieš atveriant langą pasirinktos institucijos
+- **Pagal institucijas** – klausiama institucijos studentų atstovų.
+  Filtruojama pagal padalinį arba ieškoma pagal pavadinimą; prieš atveriant langą pasirinktos institucijos
   (pvz., iš **Reikia dėmesio**) lieka sąrašo pradžioje, o tų, kurių paklausti nebūtų ko, žymėjimas
   nuimamas.
-- **Pagal atstovus** – pasirink atstovus; kiekvieno klausime apie visas jo institucijas. Ieškok
+- **Pagal atstovus** – pasirenkami atstovai; kiekvieno klausiama apie visas jo institucijas. Ieškoma
   pagal vardą arba institucijos pavadinimą.
 
-Vienu kartu gali apimti iki **100 institucijų**. Institucija ar žmogus, kurių paklausti nebūtų ko
+Vienu kartu galima apimti iki **100 institucijų**. Institucija ar žmogus, kurių paklausti nebūtų ko
 (pvz., jau paklausta, posėdis jau užfiksuotas), sąraše rodomi neaktyvūs su priežastimi, savo vietoje.
-Jei klausime tik dalies gavėjų ar institucijų, eilutėje parašyta, kiek jų liks.
+Jei bus klausiama tik dalies gavėjų ar institucijų, eilutėje parašyta, kiek jų liks.
 
-Peržiūroje **Ką ir kam išsiųsime** gavėjai sugrupuoti taip, kaip rinkaisi: pagal institucijas arba
-pagal atstovus. Kiekviena eilutė turi žymimąjį langelį – nužymėk tuos, kurių šįkart klausti nenori.
+Peržiūroje **Ką ir kam išsiųsime** gavėjai sugrupuoti taip, kaip pasirinkta: pagal institucijas arba
+pagal atstovus. Kiekviena eilutė turi žymimąjį langelį – galima nužymėti tuos, kurių šįkart klausti nenorima.
 **Kam laiško nesiųsime** paaiškina praleistas institucijas ir gavėjų pranešimų nustatymus:
-laiškas dabar, santrauka, išjungtas el. paštas ar nutildyti pranešimai. Gali pridėti žinutę iki 500
+laiškas dabar, santrauka, išjungtas el. paštas ar nutildyti pranešimai. Galima pridėti žinutę iki 500
 simbolių. Patvirtinus rodoma, kiek užklausų ir laiškų įtraukta į eilę; tai dar nėra pristatymo patvirtinimas.
 
 <DocScreenshot name="activity-request-review" narrow alt="Veiksmų lango peržiūra prieš siunčiant veiklos užklausas" caption="Veiksmų lango peržiūra: gavėjų sąrašas, laikotarpis ir koordinatoriaus žinutė prieš išsiunčiant užklausas." />
 
 Užklausa skiriama dabartiniams institucijos studentų atstovams. Jei kadencijai paskirtas
 [sekretorius](#sekretoriai) (dažniausiai VU SA vidinėse institucijose), renkantis pagal institucijas
-klausiame jo, o ne atstovų; atstovą, kurį pasirinkai pats, klausiame bet kuriuo atveju. Tau pačiam užklausos nesiunčiame. Laikotarpis prasideda nuo institucijos dabartinės
+klausiama jo, o ne atstovų; atstovo, kuris pasirinktas tiesiogiai, klausiama bet kuriuo atveju. Siuntėjui užklausa nesiunčiama. Laikotarpis prasideda nuo institucijos dabartinės
 kadencijos pradžios, bet atstovui negali prasidėti anksčiau už jo pareigybės laikotarpį. Jei dabartinės
 kadencijos nėra, naudojama atstovo pareigų pradžia. Paskutinė pareigų diena dar yra galiojanti.
 Laikotarpio pabaiga užfiksuojama siunčiant ir vėliau nesikeičia.
 
 **Ar vyko posėdis?** nesiunčiama gavėjui, kurio laikotarpiu posėdis jau užfiksuotas.
 **Papildyk posėdžių įrašus** klausia apie jau vykusius posėdžius, kurių darbotvarkės tuščios arba
-neužpildyti sprendimai. Jei laikotarpiu posėdžių nėra, rinkis **Ar vyko posėdis?**; jei visos
+neužpildyti sprendimai. Jei laikotarpiu posėdžių nėra, pasirenkama **Ar vyko posėdis?**; jei visos
 darbotvarkės užpildytos, papildymo užklausos nesiunčiamos. Koordinatorius, kuris pats yra
 institucijos atstovas, gali įtraukti ir save. Pakartotinės užklausos
 tam pačiam gavėjui, apie tą pačią instituciją ir tą patį jau apimtą laikotarpį nesiunčiamos;
@@ -192,57 +192,57 @@ skirtingos užklausų rūšys vertinamos atskirai.
 
 ### Atsakymas iš laiško {#atsakymas}
 
-Atsakyti gali **neprisijungęs**. Nuoroda atveria puslapį, o atsakymą įrašo tik tavo patvirtinimas.
+Atsakyti galima **neprisijungus**. Nuoroda atveria puslapį, o atsakymas įrašomas tik patvirtinus.
 Nuorodos galioja **14 dienų**.
 
 <DocScreenshot name="activity-request-email" narrow alt="Atstovui siunčiamas pranešimo el. laiškas su veiklos klausimu ir atsakymo mygtukais" caption="Pranešimo el. laiškas atstovui su pasirašytomis greitojo atsakymo nuorodomis." />
 
-- **Taip, vyko** – įrašyk vieno ar kelių posėdžių datas, formatus ir laiką. Sprendimui el. paštu
-  laiko nereikia. Darbotvarkes papildysi prisijungęs prie Mano VU SA.
-- **Ne, nevyko** – veiklos užklausoje patvirtink, kad visą nurodytą laikotarpį posėdžio nebuvo.
-  Jei posėdis tuo metu jau įrašytas, šio atsakymo patvirtinti negalėsi.
-- **Viskas užfiksuota** – įrašų papildymo užklausoje patvirtink, kad visi laikotarpio posėdžiai
+- **Taip, vyko** – įrašomos vieno ar kelių posėdžių datos, formatai ir laikas. Sprendimui el. paštu
+  laiko nereikia. Darbotvarkės pildomos prisijungus prie Mano VU SA.
+- **Ne, nevyko** – veiklos užklausoje patvirtinama, kad visą nurodytą laikotarpį posėdžio nebuvo.
+  Jei posėdis tuo metu jau įrašytas, šio atsakymo patvirtinti negalima.
+- **Viskas užfiksuota** – įrašų papildymo užklausoje patvirtinama, kad visi laikotarpio posėdžiai
   įrašyti ir jų darbotvarkės bei sprendimai užpildyti. Kol dar yra neužpildytų įrašų, patvirtinimo
   priimti negalima. Pranešimas apie laiką be posėdžių apima tik likusį tarpą po paskutinio posėdžio iki
   nurodytos pabaigos. Jau patvirtinti tarpai nedubliuojami.
-- **Nesu šio organo narys (-ė)** – pranešk klaususiems koordinatoriams patikrinti atstovų duomenis.
+- **Nesu šio organo narys (-ė)** – pranešama klaususiems koordinatoriams patikrinti atstovų duomenis.
   Kitų gavėjų užklausos lieka atviros.
 
 <DocScreenshot name="activity-request-reply" narrow alt="Atsakymo puslapis be prisijungimo, kuriame atstovas pažymi posėdžius" caption="Viešas atsakymo puslapis: atstovė nurodo posėdžio datą, laiką ir formatą be prisijungimo." />
 
-Įrašų papildymo laiške ir puslapyje matai posėdžius, kuriuos reikia papildyti. **Papildyti įrašus**
-atveria užklausą; konkretaus posėdžio nuoroda veda į Mano VU SA, kur prisijungęs papildai
-darbotvarkę ir sprendimus. Jei trūksta paties posėdžio, rinkis **Pridėti trūkstamą posėdį**.
+Įrašų papildymo laiške ir puslapyje rodomi posėdžiai, kuriuos reikia papildyti. **Papildyti įrašus**
+atveria užklausą; konkretaus posėdžio nuoroda veda į Mano VU SA, kur prisijungus papildoma
+darbotvarkė ir sprendimai. Jei trūksta paties posėdžio, pasirenkama **Pridėti trūkstamą posėdį**.
 Klaidingai užpildytos eilutės ir
-pasirinktas atsakymas išlieka, kad galėtum pataisyti laukus. Kompiuteryje kalendorius rodomas
+pasirinktas atsakymas išlieka, kad būtų galima pataisyti laukus. Kompiuteryje kalendorius rodomas
 lietuviškai (angliškame puslapyje – angliškai), savaitė prasideda pirmadienį, laikas rašomas 24 val.
-formatu. Telefono kalendoriaus kalba priklauso nuo tavo įrenginio.
+formatu. Telefono kalendoriaus kalba priklauso nuo įrenginio nustatymų.
 
 Užfiksuotas posėdis gali užbaigti tik to laikotarpio veiklos užklausą. Įrašų papildymo užklausas
-kitiems gavėjams užbaigia tik **Viskas užfiksuota**, kai tavo patvirtintas laikotarpis apima jų
+kitiems gavėjams užbaigia tik **Viskas užfiksuota**, kai patvirtintas laikotarpis apima jų
 klausiamą laikotarpį. Senas, nesusijęs posėdis ar pranešimas dabartinės priminimo užduoties neužbaigia.
 
 #### Kai institucijoje keli atstovai {#keli-atstovai}
 
 Kiekvienas atstovas gauna savo užklausą, bet atsakymai pildo tą patį institucijos įrašą. Kai vienas
-atstovas užfiksuoja posėdį ar patvirtina, kad jo nebuvo, kitų užklausos užsibaigia. Atvėręs savo
-nuorodą matai, kas ir kada atsakė, bei skiltį **Jau užfiksuota** su laikotarpio posėdžiais ir
-patvirtintais tarpais be posėdžių. Jei žinai apie posėdį, kurio kolega neįrašė, pridėk jį ten pat
+atstovas užfiksuoja posėdį ar patvirtina, kad jo nebuvo, kitų užklausos užsibaigia. Atvėrus savo
+nuorodą rodoma, kas ir kada atsakė, bei skiltis **Jau užfiksuota** su laikotarpio posėdžiais ir
+patvirtintais tarpais be posėdžių. Žinant apie posėdį, kurio kolega neįrašė, galima pridėti jį ten pat
 (**Žinai apie kitą posėdį? Pridėk jį.**); tą patį posėdį pakartotinai įrašius, dublikatas nesukuriamas.
-Patvirtinti, kad posėdžio nebuvo, kai kolega jau įrašė posėdį, negalima. Jei tavo laikotarpis
+Patvirtinti, kad posėdžio nebuvo, kai kolega jau įrašė posėdį, negalima. Jei atstovo laikotarpis
 prasidėjo anksčiau nei kolegos, puslapis rodo, kurią laikotarpio dalį dar liko patvirtinti.
 Kolegos atsakymai laiškais nesiunčiami.
 
 ### Užklausos atstovams {#uzklausos}
 
-Institucijos puslapyje atverk **Užklausos atstovams**. Koordinatorius mato visas institucijos
+Institucijos skiltyje **Užklausos atstovams** koordinatorius mato visas institucijos
 užklausas, gavėjas – tik savąsias; kiti skaitytojai jų nemato. Naujausios siuntimo grupės rodomos
-pirmos, pagal užklausos rūšį. Matai siuntėją arba automatinį šaltinį, laikotarpį, žinutę, gavėją,
-atsakymą, laikus ir užfiksuotus rezultatus. Koordinatoriui nerodomos gavėjo atsakymo nuorodos.
+pirmos, pagal užklausos rūšį. Rodomas siuntėjas arba automatinis šaltinis, laikotarpis, žinutė, gavėjas,
+atsakymas, laikai ir užfiksuoti rezultatai. Koordinatoriui nerodomos gavėjo atsakymo nuorodos.
 
 <DocScreenshot name="activity-request-history" alt="Institucijos skiltis Užklausos atstovams: užklausos rūšis, gavėjas, būsena, laikotarpis, siuntėjas, žinutė ir galiojimo pabaiga" caption="Koordinatoriaus vaizdas: kam ir kada išsiųsta užklausa ir ar jau atsakyta." />
 
-Istorija įkeliama atskirai, po 20 siuntimo grupių; senesnes atverk mygtuku **Rodyti daugiau**.
+Istorija įkeliama atskirai, po 20 siuntimo grupių; senesnės atveriamos mygtuku **Rodyti daugiau**.
 Būsena rodo, ar dar laukiama atsakymo, jau atsakyta, veikla patvirtinta kitu įrašu (ir kuris
 kolega atsakė), ar nuorodos galiojimas baigėsi. Ankstesnės užklausos be užfiksuotos pabaigos išlaiko laikotarpį iki atsakymo dienos.
 
@@ -250,7 +250,7 @@ kolega atsakė), ar nuorodos galiojimas baigėsi. Ankstesnės užklausos be užf
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Sekretorius ir koordinatorius atlieka skirtingus darbus">
 
-Sekretorių skirk kadencijai, jei jis fiksuos jos posėdžius: tų posėdžių užduotys ir laiškai keliaus jam. Koordinavimo atsakomybė pati savaime žmogaus sekretoriumi nepaskiria.
+Sekretorius skiriamas kadencijai, jei jis fiksuos jos posėdžius: tų posėdžių užduotys ir laiškai keliauja jam. Koordinavimo atsakomybė pati savaime žmogaus sekretoriumi nepaskiria.
 
 </ChangelogNote>
 
@@ -262,11 +262,11 @@ sekretoriai**). Sekretoriumi gali būti bet kuris narys, nebūtinai institucijos
   pareigas ėjusiems atstovams.
 - Pakeitus sekretorius, atviros tos kadencijos užduotys perduodamos naujiems, o atliktos lieka
   kaip buvo. Perdavimas pranešimų nesiunčia.
-- Skirtuke keisti gali dabartinės ir kitos kadencijos sekretorius. Ankstesnių kadencijų sekretoriai
+- Skirtuke keisti galima dabartinės ir kitos kadencijos sekretorius. Ankstesnių kadencijų sekretoriai
   rodomi tik kaip istorija.
 - Jei institucija turi savo kadencijas, sekretoriai skiriami joms, jei ne – bendroms kadencijoms
-  (žr. [Kadencijos](/sistema/nustatymai#kadencijos)). Savas kadencijas nustatyk tame pačiame
-  skirtuke paspaudęs **Nustatyti savas**; prireikia retai.
+  (žr. [Kadencijos](/sistema/nustatymai#kadencijos)). Savas kadencijas galima nustatyti tame pačiame
+  skirtuke paspaudus **Nustatyti savas**; to prireikia retai.
 - Nustačius pirmą savo kadenciją, sekretoriai perkeliami iš ją dengiančios bendros kadencijos, o
   atviros užduotys perskirstomos. Ištrynus paskutinę savo kadenciją, vėl galioja bendrosios
   kadencijos ir jų sekretoriai.
@@ -283,27 +283,27 @@ kuriamos ir tvarkomos [Pareigybių](/organizacija/pareigybes) skiltyje.
 ### Sekti ir nutildyti {#sekti}
 
 Institucijas galima **sekti**: gausi pranešimus apie jos naujus posėdžius ir užpildytas
-darbotvarkes, o jos posėdžiai matysis tavo [Apžvalgoje](/visak/apzvalga). Sekti gali institucijos
-puslapyje (**⋯ → Sekti**) arba sąraše, pažymėjęs kelias institucijas. Sąrašo greitasis filtras
+darbotvarkes, o jos posėdžiai matysis tavo [Apžvalgoje](/visak/apzvalga). Sekti galima institucijos
+puslapyje (**⋯ → Sekti**) arba sąraše, pažymėjus kelias institucijas. Sąrašo greitasis filtras
 **Sekamos** rodo tik jas.
 
-- Sekti galima institucijas, kurias gali matyti, ir kitų padalinių aktyvias institucijas, kurių
+- Sekti galima institucijas, kurias galima matyti, ir kitų padalinių aktyvias institucijas, kurių
   posėdžiai vieši.
-- Savo institucijas seki automatiškai, kol eini jose pareigas; to išjungti negalima.
+- Savo institucijos sekamos automatiškai, kol jose einamos pareigos; to išjungti negalima.
 - **Nutildyti** – sekti toliau, bet pranešimų negauti.
 
 ### Sukurti, redaguoti, ištrinti
 
-- **Sukurti** instituciją gali tik savo padalinyje. Būtinas lietuviškas pavadinimas. Lietuviškas
+- **Sukurti** instituciją galima tik savo padalinyje. Būtinas lietuviškas pavadinimas. Lietuviškas
   pavadinimas, lietuviškas trumpinys ir techninė žymė (naudojama viešame adrese) turi būti
   **unikalūs visoje platformoje** – ištrintos institucijos neskaičiuojamos. Todėl trumpinys turėtų
-  nurodyti ir padalinį (pvz., „VU TF SPK“, ne „SPK“). Techninė žymė, jei jos nenurodai, sudaroma iš
+  nurodyti ir padalinį (pvz., „VU TF SPK“, ne „SPK“). Techninė žymė, jei ji nenurodoma, sudaroma iš
   pavadinimo.
-- Jei redaguoji instituciją, kurios pavadinimas ar trumpinys sutampa su kitos, išsaugoti pavyks tik
+- Jei redaguojama institucija, kurios pavadinimas ar trumpinys sutampa su kitos, išsaugoti pavyks tik
   juos pakeitus.
 - **Padalinio** vėliau pakeisti negalima (išskyrus super administratorių).
 - **Ištrinta** institucija patenka į [šiukšlinę](/pagrindai/platforma#siuksline), o jos
-  pareigybės ir posėdžiai lieka. Institucijos, kurioje pats eini pareigas, ištrinti negalima.
+  pareigybės ir posėdžiai lieka. Institucijos, kurioje einamos pareigos, ištrinti negalima.
 - Iš šiukšlinės instituciją galima **atkurti**. **Galutinai ištrinti** negalima, kol ji turi
   posėdžių, pareigybių ar pranešimų apie veiklą arba yra padalinio pagrindinė institucija.
 

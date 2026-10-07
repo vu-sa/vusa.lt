@@ -20,9 +20,9 @@ Skiltis pasiekiama adresu `/mano/eventTypes`.
 ## Rekomendacijos {#rekomendacijos}
 
 ::: tip
-- **Aiški paskirtis:** tipą rinkis renginių grupei, pvz., „Mokymai“, o konkretaus renginio pavadinimą įrašyk pačiame renginyje.
-- **Esami tipai:** prieš kurdamas naują tipą patikrink, ar tinka jau esantis. Atskirą renginio temą gali nurodyti [žyma](/svetaine/zymos).
-- **Nuorodos stabilumas:** be reikalo nekeisk tipo nuorodos trumpinio, kad nereikėtų atnaujinti jau pasidalytų kalendoriaus filtravimo nuorodų.
+- **Aiški paskirtis:** tipas pasirenkamas renginių grupei, pvz., „Mokymai“, o konkretaus renginio pavadinimas nurodomas pačiame renginyje.
+- **Esami tipai:** prieš kuriant naują tipą verta patikrinti, ar tinka jau esantis. Atskirą renginio temą galima nurodyti [žyma](/svetaine/zymos).
+- **Nuorodos stabilumas:** rekomenduojama nekeisti tipo nuorodos trumpinio, kad nereikėtų atnaujinti jau pasidalytų kalendoriaus filtravimo nuorodų.
 :::
 
 ## Kaip tai veikia
@@ -34,7 +34,7 @@ Skiltis pasiekiama adresu `/mano/eventTypes`.
 
 ## Veiksmai
 
-Renginių tipus tvarkai sąrašo puslapyje, atvėręs šoninį langą.
+Renginių tipai tvarkomi sąrašo puslapyje, atvėrus šoninį langą.
 
 ### Naujo tipo kūrimas
 
@@ -55,7 +55,7 @@ Paspausk tipo pavadinimo sąraše arba veiksmų meniu pasirink **Redaguoti**. At
 
 - **Perkėlimas į šiukšlinę:** veiksmų meniu pasirink **Ištrinti**. Renginio tipas paslepiamas iš aktyvių pasirinkimų sąrašo.
 - **Atkūrimas:** šiukšlinės rodinyje pasirink **Atkurti**.
-- **Apsauga nuo ištrynimo:** jei renginio tipas turi bent vieną priskirtą kalendoriaus renginį (įskaitant ir esančius šiukšlinėje), sistema **blokuoja galutinį ištrynimą** (`withForceDeleteBlockers`). Lentelėje aiškiai nurodoma priežastis: „Negalima ištrinti, nes yra priskirtų renginių“. Norėdamas tipą ištrinti visam laikui, pirmiausia perkelk tuos renginius į kitą tipą.
+- **Apsauga nuo ištrynimo:** jei renginio tipas turi bent vieną priskirtą kalendoriaus renginį (įskaitant ir esančius šiukšlinėje), sistema **blokuoja galutinį ištrynimą** (`withForceDeleteBlockers`). Lentelėje aiškiai nurodoma priežastis: „Negalima ištrinti, nes yra priskirtų renginių“. Norint tipą ištrinti visam laikui, pirmiausia tuos renginius reikia perkelti į kitą tipą.
 
 ## Kas ką gali {#teises}
 

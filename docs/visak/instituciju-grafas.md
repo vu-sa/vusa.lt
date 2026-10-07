@@ -10,14 +10,14 @@ tests:
 
 # Institucijų grafas
 
-Grafas padeda suprasti, kaip susijusios institucijos ir jų tipai. Navigacijos nuorodą rasi
-**ViSAK → Institucijų grafas**, jei turi padalinio institucijų peržiūros prieigą,
+Grafas padeda suprasti, kaip susijusios institucijos ir jų tipai. Navigacijos nuoroda
+**ViSAK → Institucijų grafas** rodoma turint padalinio institucijų peržiūros prieigą,
 pavyzdžiui, su komunikacijos arba studentų atstovų koordinatoriaus role.
 Adresas – `/mano/institutionGraph`.
 
 ## Kaip tai veikia
 
-Viršuje pasirink vieną iš dviejų rodinių:
+Viršuje galima pasirinkti vieną iš dviejų rodinių:
 
 - **Institucijos** – institucijų mazgai ir jų ryšiai. Mazgo dydį lemia narių skaičius;
   institucijos išdėstomos grupėmis pagal padalinį.
@@ -28,7 +28,7 @@ Linijų spalvas paaiškina legenda apačioje. Institucijų rodinyje skiriami tie
 pagal tipus nustatyti, to paties tipo ir tarp padalinių atsirandantys ryšiai.
 Rodyklė žymi kryptį, dvipusės rodyklės – ryšį abiem kryptimis, brūkšninė linija – lygiavertį ryšį.
 
-Grafas rodo ryšių struktūrą, o ne institucijos veiklos būklę ar tavo teises ją redaguoti.
+Grafas rodo ryšių struktūrą, o ne institucijos veiklos būklę ar naudotojo teises ją redaguoti.
 Ryšių taisykles ir jų apimtį paaiškina [Ryšių gidas](/sistema/rysiai).
 
 ## Veiksmai
@@ -41,7 +41,7 @@ Ryšių taisykles ir jų apimtį paaiškina [Ryšių gidas](/sistema/rysiai).
 Norėdamas pakeisti institucijos duomenis, atverk [Institucijų sąrašą](/visak/institucijos).
 Tipus keisk per [Tipai ir kategorijos](/sistema/tipai), ryšius – jų
 [skiltyje](/sistema/rysiai). Mazgų pertempimas šių duomenų nekeičia.
-Tipo redagavimui naudok tipų katalogą: dabartinis dvigubas paspaudimas grafe jo neatveria.
+Tipo redagavimui rekomenduojama naudoti tipų katalogą: dabartinis dvigubas paspaudimas grafe jo neatveria.
 
 ## Kas ką gali {#teises}
 
@@ -53,8 +53,8 @@ to įrašo teisės. Dalis papildomų ryšio paaiškinimų rodoma užvedus žymek
 ## Pranešimai ir automatizavimas {#pranesimai}
 
 Grafas sudaromas iš institucijų ir ryšių duomenų. Vien peržiūra, mastelio keitimas ar mazgo
-pertempimas nesiunčia pranešimų ir nekeičia išsaugotų ryšių. Po duomenų pakeitimo kitame
-puslapyje atnaujink grafą.
+pertempimas nesiunčia pranešimų ir nekeičia išsaugotų ryšių. Pakeitus duomenis kitame
+puslapyje, grafą reikia atnaujinti.
 
 ## Techninė informacija {#technine-informacija}
 

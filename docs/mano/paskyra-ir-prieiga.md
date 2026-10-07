@@ -15,14 +15,15 @@ tests:
 
 # Paskyra ir prieiga
 
-Paspausk savo nuotrauką arba vardą viršutinėje juostoje. Paskyros meniu atskirai pasieksi
-**Paskyra**, **Mano rolės ir pareigybės**, **Pranešimų nustatymai**, **Išvaizda** ir **Pagalba**.
-Šiais puslapiais gali naudotis kiekvienas prisijungęs narys; juose matai savo duomenis.
+Viršutinėje juostoje paspaudus savo nuotrauką arba vardą, atveriamas paskyros meniu.
+Jame pasiekiami punktai **Paskyra**, **Mano rolės ir pareigybės**, **Pranešimų nustatymai**,
+**Išvaizda** ir **Pagalba**. Šiais puslapiais gali naudotis kiekvienas prisijungęs narys;
+juose rodomi tavo duomenys.
 
 ## Kaip tai veikia
 
 Paskyros duomenys ir pareigybių suteikiama prieiga tvarkomi atskirai.
-Pakeitęs kontaktus naujos rolės negausi, o peržiūrėdamas roles nepakeisi savo pareigų datų.
+Pakeitus kontaktus nauja rolė nesuteikiama, o rolių peržiūra nekeičia pareigų datų.
 
 ## Veiksmai
 
@@ -44,7 +45,7 @@ Tai nekeičia tavo „Microsoft“ paskyros slaptažodžio.
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Pareigos, rolės ir prieigos istorija atskirame puslapyje">
 
-Kai neberandi skilties arba pasikeitė pareigos, pirmiausia tikrink **Mano rolės ir pareigybės**.
+Pasikeitus pareigoms arba neberandant skilties, pirmiausia verta patikrinti **Mano rolės ir pareigybės**.
 Čia matai savo pareigas ir skiltis, kurias gali atverti.
 
 </ChangelogNote>
@@ -60,34 +61,34 @@ Atverk **Mano rolės ir pareigybės** (`/mano/profile/roles`). Čia rasi:
 <DocScreenshot name="my-roles" alt="Mano rolės ir pareigybės: dabartinės pareigybės su datomis ir rolėmis, žemiau – kokias darbo sritis ir skiltis gali atverti" caption="Atstovė mato savo tris pareigybes ir skiltis, kurias jos jai atveria." href="/mano/profile/roles" />
 
 Jei tavo pareigos prasidės ateityje, prieigą gali gauti jau dabar, kad spėtum pasiruošti.
-Narių sąrašuose vis tiek būsi rodomas tik nuo pareigų pradžios. Pabaigos diena dar įskaitoma. Tikslias taisykles skaityk
-[Datos ir narystės taisyklės](/pagrindai/padaliniai-ir-pareigybes#datos),
-o ką gali be papildomos rolės – [Teisės ir rolės](/pagrindai/teises#bazine-prieiga).
+Narių sąrašuose narys vis tiek rodomas tik nuo pareigų pradžios. Pabaigos diena dar įskaitoma. Tikslios taisyklės aprašytos
+skyriuje [Datos ir narystės taisyklės](/pagrindai/padaliniai-ir-pareigybes#datos),
+o bazinės galimybės be papildomos rolės – [Teisės ir rolės](/pagrindai/teises#bazine-prieiga).
 
-Jei skilties trūksta, patikrink savo pareigų datas ir roles, tada kreipkis į savo administratorių.
-Pats šiame puslapyje rolių ar pareigų nepriskiri.
+Jei skilties trūksta, verta patikrinti pareigų datas bei roles ir kreiptis į administratorių.
+Šiame puslapyje rolės ar pareigos nepriskiriamos.
 
 ### Nustatymai ir pagalba {#pagalba}
 
-- **Pranešimų nustatymai**: rinkis laiškų ir įrenginio pranešimų parinktis. Jų taisyklės
+- **Pranešimų nustatymai**: čia pasirenkamos laiškų ir įrenginio pranešimų parinktys. Jų taisyklės
   aprašytos [Pranešimų pagrinduose](/pagrindai/pranesimai).
-- **Išvaizda**: perjunk temą, kalbą arba atverk prieinamumo valdiklius
+- **Išvaizda**: galima perjungti temą, kalbą arba atverti prieinamumo valdiklius
   (plačiau – [Platforma](/pagrindai/platforma#spalvos-zenklai-ir-formos)).
-- **Pagalba**: atverk gidą, **Parodyk, kaip veikia** turą, **Mano užklausos** arba **Pranešti problemą**.
+- **Pagalba**: čia galima atverti gidą, **Parodyk, kaip veikia** turą, **Mano užklausos** arba **Pranešti problemą**.
   Problemos pranešimui pridedamas dabartinis puslapio adresas ir naršyklės kontekstas.
   Užklausų matomumas bei sprendimo eiga aprašyti [Pagalbos užklausose](/sistema/pagalbos-uzklausos).
 
 ### Atsijungti {#atsijungimas}
 
 **Atsijungti** užbaigia Mano VU SA sesiją. **Atsijungti nuo Microsoft** papildomai pradeda
-„Microsoft“ atsijungimą. Bendrame kompiuteryje rinkis ir „Microsoft“ atsijungimą;
+„Microsoft“ atsijungimą. Bendrame kompiuteryje rekomenduojama rinktis ir „Microsoft“ atsijungimą;
 vien naršyklės užvėrimas nėra patikimas atsijungimo veiksmas.
 
 ## Kas ką gali {#teises}
 
 Kiekvienas prisijungęs narys peržiūri savo paskyrą bei prieigą ir keičia savo leidžiamus
-kontaktinius duomenis. Kitų narių pareigas ar roles tvarkyk per tam skirtus
-[Organizacijos puslapius](/organizacija/), turėdamas atitinkamą rolę.
+kontaktinius duomenis. Kitų narių pareigos ir rolės tvarkomos per tam skirtus
+[Organizacijos puslapius](/organizacija/), turint atitinkamą rolę.
 
 ## Techninė informacija {#technine-informacija}
 

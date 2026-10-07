@@ -49,9 +49,9 @@ savo puslapį `/mano/agendaItems/{id}`.
 
 ## Susitarimai {#susitarimai}
 
-- **Tik viduje** skirta darbo medžiagos skelbimui valdyti. Nekelk ir nesaugok perteklinės
-  asmeninės informacijos ar asmeninių failų — tai galioja ir vidaus klausimams bei pastaboms.
-- Viešą pavadinimą rinkis tokį, kurį galima skelbti. Nebūtina jame kartoti originalaus pavadinimo.
+- **Tik viduje** skirta darbo medžiagos skelbimui valdyti. Rekomenduojama nekelti ir nesaugoti
+  perteklinės asmeninės informacijos ar asmeninių failų — tai galioja ir vidaus klausimams bei pastaboms.
+- Viešas pavadinimas pasirenkamas toks, kurį galima skelbti. Nebūtina jame kartoti originalaus pavadinimo.
 - Atskirai paskelbti dokumentai, failų nuorodos ir į kitą turinį nukopijuotas tekstas turi savo
   skelbimo nustatymus. Klausimo matomumo žyma jų nekeičia. Viešuose tiksluose su vidaus
   klausimu susieti žingsniai nerodomi.
@@ -60,38 +60,38 @@ savo puslapį `/mano/agendaItems/{id}`.
 
 ### Matomumas: Tik viduje {#matomumas}
 
-Posėdis gali būti viešas, o atskiras jo klausimas skirtas vidaus darbui. Matomumą pasirink
-jau sukurtame klausime: atverk **Redaguoti** arba paspausk jo matomumą. Įjunk
-**Nerodyti punkto turinio viešai** ir, jei reikia, įrašyk **Viešas pavadinimas (neprivaloma)**.
-Peržiūra parodo, kaip atrodys vieša eilutė. Išskleidęs **Kas matys klausimą?**, rasi prieigos
-paaiškinimą. Kuriant posėdį ar jo klausimus rodoma tik trumpa nuoroda į šią galimybę.
+Posėdis gali būti viešas, o atskiras jo klausimas skirtas vidaus darbui. Matomumas pasirenkamas
+jau sukurtame klausime: atvėrus **Redaguoti** arba paspaudus jo matomumo žymą. Įjungiama parinktis
+**Nerodyti punkto turinio viešai** ir, jei reikia, įrašomas **Viešas pavadinimas (neprivaloma)**.
+Peržiūra parodo, kaip atrodys vieša eilutė. Išskleidus **Kas matys klausimą?**, pateikiamas prieigos
+paaiškinimas. Kuriant posėdį ar jo klausimus rodoma tik trumpa nuoroda į šią galimybę.
 
-Viešai lieka klausimo numeris, žyma **Tik viduje** ir tavo įrašytas viešas pavadinimas.
+Viešai lieka klausimo numeris, žyma **Tik viduje** ir įrašytas viešas pavadinimas.
 Jei jo nėra, pavadinimas yra **Nerodoma**. Originalus pavadinimas, aprašymas, studentų pozicija,
 laikas, tipas, balsavimai, pastabos ir užpildymo duomenys viešai nerodomi. Tai galioja ir
 prisijungusio nario apsilankymui viešoje svetainėje. Vieši posėdžio rodikliai neįtraukia tokių
 klausimų balsavimų.
 
-Jei posėdis dar neviešas, jo puslapyje prieiga dabar nepasikeis. Vis tiek įjunk šią
-parinktį vidaus darbui skirtiems klausimams: institucijos tipas vėliau gali leisti viešinti
-posėdžius arba posėdis gali būti susietas su viešu kalendoriaus renginiu. Parinktis saugo
-punkto turinį ir tokiais atvejais. Saugok tik darbui būtiną asmeninę informaciją.
+Jei posėdis dar neviešas, jo puslapyje prieiga nepasikeičia. Šią parinktį vis tiek verta įjungti
+vidaus darbui skirtiems klausimams: institucijos tipas vėliau gali leisti viešinti posėdžius
+arba posėdis gali būti susietas su viešu kalendoriaus renginiu. Parinktis saugo punkto turinį
+ir tokiais atvejais. Svarbu saugoti tik darbui būtiną asmeninę informaciją.
 
 Visą klausimą Mano VU SA ir toliau gali skaityti institucijos nariai, turintys prieigą pagal
 posėdžio datą, atitinkamos apimties studentų atstovai ir koordinatoriai, prieigą per institucijų
-ryšius turintys nariai bei super administratorius. Vien prisijungti neužtenka. Klausimo pakeitimų istorija taip pat neatskleidžiama be vidaus prieigos. Jei gali matyti
-tik viešą posėdį, klausimo puslapyje taip pat matai tik viešą eilutę. Matomumą gali keisti tie
-patys žmonės, kurie gali redaguoti klausimą.
+ryšius turintys nariai bei super administratorius. Vien prisijungti neužtenka. Klausimo pakeitimų istorija taip pat neatskleidžiama be vidaus prieigos. Turint teisę matyti
+tik viešą posėdį, klausimo puslapyje taip pat rodoma tik vieša eilutė. Matomumą gali keisti tie
+patys asmenys, kurie gali redaguoti klausimą.
 
-Žyma nekeičia vidaus darbo: klausimui galioja tos pačios užpildymo taisyklės. Nuėmęs žymą,
-viešame posėdyje paskelbi jo įprastą turinį, todėl prieš išsaugodamas jį peržiūrėk.
-Kopijuojant ankstesnę darbotvarkę, matomumo žyma išlieka; viešą pavadinimą įrašyk naujam
-klausimui atskirai.
+Žyma nekeičia vidaus darbo: klausimui galioja tos pačios užpildymo taisyklės. Nuėmus žymą,
+viešame posėdyje paskelbiamas jo įprastas turinys, todėl prieš išsaugant verta jį peržiūrėti.
+Kopijuojant ankstesnę darbotvarkę, matomumo žyma išlieka; viešas pavadinimas naujam
+klausimui įrašomas atskirai.
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Atskiro klausimo matomumas">
 
 Žyma **Tik viduje** leidžia atskirti vidaus darbo klausimą nuo kitų viešo posėdžio klausimų.
-Redagavimo lange matai prieigos paaiškinimą ir viešos eilutės peržiūrą.
+Redagavimo lange rodomas prieigos paaiškinimas ir viešos eilutės peržiūra.
 
 </ChangelogNote>
 
@@ -124,7 +124,7 @@ Kiekviename balsavime žymimi trys laukai:
 | **Nauda studentams** – ar sprendimas palankus studentams | Palanku · Nepalanku · Neutralu |
 
 Tais pačiais žodžiais reikšmės rodomos ir sąrašo filtruose. **Bendru sutarimu** pažymi visus tris
-laukus teigiamai. Jis išsijungia pats, jei pakeiti sprendimą arba studentų balsą (bet ne naudą
+laukus teigiamai. Jis išsijungia pats, jei pakeičiamas sprendimas arba studentų balsas (bet ne nauda
 studentams).
 
 ### VU SA darinių išimtis {#vusa-isimtis}
@@ -268,10 +268,10 @@ Plačiau – [Posėdžiai](/visak/posedziai#pranesimai) ir [Užduotys](/mano/uzd
 - Ribojantis pakeitimas pirmiausia pašalina senus klausimo ir posėdžio paieškos įrašus.
   Jei paieškos tarnyba nepasiekiama, pakeitimas neišsaugomas. Indeksavimo darbai naudoja tą
   patį posėdžio užraktą ir iš naujo nuskaito dabartinį įrašą.
-- Diegdami šį pakeitimą, priežiūros režimu pritaikyk migracijas, paleisk `search:reindex`
-  klausimų, posėdžių ir viešų posėdžių schemoms bei duomenims atnaujinti. Prieš vėl leisdami
-  kurti vidaus klausimus, pakeisk ankstesnį administravimo paieškos pirminį raktą ir atšauk senąjį
-  (`typesense:rotate-keys --force --delete-old`), atnaujink konfigūracijos podėlį bei perkrauk
-  darbuotojus. Patikrink, kad senieji raktai nebeveikia; vien podėlio išvalymas jų neatšaukia.
+- Diegiant šį pakeitimą, priežiūros režimu pritaikomos migracijos, paleidžiama `search:reindex`
+  klausimų, posėdžių ir viešų posėdžių schemoms bei duomenims atnaujinti. Prieš vėl leidžiant
+  kurti vidaus klausimus, pakeičiamas ankstesnis administravimo paieškos pirminis raktas ir atšaukiamas senasis
+  (`typesense:rotate-keys --force --delete-old`), atnaujinamas konfigūracijos podėlis bei perkraunami
+  darbuotojai. Reikia patikrinti, kad senieji raktai nebeveikia; vien podėlio išvalymas jų neatšaukia.
   Raktų rotavimo komanda šalina ankstesnius platformos generuotus raktus, todėl bendroje
-  Typesense instancijoje pirmiausia patikrink kitų aplinkų naudojamus raktus.
+  Typesense instancijoje pirmiausia patikrinami kitų aplinkų naudojami raktai.

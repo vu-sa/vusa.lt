@@ -36,7 +36,7 @@ nuo rolės. Viso padalinio vaizdas yra [Padalinių apžvalgoje](/visak/padalinia
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Tavo institucijos ir padalinių rodikliai atskirti">
 
-Ši apžvalga skirta tavo institucijoms ir toms, kurių sekretorius esi. Viso padalinio rodiklius bei laiko juostą atverk skiltyje **Padaliniai**; apžvalgoje seno „Mano institucijos / Padalinys“ jungiklio nėra.
+Ši apžvalga skirta tavo institucijoms ir toms, kurių sekretorius esi. Viso padalinio rodikliai bei laiko juosta pateikiami skiltyje **Padaliniai**; apžvalgoje seno „Mano institucijos / Padalinys“ jungiklio nėra.
 
 </ChangelogNote>
 
@@ -116,7 +116,7 @@ atmintinės. Naujausi (pagal dokumento datą) pirmiausia. Jei tokių dokumentų 
 
 Didesniame ekrane rodoma tavo institucijų posėdžių laiko juosta. Telefone vietoj jos siūloma nuoroda
 į posėdžių sąrašą. **Rodymo nustatymuose** galima, pavyzdžiui, parodyti **susijusias institucijas**.
-Susijusios institucijos, kurių duomenų matyti negali, rodomos be darbotvarkių. Laiko juostą galima
+Susijusios institucijos, kurių duomenų negalima matyti, rodomos be darbotvarkių. Laiko juostą galima
 atidaryti per visą ekraną.
 
 ### Sekamos institucijos
@@ -139,7 +139,7 @@ Pirmą kartą atsidarius puslapį, trumpas turas parodo pagrindines jo dalis.
 
 ## Kas ką gali {#teises}
 
-Apžvalgą atidaryti gali **kiekvienas** prisijungęs narys. Ką joje matai, lemia ne rolė, o tai, kokias
+Apžvalgą atidaryti gali **kiekvienas** prisijungęs narys. Rodomą informaciją lemia ne rolė, o tai, kokias
 pareigas eini:
 
 | | Studentų atstovas | Koordinatorius | Narys be institucijų |

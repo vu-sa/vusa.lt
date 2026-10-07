@@ -21,9 +21,9 @@ Skiltis pasiekiama adresu `/mano/news`.
 ## Rekomendacijos {#rekomendacijos}
 
 ::: tip
-- **Glaustas įvadas:** trumpai įvardyk svarbiausią žinią. Jei aktualu, atsakyk, kas, kur ir kada vyksta. Įvadas turi tilpti į [200 matomų simbolių ribą](#issaugojimas).
-- **Įskaitomas viršelis:** rinkis aiškią nuotrauką ir patikrink jos apkarpymą. Plakatą su smulkiu tekstu geriau pateikti straipsnyje, o svarbiausią informaciją pakartoti tekstu.
-- **Struktūra:** ilgą straipsnį skaidyk trumpomis pastraipomis ir prasmingomis paantraštėmis. Paryškink tik svarbiausias mintis.
+- **Glaustas įvadas:** rekomenduojama trumpai įvardyti svarbiausią žinią (kas, kur ir kada vyksta). Įvadas turi tilpti į [200 matomų simbolių ribą](#issaugojimas).
+- **Įskaitomas viršelis:** rekomenduojama rinktis aiškią nuotrauką ir patikrinti jos apkarpymą. Plakatą su smulkiu tekstu geriau pateikti straipsnyje, o svarbiausią informaciją pakartoti tekstu.
+- **Struktūra:** ilgą straipsnį verta skaidyti trumpomis pastraipomis ir prasmingomis paantraštėmis, paryškinant tik svarbiausias mintis.
 :::
 
 ## Kaip tai veikia
@@ -57,19 +57,19 @@ Naujienos turinio blokai redaguojami taip pat kaip [puslapiuose](/svetaine/pusla
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Patikimesnis išsaugojimas">
 
-Nepavykęs išsaugojimas palieka tavo pakeitimus formoje. Jei kolega jau išsaugojo naujesnę versiją, pirmiausia ją peržiūrėk.
+Nepavykęs išsaugojimas palieka pakeitimus formoje. Jei kolega jau išsaugojo naujesnę versiją, pirmiausia verta ją peržiūrėti.
 
 </ChangelogNote>
 
-**Juodraštis** matomas tik sistemoje. Pasirinkęs **Paskelbta** ir išsaugojęs, naujieną padarai pasiekiamą pagal viešą nuorodą. Jei paskelbimo laikas ateityje, paieškoje ir naujienų sąrašuose ji pasirodys nuo pasirinkto laiko; pati nuoroda jau veikia.
+**Juodraštis** matomas tik sistemoje. Pasirinkus **Paskelbta** ir išsaugojus, naujiena tampa pasiekiama pagal viešą nuorodą. Jei paskelbimo laikas ateityje, paieškoje ir naujienų sąrašuose ji pasirodys nuo pasirinkto laiko; pati nuoroda jau veikia.
 
 Įvadiniame tekste gali būti iki 200 matomų simbolių. Formatavimo žymos į šį skaičių neįtraukiamos. Senesnį ilgesnį įvadą gali palikti nepakeistą; pakeistas įvadas turi tilpti į ribą. Viso ekrano **Išsaugoti** išsaugo ir likusius naujienos laukus.
 
 ## Atkūrimo kopijos ir kalbos {#atkurimas}
 
-Redaguojant saugomos privačios įrenginio bei serverio atkūrimo kopijos. Jos nepaskelbia naujienos. Grįžęs į formą pasirink **Atkurti kopiją**; jei išsaugota versija pasikeitė, **Peržiūrėti dabartinę versiją** leidžia pasirinkti, kurią kopiją tęsti. [Atkūrimo eiga](/svetaine/puslapiai#atkurimas) vienoda puslapiams ir naujienoms.
+Redaguojant saugomos privačios įrenginio bei serverio atkūrimo kopijos. Jos nepaskelbia naujienos. Grįžus į formą galima pasirinkti **Atkurti kopiją**; jei išsaugota versija pasikeitė, mygtukas **Peržiūrėti dabartinę versiją** leidžia pasirinkti, kurią kopiją tęsti. [Atkūrimo eiga](/svetaine/puslapiai#atkurimas) vienoda puslapiams ir naujienoms.
 
-**Palyginti ir redaguoti** atveria abi kalbas greta, o telefone leidžia persijungti. Kiekviena versija turi savo įvadą, svarbiausius punktus, paskelbimo laiką ir išsaugojimą. **Sukurti versiją kita kalba** atveria tuščią juodraštį, į kurį gali nukopijuoti dabartinį turinį; išsaugojus versijos susiejamos. [Kalbų versijų eiga](/svetaine/puslapiai#kalbu-versijos).
+**Palyginti ir redaguoti** atveria abi kalbas greta, o telefone leidžia persijungti. Kiekviena versija turi savo įvadą, svarbiausius punktus, paskelbimo laiką ir išsaugojimą. **Sukurti versiją kita kalba** atveria tuščią juodraštį, į kurį galima nukopijuoti dabartinį turinį; išsaugojus versijos susiejamos. [Kalbų versijų eiga](/svetaine/puslapiai#kalbu-versijos).
 
 ## Veiksmai
 

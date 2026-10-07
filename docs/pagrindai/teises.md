@@ -85,7 +85,7 @@ Kiekviename puslapyje skyrius **Kas ką gali** aprašo, kurios rolės ką leidž
 
 ### Teisės formatas {#teises-formatas}
 
-Rolės sudarytos iš **teisių**. Tikslias kiekvieno puslapio teises rasi jo pabaigoje, skyriuje **Techninė informacija**. Kiekviena teisė užrašoma `{išteklius}.{veiksmas}.{apimtis}`, pavyzdžiui, `news.update.padalinys`.
+Rolės sudarytos iš **teisių**. Tikslios kiekvieno puslapio teisės pateikiamos jo pabaigoje, skyriuje **Techninė informacija**. Kiekviena teisė užrašoma `{išteklius}.{veiksmas}.{apimtis}`, pavyzdžiui, `news.update.padalinys`.
 
 | Dalis | Reikšmės |
 |---|---|

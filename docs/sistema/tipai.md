@@ -17,8 +17,8 @@ Tipai ir kategorijos skirti institucijoms, pareigybėms, renginiams, ištekliams
 
 ## Susitarimai {#susitarimai}
 
-- Institucijų ir pareigybių tipai yra atskiri sąrašai. Tipo rūšies redaguodamas nekeisk; sukurk tinkamos rūšies tipą ir susiek jam reikalingus įrašus.
-- Ištrintą tipą gali atkurti iš šiukšlinės. Visam laikui ištrinti nepavyks, kol su juo susieti įrašai, vaikiniai tipai arba pareigybės tipo rolės; tai galioja ir ištrintiems susietiems įrašams.
+- Institucijų ir pareigybių tipai yra atskiri sąrašai. Tipo rūšies redaguojant rekomenduojama nekeisti; sukuriamas tinkamos rūšies tipas ir su juo susiejami reikalingi įrašai.
+- Ištrintą tipą galima atkurti iš šiukšlinės. Visam laikui ištrinti nepavyksta, kol su juo susieti įrašai, vaikiniai tipai arba pareigybės tipo rolės; tai galioja ir ištrintiems susietiems įrašams.
 
 ## Kaip tai veikia
 
@@ -28,7 +28,7 @@ Institucijų ir pareigybių tipai tvarkomi atskirai. Renkantis sąrašą išliek
 
 </ChangelogNote>
 
-Skiltyje **Sistema → Tipai ir kategorijos** pasirink vieną iš penkių sąrašų:
+Skiltyje **Sistema → Tipai ir kategorijos** pasirenkamas vienas iš penkių sąrašų:
 
 - **Institucijų tipai** grupuoja institucijas, nustato valdymo sritį ir institucijų ryšius.
 - **Pareigybių tipai** grupuoja pareigybes; jų rolės suteikiamos susietoms pareigybėms.
@@ -36,8 +36,8 @@ Skiltyje **Sistema → Tipai ir kategorijos** pasirink vieną iš penkių sąra�
 - **Išteklių kategorijos** grupuoja rezervuojamus išteklius. [Plačiau](/rezervacijos/kategorijos)
 - **Problemų kategorijos** grupuoja registruojamas problemas. [Plačiau](/visak/problemos)
 
-Matai tik tuos sąrašus, kuriuos gali pasiekti. Bendras puslapis rodo nuorodas į sąrašus;
-konkrečius tipus ir kategorijas tvarkyk pasirinktame sąraše.
+Rodomi tik tie sąrašai, kuriuos naudotojas turi teisę pasiekti. Bendrame puslapyje pateikiamos nuorodos į sąrašus;
+konkretūs tipai ir kategorijos tvarkomi pasirinktame sąraše.
 
 ## Veiksmai
 
