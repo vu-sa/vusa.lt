@@ -55,20 +55,20 @@ Paspausk tipo pavadinimo sąraše arba veiksmų meniu pasirink **Redaguoti**. At
 
 - **Perkėlimas į šiukšlinę:** veiksmų meniu pasirink **Ištrinti**. Renginio tipas paslepiamas iš aktyvių pasirinkimų sąrašo.
 - **Atkūrimas:** šiukšlinės rodinyje pasirink **Atkurti**.
-- **Apsauga nuo ištrynimo:** jei renginio tipas turi bent vieną priskirtą kalendoriaus renginį (įskaitant ir esančius šiukšlinėje), sistema **blokuoja galutinį ištrynimą** (`withForceDeleteBlockers`). Lentelėje aiškiai nurodoma priežastis: „Negalima ištrinti, nes yra priskirtų renginių“. Norint tipą ištrinti visam laikui, pirmiausia tuos renginius reikia perkelti į kitą tipą.
+- **Apsauga nuo ištrynimo:** jei renginio tipas turi bent vieną priskirtą kalendoriaus renginį (įskaitant ir esančius šiukšlinėje), sistema **blokuoja galutinį ištrynimą** (`withForceDeleteBlockers`). Lentelėje aiškiai nurodoma priežastis: „Negalima ištrinti, nes yra priskirtų renginių“. Norint tipą ištrinti visam laikui, pirmiausia tuos renginius reikia perkelti į kitą tipą (galutinį ištrynimą atlieka superadministratorius).
 
 ## Kas ką gali {#teises}
 
 Kadangi renginių tipai yra bendri visai organizacijai ir veikia visų padalinių kalendorius, juos administruoja tik centrinis biuras:
 
-| Veiksmas | Padalinio koordinatorius | Centrinio biuro komunikacijos koordinatorius |
-|---|---|---|
-| Priskirti tipą renginiui | ✓ (kuriant renginį) | ✓ |
-| Matyti tipų administravimo sąrašą | – | ✓ |
-| Sukurti naują tipą | – | ✓ |
-| Redaguoti tipus ir rikiavimo tvarką | – | ✓ |
-| Ištrinti į šiukšlinę / atkurti | – | ✓ |
-| Ištrinti visam laikui | – | ✓ (tik jei nėra priskirtų renginių) |
+| Veiksmas | Padalinio koordinatorius | Centrinio biuro komunikacijos koordinatorius | Superadministratorius |
+|---|---|---|---|
+| Priskirti tipą renginiui | ✓ (kuriant renginį) | ✓ | ✓ |
+| Matyti tipų administravimo sąrašą | – | ✓ | ✓ |
+| Sukurti naują tipą | – | ✓ | ✓ |
+| Redaguoti tipus ir rikiavimo tvarką | – | ✓ | ✓ |
+| Ištrinti į šiukšlinę / atkurti | – | ✓ | ✓ |
+| Ištrinti visam laikui | – | – | ✓ (tik jei nėra priskirtų renginių) |
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 

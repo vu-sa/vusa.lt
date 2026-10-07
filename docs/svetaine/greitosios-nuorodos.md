@@ -76,18 +76,18 @@ Paspausk nuorodos pavadinimo sąraše arba veiksmų meniu pasirink **Redaguoti**
 ### Šalinimas ir atkūrimas
 
 - **Perkėlimas į šiukšlinę:** veiksmų meniu pasirink **Ištrinti**. Nuoroda iškart paslepiama viešoje svetainėje.
-- **Šiukšlinė ir atkūrimas:** pažymėjęs **Šiukšlinė**, gali atkurti anksčiau pašalintą nuorodą arba ištrinti ją negrįžtamai (`forceDelete`).
+- **Šiukšlinė ir atkūrimas:** pažymėjęs **Šiukšlinė**, gali atkurti anksčiau pašalintą nuorodą (galutinai ištrinti gali tik superadministratorius).
 
 ## Kas ką gali {#teises}
 
-| Veiksmas | Narys be rolės | Komunikacijos koordinatorius | Centrinio biuro komunikacijos koordinatorius |
-|---|---|---|---|
-| Matyti sąrašą | – | ✓ (savo padalinio) | ✓ (visų) |
-| Kurti naują nuorodą | – | ✓ (savo padaliniui) | ✓ (visiems) |
-| Keisti rikiavimo tvarką | – | ✓ (savo padalinio) | ✓ (visų) |
-| Redaguoti nuorodą | – | ✓ (savo padalinio) | ✓ (visų) |
-| Trinti į šiukšlinę / atkurti | – | ✓ (savo padalinio) | ✓ (visų) |
-| Ištrinti visam laikui | – | ✓ (savo padalinio) | ✓ (visų) |
+| Veiksmas | Narys be rolės | Komunikacijos koordinatorius | Centrinio biuro komunikacijos koordinatorius | Superadministratorius |
+|---|---|---|---|---|
+| Matyti sąrašą | – | ✓ (savo padalinio) | ✓ (visų) | ✓ |
+| Kurti naują nuorodą | – | ✓ (savo padaliniui) | ✓ (visiems) | ✓ |
+| Keisti rikiavimo tvarką | – | ✓ (savo padalinio) | ✓ (visų) | ✓ |
+| Redaguoti nuorodą | – | ✓ (savo padalinio) | ✓ (visų) | ✓ |
+| Trinti į šiukšlinę / atkurti | – | ✓ (savo padalinio) | ✓ (visų) | ✓ |
+| Ištrinti visam laikui | – | – | – | ✓ |
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 

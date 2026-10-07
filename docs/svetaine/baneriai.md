@@ -77,18 +77,18 @@ Norėdamas pakeisti banerio nuorodą, pavadinimą ar paveikslėlį, sąraše pas
 - **Perkėlimas į šiukšlinę:** veiksmų meniu **⋯** pasirink **Ištrinti**. Baneris perkeliamas į šiukšlinę ir nustoja būti rodomas svetainėje.
 - **Šiukšlinės peržiūra:** sąrašo viršuje spausk mygtuką **Šiukšlinė**. Čia pateikiami pašalinti baneriai.
 - **Atkūrimas:** šiukšlinėje prie pašalinto banerio pasirink **Atkurti**. Baneris grąžinamas į sąrašą.
-- **Galutinis ištrynimas:** šiukšlinėje pasirink **Ištrinti visam laikui**. Šis veiksmas negrįžtamas.
+- **Galutinis ištrynimas:** šiukšlinėje pasirink **Ištrinti visam laikui**. Šis veiksmas negrįžtamas (veiksmas prieinamas superadministratoriui).
 
 ## Kas ką gali {#teises}
 
-| Veiksmas | Narys be rolės | Komunikacijos koordinatorius | Centrinio biuro komunikacijos koordinatorius |
-|---|---|---|---|
-| Matyti sąrašą | – | ✓ (savo padalinio) | ✓ (visus padalinius) |
-| Sukurti banerį | – | ✓ (savo padaliniui) | ✓ (visai organizacijai ir padaliniams) |
-| Keisti būseną (aktyvus / neaktyvus) | – | ✓ (savo padalinio) | ✓ (visų) |
-| Redaguoti banerį | – | ✓ (savo padalinio) | ✓ (visų) |
-| Ištrinti į šiukšlinę / atkurti | – | ✓ (savo padalinio) | ✓ (visų) |
-| Ištrinti visam laikui | – | ✓ (savo padalinio) | ✓ (visų) |
+| Veiksmas | Narys be rolės | Komunikacijos koordinatorius | Centrinio biuro komunikacijos koordinatorius | Superadministratorius |
+|---|---|---|---|---|
+| Matyti sąrašą | – | ✓ (savo padalinio) | ✓ (visus padalinius) | ✓ |
+| Sukurti banerį | – | ✓ (savo padaliniui) | ✓ (visai organizacijai ir padaliniams) | ✓ |
+| Keisti būseną (aktyvus / neaktyvus) | – | ✓ (savo padalinio) | ✓ (visų) | ✓ |
+| Redaguoti banerį | – | ✓ (savo padalinio) | ✓ (visų) | ✓ |
+| Ištrinti į šiukšlinę / atkurti | – | ✓ (savo padalinio) | ✓ (visų) | ✓ |
+| Ištrinti visam laikui | – | – | – | ✓ |
 
 ::: info Padalinio ir centrinio biuro atskyrimas
 Padalinio komunikacijos koordinatorius mato ir tvarko tik savo padalinio banerius. Centrinio biuro komunikacijos koordinatorius mato visų padalinių skydelius ir kuria bendrus, visoje svetainėje matomus banerius.

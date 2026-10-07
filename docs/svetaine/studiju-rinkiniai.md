@@ -62,17 +62,17 @@ Atlikęs pakeitimus spausk **Išsaugoti**.
 
 - **Perkėlimas į šiukšlinę:** veiksmų meniu pasirink **Ištrinti**. Rinkinys paslepiamas iš viešo puslapio ir perkeliamas į šiukšlinę.
 - **Atkūrimas:** šiukšlinės sąraše pasirink **Atkurti**.
-- **Galutinis ištrynimas:** šiukšlinėje pasirink **Ištrinti visam laikui**. Kartu pašalinami ir su šiuo rinkiniu susieti dalykai bei atsiliepimai.
+- **Galutinis ištrynimas:** šiukšlinėje pasirink **Ištrinti visam laikui**. Kartu pašalinami ir su šiuo rinkiniu susieti dalykai bei atsiliepimai (veiksmas prieinamas superadministratoriui).
 
 ## Kas ką gali {#teises}
 
-| Veiksmas | Narys be rolės | Komunikacijos koordinatorius | Centrinio biuro komunikacijos koordinatorius |
-|---|---|---|---|
-| Matyti sąrašą | – | ✓ (savo padalinio) | ✓ (visus) |
-| Sukurti rinkinį | – | ✓ (savo padaliniui) | ✓ (visiems) |
-| Redaguoti rinkinį ir dalykus | – | ✓ (savo padalinio) | ✓ (visų) |
-| Trinti į šiukšlinę / atkurti | – | ✓ (savo padalinio) | ✓ (visų) |
-| Ištrinti visam laikui | – | ✓ (savo padalinio) | ✓ (visų) |
+| Veiksmas | Narys be rolės | Komunikacijos koordinatorius | Centrinio biuro komunikacijos koordinatorius | Superadministratorius |
+|---|---|---|---|---|
+| Matyti sąrašą | – | ✓ (savo padalinio) | ✓ (visus) | ✓ |
+| Sukurti rinkinį | – | ✓ (savo padaliniui) | ✓ (visiems) | ✓ |
+| Redaguoti rinkinį ir dalykus | – | ✓ (savo padalinio) | ✓ (visų) | ✓ |
+| Trinti į šiukšlinę / atkurti | – | ✓ (savo padalinio) | ✓ (visų) | ✓ |
+| Ištrinti visam laikui | – | – | – | ✓ |
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 

@@ -41,7 +41,6 @@ Ryšių taisykles ir jų apimtį paaiškina [Ryšių gidas](/sistema/rysiai).
 Norėdamas pakeisti institucijos duomenis, atverk [Institucijų sąrašą](/visak/institucijos).
 Tipus keisk per [Tipai ir kategorijos](/sistema/tipai), ryšius – institucijos ar tipo
 kortelės skirtuke **Ryšiai** (žr. [Ryšiai](/sistema/rysiai)). Mazgų pertempimas šių duomenų nekeičia.
-Tipo redagavimui rekomenduojama naudoti tipų katalogą: dabartinis dvigubas paspaudimas grafe jo neatveria.
 
 ## Kas ką gali {#teises}
 
@@ -63,6 +62,5 @@ puslapyje, grafą reikia atnaujinti.
   Pats GET maršrutas turi prisijungimo apsaugą, bet valdiklis papildomos šios teisės patikros neatlieka;
   meniu matomumas nėra tiesioginio adreso autorizacijos įrodymas.
 - Vaizdą generuoja `InstitutionGraph.vue`; ryšius pateikia `InstitutionRelationService` – tas pats, kuris sprendžia prieigą.
-- Tipo dvigubo paspaudimo nuoroda dar naudoja pašalintą `types.edit` maršrutą.
 - `DashboardControllerTest` tikrina grafo atsakymą ir narių skaičius administratoriaus paskyrai;
   `InstitutionRelationServiceTest` – ryšių sudarymą. Šie testai nepatvirtina visų grafo valdiklių ar prieigos ribojimo.

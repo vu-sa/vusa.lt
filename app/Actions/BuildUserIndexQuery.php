@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
  *
  * Tenant-scoped user administration reaches people with a duty history (or a role); the tenant
  * scope itself is applied by the caller through `applyTanstackFilters(... 'tenantRelation' =>
- * 'tenants')`. Dutyless, roleless accounts are never part of this list (.ai/rules/policies-http-requests.md).
+ * 'tenants')`. Dutyless, roleless accounts are never part of this list (.ai/rules/users.md).
  */
 final class BuildUserIndexQuery
 {

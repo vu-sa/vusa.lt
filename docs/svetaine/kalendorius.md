@@ -87,18 +87,18 @@ Posėdžių skiltyje (`/mano/meetings/{id}`) organizatoriai gali vienu mygtuko p
 
 - **Perkėlimas į šiukšlinę:** veiksmų meniu pasirink **Ištrinti**. Renginys pašalinamas iš viešo kalendoriaus ir perkeliamas į šiukšlinę.
 - **Atkūrimas:** šiukšlinės rodinyje pasirink **Atkurti**.
-- **Galutinis ištrynimas:** šiukšlinėje pasirink **Ištrinti visam laikui**. Kartu pašalinami visi susiję nuotraukų failai ir nuorodos.
+- **Galutinis ištrynimas:** šiukšlinėje pasirink **Ištrinti visam laikui**. Kartu pašalinami visi susiję nuotraukų failai ir nuorodos (veiksmas prieinamas superadministratoriui).
 
 ## Kas ką gali {#teises}
 
-| Veiksmas | Narys be rolės | Komunikacijos koordinatorius | Centrinio biuro komunikacijos koordinatorius |
-|---|---|---|---|
-| Matyti kalendoriaus sąrašą | – | ✓ (savo padalinio) | ✓ (visus padalinius) |
-| Sukurti naują renginį | – | ✓ (savo padaliniui) | ✓ (visai organizacijai) |
-| Redaguoti ir dubliuoti renginį | – | ✓ (savo padalinio) | ✓ (visų) |
-| Kurti renginį iš posėdžio puslapio | – | ✓ (jei administruoja posėdį) | ✓ |
-| Trinti į šiukšlinę / atkurti | – | ✓ (savo padalinio) | ✓ (visų) |
-| Ištrinti visam laikui | – | ✓ (savo padalinio) | ✓ (visų) |
+| Veiksmas | Narys be rolės | Komunikacijos koordinatorius | Centrinio biuro komunikacijos koordinatorius | Superadministratorius |
+|---|---|---|---|---|
+| Matyti kalendoriaus sąrašą | – | ✓ (savo padalinio) | ✓ (visus padalinius) | ✓ |
+| Sukurti naują renginį | – | ✓ (savo padaliniui) | ✓ (visai organizacijai) | ✓ |
+| Redaguoti ir dubliuoti renginį | – | ✓ (savo padalinio) | ✓ (visų) | ✓ |
+| Kurti renginį iš posėdžio puslapio | – | ✓ (jei administruoja posėdį) | ✓ | ✓ |
+| Trinti į šiukšlinę / atkurti | – | ✓ (savo padalinio) | ✓ (visų) | ✓ |
+| Ištrinti visam laikui | – | – | – | ✓ |
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 

@@ -116,18 +116,18 @@ Pažymėjęs kelias naujienas varnelėmis, viršutinėje juostoje gali atlikti g
 
 - **Perkėlimas į šiukšlinę:** veiksmų meniu pasirink **Ištrinti**. Naujiena paslepiama iš viešos svetainės.
 - **Atkūrimas:** šiukšlinės rodinyje pasirink **Atkurti**.
-- **Ištrinti visam laikui:** pašalina įrašą ir jo turinio blokus negrįžtamai.
+- **Ištrinti visam laikui:** pašalina įrašą ir jo turinio blokus negrįžtamai (veiksmas prieinamas superadministratoriui).
 
 ## Kas ką gali {#teises}
 
-| Veiksmas | Narys be rolės | Komunikacijos koordinatorius | Centrinio biuro komunikacijos koordinatorius |
-|---|---|---|---|
-| Matyti naujienų sąrašą | – | ✓ (savo padalinio) | ✓ (visus padalinius) |
-| Kurti naujienas | – | ✓ (savo padaliniui) | ✓ (visiems) |
-| Redaguoti, dubliuoti, skelbti | – | ✓ (savo padalinio) | ✓ (visų) |
-| Susieti kalbų versijas | – | ✓ (jei gali redaguoti abu įrašus) | ✓ |
-| Trinti į šiukšlinę / atkurti | – | ✓ (savo padalinio) | ✓ (visų) |
-| Ištrinti visam laikui | – | ✓ (savo padalinio) | ✓ (visų) |
+| Veiksmas | Narys be rolės | Komunikacijos koordinatorius | Centrinio biuro komunikacijos koordinatorius | Superadministratorius |
+|---|---|---|---|---|
+| Matyti naujienų sąrašą | – | ✓ (savo padalinio) | ✓ (visus padalinius) | ✓ |
+| Kurti naujienas | – | ✓ (savo padaliniui) | ✓ (visiems) | ✓ |
+| Redaguoti, dubliuoti, skelbti | – | ✓ (savo padalinio) | ✓ (visų) | ✓ |
+| Susieti kalbų versijas | – | ✓ (jei gali redaguoti abu įrašus) | ✓ | ✓ |
+| Trinti į šiukšlinę / atkurti | – | ✓ (savo padalinio) | ✓ (visų) | ✓ |
+| Ištrinti visam laikui | – | – | – | ✓ |
 
 ::: info Kalbų versijų redagavimas
 Susiedamas kalbų versijas turi turėti teisę redaguoti abu susiejamus įrašus ir kitus įrašus, kurių ryšys būtų pakeistas.

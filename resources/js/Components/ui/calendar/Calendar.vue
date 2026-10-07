@@ -94,7 +94,7 @@ interface CalendarPropsExtended extends CalendarRootProps {
 const props = withDefaults(defineProps<CalendarPropsExtended>(), {
   class: undefined,
   yearRange: () => [1989, new Date().getFullYear() + 1],
-  // Lithuanian weeks start on Monday (.ai/rules/single-select.md); reka defaults to Sunday.
+  // Lithuanian weeks start on Monday (.ai/rules/pickers.md); reka defaults to Sunday.
   weekStartsOn: 1,
 });
 const emits = defineEmits<CalendarRootEmits>();

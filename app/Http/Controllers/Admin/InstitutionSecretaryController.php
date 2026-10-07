@@ -113,7 +113,7 @@ class InstitutionSecretaryController extends AdminController
      * Rows are written through the model rather than `secretaries()->sync()`:
      * BelongsToMany attach/detach go through the raw query builder, so no model events
      * fire and InstitutionSecretary's access-cache invalidation would be skipped.
-     * Same trap as the dutiables pivot — see .ai/rules/system.md.
+     * Same trap as the dutiables pivot — see .ai/rules/app.md.
      */
     public function update(UpdateInstitutionSecretariesRequest $request, Institution $institution): RedirectResponse
     {

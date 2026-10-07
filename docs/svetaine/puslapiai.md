@@ -137,18 +137,19 @@ Sąraše pažymėjęs kelis puslapius varnelėmis, viršutinėje veiksmų juosto
 
 - **Perkėlimas į šiukšlinę:** puslapio meniu pasirink **Ištrinti**.
 - **Šiukšlinės peržiūra ir atkūrimas:** šiukšlinės rodinyje spausk **Atkurti**. Puslapis vėl atsiranda aktyvių puslapių sąraše.
-- **Ištrinti visam laikui:** galutinai pašalina įrašą ir jo turinio blokus.
+- **Ištrinti visam laikui:** galutinai pašalina įrašą ir jo turinio blokus (veiksmas prieinamas superadministratoriui).
 
 ## Kas ką gali {#teises}
 
-| Veiksmas | Narys be rolės | Padalinio puslapių redaktorius | Komunikacijos koordinatorius | Centrinio biuro komunikacijos koordinatorius |
-|---|---|---|---|---|
-| Matyti sąrašą | – | ✓ (savo padalinio) | ✓ (savo padalinio) | ✓ (visus) |
-| Redaguoti esamus puslapius | – | ✓ (savo padalinio) | ✓ (savo padalinio) | ✓ (visus) |
-| Kurti naujus puslapius | – | – | ✓ (savo padaliniui) | ✓ (visiems) |
-| Trinti puslapius į šiukšlinę | – | – | ✓ (savo padalinio) | ✓ (visus) |
-| Keisti tėvinį puslapį / struktūrą | – | – | ✓ (savo padalinio) | ✓ (visų) |
-| Atkurti / trinti visam laikui | – | – | ✓ (savo padalinio) | ✓ (visų) |
+| Veiksmas | Narys be rolės | Padalinio puslapių redaktorius | Komunikacijos koordinatorius | Centrinio biuro komunikacijos koordinatorius | Superadministratorius |
+|---|---|---|---|---|---|
+| Matyti sąrašą | – | ✓ (savo padalinio) | ✓ (savo padalinio) | ✓ (visus) | ✓ |
+| Redaguoti esamus puslapius | – | ✓ (savo padalinio) | ✓ (savo padalinio) | ✓ (visus) | ✓ |
+| Kurti naujus puslapius | – | – | ✓ (savo padaliniui) | ✓ (visiems) | ✓ |
+| Trinti puslapius į šiukšlinę | – | – | ✓ (savo padalinio) | ✓ (visus) | ✓ |
+| Keisti tėvinį puslapį / struktūrą | – | – | ✓ (savo padalinio) | ✓ (visų) | ✓ |
+| Atkurti iš šiukšlinės | – | – | ✓ (savo padalinio) | ✓ (visų) | ✓ |
+| Ištrinti visam laikui | – | – | – | – | ✓ |
 
 ::: tip Redaktoriaus rolė
 Rolė **Padalinio puslapių redaktorius** skirta komandos nariams ar koordinatoriams, kurie pildo ar atnaujina esamų padalinio puslapių tekstus (pvz., kontaktus ar programų aprašus), tačiau patys nekuria naujų skilčių ir nekeičia svetainės medžio struktūros.

@@ -466,7 +466,7 @@ function render() {
     })
     .on('dblclick', (event: MouseEvent, d) => {
       event.stopPropagation();
-      const routeName = mode.value === 'types' ? 'types.edit' : 'institutions.edit';
+      const routeName = mode.value === 'types' ? 'institutionTypes.edit' : 'institutions.edit';
       window.open(route(routeName, d.id), '_blank');
     });
 
