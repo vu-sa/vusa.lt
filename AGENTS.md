@@ -21,12 +21,12 @@ boxes, at working density. Every screen answers *what needs me?* before *where c
 2. **One catalog** (`AdminNavigationCatalog`) feeds every menu; the palette accelerates but never hides.
 3. **Seven page types** — Overview, Collection, Record, Form, Sheet form, Guided flow, Workbench; one canonical page per record.
 4. **Forms edit attributes; relations live on the record.** One create door: **+ Sukurti** → ActionWindow.
-5. **Budgets** — one brand fill per region; uppercase only for primary creation buttons, section titles, form labels, eyebrows, tabs, headlines, and content publishing options (`contentStatuses` / `bannerStatuses`) — every other button, row action, tag, chip (including quick filters and literal resource names) and status badge is sentence case (`voice="sentence"`); status colours are never brand. Pradžia follows the scoped typography exception in `.ai/rules/components-home.md`.
+5. **Budgets** — one brand fill per region; uppercase only for primary creation buttons, section titles, form labels, eyebrows, tabs, headlines, and content publishing options (`contentStatuses` / `bannerStatuses`) — every other button, row action, tag, chip (including quick filters and literal resource names) and status badge is sentence case (`voice="sentence"`); status colours are never brand. Pradžia follows the scoped typography exception in `.ai/rules/admin-home.md`.
 6. **Phone and tablet are first-class** (390 · 820 · 1180 · 1440, 44px touch, nothing hover-only).
 7. **Speak like a colleague** — *tu*, verbs on buttons, one glossary. The benchmark is a rep finishing an emailed task on a phone in five minutes.
 
 The rules live in `.ai/rules`: `js-pages-admin.md` (page types, anatomy, visual, migrate-on-touch),
-`admin-forms.md`, `single-select.md` (pickers), `css.md` (colour system), `constants.md` (statuses,
+`admin-forms.md`, `pickers.md`, `css.md` (colour system), `constants.md` (statuses,
 entity types), `shell.md` (navigation), `lang.md` (glossary), `notifications.md`, `home.md` (reps).
 The reasoning behind them is in git history: `git log -- .ai/redesign/admin`. Code comments that cite
 a decision ID (D1–D13, O1–O26, U1–U26, R-a…R-h) or a redesign PR number (e.g. "PR 5.5") refer to
@@ -74,6 +74,8 @@ All Laravel-related commands MUST run through Sail:
 ./vendor/bin/sail npm run test         # frontend (Vitest)
 ./vendor/bin/sail npm run storybook
 ```
+
+A transient Sail failure is not a blocker: retry the command and run `./vendor/bin/sail ps` before reporting Docker or Podman unavailable.
 
 **Exception — Claude Code on the web** (`CLAUDE_CODE_REMOTE=true`): Docker images can't be pulled there, so Sail never runs. `.claude/hooks/session-start.sh` installs dependencies natively and writes a SQLite `.env`; drop the `./vendor/bin/sail` prefix (`php artisan test --parallel --compact`, `npm run test`, `vendor/bin/pint --dirty`). MariaDB, Typesense, Reverb and Mailpit are unavailable, so verify with tests, not a running site; tests that opt into real Typesense (`usesTypesense()`) fail with `ConnectException` there — run those in CI.
 

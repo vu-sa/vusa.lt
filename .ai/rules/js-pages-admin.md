@@ -37,10 +37,7 @@ Pages still on `AdminContentPage`, `PageContent` or `FormUpsertLayout` (`UpsertM
 - check 390/820/1180/1440 light + dark, touch and keyboard
 - test the changed contracts (gates, redirects, deferred props)
 - retire stale tours and docs
-Then add the path to `MIGRATED_ADMIN_PATHS` in `eslint.config.mjs`; the `admin-redesign/no-legacy-utility` error rule applies there. Code kept only for backward compatibility carries `@deprecated` naming its replacement. When no `Pages/Admin` file imports `ui/card` any more, turn that restriction from warn into error and fence all of `Pages/Admin/**`.
-
-## Pradžia typography exception
-The general uppercase button and sentence-case section-heading defaults do not apply to Pradžia. For ShowAdminHome.vue and Components/Home/**, follow the scoped Pradžia home hierarchy rule: sentence-case quick-action buttons and icon-led tracked uppercase section headings.
+Then add the path to `MIGRATED_ADMIN_PATHS` in `eslint.config.mjs`; the `admin-redesign/no-legacy-utility` error rule applies there. Code kept only for backward compatibility carries `@deprecated` naming its replacement.
 
 ## Scroll regions and navigation scroll
 The admin shell uses an inner scroll container (`div[data-slot="admin-scroll-area"]`) with the `scroll-region` attribute. Inertia resets scroll to top (`(0, 0)`) by default on all page visits (`<Link>`, `router.visit`).

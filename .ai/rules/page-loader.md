@@ -1,9 +1,12 @@
 ---
 paths:
-  - 'resources/css/components/turtle-loader.css,resources/views/turtle-loader.blade.php,resources/js/admin.ts,resources/js/public.ts'
+  - 'resources/css/components/turtle-loader.css'
+  - 'resources/views/turtle-loader.blade.php'
+  - 'resources/js/admin.ts'
+  - 'resources/js/public.ts'
 ---
 
-# Js Js
+# Page loader
 
 ## Page-transition loader hangs off Inertia's `nprogress-busy` class
 The corner spinner is our own turtle (resources/views/turtle-loader.blade.php + resources/css/components/turtle-loader.css), not NProgress's — `showSpinner: false` in admin.ts and public.ts drops the default one.

@@ -1,9 +1,14 @@
 ---
 paths:
-  - 'resources/js/Components/AdminForms/**,resources/js/Components/RichContent/**,resources/js/Features/Admin/AdminSearch/**,resources/js/Components/ui/single-select/**'
+  - 'resources/js/Components/AdminForms/**'
+  - 'resources/js/Components/RichContent/**'
+  - 'resources/js/Features/Admin/AdminSearch/**'
+  - 'resources/js/Components/ui/single-select/**'
+  - 'resources/js/Pages/Admin/**'
+  - 'resources/js/Components/**/Forms/**'
 ---
 
-# Single Select
+# Pickers
 
 ## Which picker to reach for (NativeSelect vs FormSegmentedControl vs SingleSelect vs CollectionSelectDialog)
 Pick by option count, plain-text vs rich formatting, and whether records are search-indexed:
@@ -32,6 +37,6 @@ For multi-tagging and topic assignment, use `TagMultiSelect.vue` with polymorphi
 Extends the picker rules above.
 - Dates, times and ranges use the shared pickers. They go native (`<input type="date|time">`) on coarse pointers via `useCoarsePointer`; on desktop, typing always works alongside the calendar. A moment (date + time: publish time, reservation start/end) is one `DateTimePicker` with `variant="popover"` — calendar, time and „Dabar“ in one trigger, as in `ContentPublishPanel`; a date alone uses `DatePicker`, a time alone `TimePicker`. Calendars start on Monday (the `ui/calendar` and `ui/range-calendar` default).
 - Meeting dates near today offer preset chips first (Šiandien · Vakar · Kita data…), as in the ActionWindow `MeetingWhenScreen`. Reservation periods do not.
-- By option count: 2–5 → `FormSegmentedControl` or `ToggleGroup`/radio; 6–16 plain text (or resting icon) → `NativeSelect`; options with rich descriptions/preview in dropdown → `VisualOptionSelect` or shadcn `Select`; 17+ → `SingleSelect`; indexed records → `CollectionSelectDialog`; several of many → `MultiSelect` chips; tags → `TagMultiSelect`.
+- Several of many → `MultiSelect` chips; tags → `TagMultiSelect`.
 - One picker per data kind, so never a second date picker. The trigger shows readable text plus context, never an id. Optional fields get "Išvalyti". Lithuanian locale: Monday first, 24h.
 - No dialog inside a dialog: on mobile, a picker opened from a sheet replaces the sheet's content, with a back action.

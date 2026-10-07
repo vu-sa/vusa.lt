@@ -12,8 +12,7 @@ empty by design). `app/Http/Controllers/CLAUDE.md` used to say Form Requests wer
 validation" only — that is no longer true for any mutating route.
 
 Inline validation is what let rules drift from what the controller actually wrote: `QuickLink`
-persisted `lang`/`icon`/`is_important` with no rule, `Relationship` persisted `description` with
-no rule, `Banner` persisted `link_url`/`is_active` with no rule. When you add a Form Request,
+persisted `lang`/`icon`/`is_important` with no rule, `Banner` persisted `link_url`/`is_active` with no rule. When you add a Form Request,
 check what the controller *persists*, not just what it previously validated.
 
 Naming and layout follow what is already there: `Store*`/`Update*`/`Index*` flat in

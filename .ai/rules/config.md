@@ -1,6 +1,6 @@
 ---
 paths:
-  - config/vusa.php
+  - 'config/vusa.php'
 ---
 
 # Config

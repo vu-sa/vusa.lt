@@ -12,7 +12,7 @@ Use the shared factory plus per-test state instead:
   vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
   vi.mocked(usePage).mockReturnValue(createMockPage({ app: { locale: 'lt' } }));
 
-Why: bespoke factories are the only thing blocking `isolate: false` in vitest.config.ts, which measured ~9s vs ~41s for the suite under the old `forks` pool (now ~13s under `vmThreads`, so the remaining gain is smaller). With a shared module registry each module binds to whichever factory reached it first, so failures move around with --maxWorkers and CI disagrees with a laptop. 73 of 227 spec files currently mock a module another file also mocks (43 of them `@inertiajs/vue3`); converting them is the unlock.
+Why: bespoke factories are the only thing blocking `isolate: false` in vitest.config.ts, which measured ~9s vs ~41s for the suite under the old `forks` pool (now ~13s under `vmThreads`, so the remaining gain is smaller). With a shared module registry each module binds to whichever factory reached it first, so failures move around with --maxWorkers and CI disagrees with a laptop. Converting the files that still mock a module another file also mocks (most often `@inertiajs/vue3`) is the unlock.
 
 ## Specs must run under pool: 'vmThreads'
 The unit/component projects run with `pool: 'vmThreads'`: each file gets its own VM context over the real jsdom window, not Node's global with jsdom copied onto it.

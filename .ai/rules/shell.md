@@ -1,6 +1,7 @@
 ---
 paths:
-  - 'app/Services/AdminNavigation/**,resources/js/Components/Layouts/Shell/**'
+  - 'app/Services/AdminNavigation/**'
+  - 'resources/js/Components/Layouts/Shell/**'
 ---
 
 # Shell

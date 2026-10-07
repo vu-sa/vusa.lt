@@ -1,6 +1,8 @@
 ---
 paths:
-  - 'resources/js/Pages/Admin/Representation/**,resources/js/Pages/Admin/Dashboard/**,resources/js/Components/Home/**'
+  - 'resources/js/Pages/Admin/Representation/**'
+  - 'resources/js/Pages/Admin/Dashboard/**'
+  - 'resources/js/Components/Home/**'
 ---
 
 # Home

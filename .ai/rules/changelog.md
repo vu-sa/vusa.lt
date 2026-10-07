@@ -1,6 +1,7 @@
 ---
 paths:
-  - 'docs/changelog/**,docs/en/changelog/**'
+  - 'docs/changelog/**'
+  - 'docs/en/changelog/**'
 ---
 
 # Changelog

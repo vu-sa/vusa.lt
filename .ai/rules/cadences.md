@@ -1,12 +1,18 @@
 ---
 paths:
-  - 'app/Models/Cadence.php,app/Policies/CadencePolicy.php,app/Actions/Cadences/**,app/Http/Requests/Cadences/**,resources/js/Components/Cadences/**'
+  - 'app/Models/Cadence.php'
+  - 'app/Policies/CadencePolicy.php'
+  - 'app/Actions/Cadences/**'
+  - 'app/Http/Requests/Cadences/**'
+  - 'resources/js/Components/Cadences/**'
+  - 'app/Http/Requests/UpdateInstitutionAdministratorsRequest.php'
+  - 'app/Actions/ResolveCadence*.php'
 ---
 
 # Cadences
 
 ## Cadences are plain date ranges owned by their institution
-A cadence is `(institution_id, start_date, end_date)` plus, optionally, the meetings those dates were taken from (see below). `institution_id` NULL is the global ladder; a non-null row is an override, and an institution holding even one stops using the global ladder entirely (ResolveCadenceForDuty::pick, AnalyzeDutiableTimeline::applicable, PlanDutiableTimelineChanges::applicable all repeat this rule — change all three together).
+A cadence is `(institution_id, start_date, end_date)` plus, optionally, the meetings those dates were taken from (see below). `institution_id` NULL is the global ladder; a non-null row is an override, and an institution holding even one stops using the global ladder entirely (ResolveCadenceForDuty::pick, AnalyzeDutiableTimeline::applicable, PlanDutiableTimelineChanges::applicable and ResolveCadenceForInstitution all repeat this rule — change all four together; the last one differs, see below).
 
 Do not reintroduce a `label` column: the display name is derived from the start/end years (`Cadence::getLabelAttribute()`), so it can never drift from the dates. Uniqueness is `(institution_id, start_date)`, and MySQL treats NULLs as distinct, so CadenceRequest carries the `whereNull('institution_id')` rule the index cannot express.
 
@@ -22,3 +28,8 @@ The meeting owns the date, the cadence follows: `CadenceRequest::prepareForValid
 Any meeting may be an anchor — a faculty term routinely opens at the tenant conference, which is another body's sitting — but only one the editor may already see: `CadenceRequest::anchorMeeting()` resolves the id through `MeetingPolicy::view` before either `prepareForValidation()` or the rules touch it, never by a bare `exists`. The picker matches that on the client by dropping its `institution_ids` filter: the admin meetings search is already limited to the user's own scope by its Typesense scoped key. The global ladder (`institution_id` null) belongs to no institution and therefore anchors to nothing.
 
 The anchor payload carries the sitting's own `institution_id`/`institution_name` so `CadenceList` and `CadenceRowForm` can name it when it is not the term owner's own — an unlabelled foreign date is the confusing case, not the labelled one.
+
+## ResolveCadenceForInstitution resolves strictly; a cadence id from a payload is an IDOR
+`ResolveCadenceForInstitution` differs deliberately from the other three sites in one way: it resolves **strictly by containment**, with no fall-forward to the next/latest term. Anything hanging off a cadence (administrators, and whatever follows) must not apply to a meeting held years before the term existed — the null is what makes historical meetings fall back to the members active then.
+
+A `cadence_id` arriving in a request payload must resolve *through* the institution — its own overrides when it has any, otherwise only global rows. A bare `exists:cadences,id` lets a crafted payload attach against another body's term. `UpdateInstitutionAdministratorsRequest::applicableCadenceRule()` is the precedent, same shape as `CadenceRequest::anchorMeeting()` resolving an anchor through `MeetingPolicy::view`.

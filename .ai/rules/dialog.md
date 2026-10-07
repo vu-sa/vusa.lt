@@ -1,6 +1,7 @@
 ---
 paths:
-  - 'resources/js/Components/ui/alert-dialog/**,resources/js/Components/ui/dialog/**'
+  - 'resources/js/Components/ui/alert-dialog/**'
+  - 'resources/js/Components/ui/dialog/**'
 ---
 
 # Dialog

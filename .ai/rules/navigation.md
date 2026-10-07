@@ -1,9 +1,12 @@
 ---
 paths:
-  - 'app/Services/NavigationService.php,app/Http/Requests/NavigationRequest.php,app/Http/Controllers/Admin/NavigationController.php,app/Models/Navigation.php'
+  - 'app/Services/NavigationService.php'
+  - 'app/Http/Requests/NavigationRequest.php'
+  - 'app/Http/Controllers/Admin/NavigationController.php'
+  - 'app/Models/Navigation.php'
 ---
 
-# Admin Models
+# Navigation
 
 ## Footer navigation lives in the same `navigation` table as the header, tagged by `extra_attributes.location`
 The public footer's nav columns are ordinary `Navigation` rows, not a separate model. A root (`parent_id = 0`) with `extra_attributes.location === 'footer'` is a footer column (always `type: category-link`, URL optional — empty/`#` renders as plain text, not a link); its children (always `type: link`) are the column's simple links. Missing `location` means `'header'` (backward compat with every pre-existing row).
