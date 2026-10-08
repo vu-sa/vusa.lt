@@ -8,7 +8,7 @@ export const calendarTemplate: Omit<App.Entities.Calendar, 'created_at' | 'updat
   organizer: { lt: '', en: '' },
   cto_url: { lt: '', en: '' },
   tenant_id: null,
-  main_image: null,
+  main_image_media: null,
   images: [],
   event_type_id: null,
   facebook_url: '',
@@ -70,8 +70,7 @@ export const newsTemplate = {
   // that mismatch used to backdate every new, untouched publish_time by ~3 hours.
   publish_time: new Date().toISOString(),
   draft: false,
-  image: null,
-  image_author: null,
+  image_media: null,
   tags: [],
   highlights: [],
 };
@@ -94,7 +93,7 @@ export const pageTemplate = {
   },
   highlights: [],
   layout: 'default' as const,
-  featured_image: null,
+  featured_image_media: null,
   meta_description: '',
   publish_time: null,
 };

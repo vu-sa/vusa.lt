@@ -27,7 +27,6 @@ class StoreNewsRequest extends NewsRequest
     public function rules(): array
     {
         return array_merge(parent::rules(), [
-            'image' => 'nullable|string',
             'short' => 'required|string',
             'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope('news.create.padalinys')],
         ]);

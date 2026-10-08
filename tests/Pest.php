@@ -11,15 +11,19 @@
 |
 */
 
+use App\Actions\Media\AddImageMedia;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\PendingUpload;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Providers\TestingServiceProvider;
 use Illuminate\Foundation\Vite;
+use Illuminate\Http\UploadedFile;
 use Pest\Browser\Api\AwaitableWebpage;
 use Pest\Browser\Api\PendingAwaitablePage;
 use Pest\Browser\Playwright\Page as PlaywrightPage;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Tests\TestCase;
 use Typesense\Client;
 
@@ -584,6 +588,16 @@ function usesTypesenseInBrowser(): void
     ]);
 
     test()->beforeApplicationDestroyed(fn () => $keys[$key['id']]->delete());
+}
+
+/**
+ * An image the user uploaded from a form but has not saved yet. Fake the media disk first.
+ */
+function stageImage(User $user, string $name = 'photo.png'): Media
+{
+    $upload = PendingUpload::create(['user_id' => $user->id]);
+
+    return app(AddImageMedia::class)->execute($upload, UploadedFile::fake()->image($name, 800, 400), PendingUpload::COLLECTION);
 }
 
 function makeUser(Tenant $tenant): User

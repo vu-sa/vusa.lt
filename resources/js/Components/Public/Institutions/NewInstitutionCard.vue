@@ -8,7 +8,9 @@
     <div class="flex flex-1 flex-col">
       <div class="relative">
         <MediaFrame
+          :image="institution.image_media"
           :src="institution.image_url ?? undefined"
+          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           :alt="String(institution.name || '')"
           :focal-point="institution.image_focal_point"
           :grayscale="false"
@@ -116,6 +118,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { TenantType } from '@/Types/enums';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { MediaFrame, TagChip } from '@/Components/Public/Base';
+import type { ImageData } from '@/Types/media';
 import { unwrapLinks } from '@/Utils/String';
 import IFluentArrowUpRight16Regular from '~icons/fluent/arrow-up-right-16-regular';
 import IFluentBuilding24Regular from '~icons/fluent/building-24-regular';
@@ -134,6 +137,7 @@ interface InstitutionData {
   phone?: string | null;
   website?: string | null;
   image_url?: string | null;
+  image_media?: ImageData | null;
   image_focal_point?: string | null;
   logo_url?: string | null;
   facebook_url?: string | null;

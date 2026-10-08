@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Contracts\ImageMediaOwner;
 use App\Enums\CalendarHeroStyleEnum;
+use App\Models\Traits\HasImageMedia;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\ContentResolution\ContentPartResolver;
@@ -10,6 +12,7 @@ use App\Services\IcalendarService;
 use App\Services\PublicUrlService;
 use App\Services\Typesense\SearchText;
 use App\Support\LocalizedRouteSlugs;
+use App\Support\Media\ImageData;
 use Datetime;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Guarded;
@@ -28,8 +31,6 @@ use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\CalendarLinks\Link;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\SchemaOrg\Event;
@@ -89,12 +90,12 @@ use Spatie\SchemaOrg\Place;
  *
  * @mixin \Eloquent
  */
-#[Appends(['main_image_url'])]
+#[Appends(['main_image_url', 'main_image_media'])]
 #[Guarded(['id', 'created_at', 'updated_at'])]
 #[Table(name: 'calendar')]
-class Calendar extends Model implements HasMedia
+class Calendar extends Model implements ImageMediaOwner
 {
-    use HasFactory, HasTranslations, InteractsWithMedia, LogsModelActivity, Searchable, SoftDeletes;
+    use HasFactory, HasImageMedia, HasTranslations, LogsModelActivity, Searchable, SoftDeletes;
 
     /**
      * Widest date range one calendar query may span — shared by
@@ -190,6 +191,39 @@ class Calendar extends Model implements HasMedia
             $firstMedia = $this->getFirstMedia('images');
 
             return $firstMedia?->getUrl();
+        });
+    }
+
+    /**
+     * The main image, or the first gallery image when there is none, as ImageData.
+     */
+    protected function mainImageMedia(): Attribute
+    {
+        return Attribute::make(get: function (): ?array {
+            $media = $this->getFirstMedia('main_image') ?? $this->getFirstMedia('images');
+
+            return $media !== null ? ImageData::fromMedia($media) : null;
+        });
+    }
+
+    /**
+     * The focal point lives on the main image. Events whose main image predates that still have
+     * it in the column until AlignExistingMediaJob copies it over.
+     *
+     * Transitional(legacy-images): read only the media property once the column is dropped.
+     */
+    protected function mainImageFocalPoint(): Attribute
+    {
+        return Attribute::make(get: function (?string $value): ?string {
+            $media = $this->getFirstMedia('main_image');
+
+            if ($media === null || ! $media->hasCustomProperty('focal_point')) {
+                return $value;
+            }
+
+            $property = $media->getCustomProperty('focal_point');
+
+            return is_string($property) && $property !== '' ? $property : null;
         });
     }
 
@@ -324,30 +358,13 @@ class Calendar extends Model implements HasMedia
 
     public function registerMediaCollections(): void
     {
-        $this
-            ->addMediaCollection('main_image')
-            ->singleFile()
-            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/webp'])
-            ->useDisk('spatieMediaLibrary')
-            ->withResponsiveImages();
-
-        $this
-            ->addMediaCollection('images')
-            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/webp'])
-            ->useDisk('spatieMediaLibrary')
-            ->withResponsiveImages();
+        $this->registerImageCollection('main_image');
+        $this->registerImageCollection('images', single: false);
     }
 
-    /**
-     * Register media conversions for WebP optimization.
-     */
-    public function registerMediaConversions(?Media $media = null): void
+    public function afterImageMediaChanged(string $collection): void
     {
-        $this->addMediaConversion('webp')
-            ->format('webp')
-            ->quality(80)
-            ->performOnCollections('main_image', 'images') /** @phpstan-ignore method.notFound */
-            ->nonQueued(); // Run synchronously for immediate availability
+        $this->touch();
     }
 
     protected function makeAllSearchableUsing(Builder $query): Builder

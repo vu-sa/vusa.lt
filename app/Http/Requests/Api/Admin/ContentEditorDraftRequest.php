@@ -35,8 +35,9 @@ class ContentEditorDraftRequest extends FormRequest
         $rules = ['revision' => ['required', 'integer', 'min:0']];
 
         if ($this->isMethod('PUT')) {
+            // Transitional(legacy-images): drop featured_image, image and image_author once drafts saved before media are pruned.
             $rules += [
-                'snapshot' => ['required', 'array:id,title,permalink,lang,tenant_id,parent_id,is_active,layout,show_table_of_contents,show_title,show_breadcrumbs,highlights,featured_image,meta_description,draft,publish_time,short,image,image_author,tags,other_lang_id,pairing_confirmation,content_version,content'],
+                'snapshot' => ['required', 'array:id,title,permalink,lang,tenant_id,parent_id,is_active,layout,show_table_of_contents,show_title,show_breadcrumbs,highlights,featured_image,featured_image_media,meta_description,draft,publish_time,short,image,image_author,image_media,tags,other_lang_id,pairing_confirmation,content_version,content'],
                 'snapshot.content' => ['nullable', 'array'],
                 'snapshot.content.parts' => ['nullable', 'array', 'max:100'],
                 'snapshot.content_version' => ['nullable', 'string', 'max:64'],

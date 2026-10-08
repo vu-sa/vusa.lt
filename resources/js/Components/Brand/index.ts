@@ -11,5 +11,6 @@ export { default as EyebrowLabel } from './EyebrowLabel.vue';
 export { default as TagChip } from './TagChip.vue';
 export { tagChipVariants, type TagChipVariants } from './tagChip';
 export { default as MediaFrame } from './MediaFrame.vue';
+export { default as MediaImage } from './MediaImage.vue';
 export { default as RuledGrid } from './RuledGrid.vue';
 export type { RuledGridColumns } from './RuledGrid.vue';

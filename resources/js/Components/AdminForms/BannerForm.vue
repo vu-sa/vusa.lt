@@ -64,18 +64,16 @@
       </FormFieldWrapper>
 
       <FormFieldWrapper
-        id="image_url"
+        id="image_media"
         :label="$t('forms.fields.banner_logo')"
         :hint="$t('forms.fields.banner_logo_help')"
-        :error="form.errors.image_url"
+        :error="form.errors['image_media.id']"
       >
         <ImageUpload
-          v-model:url="form.image_url"
-          mode="immediate"
-          folder="banners"
+          v-model:image="form.image_media"
+          mode="media"
           cropper
           full-width
-          :existing-url="typeof banner?.image_url === 'string' ? banner.image_url : undefined"
         />
       </FormFieldWrapper>
     </div>
@@ -145,11 +143,13 @@ const emit = defineEmits<{
 const isCreate = computed(() => !props.banner?.id || props.rememberKey === 'CreateBanner');
 const isDeleteDialogOpen = ref(false);
 
-const form = props.rememberKey
-  ? useForm(props.rememberKey, props.banner as Record<string, unknown>)
-  : useForm(props.banner as Record<string, unknown>);
+const initial = { image_media: null, ...props.banner } as Record<string, unknown>;
 
-const fieldIds = ['title', 'link_url', 'is_active', 'image_url'];
+const form = props.rememberKey
+  ? useForm(props.rememberKey, initial)
+  : useForm(initial);
+
+const fieldIds = ['title', 'link_url', 'is_active', 'image_media'];
 
 const barTitle = computed(() =>
   isCreate.value ? $t('Naujas baneris') : (props.banner.title?.trim() || $t('Baneris')),

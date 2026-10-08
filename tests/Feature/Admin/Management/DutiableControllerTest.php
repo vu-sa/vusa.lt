@@ -9,6 +9,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 pest()->use(RefreshDatabase::class);
@@ -216,12 +217,33 @@ describe('other assignment fields', function (): void {
             ->and($this->dutiable->getTranslation('description', 'lt'))->toContain('Atsakingas už komunikaciją');
     });
 
-    test('duty manager can set additional_photo', function (): void {
+    test('duty manager can set the assignment photo from an upload they staged', function (): void {
+        Storage::fake('spatieMediaLibrary');
+        $staged = stageImage($this->dutyManager);
+
         asUser($this->dutyManager)->patch(route('dutiables.update', $this->dutiable), [
-            'additional_photo' => 'contacts/photo.jpg',
+            'photo_media' => ['id' => $staged->id],
         ])->assertRedirect();
 
-        expect($this->dutiable->refresh()->additional_photo)->toBe('contacts/photo.jpg');
+        $this->dutiable->refresh();
+
+        expect($this->dutiable->getFirstMedia('photo')->id)->toBe($staged->id)
+            ->and($this->dutiable->additional_photo)->toContain("/{$staged->id}/");
+    });
+
+    test('keeping the photo without its id only updates the focal point', function (): void {
+        Storage::fake('spatieMediaLibrary');
+        $staged = stageImage($this->dutyManager);
+        asUser($this->dutyManager)->patch(route('dutiables.update', $this->dutiable), ['photo_media' => ['id' => $staged->id]]);
+
+        asUser($this->dutyManager)->patch(route('dutiables.update', $this->dutiable), [
+            'photo_media' => ['id' => null, 'focal_point' => '40% 10%'],
+        ])->assertRedirect();
+
+        $this->dutiable->refresh();
+
+        expect($this->dutiable->getFirstMedia('photo')->id)->toBe($staged->id)
+            ->and($this->dutiable->additional_photo_focal_point)->toBe('40% 10%');
     });
 
     test('duty manager can toggle use_original_duty_name', function (): void {

@@ -24,11 +24,14 @@ class NewsCollection extends Collection
      *     short: string,
      *     publish_time: Carbon|null,
      *     permalink: string|null,
-     *     image: string|null
+     *     image: string|null,
+     *     image_media: array<string, mixed>|null
      * }>
      */
     public function toPublicArray(): array
     {
+        $this->loadMissing('media');
+
         return $this->map(fn (News $item) => [
             'id' => $item->id,
             'title' => $item->title,
@@ -37,6 +40,7 @@ class NewsCollection extends Collection
             'publish_time' => $item->publish_time,
             'permalink' => $item->permalink,
             'image' => $item->getImageUrl(),
+            'image_media' => $item->imageData('image'),
         ])->values()->all();
     }
 
@@ -45,6 +49,7 @@ class NewsCollection extends Collection
      */
     public function getFirstImageUrl(): ?string
     {
+        $this->loadMissing('media');
         $first = $this->first();
 
         return $first?->getImageUrl();

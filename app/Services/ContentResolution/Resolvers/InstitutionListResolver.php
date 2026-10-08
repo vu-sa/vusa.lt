@@ -46,6 +46,7 @@ final class InstitutionListResolver implements ResolvesContentPart
             ->with([
                 'tenant:id,shortname,alias,type',
                 'types:id,slug,title',
+                'media',
             ]);
 
         if (is_string($typeSlug) && $typeSlug !== '') {
@@ -86,8 +87,10 @@ final class InstitutionListResolver implements ResolvesContentPart
                 'email' => $institution->email,
                 'phone' => $institution->phone,
                 'website' => $institution->website,
-                'image_url' => $institution->image_url,
-                'logo_url' => $institution->logo_url,
+                'image_url' => $institution->imageData('image')['url'] ?? null,
+                'logo_url' => $institution->imageData('logo')['thumb'] ?? null,
+                'image_media' => $institution->imageData('image'),
+                'logo_media' => $institution->imageData('logo'),
                 'facebook_url' => $institution->facebook_url,
                 'instagram_url' => $institution->instagram_url,
                 'tenant' => $tenant ? [

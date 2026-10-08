@@ -1,12 +1,15 @@
 <?php
 
+use App\Actions\Media\SyncImageMedia;
 use App\Actions\PairTranslatedRecord;
 use App\Models\ContentEditorDraft;
 use App\Models\News;
 use App\Models\Page;
+use App\Models\PendingUpload;
 use App\Models\Tenant;
 use App\Services\ContentEditorService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 
 pest()->use(RefreshDatabase::class);
 
@@ -57,7 +60,6 @@ test('manual saves persist page metadata and refuse stale record versions', func
     $url = route('api.v1.admin.contentEditor.pages.update', $this->page);
     $snapshot['meta_description'] = 'Description';
     $snapshot['highlights'] = ['One'];
-    $snapshot['featured_image'] = '/uploads/cover.jpg';
     $this->actingAs($this->admin)->patchJson($url, $snapshot)->assertOk()->assertJsonPath('data.meta_description', 'Description');
     expect($this->page->fresh()->highlights)->toBe(['One']);
     $snapshot['title'] = 'Stale title';
@@ -178,6 +180,100 @@ test('summary limits count visible unicode characters and preserve unchanged leg
     $snapshot = app(ContentEditorService::class)->snapshot($news->fresh());
     $snapshot['short'] = '<p>'.str_repeat('ą', 200).'&amp;</p>';
     $this->patchJson($url, $snapshot)->assertUnprocessable()->assertJsonValidationErrors('short');
+});
+
+test('a news image saves through the editor and a finished conversion does not read as a conflict', function (): void {
+    Storage::fake('spatieMediaLibrary');
+    $this->freezeSecond();
+    $news = News::factory()->for($this->tenant)->create(['lang' => 'lt', 'image' => null]);
+    $staged = stageImage($this->admin);
+    $snapshot = app(ContentEditorService::class)->snapshot($news->fresh());
+    $snapshot['image_media'] = ['id' => $staged->id, 'author' => 'Jonas Fotografas'];
+    $url = route('api.v1.admin.contentEditor.news.update', $news);
+    $this->travel(5)->seconds();
+
+    $saved = $this->actingAs($this->admin)->patchJson($url, $snapshot)->assertOk()
+        ->assertJsonPath('data.image_media.id', $staged->id)
+        ->assertJsonPath('data.image_media.author', 'Jonas Fotografas')
+        ->assertJsonPath('data.updated_at', now()->toISOString())
+        ->json('data');
+
+    $media = $news->fresh()->getFirstMedia('image');
+    $media->markAsConversionGenerated('thumb');
+    $saved['title'] = 'Pakeista po konversijos';
+
+    $this->patchJson($url, $saved)->assertOk();
+    expect($news->fresh()->title)->toBe('Pakeista po konversijos')
+        ->and($news->fresh()->image_author)->toBe('Jonas Fotografas');
+});
+
+test('image-only saves return the current version for subsequent saves', function (string $kind, string $change): void {
+    Storage::fake('spatieMediaLibrary');
+    $this->freezeSecond();
+    $record = $kind === 'news'
+        ? News::factory()->for($this->tenant)->create(['lang' => 'lt', 'image' => null, 'show_breadcrumbs' => true])
+        : Page::factory()->for($this->tenant)->create(['lang' => 'lt', 'featured_image' => null, 'show_breadcrumbs' => true, 'show_title' => true, 'show_table_of_contents' => true]);
+    $collection = $kind === 'news' ? 'image' : 'featured_image';
+    $field = $collection.'_media';
+
+    if ($change !== 'addition') {
+        $original = stageImage($this->admin);
+        app(SyncImageMedia::class)->execute($record, $collection, ['id' => $original->id], $this->admin);
+    }
+
+    $snapshot = app(ContentEditorService::class)->snapshot($record->fresh());
+    $image = match ($change) {
+        'addition', 'replacement' => ['id' => stageImage($this->admin)->id],
+        'metadata' => [...$snapshot[$field], 'focal_point' => '20% 30%', 'alt' => 'Studentai', 'author' => 'Jonas'],
+        'removal' => null,
+    };
+    $snapshot[$field] = $image;
+    $url = route('api.v1.admin.contentEditor.'.$kind.'.update', $record);
+    $this->travel(5)->seconds();
+
+    $response = $this->actingAs($this->admin)->patchJson($url, $snapshot)->assertOk()
+        ->assertJsonPath('data.updated_at', now()->toISOString())
+        ->assertJsonPath('data.'.$field.'.id', $image['id'] ?? null);
+    $saved = $response->json('data');
+
+    expect($saved['content_version'])->toBe(app(ContentEditorService::class)->snapshot($record->fresh())['content_version']);
+    if ($change === 'metadata') {
+        $response->assertJsonPath('data.'.$field.'.focal_point', '20% 30%')
+            ->assertJsonPath('data.'.$field.'.alt', 'Studentai')
+            ->assertJsonPath('data.'.$field.'.author', 'Jonas');
+    }
+    if ($change === 'removal') {
+        $response->assertJsonPath('data.'.$field, null);
+    }
+
+    $saved = $this->patchJson($url, $saved)->assertOk()->json('data');
+    $record->fresh()->update(['title' => 'Kolegos pakeistas pavadinimas']);
+
+    $this->patchJson($url, $saved)->assertConflict();
+    expect($record->fresh()->title)->toBe('Kolegos pakeistas pavadinimas');
+})->with([
+    'news addition' => ['news', 'addition'],
+    'news replacement' => ['news', 'replacement'],
+    'news metadata' => ['news', 'metadata'],
+    'news removal' => ['news', 'removal'],
+    'page addition' => ['pages', 'addition'],
+    'page replacement' => ['pages', 'replacement'],
+    'page metadata' => ['pages', 'metadata'],
+    'page removal' => ['pages', 'removal'],
+]);
+
+test('a draft keeps the upload it points at from being pruned', function (): void {
+    Storage::fake('spatieMediaLibrary');
+    $staged = stageImage($this->admin);
+    $upload = PendingUpload::query()->sole();
+    $this->travel(PendingUpload::TTL_DAYS + 1)->days();
+
+    $this->actingAs($this->admin)->putJson(editorDraftUrl($this->page), [
+        'revision' => 0,
+        'snapshot' => ['title' => 'Su nuotrauka', 'featured_image_media' => ['id' => $staged->id]],
+    ])->assertOk();
+
+    expect((new PendingUpload)->prunable()->whereKey($upload->id)->exists())->toBeFalse();
 });
 
 test('news publication dates round trip without timezone shifts and reject invalid input', function (): void {

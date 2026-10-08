@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\HasImageValidation;
 use App\Models\User;
 use App\Policies\UserPolicy;
 use App\Rules\SoftDeleteRules;
@@ -12,6 +13,8 @@ use Illuminate\Validation\Validator;
 
 class UpdateUserRequest extends FormRequest
 {
+    use HasImageValidation;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -35,8 +38,7 @@ class UpdateUserRequest extends FormRequest
             'email' => ['required', 'email', UniqueAmongTrashed::of('users', 'email')->ignore($user->id)],
             'facebook_url' => ['nullable', 'url', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
-            'profile_photo_path' => ['nullable', 'string', 'max:255'],
-            'profile_photo_focal_point' => ['nullable', 'string', 'max:20'],
+            ...$this->imageMediaRules('profile_photo_media', $this->route('user') instanceof User ? $this->route('user') : new User, 'profile_photo'),
             'pronouns' => ['nullable', 'array'],
             'pronouns.lt' => ['nullable', 'string', 'max:50'],
             'pronouns.en' => ['nullable', 'string', 'max:50'],

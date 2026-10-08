@@ -2,7 +2,7 @@
 
 namespace App\Actions;
 
-use App\Support\StagingProtection;
+use App\Actions\Media\AddImageMedia;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Spatie\MediaLibrary\HasMedia;
@@ -58,13 +58,7 @@ class HandleModelMediaUploads
             return;
         }
 
-        StagingProtection::ensureFilesAreWritable();
-
-        $file = $request->file($fieldName);
-
-        $model->addMedia($file)
-            ->usingName($file->getClientOriginalName())
-            ->toMediaCollection($collection);
+        app(AddImageMedia::class)->execute($model, $request->file($fieldName), $collection);
     }
 
     /**
@@ -82,8 +76,6 @@ class HandleModelMediaUploads
             return;
         }
 
-        StagingProtection::ensureFilesAreWritable();
-
         // Handle both array of files and array of ['file' => File] structures
         /** @var array<int|string, UploadedFile|array<string, mixed>> $filesArray */
         $filesArray = is_array($files) ? $files : [$files];
@@ -96,10 +88,7 @@ class HandleModelMediaUploads
                 continue;
             }
 
-            $model->addMedia($file)
-                ->usingName($file->getClientOriginalName())
-                ->withCustomProperties(['alt' => ''])
-                ->toMediaCollection($collection);
+            app(AddImageMedia::class)->execute($model, $file, $collection);
         }
     }
 

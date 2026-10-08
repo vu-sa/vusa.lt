@@ -11,6 +11,11 @@ tests:
   - tests/Feature/Services/FileUploadWriterTest.php
   - tests/Feature/Services/FileUsageScannerTest.php
   - tests/Unit/Services/FileReferenceMatcherTest.php
+  - tests/Feature/Api/Admin/PendingUploadApiControllerTest.php
+  - tests/Feature/Actions/Media/SyncImageMediaTest.php
+  - tests/Feature/Console/MediaLegacyFilesCommandTest.php
+  - tests/Feature/Services/Media/LegacyImageBackfillTest.php
+  - tests/Feature/Jobs/Media/AlignExistingMediaJobTest.php
   - resources/js/Features/Admin/FileManager/__tests__/FilePropertiesDrawer.component.test.ts
   - resources/js/Features/Admin/FileManager/__tests__/FileManagerUpload.component.test.ts
   - resources/js/Features/Admin/FileManager/__tests__/FileManagerView.component.test.ts
@@ -39,8 +44,23 @@ Kad skirtingų padalinių failai nesusimaišytų ir nebūtų atsitiktinai perra�
 
 - **Padalinio katalogas:** kiekvienas padalinys turi savo numatytąjį katalogą `padaliniai/{padalinys}` (pvz., `padaliniai/vusapadalinys` arba `padaliniai/vusa-mif`).
 - Padalinio koordinatorius, atvėręs failų naršyklę, iškart mato savo padalinio aplanką ir kuria jame poaplankius (pvz., `dokumentai`, `nuotraukos`, `archyvas`).
-- **Bendrieji aplankai:** formų viršeliams ir baneriams skirtos nuotraukos automatiškai saugomos į bendrus sistemos aplankus (`banners`, `news`, `pages`, `calendar`). Į juos įkelti gali tik turintys teisę kurti failus. Išimtis – narių nuotraukos (`contacts`): savo profilio ar pareigų nuotrauką įkelti gali kiekvienas, kuris gali redaguoti tą formą.
+- **Formų nuotraukos** (naujienų, puslapių, banerių, institucijų, renginių, narių ir pareigybių) failų tvarkyklėje nebesaugomos – jos priklauso pačiam įrašui. Žr. [Formų nuotraukos](#formu-nuotraukos).
 - **Saugūs failų keliai:** įkėlimai ir aplankų veiksmai negali išeiti už leistino aplanko ribų. Keliai, bandantys pasiekti aukštesnį aplanką, atmetami.
+
+### Formų nuotraukos {#formu-nuotraukos}
+
+<ChangelogNote version="v3.0" date="2026-10-02" title="Nuotraukos priklauso įrašui">
+
+Formose įkeltos nuotraukos saugomos prie įrašo, o svetainė kiekvienam ekranui parenka tinkamo dydžio versiją.
+
+</ChangelogNote>
+
+- Nuotrauka formoje įkeliama iš karto, bet įrašui priskiriama tik paspaudus **Išsaugoti**. Neišsaugotos nuotraukos po mėnesio ištrinamos.
+- Priskirti nuotrauką gali tas, kas gali redaguoti įrašą: naujienos nuotrauką – naujienos redaktorius, nario nuotrauką – pats narys arba narius tvarkantis koordinatorius. Kito žmogaus įkeltos, dar neišsaugotos nuotraukos panaudoti negalima.
+- Įkelta nuotrauka sumažinama iki 2400 px ilgesniosios kraštinės ir išsaugoma WebP formatu. Papildomai sukuriamos 400, 900 ir 1600 px pločio versijos – svetainė jas parenka pagal ekraną.
+- Fokuso taškas, nuotraukos autorius ir aprašas saugomi kartu su nuotrauka, todėl pakeitus nuotrauką jie nepasimeta kitame įraše.
+- Ta pati nuotrauka gali būti naudojama keliuose įrašuose tik kaip kopija – pvz., kuriant naujienos vertimą jos nuotrauka nukopijuojama.
+- Senosios nuotraukos iš bendrų aplankų (`news`, `contacts`, `banners`, `institutions`) perkeltos prie įrašų. Pačius senus failus galima tvarkyti tik po to, kai patikrinama, kad jų niekas nebenaudoja.
 
 ### Įkėlimų apdorojimas {#ikelimas}
 
@@ -115,7 +135,7 @@ Sąsajoje parodoma prieigos klaida; pasirinkimą galima pakeisti ir bandyti dar 
 | Įkelti failus į savo aplanką | ✓ | ✓ |
 | Kurti aplankus savo kataloge | ✓ | ✓ |
 | Trinti failus savo kataloge | ✓ | ✓ |
-| Įkelti failus į bendrus katalogus | tik per formų viršelių laukus | ✓ |
+| Įkelti nuotrauką formoje | kas gali redaguoti įrašą | kas gali redaguoti įrašą |
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 
@@ -142,6 +162,10 @@ Sąsajoje parodoma prieigos klaida; pasirinkimą galima pakeisti ir bandyti dar 
 - Failų saugojimo šaknis: `storage/app/public/files/`.
 - Bendri keliai, failų sąrašai ir grupiniai įkėlimai: `App\Services\FileStorageService`. `normalizeFilePath()` atmeta `..` segmentus ir neleidžia failų tvarkyklės keliui išeiti už `public/files` šaknies.
 - Įkėlimo paskirtis ir kūrimo teisės: `StoreFilesRequest::uploadDirectory()`. Teksto redaktoriaus turinio aplankas nustatomas pagal kūrimo teisių apimtį.
+- Formų nuotraukos: Spatie Media Library kolekcijos per `App\Models\Traits\HasImageMedia` (konversijos `thumb` 400, `medium` 900, `large` 1600 px, WebP). Laikinai įkelta nuotrauka – `PendingUpload` (`POST /api/v1/admin/pending-uploads`), įrašui priskiriama per `App\Actions\Media\SyncImageMedia`, išvaloma `model:prune` po 32 dienų.
+- Senųjų nuotraukų perkėlimas: `media:backfill-legacy-images` (`--status` rodo, kas liko).
+- Išsamesnė eiga: `media:backfill-legacy-images --status -v` rodo kiekvieną tikrinamą įrašą, šaltinį ir rezultatą; `--sync -v` rodo perkėlimo eigą. Paleidus į eilę su `-v`, rodomas įrašų ir paketų skaičius, o darbo rezultatai rašomi į žurnalą.
+- Senųjų failų patikra: `media:legacy-files -v` rodo tikrinamus aplankus, failus, jų naudojimą ir eigą. Galima pridėti `--group=contacts` vienam aplankui. `--verbose` yra `-v` atitikmuo; `--quiet` paslepia įprastą išvestį ir eigą.
 - Rašymas: `FileUploadWriter` vienodai tvarko paprastus ir optimizuotus failus, tikrina rašymo rezultatą ir naudoja aplanko užraktą pavadinimui parinkti bei failui išsaugoti.
 - Naudojimo paieška: `App\Services\FileUsageScanner` turi tikrinamų stulpelių sąrašą (`targets()`). SQL užklausa atrenka eilutes pagal kelio dalis, kurios nesikeičia jokioje koduotėje, o `App\Services\FileUsage\FileReferenceMatcher` kiekvieną reikšmę iškoduoja (JSON, HTML entities, `%20`, NFC/NFD) ir lygina visą kelią `/uploads/files/…`. Senasis kelias `/uploads/…` (be `files/`) skaičiuojamas tik tada, kai tokiu adresu nėra kito failo.
 - Paveikslėlių glaudinimas: atliekamas per `Intervention\Image` biblioteką valdiklio metode `compressImage()`.

@@ -60,7 +60,9 @@
          colour: the grayscale treatment is for photography sitting *behind* type. -->
     <div v-if="article.image" class="mx-auto max-w-4xl px-5 sm:px-6">
       <MediaFrame
+        :image="article.image_media"
         :src="article.image as string"
+        sizes="(min-width: 896px) 896px, 100vw"
         :alt="article.title"
         ratio="16/9"
         :grayscale="false"
@@ -68,8 +70,8 @@
         class="sm:-mt-8 sm:aspect-[2/1]"
         :style="{ viewTransitionName: `news-image-${article.id}` }"
       />
-      <p v-if="article.image_author" class="mt-2 text-right text-xs text-muted-foreground">
-        {{ article.image_author }}
+      <p v-if="article.image_media?.author ?? article.image_author" class="mt-2 text-right text-xs text-muted-foreground">
+        {{ article.image_media?.author ?? article.image_author }}
       </p>
     </div>
 
@@ -147,6 +149,7 @@ import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { EyebrowLabel, MediaFrame, ReadingSizeControl, ShareButton, TagChip } from '@/Components/Public/Base';
 import type { NewsItem } from '@/Types/contentParts';
+import type { ImageData } from '@/Types/media';
 import { formatStaticTime } from '@/Utils/IntlTime';
 
 /**
@@ -158,7 +161,7 @@ import { formatStaticTime } from '@/Utils/IntlTime';
  * thing is four places for it to drift.
  */
 const props = withDefaults(defineProps<{
-  article: App.Entities.News & { reading_time?: number | null };
+  article: App.Entities.News & { reading_time?: number | null; image_media?: ImageData | null };
   otherLangURL?: string;
   locale?: string;
   /** Author-controlled (Advanced Settings in NewsForm) — the band still renders, just untrailed. */

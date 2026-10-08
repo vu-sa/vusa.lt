@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\HasImageValidation;
+use App\Models\Pivots\Dutiable;
 use App\Rules\SoftDeleteRules;
 use Carbon\Carbon;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -9,6 +11,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateDutiableRequest extends FormRequest
 {
+    use HasImageValidation;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -53,8 +57,7 @@ class UpdateDutiableRequest extends FormRequest
             'study_program_note.lt' => 'nullable|string|max:100',
             'study_program_note.en' => 'nullable|string|max:100',
             'additional_email' => 'nullable|email',
-            'additional_photo' => 'nullable|string',
-            'additional_photo_focal_point' => 'nullable|string|max:20',
+            ...$this->imageMediaRules('photo_media', $this->route('dutiable') instanceof Dutiable ? $this->route('dutiable') : new Dutiable, 'photo'),
             'use_original_duty_name' => 'nullable|boolean',
         ];
     }

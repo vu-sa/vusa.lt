@@ -127,32 +127,30 @@
     </FormFieldWrapper>
 
     <FormFieldWrapper
-      id="image"
+      id="image_media"
       :label="$t('Nuotrauka')"
       :hint="$t('Rodoma naujienos viršuje, naujienų sąraše ir dalinantis nuoroda.')"
-      :error="form.errors.image"
-      :valid="form.valid('image')"
-      :invalid="form.invalid('image')"
+      :error="form.errors['image_media.id']"
     >
       <ImageUpload
-        v-model:url="form.image"
-        mode="immediate"
-        folder="news"
+        v-model:image="form.image_media"
+        mode="media"
         cropper
+        focal-point
         full-width
-        :existing-url="news?.image"
-        @update:url="form.validate('image')"
       />
     </FormFieldWrapper>
 
     <FormFieldWrapper
+      v-if="form.image_media"
       id="image_author"
       :label="`${$t('Nuotraukos autorius')} (${$t('neprivaloma')})`"
       :hint="$t('Žmogus arba organizacija, kurie sukūrė nuotrauką')"
+      :error="form.errors['image_media.author']"
     >
       <Input
         id="image_author"
-        v-model="form.image_author"
+        v-model="imageAuthor"
         type="text"
         :placeholder="$t('Žmogus arba organizacija...')"
         :class="['h-11', fieldSurfaceClass]"
@@ -271,6 +269,7 @@ import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { OrderedListInput } from '@/Components/ui/ordered-list-input';
 import { ImageUpload } from '@/Components/ui/upload';
+import type { ImageData } from '@/Types/media';
 import { contentStatuses } from '@/Constants/statuses';
 import { resolveTenantPublicHost, resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { usePermalinkPreview } from '@/Composables/usePermalinkPreview';
@@ -320,6 +319,16 @@ const formData = {
 const form = props.rememberKey
   ? useForm(props.rememberKey, formData).withPrecognition(props.submitMethod, props.submitUrl)
   : useForm(formData).withPrecognition(props.submitMethod, props.submitUrl);
+
+// The author belongs to the photo, so it travels inside image_media.
+const imageAuthor = computed({
+  get: () => (form.image_media as ImageData | null)?.author ?? '',
+  set: (author: string) => {
+    if (form.image_media) {
+      form.image_media = { ...(form.image_media as ImageData), author: author || null };
+    }
+  },
+});
 
 // Default to the sole assignable tenant; a multi-tenant actor (e.g. super admin) picks explicitly.
 if (isCreate.value && form.tenant_id == null) {

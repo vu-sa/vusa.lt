@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Contracts\ImageMediaOwner;
+use App\Models\Traits\HasImageMedia;
 use App\Models\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Collection;
@@ -38,9 +40,9 @@ use Laravel\Scout\Searchable;
  * @mixin \Eloquent
  */
 #[Unguarded]
-class Banner extends Model
+class Banner extends Model implements ImageMediaOwner
 {
-    use HasFactory, LogsModelActivity, Searchable, SoftDeletes;
+    use HasFactory, HasImageMedia, LogsModelActivity, Searchable, SoftDeletes;
 
     #[\Override]
     protected static function booted()
@@ -77,6 +79,32 @@ class Banner extends Model
         static::deleted(function (): void {
             Cache::tags(['banners'])->flush();
         });
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->registerImageCollection('image');
+    }
+
+    public function afterImageMediaChanged(string $collection): void
+    {
+        Cache::tags(['banners'])->flush();
+    }
+
+    /**
+     * Transitional(legacy-images): remove once nothing reads image_url, then drop the column.
+     */
+    public function imageCacheColumns(): array
+    {
+        return ['image' => ['url' => 'image_url', 'conversion' => 'large']];
+    }
+
+    /**
+     * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+     */
+    public function legacyImageColumns(): array
+    {
+        return ['image' => ['url' => 'image_url']];
     }
 
     public function toSearchableArray(): array

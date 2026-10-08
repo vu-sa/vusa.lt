@@ -264,12 +264,15 @@ class ContactController extends PublicController
             contentTenant: $institution->tenant,
             title: $title,
             description: Str::limit(strip_tags($institution->description), 160),
-            image: $institution->image_url,
+            image: $institution->imageData('image')['url'] ?? null,
         );
 
         $data = [
             // The contacts are passed on their own; the duty tree would be serialized twice.
-            'institution' => $institution->unsetRelation('duties'),
+            // The page reads image_url; it comes from the image's media now.
+            'institution' => $institution->unsetRelation('duties')
+                ->setAttribute('image_url', $institution->imageData('image')['url'] ?? null)
+                ->setAttribute('image_media', $institution->imageData('image')),
             'currentYearMeetings' => $groupedMeetings['current'] ?? null,
             'previousYearsMeetings' => $groupedMeetings['previous'] ?? [],
             'hasMeetings' => ! empty($groupedMeetings),

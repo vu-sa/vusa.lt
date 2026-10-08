@@ -14,8 +14,8 @@
         ]"
       >
         <img
-          v-if="banner.image_url"
-          :src="banner.image_url"
+          v-if="banner.image_media?.thumb ?? banner.image_url"
+          :src="banner.image_media?.thumb ?? banner.image_url"
           :alt="banner.title"
           loading="lazy"
           :class="[

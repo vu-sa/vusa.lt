@@ -1,10 +1,11 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-08
 tests:
   - tests/Feature/Search/SearchExperienceTest.php
   - tests/Feature/Api/Admin/ContentEditorTest.php
   - tests/Browser/RichContentFullscreenEditorTest.php
+  - tests/Browser/ContentEditorImageSaveTest.php
   - tests/Feature/Admin/Content/PageControllerTest.php
 title: Puslapiai
 area: pages
@@ -76,6 +77,8 @@ Automatinė atkūrimo kopija padeda tęsti darbą, bet nepakeičia paskelbto pus
 </ChangelogNote>
 
 Pakeitimai paskelbiami arba išsaugomi kaip juodraštis paspaudus **Išsaugoti**. Kol redaguojama, privati atkūrimo kopija saugoma šiame įrenginyje ir serveryje. Jos nemato nei lankytojai, nei kiti redaktoriai; automatinis kopijos saugojimas nekeičia išsaugoto puslapio.
+
+Sėkmingą išsaugojimą patvirtina pranešimas **Išsaugota**, taip pat ir pakeitus tik viršelį ar jo fokusavimo tašką. Nuotraukos apdorojimas nesukelia netikro versijų neatitikimo: jei kitų pakeitimų nėra, galima išsaugoti dar kartą be įspėjimo. Automatinis atkūrimo kopijos saugojimas šio pranešimo nerodo.
 
 Grįžus į redagavimą gali būti rodomas blokas **Tęsk nebaigtus pakeitimus**. Pasirinkus įrenginio arba serverio kopiją spaudžiama **Atkurti kopiją**. Jei kopijos skiriasi, jos rodomos atskirai. **Atsisakyti atkūrimo kopijų** prašo patvirtinimo ir nepakeičia išsaugoto puslapio. Neatnaujintos kopijos saugomos iki 30 dienų.
 

@@ -74,6 +74,7 @@ class NewsController extends PublicController
             ->where('publish_time', '<=', now())
             ->orderByDesc('publish_time')
             ->take(3)
+            ->with('media')
             ->get(['id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang'])
             ->map(fn ($article) => [
                 'id' => $article->id,
@@ -81,6 +82,7 @@ class NewsController extends PublicController
                 'short' => $article->short,
                 'lang' => $article->lang,
                 'image' => $article->getImageUrl(),
+                'image_media' => $article->imageData('image'),
                 'permalink' => $article->permalink,
                 'publish_time' => $article->publish_time,
                 'url' => LocalizedRouteSlugs::route('news', [
@@ -113,7 +115,8 @@ class NewsController extends PublicController
             // the most obvious use of the new dynamic block types inside a news body.
             'resolvedParts' => (object) $this->resolveContentParts($news->content),
             'article' => [
-                ...$news->only('id', 'title', 'short', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'content', 'image_author', 'important', 'main_points', 'read_more', 'show_breadcrumbs', 'highlights'),
+                ...$news->only('id', 'title', 'short', 'lang', 'other_lang_id', 'permalink', 'publish_time', 'content', 'important', 'main_points', 'read_more', 'show_breadcrumbs', 'highlights'),
+                'image_author' => $news->imageData('image')['author'] ?? null,
                 'tags' => $news->tags->map(fn ($tag) => [
                     'id' => $tag->id,
                     'name' => $tag->name,
@@ -124,6 +127,7 @@ class NewsController extends PublicController
                 // getImageUrl() checks the file actually exists and returns null otherwise —
                 // NewsArticleLayout skips the hero image entirely rather than show a placeholder.
                 'image' => $imageUrl,
+                'image_media' => $news->imageData('image'),
                 'tenant' => $news->tenant->shortname,
             ],
             'relatedArticles' => $relatedArticles,
@@ -160,6 +164,7 @@ class NewsController extends PublicController
 
         $news = $query
             ->select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang', 'created_at')
+            ->with('media')
             ->orderBy('publish_time', 'desc')
             ->paginate(15)
             ->through(fn ($item) => [
@@ -167,6 +172,7 @@ class NewsController extends PublicController
                 'title' => $item->title,
                 'short' => $item->short,
                 'image' => $item->getImageUrl(),
+                'image_media' => $item->imageData('image'),
                 'permalink' => $item->permalink,
                 'publish_time' => $item->publish_time?->toISOString() ?? $item->created_at->toISOString(),
                 'lang' => $item->lang,

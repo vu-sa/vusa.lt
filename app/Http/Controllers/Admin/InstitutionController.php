@@ -7,6 +7,7 @@ use App\Actions\GetInstitutionSecretaries;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetTypeFiles;
 use App\Actions\GetUserTenantShortnames;
+use App\Actions\Media\SyncImageMedia;
 use App\Enums\InstitutionRelationKind;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexInstitutionRequest;
@@ -86,11 +87,12 @@ class InstitutionController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreInstitutionRequest $request)
+    public function store(StoreInstitutionRequest $request, SyncImageMedia $syncImage)
     {
         $institution = new Institution;
 
-        $institution->fill($request->safe()->except('types'))->save();
+        $institution->fill($request->safe()->except('types', 'image_media', 'logo_media'))->save();
+        $this->syncImages($institution, $request->validated(), $syncImage);
 
         $institution->syncAudited('types', $request->types);
 
@@ -311,6 +313,8 @@ class InstitutionController extends AdminController
         return $this->inertiaResponse('Admin/People/EditInstitution', [
             'institution' => [
                 ...$institution->toFullArray(),
+                'image_media' => $institution->imageData('image'),
+                'logo_media' => $institution->imageData('logo'),
                 'types' => $institution->types->pluck('id'),
             ],
             'institutionTypes' => InstitutionType::query()->get(),
@@ -321,9 +325,9 @@ class InstitutionController extends AdminController
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateInstitutionRequest $request, Institution $institution)
+    public function update(UpdateInstitutionRequest $request, Institution $institution, SyncImageMedia $syncImage)
     {
-        $institution->fill($request->safe()->except('tenant_id', 'types'));
+        $institution->fill($request->safe()->except('tenant_id', 'types', 'image_media', 'logo_media'));
 
         // check if super admin, then update tenant_id
         if (auth()->user()->isSuperAdmin()) {
@@ -334,8 +338,18 @@ class InstitutionController extends AdminController
 
         // get only types id
         $institution->syncAudited('types', $request->types);
+        $this->syncImages($institution, $request->validated(), $syncImage);
 
         return back()->with('success', $this->entityMessage('updated', 'institution'));
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function syncImages(Institution $institution, array $validated, SyncImageMedia $syncImage): void
+    {
+        $syncImage->fromValidated($institution, 'image', $validated, 'image_media', auth()->user());
+        $syncImage->fromValidated($institution, 'logo', $validated, 'logo_media', auth()->user());
     }
 
     /**

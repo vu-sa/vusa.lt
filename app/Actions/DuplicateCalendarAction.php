@@ -35,12 +35,11 @@ class DuplicateCalendarAction
 
             // Copy media files if they exist
             if ($calendar->media->isNotEmpty()) {
-                StagingProtection::ensureFilesAreWritable();
+                StagingProtection::ensureDiskIsWritable(config('media-library.disk_name'));
 
+                // Read from disk rather than downloading the site's own URL.
                 foreach ($calendar->media as $media) {
-                    $newCalendar
-                        ->addMediaFromUrl($media->getFullUrl())
-                        ->toMediaCollection($media->collection_name);
+                    $media->copy($newCalendar, $media->collection_name);
                 }
             }
 

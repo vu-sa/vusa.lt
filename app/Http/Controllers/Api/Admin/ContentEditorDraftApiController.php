@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\ContentEditorDraftRequest;
 use App\Models\ContentEditorDraft;
+use App\Models\PendingUpload;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -35,6 +36,10 @@ class ContentEditorDraftApiController extends ApiController
             $draft->snapshot = $request->validated('snapshot');
             $draft->revision = ($draft->revision ?? 0) + 1;
             $draft->save();
+            PendingUpload::touchForMedia($request->user(), array_values(array_filter([
+                $request->validated('snapshot.image_media.id'),
+                $request->validated('snapshot.featured_image_media.id'),
+            ], is_numeric(...))));
 
             return $this->jsonSuccess($draft);
         });

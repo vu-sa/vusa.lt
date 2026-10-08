@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Actions\PairTranslatedRecord;
+use App\Contracts\ImageMediaOwner;
 use App\Enums\PageLayoutEnum;
+use App\Models\Traits\HasImageMedia;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\PublicUrlService;
@@ -22,7 +24,6 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Sitemap\Contracts\Sitemapable;
@@ -71,9 +72,9 @@ use Spatie\Sitemap\Tags\Url;
  * @mixin \Eloquent
  */
 #[Unguarded]
-class Page extends Model implements Sitemapable
+class Page extends Model implements ImageMediaOwner, Sitemapable
 {
-    use HasFactory, LogsModelActivity, Searchable, SoftDeletes;
+    use HasFactory, HasImageMedia, LogsModelActivity, Searchable, SoftDeletes;
 
     #[\Override]
     protected function casts(): array
@@ -217,20 +218,41 @@ class Page extends Model implements Sitemapable
         $this->update(['last_edited_at' => now()]);
     }
 
+    public function registerMediaCollections(): void
+    {
+        $this->registerImageCollection('featured_image');
+    }
+
+    public function afterImageMediaChanged(string $collection): void
+    {
+        $this->touch();
+    }
+
     /**
-     * Get the featured image URL.
+     * Transitional(legacy-images): remove once nothing reads featured_image, then drop the column.
      */
+    public function imageCacheColumns(): array
+    {
+        return ['featured_image' => ['url' => 'featured_image', 'conversion' => 'large']];
+    }
+
+    /**
+     * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+     */
+    public function legacyImageColumns(): array
+    {
+        return ['featured_image' => ['url' => 'featured_image']];
+    }
+
     public function getFeaturedImageUrl(): ?string
     {
-        if (! $this->featured_image) {
+        $url = $this->imageData('featured_image')['url'] ?? null;
+
+        if ($url === null) {
             return null;
         }
 
-        if (str_starts_with($this->featured_image, 'http')) {
-            return $this->featured_image;
-        }
-
-        return Storage::url($this->featured_image);
+        return str_starts_with($url, 'http') ? $url : url($url);
     }
 
     public function tenant(): BelongsTo

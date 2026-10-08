@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\BuildSupportRequestCollection;
+use App\Actions\Media\AddImageMedia;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexSupportRequestRequest;
 use App\Http\Requests\StoreSupportRequestRequest;
@@ -68,7 +69,7 @@ class MySupportRequestController extends AdminController
         }
 
         foreach ($request->file('images', []) as $image) {
-            $supportRequest->addMedia($image)->toMediaCollection('evidence');
+            app(AddImageMedia::class)->execute($supportRequest, $image, 'evidence');
         }
 
         return redirect()->route('supportRequests.show', $supportRequest)->with('success', __('messages.feedback.thanks'));

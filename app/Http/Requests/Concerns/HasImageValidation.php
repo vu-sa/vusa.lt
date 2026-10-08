@@ -2,6 +2,10 @@
 
 namespace App\Http\Requests\Concerns;
 
+use App\Contracts\ImageMediaOwner;
+use App\Rules\AttachableImageMedia;
+use Illuminate\Database\Eloquent\Model;
+
 /**
  * Standardized image validation rules for form requests.
  *
@@ -84,6 +88,23 @@ trait HasImageValidation
         }
 
         return $rules;
+    }
+
+    /**
+     * An ImageData object posted back by an ImageUpload in media mode; null removes the image.
+     * Pass the record, or an unsaved instance when creating one.
+     *
+     * @return array<string, mixed>
+     */
+    protected function imageMediaRules(string $key, Model&ImageMediaOwner $owner, string $collection): array
+    {
+        return [
+            $key => ['nullable', 'array'],
+            "{$key}.id" => ['nullable', 'integer', new AttachableImageMedia($owner, $collection)],
+            "{$key}.focal_point" => ['nullable', 'string', 'max:20', 'regex:/^\d{1,3}(\.\d+)?% \d{1,3}(\.\d+)?%$/'],
+            "{$key}.alt" => ['nullable', 'string', 'max:255'],
+            "{$key}.author" => ['nullable', 'string', 'max:255'],
+        ];
     }
 
     /**

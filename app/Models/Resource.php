@@ -6,8 +6,10 @@ use AjCastro\EagerLoadPivotRelations\EagerLoadPivotTrait;
 use App\Actions\GetResourceManagers;
 use App\Collections\ReservationCollection;
 use App\Contracts\GuardsForceDelete;
+use App\Contracts\ImageMediaOwner;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
+use App\Models\Traits\HasImageMedia;
 use App\Models\Traits\HasTranslations;
 use App\Services\ResourceCapacityCalculator;
 use App\Services\Typesense\SearchText;
@@ -22,8 +24,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -69,9 +69,9 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
     'name', 'description', 'identifier', 'location', 'capacity', 'is_reservable',
     'tenant_id', 'resource_category_id', 'media',
 ])]
-class Resource extends Model implements GuardsForceDelete, HasMedia
+class Resource extends Model implements GuardsForceDelete, ImageMediaOwner
 {
-    use EagerLoadPivotTrait, GuardsForceDeleteWhenReferenced, HasFactory, HasTranslations, HasUlids, InteractsWithMedia, Searchable, SoftDeletes;
+    use EagerLoadPivotTrait, GuardsForceDeleteWhenReferenced, HasFactory, HasImageMedia, HasTranslations, HasUlids, Searchable, SoftDeletes;
 
     #[\Override]
     protected function casts(): array
@@ -105,10 +105,7 @@ class Resource extends Model implements GuardsForceDelete, HasMedia
 
     public function registerMediaCollections(): void
     {
-        $this
-            ->addMediaCollection('images')
-            ->acceptsMimeTypes(['image/jpeg', 'image/jpg', 'image/png', 'image/webp'])
-            ->useDisk('spatieMediaLibrary');
+        $this->registerImageCollection('images', single: false);
     }
 
     public function toSearchableArray(): array
@@ -128,7 +125,7 @@ class Resource extends Model implements GuardsForceDelete, HasMedia
             'tenant_shortname' => $this->tenant->shortname,
             'category_id' => $this->resource_category_id,
             'category_name' => $this->category?->getTranslation('name', 'lt'),
-            'image_url' => $this->getFirstMediaUrl('images'),
+            'image_url' => $this->imageGallery('images')[0]['thumb'] ?? '',
             'created_at' => $this->created_at->timestamp,
         ];
     }

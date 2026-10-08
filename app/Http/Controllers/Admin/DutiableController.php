@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Media\SyncImageMedia;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreDutiableRequest;
 use App\Http\Requests\UpdateDutiableRequest;
@@ -11,6 +12,7 @@ use App\Models\User;
 use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 
 class DutiableController extends AdminController
 {
@@ -37,21 +39,23 @@ class DutiableController extends AdminController
      * description reaches the model's sanitizing setter; the audit wrapper keeps the
      * activity log identical to the wizard's attach.
      */
-    public function store(StoreDutiableRequest $request): RedirectResponse
+    public function store(StoreDutiableRequest $request, SyncImageMedia $syncImage): RedirectResponse
     {
         $data = $request->safe();
         $duty = Duty::query()->findOrFail($data['duty_id']);
 
-        $duty->auditRelationChange('users', fn () => Dutiable::create([
+        $dutiable = $duty->auditRelationChange('users', fn () => Dutiable::create([
             ...$data->only([
                 'duty_id', 'start_date', 'end_date', 'study_program_id', 'study_program_note',
-                'additional_email', 'additional_photo', 'additional_photo_focal_point', 'description',
+                'additional_email', 'description',
             ]),
             'dutiable_id' => $data['user_id'],
             'dutiable_type' => MorphMap::alias(User::class),
             'tenant_id' => $request->delegatedTenantId(),
             'use_original_duty_name' => $data['use_original_duty_name'] ?? false,
         ]));
+
+        $syncImage->fromValidated($dutiable, 'photo', $request->validated(), 'photo_media', $request->user());
 
         return back()->with('success', $this->entityMessage('created', 'dutiable'));
     }
@@ -85,7 +89,10 @@ class DutiableController extends AdminController
             unset($data['start_date'], $data['end_date']);
         }
 
-        $mutation = fn () => $dutiable->fill($data)->save();
+        $mutation = function () use ($dutiable, $data, $request): void {
+            $dutiable->fill(Arr::except($data, ['photo_media']))->save();
+            app(SyncImageMedia::class)->fromValidated($dutiable, 'photo', $data, 'photo_media', $request->user());
+        };
 
         // Email-only edits (JSON) never change the active period, so they can't
         // affect access; only guard the date-editing (Inertia) path.

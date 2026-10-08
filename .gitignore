@@ -17,6 +17,7 @@ test-results.junit.xml
 /storage/*.key
 /storage/clockwork/
 /storage/backups
+/storage/media-library/temp
 coverage/*
 /.vitest
 
@@ -37,6 +38,7 @@ public/hot
 
 # === Public uploads & docs ===
 public/uploads
+public/staging-media
 public/docs
 
 # === Public aliases ===

@@ -100,5 +100,15 @@ class CollapseOverlappingDutiables
         }
 
         $survivor->save();
+
+        // The loser is deleted next, and its media with it.
+        $loserPhoto = $loser->getFirstMedia('photo');
+
+        if ($loserPhoto !== null && $survivor->getFirstMedia('photo') === null) {
+            $loserPhoto->model()->associate($survivor);
+            $loserPhoto->save();
+            $loser->unsetRelation('media');
+            $survivor->unsetRelation('media');
+        }
     }
 }

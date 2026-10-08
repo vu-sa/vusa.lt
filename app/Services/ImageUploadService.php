@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\Media\ImageConversions;
 use App\Support\StagingProtection;
 use App\Support\StoragePath;
 use Illuminate\Http\UploadedFile;
@@ -47,6 +48,30 @@ class ImageUploadService
         return [
             'image' => $image,
             'originalSize' => $originalSize,
+        ];
+    }
+
+    /**
+     * A media original: longest edge bounded, WebP. A WebP already within bounds keeps its bytes,
+     * since re-encoding it only loses quality.
+     *
+     * @return array{contents: string, width: int, height: int}
+     */
+    public function normalize(UploadedFile|string $source, int $maxEdge = ImageConversions::ORIGINAL_MAX): array
+    {
+        $contents = $source instanceof UploadedFile ? (string) file_get_contents($source->getRealPath()) : $source;
+        $size = @getimagesizefromstring($contents);
+
+        if ($size !== false && $size['mime'] === 'image/webp' && max($size[0], $size[1]) <= $maxEdge) {
+            return ['contents' => $contents, 'width' => $size[0], 'height' => $size[1]];
+        }
+
+        $image = Image::decode($contents)->scaleDown(width: $maxEdge, height: $maxEdge);
+
+        return [
+            'contents' => (string) $image->encodeUsingFormat(Format::WEBP, quality: 82),
+            'width' => $image->width(),
+            'height' => $image->height(),
         ];
     }
 

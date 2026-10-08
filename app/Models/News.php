@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Actions\PairTranslatedRecord;
+use App\Contracts\ImageMediaOwner;
 use App\Feed\FeedHtml;
 use App\Feed\FeedItem;
+use App\Models\Traits\HasImageMedia;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\HtmlSanitizerService;
@@ -77,9 +79,9 @@ use Spatie\Sitemap\Tags\Url;
  */
 #[Table(name: 'news')]
 #[Unguarded]
-class News extends Model implements Feedable, Sitemapable
+class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
 {
-    use HasFactory, LogsModelActivity, Searchable, SoftDeletes;
+    use HasFactory, HasImageMedia, LogsModelActivity, Searchable, SoftDeletes;
 
     /** The conventional prose reading pace, used by {@see readingTimeMinutes()}. */
     private const int WORDS_PER_MINUTE = 200;
@@ -114,6 +116,37 @@ class News extends Model implements Feedable, Sitemapable
                 ? null
                 : app(HtmlSanitizerService::class)->sanitizeRichContent($value),
         );
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->registerImageCollection('image');
+    }
+
+    /**
+     * An article's image is part of what was edited, so it counts as an edit of the article.
+     */
+    public function afterImageMediaChanged(string $collection): void
+    {
+        $this->touch();
+    }
+
+    /**
+     * Readers not yet moved to media keep reading `image` and `image_author`.
+     *
+     * Transitional(legacy-images): remove once nothing reads the columns, then drop them.
+     */
+    public function imageCacheColumns(): array
+    {
+        return ['image' => ['url' => 'image', 'author' => 'image_author', 'conversion' => 'large']];
+    }
+
+    /**
+     * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+     */
+    public function legacyImageColumns(): array
+    {
+        return ['image' => ['url' => 'image', 'author' => 'image_author']];
     }
 
     #[\Override]
@@ -433,6 +466,13 @@ class News extends Model implements Feedable, Sitemapable
      */
     protected function getCoverSize(): int
     {
+        $media = $this->getFirstMedia('image');
+
+        if ($media !== null) {
+            return (int) $media->size;
+        }
+
+        // Transitional(legacy-images): drop this legacy branch with the image column.
         if (! $this->image || str_starts_with($this->image, 'http')) {
             return 0;
         }
@@ -449,6 +489,13 @@ class News extends Model implements Feedable, Sitemapable
      */
     protected function getCoverMime(): string
     {
+        $media = $this->getFirstMedia('image');
+
+        if ($media !== null) {
+            return (string) $media->mime_type;
+        }
+
+        // Transitional(legacy-images): drop this legacy branch with the image column.
         return match (strtolower(pathinfo($this->image ?? '', PATHINFO_EXTENSION))) {
             'png' => 'image/png',
             'gif' => 'image/gif',
@@ -464,10 +511,16 @@ class News extends Model implements Feedable, Sitemapable
      * Use this method for public display (news pages, feeds, sitemaps, schema) — callers
      * decide how to represent "no image" (an empty card slot, an omitted schema/feed
      * field, a site-default OG image), rather than this method inventing a placeholder.
-     * For admin forms, use $news->image directly (raw value, no existence check).
      */
     public function getImageUrl(): ?string
     {
+        $media = $this->getFirstMedia('image');
+
+        if ($media !== null) {
+            return $media->getUrl();
+        }
+
+        // Transitional(legacy-images): drop this legacy branch with the image column.
         $image = $this->image;
 
         // External URLs pass through
@@ -535,13 +588,13 @@ class News extends Model implements Feedable, Sitemapable
             ->where('draft', false)
             ->orderByDesc('publish_time')
             ->take(15)
-            ->with(['tags', 'content.parts', 'tenant', 'other_language_news'])
+            ->with(['tags', 'content.parts', 'tenant', 'other_language_news', 'media'])
             ->get();
     }
 
     protected function makeAllSearchableUsing(Builder $query)
     {
-        return $query->with(['tags', 'content.parts', 'tenant', 'other_language_news']);
+        return $query->with(['tags', 'content.parts', 'tenant', 'other_language_news', 'media']);
     }
 
     public function toSearchableArray(): array
@@ -554,7 +607,7 @@ class News extends Model implements Feedable, Sitemapable
             'title' => $this->title,
             'short' => $this->short,
             'permalink' => $this->permalink,
-            'image' => $this->image,
+            'image' => $this->imageData('image')['thumb'] ?? null,
             // Falls back to created_at rather than now() so unscheduled drafts (no
             // publish_time yet) sort by when they were made, not by index time —
             // this collection now also carries records that are never published.

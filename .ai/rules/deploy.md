@@ -17,3 +17,6 @@ The outage runs from the `scp deployment/maintenance.php` in deploy-common.yml t
 - **Never enable `clean-untracked` for production.** Its repo root holds ~1 GB of untracked directories (two copies of the old LimeSurvey install) that `git clean -fd` would delete silently.
 - `DeploymentResume` derives step order from `DeploymentRun::STEPS`. Do not restate the order anywhere.
 - `staging:refresh-database` drops every table in the database it points at. Its `APP_ENV=staging` guard is deliberately not overridable — no `--force`, no prompt.
+
+## Heavy data backfills are queued from the migration, never run in it
+Migrations run inside the ~15 s maintenance window, and staging re-runs them every night against restored production data. A migration that moves files or rebuilds images only plucks ids and dispatches a chain on the `long-running` connection (precedent: `dispatch_legacy_image_backfill` → `LegacyImageBackfill`). The jobs are idempotent, change no owner timestamps, end with search upserts (never `search:reindex`), and expose a `--status` command that the follow-up release's guard checks. On staging, cap the work to a sample derived from APP_ENV.

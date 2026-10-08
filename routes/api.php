@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\Admin\MailQueueApiController;
 use App\Http\Controllers\Api\Admin\MeetingApiController;
 use App\Http\Controllers\Api\Admin\MergeCandidateApiController;
 use App\Http\Controllers\Api\Admin\NavigationLinkApiController;
+use App\Http\Controllers\Api\Admin\PendingUploadApiController;
 use App\Http\Controllers\Api\Admin\PermalinkPreviewApiController;
 use App\Http\Controllers\Api\Admin\ProblemApiController;
 use App\Http\Controllers\Api\Admin\ReservationApiController;
@@ -225,6 +226,11 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
             Route::get('files/allowed-types', [FileApiController::class, 'allowedTypes'])->name('files.allowedTypes');
             Route::get('files/thumbnail', [FileApiController::class, 'thumbnail'])->name('files.thumbnail');
         });
+
+        // Form images upload before their record is saved; the form's save attaches them.
+        Route::post('pending-uploads', [PendingUploadApiController::class, 'store'])
+            ->middleware('throttle:30,1')
+            ->name('pendingUploads.store');
 
         // Tutorials
         Route::get('tutorials/progress', [TutorialApiController::class, 'progress'])->name('tutorials.progress');

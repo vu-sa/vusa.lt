@@ -192,22 +192,19 @@
     <FormPanel :title="$t('Nuotraukos')" :icon="Image" title-class="text-brand">
       <!-- Main Image -->
       <FormFieldWrapper
-        id="main_image"
+        id="main_image_media"
         :label="$t('Pagrindinė nuotrauka')"
         required
         :hint="$t('Rodoma renginio kortelėje ir viršuje')"
-        :error="form.errors.main_image"
+        :error="form.errors['main_image_media.id']"
       >
         <ImageUpload
           v-if="!readOnly"
-          v-model:focal-point-value="form.main_image_focal_point"
-          :max="1"
-          :existing-url="existingMainImageUrl"
+          v-model:image="form.main_image_media"
+          mode="media"
           cropper
           compress
           focal-point
-          folder="calendar"
-          @update:file="handleMainImageUpdate"
         />
         <img
           v-else-if="existingMainImageUrl"
@@ -538,7 +535,7 @@ const fieldIds: Record<string, string> = {
 // Store existing main_image URL for display in MediaUpload
 const existingMainImageUrl = ref<string | null>(props.calendar.main_image_url ?? null);
 
-// Prepare form data - main_image will be File | null for submission
+// Prepare form data
 const formData = {
   ...props.calendar,
   title: {
@@ -565,7 +562,10 @@ const formData = {
     lt: props.calendar.permalink?.lt ?? '',
     en: props.calendar.permalink?.en ?? '',
   },
-  main_image: null as File | null,
+  // Events that predate media-held focal points still carry theirs in the column.
+  main_image_media: props.calendar.main_image_media
+    ? { ...props.calendar.main_image_media, focal_point: props.calendar.main_image_media.focal_point ?? props.calendar.main_image_focal_point ?? null }
+    : null,
   tags: props.calendar.tags ?? [],
 } as unknown as Record<string, unknown>;
 
@@ -675,11 +675,6 @@ const statusCallout = computed(() => {
 
   return $t('Paskelbtas renginys matomas viešame kalendoriuje.');
 });
-
-// Handle main image update explicitly
-function handleMainImageUpdate(file: File | null) {
-  form.main_image = file;
-}
 
 // Hero style icons as simple SVG representations
 const CardHeroIcon = () => h('svg', { viewBox: '0 0 96 64', fill: 'none', stroke: 'currentColor', strokeWidth: 2 }, [

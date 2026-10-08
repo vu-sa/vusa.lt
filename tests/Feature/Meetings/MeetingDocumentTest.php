@@ -79,9 +79,8 @@ test('a link that lost a race to another meeting is refused rather than moving t
     $document->update(['meeting_id' => Meeting::factory()->create()->id]);
 
     expect(fn () => UpdateDocumentStatus::linkToMeeting($stale, $this->meeting, $this->admin))
-        ->toThrow(ValidationException::class);
-
-    expect($document->fresh()->meeting_id)->not->toBe($this->meeting->id);
+        ->toThrow(ValidationException::class)
+        ->and($document->fresh()->meeting_id)->not->toBe($this->meeting->id);
 });
 
 test('a document linked to another meeting cannot be unlinked through this one', function (): void {

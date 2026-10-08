@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
+use App\Actions\Media\SyncImageMedia;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexBannerRequest;
 use App\Http\Requests\StoreBannerRequest;
@@ -83,7 +84,7 @@ class BannerController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreBannerRequest $request)
+    public function store(StoreBannerRequest $request, SyncImageMedia $syncImage)
     {
         $this->handleAuthorization('create', Banner::class);
 
@@ -95,9 +96,10 @@ class BannerController extends AdminController
         $banner->link_url = $request->link_url ?? '';
         // Order is assigned by the model's creating hook, which knows about trashed
         // banners still holding a slot.
-        $banner->image_url = $request->image_url ?: null;
         $banner->tenant_id = $tenants->first()['id'] ?? null;
         $banner->save();
+
+        $syncImage->fromValidated($banner, 'image', $request->validated(), 'image_media', $request->user());
 
         Cache::forget('banners-'.$banner->tenant_id);
 
@@ -112,22 +114,23 @@ class BannerController extends AdminController
         $this->handleAuthorization('update', $banner);
 
         return $this->inertiaResponse('Admin/Content/EditBanner', [
-            'banner' => $banner,
+            'banner' => [...$banner->toArray(), 'image_media' => $banner->imageData('image')],
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateBannerRequest $request, Banner $banner)
+    public function update(UpdateBannerRequest $request, Banner $banner, SyncImageMedia $syncImage)
     {
         $this->handleAuthorization('update', $banner);
 
         $banner->title = $request->title;
         $banner->is_active = $request->is_active;
         $banner->link_url = $request->link_url ?? '';
-        $banner->image_url = $request->image_url ?: null;
         $banner->save();
+
+        $syncImage->fromValidated($banner, 'image', $request->validated(), 'image_media', $request->user());
 
         Cache::forget('banners-'.$banner->tenant_id);
 

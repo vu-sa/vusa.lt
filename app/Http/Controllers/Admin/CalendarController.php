@@ -6,6 +6,7 @@ use App\Actions\BuildCalendarIndexQuery;
 use App\Actions\DuplicateCalendarAction;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\HandleModelMediaUploads;
+use App\Actions\Media\SyncImageMedia;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexCalendarRequest;
 use App\Http\Requests\StoreCalendarRequest;
@@ -73,7 +74,7 @@ class CalendarController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCalendarRequest $request)
+    public function store(StoreCalendarRequest $request, SyncImageMedia $syncImage)
     {
         $calendar = new Calendar;
 
@@ -81,16 +82,15 @@ class CalendarController extends AdminController
         // named keys, so anything unvalidated would be mass-assigned straight through fill().
         // `tags` isn't a column — fill() would try to write it as one — so it's excluded here
         // and synced through the relation below instead.
-        $calendar = $calendar->fill($request->safe()->except(['images', 'main_image', 'tags']));
+        $calendar = $calendar->fill($request->safe()->except(['images', 'main_image_media', 'tags']));
         $calendar->event_type_id = $request->validated('event_type_id');
 
         $calendar->save();
 
         $calendar->tags()->sync($request->validated('tags') ?? []);
 
-        // Handle media uploads using centralized action
+        $syncImage->fromValidated($calendar, 'main_image', $request->validated(), 'main_image_media', $request->user());
         HandleModelMediaUploads::execute($calendar, $request, [
-            'main_image' => ['collection' => 'main_image', 'single' => true],
             'images' => ['collection' => 'images', 'single' => false],
         ]);
 
@@ -121,6 +121,7 @@ class CalendarController extends AdminController
         return $this->inertiaResponse('Admin/Calendar/EditCalendarEvent', [
             'calendar' => [
                 ...$calendar->toFullArray(),
+                'main_image_media' => $calendar->imageData('main_image'),
                 'images' => $calendar->getMedia('images')->map(
                     fn ($image) => [
                         'id' => $image->id,
@@ -196,16 +197,16 @@ class CalendarController extends AdminController
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCalendarRequest $request, Calendar $calendar)
+    public function update(UpdateCalendarRequest $request, Calendar $calendar, SyncImageMedia $syncImage)
     {
-        DB::transaction(function () use ($request, $calendar): void {
+        DB::transaction(function () use ($request, $calendar, $syncImage): void {
             // Exclude file fields from fill. An event announcing a meeting also gives up its
             // timing: the meeting owns it and pushes changes down (Meeting::syncCalendarEventTiming),
             // so accepting a date here would only let the two drift. The form disables the
             // fields; this is what actually enforces it.
             // `tags` isn't a column — fill() would try to write it as one — so it's excluded
             // here and synced through the relation below instead.
-            $protected = ['images', 'main_image', 'tags'];
+            $protected = ['images', 'main_image_media', 'tags'];
 
             if ($calendar->meeting_id !== null) {
                 $protected[] = 'date';
@@ -215,13 +216,18 @@ class CalendarController extends AdminController
             $calendar->fill($request->safe()->except($protected));
             $calendar->event_type_id = $request->validated('event_type_id');
 
+            // The focal point now travels with main_image_media.
+            // Transitional(legacy-images): remove with the main_image_focal_point column.
+            if ($request->has('main_image_media')) {
+                $calendar->main_image_focal_point = null;
+            }
+
             $calendar->save();
 
             $calendar->tags()->sync($request->validated('tags') ?? []);
 
-            // Handle media uploads using centralized action
+            $syncImage->fromValidated($calendar, 'main_image', $request->validated(), 'main_image_media', $request->user());
             HandleModelMediaUploads::execute($calendar, $request, [
-                'main_image' => ['collection' => 'main_image', 'single' => true],
                 'images' => ['collection' => 'images', 'single' => false],
             ]);
         });
@@ -284,12 +290,11 @@ class CalendarController extends AdminController
         return back()->with('info', $this->entityMessage('deleted', 'publicUrl'));
     }
 
-    // TODO: something with this???
     public function destroyMedia(Calendar $calendar, Media $media)
     {
         $this->handleAuthorization('update', $calendar);
 
-        $calendar->getMedia('images')->where('id', '=', $media->id)->first()?->delete();
+        HandleModelMediaUploads::deleteMedia($calendar, 'images', $media->id);
 
         return back()->with('info', __('messages.calendar.image_deleted'));
     }

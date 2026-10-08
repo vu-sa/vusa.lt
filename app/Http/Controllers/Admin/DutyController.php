@@ -470,7 +470,10 @@ class DutyController extends AdminController
 
         return $this->inertiaResponse('Admin/People/DutyUserUpdateWizard', [
             // Immediate data for Step 1
-            'institutions' => $institutions,
+            // The wizard reads logo_url; it comes from the logo's media now.
+            'institutions' => $institutions->load('media')->each(
+                fn (Institution $institution) => $institution->setAttribute('logo_url', $institution->imageData('logo')['thumb'] ?? null)->unsetRelation('media'),
+            ),
             // Data for inline institution creation (small datasets, load immediately)
             'assignableTenants' => $assignableTenants,
             'institutionTypes' => $institutionTypes,

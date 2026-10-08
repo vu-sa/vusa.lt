@@ -27,6 +27,8 @@
         v-if="imageUrl && !imageLoadError"
         class="size-full object-cover transition-transform duration-400 group-hover:scale-103"
         :src="imageUrl"
+        :srcset="mainImageSrcset"
+        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
         :alt="eventTitle"
         :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
         loading="lazy"
@@ -128,6 +130,7 @@ import IFluentCalendarLtr24Regular from '~icons/fluent/calendar-ltr-24-regular';
 import IFluentLocation16Regular from '~icons/fluent/location-16-regular';
 import IFluentGlobe20Regular from '~icons/fluent/globe-20-regular';
 import IFluentArrowUpRight20Regular from '~icons/fluent/arrow-up-right-20-regular';
+import type { ImageData } from '@/Types/media';
 
 interface CalendarEventLike {
   _searchMatch?: import('@/Shared/Search/matches').SearchMatch;
@@ -139,6 +142,7 @@ interface CalendarEventLike {
   is_remote?: boolean;
   location?: string | string[] | null;
   main_image_url?: string | null;
+  main_image_media?: ImageData | null;
   main_image_focal_point?: string | null;
   facebook_url?: string | null;
   event_type?: { name: string } | null;
@@ -199,6 +203,8 @@ const imageUrl = computed(() => {
   const ev = props.event as CalendarEventLike;
   return ev.main_image_url ?? null;
 });
+
+const mainImageSrcset = computed(() => (props.event as CalendarEventLike).main_image_media?.srcset ?? undefined);
 
 const normalizeDate = (d: number | Date | string | undefined | null): Date => {
   if (!d) return new Date();

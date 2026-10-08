@@ -116,8 +116,8 @@
         >
           <Crosshair class="mr-1.5 size-4" />
           {{ $t("Nustatyti fokuso tašką") }}
-          <span v-if="focalPointValue" class="ml-1.5 font-mono text-[10px] text-muted-foreground">
-            {{ focalPointValue }}
+          <span v-if="currentFocalPoint" class="ml-1.5 font-mono text-[10px] text-muted-foreground">
+            {{ currentFocalPoint }}
           </span>
         </Button>
 
@@ -243,8 +243,8 @@
       <FocalPointPicker
         v-if="showFocalPointModal && previewUrl"
         :image-url="previewUrl"
-        :model-value="focalPointValue ?? null"
-        @update:model-value="(val: string) => { emit('update:focalPointValue', val); }"
+        :model-value="currentFocalPoint"
+        @update:model-value="setFocalPoint"
       />
     </DialogContent>
   </Dialog>
@@ -260,12 +260,14 @@
  * - Optional image cropping via integrated cropper modal
  * - Optional focal point picker in a dialog
  * - Deferred mode: Files stored locally for form submission (Spatie Media Library)
- * - Immediate mode: Files uploaded immediately to server and URL returned
+ * - Media mode: Files staged on the server right away; `v-model:image` holds the ImageData the form posts
+ * - Immediate mode (legacy): Files uploaded to a shared folder and URL returned
  * - Existing image preview for edit forms
  */
 import { computed, defineAsyncComponent, ref, watch, onMounted, nextTick } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { Check, Crop, Crosshair, ImagePlus, Loader2, Plus, RefreshCw, Trash2, Upload as UploadIcon, X } from 'lucide-vue-next';
+import { toast } from 'vue-sonner';
 
 const FocalPointPicker = defineAsyncComponent(() => import('./FocalPointPicker.vue'));
 const ImageCropper = defineAsyncComponent(() => import('./ImageCropper.vue'));
@@ -279,12 +281,13 @@ import { cn } from '@/Utils/Shadcn/utils';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';
+import type { ImageData } from '@/Types/media';
 
 export interface ImageUploadProps {
   /** Maximum number of files allowed. Use 1 for single file upload (default: 1) */
   max?: number;
-  /** Upload mode: 'deferred' stores files for form submit, 'immediate' uploads instantly */
-  mode?: 'deferred' | 'immediate';
+  /** 'deferred' stores files for form submit, 'media' stages them as ImageData, 'immediate' (legacy) returns a URL */
+  mode?: 'deferred' | 'media' | 'immediate';
   /** Enable cropping functionality */
   cropper?: boolean;
   /** Enable browser-side compression (true for defaults, or pass custom options) */
@@ -333,6 +336,7 @@ const emit = defineEmits<{
   (e: 'compression', result: CompressionResult): void;
   (e: 'remove:existing', item: { id: string | number; url: string }): void;
   (e: 'update:focalPointValue', value: string | null): void;
+  (e: 'update:image', value: ImageData | null): void;
 }>();
 
 // Models for two-way binding
@@ -340,9 +344,13 @@ const emit = defineEmits<{
 const file = defineModel<File | null>('file', { default: null });
 const url = defineModel<string | null>('url', { default: null });
 const urls = defineModel<string[]>('urls', { default: () => [] });
+const image = defineModel<ImageData | null>('image', { default: null });
 
 // Component refs
 const uploadRef = ref<InstanceType<typeof Upload> | null>(null);
+
+// Media mode: what the server returned for each staged file, keyed by local file id.
+const stagedImages = new Map<string, ImageData>();
 
 // Local state
 const localFiles = ref<UploadFile[]>([]);
@@ -362,7 +370,27 @@ const { compressImage, formatFileSize } = useImageCompression();
 
 // Computed
 const isSingle = computed(() => props.max === 1);
-const isImmediate = computed(() => props.mode === 'immediate');
+const isMedia = computed(() => props.mode === 'media');
+// Transitional(legacy-images): 'immediate' goes once no form uploads to the shared folders.
+const isImmediate = computed(() => props.mode === 'immediate' || isMedia.value);
+const currentFocalPoint = computed(() => (isMedia.value ? image.value?.focal_point : props.focalPointValue) ?? null);
+
+function setFocalPoint(value: string | null) {
+  if (isMedia.value) {
+    if (image.value) {
+      image.value = { ...image.value, focal_point: value };
+
+      const currentId = localFiles.value[0]?.id;
+      if (currentId && stagedImages.has(currentId)) {
+        stagedImages.set(currentId, image.value);
+      }
+    }
+
+    return;
+  }
+
+  emit('update:focalPointValue', value);
+}
 const hasExistingImages = computed(() => {
   if (isSingle.value) {
     return !!props.existingUrl || !!url.value;
@@ -372,7 +400,7 @@ const hasExistingImages = computed(() => {
 
 const previewObjectPosition = computed(() => {
   if (!props.focalPoint) return undefined;
-  return props.focalPointValue ?? '50% 30%';
+  return currentFocalPoint.value ?? '50% 30%';
 });
 
 // Compression options
@@ -382,7 +410,7 @@ const compressionOptions = computed<CompressionOptions>(() => {
   }
   return {
     maxSizeMB: props.cropper ? 3 : 2,
-    maxWidthOrHeight: props.cropper ? 2048 : 1600,
+    maxWidthOrHeight: isMedia.value ? 2400 : props.cropper ? 2048 : 1600,
     fileType: 'image/webp',
     quality: props.cropper ? 0.9 : 0.8,
   };
@@ -391,7 +419,7 @@ const compressionOptions = computed<CompressionOptions>(() => {
 // Initialize with existing URLs (from props or v-model)
 function initializeFromExistingUrls() {
   // For single mode, check both existingUrl prop and url model
-  const existingUrl = props.existingUrl || url.value;
+  const existingUrl = props.existingUrl || (isMedia.value ? image.value?.url : url.value);
 
   if (isSingle.value && existingUrl) {
     localFiles.value = [
@@ -456,9 +484,9 @@ watch(
   },
 );
 
-// Watch for changes in url model (single mode, v-model:url)
+// Watch for changes in url model (single mode, v-model:url / v-model:image)
 watch(
-  url,
+  () => (isMedia.value ? image.value?.url : url.value),
   (newUrl) => {
     if (isSingle.value && newUrl && localFiles.value.length === 0) {
       initializeFromExistingUrls();
@@ -520,11 +548,14 @@ async function uploadFileToServer(uploadFile: UploadFile) {
 
   const formData = new FormData();
   formData.append('image', uploadFile.file);
-  formData.append('path', props.folder);
-  formData.append('name', uploadFile.name);
+
+  if (!isMedia.value) {
+    formData.append('path', props.folder);
+    formData.append('name', uploadFile.name);
+  }
 
   try {
-    const response = await fetch(route('files.uploadImage'), {
+    const response = await fetch(route(isMedia.value ? 'api.v1.admin.pendingUploads.store' : 'files.uploadImage'), {
       method: 'POST',
       headers: {
         'X-CSRF-TOKEN': usePage().props.csrf_token as string,
@@ -534,13 +565,18 @@ async function uploadFileToServer(uploadFile: UploadFile) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Upload failed: ${response.status}`);
+      const body = await response.json().catch(() => null) as { message?: string } | null;
+      throw new Error(body?.message ?? `Upload failed: ${response.status}`);
     }
 
     const data = await response.json();
 
-    uploadFile.url = data.url;
+    if (isMedia.value) {
+      const staged = data.data as ImageData;
+      stagedImages.set(uploadFile.id, { ...staged, focal_point: currentFocalPoint.value });
+    }
+
+    uploadFile.url = isMedia.value ? (data.data as ImageData).url : data.url;
     uploadFile.status = 'success';
     uploadFile.progress = 100;
 
@@ -550,6 +586,10 @@ async function uploadFileToServer(uploadFile: UploadFile) {
     console.error('[ImageUpload] Upload error:', error);
     uploadFile.status = 'error';
     uploadFile.error = error instanceof Error ? error.message : 'Upload failed';
+
+    if (isMedia.value) {
+      toast.error(uploadFile.error);
+    }
   }
 }
 
@@ -561,7 +601,17 @@ function updateModels() {
     file.value = currentFile?.file ?? null;
     emit('update:file', file.value);
 
-    if (isImmediate.value) {
+    if (isMedia.value) {
+      const current = localFiles.value[0];
+
+      if (!current) {
+        image.value = null;
+      }
+      else if (stagedImages.has(current.id)) {
+        image.value = stagedImages.get(current.id) ?? null;
+      }
+    }
+    else if (isImmediate.value) {
       const successFile = localFiles.value.find(f => f.status === 'success');
       // Use local variable and emit directly to avoid defineModel reactivity issues
       const newUrl = successFile?.url ?? null;

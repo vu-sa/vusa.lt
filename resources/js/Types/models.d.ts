@@ -405,7 +405,7 @@ declare global {
       anonymous_url?: string | null
       link_url?: string | null
       sharepoint_permission_id?: string | null
-      status: string
+      status: DocumentStatus
       removed_from_sharepoint_at?: string | null
       published_at?: string | null
       published_by?: string | null
@@ -1975,6 +1975,15 @@ declare global {
       type_exists: boolean
     }
 
+    export interface SharepointFolder {
+      // columns
+      drive_item_id: string
+      parent_id?: string | null
+      name: string
+      created_at?: string | null
+      updated_at?: string | null
+    }
+
     export interface Step {
       // columns
       id: string
@@ -2558,6 +2567,14 @@ declare global {
     } as const;
 
     export type CommentKind = typeof CommentKind[keyof typeof CommentKind]
+
+    const DocumentStatus = {
+      Pending: 'pending',
+      Published: 'published',
+      Hidden: 'hidden',
+    } as const;
+
+    export type DocumentStatus = typeof DocumentStatus[keyof typeof DocumentStatus]
 
     const Responsibility = {
       StudentRepCoordination: 'student_rep_coordination',

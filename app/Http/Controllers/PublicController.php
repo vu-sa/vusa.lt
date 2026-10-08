@@ -5,13 +5,13 @@ namespace App\Http\Controllers;
 use App\Actions\GetAliasSubdomainForPublic;
 use App\Actions\GetPublicEditLink;
 use App\Http\Traits\ResolvesPublicContent;
+use App\Models\Banner;
 use App\Models\QuickLink;
 use App\Models\Tenant;
 use App\Services\PublicAssetService;
 use App\Support\LocalizedRouteSlugs;
 use App\Support\PublicCacheTags;
 use Carbon\CarbonInterface;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
@@ -76,11 +76,12 @@ class PublicController extends Controller
         // The tenant's own banners come first, each group in a fresh random order per request.
         [$tenantBanners, $mainBanners] = Cache::tags(['banners'])
             ->remember("banner_groups_{$this->tenant->id}", 3600, fn () => [
-                $this->tenant->isMain() ? new Collection : $this->tenant->banners()->where('is_active', 1)->get(),
-                Tenant::main()->banners()->where('is_active', 1)->get(),
+                $this->tenant->isMain() ? (new Banner)->newCollection() : $this->tenant->banners()->where('is_active', 1)->with('media')->get(),
+                Tenant::main()->banners()->where('is_active', 1)->with('media')->get(),
             ]);
 
-        Inertia::share('tenant.banners', $tenantBanners->shuffle()->merge($mainBanners->shuffle())->values());
+        Inertia::share('tenant.banners', $tenantBanners->shuffle()->merge($mainBanners->shuffle())->values()
+            ->map(fn (Banner $banner): array => [...$banner->withoutRelations()->toArray(), 'image_media' => $banner->imageData('image')]));
     }
 
     protected function getTenantLinks()

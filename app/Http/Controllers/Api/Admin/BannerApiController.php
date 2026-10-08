@@ -21,7 +21,7 @@ class BannerApiController extends ApiController
         $this->authorizeApi('viewAny', Banner::class);
 
         $query = fn (IndexBannerRequest $request) => $this->applyTanstackFilters(
-            Banner::query()->with('tenant:id,shortname'),
+            Banner::query()->with(['tenant:id,shortname', 'media']),
             $request,
             $this->tableService,
             ['title'],
@@ -34,7 +34,11 @@ class BannerApiController extends ApiController
         $banners = $query($request)->paginate($request->getPerPage());
 
         return $this->jsonSuccess([
-            'items' => $banners->getCollection()->values(),
+            'items' => $banners->getCollection()->map(fn (Banner $banner): array => [
+                ...$banner->withoutRelations()->toArray(),
+                'tenant' => $banner->tenant,
+                'image_url' => $banner->imageData('image')['thumb'] ?? null,
+            ])->values(),
             'total' => $banners->total(),
             'per_page' => $banners->perPage(),
             'current_page' => $banners->currentPage(),

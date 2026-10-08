@@ -6,9 +6,20 @@ use App\Exceptions\StagingResourceReadOnlyException;
 
 final class StagingProtection
 {
+    public const string STAGING_MEDIA_DISK = 'stagingMedia';
+
     public static function filesAreReadOnly(): bool
     {
         return config('app.env') === 'staging' && (bool) config('app.files_read_only');
+    }
+
+    /**
+     * Staging's own media disk is the one place staging may write files: it is not shared with
+     * production and is wiped on every database refresh.
+     */
+    public static function diskIsWritable(?string $disk): bool
+    {
+        return ! self::filesAreReadOnly() || $disk === self::STAGING_MEDIA_DISK;
     }
 
     /**
@@ -41,6 +52,13 @@ final class StagingProtection
     public static function ensureFilesAreWritable(): void
     {
         if (self::filesAreReadOnly()) {
+            throw StagingResourceReadOnlyException::files();
+        }
+    }
+
+    public static function ensureDiskIsWritable(?string $disk): void
+    {
+        if (! self::diskIsWritable($disk)) {
             throw StagingResourceReadOnlyException::files();
         }
     }

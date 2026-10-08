@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Actions\GenerateUniqueSlug;
 use App\Enums\LocaleEnum;
 use App\Enums\PageLayoutEnum;
+use App\Http\Requests\Concerns\HasImageValidation;
 use App\Http\Requests\Concerns\ValidatesContentParts;
 use App\Models\Page;
 use App\Rules\SoftDeleteRules;
@@ -18,6 +19,7 @@ use Illuminate\Validation\Rules\Enum;
 
 class UpdatePageRequest extends FormRequest
 {
+    use HasImageValidation;
     use ValidatesContentParts;
 
     /**
@@ -46,12 +48,12 @@ class UpdatePageRequest extends FormRequest
     {
         return [
             ...$this->contentPartRules(),
+            ...$this->imageMediaRules('featured_image_media', $this->page, 'featured_image'),
             'content_version' => [$this->is('api/*') ? 'required' : 'nullable', 'string', 'size:64'],
             'pairing_confirmation' => ['nullable', 'string', 'size:64'],
             'content.parts.*.key' => ['nullable', 'string', 'max:100'],
             'highlights' => ['nullable', 'array', 'max:3'],
             'highlights.*' => ['nullable', 'string', 'max:500'],
-            'featured_image' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:500'],
             'title' => 'required|string|max:200',
             'lang' => ['required', new Enum(LocaleEnum::class)],

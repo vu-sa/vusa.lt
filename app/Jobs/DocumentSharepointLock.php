@@ -12,7 +12,7 @@ class DocumentSharepointLock
 {
     public static function for(int|string $documentId): WithoutOverlapping
     {
-        return (new WithoutOverlapping('document-sharepoint:'.$documentId))
+        return new WithoutOverlapping('document-sharepoint:'.$documentId)
             ->shared()
             ->releaseAfter(10)
             // Above SyncDocumentFromSharePointJob's timeout, so a killed worker's lock still frees itself.

@@ -162,7 +162,7 @@ test('a new file arrives as pending, without a public link, with its metadata', 
         ->and($document->title)->toBe('Parlamento protokolas')
         ->and($document->institution_id)->toBe($institution->id)
         ->and($document->sharepoint_path)->toBe('Dokumentų sistema/Protokolai')
-        ->and($document->metadataProblems())->toBe([])
+        ->and($document->metadataProblems())->toBeEmpty()
         ->and($document->shouldBeSearchable())->toBeFalse()
         ->and(app(DocumentDiscoverySettings::class)->delta_link)->toBe('delta-2');
 });

@@ -60,6 +60,7 @@ final class MorphMap
         'news' => Models\News::class,
         'notification_digest_queue' => Models\NotificationDigestQueue::class,
         'page' => Models\Page::class,
+        'pending_upload' => Models\PendingUpload::class,
         'permission' => Models\Permission::class,
         'problem' => Models\Problem::class,
         'problem_category' => Models\ProblemCategory::class,

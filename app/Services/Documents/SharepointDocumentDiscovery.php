@@ -37,13 +37,13 @@ class SharepointDocumentDiscovery
 
     public const MAX_REMOVAL_SHARE = 0.05;
 
-    private const LOCK = 'sharepoint-document-discovery';
+    private const string LOCK = 'sharepoint-document-discovery';
 
-    private const FAILURE_STREAKS = 'sharepoint-document-discovery:failure-streaks';
+    private const string FAILURE_STREAKS = 'sharepoint-document-discovery:failure-streaks';
 
-    private const GIVE_UP_AFTER = 3;
+    private const int GIVE_UP_AFTER = 3;
 
-    private const THROTTLED_UNTIL = 'sharepoint-document-discovery:throttled';
+    private const string THROTTLED_UNTIL = 'sharepoint-document-discovery:throttled';
 
     public function __construct(private DocumentDiscoverySettings $settings) {}
 

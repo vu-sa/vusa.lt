@@ -22,7 +22,7 @@ use Illuminate\Http\JsonResponse;
 class DocumentFolderApiController extends ApiController
 {
     /** Files per request; "Rodyti daugiau" asks for the next ones. */
-    private const PAGE_SIZE = 100;
+    private const int PAGE_SIZE = 100;
 
     public function index(IndexDocumentFolderRequest $request): JsonResponse
     {
@@ -109,7 +109,7 @@ class DocumentFolderApiController extends ApiController
         $document->update(['sync_status' => 'pending']);
         SyncDocumentFromSharePointJob::dispatch($document, force: true);
 
-        return $this->jsonSuccess((new DocumentRowResource($document->refresh()->load('institution.tenant:id,shortname')))->resolve(request()), __('messages.document.refresh_queued'));
+        return $this->jsonSuccess(new DocumentRowResource($document->refresh()->load('institution.tenant:id,shortname'))->resolve(request()), __('messages.document.refresh_queued'));
     }
 
     /**

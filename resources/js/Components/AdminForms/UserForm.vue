@@ -107,14 +107,11 @@
         :label="`${$t('forms.fields.picture')} (${$t('neprivaloma')})`"
       >
         <ImageUpload
-          v-model:url="form.profile_photo_path"
-          v-model:focal-point-value="form.profile_photo_focal_point"
-          mode="immediate"
-          folder="contacts"
+          v-model:image="form.profile_photo_media"
+          mode="media"
           cropper
           focal-point
           preview-aspect="4/3"
-          :existing-url="user?.profile_photo_path"
         />
       </FormFieldWrapper>
     </FormSection>
@@ -235,6 +232,7 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { ImageUpload } from '@/Components/ui/upload';
+import type { ImageData } from '@/Types/media';
 import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
 import { ModelEnum } from '@/Types/enums';
 import { formatStaticTime } from '@/Utils/IntlTime';
@@ -274,8 +272,7 @@ const initial = () => ({
   email: props.user.email ?? '',
   phone: (props.user.phone ?? null) as string | null,
   facebook_url: (props.user.facebook_url ?? null) as string | null,
-  profile_photo_path: (props.user.profile_photo_path ?? null) as string | null,
-  profile_photo_focal_point: ((props.user as unknown as Record<string, unknown>).profile_photo_focal_point ?? null) as string | null,
+  profile_photo_media: ((props.user as unknown as Record<string, unknown>).profile_photo_media ?? null) as ImageData | null,
   pronouns: (Array.isArray(props.user.pronouns) || !props.user.pronouns
     ? { lt: '', en: '' }
     : { lt: '', en: '', ...(props.user.pronouns as Record<string, string>) }) as Record<'lt' | 'en', string>,

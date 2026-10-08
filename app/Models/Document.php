@@ -43,13 +43,13 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $removed_from_sharepoint_at
  * @property Carbon|null $published_at
  * @property string|null $published_by
+ * @property string $sharepoint_site_id
+ * @property string $sharepoint_list_id
  * @property string|null $sharepoint_drive_item_id
  * @property string|null $sharepoint_path
  * @property string|null $sharepoint_web_url
  * @property Carbon|null $sharepoint_modified_at
  * @property string|null $sharepoint_institution_label
- * @property string $sharepoint_site_id
- * @property string $sharepoint_list_id
  * @property Carbon $created_at
  * @property Carbon|null $checked_at
  * @property string $sync_status Status of SharePoint sync: pending, syncing, success, failed
@@ -66,12 +66,14 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Meeting|null $meeting
  * @property-read Collection<int, Tenant> $tenant
  *
+ * @method static Builder<static>|Document browsableBy(\App\Models\User $user)
  * @method static \Database\Factories\DocumentFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Document newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Document newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Document query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Document published()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Document manageableBy(User $user)
+ * @method static Builder<static>|Document linkableTo(\App\Models\Meeting $meeting)
+ * @method static Builder<static>|Document manageableBy(\App\Models\User $user)
+ * @method static Builder<static>|Document newModelQuery()
+ * @method static Builder<static>|Document newQuery()
+ * @method static Builder<static>|Document published()
+ * @method static Builder<static>|Document query()
  *
  * @mixin \Eloquent
  */

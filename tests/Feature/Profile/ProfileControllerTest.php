@@ -6,6 +6,7 @@ use App\Models\QuickLink;
 use App\Models\Resource;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -53,7 +54,6 @@ describe('user settings', function (): void {
     test('user can update settings', function (): void {
         $validData = [
             'phone' => '+37060000000',
-            'profile_photo_path' => '/path/to/photo.jpg',
             'show_pronouns' => true,
         ];
 
@@ -65,8 +65,33 @@ describe('user settings', function (): void {
         $this->assertDatabaseHas('users', [
             'id' => $this->admin->id,
             'phone' => '+37060000000',
-            'profile_photo_path' => '/path/to/photo.jpg',
         ]);
+    });
+
+    test('a user sets their own photo from an upload they staged', function (): void {
+        Storage::fake('spatieMediaLibrary');
+        $staged = stageImage($this->user);
+
+        asUser($this->user)
+            ->patch(route('profile.update'), ['profile_photo_media' => ['id' => $staged->id, 'focal_point' => '50% 20%']])
+            ->assertSessionHas('success');
+
+        $this->user->refresh();
+
+        expect($this->user->getFirstMedia('profile_photo')->id)->toBe($staged->id)
+            ->and($this->user->profile_photo_focal_point)->toBe('50% 20%')
+            ->and($this->user->profile_photo_path)->toContain("/{$staged->id}/");
+    });
+
+    test('a user cannot take someone else\'s staged upload as their photo', function (): void {
+        Storage::fake('spatieMediaLibrary');
+        $staged = stageImage($this->admin);
+
+        asUser($this->user)
+            ->patch(route('profile.update'), ['profile_photo_media' => ['id' => $staged->id]])
+            ->assertSessionHasErrors('profile_photo_media.id');
+
+        expect($this->user->refresh()->getMedia('profile_photo'))->toBeEmpty();
     });
 
     test('user cannot change email or password via the profile endpoint', function (): void {

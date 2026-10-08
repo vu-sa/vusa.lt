@@ -1,11 +1,12 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-08
 tests:
   - tests/Feature/Search/SearchExperienceTest.php
   - tests/Feature/Api/Admin/ContentEditorTest.php
   - tests/Feature/Admin/Content/NewsControllerTest.php
   - tests/Browser/RichContentFullscreenEditorTest.php
+  - tests/Browser/ContentEditorImageSaveTest.php
   - tests/Feature/Admin/Content/NewsTagsTest.php
 title: Naujienos
 area: news
@@ -58,6 +59,8 @@ Naujienos turinio blokai redaguojami taip pat kaip [puslapiuose](/svetaine/pusla
 <ChangelogNote version="v3.0" date="2026-10-02" title="Patikimesnis išsaugojimas">
 
 Nepavykęs išsaugojimas palieka pakeitimus formoje. Jei kolega jau išsaugojo naujesnę versiją, pirmiausia verta ją peržiūrėti.
+
+Sėkmingą išsaugojimą patvirtina pranešimas **Išsaugota**, taip pat ir pakeitus tik nuotrauką, jos autorių ar fokusavimo tašką. Nuotraukos apdorojimas nesukelia netikro versijų neatitikimo: jei kitų pakeitimų nėra, galima išsaugoti dar kartą be įspėjimo.
 
 </ChangelogNote>
 

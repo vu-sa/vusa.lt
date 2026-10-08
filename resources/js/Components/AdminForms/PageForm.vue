@@ -132,17 +132,16 @@
     </FormFieldWrapper>
 
     <FormFieldWrapper
-      id="featured_image"
+      id="featured_image_media"
       :label="`${$t('Viršelio nuotrauka')} (${$t('neprivaloma')})`"
       :hint="$t('Naudojama dalinantis socialiniuose tinkluose.')"
+      :error="form.errors['featured_image_media.id']"
     >
       <ImageUpload
-        v-model:url="form.featured_image"
-        mode="immediate"
-        folder="pages"
+        v-model:image="form.featured_image_media"
+        mode="media"
         cropper
         full-width
-        :existing-url="page.featured_image"
       />
     </FormFieldWrapper>
 
@@ -382,7 +381,7 @@ const formData = {
   show_breadcrumbs: props.page.show_breadcrumbs ?? true,
   highlights: props.page.highlights || [],
   meta_description: props.page.meta_description || '',
-  featured_image: props.page.featured_image || '',
+  featured_image_media: props.page.featured_image_media ?? null,
 } as unknown as Record<string, unknown>;
 
 const form = props.rememberKey

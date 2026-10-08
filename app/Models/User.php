@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Contracts\GuardsForceDelete;
+use App\Contracts\ImageMediaOwner;
 use App\Helpers\AddressivizeHelper;
 use App\Models\Pivots\Dutiable;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
+use App\Models\Traits\HasImageMedia;
 use App\Models\Traits\HasNotificationPreferences;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasUIPreferences;
@@ -127,9 +129,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
     'microsoft_token',
     'name_was_changed',
 ])]
-class User extends Authenticatable implements GuardsForceDelete
+class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
 {
-    use GuardsForceDeleteWhenReferenced, HasFactory, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUIPreferences, HasUlids, LogsModelActivity, LogsRelationshipChanges, Notifiable, Searchable, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasFactory, HasImageMedia, HasNotificationPreferences, HasPushSubscriptions, HasRelationships, HasRoles, HasTranslations, HasUIPreferences, HasUlids, LogsModelActivity, LogsRelationshipChanges, Notifiable, Searchable, SoftDeletes;
 
     public $translatable = [
         'pronouns',
@@ -279,6 +281,38 @@ class User extends Authenticatable implements GuardsForceDelete
     {
         return $this->authorization_duties()
             ->whereDate('dutiables.start_date', '>', now()->toDateString());
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->registerImageCollection('profile_photo');
+    }
+
+    /**
+     * profile_photo_path and its focal point stay as a cache of the media for the many avatar
+     * lists that select only a few user columns.
+     */
+    public function imageCacheColumns(): array
+    {
+        return ['profile_photo' => ['url' => 'profile_photo_path', 'focal' => 'profile_photo_focal_point', 'conversion' => 'thumb']];
+    }
+
+    public function afterImageMediaChanged(string $collection): void
+    {
+        app(ContactSearchIndexSynchronizer::class)->userChanged($this);
+    }
+
+    public function afterImageCacheRefreshed(string $collection): void
+    {
+        $this->afterImageMediaChanged($collection);
+    }
+
+    /**
+     * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+     */
+    public function legacyImageColumns(): array
+    {
+        return ['profile_photo' => ['url' => 'profile_photo_path', 'focal' => 'profile_photo_focal_point']];
     }
 
     #[\Override]

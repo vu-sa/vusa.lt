@@ -1,12 +1,15 @@
 <?php
 
+use App\Actions\Media\AddImageMedia;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\Reservation;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 pest()->use(RefreshDatabase::class);
 
@@ -126,6 +129,26 @@ describe('merging dutiables', function (): void {
         expect($survivor->start_date->toDateString())->toBe('2024-01-01')
             ->and($survivor->end_date)->toBeNull()
             ->and($survivor->additional_email)->toBe('kept@vusa.lt');
+    });
+
+    test('a collapsed assignment keeps the photo only the merged row had', function (): void {
+        Storage::fake('spatieMediaLibrary');
+        $kept = makeUser($this->tenant);
+        $merged = makeUser($this->tenant);
+        $sharedDuty = Duty::factory()->create(['institution_id' => $this->institution->id]);
+
+        Dutiable::factory()->forDuty($sharedDuty)->forUser($kept)->create(['start_date' => '2024-01-01', 'end_date' => null]);
+        $mergedRow = Dutiable::factory()->forDuty($sharedDuty)->forUser($merged)->create(['start_date' => '2024-06-01', 'end_date' => '2024-12-01']);
+        $photo = app(AddImageMedia::class)->execute($mergedRow, UploadedFile::fake()->image('seat.png'), 'photo');
+
+        asUser($this->admin)->post(route('users.mergeUsers'), [
+            'kept_user_id' => $kept->id,
+            'merged_user_id' => $merged->id,
+        ]);
+
+        $survivor = Dutiable::where('duty_id', $sharedDuty->id)->where('dutiable_id', $kept->id)->sole();
+
+        expect($survivor->getFirstMedia('photo')?->id)->toBe($photo->id);
     });
 
     test('does not collapse two genuinely separate stints on the same duty', function (): void {

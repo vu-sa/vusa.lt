@@ -66,3 +66,9 @@ ordinary calendar form.
 
 ## is_remote is an explicit flag, not inferred from empty location
 `calendar.is_remote` is a real boolean column, independent of the free-text `location`. It gates geocoding (`PublicPageController::calendarEventMain()` skips `LocationGeocoder` when true), the map/address UI (`EventDetailsCard.vue`), and `Calendar::toEventSchema()`'s `eventAttendanceMode` (explicit flag wins; an empty `location` on an older row is only a fallback). `AnnounceMeetingInCalendar` seeds it from `Meeting::type === MeetingType::Remote` when creating the announcement, but it stays independently editable afterward — it is not meeting-specific, any event can be marked remote.
+
+## Form images are media collections, never URL columns
+A model with an image implements `App\Contracts\ImageMediaOwner` and uses `HasImageMedia`; collections are declared with `registerImageCollection()` so they get the shared `thumb`/`medium`/`large` WebP conversions. Never add a column holding an upload URL. Focal point, alt and author are custom properties on the media, not owner columns.
+- Forms post `ImageData` (`{collection}_media`) and controllers apply it with `SyncImageMedia`; serialize with `imageData()`.
+- A column that must stay for readers that cannot eager-load media (avatar lists: `users.profile_photo_path`, `dutiables.additional_photo` + their focal columns) is a server-written cache declared in `imageCacheColumns()` and refreshed by `refreshImageCache()`; never write it from a request.
+- Media writes fire no owner events: reindexing and cache flushes go in `afterImageMediaChanged()` / `afterImageCacheRefreshed()`.

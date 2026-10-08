@@ -16,6 +16,7 @@ use App\Listeners\NotifyUsersOfComment;
 use App\Listeners\PruneRejectedPushSubscription;
 use App\Listeners\QueueNotificationForDigest;
 use App\Listeners\RecordDeviceLogin;
+use App\Listeners\RefreshImageCacheAfterConversion;
 use App\Listeners\ReservationResource\HandleReservationResourceCreated;
 use App\Listeners\ReservationResource\HandleReservationResourceStateChanged;
 use App\Listeners\ResolveInstitutionActivityRequests;
@@ -45,6 +46,7 @@ use Illuminate\Notifications\Events\NotificationSending;
 use NotificationChannels\WebPush\Events\NotificationFailed;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use SocialiteProviders\Microsoft\MicrosoftExtendSocialite;
+use Spatie\MediaLibrary\Conversions\Events\ConversionHasBeenCompletedEvent;
 use Spatie\ModelStates\Events\StateChanged;
 use Spatie\Permission\Models\Permission;
 
@@ -98,6 +100,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         NotificationFailed::class => [
             PruneRejectedPushSubscription::class,
+        ],
+        ConversionHasBeenCompletedEvent::class => [
+            RefreshImageCacheAfterConversion::class,
         ],
     ];
 

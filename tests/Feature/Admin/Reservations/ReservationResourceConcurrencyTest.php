@@ -81,8 +81,8 @@ test('a competing capacity claim waits for the first booking and then sees its a
 
     $owner->commit();
     expect(fn () => DB::transaction(fn () => EnsureReservationCapacity::execute($lines, $start, $end)))
-        ->toThrow(ValidationException::class);
-    expect((int) ReservationResource::where('resource_id', $this->resource->id)->sum('quantity'))->toBe(1);
+        ->toThrow(ValidationException::class)
+        ->and((int) ReservationResource::where('resource_id', $this->resource->id)->sum('quantity'))->toBe(1);
 });
 
 test('an approval waits for an edit and rechecks the resource manager after it commits', function (): void {
@@ -107,7 +107,7 @@ test('an approval waits for an edit and rechecks the resource manager after it c
 
     $owner->commit();
     expect(fn () => app(ApprovalService::class)->approve($pivot, $this->manager, ApprovalDecision::Approved))
-        ->toThrow(InvalidArgumentException::class);
-    expect($pivot->fresh()->resource_id)->toBe($otherResource->id);
-    expect($pivot->approvals()->count())->toBe(0);
+        ->toThrow(InvalidArgumentException::class)
+        ->and($pivot->fresh()->resource_id)->toBe($otherResource->id)
+        ->and($pivot->approvals()->count())->toBe(0);
 });

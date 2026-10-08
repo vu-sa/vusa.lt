@@ -5,12 +5,14 @@ namespace App\Models;
 use App\Actions\GetInstitutionManagers;
 use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
+use App\Contracts\ImageMediaOwner;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Pivots\InstitutionInstitutionType;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasComments;
+use App\Models\Traits\HasImageMedia;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
@@ -112,9 +114,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @mixin \Eloquent
  */
 #[Unguarded]
-class Institution extends Model implements Commentable, GuardsForceDelete, SharepointFileableContract
+class Institution extends Model implements Commentable, GuardsForceDelete, ImageMediaOwner, SharepointFileableContract
 {
-    use GuardsForceDeleteWhenReferenced, HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasComments, HasFactory, HasImageMedia, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
 
     public $translatable = ['name', 'short_name', 'description', 'address', 'working_hours'];
 
@@ -374,6 +376,42 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
             'current_user_names' => $currentUserNames,
             'duty_names' => $dutyNames,
             'created_at' => $this->created_at->timestamp,
+        ];
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->registerImageCollection('image');
+        $this->registerImageCollection('logo');
+    }
+
+    /**
+     * Saving refreshes the public caches and the public search index.
+     */
+    public function afterImageMediaChanged(string $collection): void
+    {
+        $this->touch();
+    }
+
+    /**
+     * Transitional(legacy-images): remove once nothing reads the columns, then drop them.
+     */
+    public function imageCacheColumns(): array
+    {
+        return [
+            'image' => ['url' => 'image_url', 'focal' => 'image_focal_point', 'conversion' => 'large'],
+            'logo' => ['url' => 'logo_url', 'conversion' => 'thumb'],
+        ];
+    }
+
+    /**
+     * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+     */
+    public function legacyImageColumns(): array
+    {
+        return [
+            'image' => ['url' => 'image_url', 'focal' => 'image_focal_point'],
+            'logo' => ['url' => 'logo_url'],
         ];
     }
 

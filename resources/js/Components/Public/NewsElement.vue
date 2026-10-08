@@ -77,7 +77,9 @@
             class="group flex gap-4 border-t border-border py-5 first:border-t-0 first:pt-0 sm:gap-5 lg:first:border-t lg:first:pt-5"
           >
             <MediaFrame
+              :image="item.image_media"
               :src="item.image ?? undefined"
+              sizes="(min-width: 640px) 176px, 128px"
               :alt="item.title"
               ratio="16/9"
               :grayscale="false"

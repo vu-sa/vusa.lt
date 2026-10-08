@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\HasImageValidation;
 use App\Http\Requests\Concerns\ValidatesContentParts;
+use App\Models\News;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -10,6 +12,7 @@ use Illuminate\Support\Carbon;
 
 class NewsRequest extends FormRequest
 {
+    use HasImageValidation;
     use ValidatesContentParts;
 
     protected function prepareForValidation(): void
@@ -42,7 +45,6 @@ class NewsRequest extends FormRequest
             'lang' => 'required|in:lt,en',
             'other_lang_id' => ['nullable', 'integer', SoftDeleteRules::existsLive('news')],
             'draft' => 'nullable|boolean',
-            'image_author' => 'nullable|string',
             'publish_time' => 'required_unless:draft,true|nullable|date',
             'show_breadcrumbs' => ['boolean'],
             'highlights' => 'nullable|array|max:3',
@@ -50,6 +52,7 @@ class NewsRequest extends FormRequest
             'content' => 'required|array',
             'tags' => 'nullable|array',
             'tags.*' => ['integer', SoftDeleteRules::existsLive('tags')],
+            ...$this->imageMediaRules('image_media', $this->route('news') instanceof News ? $this->route('news') : new News, 'image'),
         ];
     }
 

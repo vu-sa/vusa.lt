@@ -3,11 +3,13 @@
 use App\Models\Banner;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    Storage::fake('spatieMediaLibrary');
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
@@ -87,7 +89,8 @@ describe('authorized access', function (): void {
         $validData = getControllerTestData('Banner')['valid'];
         $uniqueSuffix = time();
         $validData['title'] = 'Naujas baneris '.$uniqueSuffix;
-        $validData['image_url'] = 'https://example.com/banner-'.$uniqueSuffix.'.jpg';
+        $staged = stageImage($this->admin);
+        $validData['image_media'] = ['id' => $staged->id];
 
         asUser($this->admin)
             ->post(route('banners.store'), $validData)
@@ -97,18 +100,18 @@ describe('authorized access', function (): void {
 
         $this->assertDatabaseHas('banners', [
             'title' => $validData['title'],
-            'image_url' => $validData['image_url'],
             'link_url' => $validData['link_url'],
             'is_active' => $validData['is_active'],
             'tenant_id' => $this->tenant->id,
         ]);
+        expect(Banner::query()->where('title', $validData['title'])->sole()->getFirstMedia('image')->id)->toBe($staged->id);
     });
 
     test('can store banner without a logo — it renders as a text mark instead', function (): void {
         $validData = getControllerTestData('Banner')['valid'];
         $uniqueSuffix = time();
         $validData['title'] = 'Baneris be logotipo '.$uniqueSuffix;
-        unset($validData['image_url']);
+        unset($validData['image_url'], $validData['image_media']);
 
         asUser($this->admin)
             ->post(route('banners.store'), $validData)
@@ -145,7 +148,8 @@ describe('authorized access', function (): void {
     test('can update banner with valid data', function (): void {
         $updateData = getControllerTestData('Banner')['valid'];
         $updateData['title'] = 'Atnaujintas baneris';
-        $updateData['image_url'] = 'https://example.com/updated.jpg';
+        $staged = stageImage($this->admin);
+        $updateData['image_media'] = ['id' => $staged->id];
 
         asUser($this->admin)
             ->patch(route('banners.update', $this->banner), $updateData)
@@ -155,8 +159,8 @@ describe('authorized access', function (): void {
         $this->assertDatabaseHas('banners', [
             'id' => $this->banner->id,
             'title' => 'Atnaujintas baneris',
-            'image_url' => 'https://example.com/updated.jpg',
         ]);
+        expect($this->banner->refresh()->getFirstMedia('image')->id)->toBe($staged->id);
     });
 
     test('cannot update banner with invalid data - missing title', function (): void {
@@ -174,10 +178,21 @@ describe('authorized access', function (): void {
         ]);
     });
 
-    test('can update banner with an empty image_url — the logo is optional', function (): void {
+    test('another person\'s staged upload cannot become the logo', function (): void {
+        $updateData = getControllerTestData('Banner')['valid'];
+        $updateData['image_media'] = ['id' => stageImage(makeUser($this->tenant))->id];
+
+        asUser($this->admin)
+            ->patch(route('banners.update', $this->banner), $updateData)
+            ->assertSessionHasErrors('image_media.id');
+
+        expect($this->banner->refresh()->getMedia('image'))->toBeEmpty();
+    });
+
+    test('removing the logo clears it — the logo is optional', function (): void {
         $updateData = getControllerTestData('Banner')['valid'];
         $updateData['title'] = 'Valid title';
-        $updateData['image_url'] = '';
+        $updateData['image_media'] = null;
 
         asUser($this->admin)
             ->patch(route('banners.update', $this->banner), $updateData)

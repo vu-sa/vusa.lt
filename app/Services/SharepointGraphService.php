@@ -623,7 +623,7 @@ class SharepointGraphService
         }, $driveItemIds));
 
         return $this->executeWithRetry(
-            fn () => (new BatchRequestBuilder($this->graph->getRequestAdapter()))->postAsync($batch)->wait(),
+            fn () => new BatchRequestBuilder($this->graph->getRequestAdapter())->postAsync($batch)->wait(),
             'getListItemsForDriveItems',
         );
     }

@@ -54,7 +54,6 @@ class CalendarRequest extends FormRequest
             'cto_url.lt' => 'nullable|url',
             'cto_url.en' => 'nullable|url',
             'facebook_url' => 'nullable|url',
-            'main_image_focal_point' => 'nullable|string|max:20',
             'is_draft' => 'boolean',
             'is_all_day' => 'boolean',
             'is_international' => 'boolean',
@@ -64,16 +63,23 @@ class CalendarRequest extends FormRequest
             'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope($this->tenantScopePermission)],
             'tags' => 'nullable|array',
             'tags.*' => ['integer', SoftDeleteRules::existsLive('tags')],
+            ...$this->imageMediaRules('main_image_media', $this->calendar() ?? new Calendar, 'main_image'),
         ];
 
         // Skip file validation during precognitive requests
         if (! $this->isPrecognitive()) {
-            $rules['main_image'] = $this->singleImageRules(maxMB: 10);
             $rules['images'] = $this->imagesArrayRules(maxFiles: 20);
             $rules['images.*'] = $this->galleryImageRules(maxMB: 5);
         }
 
         return $rules;
+    }
+
+    private function calendar(): ?Calendar
+    {
+        $calendar = $this->route('calendar');
+
+        return $calendar instanceof Calendar ? $calendar : null;
     }
 
     /**

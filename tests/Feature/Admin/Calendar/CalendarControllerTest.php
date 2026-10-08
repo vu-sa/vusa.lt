@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Media\AddImageMedia;
 use App\Models\Calendar;
 use App\Models\EventType;
 use App\Models\PublicUrl;
@@ -195,22 +196,25 @@ describe('authorized access', function (): void {
         ]);
     });
 
-    test('calendar manager can store a main image focal point', function (): void {
+    test('calendar manager can store a main image with its focal point', function (): void {
+        Storage::fake('spatieMediaLibrary');
+        $staged = stageImage($this->calendarManager);
         $calendarData = [
             'title' => ['lt' => 'Renginys su fokuso tašku', 'en' => 'Event with focal point'],
             'permalink' => ['lt' => 'renginys-su-fokuso-tasku', 'en' => 'event-with-focal-point'],
             'date' => now()->addDays(1)->format('Y-m-d'),
             'tenant_id' => $this->tenant->id,
             'event_type_id' => $this->eventType->id,
-            'main_image_focal_point' => '40% 25%',
+            'main_image_media' => ['id' => $staged->id, 'focal_point' => '40% 25%'],
         ];
 
         asUser($this->calendarManager)->post(route('calendar.store'), $calendarData)->assertRedirect();
 
-        $this->assertDatabaseHas('calendar', [
-            'title->lt' => 'Renginys su fokuso tašku',
-            'main_image_focal_point' => '40% 25%',
-        ]);
+        $calendar = Calendar::query()->where('title->lt', 'Renginys su fokuso tašku')->sole();
+
+        expect($calendar->getFirstMedia('main_image')->id)->toBe($staged->id)
+            ->and($calendar->main_image_focal_point)->toBe('40% 25%')
+            ->and($calendar->main_image_media['focal_point'])->toBe('40% 25%');
     });
 
     test('hero style defaults to card when omitted on store', function (): void {
@@ -334,12 +338,14 @@ describe('authorized access', function (): void {
     });
 
     test('calendar manager can duplicate calendar event', function (): void {
+        Storage::fake('spatieMediaLibrary');
         $calendar = Calendar::factory()->create([
             'tenant_id' => $this->tenant->id,
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
             'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
             'is_draft' => false,
         ]);
+        $original = app(AddImageMedia::class)->execute($calendar, UploadedFile::fake()->image('event.jpg'), 'images');
 
         $initialCount = Calendar::count();
 
@@ -360,6 +366,8 @@ describe('authorized access', function (): void {
             ->first();
 
         expect($duplicatedCalendar)->not()->toBeNull()
+            ->and($duplicatedCalendar->getFirstMedia('images')->id)->not->toBe($original->id)
+            ->and($calendar->fresh()->getFirstMedia('images')->id)->toBe($original->id)
             ->and($duplicatedCalendar->title)->toContain('(kopija)')
             ->and($duplicatedCalendar->is_draft)->toBeTrue()
             ->and($duplicatedCalendar->id)->not()
@@ -547,7 +555,8 @@ describe('validation', function (): void {
             ->assertSessionHasErrors('hero_style');
     });
 
-    test('saves images to calendar', function (): void {
+    test('saves gallery images to calendar as normalized media', function (): void {
+        Storage::fake('spatieMediaLibrary');
         $image = UploadedFile::fake()->image('calendar-image.jpg', 800, 600);
 
         $calendarData = [
@@ -557,21 +566,15 @@ describe('validation', function (): void {
             'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
             'tenant_id' => $this->tenant->id,
             'event_type_id' => $this->eventType->id,
-            'images' => [['file' => $image]],
+            'images' => [$image],
         ];
 
-        $response = asUser($this->calendarManager)->post(route('calendar.store'), $calendarData);
+        asUser($this->calendarManager)->post(route('calendar.store'), $calendarData)->assertSessionHasNoErrors();
 
-        // Should either succeed or fail gracefully
-        expect($response->status())->toBeIn([200, 302, 422]);
+        $media = Calendar::query()->where('title->lt', 'Renginys su nuotrauka')->sole()->getFirstMedia('images');
 
-        // If image upload is implemented, verify it was stored
-        if ($response->status() === 302) {
-            $calendar = Calendar::latest()->first();
-            if ($calendar && $calendar->image_path) {
-                expect(Storage::exists($calendar->image_path))->toBeTrue();
-            }
-        }
+        expect($media->mime_type)->toBe('image/webp')
+            ->and($media->getCustomProperty('width'))->toBe(800);
     });
 });
 

@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Services\StagingAccountScrubber;
 use App\Services\StagingIsolationService;
+use App\Services\StagingMediaStore;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -39,7 +40,7 @@ class StagingRefreshDatabase extends Command
         'activity_log',
     ];
 
-    public function handle(StagingIsolationService $isolation, StagingAccountScrubber $accountScrubber): int
+    public function handle(StagingIsolationService $isolation, StagingAccountScrubber $accountScrubber, StagingMediaStore $mediaStore): int
     {
         // The only thing standing between this command and dropping the production database. It is
         // deliberately not overridable: there is no --force, and no prompt a tired person can accept
@@ -77,6 +78,14 @@ class StagingRefreshDatabase extends Command
             if (! $this->dropAllTables() || ! $this->import($backup)) {
                 return self::FAILURE;
             }
+
+            if (! $mediaStore->wipe()) {
+                $this->error('Refused to empty the staging media disk: '.$mediaStore->rootError());
+
+                return self::FAILURE;
+            }
+
+            $this->info('Emptied the staging media disk.');
         }
 
         $preserveAccountEmails = ! $this->option('scrub-only')

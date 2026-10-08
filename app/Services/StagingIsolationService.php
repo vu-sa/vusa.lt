@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\StagingProtection;
 use Illuminate\Support\Uri;
 
 class StagingIsolationService
@@ -26,6 +27,7 @@ class StagingIsolationService
             config('queue.connections.redis.queue') !== 'staging' ? 'REDIS_QUEUE must be staging.' : null,
             config('scout.prefix') !== 'staging_' ? 'SCOUT_PREFIX must be staging_.' : null,
             config('app.files_read_only') !== true ? 'FILES_READ_ONLY must be true.' : null,
+            ...$this->mediaErrors(),
             ...$this->sharepointErrors(),
             config('mail.default') !== 'log' ? 'The staging mailer must be log.' : null,
             ...$this->broadcastingErrors(),
@@ -59,6 +61,22 @@ class StagingIsolationService
             ! $this->missing($expectedUsername) && $username !== $expectedUsername
                 ? 'DB_USERNAME does not match STAGING_EXPECTED_DB_USERNAME.'
                 : null,
+        ]));
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function mediaErrors(): array
+    {
+        return array_values(array_filter([
+            config('media-library.disk_name') !== StagingProtection::STAGING_MEDIA_DISK
+                ? 'New media must be written to the stagingMedia disk.'
+                : null,
+            config('filesystems.disks.spatieMediaLibrary.read-only') !== true
+                ? 'The production media disk must be read-only on staging.'
+                : null,
+            app(StagingMediaStore::class)->rootError(),
         ]));
     }
 

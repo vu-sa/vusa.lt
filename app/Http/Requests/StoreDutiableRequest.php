@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\HasImageValidation;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
@@ -16,6 +17,8 @@ use Illuminate\Validation\Validator;
 
 class StoreDutiableRequest extends FormRequest
 {
+    use HasImageValidation;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -62,8 +65,7 @@ class StoreDutiableRequest extends FormRequest
             'study_program_note.lt' => ['nullable', 'string', 'max:100'],
             'study_program_note.en' => ['nullable', 'string', 'max:100'],
             'additional_email' => ['nullable', 'email'],
-            'additional_photo' => ['nullable', 'string'],
-            'additional_photo_focal_point' => ['nullable', 'string', 'max:20'],
+            ...$this->imageMediaRules('photo_media', new Dutiable, 'photo'),
             'description' => ['nullable', 'array'],
             'description.lt' => ['nullable', 'string'],
             'description.en' => ['nullable', 'string'],

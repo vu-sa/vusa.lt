@@ -66,18 +66,16 @@
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FormFieldWrapper id="institution-image" :label="$t('Nuotrauka')">
           <ImageUpload
-            v-model:url="form.image_url"
-            v-model:focal-point-value="form.image_focal_point"
-            mode="immediate"
+            v-model:image="form.image_media"
+            mode="media"
             cropper
             compress
             focal-point
-            folder="institutions"
           />
         </FormFieldWrapper>
 
         <FormFieldWrapper id="institution-logo" :label="$t('Logotipas')">
-          <ImageUpload v-model:url="form.logo_url" mode="immediate" cropper compress folder="institutions" />
+          <ImageUpload v-model:image="form.logo_media" mode="media" cropper compress />
         </FormFieldWrapper>
       </div>
 
@@ -225,6 +223,7 @@ import { Input } from '@/Components/ui/input';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { Textarea } from '@/Components/ui/textarea';
 import { ImageUpload } from '@/Components/ui/upload';
+import type { ImageData } from '@/Types/media';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import type { StatusPresentation } from '@/Constants/statuses';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
@@ -271,9 +270,8 @@ const initial = () => ({
   tenant_id: (source.tenant_id ?? null) as number | null,
   is_active: source.is_active === undefined ? 1 : (source.is_active ? 1 : 0),
   types: (Array.isArray(source.types) ? source.types : []) as number[],
-  image_url: (source.image_url ?? null) as string | null,
-  image_focal_point: (source.image_focal_point ?? null) as string | null,
-  logo_url: (source.logo_url ?? null) as string | null,
+  image_media: (source.image_media ?? null) as ImageData | null,
+  logo_media: (source.logo_media ?? null) as ImageData | null,
   email: (source.email ?? '') as string,
   phone: (source.phone ?? '') as string,
   website: (source.website ?? '') as string,

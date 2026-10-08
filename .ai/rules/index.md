@@ -13,7 +13,6 @@ Before planning or editing, find the row whose globs match the file's path and r
 | tests/Browser/** | .ai/rules/browser.md |
 | app/Models/Cadence.php, app/Policies/CadencePolicy.php, app/Actions/Cadences/**, app/Http/Requests/Cadences/**, resources/js/Components/Cadences/**, app/Http/Requests/UpdateInstitutionAdministratorsRequest.php, app/Actions/ResolveCadence*.php | .ai/rules/cadences.md |
 | docs/changelog/**, docs/en/changelog/** | .ai/rules/changelog.md |
-| resources/js/Components/Staging*.vue, resources/js/Composables/useStaging.ts, app/Http/Middleware/Staging*.php, app/Services/NotificationRouter.php, app/Listeners/BlockExternalNotificationsOnStaging.php | .ai/rules/staging.md |
 | config/vusa.php | .ai/rules/config.md |
 | resources/js/Components/Patterns/**, resources/js/Constants/** | .ai/rules/constants.md |
 | app/Http/Controllers/** | .ai/rules/controllers.md |
@@ -34,6 +33,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Http/Controllers/Admin/MailQueueController.php, app/Console/Commands/PruneNotificationDigests.php, resources/js/Pages/Admin/MailQueue.vue | .ai/rules/mail-queue.md |
 | app/Models/Meeting.php, app/Models/Vote.php, app/Models/Pivots/AgendaItem.php, app/Http/Requests/UpdateAgendaItemRequest.php, app/Http/Controllers/Admin/AgendaItemController.php, app/Enums/AgendaItemType.php, app/Services/MeetingCompletionService.php, app/Tasks/Handlers/AgendaCompletionTaskHandler.php, resources/js/Composables/useAgendaItemStyling.ts | .ai/rules/meetings-agenda.md |
 | resources/js/Pages/Admin/People/Show*.vue, app/Http/Middleware/HandleInertiaRequests.php | .ai/rules/middleware.md |
+| database/migrations/**, tests/Feature/Migrations/** | .ai/rules/migrations.md |
 | app/Models/**, app/Models/Tenant.php, app/Models/Calendar.php | .ai/rules/models.md |
 | app/Services/NavigationService.php, app/Http/Requests/NavigationRequest.php, app/Http/Controllers/Admin/NavigationController.php, app/Models/Navigation.php | .ai/rules/navigation.md |
 | app/Http/Controllers/SitemapController.php, app/Models/News.php | .ai/rules/news-sitemap.md |
@@ -49,6 +49,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Services/** | .ai/rules/services.md |
 | resources/js/Pages/Admin/Settings/**, app/Settings/** | .ai/rules/settings.md |
 | app/Services/AdminNavigation/**, resources/js/Components/Layouts/Shell/** | .ai/rules/shell.md |
+| resources/js/Components/Staging*.vue, resources/js/Composables/useStaging.ts, app/Http/Middleware/Staging*.php, app/Services/NotificationRouter.php, app/Listeners/BlockExternalNotificationsOnStaging.php, app/Support/StagingProtection.php, app/Services/StagingMediaStore.php | .ai/rules/staging.md |
 | app/Support/MorphMap.php, app/Support/LocalizedRouteSlugs.php | .ai/rules/support.md |
 | app/Tasks/**, app/Models/Task.php, app/Models/Traits/HasTasks.php, app/Http/Controllers/Admin/TaskController.php, app/Actions/ResolveTaskAssignees.php, app/Actions/ResolveTaskAudience.php, app/Actions/ResyncTaskAssigneesForCadence.php, app/Actions/Schedulable/**, app/Listeners/HandleTaskCreated.php, app/Console/Commands/SendTaskOverdueReminders.php, app/Models/Cadence.php | .ai/rules/tasks.md |
 | tests/** | .ai/rules/tests.md |

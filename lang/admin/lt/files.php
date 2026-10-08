@@ -190,4 +190,5 @@ return [
         'success' => 'Paveikslėlis optimizuotas',
         'error' => 'Nepavyko optimizuoti paveikslėlio',
     ],
+    'pending_upload_limit' => 'Turi per daug neišsaugotų nuotraukų. Išsaugok ar atšauk atidarytas formas ir bandyk dar kartą.',
 ];

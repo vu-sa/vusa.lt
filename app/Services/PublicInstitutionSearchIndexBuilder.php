@@ -16,6 +16,7 @@ class PublicInstitutionSearchIndexBuilder
         $institution->loadMissing([
             'tenant',
             'types',
+            'media',
         ]);
 
         $duties = $institution->duties()
@@ -73,9 +74,9 @@ class PublicInstitutionSearchIndexBuilder
             'address_en' => $institution->getTranslation('address', 'en'),
 
             // Media
-            'image_url' => $institution->image_url,
-            'logo_url' => $institution->logo_url,
-            'has_logo' => ! empty($institution->logo_url),
+            'image_url' => $institution->imageData('image')['url'] ?? null,
+            'logo_url' => $institution->imageData('logo')['thumb'] ?? null,
+            'has_logo' => $institution->imageData('logo') !== null,
             'facebook_url' => $institution->facebook_url,
             'instagram_url' => $institution->instagram_url,
 
