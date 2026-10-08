@@ -27,7 +27,7 @@ class DiscoveryResult
     public array $unmatchedLabels = [];
 
     /**
-     * @param  'already_running'|'mass_removal'|null  $abortReason
+     * @param  'already_running'|'mass_removal'|'throttled'|null  $abortReason
      */
     public function __construct(
         public bool $full = false,

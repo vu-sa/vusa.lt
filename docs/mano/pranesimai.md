@@ -5,6 +5,7 @@ area: notifications
 models: [DatabaseNotification]
 last_reviewed: 2026-10-08
 tests:
+  - tests/Feature/Admin/Core/UserNotificationsControllerTest.php
   - tests/Feature/Notifications/NotificationCountTest.php
   - tests/Feature/Notifications/DigestSystemTest.php
   - tests/Feature/Notifications/NotificationSettingsTest.php
@@ -86,6 +87,9 @@ Viršuje esantis mygtukas **Pranešimų nustatymai** nukreipia į tavo profilio 
 Šioje skiltyje kiekvienas narys mato ir valdo **tik savo pranešimus**. Čia ir superadministratorius
 mato savo, o ne kitų narių pranešimų dėžutę.
 
+Bandant pakeisti ar ištrinti nepasiekiamą pranešimą, parodoma prieigos klaida ir pranešimas nekeičiamas.
+Jau perskaitytą savo pranešimą galima dar kartą pažymėti skaitytu – ankstesnė skaitymo data išlieka.
+
 ## Pranešimai ir automatizavimas {#automatizavimas}
 
 Pažymėjus pranešimą kaip skaitytą platformoje, jis pašalinamas iš dar neišsiųstos el. pašto
@@ -98,4 +102,5 @@ Tai nekeičia jau išsiųstų laiškų.
 - Sąsaja naudoja `CollectionPage.vue` kartu su `ShowNotifications.vue` ir `NotificationCard.vue`.
 - Pažymėjus skaitytu (`markAsRead` / `markAllAsRead`), atitinkami įrašai ištrinami iš `NotificationDigestQueue` lentelės.
 - Prieiga tikrinama pagal sesiją: užklausos filtruojamos pagal prisijungusio naudotojo ID (`Auth::id()`), o pranešimų ID ieškoma tik jo pranešimuose.
+- Kito nario ir neegzistuojantis pranešimo ID tiesioginėje užklausoje gauna HTTP 403. Inertia užklausa grąžinama atgal su `error` pranešimu (302, trynimui – 303).
 - Testai: `NotificationCountTest`, `DigestSystemTest`.

@@ -175,6 +175,13 @@ ir su keliais pasirinktais ištekliais iš karto.
   rezervuota → pateikta, paskolinta → rezervuota, grąžinta → paskolinta. Atšauktas patvirtinimas lieka
   istorijoje su tavo nurodyta priežastimi.
 
+<ChangelogNote version="v3.0" date="2026-10-02" title="Grupinio atšaukimo teisės tikrinamos iš anksto">
+
+Pasirinkus kelis daiktus veiksmui **Atšaukti paskutinį veiksmą**, pirmiausia tikrinamos teisės į visus
+pasirinktus daiktus. Jei bent vieno valdyti negalima, nė vieno būsena nekeičiama ir parodoma prieigos klaida.
+
+</ChangelogNote>
+
 ::: tip Išteklių filtravimas rezervacijos puslapyje
 Jei rezervacijoje yra daiktų iš kelių padalinių, rezervacijos puslapyje (`/mano/reservations/{id}`)
 atsiranda padalinio pasirinkimo filtras. Taip administratorius gali matyti tik savo padalinio daiktus

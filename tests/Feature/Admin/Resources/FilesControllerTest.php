@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Duty;
 use App\Models\File;
 use App\Models\Institution;
@@ -101,6 +102,75 @@ beforeEach(function (): void {
     Storage::disk('public')->put('files/padaliniai/vusaother/forbidden.txt', 'forbidden content');
 });
 
+describe('Files Controller - Inertia authorization', function (): void {
+    test('permission denials redirect back with an error and leave storage unchanged', function (string $method, string $routeName, string $actor, string $location, string $message): void {
+        $user = match ($actor) {
+            'reader' => makeFileReader($this->institution),
+            'manager' => $this->fileManager,
+            default => $this->regularUser,
+        };
+        $directory = $location === 'forbidden' ? $this->forbiddenPath : $this->allowedPath;
+        $filePath = $directory.'/keep.jpg';
+        Storage::put($filePath, 'original content');
+        Storage::makeDirectory($directory.'/empty');
+        Storage::disk('public')->makeDirectory(substr($directory, strlen('public/')).'/empty');
+        $payload = match ($routeName) {
+            'files.index' => [],
+            'files.createDirectory' => ['path' => $directory, 'name' => 'new-folder'],
+            'files.deleteDirectory' => ['path' => $directory.'/empty'],
+            'files.bulkDelete' => ['paths' => [$filePath]],
+            default => ['path' => $filePath],
+        };
+        $referrer = route('dashboard');
+
+        $response = asUserWithInertia($user)
+            ->withHeader('X-Inertia-Version', (string) app(HandleInertiaRequests::class)->version(request()))
+            ->from($referrer)
+            ->{$method}(route($routeName), $payload);
+
+        $expectedMessage = $routeName === 'files.bulkDelete'
+            ? __($message, ['name' => basename($filePath)])
+            : __($message);
+        $response->assertRedirect($referrer)
+            ->assertStatus($method === 'delete' ? 303 : 302)
+            ->assertSessionHas('error', $expectedMessage)
+            ->assertSessionHasNoErrors()
+            ->assertSessionMissing('data');
+        expect(Storage::get($filePath))->toBe('original content');
+        expect(Storage::directoryExists($directory.'/empty'))->toBeTrue();
+        Storage::disk('public')->assertExists(substr($directory, strlen('public/')).'/empty');
+        Storage::disk('public')->assertMissing(substr($directory, strlen('public/')).'/new-folder');
+    })->with([
+        'no filesystem access' => ['get', 'files.index', 'regular', 'allowed', 'files.errors.no_filesystem_access'],
+        'create outside tenant' => ['post', 'files.createDirectory', 'manager', 'forbidden', 'files.errors.no_create_directory_permission'],
+        'read-only create' => ['post', 'files.createDirectory', 'reader', 'allowed', 'files.errors.no_create_directory_permission'],
+        'read-only directory delete' => ['delete', 'files.deleteDirectory', 'reader', 'allowed', 'files.errors.no_directory_delete_permission'],
+        'delete outside tenant' => ['delete', 'files.delete', 'manager', 'forbidden', 'files.errors.no_delete_permission'],
+        'read-only delete' => ['delete', 'files.delete', 'reader', 'allowed', 'files.errors.no_delete_permission'],
+        'read-only bulk delete' => ['delete', 'files.bulkDelete', 'reader', 'allowed', 'files.errors.bulk_no_delete_permission'],
+        'read-only compression' => ['post', 'files.compress', 'reader', 'allowed', 'files.errors.no_modify_permission'],
+        'scan outside tenant' => ['post', 'files.scanUsage', 'manager', 'forbidden', 'files.errors.no_scan_permission'],
+    ]);
+
+    test('mixed-permission bulk deletion redirects without deleting permitted files', function (): void {
+        $paths = [$this->allowedPath.'/keep.txt', $this->forbiddenPath.'/keep.txt'];
+        foreach ($paths as $path) {
+            Storage::put($path, 'original content');
+        }
+        $referrer = route('files.index', ['path' => $this->allowedPath]);
+
+        asUserWithInertia($this->fileManager)->from($referrer)
+            ->delete(route('files.bulkDelete'), ['paths' => $paths])
+            ->assertRedirect($referrer)
+            ->assertStatus(303)
+            ->assertSessionHas('error', __('files.errors.bulk_no_delete_permission', ['name' => 'keep.txt']));
+
+        foreach ($paths as $path) {
+            expect(Storage::get($path))->toBe('original content');
+        }
+    });
+});
+
 describe('Files Controller - Authentication & Authorization', function (): void {
     test('unauthenticated users cannot access files index', function (): void {
         $response = $this->get(route('files.index'));
@@ -114,11 +184,10 @@ describe('Files Controller - Authentication & Authorization', function (): void 
         expect($response->status())->toBe(401);
     });
 
-    test('regular user without permissions is redirected to dashboard', function (): void {
+    test('regular user without permissions receives forbidden', function (): void {
         $response = asUser($this->regularUser)->get(route('files.index'));
 
-        expect($response->status())->toBe(302)
-            ->and($response->headers->get('location'))->toContain('mano');
+        $response->assertForbidden();
     });
 
     test('file manager can access files within their tenant', function (): void {
@@ -222,8 +291,8 @@ describe('Files Controller - Directory Creation', function (): void {
             'name' => 'forbidden-directory',
         ]);
 
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('permission');
+        $response->assertForbidden();
+        Storage::disk('public')->assertMissing('files/padaliniai/vusaother/forbidden-directory');
     });
 
     test('directory creation validates name format', function (): void {
@@ -322,8 +391,7 @@ describe('Files Controller - Directory Deletion', function (): void {
         $deleteResponse = asUser($readerUser)->delete(route('files.deleteDirectory'), [
             'path' => $fullPath,
         ]);
-        expect($deleteResponse->status())->toBe(302);
-        $deleteResponse->assertSessionHasErrors('permission');
+        $deleteResponse->assertForbidden();
         expect(Storage::directoryExists($fullPath))->toBeTrue();
 
         // Actor with both read and delete permissions can delete directory
@@ -361,8 +429,8 @@ describe('Files Controller - File Deletion', function (): void {
             'path' => $filePath,
         ]);
 
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('permission');
+        $response->assertForbidden();
+        Storage::disk('public')->assertExists('files/padaliniai/vusaother/forbidden.txt');
     });
 
     test('cannot delete non-existent file', function (): void {
@@ -419,27 +487,34 @@ describe('Files Controller - Bulk Delete', function (): void {
         )->toBeTrue();
     });
 
-    test('bulk delete handles mixed permissions correctly', function (): void {
+    test('bulk delete rejects the whole selection when the last file is forbidden', function (): void {
         $paths = [
-            $this->allowedPath.'/bulk1.txt',  // allowed
-            $this->forbiddenPath.'/forbidden.txt',  // forbidden
-            $this->allowedPath.'/bulk2.txt',  // allowed
+            $this->allowedPath.'/bulk1.txt',
+            $this->allowedPath.'/bulk2.txt',
+            $this->forbiddenPath.'/forbidden.txt',
         ];
+
+        foreach ($paths as $path) {
+            Storage::put($path, 'keep me');
+        }
 
         $response = asUser($this->fileManager)->delete(route('files.bulkDelete'), [
             'paths' => $paths,
         ]);
 
-        expect($response->status())->toBe(302);
-        // Should handle mixed permissions - some deleted, some skipped
+        $response->assertForbidden();
+        Storage::assertExists($paths);
+    });
 
-        // Just verify some response is given - either success, warning, or error
-        expect(
-            $response->getSession()->has('success') ||
-            $response->getSession()->has('warning') ||
-            $response->getSession()->has('error') ||
-            $response->getSession()->has('errors')
-        )->toBeTrue();
+    test('bulk deletion still deletes authorized files when other paths are missing or malformed', function (): void {
+        $filePath = $this->allowedPath.'/delete-me.txt';
+        Storage::put($filePath, 'content');
+
+        asUser($this->fileManager)->delete(route('files.bulkDelete'), [
+            'paths' => [$filePath, $this->allowedPath.'/missing.txt', '../../invalid.txt'],
+        ])->assertRedirect()->assertSessionHas('warning');
+
+        Storage::assertMissing($filePath);
     });
 
     test('bulk delete validates maximum number of files', function (): void {
@@ -755,9 +830,8 @@ describe('Files Controller - File Usage Scanning', function (): void {
             'path' => $filePath,
         ]);
 
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('error');
-        expect(session('errors')->first('error'))->toContain('Neturi teisių skenuoti šio failo naudojimą');
+        $response->assertForbidden()->assertSessionMissing('data');
+        Storage::assertExists($filePath);
     });
 
     test('super admin can scan file usage in any directory', function (): void {
@@ -1032,11 +1106,9 @@ describe('Files Controller - Deletion requires the delete permission', function 
         expect(asUser($reader)->getJson('/api/v1/admin/files?path='.urlencode($this->allowedPath))->status())
             ->toBe(200);
 
-        // ...but deleting inside it is not.
         $response = asUser($reader)->delete(route('files.delete'), ['path' => $filePath]);
 
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('permission');
+        $response->assertForbidden();
         expect(Storage::exists($filePath))->toBeTrue();
     });
 
@@ -1051,7 +1123,7 @@ describe('Files Controller - Deletion requires the delete permission', function 
 
         $response = asUser($reader)->delete(route('files.bulkDelete'), ['paths' => $paths]);
 
-        expect($response->status())->toBe(302);
+        $response->assertForbidden();
 
         foreach ($paths as $path) {
             expect(Storage::exists($path))->toBeTrue();
@@ -1083,8 +1155,7 @@ describe('Files Controller - Compression requires the update permission', functi
 
         $response = asUser($reader)->post(route('files.compress'), ['path' => $imagePath]);
 
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('permission');
+        $response->assertForbidden();
 
         // The original is untouched — the permission check runs before any re-encoding.
         expect(Storage::get($imagePath))->toBe('not-really-a-jpeg');
@@ -1117,8 +1188,7 @@ describe('Files Controller - Creation requires the create permission', function 
             'name' => 'new-folder',
         ]);
 
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('permission');
+        $response->assertForbidden();
         expect(Storage::disk('public')->directoryExists('files/padaliniai/vusa'.$this->tenant->alias.'/new-folder'))
             ->toBeFalse();
     });

@@ -61,7 +61,7 @@ class FilesController extends AdminController
                     ->with('info', __('files.messages.redirected_to_tenant_folder'));
             }
 
-            return $this->redirectResponse('dashboard')->with('error', __('files.errors.no_filesystem_access'));
+            throw new AuthorizationException(__('files.errors.no_filesystem_access'));
         }
 
         ['files' => $files, 'directories' => $directories, 'path' => $currentDirectory] = $this->fileStorage->listDirectory($path);
@@ -84,7 +84,7 @@ class FilesController extends AdminController
         $name = trim($request->validated('name'));
 
         if (! $request->user()->can('createInDirectory', [File::class, $path])) {
-            return back()->withErrors(['permission' => __('files.errors.no_create_directory_permission')]);
+            throw new AuthorizationException(__('files.errors.no_create_directory_permission'));
         }
 
         $newDirectoryPath = $path.'/'.$name;
@@ -239,7 +239,7 @@ class FilesController extends AdminController
 
         $directoryPath = dirname($path);
         if (! $request->user()->can('updateInDirectory', [File::class, $directoryPath])) {
-            return back()->withErrors(['permission' => __('files.errors.no_modify_permission')]);
+            throw new AuthorizationException(__('files.errors.no_modify_permission'));
         }
 
         if (! \Storage::exists($path) || \Storage::directoryExists($path)) {
@@ -298,7 +298,7 @@ class FilesController extends AdminController
 
         $directoryPath = dirname($path);
         if (! $request->user()->can('deleteInDirectory', [File::class, $directoryPath])) {
-            return back()->withErrors(['permission' => __('files.errors.no_delete_permission')]);
+            throw new AuthorizationException(__('files.errors.no_delete_permission'));
         }
 
         if (! Storage::exists($path)) {
@@ -341,28 +341,36 @@ class FilesController extends AdminController
         $deletedCount = 0;
         $errors = [];
         $skippedCount = 0;
+        $authorizedPaths = [];
 
         foreach ($paths as $path) {
             try {
                 $validatedPath = $this->fileStorage->normalizeFilePath($path);
+            } catch (\InvalidArgumentException) {
+                $errors[] = __('files.errors.bulk_invalid_path', ['name' => basename($path)]);
+                $skippedCount++;
 
-                $directoryPath = dirname($validatedPath);
-                if (! $request->user()->can('deleteInDirectory', [File::class, $directoryPath])) {
-                    $errors[] = __('files.errors.bulk_no_delete_permission', ['name' => basename($path)]);
-                    $skippedCount++;
+                continue;
+            }
 
-                    continue;
-                }
+            if (! $request->user()->can('deleteInDirectory', [File::class, dirname($validatedPath)])) {
+                throw new AuthorizationException(__('files.errors.bulk_no_delete_permission', ['name' => basename($path)]));
+            }
 
+            $authorizedPaths[] = $validatedPath;
+        }
+
+        foreach ($authorizedPaths as $validatedPath) {
+            try {
                 if (! Storage::exists($validatedPath)) {
-                    $errors[] = __('files.errors.bulk_file_not_found', ['name' => basename($path)]);
+                    $errors[] = __('files.errors.bulk_file_not_found', ['name' => basename($validatedPath)]);
                     $skippedCount++;
 
                     continue;
                 }
 
                 if (Storage::directoryExists($validatedPath)) {
-                    $errors[] = __('files.errors.bulk_is_directory', ['name' => basename($path)]);
+                    $errors[] = __('files.errors.bulk_is_directory', ['name' => basename($validatedPath)]);
                     $skippedCount++;
 
                     continue;
@@ -377,17 +385,14 @@ class FilesController extends AdminController
                 Log::info('Bulk file deleted', [
                     'path' => $validatedPath,
                     'user_id' => $request->user()->id,
-                    'file_name' => basename($path),
+                    'file_name' => basename($validatedPath),
                 ]);
 
-            } catch (\InvalidArgumentException) {
-                $errors[] = __('files.errors.bulk_invalid_path', ['name' => basename($path)]);
-                $skippedCount++;
             } catch (\Exception $e) {
-                $errors[] = __('files.errors.bulk_delete_error', ['name' => basename($path)]);
+                $errors[] = __('files.errors.bulk_delete_error', ['name' => basename($validatedPath)]);
                 $skippedCount++;
                 Log::error('Bulk delete error', [
-                    'path' => $path,
+                    'path' => $validatedPath,
                     'user_id' => $request->user()->id,
                     'error' => $e->getMessage(),
                 ]);
@@ -436,7 +441,7 @@ class FilesController extends AdminController
 
         $parentDirectory = dirname($path);
         if (! $request->user()->can('deleteDirectory', [File::class, $parentDirectory])) {
-            return back()->withErrors(['permission' => __('files.errors.no_directory_delete_permission')]);
+            throw new AuthorizationException(__('files.errors.no_directory_delete_permission'));
         }
 
         if (! Storage::directoryExists($path)) {
@@ -488,7 +493,7 @@ class FilesController extends AdminController
 
         $directoryPath = dirname($path);
         if (! $request->user()->can('viewDirectory', [File::class, $directoryPath])) {
-            return back()->withErrors(['error' => __('files.errors.no_scan_permission')]);
+            throw new AuthorizationException(__('files.errors.no_scan_permission'));
         }
 
         if (! Storage::exists($path)) {

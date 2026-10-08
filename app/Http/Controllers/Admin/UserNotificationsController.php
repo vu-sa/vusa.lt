@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\AdminController;
 use App\Models\NotificationDigestQueue;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,12 +25,14 @@ class UserNotificationsController extends AdminController
     public function markAsRead($id)
     {
         $user = User::query()->findOrFail(Auth::id());
-        $notification = $user->unreadNotifications()->where('id', $id)->first();
+        $notification = $user->notifications()->where('id', $id)->first();
 
-        if ($notification) {
-            $notification->markAsRead();
-            NotificationDigestQueue::query()->where('user_id', $user->id)->where('notification_id', $notification->id)->delete();
+        if ($notification === null) {
+            throw new AuthorizationException;
         }
+
+        $notification->markAsRead();
+        NotificationDigestQueue::query()->where('user_id', $user->id)->where('notification_id', $notification->id)->delete();
 
         return back();
     }
@@ -50,10 +53,12 @@ class UserNotificationsController extends AdminController
         $user = User::query()->findOrFail(Auth::id());
         $notification = $user->notifications()->where('id', $id)->first();
 
-        if ($notification) {
-            NotificationDigestQueue::query()->where('user_id', $user->id)->where('notification_id', $notification->id)->delete();
-            $notification->delete();
+        if ($notification === null) {
+            throw new AuthorizationException;
         }
+
+        NotificationDigestQueue::query()->where('user_id', $user->id)->where('notification_id', $notification->id)->delete();
+        $notification->delete();
 
         return back();
     }
