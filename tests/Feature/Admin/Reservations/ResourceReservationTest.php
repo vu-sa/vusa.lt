@@ -325,8 +325,8 @@ describe('reservation resource validation', function (): void {
 
         expect($pivot->fresh())->resource_id->toBe($other->id)
             ->reservation_id->toBe($pivot->reservation_id)
-            ->quantity->toBe(2);
-        expect((string) $pivot->fresh()->state)->toBe('created');
+            ->quantity->toBe(2)
+            ->and((string) $pivot->fresh()->state)->toBe('created');
     });
 
     test('only the edited pivot is excluded at interior overlap points', function (): void {
@@ -339,8 +339,8 @@ describe('reservation resource validation', function (): void {
 
         asUser($this->user)->put(route('reservationResources.update', $pivot), reservationResourcePayload($pivot, ['quantity' => 2]))
             ->assertSessionHasNoErrors();
-        expect($pivot->fresh()->quantity)->toBe(2);
-        expect($sibling->fresh()->quantity)->toBe(1);
+        expect($pivot->fresh()->quantity)->toBe(2)
+            ->and($sibling->fresh()->quantity)->toBe(1);
     });
 
     test('capacity occupied by a sibling still prevents an increase', function (): void {
@@ -389,6 +389,6 @@ test('backtracking an approved item permits edits and retains approval history',
 
     asUser($this->user)->put(route('reservationResources.update', $pivot), reservationResourcePayload($pivot))
         ->assertSessionHasNoErrors()->assertSessionHas('success');
-    expect($approval->fresh()->reverted_at)->not->toBeNull();
-    expect((string) $pivot->fresh()->state)->toBe('created');
+    expect($approval->fresh()->reverted_at)->not->toBeNull()
+        ->and((string) $pivot->fresh()->state)->toBe('created');
 });

@@ -6,6 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:ssr": "vite build --ssr",
+    "postinstall": "[ -n \"$CI\" ] || [ -n \"$CLAUDE_CODE_REMOTE\" ] || playwright install chromium",
     "test": "vitest --project unit --project component",
     "test:all": "vitest",
     "test:unit": "vitest --project unit",

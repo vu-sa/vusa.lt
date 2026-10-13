@@ -68,13 +68,7 @@ test('a failed sync records its failure without saving the link it was preparing
     $service = Mockery::mock(DocumentSharepointSyncService::class)->makePartial()->shouldAllowMockingProtectedMethods();
     $service->shouldReceive('makeGraphService')->andReturn($graph);
 
-    expect(fn () => $service->sync($document, force: true))->toThrow(LogicException::class);
-
-    expect($document->fresh())
-        ->sync_status->toBe('failed')
-        ->sync_error_message->toBe('Graph exploded')
-        // The fields applied before the failure were never confirmed, so the next sync redoes them.
-        ->eTag->not->toBe('new-etag');
+    expect(fn () => $service->sync($document, force: true))->toThrow(LogicException::class)->and($document->fresh())->sync_status->toBe('failed')->sync_error_message->toBe('Graph exploded')->eTag->not->toBe('new-etag');
 });
 
 test('a revocation leaves alone a link the republished document uses again', function (DocumentStatus $status, bool $revokes): void {

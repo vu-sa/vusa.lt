@@ -23,7 +23,7 @@ test('maps archive columns onto the document, the date as the Vilnius day', func
         ->and($document->institution_id)->toBe($institution->id)
         ->and($document->content_type)->toBe('Protokolai')
         ->and($document->document_date->toDateString())->toBe('2026-09-14')
-        ->and($document->metadataProblems())->toBe([]);
+        ->and($document->metadataProblems())->toBeEmpty();
 });
 
 test('a column cleared in SharePoint is cleared here too', function (): void {

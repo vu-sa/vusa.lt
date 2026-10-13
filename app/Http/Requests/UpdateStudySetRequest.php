@@ -28,7 +28,7 @@ class UpdateStudySetRequest extends FormRequest
     {
         $courseIds = $this->studySet->courses()->pluck('id')->all();
         $courses = $this->input('courses');
-        $submittedCourseIds = is_array($courses) ? array_filter(array_column($courses, 'id'), 'is_string') : [];
+        $submittedCourseIds = is_array($courses) ? array_filter(array_column($courses, 'id'), is_string(...)) : [];
         $retainedCourseIds = array_intersect($courseIds, $submittedCourseIds);
 
         return [

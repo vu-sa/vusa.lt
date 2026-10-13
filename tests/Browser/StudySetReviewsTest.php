@@ -42,8 +42,8 @@ test('the review form preserves an existing review when saving an edit', functio
         ->assertSee(__('messages.updated.m', ['model' => trans_choice('entities.studySet.model', 1)]))
         ->assertNoJavaScriptErrors();
 
-    expect($review->fresh()->getTranslation('lecturer', 'lt'))->toBe('Pakeistas dėstytojas');
-    expect($course->reviews()->count())->toBe(1);
+    expect($review->fresh()->getTranslation('lecturer', 'lt'))->toBe('Pakeistas dėstytojas')
+        ->and($course->reviews()->count())->toBe(1);
 });
 
 test('a new study set explains when reviews can be added', function (): void {

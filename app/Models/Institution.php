@@ -61,7 +61,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read InstitutionInstitutionType|InstitutionFollow|InstitutionSecretary|null $pivot
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Cadence> $cadences
  * @property-read Collection<int, InstitutionCheckIn> $checkIns
@@ -69,6 +68,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
+ * @property-read InstitutionInstitutionType|InstitutionSecretary|InstitutionFollow|null $pivot
  * @property-read Collection<int, User> $followers
  * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol

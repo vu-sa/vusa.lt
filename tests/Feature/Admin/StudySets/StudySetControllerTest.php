@@ -325,8 +325,8 @@ describe('review ownership', function (): void {
             $this->studySet, [$ownCourse], [studySetReviewData($otherCourse, $review ? ['id' => $review->id] : [])],
         ))->assertSessionHasErrors('reviews.0.study_set_course_id');
 
-        expect($this->studySet->fresh()->getAttributes())->toBe($original);
-        expect($otherCourse->reviews()->count())->toBe(0);
+        expect($this->studySet->fresh()->getAttributes())->toBe($original)
+            ->and($otherCourse->reviews()->count())->toBe(0);
         if ($review) {
             expect($review->fresh()->study_set_course_id)->toBe($ownCourse->id);
         }
@@ -336,8 +336,8 @@ describe('review ownership', function (): void {
         $course = StudySetCourse::factory()->for($this->studySet)->create();
         asUser($this->admin)->post(route('studySets.store'), studySetReviewPayload($this->studySet, [], [studySetReviewData($course)]))
             ->assertSessionHasErrors('reviews');
-        expect(StudySet::count())->toBe(1);
-        expect($course->reviews()->count())->toBe(0);
+        expect(StudySet::count())->toBe(1)
+            ->and($course->reviews()->count())->toBe(0);
     });
 
     test('reviews cannot reference a course removed in the same submission', function (): void {
@@ -346,8 +346,8 @@ describe('review ownership', function (): void {
         asUser($this->admin)->patch(route('studySets.update', $this->studySet), studySetReviewPayload(
             $this->studySet, [], [studySetReviewData($course, ['id' => $review->id])],
         ))->assertSessionHasErrors('reviews.0.study_set_course_id');
-        expect($course->fresh())->not->toBeNull();
-        expect($review->fresh())->not->toBeNull();
+        expect($course->fresh())->not->toBeNull()
+            ->and($review->fresh())->not->toBeNull();
     });
 
     test('foreign child ids and duplicates are rejected', function (string $failure): void {
@@ -372,8 +372,8 @@ describe('review ownership', function (): void {
 
         asUser($this->admin)->patch(route('studySets.update', $this->studySet), studySetReviewPayload($this->studySet, $courses, $reviews))
             ->assertSessionHasErrors($field);
-        expect($ownReview->fresh())->not->toBeNull();
-        expect($foreignReview->fresh()->study_set_course_id)->toBe($otherCourse->id);
+        expect($ownReview->fresh())->not->toBeNull()
+            ->and($foreignReview->fresh()->study_set_course_id)->toBe($otherCourse->id);
     })->with(['foreign review', 'foreign course', 'duplicate review', 'duplicate course']);
 
     test('a malformed course id returns validation errors', function (): void {
@@ -415,8 +415,8 @@ describe('review ownership', function (): void {
         $review = LecturerReview::factory()->create(['study_set_course_id' => $course->id]);
         asUser($this->admin)->patch(route('studySets.update', $this->studySet), studySetReviewPayload($this->studySet, [$course], []))
             ->assertSessionHasNoErrors();
-        expect($review->fresh())->toBeNull();
-        expect($course->fresh())->not->toBeNull();
+        expect($review->fresh())->toBeNull()
+            ->and($course->fresh())->not->toBeNull();
     });
 });
 
@@ -432,7 +432,7 @@ test('a review target lost during course synchronization rolls back the whole up
 
     asUser($this->admin)->patch(route('studySets.update', $this->studySet), $payload)
         ->assertSessionHasErrors('reviews.0.study_set_course_id');
-    expect($this->studySet->fresh()->getAttributes())->toBe($original);
-    expect($course->fresh())->not->toBeNull();
-    expect($review->fresh())->not->toBeNull();
+    expect($this->studySet->fresh()->getAttributes())->toBe($original)
+        ->and($course->fresh())->not->toBeNull()
+        ->and($review->fresh())->not->toBeNull();
 });

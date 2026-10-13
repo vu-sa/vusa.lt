@@ -26,7 +26,7 @@ class DiscoverSharepointDocumentsJob implements ShouldBeUnique, ShouldQueue
     public int $uniqueFor = 1800;
 
     /** A full listing catches deletions older than the change feed's memory. */
-    private const FULL_LISTING_EVERY_DAYS = 7;
+    private const int FULL_LISTING_EVERY_DAYS = 7;
 
     public function __construct(public bool $full = false)
     {

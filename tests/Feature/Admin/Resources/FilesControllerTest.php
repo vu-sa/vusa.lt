@@ -136,8 +136,8 @@ describe('Files Controller - Inertia authorization', function (): void {
             ->assertSessionHas('error', $expectedMessage)
             ->assertSessionHasNoErrors()
             ->assertSessionMissing('data');
-        expect(Storage::get($filePath))->toBe('original content');
-        expect(Storage::directoryExists($directory.'/empty'))->toBeTrue();
+        expect(Storage::get($filePath))->toBe('original content')
+            ->and(Storage::directoryExists($directory.'/empty'))->toBeTrue();
         Storage::disk('public')->assertExists(substr($directory, strlen('public/')).'/empty');
         Storage::disk('public')->assertMissing(substr($directory, strlen('public/')).'/new-folder');
     })->with([

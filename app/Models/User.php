@@ -64,7 +64,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon|null $deleted_at
  * @property bool $name_was_changed
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read InstitutionFollow|Dutiable|InstitutionSecretary|null $pivot
+ * @property-read InstitutionSecretary|InstitutionFollow|Dutiable|null $pivot
  * @property-read Collection<int, Duty> $authorization_duties
  * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables

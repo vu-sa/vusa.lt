@@ -44,7 +44,7 @@ it('opens an activity answer and home news and events outside the admin Inertia 
     $notification = $user->notifications()->create([
         'id' => (string) Str::uuid(),
         'type' => InstitutionActivityNotification::class,
-        'data' => (new InstitutionActivityNotification(new Collection([$request])))->toArray($user),
+        'data' => new InstitutionActivityNotification(new Collection([$request]))->toArray($user),
     ]);
 
     $page->click('button:has-text("Prisijungti el. paštu")');
@@ -60,8 +60,8 @@ it('opens an activity answer and home news and events outside the admin Inertia 
     $page->assertPathIs('/atsakymas/'.$request->id)
         ->assertPresent('form[action*="/atsakymas/"]')
         ->assertNoJavaScriptErrors();
-    expect($request->fresh()->answer)->toBeNull();
-    expect($notification->fresh()->read_at)->not->toBeNull();
+    expect($request->fresh()->answer)->toBeNull()
+        ->and($notification->fresh()->read_at)->not->toBeNull();
 
     $page->navigate('/mano');
     waitForInertiaRender($page, '[data-slot=site-content] [data-slot=news-card]');
