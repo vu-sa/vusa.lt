@@ -197,4 +197,20 @@ describe('wider institution search', function (): void {
         expect($response->json('data.institutionSearch.enabled'))->toBeTrue()
             ->and($response->json('data.institutionSearch.tenant_ids'))->toBe([]);
     });
+
+    /** A meeting created from a calendar event narrows the search to VU SA's own bodies by type. */
+    test('it sends the type ids that resolve to a VU SA body and to an external one', function (): void {
+        $vusa = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create();
+        $vusaChild = InstitutionType::factory()->create(['parent_id' => $vusa->id]);
+        $university = InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create();
+
+        $response = asUser(makeAdminUser($this->tenant))
+            ->getJson(route('api.v1.admin.actionWindow.context'))
+            ->assertOk();
+
+        expect($response->json('data.institutionSearch.internal_type_ids'))->toContain($vusa->id, $vusaChild->id)
+            ->not->toContain($university->id)
+            ->and($response->json('data.institutionSearch.external_type_ids'))->toContain($university->id)
+            ->not->toContain($vusa->id);
+    });
 });

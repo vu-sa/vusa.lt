@@ -351,13 +351,24 @@
         >
           <NativeSelect
             id="event_type"
+            :key="eventTypeFlashKey"
             v-model="form.event_type_id"
             :options="eventTypeOptions"
-            :placeholder="$t('Pasirinkti renginio tipą...')"
+            :placeholder="$t('Be tipo')"
+            :placeholder-value="null"
             placeholder-selectable
+            :select-class="eventTypeFlashKey > 0 && isEventTypeSuggested ? 'motion-safe:animate-autofill-flash' : undefined"
             :disabled="readOnly"
-            @update:model-value="form.validate('event_type_id')"
+            @update:model-value="onEventTypePicked"
           />
+          <p
+            v-if="isEventTypeSuggested"
+            class="flex items-center gap-1.5 text-xs text-muted-foreground"
+            data-testid="event-type-suggested"
+          >
+            <WandSparkles class="size-3.5 shrink-0" aria-hidden="true" />
+            {{ $t('Parinkta automatiškai pagal pavadinimą') }}
+          </p>
         </FormFieldWrapper>
 
         <FormFieldWrapper
@@ -449,6 +460,7 @@ import {
   SlidersHorizontal,
   Tags,
   Trash2,
+  WandSparkles,
 } from '@lucide/vue';
 
 import ContentPublishPanel from './ContentPublishPanel.vue';
@@ -463,6 +475,7 @@ import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel, FormSegmentedControl, StatusBadge, type FormSegmentOption } from '@/Components/Patterns';
 import { isSameDay } from '@/Utils/IntlTime';
+import { guessEventTypeSlug } from '@/Utils/eventTypeFromTitle';
 import { localizedRoute, localizedSlug } from '@/Utils/LocalizedRoutes';
 import { generateSlug } from '@/Utils/String';
 import { Button } from '@/Components/ui/button';
@@ -603,6 +616,35 @@ watch([() => form.date, () => form.end_date], () => {
 
   form.is_all_day = !isSameDay(new Date(form.date), new Date(form.end_date));
 });
+
+// Suggest a type from the title until the admin chooses one; an already typed event keeps its type.
+const isEventTypeTouched = ref(false);
+const suggestedEventTypeId = ref<number | null>(null);
+// Bumped per new suggestion; re-keying the select replays its one-shot flash.
+const eventTypeFlashKey = ref(0);
+const isEventTypeSuggested = computed(() =>
+  !isEventTypeTouched.value && suggestedEventTypeId.value !== null && form.event_type_id === suggestedEventTypeId.value,
+);
+
+watch([() => form.title?.lt, () => form.title?.en], ([titleLt, titleEn]) => {
+  if (isEventTypeTouched.value || form.event_type_id !== suggestedEventTypeId.value) {
+    return;
+  }
+
+  const slug = guessEventTypeSlug([titleLt, titleEn], Boolean(props.meeting));
+  const suggestion = props.eventTypes.find(type => type.slug === slug)?.id ?? null;
+  if (suggestion !== null && suggestion !== suggestedEventTypeId.value) {
+    eventTypeFlashKey.value++;
+  }
+
+  suggestedEventTypeId.value = suggestion;
+  form.event_type_id = suggestion;
+});
+
+function onEventTypePicked(): void {
+  isEventTypeTouched.value = true;
+  form.validate('event_type_id');
+}
 
 const missingLocaleCounts = computed(() => ({
   lt: !form.title?.lt ? 1 : 0,

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ApiController;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\DutyService;
 use Illuminate\Http\JsonResponse;
@@ -38,14 +39,17 @@ class ActionWindowApiController extends ApiController
      *
      * @routeName api.v1.admin.actionWindow.context
      */
-    public function context(InstitutionActivityStatusService $activityStatus, Authorizer $authorizer): JsonResponse
-    {
+    public function context(
+        InstitutionActivityStatusService $activityStatus,
+        Authorizer $authorizer,
+        InstitutionScopeResolver $scopes,
+    ): JsonResponse {
         $institutions = DutyService::getUserInstitutionsForDashboard();
 
         return $this->jsonSuccess([
             'institutions' => $this->institutionPayload($institutions, $activityStatus),
             'meetingsNeedingAttention' => $this->meetingPayload($institutions),
-            'institutionSearch' => $this->institutionSearchScope($authorizer),
+            'institutionSearch' => $this->institutionSearchScope($authorizer, $scopes),
         ]);
     }
 
@@ -58,9 +62,12 @@ class ActionWindowApiController extends ApiController
      * would only lead to a rejection from StoreMeetingRequest's tenant-scope rule.
      * All-scope callers get an empty list, meaning no tenant filter at all.
      *
-     * @return array{enabled: bool, tenant_ids: array<int, int>}
+     * The type ids let a meeting created from a calendar event narrow the search to VU SA's
+     * own bodies; the index stores type ids, not the scope they currently resolve to.
+     *
+     * @return array{enabled: bool, tenant_ids: array<int, int>, internal_type_ids: array<int, int>, external_type_ids: array<int, int>}
      */
-    private function institutionSearchScope(Authorizer $authorizer): array
+    private function institutionSearchScope(Authorizer $authorizer, InstitutionScopeResolver $scopes): array
     {
         $scope = $authorizer->scope(request()->user(), 'meetings.create.padalinys');
         $tenants = GetTenantsForUpserts::execute('meetings.create.padalinys', $authorizer);
@@ -70,6 +77,8 @@ class ActionWindowApiController extends ApiController
             'tenant_ids' => $scope->isAllScope
                 ? []
                 : $tenants->pluck('id')->map(fn ($id): int => (int) $id)->values()->all(),
+            'internal_type_ids' => $scopes->typeIdsResolvingInternal(),
+            'external_type_ids' => $scopes->typeIdsResolvingExternal(),
         ];
     }
 

@@ -402,3 +402,99 @@ describe('CalendarForm.vue — all-day default', () => {
     expect(vm.form.is_all_day).toBe(false);
   });
 });
+
+describe('CalendarForm.vue — event type from title', () => {
+  let wrapper: ReturnType<typeof mount>;
+
+  const eventTypes = [
+    { id: 1, slug: 'posedis', name: 'Posėdis' },
+    { id: 2, slug: 'mokymai', name: 'Mokymai' },
+  ] as unknown as App.Entities.EventType[];
+
+  interface FormVm {
+    form: { title: { lt: string; en: string }; event_type_id: number | null };
+    isEventTypeTouched: boolean;
+    isEventTypeSuggested: boolean;
+    eventTypeFlashKey: number;
+  }
+
+  function createWrapper(rememberKey: string, eventTypeId: number | null = null) {
+    return mount(CalendarForm, {
+      shallow: true,
+      props: {
+        calendar: {
+          title: { lt: '', en: '' },
+          date: null,
+          end_date: null,
+          tenant_id: null,
+          event_type_id: eventTypeId,
+          is_draft: false,
+          is_all_day: false,
+          is_international: false,
+          is_remote: false,
+          hero_style: 'card',
+        } as unknown as CalendarEventForm,
+        eventTypes,
+        assignableTenants: [],
+        rememberKey,
+        submitUrl: '/mano/calendar',
+        submitMethod: 'post',
+      },
+    });
+  }
+
+  afterEach(() => {
+    wrapper?.unmount();
+  });
+
+  it('follows the title until it no longer matches', async () => {
+    wrapper = createWrapper('CreateCalendarTypeFollows');
+    const vm = wrapper.vm as unknown as FormVm;
+
+    vm.form.title.lt = 'Fakulteto tarybos posėdis';
+    await wrapper.vm.$nextTick();
+    expect(vm.form.event_type_id).toBe(1);
+    expect(vm.isEventTypeSuggested).toBe(true);
+
+    vm.form.title.lt = 'Vadovų mokymai';
+    await wrapper.vm.$nextTick();
+    expect(vm.form.event_type_id).toBe(2);
+    // Each new suggestion replays the flash; typing on within the same match does not.
+    expect(vm.eventTypeFlashKey).toBe(2);
+
+    vm.form.title.lt = 'Vadovų mokymai II';
+    await wrapper.vm.$nextTick();
+    expect(vm.eventTypeFlashKey).toBe(2);
+
+    vm.form.title.lt = 'Kalėdinis vakarėlis';
+    await wrapper.vm.$nextTick();
+    expect(vm.form.event_type_id).toBeNull();
+    expect(vm.isEventTypeSuggested).toBe(false);
+  });
+
+  it('keeps a type the admin picked and drops the automatic mark', async () => {
+    wrapper = createWrapper('CreateCalendarTypePicked');
+    const vm = wrapper.vm as unknown as FormVm;
+
+    vm.form.title.lt = 'Fakulteto tarybos posėdis';
+    await wrapper.vm.$nextTick();
+
+    vm.form.event_type_id = 2;
+    vm.isEventTypeTouched = true;
+    vm.form.title.lt = 'Fakulteto tarybos posėdis, antra dalis';
+    await wrapper.vm.$nextTick();
+
+    expect(vm.form.event_type_id).toBe(2);
+    expect(vm.isEventTypeSuggested).toBe(false);
+  });
+
+  it('keeps the type an event was saved with', async () => {
+    wrapper = createWrapper('CreateCalendarTypeSaved', 2);
+    const vm = wrapper.vm as unknown as FormVm;
+
+    vm.form.title.lt = 'Fakulteto tarybos posėdis';
+    await wrapper.vm.$nextTick();
+
+    expect(vm.form.event_type_id).toBe(2);
+  });
+});

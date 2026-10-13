@@ -1,7 +1,7 @@
 <template>
   <ActionWindowScreen
     :title="$t('action_window.institution.title')"
-    :subtitle="$t('action_window.institution.subtitle')"
+    :subtitle="draft.calendarEvent ? $t('action_window.institution.subtitle_internal') : $t('action_window.institution.subtitle')"
   >
     <div v-if="showSearch" class="pb-3">
       <Input v-model="query" :placeholder="$t('action_window.institution.search')" />
@@ -69,11 +69,16 @@ import { Skeleton } from '@/Components/ui/skeleton';
 /** Above this many institutions, scanning beats scrolling. */
 const SEARCH_THRESHOLD = 8;
 
-const { current, advance, goTo, setInstitution } = useActionWindow();
-const { institutions, institutionSearch, isLoading, error, load } = useActionWindowData();
+const { current, draft, advance, goTo, setInstitution } = useActionWindow();
+const { institutions: ownInstitutions, institutionSearch, isLoading, error, load } = useActionWindowData();
 const dates = useWindowDates();
 
 const query = ref('');
+
+// A meeting created from a calendar event is announced by it, and only VU SA's own bodies are.
+const institutions = computed(() =>
+  draft.calendarEvent ? ownInstitutions.value.filter(institution => institution.is_internal) : ownInstitutions.value,
+);
 
 onMounted(load);
 

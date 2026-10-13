@@ -68,6 +68,7 @@ return [
     'institution' => [
         'title' => 'Kuriai institucijai?',
         'subtitle' => 'Rodomos institucijos, kuriose eini pareigas.',
+        'subtitle_internal' => 'Iš renginio kuriamas tik VU SA darinio posėdis.',
         'search' => 'Ieškoti institucijos',
         'empty' => 'Neturi institucijų, kurioms galėtum tai padaryti.',
         'no_meetings_yet' => 'Posėdžių dar nebuvo',

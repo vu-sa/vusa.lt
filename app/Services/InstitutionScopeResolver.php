@@ -81,6 +81,20 @@ class InstitutionScopeResolver
     }
 
     /**
+     * InstitutionType ids whose resolved scope is internal. An institution is internal when it
+     * carries one of these and none of typeIdsResolvingExternal().
+     *
+     * @return array<int, int>
+     */
+    public function typeIdsResolvingInternal(): array
+    {
+        return collect($this->map())
+            ->filter(fn (?string $value) => $value !== null && InstitutionScope::from($value)->isInternal())
+            ->keys()
+            ->all();
+    }
+
+    /**
      * Drop both the in-process memo and the shared cache. Called whenever a InstitutionType changes.
      */
     public function flush(): void

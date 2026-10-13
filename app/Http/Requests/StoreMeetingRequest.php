@@ -95,8 +95,8 @@ class StoreMeetingRequest extends FormRequest
     }
 
     /**
-     * Only VU SA's own bodies are announced in the public calendar, so the checkbox the
-     * client hides for an external body is refused here too.
+     * Only VU SA's own bodies are announced in the public calendar, so neither a new
+     * announcement nor one the meeting is created from may belong to an external body.
      *
      * @return array<int, callable>
      */
@@ -104,7 +104,10 @@ class StoreMeetingRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                if (! $this->boolean('announce_in_calendar')) {
+                $announces = $this->boolean('announce_in_calendar');
+                $fromEvent = $this->filled('calendar_id');
+
+                if (! $announces && ! $fromEvent) {
                     return;
                 }
 
@@ -116,7 +119,10 @@ class StoreMeetingRequest extends FormRequest
                     return;
                 }
 
-                $validator->errors()->add('announce_in_calendar', __('meetings.announce.external_not_allowed'));
+                $validator->errors()->add(
+                    $fromEvent ? 'institution_id' : 'announce_in_calendar',
+                    __('meetings.announce.external_not_allowed'),
+                );
             },
         ];
     }

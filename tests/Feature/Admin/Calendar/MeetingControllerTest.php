@@ -748,6 +748,7 @@ describe('cross-tenant parent scoping', function (): void {
      * exists, so the meeting adopts it rather than creating a second one.
      */
     test('links an existing announcement to the meeting it is created from', function (): void {
+        $this->institution->types()->attach(InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create());
         $event = Calendar::factory()->create([
             'tenant_id' => $this->tenant->id,
             'date' => Carbon::now()->addDay()->setTime(18, 0),
@@ -766,6 +767,21 @@ describe('cross-tenant parent scoping', function (): void {
         // The meeting takes over the timing it was handed, rather than dropping the end.
         expect($meeting->end_time?->format('Y-m-d H:i'))->toEqual($event->end_date->format('Y-m-d H:i'));
         expect(Calendar::query()->count())->toEqual(1);
+    });
+
+    test('refuses to create a meeting of a body VU SA only delegates into from an announcement', function (): void {
+        $external = Institution::factory()->for($this->tenant)->create();
+        $external->types()->attach(InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create());
+        $event = Calendar::factory()->create(['tenant_id' => $this->tenant->id, 'date' => Carbon::now()->addDay()]);
+
+        asUser($this->admin)->post(route('meetings.store'), [
+            'start_time' => $event->date->format('Y-m-d H:i'),
+            'institution_id' => $external->id,
+            'calendar_id' => $event->id,
+        ])->assertSessionHasErrors('institution_id');
+
+        expect(Meeting::count())->toEqual($this->initialMeetingCount)
+            ->and($event->fresh()->meeting_id)->toBeNull();
     });
 
     test('refuses an announcement that already stands for another meeting', function (): void {

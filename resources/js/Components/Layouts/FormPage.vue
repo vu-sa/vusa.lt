@@ -135,7 +135,9 @@
           <span>{{ $t('Šia kalba trūksta laukų (:count)', { count: String(missingInCurrentLocale || 0) }) }}</span>
         </div>
 
-        <slot name="locale-addon" />
+        <div v-if="$slots['locale-addon']" class="ms-auto flex flex-wrap items-center gap-3">
+          <slot name="locale-addon" />
+        </div>
       </div>
     </header>
 

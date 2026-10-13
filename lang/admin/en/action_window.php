@@ -68,6 +68,7 @@ return [
     'institution' => [
         'title' => 'Which institution?',
         'subtitle' => 'Showing the institutions you hold a duty in.',
+        'subtitle_internal' => 'A meeting created from an event must belong to a VU SR body.',
         'search' => 'Search institutions',
         'empty' => 'You have no institutions you could do this for.',
         'no_meetings_yet' => 'No meetings yet',

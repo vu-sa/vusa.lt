@@ -106,6 +106,7 @@
   --animate-collapsible-up: collapsible-up 0.2s ease-in-out;
   --animate-spotlight-breathe: spotlight-breathe 2.4s ease-in-out infinite;
   --animate-badge-pop: badge-pop 0.25s ease-out;
+  --animate-autofill-flash: autofill-flash 0.9s ease-out;
 
   @keyframes accordion-down {
     from {
@@ -150,6 +151,14 @@
   @keyframes spotlight-breathe {
     50% {
       opacity: 0.45;
+    }
+  }
+
+  /* A field the form just filled in for the user. */
+  @keyframes autofill-flash {
+    from {
+      border-color: var(--brand);
+      background-color: color-mix(in oklab, var(--brand) 12%, transparent);
     }
   }
 
