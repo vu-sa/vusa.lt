@@ -8,7 +8,7 @@
 
 import { trans as $t } from 'laravel-vue-i18n';
 import type { Component } from 'vue';
-import { BriefcaseBusiness, CalendarCheck, CalendarDays, ClipboardList, Eye, FileCheck, ListTodo, Megaphone, MessageSquare, ShieldCheck, type LucideIcon } from 'lucide-vue-next';
+import { BriefcaseBusiness, CalendarCheck, CalendarDays, ClipboardList, Eye, FileCheck, ListTodo, Megaphone, MessageSquare, ShieldCheck, type LucideIcon } from '@lucide/vue';
 
 import { formatNearDate } from '@/Utils/dateTime';
 import { getModelIcon } from '@/Components/icons';

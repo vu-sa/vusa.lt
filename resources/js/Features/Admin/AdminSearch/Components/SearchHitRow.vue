@@ -88,7 +88,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronRight, Link as LinkIcon, Clock, Eye, Pencil } from 'lucide-vue-next';
+import { ChevronRight, Link as LinkIcon, Clock, Eye, Pencil } from '@lucide/vue';
 import { computed } from 'vue';
 
 import { toneClass, toneIcon } from '../Utils/searchBadges';

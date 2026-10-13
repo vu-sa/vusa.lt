@@ -141,7 +141,7 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { RotateCcw, Trash2 } from 'lucide-vue-next';
+import { RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import { NavigationIcon } from '@/Components/icons';

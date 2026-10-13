@@ -1,4 +1,4 @@
-import { Circle, CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-vue-next';
+import { Circle, CircleCheck, CircleX, Info, TriangleAlert } from '@lucide/vue';
 
 import { statusRoleClasses, type StatusRole } from '@/Constants/statuses';
 

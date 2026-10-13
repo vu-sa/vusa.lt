@@ -291,7 +291,7 @@ import {
   Settings,
   ShieldCheck,
   UserCheck,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';

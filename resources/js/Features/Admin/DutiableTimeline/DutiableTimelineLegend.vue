@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Info } from 'lucide-vue-next';
+import { Info } from '@lucide/vue';
 
 import type { TimelineColors } from './timelineColors';
 

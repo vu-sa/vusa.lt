@@ -66,7 +66,7 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { Pencil, Plus, Trash2 } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';

@@ -70,7 +70,7 @@
 import { computed } from 'vue';
 import { useEventListener } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Download, X } from 'lucide-vue-next';
+import { Download, X } from '@lucide/vue';
 
 import type { FileEntry } from '../types';
 import { formatBytes } from '../utils';

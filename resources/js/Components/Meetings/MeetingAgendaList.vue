@@ -162,7 +162,7 @@ import {
   NotebookPen,
   Plus,
   Users,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';

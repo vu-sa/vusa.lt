@@ -105,7 +105,7 @@
 import { computed, ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowLeft, ChevronsUpDown } from 'lucide-vue-next';
+import { ArrowLeft, ChevronsUpDown } from '@lucide/vue';
 
 import type { RelationKindOption, RelationshipLinkRow, RelationshipSubject, RelationshipTypeOption } from './types';
 

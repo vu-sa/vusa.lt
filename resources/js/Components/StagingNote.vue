@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { FlaskConical } from 'lucide-vue-next';
+import { FlaskConical } from '@lucide/vue';
 
 import { useStaging, type StagingTopic } from '@/Composables/useStaging';
 

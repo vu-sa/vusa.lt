@@ -1,4 +1,4 @@
-import { Building2, Tags } from 'lucide-vue-next';
+import { Building2, Tags } from '@lucide/vue';
 import type { Component } from 'vue';
 
 import {

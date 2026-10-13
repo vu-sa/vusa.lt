@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Check } from 'lucide-vue-next';
+import { Check } from '@lucide/vue';
 
 import { useFacetOptions } from '@/Shared/Search/useFacetOptions';
 import { controlVariants } from '@/Components/ui/control';

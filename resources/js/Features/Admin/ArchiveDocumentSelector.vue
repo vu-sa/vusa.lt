@@ -84,7 +84,7 @@
 import { ref, onUnmounted } from 'vue';
 import { useHttp } from '@inertiajs/vue3';
 import { onClickOutside } from '@vueuse/core';
-import { Search as SearchIcon, X as XIcon } from 'lucide-vue-next';
+import { Search as SearchIcon, X as XIcon } from '@lucide/vue';
 
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';

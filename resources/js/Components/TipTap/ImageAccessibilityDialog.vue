@@ -99,7 +99,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, Info } from 'lucide-vue-next';
+import { ChevronDown, Info } from '@lucide/vue';
 
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';

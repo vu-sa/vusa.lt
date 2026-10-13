@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Ban, Check, Ellipsis, Undo2, X } from 'lucide-vue-next';
+import { Ban, Check, Ellipsis, Undo2, X } from '@lucide/vue';
 import { computed } from 'vue';
 
 import type { ReservationDecision } from './types';

@@ -23,7 +23,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { History } from 'lucide-vue-next';
+import { History } from '@lucide/vue';
 
 import type { HomeRecentRecord } from './types';
 

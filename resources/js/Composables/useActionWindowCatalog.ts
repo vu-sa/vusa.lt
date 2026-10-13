@@ -30,7 +30,7 @@ import {
   Target,
   UserCog,
   type LucideIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import type { ScreenId } from '@/Composables/useActionWindow';
 import { changeDutyNameEndings } from '@/Utils/String';

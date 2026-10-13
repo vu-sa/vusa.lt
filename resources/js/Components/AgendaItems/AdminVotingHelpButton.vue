@@ -104,7 +104,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Check, HelpCircle, MessageCircle } from 'lucide-vue-next';
+import { Check, HelpCircle, MessageCircle } from '@lucide/vue';
 
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';

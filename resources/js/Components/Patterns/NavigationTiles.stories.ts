@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { Calendar, FileText, Folder, Megaphone, Newspaper, Tags } from 'lucide-vue-next';
+import { Calendar, FileText, Folder, Megaphone, Newspaper, Tags } from '@lucide/vue';
 
 import NavigationTiles from './NavigationTiles.vue';
 

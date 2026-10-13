@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Mail, UserRound } from 'lucide-vue-next';
+import { Mail, UserRound } from '@lucide/vue';
 
 import type { HomeCoordinator } from './types';
 

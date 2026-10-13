@@ -143,7 +143,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, Ellipsis, LayoutGrid } from 'lucide-vue-next';
+import { ChevronDown, Ellipsis, LayoutGrid } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import TaskCountBadge from './TaskCountBadge.vue';

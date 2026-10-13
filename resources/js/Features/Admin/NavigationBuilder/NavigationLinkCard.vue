@@ -171,7 +171,7 @@
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link } from '@inertiajs/vue3';
-import { GripVertical, Image as ImageIcon, Link as LinkIcon, Minus, Pencil, Square, Star, Trash2, Type } from 'lucide-vue-next';
+import { GripVertical, Image as ImageIcon, Link as LinkIcon, Minus, Pencil, Square, Star, Trash2, Type } from '@lucide/vue';
 
 import type { AdminNavigationLink } from './types';
 

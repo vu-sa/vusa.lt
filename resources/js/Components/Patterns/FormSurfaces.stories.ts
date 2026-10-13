@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { ListTree, Send } from 'lucide-vue-next';
+import { ListTree, Send } from '@lucide/vue';
 import { ref } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';

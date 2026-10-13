@@ -58,7 +58,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpRight } from 'lucide-vue-next';
+import { ArrowUpRight } from '@lucide/vue';
 
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';

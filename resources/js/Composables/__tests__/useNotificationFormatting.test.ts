@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CalendarDays, Eye, FileCheck, ListTodo, Megaphone, MessageSquare, ShieldCheck } from 'lucide-vue-next';
+import { CalendarDays, Eye, FileCheck, ListTodo, Megaphone, MessageSquare, ShieldCheck } from '@lucide/vue';
 
 import {
   getNotificationColorClasses,

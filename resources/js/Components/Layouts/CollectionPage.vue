@@ -119,7 +119,7 @@
 import { Head, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { useMediaQuery } from '@vueuse/core';
-import { Trash2 } from 'lucide-vue-next';
+import { Trash2 } from '@lucide/vue';
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
 import CollectionActiveChips from '@/Components/Collection/CollectionActiveChips.vue';

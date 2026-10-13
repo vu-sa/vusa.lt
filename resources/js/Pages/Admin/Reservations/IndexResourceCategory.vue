@@ -74,7 +74,7 @@
 import { Icon } from '@iconify/vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { Pencil, Plus, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import type { CollectionColumn } from '@/Components/Collection/types';

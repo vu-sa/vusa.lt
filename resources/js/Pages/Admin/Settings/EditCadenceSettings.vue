@@ -120,7 +120,7 @@
 import { computed, ref } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ExternalLink, Pencil, Plus } from 'lucide-vue-next';
+import { ExternalLink, Pencil, Plus } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';

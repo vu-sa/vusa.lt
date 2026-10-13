@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { TriangleAlert } from 'lucide-vue-next';
+import { TriangleAlert } from '@lucide/vue';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';

@@ -88,7 +88,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { UserPlus, X } from 'lucide-vue-next';
+import { UserPlus, X } from '@lucide/vue';
 
 import { useSecretaryRoster } from './useSecretaryRoster';
 import type { SecretaryRoster, SecretaryUser } from './secretaryTypes';

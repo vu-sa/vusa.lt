@@ -113,7 +113,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { BarChart3, MessagesSquare } from 'lucide-vue-next';
+import { BarChart3, MessagesSquare } from '@lucide/vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import CommentComposer from '@/Components/Discussions/CommentComposer.vue';

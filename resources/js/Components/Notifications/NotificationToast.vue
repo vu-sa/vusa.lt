@@ -36,7 +36,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowRight, Bell } from 'lucide-vue-next';
+import { ArrowRight, Bell } from '@lucide/vue';
 
 import NotificationLink from './NotificationLink.vue';
 

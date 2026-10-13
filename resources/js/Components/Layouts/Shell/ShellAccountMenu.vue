@@ -210,7 +210,7 @@ import {
   Sparkles,
   Sun,
   UserRound,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import IFluentAccessibility24Regular from '~icons/fluent/accessibility-24-regular';

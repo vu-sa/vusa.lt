@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AtSign, GraduationCap, Image, Tag, Text, Users } from 'lucide-vue-next';
+import { AtSign, GraduationCap, Image, Tag, Text, Users } from '@lucide/vue';
 
 import type { ParsedRow } from './types';
 

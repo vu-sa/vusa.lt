@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Pencil, Plus } from 'lucide-vue-next';
+import { Pencil, Plus } from '@lucide/vue';
 
 import CadenceList from './CadenceList.vue';
 import { prefillFrom, useCadenceCrud } from './useCadenceCrud';

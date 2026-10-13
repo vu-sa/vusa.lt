@@ -53,7 +53,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Landmark } from 'lucide-vue-next';
+import { Landmark } from '@lucide/vue';
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';

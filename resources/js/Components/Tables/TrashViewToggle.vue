@@ -44,7 +44,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Trash2Icon } from 'lucide-vue-next';
+import { Trash2Icon } from '@lucide/vue';
 
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
 

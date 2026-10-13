@@ -62,7 +62,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarPlus, Check, Plus } from 'lucide-vue-next';
+import { CalendarPlus, Check, Plus } from '@lucide/vue';
 import { computed } from 'vue';
 
 import { useReservationCart } from './useReservationCart';

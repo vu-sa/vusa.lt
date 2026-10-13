@@ -62,7 +62,7 @@ import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { useEventListener } from '@vueuse/core';
-import { ChevronLeft } from 'lucide-vue-next';
+import { ChevronLeft } from '@lucide/vue';
 
 import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
 

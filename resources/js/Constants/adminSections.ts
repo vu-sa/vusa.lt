@@ -1,6 +1,6 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import type { Component } from 'vue';
-import { Bell, ChartNoAxesCombined, FileStack, Folder, LayoutDashboard, ListTree, Mail, Settings2, Tags } from 'lucide-vue-next';
+import { Bell, ChartNoAxesCombined, FileStack, Folder, LayoutDashboard, ListTree, Mail, Settings2, Tags } from '@lucide/vue';
 
 import type { NavigationTileItem } from '@/Components/Patterns/NavigationTiles.vue';
 import { sectionHref, type AdminSection } from '@/Composables/useAdminNavigation';

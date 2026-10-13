@@ -164,7 +164,7 @@
 import { Deferred, router } from '@inertiajs/vue3';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Ban, CalendarClock, CalendarPlus, Check, Clock, Edit3, FileText, Image as ImageIcon, Link2, PackageCheck, PackageX, Plus, Trash2 } from 'lucide-vue-next';
+import { Ban, CalendarClock, CalendarPlus, Check, Clock, Edit3, FileText, Image as ImageIcon, Link2, PackageCheck, PackageX, Plus, Trash2 } from '@lucide/vue';
 import { toast } from 'vue-sonner';
 import { capitalize, computed, ref, watch } from 'vue';
 

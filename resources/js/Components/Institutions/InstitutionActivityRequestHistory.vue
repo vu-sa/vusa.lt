@@ -71,7 +71,7 @@
 import { computed, ref, watch } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarDays, CalendarX } from 'lucide-vue-next';
+import { CalendarDays, CalendarX } from '@lucide/vue';
 
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';

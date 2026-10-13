@@ -295,7 +295,7 @@
 <script setup lang="ts">
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Eye, Globe, Info, Layers, Lock, Upload, Users, X } from 'lucide-vue-next';
+import { Eye, Globe, Info, Layers, Lock, Upload, Users, X } from '@lucide/vue';
 import { computed, onBeforeUnmount, ref } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';

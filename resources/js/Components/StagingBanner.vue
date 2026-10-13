@@ -67,7 +67,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { AlertTriangle, X, FileWarning, CloudOff, RotateCcw, Mail } from 'lucide-vue-next';
+import { AlertTriangle, X, FileWarning, CloudOff, RotateCcw, Mail } from '@lucide/vue';
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { useStaging, type StagingTopic } from '@/Composables/useStaging';

@@ -118,7 +118,7 @@
 <script setup lang="ts">
 import { useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Link2, Users, X } from 'lucide-vue-next';
+import { Link2, Users, X } from '@lucide/vue';
 import { capitalize, computed, ref, toRaw, watch } from 'vue';
 
 import type { GoalStep, LinkOption, StepParent, Translated } from './types';

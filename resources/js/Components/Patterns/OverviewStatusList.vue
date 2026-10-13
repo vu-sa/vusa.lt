@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { CircleCheck } from 'lucide-vue-next';
+import { CircleCheck } from '@lucide/vue';
 import { computed, inject, onBeforeUnmount, useId } from 'vue';
 
 import { OVERVIEW_STATUS_KEY, type OverviewStatusEntry } from './overviewStatus';

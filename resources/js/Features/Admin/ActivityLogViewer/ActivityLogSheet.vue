@@ -64,7 +64,7 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { History } from 'lucide-vue-next';
+import { History } from '@lucide/vue';
 
 import ActivityLogFeed from './ActivityLogFeed.vue';
 

@@ -81,7 +81,7 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpRight, Plus } from 'lucide-vue-next';
+import { ArrowUpRight, Plus } from '@lucide/vue';
 import { computed } from 'vue';
 
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';

@@ -117,7 +117,7 @@
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref } from 'vue';
-import { ExternalLink, Trash2 } from 'lucide-vue-next';
+import { ExternalLink, Trash2 } from '@lucide/vue';
 
 import ContentPublishPanel from '@/Components/AdminForms/ContentPublishPanel.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';

@@ -90,7 +90,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Globe, Info, LoaderCircle, Maximize2, Minimize2, Rows3 } from 'lucide-vue-next';
+import { Globe, Info, LoaderCircle, Maximize2, Minimize2, Rows3 } from '@lucide/vue';
 
 import GanttZoomControl from './GanttZoomControl.vue';
 

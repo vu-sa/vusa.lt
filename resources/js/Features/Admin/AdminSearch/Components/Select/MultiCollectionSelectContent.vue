@@ -38,7 +38,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { useDebounceFn } from '@vueuse/core';
-import { LoaderCircle, Search } from 'lucide-vue-next';
+import { LoaderCircle, Search } from '@lucide/vue';
 
 import SearchSplitView from '../SearchSplitView.vue';
 import { collectAllTabHits, type NormalizedSearchHit } from '../../Utils/searchHitMappers';

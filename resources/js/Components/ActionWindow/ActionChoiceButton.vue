@@ -52,7 +52,7 @@
 </template>
 
 <script setup lang="ts">
-import { Check, ChevronRight, type LucideIcon } from 'lucide-vue-next';
+import { Check, ChevronRight, type LucideIcon } from '@lucide/vue';
 import type { Component, HTMLAttributes } from 'vue';
 
 import type { StatusRole } from '@/Constants/statuses';

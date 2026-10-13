@@ -102,7 +102,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ArrowRight } from 'lucide-vue-next';
+import { ArrowRight } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import ReservationCartItemRow from './ReservationCartItemRow.vue';

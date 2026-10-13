@@ -95,7 +95,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CircleSlash, Merge, Plus } from 'lucide-vue-next';
+import { CircleSlash, Merge, Plus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';

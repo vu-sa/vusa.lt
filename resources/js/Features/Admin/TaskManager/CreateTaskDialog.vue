@@ -83,7 +83,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ref, reactive, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
-import { CheckCircleIcon } from 'lucide-vue-next';
+import { CheckCircleIcon } from '@lucide/vue';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Label } from '@/Components/ui/label';

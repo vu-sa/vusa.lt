@@ -112,7 +112,7 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { ChevronRight, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 

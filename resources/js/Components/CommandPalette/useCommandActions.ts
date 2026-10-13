@@ -1,7 +1,7 @@
 import { computed, type Component } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Bell, Plus, Radio, Settings, ShieldCheck } from 'lucide-vue-next';
+import { Bell, Plus, Radio, Settings, ShieldCheck } from '@lucide/vue';
 
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { workspaceIcon } from '@/Constants/adminWorkspaces';

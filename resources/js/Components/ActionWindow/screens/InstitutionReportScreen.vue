@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarOff, CalendarPlus } from 'lucide-vue-next';
+import { CalendarOff, CalendarPlus } from '@lucide/vue';
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';

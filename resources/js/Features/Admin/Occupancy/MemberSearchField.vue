@@ -108,7 +108,7 @@
 <script setup lang="ts">
 import { useDebounceFn } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Loader2, Search, X } from 'lucide-vue-next';
+import { Loader2, Search, X } from '@lucide/vue';
 import { computed, ref, useId, watch } from 'vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';

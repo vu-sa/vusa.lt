@@ -67,7 +67,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Landmark, List, MailQuestion, Search } from 'lucide-vue-next';
+import { Landmark, List, MailQuestion, Search } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import InstitutionAttentionList from './InstitutionAttentionList.vue';

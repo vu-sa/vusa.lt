@@ -103,7 +103,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowRight, ChevronDown } from 'lucide-vue-next';
+import { ArrowRight, ChevronDown } from '@lucide/vue';
 import { computed } from 'vue';
 
 import TaskCountBadge from './TaskCountBadge.vue';

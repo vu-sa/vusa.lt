@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { GitBranch } from 'lucide-vue-next';
+import { GitBranch } from '@lucide/vue';
 
 import { SectionCard } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';

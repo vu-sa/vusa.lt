@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { CircleCheck } from 'lucide-vue-next';
+import { CircleCheck } from '@lucide/vue';
 import { describe, expect, it, vi } from 'vitest';
 import { router } from '@inertiajs/vue3';
 

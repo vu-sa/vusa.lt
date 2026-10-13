@@ -142,7 +142,7 @@
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Building, ExternalLink, Trash2 } from 'lucide-vue-next';
+import { Building, ExternalLink, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';

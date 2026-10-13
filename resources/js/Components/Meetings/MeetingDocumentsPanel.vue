@@ -130,7 +130,7 @@ import { computed, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { refDebounced } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { FileText, FileUp, Link2, X } from 'lucide-vue-next';
+import { FileText, FileUp, Link2, X } from '@lucide/vue';
 import { toast } from 'vue-sonner';
 
 import type { DocumentFolderRow } from '@/Components/Files';

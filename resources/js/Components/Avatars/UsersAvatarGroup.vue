@@ -95,7 +95,7 @@
 import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { breakpointsTailwind, useBreakpoints } from '@vueuse/core';
-import { ChevronDown } from 'lucide-vue-next';
+import { ChevronDown } from '@lucide/vue';
 
 import UserPopover from './UserPopover.vue';
 

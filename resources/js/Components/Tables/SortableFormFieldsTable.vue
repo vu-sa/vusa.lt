@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { useSortable } from '@vueuse/integrations/useSortable';
-import { GripVertical } from 'lucide-vue-next';
+import { GripVertical } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

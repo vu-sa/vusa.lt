@@ -116,7 +116,7 @@ import { router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, ref, watch } from 'vue';
 import { format, parseISO } from 'date-fns';
-import { Mail as MailIcon, RefreshCw as RefreshCwIcon, Trash2 as Trash2Icon } from 'lucide-vue-next';
+import { Mail as MailIcon, RefreshCw as RefreshCwIcon, Trash2 as Trash2Icon } from '@lucide/vue';
 
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';

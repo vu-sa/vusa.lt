@@ -57,7 +57,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Users, UserPlus, UserX } from 'lucide-vue-next';
+import { Users, UserPlus, UserX } from '@lucide/vue';
 
 import DutyHolderCard from './DutyHolderCard.vue';
 

@@ -338,7 +338,7 @@
 import { computed, ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Building2, ChevronsUpDown, SlidersHorizontal, Trash2, Users } from 'lucide-vue-next';
+import { Building2, ChevronsUpDown, SlidersHorizontal, Trash2, Users } from '@lucide/vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { ConfirmDialog, FormPanel } from '@/Components/Patterns';

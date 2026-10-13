@@ -128,7 +128,7 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { ref, watch } from 'vue';
-import { ArrowDownToLine, ArrowLeft } from 'lucide-vue-next';
+import { ArrowDownToLine, ArrowLeft } from '@lucide/vue';
 
 import type { Timetable } from '@/Types/contentParts';
 import { useApi } from '@/Composables/useApi';

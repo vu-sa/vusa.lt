@@ -70,7 +70,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Loader2 } from 'lucide-vue-next';
+import { Loader2 } from '@lucide/vue';
 import { ref } from 'vue';
 
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';

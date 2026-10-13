@@ -50,7 +50,7 @@
  */
 import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, SlidersHorizontal } from 'lucide-vue-next';
+import { ChevronDown, SlidersHorizontal } from '@lucide/vue';
 
 import RCSectionOptionsFields from './RCSectionOptionsFields.vue';
 

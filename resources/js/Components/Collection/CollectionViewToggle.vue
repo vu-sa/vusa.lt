@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { LayoutGrid, List, PanelRight, Table } from 'lucide-vue-next';
+import { LayoutGrid, List, PanelRight, Table } from '@lucide/vue';
 import { computed, type Component } from 'vue';
 
 import { segmentGroupClass, segmentVariants } from '@/Components/ui/control';

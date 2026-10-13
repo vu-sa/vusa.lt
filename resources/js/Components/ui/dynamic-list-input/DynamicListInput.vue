@@ -110,7 +110,7 @@
 
 <script setup lang="ts" generic="T">
 import { ref, watch, type Component } from 'vue';
-import { GripVertical, Plus, Trash2 } from 'lucide-vue-next';
+import { GripVertical, Plus, Trash2 } from '@lucide/vue';
 
 import { Button } from '@/Components/ui/button';
 

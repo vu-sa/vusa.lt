@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowRight } from 'lucide-vue-next';
+import { ArrowRight } from '@lucide/vue';
 
 import { Badge } from '@/Components/ui/badge';
 import type { ActivityChange } from '@/Types/activityLog';

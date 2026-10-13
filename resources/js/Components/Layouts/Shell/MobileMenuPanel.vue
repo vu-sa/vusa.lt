@@ -240,7 +240,7 @@ import {
   Sun,
   UserRound,
   X,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { computed, nextTick, ref, watch } from 'vue';
 
 import TaskCountBadge from './TaskCountBadge.vue';

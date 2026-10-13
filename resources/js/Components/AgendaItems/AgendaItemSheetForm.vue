@@ -154,7 +154,7 @@
 import { computed, nextTick, reactive, ref, watch } from 'vue';
 import type { InertiaForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, Languages, Trash2 } from 'lucide-vue-next';
+import { ChevronDown, Languages, Trash2 } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import { SheetForm } from '@/Components/Patterns';

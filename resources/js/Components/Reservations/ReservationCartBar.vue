@@ -39,7 +39,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { AlertTriangle, ArrowRight } from 'lucide-vue-next';
+import { AlertTriangle, ArrowRight } from '@lucide/vue';
 import { computed } from 'vue';
 
 import { formatReservationPeriod } from './reservationPeriod';

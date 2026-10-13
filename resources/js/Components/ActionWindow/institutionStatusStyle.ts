@@ -6,7 +6,7 @@ import {
   CircleHelp,
   Landmark,
   type LucideIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import type { StatusRole } from '@/Constants/statuses';
 

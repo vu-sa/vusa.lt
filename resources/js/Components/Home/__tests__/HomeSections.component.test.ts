@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
-import { ClipboardList } from 'lucide-vue-next';
+import { ClipboardList } from '@lucide/vue';
 
 import CoordinatorCard from '../CoordinatorCard.vue';
 import FollowedInstitutionsList from '../FollowedInstitutionsList.vue';

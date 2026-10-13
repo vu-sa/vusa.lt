@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { MailQuestion } from 'lucide-vue-next';
+import { MailQuestion } from '@lucide/vue';
 
 import ActionWindowScreen from '../ActionWindowScreen.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';

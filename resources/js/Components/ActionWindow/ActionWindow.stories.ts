@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { CalendarDays, CalendarSearch, History, Landmark } from 'lucide-vue-next';
+import { CalendarDays, CalendarSearch, History, Landmark } from '@lucide/vue';
 
 import ActionChoiceButton from './ActionChoiceButton.vue';
 import ActionChoiceList from './ActionChoiceList.vue';

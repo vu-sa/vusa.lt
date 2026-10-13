@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { computed, type Component } from 'vue';
-import { Check } from 'lucide-vue-next';
+import { Check } from '@lucide/vue';
 
 export interface VisualOption {
   value: string;

@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { Pencil, RefreshCw, Trash2 } from 'lucide-vue-next';
+import { Pencil, RefreshCw, Trash2 } from '@lucide/vue';
 import { describe, expect, it, vi } from 'vitest';
 
 import CollectionRowActions from '../CollectionRowActions.vue';

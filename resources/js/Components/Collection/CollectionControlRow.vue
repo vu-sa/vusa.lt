@@ -55,7 +55,7 @@
 <script setup lang="ts">
 
 import { trans as $t } from 'laravel-vue-i18n';
-import { Search, SlidersHorizontal, X } from 'lucide-vue-next';
+import { Search, SlidersHorizontal, X } from '@lucide/vue';
 import { ref, watch } from 'vue';
 
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';

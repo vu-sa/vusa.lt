@@ -127,7 +127,7 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ArrowRight, CircleAlert, Merge, Pencil, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { ArrowRight, CircleAlert, Merge, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';

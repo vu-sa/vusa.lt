@@ -214,7 +214,7 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, Expand, Pencil } from 'lucide-vue-next';
+import { AlertTriangle, Expand, Pencil } from '@lucide/vue';
 
 import { toneClass, toneIcon } from '../../Utils/searchBadges';
 import { formatSearchDateTime } from '../../Utils/searchHitMappers';

@@ -112,7 +112,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Ban, CheckCircle2, CornerDownRight, MoreHorizontal, Pencil, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { Ban, CheckCircle2, CornerDownRight, MoreHorizontal, Pencil, RotateCcw, Trash2 } from '@lucide/vue';
 
 import CommentComposer from '@/Components/Discussions/CommentComposer.vue';
 import CommentReactions from '@/Components/Discussions/CommentReactions.vue';

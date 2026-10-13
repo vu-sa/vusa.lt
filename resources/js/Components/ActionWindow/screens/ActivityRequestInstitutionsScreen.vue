@@ -61,7 +61,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Landmark } from 'lucide-vue-next';
+import { Landmark } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';

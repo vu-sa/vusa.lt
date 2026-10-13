@@ -54,7 +54,7 @@
 <script setup lang="ts">
 import { router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Building2 } from 'lucide-vue-next';
+import { Building2 } from '@lucide/vue';
 import { computed } from 'vue';
 
 import FormPage from '@/Components/Layouts/FormPage.vue';

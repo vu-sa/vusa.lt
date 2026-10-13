@@ -236,7 +236,7 @@ import {
   Trash2,
   Upload,
   X,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import type { ActiveView, SortDir, SortKey, TypeFilter } from '../types';
 

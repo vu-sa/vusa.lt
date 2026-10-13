@@ -42,7 +42,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { NotebookPen } from 'lucide-vue-next';
+import { NotebookPen } from '@lucide/vue';
 
 import type { InstitutionActivityInsight } from './types';
 

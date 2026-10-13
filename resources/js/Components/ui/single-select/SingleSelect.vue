@@ -88,7 +88,7 @@
 import type { HTMLAttributes } from 'vue';
 import { ref, watch, computed } from 'vue';
 import { cva } from 'class-variance-authority';
-import { ChevronDownIcon } from 'lucide-vue-next';
+import { ChevronDownIcon } from '@lucide/vue';
 import { ComboboxInput, ComboboxVirtualizer } from 'reka-ui';
 
 import { cn } from '@/Utils/Shadcn/utils';

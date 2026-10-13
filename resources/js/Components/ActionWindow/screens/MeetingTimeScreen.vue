@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronLeft, Clock, Clock4 } from 'lucide-vue-next';
+import { ChevronLeft, Clock, Clock4 } from '@lucide/vue';
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';

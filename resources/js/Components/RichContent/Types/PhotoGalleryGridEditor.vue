@@ -67,7 +67,7 @@
 <script setup lang="ts">
 import { computed, ref, useId } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowLeft, Settings2 } from 'lucide-vue-next';
+import { ArrowLeft, Settings2 } from '@lucide/vue';
 
 import RCImageTileGrid from '../Editor/RCImageTileGrid.vue';
 import RCSectionOptions from '../Editor/RCSectionOptions.vue';

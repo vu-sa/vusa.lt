@@ -114,7 +114,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Check, Eye, Folder, Star } from 'lucide-vue-next';
+import { Check, Eye, Folder, Star } from '@lucide/vue';
 
 import type { FileEntry } from '../types';
 import { formatBytes } from '../utils';

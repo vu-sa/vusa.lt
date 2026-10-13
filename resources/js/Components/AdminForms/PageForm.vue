@@ -304,7 +304,7 @@
 import { provide, computed, ref, h } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, ChevronDown, LayoutTemplate, ListTree, Trash2 } from 'lucide-vue-next';
+import { AlertTriangle, ChevronDown, LayoutTemplate, ListTree, Trash2 } from '@lucide/vue';
 
 import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
 import { getContentType, type BlockWidth } from '../RichContent/Types';

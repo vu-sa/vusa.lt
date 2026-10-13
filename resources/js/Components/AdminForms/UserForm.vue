@@ -220,7 +220,7 @@
 import { computed } from 'vue';
 import { useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Briefcase, Clock, Lock, UserCheck } from 'lucide-vue-next';
+import { Briefcase, Clock, Lock, UserCheck } from '@lucide/vue';
 
 import DuplicateUserWarning from './DuplicateUserWarning.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';

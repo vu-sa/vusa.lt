@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Pause, Play, Radio, X } from 'lucide-vue-next';
+import { Pause, Play, Radio, X } from '@lucide/vue';
 import { ref, useTemplateRef } from 'vue';
 
 import { Button } from '@/Components/ui/button';

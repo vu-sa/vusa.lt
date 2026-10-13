@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Users } from 'lucide-vue-next';
+import { Users } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import type { RepresentativeActivityStats, RepresentativeUser } from '../types';

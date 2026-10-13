@@ -175,7 +175,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowLeft, Maximize2, X } from 'lucide-vue-next';
+import { ArrowLeft, Maximize2, X } from '@lucide/vue';
 
 import BlockPreviewRenderer from './Editor/BlockPreviewRenderer.vue';
 import { getAllContentTypes, getContentType, type BlockCategory, type ContentType } from './Types';

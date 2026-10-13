@@ -261,7 +261,7 @@ import { computed, ref, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { useResizeObserver } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronLeft, ChevronRight, History, MoreHorizontal } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight, History, MoreHorizontal } from '@lucide/vue';
 
 import ActionControl from './RecordPageAction.vue';
 

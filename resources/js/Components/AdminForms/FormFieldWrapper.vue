@@ -51,7 +51,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { AlertCircle, CheckCircle2 } from 'lucide-vue-next';
+import { AlertCircle, CheckCircle2 } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { Label } from '@/Components/ui/label';

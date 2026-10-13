@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { TriangleAlert } from 'lucide-vue-next';
+import { TriangleAlert } from '@lucide/vue';
 
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Badge } from '@/Components/ui/badge';

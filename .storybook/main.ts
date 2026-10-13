@@ -46,7 +46,6 @@ const config: StorybookConfig = {
     return mergeConfig(config, {
       resolve: {
         alias: {
-          "lucide-vue-next": "@lucide/vue",
           "@": path.resolve(projectRoot, 'resources/js'),
           "ziggy-js": path.resolve(projectRoot, 'vendor/tightenco/ziggy/dist'),
           // Mock @inertiajs/vue3 to use our Storybook-safe mock

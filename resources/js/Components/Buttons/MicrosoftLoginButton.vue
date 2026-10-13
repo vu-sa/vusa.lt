@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Loader2 } from 'lucide-vue-next';
+import { Loader2 } from '@lucide/vue';
 
 import { usePWA } from '@/Composables/usePWA';
 

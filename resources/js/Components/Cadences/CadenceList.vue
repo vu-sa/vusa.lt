@@ -99,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { CalendarClock, Pencil, Trash2 } from 'lucide-vue-next';
+import { CalendarClock, Pencil, Trash2 } from '@lucide/vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 

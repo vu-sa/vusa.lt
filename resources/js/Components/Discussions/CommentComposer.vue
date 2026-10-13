@@ -47,7 +47,7 @@ import { StarterKit } from '@tiptap/starter-kit';
 import type { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion';
 import { computePosition, flip, offset, shift } from '@floating-ui/dom';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Loader2, Send } from 'lucide-vue-next';
+import { Loader2, Send } from '@lucide/vue';
 
 import CommentMentionList from '@/Components/Discussions/CommentMentionList.vue';
 import { Button } from '@/Components/ui/button';

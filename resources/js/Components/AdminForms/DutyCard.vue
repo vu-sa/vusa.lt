@@ -63,7 +63,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarCog, UserPlus } from 'lucide-vue-next';
+import { CalendarCog, UserPlus } from '@lucide/vue';
 
 import UserPopover from '../Avatars/UserPopover.vue';
 

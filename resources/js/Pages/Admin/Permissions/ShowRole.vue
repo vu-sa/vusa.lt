@@ -76,7 +76,7 @@
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
-import { Briefcase, Edit, Tags, Trash2 } from 'lucide-vue-next';
+import { Briefcase, Edit, Tags, Trash2 } from '@lucide/vue';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import RolePermissionForms from '@/Components/AdminForms/RolePermissionForms.vue';

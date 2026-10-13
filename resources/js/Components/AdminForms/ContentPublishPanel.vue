@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Info, Send } from 'lucide-vue-next';
+import { Info, Send } from '@lucide/vue';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';
 

@@ -1,6 +1,6 @@
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Copy, Pencil, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { Copy, Pencil, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';

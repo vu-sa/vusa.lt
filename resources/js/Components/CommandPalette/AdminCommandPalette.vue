@@ -143,7 +143,7 @@ import {
   ArrowUp,
   ArrowDown,
   SearchX,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import PaletteDialog from './PaletteDialog.vue';
 import { useCommandActions } from './useCommandActions';

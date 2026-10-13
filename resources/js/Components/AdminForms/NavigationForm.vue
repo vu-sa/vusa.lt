@@ -320,7 +320,7 @@
 import { computed, h, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, ExternalLink, Loader2, Palette, SlidersHorizontal, Trash2 } from 'lucide-vue-next';
+import { ChevronDown, ExternalLink, Loader2, Palette, SlidersHorizontal, Trash2 } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FluentIconSelect from '@/Components/FormItems/FluentIconSelect.vue';

@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { X } from 'lucide-vue-next';
+import { X } from '@lucide/vue';
 import { computed, ref, useId, watch, type HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 

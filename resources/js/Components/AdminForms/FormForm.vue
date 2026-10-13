@@ -278,7 +278,7 @@ import {
   Send,
   Trash2,
   Type,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import FormFieldForm from './FormFieldForm.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';

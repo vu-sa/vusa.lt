@@ -98,7 +98,7 @@
 import { computed, inject, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpRight, ChevronDown, Columns2, Languages, Plus } from 'lucide-vue-next';
+import { ArrowUpRight, ChevronDown, Columns2, Languages, Plus } from '@lucide/vue';
 
 import ContentTranslationWorkspace from './ContentTranslationWorkspace.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';

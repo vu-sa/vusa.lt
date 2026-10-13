@@ -24,7 +24,7 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Calendar } from 'lucide-vue-next';
+import { Calendar } from '@lucide/vue';
 
 import UserPopover from '@/Components/Avatars/UserPopover.vue';
 import { Badge } from '@/Components/ui/badge';

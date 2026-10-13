@@ -163,7 +163,7 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ExternalLink, EyeOff, FileUp, RefreshCw } from 'lucide-vue-next';
+import { ExternalLink, EyeOff, FileUp, RefreshCw } from '@lucide/vue';
 import { computed, onBeforeUnmount, ref } from 'vue';
 
 import { matchTitle } from '@/Shared/Search/matches';

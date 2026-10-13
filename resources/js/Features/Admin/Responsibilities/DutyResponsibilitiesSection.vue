@@ -167,7 +167,7 @@
 import { computed, ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Compass, Plus, ShieldCheck } from 'lucide-vue-next';
+import { Compass, Plus, ShieldCheck } from '@lucide/vue';
 
 import type { DutyResponsibilityItem, DutyResponsibilityOptions, ResponsibilityScopeValue } from './types';
 

@@ -39,7 +39,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Calendar, CalendarCheck, Edit3 } from 'lucide-vue-next';
+import { Calendar, CalendarCheck, Edit3 } from '@lucide/vue';
 import { computed } from 'vue';
 
 import { termStatus } from './occupancy';

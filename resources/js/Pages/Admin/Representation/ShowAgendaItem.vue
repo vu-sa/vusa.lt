@@ -274,7 +274,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { Deferred, Link, router, useForm } from '@inertiajs/vue3';
 import { useClipboard, useMediaQuery } from '@vueuse/core';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
-import { AlertCircle, Check, CircleDashed, Copy, ExternalLink, FileText, Globe, Link2, Loader2, MessageSquareQuote, NotebookPen, PenLine, Shapes, Trash2 } from 'lucide-vue-next';
+import { AlertCircle, Check, CircleDashed, Copy, ExternalLink, FileText, Globe, Link2, Loader2, MessageSquareQuote, NotebookPen, PenLine, Shapes, Trash2 } from '@lucide/vue';
 
 import { useToasts } from '@/Composables/useToasts';
 import AgendaItemBody from '@/Components/AgendaItems/AgendaItemBody.vue';

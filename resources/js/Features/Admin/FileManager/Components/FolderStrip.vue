@@ -48,7 +48,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useStorage } from '@vueuse/core';
-import { ChevronRight, Folder } from 'lucide-vue-next';
+import { ChevronRight, Folder } from '@lucide/vue';
 
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';

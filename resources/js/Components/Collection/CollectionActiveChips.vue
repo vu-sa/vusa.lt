@@ -32,7 +32,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { X } from 'lucide-vue-next';
+import { X } from '@lucide/vue';
 
 import type { CollectionChip } from '@/Composables/useCollectionSource';
 

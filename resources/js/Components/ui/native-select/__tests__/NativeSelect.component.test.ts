@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
-import { Star } from 'lucide-vue-next';
+import { Star } from '@lucide/vue';
 import { h } from 'vue';
 
 import NativeSelect from '../NativeSelect.vue';

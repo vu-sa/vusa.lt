@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import { nextTick, ref } from 'vue';
-import { Plus, X } from 'lucide-vue-next';
+import { Plus, X } from '@lucide/vue';
 
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';

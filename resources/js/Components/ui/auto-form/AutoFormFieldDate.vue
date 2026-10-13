@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { DateFormatter, getLocalTimeZone } from '@internationalized/date';
-import { CalendarIcon } from 'lucide-vue-next';
+import { CalendarIcon } from '@lucide/vue';
 
 import type { FieldProps } from './interface';
 import AutoFormLabel from './AutoFormLabel.vue';

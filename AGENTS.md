@@ -263,7 +263,7 @@ Full rules and a "what do I reach for" table: [resources/js/Components/CLAUDE.md
 
 | Surface | Primary set | Import path |
 |---|---|---|
-| Admin (`Pages/Admin/**`, admin Components) | **Lucide** | `import { Save, Lock } from 'lucide-vue-next'` |
+| Admin (`Pages/Admin/**`, admin Components) | **Lucide** | `import { Save, Lock } from '@lucide/vue'` |
 | Public (`Pages/Public/**`, `Components/Public/**`) | **Fluent** | `import IFluentX from '~icons/fluent/x24-regular'` |
 | Brand / social (FB, IG, Microsoft, Spotify…) | **Simple Icons** | `import ISimpleIconsFacebook from '~icons/simple-icons/facebook'` |
 | Dynamic (icon name stored as CMS data) | `@iconify/vue` | `<Icon :icon="\`fluent:${name}\`">` only for runtime-driven names |

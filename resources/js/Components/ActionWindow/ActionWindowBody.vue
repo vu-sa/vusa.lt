@@ -96,7 +96,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { ChevronLeft, ClipboardList, X } from 'lucide-vue-next';
+import { ChevronLeft, ClipboardList, X } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { ACTION_WINDOW_SCREENS, flowIdentity, flowProgress } from './screenRegistry';

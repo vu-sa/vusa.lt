@@ -83,7 +83,7 @@ import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import * as d3 from 'd3';
-import { Globe, Link2, Lock } from 'lucide-vue-next';
+import { Globe, Link2, Lock } from '@lucide/vue';
 
 import { getGanttColors, isDarkModeActive, type GanttColors } from './ganttColors';
 import MeetingsGanttToolbar from './MeetingsGanttToolbar.vue';

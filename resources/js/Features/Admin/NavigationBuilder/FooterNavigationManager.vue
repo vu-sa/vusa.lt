@@ -83,7 +83,7 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link } from '@inertiajs/vue3';
-import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { Pencil, Plus, Trash2 } from '@lucide/vue';
 
 import NavigationLinkCard from './NavigationLinkCard.vue';
 import type { AdminFooterColumn, AdminNavigationLink } from './types';

@@ -122,7 +122,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
-import { Mail, Phone } from 'lucide-vue-next';
+import { Mail, Phone } from '@lucide/vue';
 
 import UserAvatar from './UserAvatar.vue';
 

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { Calendar, Inbox } from 'lucide-vue-next';
+import { Calendar, Inbox } from '@lucide/vue';
 
 import EmptyState from './EmptyState.vue';
 

@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpRight, Boxes, Landmark, UserPlus, Users } from 'lucide-vue-next';
+import { ArrowUpRight, Boxes, Landmark, UserPlus, Users } from '@lucide/vue';
 import { computed } from 'vue';
 
 import type { HomeRegistrationForm } from './types';

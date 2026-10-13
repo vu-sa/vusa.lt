@@ -23,7 +23,7 @@ import {
   Clock,
   PackageOpen,
   TriangleAlert,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import InfoPopover from '../Buttons/InfoPopover.vue';
 

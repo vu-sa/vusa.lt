@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Calendar as CalendarIcon, ChevronRight, Info, Lock, UserCheck } from 'lucide-vue-next';
+import { Calendar as CalendarIcon, ChevronRight, Info, Lock, UserCheck } from '@lucide/vue';
 
 import InstitutionMeetingsList from './InstitutionMeetingsList.vue';
 

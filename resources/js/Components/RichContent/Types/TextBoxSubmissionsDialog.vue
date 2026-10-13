@@ -224,7 +224,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
-import { ChevronRight, Download, MessageSquare, MessageSquareOff, Trash2, X } from 'lucide-vue-next';
+import { ChevronRight, Download, MessageSquare, MessageSquareOff, Trash2, X } from '@lucide/vue';
 
 import { useApi, useApiMutation } from '@/Composables/useApi';
 import { useToasts } from '@/Composables/useToasts';

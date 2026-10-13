@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Info } from 'lucide-vue-next';
+import { Info } from '@lucide/vue';
 
 import { SectionCard } from '@/Components/Patterns';
 

@@ -198,7 +198,7 @@
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { CloudCheck, ExternalLink, Info, Loader2, Plus, Save, Search, Send, Trash2 } from 'lucide-vue-next';
+import { CloudCheck, ExternalLink, Info, Loader2, Plus, Save, Search, Send, Trash2 } from '@lucide/vue';
 import { capitalize, computed, onMounted, ref, watch } from 'vue';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';

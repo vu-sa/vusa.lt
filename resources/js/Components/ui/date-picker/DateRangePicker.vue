@@ -37,7 +37,7 @@ import {
   CalendarDate,
   CalendarDateTime,
 } from '@internationalized/date';
-import { Calendar as CalendarIcon } from 'lucide-vue-next';
+import { Calendar as CalendarIcon } from '@lucide/vue';
 import { computed, type HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { DateRange } from 'reka-ui';

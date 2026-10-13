@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
-import { ExternalLink, Pencil, Trash2 } from 'lucide-vue-next';
+import { ExternalLink, Pencil, Trash2 } from '@lucide/vue';
 import type { Component } from 'vue';
 
 import { translatedText, type GoalStep } from './types';

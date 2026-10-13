@@ -123,7 +123,7 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Merge, Pencil, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { Merge, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 

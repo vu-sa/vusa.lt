@@ -34,7 +34,7 @@
 import { computed, onMounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CheckCircle2, FileQuestion, ListX } from 'lucide-vue-next';
+import { CheckCircle2, FileQuestion, ListX } from '@lucide/vue';
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';

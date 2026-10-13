@@ -26,7 +26,7 @@ import {
   Settings,
   Plus,
   LayoutDashboard,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import {
   AgendaItemIcon,

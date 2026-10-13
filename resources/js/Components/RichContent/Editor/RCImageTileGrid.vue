@@ -133,7 +133,7 @@
 import { computed, ref, watch } from 'vue';
 import { useSortable } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowDown, ArrowLeft, ArrowUp, Ellipsis, GripVertical, ImagePlus, Images, Plus, ScanEye, Trash2 } from 'lucide-vue-next';
+import { ArrowDown, ArrowLeft, ArrowUp, Ellipsis, GripVertical, ImagePlus, Images, Plus, ScanEye, Trash2 } from '@lucide/vue';
 
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';

@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { ShoppingBasket } from 'lucide-vue-next';
+import { ShoppingBasket } from '@lucide/vue';
 
 import ReservationDraftRow, { type ReservationDraftSummaryData } from './ReservationDraftRow.vue';
 

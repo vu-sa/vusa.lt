@@ -149,7 +149,7 @@ import {
   Star,
   ThumbsDown,
   ThumbsUp,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';

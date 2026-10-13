@@ -245,7 +245,7 @@
 import { provide, computed, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, LayoutTemplate, Tags, Trash2 } from 'lucide-vue-next';
+import { ChevronDown, LayoutTemplate, Tags, Trash2 } from '@lucide/vue';
 
 import RichContentFormElement from '../RichContent/RichContentFormElement.vue';
 

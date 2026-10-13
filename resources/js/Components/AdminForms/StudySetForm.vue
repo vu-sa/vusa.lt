@@ -213,7 +213,7 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Plus, SlidersHorizontal, Trash2 } from 'lucide-vue-next';
+import { Plus, SlidersHorizontal, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';

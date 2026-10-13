@@ -75,7 +75,7 @@
 
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { Lock } from 'lucide-vue-next';
+import { Lock } from '@lucide/vue';
 
 import { Button } from '@/Components/ui/button';
 import { useDocsHref } from '@/Composables/useDocsHref';

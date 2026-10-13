@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Unlink } from 'lucide-vue-next';
+import { Unlink } from '@lucide/vue';
 
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';

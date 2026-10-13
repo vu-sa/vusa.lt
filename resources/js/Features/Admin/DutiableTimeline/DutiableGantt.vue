@@ -208,7 +208,7 @@ import { computed, onMounted, onUnmounted, ref, shallowRef, watch, nextTick } fr
 import * as d3 from 'd3';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowDownNarrowWide, ChevronRight, ChevronsDownUp, ChevronsUpDown, Link2 } from 'lucide-vue-next';
+import { ArrowDownNarrowWide, ChevronRight, ChevronsDownUp, ChevronsUpDown, Link2 } from '@lucide/vue';
 
 import { timelineDutyName } from './dutyNames';
 import { formatDuration } from './duration';

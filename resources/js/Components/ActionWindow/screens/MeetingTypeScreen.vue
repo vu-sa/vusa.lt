@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t, getActiveLanguage } from 'laravel-vue-i18n';
-import { CircleDashed, Mail, Users, Video } from 'lucide-vue-next';
+import { CircleDashed, Mail, Users, Video } from '@lucide/vue';
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';

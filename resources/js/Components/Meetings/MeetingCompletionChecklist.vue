@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { CircleDashed } from 'lucide-vue-next';
+import { CircleDashed } from '@lucide/vue';
 
 import { isAgendaItemAction, missingFieldsLabel, type MeetingMissingAction } from './meetingCompletion';
 

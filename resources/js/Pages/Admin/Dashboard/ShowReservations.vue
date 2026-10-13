@@ -98,7 +98,7 @@
 <script setup lang="ts">
 import { Deferred, Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarClock, Info, Plus } from 'lucide-vue-next';
+import { CalendarClock, Info, Plus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';

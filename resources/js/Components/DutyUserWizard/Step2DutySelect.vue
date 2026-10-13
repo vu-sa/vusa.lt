@@ -342,7 +342,7 @@ import {
   Plus,
   ChevronDown,
   Loader2,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';

@@ -80,7 +80,7 @@
 <script setup lang="ts">
 
 import { trans as $t } from 'laravel-vue-i18n';
-import { MousePointerClick } from 'lucide-vue-next';
+import { MousePointerClick } from '@lucide/vue';
 
 import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
 

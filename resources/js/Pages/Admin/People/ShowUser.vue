@@ -206,7 +206,7 @@ import { computed, defineAsyncComponent, ref } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Briefcase, CalendarClock, CalendarRange, Copy, Edit3, History, KeyRound, Plus, Shield, Trash2 } from 'lucide-vue-next';
+import { Briefcase, CalendarClock, CalendarRange, Copy, Edit3, History, KeyRound, Plus, Shield, Trash2 } from '@lucide/vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';

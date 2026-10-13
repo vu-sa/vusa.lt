@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { computed, type HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Home, Landmark } from 'lucide-vue-next';
+import { Home, Landmark } from '@lucide/vue';
 
 import { Badge } from '@/Components/ui/badge';
 import { InstitutionScope } from '@/Types/enums';

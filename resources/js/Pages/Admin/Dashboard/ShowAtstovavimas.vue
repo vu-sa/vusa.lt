@@ -111,7 +111,7 @@
 import { Deferred, Link } from '@inertiajs/vue3';
 import { useIntersectionObserver, useMediaQuery } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowRight, Eye } from 'lucide-vue-next';
+import { ArrowRight, Eye } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
 
 import CoordinatorSkeleton from './Components/CoordinatorSkeleton.vue';

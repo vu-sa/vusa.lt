@@ -134,7 +134,7 @@ import { onMounted, ref } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpRight, Check, ChevronsUpDown, Maximize2, Minimize2, Search } from 'lucide-vue-next';
+import { ArrowUpRight, Check, ChevronsUpDown, Maximize2, Minimize2, Search } from '@lucide/vue';
 
 import { EmptyState, FocusModeFrame } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';

@@ -249,7 +249,7 @@ import {
   UserPlus,
   Users,
   UserX,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';

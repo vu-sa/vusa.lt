@@ -132,7 +132,7 @@ import { computed, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { useDebounceFn, useFetch } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { LogOut, UserCog, X } from 'lucide-vue-next';
+import { LogOut, UserCog, X } from '@lucide/vue';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Button } from '@/Components/ui/button';

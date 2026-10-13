@@ -100,7 +100,7 @@
 import { computed, ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronRight, Pencil, Trash2 } from 'lucide-vue-next';
+import { ChevronRight, Pencil, Trash2 } from '@lucide/vue';
 
 import ReservationDecisionDialog from './ReservationDecisionDialog.vue';
 import ReservationRowActions from './ReservationRowActions.vue';

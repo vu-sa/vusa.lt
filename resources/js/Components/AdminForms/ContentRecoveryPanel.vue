@@ -89,7 +89,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { CircleAlert, Cloud, GitCompareArrows, HardDrive, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { CircleAlert, Cloud, GitCompareArrows, HardDrive, RotateCcw, Trash2 } from '@lucide/vue';
 
 import ContentRecoveryStatus from './ContentRecoveryStatus.vue';
 

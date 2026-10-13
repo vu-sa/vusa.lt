@@ -75,7 +75,7 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Plus } from 'lucide-vue-next';
+import { Plus } from '@lucide/vue';
 import { computed, toRef } from 'vue';
 
 import type { CollectionColumn } from '@/Components/Collection/types';

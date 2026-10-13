@@ -204,7 +204,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Ban, CalendarClock, Plus } from 'lucide-vue-next';
+import { Ban, CalendarClock, Plus } from '@lucide/vue';
 import { capitalize, computed, onMounted, watch } from 'vue';
 
 import { matchTitle } from '@/Shared/Search/matches';

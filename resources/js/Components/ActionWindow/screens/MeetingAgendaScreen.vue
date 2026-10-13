@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { ChevronLeft, ClipboardPaste, ListPlus, SkipForward } from 'lucide-vue-next';
+import { ChevronLeft, ClipboardPaste, ListPlus, SkipForward } from '@lucide/vue';
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';

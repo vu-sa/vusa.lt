@@ -340,7 +340,7 @@
 <script setup lang="ts">
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Briefcase, CalendarCheck, ChevronDown, Sparkles, Trash2 } from 'lucide-vue-next';
+import { Briefcase, CalendarCheck, ChevronDown, Sparkles, Trash2 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
 import DutySearchField, { type DutyHit } from './DutySearchField.vue';

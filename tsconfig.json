@@ -26,7 +26,6 @@
     "jsxImportSource": "vue",
     // Other
     "paths": {
-      "lucide-vue-next": ["./node_modules/@lucide/vue"],
       "@/*": [
         "./resources/js/*"
       ],

@@ -58,7 +58,7 @@
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarPlus, Link2, Plus } from 'lucide-vue-next';
+import { CalendarPlus, Link2, Plus } from '@lucide/vue';
 import { DialogDescription } from 'reka-ui';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';

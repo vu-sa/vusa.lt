@@ -265,7 +265,7 @@
  */
 import { computed, defineAsyncComponent, ref, watch, onMounted, nextTick } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
-import { Check, Crop, Crosshair, ImagePlus, Loader2, Plus, RefreshCw, Trash2, Upload as UploadIcon, X } from 'lucide-vue-next';
+import { Check, Crop, Crosshair, ImagePlus, Loader2, Plus, RefreshCw, Trash2, Upload as UploadIcon, X } from '@lucide/vue';
 
 const FocalPointPicker = defineAsyncComponent(() => import('./FocalPointPicker.vue'));
 const ImageCropper = defineAsyncComponent(() => import('./ImageCropper.vue'));

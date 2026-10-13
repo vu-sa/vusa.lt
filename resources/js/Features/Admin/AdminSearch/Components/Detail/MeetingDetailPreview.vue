@@ -86,7 +86,7 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Eye, Pencil, Vote } from 'lucide-vue-next';
+import { Eye, Pencil, Vote } from '@lucide/vue';
 
 import { formatSearchDate } from '../../Utils/searchHitMappers';
 import { getFacetValueLabel } from '../../Config/collectionFacetConfig';

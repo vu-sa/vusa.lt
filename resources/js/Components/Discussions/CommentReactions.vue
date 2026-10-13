@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { SmilePlus } from 'lucide-vue-next';
+import { SmilePlus } from '@lucide/vue';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';

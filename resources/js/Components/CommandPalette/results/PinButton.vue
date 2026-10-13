@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Star } from 'lucide-vue-next';
+import { Star } from '@lucide/vue';
 
 defineProps<{ pinned: boolean }>();
 

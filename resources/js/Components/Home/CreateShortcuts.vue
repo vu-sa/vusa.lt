@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Plus } from 'lucide-vue-next';
+import { Plus } from '@lucide/vue';
 import { computed } from 'vue';
 
 import { useCommandActions } from '@/Components/CommandPalette/useCommandActions';

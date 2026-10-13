@@ -252,7 +252,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowLeft, ChevronDown, Eye, Languages, Loader2, Save } from 'lucide-vue-next';
+import { ArrowLeft, ChevronDown, Eye, Languages, Loader2, Save } from '@lucide/vue';
 import { useEventListener } from '@vueuse/core';
 import { computed, h, nextTick, onUnmounted, ref, useId, watch, type FunctionalComponent } from 'vue';
 

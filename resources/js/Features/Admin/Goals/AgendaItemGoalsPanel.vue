@@ -57,7 +57,7 @@
 <script setup lang="ts">
 import { router, useForm } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Link2, Target } from 'lucide-vue-next';
+import { Link2, Target } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import LinkedGoalList from './LinkedGoalList.vue';

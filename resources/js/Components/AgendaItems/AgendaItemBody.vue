@@ -58,7 +58,7 @@
 import { computed } from 'vue';
 import type { InertiaForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarClock, ChevronUp, CircleHelp, Coffee, Info, Shapes, Vote } from 'lucide-vue-next';
+import { CalendarClock, ChevronUp, CircleHelp, Coffee, Info, Shapes, Vote } from '@lucide/vue';
 
 import AdminVotingHelpButton from '@/Components/AgendaItems/AdminVotingHelpButton.vue';
 import AgendaItemVotes from '@/Components/AgendaItems/AgendaItemVotes.vue';

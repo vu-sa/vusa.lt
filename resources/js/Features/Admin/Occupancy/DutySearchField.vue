@@ -102,7 +102,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Loader2, Search, X } from 'lucide-vue-next';
+import { Loader2, Search, X } from '@lucide/vue';
 import { computed, ref, useId, watch } from 'vue';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';

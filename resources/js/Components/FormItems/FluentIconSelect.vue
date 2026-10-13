@@ -32,7 +32,7 @@
 import { Icon } from '@iconify/vue';
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { X } from 'lucide-vue-next';
+import { X } from '@lucide/vue';
 
 import { Button } from '@/Components/ui/button';
 import { SingleSelect } from '@/Components/ui/single-select';

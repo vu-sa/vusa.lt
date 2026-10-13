@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpDown, History, Pencil, Plus, Trash2, Users } from 'lucide-vue-next';
+import { ArrowUpDown, History, Pencil, Plus, Trash2, Users } from '@lucide/vue';
 
 import ActivityChangeRow from './ActivityChangeRow.vue';
 import ActivityRelationChange from './ActivityRelationChange.vue';

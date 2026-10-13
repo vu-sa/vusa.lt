@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Landmark, Search as SearchIcon } from 'lucide-vue-next';
+import { Landmark, Search as SearchIcon } from '@lucide/vue';
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';

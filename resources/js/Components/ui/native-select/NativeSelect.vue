@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import type { Component, HTMLAttributes } from 'vue';
-import { ChevronDown } from 'lucide-vue-next';
+import { ChevronDown } from '@lucide/vue';
 
 import { cn } from '@/Utils/Shadcn/utils';
 

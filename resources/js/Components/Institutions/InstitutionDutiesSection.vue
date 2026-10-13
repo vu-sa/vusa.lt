@@ -98,7 +98,7 @@
 import { computed, ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowDown, ArrowDownUp, ArrowUp, Briefcase, Plus, Save } from 'lucide-vue-next';
+import { ArrowDown, ArrowDownUp, ArrowUp, Briefcase, Plus, Save } from '@lucide/vue';
 
 import DutyCard, { type DutyWithUsers, type UserWithPivot } from '@/Components/AdminForms/DutyCard.vue';
 import { EmptyState, OverviewSection } from '@/Components/Patterns';

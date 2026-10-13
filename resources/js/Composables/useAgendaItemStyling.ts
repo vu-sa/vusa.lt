@@ -1,5 +1,5 @@
 import { trans as $t } from 'laravel-vue-i18n';
-import type { LucideIcon } from 'lucide-vue-next';
+import type { LucideIcon } from '@lucide/vue';
 
 import {
   agendaItemStatuses,

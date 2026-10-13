@@ -220,7 +220,7 @@
 <script setup lang="ts" generic="T">
 import { trans as $t } from 'laravel-vue-i18n';
 import { useEventListener } from '@vueuse/core';
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, Columns3 } from 'lucide-vue-next';
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, Columns3 } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 
 import CollectionLoadMore from './CollectionLoadMore.vue';

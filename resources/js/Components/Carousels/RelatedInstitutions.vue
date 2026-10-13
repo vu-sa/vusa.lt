@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Link2 } from 'lucide-vue-next';
+import { Link2 } from '@lucide/vue';
 
 import RelatedInstitutionTile, { type RelatedInstitutionItem } from '@/Components/Institutions/RelatedInstitutionTile.vue';
 import { EmptyState } from '@/Components/Patterns';

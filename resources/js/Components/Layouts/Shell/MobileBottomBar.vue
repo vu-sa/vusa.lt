@@ -99,7 +99,7 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Bell, ClipboardCheck, Menu, Plus } from 'lucide-vue-next';
+import { Bell, ClipboardCheck, Menu, Plus } from '@lucide/vue';
 import { computed, onUnmounted, ref, watch } from 'vue';
 
 import TaskCountBadge from './TaskCountBadge.vue';

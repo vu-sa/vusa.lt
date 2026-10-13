@@ -12,7 +12,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { LayoutGrid } from 'lucide-vue-next';
+import { LayoutGrid } from '@lucide/vue';
 import { computed } from 'vue';
 
 import { NavigationTiles, OverviewSection } from '@/Components/Patterns';

@@ -94,7 +94,7 @@
 
 <script setup lang="ts">
 import { computed, ref, type HTMLAttributes } from 'vue';
-import { Lock, X } from 'lucide-vue-next';
+import { Lock, X } from '@lucide/vue';
 
 import { Input } from '@/Components/ui/input';
 import { Checkbox } from '@/Components/ui/checkbox';

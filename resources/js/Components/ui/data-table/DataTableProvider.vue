@@ -175,7 +175,7 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import DataTable from './DataTable.vue';
 

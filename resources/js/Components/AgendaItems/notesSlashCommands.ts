@@ -4,7 +4,7 @@
  */
 import type { Editor, Range } from '@tiptap/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Heading2, List, ListChecks, ListOrdered } from 'lucide-vue-next';
+import { Heading2, List, ListChecks, ListOrdered } from '@lucide/vue';
 import type { Component } from 'vue';
 
 export interface SlashCommandItem {

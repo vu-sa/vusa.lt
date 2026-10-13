@@ -50,7 +50,7 @@
 <script setup lang="ts">
 import type { Component, HTMLAttributes } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { ChevronRight } from 'lucide-vue-next';
+import { ChevronRight } from '@lucide/vue';
 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/Components/ui/card';
 

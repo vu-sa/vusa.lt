@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { defineComponent } from 'vue';
 import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
-import { LayoutDashboard } from 'lucide-vue-next';
+import { LayoutDashboard } from '@lucide/vue';
 
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import {

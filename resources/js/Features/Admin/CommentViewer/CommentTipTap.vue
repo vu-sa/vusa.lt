@@ -25,7 +25,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Send } from 'lucide-vue-next';
+import { Send } from '@lucide/vue';
 
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';

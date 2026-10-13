@@ -8,7 +8,7 @@ import {
   FilePlus2,
   FileCheck,
   type LucideIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { differenceInDays, format, formatDistanceToNow, isToday, isTomorrow, parseISO } from 'date-fns';
 import type { Locale } from 'date-fns';
 

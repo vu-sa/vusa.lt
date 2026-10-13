@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Eye, EyeOff, Globe } from 'lucide-vue-next';
+import { Eye, EyeOff, Globe } from '@lucide/vue';
 import { DialogDescription } from 'reka-ui';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
