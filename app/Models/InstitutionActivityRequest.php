@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\InstitutionActivityAnswer;
 use App\Enums\InstitutionActivityCampaign;
 use App\Services\MeetingCompletionService;
+use Carbon\CarbonInterface;
 use Database\Factories\InstitutionActivityRequestFactory;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
@@ -162,6 +163,20 @@ class InstitutionActivityRequest extends Model
     public function acceptsMeetings(): bool
     {
         return $this->answered_at === null && $this->expires_at->isFuture();
+    }
+
+    /**
+     * Whether this question already asks $recipientId about the whole of $start…$end. An expired
+     * unanswered question, or one passed on as "not mine", does not.
+     */
+    public function alreadyAsks(string $recipientId, InstitutionActivityCampaign $campaign, CarbonInterface $start, CarbonInterface $end): bool
+    {
+        return $this->recipient_id === $recipientId
+            && $this->campaign_type === $campaign
+            && $this->answer !== InstitutionActivityAnswer::NotMine
+            && ($this->isOpen() || $this->answered_at !== null || $this->resolved_at !== null)
+            && $this->period_start->lte($start)
+            && $this->periodEnd()->gte($end);
     }
 
     /**

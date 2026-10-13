@@ -3,6 +3,7 @@
 use App\Actions\ActivityRequests\GetInstitutionActivityRequestHistory;
 use App\Actions\ActivityRequests\SendInstitutionActivityRequests;
 use App\Actions\RecordMeeting;
+use App\Enums\ActivityRequestSkipReason;
 use App\Enums\InstitutionActivityCampaign;
 use App\Models\Cadence;
 use App\Models\Duty;
@@ -72,7 +73,7 @@ describe('tenant isolation', function (): void {
         asUser($this->coordinator)
             ->postJson(route('api.v1.admin.activityRequests.preview'), ['campaign_type' => 'activity_confirmation', 'institution_ids' => [$foreign->id]])
             ->assertOk()
-            ->assertJsonPath('data.0.skip_reason', SendInstitutionActivityRequests::SKIP_NOT_ALLOWED)
+            ->assertJsonPath('data.0.skip_reason', ActivityRequestSkipReason::NotAllowed->value)
             ->assertJsonPath('data.0.recipients', []);
 
         asUser($this->coordinator)
@@ -151,8 +152,8 @@ describe('who is asked about what', function (): void {
 
         expect($byInstitution[$this->institution->id]['skip_reason'])->toBeNull()
             ->and($byInstitution[$this->institution->id]['recipients'][0]['name'])->toBe($this->rep->name)
-            ->and($byInstitution[$this->otherInstitution->id]['skip_reason'])->toBe(SendInstitutionActivityRequests::SKIP_NO_RECIPIENTS)
-            ->and($byInstitution[$covered->id]['skip_reason'])->toBe(SendInstitutionActivityRequests::SKIP_CHECK_IN_ACTIVE);
+            ->and($byInstitution[$this->otherInstitution->id]['skip_reason'])->toBe(ActivityRequestSkipReason::NoRecipients->value)
+            ->and($byInstitution[$covered->id]['skip_reason'])->toBe(ActivityRequestSkipReason::CheckInActive->value);
     });
 
     test('an institution with an open question is not asked again', function (): void {
@@ -195,8 +196,8 @@ test('without a current cadence the period starts at the assignment, and former 
     $former = activityRequestRep($this->institution);
     $former->duties()->updateExistingPivot($former->duties->first()->id, ['end_date' => today()->subDay()]);
     $plan = app(SendInstitutionActivityRequests::class)->plan([$this->institution], $this->coordinator);
-    expect($plan[0]['recipients']->pluck('id')->all())->toBe([$this->rep->id])
-        ->and($plan[0]['recipient_periods'][$this->rep->id]['period_start'])->toBe(today()->subYear()->toDateString());
+    expect($plan[0]->recipients->pluck('id')->all())->toBe([$this->rep->id])
+        ->and($plan[0]->recipientPeriods[$this->rep->id]['period_start'])->toBe(today()->subYear()->toDateString());
 });
 
 test('secretaries replace representatives and use the institution override rather than the global cadence', function (): void {
@@ -205,8 +206,8 @@ test('secretaries replace representatives and use the institution override rathe
     $secretary = User::factory()->create();
     InstitutionSecretary::create(['institution_id' => $this->institution->id, 'cadence_id' => $cadence->id, 'user_id' => $secretary->id]);
     $plan = app(SendInstitutionActivityRequests::class)->plan([$this->institution], $this->coordinator);
-    expect($plan[0]['recipients']->pluck('id')->all())->toBe([$secretary->id])
-        ->and($plan[0]['recipient_periods'][$secretary->id]['period_start'])->toBe($cadence->start_date->toDateString());
+    expect($plan[0]->recipients->pluck('id')->all())->toBe([$secretary->id])
+        ->and($plan[0]->recipientPeriods[$secretary->id]['period_start'])->toBe($cadence->start_date->toDateString());
 });
 
 test('existing meetings exclude only activity confirmation and within each recipient period', function (): void {
@@ -216,16 +217,16 @@ test('existing meetings exclude only activity confirmation and within each recip
     $sender = app(SendInstitutionActivityRequests::class);
     $activity = $sender->plan([$this->institution], $this->coordinator);
     $missing = $sender->plan([$this->institution], $this->coordinator, InstitutionActivityCampaign::MissingMeetings);
-    expect($activity[0]['recipients']->pluck('id')->all())->toBe([$late->id])
-        ->and($activity[0]['excluded_recipients'][0]['skip_reason'])->toBe('meeting_recorded')
-        ->and($missing[0]['recipients']->pluck('id')->all())->toBe([$this->rep->id])
-        ->and($missing[0]['excluded_recipients'][0]['skip_reason'])->toBe('no_recorded_meetings');
+    expect($activity[0]->recipients->pluck('id')->all())->toBe([$late->id])
+        ->and($activity[0]->excludedRecipients[0]['skip_reason'])->toBe('meeting_recorded')
+        ->and($missing[0]->recipients->pluck('id')->all())->toBe([$this->rep->id])
+        ->and($missing[0]->excludedRecipients[0]['skip_reason'])->toBe('no_recorded_meetings');
 });
 
 test('preferences explain delivery and actual immediate queued email count', function (): void {
     $this->rep->update(['notification_preferences' => ['types' => ['institution_activity' => ['email' => 'off']]]]);
     $plan = app(SendInstitutionActivityRequests::class)->plan([$this->institution], $this->coordinator);
-    expect($plan[0]['recipient_periods'][$this->rep->id]['delivery_mode'])->toBe('off');
+    expect($plan[0]->recipientPeriods[$this->rep->id]['delivery_mode'])->toBe('off');
     $result = app(SendInstitutionActivityRequests::class)->send([$this->institution], $this->coordinator);
     expect($result['queued_emails'])->toBe(0)->and($result['queued_recipients'])->toBe(1)->and($result['queued_requests'])->toBe(1);
     Notification::assertSentTo($this->rep, InstitutionActivityNotification::class);
