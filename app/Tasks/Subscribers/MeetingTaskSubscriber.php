@@ -58,7 +58,7 @@ class MeetingTaskSubscriber
 
         $meeting->load(['institutions.tenant', 'agendaItems']);
 
-        // Nominated administrators when the term has any, else the representatives who
+        // Nominated secretaries when the term has any, else the representatives who
         // were actually active at the meeting date. See ResolveTaskAssignees.
         $representatives = ResolveTaskAssignees::forMeeting($meeting);
 

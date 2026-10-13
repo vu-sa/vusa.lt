@@ -7,7 +7,7 @@ use App\Models\Meeting;
 use App\Notifications\Concerns\ReachesFollowers;
 
 /**
- * Notification sent to administrators when a new meeting is created.
+ * Notification sent to overseers and followers when a new meeting is created.
  */
 class MeetingCreatedNotification extends BaseNotification
 {

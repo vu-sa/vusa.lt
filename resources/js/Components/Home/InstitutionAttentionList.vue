@@ -10,10 +10,10 @@
           {{ institution.name }}
         </Link>
         <span
-          v-if="institution.is_administered"
+          v-if="institution.is_secretary ?? institution.is_administered"
           class="mt-1 inline-flex items-center gap-1 border border-border px-1.5 py-0.5 text-xs text-muted-foreground"
-          :title="$t('secretaries.dashboard.administered_hint')"
-          data-slot="institution-administered-badge"
+          :title="$t('secretaries.dashboard.secretary_hint')"
+          data-slot="institution-secretary-badge"
         >
           <NotebookPen class="size-3.5" aria-hidden="true" />
           {{ $t('secretaries.dashboard.badge') }}

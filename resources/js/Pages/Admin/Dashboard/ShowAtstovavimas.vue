@@ -233,7 +233,8 @@ const attention = computed<InstitutionActivityInsight[]>(() =>
     .map(institution => ({
       id: String(institution.id),
       name: String(institution.name ?? ''),
-      is_administered: institution.is_administered === true,
+      is_secretary: institution.is_secretary === true || institution.is_administered === true,
+      is_administered: institution.is_secretary === true || institution.is_administered === true,
       ...institution.activity_status,
     })),
 );

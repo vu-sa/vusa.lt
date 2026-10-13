@@ -405,7 +405,7 @@ declare global {
       anonymous_url?: string | null
       link_url?: string | null
       sharepoint_permission_id?: string | null
-      status: string
+      status: DocumentStatus
       removed_from_sharepoint_at?: string | null
       published_at?: string | null
       published_by?: string | null
@@ -889,8 +889,6 @@ declare global {
       followers?: User[]
       secretaries?: User[]
       secretary_assignments?: InstitutionSecretary[]
-      administrators?: User[]
-      administrator_assignments?: InstitutionSecretary[]
       outgoing_links?: InstitutionLink[]
       incoming_links?: InstitutionLink[]
       comments?: Comment[]
@@ -910,8 +908,6 @@ declare global {
       followers_count: number
       secretaries_count: number
       secretary_assignments_count: number
-      administrators_count: number
-      administrator_assignments_count: number
       outgoing_links_count: number
       incoming_links_count: number
       comments_count: number
@@ -933,8 +929,6 @@ declare global {
       followers_exists: boolean
       secretaries_exists: boolean
       secretary_assignments_exists: boolean
-      administrators_exists: boolean
-      administrator_assignments_exists: boolean
       outgoing_links_exists: boolean
       incoming_links_exists: boolean
       comments_exists: boolean
@@ -1508,8 +1502,6 @@ declare global {
       followers?: User[]
       secretaries?: User[]
       secretary_assignments?: InstitutionSecretary[]
-      administrators?: User[]
-      administrator_assignments?: InstitutionSecretary[]
       outgoing_links?: InstitutionLink[]
       incoming_links?: InstitutionLink[]
       comments?: Comment[]
@@ -1529,8 +1521,6 @@ declare global {
       followers_count: number
       secretaries_count: number
       secretary_assignments_count: number
-      administrators_count: number
-      administrator_assignments_count: number
       outgoing_links_count: number
       incoming_links_count: number
       comments_count: number
@@ -1552,8 +1542,6 @@ declare global {
       followers_exists: boolean
       secretaries_exists: boolean
       secretary_assignments_exists: boolean
-      administrators_exists: boolean
-      administrator_assignments_exists: boolean
       outgoing_links_exists: boolean
       incoming_links_exists: boolean
       comments_exists: boolean
@@ -1973,6 +1961,15 @@ declare global {
       // exists
       role_exists: boolean
       type_exists: boolean
+    }
+
+    export interface SharepointFolder {
+      // columns
+      drive_item_id: string
+      parent_id?: string | null
+      name: string
+      created_at?: string | null
+      updated_at?: string | null
     }
 
     export interface Step {
@@ -2445,7 +2442,6 @@ declare global {
       tasks?: Task[]
       institutions?: Institution
       secretaried_institutions?: Institution[]
-      administered_institutions?: Institution[]
       followed_institutions?: Institution[]
       reservations?: Reservation[]
       reservation_draft?: ReservationDraft
@@ -2464,7 +2460,6 @@ declare global {
       dutiables_count: number
       tasks_count: number
       secretaried_institutions_count: number
-      administered_institutions_count: number
       followed_institutions_count: number
       reservations_count: number
       push_subscriptions_count: number
@@ -2482,7 +2477,6 @@ declare global {
       dutiables_exists: boolean
       tasks_exists: boolean
       secretaried_institutions_exists: boolean
-      administered_institutions_exists: boolean
       followed_institutions_exists: boolean
       reservations_exists: boolean
       reservation_draft_exists: boolean
@@ -2558,6 +2552,14 @@ declare global {
     } as const;
 
     export type CommentKind = typeof CommentKind[keyof typeof CommentKind]
+
+    const DocumentStatus = {
+      Pending: 'pending',
+      Published: 'published',
+      Hidden: 'hidden',
+    } as const;
+
+    export type DocumentStatus = typeof DocumentStatus[keyof typeof DocumentStatus]
 
     const Responsibility = {
       StudentRepCoordination: 'student_rep_coordination',

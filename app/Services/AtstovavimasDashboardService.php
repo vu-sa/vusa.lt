@@ -293,7 +293,7 @@ class AtstovavimasDashboardService
 
         $ownInstitutions = Institution::query()
             ->whereIn('id', $user->authorization_duties()->pluck('institution_id')
-                ->merge($user->administeredInstitutions()->pluck('institutions.id'))
+                ->merge($user->secretariedInstitutions()->pluck('institutions.id'))
                 ->filter()
                 ->unique())
             ->get();

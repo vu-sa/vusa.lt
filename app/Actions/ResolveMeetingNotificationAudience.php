@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Collection;
 
 /**
- * Notification audiences union overseers and followers; task assignment narrows to administrators.
+ * Notification audiences union overseers and followers; task assignment narrows to secretaries.
  */
 class ResolveMeetingNotificationAudience
 {

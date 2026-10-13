@@ -15,9 +15,9 @@ use Illuminate\Support\Collection;
 /**
  * Recompute who carries the still-open tasks of one institution term.
  *
- * Run after the administrator roster for a term changes, or after the term's own dates
+ * Run after the secretary roster for a term changes, or after the term's own dates
  * move. Because {@see ResolveTaskAssignees} falls back to date-scoped members on its own,
- * this handles both directions: nominating administrators takes the task off the wider
+ * this handles both directions: nominating secretaries takes the task off the wider
  * membership, and removing the last one hands it back.
  *
  * Deliberately silent — assignees are synced through the relation rather than
@@ -41,7 +41,7 @@ class ResyncTaskAssigneesForCadence
      * The window is passed in rather than read off the cadence because a term whose dates
      * just moved has to be swept where it *was* as well as where it is now: a meeting that
      * fell out of it needs handing back to the membership just as much as one that fell in
-     * needs handing to the administrators.
+     * needs handing to the secretaries.
      *
      * @param  Collection<int, Institution>  $institutions
      * @return int the number of tasks whose assignees were rewritten

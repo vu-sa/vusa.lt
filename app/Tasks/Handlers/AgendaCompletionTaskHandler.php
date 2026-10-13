@@ -173,7 +173,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
      * Reopen a completed task if conditions require it.
      *
      * Reopening revives a roster that was snapshotted whenever the task was last open, so
-     * the assignees are resolved again on the way back: a term staffed with administrators
+     * the assignees are resolved again on the way back: a term staffed with secretaries
      * after the task completed would otherwise mail its whole membership on the next
      * auto-completion. Silent, like {@see ResyncTaskAssigneesForCadence} — the
      * task is the same one, only its holders changed.

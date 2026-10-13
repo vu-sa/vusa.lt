@@ -73,10 +73,10 @@ class InstitutionAccessService
                 $institutionIds = $institutionIds->merge($relatedInstitutionIds);
             }
 
-            // 3. Institutions the user administers. Deliberately not folded into the
-            // duty ids above: an administrator is not a member, so this must not seed
+            // 3. Institutions the user serves as secretary. Deliberately not folded into the
+            // duty ids above: a secretary is not a member, so this must not seed
             // relationship-based access the way a real duty does.
-            $institutionIds = $institutionIds->merge($this->getAdministeredInstitutionIds($user));
+            $institutionIds = $institutionIds->merge($this->getSecretariedInstitutionIds($user));
 
             return $institutionIds->unique()->values();
         });
@@ -98,16 +98,26 @@ class InstitutionAccessService
     }
 
     /**
-     * Institutions the user has been nominated to administer, across every term.
+     * Institutions the user has been nominated to look after as secretary, across every term.
+     *
+     * @return Collection<int, string>
+     */
+    public function getSecretariedInstitutionIds(User $user): Collection
+    {
+        return $user->secretariedInstitutions()
+            ->pluck('institutions.id')
+            ->unique()
+            ->values();
+    }
+
+    /**
+     * @deprecated Use getSecretariedInstitutionIds().
      *
      * @return Collection<int, string>
      */
     public function getAdministeredInstitutionIds(User $user): Collection
     {
-        return $user->administeredInstitutions()
-            ->pluck('institutions.id')
-            ->unique()
-            ->values();
+        return $this->getSecretariedInstitutionIds($user);
     }
 
     /**

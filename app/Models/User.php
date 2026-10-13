@@ -65,7 +65,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property bool $name_was_changed
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read InstitutionFollow|Dutiable|InstitutionSecretary|null $pivot
- * @property-read Collection<int, Institution> $administeredInstitutions
  * @property-read Collection<int, Duty> $authorization_duties
  * @property-read Collection<int, Duty> $current_duties
  * @property-read Collection<int, Dutiable> $dutiables
@@ -334,16 +333,6 @@ class User extends Authenticatable implements GuardsForceDelete
             ->using(InstitutionSecretary::class)
             ->withPivot('cadence_id')
             ->withTimestamps();
-    }
-
-    /**
-     * Backwards-compatibility alias for secretariedInstitutions().
-     *
-     * @return BelongsToMany<Institution, $this, InstitutionSecretary, 'pivot'>
-     */
-    public function administeredInstitutions(): BelongsToMany
-    {
-        return $this->secretariedInstitutions();
     }
 
     /**

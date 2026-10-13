@@ -14,7 +14,7 @@ use Illuminate\Support\Collection;
  *
  * Unlike that action this resolves *strictly by containment*: a date outside every
  * term returns null rather than falling forward to the next one. Anything hanging off
- * a term (administrators, and whatever follows) must not silently apply to a meeting
+ * a term (secretaries, and whatever follows) must not silently apply to a meeting
  * held years before it existed.
  */
 class ResolveCadenceForInstitution

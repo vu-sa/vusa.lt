@@ -61,9 +61,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read Collection<int, InstitutionSecretary> $administratorAssignments
  * @property-read InstitutionInstitutionType|InstitutionFollow|InstitutionSecretary|null $pivot
- * @property-read Collection<int, User> $administrators
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Cadence> $cadences
  * @property-read Collection<int, InstitutionCheckIn> $checkIns
@@ -274,26 +272,6 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
     public function secretaryAssignments(): HasMany
     {
         return $this->hasMany(InstitutionSecretary::class);
-    }
-
-    /**
-     * Backwards-compatibility alias for secretaries().
-     *
-     * @return BelongsToMany<User, $this, InstitutionSecretary, 'pivot'>
-     */
-    public function administrators(): BelongsToMany
-    {
-        return $this->secretaries();
-    }
-
-    /**
-     * Backwards-compatibility alias for secretaryAssignments().
-     *
-     * @return HasMany<InstitutionSecretary, $this>
-     */
-    public function administratorAssignments(): HasMany
-    {
-        return $this->secretaryAssignments();
     }
 
     public function managers()

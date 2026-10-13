@@ -5,7 +5,7 @@ paths:
   - 'app/Actions/Cadences/**'
   - 'app/Http/Requests/Cadences/**'
   - 'resources/js/Components/Cadences/**'
-  - 'app/Http/Requests/UpdateInstitutionAdministratorsRequest.php'
+  - 'app/Http/Requests/UpdateInstitutionSecretariesRequest.php'
   - 'app/Actions/ResolveCadence*.php'
 ---
 
@@ -30,6 +30,6 @@ Any meeting may be an anchor — a faculty term routinely opens at the tenant co
 The anchor payload carries the sitting's own `institution_id`/`institution_name` so `CadenceList` and `CadenceRowForm` can name it when it is not the term owner's own — an unlabelled foreign date is the confusing case, not the labelled one.
 
 ## ResolveCadenceForInstitution resolves strictly; a cadence id from a payload is an IDOR
-`ResolveCadenceForInstitution` differs deliberately from the other three sites in one way: it resolves **strictly by containment**, with no fall-forward to the next/latest term. Anything hanging off a cadence (administrators, and whatever follows) must not apply to a meeting held years before the term existed — the null is what makes historical meetings fall back to the members active then.
+`ResolveCadenceForInstitution` differs deliberately from the other three sites in one way: it resolves **strictly by containment**, with no fall-forward to the next/latest term. Anything hanging off a cadence (secretaries, and whatever follows) must not apply to a meeting held years before the term existed — the null is what makes historical meetings fall back to the members active then.
 
-A `cadence_id` arriving in a request payload must resolve *through* the institution — its own overrides when it has any, otherwise only global rows. A bare `exists:cadences,id` lets a crafted payload attach against another body's term. `UpdateInstitutionAdministratorsRequest::applicableCadenceRule()` is the precedent, same shape as `CadenceRequest::anchorMeeting()` resolving an anchor through `MeetingPolicy::view`.
+A `cadence_id` arriving in a request payload must resolve *through* the institution — its own overrides when it has any, otherwise only global rows. A bare `exists:cadences,id` lets a crafted payload attach against another body's term. `UpdateInstitutionSecretariesRequest::applicableCadenceRule()` is the precedent, same shape as `CadenceRequest::anchorMeeting()` resolving an anchor through `MeetingPolicy::view`.
