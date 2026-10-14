@@ -102,6 +102,19 @@
         {{ form.errors.primary_institution_id }}
       </p>
     </div>
+
+    <div class="flex items-start gap-3">
+      <Checkbox id="tenant-goals-enabled" v-model="form.goals_enabled" class="mt-0.5" />
+      <div class="space-y-1">
+        <Label for="tenant-goals-enabled">{{ $t('Įjungti tikslus') }}</Label>
+        <p class="text-xs text-muted-foreground">
+          {{ $t('Padalinio nariai galės kurti tikslus ir veiksmus, o viešoje svetainėje atsiras tikslų puslapis.') }}
+        </p>
+        <p v-if="form.errors.goals_enabled" class="text-sm text-destructive">
+          {{ form.errors.goals_enabled }}
+        </p>
+      </div>
+    </div>
   </SheetForm>
 </template>
 
@@ -111,6 +124,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed, toRaw, watch } from 'vue';
 
 import SheetForm from '@/Components/Patterns/SheetForm.vue';
+import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -124,6 +138,7 @@ export interface TenantInput {
   alias: string;
   shortname_vu: string;
   primary_institution_id: number | string | null;
+  goals_enabled: boolean;
 }
 
 const props = defineProps<{
@@ -155,6 +170,7 @@ const blank = (): TenantInput => ({
   alias: '',
   shortname_vu: '',
   primary_institution_id: null,
+  goals_enabled: false,
 });
 
 const form = useForm<TenantInput>(blank());
@@ -180,6 +196,7 @@ watch(() => props.tenant, (val) => {
       alias: raw.alias ?? '',
       shortname_vu: raw.shortname_vu ?? '',
       primary_institution_id: raw.primary_institution_id ?? null,
+      goals_enabled: Boolean(raw.goals_enabled),
     });
   }
   else {

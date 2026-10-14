@@ -266,7 +266,7 @@ Route::post('tenants/{tenant}/quick-links', [TenantController::class, 'updateQui
 Route::get('tenants/{tenant}/main-page/edit', [TenantController::class, 'editMainPage'])->name('tenants.editMainPage');
 Route::post('tenants/{tenant}/main-page', [TenantController::class, 'updateMainPage'])->name('tenants.updateMainPage');
 
-Route::resource('tenants', TenantController::class);
+Route::resource('tenants', TenantController::class)->only(['index', 'store', 'update', 'destroy']);
 
 Route::get('forms/{form}/export', [FormController::class, 'export'])->name('forms.export');
 Route::resource('forms', FormController::class);

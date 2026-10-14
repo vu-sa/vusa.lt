@@ -82,6 +82,7 @@ type TenantRow = Pick<App.Entities.Tenant, 'id' | 'fullname' | 'shortname' | 'al
   can: { update: boolean; delete: boolean };
   shortname_vu?: string;
   primary_institution_id?: number | string | null;
+  goals_enabled?: boolean;
 };
 
 const props = defineProps<{
@@ -134,6 +135,7 @@ function openSheet(item: TenantRow | null = null): void {
       alias: item.alias,
       shortname_vu: item.shortname_vu ?? '',
       primary_institution_id: item.primary_institution_id ?? null,
+      goals_enabled: Boolean(item.goals_enabled),
     };
   }
   else {
