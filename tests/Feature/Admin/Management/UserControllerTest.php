@@ -85,6 +85,25 @@ describe('authorized access', function (): void {
             );
     });
 
+    test('separates current members from former ones', function (): void {
+        $current = makeUser($this->tenant);
+        $former = makeUser($this->tenant);
+        $former->dutiables()->update(['start_date' => '2019-07-01', 'end_date' => '2020-06-30']);
+
+        $listed = fn (string $membership) => collect(asUser($this->admin)
+            ->getJson(route('api.v1.admin.users.index', ['membership' => $membership]))
+            ->assertOk()
+            ->json('data.items'))->keyBy('id');
+
+        expect($listed('current')->keys())->toContain($current->id)->not->toContain($former->id)
+            ->and($listed('former')->keys())->toContain($former->id)->not->toContain($current->id)
+            ->and($listed('former')[$former->id]['is_current'])->toBeFalse()
+            ->and(substr($listed('former')[$former->id]['last_term_end'], 0, 10))->toBe('2020-06-30')
+            ->and($listed('current')[$current->id]['current_duties_count'])->toBe(1)
+            // The row's quick list names where each term was held.
+            ->and($listed('former')[$former->id]['duties'][0]['institution']['name'])->toBe($former->duties()->first()->institution->name);
+    });
+
     test('the trash is the same collection over soft-deleted members', function (): void {
         $gone = makeUser($this->tenant);
         $gone->delete();
@@ -203,6 +222,17 @@ describe('authorized access', function (): void {
             'email' => 'updated@example.com',
             'phone' => '+370 987 6543',
         ]);
+    });
+
+    test('a former member without an email can still be saved', function (): void {
+        $user = makeUser($this->tenant);
+        $user->update(['email' => null]);
+
+        asUser($this->admin)->put(route('users.update', $user), ['name' => $user->name, 'email' => '', 'phone' => '+370 600 00000'])
+            ->assertSessionHasNoErrors();
+
+        expect($user->fresh()->phone)->toBe('+370 600 00000')
+            ->and($user->fresh()->email)->toBeNull();
     });
 
     test('can delete user', function (): void {

@@ -32,7 +32,7 @@ class UpdateUserRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', UniqueAmongTrashed::of('users', 'email')->ignore($user->id)],
+            'email' => ['nullable', 'email', UniqueAmongTrashed::of('users', 'email')->ignore($user->id)],
             'facebook_url' => ['nullable', 'url', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'profile_photo_path' => ['nullable', 'string', 'max:255'],

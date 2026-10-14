@@ -45,10 +45,17 @@
         <div class="flex min-w-0 flex-col gap-10">
           <OverviewSection variant="home" :title="$t('Dabartiniai nariai')" :icon="Users" :count="currentHolders.length">
             <template v-if="canAssignMembers" #actions>
-              <Button size="sm" variant="outline" voice="sentence" class="u-touch" @click="openAssignSheet()">
-                <UserPlus class="size-4" />
-                {{ $t('Priskirti narį') }}
-              </Button>
+              <SpotlightPopover
+                :title="$t('Priskirk ir buvusius narius')"
+                :description="$t('Pasirink ankstesnę kadenciją — datos užsipildys pačios, o el. paštas naujam nariui nebūtinas.')"
+                :is-dismissed="assignSpotlight.isDismissed.value"
+                @dismiss="assignSpotlight.dismiss()"
+              >
+                <Button size="sm" variant="outline" voice="sentence" class="u-touch" @click="openAssignSheet()">
+                  <UserPlus class="size-4" />
+                  {{ $t('Priskirti') }}
+                </Button>
+              </SpotlightPopover>
             </template>
 
             <p v-if="currentHolders.length === 0" class="text-sm text-muted-foreground">
@@ -86,11 +93,11 @@
         </div>
 
         <OverviewSection
-          v-if="historicalHolders.length > 0"
+          v-if="historicalHolders.length + predecessorTerms.length > 0"
           variant="home"
           :title="$t('Laikotarpių istorija')"
           :icon="History"
-          :count="historicalHolders.length"
+          :count="historicalHolders.length + predecessorTerms.length"
         >
           <div>
             <MemberTermRow
@@ -98,7 +105,16 @@
               :key="`${user.id}-${user.pivot?.id}`"
               :user
               :can-manage="canAssignMembers"
+              :duty-name="formerNameDuring(user.pivot)"
               @edit="openAssignSheet(user.pivot, user)"
+            />
+            <MemberTermRow
+              v-for="term in predecessorTerms"
+              :key="`predecessor-${term.id}-${term.pivot?.id}`"
+              :user="term"
+              :can-manage="false"
+              :duty-name="term.duty_name"
+              data-testid="predecessor-term"
             />
           </div>
         </OverviewSection>
@@ -149,6 +165,69 @@
             </div>
           </OverviewSection>
         </Deferred>
+
+        <Deferred data="lineage">
+          <template #fallback>
+            <div class="h-12 animate-pulse bg-secondary/60" data-testid="lineage-skeleton" />
+          </template>
+
+          <OverviewSection
+            v-if="hasLineage || canManageDuty"
+            variant="home"
+            :title="$t('Pareigybės istorija')"
+            :icon="GitBranch"
+            data-testid="duty-lineage"
+          >
+            <template v-if="canManageDuty" #actions>
+              <Button size="sm" variant="outline" voice="sentence" class="u-touch" @click="predecessorSheetOpen = true">
+                <Plus class="size-4" />
+                {{ $t('Susieti ankstesnę pareigybę') }}
+              </Button>
+            </template>
+
+            <p v-if="!hasLineage" class="text-sm text-muted-foreground">
+              {{ $t('Jei šios pareigybės darbą anksčiau dirbo kita pareigybė (pvz., ji buvo padalinta), susiek ją — jos nariai bus rodomi istorijoje.') }}
+            </p>
+            <dl v-else class="space-y-3 text-sm">
+              <div v-if="lineage?.predecessors.length">
+                <dt class="text-xs text-muted-foreground">
+                  {{ $t('Ankstesnė pareigybė') }}
+                </dt>
+                <dd v-for="linked in lineage.predecessors" :key="linked.id" class="flex min-h-11 items-center justify-between gap-2">
+                  <Link :href="route('duties.show', linked.id)" class="min-w-0 truncate font-medium hover:underline">
+                    <InflectedDutyName :name="linked.name" />
+                    <span v-if="linked.institution_name" class="font-normal text-muted-foreground"> · {{ linked.institution_name }}</span>
+                  </Link>
+                  <span class="flex shrink-0 items-center gap-1">
+                    <StatusBadge v-if="!linked.is_active" :status="inactiveStatus" />
+                    <Button
+                      v-if="canManageDuty"
+                      size="sm"
+                      variant="ghost"
+                      voice="sentence"
+                      class="u-touch"
+                      :aria-label="$t('Atsieti')"
+                      @click="unlinkPredecessor(linked.id)"
+                    >
+                      <X class="size-4" />
+                    </Button>
+                  </span>
+                </dd>
+              </div>
+              <div v-if="lineage?.successors.length">
+                <dt class="text-xs text-muted-foreground">
+                  {{ $t('Darbą perėmė') }}
+                </dt>
+                <dd v-for="linked in lineage.successors" :key="linked.id" class="flex min-h-11 items-center gap-2">
+                  <Link :href="route('duties.show', linked.id)" class="min-w-0 truncate font-medium hover:underline">
+                    <InflectedDutyName :name="linked.name" />
+                    <span v-if="linked.institution_name" class="font-normal text-muted-foreground"> · {{ linked.institution_name }}</span>
+                  </Link>
+                </dd>
+              </div>
+            </dl>
+          </OverviewSection>
+        </Deferred>
       </div>
     </template>
 
@@ -196,9 +275,22 @@
     :dutiable="selectedDutiable"
     :user="selectedUserForSheet"
     :study-programs="studyPrograms ?? []"
-    :taken-ids="currentHolderIds"
+    :existing-terms
     :occupied-places="currentHolders.length"
   />
+
+  <SheetForm
+    :open="predecessorSheetOpen"
+    :title="$t('Susieti ankstesnę pareigybę')"
+    :description="$t('Pasirink pareigybę, kurios darbą perėmė ši. Jos nariai bus rodomi šios pareigybės istorijoje.')"
+    :save-label="$t('Susieti')"
+    :processing="predecessorForm.processing"
+    :dirty="!!predecessorChoice"
+    @update:open="predecessorSheetOpen = $event"
+    @submit="linkPredecessor"
+  >
+    <DutySearchField v-model="predecessorChoice" include-inactive :error="predecessorForm.errors.predecessor_id" />
+  </SheetForm>
 
   <DutiableTimelineDialog
     v-model:open="timelineOpen"
@@ -234,35 +326,41 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
-import { Deferred, Link, router } from '@inertiajs/vue3';
+import { computed, onMounted, ref, watch } from 'vue';
+import { Deferred, Link, router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
+  Archive,
   Briefcase,
   CalendarClock,
   CalendarRange,
   ChevronRight,
   Edit3,
   FileText,
+  GitBranch,
   History,
+  Plus,
   Trash2,
   UserPlus,
   Users,
   UserX,
+  X,
 } from '@lucide/vue';
 
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
-import { ConfirmDialog, OverviewSection } from '@/Components/Patterns';
+import { ConfirmDialog, OverviewSection, SheetForm, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import type { StatusPresentation } from '@/Constants/statuses';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
-import { AssignDutyUserSheet, MemberTermRow, termStatus } from '@/Features/Admin/Occupancy';
+import { AssignDutyUserSheet, DutySearchField, MemberTermRow, dutyNameOn, termStatus, type DutyHit, type FormerDutyName } from '@/Features/Admin/Occupancy';
 import DutyResponsibilitiesSection from '@/Features/Admin/Responsibilities/DutyResponsibilitiesSection.vue';
 import type { DutyResponsibilitiesPayload, DutyResponsibilityOptions } from '@/Features/Admin/Responsibilities/types';
 import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
@@ -274,16 +372,34 @@ interface TranslatableText {
   en?: string;
 }
 
+interface LinkedDuty {
+  id: string;
+  name: string;
+  is_active: boolean;
+  institution_name: string | null;
+}
+
+interface DutyLineage {
+  predecessors: LinkedDuty[];
+  successors: LinkedDuty[];
+  /** Holders of the predecessor duties, labelled with the name their duty had then. */
+  predecessorTerms: (App.Entities.User & { duty_name: string })[];
+}
+
 const props = defineProps<{
   duty: App.Entities.Duty & {
     sharepointPath?: string | null;
     sharepointFolderUrl?: string | null;
+    is_active?: boolean;
+    former_names?: FormerDutyName[];
   };
   can?: { update: boolean; managePeople: boolean };
   /** Deferred (`dutyPanels`): only the About tab needs siblings. */
   otherDuties?: App.Entities.Duty[];
   /** Deferred (`dutyPanels`): only the assignment sheet's picker needs them. */
   studyPrograms?: App.Entities.StudyProgram[];
+  /** Deferred (`dutyPanels`): predecessor/successor links and the predecessors' holders. */
+  lineage?: DutyLineage;
   /** Deferred (`dutyPanels`): what the duty must handle, beside its roles. */
   responsibilities?: DutyResponsibilitiesPayload;
   /** Optional: only the add-responsibility sheet needs these. */
@@ -315,15 +431,46 @@ const holdersWhere = (wanted: ReturnType<typeof termStatus>) => {
 
 const currentHolders = computed(() => holdersWhere('current'));
 const upcomingHolders = computed(() => holdersWhere('upcoming'));
-const historicalHolders = computed(() => holdersWhere('ended'));
-const currentHolderIds = computed(() => currentHolders.value.map(user => String(user.id)));
-const isVacant = computed(() => currentHolders.value.length === 0);
+const termDay = (value?: string | null) => String(value ?? '').slice(0, 10);
+// Newest first: by the last day in office, then by when the term began.
+const historicalHolders = computed(() => holdersWhere('ended').sort((a: App.Entities.User, b: App.Entities.User) =>
+  termDay(b.pivot?.end_date).localeCompare(termDay(a.pivot?.end_date))
+  || termDay(b.pivot?.start_date).localeCompare(termDay(a.pivot?.start_date))));
+const isActive = computed(() => props.duty.is_active !== false);
+// An inactive duty is expected to be empty; only a staffed one can be vacant.
+const isVacant = computed(() => isActive.value && currentHolders.value.length === 0);
+
+const existingTerms = computed(() => (props.duty.users ?? [])
+  .filter((user: App.Entities.User) => !!user.pivot)
+  .map((user: App.Entities.User) => ({
+    user_id: String(user.id),
+    start_date: user.pivot?.start_date ?? null,
+    end_date: user.pivot?.end_date ?? null,
+  })));
+
+const predecessorTerms = computed(() => props.lineage?.predecessorTerms ?? []);
+const lineage = computed(() => props.lineage);
+const hasLineage = computed(() => (props.lineage?.predecessors.length ?? 0) + (props.lineage?.successors.length ?? 0) > 0);
+
+/** The name an ended term ran under, when the duty has been renamed since. */
+const formerNameDuring = (term?: { start_date?: string | null } | null) => {
+  const current = getTranslatedValue(props.duty.name);
+  const then = dutyNameOn(current, props.duty.former_names, term?.start_date);
+
+  return then === current ? null : then;
+};
 
 const dutyTitle = computed(() => getTranslatedValue(props.duty.name));
 
 // The healthy state (occupied) gets no badge — only what needs attention is painted.
-const dutyStatus = computed<StatusPresentation | undefined>(() =>
-  isVacant.value ? { label: $t('Neužimta'), role: 'attention', icon: UserX } : undefined);
+const inactiveStatus: StatusPresentation = { label: $t('Neaktyvi'), role: 'neutral', icon: Archive };
+const dutyStatus = computed<StatusPresentation | undefined>(() => {
+  if (!isActive.value) {
+    return inactiveStatus;
+  }
+
+  return isVacant.value ? { label: $t('Neužimta'), role: 'attention', icon: UserX } : undefined;
+});
 
 const otherDuties = computed(() => props.otherDuties ?? []);
 const hasTypeFiles = computed(() => (props.duty.types?.length ?? 0) > 0);
@@ -391,7 +538,7 @@ const tabs = computed<RecordPageSection[]>(() => {
 
 const primaryAction = computed<ActionDescriptor | undefined>(() => {
   if (canAssignMembers.value) {
-    return { key: 'assign', label: $t('Priskirti narį'), icon: UserPlus };
+    return { key: 'assign', label: $t('Priskirti'), icon: UserPlus };
   }
 
   return undefined;
@@ -427,7 +574,10 @@ const handleRecordAction = (actionKey: string) => {
   }
 };
 
+const assignSpotlight = useFeatureSpotlight('assign-past-terms-v1');
+
 const openAssignSheet = (dutiable?: (App.Entities.Dutiable & Record<string, unknown>) | null, user?: App.Entities.User | null) => {
+  assignSpotlight.dismiss();
   selectedDutiable.value = dutiable ?? null;
   selectedUserForSheet.value = user ?? null;
   assignSheetOpen.value = true;
@@ -452,6 +602,32 @@ onMounted(() => {
   const query = params.toString();
   window.history.replaceState(window.history.state, '', `${window.location.pathname}${query ? `?${query}` : ''}`);
 });
+
+const predecessorSheetOpen = ref(false);
+const predecessorChoice = ref<DutyHit | null>(null);
+const predecessorForm = useForm({ predecessor_id: '' });
+
+watch(predecessorSheetOpen, (isOpen) => {
+  if (isOpen) {
+    predecessorChoice.value = null;
+    predecessorForm.reset();
+    predecessorForm.clearErrors();
+  }
+});
+
+const linkPredecessor = () => {
+  predecessorForm.predecessor_id = predecessorChoice.value?.id ?? '';
+  predecessorForm.post(route('duties.predecessors.store', props.duty.id), {
+    preserveScroll: true,
+    onSuccess: () => {
+      predecessorSheetOpen.value = false;
+    },
+  });
+};
+
+const unlinkPredecessor = (predecessorId: string) => {
+  router.delete(route('duties.predecessors.destroy', [props.duty.id, predecessorId]), { preserveScroll: true });
+};
 
 const deleteDuty = () => {
   router.delete(route('duties.destroy', props.duty.id));

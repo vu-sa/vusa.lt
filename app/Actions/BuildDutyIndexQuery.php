@@ -45,7 +45,9 @@ final class BuildDutyIndexQuery
     private static function applyDataQualityFilter(Builder $query, ?string $dataQuality): void
     {
         match ($dataQuality) {
-            'vacant' => $query->whereDoesntHave('current_users'),
+            // An inactive duty is expected to be empty, so it is never reported as vacant.
+            'vacant' => $query->where('is_active', true)->whereDoesntHave('current_users'),
+            'inactive' => $query->where('is_active', false),
             'missing_en_name' => $query->whereRaw(self::localeMissingClause('en')),
             'missing_lt_name' => $query->whereRaw(self::localeMissingClause('lt')),
             'duplicate_holders' => $query->whereExists(function ($query): void {

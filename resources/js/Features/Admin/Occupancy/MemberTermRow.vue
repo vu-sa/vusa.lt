@@ -13,12 +13,15 @@
           <span v-if="user.pivot?.via_dutiable_id" :class="chipClass">{{ $t('Ex-officio') }}</span>
           <span v-if="user.pivot?.tenant_id" :class="chipClass">{{ $t('Deleguota') }}</span>
         </div>
-        <p v-if="user.email" class="truncate text-xs text-muted-foreground">
+        <p v-if="user.pivot?.additional_email || user.email" class="truncate text-xs text-muted-foreground">
           {{ user.pivot?.additional_email || user.email }}
         </p>
         <p class="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
           <Calendar class="size-3 shrink-0" />
           <span>{{ tenure }}</span>
+        </p>
+        <p v-if="dutyName" class="text-xs text-muted-foreground" data-testid="member-term-duty-name">
+          {{ $t('Kaip') }}: <InflectedDutyName :name="dutyName" />
         </p>
       </div>
     </div>
@@ -45,12 +48,15 @@ import { computed } from 'vue';
 import { termStatus } from './occupancy';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Button } from '@/Components/ui/button';
 import { formatStaticTime } from '@/Utils/IntlTime';
 
 const props = defineProps<{
   user: App.Entities.User;
   canManage: boolean;
+  /** The duty's name during this term, when it differs from today's (a former name or a predecessor). */
+  dutyName?: string | null;
 }>();
 
 const emit = defineEmits<{

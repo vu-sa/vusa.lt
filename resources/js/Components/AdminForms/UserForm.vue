@@ -40,7 +40,7 @@
       <FormFieldWrapper
         id="user-email"
         :label="$t('El. paštas')"
-        required
+        :required="isCreating"
         :error="form.errors.email"
       >
         <Input

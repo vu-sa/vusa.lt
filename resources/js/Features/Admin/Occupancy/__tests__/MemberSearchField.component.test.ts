@@ -138,4 +138,40 @@ describe('MemberSearchField.vue', () => {
 
     expect(wrapper.text()).toContain('Šis narys jau eina šias pareigas.');
   });
+
+  it('dates a former member in the results', async () => {
+    data.value = [{ id: 'u3', name: 'Petras Petraitis', is_current: false, last_term_year: 2020 }];
+    const wrapper = mountField();
+
+    await wrapper.find('input').setValue('pet');
+    await vi.advanceTimersByTimeAsync(400);
+
+    expect(wrapper.find('[role="listbox"]').text()).toContain('Buvęs narys · 2020');
+  });
+
+  it('creates a person who is not in the system yet, without an email', async () => {
+    data.value = [];
+    const wrapper = mountField({ allowCreate: true });
+
+    await wrapper.find('input').setValue('Petras Petraitis');
+    await vi.advanceTimersByTimeAsync(400);
+    await wrapper.find('[data-testid="member-search-create-option"]').trigger('click');
+
+    const nameInput = wrapper.find('[data-testid="member-search-create"] input');
+    expect((nameInput.element as HTMLInputElement).value).toBe('Petras Petraitis');
+
+    await wrapper.findAll('[data-testid="member-search-create"] button').find(b => b.text().includes('Naudoti šį narį'))!.trigger('click');
+
+    expect(wrapper.emitted('update:modelValue')!.at(-1)![0]).toEqual({ id: '', name: 'Petras Petraitis', email: undefined, isNew: true });
+  });
+
+  it('does not offer creating anyone without the right to', async () => {
+    data.value = [];
+    const wrapper = mountField();
+
+    await wrapper.find('input').setValue('Petras');
+    await vi.advanceTimersByTimeAsync(400);
+
+    expect(wrapper.find('[data-testid="member-search-create-option"]').exists()).toBe(false);
+  });
 });

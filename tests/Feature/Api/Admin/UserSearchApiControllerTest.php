@@ -13,6 +13,23 @@ beforeEach(function (): void {
 });
 
 describe('search', function (): void {
+    test('ranks people in office above former members and dates the former ones', function (): void {
+        $former = makeUser($this->tenant);
+        $former->update(['name' => 'Aistė Rankauskaitė']);
+        $former->dutiables()->update(['start_date' => '2019-07-01', 'end_date' => '2020-06-30']);
+        $current = makeUser($this->tenant);
+        $current->update(['name' => 'Zita Rankauskienė']);
+
+        $hits = collect(asUser($this->coordinator)
+            ->getJson(route('api.v1.admin.users.search', ['search' => 'Rankausk', 'permission' => 'users.read.padalinys']))
+            ->assertOk()
+            ->json('data'));
+
+        expect($hits->pluck('id')->all())->toBe([$current->id, $former->id])
+            ->and($hits[1]['is_current'])->toBeFalse()
+            ->and($hits[1]['last_term_year'])->toBe(2020);
+    });
+
     test('matches on email as well as name', function (): void {
         $target = makeUser($this->tenant);
         $target->update(['name' => 'Petras Petraitis', 'email' => 'unique.handle@stud.vu.lt']);

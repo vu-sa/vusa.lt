@@ -56,7 +56,7 @@ class UserController extends AdminController
                 'applySortBeforePagination' => true,
                 'tenantRelation' => 'tenants',
                 'permission' => 'users.read.padalinys',
-                'handledFilters' => ['future_duty'],
+                'handledFilters' => ['future_duty', 'membership'],
             ]
         );
 
@@ -152,6 +152,7 @@ class UserController extends AdminController
                 'current_duties.current_users:id,name,profile_photo_path',
                 'upcoming_duties.institution.tenant',
                 'previous_duties.institution.tenant',
+                'previous_duties.formerNames',
                 'roles',
                 'tasks.taskable',
                 'tasks.users:id,name,email,profile_photo_path',

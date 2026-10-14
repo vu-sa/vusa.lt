@@ -726,9 +726,9 @@ export const useAdminSearch = () => {
       searches.push({
         'collection': dutiesConfig.name,
         'q': query || '*',
-        'query_by': 'name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
-        'query_by_weights': '10,8,4,4,3,3,2',
-        'infix': buildInfix('name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names', 'duties'),
+        'query_by': 'name_lt,name_en,email,former_names,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
+        'query_by_weights': '10,8,4,4,4,3,3,2',
+        'infix': buildInfix('name_lt,name_en,email,former_names,institution_name_lt,institution_name_en,current_user_names,previous_user_names', 'duties'),
         // Duties have no meaningful date; tiebreak alphabetically by name.
         'sort_by': relevanceSort('name_lt', 'asc'),
         ...commonTuning,

@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Pareigybės
 area: duties
 models: [Duty, Role, Tenant, Type, Institution, DutyResponsibility]
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-15
 tests:
   - resources/js/Utils/__tests__/String.test.ts
   - resources/js/Features/Admin/DutiableTimeline/__tests__/dutyNames.test.ts
@@ -22,6 +22,9 @@ tests:
   - tests/Feature/Permissions/ScheduledDutyAuthorizationTest.php
   - tests/Feature/Api/Admin/DutyApiControllerTest.php
   - tests/Feature/Api/Admin/DutySearchApiControllerTest.php
+  - tests/Feature/Api/Admin/DutyCadenceApiControllerTest.php
+  - tests/Feature/Admin/People/DutyLifecycleTest.php
+  - tests/Feature/Admin/Management/DutiableControllerTest.php
   - tests/Unit/Services/DutyNameNormalizerTest.php
   - tests/Browser/DutyResponsibilitiesLayoutTest.php
   - resources/js/Pages/Admin/People/__tests__/ShowDuty.component.test.ts
@@ -38,6 +41,7 @@ tests:
   - resources/js/Features/Admin/Responsibilities/__tests__/DutyResponsibilitiesSection.component.test.ts
   - resources/js/Features/Admin/Occupancy/__tests__/occupancy.test.ts
   - resources/js/Features/Admin/Occupancy/__tests__/AssignDutyUserSheet.component.test.ts
+  - resources/js/Features/Admin/Occupancy/__tests__/MemberSearchField.component.test.ts
   - resources/js/Features/Admin/AdminSearch/Components/Detail/__tests__/DutyDetailPreview.component.test.ts
   - resources/js/Composables/__tests__/useDuplicateDutyCheck.test.ts
 ---
@@ -100,6 +104,7 @@ Kiekviena pareigybė turi numatytą **vietų skaičių**:
 - Jei pareigų šiuo metu niekas neina – ji laikoma **neužimta**.
 - Neužimtos pareigybės sąrašuose žymimos perspėjimo ženklu, o pareigybės puslapyje rodomas ryškus
   perspėjimas **Pareigos neužimtos**.
+- [Neaktyvi](#istorija) pareigybė neužimta nelaikoma – jos niekas ir nebeturi eiti.
 - Kolegialiems valdymo organams (taryboms, komisijoms) vietų skaičius nurodo, kiek studentų atstovų
   turi būti deleguota į šį organą.
 
@@ -135,6 +140,30 @@ pirmininkas pagal pareigas yra ir padalinio tarybos narys.
 - Rankiniu būdu keisti *ex officio* laikotarpio datų negalima – jos visada seka pagrindinių
   pareigų datas.
 
+### Neaktyvios pareigybės, ankstesni pavadinimai ir pirmtakės {#istorija}
+
+Pareigybės istorija neturėtų trūkinėti, net jei pareigybė keitėsi:
+
+- **Neaktyvi pareigybė** – tokia, kurios nebeinama (pvz., projektų koordinatoriaus vieta vienais metais
+  nebuvo užpildyta arba pareigybė buvo padalinta į dvi). Ji lieka su visais buvusiais nariais, tačiau
+  nebesiūloma [Pareigybių atnaujinimo vedlyje](/organizacija/pareigybiu-atnaujinimas) ir pareigybių
+  paieškoje priskiriant narį. Neaktyvia pažymėti galima tik tada, kai pareigybės šiuo metu niekas neina.
+- **Ankstesni pavadinimai** – kai pareigybė pervadinama, senasis pavadinimas išsaugomas su data, iki kada
+  jis galiojo. Seni laikotarpiai pareigybės ir nario puslapiuose rodomi su tuo metu galiojusiu
+  pavadinimu („Kaip: …“). Viešuose kontaktuose rodomi tik dabartiniai nariai, todėl ten matomas
+  dabartinis pavadinimas.
+- **Ankstesnė pareigybė (pirmtakė)** – kai viena pareigybė padalinama (pvz., *Socialinis-akademinis
+  koordinatorius* → *Socialinis koordinatorius* ir *Akademinis koordinatorius*), senoji lieka atskira
+  neaktyvia pareigybe su savo nariais, o naujosios su ja susiejamos. Pirmtakės nariai rodomi naujųjų
+  pareigybių laikotarpių istorijoje, todėl tas pats laikotarpis nedubliuojamas.
+
+<ChangelogNote version="v3.0" date="2026-10-02" title="Pareigybės istorija">
+
+Pareigybę galima pažymėti neaktyvia, išsaugoti ankstesnius jos pavadinimus ir susieti su pareigybe,
+kurios darbą ji perėmė.
+
+</ChangelogNote>
+
 ### Pareigų galūnių giminizavimas, linksniavimas ir dublikatų prevencija {#lytis-ir-dublikatai}
 
 Lietuvių kalboje pareigybių pavadinimai kinta pagal einančio asmens įvardį arba vardo giminę (*Pirmininkas* /
@@ -163,6 +192,10 @@ Kad duomenų bazėje nesidaugintų dubliuotos pareigybės:
   institucijoje jau yra „Komunikacijos koordinatorius“, bandant sukurti „Komunikacijos koordinatorė“
   arba „Komunikacijos koordinatorius (-ė)“, formoje iškart pasirodo perspėjimas **Aptiktas pareigybės dublikatas**
   su nuoroda į jau esantį įrašą.
+- Tikrinamos ir **neaktyvios** pareigybės bei **ankstesni pavadinimai**: tokiu atveju geriau
+  aktyvuoti esamą pareigybę, kad jos istorija liktų vienoje vietoje.
+- Panašios pareigybės kitose to paties padalinio institucijose išvardijamos su nuoroda į jų puslapį;
+  kitų padalinių atitikmenys tik suskaičiuojami.
 
 ## Veiksmai
 
@@ -179,6 +212,7 @@ Pareigybių sąraše (`/mano/duties`) pateikiamos visos pasiekiamos pareigybės:
   - *Trūksta LT pavadinimo* – pareigybės be lietuviško pavadinimo.
   - *Pasikartojantys nariai* – pareigybės, kuriose tas pats žmogus turi kelis persidengiančius
     laikotarpius.
+  - *Neaktyvios* – pareigybės, kurių nebeinama, bet istorija išlaikoma.
 - **Šiukšliadėžė** viršuje leidžia peržiūrėti ištrintas pareigybes ir jas atkurti.
 
 ### Pareigybės puslapis {#puslapis}
@@ -193,12 +227,15 @@ suskirstytas į skirtukus:
    - *Dabartiniai nariai*: kas šiuo metu eina pareigas ir nuo kada. Žyma **Ex-officio** rodo, kad
      pareigos kyla iš kitos pareigybės, o **Deleguota** – kad narys atstovauja kitam padaliniui.
    - *Būsimi nariai*: nariai, kurių pareigos prasidės ateityje (rodoma, tik jei tokių yra).
-   - *Laikotarpių istorija*: pasibaigę laikotarpiai – kas ir kada šias pareigas ėjo anksčiau.
-   - Mygtukas **Priskirti narį** atidaro nario priskyrimo formą. Prie kiekvieno nario rasi
+   - *Laikotarpių istorija*: pasibaigę laikotarpiai – kas ir kada šias pareigas ėjo anksčiau,
+     įskaitant [pirmtakės](#istorija) narius. Jei tuo metu pareigybė vadinosi kitaip, rodomas tas pavadinimas.
+   - Mygtukas **Priskirti** atidaro nario priskyrimo formą. Prie kiekvieno nario rasi
      **Redaguoti**, o prie dabartinių – ir **Užbaigti pareigas**.
 2. **Apie pareigybę**:
    - Pareigybės aprašymas.
    - Kitos tos pačios institucijos pareigybės ir kiek narių jas eina.
+   - *Pareigybės istorija*: ankstesnė pareigybė (pirmtakė) ir pareigybės, perėmusios šios darbą.
+     Mygtukas **Susieti ankstesnę pareigybę** leidžia pasirinkti ir neaktyvias pareigybes.
 3. **Atsakomybės**:
    - Padaliniai, institucijų tipai ar konkretūs organai, kuriuos ši pareigybė koordinuoja.
    - Mygtukas **Pridėti atsakomybę** leidžia priskirti naują koordinavimo sritį.
@@ -222,12 +259,28 @@ Užbaigimo patvirtinimas aiškiai paaiškina, kad šiandien pareigos dar galioja
 
 ### Nario priskyrimas ir šalinimas {#priskirti-nari}
 
-Paspaudus **Priskirti narį** pareigybės puslapyje:
-1. Pasirenkamas narys (iš esamų narių sąrašo arba įvedant el. paštą).
-2. Nurodoma **pradžios data** (pagal nutylėjimą – šiandien).
-3. Nurodoma **pabaigos data** (jei kadencija terminuota).
-4. Jei reikia, nurodoma studijų programa (aktualu kuratoriams), papildomas
-   el. paštas ar nuotrauka.
+Paspaudus **Priskirti** pareigybės puslapyje:
+1. Pasirenkamas narys. Paieškoje pirmiausia rodomi dabartiniai nariai, o buvę pažymimi „Buvęs narys · metai“.
+   Jei žmogaus sistemoje dar nėra, jį galima sukurti čia pat – užtenka vardo ir pavardės, o el. paštas
+   nebūtinas (aktualu buvusiems nariams; be el. pašto jie tiesiog negauna laiškų). Sukurti naują narį
+   gali tie, kurie turi teisę kurti narius.
+2. Pasirenkama **kadencija**. Pagal nutylėjimą – dabartinė: pradžia šiandien, pabaiga – kadencijos
+   pabaiga. Pasirinkus ankstesnę kadenciją, datos užpildomos visam jos laikotarpiui. Kadencijos imamos
+   iš institucijos [kadencijų](/sistema/nustatymai#kadencijos), o jei institucija savų neturi – iš bendrųjų.
+3. Jei reikia, datos pataisomos ranka – tada pasirinkimas tampa „Kitos datos“.
+4. **Papildomi nustatymai** (suskleisti): papildomas el. paštas, nuotrauka, originalus pareigybės
+   pavadinimas ir **Papildomas aprašymas**, rodomas viešame kontaktų sąraše vietoj pareigybės aprašymo.
+   Kuratorių pareigybėms čia rodoma ir studijų programa bei jos pastaba.
+
+Jei per pasirinktą laikotarpį tas pats žmogus jau eina šias pareigas, jo pasirinkti negalima.
+Pasibaigęs laikotarpis neužima vietos, todėl jam padalinio kvota netaikoma.
+
+<ChangelogNote version="v3.0" date="2026-10-02" title="Buvusių narių priskyrimas">
+
+Priskyrimo formoje atsirado kadencijos pasirinkimas, galimybė sukurti narį be el. pašto ir suskleisti
+papildomi nustatymai.
+
+</ChangelogNote>
 
 Norint užbaigti nario pareigas:
 - Narių sąraše spausk **Redaguoti** ir nustatyk pabaigos datą arba pasirinkite **Užbaigti pareigas šiandien**.
@@ -248,6 +301,10 @@ viršuje (`/mano/duties/create`):
   pagal padalinį).
 
 Redagavimas pasiekiamas pareigybės puslapyje per **⋯ → Redaguoti pareigybę** (`/mano/duties/{id}/edit`).
+Redaguojant papildomai rodoma:
+- **Aktyvi pareigybė** – išjungus pareigybė tampa [neaktyvi](#istorija).
+- **Ankstesni pavadinimai** – sąrašas su data „Naudotas iki“. Pakeitus pavadinimą, senasis pridedamas
+  automatiškai (galiojęs iki vakar); jei tai buvo tik rašybos klaida, varnelę galima nuimti.
 
 ### Pareigybių sujungimas {#sujungimas}
 
@@ -262,7 +319,8 @@ ir „Atstovė taryboje“, arba dublikatas dėl rašybos klaidos), jas galima *
    - Visi narių laikotarpiai iš naikinamų pareigybių perkeliami į pagrindinę.
    - Jei tas pats žmogus abiejose pareigybėse turėjo persidengiančius laikotarpius, jie sujungiami
      į vieną ištisinį laikotarpį.
-   - Visi tipai, rolės ir padalinių kvotos perkeliami į pagrindinę pareigybę (be dubliavimo).
+   - Visi tipai, rolės, padalinių kvotos, ankstesni pavadinimai ir pirmtakių ryšiai perkeliami į
+     pagrindinę pareigybę (be dubliavimo).
    - Panaikintos pareigybės pervedamos į šiukšliadėžę (minkštasis trynimas).
 
 ### Šiukšlinė {#trynimas}
@@ -282,6 +340,8 @@ ir „Atstovė taryboje“, arba dublikatas dėl rašybos klaidos), jas galima *
 | Sukurti ir redaguoti padalinio pareigybę | – | ✓ | ✓ | ✓, visų padalinių | ✓ |
 | Priskirti narius savo padalinyje | – | ✓ | ✓ | ✓, visų padalinių | ✓ |
 | Priskirti narius pagal savo padalinio kvotą bendrose pareigybėse | – | ✓ | ✓ | ✓ | ✓ |
+| Priskiriant sukurti naują narį | – | ✓ | ✓ | ✓ | ✓ |
+| Pažymėti pareigybę neaktyvia, tvarkyti ankstesnius pavadinimus ir pirmtakes | – | ✓ | ✓ | ✓, visų padalinių | ✓ |
 | Sujungti pareigybes | – | ✓ | ✓ | ✓ | ✓ |
 | Pridėti pareigybės atsakomybes | – | ✓ | ✓ | ✓ | ✓ |
 | Ištrinti pareigybę į šiukšlinę | – | ✓ | ✓ | ✓ | ✓ |
@@ -349,7 +409,12 @@ laikotarpyje gali turėti nurodytą papildomą kontaktinį el. paštą ar asmeni
   automatiškai priskiria su tipu susietas roles (`$typeable->typeable->roles()->syncWithoutDetaching($roles)`),
   pavyzdžiui, `Studentų atstovas` tipui `studentu-atstovai` arba `Problemų redaktorius` tipui `koordinatoriai`.
 - Pavadinimų unikalumą ir normalizavimą užtikrina `DutyNameNormalizer` (sulygina vyr./mot. galūnes,
-  skliaustus `(-ė)` ir linksnius).
+  skliaustus `(-ė)` ir linksnius); `DutySimilarityFinder` tikrina ir `duty_names`, ir neaktyvias pareigybes.
+- `duties.is_active` slepia pareigybę iš vedlio ir paieškos (`is_active:!=false`); ankstesni pavadinimai
+  saugomi `duty_names` (`used_until` imtinai, `Duty::nameOn()`), pirmtakės – `duty_successions`.
+  Pirmtakę galima susieti tik su pareigybe, kurią naudotojas gali peržiūrėti (`DutyPolicy::view`).
+- Priskyrimo formos kadencijos ateina iš `api.v1.admin.duties.cadences` (`ResolveCadenceForDuty::applicableFor`);
+  naujas narys kuriamas tame pačiame `dutiables.store` užklausime (`new_user`), jei veikiantis naudotojas gali kurti narius.
 - Savęs užsirakinimo apsaugą užtikrina `AdminController::guardSelfLockout` kartu su
   `DutySelfLockoutChecker`.
 - `current_duties` tikrina ir pradžią, ir imtinę pabaigą. `authorization_duties` apima ir

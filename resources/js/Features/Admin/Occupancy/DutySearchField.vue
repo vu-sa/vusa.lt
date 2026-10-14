@@ -121,6 +121,8 @@ export interface DutyHit {
   tenantShortname?: string;
   /** The duty's home tenant, used to narrow the study-programme list. */
   homeTenantId?: number | null;
+  typeSlugs?: string[];
+  isActive?: boolean;
 }
 
 interface DutyDocument {
@@ -129,11 +131,15 @@ interface DutyDocument {
   institution_name_lt?: string;
   tenant_shortname?: string;
   home_tenant_id?: number | null;
+  type_slugs?: string[];
+  is_active?: boolean;
 }
 
-defineProps<{
+const props = defineProps<{
   modelValue: DutyHit | null;
   error?: string;
+  /** Offer duties no longer staffed, e.g. when linking a predecessor. */
+  includeInactive?: boolean;
 }>();
 
 const emit = defineEmits<(e: 'update:modelValue', value: DutyHit | null) => void>();
@@ -151,6 +157,7 @@ const collection = useAdminCollectionSearch({
   loadFacetsOnMount: false,
   searchOnMount: false,
   perPage: 8,
+  baseFilterBy: () => (props.includeInactive ? undefined : 'is_active:!=false'),
 });
 
 const query = ref('');
@@ -166,6 +173,8 @@ const hits = computed<DutyHit[]>(() => (showList.value
       institutionName: doc.institution_name_lt ?? undefined,
       tenantShortname: doc.tenant_shortname ?? undefined,
       homeTenantId: doc.home_tenant_id ?? null,
+      typeSlugs: doc.type_slugs ?? [],
+      isActive: doc.is_active !== false,
     }))
   : []));
 

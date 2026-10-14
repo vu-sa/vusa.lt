@@ -17,6 +17,7 @@ use App\Http\Requests\UpdateDutyRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
+use App\Models\DutyName;
 use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
@@ -139,7 +140,7 @@ class DutyController extends AdminController
     {
         $this->handleAuthorization('view', $duty);
 
-        $loadDuty = fn () => once(fn () => $duty->loadMissing('institution.tenant', 'users', 'types'));
+        $loadDuty = fn () => once(fn () => $duty->loadMissing('institution.tenant', 'users', 'types', 'formerNames'));
         $user = fn () => once(fn () => request()->user());
 
         return $this->inertiaResponse('Admin/People/ShowDuty', [
@@ -168,6 +169,7 @@ class DutyController extends AdminController
                     ->all()
                 : [], 'dutyPanels'),
             'studyPrograms' => Inertia::defer(fn () => $this->studyProgramsFor($duty), 'dutyPanels'),
+            'lineage' => Inertia::defer(fn () => $this->lineageFor($duty), 'dutyPanels'),
             'responsibilities' => Inertia::defer(fn () => DutyResponsibilityController::payload($duty), 'dutyPanels'),
             // Only the add sheet needs these; loaded when it opens.
             'responsibilityOptions' => Inertia::optional(function () use ($user, $duty): array {
@@ -176,6 +178,44 @@ class DutyController extends AdminController
                 return DutyResponsibilityController::options($user());
             }),
         ]);
+    }
+
+    /**
+     * The duties this one took over from and handed over to, and the predecessors' holders, each
+     * labelled with the name their duty carried when the term began.
+     *
+     * @return array{predecessors: list<array<string, mixed>>, successors: list<array<string, mixed>>, predecessorTerms: list<array<string, mixed>>}
+     */
+    private function lineageFor(Duty $duty): array
+    {
+        $summary = fn (Duty $linked) => [
+            'id' => $linked->id,
+            'name' => $linked->name,
+            'is_active' => $linked->is_active,
+            'institution_name' => $linked->institution?->short_name ?: $linked->institution?->name,
+        ];
+
+        $predecessors = $duty->predecessors()->with(['institution:id,name,short_name', 'users', 'formerNames'])->get();
+
+        return [
+            'predecessors' => $predecessors->map($summary)->values()->all(),
+            'successors' => $duty->successors()->with('institution:id,name,short_name')->get()->map($summary)->values()->all(),
+            'predecessorTerms' => $predecessors
+                ->flatMap(fn (Duty $predecessor) => $predecessor->users->map(fn (User $holder) => [
+                    ...$holder->only(['id', 'name', 'profile_photo_path']),
+                    'pivot' => $holder->pivot?->only(['id', 'start_date', 'end_date']),
+                    'duty_name' => $this->localized($predecessor->nameOn($holder->pivot?->start_date)),
+                ]))
+                ->sortByDesc(fn (array $term) => $term['pivot']['start_date'] ?? '')
+                ->values()
+                ->all(),
+        ];
+    }
+
+    /** @param  array<string, string>|string|null  $name */
+    private function localized(array|string|null $name): ?string
+    {
+        return is_array($name) ? ($name[app()->getLocale()] ?? $name['lt'] ?? null) : $name;
     }
 
     /**
@@ -252,7 +292,14 @@ class DutyController extends AdminController
             ->map(fn ($rows) => $rows->pluck('dutiable_id')->values()->all());
 
         return $this->inertiaResponse('Admin/People/EditDuty', [
-            'duty' => $duty->toFullArray(),
+            'duty' => [
+                ...$duty->toFullArray(),
+                // Edited in both languages, so the localized relation serialization will not do.
+                'former_names' => $duty->formerNames
+                    ->map(fn (DutyName $former) => ['name' => $former->getTranslations('name'), 'used_until' => $former->used_until->toDateString()])
+                    ->values()
+                    ->all(),
+            ],
             'canEditDuty' => $canEditDuty,
             'actingAssignableTenantIds' => $actingAssignableTenantIds->values()->all(),
             'assignableTenantUsers' => $assignableTenantUsers,
@@ -427,8 +474,9 @@ class DutyController extends AdminController
         // Get institutions the user can access, with their duties and current users
         // Include pivot data (start_date) to detect long-staying users
         $institutions = DutyService::getInstitutionsForUpserts($this->authorizer)
+            // Inactive duties keep their history but are not staffed any more.
             ->load(['duties' => function ($query) use ($currentUsersLoad): void {
-                $query->with($currentUsersLoad);
+                $query->where('is_active', true)->with($currentUsersLoad);
             }, 'tenant:id,shortname']);
 
         // Also surface cross-tenant duties the user's tenant may assign reps to.
@@ -452,7 +500,8 @@ class DutyController extends AdminController
                 ->with([
                     'tenant:id,shortname',
                     'duties' => function ($query) use ($tenantScopedCurrentUsers, $adminReadTenantIds): void {
-                        $query->whereHas('assignableTenants', fn ($q) => $q->whereIn('tenants.id', $adminReadTenantIds))
+                        $query->where('is_active', true)
+                            ->whereHas('assignableTenants', fn ($q) => $q->whereIn('tenants.id', $adminReadTenantIds))
                             ->with($tenantScopedCurrentUsers)
                             ->with(['assignableTenants' => fn ($q) => $q->whereIn('tenants.id', $adminReadTenantIds)]);
                     },
@@ -515,7 +564,7 @@ class DutyController extends AdminController
                     foreach ($validated['new_users'] as $newUserData) {
                         $user = User::create([
                             'name' => $newUserData['name'],
-                            'email' => $newUserData['email'],
+                            'email' => $newUserData['email'] ?? null,
                             'phone' => $newUserData['phone'] ?? null,
                         ]);
                         $createdUsers[$newUserData['temp_id']] = $user;

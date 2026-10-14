@@ -47,6 +47,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $email Commonly the @vusa.lt email address, which is used as the OAuth login. Personal mail is stored in users.email.
  * @property string $contacts_grouping
  * @property int|null $places_to_occupy Full number of positions to occupy for this duty
+ * @property bool $is_active An inactive duty keeps its history but is no longer offered for new assignments
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -60,6 +61,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $exOfficioSourceDuties
  * @property-read Collection<int, Duty> $exOfficioTargetDuties
+ * @property-read Collection<int, DutyName> $formerNames
+ * @property-read Collection<int, Duty> $predecessors
+ * @property-read Collection<int, Duty> $successors
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol
@@ -145,9 +149,17 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
         return app(EngineManager::class)->engine('typesense');
     }
 
+    #[\Override]
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
+
     public function toSearchableArray(): array
     {
-        $this->loadMissing(['institution.tenant', 'types', 'assignableTenants']);
+        $this->loadMissing(['institution.tenant', 'types', 'assignableTenants', 'formerNames']);
 
         $homeTenantId = $this->institution?->tenant_id ? (int) $this->institution->tenant_id : null;
 
@@ -174,6 +186,13 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
             'name_lt' => $this->getTranslation('name', 'lt') ?? '',
             'name_en' => $this->getTranslation('name', 'en'),
             'email' => $this->email,
+            'is_active' => (bool) ($this->is_active ?? true),
+            'former_names' => $this->formerNames
+                ->flatMap(fn (DutyName $former) => [$former->getTranslation('name', 'lt'), $former->getTranslation('name', 'en')])
+                ->filter()
+                ->unique()
+                ->values()
+                ->all(),
             'tenant_ids' => $tenantIds,
             'home_tenant_id' => $homeTenantId,
             'tenant_shortname' => $this->institution?->tenant?->shortname,
@@ -185,6 +204,7 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
                 ->filter()
                 ->values()
                 ->all(),
+            'type_slugs' => $this->types->pluck('slug')->filter()->values()->all(),
             // Names + ids stay index-aligned so the detail pane can render clickable member links.
             'current_user_names' => $currentUsers->pluck('name')->values()->all(),
             'current_user_ids' => $currentUsers->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
@@ -328,6 +348,53 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
     public function exOfficioSourceDuties(): BelongsToMany
     {
         return $this->belongsToMany(Duty::class, 'ex_officio_duties', 'target_duty_id', 'source_duty_id');
+    }
+
+    /**
+     * Names the duty went by before, newest first.
+     *
+     * @return HasMany<DutyName, $this>
+     */
+    public function formerNames(): HasMany
+    {
+        return $this->hasMany(DutyName::class)->orderByDesc('used_until');
+    }
+
+    /**
+     * The name the duty carried on a given day, so a term from 2019 reads as it did then.
+     *
+     * @return array<string, string>|string|null
+     */
+    public function nameOn(\DateTimeInterface|string|null $date): array|string|null
+    {
+        if ($date === null) {
+            return $this->name;
+        }
+
+        $day = Carbon::parse($date)->toDateString();
+
+        // Oldest first: the earliest rename after the day is the name in force on it.
+        $former = $this->formerNames
+            ->sortBy(fn (DutyName $name) => $name->used_until->toDateString())
+            ->first(fn (DutyName $name) => $name->used_until->toDateString() >= $day);
+
+        return $former->name ?? $this->name;
+    }
+
+    /**
+     * Duties whose work this one took over (e.g. a combined coordinator split in two).
+     *
+     * @return BelongsToMany<Duty, $this>
+     */
+    public function predecessors(): BelongsToMany
+    {
+        return $this->belongsToMany(Duty::class, 'duty_successions', 'successor_id', 'predecessor_id')->withTimestamps();
+    }
+
+    /** @return BelongsToMany<Duty, $this> */
+    public function successors(): BelongsToMany
+    {
+        return $this->belongsToMany(Duty::class, 'duty_successions', 'predecessor_id', 'successor_id')->withTimestamps();
     }
 
     /** Additional tenants whose admins may assign their own reps to this duty, with per-tenant quotas. */

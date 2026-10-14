@@ -1,0 +1,161 @@
+<template>
+  <Popover :open @update:open="onOpenChange">
+    <PopoverTrigger as-child>
+      <button
+        type="button"
+        class="u-touch inline-flex items-center gap-1.5 text-left text-sm tabular-nums underline decoration-dotted decoration-muted-foreground underline-offset-4 hover:text-brand"
+        data-testid="member-terms-summary"
+        @pointerenter="onPointerEnter"
+        @pointerleave="onPointerLeave"
+      >
+        <span v-if="currentCount > 0" class="font-medium text-foreground">{{ $t(':count dabar', { count: String(currentCount) }) }}</span>
+        <!-- "1 dabar · 1 iš viso" says the same thing twice. -->
+        <template v-if="currentCount !== totalCount">
+          <span v-if="currentCount > 0" class="text-muted-foreground" aria-hidden="true">·</span>
+          <span class="text-muted-foreground">{{ $t(':count iš viso', { count: String(totalCount) }) }}</span>
+        </template>
+      </button>
+    </PopoverTrigger>
+    <PopoverContent
+      align="start"
+      class="w-72 space-y-3 p-3 text-sm"
+      data-testid="member-terms-list"
+      @pointerenter="onPointerEnter"
+      @pointerleave="onPointerLeave"
+      @open-auto-focus="skipFocusOnHover"
+      @close-auto-focus="skipFocusOnHover"
+    >
+      <section v-for="group in groups" :key="group.key" class="space-y-1">
+        <h3 class="text-xs font-medium text-muted-foreground">
+          {{ group.title }}
+        </h3>
+        <ul class="space-y-0.5">
+          <li v-for="item in group.items" :key="item.name" class="flex items-baseline justify-between gap-3">
+            <span class="min-w-0 truncate">{{ item.name }}</span>
+            <span v-if="item.year" class="shrink-0 text-xs tabular-nums text-muted-foreground">{{ item.year }}</span>
+          </li>
+        </ul>
+      </section>
+      <p v-if="groups.length === 0" class="text-muted-foreground">
+        {{ $t('Institucijų nėra') }}
+      </p>
+    </PopoverContent>
+  </Popover>
+</template>
+
+<script setup lang="ts">
+import { trans as $t } from 'laravel-vue-i18n';
+import { computed, onBeforeUnmount, ref, watch } from 'vue';
+
+import { termStatus, type TermStatus } from './occupancy';
+
+import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
+
+interface MemberTerm {
+  institution?: { name?: string | null; short_name?: string | null } | null;
+  pivot?: { start_date?: string | null; end_date?: string | null } | null;
+}
+
+const props = defineProps<{
+  duties: MemberTerm[];
+  currentCount: number;
+  totalCount: number;
+}>();
+
+const open = ref(false);
+const openedByHover = ref(false);
+let closeTimer: ReturnType<typeof setTimeout> | undefined;
+let pointerInside = false;
+
+// Clicking a list that hover already opened pins it instead of toggling it shut.
+const onOpenChange = (value: boolean) => {
+  if (!value && openedByHover.value && pointerInside) {
+    openedByHover.value = false;
+    return;
+  }
+
+  open.value = value;
+};
+
+// A peek on hover must not move focus in and back out, which leaves a focus ring on the trigger.
+const skipFocusOnHover = (event: Event) => {
+  if (openedByHover.value) {
+    event.preventDefault();
+  }
+};
+
+// Opens on hover for a mouse, like a tooltip; touch and keyboard open it with a tap or Enter.
+const onPointerEnter = (event: PointerEvent) => {
+  if (event.pointerType !== 'mouse') {
+    return;
+  }
+
+  clearTimeout(closeTimer);
+  pointerInside = true;
+
+  if (!open.value) {
+    openedByHover.value = true;
+    open.value = true;
+  }
+};
+
+const onPointerLeave = (event: PointerEvent) => {
+  if (event.pointerType !== 'mouse') {
+    return;
+  }
+
+  pointerInside = false;
+  closeTimer = setTimeout(() => {
+    if (openedByHover.value) {
+      open.value = false;
+    }
+  }, 150);
+};
+
+// A click or tap opens it for real: focus then moves in so the list is reachable by keyboard.
+watch(open, (isOpen) => {
+  if (!isOpen) {
+    openedByHover.value = false;
+  }
+});
+
+onBeforeUnmount(() => clearTimeout(closeTimer));
+
+/** One line per institution, ordered as it appears, with the year a past term ended. */
+const groups = computed(() => {
+  const byStatus: Record<TermStatus, Map<string, string | null>> = { current: new Map(), upcoming: new Map(), ended: new Map() };
+
+  for (const term of props.duties) {
+    const name = term.institution?.short_name || term.institution?.name;
+
+    if (!name) {
+      continue;
+    }
+
+    const status = termStatus(term.pivot ?? {});
+    const year = status === 'ended' ? String(term.pivot?.end_date ?? '').slice(0, 4) || null : null;
+    const known = byStatus[status].get(name);
+
+    if (!byStatus[status].has(name) || (year && (!known || year > known))) {
+      byStatus[status].set(name, year);
+    }
+  }
+
+  // Somewhere the person still serves is not repeated under "Anksčiau".
+  for (const name of byStatus.current.keys()) {
+    byStatus.ended.delete(name);
+  }
+
+  const toItems = (entries: Map<string, string | null>) => [...entries].map(([name, year]) => ({ name, year }));
+
+  return [
+    { key: 'current', title: $t('Dabar'), items: toItems(byStatus.current) },
+    { key: 'upcoming', title: $t('Netrukus'), items: toItems(byStatus.upcoming) },
+    {
+      key: 'ended',
+      title: $t('Anksčiau'),
+      items: toItems(byStatus.ended).sort((a, b) => String(b.year).localeCompare(String(a.year))),
+    },
+  ].filter(group => group.items.length > 0);
+});
+</script>

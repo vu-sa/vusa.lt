@@ -377,7 +377,7 @@
                   <Input v-model="newUser.name" :placeholder="$t('Jonas Jonaitis')" class="h-8" />
                 </div>
                 <div class="space-y-1.5">
-                  <Label class="text-xs font-semibold">{{ $t('El. paštas') }} *</Label>
+                  <Label class="text-xs font-semibold">{{ $t('El. paštas') }} <span class="font-normal text-muted-foreground">{{ $t('(neprivaloma)') }}</span></Label>
                   <Input v-model="newUser.email" type="email" placeholder="jonas@stud.vu.lt" class="h-8" />
                 </div>
                 <div class="space-y-1.5">
@@ -389,7 +389,7 @@
                   <Button
                     size="sm"
                     variant="brand"
-                    :disabled="!newUser.name || !newUser.email"
+                    :disabled="!newUser.name"
                     @click="createNewUser"
                   >
                     <Check class="size-3.5 mr-1" />
@@ -600,7 +600,7 @@ const applyBatchEndDate = () => {
 };
 
 const createNewUser = () => {
-  if (!newUser.value.name || !newUser.value.email) return;
+  if (!newUser.value.name) return;
 
   const tempId = `new-${Date.now()}`;
 

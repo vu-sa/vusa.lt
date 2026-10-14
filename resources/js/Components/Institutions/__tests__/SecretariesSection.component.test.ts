@@ -83,7 +83,8 @@ describe('SecretariesSection', () => {
     expect(router.put).toHaveBeenCalledWith(
       expect.anything(),
       { cadence_id: 'cadence-1', user_ids: ['user-2'] },
-      expect.anything(),
+      // Keeps the open tab and reloads only the panel, so the roster editor stays put.
+      expect.objectContaining({ preserveState: true, only: ['management'] }),
     );
   });
 

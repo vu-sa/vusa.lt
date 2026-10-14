@@ -12,11 +12,15 @@
       <div class="flex min-w-0 items-center gap-2.5">
         <UserAvatar :user="modelValue" :size="32" class="shrink-0" />
         <div class="min-w-0">
-          <p class="truncate text-sm font-medium text-foreground">
+          <p class="flex items-center gap-1.5 truncate text-sm font-medium text-foreground">
             {{ modelValue.name }}
+            <span v-if="modelValue.isNew" :class="chipClass" data-testid="member-search-new">{{ $t('Naujas narys') }}</span>
           </p>
           <p v-if="modelValue.email" class="truncate text-xs text-muted-foreground">
             {{ modelValue.email }}
+          </p>
+          <p v-else-if="modelValue.isNew" class="truncate text-xs text-muted-foreground">
+            {{ $t('Be el. pašto') }}
           </p>
         </div>
       </div>
@@ -24,6 +28,37 @@
         <X class="size-4" />
         <span class="sr-only">{{ $t('Pakeisti narį') }}</span>
       </Button>
+    </div>
+
+    <div
+      v-else-if="creating"
+      class="space-y-3 border border-border bg-secondary/40 p-3"
+      data-testid="member-search-create"
+    >
+      <div class="space-y-1.5">
+        <Label :for="`${inputId}-new-name`" class="text-xs font-medium">{{ $t('Vardas ir pavardė') }}</Label>
+        <Input :id="`${inputId}-new-name`" v-model="draft.name" autocomplete="off" />
+      </div>
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between">
+          <Label :for="`${inputId}-new-email`" class="text-xs font-medium">{{ $t('El. paštas') }}</Label>
+          <span class="text-xs text-muted-foreground">{{ $t('(neprivaloma)') }}</span>
+        </div>
+        <Input :id="`${inputId}-new-email`" v-model="draft.email" type="email" autocomplete="off" />
+        <p class="text-xs text-muted-foreground">
+          {{ $t('Buvusiems nariams el. pašto galima nenurodyti — jie tiesiog negaus laiškų.') }}
+        </p>
+      </div>
+      <DuplicateUserWarning :matches="duplicateMatches" show-use-action @use="useExisting" />
+      <div class="flex flex-wrap gap-2">
+        <Button type="button" size="sm" voice="sentence" variant="secondary" class="u-touch" :disabled="draft.name.trim().length < 3" @click="confirmNew">
+          <Check class="size-4" />
+          {{ $t('Naudoti šį narį') }}
+        </Button>
+        <Button type="button" size="sm" voice="sentence" variant="ghost" class="u-touch" @click="creating = false">
+          {{ $t('Atšaukti') }}
+        </Button>
+      </div>
     </div>
 
     <template v-else>
@@ -82,7 +117,17 @@
                 {{ hit.name }}
               </p>
               <p class="truncate text-xs text-muted-foreground">
-                {{ isTaken(hit) ? $t('Jau eina šias pareigas') : hit.email }}
+                <template v-if="isTaken(hit)">
+                  {{ $t('Jau eina šias pareigas') }}
+                </template>
+                <template v-else>
+                  {{ hit.email }}<template v-if="hit.is_current === false && hit.last_term_year">
+                    <template v-if="hit.email">
+                      ·
+                    </template>
+                    {{ $t('Buvęs narys') }} · {{ hit.last_term_year }}
+                  </template>
+                </template>
               </p>
             </div>
           </div>
@@ -93,8 +138,20 @@
             {{ hit.tenants.join(', ') }}
           </span>
         </li>
-        <li v-if="results.length === 0" class="px-3 py-4 text-center text-sm text-muted-foreground">
+        <li v-if="results.length === 0 && !allowCreate" class="px-3 py-4 text-center text-sm text-muted-foreground">
           {{ isFetching ? $t('Ieškoma…') : $t('Narių nerasta') }}
+        </li>
+        <li
+          v-if="allowCreate && !isFetching"
+          role="option"
+          :aria-selected="false"
+          class="flex min-h-11 cursor-pointer items-center gap-3 px-3 py-2 text-sm hover:bg-accent"
+          data-testid="member-search-create-option"
+          @mousedown.prevent
+          @click="startCreate"
+        >
+          <UserPlus class="size-4 shrink-0 text-muted-foreground" />
+          <span class="min-w-0 truncate">{{ $t('Sukurti naują narį „:name“', { name: query.trim() }) }}</span>
         </li>
       </ul>
     </template>
@@ -108,14 +165,16 @@
 <script setup lang="ts">
 import { useDebounceFn } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Loader2, Search, X } from '@lucide/vue';
-import { computed, ref, useId, watch } from 'vue';
+import { Check, Loader2, Search, UserPlus, X } from '@lucide/vue';
+import { computed, reactive, ref, useId, watch } from 'vue';
 
+import DuplicateUserWarning from '@/Components/AdminForms/DuplicateUserWarning.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { useApi } from '@/Composables/useApi';
+import { useDuplicateUserCheck } from '@/Composables/useDuplicateUserCheck';
 
 /** What `api.v1.admin.users.search` returns — not a full User entity. */
 export interface MemberHit {
@@ -125,6 +184,11 @@ export interface MemberHit {
   email?: string;
   profile_photo_path?: string | null;
   tenants?: string[];
+  /** False for someone whose every term has ended. */
+  is_current?: boolean;
+  last_term_year?: number | null;
+  /** Not saved yet: created together with the term. */
+  isNew?: boolean;
 }
 
 const props = withDefaults(defineProps<{
@@ -132,6 +196,8 @@ const props = withDefaults(defineProps<{
   /** Members who already hold the duty; offered but not selectable. */
   takenIds?: string[];
   error?: string;
+  /** Offer creating the person when they are not in the system yet. */
+  allowCreate?: boolean;
 }>(), {
   takenIds: () => [],
   error: undefined,
@@ -205,4 +271,27 @@ const chooseActive = () => {
 };
 
 const clear = () => emit('update:modelValue', null);
+
+const chipClass = 'border border-border bg-secondary px-1.5 py-0.5 text-xs font-medium text-muted-foreground';
+
+const creating = ref(false);
+const draft = reactive({ name: '', email: '' });
+const { matches: duplicateMatches } = useDuplicateUserCheck(() => (creating.value ? draft.name : ''), () => (creating.value ? draft.email : ''));
+
+const startCreate = () => {
+  draft.name = query.value.trim();
+  draft.email = '';
+  creating.value = true;
+  query.value = '';
+};
+
+const confirmNew = () => {
+  emit('update:modelValue', { id: '', name: draft.name.trim(), email: draft.email.trim() || undefined, isNew: true });
+  creating.value = false;
+};
+
+const useExisting = (match: { id: string; name: string }) => {
+  emit('update:modelValue', { id: String(match.id), name: match.name });
+  creating.value = false;
+};
 </script>

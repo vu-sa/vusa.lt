@@ -14,6 +14,9 @@ export function useSecretaryRoster(institutionId: string) {
       user_ids: userIds,
     }, {
       preserveScroll: true,
+      // Keeps the open tab; only the deferred panel that holds the roster is refreshed.
+      preserveState: true,
+      only: ['management'],
       onStart: () => { processingCadenceId.value = cadenceId; },
       onFinish: () => { processingCadenceId.value = null; },
     });

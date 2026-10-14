@@ -98,6 +98,7 @@
               :own-cadences="management.cadences"
               :global-cadences="management.globalCadences"
               :defaults="management.cadenceDefaults"
+              :reload-only="['management']"
             />
           </OverviewSection>
         </div>

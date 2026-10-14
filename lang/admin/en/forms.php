@@ -280,6 +280,9 @@ return [
         'contact_admins' => 'Contact that institution\'s administrators',
         'variant_hint' => 'The masculine/feminine or plural form is generated automatically from the holder\'s pronouns — there is no need to create a separate duty.',
         'other_institutions' => 'This duty also exists in :count other institution(s) — that is normal.',
+        'reason_former_name' => 'former name',
+        'inactive_hint' => 'You can reactivate an inactive duty — that keeps its history in one place.',
+        'same_tenant_title' => 'Similar duties in other institutions of this unit:',
     ],
     'validation' => [
         'agenda_item' => [

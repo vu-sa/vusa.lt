@@ -63,17 +63,21 @@ kadencijų), o perrinktas narys dažniausiai turi vieną laikotarpį per kelias 
 Pareigybės puslapio narių sąraše prie žmogaus paspaudus **Redaguoti**, atsidaro forma **Redaguoti
 pareigybės laikotarpį** (telefone – iš apačios). Joje:
 
+- **Kadencija** – pasirinkus kadenciją datos užpildomos pagal ją
+  (žr. [nario priskyrimą](/organizacija/pareigybes#priskirti-nari));
 - **Pradžios data** ir **Pabaigos data** (neprivaloma – be jos laikotarpis neterminuotas);
-- **Papildomas el. paštas** – rodomas prie šio nario kontaktų;
-- **Papildoma nuotrauka** – rodoma vietoj nario profilio nuotraukos;
-- **Studijų programa** ir jos pastaba (pvz., „1 kursas“) – rodomos skliaustuose po pareigybės
-  pavadinimu;
-- **Viešas aprašymas** ir ar viešai naudoti originalų pareigybės pavadinimą;
+- suskleistuose **Papildomuose nustatymuose**:
+  - **Papildomas el. paštas** – rodomas prie šio nario kontaktų;
+  - **Papildoma nuotrauka** – rodoma vietoj nario profilio nuotraukos;
+  - **Studijų programa** ir jos pastaba (pvz., „1 kursas“) – rodomos skliaustuose po pareigybės
+    pavadinimu (tik kuratorių pareigybėms arba jei jau nurodytos);
+  - ar viešai naudoti originalų pareigybės pavadinimą ir **Papildomas aprašymas**, rodomas vietoj
+    pareigybės aprašymo;
 - **Užbaigti pareigas šiandien** – nustato šiandienos pabaigos datą, kuri dar įskaitoma
   (žr. [laikotarpio datas](/organizacija/pareigybes#laikotarpio-datos)); **Ištrinti priskyrimą** –
   pašalina laikotarpį visai (tai rekomenduojama daryti tik klaidingai sukurtam įrašui).
 
-<DocScreenshot name="dutiable-sheet" phone alt="Forma „Redaguoti pareigybės laikotarpį“: pareigybė, narys, pradžios ir pabaigos datos, papildomas el. paštas ir nuotrauka" caption="Vieno pareigybės laikotarpio forma pareigybės puslapyje." />
+<DocScreenshot name="dutiable-sheet" phone alt="Forma „Redaguoti pareigybės laikotarpį“: pareigybė, narys, kadencija, pradžios ir pabaigos datos ir suskleisti papildomi nustatymai" caption="Vieno pareigybės laikotarpio forma pareigybės puslapyje." />
 
 *Ex officio* laikotarpio (žr. [Ex officio pareigos](#ex-officio)) datų formoje keisti negalima, o
 užbaigti ar ištrinti jo nesiūloma.

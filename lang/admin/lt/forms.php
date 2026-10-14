@@ -283,6 +283,9 @@ return [
         'contact_admins' => 'Kreipkis į institucijos administratorius',
         'variant_hint' => 'Moteriškosios/vyriškosios giminės ar daugiskaitos forma yra sugeneruojama automatiškai pagal asmens įvardį — atskiros pareigybės kurti nereikia.',
         'other_institutions' => 'Tokia pareigybė yra dar :count institucijoje (-ose) — tai normalu.',
+        'reason_former_name' => 'anksčiau vadinosi taip',
+        'inactive_hint' => 'Neaktyvią pareigybę gali vėl aktyvuoti — taip jos istorija liks vienoje vietoje.',
+        'same_tenant_title' => 'Panašios pareigybės kitose šio padalinio institucijose:',
     ],
     'validation' => [
         'agenda_item' => [

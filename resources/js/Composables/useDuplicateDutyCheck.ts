@@ -3,6 +3,7 @@ import type { DutySimilarityMatches } from '@/Components/AdminForms/DuplicateDut
 
 const EMPTY_MATCHES: DutySimilarityMatches = {
   same_institution: [],
+  same_tenant: [],
   other_institution: [],
   other_institution_count: 0,
 };

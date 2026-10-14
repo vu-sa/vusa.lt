@@ -64,7 +64,7 @@ class GetInstitutionCoordinators
     /**
      * The role's own address reaches whoever holds the duty next; a personal one does not.
      */
-    private static function emailFor(Duty $duty, User $user): string
+    private static function emailFor(Duty $duty, User $user): ?string
     {
         if (filled($duty->email)) {
             return $duty->email;

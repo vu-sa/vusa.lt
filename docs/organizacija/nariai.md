@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Nariai
 area: users
 models: [User]
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-15
 tests:
   - resources/js/Utils/__tests__/String.test.ts
   - tests/Feature/Search/ContactSearchIndexSyncTest.php
@@ -15,6 +15,8 @@ tests:
   - tests/Feature/Permissions/UserIdentityAuthorizationTest.php
   - tests/Feature/Permissions/UnclaimedUserVisibilityTest.php
   - tests/Feature/Api/Admin/UserSearchApiControllerTest.php
+  - tests/Feature/DigestEmailPreferencesTest.php
+  - resources/js/Features/Admin/Occupancy/__tests__/MemberSearchField.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/ShowUser.component.test.ts
   - resources/js/Components/AdminForms/__tests__/UserForm.component.test.ts
   - resources/js/Components/AdminForms/__tests__/DuplicateUserWarning.component.test.ts
@@ -91,8 +93,25 @@ Narių sąraše (`/mano/users`) pateikiama visų pasiekiamų narių suvestinė:
 
 - **Paieška**: galima ieškoti pagal vardą, pavardę, el. pašto adresą ar telefono numerį.
 - **Rikiavimas**: galima rikiuoti pagal vardą (A–Z arba Z–A), paskutinį prisijungimą arba sukūrimo datą.
+- **Greitieji filtrai „Dabartiniai“ ir „Buvę“**: dabartiniai šiandien eina bent vienas pareigas, buvę –
+  turi pareigų istoriją, bet visi jų laikotarpiai pasibaigę. Paskyros, turinčios tik roles, nėra nei viena, nei kita.
+- **Stulpelis „Metai“** rodo, kuriais metais narys ėjo pareigas: nuo pirmųjų pareigų pradžios iki
+  dabar (pvz., „2023–dabar“) arba iki paskutinių pareigų pabaigos (pvz., „2019–2021“).
+- **Stulpelis „Pareigos“** rodo, kiek pareigų narys eina dabar ir kiek jų turėjo iš viso (jei skaičiai
+  sutampa – tik dabartinių). Paspaudus
+  (ar užvedus pelę) atsiveria trumpas sąrašas institucijų, kuriose narys eina pareigas dabar ir ėjo anksčiau.
 - **Filtrai**:
+  - *Narystė* – tas pats pasirinkimas tarp dabartinių ir buvusių narių.
   - *Suplanuotos pareigybės* – atrenka narius, kuriems priskirti būsimi pareigybių laikotarpiai (kurių pradžios data yra ateityje).
+
+Kai renkantis narį ieškoma pagal vardą (pvz., [priskiriant pareigybę](/organizacija/pareigybes#priskirti-nari)),
+pirmiausia rodomi dabartiniai nariai, o buvę pažymimi metais, todėl ilgėjantis buvusių narių sąrašas paieškos neužgožia.
+
+<ChangelogNote version="v3.0" date="2026-10-02" title="Dabartiniai ir buvę nariai">
+
+Narių sąraše atsirado filtrai „Dabartiniai“ ir „Buvę“, o buvę nariai pažymimi pareigų pabaigos metais.
+
+</ChangelogNote>
 - **Šiukšlinė**: viršuje rodo ištrintų narių skaičių ir leidžia peržiūrėti bei atkurti pašalintas paskyras.
 
 ### Nario profilio kortelė {#kortele}
@@ -125,7 +144,11 @@ Per meniu **⋯** profilio viršuje pasiekiami veiksmai: **Redaguoti**, laikotar
 
 ### Naujo nario sukūrimas {#kurimas}
 
-Naujas narys kuriamas paspaudus **Naujas narys (-ė)** sąrašo viršuje (`/mano/users/create`):
+Buvusį narį, kurio sistemoje dar nėra, patogiausia sukurti tiesiai
+[priskiriant pareigybę](/organizacija/pareigybes#priskirti-nari) – ten užtenka vardo ir pavardės, o el. paštas nebūtinas.
+Narys be el. pašto negali prisijungti ir negauna laiškų.
+
+Naujas narys su paskyra kuriamas paspaudus **Naujas narys (-ė)** sąrašo viršuje (`/mano/users/create`):
 
 1. **Vardas ir pavardė** – įrašyk tikslų asmens vardą ir pavardę.
 2. **El. paštas** – įrašyk asmeninį studentinį adresą. Sistema automatiškai tikrina dublikatus:
@@ -142,6 +165,9 @@ Narys prie sistemos jungiasi savarankiškai per Microsoft OAuth su savo VU el. p
 ### Nario duomenų redagavimas {#redagavimas}
 
 Atidarius formą per **Redaguoti narį** (`/mano/users/{id}/edit`):
+
+- **El. paštas** – redaguojant nebūtinas, todėl buvusio nario įrašą galima išsaugoti ir be jo.
+  Keisti ar ištrinti esamą el. paštą gali tik tas, kam leidžiama keisti nario tapatybę.
 
 - **Telefonas** ir **Facebook nuoroda** – kontaktinė informacija, matoma viešuose kontaktuose.
 - **Profilio nuotrauka** – įkeliama asmens nuotrauka, kuriai galima nustatyti fokusavimo tašką

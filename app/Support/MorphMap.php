@@ -40,6 +40,7 @@ final class MorphMap
         'document' => Models\Document::class,
         'dutiable' => Models\Pivots\Dutiable::class,
         'duty' => Models\Duty::class,
+        'duty_name' => Models\DutyName::class,
         'duty_responsibility' => Models\DutyResponsibility::class,
         'event_type' => Models\EventType::class,
         'field_response' => Models\FieldResponse::class,

@@ -16,6 +16,7 @@ class IndexUserRequest extends BaseIndexRequest
         return [
             ...parent::rules(),
             'future_duty' => 'nullable|in:scheduled',
+            'membership' => 'nullable|in:current,former',
         ];
     }
 }

@@ -365,6 +365,41 @@ describe('store (Priskirti sheet)', function (): void {
         ])->assertForbidden();
     });
 
+    test('creates a former member without an email together with their term', function (): void {
+        asUser($this->dutyManager)->post(route('dutiables.store'), [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'new_user' => ['name' => 'Petras Petraitis', 'email' => null],
+            'start_date' => '2019-07-01',
+            'end_date' => '2020-06-30',
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $created = User::query()->where('name', 'Petras Petraitis')->sole();
+
+        expect($created->email)->toBeNull()
+            ->and($created->dutiables()->sole()->end_date->toDateString())->toBe('2020-06-30');
+    });
+
+    test('creating a member inline needs the right to create members', function (): void {
+        $role = Role::firstOrCreate(['name' => 'Tik pareigybės', 'guard_name' => 'web']);
+        $role->givePermissionTo(['duties.read.padalinys', 'duties.update.padalinys']);
+        $dutiesOnly = makeUser($this->tenant);
+        $dutiesOnly->duties()->first()->assignRole($role);
+
+        asUser($dutiesOnly)->post(route('dutiables.store'), [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'new_user' => ['name' => 'Petras Petraitis'],
+        ])->assertForbidden();
+
+        expect(User::query()->where('name', 'Petras Petraitis')->exists())->toBeFalse();
+    });
+
+    test('rejects an inline member whose email already belongs to someone', function (): void {
+        asUser($this->dutyManager)->post(route('dutiables.store'), [
+            'duty_id' => $this->dutyManagerDuty->id,
+            'new_user' => ['name' => 'Antras Jonas', 'email' => $this->newMember->email],
+        ])->assertSessionHasErrors('new_user.email');
+    });
+
     test('records the assignment in the duty activity log', function (): void {
         asUser($this->dutyManager)->post(route('dutiables.store'), [
             'duty_id' => $this->dutyManagerDuty->id,

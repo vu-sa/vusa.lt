@@ -32,8 +32,8 @@ const stubs = {
   },
   ConfirmDialog: ConfirmStub,
   AssignDutyUserSheet: {
-    props: ['open', 'dutiable', 'takenIds', 'occupiedPlaces', 'studyPrograms'],
-    template: '<div data-testid="assign-sheet" :data-open="open" :data-dutiable="dutiable?.id" :data-taken="(takenIds ?? []).join(\',\')" />',
+    props: ['open', 'dutiable', 'existingTerms', 'occupiedPlaces', 'studyPrograms'],
+    template: '<div data-testid="assign-sheet" :data-open="open" :data-dutiable="dutiable?.id" :data-terms="(existingTerms ?? []).map(t => `${t.user_id}:${t.start_date}`).join(\',\')" />',
   },
   DutiableTimelineDialog: true,
   AccessChangeWarningDialog: true,
@@ -139,6 +139,60 @@ describe('ShowDuty.vue', () => {
     expect(wrapper.find('[data-testid="duty-vacancy-alert"]').exists()).toBe(true);
   });
 
+  it('marks an inactive duty instead of calling it vacant', () => {
+    const wrapper = mountPage({ duty: { ...baseDuty, users: [], is_active: false } });
+
+    expect(wrapper.find('[data-testid="fact-places"]').attributes('data-status')).toBe('Neaktyvi');
+    expect(wrapper.find('[data-testid="duty-vacancy-alert"]').exists()).toBe(false);
+  });
+
+  it('labels an old term with the name the duty had then', () => {
+    const wrapper = mountPage({
+      duty: {
+        ...baseDuty,
+        users: [holder('past', 'Buvęs Narys', { start_date: '2019-07-01', end_date: '2020-06-30' })],
+        former_names: [{ name: 'Viešųjų ryšių koordinatorius', used_until: '2021-06-30' }],
+      },
+    });
+
+    expect(wrapper.find('[data-testid="member-term-duty-name"]').text()).toContain('Viešųjų ryšių koordinatorius');
+  });
+
+  it('lists the holders of a predecessor duty in the history', () => {
+    const wrapper = mountPage({
+      lineage: {
+        predecessors: [{ id: 'duty-0', name: 'Socialinis-akademinis koordinatorius', is_active: false, institution_name: 'VU SA MIF' }],
+        successors: [],
+        predecessorTerms: [{
+          id: 'old',
+          name: 'Senas Narys',
+          pivot: { id: 'dutiable-old', start_date: '2018-07-01', end_date: '2019-06-30' },
+          duty_name: 'Socialinis-akademinis koordinatorius',
+        }],
+      },
+    });
+
+    expect(wrapper.find('[data-testid="predecessor-term"]').text()).toContain('Senas Narys');
+    expect(wrapper.find('[data-testid="duty-lineage"]').text()).toContain('Socialinis-akademinis koordinatorius');
+  });
+
+  it('orders the history from the most recent term to the oldest', () => {
+    const wrapper = mountPage({
+      duty: {
+        ...baseDuty,
+        users: [
+          holder('oldest', 'Seniausias Narys', { start_date: '2018-07-01', end_date: '2019-06-30' }),
+          holder('newest', 'Naujausias Narys', { start_date: '2024-07-01', end_date: '2025-06-30' }),
+          holder('middle', 'Vidurinis Narys', { start_date: '2021-07-01', end_date: '2022-06-30' }),
+        ],
+      },
+    });
+
+    const names = wrapper.findAll('[data-slot="member-term-row"]').map(row => row.text());
+
+    expect(names.map(text => text.split(/\s/)[0])).toEqual(['Naujausias', 'Vidurinis', 'Seniausias']);
+  });
+
   it('splits members into current, upcoming and history by term', () => {
     const wrapper = mountPage({
       duty: {
@@ -175,17 +229,17 @@ describe('ShowDuty.vue', () => {
     expect(wrapper.findComponent(stubs.RecordPage).props('actionsBesideTitle')).toBe('');
   });
 
-  it('hands the sheet who already holds the duty, so they cannot be assigned twice', () => {
+  it('hands the sheet every term, so nobody gets two overlapping ones', () => {
     const wrapper = mountPage();
     const sheet = wrapper.find('[data-testid="assign-sheet"]');
 
-    expect(sheet.attributes('data-taken')).toBe('current');
+    expect(sheet.attributes('data-terms')).toBe('current:2026-01-01');
   });
 
-  it('offers Priskirti narį as the one primary action, and edit/delete in the overflow', () => {
+  it('offers Priskirti as the one primary action, and edit/delete in the overflow', () => {
     const wrapper = mountPage();
 
-    expect(wrapper.find('[data-testid="primary"]').text()).toBe('Priskirti narį');
+    expect(wrapper.find('[data-testid="primary"]').text()).toBe('Priskirti');
     expect(wrapper.find('[data-testid="overflow-edit"]').exists()).toBe(true);
     expect(wrapper.find('[data-testid="overflow-delete"]').exists()).toBe(true);
   });

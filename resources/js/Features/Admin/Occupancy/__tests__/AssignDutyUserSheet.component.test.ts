@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { useForm } from '@inertiajs/vue3';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -29,7 +29,16 @@ const stubs = {
   DatePicker: { props: ['modelValue', 'disabled'], template: '<input class="date" :value="modelValue" :disabled="disabled" />' },
   TiptapEditor: { template: '<div class="tiptap" />' },
   ImageUpload: { template: '<div class="image-upload" />' },
-  MemberSearchField: { props: ['modelValue', 'takenIds'], template: '<div data-testid="member-search" />' },
+  MemberSearchField: {
+    props: ['modelValue', 'takenIds', 'allowCreate'],
+    emits: ['update:modelValue'],
+    template: '<button type="button" data-testid="member-search" :data-taken="(takenIds ?? []).join(\',\')" @click="$emit(\'update:modelValue\', { id: \'\', name: \'Petras Petraitis\', isNew: true })" />',
+  },
+  NativeSelect: {
+    props: ['modelValue', 'options'],
+    emits: ['update:modelValue'],
+    template: '<select data-testid="cadence-select" :value="modelValue" @change="$emit(\'update:modelValue\', $event.target.value)"><option v-for="o in options" :key="o.value" :value="o.value">{{ o.label }}</option></select>',
+  },
   DutySearchField: {
     props: ['modelValue'],
     emits: ['update:modelValue'],
@@ -47,6 +56,19 @@ const mountSheet = (props: Record<string, unknown> = {}) =>
 
 const lastForm = () => vi.mocked(useForm).mock.results.at(-1)!.value as FormMock;
 
+const cadences = [
+  { id: 'c-2026', label: '2026–2027', start_date: '2026-07-01', end_date: '2027-06-30', is_current: true },
+  { id: 'c-2025', label: '2025–2026', start_date: '2025-07-01', end_date: '2026-06-30', is_current: false },
+];
+
+const originalFetch = globalThis.fetch;
+
+const respondWithCadences = (data: unknown[] = cadences) => {
+  globalThis.fetch = vi.fn(async () => new Response(JSON.stringify({ success: true, data }), {
+    headers: { 'Content-Type': 'application/json' },
+  }));
+};
+
 describe('AssignDutyUserSheet.vue', () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date'] });
@@ -57,6 +79,96 @@ describe('AssignDutyUserSheet.vue', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    // tests/setup.ts stubs route() globally, so only fetch is put back.
+    globalThis.fetch = originalFetch;
+  });
+
+  describe('cadence presets', () => {
+    it('defaults a new term to the current cadence, from today to its end', async () => {
+      respondWithCadences();
+      mountSheet();
+      await flushPromises();
+
+      expect(lastForm().start_date).toBe('2026-09-20');
+      expect(lastForm().end_date).toBe('2027-06-30');
+    });
+
+    it('spans a previous cadence in full', async () => {
+      respondWithCadences();
+      const wrapper = mountSheet();
+      await flushPromises();
+
+      await wrapper.find('[data-testid="cadence-select"]').setValue('c-2025');
+
+      expect(lastForm().start_date).toBe('2025-07-01');
+      expect(lastForm().end_date).toBe('2026-06-30');
+    });
+
+    it('only blocks people who hold the duty during the chosen dates', async () => {
+      respondWithCadences();
+      const wrapper = mountSheet({
+        existingTerms: [
+          { user_id: 'now', start_date: '2026-07-01', end_date: null },
+          { user_id: 'before', start_date: '2025-07-01', end_date: '2026-06-30' },
+        ],
+      });
+      await flushPromises();
+
+      // Someone whose term ended last cadence may be recorded again for this one.
+      expect(wrapper.find('[data-testid="member-search"]').attributes('data-taken')).toBe('now');
+    });
+
+    it('keeps the stored dates when editing a term', async () => {
+      respondWithCadences();
+      mountSheet({ dutiable: { id: 'd-1', duty_id: 'duty-1', start_date: '2024-02-01', end_date: null, duty }, duty: null });
+      await flushPromises();
+
+      expect(lastForm().start_date).toBe('2024-02-01');
+      expect(lastForm().end_date).toBeNull();
+    });
+  });
+
+  describe('new member', () => {
+    it('sends the person to create instead of a user id', async () => {
+      const wrapper = mountSheet();
+      const form = lastForm();
+
+      await wrapper.find('[data-testid="member-search"]').trigger('click');
+      await wrapper.find('form').trigger('submit');
+
+      const transform = vi.mocked(form.transform).mock.calls[0][0] as (data: Record<string, unknown>) => Record<string, unknown>;
+      const payload = transform({ ...form.data(), new_user: form.new_user });
+
+      expect(form.user_id).toBe('');
+      expect(payload.new_user).toEqual({ name: 'Petras Petraitis', email: null });
+    });
+  });
+
+  describe('extras', () => {
+    const programmes = [{ id: 1, name: 'Ekonomika', tenant_id: 5 }];
+
+    it('keeps the extra settings folded away for a plain term', () => {
+      const wrapper = mountSheet();
+
+      expect(wrapper.find('[data-testid="assign-extras"]').attributes('open')).toBeUndefined();
+    });
+
+    it('opens them when the term already carries something', () => {
+      const wrapper = mountSheet({
+        dutiable: { id: 'd-1', duty_id: 'duty-1', start_date: '2026-01-01', additional_email: 'pirm@vusa.lt', duty },
+        duty: null,
+      });
+
+      expect(wrapper.find('[data-testid="assign-extras"]').attributes('open')).toBeDefined();
+    });
+
+    it('offers a study programme only on a curator duty', () => {
+      const plain = mountSheet({ duty: { ...duty, types: [{ slug: 'koordinatoriai' }] }, studyPrograms: programmes });
+      const curator = mountSheet({ duty: { ...duty, types: [{ slug: 'kuratoriai' }] }, studyPrograms: programmes });
+
+      expect((plain.vm as unknown as { showStudyProgram: boolean }).showStudyProgram).toBe(false);
+      expect((curator.vm as unknown as { showStudyProgram: boolean }).showStudyProgram).toBe(true);
+    });
   });
 
   describe('create from a member (duty not fixed)', () => {
@@ -105,7 +217,7 @@ describe('AssignDutyUserSheet.vue', () => {
     it('shows the duty context and a member search, not a member banner', () => {
       const wrapper = mountSheet();
 
-      expect(wrapper.text()).toContain('Priskirti narį');
+      expect(wrapper.find('h2').text()).toBe('Priskirti');
       expect(wrapper.text()).toContain('Pirmininkas');
       expect(wrapper.text()).toContain('VU SA MIF');
       expect(wrapper.find('[data-testid="member-search"]').exists()).toBe(true);

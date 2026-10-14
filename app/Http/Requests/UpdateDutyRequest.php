@@ -43,6 +43,12 @@ class UpdateDutyRequest extends FormRequest
             'institution_id' => 'required',
             'places_to_occupy' => 'required|numeric',
             'contacts_grouping' => 'required|in:none,study_program,tenant',
+            'is_active' => 'sometimes|boolean',
+            'former_names' => 'sometimes|array',
+            'former_names.*.name' => 'required|array',
+            'former_names.*.name.lt' => 'required|string|max:255',
+            'former_names.*.name.en' => 'nullable|string|max:255',
+            'former_names.*.used_until' => 'required|date|before_or_equal:today',
             'types' => 'nullable|array',
             'types.*' => ['integer', 'distinct', SoftDeleteRules::existsLive('duty_types')],
             'ex_officio_target_duty_ids' => 'nullable|array',
@@ -81,6 +87,11 @@ class UpdateDutyRequest extends FormRequest
         $validator->after(function (Validator $v): void {
             /** @var Duty $duty */
             $duty = $this->route('duty');
+
+            // Retiring a duty must not quietly strand the people still holding it.
+            if ($this->has('is_active') && ! $this->boolean('is_active') && $duty->current_users()->exists()) {
+                $v->errors()->add('is_active', __('Pirmiau užbaik narių pareigas, tada pažymėk pareigybę neaktyvia.'));
+            }
 
             $hasGlobalDutyScope = app(ModelAuthorizer::class)->allows($this->user(), 'duties.update.*');
 

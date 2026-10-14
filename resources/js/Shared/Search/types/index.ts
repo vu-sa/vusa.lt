@@ -511,6 +511,9 @@ export interface DutySearchResult {
   name_lt?: string;
   name_en?: string;
   email?: string;
+  /** Absent on documents indexed before the flag existed; treat as active. */
+  is_active?: boolean;
+  former_names?: string[];
   /** Home tenant ∪ assignable tenants — drives the scoped-key access filter. */
   tenant_ids?: number[];
   /** Institution's owning tenant; used to detect cross-tenant ("external") duties. */
@@ -520,6 +523,7 @@ export interface DutySearchResult {
   institution_name_lt?: string;
   institution_name_en?: string;
   type_titles?: string[];
+  type_slugs?: string[];
   current_user_names?: string[];
   /** Index-aligned with current_user_names; enables clickable member links. */
   current_user_ids?: string[];

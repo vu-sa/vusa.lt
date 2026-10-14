@@ -25,11 +25,22 @@ final class BuildUserIndexQuery
             ->where(fn (Builder $query) => $query
                 ->whereHas('duties')
                 ->orWhereHas('roles'))
+            // Institution names feed the row's quick list of where the person served.
             ->with([
                 'duties:id,institution_id',
-                'duties.institution:id,tenant_id',
+                'duties.institution:id,name,short_name,tenant_id',
                 'duties.institution.tenant:id,shortname',
-            ])->withCount('duties');
+            ])->withCount('duties')
+            ->withCount(['duties as current_duties_count' => fn (Builder $duties) => self::inOffice($duties)])
+            ->withExists(['duties as is_current' => fn (Builder $duties) => self::inOffice($duties)])
+            ->withMax('duties as last_term_end', 'dutiables.end_date');
+
+        // "Former" means a duty history with nothing in force; role-only accounts are neither.
+        match ($request->getFilters()['membership'] ?? $request->validated('membership')) {
+            'current' => $query->whereHas('duties', fn (Builder $duties) => self::inOffice($duties)),
+            'former' => $query->whereHas('duties')->whereDoesntHave('duties', fn (Builder $duties) => self::inOffice($duties)),
+            default => null,
+        };
 
         $futureDuty = $request->getFilters()['future_duty'] ?? $request->validated('future_duty');
 
@@ -42,6 +53,14 @@ final class BuildUserIndexQuery
     public static function scheduledFor(User $actor, ModelAuthorizer $authorizer): Builder
     {
         return self::withScheduledDuty(User::query(), $actor, $authorizer);
+    }
+
+    /** Same "in office today" window as User::current_duties(). */
+    private static function inOffice(Builder $duties): void
+    {
+        $duties->whereDate('dutiables.start_date', '<=', today())
+            ->where(fn (Builder $dates) => $dates->whereNull('dutiables.end_date')
+                ->orWhereDate('dutiables.end_date', '>=', today()));
     }
 
     /** @param Builder<User> $query */

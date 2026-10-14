@@ -31,7 +31,7 @@ class UserApiController extends ApiController
                 'applySortBeforePagination' => true,
                 'tenantRelation' => 'tenants',
                 'permission' => 'users.read.padalinys',
-                'handledFilters' => ['future_duty'],
+                'handledFilters' => ['future_duty', 'membership'],
             ],
         );
 
@@ -47,7 +47,7 @@ class UserApiController extends ApiController
             'per_page' => $users->perPage(),
             'current_page' => $users->currentPage(),
             'last_page' => $users->lastPage(),
-            'facets' => CollectionFacetCounts::forRequest($request, ['future_duty'], $query),
+            'facets' => CollectionFacetCounts::forRequest($request, ['future_duty', 'membership'], $query),
         ]);
     }
 }

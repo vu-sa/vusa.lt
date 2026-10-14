@@ -59,6 +59,12 @@ class UserSearchApiController extends ApiController
         $query = User::query()
             ->select(['id', 'name', 'email', 'profile_photo_path'])
             ->withCount('duties')
+            // Former members far outnumber current ones; rank the people in office first.
+            ->withExists(['duties as is_current' => fn (Builder $q) => $q
+                ->whereDate('dutiables.start_date', '<=', today())
+                ->where(fn (Builder $dates) => $dates->whereNull('dutiables.end_date')
+                    ->orWhereDate('dutiables.end_date', '>=', today()))])
+            ->withMax('duties as last_term_end', 'dutiables.end_date')
             // Columns must be table-qualified: tenants is a hasManyDeep whose joins
             // give several tables an `id`, so a bare `id` is ambiguous.
             ->with('tenants:tenants.id,tenants.shortname')
@@ -66,6 +72,7 @@ class UserSearchApiController extends ApiController
                 $q->whereLike('name', "%{$search}%", false)
                     ->orWhereLike('email', "%{$search}%", false);
             })
+            ->orderByDesc('is_current')
             ->orderBy('name')
             ->limit(20);
 
@@ -104,6 +111,10 @@ class UserSearchApiController extends ApiController
                     : $found->email,
                 'profile_photo_path' => $found->profile_photo_path,
                 'duties_count' => $found->duties_count,
+                'is_current' => (bool) $found->getAttribute('is_current'),
+                'last_term_year' => $found->getAttribute('last_term_end')
+                    ? (int) substr((string) $found->getAttribute('last_term_end'), 0, 4)
+                    : null,
                 'tenants' => $tenants->pluck('shortname')->unique()->values(),
             ];
         });

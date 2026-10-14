@@ -124,7 +124,6 @@ describe('authorized access', function (): void {
             'name' => ['lt' => 'Atnaujinta pareiga', 'en' => 'Updated Duty'],
             'description' => ['lt' => 'Naujas aprašymas', 'en' => 'New description'],
             'email' => 'updated@example.com',
-            'is_active' => false,
             'institution_id' => $this->dutyManagerDuty->institution_id,
             'contacts_grouping' => 'none',
             'places_to_occupy' => 1,

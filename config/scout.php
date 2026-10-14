@@ -730,6 +730,9 @@ $settings = [
                         ['name' => 'name_lt', 'type' => 'string', 'infix' => true, 'sort' => true],
                         ['name' => 'name_en', 'type' => 'string', 'infix' => true, 'sort' => true, 'optional' => true],
                         ['name' => 'email', 'type' => 'string', 'optional' => true],
+                        // Inactive duties keep their history but are not offered for new assignments.
+                        ['name' => 'is_active', 'type' => 'bool', 'facet' => true, 'optional' => true],
+                        ['name' => 'former_names', 'type' => 'string[]', 'infix' => true, 'optional' => true],
 
                         // Tenant filtering (CRITICAL for scoped API keys)
                         ['name' => 'tenant_ids', 'type' => 'int32[]', 'facet' => true],
@@ -744,6 +747,7 @@ $settings = [
 
                         // Facets
                         ['name' => 'type_titles', 'type' => 'string[]', 'facet' => true, 'optional' => true],
+                        ['name' => 'type_slugs', 'type' => 'string[]', 'facet' => true, 'optional' => true],
 
                         // Members (for the detail pane). Names are searchable; the parallel
                         // id arrays stay index-aligned so the pane can render clickable links.
@@ -760,8 +764,8 @@ $settings = [
                 ],
                 'search-parameters' => [
                     // Current members are weighted above previous ones for relevance.
-                    'query_by' => 'name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
-                    'query_by_weights' => '127,127,110,6,6,6,3',
+                    'query_by' => 'name_lt,name_en,email,former_names,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
+                    'query_by_weights' => '127,127,110,40,6,6,6,3',
                     'typo_tokens_threshold' => 1,
                     'num_typos' => 2,
                     'prioritize_exact_match' => true,

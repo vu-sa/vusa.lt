@@ -42,7 +42,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
  * @property string $id
- * @property string $email
+ * @property string|null $email
  * @property string|null $phone
  * @property string|null $facebook_url
  * @property string $name

@@ -17,7 +17,7 @@ export interface UserChange {
 
 export interface NewUserData {
   name: string;
-  email: string;
+  email?: string;
   phone?: string;
   profile_photo_path?: string | null;
   temp_id?: string; // For backend correlation with user_changes
@@ -325,9 +325,9 @@ export function useDutyUserWizard(options: UseDutyUserWizardOptions = {}) {
     }
 
     // Check new users have required fields
-    const invalidNewUsers = state.newUsersToCreate.filter(u => !u.name || !u.email);
+    const invalidNewUsers = state.newUsersToCreate.filter(u => !u.name);
     if (invalidNewUsers.length > 0) {
-      setStepError(3, 'new_users', [$t('Nauji naudotojai turi turėti vardą ir el. paštą')]);
+      setStepError(3, 'new_users', [$t('Naujas narys turi turėti vardą')]);
       state.validation.users = false;
       return false;
     }
