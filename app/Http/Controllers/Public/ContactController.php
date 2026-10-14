@@ -43,22 +43,45 @@ class ContactController extends PublicController
             description: app()->getLocale() === 'lt' ? 'VU SA kontaktų paieškoje vienoje vietoje suraskite visus VU SA kontaktus' : 'In the VU SA contact search, find all VU SA contacts in one place',
         );
 
-        // Get institution type mappings for facet display (slug => title)
-        $institutionTypes = InstitutionType::whereHas('institutions')
-            ->get()
-            ->mapWithKeys(fn ($type) => [
-                $type->slug => $type->getTranslation('title', app()->getLocale()),
-            ])
-            ->toArray();
-
         $atstovavimasSettings = app(AtstovavimasSettings::class);
         $studentRepTypeSlugs = $atstovavimasSettings->getStudentRepInstitutionTypeSlugs()->toArray();
 
         return Inertia::render('Public/Contacts/ShowContacts', [
             'tenantSwitchTarget' => 'same-page',
-            'institutionTypes' => $institutionTypes,
+            'institutionTypes' => $this->institutionTypeTree(),
             'studentRepTypeSlugs' => $studentRepTypeSlugs,
         ]);
+    }
+
+    /**
+     * Types in use plus their ancestors, so the page can expand a parent filter to its sub-types.
+     * Resolved per request rather than indexed: re-parenting a type then needs no reindex.
+     *
+     * @return list<array{slug: string, title: string, parent_slug: string|null}>
+     */
+    private function institutionTypeTree(): array
+    {
+        $types = InstitutionType::query()->whereHas('institutions')->with('recursiveParent')->get();
+
+        return $types
+            ->flatMap(function (InstitutionType $type): array {
+                $lineage = [];
+
+                for ($current = $type; $current !== null; $current = $current->recursiveParent) {
+                    $lineage[] = $current;
+                }
+
+                return $lineage;
+            })
+            ->filter(fn (InstitutionType $type): bool => filled($type->slug))
+            ->unique('id')
+            ->map(fn (InstitutionType $type): array => [
+                'slug' => $type->slug,
+                'title' => $type->getTranslation('title', app()->getLocale()),
+                'parent_slug' => $type->recursiveParent?->slug,
+            ])
+            ->values()
+            ->all();
     }
 
     public function institutionContacts($subdomain, $lang, $contactsString, Institution $institution)
@@ -473,7 +496,7 @@ class ContactController extends PublicController
             $this->applyPageHead(
                 contentTenant: $this->tenant,
                 title: __('Kontaktai').': '.$type->title,
-                description: Str::limit($type->description, 160),
+                description: Str::limit(Str::squish(strip_tags((string) $type->description)), 160),
             );
 
             return Inertia::render('Public/Contacts/ShowContactCategory', [
@@ -517,7 +540,7 @@ class ContactController extends PublicController
         $this->applyPageHead(
             contentTenant: $this->tenant,
             title: __('Kontaktai').': '.$type->title,
-            description: Str::limit($type->description, 160),
+            description: Str::limit(Str::squish(strip_tags((string) $type->description)), 160),
         );
 
         return Inertia::render('Public/Contacts/ShowStudentReps', [

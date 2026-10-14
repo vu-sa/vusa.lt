@@ -274,6 +274,7 @@ return [
     'view_mode_grid' => 'Tinklelis',
     'contact_singular' => 'kontaktas',
     'contacts_plural' => 'kontaktai',
+    'more_representatives' => '+ dar :count atstovas|+ dar :count atstovai|+ dar :count atstovų',
 
     // Search page navigation
     'go_to_documents' => 'Eiti į dokumentų paiešką',

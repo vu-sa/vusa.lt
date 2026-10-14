@@ -470,6 +470,8 @@ $settings = [
                         ['name' => 'website', 'type' => 'string', 'optional' => true],
                         ['name' => 'address_lt', 'type' => 'string', 'optional' => true],
                         ['name' => 'address_en', 'type' => 'string', 'optional' => true],
+                        ['name' => 'description_lt', 'type' => 'string', 'optional' => true, 'index' => false],
+                        ['name' => 'description_en', 'type' => 'string', 'optional' => true, 'index' => false],
 
                         ['name' => 'image_url', 'type' => 'string', 'optional' => true],
                         ['name' => 'logo_url', 'type' => 'string', 'optional' => true],

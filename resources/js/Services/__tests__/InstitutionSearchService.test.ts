@@ -89,4 +89,27 @@ describe('InstitutionSearchService', () => {
     expect(callArgs.query_by).toBe('name_en,name_lt,short_name_en,short_name_lt,alias,current_user_names');
     expect(callArgs.query_by_weights).toBe('10,8,6,4,3,5');
   });
+
+  it('expands a parent type filter to its sub-types', async () => {
+    service = new InstitutionSearchService(mockClient as unknown as Client, 'public_institutions', {
+      'studentu-atstovu-organas': ['spk', 'gnk'],
+    });
+
+    await service.performSearch({ query: '', tenants: [], types: ['studentu-atstovu-organas', 'pkp'], hasContacts: null }, 24, false, 1, 'lt');
+
+    expect(mockClient.search.mock.calls[0][1].filter_by)
+      .toBe('(type_slugs:="studentu-atstovu-organas" || type_slugs:="spk" || type_slugs:="gnk" || type_slugs:="pkp")');
+  });
+
+  it('picks the description for the current locale, falling back to the other one', async () => {
+    mockClient.search.mockResolvedValue({
+      hits: [{ document: { id: '1', name_lt: 'A', description_lt: 'Aprašymas', description_en: null } }],
+      found: 1,
+      facet_counts: [],
+    });
+
+    const result = await service.performSearch({ query: '', tenants: [], types: [], hasContacts: null }, 24, false, 1, 'en');
+
+    expect(result.hits[0].description).toBe('Aprašymas');
+  });
 });

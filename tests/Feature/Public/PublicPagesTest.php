@@ -5,6 +5,7 @@ use App\Mail\FeedbackMail;
 use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\StudyProgram;
@@ -163,6 +164,18 @@ test('can open contacts search page with student rep type slugs', function (): v
             ->component('Public/Contacts/ShowContacts')
             ->has('institutionTypes')
             ->has('studentRepTypeSlugs')
+        );
+});
+
+test('contacts search page lists a used sub-type together with its parent', function (): void {
+    $parent = InstitutionType::factory()->create(['slug' => 'tevinis-tipas']);
+    $child = InstitutionType::factory()->create(['slug' => 'vaikinis-tipas', 'parent_id' => $parent->id]);
+    Institution::factory()->create()->types()->attach($child);
+
+    $this->get(route('contacts', ['subdomain' => 'www', 'lang' => 'lt']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('institutionTypes', fn ($types) => collect($types)->contains(fn (array $type) => $type['slug'] === 'tevinis-tipas' && $type['parent_slug'] === null)
+                && collect($types)->contains(fn (array $type) => $type['slug'] === 'vaikinis-tipas' && $type['parent_slug'] === 'tevinis-tipas'))
         );
 });
 

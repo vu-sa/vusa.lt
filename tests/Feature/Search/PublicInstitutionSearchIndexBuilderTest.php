@@ -62,6 +62,7 @@ test('PublicInstitutionSearchIndexBuilder includes contacts, current user names,
         ->and($searchable['contacts'][0]['name'])->toBe('Jonas Jonaitis')
         ->and($searchable['contacts'][0]['profile_photo_path'])->toBe('photos/jonas.jpg')
         ->and($searchable['contacts'][0]['profile_photo_focal_point'])->toBe('50% 25%')
+        ->and($searchable['contacts'][0]['email'])->toBe($duty->email)
         ->and($searchable['has_contacts'])->toBeTrue();
 });
 
@@ -83,6 +84,22 @@ test('PublicInstitutionSearchIndexBuilder sets is_student_representation false f
     expect($searchable['is_student_representation'])->toBeFalse()
         ->and($searchable['contacts'])->toBeEmpty()
         ->and($searchable['has_contacts'])->toBeFalse();
+});
+
+test('PublicInstitutionSearchIndexBuilder indexes a plain-text description excerpt per locale', function (): void {
+    $institution = Institution::factory()->create([
+        'is_active' => true,
+        'description' => [
+            'lt' => '<p>Atstovaujame&nbsp;<strong>studentams</strong></p><p>'.str_repeat('ilgas tekstas ', 60).'</p>',
+            'en' => '',
+        ],
+    ]);
+
+    $searchable = app(PublicInstitutionSearchIndexBuilder::class)->build(PublicInstitution::findOrFail($institution->id));
+
+    expect($searchable['description_lt'])->toStartWith('Atstovaujame studentams ilgas tekstas')
+        ->not->toContain('<')
+        ->and(mb_strlen($searchable['description_lt']))->toBeLessThanOrEqual(403);
 });
 
 test('AtstovavimasSettings can configure custom student rep root type', function (): void {

@@ -93,7 +93,7 @@ class InstitutionSearchServiceAdapter implements BaseSearchService<InstitutionSe
 // Composable
 // ============================================================================
 
-export const useInstitutionSearch = (): InstitutionSearchController => {
+export const useInstitutionSearch = (options: { typeDescendants?: Record<string, string[]> } = {}): InstitutionSearchController => {
   // Extended preferences for institution search
   const institutionPreferences = useLocalStorage<InstitutionPreferences>('institution-search-preferences', {
     viewMode: 'grid', // Default to grid view for institutions
@@ -190,7 +190,7 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
       typesenseClient.value = clients.typesenseClient;
 
       // Create institution service and adapter
-      institutionService.value = new InstitutionSearchService(typesenseClient.value, collectionName);
+      institutionService.value = new InstitutionSearchService(typesenseClient.value, collectionName, options.typeDescendants);
       const adapter = new InstitutionSearchServiceAdapter(institutionService.value, getCurrentLocale);
 
       // Set the service on base search

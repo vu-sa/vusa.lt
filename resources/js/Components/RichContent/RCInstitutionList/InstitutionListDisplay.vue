@@ -55,7 +55,6 @@
           v-for="institution in institutions"
           :key="institution.id"
           :institution
-          show-metadata
         />
       </div>
     </div>

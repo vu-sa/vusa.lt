@@ -7,6 +7,7 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 const mockResults = ref<Array<Record<string, unknown>>>([]);
 const mockSearch = vi.fn();
 const mockInitializeSearchClient = vi.fn();
+const mockToggleType = vi.fn();
 
 vi.mock('@/Composables/useInstitutionSearch', () => ({
   useInstitutionSearch: () => ({
@@ -21,7 +22,7 @@ vi.mock('@/Composables/useInstitutionSearch', () => ({
     search: mockSearch,
     initializeSearchClient: mockInitializeSearchClient,
     toggleTenant: vi.fn(),
-    toggleType: vi.fn(),
+    toggleType: mockToggleType,
     setFilter: vi.fn(),
     clearFilters: vi.fn(),
   }),
@@ -125,5 +126,38 @@ describe('ShowContacts', () => {
     expect(wrapper.find('[data-slot="student-rep-institution-card"]').exists()).toBe(true);
     expect(wrapper.find('[data-slot="institution-card"]').exists()).toBe(false);
     expect(wrapper.text()).toContain('Studijų programos komitetas');
+  });
+
+  it('offers a quick filter chip for each top-level type only', async () => {
+    const wrapper = mount(ShowContacts, {
+      props: {
+        institutionTypes: [
+          { slug: 'pkp', title: 'Programos, klubai, projektai', parent_slug: null },
+          { slug: 'studentu-atstovu-organas', title: 'Studentų atstovų organas', parent_slug: null },
+          { slug: 'spk', title: 'Studijų programos komitetas', parent_slug: 'studentu-atstovu-organas' },
+        ],
+      },
+      global: { stubs },
+    });
+
+    const chips = wrapper.findAll('button[aria-pressed]');
+    expect(chips.map(chip => chip.text())).toEqual(['Programos, klubai, projektai', 'Studentų atstovų organas']);
+
+    await chips[1].trigger('click');
+    expect(mockToggleType).toHaveBeenCalledWith('studentu-atstovu-organas');
+  });
+
+  it('renders editorial section subheader with result count', () => {
+    mockResults.value = [
+      { id: '1', name: 'Item 1' },
+      { id: '2', name: 'Item 2' },
+    ];
+
+    const wrapper = mount(ShowContacts, {
+      global: { stubs },
+    });
+
+    expect(wrapper.text()).toContain('Kontaktai');
+    expect(wrapper.text()).toContain('2 search.results');
   });
 });
