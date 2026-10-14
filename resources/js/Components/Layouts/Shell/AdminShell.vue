@@ -8,6 +8,7 @@
       !focused && 'max-md:[--shell-bottom-bar:calc(3.5rem_+_env(safe-area-inset-bottom,0px))]',
     ]"
   >
+    <StagingWatermark />
     <StagingBanner v-model:dismissed="stagingDismissed" />
     <ImpersonateBanner />
 
@@ -85,6 +86,7 @@ import SystemAnnouncement from './SystemAnnouncement.vue';
 
 import ImpersonateBanner from '@/Components/ImpersonateBanner.vue';
 import StagingBanner from '@/Components/StagingBanner.vue';
+import StagingWatermark from '@/Components/StagingWatermark.vue';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useShellFocus } from '@/Composables/useShellFocus';

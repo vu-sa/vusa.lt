@@ -37,6 +37,7 @@
     </div>
 
     <SiteFooter class="mt-auto" />
+    <StagingWatermark />
   </div>
 
   <!-- Toast notifications (flash messages + the persistent public edit-link toast) -->
@@ -54,6 +55,7 @@ import { usePage, router } from '@inertiajs/vue3';
 import SiteFooter from '../FullWidth/SiteFooter.vue';
 
 import FadeTransition from '@/Components/Transitions/FadeTransition.vue';
+import StagingWatermark from '@/Components/StagingWatermark.vue';
 import { createBreadcrumbState } from '@/Composables/useBreadcrumbsUnified';
 import { Toaster } from '@/Components/ui/sonner';
 import { useToasts } from '@/Composables/useToasts';
