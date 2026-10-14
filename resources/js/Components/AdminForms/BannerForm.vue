@@ -3,6 +3,7 @@
     :title="isCreate ? $t('Naujas baneris') : (form.title || $t('Baneris'))"
     :bar-title
     entity-type="banner"
+    :available-locales="[]"
     :back-href="route('banners.index')"
     :back-label="$t('Baneriai')"
     :processing="form.processing"
