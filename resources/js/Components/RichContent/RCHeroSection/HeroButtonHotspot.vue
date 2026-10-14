@@ -28,7 +28,6 @@
     </div>
     <PopoverContent
       v-if="hotspots.isPopoverOpen(hotspotId)"
-      data-surface="public"
       class="w-[min(28rem,calc(100vw-2rem))]"
       @close-auto-focus.prevent
     >

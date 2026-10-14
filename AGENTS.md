@@ -35,7 +35,7 @@ that folder's `decisions.md`, `reps.md` and `plan.md` — read them with
 
 ## Public UI
 
-Public pages use the shared paper, ink, and brand palette under `data-surface="public"`.
+Public and admin pages share one paper, ink, and brand palette (global `:root`/`.dark`); `data-surface` on `<html>` only scopes the few rules that differ.
 `--accent` remains the shadcn hover surface; `--brand` and `--brand-fill` carry VU SA red or amber.
 Build from `ui/` → `Public/Base/` → `Public/<area>/` → `Public/Layouts/` → `Pages/Public/`.
 Use `Public/Base/` for domain-free primitives and `ui/button` for actions. Keep corners square and

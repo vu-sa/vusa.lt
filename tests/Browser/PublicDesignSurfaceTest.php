@@ -6,18 +6,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 /**
- * The public palette lives in a token scope, `[data-surface="public"]` in resources/css/app.css,
- * and reaching it depends on two things that can each break silently:
- *
- * 1. app.blade.php stamping the attribute on <html> (covered server-side by
- *    tests/Feature/Public/DesignSurfaceTest.php);
- * 2. the compiled CSS actually resolving through it.
- *
- * (2) is the one that needs a browser. The radius scale sits in a plain `@theme` block rather
- * than `@theme inline` precisely so `rounded-lg` emits `var(--radius-lg)` and a scope can zero
- * it — move it back under `inline` and Tailwind bakes `calc(var(--radius) + 4px)` straight into
- * the utility, the override stops applying, and the public site quietly renders with admin's
- * rounded corners. Nothing errors; only a rendered page shows it.
+ * The compiled CSS must resolve the square radius scale and typeface; only a rendered page shows
+ * it. The scale sits in a plain `@theme` block so `rounded-lg` emits `var(--radius-lg)` — under
+ * `@theme inline` Tailwind bakes a literal into the utility and the override stops applying.
  */
 it('resolves the public token scope in the browser', function (): void {
     Tenant::firstOrCreate(

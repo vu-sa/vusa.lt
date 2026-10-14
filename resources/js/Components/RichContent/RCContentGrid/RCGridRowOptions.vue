@@ -17,7 +17,7 @@
       {{ $t('rich-content.grid_row') }} {{ rowIndex + 1 }}
       <IFluentMoreVertical24Regular class="size-3" />
     </button>
-    <PopoverContent v-if="hotspots.isPopoverOpen(hotspotId)" data-surface="public"
+    <PopoverContent v-if="hotspots.isPopoverOpen(hotspotId)"
       class="w-64"
       @close-auto-focus.prevent
     >

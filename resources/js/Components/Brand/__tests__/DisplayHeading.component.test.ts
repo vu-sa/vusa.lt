@@ -9,7 +9,7 @@ import SectionBand from '@/Components/Public/Base/SectionBand.vue';
 /**
  * These assert wiring only — which classes and elements are produced. Whether the brand rule
  * actually renders red on light and amber on dark cannot be checked here: jsdom does not
- * resolve Tailwind's `dark:` variant or the `[data-surface]` token scope. That is covered by the
+ * resolve Tailwind's `dark:` variant or the design tokens. That is covered by the
  * Storybook catalogue (Public/Base/*), which runs in a real browser with a theme toolbar.
  */
 describe('DisplayHeading', () => {

@@ -3,12 +3,8 @@
 namespace App\Support;
 
 /**
- * Resolves the `data-surface` token scope `app.blade.php` stamps on `<html>`
- * (`resources/css/public/surface.css`, `resources/css/admin/surface.css`).
- *
- * Three places in `app.blade.php` branch on the same question (the `<html>` attribute, the
- * `<body>` classes, and — for `public` — the `@head`/Umami gates), so this is a helper rather
- * than a repeated blade expression.
+ * Resolves the `data-surface` attribute `app.blade.php` stamps on `<html>`, which scopes the few
+ * rules admin and public do not share. The public-only `<head>` gates read the same answer.
  */
 final class DesignSurface
 {

@@ -1,13 +1,17 @@
 @custom-variant dark (&:is(.dark *));
 
-/* Radius scale — deliberately NOT `inline`, so `rounded-lg` emits `var(--radius-lg)` and a
-   surface scope can override it. Values reproduce the previous `calc(var(--radius) ± Npx)`
-   results for --radius: 0.625rem exactly, so admin radii are unchanged. */
+/* Square corners are a hard rule of the design. `rounded-full` is a literal, not on this scale,
+   so it has to be removed per component. Plain `@theme`, not `inline`, so `rounded-lg` emits
+   `var(--radius-lg)` and a scope could still override it. */
 @theme {
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.625rem;
-  --radius-xl: 0.875rem;
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
 
   /* Card image hover zoom scale (subtle 3% zoom) */
   --scale-103: 1.03;
@@ -28,34 +32,15 @@
   --color-ink: var(--ink);
 }
 
-/* Ensure the --background variable is properly defined and scoped */
+/* The canvas/ink palette lives in surface-palette.css; these are the tokens layered on top. */
 :root {
-  --background: oklch(1 0 0);
-  /* Default light mode background */
-  --foreground: oklch(0.141 0.005 285.823);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.141 0.005 285.823);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.21 0.006 285.885);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.21 0.006 285.885);
-  --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.705 0.015 286.067);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.625rem;
+  --radius: 0rem;
   /* `--brand` is the ink/line value (text, borders, thin rules, /10 tints); `--brand-fill` is
      the solid block (buttons, date plates, active tabs). They coincide in light mode and
      diverge in dark, where the fill is a touch deeper than the ink. */
@@ -73,8 +58,7 @@
 
   /* ------------------------------------------------------------------------------------------
      Colour system (.ai/rules/css.md) — six status roles
-     + eight categories, shared by the admin and public surfaces (unlike --background etc., these
-     are NOT re-scoped per [data-surface]). Meaning is carried by shape as well as hue: solid fill
+     + eight categories, shared by the admin and public surfaces. Meaning is carried by shape as well as hue: solid fill
      = brand, tinted badge + icon + label = status (these tokens), small mark = category.
      `-border` is the text/icon colour at ~35% alpha, per rule 1's "usually the text colour at
      30-40% alpha" — color-mix rather than a fourth hand-picked value, so it can never drift from
@@ -123,26 +107,7 @@
 }
 
 .dark {
-  --background: oklch(0.141 0.005 285.823);
-  /* Dark mode background */
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.141 0.005 285.823);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.141 0.005 285.823);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.21 0.006 285.885);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.274 0.006 286.033);
-  --input: oklch(0.274 0.006 286.033);
-  --ring: oklch(0.442 0.017 285.786);
   --brand: oklch(0.82 0.152 72);
   --brand-fill: oklch(0.8 0.15 70);
   --brand-foreground: oklch(0.16 0.02 60);
@@ -184,8 +149,8 @@ html.dark {
 html.dark-mode-init {
   /* Use system preference for initial render */
   @media (prefers-color-scheme: dark) {
-    --background: oklch(0.141 0.005 285.823);
-    --foreground: oklch(0.985 0 0);
+    --background: oklch(0.135 0.004 70);
+    --foreground: oklch(0.955 0.004 85);
     color-scheme: dark;
   }
 }

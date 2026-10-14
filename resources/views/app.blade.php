@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 
 {{-- TODO: Enable class="scroll-smooth" when Inertia scroll reset is fixed --}}
-{{-- `data-surface` switches the design-token scope in resources/css/app.css: public pages take the
-     editorial palette (warm paper / near-black, zero radius), admin pages the working-density one.
-     Resolved once server-side via App\Support\DesignSurface, so it is correct before the first paint
-     and the three checks below (this attribute, @head/Umami further down, and the <body> classes) agree. --}}
+{{-- Both surfaces share one palette; `data-surface` only scopes the few rules that differ
+     (resources/css/admin/surface.css, public prose colour). Resolved once server-side so this
+     attribute and the public-only @head/Umami checks below agree. --}}
 @php($designSurface = \App\Support\DesignSurface::for($page['component'] ?? null))
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark-mode-init"
     @if ($designSurface) data-surface="{{ $designSurface }}" @endif>
@@ -141,11 +140,7 @@
 </head>
 
 {{-- TODO: something injects margin-bottom of 8px --}}
-{{-- Public and admin paint from their surface tokens; pages on neither keep the zinc canvas.
-     The font is set here rather than only on the layout's root div because
-     Reka teleports popovers, dialogs and dropdowns to <body> — outside that div, they otherwise
-     fall back to the default sans instead of the surface's typeface. --}}
-<body class="antialiased @if ($designSurface) font-public bg-background text-foreground @else font-sans bg-zinc-50 dark:bg-zinc-900 @endif" style="margin-bottom: 0px; padding-bottom: env(safe-area-inset-bottom, 0px);">
+<body class="antialiased font-public bg-background text-foreground" style="margin-bottom: 0px; padding-bottom: env(safe-area-inset-bottom, 0px);">
     @inertia
 
     @include('turtle-loader')

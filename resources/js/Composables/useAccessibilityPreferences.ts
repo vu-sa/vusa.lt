@@ -2,11 +2,8 @@ import { computed, watch } from 'vue';
 import { useStorage } from '@vueuse/core';
 
 /**
- * Reader preferences for the public site: text size, high contrast, forced link underlines.
- *
- * The CSS they drive lives in `resources/css/app.css`
- * (the "Accessibility preferences" block) and is scoped to `html[data-surface="public"]`, so the
- * admin interface — which sets its own root font size — is unaffected.
+ * Reader preferences: text size, high contrast, forced link underlines. The CSS they drive is
+ * the "Accessibility preferences" block in `resources/css/public/surface.css`, applied on every page.
  *
  * State is module-level rather than per-component: the header menu and the mobile drawer both
  * render a control, and two independent copies would disagree about what is currently on.

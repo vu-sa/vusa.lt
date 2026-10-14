@@ -16,8 +16,8 @@ selected from the toolbar. The decorator in `preview.ts` stamps `data-surface` a
 preview iframe's `<html>`, mirroring `app.blade.php` and the FOUC script in production, so a story
 resolves the same design tokens the real page does.
 
-Surface defaults to `public`. An admin component must pin it, or it renders against the wrong
-palette:
+The palette is shared; the surface only switches the few rules that differ (public prose colour,
+admin table numerals). Surface defaults to `public`; an admin component should pin it:
 
 ```typescript
 const meta: Meta<typeof AdminThing> = {
@@ -27,8 +27,7 @@ const meta: Meta<typeof AdminThing> = {
 ```
 
 Colours must come from tokens (`bg-card`, `text-muted-foreground`, `border-border`, `text-brand`)
-for the toolbar to mean anything — a hardcoded `bg-white dark:bg-zinc-900` looks identical on both
-surfaces and defeats the check.
+for the Theme toolbar to mean anything — a hardcoded `bg-white dark:bg-zinc-900` ignores the palette.
 
 **`--brand`, not `--accent`.** `--accent` is shadcn's hover/muted surface (`hover:bg-accent` on
 ghost buttons, `focus:bg-accent` on dropdown items). The VU SA brand colour — red on light, amber

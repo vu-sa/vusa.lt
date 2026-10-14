@@ -82,7 +82,6 @@
         </button>
         <PopoverContent
           v-if="hotspots.isPopoverOpen(overlayHotspotId)"
-          data-surface="public"
           class="max-h-[calc(100dvh-2rem)] w-[min(32rem,calc(100vw-2rem))] overflow-y-auto"
           @close-auto-focus.prevent
         >
@@ -176,7 +175,6 @@
         </button>
         <PopoverContent
           v-if="hotspots.isPopoverOpen(decorationsHotspotId)"
-          data-surface="public"
           class="max-h-[calc(100dvh-2rem)] w-[min(32rem,calc(100vw-2rem))] overflow-y-auto"
           @close-auto-focus.prevent
         >
@@ -190,7 +188,6 @@
     <PopoverAnchor :reference="imageSpotlightRef ?? rootRef ?? undefined" />
     <PopoverContent
       v-if="hotspots.isPopoverOpen(imageHotspotId)"
-      data-surface="public"
       class="max-h-[calc(100dvh-2rem)] w-[min(32rem,calc(100vw-2rem))] overflow-y-auto"
       @close-auto-focus.prevent
     >
