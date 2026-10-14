@@ -22,7 +22,7 @@ function resolveAppUrl(): string {
 }
 
 export const appUrl = resolveAppUrl()
-export const siteUrl = `${appUrl}/docs`
+export const siteUrl = `${appUrl}/gidas`
 
 /** `/rezervacijos/` and `/rezervacijos/index` are the same page. */
 export function normaliseLink(link: string): string {

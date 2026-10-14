@@ -44,6 +44,6 @@ describe('AccessDenied', () => {
   it('links to the permissions guide', () => {
     const wrapper = createWrapper();
 
-    expect(wrapper.find('a[href="/docs/pagrindai/teises"]').exists()).toBe(true);
+    expect(wrapper.find('a[href="/gidas/pagrindai/teises"]').exists()).toBe(true);
   });
 });

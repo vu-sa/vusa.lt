@@ -15,7 +15,7 @@ const latestChangelog = ref('v2')
 
 onMounted(async () => {
   try {
-    const res = await fetch('/docs/changelog-meta.json')
+    const res = await fetch('/gidas/changelog-meta.json')
     if (res.ok) {
       const meta = await res.json()
       lastUpdated.value = meta.lastUpdated
@@ -47,11 +47,11 @@ onMounted(async () => {
           <span class="update-icon">🔄</span>
           <span v-if="lang === 'lt'">
             Versija <strong>{{ latestVersion }}</strong> · {{ lastUpdated }} —
-            <a :href="`/docs/changelog/${latestChangelog}`">Peržiūrėti visus atnaujinimus →</a>
+            <a :href="`/gidas/changelog/${latestChangelog}`">Peržiūrėti visus atnaujinimus →</a>
           </span>
           <span v-else>
             Version <strong>{{ latestVersion }}</strong> · {{ lastUpdated }} —
-            <a :href="`/docs/en/changelog/${latestChangelog}`">View all updates →</a>
+            <a :href="`/gidas/en/changelog/${latestChangelog}`">View all updates →</a>
           </span>
         </div>
       </div>

@@ -21,8 +21,8 @@ export default {
       { text: 'Gidas', link: '/darbai', activeMatch: '^/(?!changelog|kurejams)' },
       { text: 'Kūrėjams', link: '/kurejams/', activeMatch: '/kurejams/' },
       { text: 'Atnaujinimai', link: '/changelog/v3', activeMatch: '/changelog/' },
-      // A file, not a page: VitePress adds the `/docs/` base only to page links.
-      { text: 'PDF', link: `/docs/${pdfFileName}`, target: '_blank' },
+      // A file, not a page: VitePress adds the `/gidas/` base only to page links.
+      { text: 'PDF', link: `/gidas/${pdfFileName}`, target: '_blank' },
     ],
 
     sidebar: [

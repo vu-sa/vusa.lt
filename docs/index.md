@@ -14,7 +14,7 @@ hero:
       link: /ivadas
     - theme: alt
       text: Atsisiųsti PDF
-      link: /docs/vusa-lt-gidas.pdf
+      link: /gidas/vusa-lt-gidas.pdf
       target: _blank
     - theme: alt
       text: Atnaujinimai

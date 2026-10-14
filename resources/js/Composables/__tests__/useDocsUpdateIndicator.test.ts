@@ -42,7 +42,7 @@ describe('useDocsUpdateIndicator', () => {
 
     const { changelogHref, latestVersion } = await mountIndicator('en');
 
-    expect(changelogHref.value).toBe('/docs/en/changelog/v3');
+    expect(changelogHref.value).toBe('/gidas/en/changelog/v3');
     expect(latestVersion.value).toBe('v3.1');
   });
 
@@ -51,7 +51,7 @@ describe('useDocsUpdateIndicator', () => {
 
     const { changelogHref } = await mountIndicator(locale);
 
-    expect(changelogHref.value).toBe(`/docs/${locale === 'en' ? 'en/' : ''}changelog/v3`);
+    expect(changelogHref.value).toBe(`/gidas/${locale === 'en' ? 'en/' : ''}changelog/v3`);
   });
 
   test('uses the v3 fallback when older metadata omits the changelog page', async () => {
@@ -62,6 +62,6 @@ describe('useDocsUpdateIndicator', () => {
 
     const { changelogHref } = await mountIndicator('lt');
 
-    expect(changelogHref.value).toBe('/docs/changelog/v3');
+    expect(changelogHref.value).toBe('/gidas/changelog/v3');
   });
 });

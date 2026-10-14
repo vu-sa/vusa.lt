@@ -21,7 +21,7 @@ export const FirstUseTeaching: Story = {
     description: 'Užfiksuok savo institucijos posėdį, kad repai galėtų sužinoti darbotvarkę ir balsavimo rezultatus.',
     actionLabel: 'Naujas posėdis',
     docsLabel: 'Kaip pildyti posėdžio duomenis?',
-    docsHref: 'https://vusa.lt/docs/posedziai',
+    docsHref: 'https://vusa.lt/gidas/posedziai',
   },
 };
 

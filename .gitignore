@@ -38,6 +38,7 @@ public/hot
 # === Public uploads & docs ===
 public/uploads
 public/docs
+public/gidas
 
 # === Public aliases ===
 public/chgf

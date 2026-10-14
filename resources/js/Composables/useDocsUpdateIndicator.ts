@@ -11,7 +11,7 @@ const DEFAULT_CHANGELOG = 'v3';
 /**
  * Tracks whether there are unseen documentation/platform updates.
  *
- * Fetches `/docs/changelog-meta.json` (generated at docs build time)
+ * Fetches `/gidas/changelog-meta.json` (generated at docs build time)
  * and compares `lastUpdated` with a localStorage timestamp to show
  * an indicator badge next to the documentation link in the admin sidebar.
  */
@@ -27,7 +27,7 @@ export function useDocsUpdateIndicator() {
 
   onMounted(async () => {
     try {
-      const response = await fetch('/docs/changelog-meta.json');
+      const response = await fetch('/gidas/changelog-meta.json');
 
       if (!response.ok) return;
 
