@@ -5,7 +5,7 @@
      (resources/css/admin/surface.css, public prose colour). Resolved once server-side so this
      attribute and the public-only @head/Umami checks below agree. --}}
 @php($designSurface = \App\Support\DesignSurface::for($page['component'] ?? null))
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark-mode-init"
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}"
     @if ($designSurface) data-surface="{{ $designSurface }}" @endif>
 
 <head>
@@ -62,8 +62,9 @@
 
     @include('meta-icons')
 
-    {{-- Dark mode initialization script - MUST be before any CSS to prevent flash --}}
-    <script>
+    {{-- Dark mode initialization script - MUST be before any CSS to prevent flash. data-cfasync
+         keeps Cloudflare Rocket Loader from deferring it past the first (SSR) paint. --}}
+    <script data-cfasync="false">
         (function() {
             let savedTheme = localStorage.getItem('vueuse-color-scheme');
 
@@ -79,16 +80,13 @@
             }
 
             document.getElementById('theme-color').content = isDark ? '#252528' : '#ffffff';
-
-            // Remove initialization class to allow normal operation
-            document.documentElement.classList.remove('dark-mode-init');
         })();
     </script>
 
     {{-- MSAL v5 popup redirect bridge - must run before app boots --}}
     {{-- When MSAL loginPopup() redirects back, this broadcasts the auth code --}}
     {{-- via BroadcastChannel and closes the popup before the SPA loads --}}
-    <script>
+    <script data-cfasync="false">
         (function() {
             var hash = window.location.hash;
             if (hash && hash.indexOf('state=') > -1) {

@@ -144,13 +144,3 @@
 html.dark {
   color-scheme: dark;
 }
-
-/* Prevent flash during dark mode initialization */
-html.dark-mode-init {
-  /* Use system preference for initial render */
-  @media (prefers-color-scheme: dark) {
-    --background: oklch(0.135 0.004 70);
-    --foreground: oklch(0.955 0.004 85);
-    color-scheme: dark;
-  }
-}
