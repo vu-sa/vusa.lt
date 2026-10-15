@@ -31,8 +31,8 @@ final class BuildUserIndexQuery
                 'duties.institution:id,name,short_name,tenant_id',
                 'duties.institution.tenant:id,shortname',
             ])->withCount('duties')
-            ->withCount(['duties as current_duties_count' => fn (Builder $duties) => self::inOffice($duties)])
-            ->withExists(['duties as is_current' => fn (Builder $duties) => self::inOffice($duties)])
+            ->withCount(['duties as current_duties_count' => self::inOffice(...)])
+            ->withExists(['duties as is_current' => self::inOffice(...)])
             ->withMax('duties as last_term_end', 'dutiables.end_date');
 
         // "Former" means a duty history with nothing in force; role-only accounts are neither.

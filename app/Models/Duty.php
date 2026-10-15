@@ -47,7 +47,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $email Commonly the @vusa.lt email address, which is used as the OAuth login. Personal mail is stored in users.email.
  * @property string $contacts_grouping
  * @property int|null $places_to_occupy Full number of positions to occupy for this duty
- * @property bool $is_active An inactive duty keeps its history but is no longer offered for new assignments
+ * @property bool $is_active
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -61,10 +61,8 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $exOfficioSourceDuties
  * @property-read Collection<int, Duty> $exOfficioTargetDuties
- * @property-read Collection<int, DutyName> $formerNames
- * @property-read Collection<int, Duty> $predecessors
- * @property-read Collection<int, Duty> $successors
  * @property-read Collection<int, FileableFile> $fileableFiles
+ * @property-read Collection<int, DutyName> $formerNames
  * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol
  * @property-read bool $has_report
@@ -74,12 +72,14 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Meeting> $meetings
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read Collection<int, Permission> $permissions
+ * @property-read Collection<int, Duty> $predecessors
  * @property-read Collection<int, User> $previous_users
  * @property-read Collection<int, Reservation> $reservations
  * @property-read Collection<int, \App\Models\Resource> $resources
  * @property-read Collection<int, DutyResponsibility> $responsibilities
  * @property-read Collection<int, Role> $roles
  * @property-read Collection<int, Comment> $rootComments
+ * @property-read Collection<int, Duty> $successors
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Permission> $teams
  * @property-read Collection<int, Tenant> $tenants

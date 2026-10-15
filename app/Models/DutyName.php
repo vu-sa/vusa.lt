@@ -16,13 +16,22 @@ use Illuminate\Support\Carbon;
  *
  * @property string $id
  * @property string $duty_id
- * @property array|string|null $name
+ * @property array|string $name
  * @property Carbon $used_until
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Duty $duty
+ * @property-read Duty|null $duty
+ * @property-read array $translatable_columns_from
+ * @property-read mixed $translations
  *
  * @method static \Database\Factories\DutyNameFactory factory($count = null, $state = [])
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyName newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyName newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyName query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyName whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyName whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyName whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyName whereLocales(string $column, array $locales)
  *
  * @mixin \Eloquent
  */
