@@ -101,10 +101,6 @@ describe('UserForm.vue', () => {
       wrapper = mountForm();
 
       expect(wrapper.find('[data-testid="form-page"]').attributes('data-mode')).toBe('edit');
-      expect(wrapper.findAll('[data-section]').map(section => section.attributes('data-section'))).toEqual([
-        'Kas tai?',
-        'Kaip su juo susisiekti?',
-      ]);
       expect(wrapper.findAll('[data-panel]').map(panel => panel.attributes('data-panel'))).toEqual([
         'Kreipinys ir įvardžiai',
       ]);

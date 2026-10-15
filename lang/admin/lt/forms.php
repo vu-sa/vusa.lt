@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'required_note' => 'Žvaigždute (*) pažymėti laukai yra privalomi; kitus gali praleisti.',
     'fields' => [
         'name_and_surname' => 'Vardas ir pavardė',
         'title' => 'Pavadinimas',

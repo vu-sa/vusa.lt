@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'form' => [
+        'name_hint' => 'Esamų vardų ir pavardžių keisti negalima — kitam asmeniui sukurk naują narį.',
+        'contacts_hint' => 'Turinčio pareigybę nario nuotrauka ir kontaktai matomi vusa.lt.',
+    ],
     'name_locked' => 'Vardą ir pavardę gali keisti tik sistemos administratoriai arba naudotojas, vieną kartą.',
     'identity_locked_tenants' => 'El. pašto keisti negali: šis asmuo priklauso ir kitiems padaliniams (:tenants). Kreipkis į vusa.lt pagalbą.',
     'identity_locked_protected' => 'El. pašto keisti negali: šios paskyros rolė priskirta tiesiogiai. Kreipkis į centrinio biuro administratorius.',

@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'required_note' => 'Fields marked with an asterisk (*) are required; you can skip the others.',
     'fields' => [
         'name_and_surname' => 'Name and surname',
         'title' => 'Title',

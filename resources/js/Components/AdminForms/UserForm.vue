@@ -18,13 +18,15 @@
     :updated-at="user?.updated_at"
     @submit="emit('submit:form', form)"
   >
-    <FormSection
-      :title="$t('Kas tai?')"
-      :description="$t('Dažniausiai tai studentas, VU SA narys. Naudotojai iš vusa.lt/mano netrinami, o esamų vardų pavardžių keisti negalima.')"
-    >
+    <p class="max-w-prose border-l border-border pl-3 text-sm leading-relaxed text-muted-foreground">
+      {{ $t('forms.required_note') }}
+    </p>
+
+    <div class="space-y-4">
       <FormFieldWrapper
         id="user-name"
         :label="$t('forms.fields.name_and_surname')"
+        :hint="$t('users.form.name_hint')"
         required
         :error="form.errors.name"
       >
@@ -76,18 +78,13 @@
           </ul>
         </div>
       </FormFieldWrapper>
-    </FormSection>
+    </div>
 
-    <FormSection
-      :title="$t('Kaip su juo susisiekti?')"
-      :description="$t('Nuotrauka ir kontaktai rodomi viešame vusa.lt puslapyje, kai asmuo turi pareigybę.')"
-      :badge="$t('Matoma vusa.lt')"
-      public-marker
-    >
+    <div class="space-y-4">
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <FormFieldWrapper
           id="user-phone"
-          :label="`${$t('forms.fields.phone')} (${$t('neprivaloma')})`"
+          :label="$t('forms.fields.phone')"
           :error="form.errors.phone"
         >
           <Input id="user-phone" v-model="form.phone" placeholder="+370 612 34 567" />
@@ -95,7 +92,7 @@
 
         <FormFieldWrapper
           id="user-facebook"
-          :label="`${$t('forms.fields.facebook_url')} (${$t('neprivaloma')})`"
+          :label="$t('forms.fields.facebook_url')"
           :error="form.errors.facebook_url"
         >
           <Input id="user-facebook" v-model="form.facebook_url" placeholder="https://www.facebook.com/..." />
@@ -104,7 +101,8 @@
 
       <FormFieldWrapper
         id="user-picture"
-        :label="`${$t('forms.fields.picture')} (${$t('neprivaloma')})`"
+        :label="$t('forms.fields.picture')"
+        :hint="$t('users.form.contacts_hint')"
       >
         <ImageUpload
           v-model:url="form.profile_photo_path"
@@ -117,7 +115,7 @@
           :existing-url="user?.profile_photo_path"
         />
       </FormFieldWrapper>
-    </FormSection>
+    </div>
 
     <template #aside>
       <FormPanel
@@ -166,7 +164,7 @@
       >
         <FormFieldWrapper
           id="user-pronouns"
-          :label="`${$t('forms.fields.pronouns')} (${$t('neprivaloma')})`"
+          :label="$t('forms.fields.pronouns')"
           :hint="$t('Nurodžius įvardį, pareigybės pavadinimo galūnė keičiasi automatiškai.')"
           :error="form.errors.pronouns || form.errors['pronouns.lt'] || form.errors['pronouns.en']"
         >
@@ -229,7 +227,6 @@ import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import { FormPanel } from '@/Components/Patterns';
-import FormSection from '@/Components/Patterns/FormSection.vue';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
@@ -248,10 +245,7 @@ const props = withDefaults(defineProps<{
   permissableTenants?: App.Entities.Tenant[];
   /** Create mode when set: keeps the draft across a failed submit. */
   rememberKey?: 'CreateUser';
-  /**
-   * Whether the acting admin may change this person's login email. Existing names
-   * are independently restricted to super administrators.
-   */
+  /** Name changes remain independently restricted to super administrators. */
   canUpdateIdentity?: boolean;
 }>(), {
   roles: () => [],
@@ -267,8 +261,7 @@ const isSuperAdmin = computed(() => usePage().props.auth?.user?.isSuperAdmin ?? 
 
 const userTitle = computed(() => form.name || props.user.name);
 
-// Duties and roles of an existing person are edited on the record, so only the fields the form
-// owns are sent; a create adds the first duties (and, for a super admin, roles).
+// Existing duties and roles are managed on the record.
 const initial = () => ({
   name: props.user.name ?? '',
   email: props.user.email ?? '',
