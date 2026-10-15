@@ -100,7 +100,7 @@ return [
         'institutions' => 'Institutions',
         'types' => 'Types',
         'institution' => 'Institution',
-        'contacts_grouping' => 'Contacts grouping',
+        'contacts_grouping' => 'Contacts ordering',
         'duty_type' => 'Duty type',
         'main_organizer' => 'Main organizer',
         'meeting_url' => 'Meeting link',

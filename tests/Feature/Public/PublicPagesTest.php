@@ -265,234 +265,142 @@ test('institution page with no grouping shows flat contacts', function (): void 
             ->component('Public/Contacts/ShowInstitution')
             ->has('institution')
             ->has('contacts', 2) // Should have 2 contacts flattened
-            ->missing('contactSections') // No sections for flat display
-            ->missing('hasMixedGrouping') // Not using mixed grouping
+            ->missing('contactSections')
         );
 });
 
-test('institution page with study program grouping shows grouped sections', function (): void {
-    $institution = Institution::factory()->create();
-    $tenant = Tenant::factory()->create();
-
-    // Create study programs
-    $studyProgram1 = StudyProgram::factory()->create([
-        'name' => 'Computer Science',
-        'tenant_id' => $tenant->id,
-    ]);
-
-    $studyProgram2 = StudyProgram::factory()->create([
-        'name' => 'Mathematics',
-        'tenant_id' => $tenant->id,
-    ]);
-
-    // Create duty with study program grouping
-    $duty = Duty::factory()->create([
-        'institution_id' => $institution->id,
-        'contacts_grouping' => 'study_program',
-        'name' => ['lt' => 'Studentų atstovai', 'en' => 'Student Representatives'],
-    ]);
-
-    // Create users
-    $user1 = User::factory()->create();
-    $user2 = User::factory()->create();
-    $user3 = User::factory()->create();
-
-    // Attach users to duty with study programs
-    $duty->users()->attach($user1, ['study_program_id' => $studyProgram1->id, 'start_date' => now()]);
-    $duty->users()->attach($user2, ['study_program_id' => $studyProgram1->id, 'start_date' => now()]);
-    $duty->users()->attach($user3, ['study_program_id' => $studyProgram2->id, 'start_date' => now()]);
-
-    $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
-        ->assertInertia(fn (Assert $page) => $page
-            ->component('Public/Contacts/ShowInstitution')
-            ->has('institution')
-            ->missing('contacts') // No flat contacts
-            ->has('contactSections', 1) // One duty section
-            ->where('hasMixedGrouping', true)
-            ->has('contactSections.0', fn (Assert $page) => $page
-                ->where('type', 'grouped_duty')
-                ->where('dutyName', 'Studentų atstovai') // Should get the Lithuanian translation
-                ->has('groups', 2) // Two study program groups
-                ->has('groups.0.contacts', 2) // First group has 2 contacts
-                ->has('groups.1.contacts', 1) // Second group has 1 contact
-            )
-        );
-});
-
-test('institution page with tenant grouping shows grouped sections', function (): void {
+test('a tenant-ordered duty shares one grid with the other duties and names the tenant on each card', function (): void {
     $owningTenant = Tenant::where('shortname', 'VU SA')->firstOrFail();
     $institution = Institution::factory()->create(['tenant_id' => $owningTenant->id]);
 
-    // Create tenants whose admins delegate members into this duty
-    $tenant1 = Tenant::factory()->create(['shortname' => 'VU CHGF']);
-    $tenant2 = Tenant::factory()->create(['shortname' => 'VU MIF']);
-
-    // Create duty with tenant grouping
-    $duty = Duty::factory()->create([
+    $chair = Duty::factory()->create([
+        'institution_id' => $institution->id,
+        'contacts_grouping' => 'none',
+        'name' => ['lt' => 'Parlamento pirmininkas', 'en' => 'Chair of Parliament'],
+        'order' => 0,
+    ]);
+    $member = Duty::factory()->create([
         'institution_id' => $institution->id,
         'contacts_grouping' => 'tenant',
-        'name' => ['lt' => 'Parlamento narys', 'en' => 'Parliament Member'],
+        'name' => ['lt' => 'Parlamento narys', 'en' => 'Member of Parliament'],
+        'order' => 1,
     ]);
 
-    // Create users
-    $user1 = User::factory()->create();
-    $user2 = User::factory()->create();
-    $user3 = User::factory()->create();
+    $mif = Tenant::factory()->create(['shortname' => 'VU MIF']);
+    $chgf = Tenant::factory()->create(['shortname' => 'VU CHGF']);
 
-    // Attach users: one owning-tenant member (tenant_id null), two cross-tenant reps
-    $duty->users()->attach($user1, ['tenant_id' => null, 'start_date' => now()]);
-    $duty->users()->attach($user2, ['tenant_id' => $tenant1->id, 'start_date' => now()]);
-    $duty->users()->attach($user3, ['tenant_id' => $tenant2->id, 'start_date' => now()]);
+    $chairUser = User::factory()->create();
+    $mifUser = User::factory()->create();
+    $chgfUser = User::factory()->create();
+    $ownUser = User::factory()->create();
+
+    $chair->users()->attach($chairUser, ['start_date' => now()]);
+    $member->users()->attach($mifUser, ['tenant_id' => $mif->id, 'start_date' => now()]);
+    $member->users()->attach($ownUser, ['tenant_id' => null, 'start_date' => now()]);
+    $member->users()->attach($chgfUser, ['tenant_id' => $chgf->id, 'start_date' => now()]);
 
     $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/Contacts/ShowInstitution')
-            ->has('institution')
-            ->missing('contacts')
-            ->has('contactSections', 1)
-            ->where('hasMixedGrouping', true)
-            ->has('contactSections.0', fn (Assert $page) => $page
-                ->where('type', 'grouped_duty')
-                ->where('dutyName', 'Parlamento narys')
-                ->has('groups', 3) // Owning tenant + two cross-tenant groups
-                ->where('groups.0.name', 'VU CHGF')
-                ->where('groups.1.name', 'VU MIF')
-                ->where('groups.2.name', $owningTenant->shortname)
-                ->has('groups.0.contacts', 1)
-                ->has('groups.1.contacts', 1)
-                ->has('groups.2.contacts', 1)
-            )
+            ->missing('contactSections')
+            ->has('contacts', 4)
+            ->where('contacts.0.id', $chairUser->id)
+            ->where('contacts.0.duties.0.contact_tenant', null)
+            ->where('contacts.1.id', $chgfUser->id)
+            ->where('contacts.1.duties.0.name', 'Parlamento narys')
+            ->where('contacts.1.duties.0.contact_tenant', 'VU CHGF')
+            ->where('contacts.2.duties.0.contact_tenant', 'VU MIF')
+            ->where('contacts.3.id', $ownUser->id)
+            ->where('contacts.3.duties.0.contact_tenant', $owningTenant->shortname)
         );
 });
 
-test('grouped duty without groupable data renders as flat section', function (): void {
+test('a study-program-ordered duty sorts by programme and puts it on the card', function (): void {
     $institution = Institution::factory()->create();
+    $tenant = Tenant::query()->first();
 
-    // Duty wants study program grouping, but members have no study programs attached
+    $mathematics = StudyProgram::factory()->create(['name' => 'Mathematics', 'tenant_id' => $tenant->id]);
+    $informatics = StudyProgram::factory()->create(['name' => 'Computer Science', 'tenant_id' => $tenant->id]);
+
     $duty = Duty::factory()->create([
         'institution_id' => $institution->id,
         'contacts_grouping' => 'study_program',
-        'name' => ['lt' => 'Studentų atstovai', 'en' => 'Student Representatives'],
+        'name' => ['lt' => 'Kuratorius', 'en' => 'Mentor'],
     ]);
 
-    $duty->users()->attach(User::factory()->create(), ['start_date' => now()]);
-    $duty->users()->attach(User::factory()->create(), ['start_date' => now()]);
+    $withoutProgram = User::factory()->create();
+    $mathematician = User::factory()->create();
+    $informatician = User::factory()->create();
+
+    $duty->users()->attach($withoutProgram, ['start_date' => now()]);
+    $duty->users()->attach($mathematician, ['study_program_id' => $mathematics->id, 'start_date' => now()]);
+    $duty->users()->attach($informatician, ['study_program_id' => $informatics->id, 'start_date' => now()]);
 
     $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Public/Contacts/ShowInstitution')
-            ->missing('contacts')
-            ->where('hasMixedGrouping', true)
-            ->has('contactSections', 1)
-            ->has('contactSections.0', fn (Assert $page) => $page
-                ->where('type', 'flat_duty')
-                ->where('dutyName', 'Studentų atstovai')
-                ->has('contacts', 2)
-                ->missing('groups')
-            )
+            ->has('contacts', 3)
+            ->where('contacts.0.id', $informatician->id)
+            ->where('contacts.0.duties.0.pivot.study_program.name', 'Computer Science')
+            ->where('contacts.0.duties.0.contact_tenant', null)
+            ->where('contacts.1.id', $mathematician->id)
+            ->where('contacts.2.id', $withoutProgram->id)
+            ->where('contacts.2.duties.0.pivot.study_program', null)
         );
 });
 
-test('institution page with mixed grouping shows both flat and grouped duties', function (): void {
+test('contacts follow duty order and a person with two duties gets one card', function (): void {
     $institution = Institution::factory()->create();
-    $tenant = Tenant::factory()->create();
 
-    $studyProgram = StudyProgram::factory()->create([
-        'tenant_id' => $tenant->id,
-    ]);
+    $second = Duty::factory()->create(['institution_id' => $institution->id, 'name' => ['lt' => 'Antras', 'en' => 'Second'], 'order' => 2]);
+    $first = Duty::factory()->create(['institution_id' => $institution->id, 'name' => ['lt' => 'Pirmas', 'en' => 'First'], 'order' => 1]);
 
-    // Create flat duty (no grouping)
-    $flatDuty = Duty::factory()->create([
-        'institution_id' => $institution->id,
-        'contacts_grouping' => 'none',
-        'name' => ['lt' => 'Pirmininkas', 'en' => 'President'],
-        'order' => 1,
-    ]);
+    $both = User::factory()->create();
+    $onlySecond = User::factory()->create();
 
-    // Create grouped duty
-    $groupedDuty = Duty::factory()->create([
-        'institution_id' => $institution->id,
-        'contacts_grouping' => 'study_program',
-        'name' => ['lt' => 'Studentų atstovai', 'en' => 'Student Representatives'],
-        'order' => 2,
-    ]);
-
-    // Create users
-    $user1 = User::factory()->create();
-    $user2 = User::factory()->create();
-    $user3 = User::factory()->create();
-
-    // Attach users
-    $flatDuty->users()->attach($user1, ['start_date' => now()]);
-    $groupedDuty->users()->attach($user2, ['study_program_id' => $studyProgram->id, 'start_date' => now()]);
-    $groupedDuty->users()->attach($user3, ['study_program_id' => $studyProgram->id, 'start_date' => now()]);
+    $second->users()->attach($onlySecond, ['start_date' => now()]);
+    $second->users()->attach($both, ['start_date' => now()]);
+    $first->users()->attach($both, ['start_date' => now()]);
 
     $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Public/Contacts/ShowInstitution')
-            ->has('institution')
-            ->missing('contacts')
-            ->has('contactSections', 2) // Two duty sections
-            ->where('hasMixedGrouping', true)
-            ->has('contactSections.0', fn (Assert $page) => $page
-                ->where('type', 'flat_duty')
-                ->where('dutyName', 'Pirmininkas')
-                ->has('contacts', 1)
-                ->missing('groups')
-            )
-            ->has('contactSections.1', fn (Assert $page) => $page
-                ->where('type', 'grouped_duty')
-                ->where('dutyName', 'Studentų atstovai')
-                ->has('groups', 1) // One study program group
-                ->has('groups.0.contacts', 2)
-                ->missing('contacts')
-            )
+            ->has('contacts', 2)
+            ->where('contacts.0.id', $both->id)
+            ->has('contacts.0.duties', 2)
+            ->where('contacts.0.duties.0.name', 'Pirmas')
+            ->where('contacts.0.duties.1.name', 'Antras')
+            ->where('contacts.1.id', $onlySecond->id)
         );
 });
 
-test('duty grouping respects duty order within institution', function (): void {
-    $institution = Institution::factory()->create();
-    $tenant = Tenant::factory()->create();
+test('a padalinys lists coordinators before curators regardless of duty order', function (): void {
+    $tenant = Tenant::factory()->create(['type' => TenantType::Padalinys]);
+    $institution = Institution::factory()->create(['tenant_id' => $tenant->id]);
 
-    $studyProgram = StudyProgram::factory()->create([
-        'tenant_id' => $tenant->id,
-    ]);
+    $coordinators = DutyType::where('slug', 'koordinatoriai')->first()
+        ?? DutyType::factory()->create(['slug' => 'koordinatoriai', 'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
+    $curators = DutyType::where('slug', 'kuratoriai')->first()
+        ?? DutyType::factory()->create(['slug' => 'kuratoriai', 'title' => ['lt' => 'Kuratoriai', 'en' => 'Mentors']]);
 
-    // Create duties with specific order - mix of grouped and flat to trigger contactSections
-    $duty3 = Duty::factory()->create([
-        'institution_id' => $institution->id,
-        'contacts_grouping' => 'none',
-        'name' => ['lt' => 'Trečias', 'en' => 'Third'],
-        'order' => 3,
-    ]);
+    $curatorDuty = Duty::factory()->create(['institution_id' => $institution->id, 'order' => 0]);
+    $curatorDuty->types()->attach($curators);
+    $otherDuty = Duty::factory()->create(['institution_id' => $institution->id, 'order' => 1]);
+    $coordinatorDuty = Duty::factory()->create(['institution_id' => $institution->id, 'order' => 5]);
+    $coordinatorDuty->types()->attach($coordinators);
 
-    $duty1 = Duty::factory()->create([
-        'institution_id' => $institution->id,
-        'contacts_grouping' => 'study_program', // Make this one grouped
-        'name' => ['lt' => 'Pirmas', 'en' => 'First'],
-        'order' => 1,
-    ]);
+    $curator = User::factory()->create();
+    $other = User::factory()->create();
+    $coordinator = User::factory()->create();
 
-    $duty2 = Duty::factory()->create([
-        'institution_id' => $institution->id,
-        'contacts_grouping' => 'none',
-        'name' => ['lt' => 'Antras', 'en' => 'Second'],
-        'order' => 2,
-    ]);
-
-    // Create users for duties
-    $duty1->users()->attach(User::factory()->create(), ['study_program_id' => $studyProgram->id, 'start_date' => now()]);
-    $duty2->users()->attach(User::factory()->create(), ['start_date' => now()]);
-    $duty3->users()->attach(User::factory()->create(), ['start_date' => now()]);
+    $curatorDuty->users()->attach($curator, ['start_date' => now()]);
+    $otherDuty->users()->attach($other, ['start_date' => now()]);
+    $coordinatorDuty->users()->attach($coordinator, ['start_date' => now()]);
 
     $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Public/Contacts/ShowInstitution')
-            ->has('contactSections', 3)
-            ->where('hasMixedGrouping', true)
-            ->where('contactSections.0.dutyName', 'Pirmas') // First by order
-            ->where('contactSections.1.dutyName', 'Antras') // Second by order
-            ->where('contactSections.2.dutyName', 'Trečias') // Third by order
+            ->has('contacts', 3)
+            ->where('contacts.0.id', $coordinator->id)
+            ->where('contacts.1.id', $curator->id)
+            ->where('contacts.2.id', $other->id)
         );
 });
 
@@ -526,7 +434,7 @@ test('feedback requires a non-null message', function (): void {
     Mail::assertNotQueued(FeedbackMail::class);
 });
 
-test('duty type contacts page with grouping shows grouped sections', function (): void {
+test('duty type contacts page shows a study-program-ordered duty as one grid', function (): void {
     // Find or create the central institution that's used by duty type contacts
     $institution = Institution::where('alias', 'centrinis-biuras')->first();
     if (! $institution) {
@@ -579,9 +487,9 @@ test('duty type contacts page with grouping shows grouped sections', function ()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/Contacts/ShowInstitution')
             ->has('institution')
-            ->missing('contacts') // No flat contacts
-            ->has('contactSections') // Has contact sections
-            ->where('hasMixedGrouping', true)
+            ->has('contacts', 3)
+            ->where('contacts.0.duties.0.pivot.study_program.name', 'Computer Science')
+            ->missing('contactSections')
         );
 });
 
@@ -618,7 +526,6 @@ test('duty type contacts page handles both grouped and flat duties correctly', f
         ->assertInertia(fn (Assert $page) => $page
             ->component('Public/Contacts/ShowInstitution')
             ->has('institution')
-            // Should have either contacts (flat mode) or contactSections (mixed mode)
-            ->etc()
+            ->has('contacts', 1)
         );
 });

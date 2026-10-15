@@ -68,6 +68,16 @@ describe('ContactWithPhoto', () => {
     wrapper.unmount();
   });
 
+  it('names the represented tenant next to the inflected duty', () => {
+    wrapper = mountCard(makeContact({ pronouns: 'ji / jos' }), [
+      makeDuty({ name: 'Parlamento narys', contact_tenant: 'VU SA MIF' }),
+    ]);
+
+    expect(wrapper.find('[data-testid="contact-duty-tenant"]').text()).toBe('· VU SA MIF');
+    expect(wrapper.text()).toContain('Parlamento narė');
+    wrapper.unmount();
+  });
+
   it('falls back to the other locale’s pronouns before guessing from the name', () => {
     wrapper = mountCard(makeContact({
       name: 'Jonas Jonaitis', pronouns: '', duty_pronouns: { lt: '', en: 'she / her' },

@@ -3,13 +3,14 @@ doc_status: reviewed
 title: Pareigybės
 area: duties
 models: [Duty, Role, Tenant, Type, Institution, DutyResponsibility]
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-16
 tests:
   - tests/Browser/PostCreateNavigationTest.php
   - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
   - resources/js/Utils/__tests__/String.test.ts
   - resources/js/Features/Admin/DutiableTimeline/__tests__/dutyNames.test.ts
   - tests/Feature/Public/ContactEagerLoadingTest.php
+  - tests/Feature/Public/PublicPagesTest.php
   - resources/js/Components/Public/__tests__/ContactWithPhoto.component.test.ts
   - tests/Feature/Search/ContactSearchIndexSyncTest.php
   - tests/Browser/DutyNamePresentationTest.php
@@ -301,8 +302,11 @@ viršuje (`/mano/duties/create`):
   prie Office 365.
 - **Vietų skaičius** – numatytas narių skaičius (pagal nutylėjimą 1).
 - **Tipai ir rolės** – pažymimi tinkami tipai ir, jei reikia, specifinės administratoriaus rolės.
-- **Kontaktų grupavimas** – kaip nariai rodomi kontaktuose (be grupavimo, pagal studijų programą ar
-  pagal padalinį).
+- **Kontaktų rikiavimas** – kaip pareigybės nariai išrikiuojami viešuose kontaktuose. Visi institucijos
+  kontaktai rodomi viename sąraše, o pareigybė nurodoma žmogaus kortelėje. „Pagal padalinį“ narius
+  rikiuoja pagal atstovaujamą padalinį ir nurodo jį šalia pareigybės (pvz., „Parlamento narė · VU SA MIF“),
+  „Pagal studijų programą“ – pagal programą, kuri taip pat rodoma kortelėje. Padalinio kontaktuose
+  pirmiausia rodomi koordinatoriai, tada kuratoriai, tada kiti.
 
 Redagavimas pasiekiamas pareigybės puslapyje per **⋯ → Redaguoti pareigybę** (`/mano/duties/{id}/edit`).
 Redaguojant papildomai rodoma:

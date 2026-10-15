@@ -101,6 +101,6 @@ test('public contacts preserve cross-locale pronouns and the assignment name ove
     );
 })->with([
     'ungrouped' => ['none', 'contacts.0'],
-    'grouped by tenant' => ['tenant', 'contactSections.0.groups.0.contacts.0'],
-    'group fallback' => ['study_program', 'contactSections.0.contacts.0'],
+    'ordered by tenant' => ['tenant', 'contacts.0'],
+    'ordered by study program' => ['study_program', 'contacts.0'],
 ]);

@@ -11,7 +11,6 @@ use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Tenant;
-use App\Models\User;
 use App\Services\AgendaItemPresenter;
 use App\Services\ContactPresentationService;
 use App\Services\PublicAssetService;
@@ -95,33 +94,14 @@ class ContactController extends PublicController
 
         $this->sharePublicEditLink($institution);
 
-        $duties = $institution->load('duties.current_users.current_duties')->duties->sortBy(fn ($duty) => $duty->order);
+        $duties = $institution->duties()->with(['current_users', 'types'])->get();
 
-        // Process duties in order and group/flatten as needed
-        $allContacts = collect();
-        $hasGroupedDuties = false;
-
-        foreach ($duties as $duty) {
-            // Check if this duty should be grouped
-            if ($duty->contacts_grouping && $duty->contacts_grouping !== 'none') {
-                $hasGroupedDuties = true;
-                break;
-            }
-        }
-
-        if ($hasGroupedDuties) {
-            $processedContacts = $this->presentationService->processDutiesWithGrouping($duties);
-
-            return $this->renderInstitutionPage($institution, $processedContacts, $institution->name.' | Kontaktai', hasMixedGrouping: true, activeDutyTypeTab: 'all');
-        }
-
-        // Default behavior - flatten and deduplicate all duties
-        $contacts = $duties->pluck('current_users')->flatten()->unique('id')->values();
-
-        // make eloquent collection from array
-        $contacts = new Collection($contacts);
-
-        return $this->renderInstitutionPage($institution, $contacts, $institution->name.' | Kontaktai', activeDutyTypeTab: 'all');
+        return $this->renderInstitutionPage(
+            $institution,
+            $this->presentationService->contactsFor($institution, $duties),
+            $institution->name.' | Kontaktai',
+            activeDutyTypeTab: 'all',
+        );
     }
 
     public function institutionDutyTypeContacts($subdomain, $lang, $contactsString, DutyType $type)
@@ -148,46 +128,17 @@ class ContactController extends PublicController
         // Load types for breadcrumb navigation
         $institution->load('types');
 
-        // load duties whereHas types
-        $duties = $institution->load(['duties' => function ($query) use ($types): void {
-            $query->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id')))->with('current_users.current_duties.types');
-        }])->duties->sortBy(fn ($duty) => $duty->order);
+        $duties = $institution->duties()
+            ->whereHas('types', fn (Builder $query) => $query->whereIn('id', $types->pluck('id')))
+            ->with(['current_users', 'types'])
+            ->get();
 
-        // Process duties in order and group/flatten as needed
-        $hasGroupedDuties = false;
-
-        foreach ($duties as $duty) {
-            // Check if this duty should be grouped
-            if ($duty->contacts_grouping && $duty->contacts_grouping !== 'none') {
-                $hasGroupedDuties = true;
-                break;
-            }
-        }
-
-        if ($hasGroupedDuties) {
-            $processedContacts = $this->presentationService->processDutiesWithGrouping($duties);
-
-            // Filter processed contacts to only show duties related to the selected types
-            $processedContacts = $this->presentationService->filterProcessedContactsByTypes($processedContacts, $types);
-
-            return $this->renderInstitutionPage($institution, $processedContacts, $institution->name.' | '.ucfirst($type->slug), hasMixedGrouping: true, activeDutyTypeTab: $type->slug);
-        }
-
-        // Default behavior - flatten and deduplicate all duties
-        $contacts = $duties->pluck('current_users')->flatten()->unique('id');
-
-        // keep all contacts, but remove some duties from them, if they are not in the selected types
-        $contacts = $contacts->map(function ($contact) use ($types) {
-            // You can't overwrite the relations, so we need to use another name
-            $contact->filtered_current_duties = $contact->current_duties->filter(fn ($duty) => $duty->types->intersect($types)->count() > 0);
-
-            return $contact;
-        });
-
-        // make eloquent collection from array
-        $contacts = new Collection($contacts);
-
-        return $this->renderInstitutionPage($institution, $contacts, $institution->name.' | '.ucfirst($type->slug), activeDutyTypeTab: $type->slug);
+        return $this->renderInstitutionPage(
+            $institution,
+            $this->presentationService->contactsFor($institution, $duties),
+            $institution->name.' | '.ucfirst($type->slug),
+            activeDutyTypeTab: $type->slug,
+        );
     }
 
     public function studentRepresentatives()
@@ -226,13 +177,12 @@ class ContactController extends PublicController
     }
 
     /**
-     * Render institution page with contacts (flat or grouped)
+     * @param  list<array<string, mixed>>  $contacts  from ContactPresentationService::contactsFor()
      */
     private function renderInstitutionPage(
         Institution $institution,
-        Collection|array $contacts,
+        array $contacts,
         string $title,
-        bool $hasMixedGrouping = false,
         ?string $activeDutyTypeTab = 'all'
     ) {
         $institution->loadMissing('tenant');
@@ -299,99 +249,10 @@ class ContactController extends PublicController
             'studentRepFormInfo' => $this->getStudentRepFormInfo($institution),
             'dutyTypeTabs' => $dutyTypeTabs,
             'activeDutyTypeTab' => $activeDutyTypeTab,
+            'contacts' => $contacts,
         ];
 
-        if ($hasMixedGrouping) {
-            // Transform processed contacts for frontend
-            $data['contactSections'] = $this->transformContactSections($contacts);
-            $data['hasMixedGrouping'] = true;
-        } else {
-            // Map flat contacts
-            $data['contacts'] = $contacts->map(function ($contact) use ($institution) {
-                /** @var User $contact */
-                return [
-                    'id' => $contact->id,
-                    'name' => $contact->name,
-                    'email' => $contact->email,
-                    'phone' => $contact->phone,
-                    'facebook_url' => $contact->facebook_url,
-                    'duties' => isset($contact->filtered_current_duties)
-                        ? $contact->filtered_current_duties->where('institution_id', '=', $institution->id)->values()
-                        : $contact->current_duties->where('institution_id', '=', $institution->id)->values(),
-                    'profile_photo_path' => $contact->profile_photo_path,
-                    'profile_photo_focal_point' => $contact->profile_photo_focal_point,
-                    'pronouns' => $contact->pronouns,
-                    'duty_pronouns' => $contact->getTranslations('pronouns'),
-                    'show_pronouns' => $contact->show_pronouns,
-                ];
-            })->values();
-        }
-
         return Inertia::render('Public/Contacts/ShowInstitution', $data);
-    }
-
-    /**
-     * Transform processed contact sections for frontend
-     */
-    private function transformContactSections(array $processedContacts): array
-    {
-        $transformedSections = [];
-
-        foreach ($processedContacts as $section) {
-            if ($section['type'] === 'grouped_duty') {
-                $transformedGroups = [];
-                foreach ($section['groups'] as $group) {
-                    $transformedGroups[] = [
-                        'name' => $group['name'],
-                        'contacts' => collect($group['contacts'])->map(fn ($item) => [
-                            'id' => $item['user']->id,
-                            'name' => $item['user']->name,
-                            'email' => $item['user']->email,
-                            'phone' => $item['user']->phone,
-                            'facebook_url' => $item['user']->facebook_url,
-                            'duties' => [[
-                                ...$item['duty']->only(['id', 'name', 'description']),
-                                'pivot' => ['use_original_duty_name' => (bool) $item['user']->pivot?->use_original_duty_name],
-                            ]],
-                            'profile_photo_path' => $item['user']->profile_photo_path,
-                            'profile_photo_focal_point' => $item['user']->profile_photo_focal_point,
-                            'pronouns' => $item['user']->pronouns,
-                            'duty_pronouns' => $item['user']->getTranslations('pronouns'),
-                            'show_pronouns' => $item['user']->show_pronouns,
-                        ])->values()->toArray(),
-                    ];
-                }
-
-                $transformedSections[] = [
-                    'type' => 'grouped_duty',
-                    'dutyName' => $section['duty']->name,
-                    'groups' => $transformedGroups,
-                ];
-            } else {
-                $transformedSections[] = [
-                    'type' => 'flat_duty',
-                    'dutyName' => $section['duty']->name,
-                    'contacts' => collect($section['contacts'])->map(fn ($item) => [
-                        'id' => $item['user']->id,
-                        'name' => $item['user']->name,
-                        'email' => $item['user']->email,
-                        'phone' => $item['user']->phone,
-                        'facebook_url' => $item['user']->facebook_url,
-                        'duties' => [[
-                            ...$item['duty']->only(['id', 'name', 'description']),
-                            'pivot' => ['use_original_duty_name' => (bool) $item['user']->pivot?->use_original_duty_name],
-                        ]],
-                        'profile_photo_path' => $item['user']->profile_photo_path,
-                        'profile_photo_focal_point' => $item['user']->profile_photo_focal_point,
-                        'pronouns' => $item['user']->pronouns,
-                        'duty_pronouns' => $item['user']->getTranslations('pronouns'),
-                        'show_pronouns' => $item['user']->show_pronouns,
-                    ])->values()->toArray(),
-                ];
-            }
-        }
-
-        return $transformedSections;
     }
 
     /**

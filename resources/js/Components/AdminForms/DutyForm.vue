@@ -266,13 +266,13 @@
         <!-- Contacts grouping -->
         <FormFieldWrapper
           id="contacts_grouping"
-          :label="$t('Kontaktų grupavimas')"
+          :label="$t('Kontaktų rikiavimas')"
           :error="form.errors.contacts_grouping"
         >
           <FormSegmentedControl
             v-model="form.contacts_grouping"
             :options="contactsGroupingOptions"
-            :aria-label="$t('Kontaktų grupavimas')"
+            :aria-label="$t('Kontaktų rikiavimas')"
             test-id-prefix="contacts-grouping"
           />
         </FormFieldWrapper>
@@ -621,7 +621,7 @@ const onInstitutionConfirm = (hits: NormalizedSearchHit[]) => {
 };
 
 const contactsGroupingOptions = computed<FormSegmentOption<string>[]>(() => [
-  { value: 'none', label: $t('Be grupavimo') },
+  { value: 'none', label: $t('Numatytasis') },
   { value: 'study_program', label: $t('Pagal studijų programą') },
   { value: 'tenant', label: $t('Pagal padalinį') },
 ]);

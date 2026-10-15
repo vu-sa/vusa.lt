@@ -28,8 +28,7 @@
           </span>
         </h3>
 
-        <!-- Duties (hidden when the surrounding section already names the duty) -->
-        <div v-if="duties && !hideDutyNames" class="mt-1.5 space-y-1">
+        <div v-if="duties" class="mt-1.5 space-y-1">
           <p
             v-for="duty in duties"
             :key="duty.id"
@@ -37,6 +36,9 @@
           >
             <span class="min-w-0">
               <InflectedDutyName :name="duty.name" :holder="dutyHolder" :use-original-duty-name="duty.pivot?.use_original_duty_name" />
+              <span v-if="duty.contact_tenant" data-testid="contact-duty-tenant" class="text-muted-foreground/70">
+                · {{ duty.contact_tenant }}
+              </span>
               <span v-if="showAdditionalInfo(duty)" class="text-muted-foreground/70">
                 {{ showAdditionalInfo(duty) }}
               </span>
@@ -157,9 +159,8 @@ import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 
 const props = defineProps<{
   contact: App.Entities.User & { duty_pronouns?: DutyPronouns };
-  duties: App.Entities.Duty[];
-  /** Hide duty names — used when contacts are already sectioned by duty. */
-  hideDutyNames?: boolean;
+  /** `contact_tenant` names the padalinys a member represents, set for tenant-ordered duties. */
+  duties: Array<App.Entities.Duty & { contact_tenant?: string | null }>;
 }>();
 
 const dutyHolder = computed(() => ({

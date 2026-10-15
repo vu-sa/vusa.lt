@@ -100,7 +100,7 @@ return [
         'institutions' => 'Institucijos',
         'types' => 'Tipai',
         'institution' => 'Institucija',
-        'contacts_grouping' => 'Kontaktų grupavimas',
+        'contacts_grouping' => 'Kontaktų rikiavimas',
         'duty_type' => 'Pareigybės tipas',
         'main_organizer' => 'Pagrindinis organizatorius',
         'meeting_url' => 'Susitikimo nuoroda',

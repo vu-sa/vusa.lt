@@ -71,6 +71,11 @@ export function useInstitutionCard(
     // PKP tenants have no site of their own; their contacts live on www.
     const subdomain = isMainOrPkp.value ? 'www' : (tenant?.alias || resolveTenantSubdomain(tenant?.id ?? undefined));
 
+    // A padalinys's own institution is its office; visitors come for the coordinators.
+    if (alias && tenant?.type === TenantType.Padalinys && alias === tenant.alias) {
+      return route('contacts.dutyType', { type: 'koordinatoriai', subdomain, lang });
+    }
+
     return alias
       ? route('contacts.alias', { institution: alias, subdomain, lang })
       : route('contacts.institution', { institution: id, subdomain, lang });
