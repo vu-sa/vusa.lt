@@ -189,10 +189,11 @@ export class InstitutionSearchService {
       max_facet_values: 50,
       per_page: perPage,
       page: isLoadMore ? currentPage + 1 : 1,
-      // Smart sorting: relevance for searches, logos first then alphabetical for browsing
+      // Key institutions (display_priority) lead the browse list and win ties between similarly
+      // relevant hits; Typesense accepts at most three sort fields.
       sort_by: (query && query !== '*')
-        ? '_text_match:desc,has_logo:desc,name_lt:asc'
-        : (locale === 'en' ? 'has_logo:desc,name_en:asc,name_lt:asc' : 'has_logo:desc,name_lt:asc,name_en:asc'),
+        ? '_text_match(buckets: 10):desc,display_priority:desc,name_lt:asc'
+        : `display_priority:desc,has_logo:desc,${locale === 'en' ? 'name_en' : 'name_lt'}:asc`,
       prefix: true,
       infix: 'fallback',
       prioritize_exact_match: true,
@@ -350,7 +351,7 @@ export class InstitutionSearchService {
         max_facet_values: 50,
         per_page: 1,
         page: 1,
-        sort_by: 'has_logo:desc,name_lt:asc',
+        sort_by: 'display_priority:desc,has_logo:desc,name_lt:asc',
       };
 
       const response = await this.typesenseClient.search(this.collectionName, searchRequest);

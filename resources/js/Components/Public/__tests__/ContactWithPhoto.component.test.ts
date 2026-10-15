@@ -143,6 +143,19 @@ describe('ContactWithPhoto', () => {
     });
   });
 
+  describe('action links', () => {
+    it('renders phone and Facebook as plain links, not buttons nested in links', () => {
+      wrapper = mountCard(makeContact({ phone: '+37060000000', facebook_url: 'https://facebook.com/vusa' }), []);
+
+      const phone = wrapper.find('a[href="tel:+37060000000"]');
+      const facebook = wrapper.find('a[href="https://facebook.com/vusa"]');
+      expect(phone.exists()).toBe(true);
+      expect(facebook.exists()).toBe(true);
+      expect(phone.find('button').exists()).toBe(false);
+      expect(facebook.find('button').exists()).toBe(false);
+    });
+  });
+
   describe('empty state', () => {
     it('renders neither email nor action row when there are no duties or contact links', () => {
       wrapper = mountCard(makeContact({ phone: null, facebook_url: null }), []);

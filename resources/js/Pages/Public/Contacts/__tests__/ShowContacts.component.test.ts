@@ -140,11 +140,29 @@ describe('ShowContacts', () => {
       global: { stubs },
     });
 
-    const chips = wrapper.findAll('button[aria-pressed]');
+    const panel = wrapper.find('[data-testid="quick-types-panel"]');
+    const chips = wrapper.findAll('button[aria-pressed]').filter(chip => !panel.element.contains(chip.element));
     expect(chips.map(chip => chip.text())).toEqual(['Programos, klubai, projektai', 'Studentų atstovų organas']);
 
     await chips[1].trigger('click');
     expect(mockToggleType).toHaveBeenCalledWith('studentu-atstovu-organas');
+  });
+
+  it('repeats the quick filter chips inside the filter panel for phones', async () => {
+    const wrapper = mount(ShowContacts, {
+      props: {
+        institutionTypes: [
+          { slug: 'pkp', title: 'Programos, klubai, projektai', parent_slug: null },
+        ],
+      },
+      global: { stubs },
+    });
+
+    const panelChips = wrapper.find('[data-testid="quick-types-panel"]').findAll('button[aria-pressed]');
+    expect(panelChips.map(chip => chip.text())).toEqual(['Programos, klubai, projektai']);
+
+    await panelChips[0].trigger('click');
+    expect(mockToggleType).toHaveBeenCalledWith('pkp');
   });
 
   it('renders editorial section subheader with result count', () => {

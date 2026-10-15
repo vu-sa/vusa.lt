@@ -6,10 +6,10 @@
     </Head>
 
     <!-- Hero Section based on v0 redesign -->
-    <section class="border-b border-border">
+    <section :class="availableDetails.length === 0 && 'border-b border-border'">
       <div
         class="mx-auto max-w-7xl px-5 py-12 sm:px-6 lg:px-8 lg:py-16"
-        :class="institution.image_url ? 'grid gap-x-10 gap-y-0 lg:grid-cols-[1.1fr_0.9fr] lg:gap-x-16' : ''"
+        :class="institution.image_url ? 'grid grid-cols-1 gap-x-10 gap-y-0 lg:grid-cols-[1.1fr_0.9fr] lg:gap-x-16' : ''"
       >
         <div class="flex flex-col justify-center">
           <!-- Inline Breadcrumbs -->
@@ -31,7 +31,7 @@
         <!-- Right-column photo card (photo only, no text or logo) -->
         <div
           v-if="institution.image_url"
-          class="relative flex aspect-video min-h-[240px] overflow-hidden border border-border bg-muted/20 sm:aspect-4/3 lg:max-h-[30rem]"
+          class="relative mt-8 flex aspect-4/3 overflow-hidden border border-border bg-muted/20 lg:mt-0 lg:max-h-[30rem]"
         >
           <img
             :src="institution.image_url"
@@ -41,7 +41,7 @@
           >
         </div>
 
-        <div v-if="institution.description" class="mt-2 max-w-3xl pl-5 sm:mt-3 sm:pl-7 lg:col-span-2">
+        <div v-if="institution.description" class="mt-6 max-w-3xl pl-5 sm:pl-7 lg:col-span-2 lg:mt-3">
           <div
             :class="[
               'typography text-base leading-relaxed text-muted-foreground',
@@ -63,7 +63,7 @@
     </section>
 
     <section v-if="availableDetails.length > 0">
-      <RuledGrid :columns="detailColumns" align="center" class="mx-auto max-w-7xl">
+      <RuledGrid :columns="detailColumns" align="center" top-rule="cells" class="mx-auto max-w-7xl">
         <component
           :is="item.href ? 'a' : 'div'"
           v-for="item in availableDetails"
@@ -480,8 +480,9 @@ const availableDetails = computed(() => {
 
 const detailColumns = computed<RuledGridColumns>(() => {
   const count = availableDetails.value.length;
-  const wideColumns = Math.max(1, Math.min(count, 5)) as RuledGridColumns['base'];
-  return { base: 1, sm: count <= 1 ? 1 : 2, lg: count <= 5 ? wideColumns : 3 };
+  // Four fit one row; five or more wrap at three so the rows stay balanced.
+  const wideColumns = (count === 4 ? 4 : Math.max(1, Math.min(count, 3))) as RuledGridColumns['base'];
+  return { base: 1, sm: count <= 1 ? 1 : 2, lg: wideColumns };
 });
 
 const hasAnyContacts = computed(() => props.contacts.length > 0);

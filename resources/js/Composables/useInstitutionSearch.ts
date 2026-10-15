@@ -169,7 +169,7 @@ export const useInstitutionSearch = (options: { typeDescendants?: Record<string,
           per_page: 24,
           facet_by: ['tenant_shortname', 'type_slugs', 'has_contacts'].join(','),
           max_facet_values: 50,
-          sort_by: 'duties_count:desc,updated_at:desc',
+          sort_by: 'display_priority:desc,has_logo:desc,name_lt:asc',
         },
         collectionSpecificSearchParameters,
       });

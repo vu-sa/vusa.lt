@@ -95,8 +95,8 @@ const COLLECTIONS: CollectionDef[] = [
         : 'name_lt,name_en,short_name_lt,short_name_en,alias,current_user_names',
       query_by_weights: '10,8,6,4,3,5',
       sort_by: hasRealQuery(query)
-        ? '_text_match:desc,has_logo:desc,name_lt:asc'
-        : (locale === 'en' ? 'has_logo:desc,name_en:asc,name_lt:asc' : 'has_logo:desc,name_lt:asc,name_en:asc'),
+        ? '_text_match(buckets: 10):desc,display_priority:desc,name_lt:asc'
+        : `display_priority:desc,has_logo:desc,${locale === 'en' ? 'name_en' : 'name_lt'}:asc`,
       prefix: true,
       infix: 'fallback',
       prioritize_exact_match: true,

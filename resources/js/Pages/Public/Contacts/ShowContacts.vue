@@ -32,7 +32,7 @@
     <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
       <!-- Search, Filter Controls & View Mode -->
       <div class="space-y-4">
-        <div v-if="rootTypes.length > 0" class="flex flex-wrap items-center gap-1.5 pb-1">
+        <div v-if="rootTypes.length > 0" class="hidden flex-wrap items-center gap-1.5 pb-1 sm:flex">
           <span class="mr-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
             {{ $t('Kategorijos') }}:
           </span>
@@ -96,6 +96,23 @@
           v-show="showFilterBar"
           class="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3"
         >
+          <!-- On phones the quick categories live here instead of above the search -->
+          <div v-if="rootTypes.length > 0" data-testid="quick-types-panel" class="flex w-full flex-wrap items-center gap-1.5 pb-1 sm:hidden">
+            <span class="mr-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              {{ $t('Kategorijos') }}:
+            </span>
+            <button
+              v-for="type in rootTypes"
+              :key="`quick-panel-${type.slug}`"
+              type="button"
+              :aria-pressed="isTypeSelected(type.slug)"
+              :class="controlVariants({ size: 'sm', voice: 'sentence', active: isTypeSelected(type.slug) })"
+              @click="searchController.toggleType(type.slug)"
+            >
+              {{ type.title }}
+            </button>
+          </div>
+
           <!-- Tenant / Padalinys Filter Popover -->
           <PublicFilterPopover
             :label="$t('Padalinys')"

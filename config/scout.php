@@ -489,6 +489,7 @@ $settings = [
                         ['name' => 'type_titles_lt', 'type' => 'string[]', 'optional' => true],
                         ['name' => 'type_titles_en', 'type' => 'string[]', 'optional' => true],
 
+                        ['name' => 'display_priority', 'type' => 'int32', 'sort' => true],
                         ['name' => 'duties_count', 'type' => 'int32', 'sort' => true],
                         ['name' => 'has_contacts', 'type' => 'bool', 'facet' => true],
                         ['name' => 'is_student_representation', 'type' => 'bool', 'facet' => true, 'optional' => true],

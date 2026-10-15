@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\TenantType;
 use App\Models\Duty;
 use App\Models\PublicInstitution;
 use App\Settings\AtstovavimasSettings;
@@ -102,6 +103,8 @@ class PublicInstitutionSearchIndexBuilder
             'contacts' => $contacts,
             'current_user_names' => $currentUserNames,
 
+            'display_priority' => $this->displayPriority($institution),
+
             // Stats
             'duties_count' => $activeDutiesCount,
             'has_contacts' => $activeDutiesCount > 0,
@@ -110,6 +113,25 @@ class PublicInstitutionSearchIndexBuilder
             'created_at' => $institution->created_at->timestamp,
             'updated_at' => $institution->updated_at->timestamp,
         ];
+    }
+
+    /**
+     * Browse order for the contacts search: VU SA, its governing bodies, then each
+     * padalinys' and PKP's main institution; everything else ties at zero.
+     */
+    private function displayPriority(PublicInstitution $institution): int
+    {
+        $tenant = $institution->tenant;
+        $isPrimary = $tenant !== null && (string) $tenant->primary_institution_id === (string) $institution->id;
+
+        return match (true) {
+            $isPrimary && $tenant->type === TenantType::Pagrindinis => 4,
+            $tenant?->type === TenantType::Pagrindinis
+                && $institution->types->contains('slug', config('vusa.featured_institution_type')) => 3,
+            $isPrimary && $tenant->type === TenantType::Padalinys => 2,
+            $isPrimary && $tenant->type === TenantType::Pkp => 1,
+            default => 0,
+        };
     }
 
     /**

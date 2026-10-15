@@ -23,7 +23,7 @@
         <!-- Quick Important Document Types Row -->
         <div
           v-if="importantContentTypes.length > 0"
-          class="flex flex-wrap items-center gap-1.5"
+          class="hidden flex-wrap items-center gap-1.5 sm:flex"
         >
           <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground mr-1 flex items-center gap-1 shrink-0">
             <IFluentStar16Filled class="size-3 text-brand" />
@@ -169,6 +169,27 @@
           v-show="showFilterBar"
           class="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3"
         >
+          <!-- On phones the quick types live here instead of above the search -->
+          <div v-if="importantContentTypes.length > 0" class="flex w-full flex-wrap items-center gap-1.5 pb-1 sm:hidden">
+            <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground mr-1 flex items-center gap-1 shrink-0">
+              <IFluentStar16Filled class="size-3 text-brand" />
+              {{ $t('search.most_important') }}:
+            </span>
+            <button
+              v-for="type in importantContentTypes"
+              :key="`quick-panel-${type}`"
+              type="button"
+              :class="controlVariants({ size: 'sm', active: isContentTypeSelected(type) })"
+              @click="searchController.toggleContentType(type)"
+            >
+              <span>{{ type }}</span>
+              <span
+                v-if="isContentTypeSelected(type)"
+                class="size-1.5 bg-brand-fill rounded-none shrink-0"
+              />
+            </button>
+          </div>
+
           <!-- Effect Status Filter: defaults to Galioja + Nenustatyta, hiding "Negalioja" -->
           <PublicFilterPopover
             :label="$t('Galiojimas')"
