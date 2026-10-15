@@ -38,18 +38,13 @@
         size === 'lg' ? 'mt-3 text-2xl leading-tight sm:text-[1.7rem]' :
         size === 'compact' ? 'text-sm leading-snug' : 'mt-2 text-lg leading-snug',
       ]">
-        {{ news.title }}
+        <SearchMatch v-if="titleMatch" :match="titleMatch" /><template v-else>{{ news.title }}</template>
       </h3>
-      <SearchMatch :match="news._searchMatch" class="mt-2" />
-      <div
-        v-if="showExcerpt && news.short"
-        :class="[
-          'text-pretty leading-relaxed text-muted-foreground',
-          size === 'featured' ? 'mt-4 line-clamp-3 text-base sm:text-lg' :
-          size === 'lg' ? 'mt-3 line-clamp-3' : 'mt-2 line-clamp-2 text-sm',
-        ]"
-        v-html="unwrapLinks(news.short)"
-      />
+      <!-- A search excerpt takes the short's place, so cards keep their height while typing. -->
+      <div v-if="showExcerpt && news.short && excerptMatch" :class="excerptClass">
+        <SearchMatch :match="excerptMatch" />
+      </div>
+      <div v-else-if="showExcerpt && news.short" :class="excerptClass" v-html="unwrapLinks(news.short)" />
       <span v-if="size === 'lg' || size === 'featured'" class="mt-4 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand">
         {{ $t('Skaityti daugiau') }} <IFluentArrowUpRight16Regular class="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
       </span>
@@ -65,6 +60,7 @@ import { Image } from '@lucide/vue';
 import { computed } from 'vue';
 
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
+import { descriptionMatch, matchTitle } from '@/Shared/Search/matches';
 import MediaFrame from '@/Components/Brand/MediaFrame.vue';
 import type { NewsItem } from '@/Types/contentParts';
 import { formatStaticTime } from '@/Utils/IntlTime';
@@ -75,6 +71,8 @@ import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
 type PreviewNews = Pick<NewsItem, 'id' | 'title' | 'lang' | 'permalink' | 'image'> & {
   _searchMatch?: NewsItem['_searchMatch'];
+  _searchTitleMatches?: NewsItem['_searchTitleMatches'];
+  _searchFieldMatches?: NewsItem['_searchFieldMatches'];
   short?: string;
   publish_time?: string | number | Date | null;
   public_url?: string | null;
@@ -94,6 +92,16 @@ const props = withDefaults(defineProps<{
 
 const page = usePage<PageProps>();
 const showExcerpt = computed(() => props.showExcerpt ?? (props.size === 'lg' || props.size === 'featured'));
+const titleMatch = computed(() => matchTitle(props.news.title, props.news._searchTitleMatches));
+const excerptMatch = computed(() => descriptionMatch(props.news, 'short'));
+const excerptSizeClass: Record<string, string> = {
+  featured: 'mt-4 line-clamp-3 text-base sm:text-lg',
+  lg: 'mt-3 line-clamp-3',
+};
+const excerptClass = computed(() => [
+  'text-pretty leading-relaxed text-muted-foreground',
+  excerptSizeClass[props.size] ?? 'mt-2 line-clamp-2 text-sm',
+]);
 const href = computed(() => props.news.public_url ?? localizedRoute('news', {
   news: props.news.permalink ?? '',
   subdomain: page.props.tenant?.subdomain ?? 'www',

@@ -86,14 +86,14 @@ Viršutinėje juostoje paspaudus paiešką arba klavišus **⌘/Ctrl + K**, atid
 Joje pateikiamos prieinamos skiltys, veiksmai ir įrašų paieška. Žvaigždute galima prisegti dažnai
 naudojamą puslapį – prisegtos nuorodos rodomos paletės pradžioje. Telefone paieška pasiekiama iš navigacijos.
 
-Paletėje rezultatai grupuojami pagal įrašo rūšį. **Rodyti visus** nuveda į atitinkamą sąrašą, kuriame galima tikslinti paiešką ir filtrus.
+Paletėje rezultatai pateikiami vienu sąrašu: pirmiausia įrašai, kurių vardas ar pavadinimas sutapo, o kiekviena eilutė nurodo įrašo rūšį (pvz., Narys, Pareigybė, Naujiena). **Rodyti visus** nuveda į atitinkamą sąrašą, kuriame galima tikslinti paiešką ir filtrus.
 Paieška nesuteikia naujų teisių: kitų įrašų ar jų veiksmų prieiga priklauso nuo tavo pareigų ir rolių.
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Paieška turinyje ir aiškesni filtrai">
 
 Puslapiai ir naujienos randami pagal išsaugotą turinio tekstą. Rezultato ištrauka parodo, kur sutapo paieška. Lietuvių ir anglų tekstuose paieška atpažįsta ir skirtingas žodžio formas. Pagal aktualumą rikiuojami teksto atitikmenys; pasirinktas rikiavimas pagal datą ar pavadinimą taikomas tiesiogiai.
 
-Pirmiausia rodomi atitikmenys paties įrašo varde ar pavadinime. Ieškant žmogaus vardo pirmiausia pateikiamas jo profilis, o pagal pareigybės pavadinimą, pavyzdžiui, „Prezidentė“ – pareigybė. Susijusių žmonių, pareigybių ir institucijų paminėjimai turi mažesnį svorį; dabartinė darbo sritis nekeičia paieškos rezultatų eilės. Sutapęs vardas ar pavadinimas paryškinamas pačioje antraštėje, taip pat viešoje dokumentų paieškoje. Dokumento pavadinimas randamas ir pradėjus rašyti žodį, pavyzdžiui, „įstat“. Trumpa turinio ištrauka pateikiama mažesniu šriftu tik tada, kai nekartoja vardo ar pavadinimo; HTML žymos nerodomos.
+Pirmiausia rodomi atitikmenys paties įrašo varde ar pavadinime. Ieškant žmogaus vardo pirmiausia pateikiamas jo profilis, o pagal pareigybės pavadinimą, pavyzdžiui, „Prezidentė“ – pareigybė. Susijusių žmonių, pareigybių ir institucijų paminėjimai turi mažesnį svorį; dabartinė darbo sritis nekeičia paieškos rezultatų eilės. Sutapęs vardas ar pavadinimas paryškinamas pačioje antraštėje, taip pat viešoje dokumentų paieškoje. Dokumento pavadinimas randamas ir pradėjus rašyti žodį, pavyzdžiui, „įstat“. Kitas sutapimas paryškinamas ten, kur ta reikšmė jau rodoma, pavyzdžiui, dokumento rūšyje. Turinio ištrauka rodoma vietoj trumpo aprašymo, todėl rezultatai rašant nepailgėja; HTML žymos nerodomos.
 
 </ChangelogNote>
 

@@ -30,6 +30,13 @@
       <span v-else>—</span>
     </template>
 
+    <!-- The same hover list as the members collection: where they serve now and served before. -->
+    <template #fact-years>
+      <MemberTermsSummary :duties="allTerms">
+        <span class="font-medium text-foreground">{{ yearSpan }}</span>
+      </MemberTermsSummary>
+    </template>
+
     <template #alert>
       <!-- Shown once: the server flashes the password on the redirect and never keeps it. -->
       <div
@@ -220,7 +227,7 @@ import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
-import { AssignDutyUserSheet, UserTermRow, termStatus } from '@/Features/Admin/Occupancy';
+import { AssignDutyUserSheet, MemberTermsSummary, UserTermRow, termStatus, termYearSpan } from '@/Features/Admin/Occupancy';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { ModelEnum } from '@/Types/enums';
 import { changeDutyNameEndings } from '@/Utils/String';
@@ -305,6 +312,7 @@ const dutyColumns = computed(() => [
 ].filter(column => column.groups.length > 0));
 
 const currentDuties = computed(() => dutyGroups.value.find(group => group.key === 'current')?.duties ?? []);
+const yearSpan = computed(() => termYearSpan(allTerms.value.map(duty => duty.pivot ?? {}), $t('dabar')));
 const roles = computed(() => props.user.roles ?? []);
 const showRolesSection = computed(() => roles.value.length > 0 || Boolean(props.can?.updateRoles));
 
@@ -328,7 +336,9 @@ const recordFacts = computed<RecordFact[]>(() => {
     facts.push({ key: 'facebook', label: 'Facebook', value: $t('Facebook'), href: props.user.facebook_url });
   }
 
-  facts.push({ key: 'duties', label: $t('Dabartinės pareigos'), value: String(currentDuties.value.length) });
+  if (yearSpan.value) {
+    facts.push({ key: 'years', label: $t('Veiklos metai'), value: yearSpan.value });
+  }
 
   if (props.user.last_action) {
     facts.push({ key: 'last_action', label: $t('Paskutinį kartą prisijungė'), value: formatStaticTime(props.user.last_action) });

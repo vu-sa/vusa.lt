@@ -86,6 +86,7 @@ return [
         'recent' => 'Recent',
         'pin' => 'Pin',
         'unpin' => 'Unpin',
+        'results' => 'Results',
     ],
 
     'sections' => [

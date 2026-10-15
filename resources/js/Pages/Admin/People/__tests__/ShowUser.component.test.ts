@@ -18,6 +18,7 @@ const stubs = {
     template: `
       <div>
         <h1>{{ title }}</h1>
+        <div data-testid="fact-values">{{ facts.map(f => f.key + '=' + f.value).join('|') }}</div>
         <div data-testid="tabs">{{ sections.map(s => s.value + ':' + (s.count ?? '')).join('|') }}</div>
         <div data-testid="facts">{{ facts.map(f => f.key).join('|') }}</div>
         <button v-if="primaryAction" data-testid="primary" @click="$emit('action', primaryAction.key)">{{ primaryAction.label }}</button>
@@ -136,6 +137,17 @@ describe('ShowUser.vue', () => {
     });
 
     expect(tabs(wrapper)).toContain('duties:4');
+  });
+
+  it('shows the years of activity instead of a current-duty count', () => {
+    const wrapper = createWrapper({
+      current_duties: [makeDuty({ pivot: { id: 'p1', start_date: '2024-07-01' } })],
+      upcoming_duties: [],
+      previous_duties: [makeDuty({ id: 'd4', pivot: { id: 'p4', start_date: '2020-01-01', end_date: '2021-01-01' } })],
+    });
+
+    expect(wrapper.get('[data-testid="fact-values"]').text()).toContain('years=2020–dabar');
+    expect(wrapper.get('[data-testid="facts"]').text()).not.toContain('duties');
   });
 
   it('takes the tasks count from the task stats', () => {

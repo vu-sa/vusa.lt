@@ -86,6 +86,7 @@ return [
         'recent' => 'Neseniai',
         'pin' => 'Prisegti',
         'unpin' => 'Atsegti',
+        'results' => 'Rezultatai',
     ],
 
     'sections' => [

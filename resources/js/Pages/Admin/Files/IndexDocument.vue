@@ -56,11 +56,11 @@
                 rel="noopener noreferrer"
                 class="inline-flex items-center gap-1.5 truncate font-medium hover:text-brand"
               >
-                <span class="truncate"><SearchMatch inline :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" /></span>
+                <span class="truncate"><SearchMatch :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" /></span>
                 <ExternalLink class="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
               </a>
               <span v-else class="truncate font-medium text-foreground">
-                <SearchMatch inline :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" />
+                <SearchMatch :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" />
               </span>
               <span
                 v-if="item.language"
@@ -69,13 +69,12 @@
                 {{ item.language === 'Lietuvių' ? 'LT' : item.language === 'Anglų' ? 'EN' : item.language }}
               </span>
             </div>
-            <SearchMatch compact :match="item._searchMatch" :title="item.title || $t('Be pavadinimo')" />
             <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span v-if="item.content_type" class="border border-border bg-muted/60 px-1 py-0.5">
-                {{ item.content_type }}
+                <SearchMatch :match="item._searchFieldMatches?.content_type" :title="item.content_type" />
               </span>
               <span v-if="institutionName(item)">
-                {{ institutionName(item) }}
+                <SearchMatch :match="institutionMatch(item)" :title="institutionName(item)" />
               </span>
               <span v-if="item.document_date" class="tabular-nums">
                 {{ formatDocDate(item.document_date) }}
@@ -103,24 +102,24 @@
           rel="noopener noreferrer"
           class="inline-flex items-center gap-1.5 font-medium hover:text-brand"
         >
-          <span class="line-clamp-2"><SearchMatch inline :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" /></span>
+          <span class="line-clamp-2"><SearchMatch :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" /></span>
           <ExternalLink class="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
         </a>
         <span v-else class="line-clamp-2 font-medium">
-          <SearchMatch inline :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" />
+          <SearchMatch :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" />
         </span>
-        <SearchMatch compact :match="item._searchMatch" :title="item.title || $t('Be pavadinimo')" />
       </div>
 
       <span v-else-if="column.key === 'content_type'" class="truncate text-xs">
         <span v-if="item.content_type" class="border border-border bg-muted/60 px-1.5 py-0.5">
-          {{ item.content_type }}
+          <SearchMatch :match="item._searchFieldMatches?.content_type" :title="item.content_type" />
         </span>
         <span v-else class="text-muted-foreground">—</span>
       </span>
 
       <span v-else-if="column.key === 'institution'" class="truncate text-xs">
-        {{ institutionName(item) || '—' }}
+        <SearchMatch v-if="institutionName(item)" :match="institutionMatch(item)" :title="institutionName(item)" />
+        <template v-else>—</template>
       </span>
 
       <span v-else-if="column.key === 'language'">
@@ -166,7 +165,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ExternalLink, EyeOff, FileUp, RefreshCw } from '@lucide/vue';
 import { computed, onBeforeUnmount, ref } from 'vue';
 
-import { matchTitle } from '@/Shared/Search/matches';
+import { highlightText, matchTitle } from '@/Shared/Search/matches';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
@@ -251,6 +250,12 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'language', label: $t('Kalba'), class: 'w-20' },
   ...(props.abilities.update ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),
 ]);
+
+function institutionMatch(item: DocumentSearchResult) {
+  const name = institutionName(item);
+  const fields = item._searchFieldMatches;
+  return name ? highlightText(name, fields?.institution_name_lt ?? fields?.institution_name_en) : undefined;
+}
 
 function institutionName(item: DocumentSearchResult): string | undefined {
   return item.institution_name_lt || item.institution_name_en || item.tenant_shortname;

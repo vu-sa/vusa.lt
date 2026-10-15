@@ -23,18 +23,41 @@ beforeEach(() => {
 
 afterEach(() => vi.useRealTimers());
 
+const titleHit = (title: string) => [{ field: 'name', segments: [{ text: title, matched: true }] }];
+
 describe('admin palette relevance', () => {
   it.each([
-    { workspace: 'visak', query: 'Austėja', first: 'Austėja Petrauskaitė', usersScore: '90', dutiesScore: '80' },
-    { workspace: 'organizacija', query: 'Prezidentė', first: 'Prezidentas', usersScore: '80', dutiesScore: '90' },
-  ])('keeps the most relevant record first from $workspace for $query', async ({ workspace, query, first, usersScore, dutiesScore }) => {
+    {
+      name: 'a person matched by name over a duty matched through its holder',
+      workspace: 'visak', query: 'Austėja', first: 'Austėja Petrauskaitė',
+      users: [{ id: 'u1', name: 'Austėja Petrauskaitė', _searchTitleMatches: titleHit('Austėja Petrauskaitė'), _text_match: '80' }],
+      duties: [{ id: 'd1', name_lt: 'Prezidentas', _searchFieldMatches: { current_user_names: titleHit('Austėja Petrauskaitė')[0] }, _text_match: '90' }],
+      news: [],
+    },
+    {
+      name: 'a duty matched by name over a person matched through their duty',
+      workspace: 'organizacija', query: 'Prezidentė', first: 'Prezidentas',
+      users: [{ id: 'u1', name: 'Austėja Petrauskaitė', _searchFieldMatches: { current_duty_names: titleHit('Prezidentė')[0] }, _text_match: '90' }],
+      duties: [{ id: 'd1', name_lt: 'Prezidentas', _searchTitleMatches: [{ field: 'name_lt', segments: [{ text: 'Prezidentas', matched: true }] }], _text_match: '80' }],
+      news: [],
+    },
+    {
+      // Typesense scores the story higher only because its title and body both matched.
+      name: 'a person over a news story with the name in its title',
+      workspace: 'visak', query: 'Uršul', first: 'Uršulė Barkauskaitė',
+      users: [{ id: 'u1', name: 'Uršulė Barkauskaitė', _searchTitleMatches: titleHit('Uršulė Barkauskaitė'), _text_match: '610246614105227017' }],
+      duties: [],
+      news: [{ id: 'n1', title: 'Išrinkta Uršulė Barkauskaitė', _searchTitleMatches: [{ field: 'title', segments: [{ text: 'Išrinkta Uršulė Barkauskaitė', matched: true }] }], _text_match: '610246614105227019' }],
+    },
+  ])('ranks $name', async ({ workspace, query, first, users, duties, news }) => {
     vi.mocked(useCommandActions).mockReturnValue({
       filterActions: () => [], activeWorkspace: ref({ key: workspace }),
       workspaceKeyForEntity: (entity: string) => entity === 'user' ? 'organizacija' : 'visak',
     } as unknown as ReturnType<typeof useCommandActions>);
     const results = createEmptyMultiSearchResults();
-    results.users = [{ id: 'u1', name: 'Austėja Petrauskaitė', _text_match: usersScore }] as typeof results.users;
-    results.duties = [{ id: 'd1', name_lt: 'Prezidentas', _text_match: dutiesScore }] as typeof results.duties;
+    results.users = users as unknown as typeof results.users;
+    results.duties = duties as unknown as typeof results.duties;
+    results.news = news as unknown as typeof results.news;
     vi.mocked(useAdminSearch).mockReturnValue({
       multiSearch: vi.fn().mockResolvedValue(results), initialize: vi.fn(), isRateLimited: ref(false), getDirectInstitutionIds: () => [],
     } as unknown as ReturnType<typeof useAdminSearch>);

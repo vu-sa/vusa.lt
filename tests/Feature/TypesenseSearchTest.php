@@ -219,5 +219,8 @@ test('user search array carries current and previous duties with aligned ids', f
         ->and($array['current_duty_ids'])->toHaveSameSize($array['current_duty_names'])
         ->and($array['previous_duty_ids'])->toContain((string) $previousDuty->id)
         // The current duty must not leak into the previous-duty buckets.
-        ->and($array['previous_duty_ids'])->not->toContain((string) $currentDuty->id);
+        ->and($array['previous_duty_ids'])->not->toContain((string) $currentDuty->id)
+        // Raw term dates stay index-aligned so the client can derive the active-years span.
+        ->and($array['term_start_dates'])->toEqualCanonicalizing([now()->subMonth()->toDateString(), now()->subYear()->toDateString()])
+        ->and($array['term_end_dates'])->toEqualCanonicalizing(['', now()->subMonth()->toDateString()]);
 });

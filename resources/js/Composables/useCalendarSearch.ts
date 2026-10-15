@@ -7,6 +7,8 @@ import { SearchClientFactory, type TypesenseClient } from '@/Shared/Search/servi
 
 export interface CalendarEventDocument {
   _searchMatch?: import('@/Shared/Search/matches').SearchMatch;
+  _searchTitleMatches?: import('@/Shared/Search/matches').SearchMatch[];
+  _searchFieldMatches?: Record<string, import('@/Shared/Search/matches').SearchMatch>;
   id: string | number;
   title: string;
   title_lt?: string;

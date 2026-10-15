@@ -12,7 +12,7 @@
     >
       <DatePlate :date="eventDateObj" class="w-14 border border-border bg-secondary/40" />
       <span class="min-w-0 flex-1">
-        <span class="block text-sm font-bold text-foreground transition-colors group-hover:text-brand">{{ eventTitle }}</span>
+        <span class="block text-sm font-bold text-foreground transition-colors group-hover:text-brand"><SearchMatch v-if="titleMatch" :match="titleMatch" /><template v-else>{{ eventTitle }}</template></span>
         <span class="mt-1 block text-xs text-muted-foreground">{{ formattedDateTime }}</span>
       </span>
       <IFluentArrowUpRight20Regular class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -77,10 +77,9 @@
       <!-- Title -->
       <h3 class="text-pretty text-lg font-bold leading-snug text-foreground transition-colors group-hover:text-brand">
         <component :is="useInertia ? Link : 'a'" :href="eventHref">
-          {{ eventTitle }}
+          <SearchMatch v-if="titleMatch" :match="titleMatch" /><template v-else>{{ eventTitle }}</template>
         </component>
       </h3>
-      <SearchMatch :match="(event as CalendarEventLike)._searchMatch" />
 
       <!-- Metadata -->
       <div class="mt-2 flex flex-col gap-1 text-sm text-muted-foreground">
@@ -95,7 +94,7 @@
         </span>
         <span v-else-if="eventLocation" class="flex items-center gap-1.5 min-w-0">
           <IFluentLocation16Regular class="size-3.5 shrink-0 text-brand" />
-          <span class="truncate">{{ eventLocation }}</span>
+          <span class="truncate"><SearchMatch :match="locationMatch" :title="eventLocation" /></span>
         </span>
       </div>
 
@@ -119,6 +118,7 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
+import { highlightText, matchTitle, type SearchMatchDocument } from '@/Shared/Search/matches';
 import DatePlate from '@/Components/Public/Base/DatePlate.vue';
 import { formatEventDateSpan } from '@/Utils/IntlTime';
 import { getCalendarEvent2Route } from '@/Utils/Route';
@@ -129,8 +129,7 @@ import IFluentLocation16Regular from '~icons/fluent/location-16-regular';
 import IFluentGlobe20Regular from '~icons/fluent/globe-20-regular';
 import IFluentArrowUpRight20Regular from '~icons/fluent/arrow-up-right-20-regular';
 
-interface CalendarEventLike {
-  _searchMatch?: import('@/Shared/Search/matches').SearchMatch;
+interface CalendarEventLike extends SearchMatchDocument {
   id: number | string;
   title: string | string[] | Record<string, unknown>;
   date: string | number | Date;
@@ -178,6 +177,10 @@ const eventLocation = computed(() => {
   if (Array.isArray(loc)) return loc.join(' ');
   return String(loc);
 });
+
+const searchMatches = computed(() => props.event as SearchMatchDocument);
+const titleMatch = computed(() => matchTitle(eventTitle.value, searchMatches.value._searchTitleMatches));
+const locationMatch = computed(() => eventLocation.value ? highlightText(eventLocation.value, searchMatches.value._searchFieldMatches?.location) : undefined);
 
 const eventTypeName = computed(() => {
   const ev = props.event as CalendarEventLike;

@@ -34,7 +34,7 @@ describe('DocumentCompactListItem', () => {
       expect(heading.text()).toBe(title);
       expect(heading.get('mark').text()).toBe('Įstat');
     }
-    expect(wrapper.find('[data-slot="search-match"]').exists()).toBe(false);
+    expect(wrapper.find('[data-field="summary"]').exists()).toBe(false);
   });
 
   test('links to link_url for a resolved shortcut document', () => {

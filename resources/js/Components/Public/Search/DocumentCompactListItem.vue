@@ -25,10 +25,8 @@
               class="text-sm font-semibold text-foreground group-hover:text-brand transition-colors line-clamp-2 leading-tight"
               :title="document.title"
             >
-              <SearchMatch v-if="titleMatch" inline :match="titleMatch" />
-              <template v-else>{{ document.title }}</template>
+              <SearchMatch v-if="titleMatch" :match="titleMatch" /><template v-else>{{ document.title }}</template>
             </h3>
-            <SearchMatch :match="document._searchMatch" :title="document.title" />
           </div>
           <!-- External Link / Shortcut Icon -->
           <component
@@ -42,7 +40,7 @@
           <!-- Content Type -->
           <TagChip variant="muted" class="max-w-24 shrink-0">
             <span class="truncate block normal-case tracking-normal font-medium" :title="getShortContentType()">
-              {{ getShortContentType() }}
+              <SearchMatch :match="contentTypeMatch" :title="getShortContentType()" />
             </span>
           </TagChip>
 
@@ -53,7 +51,7 @@
 
           <!-- Date -->
           <span class="whitespace-nowrap shrink-0">
-            {{ formatCompactDate() }}
+            <SearchMatch :match="dateMatch" :title="formatCompactDate()" />
           </span>
 
           <!-- Unresolved shortcut warning -->
@@ -78,10 +76,8 @@
             class="text-base font-semibold text-foreground group-hover:text-brand transition-colors line-clamp-1"
             :title="document.title"
           >
-            <SearchMatch v-if="titleMatch" inline :match="titleMatch" />
-            <template v-else>{{ document.title }}</template>
+            <SearchMatch v-if="titleMatch" :match="titleMatch" /><template v-else>{{ document.title }}</template>
           </h3>
-          <SearchMatch :match="document._searchMatch" :title="document.title" />
         </div>
 
         <!-- Compact Metadata -->
@@ -89,7 +85,7 @@
           <!-- Content Type -->
           <TagChip variant="muted" class="max-w-24 md:max-w-40 shrink-0">
             <span class="truncate block normal-case tracking-normal font-medium" :title="getShortContentType()">
-              {{ getShortContentType() }}
+              <SearchMatch :match="contentTypeMatch" :title="getShortContentType()" />
             </span>
           </TagChip>
 
@@ -103,7 +99,7 @@
 
           <!-- Date -->
           <span class="text-xs text-muted-foreground whitespace-nowrap shrink-0">
-            {{ formatCompactDate() }}
+            <SearchMatch :match="dateMatch" :title="formatCompactDate()" />
           </span>
 
           <!-- Unresolved shortcut warning -->
@@ -129,7 +125,7 @@ import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { matchTitle } from '@/Shared/Search/matches';
+import { documentDateMatch, highlightText, matchTitle } from '@/Shared/Search/matches';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { useDocumentDisplay, getDocumentTargetUrl, parseDocumentDate, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import { TagChip } from '@/Components/Public/Base';
@@ -155,6 +151,8 @@ const {
   isUnresolvedShortcut,
   trackDocumentClick,
 } = useDocumentDisplay(props.document);
+
+const contentTypeMatch = computed(() => highlightText(getShortContentType(), props.document._searchFieldMatches?.content_type));
 
 // .url shortcuts link straight to their resolved target; otherwise share_url
 // goes through DocumentRedirectController which appends web=1 server-side,
@@ -184,4 +182,6 @@ const formatCompactDate = () => {
     return props.document.document_date;
   }
 };
+
+const dateMatch = computed(() => documentDateMatch(props.document, formatCompactDate() ?? ''));
 </script>

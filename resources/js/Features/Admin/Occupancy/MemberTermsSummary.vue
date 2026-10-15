@@ -8,12 +8,14 @@
         @pointerenter="onPointerEnter"
         @pointerleave="onPointerLeave"
       >
-        <span v-if="currentCount > 0" class="font-medium text-foreground">{{ $t(':count dabar', { count: String(currentCount) }) }}</span>
-        <!-- "1 dabar · 1 iš viso" says the same thing twice. -->
-        <template v-if="currentCount !== totalCount">
-          <span v-if="currentCount > 0" class="text-muted-foreground" aria-hidden="true">·</span>
-          <span class="text-muted-foreground">{{ $t(':count iš viso', { count: String(totalCount) }) }}</span>
-        </template>
+        <slot>
+          <span v-if="currentCount > 0" class="font-medium text-foreground">{{ $t(':count dabar', { count: String(currentCount) }) }}</span>
+          <!-- "1 dabar · 1 iš viso" says the same thing twice. -->
+          <template v-if="currentCount !== totalCount">
+            <span v-if="currentCount > 0" class="text-muted-foreground" aria-hidden="true">·</span>
+            <span class="text-muted-foreground">{{ $t(':count iš viso', { count: String(totalCount) }) }}</span>
+          </template>
+        </slot>
       </button>
     </PopoverTrigger>
     <PopoverContent
@@ -32,7 +34,7 @@
         <ul class="space-y-0.5">
           <li v-for="item in group.items" :key="item.name" class="flex items-baseline justify-between gap-3">
             <span class="min-w-0 truncate">{{ item.name }}</span>
-            <span v-if="item.year" class="shrink-0 text-xs tabular-nums text-muted-foreground">{{ item.year }}</span>
+            <span v-if="item.period" class="shrink-0 text-xs tabular-nums text-muted-foreground">{{ item.period }}</span>
           </li>
         </ul>
       </section>
@@ -47,7 +49,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 
-import { termStatus, type TermStatus } from './occupancy';
+import { termStatus, termYearSpan, type TermStatus } from './occupancy';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 
@@ -56,11 +58,15 @@ interface MemberTerm {
   pivot?: { start_date?: string | null; end_date?: string | null } | null;
 }
 
-const props = defineProps<{
+/** The trigger defaults to "2 dabar · 5 iš viso"; the slot replaces it (e.g. with the active years). */
+const props = withDefaults(defineProps<{
   duties: MemberTerm[];
-  currentCount: number;
-  totalCount: number;
-}>();
+  currentCount?: number;
+  totalCount?: number;
+}>(), {
+  currentCount: 0,
+  totalCount: 0,
+});
 
 const open = ref(false);
 const openedByHover = ref(false);
@@ -121,9 +127,13 @@ watch(open, (isOpen) => {
 
 onBeforeUnmount(() => clearTimeout(closeTimer));
 
-/** One line per institution, ordered as it appears, with the year a past term ended. */
+/**
+ * One line per institution with the period served there: "2023–dabar" where they still serve
+ * (earlier terms there included), "2019–2021" for the past, the starting year for what is ahead.
+ */
 const groups = computed(() => {
-  const byStatus: Record<TermStatus, Map<string, string | null>> = { current: new Map(), upcoming: new Map(), ended: new Map() };
+  const byStatus: Record<TermStatus, Map<string, MemberTerm['pivot'][]>> = { current: new Map(), upcoming: new Map(), ended: new Map() };
+  const all = new Map<string, MemberTerm['pivot'][]>();
 
   for (const term of props.duties) {
     const name = term.institution?.short_name || term.institution?.name;
@@ -132,13 +142,9 @@ const groups = computed(() => {
       continue;
     }
 
-    const status = termStatus(term.pivot ?? {});
-    const year = status === 'ended' ? String(term.pivot?.end_date ?? '').slice(0, 4) || null : null;
-    const known = byStatus[status].get(name);
-
-    if (!byStatus[status].has(name) || (year && (!known || year > known))) {
-      byStatus[status].set(name, year);
-    }
+    const bucket = byStatus[termStatus(term.pivot ?? {})];
+    bucket.set(name, [...(bucket.get(name) ?? []), term.pivot]);
+    all.set(name, [...(all.get(name) ?? []), term.pivot]);
   }
 
   // Somewhere the person still serves is not repeated under "Anksčiau".
@@ -146,15 +152,23 @@ const groups = computed(() => {
     byStatus.ended.delete(name);
   }
 
-  const toItems = (entries: Map<string, string | null>) => [...entries].map(([name, year]) => ({ name, year }));
+  const period = (terms: MemberTerm['pivot'][]) => termYearSpan(terms.map(term => term ?? {}), $t('dabar'));
+  const toItems = (entries: Map<string, MemberTerm['pivot'][]>, span: (name: string, terms: MemberTerm['pivot'][]) => string | null) => (
+    [...entries].map(([name, terms]) => ({ name, period: span(name, terms) }))
+  );
 
   return [
-    { key: 'current', title: $t('Dabar'), items: toItems(byStatus.current) },
-    { key: 'upcoming', title: $t('Netrukus'), items: toItems(byStatus.upcoming) },
+    { key: 'current', title: $t('Dabar'), items: toItems(byStatus.current, name => period(all.get(name) ?? [])) },
+    {
+      key: 'upcoming',
+      title: $t('Netrukus'),
+      items: toItems(byStatus.upcoming, (_, terms) => terms.map(term => String(term?.start_date ?? '').slice(0, 4)).filter(Boolean).sort()[0] ?? null),
+    },
     {
       key: 'ended',
       title: $t('Anksčiau'),
-      items: toItems(byStatus.ended).sort((a, b) => String(b.year).localeCompare(String(a.year))),
+      // Most recent first: the period string ends with the year they left.
+      items: toItems(byStatus.ended, (_, terms) => period(terms)).sort((a, b) => String(b.period).slice(-4).localeCompare(String(a.period).slice(-4))),
     },
   ].filter(group => group.items.length > 0);
 });

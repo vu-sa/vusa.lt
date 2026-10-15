@@ -314,6 +314,8 @@ export interface TextBox {
  */
 export interface NewsItem {
   _searchMatch?: import('@/Shared/Search/matches').SearchMatch;
+  _searchTitleMatches?: import('@/Shared/Search/matches').SearchMatch[];
+  _searchFieldMatches?: Record<string, import('@/Shared/Search/matches').SearchMatch>;
   id: number;
   title: string;
   lang: string;

@@ -17,7 +17,9 @@ import { getFacetValueLabel } from '../Config/collectionFacetConfig';
 import { completionTone, voteTone, type BadgeTone } from './searchBadges';
 
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import { hasIdentityMatch, PROSE_FIELDS, type SearchMatchDocument } from '@/Shared/Search/matches';
 import { changeDutyNameEndings } from '@/Utils/String';
+import { termYearSpan } from '@/Features/Admin/Occupancy/occupancy';
 import {
   AgendaItemIcon,
   CalendarIcon,
@@ -98,6 +100,8 @@ export interface NormalizedSearchHit {
   /** Tenant shortname; kept for the detail pane, not rendered in the row. */
   badge?: string;
   meta?: string;
+  /** Belongs to the record itself, so it sits beside the title (a member's active years), not on the context line. */
+  aside?: string;
   href?: string;
   /**
    * "View" / "Edit" links for the two-button row affordance (command palette).
@@ -181,6 +185,11 @@ export function getSearchHitTimestamp(collection: SearchCollectionKey, doc: unkn
  * must be compared as a BigInt — comparing as a JS number silently collapses
  * distinct scores into ties. Accepts the string form (preferred) or a number.
  */
+function compareTextMatch(a: unknown, b: unknown): number {
+  const difference = getSearchHitTextMatch(a) - getSearchHitTextMatch(b);
+  return difference > 0n ? 1 : difference < 0n ? -1 : 0;
+}
+
 export function getSearchHitTextMatch(doc: unknown): bigint {
   if (typeof doc !== 'object' || doc === null) {
     return 0n;
@@ -366,9 +375,9 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
   users: (u: UserSearchResult) => ({
     recordId: String(u.id),
     title: u.name || $t('Be pavadinimo'),
-    subtitle: u.email,
+    subtitle: getUserDuties(u, 'current', usePage().props.app.locale)[0]?.name ?? u.email,
     badge: u.tenant_shortname,
-    meta: getUserDuties(u, 'current', usePage().props.app.locale)[0]?.name,
+    aside: userYearSpan(u) ?? undefined,
     href: route('users.show', u.id),
     viewHref: route('users.show', u.id),
     editHref: route('users.edit', u.id),
@@ -377,6 +386,12 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
       : undefined,
   }),
 };
+
+/** The years someone has held duties, as in the members list ("2021–dabar"). */
+function userYearSpan(u: UserSearchResult): string | null {
+  const ends = u.term_end_dates ?? [];
+  return termYearSpan((u.term_start_dates ?? []).map((start, index) => ({ start_date: start, end_date: ends[index] || null })), $t('dabar'));
+}
 
 /**
  * Fixed collection priority for the "All" tab when there is no query (browse
@@ -388,10 +403,41 @@ export const ALL_TAB_COLLECTION_ORDER: SearchCollectionKey[] = [
 ];
 
 /**
+ * Ties between equally good matches go to people and structure before content: a name
+ * search should land on the person, not on the news story that mentions them.
+ */
+const RANK_COLLECTION_ORDER: SearchCollectionKey[] = [
+  'users', 'duties', 'institutions', 'meetings', 'agendaItems', 'resources', 'documents', 'pages', 'calendar', 'news',
+];
+
+const IDENTIFIER_FIELDS = new Set(['email', 'alias', 'phone', 'short_name_lt', 'short_name_en']);
+
+/**
+ * How directly a hit matched: 3 its own name or title, 2 an identifier (email, alias),
+ * 1 a related record's name, 0 only its prose.
+ */
+export function getSearchHitMatchTier(doc: unknown): number {
+  if (typeof doc !== 'object' || doc === null) return 0;
+  if (hasIdentityMatch(doc as Record<string, unknown>)) return 3;
+  const fields = Object.keys((doc as SearchMatchDocument)._searchFieldMatches ?? {});
+  if (fields.some(field => IDENTIFIER_FIELDS.has(field))) return 2;
+  if (fields.some(field => !PROSE_FIELDS.has(field))) return 1;
+  return 0;
+}
+
+function getSearchHitTokens(doc: unknown): number {
+  const value = typeof doc === 'object' && doc !== null ? (doc as Record<string, unknown>)._tokens_matched : 0;
+  return typeof value === 'number' ? value : 0;
+}
+
+/**
  * Build the flat, normalized hit list for the "All" tab.
  *
- * - With a query, all collections are interleaved by Typesense relevance
- *   (`_text_match`) descending, with each hit's recency timestamp as a tiebreak.
+ * - With a query, hits are ranked across collections by how directly they matched
+ *   (tier, then matched tokens, then {@link RANK_COLLECTION_ORDER}). Raw `text_match`
+ *   only orders hits within one collection: Typesense normalises weights per search and
+ *   counts every matching field, so a news story matching title + body outscores a person
+ *   matching only their name.
  * - Without a query (browse mode), hits keep the static collection priority order.
  */
 export function collectAllTabHits(
@@ -408,14 +454,13 @@ export function collectAllTabHits(
   }
 
   if (hasQuery) {
-    entries.sort((a, b) => {
-      const aMatch = getSearchHitTextMatch(a.doc);
-      const bMatch = getSearchHitTextMatch(b.doc);
-      if (aMatch !== bMatch) {
-        return bMatch > aMatch ? 1 : -1;
-      }
-      return getSearchHitTimestamp(b.key, b.doc) - getSearchHitTimestamp(a.key, a.doc);
-    });
+    entries.sort((a, b) => (
+      getSearchHitMatchTier(b.doc) - getSearchHitMatchTier(a.doc)
+      || getSearchHitTokens(b.doc) - getSearchHitTokens(a.doc)
+      || RANK_COLLECTION_ORDER.indexOf(a.key) - RANK_COLLECTION_ORDER.indexOf(b.key)
+      || compareTextMatch(b.doc, a.doc)
+      || getSearchHitTimestamp(b.key, b.doc) - getSearchHitTimestamp(a.key, a.doc)
+    ));
   }
 
   return entries.map(({ key, doc }) => {

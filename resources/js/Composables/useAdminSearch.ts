@@ -589,8 +589,8 @@ export const useAdminSearch = () => {
         ? `_text_match:desc,${dateField}:${direction}`
         : `${dateField}:${direction}`;
 
-    // Relevance tuning shared by every sub-search (mirrors config/scout.php
-    // typesense.model-settings, which the multi_search call does not otherwise apply).
+    // Fallback only: buildProfileParams replaces query_by, weights and tuning with the server's
+    // SearchProfiles (config/scout.php), so tune relevance there, not here.
     const commonTuning = {
       prioritize_exact_match: true,
       prioritize_token_position: true,
@@ -839,11 +839,12 @@ export const useAdminSearch = () => {
             document: Record<string, unknown>;
             highlights?: HighlightedHit['highlights'];
             text_match?: number;
-            text_match_info?: { score?: string };
+            text_match_info?: { score?: string; tokens_matched?: number };
           }) => ({
             ...documentWithMatch(hit),
             _text_match: hit.text_match_info?.score
               ?? (hit.text_match != null ? String(hit.text_match) : '0'),
+            _tokens_matched: hit.text_match_info?.tokens_matched ?? 0,
           }),
         ) || [];
         (results[key] as unknown[]) = hits;

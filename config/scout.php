@@ -803,6 +803,8 @@ $settings = [
                         ['name' => 'current_duty_ids', 'type' => 'string[]', 'index' => false, 'optional' => true],
                         ['name' => 'previous_duty_names', 'type' => 'string[]', 'facet' => true, 'optional' => true],
                         ['name' => 'previous_duty_ids', 'type' => 'string[]', 'index' => false, 'optional' => true],
+                        ['name' => 'term_start_dates', 'type' => 'string[]', 'index' => false, 'optional' => true],
+                        ['name' => 'term_end_dates', 'type' => 'string[]', 'index' => false, 'optional' => true],
                         ['name' => 'is_active', 'type' => 'bool', 'facet' => true],
 
                         ['name' => 'created_at', 'type' => 'int64', 'sort' => true],

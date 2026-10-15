@@ -1,11 +1,11 @@
 <template>
   <span class="min-w-0">
-    <template v-if="!variants"><SearchMatch v-if="displayMatch" inline :match="displayMatch" /><template v-else>{{ displayName }}</template></template>
+    <template v-if="!variants"><SearchMatch v-if="displayMatch" :match="displayMatch" /><template v-else>{{ displayName }}</template></template>
     <template v-else>
-      <template v-if="stemLead"><SearchMatch v-if="stemLeadMatch" inline :match="stemLeadMatch" /><template v-else>{{ stemLead }}</template></template>
+      <template v-if="stemLead"><SearchMatch v-if="stemLeadMatch" :match="stemLeadMatch" /><template v-else>{{ stemLead }}</template></template>
       <!-- Keep the final stem word and ending together when the name wraps. -->
       <span data-testid="duty-ending-group" class="inline-flex items-baseline whitespace-nowrap">
-        <span><SearchMatch v-if="stemTailMatch" inline :match="stemTailMatch" /><template v-else>{{ stemTail }}</template></span>
+        <span><SearchMatch v-if="stemTailMatch" :match="stemTailMatch" /><template v-else>{{ stemTail }}</template></span>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger as-child>
@@ -14,12 +14,12 @@
                   aria-hidden="true"
                   data-testid="duty-ending-masculine"
                   :class="[endingClasses, showFeminine ? 'opacity-0 -translate-y-[0.12em] select-none' : 'translate-y-0 opacity-100']"
-                ><SearchMatch v-if="masculineEndingMatch" inline :match="masculineEndingMatch" /><template v-else>{{ variants.masculineEnding }}</template></span>
+                ><SearchMatch v-if="masculineEndingMatch" :match="masculineEndingMatch" /><template v-else>{{ variants.masculineEnding }}</template></span>
                 <span
                   aria-hidden="true"
                   data-testid="duty-ending-feminine"
                   :class="[endingClasses, showFeminine ? 'translate-y-0 opacity-100' : 'opacity-0 translate-y-[0.12em] select-none']"
-                ><SearchMatch v-if="feminineEndingMatch" inline :match="feminineEndingMatch" /><template v-else>{{ variants.feminineEnding }}</template></span>
+                ><SearchMatch v-if="feminineEndingMatch" :match="feminineEndingMatch" /><template v-else>{{ variants.feminineEnding }}</template></span>
                 <!-- Keep the rule in the grid so clamped headings paint it. -->
                 <span
                   data-testid="duty-ending-underline"
@@ -33,7 +33,7 @@
           </Tooltip>
         </TooltipProvider>
       </span>
-      <template v-if="variants.suffix"><SearchMatch v-if="suffixMatch" inline :match="suffixMatch" /><template v-else>{{ variants.suffix }}</template></template>
+      <template v-if="variants.suffix"><SearchMatch v-if="suffixMatch" :match="suffixMatch" /><template v-else>{{ variants.suffix }}</template></template>
       <span data-testid="duty-gender-pair" class="sr-only select-none">{{ genderPairLabel }}</span>
     </template>
   </span>

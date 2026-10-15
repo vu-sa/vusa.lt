@@ -336,6 +336,7 @@ export interface SearchClients {
 export interface MeetingSearchResult {
   _searchMatch?: SearchMatch;
   _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   title: string;
   description?: string;
@@ -363,6 +364,7 @@ export interface MeetingSearchResult {
 export interface AgendaItemSearchResult {
   _searchMatch?: SearchMatch;
   _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   title: string;
   description?: string;
@@ -389,6 +391,7 @@ export interface AgendaItemSearchResult {
 export interface NewsSearchResult {
   _searchMatch?: SearchMatch;
   _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   title: string;
   short?: string;
@@ -408,6 +411,7 @@ export interface NewsSearchResult {
 export interface PageSearchResult {
   _searchMatch?: SearchMatch;
   _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   title: string;
   permalink?: string;
@@ -426,6 +430,7 @@ export interface PageSearchResult {
 export interface CalendarSearchResult {
   _searchMatch?: SearchMatch;
   _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   title: string;
   title_lt?: string;
@@ -443,6 +448,7 @@ export interface CalendarSearchResult {
 export interface InstitutionSearchResult {
   _searchMatch?: SearchMatch;
   _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   name_lt?: string;
   name_en?: string;
@@ -464,6 +470,7 @@ export interface InstitutionSearchResult {
 export interface DocumentSearchResult {
   _searchMatch?: SearchMatch;
   _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   title: string;
   summary?: string;
@@ -485,6 +492,7 @@ export interface DocumentSearchResult {
 export interface ResourceSearchResult {
   _searchMatch?: SearchMatch;
   _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   name_lt?: string;
   name_en?: string;
@@ -507,6 +515,7 @@ export interface ResourceSearchResult {
 export interface DutySearchResult {
   _searchMatch?: SearchMatch;
   _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   name_lt?: string;
   name_en?: string;
@@ -540,6 +549,7 @@ export interface DutySearchResult {
 export interface UserSearchResult {
   _searchMatch?: SearchMatch;
   _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   name: string;
   email?: string;
@@ -563,6 +573,9 @@ export interface UserSearchResult {
   previous_duty_names_lt?: string[];
   previous_duty_names_en?: string[];
   previous_duty_use_original_names?: boolean[];
+  /** Index-aligned term dates (`YYYY-MM-DD`, '' for an open end), for the active-years span. */
+  term_start_dates?: string[];
+  term_end_dates?: string[];
 }
 
 /**

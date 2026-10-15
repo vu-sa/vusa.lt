@@ -44,7 +44,35 @@ describe('DocumentListItem', () => {
       expect(heading.text()).toBe(title);
       expect(heading.get('mark').text()).toBe('Įstat');
     }
-    expect(wrapper.find('[data-slot="search-match"]').exists()).toBe(false);
+    expect(wrapper.find('[data-field="summary"]').exists()).toBe(false);
+  });
+
+  test('highlights a matched type on its chip and a body match in the summary slot', () => {
+    const matches = documentWithMatch({ document: { title: baseDocument.title, content_type: 'Įstatai', summary: 'Organizacijos taisyklės' }, highlights: [
+      { field: 'content_type', snippet: '⟦Įstat⟧ai' },
+      { field: 'body', snippet: 'pagal ⟦įstat⟧us' },
+    ] }) as SearchMatchDocument;
+    const wrapper = mount(DocumentListItem, {
+      props: { document: { ...baseDocument, ...matches, content_type: 'Įstatai', summary: 'Organizacijos taisyklės' } },
+      global: { stubs },
+    });
+    expect(wrapper.get('[data-field="content_type"] mark').text()).toBe('Įstat');
+    expect(wrapper.get('p [data-field="body"]').text()).toBe('pagal įstatus');
+    expect(wrapper.text()).not.toContain('Organizacijos taisyklės');
+    // Nothing sits beside the title.
+    expect(wrapper.get('h3').element.parentElement!.querySelectorAll('[data-slot="search-match"]')).toHaveLength(0);
+  });
+
+  test('highlights a matched year on the date chip', () => {
+    const matches = documentWithMatch({ document: { title: baseDocument.title, document_year: '2024' }, highlights: [
+      { field: 'document_year', snippet: '⟦2024⟧' },
+    ] }) as SearchMatchDocument;
+    const wrapper = mount(DocumentListItem, {
+      props: { document: { ...baseDocument, ...matches, document_date: '2024-05-12' } },
+      global: { stubs },
+    });
+    expect(wrapper.get('[data-field="document_year"]').text()).toBe('2024-05-12');
+    expect(wrapper.get('[data-field="document_year"] mark').text()).toBe('2024');
   });
 
   test('links to link_url for a resolved shortcut document', () => {

@@ -169,7 +169,7 @@ class User extends Authenticatable implements GuardsForceDelete
 
     public function toSearchableArray(): array
     {
-        $this->loadMissing(['current_duties.institution.tenant', 'previous_duties']);
+        $this->loadMissing(['current_duties.institution.tenant', 'previous_duties', 'duties']);
 
         $currentDuties = $this->current_duties;
         // Order previous duties most-recent-first so the freshest history surfaces first.
@@ -213,6 +213,9 @@ class User extends Authenticatable implements GuardsForceDelete
             'current_duty_ids' => $currentDuties->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
             'previous_duty_names' => $previousDuties->pluck('name')->values()->all(),
             'previous_duty_ids' => $previousDuties->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
+            // Raw, index-aligned term dates: a pre-computed "2021–dabar" would go stale when a term ends.
+            'term_start_dates' => $this->duties->map(fn (Duty $duty) => $duty->pivot?->start_date?->toDateString() ?? '')->values()->all(),
+            'term_end_dates' => $this->duties->map(fn (Duty $duty) => $duty->pivot?->end_date?->toDateString() ?? '')->values()->all(),
             'is_active' => $this->deleted_at === null,
             'created_at' => $this->created_at->timestamp,
         ];

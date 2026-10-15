@@ -11,7 +11,7 @@
         titleLines === 2 ? 'line-clamp-2' : 'truncate',
       ]"
     >
-      <slot><SearchMatch inline :match="titleMatch" :title /></slot>
+      <slot><SearchMatch :match="titleMatch" :title /></slot>
     </Link>
     <button
       v-else-if="clickable"
@@ -24,19 +24,19 @@
       ]"
       @click="emit('open')"
     >
-      <slot><SearchMatch inline :match="titleMatch" :title /></slot>
+      <slot><SearchMatch :match="titleMatch" :title /></slot>
     </button>
     <p v-else :class="['font-bold text-foreground', titleLines === 2 ? 'line-clamp-2' : 'truncate']">
-      <slot><SearchMatch inline :match="titleMatch" :title /></slot>
+      <slot><SearchMatch :match="titleMatch" :title /></slot>
     </p>
 
-    <SearchMatch compact :match :title />
-
+    <!-- A search excerpt stands in for the sub-line, so matching never makes a row taller. -->
     <p
       v-if="sub || $slots.sub"
-      :class="['mt-0.5 truncate text-xs text-muted-foreground', mono && 'font-mono']"
+      :class="['mt-0.5 truncate text-xs text-muted-foreground', mono && !subMatch && 'font-mono']"
     >
-      <slot name="sub">
+      <SearchMatch v-if="subMatch" :match="subMatch" />
+      <slot v-else name="sub">
         {{ sub }}
       </slot>
     </p>
@@ -77,6 +77,10 @@ const props = withDefaults(defineProps<{
 });
 
 const titleMatch = computed(() => matchTitle(props.title ?? '', props.titleMatches));
+const subMatch = computed(() => {
+  const text = props.match?.segments.map(segment => segment.text).join('');
+  return text && text !== props.title ? props.match : undefined;
+});
 
 const emit = defineEmits<{
   open: [];

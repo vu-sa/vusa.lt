@@ -35,7 +35,7 @@ describe('MemberTermsSummary.vue', () => {
     expect(wrapper.get('[data-testid="member-terms-summary"]').text()).toContain(':count iš viso');
   });
 
-  it('lists where the person serves now and where they served before, with the year it ended', () => {
+  it('lists where the person serves now and where they served before, with the period at each', () => {
     const wrapper = mount(MemberTermsSummary, {
       props: {
         duties: [
@@ -57,7 +57,9 @@ describe('MemberTermsSummary.vue', () => {
     // Still serving there, so it is not repeated as a past institution.
     expect(sections[1]).not.toContain('Parlamentas');
     expect(sections[1]).toContain('Valdyba');
-    expect(sections[1]).toContain('2021');
+    // A period per institution, with earlier terms where they still serve folded into it.
+    expect(sections[0]).toContain('2023–dabar');
+    expect(sections[1]).toContain('2019–2021');
   });
 
   it('does not repeat the count when every term is current', () => {
