@@ -10,6 +10,7 @@ use App\Models\Document;
 use App\Models\Institution;
 use App\Services\SharepointGraphService;
 use App\Settings\DocumentDiscoverySettings;
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Database\DetectsLostConnections;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -45,13 +46,26 @@ class SharepointDocumentDiscovery
 
     private const string THROTTLED_UNTIL = 'sharepoint-document-discovery:throttled';
 
+    private ?Lock $lock = null;
+
     public function __construct(private DocumentDiscoverySettings $settings) {}
+
+    /**
+     * Release this run's lock when the process is being stopped, which skips `run()`'s finally.
+     */
+    public function releaseLock(): void
+    {
+        $this->lock?->release();
+        $this->lock = null;
+    }
 
     /**
      * @param  int|null  $limit  Add at most this many new files, in folder order. Repeat to add the archive in
      *                           batches; a limited run removes nothing and keeps its place in the change feed unsaved.
+     * @param  (\Closure(string, int): void)|null  $progress  told each stage: `listing_all`/`listing_changes`, `reading` (items so far), `read` (items),
+     *                                                        `looking_up` (files), `looked_up` (so far), `throttled` (seconds), `storing` (files), `stored` (so far)
      */
-    public function run(bool $full = false, bool $dryRun = false, bool $allowMassRemoval = false, ?int $limit = null): DiscoveryResult
+    public function run(bool $full = false, bool $dryRun = false, bool $allowMassRemoval = false, ?int $limit = null, ?\Closure $progress = null): DiscoveryResult
     {
         if (Cache::has(self::THROTTLED_UNTIL)) {
             return DiscoveryResult::aborted('throttled', $full);
@@ -63,8 +77,10 @@ class SharepointDocumentDiscovery
             return DiscoveryResult::aborted('already_running', $full);
         }
 
+        $this->lock = $lock;
+
         try {
-            return $this->discover($full, $dryRun, $allowMassRemoval, $limit);
+            return $this->discover($full, $dryRun, $allowMassRemoval, $limit, $progress ?? function (): void {});
         } catch (SharepointThrottledException $e) {
             // The checkpoint is untouched, so the next run after the pause replays this one.
             Log::warning('SharePoint throttled document discovery; pausing it', ['seconds' => $e->retryAfterSeconds]);
@@ -72,7 +88,7 @@ class SharepointDocumentDiscovery
 
             return DiscoveryResult::aborted('throttled', $full);
         } finally {
-            $lock->release();
+            $this->releaseLock();
         }
     }
 
@@ -133,10 +149,14 @@ class SharepointDocumentDiscovery
         return new SharepointGraphService(driveId: config('filesystems.sharepoint.archive_drive_id'));
     }
 
-    private function discover(bool $full, bool $dryRun, bool $allowMassRemoval, ?int $limit): DiscoveryResult
+    /**
+     * @param  \Closure(string, int): void  $progress
+     */
+    private function discover(bool $full, bool $dryRun, bool $allowMassRemoval, ?int $limit, \Closure $progress): DiscoveryResult
     {
         $graph = $this->makeGraphService();
-        [$items, $deltaLink, $isFull] = $this->readFeedOrRestart($graph, $full ? null : $this->settings->delta_link);
+        [$items, $deltaLink, $isFull] = $this->readFeedOrRestart($graph, $full ? null : $this->settings->delta_link, $progress);
+        $progress('read', $items->count());
 
         // The first listing ever meets years of files nobody imported; they start hidden so
         // "Laukia" only collects what arrives afterwards. A later forced full run is not a first one.
@@ -185,8 +205,9 @@ class SharepointDocumentDiscovery
             $needsFields = $known->concat($new->sortBy(fn (array $item): string => $item['path'].'/'.$item['name'], SORT_NATURAL | SORT_FLAG_CASE)->take($limit));
         }
 
+        $progress('looking_up', $needsFields->count());
         $resolveInstitution = $this->institutionResolver();
-        [$failedIds, $transientIds] = $this->upsertNeedingFields($graph, $needsFields, $existing, $isBaseline, $dryRun, $result, $resolveInstitution);
+        [$failedIds, $transientIds] = $this->upsertNeedingFields($graph, $needsFields, $existing, $isBaseline, $dryRun, $result, $resolveInstitution, $progress);
 
         $result->removed = $removals->count();
 
@@ -207,14 +228,16 @@ class SharepointDocumentDiscovery
     /**
      * @return array{0: Collection<string, FeedItem>, 1: string, 2: bool} items, deltaLink and whether the read was a full listing
      */
-    private function readFeedOrRestart(SharepointGraphService $graph, ?string $link): array
+    private function readFeedOrRestart(SharepointGraphService $graph, ?string $link, \Closure $progress): array
     {
         try {
-            [$items, $deltaLink] = $this->readFeed($graph, $link);
+            $progress($link === null ? 'listing_all' : 'listing_changes', 0);
+            [$items, $deltaLink] = $this->readFeed($graph, $link, $progress);
         } catch (SharepointDeltaExpiredException) {
             Log::warning('SharePoint delta link expired, starting a full document discovery');
             $link = null;
-            [$items, $deltaLink] = $this->readFeed($graph, null);
+            $progress('listing_all', 0);
+            [$items, $deltaLink] = $this->readFeed($graph, null, $progress);
         }
 
         return [$items, $deltaLink, $link === null];
@@ -325,14 +348,19 @@ class SharepointDocumentDiscovery
     /**
      * @param  Collection<string, Document>  $existing
      * @param  \Closure(string): ?Institution  $resolveInstitution
+     * @param  \Closure(string, int): void  $progress
      * @return array{0: list<string>, 1: list<string>} failed drive item ids, and those Graph reported as transient
      */
-    private function upsertNeedingFields(SharepointGraphService $graph, Collection $needsFields, Collection $existing, bool $isBaseline, bool $dryRun, DiscoveryResult $result, \Closure $resolveInstitution): array
+    private function upsertNeedingFields(SharepointGraphService $graph, Collection $needsFields, Collection $existing, bool $isBaseline, bool $dryRun, DiscoveryResult $result, \Closure $resolveInstitution, \Closure $progress): array
     {
         $failedIds = [];
-        ['items' => $listItems, 'transient' => $transientIds] = $graph->getListItemsForDriveItems($needsFields->pluck('id')->values()->all());
+        ['items' => $listItems, 'transient' => $transientIds] = $graph->getListItemsForDriveItems($needsFields->pluck('id')->values()->all(), progress: $progress);
+
+        $progress('storing', $needsFields->count());
+        $stored = 0;
 
         foreach ($needsFields as $item) {
+            $progress('stored', $stored++);
             $listItem = $listItems[$item['id']] ?? null;
 
             if ($listItem === null) {
@@ -418,7 +446,8 @@ class SharepointDocumentDiscovery
         $isNew = $document === null;
         $fileChanged = ! $isNew && $document->sharepoint_modified_at !== null
             && ! $document->sharepoint_modified_at->equalTo($item['modifiedAt'] ?? $document->sharepoint_modified_at);
-        $driveItemChanged = ! $isNew && $document->sharepoint_drive_item_id !== $item['id'];
+        // A first link-up (no drive item id yet) is not a move; its link and .url target are unchanged.
+        $driveItemChanged = ! $isNew && $document->sharepoint_drive_item_id !== null && $document->sharepoint_drive_item_id !== $item['id'];
         $restored = ! $isNew && $document->removed_from_sharepoint_at !== null;
 
         if ($isNew) {
@@ -580,7 +609,7 @@ class SharepointDocumentDiscovery
      *
      * @return array{0: Collection<string, FeedItem>, 1: string}
      */
-    private function readFeed(SharepointGraphService $graph, ?string $link): array
+    private function readFeed(SharepointGraphService $graph, ?string $link, \Closure $progress): array
     {
         $items = collect();
         $deltaLink = null;
@@ -592,6 +621,8 @@ class SharepointDocumentDiscovery
                 $item = $this->normalize($driveItem);
                 $items->put($item['id'], $item);
             }
+
+            $progress('reading', $items->count());
 
             $link = $page['nextLink'];
             $deltaLink = $page['deltaLink'] ?? $deltaLink;
