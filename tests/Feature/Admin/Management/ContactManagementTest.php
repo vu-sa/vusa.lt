@@ -108,17 +108,15 @@ test('contact manager can create user with duty', function (): void {
         'current_duties' => [$this->admin->duties()->first()->id],
     ]);
 
-    $response->assertStatus(302)->assertRedirectToRoute('users.index');
+    $created = User::query()->where('email', 'test@email.com')->sole();
+
+    $response->assertStatus(302)->assertRedirectToRoute('users.show', $created);
 
     $this->followRedirects($response)
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Admin/People/IndexUser')
+            ->component('Admin/People/ShowUser')
             ->has('flash.success')
         );
-
-    $this->assertDatabaseHas('users', [
-        'name' => 'Test 3',
-    ]);
 });
 
 test('contact manager can detach duty from user', function (): void {

@@ -93,14 +93,12 @@ describe('News Tag Functionality', function (): void {
         $superAdmin = User::factory()->create();
         $superAdmin->assignRole(config('permission.super_admin_role_name'));
 
-        asUser($superAdmin)
-            ->post(route('news.store'), $newsData)
-            ->assertRedirect(route('news.index'))
-            ->assertSessionHas('success');
+        $response = asUser($superAdmin)->post(route('news.store'), $newsData);
 
-        $news = News::where('title', 'Test News')->first();
-        expect($news)->not->toBeNull()
-            ->and($news->tags)->toHaveCount(2)
+        $news = News::where('title', 'Test News')->firstOrFail();
+        $response->assertRedirect(route('news.edit', $news))->assertSessionHas('success');
+
+        expect($news->tags)->toHaveCount(2)
             ->and($news->tags->pluck('id')->toArray())->toEqual([$tag1->id, $tag2->id]);
     });
 
