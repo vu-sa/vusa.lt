@@ -19,7 +19,7 @@ use Illuminate\Foundation\Vite;
 
 pest()->use(RefreshDatabase::class);
 
-it('renders equal-width email actions for each institution on narrow and wide screens', function (): void {
+it('renders compact email actions for each institution without overflow on narrow and wide screens', function (): void {
     $first = InstitutionActivityRequest::factory()->create(['period_end' => today()]);
     $second = InstitutionActivityRequest::factory()->create(['recipient_id' => $first->recipient_id, 'period_end' => today()]);
     $page = visit('/up');
@@ -33,7 +33,6 @@ it('renders equal-width email actions for each institution on narrow and wide sc
         $notification = new InstitutionActivityNotification(new Collection([$first, $second]));
         $mail = $campaign === 'digest' ? new NotificationDigest($first->recipient, ['meeting' => [$notification->toDigestItem($first->recipient)]]) : $notification->toMail($first->recipient);
         $page->page()->setContent((string) $mail->render());
-        expect($page->script('Array.from(document.querySelectorAll("table")).filter(table => table.style.tableLayout === "fixed").length'))->toBe(2);
         foreach ([390, 820, 1180, 1440] as $width) {
             $page->resize($width, 900);
             expect($page->script('document.documentElement.scrollWidth <= innerWidth'))->toBeTrue();
@@ -57,7 +56,7 @@ it('submits several meetings through the signed form and renders without overflo
         }
     }
     $page->fill('#date-0', today()->subWeek()->toDateString());
-    $page->fill('#time-0', '09:30');
+    $page->fill('#time-0', '09:32');
     $page->click('button:has-text("Pridėti posėdį")');
     $page->fill('#date-1', today()->subDay()->toDateString());
     $page->select('#type-1', 'email');
@@ -69,7 +68,9 @@ it('submits several meetings through the signed form and renders without overflo
     $page->assertNoJavaScriptErrors();
     $page->click('button[type=submit]');
     $page->assertSee(__('activity_requests.done.met'))->assertNoJavaScriptErrors();
-    expect($request->fresh()->meetings)->toHaveCount(2)->and(Meeting::query()->where('type', 'email')->sole()->start_time->format('H:i'))->toBe('23:59');
+    expect($request->fresh()->meetings)->toHaveCount(2)
+        ->and(Meeting::query()->where('type', 'in-person')->sole()->start_time->format('H:i'))->toBe('09:32')
+        ->and(Meeting::query()->where('type', 'email')->sole()->start_time->format('H:i'))->toBe('23:59');
 });
 
 it('opens request history from an institution record against the built bundle', function (): void {
@@ -182,7 +183,7 @@ it('captures documentation reference frames for activity requests', function ():
     // 3. Email notification
     $notification = new InstitutionActivityNotification(new Collection([$request]));
     $mail = $notification->toMail($representative);
-    $page->resize(640, 750);
+    $page->resize(640, 950);
     // setContent over the admin shell never reaches "load"; start from a bare page.
     $page->navigate('/up');
     $page->page()->setContent((string) $mail->render());
@@ -204,3 +205,16 @@ function pickPreselectedInstitutions($page): void
     waitForInertiaRender($page, '[data-slot=action-window-primary]:not([disabled])');
     $page->click('[data-slot=action-window-primary]');
 }
+
+it('records exact minutes using native date and time controls on a phone', function (): void {
+    app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));
+    $request = InstitutionActivityRequest::factory()->create(['period_end' => today()]);
+    $page = visit($request->answerUrl(InstitutionActivityAnswer::Met))->on()->iPhone14Pro()
+        ->assertPresent('#activity-reply form');
+    $page->fill('input[type=date]', today()->subDay()->toDateString());
+    $page->fill('input[type=time]', '07:12');
+    $page->click('button[type=submit]');
+
+    $page->assertSee(__('activity_requests.done.met'))->assertNoJavaScriptErrors();
+    expect($request->fresh()->meetings->sole()->start_time->format('H:i'))->toBe('07:12');
+});

@@ -33,7 +33,7 @@ lemia tai, ar esi išteklių administratorius.
 | Ištekliai | `/mano/resources` | Visų padalinių ištekliai, gali rezervuoti | Taip pat kuria ir redaguoja savo padalinio |
 | Kategorijos | `/mano/resourceCategories` | – | Kuria ir redaguoja |
 
-Mygtukas **+ Sukurti** šioje srityje siūlo veiksmą **Nauja rezervacija**.
+Mygtukas **Veiksmai** šioje srityje siūlo veiksmą **Nauja rezervacija**.
 
 ## Išteklių administratorius {#istekliu-administratorius}
 

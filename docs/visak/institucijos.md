@@ -24,6 +24,7 @@ tests:
   - tests/Feature/Notifications/InstitutionActivityAnswerTest.php
   - tests/Feature/Admin/Management/InstitutionActivityRequestControllerTest.php
   - resources/js/Components/ActionWindow/__tests__/ActivityRequestScreens.component.test.ts
+  - resources/js/Components/Institutions/__tests__/InstitutionActivityReply.component.test.ts
   - tests/Browser/InstitutionActivityReplyTest.php
   - tests/Unit/InstitutionActivityStatusServiceTest.php
   - resources/js/Pages/Admin/People/__tests__/ShowInstitution.component.test.ts
@@ -129,7 +130,7 @@ nebuvo**.
 ### Pranešimas „Posėdžio nebuvo“ {#posedzio-nebuvo}
 
 Jei institucija kurį laiką nesirenka (pvz., per sesiją), apie tai pranešama: nurodomas laikotarpis
-ir, jei reikia, pastaba (iki 500 simbolių). Tai galima padaryti per **+ Sukurti → Posėdžio nebuvo**
+ir, jei reikia, pastaba (iki 500 simbolių). Tai galima padaryti per **Veiksmai → Posėdžio nebuvo**
 arba institucijos meniu **⋯ → Pridėti pažymą**.
 
 - Pradžia gali būti ir praeityje. Pabaiga turi būti vėlesnė už pradžią ir ne vėliau kaip **po 3
@@ -149,7 +150,7 @@ priminimo. Klausimą galima išsiųsti iš:
 
 - **ViSAK → Padaliniai**, sąrašo **Reikia dėmesio** mygtuko **Paklausti atstovų** (pasirinktos visos
   sąrašo institucijos);
-- **+ Sukurti → Paklausti, ar vyko posėdžiai** (institucijas pasirenki pats);
+- **Veiksmai → Paklausti, ar vyko posėdžiai** (institucijas pasirenki pats);
 - institucijos meniu **⋯ → Paklausti, ar vyko posėdžiai**.
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Dvi atskiros užklausos ir atsakymų istorija">
@@ -175,7 +176,7 @@ Peržiūroje **Ką ir kam išsiųsime** gavėjai sugrupuoti taip, kaip pasirinkt
 pagal atstovus. Kiekviena eilutė turi žymimąjį langelį – galima nužymėti tuos, kurių šįkart klausti nenorima.
 **Kam laiško nesiųsime** paaiškina praleistas institucijas ir gavėjų pranešimų nustatymus:
 laiškas dabar, santrauka, išjungtas el. paštas ar nutildyti pranešimai. Galima pridėti žinutę iki 500
-simbolių. Patvirtinus rodoma, kiek užklausų ir laiškų įtraukta į eilę; tai dar nėra pristatymo patvirtinimas.
+simbolių. Patvirtinus rodoma, kiek užklausų paruošta, kiek yra gavėjų ir kiek laiškų numatyta siųsti iš karto. Tai dar nėra pristatymo patvirtinimas.
 
 <DocScreenshot name="activity-request-review" narrow alt="Veiksmų lango peržiūra prieš siunčiant veiklos užklausas" caption="Veiksmų lango peržiūra: gavėjų sąrašas, laikotarpis ir koordinatoriaus žinutė prieš išsiunčiant užklausas." />
 
@@ -197,7 +198,7 @@ skirtingos užklausų rūšys vertinamos atskirai.
 ### Atsakymas iš laiško {#atsakymas}
 
 Atsakyti galima **neprisijungus**. Nuoroda atveria puslapį, o atsakymas įrašomas tik patvirtinus.
-Nuorodos galioja **14 dienų**.
+Nuorodos galioja **14 dienų**. Laiškas pradedamas pasisveikinimu vardu ir paaiškina, kad kreipiamasi į studentų atstovą (-ę). Nuoroda į Mano VU SA ir trumpas platformos paaiškinimas pateikiami poraštėje. Laiške pateikiami nedideli neutralūs atsakymo mygtukai; institucija ir laikotarpis nurodomi prie kiekvieno klausimo.
 
 <DocScreenshot name="activity-request-email" narrow alt="Atstovui siunčiamas pranešimo el. laiškas su veiklos klausimu ir atsakymo mygtukais" caption="Pranešimo el. laiškas atstovui su pasirašytomis greitojo atsakymo nuorodomis." />
 
@@ -209,7 +210,7 @@ Nuorodos galioja **14 dienų**.
   įrašyti ir jų darbotvarkės bei sprendimai užpildyti. Kol dar yra neužpildytų įrašų, patvirtinimo
   priimti negalima. Pranešimas apie laiką be posėdžių apima tik likusį tarpą po paskutinio posėdžio iki
   nurodytos pabaigos. Jau patvirtinti tarpai nedubliuojami.
-- **Nesu šio organo narys (-ė)** – pranešama klaususiems koordinatoriams patikrinti atstovų duomenis.
+- **Neatstovauju šiai institucijai** – pranešama klaususiems koordinatoriams patikrinti atstovų duomenis.
   Kitų gavėjų užklausos lieka atviros.
 
 <DocScreenshot name="activity-request-reply" narrow alt="Atsakymo puslapis be prisijungimo, kuriame atstovas pažymi posėdžius" caption="Viešas atsakymo puslapis: atstovė nurodo posėdžio datą, laiką ir formatą be prisijungimo." />
@@ -220,7 +221,7 @@ darbotvarkė ir sprendimai. Jei trūksta paties posėdžio, pasirenkama **Pridė
 Klaidingai užpildytos eilutės ir
 pasirinktas atsakymas išlieka, kad būtų galima pataisyti laukus. Kompiuteryje kalendorius rodomas
 lietuviškai (angliškame puslapyje – angliškai), savaitė prasideda pirmadienį, laikas rašomas 24 val.
-formatu. Telefono kalendoriaus kalba priklauso nuo įrenginio nustatymų.
+formatu. Laiko pasiūlymai pateikiami kas 15 minučių nuo 08:00 iki 20:00; galima įrašyti ir kitą tikslų laiką, pvz., 07:12 ar 14:32. Telefono kalendoriaus kalba priklauso nuo įrenginio nustatymų.
 
 Užfiksuotas posėdis gali užbaigti tik to laikotarpio veiklos užklausą. Įrašų papildymo užklausas
 kitiems gavėjams užbaigia tik **Viskas užfiksuota**, kai patvirtintas laikotarpis apima jų

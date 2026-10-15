@@ -1,7 +1,7 @@
 @component('mail::message')
 # {{ __('mail.confirm.heading') }} ✅
 
-{{ __('mail.greeting', ['name' => $name ]) }} 👋
+{{ \App\Support\MailGreeting::forName($name) }}
 
 {{ __('mail.confirm.intro') }}
 

@@ -39,3 +39,10 @@ describe('admin date and time pickers', () => {
     expect(wrapper.findAll('input')).toHaveLength(2);
   });
 });
+
+it('puts form validation attributes on the date input', () => {
+  const wrapper = mount(DatePicker, { attrs: { 'required': true, 'aria-invalid': true, 'aria-describedby': 'date-error' } });
+
+  expect(wrapper.find('input').attributes()).toMatchObject({ 'required': '', 'aria-invalid': 'true', 'aria-describedby': 'date-error' });
+  expect(wrapper.attributes('aria-describedby')).toBeUndefined();
+});

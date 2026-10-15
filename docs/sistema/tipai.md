@@ -41,7 +41,7 @@ konkretūs tipai ir kategorijos tvarkomi pasirinktame sąraše.
 
 ## Veiksmai
 
-Institucijos ar pareigybės tipą sukurk per **+ Sukurti**. Įrašyk lietuvišką ir anglišką
+Institucijos ar pareigybės tipą sukurk per **Veiksmai**. Įrašyk lietuvišką ir anglišką
 pavadinimus bei aprašymus. Tėvinį tipą pasirink iš tos pačios rūšies sąrašo; tipų hierarchija
 negali sudaryti rato. Iš institucijos tipo tėvų paveldima valdymo sritis.
 

@@ -121,6 +121,8 @@ describe('AgendaItemSheetForm', () => {
     const [start, end] = wrapper.findAllComponents({ name: 'TimePicker' });
 
     expect(start!.props('suggestFrom')).toEqual({ hour: 14, minute: 0 });
+    expect(start!.props('minuteStep')).toBe(15);
+    expect(end!.props('minuteStep')).toBe(15);
 
     await wrapper.find('input#agenda-item-start-time').setValue('15:10');
 

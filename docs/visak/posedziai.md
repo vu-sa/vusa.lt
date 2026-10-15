@@ -128,7 +128,7 @@ su tipu „Protokolai“ arba „Ataskaitos“). Jie įkeliami skirtuke **Failai
 
 ### Fiksuoti posėdį {#fiksuoti}
 
-Posėdį užfiksuoti gali tie, kas eina atstovavimo pareigybę institucijoje. Paspausk **+ Sukurti →
+Posėdį užfiksuoti gali tie, kas eina atstovavimo pareigybę institucijoje. Paspausk **Veiksmai →
 Fiksuoti posėdį** (arba institucijos puslapyje **Fiksuoti veiklą**) ir veiksmų lange:
 
 1. pasirink instituciją (jei langas atvertas iš institucijos, ji jau pasirinkta). Studentų atstovas
@@ -140,7 +140,7 @@ Fiksuoti posėdį** (arba institucijos puslapyje **Fiksuoti veiklą**) ir veiksm
 4. įvesk darbotvarkės punktus (po vieną eilutę), pasirink įvesti juos vėliau arba praleisk;
 5. VU SA darinio posėdį gali iš karto **paskelbti kalendoriuje**.
 
-Kiti **+ Sukurti** veiksmai:
+Kiti **Veiksmai** veiksmai:
 
 - **Posėdžio nebuvo** – pranešti, kad institucija kurį laiką nesirinks (žr.
   [Institucijos](/visak/institucijos#posedzio-nebuvo)). Jei vėliau užregistruojamas posėdis tame

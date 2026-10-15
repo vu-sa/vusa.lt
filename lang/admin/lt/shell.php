@@ -49,7 +49,7 @@ return [
         'no_sections' => 'Skyrių nerasta',
         'tools' => 'Įrankiai',
         'sections' => 'Skyriai',
-        'create' => 'Sukurti',
+        'actions' => 'Veiksmai',
         'search' => 'Ieškoti',
         'search_field' => 'Ieškoti ar pereiti…',
         'menu' => 'Meniu',
@@ -81,7 +81,7 @@ return [
 
     'palette' => [
         'go_to' => 'Pereiti į',
-        'create' => 'Sukurti',
+        'actions' => 'Veiksmai',
         'pinned' => 'Prisegta',
         'recent' => 'Neseniai',
         'pin' => 'Prisegti',

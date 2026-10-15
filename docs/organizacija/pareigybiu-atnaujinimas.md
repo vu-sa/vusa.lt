@@ -17,7 +17,7 @@ tests:
 Vedlys vienu kartu atnaujina **vienos pareigybės narius**: užbaigia laikotarpius,
 prideda esamus ar naujus narius ir leidžia suderinti jų datas. Kitai pareigybei vedlys paleidžiamas iš naujo.
 
-Vedlys pasiekiamas per **+ Sukurti → Pareigybių atnaujinimas** arba adresu `/mano/duties-update-users`.
+Vedlys pasiekiamas per **Veiksmai → Pareigybių atnaujinimas** arba adresu `/mano/duties-update-users`.
 
 ## Rekomendacijos {#rekomendacijos}
 

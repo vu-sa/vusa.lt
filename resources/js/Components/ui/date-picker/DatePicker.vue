@@ -1,6 +1,7 @@
 <template>
   <Input
     v-if="isCoarsePointer"
+    v-bind="$attrs"
     :id
     :model-value="dateValue"
     type="date"
@@ -14,6 +15,7 @@
   />
   <div v-else :class="cn('flex w-full items-center gap-2', props.class)">
     <Input
+      v-bind="$attrs"
       :id
       :model-value="dateValue"
       inputmode="numeric"
@@ -69,7 +71,8 @@ import { Input } from '@/Components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { useCoarsePointer } from '@/Composables/useCoarsePointer';
 
-// Define component props
+defineOptions({ inheritAttrs: false });
+
 const props = defineProps<{
   id?: string;
   modelValue?: Date | DateValue | string | null;

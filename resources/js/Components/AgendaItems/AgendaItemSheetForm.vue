@@ -105,7 +105,7 @@
         <TimePicker
           id="agenda-item-start-time"
           :model-value="toTimeValue(draft.start_time)"
-          :minute-step="5"
+          :minute-step="15"
           :suggest-from="startSuggestionsFrom"
           clearable
           class="h-11 w-32 text-sm"
@@ -115,7 +115,7 @@
         <span class="text-muted-foreground" aria-hidden="true">–</span>
         <TimePicker
           :model-value="toTimeValue(draft.end_time)"
-          :minute-step="5"
+          :minute-step="15"
           :suggest-from="toTimeValue(draft.start_time) ?? startSuggestionsFrom"
           clearable
           class="h-11 w-32 text-sm"

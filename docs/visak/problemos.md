@@ -118,7 +118,7 @@ Sąraše visi padaliniai rodomi kartu, o savo padalinio problemas atsirenki grei
 
 Problemą užregistruoti gali:
 
-- per **+ Sukurti → Nauja problema** arba sąrašo mygtuką **Nauja problema**;
+- per **Veiksmai → Nauja problema** arba sąrašo mygtuką **Nauja problema**;
 - iš institucijos puslapio skirtuko **Problemos** – forma atsidaro jau su institucijos padaliniu ir
   pačia institucija.
 

@@ -1,16 +1,22 @@
 <x-mail::message>
 # {{ $title }}
 
+{{ \App\Support\MailGreeting::forName($recipientName ?? null) }}
+
 {{ $body }}
 
 <x-mail::context :rows="$context" />
+
+@if ($note !== null)
+<x-mail::panel>
+{{ $note }}
+</x-mail::panel>
+@endif
 
 @foreach ($questions as $question)
 <x-mail::activity-question :question="$question" />
 
 @endforeach
-
-{{ __('activity_requests.email.footer') }} [{{ __('activity_requests.open_mano') }}]({{ route('dashboard') }})
 
 <x-slot:subcopy>
 {{ __('notifications.mail.sign_off') }}

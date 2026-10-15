@@ -5,7 +5,7 @@
         v-for="campaign in campaigns"
         :key="campaign"
         :title="$t(`activity_requests.campaigns.${campaign}`)"
-        :description="$t(`activity_requests.email.${campaign}`)"
+        :description="$t(`activity_requests.descriptions.${campaign}`)"
         :icon="MailQuestion"
         @click="choose(campaign)"
       />

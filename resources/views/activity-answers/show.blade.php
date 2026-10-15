@@ -9,7 +9,7 @@
     $resolvedBy = $activityRequest->answer === null ? $activityRequest->resolvedByRequest?->recipient : null;
     $remaining = collect($uncovered)->map(fn ($gap) => $gap[0]->toDateString().' – '.$gap[1]->toDateString())->join(', ');
     $inputClass = 'mt-1 block w-full h-11 border border-border bg-background px-3 text-foreground';
-    $buttonClass = 'inline-flex h-11 items-center justify-center px-4 text-xs font-bold uppercase tracking-wide';
+    $buttonClass = 'inline-flex min-h-11 items-center justify-center px-4 text-sm font-semibold';
 @endphp
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}">
@@ -23,7 +23,8 @@
     <body data-surface="public" class="min-h-screen bg-background text-foreground antialiased">
         <main class="mx-auto max-w-xl px-5 py-10 sm:py-16">
             <p class="text-xs font-bold uppercase tracking-wide text-muted-foreground">Mano VU SA</p>
-            <h1 class="mt-2 text-2xl font-bold">{{ 'VU SA · '.__('activity_requests.campaigns.'.$activityRequest->campaign_type->value).' · '.$institution->name }}</h1>
+            <h1 class="mt-2 text-2xl font-bold">{{ __('activity_requests.campaigns.'.$activityRequest->campaign_type->value) }}</h1>
+            <p class="mt-2 font-medium">{{ $institution->name }}</p>
 
             @if (! $isOpen)
                 <div class="mt-6 border-l-2 border-brand pl-4">
@@ -102,7 +103,7 @@
                     $choices = [
                         ['value' => 'met', 'label' => $missing ? __('activity_requests.add_missing_meeting') : __('notifications.action_register_meeting'), 'hint' => '', 'submit' => __('activity_requests.record_meeting')],
                         ['value' => $missing ? 'complete' : 'not_met', 'label' => $missing ? __('activity_requests.complete') : __('notifications.action_report_activity'),
-                         'hint' => $missing ? __('activity_requests.complete_hint') : __('activity_requests.not_met_hint', ['date' => $since, 'institution' => $institution->name]),
+                         'hint' => $missing ? __('activity_requests.complete_hint') : __('activity_requests.not_met_hint', ['start' => $since, 'end' => $activityRequest->periodEnd()->toDateString(), 'institution' => $institution->name]),
                          'submit' => $missing ? __('activity_requests.complete') : __('activity_requests.confirm_not_met')],
                         ['value' => 'not_mine', 'label' => __('notifications.action_not_mine'), 'hint' => __('activity_requests.not_mine_hint'), 'submit' => __('activity_requests.confirm_not_mine')],
                     ];
@@ -139,7 +140,7 @@
                                             </select>
                                         </label>
                                         <label class="block text-sm">{{ __('activity_requests.meeting_time') }}
-                                            <input type="time" name="meetings[{{ $index }}][time]" value="{{ $row['time'] ?? '' }}" class="{{ $inputClass }}">
+                                            <input type="time" step="60" name="meetings[{{ $index }}][time]" value="{{ $row['time'] ?? '' }}" class="{{ $inputClass }}">
                                         </label>
                                     @endforeach
                                     <p class="text-xs text-muted-foreground">{{ __('activity_requests.meeting_time_hint') }}</p>

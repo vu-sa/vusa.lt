@@ -176,6 +176,7 @@ dar kažko trūksta, rodo posėdžio **Nepilnų punktų** sąrašas.
 
 - **Laikas** – nebūtinas; formatas `HH:MM`. Pabaiga turi būti vėlesnė už pradžią; galima nurodyti
   tik pabaigą. Pradžia siūloma pagal ankstesnio klausimo pabaigą arba posėdžio pradžią.
+  Laiko pasiūlymai pateikiami kas 15 minučių; galima įrašyti ir tikslų laiką, pvz., 14:32.
 - **Aprašymas** ir **Studentų pozicija** – laisvas tekstas. Pavadinimas ir tekstai saugomi
   lietuviškai; angliškas vertimas pridedamas atskirai, o jo nesant rodomas lietuviškas tekstas.
 - **Iškėlė: Studentų atstovai** – žymima, jei klausimą į darbotvarkę įtraukė studentai.

@@ -113,7 +113,7 @@ describe('task notifications', function (): void {
             function (InstitutionActivityNotification $notification) use ($user): bool {
                 $data = $notification->toArray($user);
 
-                return $data['title'] === 'VU SA · '.__('activity_requests.campaigns.activity_confirmation')
+                return $data['title'] === __('activity_requests.campaigns.activity_confirmation')
                     && $data['body'] === __('activity_requests.email.activity_confirmation')
                     && count($data['actions']) === 2;
             }

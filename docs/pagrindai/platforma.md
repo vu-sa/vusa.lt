@@ -37,6 +37,8 @@ tests:
   - tests/Feature/Admin/Search/SearchControllerTest.php
   - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
   - resources/js/Components/Layouts/Shell/__tests__/PaletteField.component.test.ts
+  - resources/js/Components/Layouts/Shell/__tests__/ShellTopBar.component.test.ts
+  - resources/js/Components/Layouts/Shell/__tests__/MobileBottomBar.component.test.ts
   - tests/Unit/Models/TranslatableExpectationsTest.php
   - tests/Feature/System/TranslationIntegrityTest.php
 ---
@@ -44,10 +46,10 @@ tests:
 # Platforma
 
 Mano VU SA sudaro **darbo sritys** (Mano, ViSAK, Rezervacijos, Svetainė, Organizacija, Sistema).
-Kiekviena sritis turi skiltis. Viršutinė juosta leidžia perjungti sritis, o mygtukas **+ Sukurti**
-atveria langą su visais tau leidžiamais kūrimo veiksmais.
+Kiekviena sritis turi skiltis. Viršutinė juosta leidžia perjungti sritis, o mygtukas **Veiksmai**
+atveria leidžiamus veiksmus: fiksuoti posėdį, pranešti apie jo nebuvimą ar kurti įrašus.
 
-<DocScreenshot name="action-window" narrow alt="Langas „Ką norėtum padaryti?“, atidaromas mygtuku „+ Sukurti“" caption="Mygtukas „+ Sukurti“ viršutinėje juostoje atveria šį langą." />
+<DocScreenshot name="action-window" narrow alt="Langas „Ką norėtum padaryti?“, atidaromas mygtuku „Veiksmai“" caption="Mygtukas „Veiksmai“ viršutinėje juostoje atveria šį langą." />
 
 Lango pasirinkimų „Kaip studentų atstovas“, „Kaip VU SA narys“ ir „Kaip koordinatorius“ galūnės
 pritaikomos pagal tavo profilio įvardžius, o jų nesant – pagal vardą. Pavyzdžiui, pasirinkus
@@ -61,14 +63,14 @@ išjungti. Jei kolega mato skiltį, kurios tu nematai, skiriasi jūsų teisės (
 
 ## Mygtukai ir klaviatūra {#mygtukai-ir-klaviatura}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Viena kūrimo vieta ir darbo sričių navigacija">
+<ChangelogNote version="v3.0" date="2026-10-02" title="Bendras veiksmų langas ir darbo sričių navigacija">
 
-Vietoje seno administravimo meniu pasirenkama darbo sritis ir jos skiltis. **+ Sukurti** rodo
-leidžiamus kūrimo veiksmus; telefono juostose pasiekiami tie patys pagrindiniai darbai.
+Vietoje seno administravimo meniu pasirenkama darbo sritis ir jos skiltis. **Veiksmai** rodo
+leidžiamus veiksmus; telefono juostose pasiekiami tie patys pagrindiniai darbai.
 
 </ChangelogNote>
 
-Pagrindiniai kūrimo veiksmai išsiskiria ryškia spalva ir didžiosiomis raidėmis. Kiti veiksmai
+Mygtukas **Veiksmai** pažymėtas žymeklio simboliu ir rašomas didžiosiomis raidėmis. Pagrindiniai kūrimo veiksmai išsiskiria ryškia spalva ir didžiosiomis raidėmis. Kiti veiksmai
 rašomi įprastai, kad būtų lengviau juos perskaityti. Naršant klaviatūra, aktyvi nuoroda turi
 matomą apvadą.
 
@@ -196,7 +198,7 @@ Kai viskas gerai, ženkliuko dažniausiai nėra – rodoma tik tai, į ką verta
 - Platforma pagal nutylėjimą atsidaro **šviesia tema**, net jei tavo įrenginys nustatytas tamsiai.
   Tamsią temą galima įjungti pasirinkus savo vardą → **Išvaizda → Tamsi tema**; pasirinkimas išsaugomas.
 - **Išvaizda → Prieinamumas** leidžia padidinti tekstą, paryškinti linijas ir pabraukti nuorodas.
-- Telefone ir planšetėje galima atlikti tą patį, ką kompiuteryje: telefone mygtukas **+ Sukurti** ir
+- Telefone ir planšetėje galima atlikti tą patį, ką kompiuteryje: telefone mygtukas **Veiksmai** ir
   pranešimai persikelia į apatinę juostą, o niekas nepasiekiama tik užvedus pelę.
 - Klaviatūra: **?** parodo sparčiųjų klavišų sąrašą, **/** perkelia į sąrašo paiešką.
 
@@ -221,6 +223,6 @@ Būsena visada rodoma per `StatusBadge`, nenaudojant atskirų spalvų.
 - `StatusBadge` visada rodo žodį ir piktogramą, o spalvą ima iš būsenos vaidmens.
 - Stačiakampius kampus, šriftą ir fokuso apvadą naršyklėje tikrina `AdminDesignSurfaceTest`, šviesią
   temą pagal nutylėjimą – `DefaultThemeTest`, prieinamumo nustatymus – `AdminAccessibilityTest`,
-  telefono juostą ir sparčiuosius klavišus – `AdminShellTest`, langą **+ Sukurti** – `ActionWindowTest`.
+  telefono juostą ir sparčiuosius klavišus – `AdminShellTest`, langą **Veiksmai** – `ActionWindowTest`.
 - Laikiną ištrynimą (`SoftDeletes`) ir jo elgseną sąrašuose tikrina `SoftDeletableResourcesTest`; visiškas ištrynimas reikalauja `*.forceDelete` teisės, kurią turi tik super administratorius.
 - Daugiakalbių laukų elgseną (Spatie `HasTranslations`, `toFullArray()` administravimo formose ir `toArray()` lokalizuotai peržiūrai) bei vertimų vientisumą užtikrina `TranslatableExpectationsTest` ir `TranslationIntegrityTest`.

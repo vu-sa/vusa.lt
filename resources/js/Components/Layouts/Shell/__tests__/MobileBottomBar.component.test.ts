@@ -29,21 +29,22 @@ const lit = (wrapper: ReturnType<typeof mount>) => wrapper.findAll('[data-active
   .map(tab => tab.attributes('data-active') === 'true');
 
 describe('MobileBottomBar', () => {
-  it('shows Pradžia, Užduotys, create, Pranešimai and Meniu', () => {
+  it('shows Pradžia, Užduotys, actions, Pranešimai and Meniu', () => {
     const wrapper = mountBar();
 
     expect(tabs(wrapper)).toEqual([
       'shell.workspaces.pradzia.title',
       'shell.sections.uzduotys',
-      '', // the icon-only create button
+      '', // the icon-only action button
       'shell.sections.pranesimai',
       'shell.chrome.menu',
     ]);
-    expect(wrapper.find('[aria-label="shell.chrome.create"]').exists()).toBe(true);
+    expect(wrapper.find('[aria-label="shell.chrome.actions"]').attributes('aria-haspopup')).toBe('dialog');
+    expect(wrapper.find('[aria-label="shell.chrome.actions"] svg.lucide-mouse-pointer-click').exists()).toBe(true);
   });
 
   it('hides the create button when the user has nothing to create', () => {
-    expect(mountBar({ canCreate: false }).find('[aria-label="shell.chrome.create"]').exists()).toBe(false);
+    expect(mountBar({ canCreate: false }).find('[aria-label="shell.chrome.actions"]').exists()).toBe(false);
   });
 
   it('lights exactly the Pradžia tab the user is on', () => {
@@ -107,7 +108,7 @@ describe('MobileBottomBar', () => {
   it('emits create and menu', async () => {
     const wrapper = mountBar();
 
-    await wrapper.find('[aria-label="shell.chrome.create"]').trigger('click');
+    await wrapper.find('[aria-label="shell.chrome.actions"]').trigger('click');
     await wrapper.findAll('button').at(-1)?.trigger('click');
 
     expect(wrapper.emitted('create')).toHaveLength(1);

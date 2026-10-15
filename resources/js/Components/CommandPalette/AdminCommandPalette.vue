@@ -60,7 +60,7 @@
         </PaletteGroup>
 
         <!-- Create -->
-        <PaletteGroup v-if="createActions.length > 0" :heading="$t('shell.palette.create')">
+        <PaletteGroup v-if="createActions.length > 0" :heading="$t('shell.palette.actions')">
           <ActionResult v-for="action in createActions" :key="action.id" :action />
         </PaletteGroup>
 

@@ -31,6 +31,6 @@ teisę matyti puslapius.
 | Dokumentai | `/mano/documents` |
 | Studijų rinkiniai | `/mano/studySets` |
 
-Mygtukas **+ Sukurti** šioje srityje siūlo **Nauja naujiena**.
+Mygtukas **Veiksmai** šioje srityje siūlo **Nauja naujiena**.
 
 Dokumentų skiltis aprašyta ViSAK skyriuje: [Dokumentai](/visak/dokumentai).

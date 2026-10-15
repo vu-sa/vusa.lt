@@ -49,7 +49,7 @@ return [
         'no_sections' => 'No sections found',
         'tools' => 'Tools',
         'sections' => 'Sections',
-        'create' => 'Create',
+        'actions' => 'Actions',
         'search' => 'Search',
         'search_field' => 'Search or jump to…',
         'menu' => 'Menu',
@@ -81,7 +81,7 @@ return [
 
     'palette' => [
         'go_to' => 'Go to',
-        'create' => 'Create',
+        'actions' => 'Actions',
         'pinned' => 'Pinned',
         'recent' => 'Recent',
         'pin' => 'Pin',

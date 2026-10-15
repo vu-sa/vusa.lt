@@ -73,17 +73,17 @@ return [
     'periodicity_gap_title' => 'Laikas pranešti apie :institution veiklą',
     'periodicity_gap_question_title' => 'Ar vyko „:institution“ posėdis?',
     'periodicity_gap_body' => 'Ar „:institution“ posėdžiavo nuo :date? Atsakyk vienu paspaudimu – prisijungti nereikia.',
-    'periodicity_gap_body_days' => 'Jau :days d. „:institution“ veiklos neužfiksuota. Ar posėdžiavo nuo :date? Atsakyk vienu paspaudimu – prisijungti nereikia.',
+    'periodicity_gap_body_days' => '„:institution“ posėdžių įrašų nėra :days d. Ar nuo :date vyko posėdis? Atsakyti gali neprisijungęs.',
     'activity_request_multi_title' => 'Ar vyko tavo institucijų posėdžiai?',
-    'activity_request_multi_body' => 'Prie kiekvienos institucijos pasirink, ar ji posėdžiavo. Prisijungti nereikia.',
+    'activity_request_multi_body' => 'Atsakyk apie kiekvieną instituciją. Prisijungti nereikia.',
     'activity_request_note' => ':name rašo: „:note“',
     'action_register_meeting' => 'Taip, vyko',
     'action_report_activity' => 'Ne, nevyko',
-    'action_not_mine' => 'Nesu šio organo narys (-ė)',
+    'action_not_mine' => 'Neatstovauju šiai institucijai',
     'action_answer' => 'Atsakyti',
     'action_open_institution' => 'Atverti instituciją',
     'activity_not_mine_title' => 'Patikrink „:institution“ atstovus',
-    'activity_not_mine_body' => ':name atsakė, kad neatstovauja „:institution“. Patikrink institucijos atstovus ir sekretorius.',
+    'activity_not_mine_body' => ':name pranešė, kad neatstovauja „:institution“. Patikrink atstovų ir sekretorių sąrašą.',
 
     // Registration notifications
     'member_registered_title' => 'Nauja nario registracija',
@@ -167,7 +167,7 @@ return [
     'support_request_involved_body' => ':user pridėjo tave prie pagalbos užklausos „:title“. Gali ją matyti ir komentuoti.',
     // Email footer: sign-off and "why you got this"
     'mail' => [
-        'why_received' => 'Gavai šį laišką, nes pranešimų nustatymuose įjungei kategorijos „:category“ laiškus.',
+        'why_received' => 'Gavai šį laišką, nes pranešimų nustatymuose įjungta „:category“ laiškų parinktis.',
         'settings_link' => 'Keisti pranešimų nustatymus',
         'sign_off' => 'Mano VU SA',
     ],

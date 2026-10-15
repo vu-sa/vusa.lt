@@ -27,7 +27,7 @@ priklauso ir jų teisės platformoje.
 | Narių / studentų atstovų registracija | `/mano/forms/{id}` | Galintys peržiūrėti atitinkamą formą (nustatoma nustatymuose) |
 | Formos | `/mano/forms` | Turintys teisę matyti formas |
 
-Mygtukas **+ Sukurti** šioje srityje siūlo **Pareigybių atnaujinimas** ir **Pareigybių
+Mygtukas **Veiksmai** šioje srityje siūlo **Pareigybių atnaujinimas** ir **Pareigybių
 laikotarpiai**.
 
 ::: tip Svarbu administratoriams

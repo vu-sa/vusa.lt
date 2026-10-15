@@ -45,7 +45,7 @@ suvestus duomenis. Vieną laikotarpį patogiau pakeisti jo formoje (žr. žemiau
 Tvarkyklė pasiekiama:
 
 - ViSAK → **Laikotarpių tvarkyklė** (`/mano/dutiables/timeline`);
-- per **+ Sukurti → Laikotarpių tvarkyklė**;
+- per **Veiksmai → Laikotarpių tvarkyklė**;
 - pareigybės ar nario puslapyje per **⋯ → Tvarkyti laikotarpius** – tada ji atsidaro lange ir rodo
   tik tos pareigybės ar to nario laikotarpius.
 

@@ -16,7 +16,7 @@ enum MeetingType: string
         return match ($this) {
             self::InPerson => $locale === 'en' ? 'In-person Meeting' : 'Gyvas posėdis',
             self::Remote => $locale === 'en' ? 'Remote Meeting' : 'Nuotolinis posėdis',
-            self::Email => $locale === 'en' ? 'E-meeting (via email)' : 'Sprendimas el. paštu',
+            self::Email => $locale === 'en' ? 'Decision by email' : 'Sprendimas el. paštu',
         };
     }
 

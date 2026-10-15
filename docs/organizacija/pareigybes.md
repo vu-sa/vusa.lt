@@ -293,7 +293,7 @@ Norint užbaigti nario pareigas:
 
 ### Kūrimas ir redagavimas {#kurimas}
 
-Nauja pareigybė kuriama per **+ Sukurti → Pareigybė** arba mygtuku **Nauja pareigybė** sąrašo
+Nauja pareigybė kuriama per **Veiksmai → Pareigybė** arba mygtuku **Nauja pareigybė** sąrašo
 viršuje (`/mano/duties/create`):
 - **Pavadinimas** (LT ir EN) – rašomas pagrindine forma (pvz., *Finansų koordinatorius*).
 - **Institucija** – institucija, kuriai pareigybė priklauso.

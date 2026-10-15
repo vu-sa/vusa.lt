@@ -68,3 +68,15 @@ describe('ShellTopBar', () => {
     expect(mountTopBar({ focused: true }).find('header').classes()).not.toContain('max-md:hidden');
   });
 });
+
+it('opens the action window from the permitted Actions button', async () => {
+  const wrapper = mountTopBar({ canCreate: true });
+  const button = wrapper.find('[data-tour="action-create"]');
+
+  expect(button.text()).toBe('shell.chrome.actions');
+  expect(button.find('svg.lucide-mouse-pointer-click').exists()).toBe(true);
+  await button.trigger('click');
+  expect(wrapper.emitted('create')).toHaveLength(1);
+  await wrapper.setProps({ canCreate: false });
+  expect(wrapper.find('[data-tour="action-create"]').exists()).toBe(false);
+});

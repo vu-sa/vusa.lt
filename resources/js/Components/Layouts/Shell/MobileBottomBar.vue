@@ -45,10 +45,11 @@
         variant="brand"
         size="icon"
         class="u-touch transition-transform duration-150 ease-out active:scale-90"
-        :aria-label="$t('shell.chrome.create')"
+        :aria-label="$t('shell.chrome.actions')"
+        aria-haspopup="dialog"
         @click="emit('create')"
       >
-        <Plus class="size-5" />
+        <MousePointerClick class="size-5" />
       </Button>
     </div>
 
@@ -99,7 +100,7 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Bell, ClipboardCheck, Menu, Plus } from '@lucide/vue';
+import { Bell, ClipboardCheck, Menu, MousePointerClick } from '@lucide/vue';
 import { computed, onUnmounted, ref, watch } from 'vue';
 
 import TaskCountBadge from './TaskCountBadge.vue';
