@@ -429,7 +429,7 @@ describe('validation', function (): void {
         ]);
     });
 
-    test('requires permalink for store', function (): void {
+    test('generates permalinks from translated titles on store', function (): void {
         $response = asUser($this->calendarManager)->post(route('calendar.store'), [
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
             'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
@@ -437,11 +437,15 @@ describe('validation', function (): void {
             'tenant_id' => $this->tenant->id,
         ]);
 
-        $response->assertStatus(302)
-            ->assertSessionHasErrors('permalink.lt');
+        $response->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('calendar', [
+            'permalink->lt' => 'test-renginys',
+            'permalink->en' => 'test-event',
+        ]);
     });
 
-    test('rejects a permalink already used by another event in the same year', function (): void {
+    test('automatically disambiguates a permalink already used in the same year', function (): void {
         Calendar::factory()->create([
             'permalink' => ['lt' => 'metinis-renginys', 'en' => ''],
             'date' => '2026-03-10',
@@ -455,7 +459,12 @@ describe('validation', function (): void {
             'tenant_id' => $this->tenant->id,
         ]);
 
-        $response->assertStatus(302)->assertSessionHasErrors('permalink.lt');
+        $response->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('calendar', [
+            'permalink->lt' => 'metinis-renginys-2',
+            'date' => '2026-06-01',
+        ]);
     });
 
     test('allows the same permalink for events in different years', function (): void {
@@ -476,12 +485,11 @@ describe('validation', function (): void {
         $response->assertStatus(302)->assertSessionDoesntHaveErrors('permalink.lt');
     });
 
-    test('rejects a permalink another event in the same year has already retired', function (): void {
+    test('automatically avoids a permalink another event has retired', function (): void {
         $original = Calendar::factory()->for($this->tenant)->create([
             'permalink' => ['lt' => 'the-original-slug', 'en' => ''],
             'date' => '2026-03-10',
         ]);
-        // Retires 'the-original-slug' into public_urls, owned by $original.
         $original->update(['permalink' => ['lt' => 'moved-on', 'en' => '']]);
 
         $response = asUser($this->calendarManager)->post(route('calendar.store'), [
@@ -492,7 +500,80 @@ describe('validation', function (): void {
             'tenant_id' => $this->tenant->id,
         ]);
 
-        $response->assertStatus(302)->assertSessionHasErrors('permalink.lt');
+        $response->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('calendar', ['permalink->lt' => 'the-original-slug-2']);
+    });
+
+    test('skips occupied suffixes and reserves trashed event permalinks in both languages', function (): void {
+        $original = Calendar::factory()->create([
+            'permalink' => ['lt' => 'renginys', 'en' => 'event'],
+            'date' => '2026-03-10',
+        ]);
+        $original->delete();
+        Calendar::factory()->create([
+            'permalink' => ['lt' => 'renginys-2', 'en' => 'event-2'],
+            'date' => '2026-03-10',
+        ]);
+
+        asUser($this->calendarManager)->post(route('calendar.store'), [
+            'title' => ['lt' => 'Renginys', 'en' => 'Event'],
+            'permalink' => ['lt' => '', 'en' => ''],
+            'date' => '2026-06-01',
+            'tenant_id' => $this->tenant->id,
+        ])->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('calendar', [
+            'permalink->lt' => 'renginys-3',
+            'permalink->en' => 'event-3',
+        ]);
+    });
+
+    test('keeps missing English translations empty and handles titles without slug characters', function (): void {
+        asUser($this->calendarManager)->post(route('calendar.store'), [
+            'title' => ['lt' => '🎉', 'en' => ''],
+            'date' => '2026-06-01',
+            'tenant_id' => $this->tenant->id,
+        ])->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+
+        $calendar = Calendar::query()->where('permalink->lt', 'event')->firstOrFail();
+        expect($calendar->getTranslation('permalink', 'en', false))->toBe('');
+    });
+
+    test('rejects conflicting permalinks when explicitly editing an existing event', function (): void {
+        Calendar::factory()->create([
+            'permalink' => ['lt' => 'taken', 'en' => ''],
+            'date' => '2026-03-10',
+        ]);
+        $event = Calendar::factory()->for($this->tenant)->create([
+            'permalink' => ['lt' => 'original', 'en' => ''],
+            'date' => '2026-03-10',
+        ]);
+
+        asUser($this->calendarManager)->put(route('calendar.update', $event), [
+            'title' => ['lt' => 'Renginys', 'en' => 'Event'],
+            'permalink' => ['lt' => 'taken', 'en' => ''],
+            'date' => '2026-03-10',
+            'tenant_id' => $this->tenant->id,
+        ])->assertSessionHasErrors('permalink.lt');
+
+        expect($event->fresh()->getTranslation('permalink', 'lt'))->toBe('original');
+    });
+
+    test('keeps automatically disambiguated long permalinks within the length limit', function (): void {
+        Calendar::factory()->create([
+            'permalink' => ['lt' => str_repeat('a', 255), 'en' => ''],
+            'date' => '2026-03-10',
+        ]);
+
+        asUser($this->calendarManager)->post(route('calendar.store'), [
+            'title' => ['lt' => str_repeat('a', 256), 'en' => ''],
+            'permalink' => ['lt' => str_repeat('a', 256), 'en' => ''],
+            'date' => '2026-06-01',
+            'tenant_id' => $this->tenant->id,
+        ])->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('calendar', ['permalink->lt' => str_repeat('a', 253).'-2']);
     });
 
     test('an event can re-adopt its own retired permalink', function (): void {
@@ -529,6 +610,7 @@ describe('validation', function (): void {
     test('requires valid date format for store', function (): void {
         $response = asUser($this->calendarManager)->post(route('calendar.store'), [
             'title' => ['lt' => 'Test renginys', 'en' => 'Test event'],
+            'permalink' => ['lt' => 'test-renginys', 'en' => 'test-event'],
             'description' => ['lt' => 'Test aprašymas', 'en' => 'Test description'],
             'date' => 'invalid-date',
             'tenant_id' => $this->tenant->id,

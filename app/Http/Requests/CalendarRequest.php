@@ -13,6 +13,7 @@ use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
 class CalendarRequest extends FormRequest
@@ -85,24 +86,22 @@ class CalendarRequest extends FormRequest
         return $this->imageValidationMessages();
     }
 
-    /**
-     * Uniqueness is scoped to the event's own year, not global: putting the year in the route
-     * already keeps the same recurring title from colliding across years, so only two events in
-     * the *same* year sharing a permalink is a real conflict. No DB-level unique index backs
-     * this (permalink lives inside a translatable JSON column), so this closure is the only
-     * enforcement — mirrors the request-only permalink uniqueness News/Page already rely on.
-     */
     private function assertPermalinkAvailable(string $locale, string $value, Closure $fail): void
     {
         $date = $this->input('date');
 
-        if (blank($date) || blank($value)) {
+        if (blank($value) || Validator::make(['date' => $date], ['date' => 'required|date'])->fails()) {
             return;
         }
 
-        $year = Carbon::parse($date)->format('Y');
+        if (! $this->permalinkAvailable($locale, $value, Carbon::parse($date)->format('Y'))) {
+            $fail(__('validation.unique', ['attribute' => "permalink ({$locale})"]));
+        }
+    }
 
-        $query = Calendar::query()
+    protected function permalinkAvailable(string $locale, string $value, string $year): bool
+    {
+        $query = Calendar::withTrashed()
             ->whereYear('date', $year)
             ->where("permalink->{$locale}", $value);
 
@@ -113,19 +112,12 @@ class CalendarRequest extends FormRequest
         }
 
         if ($query->exists()) {
-            $fail(__('validation.unique', ['attribute' => "permalink ({$locale})"]));
-
-            return;
+            return false;
         }
 
-        // Clear of the live `calendar` table for this year, but could still belong to a
-        // *different* event's redirect history — see PublicUrlService::isRetiredByAnother(). This
-        // event re-adopting its *own* history is fine and excluded via $current's id.
         $url = LocalizedRouteSlugs::route('calendar.show', ['year' => $year, 'permalink' => $value], $locale);
         $exceptId = $current instanceof Calendar ? $current->id : null;
 
-        if (app(PublicUrlService::class)->isRetiredByAnother($url, (new Calendar)->getMorphClass(), $exceptId)) {
-            $fail(__('validation.unique', ['attribute' => "permalink ({$locale})"]));
-        }
+        return ! app(PublicUrlService::class)->isRetiredByAnother($url, (new Calendar)->getMorphClass(), $exceptId);
     }
 }
