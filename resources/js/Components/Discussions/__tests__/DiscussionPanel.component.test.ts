@@ -32,7 +32,6 @@ vi.mock('@/Components/Discussions/CommentComposer.vue', () => ({
   default: {
     name: 'CommentComposer',
     emits: ['submit', 'cancel'],
-    props: ['collapsible'],
     methods: { reset: vi.fn() },
     template: '<button class="composer-stub" @click="$emit(\'submit\', \'<p>new</p>\')">composer</button>',
   },

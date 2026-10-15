@@ -13,7 +13,7 @@ vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () =>
 /** RecordPage is stubbed so the test can read what the page hands it and fire its emits. */
 const stubs = {
   RecordPage: {
-    props: ['title', 'sections', 'facts', 'primaryAction', 'overflowActions'],
+    props: ['title', 'sections', 'facts', 'primaryAction', 'overflowActions', 'historySubject'],
     emits: ['action'],
     template: `
       <div>
@@ -21,6 +21,7 @@ const stubs = {
         <div data-testid="fact-values">{{ facts.map(f => f.key + '=' + f.value).join('|') }}</div>
         <div data-testid="tabs">{{ sections.map(s => s.value + ':' + (s.count ?? '')).join('|') }}</div>
         <div data-testid="facts">{{ facts.map(f => f.key).join('|') }}</div>
+        <div data-testid="history-subject">{{ historySubject ? historySubject.type + ':' + historySubject.id : '' }}</div>
         <button v-if="primaryAction" data-testid="primary" @click="$emit('action', primaryAction.key)">{{ primaryAction.label }}</button>
         <button v-for="a in overflowActions" :key="a.key" :data-testid="'overflow-' + a.key" @click="$emit('action', a.key)">{{ a.label }}</button>
         <slot name="identity" />
@@ -28,7 +29,6 @@ const stubs = {
         <slot name="alert" />
         <slot name="duties" />
         <slot name="roles" />
-        <slot name="activity" />
       </div>
     `,
   },
@@ -48,7 +48,6 @@ const stubs = {
     emits: ['confirm'],
     template: '<div v-if="open" :data-testid="`confirm`"><button data-testid="confirm-yes" @click="$emit(\'confirm\')" /></div>',
   },
-  ActivityLogSheet: { template: '<div data-testid="activity-log" />' },
   UserAvatar: { template: '<span class="avatar" />' },
   DutiableTimelineDialog: true,
   TaskManager: { template: '<div data-testid="task-manager" />' },
@@ -127,6 +126,13 @@ describe('ShowUser.vue', () => {
     expect(rows[2].text()).toContain('Kuratorė');
     expect(wrapper.find('[data-testid="duty-ending-group"]').exists()).toBe(false);
     wrapper.unmount();
+  });
+
+  /** Change history is about the record, so it opens from ⋯ like on every other record page. */
+  it('offers the change history from the record menu', () => {
+    const wrapper = createWrapper();
+
+    expect(wrapper.find('[data-testid="history-subject"]').text()).toMatch(/^user:/);
   });
 
   it('counts current, upcoming, and previous assignments', () => {

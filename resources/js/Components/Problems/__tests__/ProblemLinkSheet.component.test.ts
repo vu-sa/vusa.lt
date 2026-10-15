@@ -29,7 +29,7 @@ vi.mock('@/Composables/useApi', () => ({
 const SheetStub = { props: ['open'], template: '<div v-if="open"><slot /></div>' };
 
 const mountSheet = () => mount(ProblemLinkSheet, {
-  props: { open: true, agendaItemId: 'item-1', linkedIds: ['linked'] },
+  props: { open: true, agendaItemId: 'item-1', linkedIds: ['linked'], except: ['goalLinks'] },
   global: {
     stubs: {
       ...commonStubs,
@@ -60,7 +60,7 @@ describe('ProblemLinkSheet.vue', () => {
     expect(options[0]?.text()).toContain('Laisva problema');
   });
 
-  it('links the chosen problem to the agenda item', async () => {
+  it('links the chosen problem to the agenda item, keeping the page\'s deferred props out of the reload', async () => {
     const wrapper = mountSheet();
     await flushPromises();
 
@@ -69,7 +69,7 @@ describe('ProblemLinkSheet.vue', () => {
     expect(router.post).toHaveBeenCalledWith(
       '/mocked-route/agendaItems.problems.store/item-1',
       { problem_id: 'free' },
-      expect.objectContaining({ preserveScroll: true }),
+      expect.objectContaining({ preserveScroll: true, except: ['goalLinks'] }),
     );
   });
 });

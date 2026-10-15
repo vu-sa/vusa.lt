@@ -3,8 +3,6 @@
 return [
     'title' => 'Pakeitimų istorija',
     'empty' => 'Pakeitimų nėra.',
-    'comments_empty' => 'Komentarų dar nėra. Parašyk pirmas – kolegą paminėk su @.',
-    'comments_lead' => 'Aptark įrašą su komanda. Kas ir ką pakeitė, rasi meniu ⋯ → „Pakeitimų istorija“.',
     'load_more' => 'Rodyti daugiau',
     'loading' => 'Kraunama...',
     'event' => [

@@ -43,8 +43,9 @@ atsakyti į kitų komentarus, paminėti kolegas, rengti greitas apklausas ir pa�
 ### Komentaro ir atsakymo rašymas
 
 1. Atverk norimo įrašo puslapį (pvz., posėdžio ar problemos).
-2. Skiltyje **Diskusija** įrašyk tekstą komentaro laukelyje.
-3. Jei nori atkreipti konkretaus asmens dėmesį, įvesk `@` ir pasirink vardą iš sąrašo.
+2. Skiltyje **Komentarai** (pagalbos užklausose – **Diskusija**) įrašyk tekstą komentaro laukelyje.
+3. Jei nori atkreipti konkretaus asmens dėmesį, įvesk `@` arba spausk **Paminėti** ir pasirink vardą iš sąrašo. Apatinėje laukelio juostoje matysi,
+   kas gaus pranešimą apie paminėjimą (redaguojant komentarą pranešimai iš naujo nesiunčiami).
 4. Spausk **Komentuoti**.
 5. Norėdamas prisidėti prie gijos, po jos pagrindiniu komentaru paspausk **Atsakyti**.
 

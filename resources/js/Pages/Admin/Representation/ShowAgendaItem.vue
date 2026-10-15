@@ -250,6 +250,7 @@
       v-model:open="problemSheetOpen"
       :agenda-item-id="agendaItem.id"
       :linked-ids="problems.map(problem => problem.id)"
+      :except="['goalLinks']"
     />
 
     <AgendaItemTypeDialog v-if="canUpdate" v-model:open="typeDialogOpen" :form />

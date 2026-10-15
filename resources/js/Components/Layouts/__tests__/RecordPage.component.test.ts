@@ -55,6 +55,18 @@ describe('RecordPage', () => {
     expect(wrapper.findAll('[role="tab"]')).toHaveLength(3);
   });
 
+  /** Phones stack every section, so the comments stay at the bottom there; only desktop tabs hide them. */
+  it('shows comments under the first tab only', async () => {
+    const wrapper = createWrapper();
+    const activity = () => wrapper.get('[data-slot="record-activity"]');
+
+    expect(activity().classes()).not.toContain('md:hidden');
+
+    await wrapper.findAll('[role="tab"]')[1]!.trigger('click');
+    expect(activity().classes()).toContain('md:hidden');
+    expect(activity().find('[data-testid="activity"]').exists()).toBe(true);
+  });
+
   it('places title actions beside the title when requested', async () => {
     const wrapper = createWrapper();
     await wrapper.setProps({ actionsBesideTitle: true });

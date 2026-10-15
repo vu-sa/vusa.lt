@@ -3,8 +3,6 @@
 return [
     'title' => 'Activity log',
     'empty' => 'No changes yet.',
-    'comments_empty' => 'No comments yet. Start the conversation — mention a colleague with @.',
-    'comments_lead' => 'Discuss this record with your team. Who changed what is under ⋯ → “Activity log”.',
     'load_more' => 'Load more',
     'loading' => 'Loading...',
     'event' => [

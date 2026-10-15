@@ -178,7 +178,7 @@ problemas. Kitų padalinių problemų keisti negali.
 
 Problemos pačios pranešimų nesiunčia: paskyrus atsakingą asmenį ar pakeitus būseną, niekas
 pranešimo negauna. Automatiškai tik užpildoma ar išvaloma išsprendimo data (žr.
-[Būsenos](#busenos)). Aptarti problemą su kolegomis galima jos puslapio skiltyje **Veikla** (žr.
+[Būsenos](#busenos)). Aptarti problemą su kolegomis galima jos puslapio skiltyje **Komentarai** (žr.
 [Komentarai](/visak/komentarai)).
 
 ## Techninė informacija {#technine-informacija}

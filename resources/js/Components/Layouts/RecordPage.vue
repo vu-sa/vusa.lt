@@ -203,7 +203,7 @@
         <slot name="next-actions" />
       </div>
 
-      <nav v-if="sections.length >= 3" class="mt-8 hidden border-b border-border md:flex" :aria-label="$t('Įrašo skyriai')">
+      <nav v-if="hasTabs" class="mt-8 hidden border-b border-border md:flex" :aria-label="$t('Įrašo skyriai')">
         <button
           v-for="section in sections"
           :key="section.value"
@@ -239,7 +239,13 @@
             </section>
           </div>
 
-          <section v-if="$slots.activity" class="mt-12 border-t border-border pt-8">
+          <!-- Hidden, not unmounted, so the thread and any draft survive a tab switch. -->
+          <section
+            v-if="$slots.activity"
+            class="mt-12 border-t border-border pt-8"
+            :class="{ 'md:hidden': hasTabs && currentSection !== sections[0]?.value }"
+            data-slot="record-activity"
+          >
             <slot name="activity" />
           </section>
         </div>
@@ -361,6 +367,7 @@ const emit = defineEmits<{
 }>();
 
 const currentSection = defineModel<string>('section', { default: '' });
+const hasTabs = computed(() => props.sections.length >= 3);
 
 if (!currentSection.value && props.sections.length) {
   currentSection.value = props.sections[0]!.value;

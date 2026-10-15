@@ -75,6 +75,7 @@
         :submitting
         show-cancel
         autofocus
+        quiet-mentions
         @submit="onEditSubmit"
         @cancel="editing = false"
       />

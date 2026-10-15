@@ -3,6 +3,7 @@
     v-model:section="currentSection"
     :title="user.name"
     :entity-type="ModelEnum.USER"
+    :history-subject="{ type: 'user', id: String(user.id) }"
     :facts="recordFacts"
     :sections="tabs"
     :primary-action
@@ -128,21 +129,6 @@
         @open-task-detail="openTaskDetail"
       />
     </template>
-
-    <template #activity>
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-foreground">
-            <History class="size-4 shrink-0 text-brand" aria-hidden="true" />
-            {{ $t('Veikla') }}
-          </h2>
-          <p class="mt-1 text-sm text-muted-foreground">
-            {{ $t('Įrašo pakeitimai.') }}
-          </p>
-        </div>
-        <ActivityLogSheet subject-type="user" :subject-id="String(user.id)" />
-      </div>
-    </template>
   </RecordPage>
 
   <AssignDutyUserSheet
@@ -225,7 +211,6 @@ import { Input } from '@/Components/ui/input';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import { AssignDutyUserSheet, MemberTermsSummary, UserTermRow, termStatus, termYearSpan } from '@/Features/Admin/Occupancy';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';

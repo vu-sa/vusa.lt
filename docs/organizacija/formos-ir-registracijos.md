@@ -132,7 +132,7 @@ Paspaudus formos pavadinimo atveriamas formos puslapis (`/mano/forms/{id}`):
 - Pasirinkimo laukams (`enum`) viršuje rodomi greitieji filtrai, leidžiantys filtruoti atsakymus pagal pasirinktas reikšmes.
 - Paspaudus bet kurios registracijos eilutės atsidaro **Registracijos peržiūros langas**, kuriame tvarkingai pateikiami visi studento atsakymai ir pateikimo laikas.
 - Skirtuke **Laukai** galima peržiūrėti visų klausimų struktūrą ir nustatymus.
-- Skirtuke **Veikla** galima rašyti vidinius komentarus tarp administratorių.
+- Skiltyje **Komentarai** galima rašyti vidinius komentarus tarp administratorių.
 
 ### Atsakymų eksportavimas į Excel {#eksportas}
 
