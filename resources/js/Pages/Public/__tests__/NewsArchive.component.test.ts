@@ -205,7 +205,7 @@ describe('Public/NewsArchive.vue', () => {
       },
     });
 
-    expect(wrapper.text()).toContain('Naujienų nerasta');
+    expect(wrapper.text()).toContain('news.archive.no_news');
   });
 
   it('renders first article as featured even when search query is typed', async () => {

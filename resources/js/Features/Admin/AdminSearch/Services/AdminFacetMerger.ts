@@ -5,13 +5,7 @@
  * (results from current query). This ensures users can see all filter options
  * even when current search has limited results.
  */
-
-import type {
-  AdminFacet,
-  AdminFacetValue,
-  AdminSearchFilters,
-  CollectionFacetConfig,
-} from '../Types/AdminSearchTypes';
+import type { AdminFacet, AdminFacetValue, AdminSearchFilters, CollectionFacetConfig } from '../Types/AdminSearchTypes';
 
 /**
  * Merges initial facets with current search facets.
@@ -23,9 +17,15 @@ export function mergeFacets(
   filters: AdminSearchFilters,
   facetConfig: CollectionFacetConfig,
 ): AdminFacet[] {
-  // If no initial facets, use current facets
+  const fields = new Set([...initialFacets, ...currentFacets].map(facet => facet.field));
+  for (const field of facetConfig.fields) {
+    const selected = getSelectedValuesForField(field.field, filters);
+    if (selected.length && !fields.has(field.field)) {
+      initialFacets = [...initialFacets, { field: field.field, label: field.label, type: field.type, values: selected.map(value => ({ value, count: null, isSelected: true })) }];
+    }
+  }
   if (initialFacets.length === 0) {
-    return currentFacets.map(facet => addSelectionState(facet, filters));
+    initialFacets = currentFacets;
   }
 
   return initialFacets.map((initialFacet) => {
@@ -33,7 +33,7 @@ export function mergeFacets(
     const currentFacet = currentFacets.find(f => f.field === initialFacet.field);
 
     // Create a map of current values for quick lookup
-    const currentValueMap = new Map<string, number>();
+    const currentValueMap = new Map<string, number | null>();
     if (currentFacet) {
       currentFacet.values.forEach((value) => {
         currentValueMap.set(value.value, value.count);
@@ -45,7 +45,7 @@ export function mergeFacets(
 
     // Merge values: show ALL initial values with updated counts from current search
     const mergedValues = initialFacet.values.map((initialValue) => {
-      const currentCount = currentValueMap.get(initialValue.value) || 0;
+      const currentCount = currentValueMap.get(initialValue.value) ?? null;
       const isSelected = selectedValues.includes(initialValue.value);
 
       return {
@@ -71,6 +71,11 @@ export function mergeFacets(
     }
 
     // Sort: selected items first, then by count, then alphabetically
+    for (const value of selectedValues) {
+      if (!mergedValues.some(option => String(option.value) === String(value))) {
+        mergedValues.push({ value: String(value), label: String(value), count: null, isSelected: true });
+      }
+    }
     sortFacetValues(mergedValues, selectedValues);
 
     return {
@@ -114,83 +119,11 @@ function sortFacetValues(
     if (!aSelected && bSelected) return 1;
 
     // Then by count (descending)
-    if (a.count !== b.count) return b.count - a.count;
+    if (a.count !== b.count) return (b.count ?? -1) - (a.count ?? -1);
 
     // Finally alphabetically
     return a.value.localeCompare(b.value);
   });
-}
-
-/**
- * Add selection state to facet values based on current filters
- */
-function addSelectionState(
-  facet: AdminFacet,
-  filters: AdminSearchFilters,
-): AdminFacet {
-  const selectedValues = getSelectedValuesForField(facet.field, filters);
-
-  return {
-    ...facet,
-    values: facet.values.map(value => ({
-      ...value,
-      isSelected: selectedValues.includes(value.value),
-    })),
-  };
-}
-
-/**
- * Filter facets to only include non-empty ones (or selected ones)
- * Useful for displaying facets in a cleaner UI
- */
-export function filterEmptyFacets(
-  facets: AdminFacet[],
-  hasActiveSearch: boolean,
-): AdminFacet[] {
-  return facets.filter((facet) => {
-    // Always show facets with values that have counts
-    if (facet.values.some(v => v.count > 0)) {
-      return true;
-    }
-
-    // During active search, show facets with selected values
-    if (hasActiveSearch) {
-      return facet.values.some(v => v.isSelected);
-    }
-
-    // In browse mode, show all facets for discoverability
-    return true;
-  });
-}
-
-/**
- * Calculate facet statistics for UI display
- */
-export function calculateFacetStats(facets: AdminFacet[]): {
-  totalFacets: number;
-  activeFacets: number;
-  totalValues: number;
-  selectedValues: number;
-} {
-  const totalFacets = facets.length;
-  let activeFacets = 0;
-  let totalValues = 0;
-  let selectedValues = 0;
-
-  facets.forEach((facet) => {
-    const hasActiveValues = facet.values.some(v => v.count > 0);
-    if (hasActiveValues) activeFacets++;
-
-    totalValues += facet.values.length;
-    selectedValues += facet.values.filter(v => v.isSelected).length;
-  });
-
-  return {
-    totalFacets,
-    activeFacets,
-    totalValues,
-    selectedValues,
-  };
 }
 
 /**
@@ -212,114 +145,4 @@ export function sortFacetsByConfig(
 
     return aPriority - bPriority;
   });
-}
-
-/**
- * Group facet values by category (useful for tenant hierarchies, etc.)
- */
-export function groupFacetValues<T extends AdminFacetValue>(
-  values: T[],
-  groupFn: (value: T) => string,
-): Record<string, T[]> {
-  const groups: Record<string, T[]> = {};
-
-  for (const value of values) {
-    const group = groupFn(value);
-    if (!groups[group]) {
-      groups[group] = [];
-    }
-    groups[group].push(value);
-  }
-
-  return groups;
-}
-
-/**
- * Format year values for year-pills display
- * Sorts descending and limits to recent years
- */
-export function formatYearFacetValues(
-  values: AdminFacetValue[],
-  maxYears = 10,
-): AdminFacetValue[] {
-  // Sort by year descending (assuming value is year string)
-  const sorted = [...values].sort((a, b) => {
-    const yearA = parseInt(a.value, 10);
-    const yearB = parseInt(b.value, 10);
-    return yearB - yearA;
-  });
-
-  // Limit to max years
-  return sorted.slice(0, maxYears);
-}
-
-/**
- * Process tenant hierarchy for facet display
- * Groups tenants into main org, padaliniai (units), and PKP
- */
-export function processTenantFacetValues(
-  values: AdminFacetValue[],
-): {
-  main: AdminFacetValue[];
-  padaliniai: AdminFacetValue[];
-  pkp: AdminFacetValue[];
-} {
-  const main: AdminFacetValue[] = [];
-  const padaliniai: AdminFacetValue[] = [];
-  const pkp: AdminFacetValue[] = [];
-
-  values.forEach((tenant) => {
-    const { value } = tenant;
-
-    // VU SA main organization - exact match only
-    if (value === 'VU SA') {
-      main.push(tenant);
-    }
-    // PKP (programs, clubs, projects)
-    else if (value.includes('PKP')) {
-      pkp.push(tenant);
-    }
-    // VU SA Padaliniai (faculty units)
-    else if (value.startsWith('VU SA ')) {
-      padaliniai.push(tenant);
-    }
-    // Other organizations
-    else {
-      main.push(tenant);
-    }
-  });
-
-  // Sort each group by count descending
-  const sortByCount = (a: AdminFacetValue, b: AdminFacetValue) => b.count - a.count;
-
-  return {
-    main: main.sort(sortByCount),
-    padaliniai: padaliniai.sort(sortByCount),
-    pkp: pkp.sort(sortByCount),
-  };
-}
-
-/**
- * Format completion status for display
- */
-export function formatCompletionStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    complete: 'Užbaigtas',
-    incomplete: 'Neužbaigtas',
-    partial: 'Dalinai užbaigtas',
-  };
-  return statusMap[status] || status;
-}
-
-/**
- * Format vote alignment status for display
- */
-export function formatVoteAlignmentStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    aligned: 'Atitinka',
-    misaligned: 'Neatitinka',
-    incomplete: 'Nepilna informacija',
-    unknown: 'Nežinoma',
-  };
-  return statusMap[status] || status;
 }

@@ -25,6 +25,8 @@ return [
         'f' => ':Model restored successfully.',
         'm' => ':Model restored successfully.',
     ],
+    'bulk_updated' => 'Records updated: :count.',
+    'bulk_deleted' => 'Records deleted: :count.',
     'users_attached_to_reservation' => 'Users attached to reservation!',
 
     'auth' => [
@@ -50,7 +52,9 @@ return [
         'calendar_event_linked' => 'Meeting linked to the calendar event.',
         'calendar_event_unlinked' => 'Meeting unlinked from the calendar event. The event itself was kept.',
         'document_linked' => 'Document linked to the meeting.',
+        'picked_document_elsewhere' => 'These files belong to another padalinys or have none set in SharePoint: :titles.',
         'document_unlinked' => 'Document unlinked from the meeting.',
+        'document_linked_elsewhere' => 'This document is already linked to another meeting. Unlink it there first.',
         'institution_detached' => 'Institution detached from the meeting.',
         'institution_required' => 'A meeting must keep at least one institution.',
     ],
@@ -75,6 +79,16 @@ return [
         'stored' => 'Documents have been successfully stored.',
         'refresh_queued' => 'Document refresh has been queued. It will be updated shortly.',
         'bulk_sync_queued' => 'Bulk sync queued for :count documents. They will be updated shortly.',
+        'published' => 'Documents published: :count. Public links will be ready in a few minutes.',
+        'hidden' => 'Documents hidden: :count. They are no longer shown on vusa.lt.',
+        'hidden_unpublished' => 'Documents hidden: :count. They will not be shown on vusa.lt.',
+        'discovery_queued' => 'Checking SharePoint – new files will appear in a few minutes.',
+        'removed_deleted' => 'Documents deleted: :count.',
+        'only_removed_deletable' => 'Only documents whose files were removed from SharePoint can be deleted.',
+        'picked_published' => 'Files published: :count. Public links will be ready in a few minutes.',
+        'picked_incomplete' => 'These files are missing SharePoint data, fill it in SharePoint: :titles.',
+        'pick_outside_archive' => 'The file “:name” is not in the document archive, so it cannot be published.',
+        'pick_not_found' => 'The chosen file was not found in SharePoint. Try again.',
     ],
 
     'duty' => [
@@ -103,11 +117,6 @@ return [
         'order_updated' => 'Quick link order updated successfully!',
     ],
 
-    'relationship' => [
-        'model_relation_deleted' => 'Relationship between models deleted.',
-        'type_model_relation_deleted' => 'Relationship type between models deleted.',
-    ],
-
     'role' => [
         'not_editable' => 'This role cannot be edited.',
         'not_deletable' => 'This role cannot be deleted.',
@@ -123,9 +132,14 @@ return [
     ],
 
     'task' => [
-        'automatic_not_deletable' => 'This task completes automatically and cannot be deleted.',
         'automatic_not_markable' => 'This task completes automatically and cannot be marked manually.',
         'status_updated' => 'Task status updated successfully.',
+    ],
+
+    'system_maintenance' => [
+        'done' => 'Done.',
+        'queued' => 'The task is queued and will run within a few minutes.',
+        'failed' => 'The action failed. Check the log.',
     ],
 
     'mail_queue' => [
@@ -161,5 +175,12 @@ return [
         'file_deleted' => 'File deleted.',
         'invalid_request' => 'Invalid request. Please report this to an administrator.',
         'deleted_locally_only' => 'The file was marked as deleted, but the SharePoint operation failed.',
+        'uploaded_many' => 'Files uploaded: :count.',
+        'uploaded_partially' => 'Uploaded :uploaded of :total. Failed: :failed.',
+        'upload_failed' => 'Could not upload: :failed.',
+        'link_failed' => 'Could not open the file. Try again or contact an administrator.',
+        'file_missing' => 'This file is no longer in SharePoint.',
+        'link_revoked' => 'The link no longer works. Opening the file creates a new one.',
+        'link_revoke_failed' => 'Could not revoke the link. Try again or contact an administrator.',
     ],
 ];

@@ -28,7 +28,7 @@ class UpdateFormSettingsRequest extends FormRequest
             'member_registration_form_id' => ['required', 'ulid', SoftDeleteRules::existsLive('forms')],
             'student_rep_registration_form_id' => ['nullable', 'ulid', SoftDeleteRules::existsLive('forms')],
             'student_rep_institution_type_ids' => 'nullable|array',
-            'student_rep_institution_type_ids.*' => ['integer', SoftDeleteRules::existsLive('types')],
+            'student_rep_institution_type_ids.*' => ['integer', SoftDeleteRules::existsLive('institution_types')],
         ];
     }
 }

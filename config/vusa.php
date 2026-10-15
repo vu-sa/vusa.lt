@@ -64,6 +64,18 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Reservation drafts
+    |--------------------------------------------------------------------------
+    |
+    | An unfinished reservation (the "cart") is pruned this many days after its
+    | last change.
+    |
+    */
+
+    'reservation_draft_ttl_days' => 14,
+
     'legal' => [
         'company_code' => '193077294',
         'vat_code' => 'LT100015645710',

@@ -32,6 +32,27 @@ class ResolveCadenceForDuty
     {
         $reference ??= Carbon::today();
 
+        return collect(self::applicableForDuties($duties))
+            ->map(fn (Collection $candidates) => self::pick($candidates, $reference))
+            ->all();
+    }
+
+    /**
+     * Every term a duty runs on, oldest first: its institution's own overrides, else the global ladder.
+     *
+     * @return Collection<int, Cadence>
+     */
+    public static function applicableFor(Duty $duty): Collection
+    {
+        return self::applicableForDuties(collect([$duty]))[$duty->id] ?? collect();
+    }
+
+    /**
+     * @param  Collection<int, Duty>  $duties
+     * @return array<string, Collection<int, Cadence>> keyed by duty id
+     */
+    private static function applicableForDuties(Collection $duties): array
+    {
         $institutionIds = $duties->pluck('institution_id')->filter()->unique()->values();
 
         $cadences = Cadence::query()
@@ -48,21 +69,17 @@ class ResolveCadenceForDuty
 
         $global = $cadences->get('', collect());
 
-        $resolved = [];
+        $applicable = [];
 
         foreach ($duties as $duty) {
             $candidates = $duty->institution_id
                 ? $cadences->get($duty->institution_id, collect())
                 : collect();
 
-            if ($candidates->isEmpty()) {
-                $candidates = $global;
-            }
-
-            $resolved[$duty->id] = self::pick($candidates, $reference);
+            $applicable[$duty->id] = ($candidates->isEmpty() ? $global : $candidates)->values();
         }
 
-        return $resolved;
+        return $applicable;
     }
 
     /**

@@ -43,7 +43,7 @@ describe('ConsentCard', () => {
   it('states that visit statistics involve no cookies and no personal data', () => {
     const wrapper = mountCard();
 
-    expect(wrapper.text()).toContain('Lankomumo statistiką renkame be slapukų ir be asmens duomenų.');
+    expect(wrapper.text()).toContain('consent.cookieless_analytics');
   });
 
   it('uses the public surface card and control treatments', () => {

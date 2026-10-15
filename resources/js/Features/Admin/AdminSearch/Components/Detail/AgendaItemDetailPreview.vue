@@ -83,7 +83,7 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Pencil } from 'lucide-vue-next';
+import { Pencil } from '@lucide/vue';
 
 import { toneClass, voteTone } from '../../Utils/searchBadges';
 import { formatSearchDate } from '../../Utils/searchHitMappers';

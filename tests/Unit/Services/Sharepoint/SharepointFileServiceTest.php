@@ -3,12 +3,10 @@
 use App\Enums\SharepointFolderEnum;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
-use App\Models\News;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Services\ResourceServices\SharepointFileService;
-use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -22,32 +20,20 @@ describe('SharepointFileService', function (): void {
         $this->tenant = Tenant::factory()->create(['shortname' => 'test-tenant']);
     });
 
-    describe('generateUniqueFolderName', function (): void {
-        test('generates folder name with last 4 characters of ID', function (): void {
-            $fileableId = '12345678901234567890abcd';
-            $fileableName = 'Test Document';
+    describe('folderUrlOrNull', function (): void {
+        test('appends the encoded folder path to the configured drive address', function (): void {
+            config(['filesystems.sharepoint.vusa_drive_url' => 'https://example.sharepoint.com/sites/vusa/Shared Documents/']);
+            $institution = Institution::factory()->for($this->tenant)->create(['name' => ['lt' => 'Studijų komitetas', 'en' => 'Study committee']]);
 
-            $result = $this->service->generateUniqueFolderName($fileableId, $fileableName);
-
-            expect($result)->toBe('Test Document-abcd');
+            expect(SharepointFileService::folderUrlOrNull($institution))
+                ->toBe('https://example.sharepoint.com/sites/vusa/Shared Documents/General/Padaliniai/test-tenant/Institutions/Studij%C5%B3%20komitetas');
         });
 
-        test('handles short IDs gracefully', function (): void {
-            $fileableId = 'abc';
-            $fileableName = 'Test';
+        test('is null when no drive address is configured', function (): void {
+            config(['filesystems.sharepoint.vusa_drive_url' => null]);
+            $institution = Institution::factory()->for($this->tenant)->create();
 
-            $result = $this->service->generateUniqueFolderName($fileableId, $fileableName);
-
-            expect($result)->toBe('Test-abc');
-        });
-
-        test('handles empty name', function (): void {
-            $fileableId = '1234567890abcdef';
-            $fileableName = '';
-
-            $result = $this->service->generateUniqueFolderName($fileableId, $fileableName);
-
-            expect($result)->toBe('-cdef');
+            expect(SharepointFileService::folderUrlOrNull($institution))->toBeNull();
         });
     });
 
@@ -59,15 +45,14 @@ describe('SharepointFileService', function (): void {
                 ->toThrow(Exception::class, 'Model does not have HasSharepointFiles trait');
         });
 
-        test('generates correct path for Type model', function (): void {
-            $type = Type::factory()->create([
-                'title' => 'Test Type',
-                'model_type' => MorphMap::alias(News::class),
+        test('generates correct path for InstitutionType model', function (): void {
+            $type = InstitutionType::factory()->create([
+                'title' => 'Test InstitutionType',
             ]);
 
             $path = SharepointFileService::pathForFileableDriveItem($type);
 
-            expect($path)->toBe('General/Types/News/Test Type');
+            expect($path)->toBe('General/Types/Institutions/Test InstitutionType');
         });
 
         test('generates correct path for Institution model', function (): void {
@@ -160,9 +145,8 @@ describe('SharepointFileService', function (): void {
         // at the service level when the institution relationship returns null.
 
         test('uses SharepointFolderEnum constants', function (): void {
-            $type = Type::factory()->create([
-                'title' => 'Test Type',
-                'model_type' => MorphMap::alias(News::class),
+            $type = InstitutionType::factory()->create([
+                'title' => 'Test InstitutionType',
             ]);
 
             $path = SharepointFileService::pathForFileableDriveItem($type);

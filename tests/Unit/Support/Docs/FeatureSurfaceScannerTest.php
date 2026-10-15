@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Reservation;
+use App\Models\ReservationDraft;
 use App\Support\Docs\DocClaims;
 use App\Support\Docs\FeatureSurfaceScanner;
 use App\Support\Docs\TestSurface;
@@ -25,14 +26,13 @@ describe('reportable surface', function (): void {
 });
 
 describe('feature area resolution', function (): void {
-    test('resolves a route area, morph alias and help fragment to one model', function (): void {
+    test('resolves a route area and morph alias to one model', function (): void {
         $features = (new FeatureSurfaceScanner)->scan(surface(['reservations.index' => ['tests/Foo.php']]), docClaims());
 
         $area = $features->areas['reservations'];
 
         expect($area->modelAlias)->toBe('reservation')
-            ->and($area->modelClass)->toBe(Reservation::class)
-            ->and($area->hasHelp)->toBeTrue(); // docs/_parts/reservations exists
+            ->and($area->modelClass)->toBe(Reservation::class);
     });
 
     test('marks an area tested when a test names one of its routes', function (): void {
@@ -40,6 +40,15 @@ describe('feature area resolution', function (): void {
 
         expect($features->areas['reservations']->isTested())->toBeTrue()
             ->and($features->areas['reservations']->testedRoutes)->toContain('reservations.index');
+    });
+
+    test('resolves slug aliases like reservationCart to reservation_draft', function (): void {
+        $features = (new FeatureSurfaceScanner)->scan(surface(['reservationCart.update' => ['tests/Foo.php']]), docClaims());
+
+        $area = $features->areas['reservationCart'];
+
+        expect($area->modelAlias)->toBe('reservation_draft')
+            ->and($area->modelClass)->toBe(ReservationDraft::class);
     });
 });
 

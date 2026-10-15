@@ -49,7 +49,7 @@ export interface AdminIndexPageProps<T = Record<string, any>> {
   /**
    * Function that builds the columns definition
    */
-  columnBuilder: (sorting: Ref<SortingState>, filters: Ref<TableFilters>) => ColumnDef<T, any>[];
+  columnBuilder: (sorting: Ref<SortingState>, filters: Ref<TableFilters>) => ColumnDef<any, T, any>[];
 
   /**
    * Which routes are enabled for this index page
@@ -72,7 +72,7 @@ export interface AdminIndexPageProps<T = Record<string, any>> {
  */
 export interface AdminTableState<T = Record<string, any>> {
   data: Ref<T[]>;
-  columns: Ref<ColumnDef<T, any>[]>;
+  columns: Ref<ColumnDef<any, T, any>[]>;
   sorting: Ref<SortingState>;
   // filters: Ref<TableFilters>;
   columnVisibility: Ref<VisibilityState>;

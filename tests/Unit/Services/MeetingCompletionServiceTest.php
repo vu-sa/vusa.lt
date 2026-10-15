@@ -56,18 +56,32 @@ describe('MeetingCompletionService', function (): void {
             expect($this->service->calculate($meeting))->toBe('incomplete');
         });
 
-        test('returns complete when any vote is complete if no main vote exists', function (): void {
+        test('an item without a type stays incomplete even with a complete vote', function (): void {
             $meeting = Meeting::factory()->create();
             $item = AgendaItem::factory()->create(['meeting_id' => $meeting->id]);
+            Vote::factory()->create([
+                'agenda_item_id' => $item->id,
+                'is_main' => true,
+                'student_vote' => 'positive',
+                'decision' => 'positive',
+                'student_benefit' => 'positive',
+            ]);
+
+            expect($this->service->calculate($meeting))->toBe('incomplete');
+        });
+
+        test('only the main vote completes a voting item', function (): void {
+            $meeting = Meeting::factory()->create();
+            $item = AgendaItem::factory()->create(['meeting_id' => $meeting->id, 'type' => AgendaItemType::Voting]);
             Vote::factory()->create([
                 'agenda_item_id' => $item->id,
                 'is_main' => false,
                 'student_vote' => 'positive',
                 'decision' => 'positive',
-                'student_benefit' => 'yes',
+                'student_benefit' => 'positive',
             ]);
 
-            expect($this->service->calculate($meeting))->toBe('complete');
+            expect($this->service->calculate($meeting))->toBe('incomplete');
         });
 
         test('ignores informational items for completion', function (): void {
@@ -108,6 +122,62 @@ describe('MeetingCompletionService', function (): void {
             ]);
 
             expect($this->service->calculate($meeting))->toBe('incomplete');
+        });
+    });
+
+    describe('missingActions', function (): void {
+        test('asks for an agenda when the meeting has no items', function (): void {
+            $meeting = Meeting::factory()->create();
+
+            expect($this->service->missingActions($meeting))->toBe([
+                ['type' => 'agenda_missing'],
+            ]);
+        });
+
+        test('asks for the type before vote fields', function (): void {
+            $meeting = Meeting::factory()->create();
+            $item = AgendaItem::factory()->create([
+                'meeting_id' => $meeting->id,
+                'type' => null,
+                'order' => 4,
+            ]);
+
+            expect($this->service->missingActions($meeting))->toBe([
+                [
+                    'type' => 'agenda_item_type_missing',
+                    'agenda_item_id' => $item->id,
+                    'title' => $item->title,
+                    'position' => 1,
+                ],
+            ]);
+        });
+
+        test('reports only the required missing vote fields', function (): void {
+            $meeting = Meeting::factory()->create();
+            $item = AgendaItem::factory()->create([
+                'meeting_id' => $meeting->id,
+                'type' => AgendaItemType::Voting,
+            ]);
+            Vote::factory()->create([
+                'agenda_item_id' => $item->id,
+                'is_main' => true,
+                'decision' => 'positive',
+                'student_vote' => null,
+                'student_benefit' => null,
+            ]);
+
+            expect($this->service->missingActions($meeting)[0]['missing_fields'])
+                ->toBe(['student_vote', 'student_benefit']);
+        });
+
+        test('does not ask for votes on vote-free items', function (): void {
+            $meeting = Meeting::factory()->create();
+            AgendaItem::factory()->create([
+                'meeting_id' => $meeting->id,
+                'type' => AgendaItemType::Deferred,
+            ]);
+
+            expect($this->service->missingActions($meeting))->toBe([]);
         });
     });
 });

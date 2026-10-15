@@ -21,10 +21,6 @@ describe('unauthorized access', function (): void {
         asUser($this->user)->get(route('tenants.index'))->assertStatus(403);
     });
 
-    test('cannot access tenant create page', function (): void {
-        asUser($this->user)->get(route('tenants.create'))->assertStatus(403);
-    });
-
     test('cannot store tenant', function (): void {
         asUser($this->user)->post(route('tenants.store'), [
             'fullname' => 'Test Tenant Full Name',
@@ -32,12 +28,6 @@ describe('unauthorized access', function (): void {
             'type' => 'pagrindinis',
             'alias' => 'test-tenant',
         ])->assertStatus(403);
-    });
-
-    test('cannot access tenant edit page', function (): void {
-        $tenant = Tenant::factory()->create();
-
-        asUser($this->user)->get(route('tenants.edit', $tenant))->assertStatus(403);
     });
 
     test('cannot update tenant', function (): void {
@@ -71,16 +61,11 @@ describe('authorized access', function (): void {
         $response->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/IndexTenant')
-                ->has('tenants.data')
-            );
-    });
-
-    test('can access tenant create page', function (): void {
-        $response = asUser($this->admin)->get(route('tenants.create'));
-
-        $response->assertStatus(200)
-            ->assertInertia(fn ($page) => $page
-                ->component('Admin/People/CreateTenant')
+                ->where('tenants.0.can.update', true)
+                ->where('tenants.0.can.delete', true)
+                ->has('tenants.0.shortname_vu')
+                ->has('tenants.0.primary_institution_id')
+                ->has('tenants')
             );
     });
 
@@ -100,19 +85,6 @@ describe('authorized access', function (): void {
             'alias' => 'test-tenant',
             'shortname' => 'Test',
         ]);
-    });
-
-    test('can access tenant edit page', function (): void {
-        $tenant = Tenant::factory()->create();
-
-        $response = asUser($this->admin)->get(route('tenants.edit', $tenant));
-
-        $response->assertStatus(200)
-            ->assertInertia(fn ($page) => $page
-                ->component('Admin/People/EditTenant')
-                ->has('tenant')
-                ->where('tenant.id', $tenant->id)
-            );
     });
 
     test('can update tenant', function (): void {
@@ -233,7 +205,7 @@ describe('authorized access', function (): void {
     });
 
     test('translates the validation message per admin UI language, not the content locale being edited', function (): void {
-        // `lang` (the admin's own interface language, set by AppSidebar's toggle) and
+        // `lang` (the admin's own interface language, set by the account menu's language switch) and
         // `locale` (which lt/en homepage document is being saved) are independent — this
         // asserts the error text follows the former.
         // Read each response's error bag before the next request overwrites the shared

@@ -12,7 +12,7 @@
                 <Button
                   variant="outline"
                   :class="cn(
-                    'w-full justify-start text-left font-normal border-input dark:bg-input/30',
+                    'w-full justify-start text-left font-normal border-border dark:bg-input/30',
                     !slotProps.componentField.modelValue && 'text-muted-foreground',
                   )"
                 >
@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { DateFormatter, getLocalTimeZone } from '@internationalized/date';
-import { CalendarIcon } from 'lucide-vue-next';
+import { CalendarIcon } from '@lucide/vue';
 
 import type { FieldProps } from './interface';
 import AutoFormLabel from './AutoFormLabel.vue';

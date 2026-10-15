@@ -25,7 +25,7 @@ const STORAGE_KEY = 'cookie-consent-v2';
 const consent = useStorage<CookieConsent>(
   STORAGE_KEY,
   { decided: false },
-  localStorage,
+  undefined,
   { mergeDefaults: true },
 );
 

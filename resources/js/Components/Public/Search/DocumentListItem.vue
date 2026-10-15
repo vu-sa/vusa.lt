@@ -23,7 +23,7 @@
             <h3
               class="text-pretty text-base font-bold leading-snug text-foreground transition-colors group-hover:text-brand sm:text-lg"
             >
-              {{ document.title }}
+              <SearchMatch v-if="titleMatch" :match="titleMatch" /><template v-else>{{ document.title }}</template>
             </h3>
 
             <!-- Actions. A plain flex row with a small gap, not ButtonGroup — connected
@@ -36,6 +36,7 @@
                   <Tooltip>
                     <TooltipTrigger as-child>
                       <Button
+                        voice="brand"
                         variant="ghost"
                         size="icon"
                         class="h-7 w-8 border border-border text-muted-foreground hover:border-brand hover:text-brand hover:bg-brand/5"
@@ -50,6 +51,7 @@
                   <Tooltip v-if="downloadUrl">
                     <TooltipTrigger as-child>
                       <Button
+                        voice="brand"
                         variant="ghost"
                         size="icon"
                         class="h-7 w-8 border border-border text-muted-foreground hover:border-brand hover:text-brand hover:bg-brand/5"
@@ -64,6 +66,7 @@
                   <Tooltip v-if="document.link_url || document.share_url">
                     <TooltipTrigger as-child>
                       <Button
+                        voice="brand"
                         variant="ghost"
                         size="icon"
                         class="h-7 w-8 border border-border text-muted-foreground hover:border-brand hover:text-brand hover:bg-brand/5"
@@ -72,12 +75,13 @@
                         <IFluentLink20Regular class="size-3.5" />
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom">{{ $t('copy_link') }}</TooltipContent>
+                    <TooltipContent side="bottom">{{ $t('search.document_copy_link') }}</TooltipContent>
                   </Tooltip>
 
                   <Tooltip v-if="calendarEventUrl">
                     <TooltipTrigger as-child>
                       <Button
+                        voice="brand"
                         variant="ghost"
                         size="icon"
                         :aria-label="$t('Peržiūrėti posėdį')"
@@ -112,7 +116,7 @@
             <!-- Content Type -->
             <TagChip v-if="document.content_type" variant="muted" class="max-w-36 sm:max-w-52">
               <IFluentDocument20Regular class="size-3 mr-1 shrink-0" />
-              <span class="truncate normal-case tracking-normal font-medium">{{ document.content_type }}</span>
+              <span class="truncate normal-case tracking-normal font-medium"><SearchMatch :match="document._searchFieldMatches?.content_type" :title="document.content_type" /></span>
             </TagChip>
 
             <!-- Language -->
@@ -141,7 +145,7 @@
             <!-- Date -->
             <TagChip variant="muted" class="shrink-0">
               <IFluentCalendarLtr20Regular class="size-3 mr-1" />
-              <span class="normal-case tracking-normal">{{ formatDocumentDate() }}</span>
+              <span class="normal-case tracking-normal"><SearchMatch :match="dateMatch" :title="formatDocumentDate()" /></span>
             </TagChip>
           </div>
 
@@ -154,10 +158,10 @@
             <span>{{ $t('search.document_link_unresolved') }}</span>
           </div>
 
-          <!-- Summary -->
+          <!-- Summary: a search excerpt takes its place rather than adding a line -->
           <div v-if="document.summary" class="mt-2.5">
             <p class="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-              {{ document.summary }}
+              <SearchMatch :match="summaryMatch" :title="document.summary" />
             </p>
           </div>
         </div>
@@ -172,6 +176,8 @@ import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { descriptionMatch, documentDateMatch, matchTitle } from '@/Shared/Search/matches';
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { useDocumentDisplay, getDocumentTargetUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import { useToasts } from '@/Composables/useToasts';
 import { Button } from '@/Components/ui/button';
@@ -192,6 +198,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const titleMatch = computed(() => matchTitle(props.document.title, props.document._searchTitleMatches));
+const summaryMatch = computed(() => descriptionMatch(props.document, 'summary'));
 const toasts = useToasts();
 
 // Use shared document display logic - use simple date format for list view
@@ -208,6 +216,7 @@ const {
 
 // For list view, use simple date format
 const formatDocumentDate = formatDocumentDateSimple;
+const dateMatch = computed(() => documentDateMatch(props.document, formatDocumentDate()));
 
 // The flag is purely decorative (LocaleFlag is aria-hidden) and only means something for the
 // two locales it can actually draw — an "OTHER" language keeps the plain text label alone.
@@ -271,10 +280,10 @@ const copyShareUrl = async () => {
 
   try {
     await navigator.clipboard.writeText(url);
-    toasts.success($t('copy_link_success'));
+    toasts.success($t('search.document_copy_link_success'));
   }
   catch {
-    toasts.error($t('copy_link_error'));
+    toasts.error($t('search.document_copy_link_error'));
   }
 };
 </script>

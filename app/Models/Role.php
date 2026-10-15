@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Pivots\DutyTypeRole;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Carbon;
 use Spatie\Permission\Models\Role as SpatieRole;
@@ -17,11 +19,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $guard_name
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Collection<int, Type> $attachable_types
+ * @property-read Collection<int, DutyType> $attachable_types
  * @property-read Collection<int, User> $currentUsersThroughDuties
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, Permission> $permissions
- * @property-read Collection<int, Type> $types
+ * @property-read DutyTypeRole|null $pivot
+ * @property-read Collection<int, DutyType> $types
  * @property-read Collection<int, User> $users
  * @property-read Collection<int, User> $usersThroughDuties
  * @property-read int|null $users_through_duties_count
@@ -57,18 +60,18 @@ class Role extends SpatieRole
                 $query->whereDate('dutiables.start_date', '<=', now()->toDateString())
                     ->where(function ($q): void {
                         $q->whereNull('dutiables.end_date')
-                            ->orWhere('dutiables.end_date', '>=', now());
+                            ->orWhereDate('dutiables.end_date', '>=', today());
                     });
             });
     }
 
-    public function attachable_types()
+    public function attachable_types(): BelongsToMany
     {
-        return $this->belongsToMany(Type::class, 'role_can_attach_types');
+        return $this->belongsToMany(DutyType::class, 'role_can_attach_duty_types');
     }
 
     public function types()
     {
-        return $this->belongsToMany(Type::class);
+        return $this->belongsToMany(DutyType::class)->using(DutyTypeRole::class);
     }
 }

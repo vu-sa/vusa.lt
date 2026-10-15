@@ -72,7 +72,7 @@ class ResolveTaskAudience
     {
         return $institutions
             ->flatMap(fn (Institution $institution) => GetInstitutionMembers::execute($institution, $date)
-                ->merge(GetInstitutionAdministrators::execute($institution, $date)))
+                ->merge(GetInstitutionSecretaries::execute($institution, $date)))
             ->pluck('id')
             ->unique()
             ->values();

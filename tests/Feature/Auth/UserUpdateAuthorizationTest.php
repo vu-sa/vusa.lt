@@ -9,7 +9,7 @@ pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
-    $this->admin = makeTenantUserWithRole('Student Representative Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
     $this->targetUser = makeUser($this->tenant);
 });
 

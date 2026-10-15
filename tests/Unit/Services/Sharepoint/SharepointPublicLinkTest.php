@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Document;
 use App\Services\SharepointGraphService;
 use Microsoft\Graph\Generated\Models\Permission;
 use Microsoft\Graph\Generated\Models\PermissionCollectionResponse;
@@ -76,39 +75,5 @@ describe('getDriveItemPublicLink', function (): void {
         ]);
 
         expect($service->getDriveItemPublicLink('drive-item-id'))->toBeNull();
-    });
-});
-
-describe('applyImportedPublicLink', function (): void {
-    beforeEach(function (): void {
-        $this->apply = function (?array $permission): Document {
-            $document = new Document(['sharepoint_id' => 'list-item-id', 'title' => 'Protokolas']);
-
-            new ReflectionMethod(SharepointGraphService::class, 'applyImportedPublicLink')
-                ->invoke(fakePermissionService([]), $document, $permission);
-
-            return $document;
-        };
-    });
-
-    test('marks the import failed when link creation produced no url', function (): void {
-        $document = ($this->apply)(null);
-
-        expect($document->anonymous_url)->toBeNull()
-            ->and($document->sync_status)->toBe('failed')
-            ->and($document->sync_error_message)->toBe('Imported without a public link')
-            // Left null so the rolling refresh treats the document as critical.
-            ->and($document->checked_at)->toBeNull();
-    });
-
-    test('stores the link and marks the document imported', function (): void {
-        $url = 'https://vustudentuatstovybe.sharepoint.com/:b:/s/vieningai/IQBuUQuoGF9SYOZie4WZ0Ai';
-
-        $document = ($this->apply)(['id' => 'permission-id', 'link' => ['webUrl' => $url]]);
-
-        expect($document->anonymous_url)->toBe($url)
-            ->and($document->sharepoint_permission_id)->toBe('permission-id')
-            ->and($document->sync_status)->toBe('imported')
-            ->and($document->checked_at)->not->toBeNull();
     });
 });

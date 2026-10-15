@@ -17,7 +17,7 @@
       {{ $t('rich-content.grid_row') }} {{ rowIndex + 1 }}
       <IFluentMoreVertical24Regular class="size-3" />
     </button>
-    <PopoverContent v-if="hotspots.isPopoverOpen(hotspotId)" data-surface="public"
+    <PopoverContent v-if="hotspots.isPopoverOpen(hotspotId)"
       class="w-64"
       @close-auto-focus.prevent
     >
@@ -47,7 +47,7 @@
 /**
  * Per-row settings popover for content-grid — row-level counterpart to
  * RCGridColumnOptions. Kept out of the block-level More Options toolbar, same reasoning:
- * see RICH_CONTENT_EDITOR.md.
+ * see .ai/rules/rich-content.md.
  */
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';

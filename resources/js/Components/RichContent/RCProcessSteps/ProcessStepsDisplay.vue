@@ -68,7 +68,8 @@
             <div v-if="hasTiptapContent(step.text)" class="rc-step-text mt-2 text-pretty leading-relaxed text-muted-foreground">
               <RichContentTiptapHTML :json_content="step.text" />
             </div>
-            <p v-else-if="hasHtmlText(step.text)" class="rc-step-text mt-2 text-pretty leading-relaxed text-muted-foreground" v-html="step.text" />
+            <!-- A <div>, not a <p>: the stored HTML is itself <p>…</p>, which the SSR markup parser would split. -->
+            <div v-else-if="hasHtmlText(step.text)" class="rc-step-text mt-2 text-pretty leading-relaxed text-muted-foreground" v-html="step.text" />
             <p v-else-if="step.text" class="rc-step-text mt-2 text-pretty leading-relaxed text-muted-foreground">
               {{ step.text }}
             </p>

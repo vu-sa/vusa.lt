@@ -3,7 +3,7 @@
     :open
     :multiple
     :title="$t('Pasirinkti išteklius')"
-    :description="$t('Ieškokite ir filtruokite išteklius; laisvas kiekis rodomas pagal pasirinktą laikotarpį.')"
+    :description="$t('Ieškok ir filtruok išteklius; laisvas kiekis rodomas pagal pasirinktą laikotarpį.')"
     :confirm-label="$t('Pridėti pasirinktus')"
     :initial-hits
     @update:open="$emit('update:open', $event)"

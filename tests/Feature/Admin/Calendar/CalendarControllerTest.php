@@ -16,16 +16,60 @@ beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->regularUser = makeUser($this->tenant);
     $this->calendarManager = makeCalendarManager($this->tenant);
+    $this->calendarReader = makeUser($this->tenant);
+    $this->calendarReader->givePermissionTo('calendars.read.padalinys');
     $this->eventType = EventType::factory()->create();
 });
 
 function makeCalendarManager($tenant): User
 {
     $user = makeUser($tenant);
-    $user->duties()->first()->assignRole('Communication Coordinator');
+    $user->duties()->first()->assignRole('Komunikacijos koordinatorius');
 
     return $user;
 }
+
+test('calendar status and type can be changed from the index independently', function (): void {
+    $calendar = Calendar::factory()->for($this->tenant)->create([
+        'is_draft' => true,
+        'event_type_id' => $this->eventType->id,
+    ]);
+
+    asUser($this->calendarManager)
+        ->patch(route('calendar.updateIndex', $calendar), ['is_draft' => false])
+        ->assertRedirect();
+    $this->assertDatabaseHas('calendar', ['id' => $calendar->id, 'is_draft' => 0, 'event_type_id' => $this->eventType->id]);
+
+    asUser($this->calendarManager)
+        ->patch(route('calendar.updateIndex', $calendar), ['event_type_id' => null])
+        ->assertRedirect();
+    $this->assertDatabaseHas('calendar', ['id' => $calendar->id, 'is_draft' => 0, 'event_type_id' => null]);
+});
+
+test('calendar index changes require update permission and a live event type', function (): void {
+    $calendar = Calendar::factory()->for($this->tenant)->create(['is_draft' => true]);
+
+    asUser($this->calendarReader)
+        ->patch(route('calendar.updateIndex', $calendar), ['is_draft' => false])
+        ->assertForbidden();
+
+    asUser($this->calendarManager)
+        ->patch(route('calendar.updateIndex', $calendar), ['event_type_id' => 999999])
+        ->assertSessionHasErrors('event_type_id');
+
+    $this->assertDatabaseHas('calendar', ['id' => $calendar->id, 'is_draft' => 1]);
+});
+
+test('calendar index change cannot edit another tenant event', function (): void {
+    $otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+    $calendar = Calendar::factory()->for($otherTenant)->create(['is_draft' => true]);
+
+    asUser($this->calendarManager)
+        ->patch(route('calendar.updateIndex', $calendar), ['is_draft' => false])
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('calendar', ['id' => $calendar->id, 'is_draft' => 1]);
+});
 
 describe('unauthorized access', function (): void {
     beforeEach(function (): void {
@@ -121,13 +165,17 @@ describe('authorized access', function (): void {
         ];
 
         $response = asUser($this->calendarManager)->post(route('calendar.store'), $calendarData);
-        $response->assertRedirect();
+        $response->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('calendar', [
             'title->lt' => 'Test renginys',
             'title->en' => 'Test event',
             'event_type_id' => $this->eventType->id,
         ]);
+
+        $created = Calendar::where('title->lt', 'Test renginys')->sole();
+        $response->assertRedirectToRoute('calendar.edit', $created)->assertSessionHas('success');
+        asUser($this->calendarManager)->get(route('calendar.edit', $created))->assertOk();
     });
 
     test('calendar manager can store a calendar event with a hero style', function (): void {
@@ -195,7 +243,47 @@ describe('authorized access', function (): void {
                 ->component('Admin/Calendar/EditCalendarEvent')
                 ->has('calendar')
                 ->where('calendar.id', $calendar->id)
+                ->where('canUpdate', true)
             );
+    });
+
+    test('accessing show redirects to edit page per decision o4', function (): void {
+        $calendar = Calendar::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        $response = asUser($this->calendarManager)->get(route('calendar.view', $calendar));
+        $response->assertRedirect(route('calendar.edit', $calendar));
+    });
+
+    test('read-only calendar access opens the canonical editor in view mode', function (): void {
+        $calendar = Calendar::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        asUser($this->calendarReader)
+            ->get(route('calendar.view', $calendar))
+            ->assertRedirect(route('calendar.edit', $calendar));
+
+        asUser($this->calendarReader)
+            ->get(route('calendar.edit', $calendar))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Admin/Calendar/EditCalendarEvent')
+                ->where('calendar.id', $calendar->id)
+                ->where('canUpdate', false)
+                ->has('assignableTenants', 1)
+                ->where('assignableTenants.0.id', $this->tenant->id)
+            );
+    });
+
+    test('read-only calendar access cannot update an event', function (): void {
+        $calendar = Calendar::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'title' => ['lt' => 'Originalus renginys', 'en' => 'Original event'],
+        ]);
+
+        asUser($this->calendarReader)
+            ->patch(route('calendar.update', $calendar), [])
+            ->assertForbidden();
+
+        expect($calendar->fresh()->getTranslation('title', 'lt'))->toBe('Originalus renginys');
     });
 
     test('calendar manager can update calendar event', function (): void {
@@ -283,7 +371,7 @@ describe('authorized access', function (): void {
     });
 
     test('super admin can access all calendar functions', function (): void {
-        $admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+        $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $calendar = Calendar::factory()->for($this->tenant)->create();
 
         // Test index access
@@ -349,7 +437,7 @@ describe('validation', function (): void {
             'tenant_id' => $this->tenant->id,
         ]);
 
-        $response->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+        $response->assertRedirect()->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('calendar', [
             'permalink->lt' => 'test-renginys',
@@ -371,7 +459,7 @@ describe('validation', function (): void {
             'tenant_id' => $this->tenant->id,
         ]);
 
-        $response->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+        $response->assertRedirect()->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('calendar', [
             'permalink->lt' => 'metinis-renginys-2',
@@ -412,7 +500,7 @@ describe('validation', function (): void {
             'tenant_id' => $this->tenant->id,
         ]);
 
-        $response->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+        $response->assertRedirect()->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('calendar', ['permalink->lt' => 'the-original-slug-2']);
     });
@@ -433,7 +521,7 @@ describe('validation', function (): void {
             'permalink' => ['lt' => '', 'en' => ''],
             'date' => '2026-06-01',
             'tenant_id' => $this->tenant->id,
-        ])->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+        ])->assertRedirect()->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('calendar', [
             'permalink->lt' => 'renginys-3',
@@ -446,7 +534,7 @@ describe('validation', function (): void {
             'title' => ['lt' => '🎉', 'en' => ''],
             'date' => '2026-06-01',
             'tenant_id' => $this->tenant->id,
-        ])->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+        ])->assertRedirect()->assertSessionHasNoErrors();
 
         $calendar = Calendar::query()->where('permalink->lt', 'event')->firstOrFail();
         expect($calendar->getTranslation('permalink', 'en', false))->toBe('');
@@ -483,7 +571,7 @@ describe('validation', function (): void {
             'permalink' => ['lt' => str_repeat('a', 256), 'en' => ''],
             'date' => '2026-06-01',
             'tenant_id' => $this->tenant->id,
-        ])->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+        ])->assertRedirect()->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('calendar', ['permalink->lt' => str_repeat('a', 253).'-2']);
     });

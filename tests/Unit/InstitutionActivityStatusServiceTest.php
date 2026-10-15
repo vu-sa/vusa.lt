@@ -3,8 +3,8 @@
 use App\Enums\InstitutionActivityStatus;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
-use App\Models\Type;
 use App\Services\InstitutionActivityStatusService;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -35,7 +35,7 @@ function institutionForActivityStatus(
     $institution->setRelation('types', new Collection(
         $typePeriodicityDays === null
             ? []
-            : [new Type(['extra_attributes' => ['meeting_periodicity_days' => $typePeriodicityDays]])]
+            : [new InstitutionType(['extra_attributes' => ['meeting_periodicity_days' => $typePeriodicityDays]])]
     ));
 
     return $institution;
@@ -156,5 +156,20 @@ describe('InstitutionActivityStatusService', function (): void {
 
         expect($status->periodicityDays)->toBe(14)
             ->and($status->status)->toBe(InstitutionActivityStatus::Approaching);
+    });
+
+    test('takes the shortest periodicity among several types', function (): void {
+        $institution = institutionForActivityStatus(periodicityDays: null);
+        $institution->setRelation('types', new Collection([
+            new InstitutionType(['extra_attributes' => ['meeting_periodicity_days' => 60]]),
+            new InstitutionType(['extra_attributes' => ['meeting_periodicity_days' => 21]]),
+            new InstitutionType(['extra_attributes' => []]),
+        ]));
+
+        expect($institution->meeting_periodicity_days)->toBe(21);
+    });
+
+    test('falls back to thirty days without an override or a typed periodicity', function (): void {
+        expect(institutionForActivityStatus(periodicityDays: null)->meeting_periodicity_days)->toBe(30);
     });
 });

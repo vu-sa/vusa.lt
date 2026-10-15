@@ -1,7 +1,7 @@
 <template>
   <tr
     data-slot="table-row"
-    :class="cn('hover:bg-zinc-100/50 data-[state=selected]:bg-zinc-100 border-b transition-colors dark:hover:bg-zinc-800/50 dark:data-[state=selected]:bg-zinc-800', props.class)"
+    :class="cn('border-b border-border/60 transition-colors last:border-b-0 hover:bg-secondary/40 data-[state=selected]:bg-brand/5', props.class)"
   >
     <slot />
   </tr>

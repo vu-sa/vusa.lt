@@ -22,7 +22,8 @@ class NewsController extends PublicController
         $news = News::query()->where([
             ['permalink', '=', $news],
             ['tenant_id', '=', $this->tenant->id],
-        ])->first();
+            ['draft', '=', false],
+        ])->with(['tenant', 'content', 'tags', 'other_language_news'])->first();
 
         if ($news === null) {
             $publicUrl = $publicUrls->resolve(request()->url());
@@ -35,7 +36,10 @@ class NewsController extends PublicController
             abort(404);
         }
 
-        $other_lang_page = $news->other_language_news;
+        $other_lang_page = $news->other_language_news?->draft ? null : $news->other_language_news;
+
+        // A filesystem check per call; the page needs it three times.
+        $imageUrl = $news->getImageUrl();
 
         $this->sharePublicEditLink($news);
 
@@ -55,7 +59,7 @@ class NewsController extends PublicController
             title: $news->title,
             description: ContentHelper::getDescriptionForSeo($news),
             author: $news->tenant->shortname,
-            image: $news->getImageUrl(),
+            image: $imageUrl,
             publishedTime: $news->publish_time,
             modifiedTime: $news->updated_at,
         );
@@ -119,7 +123,7 @@ class NewsController extends PublicController
                 'reading_time' => $news->readingTimeMinutes(),
                 // getImageUrl() checks the file actually exists and returns null otherwise —
                 // NewsArticleLayout skips the hero image entirely rather than show a placeholder.
-                'image' => $news->getImageUrl(),
+                'image' => $imageUrl,
                 'tenant' => $news->tenant->shortname,
             ],
             'relatedArticles' => $relatedArticles,

@@ -1,72 +1,60 @@
 <template>
-  <PageContent :title="$t('settings.pages.meetings.title')" :back-url="route('settings.index')">
-    <UpsertModelLayout>
-      <AdminForm :model="form" @submit:form="handleFormSubmit">
-        <FormElement>
-          <template #title>
-            {{ $t('settings.meeting_settings.types_title') }}
-          </template>
-          <template #description>
-            {{ $t('settings.meeting_settings.types_description') }}
-          </template>
+  <FormPage
+    :title="$t('settings.pages.meetings.title')"
+    :back-href="route('settings.index')"
+    :back-label="$t('settings.title')"
+    :processing="form.processing"
+    :dirty="form.isDirty"
+    :errors="form.errors"
+    :available-locales="[]"
+    @submit="handleFormSubmit"
+  >
+    <FormSection
+      :title="$t('settings.meeting_settings.types_title')"
+      :description="$t('settings.meeting_settings.types_description')"
+    >
+      <FormFieldWrapper id="type_ids" :label="$t('settings.meeting_settings.types_label')" :error="form.errors.type_ids">
+        <MultiSelect
+          v-model="selectedTypes"
+          :options="availablePublicTypes"
+          label-field="title"
+          value-field="id"
+          :placeholder="$t('settings.meeting_settings.types_placeholder')"
+          :empty-text="$t('settings.meeting_settings.no_types_found')"
+        />
+      </FormFieldWrapper>
+    </FormSection>
 
-          <div class="space-y-2">
-            <Label class="inline-flex items-center gap-1">
-              <component :is="TypeIcon" class="h-4 w-4" />
-              {{ $t('settings.meeting_settings.types_label') }}
-            </Label>
-
-            <MultiSelect
-              v-model="selectedTypes"
-              :options="availablePublicTypes"
-              label-field="title"
-              value-field="id"
-              :placeholder="$t('settings.meeting_settings.types_placeholder')"
-              :empty-text="$t('settings.meeting_settings.no_types_found')"
-            />
-          </div>
-        </FormElement>
-
-        <FormElement>
-          <template #title>
-            {{ $t('settings.meeting_settings.excluded_types_title') }}
-          </template>
-          <template #description>
-            {{ $t('settings.meeting_settings.excluded_types_description') }}
-          </template>
-
-          <div class="space-y-2">
-            <Label class="inline-flex items-center gap-1">
-              <component :is="TypeIcon" class="h-4 w-4" />
-              {{ $t('settings.meeting_settings.excluded_types_label') }}
-            </Label>
-
-            <MultiSelect
-              v-model="excludedTypes"
-              :options="availableExcludedTypes"
-              label-field="title"
-              value-field="id"
-              :placeholder="$t('settings.meeting_settings.excluded_types_placeholder')"
-              :empty-text="$t('settings.meeting_settings.no_types_found')"
-            />
-          </div>
-        </FormElement>
-      </AdminForm>
-    </UpsertModelLayout>
-  </PageContent>
+    <FormSection
+      :title="$t('settings.meeting_settings.excluded_types_title')"
+      :description="$t('settings.meeting_settings.excluded_types_description')"
+    >
+      <FormFieldWrapper
+        id="excluded_type_ids"
+        :label="$t('settings.meeting_settings.excluded_types_label')"
+        :error="form.errors.excluded_type_ids"
+      >
+        <MultiSelect
+          v-model="excludedTypes"
+          :options="availableExcludedTypes"
+          label-field="title"
+          value-field="id"
+          :placeholder="$t('settings.meeting_settings.excluded_types_placeholder')"
+          :empty-text="$t('settings.meeting_settings.no_types_found')"
+        />
+      </FormFieldWrapper>
+    </FormSection>
+  </FormPage>
 </template>
 
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { ref, watch, computed } from 'vue';
 
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import AdminForm from '@/Components/AdminForms/AdminForm.vue';
-import FormElement from '@/Components/AdminForms/FormElement.vue';
-import { Label } from '@/Components/ui/label';
+import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import FormPage from '@/Components/Layouts/FormPage.vue';
+import FormSection from '@/Components/Patterns/FormSection.vue';
 import { MultiSelect } from '@/Components/ui/multi-select';
-import { TypeIcon } from '@/Components/icons';
 
 interface InstitutionType {
   id: number;

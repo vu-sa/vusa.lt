@@ -9,3 +9,4 @@ export { default as DutyLineageCard } from './DutyLineageCard.vue';
 export { default as DutyMeetingMiniCard } from './DutyMeetingMiniCard.vue';
 export { default as DutyOtherDutiesCard } from './DutyOtherDutiesCard.vue';
 export { default as DutyInstitutionCard } from './DutyInstitutionCard.vue';
+export { default as MyDutyTermRow } from './MyDutyTermRow.vue';

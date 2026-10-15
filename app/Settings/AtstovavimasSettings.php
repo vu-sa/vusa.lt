@@ -3,11 +3,9 @@
 namespace App\Settings;
 
 use App\Enums\TenantType;
-use App\Models\Duty;
 use App\Models\Institution;
-use App\Models\Role;
+use App\Models\InstitutionType;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Models\User;
 use App\Policies\Traits\HasCommonChecks;
 use App\Services\ModelAuthorizer;
@@ -19,8 +17,6 @@ use Spatie\LaravelSettings\Settings;
  * Settings for the Atstovavimas (Representation) dashboard feature.
  *
  * This class handles:
- * - **Institution Manager Role**: Configurable role that identifies student rep coordinators
- *   who can be contacted by student representatives for help/support
  * - **Visibility**: Delegates to ModelAuthorizer using permissions (institutions.read.padalinys, institutions.read.*)
  *
  * The institution visibility is now unified with the permission system:
@@ -28,9 +24,8 @@ use Spatie\LaravelSettings\Settings;
  * - `institutions.read.padalinys` → can see institutions in authorized tenants
  * - `institutions.read.own` → can see institutions where user has duties + related institutions
  *
- * Cache Strategy:
- * - Manager role lookups are cached per-tenant
- * - Visibility uses ModelAuthorizer's built-in caching
+ * Coordinators are not a setting: they hold the studentų atstovų koordinavimas duty
+ * responsibility (App\Services\ResponsibilityResolver).
  *
  * @see ModelAuthorizer for permission-based authorization
  * @see HasCommonChecks for policy authorization patterns
@@ -43,12 +38,6 @@ class AtstovavimasSettings extends Settings
     protected const CACHE_TTL = 3600;
 
     /**
-     * The role ID that identifies institution managers (student rep coordinators).
-     * Users with this role in a tenant can be contacted by student representatives.
-     */
-    public ?string $institution_manager_role_id = null;
-
-    /**
      * The type ID that identifies the root student representative organ type.
      * When null, defaults to the type with slug 'studentu-atstovu-organas'.
      */
@@ -57,108 +46,6 @@ class AtstovavimasSettings extends Settings
     public static function group(): string
     {
         return 'atstovavimas';
-    }
-
-    /**
-     * Get the institution manager role ID.
-     */
-    public function getInstitutionManagerRoleId(): ?string
-    {
-        return $this->institution_manager_role_id;
-    }
-
-    /**
-     * Set the institution manager role ID.
-     */
-    public function setInstitutionManagerRoleId(?string $roleId): void
-    {
-        $this->institution_manager_role_id = $roleId;
-    }
-
-    /**
-     * Get the institution manager role model.
-     */
-    public function getInstitutionManagerRole(): ?Role
-    {
-        if (! $this->institution_manager_role_id) {
-            return null;
-        }
-
-        return Cache::remember(
-            "atstovavimas:manager_role:{$this->institution_manager_role_id}",
-            self::CACHE_TTL,
-            fn () => Role::find($this->institution_manager_role_id)
-        );
-    }
-
-    /**
-     * Get the institution manager role name for display.
-     */
-    public function getInstitutionManagerRoleName(): ?string
-    {
-        return $this->getInstitutionManagerRole()?->name;
-    }
-
-    /**
-     * Check if a user has the institution manager role.
-     * Checks both direct user roles and roles assigned through duties.
-     */
-    public function userIsInstitutionManager(User $user): bool
-    {
-        $roleId = $this->getInstitutionManagerRoleId();
-
-        if (! $roleId) {
-            return false;
-        }
-
-        // Check direct user roles
-        if ($user->roles()->where('id', $roleId)->exists()) {
-            return true;
-        }
-
-        // Check roles through current duties
-        return $user->current_duties()
-            ->whereHas('roles', fn ($query) => $query->where('id', $roleId))
-            ->exists();
-    }
-
-    /**
-     * Get tenant IDs where the user has the institution manager role through duties.
-     *
-     * Results are cached per-user.
-     */
-    public function getManagerTenantIds(User $user): Collection
-    {
-        $roleId = $this->getInstitutionManagerRoleId();
-
-        if (! $roleId) {
-            return collect();
-        }
-
-        $cacheKey = self::getManagerTenantsCacheKey($user->id);
-
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($user, $roleId) {
-            $directRoleTenantIds = $user->roles()
-                ->where('id', $roleId)
-                ->exists()
-                    ? $user->tenants()->pluck('tenants.id')
-                    : collect();
-
-            /** @var \Illuminate\Database\Eloquent\Collection<int, Duty> $duties */
-            $duties = $user->current_duties()
-                ->with(['roles', 'institution'])
-                ->get();
-
-            $dutyTenantIds = $duties
-                ->filter(fn (Duty $duty) => $duty->roles->pluck('id')->contains($roleId))
-                ->map(fn (Duty $duty) => $duty->institution?->tenant_id)
-                ->filter();
-
-            return collect($dutyTenantIds->all())
-                ->merge($directRoleTenantIds)
-                ->unique()
-                ->values();
-        });
     }
 
     /**
@@ -198,43 +85,6 @@ class AtstovavimasSettings extends Settings
     }
 
     /**
-     * Get the cache key for a user's manager tenant IDs.
-     */
-    public static function getManagerTenantsCacheKey(string $userId): string
-    {
-        return "atstovavimas:manager_tenants:{$userId}";
-    }
-
-    /**
-     * Clear the manager tenants cache for a specific user.
-     */
-    public static function clearManagerCache(string $userId): void
-    {
-        Cache::forget(self::getManagerTenantsCacheKey($userId));
-    }
-
-    /**
-     * Clear the manager cache for all users associated with a duty.
-     */
-    public static function clearManagerCacheForDuty(Duty $duty): void
-    {
-        $duty->load('users');
-        foreach ($duty->users as $user) {
-            self::clearManagerCache($user->id);
-        }
-    }
-
-    /**
-     * Clear the manager role cache when the role setting changes.
-     */
-    public static function clearManagerRoleCache(?string $roleId): void
-    {
-        if ($roleId) {
-            Cache::forget("atstovavimas:manager_role:{$roleId}");
-        }
-    }
-
-    /**
      * Get tenant visibility role IDs.
      * These are roles that grant visibility to institutions within specific tenants.
      *
@@ -264,16 +114,16 @@ class AtstovavimasSettings extends Settings
      * Get the student representative root type model.
      * Defaults to the type with slug 'studentu-atstovu-organas'.
      */
-    public function getStudentRepRootType(): ?Type
+    public function getStudentRepRootType(): ?InstitutionType
     {
         if ($this->student_rep_root_type_id) {
-            $type = Type::find($this->student_rep_root_type_id);
+            $type = InstitutionType::find($this->student_rep_root_type_id);
             if ($type) {
                 return $type;
             }
         }
 
-        return Type::query()->where('slug', 'studentu-atstovu-organas')->first();
+        return InstitutionType::query()->where('slug', 'studentu-atstovu-organas')->first();
     }
 
     /**

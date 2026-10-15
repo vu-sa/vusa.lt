@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'recommended_documents' => 'Recommended documents',
+    'facet_search' => 'Search filter options',
+    'facet_search_error' => 'Option search failed. Try again.',
+    'facet_search_loading' => 'Searching options…',
+    'filters_spotlight_title' => 'Search within filters',
     // Search interface
     'search' => 'Search',
     'search_placeholder' => 'Search for news, pages, documents, events...',
@@ -155,6 +160,9 @@ return [
     'document_link_badge' => 'Link',
     'document_link_hint' => 'This entry points to an external website',
     'document_link_unresolved' => 'This entry is a link to an external website, but its address has not been resolved yet — a SharePoint preview will open instead.',
+    'document_copy_link' => 'Copy link',
+    'document_copy_link_success' => 'Link copied to clipboard!',
+    'document_copy_link_error' => 'Failed to copy link',
 
     // Search input specific
     'search_documents_placeholder' => 'Search documents by title...',
@@ -266,6 +274,7 @@ return [
     'view_mode_grid' => 'Grid',
     'contact_singular' => 'contact',
     'contacts_plural' => 'contacts',
+    'more_representatives' => '+ :count more representative|+ :count more representatives',
 
     // Search page navigation
     'go_to_documents' => 'Go to document search',

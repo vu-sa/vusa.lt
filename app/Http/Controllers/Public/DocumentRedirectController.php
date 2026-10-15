@@ -25,7 +25,9 @@ class DocumentRedirectController extends Controller
 
         $document = Document::find($id);
 
-        if (! $document) {
+        // A hidden, pending or removed document's short link stops working; ids never change, so
+        // republishing brings the same link back.
+        if (! $document?->isPublished()) {
             throw new NotFoundHttpException('Document not found or unavailable');
         }
 

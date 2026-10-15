@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'form' => [
+        'name_hint' => 'Existing names cannot be changed — create a new member for a different person.',
+        'contacts_hint' => 'Members with a duty have their photo and contact details shown on vusa.lt.',
+    ],
     'name_locked' => 'Only super administrators can change a person\'s name.',
     'identity_locked_tenants' => 'You cannot change the email: this person also belongs to other units (:tenants). Contact those units\' or the central office administrators.',
     'identity_locked_protected' => 'You cannot change the email: this account has a directly assigned role. Contact the central office administrators.',
@@ -13,6 +17,10 @@ return [
     'duplicate_open_profile' => 'Open',
     'duplicate_contact_admins' => 'Contact that unit\'s administrators',
     'no_tenant' => 'No unit',
+    'filters' => [
+        'duty_timing' => 'Duty timing',
+        'scheduled' => 'Upcoming duties',
+    ],
     'validation' => [
         'current_password_required' => 'The current password is required.',
         'current_password_string' => 'The current password must be text.',

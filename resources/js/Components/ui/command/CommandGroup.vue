@@ -3,10 +3,10 @@
     v-bind="delegatedProps"
     :id
     data-slot="command-group"
-    :class="cn('text-zinc-950 overflow-hidden p-1 dark:text-zinc-50', props.class)"
+    :class="cn('text-foreground overflow-hidden p-1', props.class)"
     :hidden="isRender ? undefined : true"
   >
-    <ListboxGroupLabel v-if="heading || $slots.heading" class="px-2 py-1.5 text-xs font-medium text-zinc-500 dark:text-zinc-400">
+    <ListboxGroupLabel v-if="heading || $slots.heading" class="px-2 py-1.5 text-xs font-medium text-muted-foreground">
       <slot name="heading">
         {{ heading }}
       </slot>

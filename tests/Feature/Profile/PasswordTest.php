@@ -12,7 +12,7 @@ describe('User Settings', function (): void {
 
 describe('User Password Management', function (): void {
     test('user can update password with valid current password', function (): void {
-        $user = makeTenantUser('Communication Coordinator');
+        $user = makeTenantUser('Komunikacijos koordinatorius');
         $user->password = bcrypt('old-password');
         $user->save();
 
@@ -31,7 +31,7 @@ describe('User Password Management', function (): void {
     });
 
     test('user cannot update password with incorrect current password', function (): void {
-        $user = makeTenantUser('Communication Coordinator');
+        $user = makeTenantUser('Komunikacijos koordinatorius');
         $user->password = bcrypt('old-password');
         $user->save();
 
@@ -45,7 +45,7 @@ describe('User Password Management', function (): void {
     });
 
     test('user cannot update password without confirmation', function (): void {
-        $user = makeTenantUser('Communication Coordinator');
+        $user = makeTenantUser('Komunikacijos koordinatorius');
         $user->password = bcrypt('old-password');
         $user->save();
 

@@ -7,17 +7,20 @@ use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
-use App\Models\Pivots\Relationshipable;
+use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\Pivots\InstitutionInstitutionType;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasComments;
-use App\Models\Traits\HasContentRelationships;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTasks;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
+use App\Services\ContentResolution\ContentPartResolver;
+use App\Services\InstitutionActivityStatusService;
+use App\Services\InstitutionRelationService;
 use App\Services\InstitutionScopeResolver;
-use App\Services\RelationshipService;
+use App\Services\Typesense\SearchText;
 use App\Settings\MeetingSettings;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -27,9 +30,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
@@ -58,9 +61,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
- * @property-read Collection<int, InstitutionAdministrator> $administratorAssignments
- * @property-read Relationshipable|InstitutionFollow|InstitutionAdministrator|null $pivot
- * @property-read Collection<int, User> $administrators
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, Cadence> $cadences
  * @property-read Collection<int, InstitutionCheckIn> $checkIns
@@ -68,6 +68,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
+ * @property-read InstitutionInstitutionType|InstitutionSecretary|InstitutionFollow|null $pivot
  * @property-read Collection<int, User> $followers
  * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol
@@ -75,19 +76,20 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read array $translatable_columns_from
  * @property-read mixed $governance_scope
  * @property-read mixed $has_public_meetings
- * @property-read Collection<int, Relationship> $incomingRelationships
+ * @property-read Collection<int, InstitutionLink> $incomingLinks
  * @property-read mixed $maybe_short_name
  * @property-read Collection<int, Meeting> $meetings
- * @property-read Collection<int, Relationship> $outgoingRelationships
+ * @property-read Collection<int, InstitutionLink> $outgoingLinks
  * @property-read Collection<int, Problem> $problems
- * @property-read mixed $related_institutions
  * @property-read Collection<int, Comment> $rootComments
+ * @property-read Collection<int, User> $secretaries
+ * @property-read Collection<int, InstitutionSecretary> $secretaryAssignments
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Task> $tasksFromMeetings
  * @property-read Tenant|null $tenant
  * @property-read Tenant|null $tenants
  * @property-read mixed $translations
- * @property-read Collection<int, Type> $types
+ * @property-read Collection<int, InstitutionType> $types
  * @property-read Collection<int, User> $users
  * @property-read int|null $tasks_from_meetings_count
  * @property-read int|null $users_count
@@ -110,7 +112,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 #[Unguarded]
 class Institution extends Model implements Commentable, GuardsForceDelete, SharepointFileableContract
 {
-    use GuardsForceDeleteWhenReferenced, HasComments, HasContentRelationships, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasComments, HasFactory, HasRelationships, HasSharepointFiles, HasTasks, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
 
     public $translatable = ['name', 'short_name', 'description', 'address', 'working_hours'];
 
@@ -151,9 +153,9 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         return $query->whereHas('duties.current_users');
     }
 
-    public function types(): MorphToMany
+    public function types(): BelongsToMany
     {
-        return $this->morphToMany(Type::class, 'typeable');
+        return $this->belongsToMany(InstitutionType::class)->using(InstitutionInstitutionType::class);
     }
 
     public function tenant(): BelongsTo
@@ -246,18 +248,18 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
     }
 
     /**
-     * People nominated to look after this body for a term.
+     * People nominated to look after this body for a term (O22).
      *
-     * Deliberately kept out of users()/duties(): an administrator carries the
+     * Deliberately kept out of users()/duties(): a secretary carries the
      * institution's tasks and notifications without being a member of it, so
      * nothing here may leak into contacts, duty listings or the search index.
      *
-     * @return BelongsToMany<User, $this, InstitutionAdministrator, 'pivot'>
+     * @return BelongsToMany<User, $this, InstitutionSecretary, 'pivot'>
      */
-    public function administrators(): BelongsToMany
+    public function secretaries(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'institution_administrators')
-            ->using(InstitutionAdministrator::class)
+        return $this->belongsToMany(User::class, 'institution_secretaries')
+            ->using(InstitutionSecretary::class)
             ->withPivot('cadence_id')
             ->withTimestamps();
     }
@@ -265,11 +267,11 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
     /**
      * The nomination rows themselves, for the roster editor.
      *
-     * @return HasMany<InstitutionAdministrator, $this>
+     * @return HasMany<InstitutionSecretary, $this>
      */
-    public function administratorAssignments(): HasMany
+    public function secretaryAssignments(): HasMany
     {
-        return $this->hasMany(InstitutionAdministrator::class);
+        return $this->hasMany(InstitutionSecretary::class);
     }
 
     public function managers()
@@ -277,14 +279,16 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
         return GetInstitutionManagers::execute($this);
     }
 
-    public function related_institution_relationshipables()
+    /** @return HasMany<InstitutionLink, $this> */
+    public function outgoingLinks(): HasMany
     {
-        return RelationshipService::getRelatedInstitutionRelations($this);
+        return $this->hasMany(InstitutionLink::class, 'source_institution_id');
     }
 
-    protected function relatedInstitutions(): Attribute
+    /** @return HasMany<InstitutionLink, $this> */
+    public function incomingLinks(): HasMany
     {
-        return Attribute::make(get: fn () => RelationshipService::getRelatedInstitutions($this));
+        return $this->hasMany(InstitutionLink::class, 'target_institution_id');
     }
 
     /**
@@ -322,6 +326,7 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
             ->all();
 
         return [
+            ...SearchText::forModel($this),
             'id' => (string) $this->id,
             'name_lt' => $this->getTranslation('name', 'lt') ?? '',
             'name_en' => $this->getTranslation('name', 'en'),
@@ -333,12 +338,17 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
             'tenant_ids' => $this->tenant_id ? [$this->tenant_id] : [],
             'tenant_shortname' => $this->tenant?->shortname,
             'type_titles' => $this->types
-                ->map(fn (Type $type) => $type->getTranslation('title', 'lt'))
+                ->map(fn (InstitutionType $type) => $type->getTranslation('title', 'lt'))
                 ->filter()
                 ->values()
                 ->all(),
             // Self-referential institution_ids for .own permission filtering
             'institution_ids' => [(string) $this->id],
+            // Facts the scoped key and the list's follow check read: active institutions are public,
+            // and the types decide against the current settings whether its meetings are.
+            'is_active' => (bool) $this->is_active,
+            'type_ids' => $this->types->pluck('id')->map(fn ($id) => (int) $id)->values()->all(),
+            'activity_status' => app(InstitutionActivityStatusService::class)->resolve($this)->status->value,
             'current_user_names' => $currentUserNames,
             'duty_names' => $dutyNames,
             'created_at' => $this->created_at->timestamp,
@@ -354,6 +364,17 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
                 FileableNameUpdated::dispatch($institution);
             }
         });
+
+        // The shared tenant list carries each tenant's primary institution; institution-list
+        // blocks are resolved from institutions. A void closure: Cache::forget() returns false
+        // on a miss, which would stop the listeners below.
+        $forgetPublicCaches = function (): void {
+            Cache::forget(HandleInertiaRequests::TENANTS_CACHE_KEY);
+            Cache::tags([ContentPartResolver::CACHE_TAG])->flush();
+        };
+        static::saved($forgetPublicCaches);
+        static::deleted($forgetPublicCaches);
+        static::restored($forgetPublicCaches);
 
         static::saved(function (Institution $institution): void {
             $publicInstitution = PublicInstitution::query()->find($institution->getKey());
@@ -373,6 +394,14 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Share
 
         // Duty::toSearchableArray() derives tenant_ids from its institution, so the
         // duties have to be reindexed when the institution's visibility changes.
+        static::updated(function (Institution $institution): void {
+            if ($institution->wasChanged('tenant_id')) {
+                InstitutionRelationService::flush();
+            }
+        });
+        static::deleted(fn () => InstitutionRelationService::flush());
+        static::restored(fn () => InstitutionRelationService::flush());
+
         static::deleted(fn (Institution $institution) => $institution->reindexDuties());
         static::restored(fn (Institution $institution) => $institution->reindexDuties());
 

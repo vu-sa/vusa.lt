@@ -24,7 +24,7 @@ beforeEach(function (): void {
 function makeTagAdmin($tenant): User
 {
     $user = makeUser($tenant);
-    $user->duties()->first()->assignRole('Global Communication Coordinator');
+    $user->duties()->first()->assignRole('Centrinio biuro komunikacijos koordinatorius');
 
     return $user;
 }
@@ -94,9 +94,22 @@ describe('auth: admin user with permissions', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Content/IndexTag')
+                ->where('abilities.update', true)
+                ->where('abilities.delete', true)
                 ->has('tags.data')
                 ->has('tags.meta')
             );
+    });
+
+    test('returns tags through the database collection API', function (): void {
+        $this->actingAs($this->admin)
+            ->getJson(route('api.v1.admin.tags.index'))
+            ->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonFragment(['alias' => 'test-alias'])
+            ->assertJsonStructure([
+                'data' => ['items', 'total', 'per_page', 'current_page', 'last_page'],
+            ]);
     });
 
     test('can access tag create page', function (): void {
@@ -269,14 +282,11 @@ describe('tag merging', function (): void {
         asUser($this->admin)->get(route('dashboard'))->assertStatus(200);
     });
 
-    test('admin can access merge tags page', function (): void {
+    test('legacy merge tags route redirects to the index', function (): void {
         asUser($this->admin)
             ->get(route('tags.merge'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/MergeTags')
-                ->has('tags')
-            );
+            ->assertRedirect(route('tags.index'))
+            ->assertSessionHas('info');
     });
 
     test('admin can merge tags successfully', function (): void {
@@ -328,6 +338,20 @@ describe('tag merging', function (): void {
             ->and($targetTag->news->pluck('id')->toArray())->toContain($news1->id, $news2->id);
     });
 
+    test('rejects duplicate source tag ids without deleting the source', function (): void {
+        $targetTag = Tag::factory()->create(['alias' => 'target-distinct']);
+        $sourceTag = Tag::factory()->create(['alias' => 'source-distinct']);
+
+        asUser($this->admin)
+            ->post(route('tags.processMerge'), [
+                'target_tag_id' => $targetTag->id,
+                'source_tag_ids' => [$sourceTag->id, $sourceTag->id],
+            ])
+            ->assertSessionHasErrors('source_tag_ids.1');
+
+        expect($sourceTag->fresh()->trashed())->toBeFalse();
+    });
+
     test('merging a news already on the target does not create a duplicate', function (): void {
         $targetTag = Tag::factory()->create(['alias' => 'target-dedup']);
         $sourceTag = Tag::factory()->create(['alias' => 'source-dedup']);
@@ -366,10 +390,10 @@ describe('tag merging', function (): void {
             ->assertSessionHasErrors(['source_tag_ids']);
     });
 
-    test('simple user cannot access merge tags page', function (): void {
+    test('legacy merge tags route redirects for a simple user', function (): void {
         asUser($this->user)
             ->get(route('tags.merge'))
-            ->assertStatus(403);
+            ->assertRedirect(route('tags.index'));
     });
 
     test('simple user cannot process tag merge', function (): void {

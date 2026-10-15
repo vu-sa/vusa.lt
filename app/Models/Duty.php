@@ -2,16 +2,20 @@
 
 namespace App\Models;
 
+use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
+use App\Models\Pivots\DutyDutyType;
+use App\Models\Traits\HasComments;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\LogsModelActivity;
 use App\Models\Traits\LogsRelationshipChanges;
 use App\Services\ContactSearchIndexSynchronizer;
+use App\Services\Typesense\SearchText;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
@@ -43,6 +47,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $email Commonly the @vusa.lt email address, which is used as the OAuth login. Personal mail is stored in users.email.
  * @property string $contacts_grouping
  * @property int|null $places_to_occupy Full number of positions to occupy for this duty
+ * @property bool $is_active
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -50,12 +55,14 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, AgendaItem> $agendaItems
  * @property-read Collection<int, Tenant> $assignableTenants
  * @property-read Collection<int, FileableFile> $availableFiles
- * @property-read Typeable|Dutiable|null $pivot
+ * @property-read Collection<int, Comment> $comments
+ * @property-read DutyDutyType|Dutiable|null $pivot
  * @property-read Collection<int, User> $current_users
  * @property-read Collection<int, Dutiable> $dutiables
  * @property-read Collection<int, Duty> $exOfficioSourceDuties
  * @property-read Collection<int, Duty> $exOfficioTargetDuties
  * @property-read Collection<int, FileableFile> $fileableFiles
+ * @property-read Collection<int, DutyName> $formerNames
  * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol
  * @property-read bool $has_report
@@ -65,15 +72,19 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Meeting> $meetings
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read Collection<int, Permission> $permissions
+ * @property-read Collection<int, Duty> $predecessors
  * @property-read Collection<int, User> $previous_users
  * @property-read Collection<int, Reservation> $reservations
  * @property-read Collection<int, \App\Models\Resource> $resources
+ * @property-read Collection<int, DutyResponsibility> $responsibilities
  * @property-read Collection<int, Role> $roles
+ * @property-read Collection<int, Comment> $rootComments
+ * @property-read Collection<int, Duty> $successors
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Permission> $teams
  * @property-read Collection<int, Tenant> $tenants
  * @property-read mixed $translations
- * @property-read Collection<int, Type> $types
+ * @property-read Collection<int, DutyType> $types
  * @property-read Collection<int, User> $users
  * @property-read int|null $tenants_count
  * @property-read int|null $meetings_count
@@ -106,9 +117,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
     'name', 'description', 'email', 'phone', 'order', 'is_active', 'institution_id', 'contacts_grouping', 'places_to_occupy',
 ])]
 #[Unguarded]
-class Duty extends Model implements AuthorizableContract, GuardsForceDelete, SharepointFileableContract
+class Duty extends Model implements AuthorizableContract, Commentable, GuardsForceDelete, SharepointFileableContract
 {
-    use Authorizable, HasFactory, HasRelationships, HasRoles, HasSharepointFiles, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Notifiable, Searchable, SoftDeletes;
+    use Authorizable, HasComments, HasFactory, HasRelationships, HasRoles, HasSharepointFiles, HasTranslations, HasUlids, LogsModelActivity, LogsRelationshipChanges, Notifiable, Searchable, SoftDeletes;
 
     // Note: types are NOT auto-loaded to prevent N+1 in collections.
     // Load explicitly where needed: ->with('duties.types') or ->load('types').
@@ -138,9 +149,17 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
         return app(EngineManager::class)->engine('typesense');
     }
 
+    #[\Override]
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
+
     public function toSearchableArray(): array
     {
-        $this->loadMissing(['institution.tenant', 'types', 'assignableTenants']);
+        $this->loadMissing(['institution.tenant', 'types', 'assignableTenants', 'formerNames']);
 
         $homeTenantId = $this->institution?->tenant_id ? (int) $this->institution->tenant_id : null;
 
@@ -162,10 +181,18 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
             ->get(['users.id', 'name']);
 
         return [
+            ...SearchText::forModel($this),
             'id' => (string) $this->id,
             'name_lt' => $this->getTranslation('name', 'lt') ?? '',
             'name_en' => $this->getTranslation('name', 'en'),
             'email' => $this->email,
+            'is_active' => (bool) ($this->is_active ?? true),
+            'former_names' => $this->formerNames
+                ->flatMap(fn (DutyName $former) => [$former->getTranslation('name', 'lt'), $former->getTranslation('name', 'en')])
+                ->filter()
+                ->unique()
+                ->values()
+                ->all(),
             'tenant_ids' => $tenantIds,
             'home_tenant_id' => $homeTenantId,
             'tenant_shortname' => $this->institution?->tenant?->shortname,
@@ -173,10 +200,11 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
             'institution_name_lt' => $this->institution?->getTranslation('name', 'lt'),
             'institution_name_en' => $this->institution?->getTranslation('name', 'en'),
             'type_titles' => $this->types
-                ->map(fn (Type $type) => $type->getTranslation('title', 'lt'))
+                ->map(fn (DutyType $type) => $type->getTranslation('title', 'lt'))
                 ->filter()
                 ->values()
                 ->all(),
+            'type_slugs' => $this->types->pluck('slug')->filter()->values()->all(),
             // Names + ids stay index-aligned so the detail pane can render clickable member links.
             'current_user_names' => $currentUsers->pluck('name')->values()->all(),
             'current_user_ids' => $currentUsers->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
@@ -236,7 +264,7 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
                 $query->whereDate('dutiables.start_date', '<=', now()->toDateString())
                     ->where(function ($q): void {
                         $q->whereNull('dutiables.end_date')
-                            ->orWhere('dutiables.end_date', '>=', now());
+                            ->orWhereDate('dutiables.end_date', '>=', today());
                     });
             })
             ->withTimestamps();
@@ -247,14 +275,24 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
         return $this->users()
             ->where(function ($query): void {
                 $query->whereNotNull('dutiables.end_date')
-                    ->where('dutiables.end_date', '<', now());
+                    ->whereDate('dutiables.end_date', '<', today());
             })
             ->withTimestamps();
     }
 
-    public function types(): MorphToMany
+    /**
+     * What this duty must handle, as opposed to what its roles allow it to do.
+     *
+     * @return HasMany<DutyResponsibility, $this>
+     */
+    public function responsibilities(): HasMany
     {
-        return $this->morphToMany(Type::class, 'typeable')->using(Typeable::class)->withPivot(['typeable_type']);
+        return $this->hasMany(DutyResponsibility::class);
+    }
+
+    public function types(): BelongsToMany
+    {
+        return $this->belongsToMany(DutyType::class)->using(DutyDutyType::class);
     }
 
     public function institution(): BelongsTo
@@ -310,6 +348,53 @@ class Duty extends Model implements AuthorizableContract, GuardsForceDelete, Sha
     public function exOfficioSourceDuties(): BelongsToMany
     {
         return $this->belongsToMany(Duty::class, 'ex_officio_duties', 'target_duty_id', 'source_duty_id');
+    }
+
+    /**
+     * Names the duty went by before, newest first.
+     *
+     * @return HasMany<DutyName, $this>
+     */
+    public function formerNames(): HasMany
+    {
+        return $this->hasMany(DutyName::class)->orderByDesc('used_until');
+    }
+
+    /**
+     * The name the duty carried on a given day, so a term from 2019 reads as it did then.
+     *
+     * @return array<string, string>|string|null
+     */
+    public function nameOn(\DateTimeInterface|string|null $date): array|string|null
+    {
+        if ($date === null) {
+            return $this->name;
+        }
+
+        $day = Carbon::parse($date)->toDateString();
+
+        // Oldest first: the earliest rename after the day is the name in force on it.
+        $former = $this->formerNames
+            ->sortBy(fn (DutyName $name) => $name->used_until->toDateString())
+            ->first(fn (DutyName $name) => $name->used_until->toDateString() >= $day);
+
+        return $former->name ?? $this->name;
+    }
+
+    /**
+     * Duties whose work this one took over (e.g. a combined coordinator split in two).
+     *
+     * @return BelongsToMany<Duty, $this>
+     */
+    public function predecessors(): BelongsToMany
+    {
+        return $this->belongsToMany(Duty::class, 'duty_successions', 'successor_id', 'predecessor_id')->withTimestamps();
+    }
+
+    /** @return BelongsToMany<Duty, $this> */
+    public function successors(): BelongsToMany
+    {
+        return $this->belongsToMany(Duty::class, 'duty_successions', 'predecessor_id', 'successor_id')->withTimestamps();
     }
 
     /** Additional tenants whose admins may assign their own reps to this duty, with per-tenant quotas. */

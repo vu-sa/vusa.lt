@@ -43,11 +43,10 @@ use Illuminate\Support\Collection;
  * @property Carbon|null $returned_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property string|null $deleted_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Approval> $approvals
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Comment> $comments
  * @property-read bool $approvable
- * @property-read Reservation|null $reservation
+ * @property-read Reservation $reservation
  * @property-read resource|null $resource
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Comment> $rootComments
  * @property-read mixed $state_properties
@@ -71,9 +70,6 @@ class ReservationResource extends Pivot implements Approvable
      */
     #[\Override]
     public $incrementing = true;
-
-    #[\Override]
-    protected $with = ['comments', 'approvals'];
 
     #[\Override]
     protected $dispatchesEvents = [

@@ -27,18 +27,20 @@ return [
         'f' => ':Model sėkmingai atkurta.',
         'm' => ':Model sėkmingai atkurtas.',
     ],
+    'bulk_updated' => 'Atnaujinta įrašų: :count.',
+    'bulk_deleted' => 'Ištrinta įrašų: :count.',
     'users_attached_to_reservation' => 'Rezervacijos valdytojai pridėti!',
 
     'auth' => [
-        'logout_success' => 'Sėkmingai atsijungėte.',
+        'logout_success' => 'Sėkmingai atsijungei.',
         'password_changed' => 'Slaptažodis sėkmingai pakeistas.',
-        'login_cancelled' => 'Prisijungimas buvo atšauktas. Bandykite dar kartą, jei norite prisijungti.',
-        'login_error' => 'Prisijungimo metu įvyko klaida. Bandykite dar kartą.',
-        'login_failed' => 'Prisijungimas nepavyko. Bandykite dar kartą.',
-        'login_unexpected_error' => 'Įvyko netikėta klaida. Bandykite dar kartą.',
-        'duty_email_many_users' => 'Nepavyko prisijungti su pareigybiniu paštu, nes pareigybinis paštas turi daugiau nei vieną aktyvų vartotoją. Susisiekite su administratoriumi.',
-        'duty_email_no_user' => 'Nepavyko prisijungti su pareigybiniu paštu, nes pareigybinis paštas neturi aktyvaus vartotojo. Bandykite ištrinti slapukus arba naudoti naršyklės privatų rėžimą.',
-        'no_account_found' => 'Su šiuo el. pašto adresu nerastas nei vartotojas, nei pareigybė. Susisiekite su VU SA padalinio studentų atstovų koordinatoriumi ar administratoriumi, kad gautumėte prieigą.',
+        'login_cancelled' => 'Prisijungimas buvo atšauktas. Bandyk dar kartą, jei nori prisijungti.',
+        'login_error' => 'Prisijungimo metu įvyko klaida. Bandyk dar kartą.',
+        'login_failed' => 'Prisijungimas nepavyko. Bandyk dar kartą.',
+        'login_unexpected_error' => 'Įvyko netikėta klaida. Bandyk dar kartą.',
+        'duty_email_many_users' => 'Nepavyko prisijungti su pareigybiniu paštu, nes pareigybinis paštas turi daugiau nei vieną aktyvų vartotoją. Susisiek su administratoriumi.',
+        'duty_email_no_user' => 'Nepavyko prisijungti su pareigybiniu paštu, nes pareigybinis paštas neturi aktyvaus vartotojo. Bandyk ištrinti slapukus arba naudoti naršyklės privatų rėžimą.',
+        'no_account_found' => 'Su šiuo el. pašto adresu nerastas nei vartotojas, nei pareigybė. Susisiek su VU SA padalinio studentų atstovų koordinatoriumi ar administratoriumi, kad gautum prieigą.',
     ],
 
     'meeting' => [
@@ -48,11 +50,13 @@ return [
         'deleted' => 'Posėdis ištrintas sėkmingai!',
         'restored' => 'Posėdis sėkmingai atkurtas.',
         'institution_attached' => 'Institucija sėkmingai pridėta prie posėdžio.',
-        'calendar_event_created' => 'Sukurtas kalendoriaus įrašo juodraštis. Paskelbkite jį, kad posėdis taptų matomas viešai.',
+        'calendar_event_created' => 'Sukurtas kalendoriaus įrašo juodraštis. Paskelbk jį, kad posėdis taptų matomas viešai.',
         'calendar_event_linked' => 'Posėdis susietas su kalendoriaus įrašu.',
         'calendar_event_unlinked' => 'Posėdis atsietas nuo kalendoriaus įrašo. Pats įrašas nepašalintas.',
         'document_linked' => 'Dokumentas susietas su posėdžiu.',
+        'picked_document_elsewhere' => 'Šie failai priklauso kitam padaliniui arba jiems SharePoint nenurodytas padalinys: :titles.',
         'document_unlinked' => 'Dokumentas atsietas nuo posėdžio.',
+        'document_linked_elsewhere' => 'Šis dokumentas jau susietas su kitu posėdžiu. Pirma atsiek jį ten.',
         'institution_detached' => 'Institucija sėkmingai pašalinta iš posėdžio.',
         'institution_required' => 'Posėdis turi turėti bent vieną instituciją.',
     ],
@@ -77,6 +81,16 @@ return [
         'stored' => 'Dokumentai sėkmingai išsaugoti.',
         'refresh_queued' => 'Dokumento atnaujinimas įtrauktas į eilę. Jis bus atnaujintas netrukus.',
         'bulk_sync_queued' => 'Į eilę įtrauktas :count dokumentų atnaujinimas. Jie bus atnaujinti netrukus.',
+        'published' => 'Paskelbta dokumentų: :count. Viešos nuorodos bus sukurtos per kelias minutes.',
+        'hidden' => 'Paslėpta dokumentų: :count. Jie nebematomi vusa.lt.',
+        'hidden_unpublished' => 'Paslėpta dokumentų: :count. Jie nebus rodomi vusa.lt.',
+        'discovery_queued' => 'Tikriname SharePoint – nauji failai atsiras per kelias minutes.',
+        'removed_deleted' => 'Ištrinta dokumentų: :count.',
+        'only_removed_deletable' => 'Ištrinti galima tik dokumentus, kurių failai pašalinti iš SharePoint.',
+        'picked_published' => 'Paskelbta failų: :count. Viešos nuorodos bus sukurtos per kelias minutes.',
+        'picked_incomplete' => 'Šiems failams trūksta SharePoint duomenų, juos užpildyk SharePoint: :titles.',
+        'pick_outside_archive' => 'Failas „:name“ ne iš dokumentų archyvo, todėl jo paskelbti negalima.',
+        'pick_not_found' => 'Pasirinkto failo SharePoint nerasta. Pabandyk dar kartą.',
     ],
 
     'duty' => [
@@ -94,20 +108,15 @@ return [
 
     'news' => [
         'duplicated' => 'Naujiena sėkmingai nukopijuota!',
-        'no_available_tenant' => 'Nėra prieinamo padalinio, kuriam galėtumėte sukurti naujieną.',
+        'no_available_tenant' => 'Nėra prieinamo padalinio, kuriam galėtum sukurti naujieną.',
     ],
 
     'pages' => [
-        'no_available_tenant' => 'Nėra prieinamo padalinio, kuriam galėtumėte sukurti puslapį.',
+        'no_available_tenant' => 'Nėra prieinamo padalinio, kuriam galėtum sukurti puslapį.',
     ],
 
     'quick_link' => [
         'order_updated' => 'Greitųjų nuorodų tvarka sėkmingai atnaujinta!',
-    ],
-
-    'relationship' => [
-        'model_relation_deleted' => 'Ryšys tarp modelių ištrintas.',
-        'type_model_relation_deleted' => 'Ryšio tipas tarp modelių ištrintas.',
     ],
 
     'role' => [
@@ -116,7 +125,7 @@ return [
         'permissions_updated' => 'Rolės leidimai atnaujinti.',
         'attachables_updated' => 'Rolės galimos priklausomybės atnaujintos.',
         'duties_updated' => 'Rolės pareigos atnaujintos.',
-        'not_assignable_to_duty' => 'Negalima priskirti šios rolės pareigybėms! Bandykite iš naujo.',
+        'not_assignable_to_duty' => 'Negalima priskirti šios rolės pareigybėms! Bandyk iš naujo.',
     ],
 
     'study_program' => [
@@ -125,9 +134,14 @@ return [
     ],
 
     'task' => [
-        'automatic_not_deletable' => 'Ši užduotis užsibaigia automatiškai ir negali būti ištrinta.',
         'automatic_not_markable' => 'Ši užduotis užsibaigia automatiškai ir negali būti pažymėta rankiniu būdu.',
         'status_updated' => 'Užduoties būsena sėkmingai atnaujinta.',
+    ],
+
+    'system_maintenance' => [
+        'done' => 'Atlikta.',
+        'queued' => 'Užduotis įtraukta į eilę — ji bus įvykdyta per kelias minutes.',
+        'failed' => 'Nepavyko atlikti veiksmo. Patikrink žurnalą.',
     ],
 
     'mail_queue' => [
@@ -161,7 +175,14 @@ return [
         'fileable_not_allowed' => 'Susijęs objektas negali turėti failų.',
         'uploaded' => 'Failas sėkmingai įkeltas į Sharepoint!',
         'file_deleted' => 'Failas ištrintas.',
-        'invalid_request' => 'Neteisinga užklausa. Praneškite administratoriui.',
+        'invalid_request' => 'Neteisinga užklausa. Pranešk administratoriui.',
         'deleted_locally_only' => 'Failas pažymėtas kaip ištrintas, bet SharePoint operacija nepavyko.',
+        'uploaded_many' => 'Įkelta failų: :count.',
+        'uploaded_partially' => 'Įkelta :uploaded iš :total. Nepavyko: :failed.',
+        'upload_failed' => 'Nepavyko įkelti failų: :failed.',
+        'link_failed' => 'Nepavyko atidaryti failo. Pabandyk dar kartą arba parašyk administratoriui.',
+        'file_missing' => 'Šio failo SharePoint nebėra.',
+        'link_revoked' => 'Nuoroda nebeveikia. Atvėrus failą bus sukurta nauja.',
+        'link_revoke_failed' => 'Nepavyko atšaukti nuorodos. Pabandyk dar kartą arba parašyk administratoriui.',
     ],
 ];

@@ -5,7 +5,11 @@ namespace App\Models;
 use App\Actions\PairTranslatedRecord;
 use App\Enums\PageLayoutEnum;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\PublicUrlService;
+use App\Services\Typesense\SearchText;
+use App\Settings\SiteSettings;
+use App\Support\PublicCacheTags;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -21,8 +25,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
-use Spatie\Feed\Feedable;
-use Spatie\Feed\FeedItem;
 use Spatie\Sitemap\Contracts\Sitemapable;
 use Spatie\Sitemap\Tags\Url;
 
@@ -43,7 +45,6 @@ use Spatie\Sitemap\Tags\Url;
  * @property bool $show_breadcrumbs
  * @property string|null $featured_image
  * @property string|null $meta_description
- * @property Carbon|null $publish_time
  * @property int $tenant_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
@@ -55,6 +56,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property-read Page|null $otherLanguagePage
  * @property-read Page|null $parent
  * @property-read Collection<int, PublicUrl> $publicUrls
+ * @property-read Taggable|null $pivot
  * @property-read Collection<int, Tag> $tags
  * @property-read Tenant $tenant
  *
@@ -69,7 +71,7 @@ use Spatie\Sitemap\Tags\Url;
  * @mixin \Eloquent
  */
 #[Unguarded]
-class Page extends Model implements Feedable, Sitemapable
+class Page extends Model implements Sitemapable
 {
     use HasFactory, LogsModelActivity, Searchable, SoftDeletes;
 
@@ -80,7 +82,6 @@ class Page extends Model implements Feedable, Sitemapable
             'updated_at' => 'datetime:Y-m-d H:i:s',
             'created_at' => 'datetime:Y-m-d H:i:s',
             'last_edited_at' => 'datetime:Y-m-d H:i:s',
-            'publish_time' => 'datetime',
             'is_active' => 'boolean',
             'highlights' => 'array',
             'show_table_of_contents' => 'boolean',
@@ -102,14 +103,14 @@ class Page extends Model implements Feedable, Sitemapable
             $page->layout = (PageLayoutEnum::tryFrom((string) $page->layout) ?? PageLayoutEnum::default())->value;
         });
 
-        static::saved(function ($page): void {
-            Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
+        static::saved(function (Page $page): void {
+            $page->flushPublicCaches();
 
             // A freshly inserted row's `lang` attribute isn't hydrated from the column's DB
             // default until the model is refreshed — guard here rather than in publicUrl(),
             // which trusts an already-persisted, freshly-queried row (true for every other
             // caller, e.g. NormalizePermalinks).
-            if (! is_string($page->lang)) {
+            if (! is_string($page->getAttribute('lang'))) {
                 return;
             }
 
@@ -134,9 +135,7 @@ class Page extends Model implements Feedable, Sitemapable
 
         static::saved(fn (Page $page) => $page->syncPublicSearchIndex());
 
-        static::deleted(function ($page): void {
-            Cache::tags(['sitemap', 'pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
-        });
+        static::deleted(fn (Page $page) => $page->flushPublicCaches());
 
         static::deleted(fn (Page $page) => $page->publicSearchModel()->unsearchable());
 
@@ -201,6 +200,13 @@ class Page extends Model implements Feedable, Sitemapable
 
             return array_slice(array_filter($highlights), 0, 3);
         });
+    }
+
+    private function flushPublicCaches(): void
+    {
+        Cache::tags(PublicCacheTags::pagesOf($this))->flush();
+        Cache::tags([ContentPartResolver::CACHE_TAG])->flush();
+        SiteSettings::forgetCachedPrivacyPageUrls();
     }
 
     /**
@@ -306,7 +312,7 @@ class Page extends Model implements Feedable, Sitemapable
 
     public function tags(): MorphToMany
     {
-        return $this->morphToMany(Tag::class, 'taggable');
+        return $this->morphToMany(Tag::class, 'taggable')->using(Taggable::class);
     }
 
     /** @return BelongsTo<Content, $this> */
@@ -341,41 +347,6 @@ class Page extends Model implements Feedable, Sitemapable
     }
 
     /**
-     * Convert page to RSS feed item.
-     */
-    public function toFeedItem(): FeedItem
-    {
-        $summary = $this->meta_description ?? $this->title;
-
-        // Add featured image if available
-        if ($imageUrl = $this->getFeaturedImageUrl()) {
-            $summary = '<img src="'.$imageUrl.'" alt="'.$this->title.'" style="max-width: 100%; height: auto; margin-bottom: 1rem">'.$summary;
-        }
-
-        return FeedItem::create()
-            ->id($this->id)
-            ->title($this->title)
-            ->summary($summary)
-            ->updated($this->last_edited_at ?? $this->updated_at)
-            ->link($this->permalink)
-            ->authorName($this->tenant->shortname);
-    }
-
-    /**
-     * Get feed items for RSS.
-     */
-    public static function getFeedItems()
-    {
-        return Page::query()
-            ->where('is_active', true)
-            ->whereNotNull('publish_time')
-            ->where('publish_time', '<=', now())
-            ->orderByDesc('publish_time')
-            ->take(15)
-            ->get();
-    }
-
-    /**
      * No return type declared: matches Searchable::makeAllSearchableUsing()'s own signature
      * exactly. PublicPage re-declares `use Searchable;` on its own class body, which flattens
      * the trait's method back in as PublicPage's own — an incompatible signature here (e.g. a
@@ -386,12 +357,13 @@ class Page extends Model implements Feedable, Sitemapable
      */
     protected function makeAllSearchableUsing(Builder $query)
     {
-        return $query->with(['tenant', 'tags']);
+        return $query->with(['tenant', 'tags', 'content.parts']);
     }
 
     public function toSearchableArray(): array
     {
         return [
+            ...SearchText::forModel($this),
             'id' => (string) $this->id,
             'title' => $this->title,
             'permalink' => $this->permalink,
@@ -400,6 +372,7 @@ class Page extends Model implements Feedable, Sitemapable
             'tenant_id' => $this->tenant_id,
             'tenant_ids' => [$this->tenant_id],
             'tenant_name' => $this->tenant->fullname,
+            'tenant_shortname' => $this->tenant->shortname,
             'tag_names' => $this->tags->map(fn ($tag) => $tag->getTranslation('name', $this->lang) ?? $tag->name)->filter()->values()->all(),
             'is_active' => (bool) $this->is_active,
             'created_at' => $this->created_at->timestamp,
@@ -410,7 +383,7 @@ class Page extends Model implements Feedable, Sitemapable
      * Determine if the model should be searchable.
      *
      * This is the admin index (used by admin search and the other-language picker) and
-     * therefore covers everything non-trashed, including inactive and scheduled pages.
+     * therefore covers everything non-trashed, including inactive pages.
      * Public-facing gating lives in PublicPage::shouldBeSearchable().
      */
     public function shouldBeSearchable(): bool

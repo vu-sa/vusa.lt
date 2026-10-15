@@ -84,11 +84,6 @@ return [
 
     // Atstovavimas settings page
     'atstovavimas_settings' => [
-        'manager_role_title' => 'Institution manager role',
-        'manager_role_description' => 'Select the role that identifies institution managers for the tenant. Users with current duties of this role in the same tenant are treated as institution managers and receive institution-related notifications, e.g. about student representative registrations.',
-        'manager_role_label' => 'Manager role',
-        'manager_role_placeholder' => 'Select a role',
-        'manager_role_note' => 'Note: institution managers are also notified about their institutions\' meetings. That is separate from institution administrators, who are nominated per cadence on the institution itself and carry its tasks.',
         'student_rep_type_title' => 'Student representative body root type',
         'student_rep_type_description' => 'Select the root institution type that (along with all its descendant types) is recognized as a student representative body. Institutions of this type will be displayed using the student rep card instead of the standard institution card in public contacts.',
         'student_rep_type_label' => 'Root type',
@@ -100,10 +95,23 @@ return [
     // Document settings page
     'document_settings' => [
         'important_types_title' => 'Most Important Document Types',
-        'important_types_description' => 'Select which document types should appear first in the filter as "Most important".',
+        'important_types_description' => 'Choose types to show first in the filter and above equally relevant search results.',
         'important_types_label' => 'Document Types',
         'important_types_placeholder' => 'Select document types',
         'no_types_found' => 'No document types found.',
+        'recommendations_title' => 'Recommended documents',
+        'recommendations_description' => 'A recommendation appears above the search results when every searched word is in one of its phrases, e.g. “statut” matches “VU SA statutes”. Separate phrases with commas; word forms are recognised automatically.',
+        'choose_document' => 'Choose a document',
+        'move_up' => 'Move up',
+        'move_down' => 'Move down',
+        'remove' => 'Remove',
+        'phrases_label' => 'Show when searching',
+        'add_recommendation' => 'Add a recommendation',
+        'when_empty' => 'Also show when the search is empty',
+        'pause' => 'Turn off for now',
+        'phrases_placeholder' => 'comma-separated phrases, e.g. statutes, VU SA statutes',
+        'change_document' => 'change document',
+        'phrases_required' => 'Enter at least one phrase or tick “Also show when the search is empty”.',
     ],
 
     // Messages

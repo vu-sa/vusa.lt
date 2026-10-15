@@ -10,8 +10,8 @@ import type { NewsItem } from '@/Types/contentParts';
  *
  * It has no fixture in `Types/samples.ts` because that file deliberately excludes anything that
  * fetches — the block picker must not fire a network request just because someone is browsing
- * it. Here the data is passed straight in through `prefetchedNews`, the same prop the homepage
- * uses, so nothing is fetched here either.
+ * it. Here the data is passed straight in through `resolved`, the payload public pages get
+ * from the server, so nothing is fetched here either.
  */
 const pageProps = {
   app: { locale: 'lt', subdomain: 'www', name: 'VU SA', url: 'http://www.vusa.test', path: 'lt' },
@@ -70,8 +70,8 @@ const articles: NewsItem[] = [
 function renderNews(news: NewsItem[], title = '') {
   return {
     components: { NewsElement },
-    setup: () => ({ element: { json_content: { title } }, news }),
-    template: '<NewsElement :element="element" :prefetched-news="news" />',
+    setup: () => ({ element: { json_content: { title } }, resolved: { type: 'news', items: news } }),
+    template: '<NewsElement :element="element" :resolved="resolved" />',
   };
 }
 

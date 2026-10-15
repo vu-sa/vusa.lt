@@ -34,6 +34,7 @@ export interface MeetingFormData {
 
 export interface AgendaItemFormData {
   title: string;
+  is_private?: boolean;
   description?: string;
   order: number;
   brought_by_students?: boolean;
@@ -93,7 +94,7 @@ export function useMeetingCreation() {
       onError: (received) => {
         errors.value = Object.keys(received).length > 0
           ? received
-          : { general: $t('Nepavyko sukurti susitikimo. Bandykite dar kartą.') };
+          : { general: $t('Nepavyko sukurti susitikimo. Bandyk dar kartą.') };
         callbacks.onError?.(errors.value);
       },
       onFinish: () => {

@@ -11,8 +11,8 @@
 
           <!-- Vote mismatches (student position not accepted) -->
           <span v-if="mismatches > 0" class="flex items-center ml-1">
-            <IFluentDismiss12Regular class="h-3 w-3 text-status-warning" />
-            <span class="text-[0.625rem] text-status-warning font-medium">{{ mismatches }}</span>
+            <IFluentDismiss12Regular class="h-3 w-3 text-status-danger" />
+            <span class="text-[0.625rem] text-status-danger font-medium">{{ mismatches }}</span>
           </span>
 
           <!-- Incomplete vote data -->

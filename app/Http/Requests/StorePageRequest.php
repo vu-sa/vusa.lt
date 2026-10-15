@@ -38,13 +38,20 @@ class StorePageRequest extends FormRequest
     {
         return [
             ...$this->contentPartRules(),
-            'title' => 'required|string|max:255',
+            'content_version' => ['nullable', 'string', 'size:64'],
+            'pairing_confirmation' => ['nullable', 'string', 'size:64'],
+            'content.parts.*.key' => ['nullable', 'string', 'max:100'],
+            'highlights' => ['nullable', 'array', 'max:3'],
+            'highlights.*' => ['nullable', 'string', 'max:500'],
+            'featured_image' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:500'],
+            'title' => 'required|string|max:200',
             'lang' => ['required', new Enum(LocaleEnum::class)],
             'parent_id' => [
                 'nullable', 'integer', SoftDeleteRules::existsLive('pages'),
                 new ValidPageParent(lang: (string) $this->input('lang'), tenantId: $this->filled('tenant_id') ? (int) $this->input('tenant_id') : null),
             ],
-            'other_lang_id' => ['nullable', SoftDeleteRules::existsLive('pages')],
+            'other_lang_id' => ['nullable', 'integer', SoftDeleteRules::existsLive('pages')],
             'is_active' => 'required|boolean',
             'layout' => ['nullable', new Enum(PageLayoutEnum::class)],
             'show_table_of_contents' => ['boolean'],

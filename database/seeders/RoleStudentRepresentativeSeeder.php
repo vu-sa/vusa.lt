@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\DutyType;
 use App\Models\Role;
-use App\Models\Type;
 use Illuminate\Database\Seeder;
 
 class RoleStudentRepresentativeSeeder extends Seeder
@@ -16,13 +16,13 @@ class RoleStudentRepresentativeSeeder extends Seeder
     public function run()
     {
         $role = Role::firstOrCreate([
-            'name' => 'Student Representative',
+            'name' => 'Studentų atstovas',
             'guard_name' => 'web',
         ]);
 
         $role->syncPermissions([
-            'institutions.read.padalinys',
-            'meetings.create.padalinys',
+            'institutions.read.own',
+            'meetings.create.own',
             'meetings.read.own',
             'meetings.update.own',
             'meetings.delete.own',
@@ -30,26 +30,19 @@ class RoleStudentRepresentativeSeeder extends Seeder
             'agendaItems.read.own',
             'agendaItems.update.own',
             'agendaItems.delete.own',
-            'comments.create.own',
-            'comments.read.own',
-            'comments.update.own',
-            'sharepointFiles.create.padalinys',
-            'sharepointFiles.read.own',
-            'sharepointFiles.update.own',
             'tasks.create.padalinys',
             'tasks.read.own',
             'tasks.update.own',
             'problems.create.padalinys',
-            'problems.read.padalinys',
             'problems.update.padalinys',
         ]);
 
-        $type = Type::query()->where('slug', 'studentu-atstovai')->firstOrFail();
+        $type = DutyType::query()->where('slug', 'studentu-atstovai')->firstOrFail();
 
         // Coordinators can attach this type to duties
         $role->attachable_types()->syncWithoutDetaching([$type->id]);
 
-        // Duties with this type automatically receive this role
-        $role->types()->syncWithoutDetaching([$type->id]);
+        // Through DutyType::roles() so RoleTypeObserver also hands the role to the existing duties of this type.
+        $type->roles()->syncWithoutDetaching([$role->id]);
     }
 }

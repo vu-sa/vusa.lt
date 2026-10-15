@@ -7,7 +7,7 @@ use App\Http\Requests\Concerns\NormalizesTranslatableInput;
 use App\Models\Calendar;
 use App\Models\Institution;
 use App\Models\Meeting;
-use App\Rules\WithinAuthorizedTenantScope;
+use Closure;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -56,9 +56,15 @@ class StoreMeetingRequest extends FormRequest
                 'required',
                 'ulid',
                 'exists:institutions,id',
-                // Meeting::create() is gated by the tenant-agnostic meetings.create check, so
-                // the institution the meeting is filed under has to be scoped here.
-                new WithinAuthorizedTenantScope(Institution::class, 'meetings.create.padalinys'),
+                // authorize() only asks whether the user may create meetings anywhere; this scopes
+                // the institution: their padalinys for coordinators, their own duties for a rep.
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    $institution = Institution::query()->find($value);
+
+                    if ($institution !== null && ! $this->user()->can('createFor', [Meeting::class, $institution])) {
+                        $fail(__('validation.meeting_institution_not_own'));
+                    }
+                },
             ],
             'type' => ['nullable', new Enum(MeetingType::class)],
             'description' => 'nullable|array',
@@ -79,6 +85,7 @@ class StoreMeetingRequest extends FormRequest
             'agendaItems.*.description' => 'nullable|string|max:1000',
             'agendaItems.*.order' => 'required|integer|min:1',
             'agendaItems.*.brought_by_students' => 'nullable|boolean',
+            'agendaItems.*.is_private' => 'sometimes|boolean',
             // Batch creation, unlike UpdateAgendaItemRequest's single-item form, has no
             // straightforward way to conditionally require `after:` only for rows that set a
             // start time — leave ordering a client-side concern here.
@@ -88,8 +95,8 @@ class StoreMeetingRequest extends FormRequest
     }
 
     /**
-     * Only VU SA's own bodies are announced in the public calendar, so the checkbox the
-     * client hides for an external body is refused here too.
+     * Only VU SA's own bodies are announced in the public calendar, so neither a new
+     * announcement nor one the meeting is created from may belong to an external body.
      *
      * @return array<int, callable>
      */
@@ -97,7 +104,10 @@ class StoreMeetingRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                if (! $this->boolean('announce_in_calendar')) {
+                $announces = $this->boolean('announce_in_calendar');
+                $fromEvent = $this->filled('calendar_id');
+
+                if (! $announces && ! $fromEvent) {
                     return;
                 }
 
@@ -109,7 +119,10 @@ class StoreMeetingRequest extends FormRequest
                     return;
                 }
 
-                $validator->errors()->add('announce_in_calendar', __('meetings.announce.external_not_allowed'));
+                $validator->errors()->add(
+                    $fromEvent ? 'institution_id' : 'announce_in_calendar',
+                    __('meetings.announce.external_not_allowed'),
+                );
             },
         ];
     }

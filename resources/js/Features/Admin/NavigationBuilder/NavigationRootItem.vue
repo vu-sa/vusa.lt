@@ -1,7 +1,7 @@
 <template>
-  <div class="rounded-lg border bg-background">
+  <div class="border bg-background">
     <div class="flex items-center gap-2 border-b p-3">
-      <button type="button" class="nav-root-handle cursor-grab touch-none text-zinc-400 hover:text-zinc-600 active:cursor-grabbing dark:hover:text-zinc-300">
+      <button type="button" class="nav-root-handle cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing">
         <GripVertical class="size-4" />
       </button>
       <span class="text-base font-semibold" :class="[!root.is_active && 'opacity-60']">{{ root.name || `#${root.id}` }}</span>
@@ -80,7 +80,7 @@ import { nextTick, shallowRef, unref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link } from '@inertiajs/vue3';
 import { insertNodeAt, removeNode, useSortable } from '@vueuse/integrations/useSortable';
-import { GripVertical, Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { GripVertical, Pencil, Plus, Trash2 } from '@lucide/vue';
 
 import NavigationColumn from './NavigationColumn.vue';
 import type { AdminNavigationLink, AdminNavigationRoot } from './types';

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
+  "entry": [
+    "resources/js/app.ts!",
+    "resources/js/ssr.ts!",
+    "resources/js/activity-reply.ts!",
+    "resources/js/Pages/**/*.vue!",
+    "dev/*.{mjs,sh}"
+  ],
+  "project": [
+    "resources/js/**/*.{ts,vue}!",
+    "!resources/js/**/*.{test,stories}.ts!",
+    "!resources/js/**/__tests__/**!",
+    "!resources/js/{mocks,tests}/**!",
+    "vite-plugins/**/*.ts",
+    "dev/*.{mjs,sh}",
+    ".storybook/**/*.{ts,vue}",
+    "docs/.vitepress/**/*.{ts,vue}",
+    "docs/pdf/**/*.ts"
+  ],
+  "ignoreExportsUsedInFile": true,
+  "vitepress": {
+    "entry": ["docs/.vitepress/config.ts", "docs/.vitepress/theme/index.ts"]
+  },
+  "ignore": ["resources/js/**/*.d.ts"],
+  // Ziggy is installed by Composer and resolved through the vendor/ alias.
+  "ignoreDependencies": ["ziggy-js"],
+  // The PDF toolchain installs Typst separately from npm.
+  "ignoreBinaries": ["typst"],
+  "ignoreIssues": {
+    // The PHP transformer owns the complete enum catalog.
+    "resources/js/Types/enums.ts": ["exports", "types", "enumMembers"],
+    // Keep the shadcn catalog, while still checking its imports and dependencies.
+    "resources/js/Components/ui/**": ["files", "exports", "types", "duplicates"],
+    // Canonical component barrels intentionally expose the reusable catalog.
+    "resources/js/Components/{Brand,Patterns,Duties,Files,Relationships,Cadences,Institutions}/index.ts": ["exports", "types"],
+    "resources/js/Components/Public/Base/index.ts": ["exports", "types"],
+    // Aliased modules must retain the interfaces imported from their real packages.
+    "resources/js/mocks/{inertia.storybook,route}.ts": ["exports", "types"],
+    // The translation mock mirrors laravel-vue-i18n's aliases.
+    "resources/js/mocks/i18n.ts": ["duplicates"]
+  }
+}

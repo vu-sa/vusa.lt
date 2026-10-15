@@ -133,11 +133,12 @@
           </div>
 
           <!-- Institutions grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+          <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             <StudentRepInstitutionCard
               v-for="institution in institutionType.institutions"
               :key="institution.id"
               :institution
+              :omit-type-slugs="[institutionType.slug, ...pageTypeSlugs]"
             />
           </div>
         </section>
@@ -154,15 +155,16 @@
           </div>
 
           <!-- All single institutions in one grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+          <div class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             <template v-for="institutionType in singleInstitutionTypes" :key="institutionType.id">
               <div
                 v-for="institution in institutionType.institutions"
                 :key="institution.id"
-                class="flex flex-col gap-2"
+                class="flex min-w-0 flex-col gap-2"
               >
                 <StudentRepInstitutionCard
                   :institution
+                  :omit-type-slugs="pageTypeSlugs"
                   class="flex-1"
                 />
                 <SmartLink
@@ -222,7 +224,8 @@ import { TenantType } from '@/Types/enums';
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
-import StudentRepInstitutionCard from '@/Components/Cards/StudentRepInstitutionCard.vue';
+import StudentRepInstitutionCard from '@/Components/Public/Institutions/StudentRepInstitutionCard.vue';
+import { toPlainText } from '@/Components/Public/Institutions/useInstitutionCard';
 import PadalinysSelector from '@/Components/Public/Nav/PadalinysSelector.vue';
 import { pluralizeLithuanian } from '@/Utils/String';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
@@ -234,8 +237,8 @@ import IFluentPeople16Regular from '~icons/fluent/people-16-regular';
 import IFluentArrowRight16Regular from '~icons/fluent/arrow-right-16-regular';
 
 const props = defineProps<{
-  types: App.Entities.Type[];
-  categoryType?: { id: number; slug: string; title: string; description?: string };
+  types: App.Entities.InstitutionType[];
+  categoryType?: { id: number; slug: string; title: string; description?: string | null };
   showAllTenants?: boolean;
 }>();
 
@@ -296,15 +299,16 @@ const toggleAllTenants = () => {
   router.visit(url.toString(), { preserveState: true, preserveScroll: true });
 };
 
-// Dynamic page description based on context
+const pageTypeSlugs = computed(() => (props.categoryType ? [props.categoryType.slug] : []));
+
+// A type description is rich HTML; the lead is one plain paragraph. A category without one gets
+// no lead rather than the overview page's sentence about all representatives.
 const pageDescription = computed(() => {
-  if (props.categoryType?.description) {
-    return props.categoryType.description;
+  if (props.categoryType) {
+    return toPlainText(props.categoryType.description)
+      ?? (props.categoryType.slug === 'pkp' ? $t('Susipažinkite su VU SA programomis, klubais ir projektais.') : null);
   }
-  if (props.categoryType?.slug === 'pkp') {
-    return 'Susipažinkite su VU SA programomis, klubais ir projektais.';
-  }
-  return 'Susipažinkite su studentų atstovais įvairiose VU institucijose ir darbo grupėse.';
+  return $t('Susipažinkite su studentų atstovais įvairiose VU institucijose ir darbo grupėse.');
 });
 
 // Check if current tenant is main (pagrindinis/vusa)

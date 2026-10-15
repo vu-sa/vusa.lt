@@ -1,465 +1,371 @@
 <template>
-  <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange">
-    <template #headerActions>
-      <div class="flex items-center gap-2">
-        <FilePicker v-if="sharepointPickerAvailable" :loading round size="sm" @pick="handleDocumentPick">
-          <div class="flex items-center gap-2">
-            <ExternalLinkIcon class="h-4 w-4" />
-            {{ $t("Upload from SharePoint") }}
-          </div>
-        </FilePicker>
+  <DocumentFolderBrowser
+    v-if="discovery"
+    ref="browser"
+    :eyebrow
+    :title="$t('Dokumentai')"
+    :lead
+    :pending-count="discovery.counts.pending"
+    :removed-count="discovery.counts.removed"
+    :refresh-key="discovery.lastRunAt"
+  >
+    <template #actions>
+      <FilePicker v-if="pickerAvailable" @pick="handlePick">
+        <template #trigger>
+          <Button variant="outline" voice="sentence" :disabled="picking">
+            <Spinner v-if="picking" aria-hidden="true" />
+            <FileUp v-else aria-hidden="true" />
+            {{ $t('Pasirinkti iš SharePoint') }}
+          </Button>
+        </template>
+      </FilePicker>
+      <Button variant="outline" voice="sentence" :disabled="discoverLoading" @click="handleDiscover">
+        <RefreshCw :class="['size-4', discoverLoading && 'animate-spin']" aria-hidden="true" />
+        {{ $t('Tikrinti SharePoint') }}
+      </Button>
+    </template>
+  </DocumentFolderBrowser>
 
-        <Button variant="outline" size="sm" :loading="bulkSyncLoading" @click="handleBulkSync">
-          <div class="flex items-center gap-2">
-            <RefreshCwIcon class="h-4 w-4" />
-            {{ $t("Sync All") }}
+  <CollectionPage
+    v-else
+    :source="source!"
+    collection="documents"
+    entity-type="document"
+    :eyebrow
+    :title="$t('Dokumentai')"
+    :lead
+    default-view="table"
+    :item-key="documentKey"
+    :quick-filters
+    :columns
+    :search-placeholder="$t('Ieškoti dokumentų...')"
+    @quick-filter="toggleQuickFilter"
+  >
+    <template #row="{ item }">
+      <article class="flex min-h-14 items-center justify-between gap-4 px-3 py-2.5 sm:px-4" data-slot="document-collection-row">
+        <div class="flex min-w-0 flex-1 items-center gap-3">
+          <div class="flex size-10 shrink-0 items-center justify-center border border-border bg-muted text-muted-foreground">
+            <DocumentIcon class="size-5" />
           </div>
-        </Button>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <a
+                v-if="item.anonymous_url"
+                :href="item.anonymous_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-1.5 truncate font-medium hover:text-brand"
+              >
+                <span class="truncate"><SearchMatch :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" /></span>
+                <ExternalLink class="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
+              </a>
+              <span v-else class="truncate font-medium text-foreground">
+                <SearchMatch :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" />
+              </span>
+              <span
+                v-if="item.language"
+                class="border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
+              >
+                {{ item.language === 'Lietuvių' ? 'LT' : item.language === 'Anglų' ? 'EN' : item.language }}
+              </span>
+            </div>
+            <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span v-if="item.content_type" class="border border-border bg-muted/60 px-1 py-0.5">
+                <SearchMatch :match="item._searchFieldMatches?.content_type" :title="item.content_type" />
+              </span>
+              <span v-if="institutionName(item)">
+                <SearchMatch :match="institutionMatch(item)" :title="institutionName(item)" />
+              </span>
+              <span v-if="item.document_date" class="tabular-nums">
+                {{ formatDocDate(item.document_date) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex shrink-0 items-center gap-2">
+          <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
+        </div>
+      </article>
+    </template>
+
+    <template #cell="{ item, column }">
+      <span v-if="column.key === 'date'" class="tabular-nums text-xs">
+        {{ formatDocDate(item.document_date) }}
+      </span>
+
+      <div v-else-if="column.key === 'title'" class="min-w-0">
+        <a
+          v-if="item.anonymous_url"
+          :href="item.anonymous_url"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 font-medium hover:text-brand"
+        >
+          <span class="line-clamp-2"><SearchMatch :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" /></span>
+          <ExternalLink class="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
+        </a>
+        <span v-else class="line-clamp-2 font-medium">
+          <SearchMatch :match="matchTitle(item.title || $t('Be pavadinimo'), item._searchTitleMatches)" :title="item.title || $t('Be pavadinimo')" />
+        </span>
       </div>
+
+      <span v-else-if="column.key === 'content_type'" class="truncate text-xs">
+        <span v-if="item.content_type" class="border border-border bg-muted/60 px-1.5 py-0.5">
+          <SearchMatch :match="item._searchFieldMatches?.content_type" :title="item.content_type" />
+        </span>
+        <span v-else class="text-muted-foreground">—</span>
+      </span>
+
+      <span v-else-if="column.key === 'institution'" class="truncate text-xs">
+        <SearchMatch v-if="institutionName(item)" :match="institutionMatch(item)" :title="institutionName(item)" />
+        <template v-else>—</template>
+      </span>
+
+      <span v-else-if="column.key === 'language'">
+        <span
+          v-if="item.language"
+          class="border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
+        >
+          {{ item.language === 'Lietuvių' ? 'LT' : item.language === 'Anglų' ? 'EN' : item.language }}
+        </span>
+        <span v-else class="text-muted-foreground">—</span>
+      </span>
+
+      <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
     </template>
 
-    <template #filters>
-      <DataTableFilter v-if="contentTypeOptions.length > 0" v-model:value="selectedContentType"
-        :options="contentTypeOptions" @update:value="handleContentTypeFilterChange">
-        {{ $t("content_type") }}
-      </DataTableFilter>
-
-      <DataTableFilter v-if="languageOptions.length > 0" v-model:value="selectedLanguage" :options="languageOptions"
-        @update:value="handleLanguageFilterChange">
-        {{ $t("language") }}
-      </DataTableFilter>
-
-      <DataTableFilter v-if="institutionOptions.length > 0" v-model:value="selectedInstitutionId"
-        :options="institutionOptions" @update:value="handleInstitutionFilterChange">
-        {{ $t("institution") }}
-      </DataTableFilter>
+    <template #preview="{ item }">
+      <DocumentDetailPreview :key="item.id" :document="item" />
     </template>
 
-    <div class="hidden items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-1.5 text-xs text-muted-foreground lg:flex">
-      <span>{{ $t("Environment") }}:</span>
-      <Badge :variant="appEnvironment === 'production' ? 'default' : 'secondary'">
-        {{ appEnvironmentLabel }}
-      </Badge>
-      <span class="mx-1 text-muted-foreground/50">|</span>
-      <span>{{ $t("Work mode") }}:</span>
-      <Badge :variant="appEnvironment === 'production' ? 'default' : 'secondary'">
-        {{ appWorkModeLabel }}
-      </Badge>
-    </div>
-  </IndexTablePage>
+    <template #empty>
+      <EmptyState
+        mode="empty"
+        :icon="DocumentIcon"
+        :title="$t('Dokumentų dar nėra')"
+        :description="$t('Dokumentai automatiškai sinchronizuojami iš SharePoint archyvo.')"
+      />
+    </template>
+  </CollectionPage>
+
+  <ConfirmDialog
+    :open="documentToHide !== null"
+    :title="$t('Slėpti dokumentą?')"
+    :description="hideDescription"
+    :confirm-label="$t('Slėpti')"
+    @update:open="!$event && (documentToHide = null)"
+    @confirm="handleHide"
+  />
 </template>
 
 <script setup lang="ts">
-import { h, ref, computed, watch, capitalize } from 'vue';
-import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { router, usePage } from '@inertiajs/vue3';
-import type { ColumnDef } from '@tanstack/vue-table';
-import { ExternalLinkIcon, RefreshCwIcon } from 'lucide-vue-next';
+import { trans as $t } from 'laravel-vue-i18n';
+import { ExternalLink, EyeOff, FileUp, RefreshCw } from '@lucide/vue';
+import { computed, onBeforeUnmount, ref } from 'vue';
 
-import type { Item } from '@/Features/Admin/SharepointFilePicker/picker';
-import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';
-import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
-import SmartLink from '@/Components/Public/SmartLink.vue';
-import { Badge } from '@/Components/ui/badge';
+import { highlightText, matchTitle } from '@/Shared/Search/matches';
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
+import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
+import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
+import { DocumentFolderBrowser } from '@/Components/Files';
+import { DocumentIcon } from '@/Components/icons';
+import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
-import { DateCell, TruncatedBadge, TruncatedLink, TruncatedText } from '@/Components/ui/data-table/cells';
-import { LocaleEnum } from '@/Types/enums';
-import { BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
-import type {
-  IndexTablePageProps,
-} from '@/Types/TableConfigTypes';
-import {
-  createDateColumn,
-} from '@/Composables/useDataTableColumns';
-import { createStandardActionsColumn } from '@/Composables/useTableActions';
-import { DocumentIcon, TypeIcon } from '@/Components/icons';
+import { Spinner } from '@/Components/ui/spinner';
+import { useAdminNavigation } from '@/Composables/useAdminNavigation';
+import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
+import DocumentDetailPreview from '@/Features/Admin/AdminSearch/Components/Detail/DocumentDetailPreview.vue';
+import FilePicker from '@/Features/Admin/SharepointFilePicker/FilePicker.vue';
+import { isPickerAvailable, pickedDocuments, type Item } from '@/Features/Admin/SharepointFilePicker/picker';
+import type { DocumentSearchResult } from '@/Shared/Search/types';
+import { formatDate, formatNearDate } from '@/Utils/dateTime';
 
 const props = defineProps<{
-  data: App.Entities.Document[];
-  meta: {
-    total: number;
-    current_page: number;
-    per_page: number;
-    last_page: number;
-    from: number;
-    to: number;
-  };
-  filters?: Record<string, any>;
-  sorting?: { id: string; desc: boolean }[];
-  filterOptions?: {
-    contentTypes: string[];
-    languages: string[];
-  };
+  importantContentTypes: string[];
+  abilities: { create: boolean; update: boolean; updateTenantShortnames: string[] | null };
+  /** The user's padaliniai plus VU SA: a first visit starts filtered to them. */
+  defaultTenantShortnames: string[];
+  /** Managers get every SharePoint file from the database; null for members who browse the published archive. */
+  discovery: { lastRunAt: string | null; counts: { pending: number; removed: number } } | null;
 }>();
 
-// Component constants
-const modelName = 'documents';
-const entityName = 'document';
+const { activeWorkspace } = useAdminNavigation();
 
-const loading = ref(false);
-const bulkSyncLoading = ref(false);
-const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
-const page = usePage();
+// Listed in both ViSAK and Svetainė; the eyebrow names whichever the user came through.
+const eyebrow = computed(() => `${$t(activeWorkspace.value?.label ?? 'shell.workspaces.svetaine.title')} · ${$t('shell.sections.dokumentai')}`);
 
-// Same guard as the meetings documents panel: MSAL needs a secure context, and app.url can
-// claim https while the page is actually opened over http (local dev).
-const sharepointPickerAvailable = computed(() =>
-  typeof window !== 'undefined' && window.isSecureContext && String(page.props.app.url).startsWith('https'),
+const lead = computed(() => {
+  if (!props.discovery) {
+    return $t('VU SA ir padalinių dokumentų archyvas.');
+  }
+
+  const checked = props.discovery.lastRunAt
+    ? $t('SharePoint tikrintas :time.', { time: formatNearDate(props.discovery.lastRunAt) })
+    : $t('SharePoint dar netikrintas.');
+
+  return `${$t('Visi SharePoint archyvo failai. Nuspręsk, kurie rodomi vusa.lt.')} ${checked}`;
+});
+
+const browser = ref<InstanceType<typeof DocumentFolderBrowser> | null>(null);
+
+// Members who may update a padalinys' documents act on archive rows by its shortname, as in DocumentPolicy.
+const canUpdateItem = (item: DocumentSearchResult): boolean => props.abilities.update && (
+  props.abilities.updateTenantShortnames === null
+  || (!!item.tenant_shortname && props.abilities.updateTenantShortnames.includes(item.tenant_shortname))
 );
 
-const appEnvironment = computed(() => String(page.props.app?.env ?? 'unknown').toLowerCase());
-const appEnvironmentLabel = computed(() => {
-  if (appEnvironment.value === 'production') return $t('Production');
-  if (appEnvironment.value === 'local') return $t('Local');
+const rowActions = (item: DocumentSearchResult): CollectionRowAction[] => canUpdateItem(item)
+  ? [
+      { key: 'refresh', label: $t('Atnaujinti iš SharePoint'), icon: RefreshCw, loading: refreshingId.value === String(item.id) },
+      // Hiding, not deleting: SharePoint is the source, and a deleted record would only be rediscovered.
+      { key: 'hide', label: $t('Slėpti'), icon: EyeOff },
+    ]
+  : [];
 
-  return appEnvironment.value;
-});
-const appWorkModeLabel = computed(() => {
-  return appEnvironment.value === 'production' ? $t('Production mode') : $t('Development mode');
-});
+function selectRowAction(key: string, item: DocumentSearchResult): void {
+  if (key === 'refresh') refreshDocument(item);
+  if (key === 'hide') documentToHide.value = item;
+}
 
-// Initialize filter states
-const selectedContentType = ref<string | null>(props.filters?.['content_type'] || null);
-const selectedLanguage = ref<string | null>(props.filters?.['language'] || null);
-const selectedInstitutionId = ref<number | null>(props.filters?.['institution.id'] || null);
+// Only the archive gets a search source: it syncs its state into the URL on mount and would
+// otherwise erase the managers' view's `path`, `layout` and `status`.
+const source = props.discovery
+  ? null
+  : useTypesenseCollectionSource<DocumentSearchResult>({
+      collection: 'documents',
+      preserveUrlKeys: ['view', 'item'],
+      defaultFilters: { tenant_shortname: props.defaultTenantShortnames },
+    });
 
-// Filter options using complete data from backend instead of current page data
-const contentTypeOptions = computed(() => {
-  const types = props.filterOptions?.contentTypes || [];
-  return types.map(type => ({
+const documentKey = (item: DocumentSearchResult) => String(item.id);
+
+const columns = computed<CollectionColumn[]>(() => [
+  { key: 'date', label: $t('Data'), class: 'w-28' },
+  { key: 'title', label: $t('Pavadinimas') },
+  { key: 'content_type', label: $t('Rūšis'), class: 'w-44' },
+  { key: 'institution', label: $t('Institucija'), class: 'w-44' },
+  { key: 'language', label: $t('Kalba'), class: 'w-20' },
+  ...(props.abilities.update ? [{ key: 'actions', label: $t('Veiksmai'), class: 'w-px text-right', pinned: true }] : []),
+]);
+
+function institutionMatch(item: DocumentSearchResult) {
+  const name = institutionName(item);
+  const fields = item._searchFieldMatches;
+  return name ? highlightText(name, fields?.institution_name_lt ?? fields?.institution_name_en) : undefined;
+}
+
+function institutionName(item: DocumentSearchResult): string | undefined {
+  return item.institution_name_lt || item.institution_name_en || item.tenant_shortname;
+}
+
+function formatDocDate(timestamp?: number | null): string {
+  if (!timestamp) return '—';
+  return formatDate(new Date(timestamp * 1000));
+}
+
+const asList = (value: unknown): string[] => (Array.isArray(value) ? value.map(String) : []);
+
+const quickFilters = computed<CollectionQuickFilter[]>(() => {
+  const chosenCategories = asList(source?.filters.value.content_type_category);
+
+  return (props.importantContentTypes || []).map(type => ({
+    id: `ct_${type}`,
     label: type,
-    value: type,
+    active: chosenCategories.includes(type),
   }));
 });
 
-const languageOptions = computed(() => {
-  const languages = props.filterOptions?.languages || [];
-  return languages.map(lang => ({
-    label: lang,
-    value: lang,
-  }));
-});
-
-const institutionOptions = computed(() => {
-  const institutions = page.props.institutions || [];
-  return institutions.map(institution => ({
-    label: institution.short_name || institution.name,
-    value: institution.id,
-  }));
-});
-
-// Column definitions using Tanstack Table format and standardized column helpers
-const columns = computed(() => [
-  {
-    accessorKey: 'title',
-    header: () => $t('forms.fields.title'),
-    cell: ({ row }) => {
-      const title = row.getValue('title') as string;
-      const hasUrl = row.original.anonymous_url;
-
-      if (hasUrl) {
-        return h('div', { class: 'flex items-start gap-1' }, [
-          h(TruncatedLink, {
-            href: row.original.anonymous_url,
-            text: title,
-            lines: 2,
-            external: true,
-            class: 'text-blue-600 hover:text-blue-800 text-sm leading-tight',
-          }),
-          h(ExternalLinkIcon, { class: 'h-3 w-3 mt-0.5 opacity-60 flex-shrink-0' }),
-        ]);
-      }
-
-      return h(TruncatedText, {
-        text: title,
-        lines: 2,
-        class: 'font-medium text-gray-600 text-sm leading-tight',
-      });
-    },
-    size: 300,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'language',
-    header: () => $t('lang'),
-    cell: ({ row }) => {
-      const language = row.getValue('language') as string;
-      if (!language) return h(TruncatedText, { text: null });
-      const display = language === 'Lietuvių' ? 'LT' : language === 'Anglų' ? 'EN' : language;
-      return h(TruncatedBadge, { text: display, variant: 'secondary', class: 'text-xs' });
-    },
-    size: 70,
-    enableSorting: true,
-  },
-  createDateColumn<App.Entities.Document>('document_date', {
-    title: $t('date'),
-    width: 100,
-    enableSorting: true,
-    format: { year: 'numeric', month: '2-digit', day: '2-digit' },
-  }),
-  {
-    accessorKey: 'content_type',
-    header: () => $t('content_type'),
-    cell: ({ row }) => {
-      const contentType = row.getValue('content_type') as string;
-      if (!contentType) return h(TruncatedText, { text: null });
-
-      const shortType = contentType
-        .replace('Parlamento ', 'Parl. ')
-        .replace(' sprendimas', ' spr.')
-        .replace(' protokolas', ' prot.')
-        .replace(' darbotvarkė', ' d.t.');
-
-      return h(TruncatedBadge, {
-        text: shortType,
-        variant: 'secondary',
-        class: 'text-xs',
-      }, {
-        default: () => h(TruncatedText, { text: contentType }),
-      });
-    },
-    size: 150,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'institution_name_lt',
-    header: () => $t('institution'),
-    cell: ({ row }) => {
-      const { institution } = row.original;
-      if (!institution) return h(TruncatedText, { text: null });
-
-      const shortName = institution.short_name || institution.name;
-      return h(TruncatedBadge, {
-        text: shortName,
-        variant: 'secondary',
-        class: 'text-xs font-medium text-indigo-600 bg-indigo-50',
-      });
-    },
-    size: 120,
-    enableSorting: true,
-  },
-  {
-    accessorKey: 'sync_status',
-    header: () => $t('Sync Status'),
-    cell: ({ row }) => {
-      const status = row.original.sync_status || 'pending';
-      const attempts = row.original.sync_attempts || 0;
-      const statusConfig = {
-        pending: {
-          color: 'text-gray-600',
-          bgColor: 'bg-gray-100',
-          dotColor: 'bg-gray-400',
-          label: 'Pending',
-          icon: '⏳',
-        },
-        imported: {
-          color: 'text-indigo-600',
-          bgColor: 'bg-indigo-50',
-          dotColor: 'bg-indigo-500',
-          label: 'Imported',
-          icon: '📥',
-        },
-        syncing: {
-          color: 'text-blue-600',
-          bgColor: 'bg-blue-50',
-          dotColor: 'bg-blue-500 animate-pulse',
-          label: 'Syncing...',
-          icon: '🔄',
-        },
-        success: {
-          color: 'text-green-600',
-          bgColor: 'bg-green-50',
-          dotColor: 'bg-green-500',
-          label: 'Success',
-          icon: '✅',
-        },
-        failed: {
-          color: 'text-red-600',
-          bgColor: 'bg-red-50',
-          dotColor: 'bg-red-500',
-          label: 'Failed',
-          icon: '❌',
-        },
-      };
-
-      const config = statusConfig[status] || statusConfig['pending'];
-
-      return h('div', {
-        class: `inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium ${config.bgColor} ${config.color}`,
-      }, [
-        h('div', { class: `w-2 h-2 rounded-full ${config.dotColor}` }),
-        h('span', {}, config.label),
-        attempts > 1 ? h('span', { class: 'bg-white/50 px-1 rounded text-xs' }, String(attempts)) : null,
-      ]);
-    },
-    size: 140,
-  },
-  {
-    accessorKey: 'checked_at',
-    header: () => $t('Last Check'),
-    cell: ({ row }) => {
-      const checkedAt = row.getValue('checked_at');
-
-      return h('div', { class: 'flex items-center gap-2' }, [
-        checkedAt
-          ? h(DateCell, { date: checkedAt as string | Date, mode: 'relative' })
-          : h(TruncatedText, { text: $t('Never') }),
-        h(Button, {
-          size: 'icon',
-          variant: 'ghost',
-          onClick: () => handleDocumentRefresh(row.original),
-          title: $t('refresh'),
-          class: 'h-6 w-6',
-        }, () => h(RefreshCwIcon, { class: 'h-3 w-3' })),
-      ]);
-    },
-    size: 130,
-    enableSorting: true,
-  },
-  createStandardActionsColumn<App.Entities.Document>('documents', {
-    canDelete: true,
-  }),
-]) as Array<ColumnDef<App.Entities.Document, any>>;
-
-// Simplified table configuration using the new interfaces
-const tableConfig = computed<IndexTablePageProps<App.Entities.Document>>(() => {
-  return {
-    modelName,
-    entityName,
-    data: props.data,
-    columns: columns.value,
-    totalCount: props.meta.total,
-    initialPage: props.meta.current_page,
-    pageSize: props.meta.per_page,
-
-    initialFilters: props.filters,
-    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'created_at', desc: true }],
-    enableFiltering: true,
-    enableColumnVisibility: true,
-
-    headerTitle: $t('Documents'),
-    headerDescription: $t('Documents are automatically synchronized from SharePoint. Manual refresh is rarely needed - the system updates content intelligently in the background.'),
-    icon: DocumentIcon,
-    breadcrumbs: [
-      BreadcrumbHelpers.homeItem(),
-      BreadcrumbHelpers.createBreadcrumbItem($t('Administravimas'), route('administration'), TypeIcon),
-      BreadcrumbHelpers.createBreadcrumbItem($t('Dokumentai'), undefined, DocumentIcon),
-    ],
-    canCreate: false,
-  };
-});
-
-// Filter handlers
-const handleContentTypeFilterChange = (contentType: string | null) => {
-  selectedContentType.value = contentType;
-  if (indexTablePageRef.value) {
-    indexTablePageRef.value.updateFilter('content_type', contentType);
+function toggleQuickFilter(id: string): void {
+  if (id.startsWith('ct_')) {
+    source?.toggleFilter('content_type_category', id.replace('ct_', ''));
   }
-};
+}
 
-const handleLanguageFilterChange = (language: string | null) => {
-  selectedLanguage.value = language;
-  if (indexTablePageRef.value) {
-    indexTablePageRef.value.updateFilter('language', language);
-  }
-};
+// Actions
+const refreshingId = ref<string | null>(null);
 
-const handleInstitutionFilterChange = (institutionId: number | null) => {
-  selectedInstitutionId.value = institutionId;
-  if (indexTablePageRef.value) {
-    indexTablePageRef.value.updateFilter('institution.id', institutionId);
-  }
-};
-
-// Event handlers
-const onDataLoaded = (_data: unknown) => {};
-
-const handleSortingChange = (_sorting: unknown) => {};
-
-const handlePageChange = (_page: unknown) => {};
-
-const handleFilterChange = (filterKey, value) => {
-  if (filterKey === 'content_type') {
-    selectedContentType.value = value;
-  }
-  else if (filterKey === 'language') {
-    selectedLanguage.value = value;
-  }
-  else if (filterKey === 'institution.id') {
-    selectedInstitutionId.value = value;
-  }
-};
-
-const handleDocumentPick = (items: Item[]) => {
-  loading.value = true;
-
-  const documents = items.map(item => ({
-    name: item.name,
-    site_id: item.sharepointIds?.siteId,
-    list_id: item.sharepointIds?.listId,
-    list_item_unique_id: item.sharepointIds?.listItemUniqueId,
-  }));
-
-  router.post(route('documents.store'), { documents }, {
-    onSuccess: () => {
-      loading.value = false;
-      if (indexTablePageRef.value) {
-        indexTablePageRef.value.reloadData();
-      }
-    },
-    onError() {
-      loading.value = false;
+function refreshDocument(item: DocumentSearchResult): void {
+  refreshingId.value = item.id;
+  router.post(route('documents.refresh', item.id), {}, {
+    preserveScroll: true,
+    onFinish: () => {
+      refreshingId.value = null;
     },
   });
-};
+}
 
-const handleDocumentRefresh = (document: App.Entities.Document) => {
-  loading.value = true;
+const pickerAvailable = computed(() => isPickerAvailable(usePage().props.app?.url));
+const picking = ref(false);
 
-  router.post(route('documents.refresh', document.id), {}, {
-    onSuccess: () => {
-      loading.value = false;
-      if (indexTablePageRef.value) {
-        indexTablePageRef.value.reloadData();
-      }
-    },
-    onError() {
-      loading.value = false;
-    },
-  });
-};
-
-const handleBulkSync = () => {
-  bulkSyncLoading.value = true;
-
-  router.post(route('documents.bulk-sync'), {}, {
-    onSuccess: () => {
-      bulkSyncLoading.value = false;
-      if (indexTablePageRef.value) {
-        indexTablePageRef.value.reloadData();
-      }
-    },
-    onError() {
-      bulkSyncLoading.value = false;
+/** Coordinators' habit from before discovery: pick the file in SharePoint, and it is shown on vusa.lt. */
+function handlePick(items: Item[]): void {
+  picking.value = true;
+  router.post(route('documents.pick'), { documents: pickedDocuments(items) }, {
+    preserveScroll: true,
+    preserveState: true,
+    onSuccess: () => browser.value?.refresh(),
+    onFinish: () => {
+      picking.value = false;
     },
   });
-};
+}
 
-// Sync filter values when changed externally
-watch(() => props.filters, (newFilters) => {
-  if (newFilters) {
-    if (newFilters['content_type'] !== undefined) {
-      selectedContentType.value = newFilters['content_type'];
-    }
-    if (newFilters['language'] !== undefined) {
-      selectedLanguage.value = newFilters['language'];
-    }
-    if (newFilters['institution.id'] !== undefined) {
-      selectedInstitutionId.value = newFilters['institution.id'];
-    }
+const discoverLoading = ref(false);
+
+// The check runs in the background; watch for it to finish so new files and counts appear without a reload.
+const DISCOVERY_POLL_MS = 5000;
+const DISCOVERY_POLL_LIMIT = 36;
+let discoveryPoll: ReturnType<typeof setTimeout> | null = null;
+
+function stopDiscoveryPolling(): void {
+  if (discoveryPoll) clearTimeout(discoveryPoll);
+  discoveryPoll = null;
+  discoverLoading.value = false;
+}
+
+function waitForDiscovery(startedFrom: string | null, attempt = 1): void {
+  if (attempt > DISCOVERY_POLL_LIMIT || (props.discovery?.lastRunAt ?? null) !== startedFrom) {
+    stopDiscoveryPolling();
+    return;
   }
-}, { deep: true });
 
+  discoveryPoll = setTimeout(() => {
+    router.reload({ only: ['discovery'], onFinish: () => waitForDiscovery(startedFrom, attempt + 1) });
+  }, DISCOVERY_POLL_MS);
+}
+
+onBeforeUnmount(stopDiscoveryPolling);
+
+function handleDiscover(): void {
+  const startedFrom = props.discovery?.lastRunAt ?? null;
+
+  discoverLoading.value = true;
+  router.post(route('documents.discover'), {}, {
+    preserveScroll: true,
+    // The same page instance keeps watching; a fresh one would lose the poll.
+    preserveState: true,
+    onSuccess: () => waitForDiscovery(startedFrom),
+    onError: () => stopDiscoveryPolling(),
+  });
+}
+
+const documentToHide = ref<DocumentSearchResult | null>(null);
+
+const hideDescription = computed(() => $t('„:title“ nebebus rodomas vusa.lt, o jo vieša SharePoint nuoroda bus atšaukta.', {
+  title: documentToHide.value?.title ?? '',
+}));
+
+function handleHide(): void {
+  if (!documentToHide.value) return;
+  router.post(route('documents.status'), { document_ids: [Number(documentToHide.value.id)], status: 'hidden' }, {
+    preserveScroll: true,
+    onSuccess: () => {
+      documentToHide.value = null;
+      source?.refresh();
+    },
+  });
+}
 </script>

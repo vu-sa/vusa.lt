@@ -34,8 +34,7 @@ class SyncFileableFilesJob implements ShouldQueue
      * The maximum number of seconds the job can run before timing out.
      *
      * Sequential per-file SharePoint API calls over the full FileableFile backlog can run
-     * well past the default 60s worker timeout; 1800s comfortably covers it while staying
-     * under the sharepoint-sync worker's --max-time=3600.
+     * well past the default 60s worker timeout; hence the long-running connection.
      */
     public int $timeout = 1800;
 
@@ -52,9 +51,8 @@ class SyncFileableFilesJob implements ShouldQueue
          */
         protected int $batchSize = 50
     ) {
-        // The sharepoint-sync worker runs a single process, so a long-running job here
-        // can't be picked up twice when the 90s queue retry_after elapses mid-run.
-        $this->queue = 'sharepoint-sync';
+        // retry_after there exceeds the timeout, so a run in progress is never handed to a second worker.
+        $this->onConnection('long-running');
     }
 
     /**

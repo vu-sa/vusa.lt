@@ -194,10 +194,10 @@ test('a tenant quota still admits reps up to the seats left beside ex-officio on
 });
 
 test('an admin assigning themselves still triggers the ex-officio sync', function (): void {
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo(['duties.read.padalinys', 'duties.update.padalinys']);
 
-    $admin = makeTenantUser('Communication Coordinator', $this->tenant);
+    $admin = makeTenantUser('Komunikacijos koordinatorius', $this->tenant);
 
     // Touching their own membership routes the mutation through AccessChangeAnalyzer,
     // which intercepts DutiableChanged to keep speculative listeners off uncommitted

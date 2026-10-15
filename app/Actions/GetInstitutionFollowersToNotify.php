@@ -7,17 +7,9 @@ use App\Models\Meeting;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
-/**
- * Get all followers who should be notified about institution-related events.
- *
- * Collects users who have explicitly followed any of the meeting's institutions,
- * excluding users who have muted notifications for those institutions.
- */
 class GetInstitutionFollowersToNotify
 {
     /**
-     * Execute the action to get unique followers to notify for a meeting.
-     *
      * @return Collection<int, User>
      */
     public static function execute(Meeting $meeting): Collection
@@ -31,21 +23,17 @@ class GetInstitutionFollowersToNotify
             $followers = $followers->merge($institutionFollowers);
         }
 
-        // Return unique users by ID
-        return $followers->unique('id')->values();
+        // Anyone may follow an active institution, but only hears about meetings they may read.
+        return $followers->unique('id')
+            ->filter(fn (User $follower): bool => $follower->can('viewSummary', $meeting))
+            ->values();
     }
 
     /**
-     * Get followers for a single institution who haven't muted it.
-     *
      * @return Collection<int, User>
      */
     public static function getFollowersForInstitution(Institution $institution): Collection
     {
-        return $institution->followers()
-            ->whereDoesntHave('mutedInstitutions', function ($query) use ($institution): void {
-                $query->where('institution_id', $institution->id);
-            })
-            ->get();
+        return $institution->followers()->get();
     }
 }

@@ -85,12 +85,10 @@ describe('page tagging via controller', function (): void {
         $payload['tenant_id'] = $this->tenant->id;
         $payload['tags'] = [$tag1->id, $tag2->id];
 
-        asUser($this->superAdmin)
-            ->post(route('pages.store'), $payload)
-            ->assertRedirect(route('pages.index'))
-            ->assertSessionHas('success');
+        $response = asUser($this->superAdmin)->post(route('pages.store'), $payload);
 
         $page = Page::where('title', $payload['title'])->firstOrFail();
+        $response->assertRedirect(route('pages.edit', $page))->assertSessionHas('success');
 
         expect($page->tags)->toHaveCount(2)
             ->and($page->tags->pluck('id')->sort()->values()->all())->toEqual(collect([$tag1->id, $tag2->id])->sort()->values()->all());
@@ -128,12 +126,10 @@ describe('calendar tagging via controller', function (): void {
             'tags' => [$tag1->id, $tag2->id],
         ];
 
-        asUser($this->superAdmin)
-            ->post(route('calendar.store'), $payload)
-            ->assertRedirect(route('calendar.index'))
-            ->assertSessionHas('success');
+        $response = asUser($this->superAdmin)->post(route('calendar.store'), $payload);
 
         $calendar = Calendar::query()->latest('id')->firstOrFail();
+        $response->assertRedirect(route('calendar.edit', $calendar))->assertSessionHas('success');
 
         expect($calendar->tags)->toHaveCount(2)
             ->and($calendar->tags->pluck('id')->sort()->values()->all())->toEqual(collect([$tag1->id, $tag2->id])->sort()->values()->all());

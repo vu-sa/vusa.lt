@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\DocumentStatus;
 use App\Jobs\RevokeSharepointPermissionJob;
 use App\Models\Document;
 use App\Models\Institution;
@@ -82,17 +83,17 @@ describe('observer dispatches revocation on delete', function (): void {
 });
 
 describe('observer dispatches revocation on deactivation', function (): void {
-    test('dispatches job and clears URL when is_active changes to false', function (): void {
+    test('dispatches job and clears URL when a published document is hidden', function (): void {
         Queue::fake();
 
         $document = Document::factory()->create([
             'institution_id' => $this->institution->id,
-            'is_active' => true,
+            'status' => DocumentStatus::Published,
             'anonymous_url' => 'https://example.sharepoint.com/:b:/test',
             'sharepoint_permission_id' => 'perm-456',
         ]);
 
-        $document->is_active = false;
+        $document->status = DocumentStatus::Hidden;
         $document->save();
 
         Queue::assertPushed(RevokeSharepointPermissionJob::class, fn ($job) => $job->sharepointPermissionId === 'perm-456'
@@ -103,28 +104,28 @@ describe('observer dispatches revocation on deactivation', function (): void {
             ->and($document->sharepoint_permission_id)->toBeNull();
     });
 
-    test('does not dispatch job when is_active changes to true', function (): void {
+    test('does not dispatch job when a hidden document is published', function (): void {
         Queue::fake();
 
         $document = Document::factory()->create([
             'institution_id' => $this->institution->id,
-            'is_active' => false,
+            'status' => DocumentStatus::Hidden,
             'anonymous_url' => null,
             'sharepoint_permission_id' => null,
         ]);
 
-        $document->is_active = true;
+        $document->status = DocumentStatus::Published;
         $document->save();
 
         Queue::assertNotPushed(RevokeSharepointPermissionJob::class);
     });
 
-    test('does not dispatch job when is_active is not changing', function (): void {
+    test('does not dispatch job when the status is not changing', function (): void {
         Queue::fake();
 
         $document = Document::factory()->create([
             'institution_id' => $this->institution->id,
-            'is_active' => true,
+            'status' => DocumentStatus::Published,
             'anonymous_url' => 'https://example.sharepoint.com/:b:/test',
             'sharepoint_permission_id' => 'perm-789',
         ]);
@@ -141,12 +142,12 @@ describe('observer dispatches revocation on deactivation', function (): void {
 
         $document = Document::factory()->create([
             'institution_id' => $this->institution->id,
-            'is_active' => true,
+            'status' => DocumentStatus::Published,
             'anonymous_url' => 'https://example.sharepoint.com/:b:/test',
             'sharepoint_permission_id' => null,
         ]);
 
-        $document->is_active = false;
+        $document->status = DocumentStatus::Hidden;
         $document->save();
 
         Queue::assertNotPushed(RevokeSharepointPermissionJob::class);
@@ -164,7 +165,7 @@ describe('public API', function (): void {
         // Active with URL - should be returned
         Document::factory()->create([
             'institution_id' => $this->institution->id,
-            'is_active' => true,
+            'status' => DocumentStatus::Published,
             'anonymous_url' => 'https://example.sharepoint.com/:b:/test1',
             'title' => $uniquePrefix.' Active with URL',
         ]);
@@ -172,7 +173,7 @@ describe('public API', function (): void {
         // Inactive with URL - should NOT be returned
         Document::factory()->create([
             'institution_id' => $this->institution->id,
-            'is_active' => false,
+            'status' => DocumentStatus::Hidden,
             'anonymous_url' => 'https://example.sharepoint.com/:b:/test2',
             'title' => $uniquePrefix.' Inactive with URL',
         ]);
@@ -180,7 +181,7 @@ describe('public API', function (): void {
         // Active without URL - should NOT be returned
         Document::factory()->create([
             'institution_id' => $this->institution->id,
-            'is_active' => true,
+            'status' => DocumentStatus::Published,
             'anonymous_url' => null,
             'title' => $uniquePrefix.' Active without URL',
         ]);
@@ -198,14 +199,14 @@ describe('public API', function (): void {
     test('search respects active and URL filters', function (): void {
         Document::factory()->create([
             'institution_id' => $this->institution->id,
-            'is_active' => true,
+            'status' => DocumentStatus::Published,
             'anonymous_url' => 'https://example.sharepoint.com/:b:/test',
             'title' => 'Searchable Document',
         ]);
 
         Document::factory()->create([
             'institution_id' => $this->institution->id,
-            'is_active' => false,
+            'status' => DocumentStatus::Hidden,
             'anonymous_url' => 'https://example.sharepoint.com/:b:/test2',
             'title' => 'Searchable Hidden',
         ]);

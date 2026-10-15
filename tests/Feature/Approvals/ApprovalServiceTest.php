@@ -11,6 +11,7 @@ use App\Models\ResourceCategory;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Services\ApprovalService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 
@@ -21,7 +22,7 @@ beforeEach(function (): void {
     $this->user = makeUser($this->tenant);
 
     $this->resourceManager = makeUser($this->tenant);
-    $this->resourceManager->duties()->first()->assignRole('Resource Manager');
+    $this->resourceManager->duties()->first()->assignRole('Išteklių administratorius');
 
     $this->category = ResourceCategory::factory()->create();
     $this->resource = Resource::factory()->create([
@@ -47,6 +48,75 @@ beforeEach(function (): void {
         ->first();
 
     $this->approvalService = app(ApprovalService::class);
+});
+
+describe('ApprovalService backtracking authorization', function (): void {
+    test('single and bulk backtracking propagate permission denials', function (bool $bulk): void {
+        $approval = $this->approvalService->approve($this->reservationResource, $this->resourceManager, ApprovalDecision::Approved);
+
+        expect(fn () => $bulk
+            ? $this->approvalService->bulkBacktrack(collect([$this->reservationResource]), $this->user)
+            : $this->approvalService->backtrack($this->reservationResource, $this->user)
+        )->toThrow(AuthorizationException::class, __('reservations.messages.backtrack_forbidden'))
+            ->and($this->reservationResource->refresh()->state->getValue())->toBe('reserved')
+            ->and($approval->refresh()->reverted_at)->toBeNull();
+    })->with(['single' => false, 'bulk' => true]);
+
+    test('bulk backtracking reports lifecycle errors without treating them as permission denials', function (): void {
+        $result = $this->approvalService->bulkBacktrack(collect([$this->reservationResource]), $this->resourceManager);
+
+        expect($result['approvals'])->toBeEmpty()
+            ->and($result['errors'])->toBe([__('reservations.messages.backtrack_invalid_state')])
+            ->and($this->reservationResource->refresh()->state->getValue())->toBe('created');
+    });
+
+    test('a lifecycle error does not roll back a permitted item in the same batch', function (): void {
+        $approval = $this->approvalService->approve($this->reservationResource, $this->resourceManager, ApprovalDecision::Approved);
+        $otherReservation = Reservation::factory()->create();
+        $otherReservation->resources()->attach($this->resource->id, [
+            'quantity' => 1,
+            'start_time' => $otherReservation->start_time,
+            'end_time' => $otherReservation->end_time,
+            'state' => 'created',
+        ]);
+        $otherPivot = ReservationResource::query()->where('reservation_id', $otherReservation->id)->firstOrFail();
+
+        $result = $this->approvalService->bulkBacktrack(collect([$this->reservationResource, $otherPivot]), $this->resourceManager);
+
+        expect($result['approvals'])->toHaveCount(1)
+            ->and($result['errors'])->toBe([__('reservations.messages.backtrack_invalid_state')])
+            ->and($this->reservationResource->refresh()->state->getValue())->toBe('created')
+            ->and($approval->refresh()->reverted_at)->not->toBeNull()
+            ->and($otherPivot->refresh()->state->getValue())->toBe('created');
+    });
+
+    test('a late permission denial rolls back earlier backtracking writes', function (): void {
+        $approval = $this->approvalService->approve($this->reservationResource, $this->resourceManager, ApprovalDecision::Approved);
+        $otherReservation = Reservation::factory()->create();
+        $otherReservation->resources()->attach($this->resource->id, [
+            'quantity' => 1,
+            'start_time' => $otherReservation->start_time,
+            'end_time' => $otherReservation->end_time,
+            'state' => 'created',
+        ]);
+        $otherPivot = ReservationResource::query()->where('reservation_id', $otherReservation->id)->firstOrFail();
+        $realService = $this->approvalService;
+        $service = $this->partialMock(ApprovalService::class);
+        $service->shouldReceive('backtrack')->twice()->andReturnUsing(function (ReservationResource $pivot, $user, $notes) use ($otherPivot, $realService) {
+            if ($pivot->id === $otherPivot->id) {
+                throw new AuthorizationException;
+            }
+
+            return $realService->backtrack($pivot, $user, $notes);
+        });
+
+        expect(fn () => $service->bulkBacktrack(collect([$this->reservationResource, $otherPivot]), $this->resourceManager))
+            ->toThrow(AuthorizationException::class)
+            ->and($this->reservationResource->refresh()->state->getValue())->toBe('reserved')
+            ->and($approval->refresh()->reverted_at)->toBeNull()
+            ->and($approval->reverted_by_id)->toBeNull()
+            ->and($approval->reversion_notes)->toBeNull();
+    });
 });
 
 describe('ApprovalService', function (): void {
@@ -260,4 +330,30 @@ describe('ReservationResource State Transitions', function (): void {
         $this->reservationResource->refresh();
         expect($this->reservationResource->state->getValue())->toBe('cancelled');
     });
+});
+
+test('approval reloads a stale reservation resource before checking its state', function (): void {
+    $stale = $this->reservationResource;
+    ReservationResource::query()->whereKey($stale->id)->update(['state' => 'cancelled']);
+
+    expect(fn () => $this->approvalService->approve($stale, $this->resourceManager, ApprovalDecision::Approved))
+        ->toThrow(InvalidArgumentException::class)
+        ->and($stale->approvals()->count())->toBe(0)
+        ->and((string) $stale->fresh()->state)->toBe('cancelled');
+});
+
+test('a failed approval completion rolls back both the decision and state', function (): void {
+    Event::listen(ApprovalFlowCompleted::class, fn () => throw new RuntimeException('Completion failed'));
+    expect(fn () => $this->approvalService->approve($this->reservationResource, $this->resourceManager, ApprovalDecision::Approved))
+        ->toThrow(RuntimeException::class, 'Completion failed')
+        ->and($this->reservationResource->approvals()->count())->toBe(0)
+        ->and((string) $this->reservationResource->fresh()->state)->toBe('created');
+});
+
+test('partial approval cannot change quantity before authorization', function (): void {
+    $this->reservationResource->update(['quantity' => 3]);
+    expect(fn () => $this->approvalService->approve(
+        $this->reservationResource, $this->user, ApprovalDecision::Approved, approvedQuantity: 1,
+    ))->toThrow(InvalidArgumentException::class)
+        ->and($this->reservationResource->fresh()->quantity)->toBe(3);
 });

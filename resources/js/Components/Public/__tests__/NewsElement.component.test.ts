@@ -35,7 +35,7 @@ const stubs = {
 
 function mountWith(items: NewsItem[], element: News = makeElement()) {
   return mount(NewsElement, {
-    props: { element, prefetchedNews: items },
+    props: { element, resolved: { type: 'news', items } },
     global: { stubs },
   });
 }

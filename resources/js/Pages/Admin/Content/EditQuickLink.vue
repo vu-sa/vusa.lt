@@ -1,20 +1,18 @@
 <template>
-  <PageContent :title="quickLink.text" :back-url="route('quickLinks.index')" :heading-icon="QuickLinkIcon">
-    <UpsertModelLayout>
-      <QuickLinkForm :quick-link :tenant-options :topic-options enable-delete
-        @submit:form="(form) => form.patch(route('quickLinks.update', quickLink.id), { preserveScroll: true })"
-        @delete="() => router.delete(route('quickLinks.destroy', quickLink.id))" />
-    </UpsertModelLayout>
-  </PageContent>
+  <QuickLinkForm
+    :quick-link
+    :tenant-options
+    :topic-options
+    enable-delete
+    @submit:form="submitForm"
+    @delete="deleteQuickLink"
+  />
 </template>
 
 <script setup lang="ts">
-import { router } from '@inertiajs/vue3';
+import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import QuickLinkForm from '@/Components/AdminForms/QuickLinkForm.vue';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import { QuickLinkIcon } from '@/Components/icons';
 
 interface TopicOption {
   id: number;
@@ -22,9 +20,19 @@ interface TopicOption {
   alias: string | null;
 }
 
-defineProps<{
+const props = defineProps<{
   quickLink: App.Entities.QuickLink;
-  tenantOptions: Record<string, any>[];
+  tenantOptions: Record<string, unknown>[];
   topicOptions: TopicOption[];
 }>();
+
+function submitForm(form: unknown): void {
+  const inertiaForm = form as InertiaForm<App.Entities.QuickLink>;
+  inertiaForm.defaults();
+  inertiaForm.patch(route('quickLinks.update', props.quickLink.id), { preserveScroll: true });
+}
+
+function deleteQuickLink(): void {
+  router.delete(route('quickLinks.destroy', props.quickLink.id));
+}
 </script>

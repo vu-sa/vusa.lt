@@ -11,7 +11,6 @@
  * const { hasTour, startTour } = useTour();
  * // Show help button only if hasTour.value is true
  */
-
 import { ref, provide, inject, type InjectionKey, type Ref, computed, readonly } from 'vue';
 
 interface TourContext {
@@ -89,13 +88,16 @@ export function provideTour(startTourFn: (isVoluntary?: boolean) => void) {
   };
 }
 
-/**
- * Clears the current tour registration
- */
-export function clearTour() {
+/** Reads the page-local tour registered by the current admin page. */
+export function useTour(): TourContext {
   const context = inject(TOUR_INJECTION_KEY, null);
 
-  if (context) {
-    context.clearTour();
+  if (!context) {
+    return { hasTour: computed(() => false), startTour: () => {} };
   }
+
+  return {
+    hasTour: computed(() => context.startTour.value !== null),
+    startTour: () => context.startTour.value?.(),
+  };
 }

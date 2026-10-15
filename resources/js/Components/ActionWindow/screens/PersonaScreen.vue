@@ -1,5 +1,5 @@
 <template>
-  <ActionWindowScreen centered :title="$t('action_window.personas.title')">
+  <ActionWindowScreen>
     <ActionChoiceList>
       <ActionChoiceButton
         v-for="persona in personas"
@@ -7,7 +7,6 @@
         :title="persona.title"
         :description="persona.description"
         :icon="persona.icon"
-        :gradient="persona.gradient"
         @click="goTo('persona.actions', { persona: persona.key })"
       />
     </ActionChoiceList>

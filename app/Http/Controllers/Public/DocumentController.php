@@ -33,6 +33,7 @@ class DocumentController extends PublicController
                 // 2 hours TTL
                 fn () => [
                     'contentTypes' => Document::query()
+                        ->published()
                         ->select('content_type')
                         ->whereNotNull('content_type')
                         ->distinct()
@@ -45,6 +46,7 @@ class DocumentController extends PublicController
             'tenantSwitchTarget' => 'same-page',
             'allContentTypes' => $staticData['contentTypes'],
             'importantContentTypes' => $documentSettings->getImportantContentTypes()->toArray(),
+            'hasDocumentRecommendations' => collect($documentSettings->recommendations)->contains(fn ($rule) => $rule['enabled']),
         ]);
     }
 }

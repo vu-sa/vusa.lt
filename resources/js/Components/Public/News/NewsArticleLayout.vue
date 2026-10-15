@@ -2,13 +2,8 @@
   <article :class="['relative', className]" data-slot="news-article">
     <!-- ── Title band ───────────────────────────────────────────────────────────────────────
          The masthead the article emerges from: warm tint on light, the near-black `--ink` slab on
-         dark (see `.band-masthead`). `rc-viewport` escapes the rc-canvas, `.wrapper` and
-         PublicLayout's `.container` so it reaches the viewport edges.
-
-         The `-mt-*` pull-up mirrors PublicLayout's content wrapper (`pt-4 md:pt-6 lg:pt-8`)
-         exactly — without it that padding shows as a strip of page background between the fixed
-         header and the band, which should sit flush against it. Same idiom as HeroElement's. -->
-    <header class="band-masthead rc-viewport -mt-4 border-b border-border md:-mt-6 lg:-mt-8">
+         dark (see `.band-masthead`). -->
+    <header class="band-masthead border-b border-border">
       <div class="mx-auto max-w-3xl px-5 py-12 sm:px-6 lg:py-16">
         <PublicBreadcrumbs v-if="showBreadcrumbs" variant="inline" class="mb-8" />
 
@@ -107,7 +102,7 @@
     </div>
 
     <!-- ── Related ──────────────────────────────────────────────────────────────────────── -->
-    <section v-if="relatedArticles.length > 0" class="rc-viewport border-t border-border bg-secondary/40">
+    <section v-if="relatedArticles.length > 0" class="border-t border-border bg-secondary/40">
       <div class="mx-auto max-w-7xl px-5 py-14 sm:px-6 lg:px-8 lg:py-20">
         <div class="flex flex-wrap items-end justify-between gap-4 border-b border-border pb-5">
           <div>

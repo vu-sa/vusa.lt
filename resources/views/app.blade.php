@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 
 {{-- TODO: Enable class="scroll-smooth" when Inertia scroll reset is fixed --}}
-{{-- `data-surface="public"` switches the design-token scope in resources/css/app.css: the
-     public site takes the editorial palette (warm paper / near-black, zero radius), admin keeps
-     its own. Emitted server-side, from the same component check that gates @head and Umami
-     below, so it is correct before the first paint. --}}
+{{-- Both surfaces share one palette; `data-surface` only scopes the few rules that differ
+     (resources/css/admin/surface.css, public prose colour). Resolved once server-side so this
+     attribute and the public-only @head/Umami checks below agree. --}}
+@php($designSurface = \App\Support\DesignSurface::for($page['component'] ?? null))
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark-mode-init"
-    @if (str_starts_with($page['component'] ?? '', 'Public/')) data-surface="public" @endif>
+    @if ($designSurface) data-surface="{{ $designSurface }}" @endif>
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+    @if ($designSurface === 'public' && isset($page['props']['publicAssets']['logoSrc']))
+        <link rel="preload" as="image" href="{{ $page['props']['publicAssets']['logoSrc'] }}" fetchpriority="high">
+    @endif
 
     {{-- PWA Meta Tags --}}
     <link rel="manifest" href="/build/manifest.webmanifest">
@@ -61,21 +65,14 @@
     {{-- Dark mode initialization script - MUST be before any CSS to prevent flash --}}
     <script>
         (function() {
-            // Check localStorage for saved theme preference
-            const savedTheme = localStorage.getItem('vueuse-color-scheme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let savedTheme = localStorage.getItem('vueuse-color-scheme');
 
-            // Determine if dark mode should be active
-            let isDark = false;
-
-            if (savedTheme === 'dark') {
-                isDark = true;
-            } else if (savedTheme === 'light') {
-                isDark = false;
-            } else {
-                // savedTheme is 'auto' or null - use system preference
-                isDark = prefersDark;
+            if (savedTheme === null) {
+                savedTheme = 'light';
+                localStorage.setItem('vueuse-color-scheme', savedTheme);
             }
+
+            const isDark = savedTheme === 'dark' || (savedTheme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
             if (isDark) {
                 document.documentElement.classList.add('dark');
@@ -132,9 +129,12 @@
     {{-- Umami analytics: cookieless, public pages only. Absent when unconfigured (staging, CI). --}}
     {{-- data-performance opts into Web Vitals (TTFB/FCP/LCP/CLS); it is off by default and --}}
     {{-- the figures cannot be backfilled, so it is collected from the start. --}}
+    {{-- data-exclude-search: search pages write their filters into the URL with replaceState, --}}
+    {{-- which Umami would otherwise count as a pageview per keystroke. --}}
     @if (config('services.umami.website_id') && str_starts_with($page['component'] ?? '', 'Public/'))
         <script defer src="{{ config('services.umami.script_url') }}"
                 data-website-id="{{ config('services.umami.website_id') }}"
+                data-exclude-search="true"
                 data-performance="true"></script>
     @endif
 
@@ -143,11 +143,7 @@
 </head>
 
 {{-- TODO: something injects margin-bottom of 8px --}}
-{{-- The public surface paints from its own tokens; admin keeps the zinc canvas it has today
-     until its own revamp. The font is set here rather than only on PublicLayout's root div
-     because Reka teleports popovers, dialogs and dropdowns to <body> — outside that div, they
-     otherwise fall back to the default sans instead of Atkinson. --}}
-<body class="antialiased @if (str_starts_with($page['component'] ?? '', 'Public/')) font-public bg-background text-foreground @else font-sans bg-zinc-50 dark:bg-zinc-900 @endif" style="margin-bottom: 0px; padding-bottom: env(safe-area-inset-bottom, 0px);">
+<body class="antialiased font-public bg-background text-foreground" style="margin-bottom: 0px; padding-bottom: env(safe-area-inset-bottom, 0px);">
     @inertia
 
     @include('turtle-loader')

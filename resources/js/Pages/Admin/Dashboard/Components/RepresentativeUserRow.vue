@@ -1,40 +1,29 @@
 <template>
-  <div
-    class="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white/60 p-2 transition-colors hover:bg-white/80 dark:border-zinc-700 dark:bg-zinc-800/50
-      dark:hover:bg-zinc-700/50"
-  >
-    <!-- Avatar with activity indicator -->
-    <div class="relative">
-      <Avatar class="h-8 w-8">
-        <AvatarImage v-if="user.profile_photo_path" :src="user.profile_photo_path" :alt="user.name" />
-        <AvatarFallback class="text-xs bg-zinc-200 dark:bg-zinc-700">
-          {{ getInitials(user.name) }}
-        </AvatarFallback>
-      </Avatar>
-      <!-- Activity status dot -->
-      <div
-        class="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white dark:border-zinc-800"
-        :class="statusDotClasses"
-        :title="statusLabel"
-      />
+  <div class="flex items-center gap-3 py-3">
+    <div class="relative shrink-0">
+      <UserAvatar :user="(user as unknown as App.Entities.User)" :size="32" />
+      <span
+        :class="['absolute -right-0.5 -bottom-0.5 size-2.5 ring-2 ring-background', statusDotClasses]"
+        :title="$t(statusLabel)"
+      >
+        <span class="sr-only">{{ $t(statusLabel) }}</span>
+      </span>
     </div>
 
-    <!-- User info -->
-    <div class="flex-1 min-w-0">
-      <div class="font-medium text-sm text-zinc-900 dark:text-zinc-100 truncate">
+    <div class="min-w-0 flex-1">
+      <div class="truncate text-sm font-medium text-foreground">
         {{ user.name }}
       </div>
-      <div class="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+      <div class="truncate text-xs text-muted-foreground">
         {{ user.duties && user.duties.length > 0 ? user.duties[0]?.institution_name : user.email }}
       </div>
     </div>
 
-    <!-- Last activity -->
-    <div class="text-right shrink-0">
+    <div class="shrink-0 text-right">
       <div :class="['text-xs font-medium', lastActivityClasses]">
         {{ lastActivityText }}
       </div>
-      <div v-if="user.duties.length > 1" class="text-xs text-zinc-400 dark:text-zinc-500">
+      <div v-if="user.duties.length > 1" class="text-xs text-muted-foreground">
         +{{ user.duties.length - 1 }} {{ $t('pareigos') }}
       </div>
     </div>
@@ -48,23 +37,14 @@ import { trans as $t } from 'laravel-vue-i18n';
 import type { RepresentativeUser } from '../types';
 import { getActivityDotClasses, getActivityTextClasses, getActivityLabel } from '../Composables/useActivityStatus';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
-import { formatRelativeTime } from '@/Utils/IntlTime';
+import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
+import { formatNearDate } from '@/Utils/dateTime';
 
 interface Props {
   user: RepresentativeUser;
 }
 
 const props = defineProps<Props>();
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 const statusDotClasses = computed(() => getActivityDotClasses(props.user.category));
 
@@ -74,7 +54,7 @@ const lastActivityText = computed(() => {
   if (props.user.category === 'never' || !props.user.last_action) {
     return $t('Niekada');
   }
-  return formatRelativeTime(new Date(props.user.last_action));
+  return formatNearDate(props.user.last_action, { thresholdDays: 30, fallbackFormat: 'iso' });
 });
 
 const lastActivityClasses = computed(() => getActivityTextClasses(props.user.category));

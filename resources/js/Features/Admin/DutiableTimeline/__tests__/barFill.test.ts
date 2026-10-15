@@ -50,11 +50,8 @@ describe('barFill', () => {
     expect(barFill(makeRow({ ...open, is_derived: true }), colors, undefined)).toBe(colors.derived);
   });
 
-  /**
-   * The point of the rule: amber says "live, and mirrored from elsewhere". On a seat that
-   * ended years ago it made history shout louder than the present, so ended wins.
-   */
-  it('mutes an ex-officio seat that has ended, rather than keeping it amber', () => {
+  /** A mirrored seat that ended years ago is history like any other, so ended wins. */
+  it('mutes an ex-officio seat that has ended', () => {
     expect(barFill(makeRow({ is_derived: true }), colors, undefined)).toBe(colors.former);
   });
 
@@ -63,5 +60,10 @@ describe('barFill', () => {
 
     expect(barFill(makeRow({ is_derived: true }), colors, staged)).toBe(colors.staged);
     expect(barFill(makeRow(), colors, { ...staged, projected: true })).toBe(colors.projected);
+  });
+
+  /** Amber is reserved for what still needs saving; a live seat never borrows it. */
+  it('keeps unsaved amber apart from every saved status', () => {
+    expect(new Set([colors.active, colors.former, colors.derived]).has(colors.staged)).toBe(false);
   });
 });

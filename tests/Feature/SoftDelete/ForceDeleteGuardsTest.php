@@ -105,22 +105,6 @@ describe('through the controller', function (): void {
     });
 });
 
-describe('cascading models', function (): void {
-    test('a reservation detaches its resources on permanent deletion only', function (): void {
-        $reservation = Reservation::factory()->create();
-        $reservation->resources()->attach(Resource::factory()->create(), [
-            'quantity' => 1,
-            'state' => 'created',
-        ]);
-
-        $reservation->delete();
-        $this->assertDatabaseHas('reservation_resource', ['reservation_id' => $reservation->id]);
-
-        $reservation->forceDelete();
-        $this->assertDatabaseMissing('reservation_resource', ['reservation_id' => $reservation->id]);
-    });
-});
-
 test('every guarded model exposes the reason as an appendable attribute', function (): void {
     // The admin index serializes `force_delete_blocked_reason` so the table can disable
     // the action before it is clicked.

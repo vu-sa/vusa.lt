@@ -1,3 +1,6 @@
+import type { SearchMatch } from '../matches';
+import type { SearchProfileConfig } from '../profiles';
+
 /**
  * Shared Search Types
  *
@@ -26,21 +29,6 @@ export interface SearchError {
  */
 export type SearchStatus = 'idle' | 'searching' | 'loading-more' | 'loading-facets' | 'error';
 
-/**
- * Sort direction
- */
-export type SortDirection = 'asc' | 'desc';
-
-/**
- * Sort option for search results
- */
-export interface SortOption {
-  value: string;
-  label: string;
-  field: string;
-  direction: SortDirection;
-}
-
 // ============================================================================
 // Facet Types
 // ============================================================================
@@ -51,7 +39,7 @@ export interface SortOption {
 export interface FacetValue {
   value: string;
   label: string;
-  count: number;
+  count: number | null;
   highlighted?: string;
   isSelected?: boolean;
   level?: number; // For hierarchical display
@@ -115,29 +103,6 @@ export interface BaseSearchFilters {
   [key: string]: unknown;
 }
 
-// ============================================================================
-// Search State Types
-// ============================================================================
-
-/**
- * Base search state - extend for model-specific state
- */
-export interface BaseSearchState<TFilters extends BaseSearchFilters, TFacet extends BaseFacet> {
-  status: SearchStatus;
-  hasResults: boolean;
-  totalHits: number;
-  query: string;
-  filters: TFilters;
-  facets: TFacet[];
-  initialFacets: TFacet[];
-  results: unknown[];
-  error: SearchError | null;
-  isOnline: boolean;
-  currentPage: number;
-  totalPages: number;
-  perPage: number;
-}
-
 /**
  * Base search preferences
  */
@@ -193,7 +158,7 @@ export interface TypesenseCollections {
 /**
  * Base Typesense configuration
  */
-export interface TypesenseConfig {
+export interface TypesenseConfig extends SearchProfileConfig {
   apiKey: string;
   nodes: TypesenseNode[];
   collections?: TypesenseCollections;
@@ -215,112 +180,12 @@ export interface ScopedCollectionConfig {
 /**
  * Admin search configuration with scoped keys
  */
-export interface AdminSearchConfig {
+export interface AdminSearchConfig extends SearchProfileConfig {
   collections: Record<string, ScopedCollectionConfig>;
   headerKey: string;
   nodes: TypesenseNode[];
   expiresAt: number;
   isSuperAdmin: boolean;
-}
-
-// ============================================================================
-// Search Controller Interface
-// ============================================================================
-
-/**
- * Base search controller interface - minimum methods all search controllers should have
- */
-export interface BaseSearchController<
-  TFilters extends BaseSearchFilters,
-  TFacet extends BaseFacet,
-  TResult = unknown,
-> {
-  // State refs
-  status: { value: SearchStatus };
-  query: { value: string };
-  results: { value: TResult[] };
-  facets: { value: TFacet[] };
-  filters: { value: TFilters };
-  totalHits: { value: number };
-  error: { value: SearchError | null };
-  isOnline: { value: boolean };
-
-  // Pagination
-  currentPage: { value: number };
-  totalPages: { value: number };
-  perPage: { value: number };
-
-  // Computed
-  isSearching: { value: boolean };
-  isLoadingFacets: { value: boolean };
-  isLoadingMore: { value: boolean };
-  hasResults: { value: boolean };
-  hasActiveFilters: { value: boolean };
-  hasMoreResults: { value: boolean };
-  activeFilterCount: { value: number };
-
-  // Search methods
-  search: (query: string, immediate?: boolean) => void;
-  loadMore: () => void;
-  refresh: () => void;
-
-  // Filter methods
-  setFilter: (field: string, value: unknown) => void;
-  toggleFilter: (field: string, value: string | number) => void;
-  clearFilters: () => void;
-
-  // Error handling
-  retrySearch: () => void;
-  clearError: () => void;
-
-  // Initialization
-  initialize: () => Promise<void>;
-  loadInitialFacets: () => Promise<void>;
-}
-
-// ============================================================================
-// Search Service Interface
-// ============================================================================
-
-/**
- * Abstract search service interface
- * Implementations handle the actual Typesense API calls
- */
-export interface SearchService<TFilters extends BaseSearchFilters, TFacet extends BaseFacet> {
-  performSearch(
-    filters: TFilters,
-    perPage: number,
-    isLoadMore: boolean,
-    currentPage: number
-  ): Promise<ProcessedSearchResult<TFacet>>;
-
-  loadInitialFacets(): Promise<TFacet[]>;
-}
-
-// ============================================================================
-// Client Factory Types
-// ============================================================================
-
-/**
- * Search client type - either public or admin scoped
- */
-export type SearchClientType = 'public' | 'admin';
-
-/**
- * Client factory options
- */
-export interface SearchClientOptions {
-  type: SearchClientType;
-  collection?: string;
-  additionalSearchParameters?: Record<string, unknown>;
-}
-
-/**
- * Created search clients
- */
-export interface SearchClients {
-  typesenseClient: unknown;
-  searchClient?: unknown; // InstantSearch adapter (optional)
 }
 
 // ============================================================================
@@ -331,6 +196,9 @@ export interface SearchClients {
  * Meeting search result - used in admin search
  */
 export interface MeetingSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   title: string;
   description?: string;
@@ -344,6 +212,10 @@ export interface MeetingSearchResult {
   vote_alignment_status?: string;
   institution_type_title?: string;
   agenda_items_count?: number;
+  votes_count?: number;
+  /** MeetingType value: `in-person`, `remote` or `email`. */
+  type?: string;
+  institution_type_ids?: number[];
   year?: number;
   user_names?: string[];
 }
@@ -352,6 +224,9 @@ export interface MeetingSearchResult {
  * Agenda item search result
  */
 export interface AgendaItemSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   title: string;
   description?: string;
@@ -376,6 +251,9 @@ export interface AgendaItemSearchResult {
  * News search result
  */
 export interface NewsSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   title: string;
   short?: string;
@@ -393,6 +271,9 @@ export interface NewsSearchResult {
  * Page search result
  */
 export interface PageSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   title: string;
   permalink?: string;
@@ -400,6 +281,7 @@ export interface PageSearchResult {
   lang: string;
   tenant_id?: number;
   tenant_name?: string;
+  tenant_shortname?: string;
   /** Only present in the admin `pages` index — the public index drops it. */
   is_active?: boolean;
 }
@@ -408,6 +290,9 @@ export interface PageSearchResult {
  * Calendar event search result
  */
 export interface CalendarSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   title: string;
   title_lt?: string;
@@ -423,6 +308,9 @@ export interface CalendarSearchResult {
  * Institution search result
  */
 export interface InstitutionSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   name_lt?: string;
   name_en?: string;
@@ -435,12 +323,16 @@ export interface InstitutionSearchResult {
   type_titles?: string[];
   current_user_names?: string[];
   duty_names?: string[];
+  type_ids?: number[];
 }
 
 /**
  * Document search result
  */
 export interface DocumentSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   title: string;
   summary?: string;
@@ -460,6 +352,9 @@ export interface DocumentSearchResult {
  * Resource search result
  */
 export interface ResourceSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   name_lt?: string;
   name_en?: string;
@@ -480,10 +375,16 @@ export interface ResourceSearchResult {
  * Duty search result (admin search)
  */
 export interface DutySearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   name_lt?: string;
   name_en?: string;
   email?: string;
+  /** Absent on documents indexed before the flag existed; treat as active. */
+  is_active?: boolean;
+  former_names?: string[];
   /** Home tenant ∪ assignable tenants — drives the scoped-key access filter. */
   tenant_ids?: number[];
   /** Institution's owning tenant; used to detect cross-tenant ("external") duties. */
@@ -493,6 +394,7 @@ export interface DutySearchResult {
   institution_name_lt?: string;
   institution_name_en?: string;
   type_titles?: string[];
+  type_slugs?: string[];
   current_user_names?: string[];
   /** Index-aligned with current_user_names; enables clickable member links. */
   current_user_ids?: string[];
@@ -507,6 +409,9 @@ export interface DutySearchResult {
  * User search result (admin search)
  */
 export interface UserSearchResult {
+  _searchMatch?: SearchMatch;
+  _searchTitleMatches?: SearchMatch[];
+  _searchFieldMatches?: Record<string, SearchMatch>;
   id: string;
   name: string;
   email?: string;
@@ -522,6 +427,17 @@ export interface UserSearchResult {
   previous_duty_ids?: string[];
   is_active?: boolean;
   created_at?: number;
+  pronouns_lt?: string;
+  pronouns_en?: string;
+  current_duty_names_lt?: string[];
+  current_duty_names_en?: string[];
+  current_duty_use_original_names?: boolean[];
+  previous_duty_names_lt?: string[];
+  previous_duty_names_en?: string[];
+  previous_duty_use_original_names?: boolean[];
+  /** Index-aligned term dates (`YYYY-MM-DD`, '' for an open end), for the active-years span. */
+  term_start_dates?: string[];
+  term_end_dates?: string[];
 }
 
 /**

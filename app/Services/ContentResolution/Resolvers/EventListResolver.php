@@ -12,9 +12,8 @@ use Illuminate\Support\Str;
 
 /**
  * Resolves `event-list` blocks: a filtered, optionally tenant-grouped list of Calendar
- * events (see RCEventList/EventListDisplay.vue). Modeled on
- * `PublicPageController::summerCamps()` — the `year` + `stovykla` event type +
- * tenant-grouping combination this block generalizes.
+ * events (see RCEventList/EventListDisplay.vue). The yearly summer camps pages are its
+ * reference use: `year` mode + `stovykla` event type + tenant grouping.
  */
 final class EventListResolver implements ResolvesContentPart
 {
@@ -44,12 +43,7 @@ final class EventListResolver implements ResolvesContentPart
         $groupByTenant = ($options['groupBy'] ?? 'none') === 'tenant';
         $style = in_array($options['style'] ?? null, ['cards', 'list'], true) ? $options['style'] : 'cards';
         $tenantLabelPrefix = is_string($options['tenantLabelPrefix'] ?? null) ? $options['tenantLabelPrefix'] : '';
-        // 'faculty' → "VU <nominative faculty>" (e.g. "VU Filologijos fakultetas"),
-        // derived from the locative `fullname` by stripping the common VU SA prefix and
-        // reversing the locative ending. Mirrors the client-side `getFacultyName`
-        // (Utils/String.ts) used by SummerCampCard; kept in sync so the two surfaces
-        // agree. The central VU SA tenant has no faculty part, so it falls back to its
-        // fullname.
+        // Derive nominative faculty name from locative fullname, falling back to fullname for central.
         $tenantLabelStyle = ($options['tenantLabelStyle'] ?? 'full') === 'faculty' ? 'faculty' : 'full';
 
         $slug = $options['eventTypeSlug'] ?? null;
@@ -71,9 +65,7 @@ final class EventListResolver implements ResolvesContentPart
         [$from, $to] = $this->resolveDateRange($mode, $options);
         $query->whereBetween('date', [$from, $to]);
 
-        // Grouped results need every event in every group up front (the display can't
-        // paginate a group), so the row cap is generous; ungrouped results respect the
-        // author's limit directly.
+        // Raise cap for grouped results to include full sets across tenants before client rendering.
         $rowCap = $groupByTenant ? self::MAX_ITEMS * 6 : $limit;
         $events = $query->orderBy('date')->limit($rowCap)->get();
 
@@ -90,10 +82,7 @@ final class EventListResolver implements ResolvesContentPart
                     'items' => $tenantEvents->sortBy('date')->values()->map(fn (Calendar $e) => $this->mapEvent($e, $context))->all(),
                 ];
             })
-                // Groups previously kept whichever order tenants first appeared in the
-                // date-sorted event list — "whoever has the earliest event first" —
-                // which reads as arbitrary in a grid of cards. Alphabetical by label is
-                // stable and predictable regardless of event dates.
+                // Sort groups alphabetically by label for predictable card grid ordering.
                 ->sortBy('label')
                 ->values()->all();
 
@@ -170,10 +159,8 @@ final class EventListResolver implements ResolvesContentPart
             'isAllDay' => (bool) $event->is_all_day,
             'ctoUrl' => $event->cto_url,
             'imageUrl' => $event->main_image_url,
-            // 'www' matches the existing SummerCampCard.vue precedent for this route —
-            // it's a redirect route that resolves the event's real URL server-side
-            // regardless of which subdomain it was reached through. Falls back to the
-            // id-based redirect only when the event has no permalink for this locale yet.
+            // A redirect route that resolves the event's real URL server-side regardless
+            // of subdomain — only used when the event has no permalink for this locale yet.
             'href' => $event->publicUrl($context->locale)
                 ?? route('calendar.event', ['calendar' => $event->id, 'lang' => $context->locale, 'subdomain' => 'www']),
         ];
@@ -183,8 +170,6 @@ final class EventListResolver implements ResolvesContentPart
      * Derives a "VU <nominative faculty>" label from the locative tenant fullname,
      * e.g. "VU Filologijos fakultetas" from "... Studentų atstovybė Filologijos fakultete".
      *
-     * Server-side port of the client-side `getFacultyName` util (resources/js/Utils/String.ts) —
-     * the two must stay in lockstep so SummerCampCard and this resolver render the same names.
      * Tenants without a faculty part (the central VU SA tenant, clubs) fall back to
      * their fullname rather than a malformed "VU " prefix.
      */

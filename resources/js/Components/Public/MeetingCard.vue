@@ -1,105 +1,71 @@
 <template>
-  <!-- Meeting card with gradient styling - fully clickable -->
   <SmartLink
     :href="route('publicMeetings.show', { meeting: meeting.id, subdomain: $page.props.tenant?.subdomain })"
-    class="group relative block overflow-hidden rounded-2xl bg-gradient-to-br from-zinc-50 to-zinc-100/50 ring-1 ring-zinc-200/50 transition-all duration-300 hover:ring-zinc-300 hover:shadow-lg dark:from-zinc-800/80 dark:to-zinc-900 dark:ring-zinc-700/50 dark:hover:ring-zinc-600 cursor-pointer"
+    data-slot="meeting-card"
+    class="group block border border-border bg-card text-foreground transition-colors hover:border-foreground/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
   >
-    <!-- Compact header -->
-    <div class="p-4 pb-3">
-      <div class="flex items-start justify-between gap-4 mb-2">
-        <!-- Date & Time -->
-        <div class="flex-1 min-w-0">
-          <time class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 block">
-            {{ formatMeetingDateTime(meeting) }}
-          </time>
+    <div class="flex items-start justify-between gap-4 p-4">
+      <div class="min-w-0 flex-1">
+        <time class="block text-sm font-semibold text-foreground">
+          {{ formatMeetingDateTime(meeting) }}
+        </time>
 
-          <!-- Institution name (when shown in search context) -->
-          <div v-if="showInstitution && meeting.institutions?.[0]" class="mt-1">
-            <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-              {{ meeting.institutions[0].name }}
-            </span>
-          </div>
+        <p v-if="showInstitution && meeting.institutions?.[0]" class="mt-1 text-xs font-medium text-muted-foreground">
+          {{ meeting.institutions[0].name }}
+        </p>
 
-          <!-- Outcome indicators (replacing progress bar) -->
-          <div class="mt-1.5 flex items-center gap-2">
-            <span class="text-xs text-zinc-500 dark:text-zinc-400">
-              {{ allAgendaItems.length }}
-              {{ allAgendaItems.length === 1 ? $t('klausimas') : $t('klausimai') }}
-            </span>
-            <AgendaOutcomeIndicators :agenda-items="itemsWithDecisions" :requires-student-perspective="meeting.requires_student_perspective ?? true" />
-            <!-- Vote alignment summary badge -->
-            <span
-              v-if="meetingSummary.voteAlignmentStatus !== 'unknown' && meetingSummary.totalItems > 0"
-              class="inline-flex items-center gap-1 text-[0.625rem] font-medium rounded-full px-1.5 py-0.5"
-              :class="{
-                'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400': meetingSummary.voteAlignmentStatus === 'all_match',
-                'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400': meetingSummary.voteAlignmentStatus === 'mixed',
-                'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400': meetingSummary.voteAlignmentStatus === 'all_mismatch',
-                'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400': meetingSummary.voteAlignmentStatus === 'neutral',
-              }"
-            >
-              <CheckIcon v-if="meetingSummary.voteAlignmentStatus === 'all_match'" class="h-2.5 w-2.5" />
-              <AlertTriangleIcon v-else-if="meetingSummary.voteAlignmentStatus === 'mixed'" class="h-2.5 w-2.5" />
-              <XIcon v-else-if="meetingSummary.voteAlignmentStatus === 'all_mismatch'" class="h-2.5 w-2.5" />
-              <MinusIcon v-else class="h-2.5 w-2.5" />
-              {{ meetingSummary.voteAlignmentStatus === 'all_match' ? $t('Pozicija priimta') :
-                meetingSummary.voteAlignmentStatus === 'all_mismatch' ? $t('Pozicija nepriimta') :
-                meetingSummary.voteAlignmentStatus === 'mixed' ? $t('Mišrus rezultatas') : $t('Neutralu') }}
-            </span>
-          </div>
+        <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+          <span class="text-xs text-muted-foreground">
+            {{ allAgendaItems.length }}
+            {{ allAgendaItems.length === 1 ? $t('klausimas') : $t('klausimai') }}
+          </span>
+          <AgendaOutcomeIndicators :agenda-items="itemsWithDecisions" :requires-student-perspective="meeting.requires_student_perspective ?? true" />
+          <span
+            v-if="alignment"
+            :class="['inline-flex items-center gap-1 border px-1.5 py-0.5 text-xs font-medium', statusRoleClasses[alignment.role]]"
+          >
+            <component :is="alignment.icon" class="size-3.5" aria-hidden="true" />
+            {{ alignment.label }}
+          </span>
         </div>
       </div>
 
-      <!-- View action indicator -->
-      <div class="flex justify-end">
-        <span class="text-xs text-zinc-500 dark:text-zinc-400 group-hover:text-vusa-red transition-colors flex items-center gap-1">
-          {{ $t('Peržiūrėti') }}
-          <ArrowRightIcon class="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-        </span>
-      </div>
+      <span class="flex shrink-0 items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-brand">
+        {{ $t('Peržiūrėti') }}
+        <IFluentArrowRight24Regular class="size-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+      </span>
     </div>
 
-    <!-- Agenda items (showing all items, vote details only when available) -->
-    <div
-      v-if="allAgendaItems.length > 0"
-      class="border-t border-zinc-200/50 bg-zinc-100/50 px-4 py-3 dark:border-zinc-700/50 dark:bg-zinc-800/50"
-    >
-      <div class="space-y-2">
-        <div
-          v-for="item in allAgendaItems"
-          :key="item.id"
-          class="text-xs"
-        >
-          <div class="flex items-center gap-2 mb-1">
-            <p class="font-medium text-zinc-900 dark:text-zinc-100 flex-1">
-              {{ item.order }}. {{ item.title }}
-            </p>
-            <span
-              v-if="item.brought_by_students"
-              class="shrink-0 inline-flex items-center gap-0.5 rounded-full bg-zinc-200 dark:bg-zinc-700 px-1.5 py-0 text-[0.625rem] font-medium text-zinc-600 dark:text-zinc-300"
-            >
-              <UsersIcon class="h-2.5 w-2.5" />
-              {{ $t('Įtraukta studentų') }}
-            </span>
-          </div>
-          <!-- Vote details only when at least one value exists -->
-          <div v-if="hasDecisionData(item)" class="flex gap-4 text-zinc-500 dark:text-zinc-400">
-            <span class="flex items-center gap-1">
-              {{ $t('Studentų balsas') }}:
-              <VoteStatusIndicator :vote="getMainVote(item)?.student_vote" type="vote" compact />
-            </span>
-            <span class="flex items-center gap-1">
-              {{ $t('Sprendimas') }}:
-              <VoteStatusIndicator :vote="getMainVote(item)?.decision" type="vote" compact />
-            </span>
-            <span class="flex items-center gap-1">
-              {{ $t('Nauda') }}:
-              <VoteStatusIndicator :vote="getMainVote(item)?.student_benefit" type="benefit" compact />
-            </span>
-          </div>
+    <ol v-if="allAgendaItems.length > 0" class="divide-y divide-border border-t border-border px-4">
+      <li v-for="item in allAgendaItems" :key="item.id" class="py-2.5 text-xs">
+        <div class="flex items-start gap-2">
+          <p class="min-w-0 flex-1 text-sm font-medium text-foreground">
+            {{ item.order }}. {{ item.title }}
+          </p>
+          <span
+            v-if="item.brought_by_students"
+            class="inline-flex shrink-0 items-center gap-1 border border-border px-1.5 py-0.5 text-xs font-medium text-muted-foreground"
+          >
+            <IFluentPeople24Regular class="size-3.5" aria-hidden="true" />
+            {{ $t('Įtraukta studentų') }}
+          </span>
         </div>
-      </div>
-    </div>
+        <div v-if="hasDecisionData(item)" class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
+          <span class="flex items-center gap-1">
+            {{ $t('Studentų balsas') }}:
+            <VoteStatusIndicator :vote="getMainVote(item)?.student_vote" type="vote" compact />
+          </span>
+          <span class="flex items-center gap-1">
+            {{ $t('Sprendimas') }}:
+            <VoteStatusIndicator :vote="getMainVote(item)?.decision" type="vote" compact />
+          </span>
+          <span class="flex items-center gap-1">
+            {{ $t('Nauda') }}:
+            <VoteStatusIndicator :vote="getMainVote(item)?.student_benefit" type="benefit" compact />
+          </span>
+        </div>
+      </li>
+    </ol>
   </SmartLink>
 </template>
 
@@ -107,14 +73,19 @@
 import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowRightIcon, Users as UsersIcon, Check as CheckIcon, AlertTriangle as AlertTriangleIcon, X as XIcon, Minus as MinusIcon } from 'lucide-vue-next';
 
 import AgendaOutcomeIndicators from './AgendaOutcomeIndicators.vue';
 import VoteStatusIndicator from './VoteStatusIndicator.vue';
 import SmartLink from './SmartLink.vue';
 
-import { Badge } from '@/Components/ui/badge';
+import { statusRoleClasses, type StatusRole } from '@/Constants/statuses';
 import { formatMeetingDateTime } from '@/Utils/MeetingDisplay';
+import IFluentArrowRight24Regular from '~icons/fluent/arrow-right-24-regular';
+import IFluentCheckmark24Regular from '~icons/fluent/checkmark-24-regular';
+import IFluentDismiss24Regular from '~icons/fluent/dismiss-24-regular';
+import IFluentPeople24Regular from '~icons/fluent/people-24-regular';
+import IFluentSubtract24Regular from '~icons/fluent/subtract-24-regular';
+import IFluentWarning24Regular from '~icons/fluent/warning-24-regular';
 import { getMainVote, getMeetingStatusSummary, hasDecisionData } from '@/Composables/useAgendaItemStyling';
 
 const $page = usePage();
@@ -134,6 +105,23 @@ const allAgendaItems = computed(() => {
 // Meeting summary for alignment status
 const meetingSummary = computed(() => {
   return getMeetingStatusSummary(allAgendaItems.value, props.meeting.requires_student_perspective ?? true);
+});
+
+const ALIGNMENTS = {
+  all_match: { label: 'Pozicija priimta', role: 'success', icon: IFluentCheckmark24Regular },
+  mixed: { label: 'Mišrus rezultatas', role: 'attention', icon: IFluentWarning24Regular },
+  all_mismatch: { label: 'Pozicija nepriimta', role: 'danger', icon: IFluentDismiss24Regular },
+  neutral: { label: 'Neutralu', role: 'neutral', icon: IFluentSubtract24Regular },
+} as const satisfies Record<string, { label: string; role: StatusRole; icon: unknown }>;
+
+const alignment = computed(() => {
+  const status = meetingSummary.value.voteAlignmentStatus;
+  if (status === 'unknown' || meetingSummary.value.totalItems === 0) {
+    return null;
+  }
+
+  const { label, role, icon } = ALIGNMENTS[status];
+  return { label: $t(label), role, icon };
 });
 
 // Items with at least one decision field filled (for outcome indicators)

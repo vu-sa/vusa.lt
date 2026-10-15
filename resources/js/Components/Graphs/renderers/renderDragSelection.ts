@@ -96,9 +96,7 @@ export function renderDragSelection(ctx: DragSelectionRenderContext): void {
     .attr('fill', 'url(#dragSelectionPattern)')
     .attr('stroke', isDarkMode ? 'rgba(59, 130, 246, 0.7)' : 'rgba(59, 130, 246, 0.6)')
     .attr('stroke-width', 1.5)
-    .attr('stroke-dasharray', '4,2')
-    .attr('rx', 4)
-    .attr('ry', 4);
+    .attr('stroke-dasharray', '4,2');
 
   // Start marker line
   group.append('line')
@@ -142,13 +140,4 @@ function formatDateShort(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${month}-${day}`;
-}
-
-/**
- * Clear the drag selection rectangle
- */
-export function clearDragSelection(
-  g: d3.Selection<SVGGElement, unknown, null, undefined>,
-): void {
-  g.selectAll('.drag-selection-rect').remove();
 }

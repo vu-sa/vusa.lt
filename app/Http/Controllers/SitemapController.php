@@ -6,6 +6,7 @@ use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
 use App\Support\LocalizedRouteSlugs;
+use App\Support\PublicCacheTags;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +23,7 @@ class SitemapController extends Controller
 
             $cacheKey = "sitemap_index_{$tenant->id}";
 
-            $xmlContent = Cache::tags(['sitemap', "tenant_{$tenant->id}"])
+            $xmlContent = Cache::tags(['sitemap'])
                 ->remember($cacheKey, 3600, function () {
                     $sitemap = Sitemap::create();
 
@@ -64,7 +65,7 @@ class SitemapController extends Controller
 
         $cacheKey = "sitemap_pages_{$tenant->id}";
 
-        $xmlContent = Cache::tags(['sitemap', 'pages', "tenant_{$tenant->id}"])
+        $xmlContent = Cache::tags(['sitemap', PublicCacheTags::pagesSitemap($tenant->id)])
             ->remember($cacheKey, 3600, function () use ($tenant) {
                 $sitemap = Sitemap::create();
 
@@ -97,7 +98,7 @@ class SitemapController extends Controller
 
         $cacheKey = "sitemap_news_{$tenant->id}";
 
-        $xmlContent = Cache::tags(['sitemap', 'news', "tenant_{$tenant->id}"])
+        $xmlContent = Cache::tags(['sitemap', PublicCacheTags::newsSitemap($tenant->id)])
             ->remember($cacheKey, 3600, function () use ($tenant) {
                 $sitemap = Sitemap::create();
 
@@ -137,7 +138,7 @@ class SitemapController extends Controller
 
         $cacheKey = "sitemap_google_news_{$tenant->id}";
 
-        $xmlContent = Cache::tags(['sitemap', 'news', "tenant_{$tenant->id}"])
+        $xmlContent = Cache::tags(['sitemap', PublicCacheTags::newsSitemap($tenant->id)])
             ->remember($cacheKey, 3600, function () use ($tenant) {
                 // Google News articles should be from the last 2 days
                 $cutoffDate = now()->subDays(2);

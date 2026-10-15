@@ -4,7 +4,7 @@
     :subtitle="$t('action_window.meeting_picker.subtitle')"
   >
     <div v-if="isLoading" class="flex flex-col gap-2">
-      <Skeleton v-for="n in 3" :key="n" class="h-16 w-full rounded-xl" />
+      <Skeleton v-for="n in 3" :key="n" class="h-16 w-full" />
     </div>
 
     <EmptyState v-else-if="meetings.length === 0" :title="emptyTitle" description="">
@@ -19,9 +19,7 @@
         :key="meeting.id"
         :title="meeting.institution_name"
         :icon="meeting.completion_status === 'no_items' ? ListX : FileQuestion"
-        :gradient="meeting.completion_status === 'no_items'
-          ? 'from-red-500/20 to-rose-500/15 dark:from-red-400/15 dark:to-rose-400/12'
-          : 'from-amber-500/20 to-orange-500/15 dark:from-amber-400/15 dark:to-orange-400/12'"
+        :tone="meeting.completion_status === 'no_items' ? 'danger' : 'attention'"
         @click="openMeeting(meeting)"
       >
         <template #description>
@@ -36,7 +34,7 @@
 import { computed, onMounted } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CheckCircle2, FileQuestion, ListX } from 'lucide-vue-next';
+import { CheckCircle2, FileQuestion, ListX } from '@lucide/vue';
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';

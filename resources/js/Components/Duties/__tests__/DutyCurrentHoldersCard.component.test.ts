@@ -7,7 +7,7 @@ const stubs = {
   DutyHolderCard: { props: ['member'], template: '<div class="holder">{{ member.name }}</div>' },
 };
 
-const makeHolder = (id: string, name: string) => ({ id, name, pivot: { start_date: '2024-09-01', end_date: null, tenant_id: null } }) as any;
+const makeHolder = (id: string, name: string) => ({ id, name, pivot: { start_date: '2024-09-01', end_date: null, tenant_id: null } }) as App.Entities.User;
 
 describe('DutyCurrentHoldersCard', () => {
   it('renders the vacancy state when there are no holders', () => {

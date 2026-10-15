@@ -14,7 +14,7 @@
       <div class="space-y-3 pt-2">
         <button
           type="button"
-          class="flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent/50 disabled:opacity-60"
+          class="flex w-full items-start gap-3 border border-border p-3 text-left transition-colors hover:bg-accent/50 pointer-coarse:min-h-11 disabled:opacity-60"
           :disabled="processing"
           @click="createEvent"
         >
@@ -39,7 +39,7 @@
           <template #trigger>
             <button
               type="button"
-              class="flex w-full items-start gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-accent/50"
+              class="flex w-full items-start gap-3 border border-border p-3 text-left transition-colors hover:bg-accent/50 pointer-coarse:min-h-11"
             >
               <Link2 class="mt-0.5 size-4 shrink-0 text-primary" />
               <span>
@@ -58,7 +58,7 @@
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarPlus, Link2, Plus } from 'lucide-vue-next';
+import { CalendarPlus, Link2, Plus } from '@lucide/vue';
 import { DialogDescription } from 'reka-ui';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';

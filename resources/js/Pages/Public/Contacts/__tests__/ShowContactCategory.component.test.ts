@@ -24,13 +24,13 @@ const stubs = {
 };
 
 describe('ShowContactCategory', () => {
-  const mockType: App.Entities.Type = {
+  const mockType: App.Entities.InstitutionType = {
     id: 1,
     title: 'Padaliniai',
     slug: 'padaliniai',
     description: 'VU SA padaliniai fakultetuose',
     model_type: 'institution',
-  } as App.Entities.Type;
+  } as App.Entities.InstitutionType;
 
   const mockInstitutions: App.Entities.Institution[] = [
     {

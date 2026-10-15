@@ -6,11 +6,11 @@ import type { DocumentSearchFilters } from '@/Types/DocumentSearchTypes';
 
 // Define interfaces to match actual implementation
 interface SearchClient {
-  search: (collection: string, searchParams: any) => Promise<SearchResponse>;
+  search: (collection: string, searchParams: unknown, signal?: AbortSignal) => Promise<SearchResponse>;
 }
 
 interface SearchResponse {
-  hits?: Array<{ document: any }>;
+  hits?: Array<{ document: Record<string, unknown> }>;
   found?: number;
   facet_counts?: Array<{
     field_name: string;
@@ -104,6 +104,7 @@ describe('DocumentSearchService', () => {
   afterEach(() => {
     // Cancel any ongoing searches
     service.cancelCurrentSearch();
+    vi.unstubAllGlobals();
   });
 
   describe('constructor', () => {
@@ -122,6 +123,63 @@ describe('DocumentSearchService', () => {
       vi.mocked(mockClient.search).mockResolvedValue(createMockSearchResponse());
     });
 
+    it('promotes important types and pins recommendations once while retaining filters', async () => {
+      const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data: { ids: ['2'] } }) });
+      vi.stubGlobal('fetch', fetch);
+      service = new DocumentSearchService(mockClient, 'documents', { importantContentTypes: ['Įstatai', 'Šablonai'], recommendationsUrl: '/api/v1/documents/recommendations' });
+      const result = await service.performSearch({ ...baseFilters, query: 'įstatų', languages: ['Lithuanian'] }, 24, false, 0);
+      expect(new URL(fetch.mock.calls[0][0]).searchParams.get('q')).toBe('įstatų');
+      expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
+        sort_by: '_text_match:desc,_eval(content_type:=[`Įstatai`,`Šablonai`]):desc,document_date:desc',
+        pinned_hits: '2:1', filter_curated_hits: true, enable_overrides: false,
+        filter_by: 'is_active:=true && (language:="Lithuanian")',
+      }), expect.any(AbortSignal));
+      expect(result.hits.filter(hit => hit._searchRecommended)).toHaveLength(1);
+      expect(result.hits.map(hit => hit.id)).toEqual(['1', '2']);
+    });
+
+    it('honours explicit date sorting without fetching recommendations or promoting types', async () => {
+      const fetch = vi.fn();
+      vi.stubGlobal('fetch', fetch);
+      service = new DocumentSearchService(mockClient, 'documents', { importantContentTypes: ['Įstatai'], recommendationsUrl: '/api/v1/documents/recommendations' });
+      const result = await service.performSearch({ ...baseFilters, query: 'įstatų', sort: 'date_asc' }, 24, false, 0);
+      expect(fetch).not.toHaveBeenCalled();
+      expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({ sort_by: 'document_date:asc,created_at:asc' }), expect.any(AbortSignal));
+      expect(result.hits.some(hit => hit._searchRecommended)).toBe(false);
+    });
+
+    it('keeps default browsing newest first and includes initial recommendations', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data: { ids: ['2'] } }) }));
+      service = new DocumentSearchService(mockClient, 'documents', { importantContentTypes: ['Įstatai'], recommendationsUrl: '/api/v1/documents/recommendations' });
+      const result = await service.performSearch(baseFilters, 24, false, 0);
+      expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
+        q: '*', sort_by: 'document_date:desc,created_at:desc', pinned_hits: '2:1', filter_curated_hits: true,
+      }), expect.any(AbortSignal));
+      expect(result.hits[1]._searchRecommended).toBe(true);
+      await service.performSearch({ ...baseFilters, sort: 'date_desc' }, 24, false, 0);
+      expect(mockClient.search).toHaveBeenLastCalledWith('documents', expect.objectContaining({
+        sort_by: 'document_date:desc,created_at:desc', pinned_hits: '2:1',
+      }), expect.any(AbortSignal));
+    });
+
+    it('keeps the first page pins when loading more without asking for recommendations again', async () => {
+      const fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data: { ids: ['2'] } }) });
+      vi.stubGlobal('fetch', fetch);
+      service = new DocumentSearchService(mockClient, 'documents', { recommendationsUrl: '/api/v1/documents/recommendations' });
+      await service.performSearch({ ...baseFilters, query: 'įstatų' }, 24, false, 0);
+      await service.performSearch({ ...baseFilters, query: 'įstatų' }, 24, true, 1);
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(mockClient.search).toHaveBeenLastCalledWith('documents', expect.objectContaining({ page: 2, pinned_hits: '2:1' }), expect.any(AbortSignal));
+    });
+
+    it('continues ordinary search if recommendations are temporarily unavailable', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false }));
+      service = new DocumentSearchService(mockClient, 'documents', { recommendationsUrl: '/api/v1/documents/recommendations' });
+      const result = await service.performSearch(baseFilters, 24, false, 0);
+      expect(result.hits).toHaveLength(2);
+      expect(vi.mocked(mockClient.search).mock.calls[0][1]).not.toHaveProperty('pinned_hits');
+    });
+
     it('performs basic search with wildcard query', async () => {
       const filters = { ...baseFilters, query: '*' };
 
@@ -137,7 +195,7 @@ describe('DocumentSearchService', () => {
         max_facet_values: 50,
         sort_by: 'document_date:desc,created_at:desc',
         filter_by: 'is_active:=true',
-        prefix: false,
+        prefix: true,
         infix: 'fallback',
         prioritize_exact_match: true,
         prioritize_token_position: true,
@@ -145,7 +203,7 @@ describe('DocumentSearchService', () => {
         min_len_1typo: 4,
         min_len_2typo: 7,
         drop_tokens_threshold: 10,
-      }));
+      }), expect.any(AbortSignal));
 
       expect(result.hits).toHaveLength(2);
       expect(result.totalHits).toBe(2);
@@ -165,7 +223,7 @@ describe('DocumentSearchService', () => {
         query_by_weights: '10,3,2,6,4',
         sort_by: '_text_match:desc,document_date:desc',
         filter_by: 'is_active:=true',
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('applies tenant filters correctly', async () => {
@@ -175,7 +233,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         filter_by: 'is_active:=true && (tenant_shortname:="vu-sa" || tenant_shortname:="vu-mif")',
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('applies content type filters correctly', async () => {
@@ -185,7 +243,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         filter_by: 'is_active:=true && (content_type:="Protocol" || content_type:="Resolution")',
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('applies language filters correctly', async () => {
@@ -195,7 +253,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         filter_by: 'is_active:=true && (language:="Lithuanian" || language:="English")',
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('applies date range filters with preset', async () => {
@@ -209,7 +267,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         filter_by: expect.stringMatching(/document_date:\[\d+\.\.\d+\]/),
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('applies date range filters with custom dates', async () => {
@@ -228,7 +286,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         filter_by: `is_active:=true && document_date:[${expectedFrom}..${expectedTo}]`,
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('combines multiple filters correctly', async () => {
@@ -244,7 +302,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         filter_by: 'is_active:=true && (tenant_shortname:="vu-sa") && (content_type:="Protocol") && (language:="Lithuanian")',
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('hides "Negalioja" documents when effectStatuses excludes false', async () => {
@@ -254,7 +312,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         filter_by: 'is_active:=true && is_in_effect:!=false',
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('shows only "Negalioja" documents when effectStatuses is just false', async () => {
@@ -264,7 +322,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         filter_by: 'is_active:=true && is_in_effect:=false',
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('matches documents with no effective/expiration dates when effectStatuses is just unknown', async () => {
@@ -274,7 +332,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         filter_by: 'is_active:=true && is_in_effect:!=true && is_in_effect:!=false',
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('applies no effect-status restriction when effectStatuses is empty or omitted', async () => {
@@ -284,7 +342,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         filter_by: 'is_active:=true',
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('overrides the smart sort default with an explicit sort choice', async () => {
@@ -294,7 +352,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         sort_by: 'document_date:asc,created_at:asc',
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('handles load more correctly', async () => {
@@ -304,7 +362,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         page: 2, // Should increment page for load more
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('calculates pagination correctly', async () => {
@@ -355,7 +413,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         filter_by: 'is_active:=true && (tenant_shortname:="vu-sa [special]" || tenant_shortname:="test & co")',
-      }));
+      }), expect.any(AbortSignal));
     });
   });
 
@@ -416,7 +474,7 @@ describe('DocumentSearchService', () => {
     });
 
     it('handles malformed responses', async () => {
-      vi.mocked(mockClient.search).mockResolvedValue({} as any);
+      vi.mocked(mockClient.search).mockResolvedValue({});
 
       const result = await service.performSearch(baseFilters, 24, false, 0);
 
@@ -467,7 +525,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         page: 1, // First page for new search
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('passes through per_page values as provided', async () => {
@@ -478,7 +536,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         per_page: 0, // Passes through the value
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('passes through large per_page values', async () => {
@@ -488,7 +546,7 @@ describe('DocumentSearchService', () => {
 
       expect(mockClient.search).toHaveBeenCalledWith('documents', expect.objectContaining({
         per_page: 1000, // Passes through large values
-      }));
+      }), expect.any(AbortSignal));
     });
   });
 
@@ -504,7 +562,7 @@ describe('DocumentSearchService', () => {
         query_by_weights: '10,3,2,6,4',
         sort_by: '_text_match:desc,document_date:desc',
         max_facet_values: 50,
-        prefix: false,
+        prefix: true,
         infix: 'fallback',
         prioritize_exact_match: true,
         prioritize_token_position: true,
@@ -512,7 +570,7 @@ describe('DocumentSearchService', () => {
         min_len_1typo: 4,
         min_len_2typo: 7,
         drop_tokens_threshold: 10,
-      }));
+      }), expect.any(AbortSignal));
     });
 
     it('uses same settings for wildcard queries', async () => {
@@ -526,7 +584,7 @@ describe('DocumentSearchService', () => {
         query_by: 'title,summary,content_type,document_year,document_date_formatted',
         query_by_weights: '10,3,2,6,4',
         sort_by: 'document_date:desc,created_at:desc',
-      }));
+      }), expect.any(AbortSignal));
     });
   });
 

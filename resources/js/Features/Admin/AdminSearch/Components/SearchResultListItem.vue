@@ -7,9 +7,9 @@
     tabindex="0"
     :aria-disabled="disabled"
     :class="[
-      'group flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
+      'group flex min-h-11 w-full cursor-pointer items-center gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-ring',
       disabled && 'opacity-50',
-      selected ? 'bg-accent ring-1 ring-primary/20' : 'hover:bg-accent/60',
+      selected ? 'bg-accent border-l-2 border-brand' : 'hover:bg-accent/60',
     ]"
     @click="onRowClick"
     @keydown.enter.prevent="!disabled && $emit('toggle')"
@@ -20,17 +20,19 @@
         v-if="multiple"
         :model-value="checked"
         :disabled
+        :aria-label="hit.title"
         @update:model-value="!disabled && $emit('toggle')"
       />
       <button
         v-else
         type="button"
         :disabled
-        class="flex size-4 items-center justify-center rounded-full border text-primary"
-        :class="checked ? 'border-primary' : 'border-muted-foreground/40'"
+        class="flex size-8 items-center justify-center border border-border text-brand focus-visible:ring-2 focus-visible:ring-ring pointer-coarse:size-11"
+        :aria-label="hit.title"
+        :aria-pressed="checked"
         @click="!disabled && $emit('toggle')"
       >
-        <span v-if="checked" class="size-2 rounded-full bg-primary" />
+        <span v-if="checked" class="size-2 bg-brand-fill" />
       </button>
     </div>
     <SearchHitRow :hit :selected />
@@ -41,8 +43,8 @@
     v-else
     type="button"
     :class="[
-      'group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors',
-      selected ? 'bg-accent ring-1 ring-primary/20' : 'hover:bg-accent/60',
+      'group flex min-h-11 w-full items-center gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-ring',
+      selected ? 'bg-accent border-l-2 border-brand' : 'hover:bg-accent/60',
     ]"
     @click="$emit('select')"
   >

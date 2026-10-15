@@ -7,7 +7,7 @@ namespace App\Enums;
  *
  * These three strings drove roughly forty comparisons across PHP and Vue with no definition
  * anywhere — the closest thing to a source of truth was a hand-written option list in
- * TenantForm.vue. Backing values match the `tenants.type` column exactly, so the enum can be
+ * the tenant form. Backing values match the `tenants.type` column exactly, so the enum can be
  * cast on the model and compared against existing rows without a data migration.
  */
 enum TenantType: string

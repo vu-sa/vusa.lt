@@ -1,18 +1,3 @@
-export const INSTITUTION_PLACEHOLDERS = {
-  name: {
-    lt: 'Vilniaus universiteto Studentų atstovybė',
-    en: 'Vilnius University Student Representation',
-  },
-  short_name: {
-    lt: 'VU SA',
-    en: 'VU SR',
-  },
-  description: {
-    lt: 'VU SA - Vilniaus universiteto studentų atstovybė, kuri atstovauja visiems studentams...',
-    en: 'VU SA - Vilnius University Student Representation, which represents all students...',
-  },
-};
-
 export const RESOURCE_PLACEHOLDERS = {
   title: {
     lt: 'JBL kolonėlė (įkraunama)',
@@ -21,6 +6,17 @@ export const RESOURCE_PLACEHOLDERS = {
   description: {
     lt: 'Tikslus modelis: ABC123. Nuoroda internete: ... Naudoti tik perskaičius instrukciją...',
     en: 'Exact model: ABC123. Link on the web: ... Use only after reading the instructions...',
+  },
+};
+
+export const PROBLEM_CATEGORY_PLACEHOLDERS = {
+  name: {
+    lt: 'Studijų procesas',
+    en: 'Study process',
+  },
+  description: {
+    lt: 'Tvarkaraščiai, atsiskaitymai, studijų programų pokyčiai...',
+    en: 'Timetables, assessments, study programme changes...',
   },
 };
 
@@ -45,7 +41,7 @@ export const RESERVATION_PLACEHOLDERS = {
     en: 'All resources will be used for this event. If necessary, resources A could be returned earlier...',
   },
   resource: {
-    lt: 'Pasirinkite išteklių...',
+    lt: 'Pasirink išteklių...',
     en: 'Select resource...',
   },
 };

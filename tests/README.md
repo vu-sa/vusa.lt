@@ -89,6 +89,18 @@ test('cannot update resource in invalid state', function () {
 
 ## Test Environment
 
+### Reservation row-lock tests
+
+The optional MariaDB tests use two connections to a temporary database to check competing capacity
+claims and approval permissions after an edit. They require Sail's database service and permission
+to create and drop databases; the generated database is removed after each test.
+
+```bash
+./vendor/bin/sail exec -e RUN_MYSQL_CONCURRENCY_TESTS=1 laravel.test php artisan test --compact tests/Feature/Admin/Reservations/ReservationResourceConcurrencyTest.php
+```
+
+They are skipped in the default SQLite suite, which cannot exercise MySQL row locks.
+
 ### Local Development
 - Uses Docker services via Laravel Sail (MySQL, Redis, Typesense)
 - Admin operations use database driver
@@ -124,11 +136,16 @@ tests/Feature/
 │   ├── Calendar/   # AgendaItem, Calendar, Meeting controllers
 │   ├── Content/    # Banner, Category, News, Page, Tag controllers  
 │   ├── Core/       # Dashboard controller
+│   ├── Dashboard/  # One {Workspace}DashboardTest.php per workspace overview
 │   ├── Forms/      # Form controller
 │   ├── Management/ # Duty, Institution, StudyProgram, Tenant, User controllers
 │   ├── Navigation/ # Navigation controller
 │   ├── Permissions/# Permission, Role controllers
-│   └── Resources/  # Document, Files, Reservation controllers
+│   ├── Reservations/# Reservation, cart, Resource, ResourceCategory controllers
+│   └── Resources/  # Document, Files, SharePoint controllers
+├── Api/Admin/      # {Controller}Test.php for each admin API controller
+├── Approvals/      # ApprovalService and ApprovalController (one describe per action)
+├── Duties/         # Duty update action and shared assignment service
 ├── Tasks/          # Mirrors app/Tasks/ structure
 │   ├── Handlers/   # {HandlerName}Test.php for each task handler
 │   └── Subscribers/# {SubscriberName}Test.php for each subscriber

@@ -1,0 +1,84 @@
+/* ==================================================================================
+   Palette — one visual language for admin and public
+   ==================================================================================
+
+   Declared on :root/.dark rather than under `[data-surface]`, so pages on neither surface
+   (NotFound, error views) and teleported overlays get the same tokens. What still differs per
+   surface lives in admin/surface.css and public/surface.css. `--accent` keeps its shadcn meaning
+   — the hover/muted surface, never the brand (`--brand`).
+   ================================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* Set on the root so content Reka teleports into <body> (popovers, dialogs) keeps the typeface. */
+  font-family: var(--font-public);
+
+  /* Warm paper canvas, near-black ink. No blue anywhere. */
+  --background: oklch(0.965 0.006 85);
+  --foreground: oklch(0.17 0.008 70);
+  --card: oklch(0.995 0.003 85);
+  --card-foreground: oklch(0.17 0.008 70);
+  --popover: oklch(0.995 0.003 85);
+  --popover-foreground: oklch(0.17 0.008 70);
+  --primary: oklch(0.19 0.008 70);
+  --primary-foreground: oklch(0.97 0.006 85);
+  --secondary: oklch(0.925 0.006 85);
+  --secondary-foreground: oklch(0.2 0.008 70);
+  --muted: oklch(0.93 0.006 85);
+  --muted-foreground: oklch(0.46 0.01 75);
+  /* Long-form body copy: one step back from `--foreground`, but not as far back as
+     `--muted-foreground`, which is sized for labels and metadata. At 0.46 on the 0.965 canvas it
+     passes AA comfortably and still reads as too light across a full article — a paragraph is
+     read for minutes, a timestamp for a second. */
+  --prose-foreground: oklch(0.315 0.012 75);
+  /* shadcn semantics: the hover/lifted surface, NOT the brand. Matches --secondary. */
+  --accent: oklch(0.925 0.006 85);
+  --accent-foreground: oklch(0.2 0.008 70);
+  --destructive: oklch(0.55 0.19 27);
+  --border: oklch(0.855 0.008 80);
+  --input: oklch(0.76 0.01 78);
+  --ring: oklch(0.48 0.18 25);
+
+  /* Light mode's `--border` is already fully opaque, so it renders identically regardless of
+     what's behind it — no flattening needed. Defined anyway so `.u-hairline` (below) can use one
+     token in both themes without a `dark:` variant. See the dark block for why dark mode's
+     version differs. */
+  --border-opaque: var(--border);
+}
+
+.dark {
+  color-scheme: dark;
+  /* True near-black. Off-white ink. Amber brand (set globally on .dark). */
+  --background: oklch(0.135 0.004 70);
+  --foreground: oklch(0.955 0.004 85);
+  --card: oklch(0.175 0.005 70);
+  --card-foreground: oklch(0.955 0.004 85);
+  --popover: oklch(0.165 0.005 70);
+  --popover-foreground: oklch(0.955 0.004 85);
+  --primary: oklch(0.955 0.004 85);
+  --primary-foreground: oklch(0.15 0.005 70);
+  --secondary: oklch(0.225 0.006 70);
+  --secondary-foreground: oklch(0.955 0.004 85);
+  --muted: oklch(0.225 0.006 70);
+  --muted-foreground: oklch(0.68 0.008 78);
+  /* Dark mode needs no separate step: on near-black, 0.68 already reads as body copy rather than
+     as metadata. Defined anyway so the token exists in both themes. */
+  --prose-foreground: oklch(0.74 0.008 78);
+  --accent: oklch(0.225 0.006 70);
+  --accent-foreground: oklch(0.955 0.004 85);
+  --destructive: oklch(0.62 0.2 27);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.82 0.152 72);
+
+  /* An opaque flattening of `--border`'s 12%-white-over-background recipe. `--border` itself is
+     translucent so it reads correctly against the many different surfaces it sits on (cards,
+     popovers, images) — but that means the *same* `--border` renders as a visibly different RGB
+     depending on what's directly behind it. Two elements that must look identically weighted
+     regardless of their own local background (e.g. the header's `border-b` and the section
+     directly below it, which sit on differently-tinted, differently-transparent backgrounds)
+     should use this instead. */
+  --border-opaque: color-mix(in oklab, white 12%, var(--background));
+}
+

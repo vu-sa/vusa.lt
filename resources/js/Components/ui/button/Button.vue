@@ -3,7 +3,7 @@
     data-slot="button"
     :as
     :as-child
-    :class="cn(buttonVariants({ variant, size, animation }), props.class)"
+    :class="cn(buttonVariants({ variant, voice, size }), props.class)"
   >
     <slot />
   </Primitive>
@@ -19,20 +19,10 @@ import { buttonVariants } from '.';
 
 import { cn } from '@/Utils/Shadcn/utils';
 
-/**
- * Button component with consistent styling and optional animations
- *
- * Animation variants:
- * - none: No animation (default)
- * - subtle: Gentle scale on hover (for interactive elements like search)
- * - bounce: Scale with active state (for call-to-action buttons)
- *
- * Use animations sparingly - only for buttons that benefit from visual feedback
- */
 interface Props extends PrimitiveProps {
   variant?: ButtonVariants['variant'];
+  voice?: ButtonVariants['voice'];
   size?: ButtonVariants['size'];
-  animation?: ButtonVariants['animation'];
   class?: HTMLAttributes['class'];
 }
 

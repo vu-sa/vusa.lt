@@ -88,7 +88,7 @@ export const contentSamples: Record<string, () => ContentSample> = {
     json_content: {},
     options: {
       title: { lt: 'Pasiūlyk idėją', en: 'Suggest an idea' },
-      placeholder: { lt: 'Įrašykite savo pasiūlymą...', en: 'Write your suggestion...' },
+      placeholder: { lt: 'Įrašyk savo pasiūlymą...', en: 'Write your suggestion...' },
       isClosed: false,
       closedMessage: { lt: '', en: '' },
     },

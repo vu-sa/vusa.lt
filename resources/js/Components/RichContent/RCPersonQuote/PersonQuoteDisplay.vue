@@ -60,7 +60,7 @@
 
     <Popover v-if="editable" :open="!!hotspots?.isPopoverOpen(personHotspotId)" @update:open="onPersonPopoverOpenChange">
       <PopoverAnchor :reference="figureRef ?? undefined" />
-      <PopoverContent v-if="hotspots?.isPopoverOpen(personHotspotId)" data-surface="public" class="w-80" @close-auto-focus.prevent>
+      <PopoverContent v-if="hotspots?.isPopoverOpen(personHotspotId)" class="w-80" @close-auto-focus.prevent>
         <Field>
           <FieldLabel>{{ $t('rich-content.person_quote_person') }}</FieldLabel>
           <CollectionSelectDialog

@@ -78,7 +78,6 @@
         <PopoverAnchor :reference="stackRef ?? undefined" />
         <PopoverContent
           v-if="hotspots?.isPopoverOpen(cardHotspotId) && currentCard"
-          data-surface="public"
           class="w-64"
           @close-auto-focus.prevent
         >

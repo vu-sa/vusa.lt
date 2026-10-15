@@ -1,4 +1,4 @@
-import { vi } from 'vitest';
+import { afterAll, vi } from 'vitest';
 import { config } from '@vue/test-utils';
 
 // Note: Icon auto-imports now handled by unplugin-icons in vitest.config.ts
@@ -31,6 +31,16 @@ for (const key of ['localStorage', 'sessionStorage'] as const) {
   });
 }
 
+// Under `pool: 'vmThreads'` the window's `performance` is jsdom's, which lacks the timeline API
+// that @inertiajs/core reads on import to detect back/forward navigation.
+if (typeof performance.getEntriesByType !== 'function') {
+  performance.getEntriesByType = () => [];
+}
+
+// Async components start loading on mount; under `vmThreads` any import still pending when the
+// file ends rejects with "Vite module runner has been closed" and fails the run.
+afterAll(() => vi.dynamicImportSettled());
+
 // Mock route function from Ziggy
 vi.mock('ziggy-js', () => ({
   default: (name: string, params: any) => {
@@ -56,6 +66,7 @@ vi.mock('@inertiajs/vue3', async () => {
   return {
     Link: inertiaMock.Link,
     Head: inertiaMock.Head,
+    Deferred: inertiaMock.Deferred,
     usePage: inertiaMock.usePage,
     router: inertiaMock.router,
     useForm: inertiaMock.useForm,
@@ -132,36 +143,6 @@ config.global.mocks = {
     },
   },
 };
-
-// Enhanced TypesenseInstantSearchAdapter mock for comprehensive network mocking
-vi.mock('typesense-instantsearch-adapter', () => {
-  return {
-    default: vi.fn(() => ({
-      searchClient: {
-        search: vi.fn().mockResolvedValue({
-          results: [{
-            hits: [],
-            facets: {},
-            nbHits: 0,
-            page: 0,
-            nbPages: 1,
-            hitsPerPage: 24,
-            exhaustiveNbHits: true,
-            query: '',
-            params: '',
-          }],
-        }),
-        searchForFacetValues: vi.fn().mockResolvedValue([]),
-        clearCache: vi.fn(),
-        addAlgoliaAgent: vi.fn(),
-        initIndex: vi.fn(() => ({
-          search: vi.fn().mockResolvedValue({ hits: [], nbHits: 0 }),
-          searchForFacetValues: vi.fn().mockResolvedValue([]),
-        })),
-      },
-    })),
-  };
-});
 
 // Mock fetch for any remaining network calls
 Object.defineProperty(global, 'fetch', {

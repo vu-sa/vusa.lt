@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Notifications\TaskAutoCompletedNotification;
 use App\Tasks\DTOs\CreateTaskData;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 
 abstract class BaseTaskHandler implements TaskHandler
 {
@@ -32,7 +33,7 @@ abstract class BaseTaskHandler implements TaskHandler
 
         $task->refresh();
 
-        event(new TaskCreated($task));
+        event(new TaskCreated($task, auth()->user() instanceof User ? auth()->user() : null));
 
         return $task;
     }
@@ -56,8 +57,8 @@ abstract class BaseTaskHandler implements TaskHandler
      */
     protected function notifyUsersOfCompletion(Task $task, string $reason, ?User $completedBy = null): void
     {
-        foreach ($task->notifiableUsers() as $user) {
-            $user->notify(new TaskAutoCompletedNotification($task, $reason, $completedBy));
-        }
+        $recipients = $task->notifiableUsers()->reject(fn (User $user): bool => $user->is($completedBy));
+
+        Notification::send($recipients, new TaskAutoCompletedNotification($task, $reason, $completedBy));
     }
 }

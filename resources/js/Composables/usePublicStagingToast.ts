@@ -17,6 +17,7 @@ function stagingDescription(staging: PublicStagingState | null | undefined): str
   }
 
   const warnings = [
+    'Changes won\'t be saved — data is refreshed tomorrow',
     staging.filesReadOnly ? 'File storage is shared with production (read-only)' : null,
     staging.sharepointReadOnly ? 'SharePoint is shared with production (read-only)' : null,
   ].filter((warning): warning is string => warning !== null);
@@ -26,8 +27,11 @@ function stagingDescription(staging: PublicStagingState | null | undefined): str
 
 export function usePublicStagingToast(
   stagingGetter: () => PublicStagingState | null | undefined,
+  pageKeyGetter: () => string,
 ): void {
   let currentDescription: string | null = null;
+  let currentToastId: string | null = null;
+  let toastSequence = 0;
 
   const show = (staging: PublicStagingState | null | undefined): void => {
     const description = stagingDescription(staging);
@@ -35,19 +39,21 @@ export function usePublicStagingToast(
       return;
     }
 
-    if (currentDescription !== null) {
-      toast.dismiss(TOAST_ID);
+    if (currentToastId !== null) {
+      toast.dismiss(currentToastId);
+      currentToastId = null;
     }
 
     currentDescription = description;
 
     if (description !== null) {
+      currentToastId = `${TOAST_ID}:${++toastSequence}`;
       toast('STAGING ENVIRONMENT', {
-        id: TOAST_ID,
+        id: currentToastId,
         description,
         duration: Infinity,
-        closeButton: false,
-        dismissible: false,
+        closeButton: true,
+        dismissible: true,
         ...publicToastAppearance,
       });
     }
@@ -55,5 +61,13 @@ export function usePublicStagingToast(
 
   onMounted(() => show(stagingGetter()));
 
-  watch(stagingGetter, show);
+  watch([stagingGetter, pageKeyGetter], ([staging, pageKey], [, previousPageKey]) => {
+    if (pageKey !== previousPageKey && currentToastId !== null) {
+      toast.dismiss(currentToastId);
+      currentToastId = null;
+      currentDescription = null;
+    }
+
+    show(staging);
+  });
 }

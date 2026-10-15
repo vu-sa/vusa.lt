@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Http\Requests\Concerns\ValidatesTenantScope;
+use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -45,6 +46,7 @@ class InstitutionRequest extends FormRequest
             'instagram_url' => 'nullable|string',
             'is_active' => 'boolean',
             'types' => 'nullable|array',
+            'types.*' => ['integer', 'distinct', SoftDeleteRules::existsLive('institution_types')],
             'meeting_periodicity_days' => 'nullable|integer|min:1|max:365',
         ];
     }

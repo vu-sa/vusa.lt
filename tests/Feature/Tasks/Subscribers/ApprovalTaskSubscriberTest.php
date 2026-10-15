@@ -17,10 +17,14 @@ use App\Models\ResourceCategory;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\ApprovalRequestedNotification;
+use App\Notifications\TaskAssignedNotification;
+use App\Notifications\TaskAutoCompletedNotification;
 use App\States\ReservationResource\Created;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use App\Tasks\Subscribers\ApprovalTaskSubscriber;
+use Database\Seeders\RoleCentralResourceManagerSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
@@ -72,6 +76,89 @@ describe('ApprovalTaskSubscriber', function (): void {
 
             // Task should not be created because no approvers exist
             expect($approvalTaskCount)->toBe(0);
+        });
+    });
+
+    describe('notifications', function (): void {
+        test('approvers are asked once: the approval request, not a task notice as well', function (): void {
+            $tenant = Tenant::query()->first();
+            $approver = makeTenantUserWithRole('Išteklių administratorius', $tenant);
+            $resource = Resource::factory()->create(['tenant_id' => $tenant->id, 'resource_category_id' => ResourceCategory::factory()->create()->id]);
+
+            $reservation = Reservation::factory()->create(['start_time' => now()->addDays(3), 'end_time' => now()->addDays(5)]);
+            $reservation->users()->attach(User::factory()->create()->id);
+            $reservation->resources()->attach($resource->id, [
+                'quantity' => 1,
+                'start_time' => $reservation->start_time,
+                'end_time' => $reservation->end_time,
+                'state' => 'created',
+            ]);
+            $reservationResource = ReservationResource::query()->where('reservation_id', $reservation->id)->first();
+
+            event(new ApprovalRequested($reservationResource, step: 1));
+
+            Notification::assertSentTo($approver, ApprovalRequestedNotification::class);
+            Notification::assertNotSentTo($approver, TaskAssignedNotification::class);
+        });
+
+        test('a central office manager holding only the global permission is asked about its own padalinys\' items only', function (): void {
+            $centralOffice = Tenant::query()->first();
+            $centralManager = makeTenantUserWithRole(RoleCentralResourceManagerSeeder::NAME, $centralOffice);
+
+            $requestFor = function (Tenant $tenant): ReservationResource {
+                $resource = Resource::factory()->create(['tenant_id' => $tenant->id, 'resource_category_id' => ResourceCategory::factory()->create()->id]);
+                $reservation = Reservation::factory()->create(['start_time' => now()->addDays(3), 'end_time' => now()->addDays(5)]);
+                $reservation->resources()->attach($resource->id, [
+                    'quantity' => 1,
+                    'start_time' => $reservation->start_time,
+                    'end_time' => $reservation->end_time,
+                    'state' => 'created',
+                ]);
+
+                return ReservationResource::query()->where('reservation_id', $reservation->id)->firstOrFail();
+            };
+
+            event(new ApprovalRequested($requestFor($centralOffice), step: 1));
+            Notification::assertSentTo($centralManager, ApprovalRequestedNotification::class);
+
+            // Approving elsewhere stays possible (wildcard), but other padaliniai's queues are not theirs to be pinged about.
+            Notification::fake();
+            event(new ApprovalRequested($requestFor(Tenant::factory()->create()), step: 1));
+            Notification::assertNotSentTo($centralManager, ApprovalRequestedNotification::class);
+        });
+
+        test('the approver who decided is not told their own task completed', function (): void {
+            $decider = User::factory()->create();
+            $colleague = User::factory()->create();
+            $resource = Resource::factory()->create(['tenant_id' => Tenant::query()->first()->id, 'resource_category_id' => ResourceCategory::factory()->create()->id]);
+            $reservation = Reservation::factory()->create(['start_time' => now()->addDays(3), 'end_time' => now()->addDays(5)]);
+            $reservation->resources()->attach($resource->id, [
+                'quantity' => 1,
+                'start_time' => $reservation->start_time,
+                'end_time' => $reservation->end_time,
+                'state' => 'created',
+            ]);
+            $reservationResource = ReservationResource::query()->where('reservation_id', $reservation->id)->first();
+
+            $task = Task::factory()->create([
+                'taskable_type' => MorphMap::alias(Reservation::class),
+                'taskable_id' => $reservation->id,
+                'action_type' => ActionType::Approval,
+            ]);
+            $task->users()->sync([$decider->id, $colleague->id]);
+
+            $approval = Approval::factory()->create([
+                'approvable_type' => $reservationResource->getMorphClass(),
+                'approvable_id' => $reservationResource->id,
+                'user_id' => $decider->id,
+                'decision' => ApprovalDecision::Approved,
+                'step' => 1,
+            ]);
+
+            event(new ApprovalDecisionMade($approval, $reservationResource));
+
+            Notification::assertSentTo($colleague, TaskAutoCompletedNotification::class);
+            Notification::assertNotSentTo($decider, TaskAutoCompletedNotification::class);
         });
     });
 

@@ -25,7 +25,6 @@ export interface DiscussionMember {
 export interface DiscussionChannelHandlers {
   onCreated?: (comment: CommentData) => void;
   onUpdated?: (comment: CommentData) => void;
-  onDeleted?: (payload: { id: string }) => void;
   onResolved?: (comment: CommentData) => void;
   onReaction?: (comment: CommentData) => void;
   onPoll?: (comment: CommentData) => void;
@@ -60,7 +59,6 @@ export function useDiscussionChannel(
         })
         .listen('.comment.created', (comment: CommentData) => handlers.onCreated?.(comment))
         .listen('.comment.updated', (comment: CommentData) => handlers.onUpdated?.(comment))
-        .listen('.comment.deleted', (payload: { id: string }) => handlers.onDeleted?.(payload))
         .listen('.comment.resolved', (comment: CommentData) => handlers.onResolved?.(comment))
         .listen('.comment.reaction', (comment: CommentData) => handlers.onReaction?.(comment))
         .listen('.comment.poll', (comment: CommentData) => handlers.onPoll?.(comment));

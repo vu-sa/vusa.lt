@@ -33,4 +33,26 @@ describe('notifications:meeting-reminders', function (): void {
         Notification::assertSentTimes(MeetingReminderNotification::class, 1);
         Notification::assertSentTo($user, MeetingReminderNotification::class);
     });
+
+    test('by default reminds 24 hours and 1 hour before, and never about a deleted meeting', function (): void {
+        Notification::fake();
+
+        $institution = Institution::factory()->for(Tenant::factory()->create())->create();
+        $duty = Duty::factory()->for($institution)->create();
+        $user = User::factory()->create();
+        $user->duties()->attach($duty, ['start_date' => now()->subMonth(), 'end_date' => null]);
+
+        $dayAhead = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()->addDay()]);
+        $hourAhead = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()->addHour()]);
+        Meeting::factory()->hasAttached($institution)->create(['start_time' => now()->addHours(12)]);
+        Meeting::factory()->hasAttached($institution)->create(['start_time' => now()->addHour()])->delete();
+
+        $this->artisan('notifications:meeting-reminders')->assertSuccessful();
+
+        $remindedAbout = fn (Meeting $meeting): Closure => fn (MeetingReminderNotification $notification): bool => $notification->url() === route('meetings.show', $meeting);
+
+        Notification::assertSentTimes(MeetingReminderNotification::class, 2);
+        Notification::assertSentTo($user, MeetingReminderNotification::class, $remindedAbout($dayAhead));
+        Notification::assertSentTo($user, MeetingReminderNotification::class, $remindedAbout($hourAhead));
+    });
 });

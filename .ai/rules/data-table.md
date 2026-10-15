@@ -1,6 +1,7 @@
 ---
 paths:
-  - 'resources/js/Components/Tables/**,resources/js/Components/ui/data-table/**'
+  - 'resources/js/Components/Tables/**'
+  - 'resources/js/Components/ui/data-table/**'
 ---
 
 # Data Table

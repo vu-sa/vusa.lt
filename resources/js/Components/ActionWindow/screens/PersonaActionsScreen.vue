@@ -7,7 +7,6 @@
         :title="action.title"
         :description="action.description"
         :icon="action.icon"
-        :gradient="action.gradient"
         @click="run(action)"
       />
     </ActionChoiceList>

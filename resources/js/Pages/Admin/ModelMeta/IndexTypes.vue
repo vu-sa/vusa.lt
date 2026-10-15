@@ -1,164 +1,31 @@
 <template>
-  <IndexTablePage ref="indexTablePageRef" v-bind="tableConfig" @data-loaded="onDataLoaded"
-    @sorting-changed="handleSortingChange" @page-changed="handlePageChange" @filter-changed="handleFilterChange">
-    <template #filters>
-      <DataTableFilter v-if="modelTypeOptions.length > 0" v-model:value="selectedModelType" :options="modelTypeOptions"
-        @update:value="handleModelTypeFilterChange">
-        {{ $t("Model Type") }}
-      </DataTableFilter>
-    </template>
-  </IndexTablePage>
+  <OverviewPage :eyebrow="$t('shell.workspaces.sistema.title')" :title="$t('types.directory_title')" :lead="$t('types.directory_lead')">
+    <SpotlightPopover
+      :title="$t('types.directory_title')"
+      :description="$t('types.spotlight')"
+      :is-dismissed="spotlight.isDismissed.value"
+      side="top"
+      align="end"
+      class="w-full"
+      @dismiss="spotlight.dismiss"
+    >
+      <NavigationTiles :items="tiles" :columns="3" @navigate="spotlight.dismiss" />
+    </SpotlightPopover>
+  </OverviewPage>
 </template>
 
 <script setup lang="ts">
-import { h, computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import type { ColumnDef } from '@tanstack/vue-table';
-import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-import IndexTablePage from '@/Components/Layouts/IndexTablePage.vue';
-import DataTableFilter from '@/Components/ui/data-table/DataTableFilter.vue';
-import { TruncatedBadge } from '@/Components/ui/data-table/cells';
-import {
-  createIdColumn,
-  createTimestampColumn,
-  createTextColumn,
-  createTitleColumn,
-} from '@/Composables/useDataTableColumns';
-import { createStandardActionsColumn } from '@/Composables/useTableActions';
-import { TypeIcon } from '@/Components/icons';
-import type {
-  IndexTablePageProps,
-} from '@/Types/TableConfigTypes';
+import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { NavigationTiles } from '@/Components/Patterns';
+import type { AdminSection } from '@/Composables/useAdminNavigation';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import { sectionTile } from '@/Constants/adminSections';
 
-const props = defineProps<{
-  data: App.Entities.Type[];
-  meta: {
-    total: number;
-    current_page: number;
-    per_page: number;
-    last_page: number;
-    from: number;
-    to: number;
-  };
-  filters?: Record<string, any>;
-  sorting?: { id: string; desc: boolean }[];
-  showDeleted?: boolean;
-  deletedCount?: number;
-}>();
-
-const indexTablePageRef = ref<InstanceType<typeof IndexTablePage> | null>(null);
-
-// Component constants
-const modelName = 'types';
-const entityName = 'type';
-
-const canForceDelete = computed(() => usePage().props.auth?.can?.forceDelete?.type ?? false);
-
-// Extract unique model types for filtering
-const modelTypes = computed(() => {
-  const types = new Set<string>();
-  props.data.forEach((type) => {
-    if (type.model_type) {
-      types.add(type.model_type);
-    }
-  });
-  return Array.from(types);
-});
-
-// Initialize filter states
-const selectedModelType = ref<string | null>(props.filters?.['model_type'] || null);
-
-// Filter options
-const modelTypeOptions = computed(() => {
-  return modelTypes.value.map(type => ({
-    label: type,
-    value: type,
-  }));
-});
-
-// Table columns
-const columns = computed<Array<ColumnDef<App.Entities.Type, any>>>(() => [
-  createIdColumn(),
-  createTitleColumn<App.Entities.Type>({
-    accessorKey: 'title',
-    routeName: 'types.edit',
-    width: 200,
-  }),
-  createTextColumn('slug', {
-    title: $t('forms.fields.slug'),
-    cell: ({ row }) => h(TruncatedBadge, { text: row.getValue('slug'), variant: 'outline' }),
-  }),
-  createTextColumn('model_type', {
-    cell: ({ row }) => h(TruncatedBadge, { text: row.getValue('model_type'), variant: 'secondary' }),
-  }),
-  createTimestampColumn('created_at'),
-  createTimestampColumn('updated_at'),
-  createStandardActionsColumn<App.Entities.Type>('types', {
-    canView: false,
-    canEdit: true,
-    canDelete: true,
-    canRestore: true,
-    canForceDelete: canForceDelete.value,
-  }),
-]);
-
-// Simplified table configuration using the new interfaces
-const tableConfig = computed<IndexTablePageProps<App.Entities.Type>>(() => {
-  return {
-    // Essential table configuration
-    modelName,
-    entityName,
-    data: props.data,
-    columns: columns.value,
-    totalCount: props.meta.total,
-    initialPage: props.meta.current_page,
-    pageSize: props.meta.per_page,
-
-    // Advanced features
-    initialFilters: props.filters,
-    initialSorting: props.sorting?.length ? props.sorting : [{ id: 'created_at', desc: true }],
-    enableFiltering: true,
-    enableColumnVisibility: true,
-    allowToggleDeleted: true,
-    showDeleted: props.showDeleted,
-    deletedCount: props.deletedCount,
-
-    // Page layout
-    headerTitle: $t('Turinio tipai'),
-    icon: TypeIcon,
-    createRoute: route('types.create'),
-    canCreate: true,
-  };
-});
-
-// Event handlers
-const handleModelTypeFilterChange = (modelType: string | null) => {
-  selectedModelType.value = modelType;
-  if (indexTablePageRef.value) {
-    indexTablePageRef.value.updateFilter('model_type', modelType);
-  }
-};
-
-const onDataLoaded = (_data: unknown) => {};
-
-const handleSortingChange = (_sorting: unknown) => {};
-
-const handlePageChange = (_page: unknown) => {};
-
-const handleFilterChange = (filterKey, value) => {
-  // Update local filter references if needed
-  if (filterKey === 'model_type') {
-    selectedModelType.value = value;
-  }
-};
-
-// Sync filter values when changed externally
-watch(() => props.filters, (newFilters) => {
-  if (newFilters) {
-    if (newFilters['model_type'] !== undefined) {
-      selectedModelType.value = newFilters['model_type'];
-    }
-  }
-}, { deep: true });
+const props = defineProps<{ destinations: AdminSection[] }>();
+const tiles = computed(() => props.destinations.map(sectionTile));
+const spotlight = useFeatureSpotlight('types-directory-v1');
 </script>

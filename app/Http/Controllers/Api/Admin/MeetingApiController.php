@@ -2,14 +2,38 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\Documents\PendingMeetingDocuments;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Meetings\IndexMeetingPendingDocumentsRequest;
+use App\Http\Resources\DocumentRowResource;
 use App\Models\Meeting;
+use App\Services\AgendaItemPresenter;
 use App\Services\ResourceServices\DutyService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class MeetingApiController extends ApiController
 {
+    /**
+     * Unpublished SharePoint files this meeting could link, by title or file name.
+     *
+     * @route GET /api/v1/admin/meetings/{meeting}/pending-documents
+     */
+    public function pendingDocuments(IndexMeetingPendingDocumentsRequest $request, Meeting $meeting): JsonResponse
+    {
+        $search = (string) $request->validated('search');
+
+        $documents = PendingMeetingDocuments::query($meeting, $request->user())
+            ->when($search !== '', fn (Builder $query) => $query->where(
+                fn (Builder $query) => $query->where('title', 'like', "%{$search}%")->orWhere('name', 'like', "%{$search}%")
+            ))
+            ->limit(20)
+            ->get();
+
+        return $this->jsonSuccess(DocumentRowResource::collection($documents)->resolve($request));
+    }
+
     /**
      * Lightweight meeting detail used by the admin search preview pane.
      * Returns the agenda items, institutions and representatives that are not
@@ -37,9 +61,9 @@ class MeetingApiController extends ApiController
             'agenda_items' => $meeting->agendaItems
                 ->map(fn ($item) => [
                     'id' => (string) $item->id,
-                    'title' => $item->title,
-                    'decision' => $item->mainVote?->decision,
-                    'student_benefit' => $item->mainVote?->student_benefit,
+                    ...($item->is_private && ! AgendaItemPresenter::canRead($item, request()->user())
+                        ? AgendaItemPresenter::redacted($item)
+                        : ['title' => $item->title, 'decision' => $item->mainVote?->decision, 'student_benefit' => $item->mainVote?->student_benefit]),
                 ])->values(),
             // Student representatives whose duty was active at the meeting date
             // (same calculation the meeting show page uses), not all-time members.
@@ -71,7 +95,7 @@ class MeetingApiController extends ApiController
 
         return $this->jsonSuccess(
             $meeting->agendaItems
-                ->filter(fn ($item) => filled($item->start_time))
+                ->filter(fn ($item) => ! $item->is_private && filled($item->start_time))
                 ->map(fn ($item) => [
                     'title' => $item->title,
                     'startTime' => $item->start_time,
@@ -113,7 +137,7 @@ class MeetingApiController extends ApiController
                     'start_time' => $meeting->start_time?->toISOString(),
                     'institution_id' => (string) $institution->id,
                     'institution_name' => $institution->name ?? 'Unknown',
-                    'agenda_items' => $meeting->agendaItems->map(fn ($item) => ['title' => $item->title])->toArray(),
+                    'agenda_items' => $meeting->agendaItems->map(fn ($item) => ['title' => AgendaItemPresenter::forUser($item, request()->user())['title']])->toArray(),
                 ]) ?? collect())
             ->sortByDesc('start_time')
             ->unique('id')

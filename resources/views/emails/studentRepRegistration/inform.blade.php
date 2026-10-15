@@ -1,6 +1,8 @@
 @component('mail::message')
 # {{ __('mail.student_rep.inform.heading') }}
 
+{{ __('mail.greeting_generic') }}
+
 {{ __('mail.student_rep.inform.intro', ['name' => $name, 'institution' => $institution->name]) }}
 
 @component('mail::button', ['url' => route('forms.show', $form_id)])

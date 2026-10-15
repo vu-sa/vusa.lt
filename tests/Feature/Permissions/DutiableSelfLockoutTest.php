@@ -12,7 +12,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'duties.read.padalinys',
         'duties.update.padalinys',
@@ -20,7 +20,7 @@ beforeEach(function (): void {
 
     $this->admin = makeUser($this->tenant);
     $this->adminDuty = $this->admin->duties()->first();
-    $this->adminDuty->assignRole('Communication Coordinator');
+    $this->adminDuty->assignRole('Komunikacijos koordinatorius');
 
     $this->adminDutiable = Dutiable::where('duty_id', $this->adminDuty->id)
         ->where('dutiable_id', $this->admin->id)

@@ -96,9 +96,10 @@
 
     <!-- Lightbox: teleported to <body> — the canvas is inside a `contain: layout` ancestor,
            which becomes the containing block for position:fixed, so without this the modal
-           would be clipped to the content column instead of covering the viewport. -->
+           would be clipped to the content column instead of covering the viewport. Mounted-only,
+           since SSR drops teleported markup and hydrating it would eat <body>'s first node. -->
     <VueEasyLightbox
-      v-if="element.options?.showLightbox && !editable"
+      v-if="mounted && element.options?.showLightbox && !editable"
       teleport="body"
       class="z-50"
       :visible="lightboxVisible"
@@ -114,12 +115,13 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, inject, nextTick, ref } from 'vue';
 import VueEasyLightbox from 'vue-easy-lightbox';
+import { useMounted } from '@vueuse/core';
 
 import RCSection from '../RCSection.vue';
 import type { BandResolution } from '../bandLayout';
 import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 
-import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
+import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
 import type { PhotoGalleryGrid } from '@/Types/contentParts';
 
 // Lazy-loaded: only ever mounted while `editable` — a static import would bundle the
@@ -190,6 +192,7 @@ async function addEmptyImage(): Promise<void> {
 }
 
 // Lightbox state
+const mounted = useMounted();
 const lightboxVisible = ref(false);
 const lightboxIndex = ref(0);
 

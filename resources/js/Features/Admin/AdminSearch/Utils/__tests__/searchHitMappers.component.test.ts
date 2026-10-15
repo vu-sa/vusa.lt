@@ -7,6 +7,7 @@ import {
   formatSearchDate,
   formatSearchDateTime,
   normalizeHit,
+  getUserDuties,
 } from '../searchHitMappers';
 
 import type { MultiSearchResults } from '@/Shared/Search/types';
@@ -69,7 +70,7 @@ describe('normalizeHit', () => {
     expect(hit.href).toContain('meetings.show');
     expect(hit.icon).toBe(COLLECTION_META.meetings.icon);
     expect(hit.raw).toBe(doc);
-    expect(hit.statusBadge).toEqual({ label: 'Užbaigtas', tone: 'success' });
+    expect(hit.statusBadge).toEqual({ label: 'Užpildyta', tone: 'success' });
   });
 
   it('links an agenda item to its edit page and uses institution as subtitle', () => {
@@ -91,6 +92,17 @@ describe('normalizeHit', () => {
     const hit = normalizeHit('documents', { id: 'd1', title: 'Doc', anonymous_url: 'https://files.example/d1.pdf' });
 
     expect(hit.href).toBe('https://files.example/d1.pdf');
+  });
+
+  it('shows a member\'s years of activity, open-ended while a term is in force', () => {
+    const current = normalizeHit('users', { id: 'u1', name: 'Jonas', email: 'j@vusa.lt', term_start_dates: ['2021-09-01', '2024-09-01'], term_end_dates: ['2022-06-30', ''] });
+    const former = normalizeHit('users', { id: 'u2', name: 'Ona', email: 'o@vusa.lt', term_start_dates: ['2019-09-01'], term_end_dates: ['2021-06-30'] });
+
+    // Beside the name, not on the duty line, so the years never read as the duty's.
+    expect(current.aside).toBe('2021–dabar');
+    expect(current.meta).toBeUndefined();
+    expect(current.subtitle).toBe('j@vusa.lt');
+    expect(former.aside).toBe('2019–2021');
   });
 
   it('falls back to a placeholder title when missing', () => {
@@ -123,7 +135,8 @@ describe('normalizeHit', () => {
       const hit = normalizeHit('duties', baseDuty, { ownTenantIds: [1], isSuperAdmin: false });
 
       expect(hit.isExternal).toBe(true);
-      expect(hit.statusBadge).toEqual({ label: 'MIF', tone: 'info' });
+      expect(hit.contextBadge).toBe('MIF');
+      expect(hit.statusBadge).toBeUndefined();
     });
 
     it('does not flag a duty within the user tenants', () => {
@@ -193,5 +206,24 @@ describe('collectAllTabHits', () => {
     // No query: meetings precede institutions regardless of relevance score.
     expect(hits[0].collection).toBe('meetings');
     expect(hits[1].collection).toBe('institutions');
+  });
+});
+
+describe('holder-aware search duty names', () => {
+  it('keeps links and overrides aligned while selecting the display locale', () => {
+    const user = {
+      id: 'user-1', name: 'Petras Petraitis', pronouns_lt: '', pronouns_en: 'she/her',
+      current_duty_names: ['Koordinatorius', 'Kuratorius'], current_duty_ids: ['d1', 'd2'],
+      current_duty_names_lt: ['Koordinatorius', 'Kuratorius'], current_duty_names_en: ['Coordinator', 'Mentor'],
+      current_duty_use_original_names: [false, true],
+    };
+
+    expect(getUserDuties(user, 'current', 'lt')).toEqual([{ id: 'd1', name: 'Koordinatorė' }, { id: 'd2', name: 'Kuratorius' }]);
+    expect(getUserDuties(user, 'current', 'en')).toEqual([{ id: 'd1', name: 'Coordinator' }, { id: 'd2', name: 'Mentor' }]);
+  });
+
+  it('supports old documents with only stored duty names', () => {
+    expect(getUserDuties({ id: 'u', name: 'Petras', previous_duty_names: ['Koordinatorė'] }, 'previous', 'lt'))
+      .toEqual([{ id: undefined, name: 'Koordinatorius' }]);
   });
 });

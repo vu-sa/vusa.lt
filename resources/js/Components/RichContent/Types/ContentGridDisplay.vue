@@ -189,7 +189,7 @@ import RCFeatureCard from '../RCFeatureCard.vue';
 import RCSection from '../RCSection.vue';
 import type { BandResolution } from '../bandLayout';
 
-import ImageWithDecorations from '@/Components/ui/ImageWithDecorations.vue';
+import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
 import type { DecorationConfig } from '@/Types/contentParts';
 
 // Lazy-loaded: only needed while a tiptap cell is actually being edited in the

@@ -87,7 +87,7 @@
  * dividers, vertical align), width, and section chrome. Row/column structure — add,
  * remove, reorder, per-column content type and width — lives on the canvas instead,
  * via RCGridRowOptions and RCGridColumnOptions anchored to each row/column. See
- * RICH_CONTENT_EDITOR.md.
+ * .ai/rules/rich-content.md.
  */
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';

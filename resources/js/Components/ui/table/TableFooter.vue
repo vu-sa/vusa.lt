@@ -1,7 +1,7 @@
 <template>
   <tfoot
     data-slot="table-footer"
-    :class="cn('bg-zinc-100/50 border-t font-medium [&>tr]:last:border-b-0 dark:bg-zinc-800/50', props.class)"
+    :class="cn('bg-secondary/70 border-t font-medium [&>tr]:last:border-b-0', props.class)"
   >
     <slot />
   </tfoot>

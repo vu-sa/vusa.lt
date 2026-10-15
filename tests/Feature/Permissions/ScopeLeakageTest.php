@@ -23,6 +23,7 @@ use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\ResourceCategory;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer;
 use App\Services\ResourceServices\UserDutyService;
@@ -38,11 +39,11 @@ beforeEach(function (): void {
     $this->authorizer = app(ModelAuthorizer::class);
 });
 
-describe('Resource Manager', function (): void {
+describe('Išteklių administratorius', function (): void {
     beforeEach(function (): void {
-        // 'Resource Manager' holds resources.read.* and reservations.read.* at global
-        // scope, but resources.update.padalinys only within its own tenant.
-        $this->manager = makeTenantUserWithRole('Resource Manager', $this->tenantA);
+        // 'Išteklių administratorius' holds resources.read.* at global scope, but
+        // resources.update.padalinys only within its own tenant.
+        $this->manager = makeTenantUserWithRole('Išteklių administratorius', $this->tenantA);
 
         $resource = Resource::factory()->create([
             'tenant_id' => $this->tenantB->id,
@@ -66,10 +67,7 @@ describe('Resource Manager', function (): void {
             ->first();
     });
 
-    test('a global read scope does not grant approval rights in another tenant', function (): void {
-        // The `*`-scoped check a ReservationPolicy::view would have made first.
-        expect($this->authorizer->allows($this->manager, 'reservations.read.*'))->toBeTrue();
-
+    test('seeing every resource does not grant approval rights in another tenant', function (): void {
         expect($this->foreignReservationResource->canBeApprovedBy($this->manager))->toBeFalse();
     });
 
@@ -95,18 +93,21 @@ describe('Resource Manager', function (): void {
             ->where('resource_id', $ownResource->id)
             ->first();
 
-        expect($this->authorizer->allows($this->manager, 'reservations.read.*'))->toBeTrue()
-            ->and($own->canBeApprovedBy($this->manager))->toBeTrue();
+        expect($own->canBeApprovedBy($this->manager))->toBeTrue();
     });
 });
 
-describe('Global Communication Coordinator', function (): void {
+describe('a global tag role beside a tenant-scoped content role', function (): void {
     beforeEach(function (): void {
-        // The real production shape: one person holding the global tag/category role
-        // *and* the tenant-scoped content role. The global role is what used to latch
-        // all-scope on for everything the tenant-scoped role granted.
-        $this->coordinator = makeTenantUserWithRole('Global Communication Coordinator', $this->tenantA);
-        $this->coordinator->duties()->first()->assignRole('Communication Coordinator');
+        // One person holding a role whose only global grant is tags *and* the tenant-scoped
+        // content role. The global grant is what used to latch all-scope on for everything the
+        // tenant-scoped role granted. Built here rather than borrowed from a seeded role, since
+        // the production CB roles now carry real all-tenant content grants of their own.
+        Role::firstOrCreate(['name' => 'Tik žymos visuose padaliniuose', 'guard_name' => 'web'])
+            ->syncPermissions(['tags.create.*', 'tags.read.*', 'tags.update.*', 'tags.delete.*']);
+
+        $this->coordinator = makeTenantUserWithRole('Tik žymos visuose padaliniuose', $this->tenantA);
+        $this->coordinator->duties()->first()->assignRole('Komunikacijos koordinatorius');
         $this->authorizer->resetCache($this->coordinator);
 
         $this->actingAs($this->coordinator);

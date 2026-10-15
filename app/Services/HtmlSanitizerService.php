@@ -89,18 +89,11 @@ class HtmlSanitizerService
             ->allowElement('li')
             ->allowElement('code')
             ->allowElement('pre')
-            // CustomHeading (levels 2-4); `id` is generated for anchor links, `class`
-            // carries the size/accent/align attributes (App\Tiptap\CustomHeading,
-            // App\Tiptap\TextAlign) — never an inline `style`, which is stripped below.
+            // Allow CustomHeading attributes (id for anchors, class for styling).
             ->allowElement('h2', ['id', 'class'])
             ->allowElement('h3', ['id', 'class'])
             ->allowElement('h4', ['id', 'class'])
-            // h1/h5/h6 are outside what CustomHeading can produce, but legacy and
-            // imported HTML (calendar descriptions synced from external feeds, news
-            // predating the current editor) contains them. Symfony's sanitizer drops
-            // a disallowed element *together with its text*, so leaving these out
-            // silently deletes whole paragraphs on the next save. They carry no
-            // script vector, so allow them rather than lose the content.
+            // Allow h1/h5/h6 so Symfony sanitizer does not drop legacy heading elements and their text.
             ->allowElement('h1', ['id', 'class'])
             ->allowElement('h5', ['id', 'class'])
             ->allowElement('h6', ['id', 'class'])

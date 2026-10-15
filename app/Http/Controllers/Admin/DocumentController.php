@@ -2,192 +2,105 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Documents\ResolvePickedDocuments;
+use App\Actions\Documents\UpdateDocumentStatus;
+use App\Actions\GetUserTenantShortnames;
+use App\Enums\DocumentStatus;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexDocumentRequest;
-use App\Http\Requests\StoreDocumentRequest;
-use App\Http\Requests\UpdateDocumentRequest;
-use App\Http\Traits\HasTanstackTables;
+use App\Http\Requests\PickSharepointDocumentsRequest;
+use App\Http\Requests\UpdateDocumentStatusRequest;
+use App\Jobs\DiscoverSharepointDocumentsJob;
 use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Models\Document;
 use App\Services\ModelAuthorizer as Authorizer;
-use App\Services\SharepointGraphService;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Context;
+use App\Settings\DocumentDiscoverySettings;
+use App\Settings\DocumentSettings;
+use Inertia\Inertia;
 
 class DocumentController extends AdminController
 {
-    use HasTanstackTables;
-
     public function __construct(public Authorizer $authorizer) {}
 
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexDocumentRequest $request)
+    public function index(IndexDocumentRequest $request, DocumentSettings $documentSettings)
     {
         $this->handleAuthorization('viewAny', Document::class);
 
-        // Set admin context for indexing all documents
-        Context::add('search_context', 'admin');
+        $user = $request->user();
+        $canCreate = $user->can('create', Document::class);
 
-        // Build Typesense options array
-        $options = [];
-
-        // Handle search text - use wildcard for "show all"
-        $searchText = $request->input('search', '');
-        if (empty($searchText)) {
-            // Use q: "*" (wildcard) with filter_by as per Typesense docs
-            $searchText = '*';
-        }
-        // Always set query_by - it's mandatory for Typesense
-        $options['query_by'] = 'title,name,summary,content_type,institution_name_lt,institution_name_en';
-
-        // Apply all filters in filter_by (this is the key for wildcard searches)
-        $filters = $request->getFilters();
-        $filterConditions = [];
-
-        if (! empty($filters['content_type'])) {
-            $contentTypeFilters = array_map(fn ($type) => "content_type:=\"{$type}\"", (array) $filters['content_type']);
-            $filterConditions[] = '('.implode(' || ', $contentTypeFilters).')';
+        // The old separate views are now filters of the one manager view.
+        if ($canCreate && ($request->filled('queue') || $request->filled('browse'))) {
+            return redirect()->route('documents.index', array_filter([
+                'status' => $request->validated('queue'),
+                'layout' => $request->validated('browse') === 'folders' ? 'folders' : ($request->filled('queue') ? 'list' : null),
+            ]));
         }
 
-        if (! empty($filters['language'])) {
-            $filterConditions[] = "language:=\"{$filters['language']}\"";
-        }
-
-        if (! empty($filters['institution.id'])) {
-            $institutionIds = array_map(fn ($id) => "institution_id:={$id}", (array) $filters['institution.id']);
-            $filterConditions[] = '('.implode(' || ', $institutionIds).')';
-        }
-
-        // Add permission filtering to Typesense options
-        $documentScope = $this->authorizer->scope(auth()->user(), 'documents.read.padalinys');
-
-        if (! $documentScope->isAllScope && ! auth()->user()?->isSuperAdmin()) {
-            $allowedTenants = $documentScope->tenants;
-            if ($allowedTenants->isNotEmpty()) {
-                $allowedShortnames = $allowedTenants->pluck('shortname')->toArray();
-                $tenantFilter = implode(' || ', array_map(fn ($shortname) => "tenant_shortname:=\"{$shortname}\"", $allowedShortnames));
-                $filterConditions[] = "({$tenantFilter})";
-            }
-        }
-
-        // Always set filter_by, even if empty (important for wildcard searches)
-        if (! empty($filterConditions)) {
-            $options['filter_by'] = implode(' && ', $filterConditions);
-        }
-
-        // Sorting
-        $sorting = $request->getSorting();
-        if (! empty($sorting)) {
-            $sortFields = [];
-            foreach ($sorting as $sort) {
-                $field = $sort['id'];
-                $direction = $sort['desc'] ? 'desc' : 'asc';
-
-                // Map frontend field names to Typesense fields
-                $fieldMap = [
-                    'document_date' => 'document_date',
-                    'created_at' => 'created_at',
-                    'checked_at' => 'checked_at',
-                    'title' => 'title',
-                    'content_type' => 'content_type',
-                    'sync_status' => 'sync_status',
-                ];
-
-                $typesenseField = $fieldMap[$field] ?? $field;
-                $sortFields[] = "{$typesenseField}:{$direction}";
-            }
-            $options['sort_by'] = implode(',', $sortFields);
-        } else {
-            $options['sort_by'] = 'created_at:desc';
-        }
-
-        $perPage = $request->getPerPage();
-        $results = Document::search($searchText)->options($options)->paginate($perPage);
-
-        // Get complete filter options (all distinct values across all documents)
-        // Apply same permission filtering as the main query
-        $baseQuery = Document::query();
-
-        // Apply tenant permission filtering if needed
-        $documentScope = $this->authorizer->scope(auth()->user(), 'documents.read.padalinys');
-
-        if (! $documentScope->isAllScope && ! auth()->user()?->isSuperAdmin()) {
-            $allowedTenants = $documentScope->tenants;
-            if ($allowedTenants->isNotEmpty()) {
-                $allowedTenantIds = $allowedTenants->pluck('id')->toArray();
-                $baseQuery->whereHas('institution.tenant', function ($query) use ($allowedTenantIds): void {
-                    $query->whereIn('id', $allowedTenantIds);
-                });
-            }
-        }
-
-        $allContentTypes = (clone $baseQuery)
-            ->distinct('content_type')
-            ->whereNotNull('content_type')
-            ->pluck('content_type')
-            ->sort()
-            ->values();
-
-        $allLanguages = (clone $baseQuery)
-            ->distinct('language')
-            ->whereNotNull('language')
-            ->pluck('language')
-            ->sort()
-            ->values();
+        $updateScope = $this->authorizer->scope($user, 'documents.update.padalinys');
+        $manageable = fn () => Document::query()->manageableBy($user);
 
         return $this->inertiaResponse('Admin/Files/IndexDocument', [
-            'data' => new Collection($results->items())->load('institution.tenant'),
-            'meta' => [
-                'total' => $results->total(),
-                'per_page' => $results->perPage(),
-                'current_page' => $results->currentPage(),
-                'last_page' => $results->lastPage(),
-                'from' => $results->firstItem(),
-                'to' => $results->lastItem(),
+            'importantContentTypes' => $documentSettings->getImportantContentTypes()->toArray(),
+            // Managers get the database-backed view of every file; others browse the published archive.
+            'discovery' => $canCreate ? [
+                'lastRunAt' => app(DocumentDiscoverySettings::class)->last_run_at,
+                'counts' => [
+                    'pending' => $manageable()->whereNull('removed_from_sharepoint_at')->where('status', DocumentStatus::Pending)->count(),
+                    'removed' => $manageable()->whereNotNull('removed_from_sharepoint_at')->count(),
+                ],
+            ] : null,
+            'abilities' => [
+                'create' => $canCreate,
+                'update' => $updateScope->granted,
+                // Archive rows come from search, so their actions are decided by padalinys in the browser; null is every one.
+                'updateTenantShortnames' => $updateScope->isAllScope ? null : $updateScope->tenants->pluck('shortname')->values()->all(),
             ],
-            'filters' => $filters,
-            'sorting' => $sorting,
-            'filterOptions' => [
-                'contentTypes' => $allContentTypes,
-                'languages' => $allLanguages,
-            ],
+            // Central office documents matter to everyone, so VU SA joins the user's own padaliniai.
+            'defaultTenantShortnames' => GetUserTenantShortnames::execute($user, withMainTenant: true),
         ]);
     }
 
     /**
-     * Store multiple documents in storage.
+     * Publish (queues the public link) or hide (revokes it, see DocumentObserver) SharePoint files.
      */
-    public function store(StoreDocumentRequest $request)
+    public function updateStatus(UpdateDocumentStatusRequest $request)
     {
-        $documentCollection = new Collection;
-        $model = null; // Initialize model variable
+        return back()->with('success', UpdateDocumentStatus::executeWithMessage($request->documents(), $request->status(), $request->user()));
+    }
 
-        foreach ($request->documents as $document) {
-            $model = new Document;
+    /**
+     * Publish files chosen in SharePoint's own picker, importing any discovery has not reached yet.
+     */
+    public function pick(PickSharepointDocumentsRequest $request)
+    {
+        $documents = ResolvePickedDocuments::execute($request->pickedItems(), $request->user());
+        UpdateDocumentStatus::execute($documents, DocumentStatus::Published, $request->user());
 
-            $model->name = $document['name'];
-            $model->title = $document['name'];
-            $model->sharepoint_id = $document['list_item_unique_id'];
-            $model->sharepoint_site_id = $document['site_id'];
-            $model->sharepoint_list_id = $document['list_id'];
+        // The picker gives no chance to warn before publishing, so the missing data is named afterwards.
+        $incomplete = $documents->filter(fn (Document $document): bool => $document->metadataProblems() !== []);
 
-            $documentCollection->push($model);
+        return back()->with(array_filter([
+            'success' => __('messages.document.picked_published', ['count' => $documents->count()]),
+            'toast_description' => $incomplete->isEmpty() ? null : __('messages.document.picked_incomplete', [
+                'titles' => $incomplete->map(fn (Document $document): string => $document->title ?: $document->name)->join(', '),
+            ]),
+        ]));
+    }
 
-            /* $model->save(); */
-        }
+    /**
+     * Read new and changed files from SharePoint now instead of waiting for the 15-minute run.
+     */
+    public function discover()
+    {
+        $this->authorize('create', Document::class);
 
-        // Check if documents array is not empty
-        if ($model === null) {
-            return redirect()->route('documents.index')->with('info', __('messages.document.none_to_process'));
-        }
+        DiscoverSharepointDocumentsJob::dispatch();
 
-        $graph = new SharepointGraphService(siteId: $model->sharepoint_site_id, driveId: config('filesystems.sharepoint.archive_drive_id'));
-
-        $documentCollection = $graph->batchProcessDocuments($documentCollection);
-
-        return redirect()->route('documents.index')->with('success', __('messages.document.stored'));
+        return back()->with('success', __('messages.document.discovery_queued'));
     }
 
     public function refresh(Document $document)
@@ -195,31 +108,10 @@ class DocumentController extends AdminController
         $this->handleAuthorization('update', $document);
 
         // Dispatch sync job to background instead of synchronous processing
-        SyncDocumentFromSharePointJob::dispatch($document);
+        // Forced: a person asking for a refresh means "check the link too", not "unless the eTag matches".
+        SyncDocumentFromSharePointJob::dispatch($document, force: true);
 
         return back()->with('success', __('messages.document.refresh_queued'));
-    }
-
-    /**
-     * Bulk sync all documents from SharePoint
-     */
-    public function bulkSync()
-    {
-        $this->authorize('viewAny', Document::class);
-
-        // Get all documents that need syncing (failed, pending, or outdated)
-        $documents = Document::where(function ($query): void {
-            $query->where('sync_status', '!=', 'success')
-                ->orWhere('checked_at', '<', now()->subHours(24))
-                ->orWhereNull('checked_at');
-        })->get();
-
-        // Dispatch sync jobs for each document
-        foreach ($documents as $document) {
-            SyncDocumentFromSharePointJob::dispatch($document);
-        }
-
-        return back()->with('success', __('messages.document.bulk_sync_queued', ['count' => $documents->count()]));
     }
 
     /**
@@ -227,26 +119,12 @@ class DocumentController extends AdminController
      */
     public function show(Document $document)
     {
-        //
-    }
+        $this->handleAuthorization('view', $document);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateDocumentRequest $request, Document $document)
-    {
-        //
-    }
+        if ($document->anonymous_url) {
+            return Inertia::location($document->anonymous_url);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Document $document)
-    {
-        $this->handleAuthorization('delete', $document);
-
-        $document->delete();
-
-        return redirect()->route('documents.index')->with('success', $this->entityMessage('deleted', 'document'));
+        return redirect()->route('documents.index')->with('info', __('Dokumentas neturi viešosios nuorodos.'));
     }
 }

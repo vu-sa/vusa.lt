@@ -66,13 +66,13 @@ export function createCenterLine(ctx: CenterLineRenderContext): CenterLineManage
   `;
   container.appendChild(lineEl);
 
-  // Create the outer wrapper (contains week offset label + date badge)
+  // Sits above the chart's top edge; the container's isolation keeps it under the shell topbar.
   const outerWrapper = document.createElement('div');
   outerWrapper.className = 'gantt-center-date';
   outerWrapper.style.cssText = `
     position: absolute;
-    top: -6px;
-    transform: translateX(-50%);
+    top: -4px;
+    transform: translate(-50%, -100%);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -106,9 +106,7 @@ export function createCenterLine(ctx: CenterLineRenderContext): CenterLineManage
     color: ${colors.centerDateText};
     background: ${colors.centerDateBg};
     border: 1px solid ${colors.centerDateBorder};
-    border-radius: 4px;
     white-space: nowrap;
-    backdrop-filter: blur(4px);
     pointer-events: auto;
   `;
   outerWrapper.appendChild(dateBadge);
@@ -126,8 +124,8 @@ export function createCenterLine(ctx: CenterLineRenderContext): CenterLineManage
   // Compute hover background (slightly darker/lighter than base)
   const btnBaseBg = colors.centerDateBorder;
   const btnHoverBg = isDarkMode
-    ? 'oklch(0.985 0 0 / 25%)' // lighter for dark mode
-    : 'oklch(0.21 0.006 285.885 / 25%)'; // darker for light mode
+    ? 'oklch(0.955 0.004 85 / 25%)' // --foreground, dark
+    : 'oklch(0.17 0.008 70 / 25%)'; // --foreground, light
   resetBtn.style.cssText = `
     display: none;
     align-items: center;
@@ -136,7 +134,6 @@ export function createCenterLine(ctx: CenterLineRenderContext): CenterLineManage
     margin: -2px -4px -2px 2px;
     background: ${btnBaseBg};
     border: none;
-    border-radius: 3px;
     cursor: pointer;
     opacity: 0.8;
     transition: opacity 0.15s, background 0.15s;

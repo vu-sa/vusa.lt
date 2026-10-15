@@ -1,181 +1,61 @@
-# TanStack Data Tables - AI Guidance
+# Tables — AI guidance
 
-Quick reference for AI assistants working with TanStack tables in vusa.lt.
-
-**For comprehensive documentation**: See [README.md](README.md) in this directory.
-
-## Quick Decision Tree
+## Decision tree
 
 ```
-Full admin page with header/actions/breadcrumbs? → IndexTablePage.vue
-Server-side table without page wrapper? → ServerDataTable.vue
-Simple client-side table? → SimpleDataTable.vue
+A list of many things of one kind (an admin index)?   → Layouts/CollectionPage + a collection source
+A small table inside another page (a record, a sheet)? → Tables/SimpleDataTable
 ```
 
-## Table System Architecture
+There is no third option. `IndexTablePage` and `ServerDataTable` were removed; don't recreate them.
 
-**Two systems exist**:
-1. **Legacy (Naive UI)**: `IndexModel/IndexDataTable.vue` - DON'T modify
-2. **TanStack (Current)**: Use for all new features
+## CollectionPage: one design, three sources
 
-**Component hierarchy** (4 layers):
-```
-IndexTablePage.vue          # Full page with header/breadcrumbs
-└── ServerDataTable.vue     # Server-side data + admin features
-    └── DataTableProvider.vue   # State coordination
-        └── DataTable.vue       # Core TanStack table
-```
+`CollectionPage` owns the whole anatomy (title band, filter band, rows · table · preview, load more,
+selection bar, trash) and never learns where rows come from. Pick the source by the data:
 
-## Component Selection Guide
+| Source (`@/Composables/useCollectionSource`) | Use for | Backend |
+|---|---|---|
+| `useTypesenseCollectionSource` | big searchable collections already in Typesense (pages, news, institutions, meetings, documents, resources) | scoped search key; the controller sends no rows |
+| `useDatabaseCollectionSource` | workflow collections with server facets (reservations, problems, forms, tags, calendar, users, duties) | Inertia first page + an `Api\Admin\*ApiController::index` twin via `HasTanstackTables` |
+| `useLocalCollectionSource` | short config lists sent whole as a prop (roles, permissions, types, tenants, study programmes) | `->get()`, no paging |
 
-### IndexTablePage.vue
-**Use when**: Need full admin page layout
-- Includes: Header, breadcrumbs, filters, actions, create button
-- Handles: Page navigation, permission-based UI
+**Trash is a filter, not a page.** Pass `:trash="{ count: deletedCount, active: isTrashView() }"`;
+the control visits `?showDeleted=true` on the same route. Typesense never indexes deleted rows, so
+Typesense pages switch with `useTrashAwareSource(live, () => useTrashCollectionSource('<collection>'))`,
+which reads `api.v1.admin.trash.index` — rows come back as the model's `toSearchableArray()`, so
+the same cells render them. Database and local sources just reload with `showDeleted`.
 
-### ServerDataTable.vue
-**Use when**: Need table without page wrapper
-- Includes: Empty state, create button, show deleted toggle
-- Handles: Server-side pagination, sorting, filtering
-- **Enhanced**: Comprehensive admin functionality built-in
+**TanStack is the engine inside `CollectionResults`** (`useCollectionTable`): selection, header sort,
+column visibility. It runs in manual mode — the source owns search, facets, sort and paging. Pages
+describe columns as `CollectionColumn` (`sortField` makes a header sortable when the source offers
+both directions; `pinned` keeps a column out of the "Stulpeliai" menu) and render cells through the
+`#cell` slot. For bulk work pass `selectable` (and `can-select` for per-row rules) and fill
+`#bulk-actions`; bind `v-model:selection` only when the page must clear it itself.
 
-### SimpleDataTable.vue
-**Use when**: Client-side data only (< 100 items)
-- No server communication
-- Good for: Modals, embedded tables, reports
+Shift-click on a row checkbox selects the range since the last toggled row (`toggleRow` in
+`useCollectionTable`).
 
-## Project-Specific Patterns
+**Optimistic changes**: Scout syncs through the queue, so Typesense lags a save. Change rows with
+`source.patchItems(ids, patch)` / `source.hideItems(ids)` before the request and call the
+returned undo in `onError`; the overlay outlives later searches. Draft ⇄ published content
+(`IndexPages`, `IndexNews`) goes through `useCollectionPublishing` + `CollectionPublishActions`,
+backed by `<prefix>.bulkStatus` / `<prefix>.bulkDestroy` and `Requests/Content/BulkContentRequest`.
 
-### Model Names
-Always provide `model-name` prop for:
-- Translation lookups (`models.*.name`)
-- Permission checks
-- Route generation
+**Shared cells**: `CollectionPrimaryCell` (bold title + one quiet sub-line), `CollectionStatusMenu`
+(a `StatusBadge` that opens a status picker when `editable`), `CollectionRowActions`
+(square bordered icon actions, one labelled), `StatusBadge`. Row actions for edit / delete /
+duplicate / restore / permanent delete come from `useCollectionRecordActions` with
+`CollectionConfirmAction` for the dialog.
 
-### Permission Integration
-Tables automatically respect permissions:
-- Show/hide create button based on `can-create` prop
-- Filter data based on tenant permissions
-- Row actions respect model policies
+## SimpleDataTable
 
-### Backend Integration
-Controllers use `HasTanstackTables` trait:
-```php
-$query = $this->applyTanstackFilters(
-    $query,
-    $request,
-    $this->tableService,
-    ['name', 'email'], // searchable columns
-    ['tenantRelation' => 'tenant', 'permission' => 'model.read.padalinys']
-);
-```
+Client-side TanStack table for embedded use (< ~100 rows): `:data` + `:columns` (`ColumnDef[]`).
+It renders through `ui/table`, so it shares the collection table's look.
 
-## Delete Confirmation System
+## Gotchas
 
-### Built-in (Tables)
-Table actions automatically handle delete confirmation:
-```vue
-createStandardActionsColumn('institutions', {
-  canDelete: true,
-  confirmDelete: true, // default
-  deleteConfirmTitle: 'Delete?', // optional
-  deleteConfirmMessage: 'Custom message' // optional
-})
-```
-
-### Manual (Forms/Custom)
-Use `useDeleteConfirmation` composable:
-```vue
-import { useDeleteConfirmation } from '@/Composables/useDeleteConfirmation';
-
-const deleteConfirmation = useDeleteConfirmation({
-  title: 'Delete?',
-  message: 'This will permanently delete the item.'
-});
-
-// Then call:
-deleteConfirmation.deleteWithInertia(route('model.destroy', id));
-```
-
-## Common Issues & Gotchas
-
-### Issue: Table not updating after data change
-**Solution**: Add `:key` to force re-render
-```vue
-<ServerDataTable :key="refreshKey" ... />
-```
-
-### Issue: Filters not working
-**Solution**: Request class must implement `getFilters()` and `getSorting()`
-```php
-public function getFilters(): array {
-    return json_decode($this->input('filters', '{}'), true) ?: [];
-}
-```
-
-### Issue: Events not firing
-**Solution**: Use kebab-case for event names
-```vue
-@filter-changed="handler"  <!-- ✅ Correct -->
-@filterChanged="handler"   <!-- ❌ Wrong -->
-```
-
-### Issue: Checkbox binding errors
-**Solution**: Use `modelValue`, not `checked`
-```vue
-<Checkbox v-model="isChecked" />  <!-- ✅ Correct -->
-<Checkbox v-model:checked="isChecked" />  <!-- ❌ Wrong -->
-```
-
-## TypeScript Integration
-
-### Column Definitions
-```typescript
-const columns: ColumnDef<ModelType, any>[] = [
-  {
-    accessorKey: "name",
-    header: () => $t("forms.fields.name"),
-    cell: ({ row }) => (
-      <Link href={route("model.edit", row.original.id)}>
-        {row.getValue("name")}
-      </Link>
-    ),
-    enableSorting: true
-  }
-];
-```
-
-### Configuration Presets
-```typescript
-import { createTableConfig, TablePresets } from '@/Types/TableConfigTypes';
-
-const config = createTableConfig('admin', {
-  modelName: 'institutions',
-  data: institutions.data,
-  columns,
-  totalCount: institutions.total
-});
-```
-
-## Performance Guidelines
-
-1. **Use server-side tables** for > 100 items
-2. **Set appropriate page sizes**: 10-15 for complex rows, 25-50 for simple
-3. **Implement eager loading** in backend queries
-4. **Debounce search** (handled automatically by ServerDataTable)
-
-## Quick Reference
-
-**Migration**: Don't migrate existing Naive UI tables unless required
-**Backend**: No changes needed - existing services work perfectly
-**Debug**: Set `APP_DEBUG=true` to see table state in console
-**Help**: Check existing implementations in `resources/js/Pages/Admin/`
-
----
-
-**See [README.md](README.md) for**:
-- Complete component examples
-- Advanced features (row selection, custom filters)
-- Migration guide
-- Troubleshooting details
-- Full API reference
+- `Checkbox` binds with `v-model` / `model-value`, never `v-model:checked`.
+- A TanStack column without an accessor cannot sort — `useCollectionTable` adds one for you.
+- Hover-revealed actions need `group` on the row and `focus-visible:opacity-100` (see
+  `.ai/rules/data-table.md`); collection row actions are always visible instead.

@@ -94,6 +94,26 @@ describe('tasks.destroy authorization', function (): void {
         expect(Task::query()->whereKey($task->id)->exists())->toBeFalse();
     });
 
+    test('whoever holds the delete permission clears an automatic task, super admin or not', function (): void {
+        $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
+        $meeting = Meeting::factory()->hasAttached($this->institution)->create();
+        $task = taskWithAssignee($meeting, ActionType::AgendaCompletion);
+
+        asUser($coordinator)->delete(route('tasks.destroy', $task->id))->assertRedirect();
+
+        expect(Task::query()->whereKey($task->id)->exists())->toBeFalse();
+    });
+
+    test('a student representative cannot delete even a manual task they are assigned', function (): void {
+        $representative = makeTenantUserWithRole('Studentų atstovas', $this->tenant);
+        $meeting = Meeting::factory()->hasAttached($this->institution)->create();
+        $task = taskWithAssignee($meeting, ActionType::Manual, $representative);
+
+        asUser($representative)->delete(route('tasks.destroy', $task->id))->assertForbidden();
+
+        expect(Task::query()->whereKey($task->id)->exists())->toBeTrue();
+    });
+
     test('being assigned to a task is not enough to delete it', function (): void {
         $user = makeUser($this->tenant);
         $meeting = Meeting::factory()->hasAttached($this->institution)->create();

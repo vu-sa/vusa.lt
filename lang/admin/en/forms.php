@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'required_note' => 'Fields marked with an asterisk (*) are required; you can skip the others.',
     'fields' => [
         'name_and_surname' => 'Name and surname',
         'title' => 'Title',
@@ -94,8 +95,6 @@ return [
         'models' => 'Models',
         'roles' => 'Roles',
         'meeting_periodicity_days' => 'Meeting periodicity (in days)',
-        'enable_sibling_relationships' => 'Show related institutions by type',
-        'enable_cross_tenant' => 'Show unit institutions from the main tenant',
         'governance_scope' => 'Governance scope',
         'fileable_object' => 'Object',
         'institutions' => 'Institutions',
@@ -148,8 +147,6 @@ return [
         'type_duty_roles_desc' => 'These roles are automatically assigned to duties with this type.',
         'institution_settings_desc' => 'Settings applied to all institutions of this type.',
         'meeting_periodicity_hint' => 'Recommended period between meetings. If not specified, a default of 30 days is used.',
-        'enable_sibling_hint' => 'When enabled, institutions with this type in the same tenant will be shown as related to each other (e.g. in the representation panel).',
-        'enable_cross_tenant_hint' => 'When enabled, the main tenant\'s institution with this type will see all other tenants\' institutions with the same type. One-way: unit institutions will not see the main one.',
         'technical_slug_hint' => 'Change only in exceptional cases.',
         'governance_scope_hint' => 'Whether this is an internal VU SA body or an external one VU SA delegates representatives into. It decides which voting fields a meeting shows. Left empty, it is inherited from the parent type.',
         'governance_scope_internal_fields' => 'VU SR bodies have a public page of their own, so contacts, a logo and an address can be set below.',
@@ -284,6 +281,9 @@ return [
         'contact_admins' => 'Contact that institution\'s administrators',
         'variant_hint' => 'The masculine/feminine or plural form is generated automatically from the holder\'s pronouns — there is no need to create a separate duty.',
         'other_institutions' => 'This duty also exists in :count other institution(s) — that is normal.',
+        'reason_former_name' => 'former name',
+        'inactive_hint' => 'You can reactivate an inactive duty — that keeps its history in one place.',
+        'same_tenant_title' => 'Similar duties in other institutions of this unit:',
     ],
     'validation' => [
         'agenda_item' => [

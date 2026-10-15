@@ -2,9 +2,9 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Pivots\Dutiable;
 use App\Models\PublicInstitution;
-use App\Models\Type;
 use App\Models\User;
 use App\Services\PublicInstitutionSearchIndexBuilder;
 use App\Settings\AtstovavimasSettings;
@@ -17,12 +17,12 @@ beforeEach(function (): void {
 });
 
 test('PublicInstitutionSearchIndexBuilder includes contacts, current user names, and representation flag', function (): void {
-    $rootType = Type::query()->firstOrCreate(
+    $rootType = InstitutionType::query()->firstOrCreate(
         ['slug' => 'studentu-atstovu-organas'],
         ['title' => json_encode(['lt' => 'Studentų atstovų organas', 'en' => 'Student representative body'])],
     );
 
-    $childType = Type::factory()->create([
+    $childType = InstitutionType::factory()->create([
         'title' => 'Fakulteto taryba',
         'slug' => 'fakulteto-taryba',
         'parent_id' => $rootType->id,
@@ -62,11 +62,12 @@ test('PublicInstitutionSearchIndexBuilder includes contacts, current user names,
         ->and($searchable['contacts'][0]['name'])->toBe('Jonas Jonaitis')
         ->and($searchable['contacts'][0]['profile_photo_path'])->toBe('photos/jonas.jpg')
         ->and($searchable['contacts'][0]['profile_photo_focal_point'])->toBe('50% 25%')
+        ->and($searchable['contacts'][0]['email'])->toBe($duty->email)
         ->and($searchable['has_contacts'])->toBeTrue();
 });
 
 test('PublicInstitutionSearchIndexBuilder sets is_student_representation false for non-student-rep types', function (): void {
-    $otherType = Type::factory()->create([
+    $otherType = InstitutionType::factory()->create([
         'title' => 'Padalinys',
         'slug' => 'padalinys',
     ]);
@@ -85,15 +86,31 @@ test('PublicInstitutionSearchIndexBuilder sets is_student_representation false f
         ->and($searchable['has_contacts'])->toBeFalse();
 });
 
+test('PublicInstitutionSearchIndexBuilder indexes a plain-text description excerpt per locale', function (): void {
+    $institution = Institution::factory()->create([
+        'is_active' => true,
+        'description' => [
+            'lt' => '<p>Atstovaujame&nbsp;<strong>studentams</strong></p><p>'.str_repeat('ilgas tekstas ', 60).'</p>',
+            'en' => '',
+        ],
+    ]);
+
+    $searchable = app(PublicInstitutionSearchIndexBuilder::class)->build(PublicInstitution::findOrFail($institution->id));
+
+    expect($searchable['description_lt'])->toStartWith('Atstovaujame studentams ilgas tekstas')
+        ->not->toContain('<')
+        ->and(mb_strlen($searchable['description_lt']))->toBeLessThanOrEqual(403);
+});
+
 test('AtstovavimasSettings can configure custom student rep root type', function (): void {
     $settings = app(AtstovavimasSettings::class);
 
-    $customType = Type::factory()->create([
+    $customType = InstitutionType::factory()->create([
         'title' => 'Mano atstovai',
         'slug' => 'mano-atstovai',
     ]);
 
-    $childType = Type::factory()->create([
+    $childType = InstitutionType::factory()->create([
         'title' => 'Komitetas',
         'slug' => 'komitetas',
         'parent_id' => $customType->id,

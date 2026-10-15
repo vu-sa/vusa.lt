@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Comments;
 
 use App\Enums\CommentKind;
-use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -26,7 +25,7 @@ class StoreCommentRequest extends FormRequest
     {
         return [
             'body' => ['required', 'string'],
-            'parent_id' => ['nullable', 'string', SoftDeleteRules::existsLive('comments')],
+            'parent_id' => ['nullable', 'string', Rule::exists('comments', 'id')],
             'kind' => ['nullable', Rule::in([CommentKind::Comment->value, CommentKind::Poll->value])],
             'metadata' => ['nullable', 'array'],
             // Poll definition: clients send option labels only — ids are assigned

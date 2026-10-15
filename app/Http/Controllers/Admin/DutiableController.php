@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\StoreDutiableRequest;
 use App\Http\Requests\UpdateDutiableRequest;
+use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
-use App\Models\StudyProgram;
 use App\Models\User;
 use App\Support\MorphMap;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DutiableController extends AdminController
 {
@@ -29,37 +32,53 @@ class DutiableController extends AdminController
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Assign a member to a duty (Decision O21: the record page's Priskirti sheet).
+     *
+     * Goes through Dutiable::create() rather than the users() relation so the
+     * description reaches the model's sanitizing setter; the audit wrapper keeps the
+     * activity log identical to the wizard's attach.
      */
-    public function edit(Dutiable $dutiable)
+    public function store(StoreDutiableRequest $request): RedirectResponse
+    {
+        $data = $request->safe();
+        $duty = Duty::query()->findOrFail($data['duty_id']);
+        $tenantId = $request->delegatedTenantId();
+
+        DB::transaction(function () use ($request, $data, $duty, $tenantId): void {
+            $userId = $request->isCreatingMember()
+                ? User::create([
+                    'name' => $data['new_user']['name'],
+                    'email' => $data['new_user']['email'] ?? null,
+                    'phone' => $data['new_user']['phone'] ?? null,
+                ])->id
+                : $data['user_id'];
+
+            $duty->auditRelationChange('users', fn () => Dutiable::create([
+                ...$data->only([
+                    'duty_id', 'start_date', 'end_date', 'study_program_id', 'study_program_note',
+                    'additional_email', 'additional_photo', 'additional_photo_focal_point', 'description',
+                ]),
+                'dutiable_id' => $userId,
+                'dutiable_type' => MorphMap::alias(User::class),
+                'tenant_id' => $tenantId,
+                'use_original_duty_name' => $data['use_original_duty_name'] ?? false,
+            ]));
+        });
+
+        return back()->with('success', $this->entityMessage('created', 'dutiable'));
+    }
+
+    /**
+     * The standalone edit page is gone (Decision O21): a term is edited in the Priskirti sheet
+     * on its duty's record, which opens itself for `?dutiable=`.
+     *
+     * @deprecated Kept for bookmarks, mail links and the timeline's `edit_url`; remove once they open the occupancy sheet instead.
+     */
+    public function edit(Dutiable $dutiable): RedirectResponse
     {
         $this->authorize('manageDutiable', $dutiable);
 
-        $dutiable->loadMissing('duty.institution');
-        $tenantId = $dutiable->duty?->institution?->tenant_id;
-
-        // Scoped to the duty's own tenant when it's known (16 tenants have study
-        // programs, ~10 each — loading every tenant's ~148 was pointless noise in
-        // the picker). Falls back to the full list when the tenant can't be
-        // resolved, and always keeps whatever is already selected in scope even
-        // if it belongs to another tenant, so an existing cross-tenant value
-        // still resolves to a real option instead of silently vanishing.
-        $studyPrograms = StudyProgram::query()
-            ->when($tenantId, function ($query) use ($tenantId, $dutiable): void {
-                $query->where(function ($query) use ($tenantId, $dutiable): void {
-                    $query->where('tenant_id', $tenantId);
-
-                    if ($dutiable->study_program_id) {
-                        $query->orWhere('id', $dutiable->study_program_id);
-                    }
-                });
-            })
-            ->get();
-
-        return $this->inertiaResponse('Admin/People/EditDutiable', [
-            'dutiable' => $dutiable->load('duty', 'dutiable', 'viaDutiable.duty')->toFullArray(),
-            'studyPrograms' => $studyPrograms,
-        ]);
+        return redirect()->route('duties.show', ['duty' => $dutiable->duty_id, 'dutiable' => $dutiable->id]);
     }
 
     /**
@@ -115,10 +134,10 @@ class DutiableController extends AdminController
 
         $message = $this->entityMessage('deleted', 'dutiable');
 
-        // The timeline deletes rows in place and must not be navigated away from; the
-        // dutiable edit page has to leave, because the record it was editing is gone.
+        // The timeline deletes rows in place and must not be navigated away from; a request
+        // that came from the (now retired) standalone page has to leave, because its record is gone.
         return $request->boolean('stay')
             ? back()->with('success', $message)
-            : redirect()->route('users.edit', $user)->with('success', $message);
+            : redirect()->route('users.show', $user)->with('success', $message);
     }
 }

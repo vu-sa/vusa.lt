@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Enums\NotificationCategory;
+use App\Enums\NotificationType;
 use App\Models\Task;
 use Illuminate\Support\Collection;
 
@@ -13,6 +13,11 @@ use Illuminate\Support\Collection;
  */
 class TaskOverdueNotification extends BaseNotification
 {
+    public function type(): NotificationType
+    {
+        return NotificationType::TaskOverdue;
+    }
+
     /**
      * Create a new notification instance.
      *
@@ -24,11 +29,6 @@ class TaskOverdueNotification extends BaseNotification
          */
         protected Collection $tasks
     ) {}
-
-    public function category(): NotificationCategory
-    {
-        return NotificationCategory::Task;
-    }
 
     public function title(object $notifiable): string
     {
@@ -51,7 +51,7 @@ class TaskOverdueNotification extends BaseNotification
 
     public function url(): string
     {
-        return route('userTasks');
+        return route('tasks.index');
     }
 
     #[\Override]
@@ -70,27 +70,27 @@ class TaskOverdueNotification extends BaseNotification
         return [
             'modelClass' => 'Task',
             'name' => __('notifications.overdue_tasks'),
-            'url' => route('userTasks'),
+            'url' => route('tasks.index'),
         ];
     }
 
     #[\Override]
-    public function actions(): array
+    public function context(object $notifiable): array
+    {
+        $oldest = $this->tasks->pluck('due_date')->filter()->min();
+
+        return $this->contextRows([
+            'deadline' => $oldest?->format('Y-m-d'),
+            'days_overdue' => $oldest ? __('notifications.context.days_value', ['count' => (int) $oldest->copy()->startOfDay()->diffInDays(today())]) : null,
+        ]);
+    }
+
+    #[\Override]
+    public function primaryAction(): ?array
     {
         return [
-            [
-                'label' => __('notifications.action_view_tasks'),
-                'url' => route('userTasks'),
-            ],
+            'label' => __('notifications.action_view_tasks'),
+            'url' => route('tasks.index'),
         ];
-    }
-
-    /**
-     * Overdue notifications are important and should not be digested.
-     */
-    #[\Override]
-    public function supportsEmailDigest(): bool
-    {
-        return false;
     }
 }

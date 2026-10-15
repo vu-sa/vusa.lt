@@ -95,6 +95,24 @@ describe('DutiableTimelineSuggestions', () => {
       expect(wrapper.findAll('li')).toHaveLength(1);
     });
 
+    /** An open row from an earlier term is usually a re-elected member, not a stale seat. */
+    it('folds open-ended rows from earlier cadences too, unchecked', () => {
+      const rows = ['row-1', 'row-2'].map(id => makeRow({ id, end_date: null }));
+      const wrapper = mountPanel(rows.map(row => ({
+        code: 'open_ended_stale',
+        severity: 'info' as const,
+        row_ids: [row.id],
+        duty_id: 'duty-1',
+        detail: { suggested_end: '2025-06-30' },
+      })), rows);
+
+      expect(wrapper.findAll('li')).toHaveLength(1);
+      expect(wrapper.text()).toContain('dutiables.timeline.diagnostics.codes.open_ended_stale');
+
+      const apply = wrapper.findAll('button').find(button => button.text().includes('apply_selected'))!;
+      expect(apply.attributes('disabled')).toBeDefined();
+    });
+
     it('leaves the codes that are actually worth reading unfolded', () => {
       const wrapper = mountPanel([overlap, spans('row-1')]);
 
@@ -153,12 +171,22 @@ describe('DutiableTimelineSuggestions', () => {
     expect(apply.attributes('disabled')).toBeDefined();
   });
 
+  /** Its fix clears the end date, which reopens access — so the admin opts in. */
+  it('leaves an inverted row unchecked even though it is an error', () => {
+    const wrapper = mountPanel([{ code: 'inverted', severity: 'error', row_ids: ['row-1'], duty_id: 'duty-1' }]);
+
+    const apply = wrapper.findAll('button').find(button => button.text().includes('apply_selected'))!;
+
+    expect(apply.attributes('disabled')).toBeDefined();
+  });
+
   it('batches every checked finding into one operation list', async () => {
     const second: TimelineDiagnostic = {
-      code: 'inverted',
+      code: 'overlap',
       severity: 'error',
       row_ids: ['row-2'],
       duty_id: 'duty-1',
+      detail: { suggested_end: '2025-06-30' },
     };
 
     const wrapper = mountPanel([overlap, second], [makeRow(), makeRow({ id: 'row-2' })]);

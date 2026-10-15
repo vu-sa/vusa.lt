@@ -126,10 +126,12 @@ class CommentApiController extends ApiController
     {
         $this->authorize('delete', $comment);
 
-        $this->broadcastForComment($comment, 'deleted', ['id' => $comment->id]);
-        $comment->delete();
+        $comment->erase();
+        $this->stashModeration($request, $comment->commentable);
 
-        return $this->jsonSuccess(['id' => $comment->id], $this->entityMessage('deleted', 'comment'));
+        $this->broadcastForComment($comment, 'updated', $this->payload($request, $comment));
+
+        return $this->jsonSuccess(new CommentResource($comment), $this->entityMessage('deleted', 'comment'));
     }
 
     public function resolve(Request $request, Comment $comment): JsonResponse

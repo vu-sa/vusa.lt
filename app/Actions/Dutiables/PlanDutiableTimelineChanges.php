@@ -216,6 +216,8 @@ class PlanDutiableTimelineChanges
                 rowId: $id,
                 holderId: $row->dutiable_id,
                 holderName: $row->user?->name,
+                holderPronouns: $row->user?->getTranslations('pronouns') ?? [],
+                useOriginalDutyName: (bool) $row->use_original_duty_name,
                 dutyName: $row->duty?->name,
                 before: $original[$id],
                 after: $state[$id],
@@ -291,7 +293,7 @@ class PlanDutiableTimelineChanges
      * knock-on seats before anything is written.
      *
      * @param  array{start_date: string, end_date: string|null}  $after
-     * @return list<array{id: string, duty_name: string|null, start_date: string, end_date: string|null}>
+     * @return list<array{id: string, duty_name: string|null, use_original_duty_name: bool, start_date: string, end_date: string|null}>
      */
     private static function projectDerived(Dutiable $row, array $after): array
     {
@@ -303,6 +305,7 @@ class PlanDutiableTimelineChanges
             ->map(fn (Dutiable $derived) => [
                 'id' => $derived->id,
                 'duty_name' => $derived->duty?->name,
+                'use_original_duty_name' => (bool) $derived->use_original_duty_name,
                 'start_date' => $after['start_date'],
                 'end_date' => $after['end_date'],
             ])
@@ -362,8 +365,7 @@ class PlanDutiableTimelineChanges
         }
 
         return Dutiable::query()
-            ->without('study_program')
-            ->with(['duty:id,name,institution_id', 'user:id,name', 'derivedDutiables.duty:id,name'])
+            ->with(['duty:id,name,institution_id', 'user:id,name,pronouns', 'derivedDutiables.duty:id,name'])
             ->whereIn('id', $rowIds)
             ->get()
             ->keyBy('id');

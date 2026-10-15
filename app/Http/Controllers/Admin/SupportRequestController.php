@@ -12,10 +12,12 @@ use App\Http\Requests\UpdateSupportRequestStatusRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Models\SupportRequest;
 use App\Models\User;
-use App\Notifications\AssignedToResourceNotification;
+use App\Notifications\SupportRequestAssignedNotification;
+use App\Notifications\SupportRequestInvolvedNotification;
 use App\Notifications\SupportRequestStatusChangedNotification;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Response;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -155,8 +157,14 @@ class SupportRequestController extends AdminController
 
         $supportRequest->update($updates);
 
-        if ($supportRequest->creator && $oldStatus !== $newStatus) {
-            $supportRequest->creator->notify(new SupportRequestStatusChangedNotification(
+        if ($oldStatus !== $newStatus) {
+            $recipients = collect([$supportRequest->creator])
+                ->concat($supportRequest->involvedUsers)
+                ->filter()
+                ->unique('id')
+                ->reject(fn (User $user) => $user->is($request->user()));
+
+            Notification::send($recipients, new SupportRequestStatusChangedNotification(
                 $supportRequest,
                 $oldStatus,
                 $newStatus,
@@ -174,7 +182,7 @@ class SupportRequestController extends AdminController
 
         $assignee = $supportRequest->assignedTo;
         if ($assignee && $assignee->id !== $previousAssignee && $assignee->id !== $request->user()->id) {
-            $assignee->notify(AssignedToResourceNotification::fromModel($supportRequest, $request->user()));
+            $assignee->notify(new SupportRequestAssignedNotification($supportRequest, $request->user()));
         }
 
         return back()->with('success', $this->entityMessage('updated', 'supportRequest'));
@@ -184,12 +192,10 @@ class SupportRequestController extends AdminController
     {
         $changes = $supportRequest->involvedUsers()->sync($request->validated('involved_users'));
 
-        $notification = AssignedToResourceNotification::fromModel($supportRequest, $request->user());
-        User::query()
-            ->whereKey($changes['attached'])
-            ->whereKeyNot($request->user()->id)
-            ->get()
-            ->each->notify($notification);
+        Notification::send(
+            User::query()->whereKey($changes['attached'])->whereKeyNot($request->user()->id)->get(),
+            new SupportRequestInvolvedNotification($supportRequest, $request->user()),
+        );
 
         return back()->with('success', $this->entityMessage('updated', 'supportRequest'));
     }

@@ -6,8 +6,7 @@
     :show-separator="element.options?.showSeparator" inner="wide"
     :editable @update:header="updateOptions"
   >
-    <!-- Grouped cards — one RCFeatureCard per group (tenant), events as a footer link
-         list. This is the SummerCampCard shape, generalized. -->
+    <!-- Grouped cards — one RCFeatureCard per group (tenant), events as a footer link list. -->
     <div v-if="hasGroups && style === 'cards'" class="grid gap-6" :class="smartGridCols(groups.length)">
       <RCFeatureCard
         v-for="group in groups" :key="group.key"
@@ -114,8 +113,6 @@
 <script setup lang="ts">
 /**
  * Displays the `event-list` block's server-resolved payload (see `EventListResolver`).
- * `groupBy: 'tenant'` reproduces `SummerCampCard`'s card shape generically — the two
- * should stay visually identical, since `SummerCampCard` is this display's namesake.
  */
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';

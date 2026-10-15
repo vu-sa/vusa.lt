@@ -52,6 +52,14 @@ describe('SingleSelect.vue', () => {
       expect(wrapper.find('[role="combobox"]').exists()).toBe(true);
     });
 
+    it('exposes the standard form trigger slot and size', () => {
+      wrapper = createWrapper();
+      const trigger = wrapper.find('[data-slot="select-trigger"]');
+
+      expect(trigger.exists()).toBe(true);
+      expect(trigger.attributes('data-size')).toBe('default');
+    });
+
     it('shows placeholder in input when no item is selected', () => {
       wrapper = createWrapper();
       expect(wrapper.find('input').attributes('placeholder')).toBe('Select...');

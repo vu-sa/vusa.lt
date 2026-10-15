@@ -14,7 +14,7 @@
           : 'border-border font-medium text-muted-foreground hover:text-foreground'"
         @click="$emit('close')"
       >
-        <Icon v-if="link?.icon" :icon="`fluent:${link.icon}`" class="size-3.5 shrink-0" />
+        <Icon v-if="link?.icon" :icon="quickLinkIcons?.[link.icon] ?? `fluent:${link.icon}`" class="size-3.5 shrink-0" />
         {{ link?.text }}
       </SmartLink>
     </div>
@@ -83,6 +83,7 @@ const page = usePage();
 
 const mainNavigation = computed(() => page.props.mainNavigation ?? []);
 const tenantLinks = computed(() => page.props.tenant?.links ?? []);
+const quickLinkIcons = computed(() => page.props.publicAssets?.icons);
 
 const { currentLabel } = useTenantOptions();
 const tenantLabel = currentLabel();

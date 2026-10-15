@@ -41,7 +41,7 @@ class FindSuspectExOfficioDutiables
             ->leftJoin('institutions as inst', 'inst.id', '=', 'target.institution_id')
             ->leftJoin('tenants as tn', 'tn.id', '=', 'inst.tenant_id')
             ->whereNull('u.deleted_at')
-            ->where(fn ($q) => $q->whereNull('t.end_date')->orWhere('t.end_date', '>=', $today))
+            ->where(fn ($q) => $q->whereNull('t.end_date')->orWhereDate('t.end_date', '>=', $today))
             // The holder does not currently hold the source duty that grants this one.
             ->whereNotExists(function ($sub) use ($today): void {
                 $sub->select(DB::raw('1'))
@@ -49,7 +49,7 @@ class FindSuspectExOfficioDutiables
                     ->whereColumn('s.duty_id', 'eo.source_duty_id')
                     ->whereColumn('s.dutiable_id', 't.dutiable_id')
                     ->where('s.dutiable_type', '=', MorphMap::alias(User::class))
-                    ->where(fn ($q) => $q->whereNull('s.end_date')->orWhere('s.end_date', '>=', $today));
+                    ->where(fn ($q) => $q->whereNull('s.end_date')->orWhereDate('s.end_date', '>=', $today));
             });
 
         if ($tenantId !== null) {

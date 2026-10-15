@@ -1,10 +1,10 @@
 {
     "mcpServers": {
         "laravel-boost": {
-            "command": "vendor/bin/sail",
+            "command": "sh",
             "args": [
-                "artisan",
-                "boost:mcp"
+                "-c",
+                "if [ \"$CLAUDE_CODE_REMOTE\" = true ]; then exec php artisan boost:mcp; else exec vendor/bin/sail artisan boost:mcp; fi"
             ]
         }
     }

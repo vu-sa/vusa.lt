@@ -25,13 +25,17 @@ describe('PermissionTable', () => {
   const mountTable = (props: {
     permissions?: string[];
     availablePermissions?: string[];
+    retiredPermissions?: string[];
+    modelType?: string;
   } = {}) => mount(PermissionTable, {
     props: {
       permissions: props.permissions ?? [],
       role: { id: 1, name: 'Editor' } as unknown as App.Entities.Role,
-      modelType: 'news',
+      modelType: props.modelType ?? 'news',
       icon: TestIcon,
       availablePermissions: props.availablePermissions ?? [],
+      retiredPermissions: props.retiredPermissions ?? [],
+      baselineNote: 'Mato visus išteklius.',
     },
     global: {
       stubs: {
@@ -154,5 +158,35 @@ describe('PermissionTable', () => {
       { forceDelete: '*' },
       expect.objectContaining({ preserveScroll: true }),
     );
+  });
+
+  describe('baseline permissions', () => {
+    it('locks an ability every member already has instead of offering switches', () => {
+      wrapper = mountTable({
+        modelType: 'resources',
+        availablePermissions: ['resources.update.padalinys', 'resources.update.*'],
+        retiredPermissions: ['resources.read.own', 'resources.read.padalinys', 'resources.read.*'],
+      });
+
+      const readRow = findAbilityRow('Matyti');
+
+      expect(readRow.findAll('[data-testid="baseline-lock"]')).toHaveLength(2);
+      expect(readRow.find('[data-testid="baseline-lock"]').attributes('title')).toBe('Mato visus išteklius.');
+      expect(switchesIn(readRow)).toHaveLength(0);
+      expect(findAbilityRow('Redaguoti').find('[data-testid="baseline-lock"]').exists()).toBe(false);
+    });
+
+    it('marks only the own scope as everyone\'s and keeps the wider scopes grantable', () => {
+      wrapper = mountTable({
+        modelType: 'duties',
+        availablePermissions: ['duties.read.padalinys', 'duties.read.*'],
+        retiredPermissions: ['duties.read.own'],
+      });
+
+      const readRow = findAbilityRow('Matyti');
+
+      expect(readRow.findAll('[data-testid="baseline-lock"]')).toHaveLength(1);
+      expect(switchesIn(readRow).length).toBeGreaterThan(0);
+    });
   });
 });

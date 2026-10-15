@@ -1,10 +1,14 @@
 import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { debounce } from 'lodash-es';
+import { useDebounceFn } from '@vueuse/core';
 
+import { provideFacetSearch } from '@/Shared/Search/facets';
 import { SearchClientFactory, type TypesenseClient } from '@/Shared/Search/services/SearchClientFactory';
 
 export interface CalendarEventDocument {
+  _searchMatch?: import('@/Shared/Search/matches').SearchMatch;
+  _searchTitleMatches?: import('@/Shared/Search/matches').SearchMatch[];
+  _searchFieldMatches?: Record<string, import('@/Shared/Search/matches').SearchMatch>;
   id: string | number;
   title: string;
   title_lt?: string;
@@ -99,7 +103,7 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
     if (!config?.apiKey || !config?.nodes?.length) {
       return null;
     }
-    client = SearchClientFactory.createPublicClient(config);
+    client = SearchClientFactory.createPublicClient(config, locale.value);
     return client;
   };
 
@@ -108,7 +112,9 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
     return config?.collections?.calendar || 'calendar';
   };
 
-  const buildFilterConditions = (): string[] => {
+  provideFacetSearch(async (field, text, signal) => getClient()?.searchFacet(field, text, signal) ?? []);
+
+  const buildFilterConditions = (excludeField?: string): string[] => {
     const conditions: string[] = [];
     const now = Math.floor(Date.now() / 1000);
 
@@ -126,13 +132,13 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
     }
 
     // Event type filter
-    if (selectedEventTypes.value.length > 0) {
+    if (excludeField !== 'event_type_name' && selectedEventTypes.value.length > 0) {
       const escaped = selectedEventTypes.value.map(c => `\`${c.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',');
       conditions.push(`event_type_name:=[${escaped}]`);
     }
 
     // Tenant filter
-    if (selectedTenants.value.length > 0) {
+    if (excludeField !== 'tenant_shortname' && selectedTenants.value.length > 0) {
       const escaped = selectedTenants.value.map(t => `\`${t.replace(/\\/g, '\\\\').replace(/`/g, '\\`')}\``).join(',');
       conditions.push(`tenant_shortname:=[${escaped}]`);
     }
@@ -143,7 +149,7 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
     }
 
     // Year filter
-    if (selectedYears.value.length > 0) {
+    if (excludeField !== 'year' && selectedYears.value.length > 0) {
       conditions.push(`year:=[${selectedYears.value.join(',')}]`);
     }
 
@@ -170,7 +176,7 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
 
     const newQuery = params.toString();
     const newUrl = `${window.location.pathname}${newQuery ? `?${newQuery}` : ''}`;
-    window.history.replaceState({}, '', newUrl);
+    window.history.replaceState(window.history.state, '', newUrl);
   };
 
   const parseUrlParams = () => {
@@ -257,6 +263,7 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
       abortController.abort();
     }
     abortController = new AbortController();
+    const controller = abortController;
 
     if (isLoadMore) {
       isLoadingMore.value = true;
@@ -285,6 +292,7 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
       query_by_weights: '10,8,8,3,2',
       filter_by: filterConditions.join(' && '),
       sort_by: sortExpression,
+      facetFilters: Object.fromEntries(['tenant_shortname', 'year', 'event_type_name'].map(field => [field, buildFilterConditions(field).join(' && ')])),
       facet_by: 'event_type_name,tenant_shortname,year',
       max_facet_values: 50,
       per_page: perPage,
@@ -299,8 +307,9 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
       const response = await searchClient.search(
         getCollectionName(),
         searchParams,
-        abortController.signal,
+        controller.signal,
       );
+      if (controller.signal.aborted) return;
 
       const hits = (response.hits ?? []).map(h => h.document as unknown as CalendarEventDocument);
       totalHits.value = response.found ?? 0;
@@ -323,12 +332,14 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
       error.value = err instanceof Error ? err.message : 'Search failed';
     }
     finally {
-      isLoading.value = false;
-      isLoadingMore.value = false;
+      if (abortController === controller) {
+        isLoading.value = false;
+        isLoadingMore.value = false;
+      }
     }
   };
 
-  const debouncedSearch = debounce(() => {
+  const debouncedSearch = useDebounceFn(() => {
     performSearch(false);
   }, 300);
 

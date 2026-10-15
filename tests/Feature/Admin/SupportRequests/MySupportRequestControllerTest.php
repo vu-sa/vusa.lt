@@ -9,7 +9,8 @@ use App\Models\SupportRequestArea;
 use App\Models\SupportRequestType;
 use App\Models\SupportService;
 use App\Models\Tenant;
-use App\Notifications\AssignedToResourceNotification;
+use App\Notifications\SupportRequestCreatedNotification;
+use App\Notifications\SupportRequestInvolvedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
@@ -42,6 +43,23 @@ describe('guest access', function (): void {
 });
 
 describe('authenticated user index', function (): void {
+    test('collection API keeps private requests out and filters the mine tab', function (): void {
+        $own = SupportRequest::factory()->create(['created_by' => $this->user->id]);
+        SupportRequest::factory()->create([
+            'created_by' => makeUser($this->tenant)->id,
+            'visibility' => SupportRequestVisibility::Private,
+        ]);
+
+        asUser($this->user)->getJson(route('api.v1.admin.supportRequests.index'))
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.id', $own->id);
+
+        asUser($this->user)->getJson(route('api.v1.admin.supportRequests.index', ['tab' => 'mine']))
+            ->assertOk()
+            ->assertJsonPath('data.total', 1);
+    });
+
     test('shows all visible support requests by default and mine on request', function (): void {
         $ownActive = SupportRequest::factory()->create([
             'created_by' => $this->user->id,
@@ -123,16 +141,14 @@ describe('involved people on the dashboard', function (): void {
             );
     });
 
-    test('a private request assigned to the user appears under all with its assignee', function (): void {
+    test('the list exposes each request\'s assignee', function (): void {
         $assignedRequest = SupportRequest::factory()->create([
             'created_by' => makeUser($this->tenant)->id,
             'assigned_to' => $this->user->id,
-            'visibility' => SupportRequestVisibility::Private,
         ]);
 
-        asUser($this->user)->get(route('mySupportRequests.index'))
+        asUser(makeAdminUser($this->tenant))->get(route('mySupportRequests.index'))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('tabCounts.all', 1)
                 ->where('requests.data.0.id', $assignedRequest->id)
                 ->where('requests.data.0.assigned_to', $this->user->id)
                 ->where('requests.data.0.assignedTo.name', $this->user->name)
@@ -235,6 +251,7 @@ describe('creating and storing support requests', function (): void {
             'visibility' => 'roles',
             'roles' => [$role->id],
             'context_url' => 'http://www.vusa.test/lt/forma',
+            'context' => ['viewport' => '390×844', 'browser' => 'Mozilla/5.0 test'],
             'images' => [$file],
         ];
 
@@ -244,6 +261,7 @@ describe('creating and storing support requests', function (): void {
         expect($supportRequest)->not->toBeNull()
             ->and($supportRequest->title)->toBe('Puslapio klaida formoje')
             ->and($supportRequest->visibility)->toBe(SupportRequestVisibility::Roles)
+            ->and($supportRequest->context)->toBe(['viewport' => '390×844', 'browser' => 'Mozilla/5.0 test'])
             ->and($supportRequest->roles()->pluck('roles.id')->all())->toContain($role->id);
 
         $response->assertRedirect(route('supportRequests.show', $supportRequest->id));
@@ -268,8 +286,42 @@ describe('creating and storing support requests', function (): void {
         $supportRequest = SupportRequest::where('created_by', $this->user->id)->latest()->first();
 
         expect($supportRequest->involvedUsers()->pluck('users.id')->all())->toBe([$colleague->id]);
-        Notification::assertSentTo($colleague, AssignedToResourceNotification::class);
-        Notification::assertNotSentTo($this->user, AssignedToResourceNotification::class);
+        Notification::assertSentTo($colleague, SupportRequestInvolvedNotification::class);
+        Notification::assertNotSentTo($this->user, SupportRequestInvolvedNotification::class);
+    });
+
+    test('a new request notifies super admins once, whatever its visibility', function (): void {
+        Notification::fake();
+        $admin = makeAdminUser($this->tenant);
+        $reportingAdmin = makeAdminUser($this->tenant);
+
+        asUser($this->user)->post(route('mySupportRequests.store'), [
+            'title' => 'Neveikia paieška',
+            'description' => 'Paieška negrąžina rezultatų',
+            'support_request_type_id' => $this->type->id,
+            'support_request_area_id' => $this->area->id,
+            'visibility' => 'public',
+            'involved_users' => [$admin->id],
+        ])->assertRedirect();
+
+        Notification::assertSentTo([$admin, $reportingAdmin], SupportRequestCreatedNotification::class);
+        Notification::assertNotSentTo($admin, SupportRequestInvolvedNotification::class);
+        Notification::assertNotSentTo($this->user, SupportRequestCreatedNotification::class);
+    });
+
+    test('a super admin reporting a request is not notified about their own request', function (): void {
+        Notification::fake();
+        $admin = makeAdminUser($this->tenant);
+
+        asUser($admin)->post(route('mySupportRequests.store'), [
+            'title' => 'Klaida',
+            'description' => 'Aprašymas',
+            'support_request_type_id' => $this->type->id,
+            'support_request_area_id' => $this->area->id,
+            'visibility' => 'private',
+        ])->assertRedirect();
+
+        Notification::assertNotSentTo($admin, SupportRequestCreatedNotification::class);
     });
 
     test('rejects unknown involved people', function (): void {
@@ -357,4 +409,40 @@ describe('creator editing permissions', function (): void {
 
         expect($request->fresh()->selected_text)->toBe('Viešame puslapyje pažymėtas tekstas');
     });
+});
+
+test('assignment permits private viewing without granting management or dashboard visibility', function (): void {
+    $author = makeUser($this->tenant);
+    $request = SupportRequest::factory()->create([
+        'created_by' => $author->id,
+        'assigned_to' => $this->user->id,
+        'visibility' => SupportRequestVisibility::Private,
+        'status' => SupportRequestStatus::New,
+    ]);
+
+    asUser($this->user)->get(route('supportRequests.show', $request))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('supportRequest.id', $request->id)
+            ->where('permissions.can_update', false)
+            ->where('permissions.can_update_status', false)
+            ->where('permissions.can_assign', false)
+            ->where('permissions.can_delete', false));
+    asUser($this->user)->get(route('supportRequests.edit', $request))->assertForbidden();
+    asUser($this->user)->patch(route('supportRequests.status.update', $request), ['status' => 'done'])->assertForbidden();
+    asUser($this->user)->patch(route('supportRequests.assign', $request), ['assigned_to' => $author->id])->assertForbidden();
+    asUser(makeUser($this->tenant))->get(route('supportRequests.show', $request))->assertForbidden();
+
+    asUser($this->user)->getJson(route('api.v1.admin.supportRequests.index'))
+        ->assertOk()->assertJsonPath('data.total', 0);
+    expect($request->fresh()->status)->toBe(SupportRequestStatus::New)
+        ->and($request->fresh()->assigned_to)->toBe($this->user->id);
+});
+
+test('collection API filters visible requests by their assignee', function (): void {
+    $assigned = SupportRequest::factory()->create(['created_by' => $this->user->id, 'assigned_to' => $this->user->id]);
+    SupportRequest::factory()->create(['created_by' => $this->user->id, 'assigned_to' => null]);
+
+    asUser($this->user)->getJson(route('api.v1.admin.supportRequests.index', ['filters' => json_encode(['assigned_to' => [$this->user->id]])]))
+        ->assertOk()->assertJsonPath('data.total', 1)->assertJsonPath('data.items.0.id', $assigned->id);
 });

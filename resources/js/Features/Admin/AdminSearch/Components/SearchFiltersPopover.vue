@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { SlidersHorizontal } from 'lucide-vue-next';
+import { SlidersHorizontal } from '@lucide/vue';
 
 import type { AdminFacet, AdminSearchFilters, CollectionFacetConfig } from '../Types/AdminSearchTypes';
 

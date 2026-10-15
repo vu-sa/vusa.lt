@@ -3,15 +3,16 @@
 use App\Enums\TenantType;
 use App\Mail\FeedbackMail;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Models\User;
-use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -65,6 +66,16 @@ test('catch-all fallback route 404s for an unrecognized host instead of crashing
     // their /lt/… form first, so request the localized URL the redirect produces.
     $this->get('/lt/some-unmatched-path', ['HTTP_HOST' => '127.0.0.1:12345'])
         ->assertNotFound();
+});
+
+test('page route is registered as fallback and does not match admin routes', function (): void {
+    $route = app('router')->getRoutes()->getByName('page');
+
+    expect($route)->not->toBeNull()
+        ->and($route->isFallback)->toBeTrue();
+
+    $match = app('router')->getRoutes()->match(Request::create('https://www.vusa.test/mano/users'));
+    expect($match->getName())->toBe('users.index');
 });
 
 test('can open news archive', function (): void {
@@ -156,6 +167,18 @@ test('can open contacts search page with student rep type slugs', function (): v
         );
 });
 
+test('contacts search page lists a used sub-type together with its parent', function (): void {
+    $parent = InstitutionType::factory()->create(['slug' => 'tevinis-tipas']);
+    $child = InstitutionType::factory()->create(['slug' => 'vaikinis-tipas', 'parent_id' => $parent->id]);
+    Institution::factory()->create()->types()->attach($child);
+
+    $this->get(route('contacts', ['subdomain' => 'www', 'lang' => 'lt']))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('institutionTypes', fn ($types) => collect($types)->contains(fn (array $type) => $type['slug'] === 'tevinis-tipas' && $type['parent_slug'] === null)
+                && collect($types)->contains(fn (array $type) => $type['slug'] === 'vaikinis-tipas' && $type['parent_slug'] === 'tevinis-tipas'))
+        );
+});
+
 test('can open institution page', function (): void {
     $institution = Institution::factory()->create();
 
@@ -198,7 +221,7 @@ test('an unknown category alias 404s', function (): void {
 test('padalinys institution page renders duty type tabs', function (): void {
     $tenant = Tenant::factory()->create(['type' => TenantType::Padalinys]);
     $institution = Institution::factory()->create(['tenant_id' => $tenant->id]);
-    $type = Type::factory()->create(['slug' => 'koordinatoriai', 'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
+    $type = DutyType::factory()->create(['slug' => 'koordinatoriai', 'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
     $duty = Duty::factory()->create(['institution_id' => $institution->id]);
     $duty->types()->attach($type);
 
@@ -513,12 +536,11 @@ test('duty type contacts page with grouping shows grouped sections', function ()
     $tenant = Tenant::factory()->create();
 
     // Create or find a type for the duty (e.g., koordinatoriai)
-    $type = Type::where('slug', 'koordinatoriai')->first();
+    $type = DutyType::where('slug', 'koordinatoriai')->first();
     if (! $type) {
-        $type = Type::factory()->create([
+        $type = DutyType::factory()->create([
             'slug' => 'koordinatoriai',
             'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
-            'model_type' => MorphMap::alias(Duty::class),
         ]);
     }
 
@@ -571,12 +593,11 @@ test('duty type contacts page handles both grouped and flat duties correctly', f
     }
 
     // Create or find a type for the duty (e.g., koordinatoriai)
-    $type = Type::where('slug', 'koordinatoriai')->first();
+    $type = DutyType::where('slug', 'koordinatoriai')->first();
     if (! $type) {
-        $type = Type::factory()->create([
+        $type = DutyType::factory()->create([
             'slug' => 'koordinatoriai',
             'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators'],
-            'model_type' => MorphMap::alias(Duty::class),
         ]);
     }
 

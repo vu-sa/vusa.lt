@@ -47,7 +47,6 @@ export function renderDragGhost(ctx: DragGhostContext): void {
     .attr('y', d => d.lane.top + BAR_INSET / 2)
     .attr('width', d => Math.max(2, (d.entry.end ? x(d.entry.end) : innerWidth) - x(d.entry.start)))
     .attr('height', d => d.lane.height - BAR_INSET)
-    .attr('rx', 3)
     .attr('fill', colors.todayLine)
     .attr('fill-opacity', 0.25)
     .attr('stroke', colors.todayLine)
@@ -119,7 +118,6 @@ function renderLabel(
     .attr('y', box.y - 2)
     .attr('width', box.width + 8)
     .attr('height', box.height + 4)
-    .attr('rx', 3)
     .attr('fill', colors.tooltipBg)
     .attr('stroke', colors.tooltipBorder);
 }

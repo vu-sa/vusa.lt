@@ -44,6 +44,9 @@ export interface ActionWindowMeeting {
 export interface ActionWindowInstitutionSearch {
   enabled: boolean;
   tenant_ids: number[];
+  /** Institution types resolving to a VU SA body, and to an external one; external wins on a mix. */
+  internal_type_ids: number[];
+  external_type_ids: number[];
 }
 
 export interface ActionWindowContextData {
@@ -80,7 +83,7 @@ export function useActionWindowData() {
   const institutions = computed(() => cached.value?.institutions ?? []);
   const meetings = computed(() => cached.value?.meetingsNeedingAttention ?? []);
   const institutionSearch = computed<ActionWindowInstitutionSearch>(
-    () => cached.value?.institutionSearch ?? { enabled: false, tenant_ids: [] },
+    () => cached.value?.institutionSearch ?? { enabled: false, tenant_ids: [], internal_type_ids: [], external_type_ids: [] },
   );
 
   return {

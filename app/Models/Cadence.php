@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\Cadences\CarrySecretariesIntoOverride;
 use App\Actions\Cadences\SyncCadenceDatesFromAnchors;
 use App\Actions\ResyncTaskAssigneesForCadence;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -31,6 +33,7 @@ use Illuminate\Support\Collection;
  * @property-read Meeting|null $endMeeting
  * @property-read Institution|null $institution
  * @property-read mixed $label
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, InstitutionSecretary> $secretaryAssignments
  * @property-read Meeting|null $startMeeting
  *
  * @method static Builder<static>|Cadence containing(string $date)
@@ -52,7 +55,7 @@ class Cadence extends Model
     /**
      * The institutions this term staffs, read while it still stands.
      *
-     * `institution_administrators.cadence_id` cascades in the database, so by `deleted`
+     * `institution_secretaries.cadence_id` cascades in the database, so by `deleted`
      * the roster is gone and there is nothing left to ask.
      *
      * @var Collection<int, Institution>|null
@@ -61,13 +64,24 @@ class Cadence extends Model
 
     /**
      * Moving or dropping a term moves meetings in and out of it, and with them the tasks
-     * its administrators carry — task assignment is stored, not derived, so nothing else
+     * its secretaries carry — task assignment is stored, not derived, so nothing else
      * re-staffs them. On the model rather than in CadenceController because dates also move
      * from the meeting side, through {@see SyncCadenceDatesFromAnchors}.
      */
     #[\Override]
     protected static function booted(): void
     {
+        // An institution's first override retires the shared ladder for it, so every staffed
+        // term of that institution can change hands, not only the new one's window.
+        static::created(function (Cadence $cadence): void {
+            if ($cadence->institution === null) {
+                return;
+            }
+
+            CarrySecretariesIntoOverride::execute($cadence);
+            ResyncTaskAssigneesForCadence::forInstitution($cadence->institution);
+        });
+
         static::updated(function (Cadence $cadence): void {
             if (! $cadence->wasChanged(['start_date', 'end_date'])) {
                 return;
@@ -95,6 +109,13 @@ class Cadence extends Model
                 $cadence->start_date,
                 $cadence->end_date,
             );
+
+            // Dropping the last override hands the institution back to the shared ladder.
+            $institution = $cadence->institution;
+
+            if ($institution !== null && ! $institution->cadences()->exists()) {
+                ResyncTaskAssigneesForCadence::forInstitution($institution);
+            }
         });
     }
 
@@ -122,6 +143,14 @@ class Cadence extends Model
     public function institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class);
+    }
+
+    /**
+     * @return HasMany<InstitutionSecretary, $this>
+     */
+    public function secretaryAssignments(): HasMany
+    {
+        return $this->hasMany(InstitutionSecretary::class);
     }
 
     /**

@@ -139,7 +139,7 @@ describe('route accessibility and authentication', function (): void {
 
     test('authenticated users can access appropriate admin areas', function (): void {
         // Give admin proper permissions
-        $this->admin->duties()->first()->assignRole('Communication Coordinator');
+        $this->admin->duties()->first()->assignRole('Komunikacijos koordinatorius');
 
         // Test basic dashboard access
         asUser($this->admin)->get(route('dashboard'))

@@ -81,7 +81,7 @@ class FormOptionResolver
         });
 
         if ($allowedTypeIds->isNotEmpty()) {
-            $query->whereHas('types', fn ($typeQuery) => $typeQuery->whereIn('types.id', $allowedTypeIds));
+            $query->whereHas('types', fn ($typeQuery) => $typeQuery->whereIn('institution_types.id', $allowedTypeIds));
         }
 
         return $query->orderBy('name')->get(['id', 'name']);

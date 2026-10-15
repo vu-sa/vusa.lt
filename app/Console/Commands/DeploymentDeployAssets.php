@@ -40,6 +40,8 @@ class DeploymentDeployAssets extends Command
 
             // Extract build artifacts to temporary directory
             $this->deployBuildAssets($tempDir);
+            $this->deployBootstrapDirectory($tempDir, 'ssr');
+            $this->deployBootstrapDirectory($tempDir, 'icons');
             $this->deployDocumentation($tempDir);
 
             // Clean up temporary directory and archives
@@ -101,6 +103,30 @@ class DeploymentDeployAssets extends Command
         }
     }
 
+    /** Swaps in a bootstrap/ build directory from the archive, keeping the previous one as `.old`. */
+    private function deployBootstrapDirectory(string $tempDir, string $name): void
+    {
+        $source = "{$tempDir}/bootstrap/{$name}";
+        if (! is_dir($source)) {
+            return;
+        }
+
+        $target = base_path("bootstrap/{$name}");
+        $previous = base_path("bootstrap/{$name}.old");
+        if (is_dir($previous)) {
+            $this->removeDirectory($previous);
+        }
+        if (is_dir($target) && ! rename($target, $previous)) {
+            throw new \RuntimeException("Failed to back up bootstrap/{$name}");
+        }
+        if (! rename($source, $target)) {
+            if (is_dir($previous)) {
+                rename($previous, $target);
+            }
+            throw new \RuntimeException("Failed to deploy bootstrap/{$name}");
+        }
+    }
+
     private function deployDocumentation(string $tempDir): void
     {
         $docsArchive = base_path('docs.tar.gz');
@@ -111,13 +137,12 @@ class DeploymentDeployAssets extends Command
 
         $this->info('Deploying documentation...');
 
-        $docsDir = base_path('public/docs');
+        $docsDir = base_path('public/gidas');
 
-        // Clear existing docs
         if (is_dir($docsDir)) {
             $this->removeDirectory($docsDir);
-            mkdir($docsDir, 0755, true);
         }
+        mkdir($docsDir, 0755, true);
 
         // Extract docs directly to docs directory
         $output = [];

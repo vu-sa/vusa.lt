@@ -1,0 +1,55 @@
+/* ==================================================================================
+   Admin surface
+   ==================================================================================
+
+   Only what differs from the public site: `[data-surface="admin"]` is stamped on <html> by
+   app.blade.php (App\Support\DesignSurface). The palette is theme/surface-palette.css; toasts,
+   reduced motion and reader preferences are shared in public/surface.css.
+   ================================================================================== */
+
+/* Numbers line up in tables without every component remembering `tabular-nums` (D10). */
+[data-surface="admin"] :is(table, [data-slot="table"]) {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Touch targets (.ai/rules/js-pages-admin.md): 44px on coarse pointers,
+   dense on desktop. Unused until PR 4.1 (the shell) becomes its first consumer. */
+@utility u-touch {
+  @media (pointer: coarse) {
+    min-block-size: 2.75rem;
+    min-inline-size: 2.75rem;
+  }
+}
+
+/* Navigation progress bar under admin surface: crisp, 2px hairline in brand colour
+   with zero shadows, glow or peg blur (.ai/rules/js-pages-admin.md, O16, O3). */
+html[data-surface="admin"] #nprogress .bar {
+  background: var(--brand-fill, var(--brand));
+  height: 2px;
+}
+
+html[data-surface="admin"] #nprogress .peg {
+  box-shadow: none;
+  display: none;
+}
+
+
+/* Fields on the editing canvas (FormPage): paper on the tinted canvas, 44px, and a brand
+   hairline on focus instead of a ring. Unlayered on purpose — it must beat the ui/* utilities
+   (`bg-transparent`, `data-[size=default]:h-9`) — and scoped so dialogs and filters keep density. */
+[data-slot="form-page"] :is([data-slot="input"], [data-slot="select-trigger"], [data-slot="textarea"]) {
+  background-color: var(--background);
+  box-shadow: none;
+}
+
+[data-slot="form-page"] :is([data-slot="input"], [data-slot="select-trigger"][data-size="default"]) {
+  min-block-size: 2.75rem;
+}
+
+[data-slot="form-page"] :is([data-slot="input"], [data-slot="select-trigger"], [data-slot="textarea"]):focus-visible:not([aria-invalid="true"]) {
+  border-color: var(--brand);
+}
+
+[data-slot="form-page"] [data-slot="select-trigger"]:focus-within:not([aria-invalid="true"]) {
+  border-color: var(--brand);
+}

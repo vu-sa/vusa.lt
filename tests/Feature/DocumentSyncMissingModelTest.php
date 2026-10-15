@@ -27,7 +27,6 @@ test('sync job is silently deleted, not failed, when the document is gone by the
 
     Artisan::call('queue:work', [
         'connection' => 'database',
-        '--queue' => 'sharepoint-sync',
         '--once' => true,
     ]);
 

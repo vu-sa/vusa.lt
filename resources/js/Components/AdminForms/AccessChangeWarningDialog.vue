@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { TriangleAlert } from 'lucide-vue-next';
+import { TriangleAlert } from '@lucide/vue';
 
 import {
   AlertDialog,

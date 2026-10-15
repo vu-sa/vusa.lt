@@ -16,8 +16,9 @@
       />
       <SmartLink :href="button.link" class="w-fit">
         <Button
-          :variant="button.variant === 'outline' ? (onDark ? 'brand-outline-on-dark' : 'brand-outline') : 'brand'"
-          size="public"
+          :variant="button.variant === 'outline' ? (onDark ? 'brand-outline-on-dark' : 'outline') : 'brand'"
+          voice="brand"
+          size="lg"
           class="w-full sm:w-auto"
         >
           <RCIcon v-if="button.icon" :name="button.icon" class="size-4" />
@@ -27,7 +28,6 @@
     </div>
     <PopoverContent
       v-if="hotspots.isPopoverOpen(hotspotId)"
-      data-surface="public"
       class="w-[min(28rem,calc(100vw-2rem))]"
       @close-auto-focus.prevent
     >

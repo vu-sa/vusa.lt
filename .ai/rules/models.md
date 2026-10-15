@@ -31,7 +31,7 @@ Read it through `InstitutionScopeResolver` (a singleton, one cached query over t
 never `Type::getParentsAndSelf()` — that walks `recursiveParent` one query per level and N+1s
 across any meeting or institution listing. `Type::booted()` flushes the cache on save/delete/restore.
 
-A type carries exactly ONE scope. Relationship and sibling edges are type-based and do not consider
+A type carries exactly ONE scope. Type links (`institution_type_links`) do not consider
 scope, so a body belonging to a different world than its type gets its own type — never a
 per-institution exception. Untyped institutions default to `University`, which preserves the
 VU-shaped behaviour everything had before scopes existed.

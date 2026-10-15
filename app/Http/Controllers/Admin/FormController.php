@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\BuildFormIndexQuery;
 use App\Actions\GetTenantsForUpserts;
+use App\Actions\SerializeFormsForTable;
 use App\Enums\FormOptionSource;
 use App\Exports\FormRegistrationsExport;
 use App\Http\Controllers\AdminController;
@@ -17,6 +19,7 @@ use App\Models\Institution;
 use App\Services\FormAccessService;
 use App\Services\FormRegistrationVisibilityService;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
 use App\Settings\FormSettings;
 use App\Support\LocalizedRouteSlugs;
@@ -70,7 +73,9 @@ class FormController extends AdminController
     {
         $this->handleAuthorization('viewAny', Form::class);
 
-        $query = Form::query()->with('tenant:id,shortname')->withCount('registrations');
+        $user = $request->user();
+
+        $query = BuildFormIndexQuery::execute($request, $user, $this->formAccess, $this->tableService);
 
         $searchableColumns = ['name', 'path'];
 
@@ -80,8 +85,6 @@ class FormController extends AdminController
             $this->tableService,
             $searchableColumns,
         );
-
-        $query = $this->formAccess->applyIndexVisibility($query, $request->user());
 
         $deletedCount = $this->getTrashedCount($query);
 
@@ -94,31 +97,10 @@ class FormController extends AdminController
         $this->appendForceDeleteBlockedReason($forms->getCollection(), $request);
 
         $sorting = $request->getSorting();
-        $user = $request->user();
 
         return $this->inertiaResponse('Admin/Forms/IndexForm', [
             'forms' => [
-                'data' => $forms->getCollection()
-                    ->map(function ($form) use ($user) {
-                        /** @var Form $form */
-                        $registrationsCount = $this->registrationVisibility->isSharedRegistrationForm($form)
-                            ? $this->registrationVisibility->count($form, $user)
-                            : $form->registrations_count;
-
-                        return [
-                            ...$form->toFullArray(),
-                            'registrations_count' => $registrationsCount,
-                            'tenant' => [
-                                'id' => $form->tenant->id,
-                                'shortname' => $form->tenant->shortname,
-                            ],
-                            'can' => [
-                                'view' => $user->can('view', $form),
-                                'update' => $user->can('update', $form),
-                                'delete' => $user->can('delete', $form),
-                            ],
-                        ];
-                    }),
+                'data' => SerializeFormsForTable::execute($forms->getCollection(), $user, $this->registrationVisibility),
                 'meta' => [
                     'total' => $forms->total(),
                     'per_page' => $forms->perPage(),
@@ -170,7 +152,7 @@ class FormController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreFormRequest $request)
+    public function store(StoreFormRequest $request, PostCreateRedirect $redirect)
     {
         $form = new Form;
 
@@ -185,7 +167,8 @@ class FormController extends AdminController
             $form->formFields()->create(collect($formField)->only(self::FORM_FIELD_ATTRIBUTES)->all());
         });
 
-        return redirect(request()->redirect_to ?? route('forms.index'))->with('success', $this->entityMessage('created', 'form'));
+        return redirect($redirect->url($request->user(), $form, 'forms.show', 'view', 'forms.index'))
+            ->with('success', $this->entityMessage('created', 'form'));
     }
 
     /**

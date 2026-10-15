@@ -15,7 +15,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'duties.read.padalinys',
         'duties.create.padalinys',
@@ -25,7 +25,7 @@ beforeEach(function (): void {
 
     $this->dutyManager = makeUser($this->tenant);
     $this->dutyManagerDuty = $this->dutyManager->duties()->first();
-    $this->dutyManagerDuty->assignRole('Communication Coordinator');
+    $this->dutyManagerDuty->assignRole('Komunikacijos koordinatorius');
 
     $this->institution = $this->dutyManagerDuty->institution;
 });
@@ -422,4 +422,26 @@ describe('per-assignment extras', function (): void {
 
         expect($payload['extras']['study_program_note'])->toBe('1 grupė');
     });
+});
+
+test('timeline rows retain holder pronouns and each source assignment override', function (): void {
+    $holder = makeUser($this->tenant);
+    $holder->update(['pronouns' => ['lt' => 'ji/jos', 'en' => 'she/her']]);
+    $source = Dutiable::factory()->create([
+        'duty_id' => $this->dutyManagerDuty->id, 'dutiable_id' => $holder->id,
+        'start_date' => '2024-01-01', 'use_original_duty_name' => true,
+    ]);
+    $derived = Dutiable::factory()->create([
+        'duty_id' => $this->dutyManagerDuty->id, 'dutiable_id' => $holder->id,
+        'via_dutiable_id' => $source->id, 'start_date' => '2024-01-01', 'use_original_duty_name' => false,
+    ]);
+
+    $response = asUser($this->dutyManager)->getJson(route('api.v1.admin.dutiableTimeline.index', [
+        'scope' => 'user', 'scope_id' => $holder->id,
+    ]))->assertOk();
+    $row = collect($response->json('data.rows'))->firstWhere('id', $derived->id);
+
+    expect($row['holder_pronouns'])->toBe(['lt' => 'ji/jos', 'en' => 'she/her'])
+        ->and($row['use_original_duty_name'])->toBeFalse()
+        ->and($row['source']['use_original_duty_name'])->toBeTrue();
 });

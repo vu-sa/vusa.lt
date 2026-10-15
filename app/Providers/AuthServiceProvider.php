@@ -2,13 +2,16 @@
 
 namespace App\Providers;
 
+use App\Actions\ResolveForbiddenExplanation;
 use App\Enums\ModelEnum;
 use App\Models\FileableFile;
+use App\Models\Goal;
 use App\Models\InstitutionCheckIn;
 use App\Models\User;
 use App\Policies\FileableFilePolicy;
 use App\Policies\InstitutionCheckInPolicy;
 use App\Settings\SettingsSettings;
+use Illuminate\Auth\Access\Response;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -37,9 +40,23 @@ class AuthServiceProvider extends ServiceProvider
 
         // Implicitly grant "Super Admin" role all permissions
         // This works in the app by using gate-related functions like auth()->user->can() and @can()
-        Gate::before(function (User $user, $ability) {
+        Gate::before(function (User $user, $ability, array $arguments) {
+            // Goal policies enforce tenant enrollment even for super admins.
+            if (($arguments[0] ?? null) === Goal::class || ($arguments[0] ?? null) instanceof Goal) {
+                return null;
+            }
+
             if ($user->isSuperAdmin()) {
                 return true;
+            }
+        });
+
+        // Remembers what was denied so the 403 page can name the missing permission (U8).
+        Gate::after(function (User $user, string $ability, $result, array $arguments): void {
+            $denied = $result instanceof Response ? $result->denied() : $result === false;
+
+            if ($denied) {
+                request()->attributes->set('denied_ability', ResolveForbiddenExplanation::permissionFor($ability, $arguments));
             }
         });
 

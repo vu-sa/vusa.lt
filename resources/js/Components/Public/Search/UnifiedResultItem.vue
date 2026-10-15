@@ -20,6 +20,15 @@
       </div>
     </template>
 
+    <SearchMatch :match="titleMatch" :title />
+
+    <template #meta>
+      <!-- A search excerpt stands in for the subtitle, so the row never grows a line. -->
+      <template v-if="subtitle">
+        <SearchMatch :match="subtitleMatch" :title="subtitle" /><template v-if="formattedDate"> · </template>
+      </template>{{ formattedDate }}
+    </template>
+
     <template #trailing>
       <component
         :is="isExternal ? IFluentArrowUpRight16Regular : IFluentArrowRight16Regular"
@@ -33,6 +42,8 @@
 import { computed, ref, type Component } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
+import { descriptionMatch, highlightText, matchTitle, type SearchMatchDocument } from '@/Shared/Search/matches';
 import HairlineRow from '@/Components/Public/Base/HairlineRow.vue';
 import { getDocumentTargetUrl, type DocumentDisplayItem } from '@/Composables/useDocumentDisplay';
 import type { SearchCollectionId } from '@/Composables/usePublicMultiSearch';
@@ -130,6 +141,25 @@ const formattedDate = computed(() => {
 });
 
 const metaText = computed(() => [subtitle.value, formattedDate.value].filter(Boolean).join(' · '));
+
+const titleMatch = computed(() => matchTitle(title.value, (props.doc as SearchMatchDocument)._searchTitleMatches));
+
+/** The field each collection's subtitle comes from; prose fields may be replaced by a body excerpt. */
+const subtitleField: Partial<Record<SearchCollectionId, { field: string; prose: boolean }>> = {
+  news: { field: 'short', prose: true },
+  documents: { field: 'summary', prose: true },
+  pages: { field: 'meta_description', prose: true },
+  meetings: { field: 'institution_name_lt', prose: false },
+};
+
+const subtitleMatch = computed(() => {
+  const source = subtitleField[props.collection];
+  const doc = props.doc as SearchMatchDocument;
+  if (!source) return undefined;
+  return source.prose
+    ? descriptionMatch(doc, source.field)
+    : highlightText(subtitle.value, doc._searchFieldMatches?.[source.field]);
+});
 
 // -- URL / routing -----------------------------------------------------------
 

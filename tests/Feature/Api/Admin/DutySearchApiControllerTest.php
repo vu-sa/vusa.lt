@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Duty;
+use App\Models\DutyName;
 use App\Models\Institution;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -11,7 +12,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'duties.read.padalinys',
         'duties.create.padalinys',
@@ -20,7 +21,7 @@ beforeEach(function (): void {
 
     $this->dutyManager = makeUser($this->tenant);
     $this->dutyManagerDuty = $this->dutyManager->duties()->first();
-    $this->dutyManagerDuty->assignRole('Communication Coordinator');
+    $this->dutyManagerDuty->assignRole('Komunikacijos koordinatorius');
 
     $this->institution = $this->dutyManagerDuty->institution;
 });
@@ -67,10 +68,10 @@ describe('similar', function (): void {
             ->and($match['reason'])->toBe('same_institution_variant');
     });
 
-    test('the same name in a different institution is informational, not alarming', function (): void {
+    test('the same name in another tenant is informational, not alarming', function (): void {
         $elsewhere = Duty::factory()->create([
-            'name' => ['lt' => 'Studentų atstovas', 'en' => 'Student Representative'],
-            'institution_id' => Institution::factory()->for($this->tenant)->create()->id,
+            'name' => ['lt' => 'Studentų atstovas', 'en' => 'Studentų atstovas'],
+            'institution_id' => Institution::factory()->for(Tenant::query()->whereKeyNot($this->tenant->id)->first())->create()->id,
         ]);
 
         $response = asUser($this->dutyManager)
@@ -87,8 +88,8 @@ describe('similar', function (): void {
 
     test('other-institution matches are capped while the count reflects the true total', function (): void {
         Duty::factory()->count(5)->create([
-            'name' => ['lt' => 'Studentų atstovas', 'en' => 'Student Representative'],
-            'institution_id' => Institution::factory()->for($this->tenant),
+            'name' => ['lt' => 'Studentų atstovas', 'en' => 'Studentų atstovas'],
+            'institution_id' => Institution::factory()->for(Tenant::query()->whereKeyNot($this->tenant->id)->first()),
         ]);
 
         $response = asUser($this->dutyManager)
@@ -133,6 +134,61 @@ describe('similar', function (): void {
             ->assertStatus(200);
 
         expect($response->json('data.same_institution'))->toBe([]);
+    });
+
+    test('an inactive duty is still matched, flagged as inactive, with a link to its record', function (): void {
+        $retired = Duty::factory()->create([
+            'name' => ['lt' => 'Projektų koordinatorius', 'en' => 'Project Coordinator'],
+            'institution_id' => $this->institution->id,
+            'is_active' => false,
+        ]);
+
+        $response = asUser($this->dutyManager)
+            ->getJson(route('api.v1.admin.duties.similar', [
+                'name' => 'Projektų koordinatorius',
+                'institution_id' => $this->institution->id,
+            ]))
+            ->assertStatus(200);
+
+        $match = collect($response->json('data.same_institution'))->firstWhere('id', $retired->id);
+
+        expect($match['is_active'])->toBeFalse()
+            ->and($match['can_view'])->toBeTrue();
+    });
+
+    test('a duty is found by a name it used to have', function (): void {
+        $renamed = Duty::factory()->create([
+            'name' => ['lt' => 'Komunikacijos koordinatorius', 'en' => 'Communications Coordinator'],
+            'institution_id' => $this->institution->id,
+        ]);
+        DutyName::factory()->for($renamed)->create(['name' => ['lt' => 'Viešųjų ryšių koordinatorius']]);
+
+        $response = asUser($this->dutyManager)
+            ->getJson(route('api.v1.admin.duties.similar', [
+                'name' => 'Viešųjų ryšių koordinatorius',
+                'institution_id' => $this->institution->id,
+            ]))
+            ->assertStatus(200);
+
+        expect(collect($response->json('data.same_institution'))->firstWhere('id', $renamed->id)['reason'])->toBe('former_name');
+    });
+
+    test('a match elsewhere in the same tenant is named individually, not only counted', function (): void {
+        $sibling = Institution::factory()->for($this->tenant)->create();
+        $elsewhere = Duty::factory()->create([
+            'name' => ['lt' => 'Akademinis koordinatorius', 'en' => 'Academic Coordinator'],
+            'institution_id' => $sibling->id,
+        ]);
+
+        $response = asUser($this->dutyManager)
+            ->getJson(route('api.v1.admin.duties.similar', [
+                'name' => 'Akademinis koordinatorius',
+                'institution_id' => $this->institution->id,
+            ]))
+            ->assertStatus(200);
+
+        expect(collect($response->json('data.same_tenant'))->pluck('id'))->toContain($elsewhere->id)
+            ->and(collect($response->json('data.other_institution'))->pluck('id'))->not->toContain($elsewhere->id);
     });
 
     test('a user without duties.create permission is refused', function (): void {

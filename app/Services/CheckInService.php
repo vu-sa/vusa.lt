@@ -31,10 +31,10 @@ class CheckInService
     /**
      * Delete all active check-ins for an institution
      */
-    public function deleteActive(Institution $institution): int
+    public function deleteActive(Institution $institution, ?User $owner = null): int
     {
         $count = 0;
-        foreach ($institution->activeCheckIns()->get() as $checkIn) {
+        foreach ($institution->activeCheckIns()->when($owner !== null, fn ($query) => $query->where('user_id', $owner->id))->get() as $checkIn) {
             $checkIn->delete();
             $count++;
         }

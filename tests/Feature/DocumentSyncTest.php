@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\DocumentStatus;
 use App\Jobs\SyncDocumentFromSharePointJob;
 use App\Jobs\SyncStaleDocumentsJob;
 use App\Models\Document;
@@ -24,9 +25,10 @@ describe('Document Sync Jobs', function (): void {
         $job = new SyncDocumentFromSharePointJob($document);
 
         expect($job->document->id)->toBe($document->id)
-            ->and($job->tries)->toBe(3)
-            ->and($job->timeout)->toBe(120)
-            ->and($job->queue)->toBe('sharepoint-sync')
+            ->and($job->maxExceptions)->toBe(3)
+            ->and($job->middleware()[0]->getLockKey($job))->toBe('laravel-queue-overlap:document-sharepoint:'.$document->id)
+            ->and($job->timeout)->toBeLessThan(config('queue.connections.redis.retry_after'))
+            ->and($job->queue)->toBeNull()
             ->and($job->deleteWhenMissingModels)->toBeTrue();
     });
 
@@ -35,14 +37,14 @@ describe('Document Sync Jobs', function (): void {
         $criticalDocument1 = Document::factory()->create([
             'checked_at' => now()->subDays(15), // Critical - older than 14 days
             'sync_status' => 'success',
-            'is_active' => true,
+            'status' => DocumentStatus::Published,
             'anonymous_url' => 'https://example.com/doc1',
         ]);
 
         $criticalDocument2 = Document::factory()->create([
             'checked_at' => null, // Never checked - critical
             'sync_status' => 'pending',
-            'is_active' => true,
+            'status' => DocumentStatus::Published,
         ]);
 
         // Create documents in 7-14 day range (may be selected to fill quota)
@@ -58,7 +60,7 @@ describe('Document Sync Jobs', function (): void {
         ]);
 
         // Run the rolling refresh job
-        $job = new SyncStaleDocumentsJob(dispatchDelayMicroseconds: 0, batchDelaySeconds: 0);
+        $job = new SyncStaleDocumentsJob;
         $job->handle();
 
         // With 4 total documents, the dynamic quota should be at least 1 (4/14 = 0.28, ceil = 1)
@@ -82,7 +84,7 @@ describe('Document Sync Jobs', function (): void {
             'last_sync_attempt_at' => now()->subHours(1),
         ]);
 
-        $job = new SyncStaleDocumentsJob(dispatchDelayMicroseconds: 0, batchDelaySeconds: 0);
+        $job = new SyncStaleDocumentsJob;
         $job->handle();
 
         // No jobs should be dispatched for documents with excessive failures
@@ -98,7 +100,7 @@ describe('Document Sync Jobs', function (): void {
             'last_sync_attempt_at' => now()->subHours(2), // Recent failure (within 6 hours)
         ]);
 
-        $job = new SyncStaleDocumentsJob(dispatchDelayMicroseconds: 0, batchDelaySeconds: 0);
+        $job = new SyncStaleDocumentsJob;
         $job->handle();
 
         // Should skip recently failed documents
@@ -112,7 +114,7 @@ describe('Document Sync Jobs', function (): void {
             'sync_status' => 'success',
         ]);
 
-        $job = new SyncStaleDocumentsJob(dispatchDelayMicroseconds: 0, batchDelaySeconds: 0);
+        $job = new SyncStaleDocumentsJob;
         $job->handle();
 
         // With 14 documents, quota should be around 14/14 = 1 per day (with randomization ±10%)
@@ -126,26 +128,26 @@ describe('Document Sync Jobs', function (): void {
         // Create documents with different priorities (all critical age)
         $highPriority = Document::factory()->create([
             'checked_at' => now()->subDays(15),
-            'is_active' => true,
+            'status' => DocumentStatus::Published,
             'anonymous_url' => 'https://example.com/doc',
             'sync_status' => 'success',
         ]);
 
         $mediumPriority = Document::factory()->create([
             'checked_at' => now()->subDays(16), // Older but lower priority
-            'is_active' => true,
+            'status' => DocumentStatus::Published,
             'anonymous_url' => null,
             'sync_status' => 'success',
         ]);
 
         $lowPriority = Document::factory()->create([
             'checked_at' => now()->subDays(17), // Oldest but lowest priority
-            'is_active' => false,
+            'status' => DocumentStatus::Hidden,
             'anonymous_url' => null,
             'sync_status' => 'success',
         ]);
 
-        $job = new SyncStaleDocumentsJob(dispatchDelayMicroseconds: 0, batchDelaySeconds: 0);
+        $job = new SyncStaleDocumentsJob;
         $job->handle();
 
         // High priority document should be more likely to be selected
@@ -244,6 +246,17 @@ describe('Document Sync Command', function (): void {
         $this->artisan('sharepoint:sync-documents --all --limit=25 --dry-run')
             ->expectsOutputToContain('(limit: 25)')
             ->assertExitCode(0);
+    });
+
+    test('sync command leaves unpublished and removed files to discovery', function (): void {
+        Document::factory()->create();
+        Document::factory()->pending()->create();
+        Document::factory()->inactive()->create();
+        Document::factory()->removedFromSharepoint()->create();
+
+        $this->artisan('sharepoint:sync-documents --all')->assertExitCode(0);
+
+        Queue::assertPushed(SyncDocumentFromSharePointJob::class, 1);
     });
 
     test('--shortcuts option only targets .url internet shortcut documents', function (): void {

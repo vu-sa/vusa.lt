@@ -6,6 +6,7 @@
   <DropdownMenu :modal="false" @update:open="isOpen = $event">
     <DropdownMenuTrigger as-child>
       <Button
+        voice="brand"
         variant="ghost"
         :size="props.size || 'sm'"
         data-slot="locale-button"

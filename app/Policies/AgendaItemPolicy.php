@@ -36,9 +36,9 @@ class AgendaItemPolicy extends ModelPolicy
         $meeting = $agendaItem->meeting;
 
         if ($meeting) {
-            $meeting->loadMissing(['users', 'institutions']);
+            $meeting->loadMissing('institutions');
 
-            if ($meeting->users->contains('id', $user->id)) {
+            if ($meeting->hadMemberAtTheTime($user)) {
                 return true;
             }
 
@@ -48,5 +48,15 @@ class AgendaItemPolicy extends ModelPolicy
         }
 
         return $this->commonChecker($user, $agendaItem, CRUDEnum::READ->label(), $this->pluralModelName);
+    }
+
+    /**
+     * The read-only record, mirroring `MeetingPolicy::viewSummary()` through the item's meeting.
+     *
+     * @param  AgendaItem  $agendaItem
+     */
+    public function viewSummary(User $user, Model $agendaItem): bool
+    {
+        return (bool) $agendaItem->meeting?->is_public || $this->view($user, $agendaItem);
     }
 }

@@ -1,7 +1,7 @@
 ---
 paths:
-  - app/Support/MorphMap.php
-  - app/Support/LocalizedRouteSlugs.php
+  - 'app/Support/MorphMap.php'
+  - 'app/Support/LocalizedRouteSlugs.php'
 ---
 
 # Support
@@ -13,20 +13,11 @@ paths:
 - Resolving a class from a stored value goes through `MorphMap::classFor($alias)`; `class_exists($activity->subject_type)` is now always false. `Activity::subjectClass()` exists for that.
 - Public* mirrors override `getMorphClass()` to their parent's alias (a map is keyed by alias and cannot hold two classes under one).
 - `MorphMapTest` fails if a new model has no alias, if an alias is not `Str::snake(class_basename())`, or if any file under `app/`, `database/{seeders,factories}/` or `tests/` writes `Foo::class` into a `*_type` column. Migrations are exempt — the ones predating the map wrote class names legitimately.
-- `requireMorphMap()` is deliberately off. `survey` is an alias with no class yet (rows from an unmerged branch).
+- `requireMorphMap()` is deliberately off: `survey` is an alias with no class yet (rows from the unmerged `survey-integration` branch).
 
 ### Merging a branch cut before the map
 
-The rows were already migrated, so no data migration — but the branch's code and tests still spell the value `Foo::class`, agreeing with each other and not with the database. Add the model to `MorphMap::MAP`; `MorphMapTest` then names the leftover literals.
-
-`survey-integration` (branched 2026-08-07; `ModelEnum::SURVEY = 'survey'` and `ShowSurvey.vue` are already correct):
-
-| Where | Change |
-| --- | --- |
-| `MorphMap::MAP` | add `'survey' => Models\Survey::class` |
-| `Survey::getApprovalFlow()` | delete the override — it hardcodes `where('flowable_type', self::class)`; the `HasApprovals` trait does the same lookup via `getMorphClass()` and also supports a per-survey flow |
-| `database/seeders/ApprovalFlowSeeder.php` | `Survey::class` → `'survey'`, and drop the comment claiming no morph map is registered |
-| `tests/Feature/Admin/Surveys/SurveyApprovalTest.php` | same literal in the flow fixture |
+The rows were already migrated, so no data migration — but the branch's code and tests still spell the value `Foo::class`, agreeing with each other and not with the database. Add the model to `MorphMap::MAP`; `MorphMapTest` then names the leftover literals. Also check reads it does not catch, such as `where('flowable_type', self::class)` (the `survey-integration` branch's `Survey::getApprovalFlow()` override, which `HasApprovals` already covers via `getMorphClass()`).
 
 ## Localized URL segments are route parameters filled from URL defaults
 "/lt/dokumentai" and "/en/documents" are one route: the segment is a parameter constrained by `->whereIn($param, LocalizedRouteSlugs::accepted($param))`.

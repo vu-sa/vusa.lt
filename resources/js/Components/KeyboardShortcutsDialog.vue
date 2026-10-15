@@ -12,7 +12,7 @@
           class="flex items-center justify-between py-2.5"
         >
           <span class="text-sm">{{ $t(shortcut.label) }}</span>
-          <kbd class="inline-flex h-6 items-center rounded border bg-muted/60 px-2 font-mono text-xs font-medium text-muted-foreground">
+          <kbd class="inline-flex h-6 items-center rounded-none border border-border bg-muted/60 px-2 font-mono text-xs font-medium text-muted-foreground">
             {{ shortcut.keys }}
           </kbd>
         </div>
@@ -45,8 +45,10 @@ const isMac = computed(() => {
 const mod = computed(() => isMac.value ? '⌘' : 'Ctrl');
 
 const shortcuts = computed(() => [
-  { label: 'Paieška', keys: `${mod.value}${isMac.value ? '' : '+'}K` },
-  { label: 'Perjungti šoninę juostą', keys: `${mod.value}${isMac.value ? '' : '+'}B` },
+  { label: 'Atidaryti komandų paletę', keys: `${mod.value}${isMac.value ? '' : '+'}K` },
+  { label: 'Fokusuoti sąrašo paiešką', keys: '/' },
+  { label: 'Išsaugoti pakeitimus', keys: `${mod.value}${isMac.value ? '' : '+'}↵` },
+  { label: 'Uždaryti skydelį', keys: 'Esc' },
   { label: 'Klaviatūros trumpiniai', keys: '?' },
 ]);
 </script>

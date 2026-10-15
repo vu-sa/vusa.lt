@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { usePage } from '@inertiajs/vue3';
+import { Icon } from '@iconify/vue';
 
 import MobileNavRootPanel from '../MobileNavRootPanel.vue';
 
@@ -93,6 +94,14 @@ describe('MobileNavRootPanel.vue', () => {
 
     expect(wrapper.text()).toContain('Tapk nariu');
     expect(wrapper.text()).toContain('Renginių kalendorius');
+  });
+
+  it('draws quick-link icons from the data shared with the page, fetching only the rest', () => {
+    const calendar = { body: '<path d="M1 2h3v4H1z"/>', width: 24, height: 24 };
+    const wrapper = mountPanel({ publicAssets: { logoSrc: '/logo.svg', icons: { 'calendar-24-regular': calendar } } });
+
+    expect(wrapper.findAllComponents(Icon).map(icon => icon.props('icon')))
+      .toEqual(['fluent:people-24-regular', calendar]);
   });
 
   it('offers the tenants as their own section', async () => {

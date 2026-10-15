@@ -1,0 +1,35 @@
+<?php
+
+return [
+    'sync' => [
+        'button' => 'Sinchronizuoti kalendorių',
+        'eyebrow' => 'Sinchronizavimas',
+        'title' => 'Kalendoriaus sinchronizavimo instrukcija',
+        'description' => 'Sinchronizuok VU SA renginių kalendorių su savo asmeniniu kalendoriumi',
+        'step_copy' => 'Nukopijuok nuorodą',
+        'all_events' => 'Visi renginiai',
+        'only_english' => 'Tik renginiai anglų kalba',
+        'copy' => 'Kopijuoti',
+        'copy_failed' => 'Nepavyko nukopijuoti nuorodos...',
+        'copied' => 'Nuoroda nukopijuota!',
+        'step_add' => 'Pridėk prie savo kalendoriaus',
+        'go_to' => 'Nueik į savo',
+        'google_calendar' => 'Google kalendorių',
+        'outlook_calendar' => 'Outlook kalendorių',
+        'desktop_browser_hint' => '(per naršyklę kompiuteryje)',
+        'paste_copied_link' => 'Įklijuok nukopijuotą nuorodą',
+        'press' => 'Paspausk',
+        'ready_minutes' => 'Paruošta! Renginiai atsiras per kelias minutes.',
+        'go_to_section' => 'Eik į',
+        'section_word' => 'sekciją',
+        'ready' => 'Paruošta!',
+        'footer_notice' => '„Google" ir „Outlook" kartais atnaujina renginių informaciją tik',
+        'once_a_day' => 'kartą per dieną',
+        'visit_site_hint' => 'Dėl naujausios informacijos apsilankyk vusa.lt',
+    ],
+    'filters' => [
+        'active' => 'Aktyvūs filtrai',
+        'search_unit' => 'Ieškoti padalinio',
+        'search_year' => 'Ieškoti metų',
+    ],
+];

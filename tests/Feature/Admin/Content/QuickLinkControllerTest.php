@@ -11,7 +11,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'quickLinks.read.padalinys',
         'quickLinks.create.padalinys',
@@ -20,7 +20,7 @@ beforeEach(function (): void {
     ]);
 
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     $this->quickLink = QuickLink::factory()->for($this->tenant)->create([
         'text' => 'Test Quick Link',
@@ -98,7 +98,7 @@ describe('authorized access', function (): void {
     });
 
     test('can store quick link with valid data', function (): void {
-        asUser($this->admin)
+        $response = asUser($this->admin)
             ->post(route('quickLinks.store'), [
                 'text' => 'New Quick Link',
                 'link' => 'https://new.example.com',
@@ -107,7 +107,7 @@ describe('authorized access', function (): void {
                 'is_important' => true,
             ])
             ->assertStatus(302)
-            ->assertRedirect(route('quickLinks.index'))
+            ->assertSessionHasNoErrors()
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('quick_links', [
@@ -115,6 +115,10 @@ describe('authorized access', function (): void {
             'link' => 'https://new.example.com',
             'lang' => 'lt',
         ]);
+
+        $created = QuickLink::where('text', 'New Quick Link')->sole();
+        $response->assertRedirectToRoute('quickLinks.edit', $created)->assertSessionHas('success');
+        asUser($this->admin)->get(route('quickLinks.edit', $created))->assertOk();
     });
 
     test('cannot store quick link without required fields', function (): void {
@@ -299,5 +303,21 @@ describe('tenant isolation', function (): void {
                 'link' => 'https://evil.com',
             ])
             ->assertStatus(403);
+    });
+
+    test('reordering a batch that includes another tenant quick link changes nothing', function (): void {
+        $otherOrder = $this->otherQuickLink->order;
+
+        asUser($this->admin)
+            ->post(route('quickLinks.update-order'), [
+                'orderList' => [
+                    ['id' => $this->quickLink->id, 'order' => 5],
+                    ['id' => $this->otherQuickLink->id, 'order' => 6],
+                ],
+            ])
+            ->assertStatus(403);
+
+        expect($this->quickLink->fresh()->order)->toBe(1)
+            ->and($this->otherQuickLink->fresh()->order)->toBe($otherOrder);
     });
 });

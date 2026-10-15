@@ -2,8 +2,8 @@
   <div
     ref="el"
     :data-column="index"
-    class="flex min-w-0 min-h-[3rem] flex-col gap-1.5 rounded-md border border-dashed border-transparent p-1 transition-colors"
-    :class="[isEmpty && 'border-zinc-200 dark:border-zinc-700']"
+    class="flex min-w-0 min-h-[3rem] flex-col gap-1.5 border border-dashed border-transparent p-1 transition-colors"
+    :class="[isEmpty && 'border-border']"
   >
     <NavigationLinkCard
       v-for="link in links"

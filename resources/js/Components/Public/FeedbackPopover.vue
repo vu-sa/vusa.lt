@@ -1,6 +1,7 @@
 <template>
-  <!-- Floating feedback button positioned at text selection -->
-  <Teleport to="body">
+  <!-- Floating feedback button positioned at text selection. After mount only: SSR drops
+       teleported markup, so hydrating a body teleport eats <body>'s first node. -->
+  <Teleport v-if="mounted" to="body">
     <Transition
       enter-active-class="transition-opacity duration-200"
       leave-active-class="transition-opacity duration-200"
@@ -12,7 +13,7 @@
         class="fixed z-50 -translate-x-1/2 -translate-y-full"
         :style="{ left: `${coordinates.x}px`, top: `${coordinates.y}px` }"
       >
-        <Button variant="brand" size="icon" :aria-label="$t('Pranešk apie klaidą!')" @click="handleFeedbackClick">
+        <Button variant="brand" size="icon" :aria-label="$t('feedback.button_label')" @click="handleFeedbackClick">
           <IFluentPersonFeedback24Filled />
         </Button>
       </div>
@@ -22,16 +23,16 @@
   <Dialog :open="showModal" @update:open="(val) => !val && handleModalClose()">
     <DialogContent class="sm:max-w-md">
       <DialogHeader>
-        <DialogTitle>{{ $t('Pranešk apie klaidą!') }}</DialogTitle>
+        <DialogTitle>{{ $t('feedback.title') }}</DialogTitle>
         <DialogDescription>
-          {{ $t('Pažymėtas tekstas bus pridėtas prie jūsų pranešimo.') }}
+          {{ $t('feedback.description') }}
         </DialogDescription>
       </DialogHeader>
       <div>
         <p class="mb-4 text-xs text-muted-foreground">
           {{ textInQuestion }}
         </p>
-        <Textarea v-model="feedback" rows="4" :placeholder="$t('Jūsų atsiliepimas, pastaba...')" />
+        <Textarea v-model="feedback" rows="4" :placeholder="$t('feedback.placeholder')" />
       </div>
       <DialogFooter>
         <Button variant="brand" :disabled="loading" @click="handleSend">
@@ -47,13 +48,14 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { useMousePressed, useTextSelection } from '@vueuse/core';
+import { useMounted, useMousePressed, useTextSelection } from '@vueuse/core';
 
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Spinner } from '@/Components/ui/spinner';
 import { Textarea } from '@/Components/ui/textarea';
 
+const mounted = useMounted();
 const showPopover = ref(false);
 const showModal = ref(false);
 const loading = ref(false);
@@ -64,7 +66,7 @@ const mousePressed = useMousePressed();
 const textInQuestion = ref('');
 const feedback = ref('');
 
-const coordinates = ref({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+const coordinates = ref({ x: typeof window === 'undefined' ? 0 : window.innerWidth / 2, y: typeof window === 'undefined' ? 0 : window.innerHeight / 2 });
 
 watch(
   mousePressed.pressed,

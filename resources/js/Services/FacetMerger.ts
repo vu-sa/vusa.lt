@@ -5,7 +5,7 @@ export class FacetMerger {
    * Generic facet merging for custom filter mappings
    */
   static mergeFacetsWithSelectionMap<
-    T extends { field: string; values: Array<{ value: string; count: number; isSelected?: boolean }> },
+    T extends { field: string; values: Array<{ value: string; count: number | null; isSelected?: boolean }> },
   >(
     initialFacets: T[],
     currentFacets: T[],
@@ -18,7 +18,7 @@ export class FacetMerger {
     return initialFacets.map((initialFacet) => {
       const currentFacet = currentFacets.find(f => f.field === initialFacet.field);
 
-      const currentValueMap = new Map<string, number>();
+      const currentValueMap = new Map<string, number | null>();
       if (currentFacet) {
         currentFacet.values.forEach((value) => {
           currentValueMap.set(value.value, value.count);
@@ -29,7 +29,7 @@ export class FacetMerger {
 
       const mergedValues = initialFacet.values.map(initialValue => ({
         ...initialValue,
-        count: currentValueMap.get(initialValue.value) || 0,
+        count: currentValueMap.get(initialValue.value) ?? null,
         isSelected: selectedValues.includes(initialValue.value),
       }));
 
@@ -44,13 +44,18 @@ export class FacetMerger {
         });
       }
 
+      for (const value of selectedValues) {
+        if (!mergedValues.some(option => String(option.value) === String(value))) {
+          mergedValues.push({ value: String(value), label: String(value), count: null, isSelected: true });
+        }
+      }
       mergedValues.sort((a, b) => {
         const aSelected = selectedValues.includes(a.value);
         const bSelected = selectedValues.includes(b.value);
 
         if (aSelected && !bSelected) return -1;
         if (!aSelected && bSelected) return 1;
-        if (a.count !== b.count) return b.count - a.count;
+        if (a.count !== b.count) return (b.count ?? -1) - (a.count ?? -1);
         return a.value.localeCompare(b.value);
       });
 
@@ -79,7 +84,7 @@ export class FacetMerger {
       const currentFacet = currentFacets.find(f => f.field === initialFacet.field);
 
       // Create a map of current values for quick lookup
-      const currentValueMap = new Map<string, number>();
+      const currentValueMap = new Map<string, number | null>();
       if (currentFacet) {
         currentFacet.values.forEach((value) => {
           currentValueMap.set(value.value, value.count);
@@ -91,7 +96,7 @@ export class FacetMerger {
 
       // Merge values: show ALL initial values with updated counts from current search
       const mergedValues = initialFacet.values.map((initialValue) => {
-        const currentCount = currentValueMap.get(initialValue.value) || 0;
+        const currentCount = currentValueMap.get(initialValue.value) ?? null;
         const isSelected = selectedValues.includes(initialValue.value);
 
         return {
@@ -116,13 +121,18 @@ export class FacetMerger {
       }
 
       // Sort: selected items first, then by count (but keep zero counts), then alphabetically
+      for (const value of selectedValues) {
+        if (!mergedValues.some(option => String(option.value) === String(value))) {
+          mergedValues.push({ value: String(value), label: String(value), count: null, isSelected: true });
+        }
+      }
       mergedValues.sort((a, b) => {
         const aSelected = selectedValues.includes(a.value);
         const bSelected = selectedValues.includes(b.value);
 
         if (aSelected && !bSelected) return -1;
         if (!aSelected && bSelected) return 1;
-        if (a.count !== b.count) return b.count - a.count;
+        if (a.count !== b.count) return (b.count ?? -1) - (a.count ?? -1);
         return a.value.localeCompare(b.value);
       });
 
@@ -212,7 +222,7 @@ export class FacetMerger {
   static filterFacetsForContext(facets: DocumentFacet[], hasActiveSearch: boolean): DocumentFacet[] {
     return facets.filter((facet) => {
       // Always show facets with values
-      if (facet.values.some(v => v.count > 0)) {
+      if (facet.values.some(v => v.count == null || v.count > 0)) {
         return true;
       }
 
@@ -241,7 +251,7 @@ export class FacetMerger {
     let selectedValues = 0;
 
     facets.forEach((facet) => {
-      const hasActiveValues = facet.values.some(v => v.count > 0);
+      const hasActiveValues = facet.values.some(v => v.count == null || v.count > 0);
       if (hasActiveValues) activeFacets++;
 
       totalValues += facet.values.length;

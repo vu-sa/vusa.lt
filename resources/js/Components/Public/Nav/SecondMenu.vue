@@ -41,6 +41,7 @@
           <DropdownMenu :modal="false">
             <DropdownMenuTrigger as-child>
               <Button
+                voice="brand"
                 variant="ghost"
                 size="sm"
                 class="h-7 px-1.5 text-muted-foreground transition-colors
@@ -71,9 +72,10 @@
           <LocaleButton :locale="$page.props.app.locale" size="sm" class="h-7 px-2 text-xs" />
           <span class="h-4 w-px bg-border" aria-hidden="true" />
           <Button
+            voice="brand"
             as-child
-            variant="brand-outline"
-            size="public-sm"
+            variant="outline"
+            size="sm"
             class="w-31 shrink-0 gap-1 px-2 text-foreground/70"
           >
             <a
@@ -102,10 +104,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, shallowRef, watch } from 'vue';
+import { computed, shallowRef } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { useResizeObserver } from '@vueuse/core';
 
 import SmartLink from '../SmartLink.vue';
 
@@ -119,47 +120,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
+import { useOverflowingItems } from '@/Composables/useOverflowingItems';
 import IFluentGrid24Filled from '~icons/fluent/grid-24-filled';
 import IFluentGrid24Regular from '~icons/fluent/grid-24-regular';
 
 const tenantLinks = computed(() => usePage().props.tenant?.links ?? []);
 
 const containerRef = shallowRef<HTMLElement | null>(null);
-const itemRefs = ref<(HTMLElement | null)[]>([]);
-const overflowIndexes = ref<Set<number>>(new Set());
-
-const setItemRef = (el: Element | null, index: number) => {
-  itemRefs.value[index] = el as HTMLElement | null;
-};
-
-/**
- * The row already clips overflowing links visually (the mask + `overflow-hidden`
- * above); this mirrors that clipping in JS so the "more" dropdown lists only the
- * links actually hidden by it, instead of repeating every link already visible.
- * jsdom has no layout, so `clientWidth` stays 0 there and nothing is ever flagged
- * as overflowing — the dropdown correctly stays hidden in component tests.
- */
-const measureOverflow = () => {
-  const container = containerRef.value;
-  if (!container || container.clientWidth === 0) {
-    return;
-  }
-
-  const containerWidth = container.clientWidth;
-  const containerLeft = container.getBoundingClientRect().left;
-  const next = new Set<number>();
-
-  itemRefs.value.forEach((item, index) => {
-    if (item && item.getBoundingClientRect().right - containerLeft > containerWidth) {
-      next.add(index);
-    }
-  });
-
-  overflowIndexes.value = next;
-};
-
-useResizeObserver(containerRef, measureOverflow);
-watch(tenantLinks, () => nextTick(measureOverflow), { immediate: true, flush: 'post' });
+// The row clips overflowing links (mask + `overflow-hidden`); the "more" menu lists only those.
+const { overflowIndexes, setItemRef } = useOverflowingItems(containerRef, tenantLinks);
 
 const overflowOptions = computed(() => tenantLinks.value
   .filter((link, index): link is NonNullable<typeof link> =>

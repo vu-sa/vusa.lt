@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Duty;
 use App\Models\File;
 use App\Models\Institution;
@@ -15,8 +16,9 @@ use Illuminate\Support\Facades\Storage;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    // Set up test storage
+    // The controller writes through the default disk; faking only `public` wrote into real storage.
     Storage::fake('public');
+    Storage::fake('local');
 
     // Create test tenant and users
     $this->tenant = Tenant::factory()->create([
@@ -51,7 +53,7 @@ beforeEach(function (): void {
     }
 
     // Create roles
-    $this->communicationCoordinatorRole = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $this->communicationCoordinatorRole = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $this->superAdminRole = Role::firstOrCreate(['name' => config('permission.super_admin_role_name'), 'guard_name' => 'web']);
 
     $this->communicationCoordinatorRole->givePermissionTo([
@@ -80,7 +82,7 @@ beforeEach(function (): void {
     ]);
 
     // Assign role to the duty
-    $fileManagerDuty->assignRole('Communication Coordinator');
+    $fileManagerDuty->assignRole('Komunikacijos koordinatorius');
 
     $this->superAdmin = User::factory()->create();
     $this->superAdmin->assignRole(config('permission.super_admin_role_name'));
@@ -100,6 +102,75 @@ beforeEach(function (): void {
     Storage::disk('public')->put('files/padaliniai/vusaother/forbidden.txt', 'forbidden content');
 });
 
+describe('Files Controller - Inertia authorization', function (): void {
+    test('permission denials redirect back with an error and leave storage unchanged', function (string $method, string $routeName, string $actor, string $location, string $message): void {
+        $user = match ($actor) {
+            'reader' => makeFileReader($this->institution),
+            'manager' => $this->fileManager,
+            default => $this->regularUser,
+        };
+        $directory = $location === 'forbidden' ? $this->forbiddenPath : $this->allowedPath;
+        $filePath = $directory.'/keep.jpg';
+        Storage::put($filePath, 'original content');
+        Storage::makeDirectory($directory.'/empty');
+        Storage::disk('public')->makeDirectory(substr($directory, strlen('public/')).'/empty');
+        $payload = match ($routeName) {
+            'files.index' => [],
+            'files.createDirectory' => ['path' => $directory, 'name' => 'new-folder'],
+            'files.deleteDirectory' => ['path' => $directory.'/empty'],
+            'files.bulkDelete' => ['paths' => [$filePath]],
+            default => ['path' => $filePath],
+        };
+        $referrer = route('dashboard');
+
+        $response = asUserWithInertia($user)
+            ->withHeader('X-Inertia-Version', (string) app(HandleInertiaRequests::class)->version(request()))
+            ->from($referrer)
+            ->{$method}(route($routeName), $payload);
+
+        $expectedMessage = $routeName === 'files.bulkDelete'
+            ? __($message, ['name' => basename($filePath)])
+            : __($message);
+        $response->assertRedirect($referrer)
+            ->assertStatus($method === 'delete' ? 303 : 302)
+            ->assertSessionHas('error', $expectedMessage)
+            ->assertSessionHasNoErrors()
+            ->assertSessionMissing('data');
+        expect(Storage::get($filePath))->toBe('original content')
+            ->and(Storage::directoryExists($directory.'/empty'))->toBeTrue();
+        Storage::disk('public')->assertExists(substr($directory, strlen('public/')).'/empty');
+        Storage::disk('public')->assertMissing(substr($directory, strlen('public/')).'/new-folder');
+    })->with([
+        'no filesystem access' => ['get', 'files.index', 'regular', 'allowed', 'files.errors.no_filesystem_access'],
+        'create outside tenant' => ['post', 'files.createDirectory', 'manager', 'forbidden', 'files.errors.no_create_directory_permission'],
+        'read-only create' => ['post', 'files.createDirectory', 'reader', 'allowed', 'files.errors.no_create_directory_permission'],
+        'read-only directory delete' => ['delete', 'files.deleteDirectory', 'reader', 'allowed', 'files.errors.no_directory_delete_permission'],
+        'delete outside tenant' => ['delete', 'files.delete', 'manager', 'forbidden', 'files.errors.no_delete_permission'],
+        'read-only delete' => ['delete', 'files.delete', 'reader', 'allowed', 'files.errors.no_delete_permission'],
+        'read-only bulk delete' => ['delete', 'files.bulkDelete', 'reader', 'allowed', 'files.errors.bulk_no_delete_permission'],
+        'read-only compression' => ['post', 'files.compress', 'reader', 'allowed', 'files.errors.no_modify_permission'],
+        'scan outside tenant' => ['post', 'files.scanUsage', 'manager', 'forbidden', 'files.errors.no_scan_permission'],
+    ]);
+
+    test('mixed-permission bulk deletion redirects without deleting permitted files', function (): void {
+        $paths = [$this->allowedPath.'/keep.txt', $this->forbiddenPath.'/keep.txt'];
+        foreach ($paths as $path) {
+            Storage::put($path, 'original content');
+        }
+        $referrer = route('files.index', ['path' => $this->allowedPath]);
+
+        asUserWithInertia($this->fileManager)->from($referrer)
+            ->delete(route('files.bulkDelete'), ['paths' => $paths])
+            ->assertRedirect($referrer)
+            ->assertStatus(303)
+            ->assertSessionHas('error', __('files.errors.bulk_no_delete_permission', ['name' => 'keep.txt']));
+
+        foreach ($paths as $path) {
+            expect(Storage::get($path))->toBe('original content');
+        }
+    });
+});
+
 describe('Files Controller - Authentication & Authorization', function (): void {
     test('unauthenticated users cannot access files index', function (): void {
         $response = $this->get(route('files.index'));
@@ -113,11 +184,10 @@ describe('Files Controller - Authentication & Authorization', function (): void 
         expect($response->status())->toBe(401);
     });
 
-    test('regular user without permissions is redirected to dashboard', function (): void {
+    test('regular user without permissions receives forbidden', function (): void {
         $response = asUser($this->regularUser)->get(route('files.index'));
 
-        expect($response->status())->toBe(302)
-            ->and($response->headers->get('location'))->toContain('mano');
+        $response->assertForbidden();
     });
 
     test('file manager can access files within their tenant', function (): void {
@@ -157,7 +227,7 @@ describe('Files Controller - Directory Listing', function (): void {
         $response = asUser($this->fileManager)->getJson('/api/v1/admin/files?path='.urlencode($this->forbiddenPath));
 
         expect($response->status())->toBe(403)
-            ->and($response->json('message'))->toContain('Neturite teisių')
+            ->and($response->json('message'))->toContain('Neturi teisių')
             ->and($response->json('code'))->toBe('INSUFFICIENT_PERMISSIONS');
     });
 
@@ -199,120 +269,6 @@ describe('Files Controller - Directory Listing', function (): void {
     });
 });
 
-describe('Files Controller - File Upload', function (): void {
-    test('file manager can upload files to allowed directory', function (): void {
-        $file = UploadedFile::fake()->create('test-upload.txt', 100, 'text/plain');
-
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => $file]],
-            'path' => $this->allowedPath,
-        ]);
-
-        expect($response->status())->toBe(302);
-        $response->assertSessionHas('success');
-
-        // Verify file was actually stored
-        Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/test-upload.txt');
-    });
-
-    test('file manager cannot upload files to forbidden directory', function (): void {
-        $file = UploadedFile::fake()->create('forbidden-upload.txt', 100, 'text/plain');
-
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => $file]],
-            'path' => $this->forbiddenPath,
-        ]);
-
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('permission');
-    });
-
-    test('duplicate files are renamed with timestamp', function (): void {
-        // First upload
-        $file1 = UploadedFile::fake()->create('duplicate.txt', 100, 'text/plain');
-        $response1 = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => $file1]],
-            'path' => $this->allowedPath,
-        ]);
-
-        expect($response1->status())->toBe(302)
-            ->and($response1->getSession()->has('success') || $response1->getSession()->has('warning'))->toBeTrue();
-
-        // Second upload with same name
-        $file2 = UploadedFile::fake()->create('duplicate.txt', 100, 'text/plain');
-        $response2 = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => $file2]],
-            'path' => $this->allowedPath,
-        ]);
-
-        expect($response2->status())->toBe(302)
-            ->and($response2->getSession()->has('success') || $response2->getSession()->has('warning'))->toBeTrue();
-
-        // The system should handle duplicates gracefully - either by renaming or warning
-        // We don't test the exact implementation, just that it doesn't crash
-    });
-
-    test('file upload validates file types', function (): void {
-        $file = UploadedFile::fake()->create('test.exe', 100, 'application/x-executable');
-
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => $file]],
-            'path' => $this->allowedPath,
-        ]);
-
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors(['files.0.file']);
-    });
-
-    test('file upload validates file size', function (): void {
-        $file = UploadedFile::fake()->create('huge.txt', 60000, 'text/plain'); // 60MB > 50MB limit
-
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => $file]],
-            'path' => $this->allowedPath,
-        ]);
-
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors(['files.0.file']);
-    });
-
-    test('a TipTap non-image upload lands where the editor /uploads URL points', function (): void {
-        // storeAs() writes to the default (local) disk, so the TipTap branch has to carry the
-        // `public/` prefix. Without it the file landed in storage/app/files/content/... and the
-        // /uploads/files/content/... link the editor inserts returned 404.
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => UploadedFile::fake()->create('handout.pdf', 20, 'application/pdf')]],
-            'path' => 'content/'.date('Y/m'),
-        ]);
-
-        expect($response->status())->toBe(302);
-
-        $expected = 'public/files/padaliniai/vusa'.$this->tenant->alias.'/content/'.date('Y/m').'/handout.pdf';
-
-        Storage::assertExists($expected);
-        Storage::assertMissing('files/padaliniai/vusa'.$this->tenant->alias.'/content/'.date('Y/m').'/handout.pdf');
-    });
-
-    test('multiple files can be uploaded simultaneously', function (): void {
-        $files = [
-            ['file' => UploadedFile::fake()->create('file1.txt', 100, 'text/plain')],
-            ['file' => UploadedFile::fake()->create('file2.txt', 100, 'text/plain')],
-            ['file' => UploadedFile::fake()->create('file3.pdf', 100, 'application/pdf')],
-        ];
-
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => $files,
-            'path' => $this->allowedPath,
-        ]);
-
-        expect($response->status())->toBe(302);
-
-        Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/file1.txt');
-        Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/file2.txt');
-        Storage::assertExists('public/files/padaliniai/vusa'.$this->tenant->alias.'/file3.pdf');
-    });
-});
-
 describe('Files Controller - Directory Creation', function (): void {
     test('file manager can create directory in allowed path', function (): void {
         $response = asUser($this->fileManager)->post(route('files.createDirectory'), [
@@ -335,8 +291,8 @@ describe('Files Controller - Directory Creation', function (): void {
             'name' => 'forbidden-directory',
         ]);
 
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('permission');
+        $response->assertForbidden();
+        Storage::disk('public')->assertMissing('files/padaliniai/vusaother/forbidden-directory');
     });
 
     test('directory creation validates name format', function (): void {
@@ -435,8 +391,7 @@ describe('Files Controller - Directory Deletion', function (): void {
         $deleteResponse = asUser($readerUser)->delete(route('files.deleteDirectory'), [
             'path' => $fullPath,
         ]);
-        expect($deleteResponse->status())->toBe(302);
-        $deleteResponse->assertSessionHasErrors('permission');
+        $deleteResponse->assertForbidden();
         expect(Storage::directoryExists($fullPath))->toBeTrue();
 
         // Actor with both read and delete permissions can delete directory
@@ -474,8 +429,8 @@ describe('Files Controller - File Deletion', function (): void {
             'path' => $filePath,
         ]);
 
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('permission');
+        $response->assertForbidden();
+        Storage::disk('public')->assertExists('files/padaliniai/vusaother/forbidden.txt');
     });
 
     test('cannot delete non-existent file', function (): void {
@@ -532,27 +487,34 @@ describe('Files Controller - Bulk Delete', function (): void {
         )->toBeTrue();
     });
 
-    test('bulk delete handles mixed permissions correctly', function (): void {
+    test('bulk delete rejects the whole selection when the last file is forbidden', function (): void {
         $paths = [
-            $this->allowedPath.'/bulk1.txt',  // allowed
-            $this->forbiddenPath.'/forbidden.txt',  // forbidden
-            $this->allowedPath.'/bulk2.txt',  // allowed
+            $this->allowedPath.'/bulk1.txt',
+            $this->allowedPath.'/bulk2.txt',
+            $this->forbiddenPath.'/forbidden.txt',
         ];
+
+        foreach ($paths as $path) {
+            Storage::put($path, 'keep me');
+        }
 
         $response = asUser($this->fileManager)->delete(route('files.bulkDelete'), [
             'paths' => $paths,
         ]);
 
-        expect($response->status())->toBe(302);
-        // Should handle mixed permissions - some deleted, some skipped
+        $response->assertForbidden();
+        Storage::assertExists($paths);
+    });
 
-        // Just verify some response is given - either success, warning, or error
-        expect(
-            $response->getSession()->has('success') ||
-            $response->getSession()->has('warning') ||
-            $response->getSession()->has('error') ||
-            $response->getSession()->has('errors')
-        )->toBeTrue();
+    test('bulk deletion still deletes authorized files when other paths are missing or malformed', function (): void {
+        $filePath = $this->allowedPath.'/delete-me.txt';
+        Storage::put($filePath, 'content');
+
+        asUser($this->fileManager)->delete(route('files.bulkDelete'), [
+            'paths' => [$filePath, $this->allowedPath.'/missing.txt', '../../invalid.txt'],
+        ])->assertRedirect()->assertSessionHas('warning');
+
+        Storage::assertMissing($filePath);
     });
 
     test('bulk delete validates maximum number of files', function (): void {
@@ -577,6 +539,18 @@ describe('Files Controller - Bulk Delete', function (): void {
 });
 
 describe('Files Controller - Image Upload', function (): void {
+    test('single image uploads preserve a nested folder named public', function (): void {
+        Storage::fake();
+        $directory = $this->allowedPath.'/public/photos';
+
+        asUser($this->fileManager)->postJson(route('files.uploadImage'), [
+            'file' => UploadedFile::fake()->image('photo.png', 10, 10),
+            'path' => $directory,
+        ])->assertOk()->assertJsonPath('url', '/uploads/'.substr($directory, strlen('public/')).'/photo.webp');
+
+        Storage::assertExists($directory.'/photo.webp');
+    });
+
     test('can upload and process image', function (): void {
         $image = UploadedFile::fake()->image('test.jpg', 2000, 2000);
 
@@ -785,18 +759,6 @@ describe('Files Controller - Security Tests', function (): void {
         }
     });
 
-    test('file uploads outside allowed directory are rejected', function (): void {
-        $file = UploadedFile::fake()->create('malicious.txt', 100, 'text/plain');
-
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [['file' => $file]],
-            'path' => '../../../tmp',
-        ]);
-
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors();
-    });
-
     test('directory creation outside allowed path is rejected', function (): void {
         $response = asUser($this->fileManager)->post(route('files.createDirectory'), [
             'path' => '../../../tmp',
@@ -828,16 +790,6 @@ describe('Files Controller - Error Handling', function (): void {
 
         expect($response->status())->toBe(302);
         $response->assertSessionHasErrors('name');
-    });
-
-    test('handles empty file uploads', function (): void {
-        $response = asUser($this->fileManager)->post(route('files.store'), [
-            'files' => [],
-            'path' => $this->allowedPath,
-        ]);
-
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('files');
     });
 });
 
@@ -878,9 +830,8 @@ describe('Files Controller - File Usage Scanning', function (): void {
             'path' => $filePath,
         ]);
 
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('error');
-        expect(session('errors')->first('error'))->toContain('Neturite teisių skenuoti šio failo naudojimą');
+        $response->assertForbidden()->assertSessionMissing('data');
+        Storage::assertExists($filePath);
     });
 
     test('super admin can scan file usage in any directory', function (): void {
@@ -1040,10 +991,8 @@ describe('Files Controller - File Usage Scanning', function (): void {
         $responseComposed->assertSessionHas('data');
         $dataComposed = session('data');
 
-        // The scan should find the usage we just created, but due to unicode normalization complexities,
-        // we'll accept either finding usages or marking as safe to delete
-        expect($dataComposed)->toHaveKey('total_usages');
-        expect($dataComposed)->toHaveKey('is_safe_to_delete');
+        expect($dataComposed['is_safe_to_delete'])->toBeFalse()
+            ->and($dataComposed['total_usages'])->toBe(1);
 
         // Scan decomposed file
         $responseDecomposed = asUser($this->fileManager)->post(route('files.scanUsage'), [
@@ -1052,7 +1001,8 @@ describe('Files Controller - File Usage Scanning', function (): void {
         expect($responseDecomposed->status())->toBe(302);
         $responseDecomposed->assertSessionHas('data');
         $dataDecomposed = session('data');
-        expect($dataDecomposed)->toHaveKeys(['total_usages', 'is_safe_to_delete']);
+        expect($dataDecomposed['is_safe_to_delete'])->toBeFalse()
+            ->and($dataDecomposed['total_usages'])->toBe(1);
 
         // Additional: simulate JSON where precomposed š stored as \u0161
         $filenamePrecomposed = 'vardas_šaltinis.jpg';
@@ -1079,7 +1029,8 @@ describe('Files Controller - File Usage Scanning', function (): void {
         expect($respPre->status())->toBe(302);
         $respPre->assertSessionHas('data');
         $dataPre = session('data');
-        expect($dataPre)->toHaveKeys(['total_usages', 'is_safe_to_delete']);
+        expect($dataPre['is_safe_to_delete'])->toBeFalse()
+            ->and($dataPre['total_usages'])->toBe(1);
     });
 });
 
@@ -1125,6 +1076,17 @@ describe('Files Controller - Image Upload Path Hardening', function (): void {
             'path' => 'banners',
         ])->assertStatus(403);
     });
+
+    test('a user without file permissions can upload a contact photo', function (): void {
+        $image = UploadedFile::fake()->image('photo.jpg', 10, 10);
+
+        $response = asUser($this->regularUser)->postJson(route('files.uploadImage'), [
+            'file' => $image,
+            'path' => 'contacts',
+        ])->assertOk();
+
+        Storage::assertExists('public/contacts/'.$response->json('name'));
+    });
 });
 
 describe('Files Controller - Deletion requires the delete permission', function (): void {
@@ -1144,11 +1106,9 @@ describe('Files Controller - Deletion requires the delete permission', function 
         expect(asUser($reader)->getJson('/api/v1/admin/files?path='.urlencode($this->allowedPath))->status())
             ->toBe(200);
 
-        // ...but deleting inside it is not.
         $response = asUser($reader)->delete(route('files.delete'), ['path' => $filePath]);
 
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('permission');
+        $response->assertForbidden();
         expect(Storage::exists($filePath))->toBeTrue();
     });
 
@@ -1163,7 +1123,7 @@ describe('Files Controller - Deletion requires the delete permission', function 
 
         $response = asUser($reader)->delete(route('files.bulkDelete'), ['paths' => $paths]);
 
-        expect($response->status())->toBe(302);
+        $response->assertForbidden();
 
         foreach ($paths as $path) {
             expect(Storage::exists($path))->toBeTrue();
@@ -1195,8 +1155,7 @@ describe('Files Controller - Compression requires the update permission', functi
 
         $response = asUser($reader)->post(route('files.compress'), ['path' => $imagePath]);
 
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('permission');
+        $response->assertForbidden();
 
         // The original is untouched — the permission check runs before any re-encoding.
         expect(Storage::get($imagePath))->toBe('not-really-a-jpeg');
@@ -1229,8 +1188,7 @@ describe('Files Controller - Creation requires the create permission', function 
             'name' => 'new-folder',
         ]);
 
-        expect($response->status())->toBe(302);
-        $response->assertSessionHasErrors('permission');
+        $response->assertForbidden();
         expect(Storage::disk('public')->directoryExists('files/padaliniai/vusa'.$this->tenant->alias.'/new-folder'))
             ->toBeFalse();
     });

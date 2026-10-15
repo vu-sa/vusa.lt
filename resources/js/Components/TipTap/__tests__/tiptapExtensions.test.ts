@@ -209,6 +209,15 @@ describe('createCompactExtensions (content-grid cells, etc.)', () => {
 });
 
 describe('createMarksExtensions (hero fields, process steps, etc.)', () => {
+  it('preserves a legacy introduction over the limit while preventing additional characters', () => {
+    const text = 'ą'.repeat(201);
+    const editor = new Editor({ extensions: createMarksExtensions({ maxCharacters: 200 }), content: `<p>${text}</p>` });
+    editors.push(editor);
+    editor.commands.setTextSelection(1);
+    expect(editor.getText()).toBe(text);
+    editor.commands.insertContentAt(1, 'x');
+    expect(editor.getText()).toBe(text);
+  });
   it('registers the link mark and allows setting a link', () => {
     const editor = new Editor({ extensions: createMarksExtensions() });
     editors.push(editor);

@@ -12,7 +12,7 @@ interface TestRow {
   age: number;
 }
 
-const columns: ColumnDef<TestRow, any>[] = [
+const columns: ColumnDef<any, TestRow, any>[] = [
   {
     accessorKey: 'id',
     header: 'ID',
@@ -292,7 +292,7 @@ describe('DataTable.vue', () => {
   });
 
   describe('row selection', () => {
-    const columnsWithSelection: ColumnDef<TestRow, any>[] = [
+    const columnsWithSelection: ColumnDef<any, TestRow, any>[] = [
       {
         accessorKey: 'id',
         header: 'ID',

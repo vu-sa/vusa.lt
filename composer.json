@@ -65,7 +65,7 @@
         "pestphp/pest-plugin-browser": "^5.0",
         "pestphp/pest-plugin-laravel": "^5.0",
         "pestphp/pest-plugin-rector": "^5.0",
-        "phpmd/phpmd": "^2.15",
+        "phpmd/phpmd": "^3.0",
         "rector/rector": "^2.5",
         "ryoluo/sail-ssl": "^1.5.0",
         "spatie/laravel-ignition": "^2.0",
@@ -109,7 +109,7 @@
             "./vendor/bin/pest"
         ],
         "test:browser": [
-            "./vendor/bin/pest tests/Browser"
+            "./vendor/bin/pest tests/Browser --parallel"
         ],
         "lint": [
             "./vendor/bin/pint"
@@ -119,6 +119,9 @@
         ],
         "rector": [
           "./vendor/bin/rector"
+        ],
+        "phpmd": [
+            "./vendor/bin/phpmd analyze --no-progress"
         ]
     },
     "extra": {

@@ -1,0 +1,35 @@
+<?php
+
+return [
+    'sync' => [
+        'button' => 'Sync calendar',
+        'eyebrow' => 'Synchronization',
+        'title' => 'Calendar Synchronization Instructions',
+        'description' => 'Sync the VU SA event calendar with your personal calendar',
+        'step_copy' => 'Copy the link',
+        'all_events' => 'All events',
+        'only_english' => 'English events only',
+        'copy' => 'Copy',
+        'copy_failed' => "Couldn't copy the link...",
+        'copied' => 'Link copied!',
+        'step_add' => 'Add to your calendar',
+        'go_to' => 'Go to your',
+        'google_calendar' => 'Google Calendar',
+        'outlook_calendar' => 'Outlook Calendar',
+        'desktop_browser_hint' => '(using a browser on a PC)',
+        'paste_copied_link' => 'Paste the copied link',
+        'press' => 'Press',
+        'ready_minutes' => 'Done! Events will appear within a few minutes.',
+        'go_to_section' => 'Go to',
+        'section_word' => 'section',
+        'ready' => 'Done!',
+        'footer_notice' => 'Google and Outlook sometimes only update event information',
+        'once_a_day' => 'once a day',
+        'visit_site_hint' => 'For the latest events, always visit vusa.lt',
+    ],
+    'filters' => [
+        'active' => 'Active filters',
+        'search_unit' => 'Search unit',
+        'search_year' => 'Search year',
+    ],
+];

@@ -4,7 +4,7 @@
       <Tooltip v-for="item in agendaItems" :key="item.id">
         <TooltipTrigger>
           <span
-            class="w-2.5 h-2.5 rounded-full"
+            class="size-2.5"
             :class="getStatusMeta(item).dotClass"
           />
         </TooltipTrigger>

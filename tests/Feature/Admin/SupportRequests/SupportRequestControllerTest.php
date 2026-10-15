@@ -11,7 +11,8 @@ use App\Models\SupportRequestType;
 use App\Models\SupportService;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Notifications\AssignedToResourceNotification;
+use App\Notifications\SupportRequestAssignedNotification;
+use App\Notifications\SupportRequestInvolvedNotification;
 use App\Notifications\SupportRequestStatusChangedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -273,8 +274,8 @@ describe('involved people', function (): void {
         expect($this->supportRequest->involvedUsers()->pluck('users.id')->sort()->values()->all())
             ->toBe(collect([$kept->id, $added->id])->sort()->values()->all());
 
-        Notification::assertSentTo($added, AssignedToResourceNotification::class);
-        Notification::assertNotSentTo([$kept, $removed], AssignedToResourceNotification::class);
+        Notification::assertSentTo($added, SupportRequestInvolvedNotification::class);
+        Notification::assertNotSentTo([$kept, $removed], SupportRequestInvolvedNotification::class);
     });
 
     test('manager can clear involved people', function (): void {
@@ -301,6 +302,19 @@ describe('involved people', function (): void {
             'assigned_to' => $assignee->id,
         ])->assertRedirect();
 
-        Notification::assertSentTo($assignee, AssignedToResourceNotification::class);
+        Notification::assertSentTo($assignee, SupportRequestAssignedNotification::class);
+    });
+
+    test('a status change reaches the reporter and involved people but not whoever changed it', function (): void {
+        Notification::fake();
+        $involved = makeUser($this->tenant);
+        $this->supportRequest->involvedUsers()->attach([$involved->id, $this->admin->id]);
+
+        asUser($this->admin)->patch(route('supportRequests.status.update', $this->supportRequest->id), [
+            'status' => 'reviewing',
+        ])->assertRedirect();
+
+        Notification::assertSentTo([$this->user, $involved], SupportRequestStatusChangedNotification::class);
+        Notification::assertNotSentTo($this->admin, SupportRequestStatusChangedNotification::class);
     });
 });

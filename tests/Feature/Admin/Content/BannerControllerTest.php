@@ -10,7 +10,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     $this->banner = Banner::factory()->for($this->tenant)->create([
         'title' => 'Test baneris',
@@ -89,10 +89,10 @@ describe('authorized access', function (): void {
         $validData['title'] = 'Naujas baneris '.$uniqueSuffix;
         $validData['image_url'] = 'https://example.com/banner-'.$uniqueSuffix.'.jpg';
 
-        asUser($this->admin)
+        $response = asUser($this->admin)
             ->post(route('banners.store'), $validData)
             ->assertStatus(302)
-            ->assertRedirect(route('banners.index'))
+            ->assertSessionHasNoErrors()
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('banners', [
@@ -102,6 +102,10 @@ describe('authorized access', function (): void {
             'is_active' => $validData['is_active'],
             'tenant_id' => $this->tenant->id,
         ]);
+
+        $created = Banner::where('title', $validData['title'])->sole();
+        $response->assertRedirectToRoute('banners.edit', $created)->assertSessionHas('success');
+        asUser($this->admin)->get(route('banners.edit', $created))->assertOk();
     });
 
     test('can store banner without a logo — it renders as a text mark instead', function (): void {
@@ -113,7 +117,7 @@ describe('authorized access', function (): void {
         asUser($this->admin)
             ->post(route('banners.store'), $validData)
             ->assertStatus(302)
-            ->assertRedirect(route('banners.index'))
+            ->assertRedirectToRoute('banners.edit', Banner::query()->latest('id')->firstOrFail())
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('banners', [
@@ -290,6 +294,15 @@ describe('filtering and search', function (): void {
             );
     });
 
+    test('can filter banners by active status', function (): void {
+        asUser($this->admin)
+            ->get(route('banners.index', ['filters' => json_encode(['is_active' => '1'])]))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('banners.meta.total', 1)
+                ->where('banners.data.0.id', $this->banner->id)
+            );
+    });
+
     test('pagination works correctly', function (): void {
         // Create more banners to test pagination
         Banner::factory()->count(25)->for($this->tenant)->create();
@@ -304,11 +317,34 @@ describe('filtering and search', function (): void {
     });
 });
 
+test('banner status can be changed without submitting the entire form', function (): void {
+    asUser($this->admin)
+        ->patch(route('banners.updateStatus', $this->banner), ['is_active' => false])
+        ->assertRedirect();
+
+    $this->assertDatabaseHas('banners', ['id' => $this->banner->id, 'is_active' => 0]);
+    $this->assertDatabaseHas('banners', ['id' => $this->banner->id, 'title' => 'Test baneris']);
+});
+
+test('banner status change requires update permission', function (): void {
+    asUser($this->user)
+        ->patch(route('banners.updateStatus', $this->banner), ['is_active' => false])
+        ->assertForbidden();
+});
+
+test('banner status change rejects invalid input', function (): void {
+    asUser($this->admin)
+        ->patch(route('banners.updateStatus', $this->banner), ['is_active' => 'invalid'])
+        ->assertSessionHasErrors('is_active');
+
+    $this->assertDatabaseHas('banners', ['id' => $this->banner->id, 'is_active' => 1]);
+});
+
 describe('tenant isolation', function (): void {
     beforeEach(function (): void {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherBanner = Banner::factory()->for($this->otherTenant)->create();
-        $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
+        $this->otherAdmin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->otherTenant);
     });
 
     test('user only sees banners from their tenant', function (): void {

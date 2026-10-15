@@ -6,6 +6,7 @@ use App\Actions\ResolveTaskAssignees;
 use App\Actions\ResyncTaskAssigneesForCadence;
 use App\Enums\AgendaItemType;
 use App\Models\Meeting;
+use App\Models\Pivots\AgendaItem;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\MeetingCompletionService;
@@ -135,33 +136,13 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
             ->first();
     }
 
-    /**
-     * An item is complete when:
-     * - Type needs no vote (informational, deferred, break), OR
-     * - Type is 'voting' AND has a main vote the meeting's scope considers filled.
-     */
     protected function countCompletedItems(Meeting $meeting): int
     {
-        $agendaItems = $meeting->agendaItems()->with('votes')->get();
         $requiresStudentPerspective = $meeting->requiresStudentPerspective();
 
-        return $agendaItems->filter(function ($item) use ($requiresStudentPerspective) {
-            if ($item->type === null) {
-                return false;
-            }
-
-            if (! $item->type->requiresVote()) {
-                return true;
-            }
-
-            $mainVote = $item->votes->firstWhere('is_main', true);
-
-            if (! $mainVote) {
-                return false;
-            }
-
-            return $this->completionService->voteIsComplete($mainVote, $requiresStudentPerspective);
-        })->count();
+        return $meeting->agendaItems()->with('votes')->get()
+            ->filter(fn (AgendaItem $item): bool => $this->completionService->itemIsComplete($item, $requiresStudentPerspective))
+            ->count();
     }
 
     /**
@@ -181,39 +162,18 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
     }
 
     /**
-     * Check if a previously completed task should reopen due to an agenda item changing to voting.
+     * A completed task reopens once any agenda item stops counting as complete (e.g. switched to voting).
      */
     public function shouldReopenTask(Meeting $meeting): bool
     {
-        $agendaItems = $meeting->agendaItems()->with('votes')->get();
-        $requiresStudentPerspective = $meeting->requiresStudentPerspective();
-
-        foreach ($agendaItems as $item) {
-            if ($item->type === AgendaItemType::Voting) {
-                $mainVote = $item->votes->firstWhere('is_main', true);
-
-                if (! $mainVote) {
-                    return true;
-                }
-
-                if (! $this->completionService->voteIsComplete($mainVote, $requiresStudentPerspective)) {
-                    return true;
-                }
-            }
-
-            if ($item->type === null) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->countCompletedItems($meeting) < $meeting->agendaItems()->count();
     }
 
     /**
      * Reopen a completed task if conditions require it.
      *
      * Reopening revives a roster that was snapshotted whenever the task was last open, so
-     * the assignees are resolved again on the way back: a term staffed with administrators
+     * the assignees are resolved again on the way back: a term staffed with secretaries
      * after the task completed would otherwise mail its whole membership on the next
      * auto-completion. Silent, like {@see ResyncTaskAssigneesForCadence} — the
      * task is the same one, only its holders changed.

@@ -1,8 +1,7 @@
 <?php
 
-use App\Enums\NotificationCategory;
-use App\Enums\NotificationChannel;
-use App\Models\Task;
+use App\Enums\EmailDelivery;
+use App\Enums\NotificationType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Feature\Notifications\NotificationTestHelpers;
@@ -13,42 +12,31 @@ describe('default preferences', function (): void {
     test('defaults are applied when preferences are null', function (): void {
         $user = User::factory()->create(['notification_preferences' => null]);
 
-        $prefs = $user->notification_preferences;
-
-        expect($prefs)->toHaveKeys(['channels', 'digest_frequency_hours', 'muted_until', 'muted_threads', 'reminder_settings']);
-
-        // Categories that are disabled by default (opt-in)
-        $disabledByDefault = [
-            NotificationCategory::News,
-            NotificationCategory::Calendar,
-        ];
-
-        // Check channels - most should be enabled, but News and Calendar are disabled by default
-        foreach (NotificationCategory::cases() as $category) {
-            $expectedEnabled = ! in_array($category, $disabledByDefault, true);
-            foreach (NotificationChannel::cases() as $channel) {
-                expect($prefs['channels'][$category->value][$channel->value])->toBe($expectedEnabled);
-            }
-        }
-
-        expect($prefs['digest_frequency_hours'])->toBe(4)
-            ->and($prefs['muted_until'])->toBeNull()
-            ->and($prefs['muted_threads'])->toBeEmpty();
+        expect($user->notification_preferences)->toBe([
+            'types' => [],
+            'digest_frequency_hours' => 4,
+            'emails' => [],
+            'muted_until' => null,
+            'reminder_settings' => ['task_reminder_days' => [7, 3, 1], 'meeting_reminder_hours' => [24, 1]],
+        ]);
     });
 
-    test('partial preferences are merged with defaults', function (): void {
-        $user = User::factory()->create([
-            'notification_preferences' => [
-                'digest_frequency_hours' => 12,
-            ],
-        ]);
+    test('a deselected reminder interval stays deselected', function (): void {
+        $user = User::factory()->create(['notification_preferences' => [
+            'reminder_settings' => ['meeting_reminder_hours' => [24], 'task_reminder_days' => []],
+        ]]);
 
-        $prefs = $user->notification_preferences;
+        expect($user->getMeetingReminderHours())->toBe([24])
+            ->and($user->getTaskReminderDays())->toBe([]);
+    });
 
-        expect($prefs['digest_frequency_hours'])->toBe(12);
-        // Defaults should still be present
-        expect($prefs['channels'])->not->toBeEmpty();
-        expect($prefs['reminder_settings'])->not->toBeEmpty();
+    test('keys from the retired category matrix are ignored', function (): void {
+        $user = User::factory()->create(['notification_preferences' => [
+            'channels' => ['task' => ['email_digest' => false]],
+        ]]);
+
+        expect($user->notification_preferences)->not->toHaveKey('channels')
+            ->and($user->emailDeliveryFor(NotificationType::TaskReminder))->toBe(EmailDelivery::Immediate);
     });
 });
 
@@ -107,188 +95,58 @@ describe('global muting', function (): void {
     });
 });
 
-describe('thread muting', function (): void {
-    test('muteThread adds to muted_threads array', function (): void {
-        $user = $this->createUserWithPreferences();
+describe('per-type delivery', function (): void {
+    test('a type without an override uses its defaults', function (): void {
+        $user = User::factory()->create();
 
-        $user->muteThread(Task::class, '123');
-
-        $user->refresh();
-        $mutedThreads = $user->notification_preferences['muted_threads'];
-
-        expect($mutedThreads)->toHaveCount(1)
-            ->and($mutedThreads[0])->toMatchArray(['model_class' => Task::class, 'model_id' => '123']);
+        expect($user->emailDeliveryFor(NotificationType::ApprovalRequested))->toBe(EmailDelivery::Immediate)
+            ->and($user->emailDeliveryFor(NotificationType::MeetingCreated))->toBe(EmailDelivery::Digest)
+            ->and($user->wantsPushFor(NotificationType::ApprovalRequested))->toBeTrue()
+            ->and($user->wantsPushFor(NotificationType::MeetingCreated))->toBeFalse();
     });
 
-    test('muteThread with expiry sets until timestamp', function (): void {
-        $user = $this->createUserWithPreferences();
-        $until = now()->addDay();
+    test('stored overrides win over defaults', function (): void {
+        $user = $this->createUserWithTypePreference(NotificationType::MeetingCreated, ['email' => 'off', 'push' => true]);
 
-        $user->muteThread(Task::class, '123', $until);
-
-        $user->refresh();
-        $mutedThreads = $user->notification_preferences['muted_threads'];
-
-        expect($mutedThreads[0]['until'])->not->toBeNull();
+        expect($user->emailDeliveryFor(NotificationType::MeetingCreated))->toBe(EmailDelivery::Off)
+            ->and($user->wantsPushFor(NotificationType::MeetingCreated))->toBeTrue();
     });
 
-    test('unmuteThread removes from muted_threads array', function (): void {
-        $user = $this->createUserWithPreferences();
+    test('an unknown stored value falls back to the default', function (): void {
+        $user = $this->createUserWithTypePreference(NotificationType::MeetingCreated, ['email' => 'weekly', 'push' => 'yes']);
 
-        $user->muteThread(Task::class, '123');
-        $user->muteThread(Task::class, '456');
-
-        $user->refresh();
-        expect($user->notification_preferences['muted_threads'])->toHaveCount(2);
-
-        $user->unmuteThread(Task::class, '123');
-        $user->refresh();
-
-        $mutedThreads = $user->notification_preferences['muted_threads'];
-        expect($mutedThreads)->toHaveCount(1)
-            ->and($mutedThreads[0]['model_id'])->toBe('456');
-    });
-
-    test('muteThread replaces existing mute for same thread', function (): void {
-        $user = $this->createUserWithPreferences();
-
-        $user->muteThread(Task::class, '123', now()->addHour());
-        $user->muteThread(Task::class, '123', now()->addDays(7));
-
-        $user->refresh();
-        $mutedThreads = $user->notification_preferences['muted_threads'];
-
-        expect($mutedThreads)->toHaveCount(1);
+        expect($user->emailDeliveryFor(NotificationType::MeetingCreated))->toBe(EmailDelivery::Digest)
+            ->and($user->wantsPushFor(NotificationType::MeetingCreated))->toBeFalse();
     });
 });
 
-describe('channel preferences', function (): void {
-    test('shouldReceiveNotification returns true for enabled channel', function (): void {
+describe('notification emails', function (): void {
+    test('with nothing chosen, mail goes to the current duty address', function (): void {
         $user = $this->createUserWithPreferences();
+        $user->current_duties()->first()->update(['email' => 'pirmininkas@gmc.vusa.lt']);
 
-        expect($user->shouldReceiveNotification(
-            NotificationCategory::Task,
-            NotificationChannel::InApp
-        ))->toBeTrue();
+        expect($user->notificationEmails())->toBe(['pirmininkas@gmc.vusa.lt']);
     });
 
-    test('shouldReceiveNotification returns false for disabled channel', function (): void {
-        $user = $this->createUserWithDisabledChannel(
-            NotificationCategory::Task,
-            NotificationChannel::Push
-        );
-
-        expect($user->shouldReceiveNotification(
-            NotificationCategory::Task,
-            NotificationChannel::Push
-        ))->toBeFalse();
-
-        // Other channels should still be enabled
-        expect($user->shouldReceiveNotification(
-            NotificationCategory::Task,
-            NotificationChannel::InApp
-        ))->toBeTrue();
-    });
-
-    test('setNotificationPreference updates specific channel', function (): void {
+    test('with no duty address, mail goes to the personal address', function (): void {
         $user = $this->createUserWithPreferences();
+        $user->current_duties()->first()->update(['email' => null]);
 
-        $user->setNotificationPreference(
-            NotificationCategory::Comment,
-            NotificationChannel::EmailDigest,
-            false
-        );
-
-        $user->refresh();
-
-        expect($user->shouldReceiveNotification(
-            NotificationCategory::Comment,
-            NotificationChannel::EmailDigest
-        ))->toBeFalse();
-
-        // Other category/channel combinations should be unaffected
-        expect($user->shouldReceiveNotification(
-            NotificationCategory::Task,
-            NotificationChannel::EmailDigest
-        ))->toBeTrue();
+        expect($user->notificationEmails())->toBe([$user->email]);
     });
-});
 
-describe('digest settings', function (): void {
-    test('getDigestFrequencyHours returns default when not set', function (): void {
+    test('chosen addresses that are no longer available fall back to the same default', function (): void {
+        $user = $this->createUserWithPreferences(['emails' => ['old-role@vusa.lt']]);
+        $user->current_duties()->first()->update(['email' => 'pirmininkas@vusa.lt']);
+
+        expect($user->notificationEmails())->toBe(['pirmininkas@vusa.lt']);
+    });
+
+    test('chosen available addresses are used as they are', function (): void {
         $user = $this->createUserWithPreferences();
+        $user->current_duties()->first()->update(['email' => 'pirmininkas@vusa.lt']);
+        $user->update(['notification_preferences' => ['emails' => [$user->email]]]);
 
-        expect($user->getDigestFrequencyHours())->toBe(4);
-    });
-
-    test('getDigestFrequencyHours returns custom value', function (): void {
-        $user = $this->createUserWithDigestEnabled(12);
-
-        expect($user->getDigestFrequencyHours())->toBe(12);
-    });
-
-    test('setDigestFrequencyHours validates allowed values', function (): void {
-        $user = $this->createUserWithPreferences();
-
-        // Valid values
-        foreach ([1, 4, 12, 24] as $hours) {
-            $user->setDigestFrequencyHours($hours);
-            $user->refresh();
-            expect($user->getDigestFrequencyHours())->toBe($hours);
-        }
-
-        // Invalid value should default to 4
-        $user->setDigestFrequencyHours(5);
-        $user->refresh();
-        expect($user->getDigestFrequencyHours())->toBe(4);
-    });
-});
-
-describe('reminder settings', function (): void {
-    test('getTaskReminderDays returns default values', function (): void {
-        $user = $this->createUserWithPreferences();
-
-        expect($user->getTaskReminderDays())->toBe([7, 3, 1]);
-    });
-
-    test('setTaskReminderDays updates values', function (): void {
-        $user = $this->createUserWithPreferences();
-
-        $user->setTaskReminderDays([14, 7, 1]);
-        $user->refresh();
-
-        expect($user->getTaskReminderDays())->toBe([14, 7, 1]);
-    });
-
-    test('setTaskReminderDays filters invalid values', function (): void {
-        $user = $this->createUserWithPreferences();
-
-        // Note: Due to array_replace_recursive behavior, filtered values [7, 3]
-        // will be merged with defaults [7, 3, 1] by index, so index 2 (value 1)
-        // remains from defaults. This is expected current behavior.
-        $user->setTaskReminderDays([7, 0, -1, 3]);
-        $user->refresh();
-
-        $days = $user->getTaskReminderDays();
-        // Verify that 0 and -1 were filtered out
-        expect($days)->not->toContain(0);
-        expect($days)->not->toContain(-1);
-        // The actual stored filtered values are 7 and 3
-        expect($days)->toMatchArray([0 => 7, 1 => 3]);
-    });
-
-    test('getMeetingReminderHours returns default values', function (): void {
-        $user = $this->createUserWithPreferences();
-
-        expect($user->getMeetingReminderHours())->toBe([24, 1]);
-    });
-
-    test('setMeetingReminderHours updates values', function (): void {
-        $user = $this->createUserWithPreferences();
-
-        $user->setMeetingReminderHours([48, 24, 2]);
-        $user->refresh();
-
-        expect($user->getMeetingReminderHours())->toBe([48, 24, 2]);
+        expect($user->fresh()->notificationEmails())->toBe([$user->email]);
     });
 });

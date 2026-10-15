@@ -73,7 +73,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch, useId } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarClock, X } from 'lucide-vue-next';
+import { CalendarClock, X } from '@lucide/vue';
 
 import { CollectionSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';

@@ -6,7 +6,12 @@ use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\ActivityLogIndexRequest;
 use App\Http\Resources\ActivityResource;
 use App\Models\Activity;
+use App\Models\AgendaItemNote;
+use App\Models\Pivots\AgendaItem;
+use App\Models\Step;
+use App\Models\Vote;
 use App\Services\ActivityChangeFormatter;
+use App\Services\AgendaItemPresenter;
 use App\Support\Auditables;
 use App\Support\MorphMap;
 use Illuminate\Http\JsonResponse;
@@ -49,15 +54,30 @@ class ActivityLogApiController extends ApiController
                 fn ($q, $type) => $q->where('subject_type', MorphMap::alias(Auditables::subjectClassFor($type)))
             )
             ->when($request->validated('causer_id'), fn ($q, $causerId) => $q->where('causer_id', $causerId))
-            ->with('causer:id,name,profile_photo_path')
+            ->with(['causer:id,name,profile_photo_path', 'subject'])
             ->orderByDesc('id');
 
         // cursorPaginate() resolves the current cursor itself from the
         // request's "cursor" query parameter -- no manual decoding needed.
         $activities = $query->cursorPaginate((int) $request->validated('per_page', 25));
 
-        $this->formatter->prepare(collect($activities->items()));
+        $visible = collect($activities->items())->filter(function (Activity $activity) use ($request): bool {
+            $child = $activity->subject;
+            if ($child === null && in_array($activity->subjectClass(), [AgendaItem::class, AgendaItemNote::class, Vote::class, Step::class], true)) {
+                return $request->user()->isSuperAdmin();
+            }
 
-        return $this->jsonCursorPaginated($activities, ActivityResource::collection($activities->items()));
+            $item = match (true) {
+                $child instanceof AgendaItem => $child,
+                $child instanceof Vote, $child instanceof AgendaItemNote, $child instanceof Step => $child->agendaItem,
+                default => null,
+            };
+
+            return $item === null || ! $item->is_private || AgendaItemPresenter::canRead($item, $request->user());
+        })->values();
+
+        $this->formatter->prepare($visible);
+
+        return $this->jsonCursorPaginated($activities, ActivityResource::collection($visible));
     }
 }

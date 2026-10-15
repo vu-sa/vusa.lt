@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import MeetingsGanttToolbar from '../MeetingsGanttToolbar.vue';
+import GanttZoomControl from '../GanttZoomControl.vue';
 
 import { commonStubs } from '@/tests/stubs';
 
@@ -42,6 +43,22 @@ describe('MeetingsGanttToolbar', () => {
     expect(wrapper.text()).toContain('7');
   });
 
+  it('caps zoom-in at half its prior width and reaches one pixel per day', async () => {
+    wrapper = mountToolbar({ dayWidth: 1 });
+
+    const zoom = wrapper.getComponent(GanttZoomControl);
+    expect(zoom.props()).toMatchObject({ min: 1, max: 9, step: 2 });
+
+    const [zoomOut, zoomIn] = zoom.findAll('button');
+    expect(zoomOut!.attributes('disabled')).toBeDefined();
+
+    await zoomIn!.trigger('click');
+    expect(wrapper.emitted('update:dayWidth')).toEqual([[3]]);
+
+    await wrapper.setProps({ dayWidth: 9 });
+    expect(zoom.findAll('button')[1]!.attributes('disabled')).toBeDefined();
+  });
+
   it('renders a chip per tenant filter and emits scroll-to-tenant on click', async () => {
     wrapper = mountToolbar({ tenantFilter: ['vusa', 'vuif'] });
 
@@ -62,22 +79,21 @@ describe('MeetingsGanttToolbar', () => {
   it('emits update:detailsExpanded when the details toggle is clicked', async () => {
     wrapper = mountToolbar({ detailsExpanded: false });
 
-    // Details toggle is the first button inside the right-hand controls group.
-    const detailsButton = wrapper.find('button svg path[d^="M3 4a1 1 0 011-1h12"]').element
-      .closest('button') as HTMLButtonElement;
-    await detailsButton.click();
+    await wrapper.get('[data-slot="gantt-details-toggle"]').trigger('click');
 
     expect(wrapper.emitted('update:detailsExpanded')).toEqual([[true]]);
   });
 
-  it('hides the fullscreen button when hideFullscreenButton is true', () => {
-    wrapper = mountToolbar({ hideFullscreenButton: true });
+  it('turns the full-screen button into the way back out while in focus mode', () => {
+    wrapper = mountToolbar({ fullscreenActive: true });
 
-    expect(wrapper.find('[data-tour="gantt-fullscreen"]').exists()).toBe(false);
+    const button = wrapper.get('[data-tour="gantt-fullscreen"]');
+    expect(button.attributes('aria-pressed')).toBe('true');
+    expect(button.attributes('aria-label')).toBe('Išeiti iš viso ekrano');
   });
 
   it('shows the fullscreen button and emits fullscreen when clicked', async () => {
-    wrapper = mountToolbar({ hideFullscreenButton: false });
+    wrapper = mountToolbar();
 
     const fullscreenButton = wrapper.get('[data-tour="gantt-fullscreen"]');
     await fullscreenButton.trigger('click');

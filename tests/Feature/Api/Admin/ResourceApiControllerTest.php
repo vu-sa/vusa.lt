@@ -12,7 +12,7 @@ beforeEach(function (): void {
     $this->tenantB = Tenant::factory()->create();
 
     $this->simpleUser = makeUser($this->tenantA);
-    $this->manager = makeTenantUserWithRole('Resource Manager', $this->tenantB);
+    $this->manager = makeTenantUserWithRole('Išteklių administratorius', $this->tenantB);
 
     $this->resource = Resource::factory()->for($this->tenantB)->create([
         'name' => ['lt' => 'Bendra įranga', 'en' => 'Shared equipment'],

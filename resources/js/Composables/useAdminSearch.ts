@@ -1,37 +1,14 @@
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 
+import { buildProfileParams } from '@/Shared/Search/profiles';
+import { documentWithMatch, type HighlightedHit } from '@/Shared/Search/matches';
+import { facetSearches, mergeDisjunctiveFacets } from '@/Shared/Search/facets';
 import { buildInfix } from '@/Features/Admin/AdminSearch/Utils/searchParams';
 import { ErrorUtils } from '@/Shared/Search/services/SearchErrorUtils';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
-import type {
-  TypesenseNode,
-  AdminSearchConfig,
-  ScopedCollectionConfig,
-  MeetingSearchResult,
-  AgendaItemSearchResult,
-  NewsSearchResult,
-  PageSearchResult,
-  CalendarSearchResult,
-  InstitutionSearchResult,
-  DocumentSearchResult,
-  ResourceSearchResult,
-  DutySearchResult,
-  MultiSearchResults,
-} from '@/Shared/Search/types';
+import type { AdminSearchConfig, MultiSearchResults } from '@/Shared/Search/types';
 
-// Re-export types for backward compatibility
-export type {
-  MeetingSearchResult,
-  AgendaItemSearchResult,
-  NewsSearchResult,
-  PageSearchResult,
-  CalendarSearchResult,
-  InstitutionSearchResult,
-  DocumentSearchResult,
-  ResourceSearchResult,
-  DutySearchResult,
-  MultiSearchResults,
-} from '@/Shared/Search/types';
+export type { MultiSearchResults } from '@/Shared/Search/types';
 
 /**
  * Admin Search Types
@@ -44,6 +21,14 @@ interface AdminSearchResult {
   tenant_id?: number;
   tenant_name?: string;
   [key: string]: any;
+}
+
+/** The part of a Typesense search result the admin search reads. */
+interface CollectionSearchResult {
+  hits?: HighlightedHit[];
+  found?: number;
+  page?: number;
+  facet_counts?: Array<{ field_name: string; counts: Array<{ value: string; count: number }> }>;
 }
 
 interface SearchState {
@@ -279,7 +264,56 @@ export const useAdminSearch = () => {
     return config.value?.collections?.[collection]?.tenantIds ?? [];
   };
 
+  /** Own and authorized related institutions the scoped key grants for a collection. */
+  const getCollectionInstitutionIds = (collection: string): string[] => {
+    return config.value?.collections?.[collection]?.institutionIds ?? [];
+  };
+
   const isSuperAdmin = computed(() => config.value?.isSuperAdmin ?? false);
+
+  /**
+   * One collection search sent as POST /multi_search. A GET query string is capped at 4000
+   * characters, which a long `filter_by` (a "Sekamos" list of ~150+ ids) exceeds with a 400.
+   * The per-search key keeps the collection's scoped filter; the header key only opens the endpoint.
+   */
+  const postCollectionSearch = async (
+    baseUrl: string,
+    collectionName: string,
+    apiKey: string,
+    params: URLSearchParams,
+    signal?: AbortSignal,
+    facetFilters: Record<string, string> = {},
+  ): Promise<{ status: number; data?: CollectionSearchResult; errorText?: string; retryAfter?: string | null }> => {
+    const base = Object.entries(config.value?.collections ?? {}).find(([, entry]) => entry.name === collectionName)?.[0] ?? collectionName;
+    const profiled = buildProfileParams(config.value?.searchProfiles?.[base], Object.fromEntries(params), config.value?.searchLocale);
+    const searches = facetSearches(profiled, facetFilters).map(search => ({ 'collection': collectionName, 'x-typesense-api-key': apiKey, ...search }));
+    const response = await fetch(`${baseUrl}/multi_search`, {
+      method: 'POST',
+      headers: {
+        'X-TYPESENSE-API-KEY': config.value?.headerKey || apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        searches,
+      }),
+      signal,
+    });
+
+    if (!response.ok) {
+      return { status: response.status, errorText: await response.text(), retryAfter: response.headers.get('retry-after') };
+    }
+
+    const results = (await response.json())?.results ?? [];
+    const result = results[0];
+
+    // multi_search answers 200 and reports each search's failure inside its result.
+    if (!result || result.error) {
+      return { status: result?.code ?? 500, errorText: result?.error ?? 'Empty search response' };
+    }
+
+    if (Object.keys(facetFilters).length) result.facet_counts = mergeDisjunctiveFacets(result.facet_counts ?? [], Object.keys(facetFilters), results.slice(1));
+    return { status: 200, data: result };
+  };
 
   /**
    * Perform a search against a collection
@@ -352,18 +386,9 @@ export const useAdminSearch = () => {
         searchParams.append('facet_by', options.facetBy);
       }
 
-      const response = await fetch(
-        `${baseUrl}/collections/${collectionName}/documents/search?${searchParams}`,
-        {
-          method: 'GET',
-          headers: {
-            'X-TYPESENSE-API-KEY': apiKey,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+      const response = await postCollectionSearch(baseUrl, collectionName, apiKey, searchParams);
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         // Handle 401 - expired or invalid key
         if (response.status === 401) {
           await refreshConfig();
@@ -373,13 +398,12 @@ export const useAdminSearch = () => {
           }
         }
 
-        const errorText = await response.text();
-        throw new Error(`Typesense error: ${response.status} - ${errorText}`);
+        throw new Error(`Typesense error: ${response.status} - ${response.errorText}`);
       }
 
-      const data = await response.json();
+      const data = response.data ?? {};
 
-      searchState.value.results = data.hits?.map((hit: any) => hit.document) || [];
+      searchState.value.results = (data.hits?.map(hit => documentWithMatch(hit)) || []) as AdminSearchResult[];
       searchState.value.totalHits = data.found || 0;
     }
     catch (error: unknown) {
@@ -536,11 +560,11 @@ export const useAdminSearch = () => {
     const hasQuery = !!query && query.trim() !== '';
     const relevanceSort = (dateField: string, direction: 'asc' | 'desc' = 'desc'): string =>
       hasQuery
-        ? `_text_match(buckets:10):desc,${dateField}:${direction}`
+        ? `_text_match:desc,${dateField}:${direction}`
         : `${dateField}:${direction}`;
 
-    // Relevance tuning shared by every sub-search (mirrors config/scout.php
-    // typesense.model-settings, which the multi_search call does not otherwise apply).
+    // Fallback only: buildProfileParams replaces query_by, weights and tuning with the server's
+    // SearchProfiles (config/scout.php), so tune relevance there, not here.
     const commonTuning = {
       prioritize_exact_match: true,
       prioritize_token_position: true,
@@ -676,9 +700,9 @@ export const useAdminSearch = () => {
       searches.push({
         'collection': dutiesConfig.name,
         'q': query || '*',
-        'query_by': 'name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
-        'query_by_weights': '10,8,4,4,3,3,2',
-        'infix': buildInfix('name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names', 'duties'),
+        'query_by': 'name_lt,name_en,email,former_names,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
+        'query_by_weights': '10,8,4,4,4,3,3,2',
+        'infix': buildInfix('name_lt,name_en,email,former_names,institution_name_lt,institution_name_en,current_user_names,previous_user_names', 'duties'),
         // Duties have no meaningful date; tiebreak alphabetically by name.
         'sort_by': relevanceSort('name_lt', 'asc'),
         ...commonTuning,
@@ -721,7 +745,10 @@ export const useAdminSearch = () => {
           'X-TYPESENSE-API-KEY': headerApiKey,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ searches }),
+        body: JSON.stringify({ searches: searches.map((search) => {
+          const base = Object.entries(config.value?.collections ?? {}).find(([, entry]) => entry.name === search.collection)?.[0];
+          return buildProfileParams(base ? config.value?.searchProfiles?.[base] : undefined, search, config.value?.searchLocale);
+        }) }),
         signal,
       });
 
@@ -740,14 +767,14 @@ export const useAdminSearch = () => {
         if (response.status === 401) {
           const errorText = await response.text();
           console.error('Search authentication error after retry:', errorText);
-          throw new Error('Paieškos autentifikacija nepavyko. Pabandykite perkrauti puslapį.');
+          throw new Error('Paieškos autentifikacija nepavyko. Pabandyk perkrauti puslapį.');
         }
 
         // Handle 403 - forbidden (scoped key doesn't allow this operation)
         if (response.status === 403) {
           const errorText = await response.text();
           console.error('Search forbidden:', errorText);
-          throw new Error('Neturite prieigos prie paieškos. Pabandykite perkrauti puslapį.');
+          throw new Error('Neturi prieigos prie paieškos. Pabandyk perkrauti puslapį.');
         }
 
         // Handle 429 - rate limited
@@ -776,7 +803,7 @@ export const useAdminSearch = () => {
 
         const key = collectionKey as keyof Omit<MultiSearchResults, 'counts'>;
         // Attach the Typesense relevance score so the "All" tab can interleave
-        // results across collections by relevance (see SearchAllPanel.vue).
+        // results across collections by relevance.
         // Use the string `text_match_info.score`, not the numeric `text_match`:
         // the int64 score exceeds JS's safe-integer range, so the number form
         // loses precision and collapses distinct scores into ties. The string is
@@ -784,12 +811,14 @@ export const useAdminSearch = () => {
         const hits = searchResult?.hits?.map(
           (hit: {
             document: Record<string, unknown>;
+            highlights?: HighlightedHit['highlights'];
             text_match?: number;
-            text_match_info?: { score?: string };
+            text_match_info?: { score?: string; tokens_matched?: number };
           }) => ({
-            ...hit.document,
+            ...documentWithMatch(hit),
             _text_match: hit.text_match_info?.score
               ?? (hit.text_match != null ? String(hit.text_match) : '0'),
+            _tokens_matched: hit.text_match_info?.tokens_matched ?? 0,
           }),
         ) || [];
         (results[key] as unknown[]) = hits;
@@ -821,6 +850,7 @@ export const useAdminSearch = () => {
     query: string,
     options: {
       filterBy?: string; // Additional filters from facet selection
+      facetFilters?: Record<string, string>;
       sortBy?: string; // Sort order
       facetBy: string; // Comma-separated facet fields
       queryBy?: string; // Fields to search (defaults by collection)
@@ -915,19 +945,9 @@ export const useAdminSearch = () => {
     }
 
     try {
-      const response = await fetch(
-        `${baseUrl}/collections/${collectionName}/documents/search?${searchParams}`,
-        {
-          method: 'GET',
-          headers: {
-            'X-TYPESENSE-API-KEY': apiKey,
-            'Content-Type': 'application/json',
-          },
-          signal,
-        },
-      );
+      const response = await postCollectionSearch(baseUrl, collectionName, apiKey, searchParams, signal, options.facetFilters);
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         // Handle 401 - expired or invalid key (retry once)
         if (response.status === 401 && _retryCount < 1) {
           console.warn('Search authentication failed, refreshing keys...');
@@ -942,19 +962,19 @@ export const useAdminSearch = () => {
         }
 
         if (response.status === 429) {
-          const retryAfter = parseInt(response.headers.get('retry-after') || '5', 10);
+          const retryAfter = parseInt(response.retryAfter || '5', 10);
           rateLimitedUntil.value = Date.now() + retryAfter * 1000;
           throw new Error('Too many requests. Please wait a moment.');
         }
 
-        const errorText = await response.text();
-        throw new Error(`Search failed: ${response.status} - ${errorText}`);
+        throw new Error(`Search failed: ${response.status} - ${response.errorText}`);
       }
 
-      const data = await response.json();
+      if (signal.aborted) throw new DOMException('Search was cancelled', 'AbortError');
+      const data = response.data ?? {};
 
       return {
-        hits: (data.hits?.map((hit: { document: T }) => hit.document) || []) as T[],
+        hits: (data.hits?.map(hit => documentWithMatch(hit)) || []) as T[],
         totalHits: data.found || 0,
         facets: data.facet_counts || [],
         page: data.page || page,
@@ -964,14 +984,14 @@ export const useAdminSearch = () => {
     catch (error: unknown) {
       // Don't throw for aborted requests
       if (ErrorUtils.isAbortError(error)) {
-        return { hits: [], totalHits: 0, facets: [], page: 1, totalPages: 0 };
+        throw error;
       }
       // Re-throw with consistent error handling
       const searchError = ErrorUtils.fromError(error, 'faceted-search');
       throw new Error(searchError.userMessage);
     }
     finally {
-      searchAbortController = null;
+      if (searchAbortController?.signal === signal) searchAbortController = null;
     }
   };
 
@@ -1039,18 +1059,9 @@ export const useAdminSearch = () => {
     }
 
     try {
-      const response = await fetch(
-        `${baseUrl}/collections/${collectionName}/documents/search?${searchParams}`,
-        {
-          method: 'GET',
-          headers: {
-            'X-TYPESENSE-API-KEY': apiKey,
-            'Content-Type': 'application/json',
-          },
-        },
-      );
+      const response = await postCollectionSearch(baseUrl, collectionName, apiKey, searchParams);
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         if (response.status === 401 && _retryCount < 1) {
           await refreshConfig();
           const refreshedKey = getCollectionApiKey(collection);
@@ -1059,12 +1070,10 @@ export const useAdminSearch = () => {
           }
         }
 
-        const errorText = await response.text();
-        throw new Error(`Failed to load facets: ${response.status} - ${errorText}`);
+        throw new Error(`Failed to load facets: ${response.status} - ${response.errorText}`);
       }
 
-      const data = await response.json();
-      return data.facet_counts || [];
+      return response.data?.facet_counts || [];
     }
     catch (error) {
       console.error('Failed to load initial facets:', error);
@@ -1110,6 +1119,18 @@ export const useAdminSearch = () => {
     return config.value?.collections?.[collection]?.directInstitutionIds || [];
   };
 
+  const searchFacetValues = async (collection: string, field: string, text: string, options: { query: string; filterBy?: string; queryBy?: string; signal?: AbortSignal }) => {
+    if (!config.value || hasExpired.value) await refreshConfig();
+    const cfg = config.value;
+    const entry = cfg?.collections[collection];
+    const node = cfg?.nodes[0];
+    if (!entry?.key || !node) throw new Error('Search configuration unavailable');
+    const params = new URLSearchParams({ q: options.query, query_by: options.queryBy || 'title', facet_by: field, facet_query: `${field}:${text}`, per_page: '0', max_facet_values: '100', filter_by: options.filterBy || '' });
+    const response = await postCollectionSearch(`${node.protocol}://${node.host}:${node.port}`, entry.name, entry.key, params, options.signal);
+    if (response.status !== 200) throw new Error(response.errorText || 'Facet search failed');
+    return response.data?.facet_counts?.find(facet => facet.field_name === field)?.counts ?? [];
+  };
+
   return {
     // State
     config,
@@ -1135,12 +1156,14 @@ export const useAdminSearch = () => {
 
     // Faceted search methods
     searchWithFacets,
+    searchFacetValues,
     loadInitialFacets,
 
     // Per-collection helpers
     getCollectionApiKey,
     hasCollectionAccess,
     getCollectionTenantIds,
+    getCollectionInstitutionIds,
     isSuperAdmin,
 
     // Related institution helpers
@@ -1148,5 +1171,3 @@ export const useAdminSearch = () => {
     getDirectInstitutionIds,
   };
 };
-
-export type AdminSearchController = ReturnType<typeof useAdminSearch>;

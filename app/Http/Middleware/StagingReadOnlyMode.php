@@ -22,7 +22,6 @@ class StagingReadOnlyMode
      * These are routes that modify files in storage/app/public
      */
     protected array $fileRoutes = [
-        'files.store',
         'files.delete',
         'files.deleteDirectory',
         'files.bulkDelete',
@@ -36,15 +35,14 @@ class StagingReadOnlyMode
      * SharePoint-related routes that should be blocked when SHAREPOINT_READ_ONLY=true
      * Only routes that WRITE to SharePoint are blocked
      *
-     * Note: documents.update, documents.destroy, documents.refresh, documents.bulk-sync
-     * are ALLOWED because they only modify local database or READ from SharePoint
+     * Note: documents.refresh, documents.status, documents.discover
+     * are ALLOWED: they only modify the local database or READ from SharePoint (publishing guards its
+     * link creation itself through StagingProtection)
      */
     protected array $sharepointWriteRoutes = [
-        'sharepointFiles.store',                  // Upload file TO SharePoint
-        'sharepointFiles.destroy',                // Delete file FROM SharePoint
+        'fileableFiles.store',                    // Upload files TO SharePoint
         'fileableFiles.destroy',                  // Delete file FROM SharePoint
-        'sharepoint.createFolder',                // Create folder IN SharePoint
-        'sharepoint.createPublicPermission',      // Create public link IN SharePoint
+        'fileableFiles.revokePublicLink',         // Delete a sharing link IN SharePoint
     ];
 
     /**
@@ -53,11 +51,9 @@ class StagingReadOnlyMode
     protected array $sharepointReadRoutes = [
         'documents.index',       // List documents (read DB)
         'documents.show',        // View document (read DB)
-        'documents.store',       // Add document reference to DB from SharePoint picker
-        'documents.update',      // Update document metadata in DB only
-        'documents.destroy',     // Delete document reference from DB only (not SharePoint)
         'documents.refresh',     // Refresh document FROM SharePoint (read)
-        'documents.bulk-sync',   // Bulk sync FROM SharePoint (read)
+        'documents.status',      // Publish/hide; link creation is guarded by StagingProtection
+        'documents.discover',    // Read the archive FROM SharePoint
     ];
 
     /**
@@ -94,8 +90,7 @@ class StagingReadOnlyMode
         if (config('app.sharepoint_read_only') && $this->isSharepointWriteRoute($routeName)) {
             return $this->readOnlyResponse(
                 $request,
-                'SharePoint modifications are disabled in staging environment. '.
-                'SharePoint is shared with production.'
+                'SharePoint modifications are disabled in staging environment.'
             );
         }
 

@@ -4,8 +4,22 @@
     :class="{ 'opacity-75': variant === 'past' }"
     data-slot="event-card"
   >
+    <component
+      :is="useInertia ? Link : 'a'"
+      v-if="variant === 'compact'"
+      :href="eventHref"
+      class="flex items-center gap-4 border-b border-border py-4 hover:bg-secondary/40 pointer-coarse:min-h-11"
+    >
+      <DatePlate :date="eventDateObj" class="w-14 border border-border bg-secondary/40" />
+      <span class="min-w-0 flex-1">
+        <span class="block text-sm font-bold text-foreground transition-colors group-hover:text-brand"><SearchMatch v-if="titleMatch" :match="titleMatch" /><template v-else>{{ eventTitle }}</template></span>
+        <span class="mt-1 block text-xs text-muted-foreground">{{ formattedDateTime }}</span>
+      </span>
+      <IFluentArrowUpRight20Regular class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+    </component>
     <!-- 16:10 fixed-ratio image frame per v0 design -->
-    <Link
+    <component :is="useInertia ? Link : 'a'"
+      v-else
       :href="eventHref"
       class="relative aspect-[16/9] overflow-hidden border border-border bg-secondary"
     >
@@ -56,15 +70,15 @@
           {{ tenantShortname }}
         </span>
       </div>
-    </Link>
+    </component>
 
     <!-- Content -->
-    <div class="flex flex-1 flex-col pt-4">
+    <div v-if="variant !== 'compact'" class="flex flex-1 flex-col pt-4">
       <!-- Title -->
       <h3 class="text-pretty text-lg font-bold leading-snug text-foreground transition-colors group-hover:text-brand">
-        <Link :href="eventHref">
-          {{ eventTitle }}
-        </Link>
+        <component :is="useInertia ? Link : 'a'" :href="eventHref">
+          <SearchMatch v-if="titleMatch" :match="titleMatch" /><template v-else>{{ eventTitle }}</template>
+        </component>
       </h3>
 
       <!-- Metadata -->
@@ -80,19 +94,19 @@
         </span>
         <span v-else-if="eventLocation" class="flex items-center gap-1.5 min-w-0">
           <IFluentLocation16Regular class="size-3.5 shrink-0 text-brand" />
-          <span class="truncate">{{ eventLocation }}</span>
+          <span class="truncate"><SearchMatch :match="locationMatch" :title="eventLocation" /></span>
         </span>
       </div>
 
       <!-- Action -->
       <div class="mt-auto flex items-center justify-between gap-3 pt-4">
-        <Link
+        <component :is="useInertia ? Link : 'a'"
           :href="eventHref"
           class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-foreground transition-colors group-hover:text-brand"
         >
           <span>{{ variant === 'past' ? $t('Peržiūrėti') : $t('Daugiau') }}</span>
           <IFluentArrowUpRight20Regular class="size-4" />
-        </Link>
+        </component>
       </div>
     </div>
   </article>
@@ -103,6 +117,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Link, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 
+import SearchMatch from '@/Components/ui/SearchMatch.vue';
+import { highlightText, matchTitle, type SearchMatchDocument } from '@/Shared/Search/matches';
 import DatePlate from '@/Components/Public/Base/DatePlate.vue';
 import { formatEventDateSpan } from '@/Utils/IntlTime';
 import { getCalendarEvent2Route } from '@/Utils/Route';
@@ -113,7 +129,7 @@ import IFluentLocation16Regular from '~icons/fluent/location-16-regular';
 import IFluentGlobe20Regular from '~icons/fluent/globe-20-regular';
 import IFluentArrowUpRight20Regular from '~icons/fluent/arrow-up-right-20-regular';
 
-interface CalendarEventLike {
+interface CalendarEventLike extends SearchMatchDocument {
   id: number | string;
   title: string | string[] | Record<string, unknown>;
   date: string | number | Date;
@@ -137,10 +153,13 @@ const props = withDefaults(defineProps<{
   event: CalendarEventLike | App.Entities.Calendar;
   variant?: 'upcoming' | 'past' | 'compact';
   showBadges?: boolean;
+  inertia?: boolean;
 }>(), {
   variant: 'upcoming',
   // eslint-disable-next-line vue/no-boolean-default
   showBadges: true,
+  // eslint-disable-next-line vue/no-boolean-default
+  inertia: true,
 });
 
 const imageLoadError = ref(false);
@@ -159,6 +178,10 @@ const eventLocation = computed(() => {
   return String(loc);
 });
 
+const searchMatches = computed(() => props.event as SearchMatchDocument);
+const titleMatch = computed(() => matchTitle(eventTitle.value, searchMatches.value._searchTitleMatches));
+const locationMatch = computed(() => eventLocation.value ? highlightText(eventLocation.value, searchMatches.value._searchFieldMatches?.location) : undefined);
+
 const eventTypeName = computed(() => {
   const ev = props.event as CalendarEventLike;
   return ev.event_type?.name ?? ev.event_type_name ?? null;
@@ -170,6 +193,10 @@ const tenantShortname = computed(() => {
 });
 
 const eventHref = computed(() => getCalendarEvent2Route(props.event, page.props.app.locale));
+const useInertia = computed(() => {
+  if (!props.inertia || typeof window === 'undefined') return false;
+  return new URL(eventHref.value, window.location.href).origin === window.location.origin;
+});
 
 const imageUrl = computed(() => {
   const ev = props.event as CalendarEventLike;

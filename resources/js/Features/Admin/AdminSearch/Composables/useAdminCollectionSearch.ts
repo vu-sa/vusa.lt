@@ -5,9 +5,8 @@
  * Handles state management, URL sync, facet merging, and search operations.
  */
 
-import { ref, computed, watch, onMounted, onUnmounted, shallowRef, nextTick } from 'vue';
-import { useUrlSearchParams } from '@vueuse/core';
-import { debounce } from 'lodash-es';
+import { ref, computed, watch, onMounted, onUnmounted, shallowRef, nextTick, toValue, type MaybeRefOrGetter } from 'vue';
+import { useUrlSearchParams, useDebounceFn } from '@vueuse/core';
 
 import type {
   AdminCollection,
@@ -32,7 +31,12 @@ import {
 import { mergeFacets, sortFacetsByConfig } from '../Services/AdminFacetMerger';
 import { getCollectionFacetConfig, getCollectionSortOptions, resolveSortValue, RELEVANCE_SORT_VALUE } from '../Config/collectionFacetConfig';
 
+import { provideFacetSearch } from '@/Shared/Search/facets';
 import { useAdminSearch } from '@/Composables/useAdminSearch';
+import { useCollectionFilterMemory } from '@/Composables/collectionFilterMemory';
+
+/** Bounds the replay of `?pages=`, so a hand-edited URL cannot fan out into hundreds of requests. */
+const MAX_RESTORED_PAGES = 10;
 
 export interface UseAdminCollectionSearchOptions {
   collection: AdminCollection;
@@ -55,8 +59,14 @@ export interface UseAdminCollectionSearchOptions {
    * applied to the initial facet universe too. Used to scope a collection to a
    * caller-defined subset (e.g. the institution picker restricted to the
    * duty-assignable tenants). Leave undefined for the unrestricted collection.
+   * A ref or getter re-runs the search when it changes (IndexInstitution's "Sekamos").
    */
-  baseFilterBy?: string;
+  baseFilterBy?: MaybeRefOrGetter<string | undefined>;
+  /**
+   * Filters a first visit starts with (e.g. the user's own padaliniai). Ordinary, clearable
+   * filters — applied only when the URL carries no query or filter of its own.
+   */
+  defaultFilters?: Record<string, string[]>;
 }
 
 export function useAdminCollectionSearch(options: UseAdminCollectionSearchOptions) {
@@ -69,8 +79,8 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     preserveUrlKeys = [],
     debounceMs = 300,
     perPage = 24,
-    baseFilterBy,
   } = options;
+  const baseFilterBy = computed(() => toValue(options.baseFilterBy) || undefined);
 
   // Get the facet config for this collection
   const facetConfig = getCollectionFacetConfig(collection);
@@ -83,6 +93,9 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
 
   // URL params for state persistence
   const urlParams = syncToUrl ? useUrlSearchParams('history') : ref({});
+  const filterMemory = syncToUrl
+    ? useCollectionFilterMemory([...facetConfig.fields.map(field => field.field), 'sort'], ['q'])
+    : null;
 
   // State
   const status = ref<AdminSearchStatus>('idle');
@@ -94,6 +107,9 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   // state drives the default sort (relevance when querying, date when browsing).
   const isSortUserSelected = ref(false);
   const currentPage = ref(1);
+  // Pages the URL says were loaded before leaving (`?pages=3`); replayed after the first search
+  // so back navigation lands on the same rows. Consumed once.
+  let pagesToRestore = 1;
 
   // Results state (using shallowRef for performance with large arrays)
   const results = shallowRef<unknown[]>([]);
@@ -149,7 +165,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       error.value = {
         type: 'auth',
         message: 'No access to this collection',
-        userMessage: 'Neturite prieigos prie šios paieškos.',
+        userMessage: 'Neturi prieigos prie šios paieškos.',
         retryable: false,
       };
       return false;
@@ -171,7 +187,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     try {
       const rawFacets = await adminSearch.loadInitialFacets(collection, facetConfig.facetBy, {
         queryBy: facetConfig.queryBy,
-        filterBy: baseFilterBy,
+        filterBy: baseFilterBy.value,
       });
 
       initialFacets.value = parseFacets(rawFacets, facetConfig, filters.value);
@@ -187,7 +203,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       error.value = {
         type: 'server',
         message: err instanceof Error ? err.message : 'Unknown error',
-        userMessage: 'Nepavyko įkelti filtrų. Bandykite dar kartą.',
+        userMessage: 'Nepavyko įkelti filtrų. Bandyk dar kartą.',
         retryable: true,
       };
     }
@@ -200,14 +216,21 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   /**
    * Perform search with current filters
    */
+  provideFacetSearch(async (field, text, signal) => {
+    const filterBy = [baseFilterBy.value, buildFilterString({ ...filters.value, [field]: undefined }, facetConfig)].filter(Boolean).join(' && ');
+    return adminSearch.searchFacetValues(collection, field, text, { query: query.value || '*', filterBy, queryBy: facetConfig.queryBy, signal });
+  });
+
+  let searchGeneration = 0;
   const performSearch = async (isLoadMore = false) => {
+    const generation = ++searchGeneration;
     // Clear previous error
     if (!isLoadMore) {
       clearError();
     }
 
     // Build filter string from current filters, ANDed with any always-on base filter.
-    const filterString = [baseFilterBy, buildFilterString(filters.value, facetConfig)]
+    const filterString = [baseFilterBy.value, buildFilterString(filters.value, facetConfig)]
       .filter(Boolean)
       .join(' && ');
 
@@ -228,12 +251,18 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     try {
       const searchResult = await adminSearch.searchWithFacets(collection, query.value || '*', {
         filterBy: filterString || undefined,
+        facetFilters: Object.fromEntries(facetConfig.fields.filter((field) => {
+          const value = filters.value[field.field];
+          return Array.isArray(value) ? value.length > 0 : value !== undefined && value !== null;
+        }).map(field => [field.field, [baseFilterBy.value, buildFilterString({ ...filters.value, [field.field]: undefined }, facetConfig)].filter(Boolean).join(' && ')])),
         sortBy: effectiveSortBy,
         facetBy: facetConfig.facetBy,
         queryBy: facetConfig.queryBy,
         perPage,
         page: currentPage.value,
       });
+
+      if (generation !== searchGeneration) return;
 
       // Update results
       if (isLoadMore) {
@@ -250,11 +279,17 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       facets.value = parseFacets(searchResult.facets, facetConfig, filters.value);
 
       // Sync to URL if enabled
-      if (syncToUrl && !isLoadMore) {
-        syncStateToUrl();
+      if (syncToUrl) {
+        if (isLoadMore) {
+          syncLoadedPagesToUrl();
+        }
+        else {
+          syncStateToUrl();
+        }
       }
     }
     catch (err) {
+      if (generation !== searchGeneration) return;
       console.error('Search failed:', err);
 
       // Don't show error for aborted requests
@@ -265,7 +300,7 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       error.value = {
         type: 'server',
         message: err instanceof Error ? err.message : 'Unknown error',
-        userMessage: 'Paieška nepavyko. Bandykite dar kartą.',
+        userMessage: 'Paieška nepavyko. Bandyk dar kartą.',
         retryable: true,
       };
 
@@ -277,12 +312,12 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
       }
     }
     finally {
-      status.value = 'idle';
+      if (generation === searchGeneration) status.value = 'idle';
     }
   };
 
   // Debounced search for user typing
-  const debouncedSearch = debounce(() => {
+  const debouncedSearch = useDebounceFn(() => {
     if (status.value === 'idle' || status.value === 'error') {
       performSearch(false);
     }
@@ -416,6 +451,23 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     const newUrl = new URL(window.location.href);
     newUrl.search = params.toString();
     window.history.replaceState({}, '', newUrl.toString());
+    filterMemory?.remember();
+  };
+
+  /**
+   * Record how many pages are loaded so history navigation can restore them. A fresh search
+   * rebuilds the URL without `pages`, which is what resets it.
+   */
+  const syncLoadedPagesToUrl = () => {
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set('pages', String(currentPage.value));
+    window.history.replaceState({}, '', newUrl.toString());
+  };
+
+  const withDefaultFilters = (base: AdminSearchFilters): AdminSearchFilters => {
+    const defaults = Object.entries(options.defaultFilters ?? {}).filter(([, values]) => values.length > 0);
+
+    return { ...base, ...Object.fromEntries(defaults) };
   };
 
   /**
@@ -424,11 +476,13 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
   const loadFromUrl = () => {
     if (!syncToUrl) return;
 
+    // Remembered filters first, so a returning visit is not reset to the defaults.
+    const isDecided = filterMemory?.restore().decided ?? true;
     const params = new URLSearchParams(window.location.search);
 
     // Parse filters from URL
     const urlFilters = urlParamsToFilters(params, facetConfig);
-    filters.value = urlFilters;
+    filters.value = isDecided ? urlFilters : withDefaultFilters(urlFilters);
     query.value = urlFilters.query || '';
 
     // Parse sort from URL
@@ -436,6 +490,9 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     if (urlSort) {
       sortBy.value = urlSort;
     }
+
+    const urlPages = Number(params.get('pages'));
+    pagesToRestore = Number.isInteger(urlPages) && urlPages > 1 ? Math.min(urlPages, MAX_RESTORED_PAGES) : 1;
   };
 
   // Watch for config changes to re-search
@@ -449,8 +506,24 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     },
   );
 
+  let isMounted = false;
+
+  // A new base filter is a new universe: its facets and first page are loaded again.
+  watch(baseFilterBy, async () => {
+    if (!isMounted) return;
+
+    initialFacetsLoaded.value = false;
+    facets.value = [];
+    if (loadFacetsOnMount) {
+      await loadInitialFacets();
+    }
+    await performSearch(false);
+  });
+
   // Initialize on mount
   onMounted(async () => {
+    isMounted = true;
+
     // Initialize admin search
     await adminSearch.initialize();
 
@@ -470,6 +543,11 @@ export function useAdminCollectionSearch(options: UseAdminCollectionSearchOption
     if (searchOnMount) {
       await nextTick();
       await performSearch(false);
+
+      while (currentPage.value < pagesToRestore && hasMoreResults.value) {
+        await performSearch(true);
+      }
+      pagesToRestore = 1;
     }
   });
 

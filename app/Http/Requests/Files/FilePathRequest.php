@@ -5,15 +5,7 @@ namespace App\Http\Requests\Files;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-/**
- * Shared shape for the file-manager actions that operate on a single `path`.
- *
- * Authorization is deliberately left to the controller: it depends on the *normalized* path
- * (`FilesController::validateAndNormalizePath()`), which only exists after validation has run,
- * and is checked there with the ability matching the action — `viewDirectory` for reads,
- * `createInDirectory` for adding a file or folder, `updateInDirectory` for rewriting a file,
- * `deleteInDirectory` for deleting one, and `deleteDirectory` for removing the folder itself.
- */
+/** Authorization follows path validation and uses the policy ability matching the action. */
 class FilePathRequest extends FormRequest
 {
     public function authorize(): bool

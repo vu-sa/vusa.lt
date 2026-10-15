@@ -43,7 +43,7 @@ class TopicController extends PublicController
             ->where('lang', $locale)
             ->where('is_active', true)
             ->with('tenant:id,alias,shortname')
-            ->orderByDesc('publish_time')
+            ->latest()
             ->limit(10)
             ->get(['id', 'title', 'permalink', 'lang', 'tenant_id']);
 

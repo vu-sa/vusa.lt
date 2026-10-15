@@ -1,11 +1,17 @@
-import { ref, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { useStorage } from '@vueuse/core';
+
+import { useDocsHref } from '@/Composables/useDocsHref';
 
 const STORAGE_KEY = 'docs-changelog-last-seen';
+
+/** Fallback until `changelog-meta.json` names the newest per-major changelog page. */
+const DEFAULT_CHANGELOG = 'v3';
 
 /**
  * Tracks whether there are unseen documentation/platform updates.
  *
- * Fetches `/docs/changelog-meta.json` (generated at docs build time)
+ * Fetches `/gidas/changelog-meta.json` (generated at docs build time)
  * and compares `lastUpdated` with a localStorage timestamp to show
  * an indicator badge next to the documentation link in the admin sidebar.
  */
@@ -13,19 +19,24 @@ export function useDocsUpdateIndicator() {
   const hasNewUpdates = ref(false);
   const lastUpdateDate = ref<string | null>(null);
   const latestVersion = ref<string | null>(null);
+  const latestChangelog = ref(DEFAULT_CHANGELOG);
+  const lastSeen = useStorage<string | null>(STORAGE_KEY, null);
+
+  const docsBase = useDocsHref();
+  const changelogHref = computed(() => `${docsBase.value}/changelog/${latestChangelog.value}`);
 
   onMounted(async () => {
     try {
-      const response = await fetch('/docs/changelog-meta.json');
+      const response = await fetch('/gidas/changelog-meta.json');
 
       if (!response.ok) return;
 
       const meta = await response.json();
       lastUpdateDate.value = meta.lastUpdated;
       latestVersion.value = meta.latestVersion;
+      latestChangelog.value = meta.latestChangelog ?? DEFAULT_CHANGELOG;
 
-      const lastSeen = localStorage.getItem(STORAGE_KEY);
-      if (!lastSeen || lastSeen < meta.lastUpdated) {
+      if (!lastSeen.value || lastSeen.value < meta.lastUpdated) {
         hasNewUpdates.value = true;
       }
     }
@@ -36,7 +47,7 @@ export function useDocsUpdateIndicator() {
 
   function markAsSeen() {
     if (lastUpdateDate.value) {
-      localStorage.setItem(STORAGE_KEY, lastUpdateDate.value);
+      lastSeen.value = lastUpdateDate.value;
       hasNewUpdates.value = false;
     }
   }
@@ -45,6 +56,8 @@ export function useDocsUpdateIndicator() {
     hasNewUpdates,
     lastUpdateDate,
     latestVersion,
+    docsBase,
+    changelogHref,
     markAsSeen,
   };
 }

@@ -64,6 +64,8 @@ export interface HoverEffectsRenderContext {
   fmtDate: Intl.DateTimeFormat;
   /** Whether interactive (clickable) */
   interactive: boolean;
+  /** Rows the viewer may not record on (public or related rows); defaults to every row. */
+  canCreateOn?: (institutionId: string | number) => boolean;
   /** Unified tooltip manager */
   tooltipManager?: GanttTooltipManager;
   /** Callback when create-meeting is triggered */
@@ -77,7 +79,7 @@ export function renderHoverEffects(ctx: HoverEffectsRenderContext): void {
   const {
     g, container, x, innerHeight, layoutRows, meetings, gaps, colors,
     rowTop, rowHeightFor, rowCenter, labelFor, fmtDateWithYear, fmtDate,
-    interactive, tooltipManager, onCreateMeeting,
+    interactive, tooltipManager, onCreateMeeting, canCreateOn = () => true,
   } = ctx;
 
   // Hover indicator line across the chart (full-height)
@@ -175,6 +177,7 @@ export function renderHoverEffects(ctx: HoverEffectsRenderContext): void {
     }
 
     const rowId = lr.institutionId!;
+    const rowInteractive = interactive && canCreateOn(rowId);
     const dayEnd = d3.timeDay.offset(dayStart, 1);
     let centerX = (x(dayStart) + x(dayEnd)) / 2;
     let circleR = 7;
@@ -220,7 +223,7 @@ export function renderHoverEffects(ctx: HoverEffectsRenderContext): void {
       .attr('cx', centerX)
       .attr('cy', rowCenter(lr.key))
       .attr('r', circleR)
-      .attr('opacity', interactive ? 1 : 0);
+      .attr('opacity', rowInteractive ? 1 : 0);
 
     // Build tooltip HTML with optional check-in info
     const activeGap = findActiveGap(rowId, dayStart);
@@ -258,7 +261,7 @@ export function renderHoverEffects(ctx: HoverEffectsRenderContext): void {
     // Set time to 12:00 noon (more reasonable default than midnight)
     day.setHours(12, 0, 0, 0);
     const lr = findRowByY(my);
-    if (!lr || lr.type !== 'institution') return;
+    if (!lr || lr.type !== 'institution' || !canCreateOn(lr.institutionId!)) return;
 
     onCreateMeeting({ institution_id: lr.institutionId!, suggestedAt: day });
   });

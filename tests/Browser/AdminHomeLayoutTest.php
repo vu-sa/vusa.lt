@@ -1,0 +1,47 @@
+<?php
+
+use App\Models\User;
+use Database\Seeders\DocsSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+pest()->use(RefreshDatabase::class);
+
+it('keeps the home layout within the viewport at the redesign widths', function (): void {
+    // A representative with real meetings and tasks: an empty home would hide overflow bugs.
+    $this->seed(DocsSeeder::class);
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL));
+    $page->navigate('/mano');
+    waitForInertiaRender($page, '[data-slot=overview-page]');
+
+    foreach ([390, 820, 1180, 1440] as $width) {
+        $page->resize($width, 900);
+
+        foreach ([false, true] as $dark) {
+            $page->script('document.documentElement.classList.toggle("dark", '.($dark ? 'true' : 'false').')');
+
+            $page->screenshot(fullPage: false, filename: 'admin-home-'.$width.($dark ? '-dark' : '-light'));
+
+            if (! $dark && $width === 390) {
+                docsScreenshot($page, 'admin-home-phone');
+            }
+
+            // 840 ends the desktop frame after Tavo institucijos instead of on the next heading.
+            if (! $dark && $width === 1440) {
+                $page->resize(1440, 840);
+                docsScreenshot($page, 'admin-home');
+                docsScreenshot($page, 'v3-workspaces', highlights: [
+                    '[data-slot=workspace-picker]',
+                    '[data-tour=command-palette]',
+                    '[data-tour=action-create]',
+                    '[data-slot=section-tabs]',
+                ]);
+                $page->resize(1440, 900);
+            }
+
+            expect($page->script('document.documentElement.scrollWidth'))->toBeLessThanOrEqual($width)
+                ->and($page->script('document.querySelector("[data-slot=overview-page]").getBoundingClientRect().width <= window.innerWidth'))->toBeTrue();
+        }
+    }
+
+    $page->assertNoJavaScriptErrors();
+});

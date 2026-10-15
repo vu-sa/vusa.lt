@@ -4,7 +4,7 @@
  * Generic composable for handling column resize via drag.
  * Can be reused for any resizable panel/column in the UI.
  */
-import { ref, onUnmounted } from 'vue';
+import { ref, getCurrentScope, onScopeDispose } from 'vue';
 
 export interface ColumnResizeOptions {
   /** Minimum width in pixels */
@@ -68,15 +68,19 @@ export function useColumnResize(
     document.body.style.cursor = '';
   }
 
-  // Cleanup on unmount
-  onUnmounted(() => {
+  function cleanup() {
     if (isResizing.value) {
       stopResize();
     }
-  });
+  }
+
+  if (getCurrentScope()) {
+    onScopeDispose(cleanup);
+  }
 
   return {
     isResizing,
     startResize,
+    cleanup,
   };
 }

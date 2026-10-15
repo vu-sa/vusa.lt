@@ -102,6 +102,6 @@ describe('useDuplicateDutyCheck', () => {
     await vi.advanceTimersByTimeAsync(600);
 
     expect(capturedUrl?.value).toBe('');
-    expect(matches.value).toEqual({ same_institution: [], other_institution: [], other_institution_count: 0 });
+    expect(matches.value).toEqual({ same_institution: [], same_tenant: [], other_institution: [], other_institution_count: 0 });
   });
 });

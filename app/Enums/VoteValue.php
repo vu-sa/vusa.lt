@@ -15,7 +15,7 @@ enum VoteValue: string
     {
         return match ($this) {
             self::Positive => $locale === 'en' ? 'Approved' : 'Priimtas',
-            self::Negative => $locale === 'en' ? 'Rejected' : 'Nepriimtas',
+            self::Negative => $locale === 'en' ? 'Rejected' : 'Atmestas',
             self::Neutral => $locale === 'en' ? 'Abstained' : 'Susilaikyta',
         };
     }

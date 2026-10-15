@@ -3,45 +3,30 @@
 </template>
 
 <script setup lang="ts">
-import { createRenderExtensions, createRenderExtensions as createRenderExtensionsCore } from '../TipTap/extensions/presets';
-
 defineProps<{
-  json_content: any;
+  json_content: Record<string, unknown>;
 }>();
 </script>
 
 <script lang="ts">
-import { generateHTML as generateHTMLCore } from '@tiptap/vue-3';
+import { renderToHTMLString } from '@tiptap/static-renderer/pm/html-string';
+import { trans } from 'laravel-vue-i18n';
 
-// Export this function so it can be used in other components
-export const generateHTMLfromTiptap = (json_content: any) => {
+import { createRenderExtensions } from '../TipTap/extensions/render';
+
+const renderExtensions = createRenderExtensions();
+
+// DOM-free, so SSR and hydration produce the same markup (`generateHTML` needs a document).
+export const generateHTMLfromTiptap = (json_content: Record<string, unknown>) => {
   if (!json_content || Object.keys(json_content).length === 0) {
     return '';
   }
 
-  return wrapTablesForScroll(generateHTMLCore(json_content, createRenderExtensionsCore()));
-};
-
-/**
- * Static `generateHTML` output (unlike the live editor's ProseMirror NodeView) never
- * gets the `.tableWrapper` div, so a resized table's explicit column widths can overflow
- * the reading measure with no way to scroll to the rest of it. Mirrors the wrapper
- * `App\Tiptap\TiptapEditor::getHTML()` adds to the server-rendered HTML.
- */
-function wrapTablesForScroll(html: string): string {
-  if (!html.includes('<table')) {
-    return html;
+  try {
+    return renderToHTMLString({ content: json_content, extensions: renderExtensions });
   }
-
-  const container = document.createElement('div');
-  container.innerHTML = html;
-  container.querySelectorAll('table').forEach((table) => {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'tableWrapper';
-    table.replaceWith(wrapper);
-    wrapper.append(table);
-  });
-
-  return container.innerHTML;
-}
+  catch {
+    return `<p>${trans('Turinio nepavyko atvaizduoti')}</p>`;
+  }
+};
 </script>

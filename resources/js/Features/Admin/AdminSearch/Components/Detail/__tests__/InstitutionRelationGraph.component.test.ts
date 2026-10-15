@@ -9,9 +9,9 @@ import { commonStubs } from '@/tests/stubs';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const related = [
-  { id: 'i1', name: 'Pirma institucija', direction: 'outgoing', type: 'direct', authorized: true },
-  { id: 'i2', name: 'Antra institucija', direction: 'incoming', type: 'direct', authorized: false },
-  { id: 'i3', name: 'Trečia institucija', direction: 'sibling', type: 'within-type', authorized: true },
+  { id: 'i1', name: 'Pirma institucija', direction: 'outgoing', via: 'direct', authorized: true },
+  { id: 'i2', name: 'Antra institucija', direction: 'incoming', via: 'direct', authorized: false },
+  { id: 'i3', name: 'Trečia institucija', direction: 'mutual', via: 'type', kind_label: 'Bendradarbiauja', authorized: true },
 ];
 
 const mountGraph = (props: Record<string, unknown> = {}) =>
@@ -36,7 +36,7 @@ describe('InstitutionRelationGraph', () => {
       id: `m${i}`,
       name: `Institucija ${i}`,
       direction: 'outgoing',
-      type: 'direct',
+      via: 'direct',
       authorized: true,
     }));
     const wrapper = mountGraph({ related: many });
@@ -51,8 +51,8 @@ describe('InstitutionRelationGraph', () => {
 
     expect(markerIds).toContain('rel-arrow-outgoing');
     expect(markerIds).toContain('rel-arrow-incoming');
-    // sibling links have no arrow marker
-    expect(markerIds).not.toContain('rel-arrow-sibling');
+    // mutual links have no arrow marker
+    expect(markerIds).not.toContain('rel-arrow-mutual');
   });
 
   it('shows an edge tooltip on hover and hides it on leave', async () => {

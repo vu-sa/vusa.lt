@@ -3,10 +3,13 @@
 namespace App\Console\Commands;
 
 use App\Enums\SearchableModelEnum;
+use App\Services\Typesense\SearchProfiles;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
+use Laravel\Scout\Engines\TypesenseEngine;
 use Typesense\Client;
 use Typesense\Exceptions\ObjectNotFound;
 
@@ -101,7 +104,7 @@ class ReindexSearchCommand extends Command
         $instance = new $model;
         $engine = $instance->searchableUsing();
 
-        return class_basename($engine::class);
+        return $engine instanceof TypesenseEngine ? 'TypesenseEngine' : class_basename($engine::class);
     }
 
     /**
@@ -110,6 +113,8 @@ class ReindexSearchCommand extends Command
     private function reindexTypesenseModel(string $model): void
     {
         $collectionName = (new $model)->searchableAs();
+        $baseName = substr($collectionName, strlen(config('scout.prefix', '')));
+        Cache::forget(SearchProfiles::cacheKey($baseName));
 
         try {
             // Delete the collection to force schema recreation
@@ -125,14 +130,37 @@ class ReindexSearchCommand extends Command
         }
 
         // Import will recreate the collection with the current schema
-        Artisan::call('scout:import', ['model' => $model]);
+        if (Artisan::call('scout:import', ['model' => $model]) !== self::SUCCESS) {
+            throw new \RuntimeException('Scout import failed for '.$model);
+        }
 
         // Verify the collection really came back. Reporting success here without
         // checking is how a silently-missing collection used to reach the attach step
         // and fail there with a much less obvious error.
         $client = new Client(config('scout.typesense.client-settings'));
-        $collection = $client->collections[$collectionName]->retrieve();
+        try {
+            $collection = $client->collections[$collectionName]->retrieve();
+        } catch (ObjectNotFound) {
+            $collection = $client->collections->create(['name' => $collectionName, ...config('scout.typesense.model-settings.'.$model.'.collection-schema')]);
+        }
         $docCount = $collection['num_documents'] ?? 0;
+        $expected = config('scout.typesense.model-settings.'.$model.'.collection-schema.fields');
+        $actual = collect($collection['fields'])->keyBy('name');
+        foreach ($expected as $field) {
+            // Typesense omits the implicit id field from schema responses.
+            if ($field['name'] === 'id') {
+                continue;
+            }
+            if (! $actual->has($field['name'])) {
+                throw new \RuntimeException('Recreated schema is missing '.$field['name']);
+            }
+            foreach (['type', 'stem', 'locale', 'sort', 'facet', 'infix'] as $attribute) {
+                if (isset($field[$attribute]) && ($actual[$field['name']][$attribute] ?? null) !== $field[$attribute]) {
+                    throw new \RuntimeException('Recreated schema has incompatible '.$field['name'].'.'.$attribute);
+                }
+            }
+        }
+        Cache::forever(SearchProfiles::cacheKey($baseName), SearchProfiles::VERSION);
 
         $this->line("  - Recreated collection with fresh schema and data ({$docCount} documents)");
     }

@@ -99,7 +99,7 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Eye, Pencil } from 'lucide-vue-next';
+import { Eye, Pencil } from '@lucide/vue';
 
 import { formatSearchDate } from '../../Utils/searchHitMappers';
 
@@ -119,7 +119,7 @@ interface InstitutionPreviewData {
   types: Array<{ id: string; title: string }>;
   last_meetings: Array<{ id: string; title: string; start_time: number | null }>;
   representatives: Array<{ id: string; name: string; profile_photo_path: string | null }>;
-  related_institutions: Array<{ id: string; name: string; direction: string; type: string; authorized: boolean }>;
+  related_institutions: Array<{ id: string; name: string; direction: string; via: string; kind_label: string; cross_tenant: boolean; authorized: boolean }>;
 }
 
 /** Soft cap on representative avatars before collapsing into a "+N" indicator. */

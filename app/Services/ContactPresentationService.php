@@ -3,8 +3,8 @@
 namespace App\Services;
 
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Pivots\Dutiable;
-use App\Models\Type;
 use Illuminate\Support\Collection;
 
 class ContactPresentationService
@@ -89,7 +89,7 @@ class ContactPresentationService
                 // otherwise a member's ended row could win over their current one.
                 $query->where('duty_id', $duty->id)
                     ->where(function ($q): void {
-                        $q->whereNull('end_date')->orWhere('end_date', '>=', now());
+                        $q->whereNull('end_date')->orWhereDate('end_date', '>=', today());
                     })
                     ->with(['study_program.tenant', 'tenant']);
             },
@@ -160,7 +160,7 @@ class ContactPresentationService
      * Filter processed contacts to only show duties related to the selected types.
      *
      * @param  array<int, array<string, mixed>>  $processedContacts
-     * @param  \Illuminate\Database\Eloquent\Collection<int, Type>  $types
+     * @param  \Illuminate\Database\Eloquent\Collection<int, DutyType>  $types
      * @return array<int, array<string, mixed>>
      */
     public function filterProcessedContactsByTypes(array $processedContacts, $types): array

@@ -144,8 +144,6 @@ export function renderInactivePeriods(ctx: InactivePeriodsRenderContext): void {
     })
     .attr('height', d => rowHeightFor(String(d.institution_id)) - 4)
     .attr('fill', 'url(#inactiveStripes)')
-    .attr('rx', 2)
-    .attr('ry', 2)
     .attr('pointer-events', 'none')
     .append('title')
     .text(d => `No active members: ${d.fromDate.toLocaleDateString()} → ${d.untilDate.toLocaleDateString()}`);

@@ -1,4 +1,8 @@
 /**
+ * @deprecated Legacy admin destination catalog superseded by AdminNavigationCatalog
+ * (app/Services/AdminNavigation/AdminNavigationCatalog.php) and useAdminNavigation (PR 3.1 & 3.2).
+ * Kept only for the palette's icon lookup and recent-page titles; remove once those read the catalog.
+ *
  * adminPageCatalog - Curated catalog of admin destinations.
  *
  * Single source of truth for "all the admin pages a user can navigate to".
@@ -19,11 +23,10 @@ import { usePage } from '@inertiajs/vue3';
 import {
   CalendarRange,
   Home,
-  Search,
   Settings,
   Plus,
   LayoutDashboard,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import {
   AgendaItemIcon,
@@ -40,7 +43,6 @@ import {
   PermissionIcon,
   ProblemIcon,
   QuickLinkIcon,
-  RelationshipIcon,
   ReservationIcon,
   ResourceIcon,
   RoleIcon,
@@ -75,6 +77,8 @@ export interface AdminPageEntry {
 }
 
 /**
+ * @deprecated Superseded by AdminNavigationCatalog.
+ *
  * The full catalog. Add new admin destinations here.
  */
 export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
@@ -103,14 +107,6 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
     category: 'navigation',
     keywords: ['meetings', 'posedziai', 'susirinkimai'],
     can: c => !!c.index?.meeting,
-  },
-  {
-    id: 'nav-search',
-    routeName: 'search.index',
-    labelKey: 'Paieška',
-    icon: Search,
-    category: 'navigation',
-    keywords: ['search', 'paieska', 'ieskoti', 'viskas', 'posedziai', 'institucijos', 'istekliai'],
   },
   {
     id: 'nav-institutions',
@@ -159,7 +155,7 @@ export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
   },
   {
     id: 'nav-tasks',
-    routeName: 'userTasks',
+    routeName: 'tasks.index',
     labelKey: 'Užduotys',
     icon: TaskIcon,
     category: 'navigation',
@@ -301,6 +297,8 @@ export function resolveCatalogEntryByRoute(routeName: string | undefined): Admin
 }
 
 /**
+ * @deprecated Superseded by useAdminNavigation().
+ *
  * Returns the permission-filtered catalog for the current user.
  */
 export function useAdminPageCatalog() {
@@ -333,7 +331,6 @@ const ROUTE_PREFIX_ICONS: Record<string, Component> = {
   agendaItems: AgendaItemIcon,
   documents: DocumentIcon,
   files: FileIcon,
-  sharepointFiles: FileIcon,
   tasks: TaskIcon,
   reservations: ReservationIcon,
   resources: ResourceIcon,
@@ -352,7 +349,6 @@ const ROUTE_PREFIX_ICONS: Record<string, Component> = {
   quickLinks: QuickLinkIcon,
   navigation: NavigationIcon,
   tenants: TenantIcon,
-  relationships: RelationshipIcon,
 };
 
 /**

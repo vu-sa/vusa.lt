@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\DocumentStatus;
 use App\Models\Document;
 use App\Models\Institution;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -69,7 +70,8 @@ class DocumentFactory extends Factory
                 ? 'Dokumentas skirtas '.$this->faker->sentence(8)
                 : 'This document is intended for '.$this->faker->sentence(8),
             'anonymous_url' => $this->faker->url,
-            'is_active' => $this->faker->boolean(85), // 85% chance of being active
+            'status' => DocumentStatus::Published,
+            'published_at' => now(),
             'sharepoint_site_id' => $this->faker->uuid,
             'sharepoint_list_id' => $this->faker->uuid,
             'effective_date' => $this->faker->optional(0.6)->dateTimeBetween('-1 year', '+3 months')?->format('Y-m-d'),
@@ -80,23 +82,39 @@ class DocumentFactory extends Factory
         ];
     }
 
-    /**
-     * Create a public document
-     */
     public function active(): static
     {
         return $this->state(fn (array $attributes) => [
-            'is_active' => true,
+            'status' => DocumentStatus::Published,
+        ]);
+    }
+
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => DocumentStatus::Hidden,
+            'anonymous_url' => null,
         ]);
     }
 
     /**
-     * Create an inactive document
+     * A file discovery found in SharePoint that nobody has published yet.
      */
-    public function inactive(): static
+    public function pending(): static
     {
         return $this->state(fn (array $attributes) => [
-            'is_active' => false,
+            'status' => DocumentStatus::Pending,
+            'published_at' => null,
+            'anonymous_url' => null,
+            'sharepoint_drive_item_id' => $this->faker->uuid,
+            'sharepoint_modified_at' => now()->subDay(),
+        ]);
+    }
+
+    public function removedFromSharepoint(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'removed_from_sharepoint_at' => now(),
         ]);
     }
 

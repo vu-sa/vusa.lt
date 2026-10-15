@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Permission;
+use App\Support\Permissions\BaselineAccess;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -54,9 +55,15 @@ class ModelPermissionSeeder extends Seeder
                     $operationAllowedScopes = array_intersect($operationAllowedScopes, ['padalinys', '*']);
                 }
 
-                // Create permissions for allowed scopes
+                // Create permissions for allowed scopes; retired ones grant nothing beyond the baseline.
                 foreach ($operationAllowedScopes as $scope) {
-                    $permissionsToCreate[] = $pluralizedModel.'.'.$crud.'.'.$scope;
+                    $permission = $pluralizedModel.'.'.$crud.'.'.$scope;
+
+                    if (BaselineAccess::isRetired($permission)) {
+                        $permissionsToDelete[] = $permission;
+                    } else {
+                        $permissionsToCreate[] = $permission;
+                    }
                 }
 
                 // Identify permissions to delete (scopes not in allowed list for this operation)

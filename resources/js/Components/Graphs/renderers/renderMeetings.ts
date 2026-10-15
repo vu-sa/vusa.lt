@@ -160,9 +160,7 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
     .attr('height', d => getRectHeight(d.institution_id))
     .attr('fill', colors.safetyBandFlat ?? colors.safetyBandMid)
     .attr('stroke', colors.safetyBandStroke ?? 'transparent')
-    .attr('stroke-width', 1)
-    .attr('rx', 4)
-    .attr('ry', 4);
+    .attr('stroke-width', 1);
 
   // Meeting icons group
   const dotGroup = g.append('g').attr('class', 'meeting-icons');
@@ -185,7 +183,7 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
       // For unauthorized meetings, show info toast instead of navigating
       // This prevents page refresh flicker and provides clear feedback
       if (d.authorized === false) {
-        toast.info($t('Neturite prieigos prie šio posėdžio duomenų'));
+        toast.info($t('Neturi prieigos prie šio posėdžio duomenų'));
         return;
       }
 
@@ -195,7 +193,7 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
         window.open(url, '_blank');
       }
       else {
-        router.visit(url, { preserveScroll: false });
+        router.visit(url);
       }
     })
     .on('auxclick', (event: MouseEvent, d: any) => {
@@ -203,7 +201,7 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
 
       // For unauthorized meetings, show info toast instead of navigating
       if (d.authorized === false) {
-        toast.info($t('Neturite prieigos prie šio posėdžio duomenų'));
+        toast.info($t('Neturi prieigos prie šio posėdžio duomenų'));
         return;
       }
 
@@ -217,13 +215,13 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
       if (event.key === 'Enter' || event.key === ' ') {
         // For unauthorized meetings, show info toast instead of navigating
         if (d.authorized === false) {
-          toast.info($t('Neturite prieigos prie šio posėdžio duomenų'));
+          toast.info($t('Neturi prieigos prie šio posėdžio duomenų'));
           return;
         }
 
         const routeFn = (window as any)?.route;
         const url = routeFn ? routeFn('meetings.show', d.id) : `/admin/meetings/${d.id}`;
-        router.visit(url, { preserveScroll: false });
+        router.visit(url);
       }
     });
 

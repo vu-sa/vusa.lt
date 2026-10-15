@@ -9,7 +9,7 @@ use App\Models\User;
  *
  * Used by AccessChangeAnalyzer to compare a user's roles before and after a
  * proposed change. Effective roles are the union of the user's direct roles and
- * the roles carried by their current (non-ended) duties — read straight from the
+ * the roles carried by their non-ended duties — read straight from the
  * Eloquent relations so an uncommitted mutation is reflected.
  */
 final readonly class CapabilitySnapshot
@@ -26,7 +26,7 @@ final readonly class CapabilitySnapshot
      */
     public static function capture(User $user): self
     {
-        $user->loadMissing('roles:id,name', 'current_duties:id', 'current_duties.roles:id,name');
+        $user->loadMissing('roles:id,name', 'authorization_duties:id', 'authorization_duties.roles:id,name');
 
         $roles = [];
 
@@ -34,7 +34,7 @@ final readonly class CapabilitySnapshot
             $roles[$role->id] = $role->name;
         }
 
-        foreach ($user->current_duties as $duty) {
+        foreach ($user->authorization_duties as $duty) {
             foreach ($duty->roles as $role) {
                 $roles[$role->id] = $role->name;
             }

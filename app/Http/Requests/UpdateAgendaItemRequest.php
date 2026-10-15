@@ -18,6 +18,7 @@ class UpdateAgendaItemRequest extends FormRequest
     {
         $this->normalizeTranslatable(
             'title',
+            'public_title',
             'description',
             'student_position',
             'votes.*.title',
@@ -47,6 +48,10 @@ class UpdateAgendaItemRequest extends FormRequest
             'title' => ['sometimes', 'array', new TranslatableField(['lt'])],
             'title.lt' => 'required_with:title|string',
             'title.en' => 'nullable|string',
+            'is_private' => 'sometimes|boolean',
+            'public_title' => 'nullable|array:lt,en',
+            'public_title.lt' => 'nullable|string|max:200',
+            'public_title.en' => 'nullable|string|max:200',
             'description' => 'nullable|array',
             'description.lt' => 'nullable|string',
             'description.en' => 'nullable|string',

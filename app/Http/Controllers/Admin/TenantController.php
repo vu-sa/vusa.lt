@@ -8,22 +8,16 @@ use App\Http\Requests\IndexTenantRequest;
 use App\Http\Requests\StoreTenantRequest;
 use App\Http\Requests\UpdateContentRequest;
 use App\Http\Requests\UpdateTenantRequest;
-use App\Http\Traits\HasTanstackTables;
 use App\Models\Content;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Services\ContentService;
-use App\Services\TanstackTableService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Inertia\Response;
 
 class TenantController extends AdminController
 {
-    use HasTanstackTables;
-
-    public function __construct(private TanstackTableService $tableService) {}
-
     /**
      * Display a listing of the resource.
      */
@@ -31,51 +25,17 @@ class TenantController extends AdminController
     {
         $this->handleAuthorization('viewAny', Tenant::class);
 
-        $query = Tenant::query();
-
-        $searchableColumns = ['fullname', 'shortname', 'alias'];
-
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-            ]
-        );
-
-        $tenants = $query->paginate($request->getPerPage())
-            ->withQueryString();
-
-        $sorting = $request->getSorting();
-
+        // A short list sent whole: the collection searches, sorts and filters it in the browser.
         return $this->inertiaResponse('Admin/People/IndexTenant', [
-            'tenants' => [
-                'data' => $tenants->items(),
-                'meta' => [
-                    'total' => $tenants->total(),
-                    'per_page' => $tenants->perPage(),
-                    'current_page' => $tenants->currentPage(),
-                    'last_page' => $tenants->lastPage(),
-                    'from' => $tenants->firstItem(),
-                    'to' => $tenants->lastItem(),
-                ],
-            ],
-            'filters' => $request->getFilters(),
-            'sorting' => $sorting,
-        ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $this->handleAuthorization('create', Tenant::class);
-
-        return $this->inertiaResponse('Admin/People/CreateTenant', [
-            'assignableInstitutions' => Institution::all(['id', 'name']),
+            'tenants' => Tenant::query()->orderBy('fullname')->get(['id', 'fullname', 'shortname', 'alias', 'type', 'shortname_vu', 'primary_institution_id', 'goals_enabled'])
+                ->map(fn (Tenant $tenant) => [
+                    ...$tenant->toArray(),
+                    'can' => [
+                        'update' => $request->user()->can('update', $tenant),
+                        'delete' => $request->user()->can('delete', $tenant),
+                    ],
+                ]),
+            'assignableInstitutions' => Institution::query()->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -91,19 +51,6 @@ class TenantController extends AdminController
         $tenant->save();
 
         return redirect()->route('tenants.index')->with('success', $this->entityMessage('created', 'tenant'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Tenant $tenant)
-    {
-        $this->handleAuthorization('update', $tenant);
-
-        return $this->inertiaResponse('Admin/People/EditTenant', [
-            'tenant' => $tenant,
-            'assignableInstitutions' => Institution::all(['id', 'name']),
-        ]);
     }
 
     /**
@@ -174,8 +121,7 @@ class TenantController extends AdminController
         });
 
         foreach (LocaleEnum::cases() as $locale) {
-            Cache::tags(['homepage', "tenant_{$tenant->id}", "locale_{$locale->value}"])
-                ->forget("homepage_content_{$tenant->id}_{$locale->value}");
+            Cache::tags(['homepage'])->forget("homepage_content_{$tenant->id}_{$locale->value}");
         }
 
         return redirect()->back()->with('success', $this->entityMessage('updated', 'tenant'));

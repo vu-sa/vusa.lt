@@ -3,14 +3,11 @@
 namespace App\Services;
 
 use App\Enums\SharepointConfigEnum;
-use App\Enums\SharepointFieldEnum;
 use App\Enums\SharepointPermissionTypeEnum;
 use App\Enums\SharepointScopeEnum;
-use App\Models\Document;
-use App\Models\Institution;
-use App\Models\SharepointFile;
+use App\Exceptions\SharepointDeltaExpiredException;
+use App\Exceptions\SharepointThrottledException;
 use App\Support\StagingProtection;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -19,9 +16,11 @@ use Illuminate\Support\Sleep;
 use Microsoft\Graph\BatchRequestBuilder;
 use Microsoft\Graph\Core\Requests\BatchRequestContent;
 use Microsoft\Graph\Core\Requests\BatchRequestItem;
-use Microsoft\Graph\Generated\Drives\Item\Items\Item\Children\ChildrenRequestBuilder;
+use Microsoft\Graph\Core\Requests\BatchResponseContent;
 use Microsoft\Graph\Generated\Drives\Item\Items\Item\CreateLink\CreateLinkPostRequestBody;
+use Microsoft\Graph\Generated\Drives\Item\Items\Item\Delta\DeltaRequestBuilderGetRequestConfiguration;
 use Microsoft\Graph\Generated\Drives\Item\Items\Item\DriveItemItemRequestBuilderGetRequestConfiguration;
+use Microsoft\Graph\Generated\Drives\Item\Items\Item\ListItem\ListItemRequestBuilderGetRequestConfiguration;
 use Microsoft\Graph\Generated\Models;
 use Microsoft\Graph\Generated\Models\DriveItem;
 use Microsoft\Graph\Generated\Models\FieldValueSet;
@@ -30,6 +29,7 @@ use Microsoft\Graph\Generated\Models\PermissionCollectionResponse;
 use Microsoft\Graph\Generated\Sites\Item\Lists\Item\Items\Item\DriveItem\DriveItemRequestBuilderGetRequestConfiguration;
 use Microsoft\Graph\Generated\Sites\Item\Lists\Item\Items\Item\Fields\FieldsRequestBuilderPatchRequestConfiguration;
 use Microsoft\Graph\GraphServiceClient;
+use Microsoft\Kiota\Abstractions\ApiException;
 use Microsoft\Kiota\Authentication\Oauth\ClientCredentialContext;
 use Nyholm\Psr7\Factory\Psr17Factory;
 
@@ -55,6 +55,9 @@ class SharepointGraphService
      * Default number of days for SharePoint permission expiry
      */
     private const int DEFAULT_PERMISSION_EXPIRY_DAYS = 365;
+
+    /** A longer Retry-After ends the caller's run instead of holding a worker asleep. */
+    public const int MAX_THROTTLE_WAIT_SECONDS = 120;
 
     /**
      * SharePoint Graph API Service
@@ -102,32 +105,6 @@ class SharepointGraphService
         $drive = $this->graph->sites()->bySiteId($this->siteId)->drive()->get()->wait();
 
         return $drive;
-    }
-
-    /**
-     * getDriveItemByPath
-     *
-     * Note: for some reason DriveItems are not returned
-     *
-     * @return Collection
-     */
-    public function getDriveItemByPath(string $path, bool $getChildren = false)
-    {
-        // encode path
-        $childrenPath = $getChildren ? ':/children' : '';
-
-        try {
-            $sharepointPathFinal = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root:'."/{$path}{$childrenPath}?\$expand=listItem,thumbnails";
-
-            $drive = $this->graph->drives()->byDriveId($this->driveId)->withUrl($sharepointPathFinal)->get()->wait();
-
-        } catch (ODataError) {
-            return collect([]);
-        }
-
-        $driveItems = collect($drive->getAdditionalData()['value']);
-
-        return $this->parseDriveItems($driveItems);
     }
 
     /**
@@ -262,7 +239,7 @@ class SharepointGraphService
 
     public function updateDriveItemByPath(string $path, array $fields): ?DriveItem
     {
-        StagingProtection::ensureSharepointIsWritable();
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         try {
             $path = rawurlencode($path);
@@ -317,7 +294,7 @@ class SharepointGraphService
 
     public function updateListItem(string $listId, string $listItemId, array $fields): FieldValueSet
     {
-        StagingProtection::ensureSharepointIsWritable();
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         try {
             $requestConfiguration = new FieldsRequestBuilderPatchRequestConfiguration;
@@ -342,49 +319,6 @@ class SharepointGraphService
         }
     }
 
-    // Since every institution can have types and with them associated documents, we need to
-    // get them by batch
-    public function getDriveItemsChildrenByPaths(array $paths)
-    {
-        $pathCollection = collect($paths);
-
-        $batch = new BatchRequestContent(
-            $pathCollection->map(function ($path) {
-                $path = rawurlencode($path);
-
-                $sharepointPathFinal = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root:'."/{$path}:/children?\expand=listItem,thumbnails";
-
-                $request = $this->graph->drives()->byDriveId($this->driveId)->root()->withUrl($sharepointPathFinal)->toGetRequestInformation();
-
-                return new BatchRequestItem($request);
-            })->toArray()
-        );
-
-        // Create a batch request builder to send the batched requests
-        $batchRequestBuilder = new BatchRequestBuilder($this->graph->getRequestAdapter());
-
-        $batchResponse = $batchRequestBuilder->postAsync($batch)->wait();
-
-        $driveItemCollections = collect($batch->getRequests())->map(function (BatchRequestItem $request) use ($batchResponse) {
-            $response = $batchResponse->getResponseBody($request->getId(), Models\DriveItemCollectionResponse::class)->getValue();
-
-            return $response;
-        });
-
-        $driveItems = $driveItemCollections->map(function (?array $driveItemCollection) {
-            if (! $driveItemCollection) {
-                return false;
-            }
-
-            // flatten driveItemCollection
-            return $driveItemCollection;
-        })->reject(fn ($value) => $value === false)->flatten()->map(
-            // turn to simple array
-            fn (DriveItem $driveItem) => $driveItem->getBackingStore()->enumerate());
-
-        return $this->parseDriveItems($driveItems);
-    }
-
     protected function getDriveItemPermissions(string $driveItemId): PermissionCollectionResponse
     {
         $permissions = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->permissions()->get()->wait();
@@ -397,13 +331,6 @@ class SharepointGraphService
         $permissions = collect($this->getDriveItemPermissions($driveItemId)->getValue());
 
         $permission = $permissions->filter(function (Models\Permission $permission) use ($driveItemId) {
-            // Filter criteria:
-            // 1. Must have a link (not SharePoint group permission)
-            // 2. Must be anonymous scope
-            // 3. Must NOT have expiration (our standard)
-            // 4. CRITICAL: Must NOT be inherited from parent folder
-            // 5. Must expose its webUrl (Graph omits it once an identity is granted on the link)
-            // 6. CRITICAL: Must be a file URL (:b: or :w:), not a folder URL (:f:)
             if (! $permission->getLink()
                 || $permission->getLink()->getScope() !== 'anonymous'
                 || $permission->getExpirationDateTime() !== null
@@ -413,8 +340,7 @@ class SharepointGraphService
 
             $url = $permission->getLink()->getWebUrl();
 
-            // A link whose address Graph withholds is useless to us, and treating it as
-            // the current one would overwrite a working anonymous_url with null.
+            // Treat links without webUrl as invalid to avoid overwriting a working anonymous_url.
             if ($url === null) {
                 $this->logWarning('Rejecting anonymous permission without a webUrl', [
                     'drive_item_id' => $driveItemId,
@@ -456,7 +382,7 @@ class SharepointGraphService
 
     public function createPublicPermission(?string $siteId, string $driveItemId, Carbon|false|null $datetime = null): Models\Permission
     {
-        StagingProtection::ensureSharepointIsWritable();
+        StagingProtection::ensureSharepointIsWritable($siteId ?? $this->siteId, $this->driveId);
         $this->validateNotEmpty(['driveItemId' => $driveItemId]);
 
         // Validate item is a file, not folder
@@ -503,7 +429,7 @@ class SharepointGraphService
      */
     public function deletePermission(string $driveItemId, string $permissionId): void
     {
-        StagingProtection::ensureSharepointIsWritable();
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         $this->graph->drives()
             ->byDriveId($this->driveId)
@@ -522,7 +448,7 @@ class SharepointGraphService
 
     public function uploadDriveItem(string $filePath, UploadedFile $file): DriveItem
     {
-        StagingProtection::ensureSharepointIsWritable();
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         $factory = new Psr17Factory;
 
@@ -537,51 +463,9 @@ class SharepointGraphService
 
     public function deleteDriveItem(string $driveItemId): void
     {
-        StagingProtection::ensureSharepointIsWritable();
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)->delete()->wait();
-    }
-
-    /**
-     * Create a folder in SharePoint.
-     * Creates parent folders recursively if they don't exist.
-     *
-     * @param  string  $folderPath  The full path for the folder (e.g., "General/Padaliniai/NewFolder")
-     */
-    public function createFolder(string $folderPath): DriveItem
-    {
-        StagingProtection::ensureSharepointIsWritable();
-
-        $pathParts = explode('/', trim($folderPath, '/'));
-        $folderName = array_pop($pathParts);
-        $parentPath = implode('/', $pathParts);
-
-        // Build the parent item path
-        $parentUrl = $this->graphApiBaseUrl.'drives/'.$this->driveId.'/root';
-        if (! empty($parentPath)) {
-            $parentUrl .= ':/'.$parentPath.':';
-        }
-
-        $requestBody = new DriveItem;
-        $requestBody->setName($folderName);
-        $requestBody->setFolder(new Models\Folder);
-        $requestBody->setAdditionalData([
-            '@microsoft.graph.conflictBehavior' => 'fail',
-        ]);
-
-        $childrenRequestBuilder = new ChildrenRequestBuilder(
-            $parentUrl.'/children',
-            $this->graph->getRequestAdapter()
-        );
-
-        $createdFolder = $childrenRequestBuilder->post($requestBody)->wait();
-
-        $this->logInfo('Folder created', [
-            'path' => $folderPath,
-            'folder_id' => $createdFolder->getId(),
-        ]);
-
-        return $createdFolder;
     }
 
     /**
@@ -593,7 +477,7 @@ class SharepointGraphService
      */
     public function uploadUrlShortcut(string $filePath, string $content): DriveItem
     {
-        StagingProtection::ensureSharepointIsWritable();
+        StagingProtection::ensureSharepointIsWritable($this->siteId, $this->driveId);
 
         $factory = new Psr17Factory;
 
@@ -608,223 +492,202 @@ class SharepointGraphService
     }
 
     /**
-     * parseDriveItems
+     * One page of the drive's change feed. `null` starts a full listing; pass the previous
+     * page's nextLink, or a stored deltaLink, to continue.
      *
-     * @return Collection
+     * @return array{items: list<DriveItem>, nextLink: ?string, deltaLink: ?string}
+     *
+     * @throws SharepointDeltaExpiredException when Graph no longer accepts the deltaLink
      */
-    private function parseDriveItems(Collection $driveItems)
+    public function getDriveDeltaPage(?string $link = null): array
     {
-        // get all driveitem ids
-        $driveItemIds = $driveItems->map(fn ($driveItem) => $driveItem['id'])->toArray();
+        $builder = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId('root')->delta();
 
-        // load all sharepointFile models wherein sharepointfile.sharepoint_id
-        // is in $driveItemIds
-        $sharepointFiles = SharepointFile::whereIn('sharepoint_id', $driveItemIds)->with('fileables.fileable', 'comments')->get();
+        $configuration = new DeltaRequestBuilderGetRequestConfiguration;
+        $configuration->queryParameters = DeltaRequestBuilderGetRequestConfiguration::createQueryParameters();
+        // Graph's default ~250 items per page makes a full listing of the archive take minutes longer.
+        $configuration->queryParameters->top = 1000;
+        $configuration->queryParameters->select = [
+            'id', 'name', 'file', 'folder', 'root', 'deleted', 'eTag', 'lastModifiedDateTime',
+            'parentReference', 'sharepointIds', 'webUrl',
+        ];
 
-        $parsedDriveItems = $driveItems->map(fn (array $driveItem) => [
-            'id' => $driveItem['id'],
-            'sharepointFile' => $sharepointFiles->filter(fn ($sharepointFile) => $sharepointFile->sharepoint_id == $driveItem['id'])->first(),
-            'name' => $driveItem['name'],
-            'file' => $driveItem['file'] ?? null,
-            // if driveitem is a file, get content
-            'folder' => $driveItem['folder'] ?? null,
-            'size' => $driveItem['size'],
-            'createdDateTime' => $driveItem['createdDateTime'],
-            'lastModifiedDateTime' => $driveItem['lastModifiedDateTime'],
-            'webUrl' => $driveItem['webUrl'],
-            'listItem' => [
-                'fields' => $driveItem['listItem']['fields'] ?? null,
-            ],
-            'permissions' => $driveItem['permissions'] ?? null,
-            'thumbnails' => collect($driveItem['thumbnails'] ?? [])->map(fn ($thumbnail) => [
-                'large' => [
-                    'url' => $thumbnail['large']['url'],
-                ],
-            ]),
-        ]);
+        try {
+            $response = $link === null
+                ? $builder->get($configuration)->wait()
+                : $builder->withUrl($link)->get()->wait();
+        } catch (ApiException $e) {
+            if ($e->getResponseStatusCode() === 410) {
+                throw new SharepointDeltaExpiredException('SharePoint delta link expired', previous: $e);
+            }
 
-        return $parsedDriveItems;
+            throw $e;
+        }
+
+        return [
+            'items' => array_values($response?->getValue() ?? []),
+            'nextLink' => $response?->getOdataNextLink(),
+            'deltaLink' => $response?->getOdataDeltaLink(),
+        ];
     }
 
     /**
-     * Batch process documents from SharePoint
+     * List item fields of many drive items, batched 20 per Graph request. Throttled items are
+     * retried after SharePoint's Retry-After. Items that fail for a reason that may pass (throttling,
+     * a server error, a refused token) are listed as `transient`; any other missing item is a
+     * permanent failure of that file's data.
      *
-     * @param  EloquentCollection<int, Document>  $documentCollection
+     * @param  list<string>  $driveItemIds
+     * @param  (\Closure(string, int): void)|null  $progress  told `looked_up` (items answered so far) and `throttled` (seconds it waits)
+     * @return array{items: array<string, array{eTag: ?string, fields: array<string, mixed>}>, transient: list<string>}
+     *
+     * @throws SharepointThrottledException when SharePoint asks for a longer pause than is worth sleeping through
      */
-    public function batchProcessDocuments(EloquentCollection $documentCollection)
+    public function getListItemsForDriveItems(array $driveItemIds, int $maxThrottleRetries = 6, ?\Closure $progress = null): array
     {
+        $result = [];
+        $transient = [];
+        $pending = $driveItemIds;
+        $answered = 0;
 
-        // filter by documents that don't exist
-        $documentColection = $documentCollection->filter(fn (Document $document): bool => Document::query()->where('sharepoint_id', $document->sharepoint_id)->doesntExist());
+        for ($attempt = 0; $pending !== [] && $attempt <= $maxThrottleRetries; $attempt++) {
+            $throttled = [];
+            $waitSeconds = 0;
 
-        // If no documents to process, return
-        if ($documentColection->isEmpty()) {
-            return $documentColection;
+            foreach (array_chunk($pending, 20) as $chunk) {
+                // Once SharePoint throttles, the rest of this pass would only be throttled too.
+                if ($throttled !== []) {
+                    array_push($throttled, ...$chunk);
+
+                    continue;
+                }
+
+                $response = $this->postListItemBatch($chunk);
+
+                foreach ($chunk as $driveItemId) {
+                    $item = $response->getResponse($driveItemId);
+                    $status = $item->getStatusCode();
+
+                    if ($status === 429 || $status === 503) {
+                        $throttled[] = $driveItemId;
+                        $waitSeconds = max($waitSeconds, $this->retryAfterSeconds($item->getHeaders()));
+
+                        continue;
+                    }
+
+                    if ($status === null || $status >= 500 || $status === 401 || $status === 403) {
+                        $this->logWarning('List item lookup failed in batch, will retry', ['drive_item_id' => $driveItemId, 'status' => $status]);
+                        $transient[] = $driveItemId;
+
+                        continue;
+                    }
+
+                    $listItem = $this->parseListItem($response, $driveItemId, $status);
+
+                    if ($listItem !== null) {
+                        $result[$driveItemId] = $listItem;
+                    }
+                }
+
+                $answered += count($chunk) - count(array_intersect($chunk, $throttled));
+                $progress?->__invoke('looked_up', $answered);
+            }
+
+            $pending = $throttled;
+
+            if ($pending !== [] && $attempt < $maxThrottleRetries) {
+                if ($waitSeconds > self::MAX_THROTTLE_WAIT_SECONDS) {
+                    throw new SharepointThrottledException($waitSeconds);
+                }
+
+                $this->logInfo('SharePoint throttled list item lookups, waiting', ['items' => count($pending), 'seconds' => $waitSeconds]);
+                $progress?->__invoke('throttled', $waitSeconds);
+                Sleep::for($waitSeconds)->seconds();
+            }
         }
 
-        // First, get the drive item and associated data
-        $batch = new BatchRequestContent(
-            $documentColection->map(function (Document $document): BatchRequestItem {
+        if ($pending !== []) {
+            $this->logWarning('List item lookups still throttled after retries', ['items' => count($pending)]);
+            array_push($transient, ...$pending);
+        }
 
-                $requestConfiguration = new DriveItemRequestBuilderGetRequestConfiguration;
-                $queryParameters = DriveItemRequestBuilderGetRequestConfiguration::createQueryParameters();
+        return ['items' => $result, 'transient' => $transient];
+    }
 
-                $queryParameters->expand = ['listItem', 'permissions'];
+    /**
+     * @param  list<string>  $driveItemIds
+     */
+    private function postListItemBatch(array $driveItemIds): BatchResponseContent
+    {
+        $batch = new BatchRequestContent(array_map(function (string $driveItemId): BatchRequestItem {
+            $configuration = new ListItemRequestBuilderGetRequestConfiguration;
+            $configuration->queryParameters = ListItemRequestBuilderGetRequestConfiguration::createQueryParameters();
+            $configuration->queryParameters->expand = ['fields'];
 
-                $requestConfiguration->queryParameters = $queryParameters;
+            $request = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItemId)
+                ->listItem()->toGetRequestInformation($configuration);
 
-                $driveItemRequestConfiguration = $this->graph->sites()->bySiteId($document->sharepoint_site_id)->lists()->byListId($document->sharepoint_list_id)->items()->byListItemId($document->sharepoint_id)->driveItem()->toGetRequestInformation($requestConfiguration);
+            return new BatchRequestItem($request, $driveItemId);
+        }, $driveItemIds));
 
-                return new BatchRequestItem($driveItemRequestConfiguration, $document->sharepoint_id);
-            })->toArray()
+        return $this->executeWithRetry(
+            fn () => new BatchRequestBuilder($this->graph->getRequestAdapter())->postAsync($batch)->wait(),
+            'getListItemsForDriveItems',
         );
-
-        // Create a batch request builder to send the batched requests
-        $batchRequestBuilder = new BatchRequestBuilder($this->graph->getRequestAdapter());
-
-        $batchResponse = $batchRequestBuilder->postAsync($batch)->wait();
-
-        $driveItemCollections = collect($batch->getRequests())->map(function (BatchRequestItem $request) use ($batchResponse): array {
-            /** @var array<string, mixed> $additionalData */
-            $additionalData = $batchResponse->getResponseBody($request->getId(), Models\DriveItemCollectionResponse::class)->getAdditionalData();
-
-            $additionalData['listItem']['uniqueId'] = $request->getId();
-
-            return $additionalData;
-            // keyBy list item id
-        })->keyBy(fn (array $value): string => (string) $value['listItem']['uniqueId']);
-
-        $driveItemCollections = $this->filterProcessableDriveItems($driveItemCollections);
-
-        // Get drive items that don't have a valid anonymous permission yet
-        $driveItemsWithoutAnonymousUrl = $driveItemCollections->filter(fn ($driveItem) => ! collect($driveItem['permissions'] ?? [])
-            ->contains(fn ($permission) => $this->isValidAnonymousPermission($permission)));
-
-        // Add anonymous url to drive items without it
-        if ($driveItemsWithoutAnonymousUrl->isNotEmpty() && ! StagingProtection::sharepointIsReadOnly()) {
-            $batch = new BatchRequestContent(
-                $driveItemsWithoutAnonymousUrl->map(function (array $driveItem) {
-
-                    $requestBody = new CreateLinkPostRequestBody;
-
-                    $requestBody->setType(SharepointPermissionTypeEnum::VIEW->label());
-                    $requestBody->setScope(SharepointScopeEnum::ANONYMOUS->label());
-
-                    $sharepointPathFinal = "{$this->graphApiBaseUrl}sites/{$this->siteId}/drive/items/{$driveItem['id']}/createLink";
-
-                    // This is the wrong chain, but it should work
-                    $permissionRequestConfiguration = $this->graph->drives()->byDriveId($this->driveId)->items()->byDriveItemId($driveItem['id'])->createLink()->withUrl($sharepointPathFinal)->toPostRequestInformation($requestBody);
-
-                    return new BatchRequestItem($permissionRequestConfiguration, $driveItem['listItem']['uniqueId']);
-                })->toArray()
-
-            );
-            $batchRequestBuilder = new BatchRequestBuilder($this->graph->getRequestAdapter());
-
-            $batchResponse = $batchRequestBuilder->postAsync($batch)->wait();
-
-            $permissionCollection = collect($batch->getRequests())->map(function (BatchRequestItem $request) use ($batchResponse) {
-                $additionalData = $batchResponse->getResponseBody($request->getId(), PermissionCollectionResponse::class)->getAdditionalData();
-
-                $additionalData['list_item_unique_id'] = $request->getId();
-
-                return $additionalData;
-            })->keyBy(fn ($value) => $value['list_item_unique_id']);
-        } else {
-            $permissionCollection = collect([]);
-        }
-
-        $driveItemCollections->each(function ($driveItem, string $key) use ($permissionCollection, $driveItemCollections): void {
-            // Only merge permission if this item was in the createLink batch
-            $permission = $permissionCollection->get($key);
-
-            if ($permission !== null) {
-                $driveItem['permissions'][] = $permission;
-                $driveItemCollections->put($key, $driveItem);
-            }
-        });
-
-        // Update documents
-        $documentColection->each(function (Document $document) use ($driveItemCollections): void {
-            $driveItem = $driveItemCollections->get($document->sharepoint_id);
-
-            // Handle filtered folders and failed batch sub-requests - mark as failed
-            if ($driveItem === null) {
-                Log::warning('Document drive item unavailable, skipping', [
-                    'sharepoint_id' => $document->sharepoint_id,
-                    'title' => $document->title,
-                ]);
-                $document->sync_status = 'failed';
-                $document->sync_error_message = 'Document could not be retrieved from SharePoint (references a folder, or the request failed)';
-                $document->save();
-
-                return;
-            }
-
-            $document->name = $driveItem['name'];
-            $document->title = $driveItem['listItem']['fields'][SharepointFieldEnum::TITLE->label()] ?? $driveItem['name'];
-            $document->eTag = $driveItem['listItem']['eTag'];
-            $document->document_date = isset($driveItem['listItem']['fields'][SharepointFieldEnum::DATE->label()]) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields'][SharepointFieldEnum::DATE->label()], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
-            $document->effective_date = isset($driveItem['listItem']['fields'][SharepointFieldEnum::EFFECTIVE_DATE->label()]) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields'][SharepointFieldEnum::EFFECTIVE_DATE->label()], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
-            $document->expiration_date = isset($driveItem['listItem']['fields'][SharepointFieldEnum::EXPIRATION_DATE->label()]) ? Carbon::parseFromLocale(time: $driveItem['listItem']['fields'][SharepointFieldEnum::EXPIRATION_DATE->label()], timezone: 'UTC')->setTimezone('Europe/Vilnius') : null;
-
-            $document->language = $driveItem['listItem']['fields'][SharepointFieldEnum::LANGUAGE->label()] ?? null;
-            $document->content_type = $driveItem['listItem']['fields'][SharepointFieldEnum::TURINYS->label()]['Label'] ?? null;
-
-            $document->summary = $driveItem['listItem']['fields'][SharepointFieldEnum::SUMMARY->label()] ?? null;
-            /* $document->thumbnail_url = $driveItem['thumbnails'][0]['large']['url']; */
-
-            $this->applyImportedPublicLink($document, collect($driveItem['permissions'] ?? [])
-                ->first(fn ($permission) => $this->isValidAnonymousPermission($permission)));
-
-            $institutionFieldName = SharepointFieldEnum::PADALINYS->label();
-
-            if (isset($driveItem['listItem']['fields'][$institutionFieldName]['Label'])) {
-                $document->institution()->associate(Institution::query()->where('name->lt', $driveItem['listItem']['fields'][$institutionFieldName]['Label'])->orWhere('short_name->lt', $driveItem['listItem']['fields'][$institutionFieldName]['Label'])->first());
-            }
-
-            $document->save();
-        });
-
-        return $documentColection;
-
     }
 
     /**
-     * Reject drive items that must not be processed as normal files: folders, and
-     * items whose batch sub-request failed (e.g. transient Graph API error,
-     * throttling, or the item not yet readable right after being picked). Failed
-     * sub-requests come back as an error body without the usual drive item fields
-     * (no 'id', no 'permissions'), so they must be filtered out before the caller
-     * touches those fields.
-     *
-     * @param  iterable<string, array<string, mixed>>  $driveItemCollections
-     * @return Collection<string, array<string, mixed>>
+     * @return array{eTag: ?string, fields: array<string, mixed>}|null
      */
-    protected function filterProcessableDriveItems(iterable $driveItemCollections): Collection
+    private function parseListItem(BatchResponseContent $response, string $driveItemId, ?int $status): ?array
     {
-        $driveItemCollections = collect($driveItemCollections);
+        if ($status === null || $status >= 300) {
+            $this->logWarning('List item lookup failed in batch', ['drive_item_id' => $driveItemId, 'status' => $status]);
 
-        $folderItems = $driveItemCollections->filter(fn ($item) => isset($item['folder']));
-        if ($folderItems->isNotEmpty()) {
-            Log::warning('Batch processing encountered folders instead of files', [
-                'folder_count' => $folderItems->count(),
-                'folder_ids' => $folderItems->keys()->toArray(),
-            ]);
-            $driveItemCollections = $driveItemCollections->reject(fn ($item) => isset($item['folder']));
+            return null;
         }
 
-        $failedItems = $driveItemCollections->filter(fn ($item) => ! isset($item['id']));
-        if ($failedItems->isNotEmpty()) {
-            Log::warning('Batch processing encountered failed drive item requests', [
-                'failed_count' => $failedItems->count(),
-                'failed_ids' => $failedItems->keys()->toArray(),
-                'errors' => $failedItems->map(fn ($item) => $item['error'] ?? null)->toArray(),
-            ]);
-            $driveItemCollections = $driveItemCollections->reject(fn ($item) => ! isset($item['id']));
+        try {
+            $listItem = $response->getResponseBody($driveItemId, Models\ListItem::class);
+        } catch (\Throwable $e) {
+            $this->logWarning('List item lookup failed in batch', ['drive_item_id' => $driveItemId, 'error' => $e->getMessage()]);
+
+            return null;
         }
 
-        return $driveItemCollections;
+        if (! $listItem instanceof Models\ListItem) {
+            return null;
+        }
+
+        $fields = $listItem->getFields()?->getAdditionalData() ?? [];
+
+        return ['eTag' => $fields['@odata.etag'] ?? $listItem->getETag(), 'fields' => $fields];
+    }
+
+    /**
+     * Retry-After is either seconds or an HTTP date; Graph's guidance is to wait the whole of it.
+     *
+     * @param  array<string, string|list<string>>|null  $headers
+     */
+    private function retryAfterSeconds(?array $headers): int
+    {
+        foreach ($headers ?? [] as $name => $value) {
+            if (strtolower((string) $name) !== 'retry-after') {
+                continue;
+            }
+
+            $value = trim((string) (is_array($value) ? ($value[0] ?? '') : $value));
+
+            if (is_numeric($value)) {
+                return max(1, (int) $value);
+            }
+
+            $until = strtotime($value);
+
+            return $until === false ? 10 : max(1, $until - time());
+        }
+
+        return 10;
     }
 
     /**
@@ -1001,75 +864,6 @@ class SharepointGraphService
         }
 
         return $driveItem;
-    }
-
-    /**
-     * Record the public link on a freshly imported document.
-     *
-     * An import that produced no usable link is marked failed rather than 'imported', so
-     * `sharepoint:sync-documents --failed` retries it instead of leaving a document nobody
-     * can open. checked_at stays null so the rolling refresh also treats it as critical.
-     *
-     * @param  array<string, mixed>|null  $anonymousPermission
-     */
-    protected function applyImportedPublicLink(Document $document, ?array $anonymousPermission): void
-    {
-        // isValidAnonymousPermission() already rejected folder and unreadable links,
-        // so a missing URL here means link creation failed for this drive item.
-        $url = $anonymousPermission['link']['webUrl'] ?? null;
-
-        if ($url === null) {
-            if (! StagingProtection::sharepointIsReadOnly()) {
-                $document->anonymous_url = null;
-                $document->sharepoint_permission_id = null;
-            }
-
-            $this->logWarning('Batch processing: document imported without a public link', [
-                'sharepoint_id' => $document->sharepoint_id,
-                'title' => $document->title,
-            ]);
-
-            $document->sync_status = 'failed';
-            $document->sync_error_message = 'Imported without a public link';
-
-            return;
-        }
-
-        $document->anonymous_url = $url;
-        $document->sharepoint_permission_id = $anonymousPermission['id'] ?? null;
-
-        $document->checked_at = Carbon::now();
-        $document->sync_status = 'imported';
-    }
-
-    /**
-     * Check if a raw permission array represents a valid anonymous file permission.
-     *
-     * Mirrors the validation in getDriveItemPublicLink() for typed Permission objects.
-     * Criteria: anonymous scope, no password, not inherited, has a readable webUrl,
-     * not a folder URL.
-     */
-    private function isValidAnonymousPermission(array $permission): bool
-    {
-        $isAnonymous = ($permission['link']['scope'] ?? null) === SharepointScopeEnum::ANONYMOUS->label();
-        if (! $isAnonymous) {
-            return false;
-        }
-
-        if ($permission['hasPassword'] ?? false) {
-            return false;
-        }
-
-        if (isset($permission['inheritedFrom'])) {
-            return false;
-        }
-
-        $url = $permission['link']['webUrl'] ?? null;
-        if ($url === null || $this->isFolderUrl($url)) {
-            return false;
-        }
-
-        return true;
     }
 
     /**

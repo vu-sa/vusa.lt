@@ -1,3 +1,3 @@
-export { default as AdministratorsSection } from './AdministratorsSection.vue';
-export type { AdministratorRoster, AdministratorUser } from './administratorTypes';
-export { useAdministratorRoster } from './useAdministratorRoster';
+export { default as SecretariesSection } from './SecretariesSection.vue';
+export type { SecretaryRoster, SecretaryUser } from './secretaryTypes';
+export { useSecretaryRoster } from './useSecretaryRoster';

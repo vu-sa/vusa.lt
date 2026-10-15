@@ -1,19 +1,4 @@
-/**
- * useGanttViewport - Horizontal viewport culling for Gantt chart performance
- *
- * This composable implements viewport-based rendering optimization by tracking
- * which portion of the timeline is currently visible and filtering data to only
- * include elements within the visible range (plus a buffer).
- *
- * This significantly improves rendering performance when dealing with large
- * date ranges or many meetings/gaps, as D3 only needs to render visible elements.
- *
- * Performance characteristics:
- * - Uses RAF-throttled scroll tracking (not debounced) for smooth updates
- * - Adds configurable buffer zones to prevent pop-in during scrolling
- * - Only recalculates when scroll position changes significantly
- */
-import { ref, computed, onUnmounted, type Ref, type ComputedRef } from 'vue';
+import { ref, computed, getCurrentScope, onScopeDispose, type Ref, type ComputedRef } from 'vue';
 import type * as d3 from 'd3';
 
 export interface ViewportBounds {
@@ -102,6 +87,7 @@ export function useGanttViewport(
   const viewportBottom = ref(1000);
   const lastScrollTop = ref(0);
   let rafId: number | null = null;
+  let trackedContainer: HTMLElement | null = null;
 
   /**
    * Current viewport bounds with dates
@@ -260,29 +246,35 @@ export function useGanttViewport(
    * Returns cleanup function
    */
   function attachViewportTracking(): () => void {
+    cleanup();
     const el = scrollContainer.value;
     if (!el) return () => {};
 
+    trackedContainer = el;
     el.addEventListener('scroll', onViewportScroll, { passive: true });
 
     // Initial update
     forceUpdate();
 
     return () => {
-      el.removeEventListener('scroll', onViewportScroll);
-      if (rafId !== null) {
-        cancelAnimationFrame(rafId);
-        rafId = null;
+      if (trackedContainer === el) {
+        cleanup();
       }
     };
   }
 
-  // Cleanup on unmount
-  onUnmounted(() => {
+  function cleanup() {
+    trackedContainer?.removeEventListener('scroll', onViewportScroll);
+    trackedContainer = null;
     if (rafId !== null) {
       cancelAnimationFrame(rafId);
+      rafId = null;
     }
-  });
+  }
+
+  if (getCurrentScope()) {
+    onScopeDispose(cleanup);
+  }
 
   return {
     // State
@@ -296,6 +288,7 @@ export function useGanttViewport(
     updateViewport,
     forceUpdate,
     attachViewportTracking,
+    cleanup,
 
     // Factory methods for filtered computeds
     createVisibleMeetings,

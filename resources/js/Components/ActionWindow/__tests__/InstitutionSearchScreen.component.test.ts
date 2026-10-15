@@ -8,7 +8,7 @@ import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
-const institutionSearch = ref({ enabled: true, tenant_ids: [16, 17] });
+const institutionSearch = ref({ enabled: true, tenant_ids: [16, 17], internal_type_ids: [] as number[], external_type_ids: [] as number[] });
 
 vi.mock('@/Composables/useActionWindowData', () => ({
   useActionWindowData: () => ({
@@ -42,13 +42,16 @@ vi.mock('@/Features/Admin/AdminSearch/Composables/useAdminCollectionSearch', () 
   },
 }));
 
-const mountScreen = () => {
+const mountScreen = (fromEvent = false) => {
   let window!: ActionWindowContext;
 
   const wrapper = mount(defineComponent({
     setup() {
       window = createActionWindowProvider();
-      window.open({ flow: 'meeting.create' });
+      window.open({
+        flow: 'meeting.create',
+        calendarEvent: fromEvent ? { id: 5, title: 'Parlamento posėdis', date: '2026-11-03 18:00:00' } : undefined,
+      });
       window.goTo('meeting.institution.search');
       return () => h(InstitutionSearchScreen);
     },
@@ -63,7 +66,7 @@ describe('InstitutionSearchScreen.vue', () => {
    * further to the tenants they may actually create a meeting for.
    */
   it('scopes the collection to the tenants the caller may create meetings for', () => {
-    institutionSearch.value = { enabled: true, tenant_ids: [16, 17] };
+    institutionSearch.value = { enabled: true, tenant_ids: [16, 17], internal_type_ids: [], external_type_ids: [] };
     results.value = [];
     mountScreen();
 
@@ -73,7 +76,7 @@ describe('InstitutionSearchScreen.vue', () => {
   });
 
   it('sends no filter for an all-scope caller', () => {
-    institutionSearch.value = { enabled: true, tenant_ids: [] };
+    institutionSearch.value = { enabled: true, tenant_ids: [], internal_type_ids: [], external_type_ids: [] };
     results.value = [];
     mountScreen();
 
@@ -83,7 +86,7 @@ describe('InstitutionSearchScreen.vue', () => {
   });
 
   it('picking a result files the meeting under it and moves on', async () => {
-    institutionSearch.value = { enabled: true, tenant_ids: [16] };
+    institutionSearch.value = { enabled: true, tenant_ids: [16], internal_type_ids: [], external_type_ids: [] };
     results.value = [{ id: 'inst-1', name_lt: 'VU SA MIF', tenant_shortname: 'MIF' }];
 
     const { wrapper, window } = mountScreen();
@@ -92,5 +95,30 @@ describe('InstitutionSearchScreen.vue', () => {
     expect(window.draft.institution).toEqual({ id: 'inst-1', name: 'VU SA MIF' });
     expect(window.draft.meeting.institution_id).toBe('inst-1');
     expect(window.current.value.id).toBe('meeting.type');
+  });
+
+  // Only VU SA's own bodies are announced in the calendar; an external type wins on a mix.
+  it('narrows a meeting created from a calendar event to VU SA bodies', async () => {
+    institutionSearch.value = { enabled: true, tenant_ids: [16], internal_type_ids: [1, 2], external_type_ids: [3] };
+    results.value = [{ id: 'inst-1', name_lt: 'VU SA Parlamentas', tenant_shortname: 'VU SA' }];
+
+    const { wrapper, window } = mountScreen(true);
+
+    expect(searchOptions).toHaveBeenLastCalledWith(
+      expect.objectContaining({ baseFilterBy: 'tenant_ids:[16] && type_ids:[1,2] && type_ids:!=[3]' }),
+    );
+
+    await wrapper.findAll('[data-slot="action-choice-button"]')[0]!.trigger('click');
+    expect(window.draft.institution).toEqual({ id: 'inst-1', name: 'VU SA Parlamentas', isInternal: true });
+  });
+
+  it('finds nothing from a calendar event when no type is a VU SA one', () => {
+    institutionSearch.value = { enabled: true, tenant_ids: [], internal_type_ids: [], external_type_ids: [] };
+    results.value = [];
+    mountScreen(true);
+
+    expect(searchOptions).toHaveBeenLastCalledWith(
+      expect.objectContaining({ baseFilterBy: 'type_ids:[0]' }),
+    );
   });
 });

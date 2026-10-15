@@ -15,6 +15,7 @@ use App\Models\QuickLink;
 use App\Models\Tag;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -84,7 +85,7 @@ class QuickLinkController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreQuickLinkRequest $request)
+    public function store(StoreQuickLinkRequest $request, PostCreateRedirect $redirect)
     {
         $this->handleAuthorization('create', QuickLink::class);
 
@@ -95,14 +96,17 @@ class QuickLinkController extends AdminController
                 ->first()?->tenants->first()?->id;
         }
 
-        DB::transaction(function () use ($request, $tenant_id): void {
+        $quickLink = DB::transaction(function () use ($request, $tenant_id): QuickLink {
             $quickLink = new QuickLink;
             $quickLink->fill($request->safe()->only('text', 'link', 'lang', 'icon', 'is_important'));
             $quickLink->tenant()->associate($tenant_id);
             $quickLink->save();
+
+            return $quickLink;
         });
 
-        return redirect()->route('quickLinks.index')->with('success', $this->entityMessage('created', 'quickLink'));
+        return redirect($redirect->url($request->user(), $quickLink, 'quickLinks.edit', 'update', 'quickLinks.index'))
+            ->with('success', $this->entityMessage('created', 'quickLink'));
     }
 
     /**
@@ -111,26 +115,6 @@ class QuickLinkController extends AdminController
     public function edit(QuickLink $quickLink)
     {
         $this->handleAuthorization('update', $quickLink);
-
-        // $routes = Route::getRoutes();
-
-        // Filter the routes to include only those without parameters EXCEPT for {subdomain} and {lang}.
-        // Also the routes NOT in /mano directory, debugbar, telescope, impersonate, laravel-websockets, ignition, auth, login, feed and broadcasting routes
-        // $routesWithoutParams = collect($routes->getRoutesByMethod()['GET'])->filter(function ($route) {
-        //     return !collect($route->parameterNames)->except(['subdomain', 'lang'])->count() &&
-        //         !collect($route->getAction())->has('prefix', 'mano') &&
-        //         !collect($route->getAction())->has('prefix', '_debugbar') &&
-        //         !collect($route->getAction())->has('prefix', 'telescope') &&
-        //         !collect($route->getAction())->has('prefix', 'impersonate') &&
-        //         !collect($route->getAction())->has('prefix', 'laravel-websockets') &&
-        //         !collect($route->getAction())->has('prefix', 'ignition') &&
-        //         !collect($route->getAction())->has('prefix', 'auth') &&
-        //         !collect($route->getAction())->has('prefix', 'login') &&
-        //         !collect($route->getAction())->has('prefix', 'feed') &&
-        //         !collect($route->getAction())->has('prefix', 'broadcasting');
-        // });
-
-        // dd($routesWithoutParams);
 
         return $this->inertiaResponse('Admin/Content/EditQuickLink', [
             'quickLink' => $quickLink,
@@ -167,13 +151,17 @@ class QuickLinkController extends AdminController
 
     public function updateOrder(UpdateQuickLinkOrderRequest $request)
     {
-        foreach ($request->orderList as $idAndOrder) {
-            $this->handleAuthorization('update', [QuickLink::class, QuickLink::find($idAndOrder['id']), $this->authorizer]);
+        $orderList = $request->validated('orderList');
+        $quickLinks = QuickLink::query()->whereIn('id', array_column($orderList, 'id'))->get()->keyBy('id');
+
+        // Authorize every row before writing any, so a mixed batch changes nothing.
+        foreach ($quickLinks as $quickLink) {
+            $this->handleAuthorization('update', [QuickLink::class, $quickLink, $this->authorizer]);
         }
 
-        DB::transaction(function () use ($request): void {
-            foreach ($request->orderList as $idAndOrder) {
-                $quickLink = QuickLink::find($idAndOrder['id']);
+        DB::transaction(function () use ($orderList, $quickLinks): void {
+            foreach ($orderList as $idAndOrder) {
+                $quickLink = $quickLinks[$idAndOrder['id']];
                 $quickLink->order = $idAndOrder['order'];
                 $quickLink->save();
             }

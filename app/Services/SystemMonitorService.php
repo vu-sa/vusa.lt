@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\SearchableModelEnum;
 use App\Services\Typesense\TypesenseManager;
+use App\Settings\DocumentDiscoverySettings;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -46,7 +47,7 @@ class SystemMonitorService
     /**
      * Get a complete snapshot of system health.
      *
-     * @return array{redis: array, database: array, cache: array, typesense: array, scheduler: array, digest: array, mail: array, integrations: array, system: array}
+     * @return array{redis: array, database: array, cache: array, typesense: array, scheduler: array, digest: array, mail: array, sharepoint_documents: array, integrations: array, system: array}
      */
     public function getAllStatus(): array
     {
@@ -58,6 +59,7 @@ class SystemMonitorService
             'scheduler' => $this->getSchedulerStatus(),
             'digest' => $this->getDigestStatus(),
             'mail' => $this->getMailStatus(),
+            'sharepoint_documents' => $this->getDocumentDiscoveryStatus(),
             'integrations' => $this->getIntegrationsStatus(),
             'system' => $this->getSystemStatus(),
         ];
@@ -105,6 +107,51 @@ class SystemMonitorService
             'message' => $status === 'healthy'
                 ? null
                 : 'The scheduler has not run recently. Check that cron runs `schedule:run`.',
+            'last_check' => now()->toISOString(),
+        ];
+    }
+
+    /**
+     * Whether SharePoint document discovery keeps up. A failing run saves nothing (by design),
+     * so the age of the last successful run is the signal — it runs every 15 minutes.
+     *
+     * @return array<string, mixed>
+     */
+    public function getDocumentDiscoveryStatus(): array
+    {
+        // Settings load lazily, so the first property read is what can fail.
+        try {
+            $settings = app(DocumentDiscoverySettings::class);
+            $lastDiscoveryAt = $settings->last_run_at;
+            $lastFullDiscoveryAt = $settings->last_full_run_at;
+            $skippedFiles = $settings->skipped_files;
+        } catch (\Throwable $e) {
+            return ['status' => 'error', 'error' => $e->getMessage(), 'last_check' => now()->toISOString()];
+        }
+
+        $lastRun = $lastDiscoveryAt ? Carbon::parse($lastDiscoveryAt) : null;
+        $minutesSince = $lastRun ? (int) $lastRun->diffInMinutes(now(), absolute: true) : null;
+
+        $status = match (true) {
+            $minutesSince === null => 'warning',
+            $minutesSince <= 60 && $skippedFiles > 0 => 'warning',
+            $minutesSince <= 60 => 'healthy',
+            $minutesSince <= 24 * 60 => 'warning',
+            default => 'error',
+        };
+
+        return [
+            'status' => $status,
+            'last_run' => $lastRun?->toISOString(),
+            'minutes_since_last_run' => $minutesSince,
+            'last_full_run' => $lastFullDiscoveryAt,
+            'skipped_files' => $skippedFiles,
+            'message' => match (true) {
+                $status === 'healthy' => null,
+                $status === 'warning' && $minutesSince !== null && $minutesSince <= 60 => "Document discovery skips {$skippedFiles} file(s) that keep failing. Search the logs for 'gave up on items'.",
+                $status === 'warning' => $lastRun ? 'Document discovery has not finished recently. Check the logs and the long-running queue worker.' : 'Document discovery has not finished yet. Run `sharepoint:discover-documents --dry-run` to check.',
+                default => 'Document discovery has not finished for over a day. New SharePoint files are not reaching Dokumentai.',
+            },
             'last_check' => now()->toISOString(),
         ];
     }
@@ -463,13 +510,13 @@ class SystemMonitorService
                            ! empty(config('services.microsoft.client_secret'))) ? 'configured' : 'missing',
             ],
             'sharepoint' => [
-                'configured' => ! empty(config('services.sharepoint.client_id')) &&
-                              ! empty(config('services.sharepoint.client_secret')),
-                'client_id_set' => ! empty(config('services.sharepoint.client_id')),
-                'client_secret_set' => ! empty(config('services.sharepoint.client_secret')),
-                'tenant_id' => config('services.sharepoint.tenant_id'),
-                'status' => (! empty(config('services.sharepoint.client_id')) &&
-                           ! empty(config('services.sharepoint.client_secret'))) ? 'configured' : 'missing',
+                'configured' => ! empty(config('filesystems.sharepoint.client_id')) &&
+                              ! empty(config('filesystems.sharepoint.client_secret')),
+                'client_id_set' => ! empty(config('filesystems.sharepoint.client_id')),
+                'client_secret_set' => ! empty(config('filesystems.sharepoint.client_secret')),
+                'tenant_id' => config('filesystems.sharepoint.tenant_id'),
+                'status' => (! empty(config('filesystems.sharepoint.client_id')) &&
+                           ! empty(config('filesystems.sharepoint.client_secret'))) ? 'configured' : 'missing',
             ],
             'mail' => [
                 'driver' => config('mail.default'),

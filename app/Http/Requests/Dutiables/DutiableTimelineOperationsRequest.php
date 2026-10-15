@@ -128,7 +128,6 @@ abstract class DutiableTimelineOperationsRequest extends FormRequest
         }
 
         return Dutiable::query()
-            ->without('study_program')
             ->with('duty.assignableTenants', 'user')
             ->whereIn('id', array_keys($ids))
             ->get();

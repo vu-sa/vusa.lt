@@ -25,10 +25,10 @@
         <IFluentCloudArrowUp24Regular class="h-12 w-12 text-muted-foreground" />
         <div>
           <p class="text-base font-medium text-foreground">
-            Įkelkite failus
+            Įkelk failus
           </p>
           <p class="text-sm text-muted-foreground mt-1">
-            Vilkite failus čia arba <span class="text-vusa-red font-medium">spustelėkite pasirinkimui</span>
+            Vilk failus čia arba <span class="text-vusa-red font-medium">spustelėk pasirinkimui</span>
           </p>
           <div class="mt-2 space-y-1">
             <p class="text-xs text-muted-foreground">

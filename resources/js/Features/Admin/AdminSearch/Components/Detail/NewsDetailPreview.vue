@@ -50,7 +50,7 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ExternalLink, Pencil } from 'lucide-vue-next';
+import { ExternalLink, Pencil } from '@lucide/vue';
 
 import { formatSearchDate } from '../../Utils/searchHitMappers';
 import { stripHtml } from '../../Utils/html';

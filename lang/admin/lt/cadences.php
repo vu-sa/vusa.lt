@@ -28,13 +28,14 @@ return [
 
     'institution' => [
         'title' => 'Kadencijos',
-        'description' => 'Datos, pagal kurias lygiuojami šios institucijos pareigybių laikotarpiai.',
-        'override_active' => 'Bendrosios nebetaikomos',
-        'inherited' => 'Paveldėtos bendros kadencijos',
-        'inherited_hint' => 'Šios datos galioja tol, kol institucija neturi nė vienos savo kadencijos.',
-        'own' => 'Šios institucijos kadencijos',
-        'override_warning' => 'Pridėjus bent vieną savo kadenciją, institucija nustoja naudoti visas bendrąsias – net ir tų metų, kurių pati neaprašė. Prireikia retai.',
-        'timeline' => 'Tvarkyti laikotarpius',
+        'summary_global' => 'Taikomos bendros kadencijos',
+        'summary_own' => 'Taikomos savos kadencijos',
+        'now' => 'dabar :label',
+        'none_now' => 'dabartinės nėra',
+        'customize' => 'Nustatyti savas',
+        'manage' => 'Tvarkyti',
+        'done' => 'Baigti',
+        'override_warning' => 'Sava kadencija pakeičia visas bendrąsias – net ir tų metų, kurių neaprašysi. Sekretoriai perkeliami iš sutampančios bendros kadencijos. Prireikia retai.',
     ],
 
     'fields' => [

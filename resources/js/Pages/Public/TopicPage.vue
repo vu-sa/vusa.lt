@@ -80,7 +80,7 @@ import { Head, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import EyebrowLabel from '@/Components/Public/Base/EyebrowLabel.vue';
+import EyebrowLabel from '@/Components/Brand/EyebrowLabel.vue';
 import HairlineList from '@/Components/Public/Base/HairlineList.vue';
 import HairlineRow from '@/Components/Public/Base/HairlineRow.vue';
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';

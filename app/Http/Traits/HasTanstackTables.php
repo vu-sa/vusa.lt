@@ -52,6 +52,8 @@ trait HasTanstackTables
                 ? $request->getFilters()
                 : $this->decodeFilters($request->input('filters'));
 
+            $filters = array_diff_key($filters, array_flip($options['handledFilters'] ?? []));
+
             if (! empty($filters)) {
                 $query = $tableService->applyFiltering($query, $filters);
             }
@@ -97,6 +99,23 @@ trait HasTanstackTables
     protected function getTrashedCount(Builder $query, ?TanstackTableService $tableService = null): int
     {
         return ($tableService ?? app(TanstackTableService::class))->getTrashedCount($query);
+    }
+
+    /**
+     * Soft-deleted records of a collection the user may see — the count on the trash control of
+     * a page whose live rows come from Typesense and so never pass through a query here.
+     *
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query
+     */
+    protected function scopedTrashedCount(Builder $query, string $tenantRelation, string $permission): int
+    {
+        $tableService = app(TanstackTableService::class);
+
+        return $tableService->getTrashedCount(
+            $tableService->applyPermissionFiltering($query, $tenantRelation, $permission, app(ModelAuthorizer::class))
+        );
     }
 
     /**

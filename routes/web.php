@@ -46,6 +46,14 @@ Route::get('/d/{code}', [Public\DocumentRedirectController::class, 'redirect'])
     ->where('code', '[0-9A-Za-z]+')
     ->name('document.short');
 
+// "Ar vyko posėdis?" answers from email, without signing in: the signed link is the authorization.
+Route::get('/atsakymas/{activityRequest}', [InstitutionActivityAnswerController::class, 'show'])
+    ->middleware('signed')
+    ->name('activityAnswers.show');
+Route::post('/atsakymas/{activityRequest}', [InstitutionActivityAnswerController::class, 'store'])
+    ->middleware(['signed', 'throttle:20,1'])
+    ->name('activityAnswers.store');
+
 // Sitemap routes (outside language group)
 Route::domain('{subdomain}.'.explode('.', config('app.url'), 2)[1])->group(function (): void {
     Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap.index');
@@ -70,10 +78,6 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('kalendorius/renginys/{calendar}', [Public\PublicPageController::class, 'calendarEventRedirect'])->name('calendar.event');
         Route::get('kalendorius/{year}/{month}/{day}/{slug}', [Public\PublicPageController::class, 'calendarLegacy'])->name('calendar.event.legacy')->whereNumber('year')->whereNumber('month')->whereNumber('day');
-
-        Route::get('{summerCampsString}/{year?}', [Public\PublicPageController::class, 'summerCamps'])->name('pirmakursiuStovyklos')
-            ->whereIn('summerCampsString', LocalizedRouteSlugs::accepted('summerCampsString'))
-            ->whereNumber('year');
 
         Route::get('{pkpString}', [Public\PublicPageController::class, 'pkp'])->name('pkp')
             ->whereIn('pkpString', LocalizedRouteSlugs::accepted('pkpString'));
@@ -147,13 +151,24 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
             ->whereIn('contactCategoryString', LocalizedRouteSlugs::accepted('contactCategoryString'))
             ->name('contacts.category');
 
+        // Goals pilot — App\Support\Experiments\GoalsExperiment; the controller 404s outside the pilot.
+        Route::get('{goalsString}', [Public\GoalController::class, 'index'])->name('publicGoals.index')
+            ->whereIn('goalsString', LocalizedRouteSlugs::accepted('goalsString'));
+        Route::get('{goalsString}/{goal}', [Public\GoalController::class, 'show'])->name('publicGoals.show')
+            ->whereIn('goalsString', LocalizedRouteSlugs::accepted('goalsString'));
+
         Route::get('{newsString}/{news}', [Public\NewsController::class, 'news'])
             ->whereIn('newsString', ['naujiena', 'news'])
             ->name('news');
 
         Route::get('mainNews', [Public\MainController::class, 'getMainNews']);
-        Route::get('{permalink}', [Public\PublicPageController::class, 'page'])->where('permalink', '.*')->name('page');
+        Route::get('{permalink}', [Public\PublicPageController::class, 'page'])
+            ->where('permalink', '.*')
+            ->fallback()
+            ->name('page');
     });
 });
 
-Route::get('{permalink}', [Public\PublicPageController::class, 'page'])->where('permalink', '.*');
+Route::get('{permalink}', [Public\PublicPageController::class, 'page'])
+    ->where('permalink', '.*')
+    ->fallback();

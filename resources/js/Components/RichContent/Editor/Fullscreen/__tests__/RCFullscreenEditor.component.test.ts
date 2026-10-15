@@ -94,7 +94,8 @@ describe('RCFullscreenEditor', () => {
     expect(dialog.classes()).toContain('overflow-hidden');
     expect(scrollViewport.classes()).toContain('overflow-y-auto');
     expect(scrollViewport.element.contains(portal.element)).toBe(false);
-    expect(scrollViewport.element.parentElement).toBe(portal.element.parentElement);
+    expect(dialog.element.contains(portal.element)).toBe(true);
+    expect(scrollViewport.element.closest('[data-surface="public"]')).toBe(portal.element.closest('[data-surface="public"]'));
   });
 
   it('renders an insert affordance above the first block', () => {

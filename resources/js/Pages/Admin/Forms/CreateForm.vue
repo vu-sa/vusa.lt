@@ -1,31 +1,29 @@
 <template>
-  <PageContent :title="$t('Nauja registracijos forma')" :back-url="route('forms.index')">
-    <UpsertModelLayout>
-      <FormForm :form :assignable-tenants :field-model-fields :field-model-options
-        @submit:form="handleFormSubmitted" />
-    </UpsertModelLayout>
-  </PageContent>
+  <FormForm
+    :form
+    :assignable-tenants
+    :field-model-fields
+    :field-model-options
+    @submit:form="handleFormSubmitted"
+  />
 </template>
 
 <script setup lang="ts">
-import { trans as $t } from 'laravel-vue-i18n';
+import type { InertiaForm } from '@inertiajs/vue3';
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 
-import { formTemplate } from '../../../Types/formTemplates';
-
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
 import FormForm from '@/Components/AdminForms/FormForm.vue';
+import { formTemplate } from '@/Types/formTemplates';
 
 defineProps<{
   assignableTenants: App.Entities.Tenant[];
-  fieldModelOptions: Record<string, any>[];
-  fieldModelFields: Record<string, any>[];
+  fieldModelOptions: Record<string, unknown>[];
+  fieldModelFields: Record<string, unknown>[];
 }>();
 
-// Clone so the shared template object isn't mutated by the editor.
 const form = structuredClone(formTemplate);
 
-function handleFormSubmitted(form: any) {
-  form.post(route('forms.store'));
+function handleFormSubmitted(form: unknown) {
+  (form as InertiaForm<Record<string, unknown>>).post(route('forms.store'));
 }
 </script>

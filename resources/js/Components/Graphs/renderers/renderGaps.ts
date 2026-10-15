@@ -76,8 +76,6 @@ export function renderGaps(ctx: GapRenderContext): void {
     .attr('fill', 'url(#checkInStripes)')
     .attr('stroke', colors.checkInStroke)
     .attr('stroke-width', 1)
-    .attr('rx', 4)
-    .attr('ry', 4)
     .style('cursor', onCreateMeeting ? 'pointer' : 'default')
     .on('click', (event, d: any) => {
       if (onCreateMeeting) {

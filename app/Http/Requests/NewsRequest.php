@@ -6,10 +6,25 @@ use App\Http\Requests\Concerns\ValidatesContentParts;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Carbon;
 
 class NewsRequest extends FormRequest
 {
     use ValidatesContentParts;
+
+    protected function prepareForValidation(): void
+    {
+        $value = $this->input('publish_time');
+        if ($value === null || $value === '') {
+            return;
+        }
+        $timestamp = is_numeric($value)
+            ? (abs((float) $value) > 100_000_000_000 ? (float) $value / 1000 : (float) $value)
+            : (is_string($value) ? strtotime($value) : false);
+        if ($timestamp !== false) {
+            $this->merge(['publish_time' => Carbon::createFromTimestamp($timestamp, config('app.timezone'))]);
+        }
+    }
 
     /**
      * Get the validation rules that apply to the request.
@@ -20,12 +35,15 @@ class NewsRequest extends FormRequest
     {
         return [
             ...$this->contentPartRules(),
-            'title' => 'required',
-            'lang' => 'required',
+            'content_version' => ['nullable', 'string', 'size:64'],
+            'pairing_confirmation' => ['nullable', 'string', 'size:64'],
+            'content.parts.*.key' => ['nullable', 'string', 'max:100'],
+            'title' => 'required|string|max:255',
+            'lang' => 'required|in:lt,en',
             'other_lang_id' => ['nullable', 'integer', SoftDeleteRules::existsLive('news')],
             'draft' => 'nullable|boolean',
             'image_author' => 'nullable|string',
-            'publish_time' => 'required',
+            'publish_time' => 'required_unless:draft,true|nullable|date',
             'show_breadcrumbs' => ['boolean'],
             'highlights' => 'nullable|array|max:3',
             'highlights.*' => 'nullable|string|max:500',

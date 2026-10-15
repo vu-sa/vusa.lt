@@ -1,4 +1,4 @@
-import type { AdministratorUser } from '@/Components/Institutions';
+import type { SecretaryUser } from '@/Components/Institutions';
 import type { InstitutionActivityStatus } from '@/Types/InstitutionActivity';
 
 export interface InstitutionPageComment {
@@ -68,12 +68,15 @@ export interface InstitutionPageTask {
 export interface InstitutionPageRelatedInstitution {
   id: string | number;
   name: string;
-  direction?: 'outgoing' | 'incoming' | 'sibling';
-  type?: 'direct' | 'type-based' | 'within-type' | 'cross-tenant-sibling';
+  direction?: 'outgoing' | 'incoming' | 'mutual';
+  via?: 'direct' | 'type';
+  kind?: string;
+  kind_label?: string;
+  cross_tenant?: boolean;
   authorized?: boolean;
 }
 
-interface InstitutionPageType extends Omit<App.Entities.Type, 'title'> {
+interface InstitutionPageType extends Omit<App.Entities.InstitutionType, 'title'> {
   title?: string | null;
 }
 
@@ -84,23 +87,28 @@ export interface InstitutionPageData {
   description?: string | null;
   types: InstitutionPageType[];
   managers: App.Entities.User[];
-  administrators: AdministratorUser[];
+  secretaries?: SecretaryUser[];
   sharepointPath: string | null;
+  sharepointFolderUrl?: string | null;
   has_public_meetings?: boolean;
   meeting_periodicity_days?: number | null;
   governance_scope?: string;
   comments_count?: number;
   duties_count: number;
   meetings_count: number;
+  problems_count?: number;
   tasks_count: number;
   related_institutions_count: number;
 }
 
 export interface InstitutionOverviewData {
-  activity_status: InstitutionActivityStatus;
+  /** Null when withheld: the meetings it is read off are not public and the reader has no access. */
+  activity_status: InstitutionActivityStatus | null;
   current_users: App.Entities.User[];
   duties: InstitutionPageDuty[];
   recentMeetings: InstitutionPageMeeting[];
   meetings_count: number;
+  /** The institution has meetings, but they are not public and the reader has no access. */
+  meetings_hidden?: boolean;
   recentComments: InstitutionPageComment[];
 };

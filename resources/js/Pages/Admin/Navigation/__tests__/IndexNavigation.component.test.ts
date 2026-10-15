@@ -39,7 +39,7 @@ const pageStubs = {
     props: ['title'],
     template: '<section><slot /></section>',
   },
-  ConfirmDangerousActionDialog: {
+  ConfirmDangerousDialog: {
     props: ['open', 'confirmationText'],
     emits: ['confirm', 'update:open'],
     template: '<div v-if="open" data-testid="force-delete-dialog"><span>{{ confirmationText }}</span><button data-testid="confirm-force-delete" @click="$emit(\'confirm\')">confirm</button></div>',

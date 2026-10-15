@@ -148,8 +148,9 @@ class AnalyzeDutiableTimeline
     }
 
     /**
-     * A row with no end whose own term has already finished: it was never closed, and
-     * every quota check still counts the seat as taken.
+     * A row with no end whose starting term has already finished. Informational, not a
+     * defect: a re-elected member keeps one open row across several terms, so most of these
+     * are seats still held. Only the admin knows which ones were never closed.
      *
      * @param  Collection<int, Dutiable>  $rows
      * @param  array<string, array{start: string, end: string|null}>  $periods
@@ -174,7 +175,7 @@ class AnalyzeDutiableTimeline
 
             $findings[] = new DutiableDiagnostic(
                 'open_ended_stale',
-                DutiableDiagnostic::SEVERITY_WARNING,
+                DutiableDiagnostic::SEVERITY_INFO,
                 [$row->id],
                 $row->duty_id,
                 ['cadence_id' => $cadence->id, 'suggested_end' => $cadence->end_date->toDateString()],
@@ -280,8 +281,8 @@ class AnalyzeDutiableTimeline
     }
 
     /**
-     * A term covering more than one cadence. Reported, never auto-checked: a two-term
-     * appointment is legitimate, so this is a question for the admin rather than a defect.
+     * A term covering more than one cadence — usually a re-election. Reported for context
+     * only: the client offers no fix, since widening real dates to term edges is a guess.
      *
      * @param  Collection<int, Dutiable>  $rows
      * @param  array<string, array{start: string, end: string|null}>  $periods

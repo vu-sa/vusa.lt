@@ -1,14 +1,20 @@
 <template>
   <div data-slot="action-window-screen" class="flex min-h-0 flex-1 flex-col">
-    <div :class="['shrink-0 px-5 pb-5 sm:px-7', centered && 'text-center']">
-      <h2 class="text-[1.4rem] font-semibold leading-[1.15] tracking-[-0.02em] text-foreground sm:text-2xl">
+    <div
+      v-if="title || subtitle || $slots.title || $slots.subtitle"
+      :class="['shrink-0 px-5 pb-3 pt-4 sm:px-6 sm:pt-5', centered && 'text-center']"
+    >
+      <h2
+        v-if="title || $slots.title"
+        class="text-lg font-bold leading-snug tracking-tight text-foreground sm:text-xl text-balance"
+      >
         <slot name="title">
           {{ title }}
         </slot>
       </h2>
       <p
         v-if="subtitle || $slots.subtitle"
-        :class="['mt-2 text-sm leading-snug text-muted-foreground', centered && 'mx-auto max-w-sm']"
+        :class="['mt-1.5 text-sm leading-relaxed text-muted-foreground', centered && 'mx-auto max-w-sm']"
       >
         <slot name="subtitle">
           {{ subtitle }}
@@ -17,15 +23,20 @@
     </div>
 
     <!-- The only scrolling region: the header and footer must stay reachable on a phone.
-         The pt/-mt pair leaves room inside the clip for the first row's focus ring
+         The pt/-mt pair leaves room inside the clip for the first row's focus outline
          without moving anything: `overflow-y-auto` would otherwise shear it off. -->
-    <div class="-mt-1 min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-5 pt-1 sm:px-7">
+    <div
+      :class="[
+        'min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-5 sm:px-7',
+        (title || subtitle || $slots.title || $slots.subtitle) ? '-mt-1 pt-1' : 'pt-4 sm:pt-5',
+      ]"
+    >
       <slot />
     </div>
 
     <div
       v-if="$slots.footer"
-      class="shrink-0 border-t border-border/70 bg-background/90 px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur sm:px-7 sm:pb-4"
+      class="shrink-0 border-t border-border bg-background px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-7 sm:pb-4"
     >
       <slot name="footer" />
     </div>

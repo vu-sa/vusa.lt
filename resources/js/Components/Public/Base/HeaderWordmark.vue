@@ -10,6 +10,7 @@
       :alt
       class="aspect-[2.804] h-14 w-auto max-w-full p-1 dark:invert"
       loading="eager"
+      fetchpriority="high"
       width="1200"
       height="428"
     >
@@ -34,9 +35,6 @@ import { usePage } from '@inertiajs/vue3';
 import { cn } from '@/Utils/Shadcn/utils';
 import { getAppLogoSrc } from '@/Utils/AppLogo';
 
-/**
- * The public site mark.
- */
 const props = withDefaults(defineProps<{
   variant?: 'official' | 'wordmark';
   /** Overrides the tenant and locale-specific official SVG. */
@@ -57,5 +55,6 @@ const props = withDefaults(defineProps<{
 const page = usePage();
 
 const resolvedSrc = computed(() => props.src
+  ?? page.props.publicAssets?.logoSrc
   ?? getAppLogoSrc(page.props.tenant?.alias, page.props.app.locale));
 </script>

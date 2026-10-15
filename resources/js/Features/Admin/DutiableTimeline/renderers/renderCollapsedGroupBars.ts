@@ -45,7 +45,6 @@ export function renderCollapsedGroupBars(ctx: CollapsedGroupBarContext): void {
       return Math.max(2, right - x(d.summary.start));
     })
     .attr('height', BAR_HEIGHT)
-    .attr('rx', 2)
     .attr('fill', timelineColors.former)
     .attr('opacity', 0.8);
 }

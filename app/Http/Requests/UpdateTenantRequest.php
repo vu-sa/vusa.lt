@@ -33,6 +33,7 @@ class UpdateTenantRequest extends FormRequest
             'alias' => 'nullable|unique:tenants,alias,'.$this->tenant->id,
             'shortname_vu' => 'nullable|unique:tenants,shortname_vu,'.$this->tenant->id,
             'primary_institution_id' => ['nullable', SoftDeleteRules::existsLive('institutions')],
+            'goals_enabled' => ['sometimes', 'boolean'],
         ];
     }
 }

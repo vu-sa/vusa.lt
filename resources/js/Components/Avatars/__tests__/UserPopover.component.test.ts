@@ -33,7 +33,7 @@ const adminPageWithoutPermission = createMockPage({
   },
 });
 
-const makeUser = (overrides: Record<string, any> = {}) => ({
+const makeUser = (overrides: Record<string, unknown> = {}) => ({
   id: 'u1',
   name: 'Jonas Jonaitis',
   ...overrides,
@@ -48,6 +48,21 @@ const hoverCardStubs = {
 const avatarStub = { props: ['user', 'size', 'interactive'], template: '<span class="user-avatar" />' };
 
 describe('UserPopover', () => {
+  it.each([false, true])('renders compact avatars with readable initials (showName: %s)', (showName) => {
+    const wrapper = mount(UserPopover, {
+      props: { user: makeUser(), size: 'xxs', showName, clickable: false },
+      global: { stubs: hoverCardStubs },
+    });
+
+    const avatar = wrapper.find('[data-slot="avatar"]');
+    expect(avatar.classes()).toContain('size-5');
+    expect(avatar.text()).toBe('JJ');
+    expect(avatar.find('[data-slot="avatar-fallback"]').classes()).toContain('text-xs');
+    if (showName) {
+      expect(wrapper.find('[data-stub="hover-card-trigger"]').text()).toContain('Jonas Jonaitis');
+    }
+  });
+
   it('renders the avatar trigger as a link in admin context with permission', () => {
     vi.mocked(usePage).mockReturnValue(adminPage);
 

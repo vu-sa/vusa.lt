@@ -1,21 +1,17 @@
 <template>
-  <PageContent :title="newEntityTitle('resource')" :heading-icon="ResourceIcon">
-    <UpsertModelLayout>
-      <ResourceForm remember-key="CreateResource" :assignable-tenants :resource :categories
-        @submit:form="(form) => form.post(route('resources.store'))" />
-    </UpsertModelLayout>
-  </PageContent>
+  <ResourceForm
+    remember-key="CreateResource"
+    :assignable-tenants
+    :resource
+    :categories
+    @submit:form="(form) => (form as InertiaForm<Record<string, unknown>>).post(route('resources.store'))"
+  />
 </template>
 
 <script setup lang="ts">
-import { usePage } from '@inertiajs/vue3';
+import { usePage, type InertiaForm } from '@inertiajs/vue3';
 
-import { newEntityTitle } from '@/Utils/EntityMessages';
-import { BreadcrumbHelpers, usePageBreadcrumbs } from '@/Composables/useBreadcrumbsUnified';
-import PageContent from '@/Components/Layouts/AdminContentPage.vue';
 import ResourceForm from '@/Components/AdminForms/ResourceForm.vue';
-import UpsertModelLayout from '@/Components/Layouts/FormUpsertLayout.vue';
-import { ResourceIcon } from '@/Components/icons';
 
 export type ResourceMediaEntry
   = | { id: string | number; name: string; type: string; status: 'finished'; url: string }
@@ -26,6 +22,8 @@ export type ResourceCreationTemplate = Omit<
   'created_at' | 'updated_at' | 'deleted_at' | 'id' | 'name' | 'description'
 > & {
   id: undefined;
+  created_at?: string;
+  updated_at?: string;
   name: Record<'lt' | 'en', string>;
   description: Record<'lt' | 'en', string>;
   media: ResourceMediaEntry[];
@@ -33,13 +31,8 @@ export type ResourceCreationTemplate = Omit<
 
 defineProps<{
   assignableTenants: Array<App.Entities.Tenant>;
-  categories: any;
+  categories: App.Entities.ResourceCategory[];
 }>();
-
-// Generate breadcrumbs automatically with new simplified API
-usePageBreadcrumbs(
-  BreadcrumbHelpers.adminForm('Ištekliai', 'resources.index', 'Naujas išteklius', ResourceIcon),
-);
 
 const resource: ResourceCreationTemplate = {
   id: undefined,

@@ -35,7 +35,12 @@ export function useDutiableLayout(
 
     for (const row of rows.value) {
       const bucket = map.get(row.group_key);
-      bucket ? bucket.push(row) : map.set(row.group_key, [row]);
+      if (bucket) {
+        bucket.push(row);
+      }
+      else {
+        map.set(row.group_key, [row]);
+      }
     }
 
     if (sortMode.value === 'study_program') {
@@ -115,7 +120,12 @@ export function useDutiableLayout(
 
   function toggleGroup(key: string): void {
     const next = new Set(collapsed.value);
-    next.has(key) ? next.delete(key) : next.add(key);
+    if (next.has(key)) {
+      next.delete(key);
+    }
+    else {
+      next.add(key);
+    }
     collapsed.value = next;
   }
 

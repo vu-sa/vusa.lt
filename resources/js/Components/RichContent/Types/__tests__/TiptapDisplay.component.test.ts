@@ -3,6 +3,8 @@ import { flushPromises, mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
 import TiptapDisplay from '../TiptapDisplay.vue';
+import TiptapEditable from '../TiptapEditable.vue';
+
 import TiptapLinkButton from '@/Components/TipTap/TiptapLinkButton.vue';
 
 function makeElement(html: string | null = '<p>Test paragraph</p>', json_content: Record<string, unknown> | null = {}) {
@@ -25,6 +27,17 @@ describe('TiptapDisplay', () => {
     expect(wrapper.find('.rc-prose').exists()).toBe(true);
   });
 
+  it('keeps an empty published HTML result instead of rendering its JSON fallback', () => {
+    const wrapper = mount(TiptapDisplay, {
+      props: { element: makeElement('', { type: 'doc', content: [
+        { type: 'paragraph', content: [{ type: 'text', text: 'Unpublished text' }] },
+      ] }) },
+    });
+    expect(wrapper.find('.rc-prose').exists()).toBe(true);
+    expect(wrapper.text()).toBe('');
+    expect(wrapper.find('.ProseMirror').exists()).toBe(false);
+  });
+
   it('renders fallback error text when html is null', () => {
     const wrapper = mount(TiptapDisplay, {
       props: {
@@ -35,14 +48,13 @@ describe('TiptapDisplay', () => {
     expect(wrapper.text()).toContain('Turinio nepavyko atvaizduoti');
   });
 
-  it('renders smart toolbar and editor when editable is true', async () => {
-    const wrapper = mount(TiptapDisplay, {
+  it('renders the editor by default when the editing surface is mounted', async () => {
+    const wrapper = mount(TiptapEditable, {
       props: {
         element: makeElement('<p>Editable content</p>', {
           type: 'doc',
           content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Editable content' }] }],
         }),
-        editable: true,
         blockKey: 'tip-1',
       },
       global: {
@@ -69,7 +81,7 @@ describe('TiptapDisplay', () => {
    * Same pattern as TiptapEditor.vue's `prose-style`.
    */
   it('mounts the prose editing surface on the ProseMirror root, not a wrapper', async () => {
-    const wrapper = mount(TiptapDisplay, {
+    const wrapper = mount(TiptapEditable, {
       props: {
         element: makeElement('<p>Editable content</p>', {
           type: 'doc',
@@ -98,7 +110,7 @@ describe('TiptapDisplay', () => {
   });
 
   it('adds a link to the editor when the selection bubble menu submits url and text', async () => {
-    const wrapper = mount(TiptapDisplay, {
+    const wrapper = mount(TiptapEditable, {
       props: {
         element: makeElement('<p>Editable content</p>', {
           type: 'doc',

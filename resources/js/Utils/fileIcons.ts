@@ -74,10 +74,6 @@ export function getFileKind(nameOrPath: string): FileKind {
   return 'other';
 }
 
-export function isImageFile(nameOrPath: string): boolean {
-  return getFileKind(nameOrPath) === 'image';
-}
-
 /**
  * Resolve the icon component for a name or path. Returns a component, never a component
  * *name* — `<component :is>` silently renders nothing for an unregistered name string.

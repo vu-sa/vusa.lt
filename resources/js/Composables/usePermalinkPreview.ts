@@ -1,9 +1,6 @@
-import { computed, ref, watch } from 'vue';
-import { useDebounceFn } from '@vueuse/core';
+import { useDebouncedQuery } from '@/Composables/useDebouncedQuery';
 
-import { useApi } from '@/Composables/useApi';
-
-interface PermalinkPreview {
+export interface PermalinkPreview {
   permalink: string;
   url: string;
 }
@@ -19,31 +16,23 @@ export function usePermalinkPreview(
   title: () => string,
   lang: () => string,
 ) {
-  const url = ref('');
+  const { data: preview, isChecking, check } = useDebouncedQuery<PermalinkPreview | null>({
+    url: () => {
+      const currentTitle = (title() ?? '').trim();
 
-  const { data, isFetching, execute } = useApi<PermalinkPreview>(url, {
-    immediate: false,
-    showErrorToast: false,
+      if (currentTitle.length < 2) {
+        return null;
+      }
+
+      const params = new URLSearchParams({ title: currentTitle, lang: lang() });
+      const routeName = type === 'news' ? 'api.v1.admin.news.permalinkPreview' : 'api.v1.admin.pages.permalinkPreview';
+
+      return `${route(routeName)}?${params.toString()}`;
+    },
+    watchSources: [() => title(), () => lang()],
+    debounceMs: 500,
+    initialValue: null,
   });
 
-  const preview = computed<PermalinkPreview | null>(() => (url.value ? data.value ?? null : null));
-
-  const run = useDebounceFn(() => {
-    const currentTitle = (title() ?? '').trim();
-
-    if (currentTitle.length < 2) {
-      url.value = '';
-      return;
-    }
-
-    const params = new URLSearchParams({ title: currentTitle, lang: lang() });
-    const routeName = type === 'news' ? 'api.v1.admin.news.permalinkPreview' : 'api.v1.admin.pages.permalinkPreview';
-
-    url.value = `${route(routeName)}?${params.toString()}`;
-    execute();
-  }, 500);
-
-  watch([() => title(), () => lang()], run);
-
-  return { preview, isChecking: isFetching, check: run };
+  return { preview, isChecking, check };
 }

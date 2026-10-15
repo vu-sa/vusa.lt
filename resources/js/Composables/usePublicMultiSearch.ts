@@ -12,14 +12,14 @@
  * lifted from the dedicated search services (DocumentSearchService, InstitutionSearchService,
  * MeetingSearchService) so behavior stays consistent with the dedicated pages.
  */
-
 import { reactive, ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
-import { useLocalStorage } from '@vueuse/core';
-import { debounce } from 'lodash-es';
+import { useLocalStorage, useDebounceFn } from '@vueuse/core';
 
+import { documentWithMatch, type HighlightedHit } from '@/Shared/Search/matches';
+import { buildProfileParams, type SearchProfileConfig } from '@/Shared/Search/profiles';
 import { ErrorUtils } from '@/Shared/Search/services/SearchErrorUtils';
-import { trackEvent } from '@/Plugins/umami';
+import { createSearchReporter } from '@/Shared/Search/searchReporter';
 
 export type SearchCollectionId
   = | 'institutions'
@@ -36,7 +36,7 @@ interface TypesenseNode {
   path?: string;
 }
 
-interface TypesenseConfig {
+interface TypesenseConfig extends SearchProfileConfig {
   apiKey: string;
   nodes: TypesenseNode[];
   collections?: Record<string, string>;
@@ -71,19 +71,6 @@ const MAX_RECENT = 8;
 
 /** Typesense wildcard — powers the "browse everything" state on page load and after clearing. */
 const BROWSE_QUERY = '*';
-
-/**
- * How long typing must settle before a term is reported to analytics. `performSearch` runs
- * behind a much shorter debounce so results feel live; reporting on that same cadence would
- * record every keystroke fragment ("v", "vu", "vusa") and bury the terms people meant.
- */
-const REPORT_SETTLE_MS = 2000;
-
-/** Search terms are free text, so they are capped before leaving the browser. */
-const MAX_REPORTED_TERM_LENGTH = 60;
-
-const normalizeReportedTerm = (term: string): string =>
-  term.trim().toLowerCase().slice(0, MAX_REPORTED_TERM_LENGTH);
 
 /** Fixed tiebreaker order when relevance scores are equal. */
 const PRIORITY: SearchCollectionId[] = [
@@ -260,7 +247,7 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
   const runMultiSearch = async (
     searches: Array<Record<string, unknown>>,
     signal?: AbortSignal,
-  ): Promise<{ results?: Array<{ hits?: Array<{ document: any; text_match?: number }>; found?: number; error?: string }> }> => {
+  ): Promise<{ results?: Array<{ hits?: Array<HighlightedHit & { text_match?: number }>; found?: number; error?: string }> }> => {
     const cfg = config();
     const node = cfg?.nodes?.[0];
     if (!cfg?.apiKey || !node) {
@@ -274,7 +261,10 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
         'X-TYPESENSE-API-KEY': cfg.apiKey,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ searches }),
+      body: JSON.stringify({ searches: searches.map((search) => {
+        const base = Object.entries(cfg.collections ?? {}).find(([, name]) => name === search.collection)?.[0] ?? String(search.collection);
+        return buildProfileParams(cfg.searchProfiles?.[base], search, locale());
+      }) }),
       signal,
     });
 
@@ -288,7 +278,7 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
 
   const applyResult = (
     id: SearchCollectionId,
-    result: { hits?: Array<{ document: any; text_match?: number }>; found?: number; error?: string } | undefined,
+    result: { hits?: Array<HighlightedHit & { text_match?: number }>; found?: number; error?: string } | undefined,
     append: boolean,
   ): void => {
     const section = sections[id];
@@ -303,7 +293,7 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
       return;
     }
 
-    const hits = (result.hits ?? []).map(hit => hit.document);
+    const hits = (result.hits ?? []).map(hit => documentWithMatch(hit));
     section.totalHits = result.found ?? 0;
 
     if (append) {
@@ -326,25 +316,7 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
     recentSearches.value = [trimmed, ...recentSearches.value.filter(s => s !== trimmed)].slice(0, MAX_RECENT);
   };
 
-  /**
-   * The last term sent to analytics. Toggling a collection re-runs the same search, which
-   * would otherwise report the term again and inflate its apparent popularity.
-   */
-  let lastReportedTerm = '';
-
-  /**
-   * Reports a settled search so we learn what people look for — and, when `results` is 0,
-   * what they fail to find. Only the term and the result count are sent; see the privacy
-   * note on the `/privatumas` page.
-   */
-  const reportSearch = debounce((term: string, results: number): void => {
-    if (term === lastReportedTerm) {
-      return;
-    }
-
-    lastReportedTerm = term;
-    trackEvent('search_submitted', { term, results });
-  }, REPORT_SETTLE_MS);
+  const searchReporter = createSearchReporter('global');
 
   const performSearch = async (q: string): Promise<void> => {
     const trimmed = q.trim();
@@ -352,7 +324,7 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
     // Below the minimum length (but not the browse wildcard itself), fall back to browsing
     // everything rather than blanking the page — e.g. clearing the search box.
     if (trimmed !== BROWSE_QUERY && trimmed.length < MIN_QUERY_LENGTH) {
-      lastReportedTerm = '';
+      searchReporter.reset();
       await performSearch(BROWSE_QUERY);
       return;
     }
@@ -372,6 +344,7 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
       // can keep showing accurate counts for collections the user has toggled off.
       const searches = COLLECTIONS.map(def => buildSearch(def, trimmed, 1));
       const data = await runMultiSearch(searches, signal);
+      if (signal.aborted) return;
 
       COLLECTIONS.forEach((def, index) => {
         applyResult(def.id, data.results?.[index], false);
@@ -380,7 +353,7 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
       hasSearched.value = true;
 
       if (hasRealQuery(trimmed)) {
-        reportSearch(normalizeReportedTerm(trimmed), totalResultCount.value);
+        searchReporter.report(trimmed, totalResultCount.value);
       }
     }
     catch (error) {
@@ -390,12 +363,14 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
       searchError.value = ErrorUtils.fromError(error, 'multi-search').userMessage;
     }
     finally {
-      isSearching.value = false;
-      abortController = null;
+      if (abortController?.signal === signal) {
+        isSearching.value = false;
+        abortController = null;
+      }
     }
   };
 
-  const debouncedSearch = debounce(performSearch, 300);
+  const debouncedSearch = useDebounceFn(performSearch, 300);
 
   const search = (q: string, immediate = false): void => {
     query.value = q;
@@ -405,7 +380,7 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
       addRecentSearch(q);
       debouncedSearch.cancel();
       // Submitting is an explicit signal, so the term is reported without waiting to settle.
-      void performSearch(q).then(() => reportSearch.flush());
+      void performSearch(q).then(() => searchReporter.flush());
     }
     else {
       debouncedSearch(q);
@@ -532,5 +507,3 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
     browseQuery: BROWSE_QUERY,
   };
 };
-
-export type PublicMultiSearchController = ReturnType<typeof usePublicMultiSearch>;

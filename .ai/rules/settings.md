@@ -1,6 +1,7 @@
 ---
 paths:
-  - 'resources/js/Pages/Admin/Settings/**, app/Settings/**'
+  - 'resources/js/Pages/Admin/Settings/**'
+  - 'app/Settings/**'
 ---
 
 # Settings

@@ -1,0 +1,187 @@
+import { mount } from '@vue/test-utils';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { usePage } from '@inertiajs/vue3';
+import { transChoice } from 'laravel-vue-i18n';
+
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
+
+import StudentRepInstitutionCard from '../StudentRepInstitutionCard.vue';
+
+import { createMockPage } from '@/tests/helpers/createMockPage';
+
+const stubs = {
+  SmartLink: {
+    props: ['href'],
+    template: '<a :href="href"><slot /></a>',
+  },
+};
+
+describe('StudentRepInstitutionCard', () => {
+  afterEach(() => {
+    vi.mocked(usePage).mockReset();
+  });
+
+  const createMockInstitution = (usersCount = 2): App.Entities.Institution => {
+    const firstNames = ['Vardenis', 'Vardenė', 'Jonas', 'Petras', 'Ona', 'Agnė', 'Tomas', 'Lukas'];
+    const lastNames = ['Pavardenis', 'Pavardenytė', 'Jonaitis', 'Petraitis', 'Onaitė', 'Agnaitė', 'Tomaitis', 'Lukaitis'];
+
+    const users: App.Entities.User[] = Array.from({ length: usersCount }, (_, i) => ({
+      id: `user-${i + 1}`,
+      name: `${firstNames[i % firstNames.length]} ${lastNames[i % lastNames.length]}`,
+      profile_photo_path: i === 0 ? '/photos/vardenis.jpg' : null,
+    } as unknown as App.Entities.User));
+
+    return {
+      id: 'inst-1',
+      name: 'VU SA MIF Taryba',
+      alias: 'mif-taryba',
+      tenant: {
+        id: 1,
+        shortname: 'VU SA MIF',
+        alias: 'mif',
+      },
+      duties: [
+        {
+          id: 'duty-1',
+          name: 'Narys',
+          current_users: users,
+        } as unknown as App.Entities.Duty,
+      ],
+    } as unknown as App.Entities.Institution;
+  };
+
+  it('renders institution name and link correctly', () => {
+    const institution = createMockInstitution(2);
+    const wrapper = mount(StudentRepInstitutionCard, {
+      props: { institution },
+      global: { stubs },
+    });
+
+    expect(wrapper.text()).toContain('VU SA MIF Taryba');
+    expect(wrapper.find('a').attributes('href')).toContain('/mocked-route/contacts.alias');
+  });
+
+  it('leaves out a type the page already names but keeps the unit', () => {
+    const institution = {
+      ...createMockInstitution(1),
+      types: [{ slug: 'gnk', title: 'Ginčų nagrinėjimo komisija' }],
+    } as unknown as App.Entities.Institution;
+
+    const labelOf = (omitTypeSlugs?: string[]) => mount(StudentRepInstitutionCard, {
+      props: { institution, omitTypeSlugs },
+      global: { stubs },
+    }).find('[data-slot="institution-card-eyebrow"]').text();
+
+    expect(labelOf()).toContain('Ginčų nagrinėjimo komisija');
+    expect(labelOf(['gnk'])).not.toContain('Ginčų nagrinėjimo komisija');
+    expect(labelOf(['gnk'])).toContain('VU SA MIF');
+  });
+
+  it('lists representatives without their duty names', () => {
+    const wrapper = mount(StudentRepInstitutionCard, {
+      props: { institution: createMockInstitution(1) },
+      global: { stubs },
+    });
+
+    expect(wrapper.text()).toContain('Vardenis Pavardenis');
+    expect(wrapper.text()).not.toContain('Narys');
+  });
+
+  it('renders student representatives with photo or initials without grayscale', () => {
+    const institution = createMockInstitution(2);
+    const wrapper = mount(StudentRepInstitutionCard, {
+      props: { institution },
+      global: { stubs },
+    });
+
+    // First user has photo (must NOT be grayscale)
+    const img = wrapper.find('img');
+    expect(img.exists()).toBe(true);
+    expect(img.attributes('src')).toBe('/photos/vardenis.jpg');
+    expect(img.classes()).not.toContain('grayscale');
+
+    // Second user has initials fallback (Vardenė Pavardenytė => VP)
+    expect(wrapper.text()).toContain('VP');
+    expect(wrapper.text()).toContain('Vardenis Pavardenis');
+    expect(wrapper.text()).toContain('Vardenė Pavardenytė');
+  });
+
+  it('limits to 3 representatives and counts the rest', () => {
+    const institution = createMockInstitution(8);
+    const wrapper = mount(StudentRepInstitutionCard, {
+      props: { institution },
+      global: { stubs },
+    });
+
+    expect(wrapper.findAll('li')).toHaveLength(3);
+    expect(wrapper.text()).toContain('Jonas Jonaitis');
+    expect(wrapper.text()).not.toContain('Petras Petraitis');
+    expect(transChoice).toHaveBeenCalledWith('search.more_representatives', 5);
+  });
+
+  it('renders fallback criteria text when institution has no contacts', () => {
+    const institution = {
+      id: 'inst-empty',
+      name: 'Tuščia institucija',
+      duties: [],
+    } as unknown as App.Entities.Institution;
+
+    const wrapper = mount(StudentRepInstitutionCard, {
+      props: { institution },
+      global: { stubs },
+    });
+
+    expect(wrapper.text()).toContain('Tuščia institucija');
+    expect(wrapper.text()).toContain('Šiuo metu kontaktų nėra');
+  });
+
+  it('renders student representatives from contacts array (Typesense format)', () => {
+    const institution = {
+      id: 'inst-typesense',
+      name: 'PKP Taryba',
+      tenant_id: 1,
+      tenant: { alias: 'vusa' },
+      contacts: [
+        {
+          id: 'user-ts-1',
+          name: 'Austėja Austytė',
+          duty_id: 'duty-1',
+          duty_name: 'Kuratorė',
+          profile_photo_path: '/photos/austeja.jpg',
+        },
+        {
+          id: 'user-ts-2',
+          name: 'Benas Benaitis',
+          duty_id: 'duty-2',
+          duty_name: 'Atstovas',
+          profile_photo_path: null,
+        },
+      ],
+    } as unknown as App.Entities.Institution;
+
+    const wrapper = mount(StudentRepInstitutionCard, {
+      props: { institution },
+      global: { stubs },
+    });
+
+    expect(wrapper.text()).toContain('PKP Taryba');
+    expect(wrapper.text()).toContain('Austėja Austytė');
+    expect(wrapper.text()).toContain('Benas Benaitis');
+    expect(wrapper.text()).toContain('BB');
+    expect(wrapper.find('img').attributes('src')).toBe('/photos/austeja.jpg');
+  });
+
+  it.each([
+    ['links a PKP tenant\'s institution to www', { id: 7, alias: 'the-coins', type: 'pkp' }, 'subdomain=www'],
+    ['links a padalinys institution to its tenant subdomain', { id: 3, alias: 'mif', type: 'padalinys' }, 'subdomain=mif'],
+  ])('%s', (_, tenant, expectedSubdomain) => {
+    vi.mocked(usePage).mockReturnValue(createMockPage({ tenants: [tenant] }));
+
+    const wrapper = mount(StudentRepInstitutionCard, {
+      props: { institution: { id: 'inst-1', name: 'Institucija', tenant, duties: [] } as unknown as App.Entities.Institution },
+      global: { stubs },
+    });
+
+    expect(wrapper.find('a').attributes('href')).toContain(expectedSubdomain);
+  });
+});

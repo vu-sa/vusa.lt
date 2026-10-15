@@ -3,61 +3,42 @@
     class="inline-flex items-center gap-1"
     :class="[colorClass, compact ? 'text-xs' : 'text-sm font-medium']"
   >
-    <component :is="icon" :class="compact ? 'h-3 w-3' : 'h-3.5 w-3.5'" />
-    <span v-if="!compact">{{ label }}</span>
+    <component :is="icon" :class="compact ? 'size-3.5' : 'size-4'" aria-hidden="true" />
+    <span :class="compact ? 'sr-only' : undefined">{{ label }}</span>
   </span>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { CheckIcon, XIcon, MinusIcon, ThumbsUpIcon, ThumbsDownIcon, HelpCircleIcon } from 'lucide-vue-next';
 
 import { getVoteTextColorClass, getVoteDisplayLabel, type VoteValue } from '@/Composables/useAgendaItemStyling';
+import IFluentCheckmark24Regular from '~icons/fluent/checkmark-24-regular';
+import IFluentDismiss24Regular from '~icons/fluent/dismiss-24-regular';
+import IFluentQuestionCircle24Regular from '~icons/fluent/question-circle-24-regular';
+import IFluentSubtract24Regular from '~icons/fluent/subtract-24-regular';
+import IFluentThumbDislike24Regular from '~icons/fluent/thumb-dislike-24-regular';
+import IFluentThumbLike24Regular from '~icons/fluent/thumb-like-24-regular';
 
-/**
- * VoteStatusIndicator - Display-only vote status for public views
- *
- * Shows vote value (positive/negative/neutral) with consistent styling.
- * For interactive vote selection, use VoteSelectionBadge (admin component).
- */
+/** A recorded vote value on the public pages; `compact` keeps the word for screen readers only. */
 const props = defineProps<{
   vote: VoteValue;
-  type?: 'vote' | 'benefit'; // Distinguish vote vs benefit icons
-  compact?: boolean; // Compact mode (icon only, no text)
+  type?: 'vote' | 'benefit';
+  compact?: boolean;
 }>();
 
-// Get icon based on type and value
 const icon = computed(() => {
-  if (props.type === 'benefit') {
-    // Use thumbs icons for benefits
-    switch (props.vote) {
-      case 'positive':
-        return ThumbsUpIcon;
-      case 'negative':
-        return ThumbsDownIcon;
-      case 'neutral':
-        return MinusIcon;
-      default:
-        return HelpCircleIcon; // null/undefined = question mark (no data)
-    }
-  }
-
-  // Default: use check/x for votes and decisions
   switch (props.vote) {
     case 'positive':
-      return CheckIcon;
+      return props.type === 'benefit' ? IFluentThumbLike24Regular : IFluentCheckmark24Regular;
     case 'negative':
-      return XIcon;
+      return props.type === 'benefit' ? IFluentThumbDislike24Regular : IFluentDismiss24Regular;
     case 'neutral':
-      return MinusIcon;
+      return IFluentSubtract24Regular;
     default:
-      return HelpCircleIcon; // null/undefined = question mark (no data)
+      return IFluentQuestionCircle24Regular;
   }
 });
 
-// Use composable for consistent color
 const colorClass = computed(() => getVoteTextColorClass(props.vote));
-
-// Use composable for consistent label
 const label = computed(() => getVoteDisplayLabel(props.vote));
 </script>

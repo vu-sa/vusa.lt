@@ -3,6 +3,7 @@ import { mount } from '@vue/test-utils';
 
 import ProcessStepsDisplay from '../ProcessStepsDisplay.vue';
 
+import { ssrRoundTrip } from '@/tests/helpers/ssrRoundTrip';
 import { waitForSelector } from '@/tests/helpers/waitForSelector';
 import type { ProcessSteps } from '@/Types/contentParts';
 
@@ -66,6 +67,17 @@ describe('ProcessStepsDisplay — public (non-editable)', () => {
     const vuLink = wrapper.find('a[href="https://vu.lt"]');
     expect(vuLink.exists()).toBe(true);
     expect(vuLink.text()).toBe('VU nuoroda');
+  });
+
+  it('keeps paragraph HTML step text through server render and hydration', async () => {
+    const { container, hydrationWarnings, unmount } = await ssrRoundTrip(ProcessStepsDisplay, {
+      element: makeElement([{ title: 'Registracija', text: '<p>Pirma pastraipa</p><p>Antra pastraipa</p>' }]),
+    });
+
+    expect(hydrationWarnings).toEqual([]);
+    expect(container.textContent).toContain('Pirma pastraipa');
+    expect(container.textContent).toContain('Antra pastraipa');
+    unmount();
   });
 });
 

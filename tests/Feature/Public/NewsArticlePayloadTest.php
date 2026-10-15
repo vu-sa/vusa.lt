@@ -67,3 +67,22 @@ test('related articles carry the fields the news card renders', function (): voi
             )
         );
 });
+
+test('a draft article is not reachable by its link', function (): void {
+    $tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
+    $news = News::factory()->for($tenant)->create(['lang' => 'lt', 'draft' => true]);
+
+    $this->get(newsArticleUrl($news))->assertNotFound();
+});
+
+test('the language switch does not point at a draft translation', function (): void {
+    $tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
+    $draftTranslation = News::factory()->for($tenant)->create(['lang' => 'en', 'draft' => true]);
+    $news = News::factory()->for($tenant)->create(['lang' => 'lt', 'other_lang_id' => $draftTranslation->id]);
+
+    $this->get(newsArticleUrl($news))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Public/NewsPage')
+            ->where('otherLangURL', null)
+        );
+});

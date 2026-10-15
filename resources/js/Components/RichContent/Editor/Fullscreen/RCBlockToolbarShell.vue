@@ -16,7 +16,6 @@
       </button>
       <PopoverContent
         v-if="hotspots.isPopoverOpen(toolbarId)"
-        data-surface="public"
         align="end"
         class="w-[min(30rem,calc(100vw-2rem))]"
         @close-auto-focus.prevent

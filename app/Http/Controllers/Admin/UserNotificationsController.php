@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\AdminController;
 use App\Models\NotificationDigestQueue;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,12 +25,14 @@ class UserNotificationsController extends AdminController
     public function markAsRead($id)
     {
         $user = User::query()->findOrFail(Auth::id());
-        $notification = $user->unreadNotifications()->where('id', $id)->first();
+        $notification = $user->notifications()->where('id', $id)->first();
 
-        if ($notification) {
-            $notification->markAsRead();
-            $this->removeMatchingDigestEntries($user, $notification->data);
+        if ($notification === null) {
+            throw new AuthorizationException;
         }
+
+        $notification->markAsRead();
+        NotificationDigestQueue::query()->where('user_id', $user->id)->where('notification_id', $notification->id)->delete();
 
         return back();
     }
@@ -50,10 +53,12 @@ class UserNotificationsController extends AdminController
         $user = User::query()->findOrFail(Auth::id());
         $notification = $user->notifications()->where('id', $id)->first();
 
-        if ($notification) {
-            $this->removeMatchingDigestEntries($user, $notification->data);
-            $notification->delete();
+        if ($notification === null) {
+            throw new AuthorizationException;
         }
+
+        NotificationDigestQueue::query()->where('user_id', $user->id)->where('notification_id', $notification->id)->delete();
+        $notification->delete();
 
         return back();
     }
@@ -71,36 +76,5 @@ class UserNotificationsController extends AdminController
         }
 
         return back();
-    }
-
-    /**
-     * Remove a single digest queue entry that matches a notification's data.
-     *
-     * Matches on title + body + url to avoid false positives when multiple
-     * notifications share the same title and URL (e.g. "Nauja užduotis" all
-     * pointing to /mano/tasks — the body contains the specific task name).
-     *
-     * @param  array<string, mixed>  $notificationData
-     */
-    private function removeMatchingDigestEntries(User $user, array $notificationData): void
-    {
-        $query = NotificationDigestQueue::where('user_id', $user->id);
-
-        if (isset($notificationData['title'])) {
-            $query->whereJsonContains('data->title', $notificationData['title']);
-        }
-
-        if (isset($notificationData['body'])) {
-            $query->whereJsonContains('data->body', $notificationData['body']);
-        }
-
-        if (isset($notificationData['url'])) {
-            $query->whereJsonContains('data->url', $notificationData['url']);
-        }
-
-        // Delete only one matching entry to avoid removing digest items
-        // for other unread notifications with similar data
-        $match = $query->first();
-        $match?->delete();
     }
 }

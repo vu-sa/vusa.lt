@@ -15,7 +15,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
@@ -30,7 +29,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $completed_at
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, Comment> $comments
  * @property-read mixed $is_completed
@@ -45,17 +43,14 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Database\Factories\ReservationFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation onlyTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Reservation withoutTrashed()
  *
  * @mixin \Eloquent
  */
 #[Unguarded]
 class Reservation extends Model implements Commentable
 {
-    use HasComments, HasFactory, HasRelationships, HasTasks, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable, SoftDeletes;
+    use HasComments, HasFactory, HasRelationships, HasTasks, HasUlids, LogsModelActivity, LogsRelationshipChanges, Searchable;
 
     #[\Override]
     protected function casts(): array
@@ -103,15 +98,9 @@ class Reservation extends Model implements Commentable
     protected static function booted(): void
     {
         static::deleting(function (Reservation $reservation): void {
-            // reservation_resource.reservation_id restricts deletes, so the links have
-            // to go before the row can. They are owned by the reservation, so nothing
-            // outlives it — but on a soft delete they must stay put for restore.
-            if (! $reservation->isForceDeleting()) {
-                return;
-            }
-
             $reservation->resources()->detach();
             $reservation->users()->detach();
+            $reservation->comments()->delete();
         });
     }
 }

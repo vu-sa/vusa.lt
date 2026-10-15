@@ -27,8 +27,7 @@
  */
 
 import { ref, computed, watch, onUnmounted, shallowRef } from 'vue';
-import { useLocalStorage, useOnline } from '@vueuse/core';
-import { debounce } from 'lodash-es';
+import { useLocalStorage, useOnline, useDebounceFn } from '@vueuse/core';
 
 import type {
   SearchStatus,
@@ -388,7 +387,7 @@ export function useBaseSearch<
   };
 
   // Debounced search
-  const debouncedSearch = debounce(() => {
+  const debouncedSearch = useDebounceFn(() => {
     if (status.value === 'idle' || status.value === 'error') {
       performSearch(false);
     }

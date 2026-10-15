@@ -113,7 +113,7 @@ export function useDutiableDiagnostics(
       if (cadence !== null && period.end === null && cadence.end_date < today) {
         result.push({
           code: 'open_ended_stale',
-          severity: 'warning',
+          severity: 'info',
           row_ids: [row.id],
           duty_id: row.duty_id,
           detail: { cadence_id: cadence.id, suggested_end: cadence.end_date },
@@ -198,7 +198,12 @@ export function useDutiableDiagnostics(
     for (const row of rows.value) {
       const key = `${row.duty_id}|${row.holder_id}|${row.tenant_id ?? ''}`;
       const bucket = groups.get(key);
-      bucket ? bucket.push(row) : groups.set(key, [row]);
+      if (bucket) {
+        bucket.push(row);
+      }
+      else {
+        groups.set(key, [row]);
+      }
     }
 
     const result: TimelineDiagnostic[] = [];
@@ -251,6 +256,8 @@ export function useDutiableDiagnostics(
  * `orphan_derived_suspect` has none because a NULL `via_dutiable_id` is indistinguishable
  * from a deliberate manual assignment, and these rows grant real permissions.
  * `understaffed` has none because filling a seat is a decision about a person.
+ * `spans_cadences` has none because a re-election is not a fault, and widening real dates
+ * to term edges would overwrite a deliberate mid-term start.
  */
 export function fixOperationFor(finding: TimelineDiagnostic): TimelineOperation | null {
   const detail = (finding.detail ?? {}) as {
@@ -283,18 +290,6 @@ export function fixOperationFor(finding: TimelineDiagnostic): TimelineOperation 
         edges: 'both',
         threshold_days: OFF_CADENCE_MAX_DAYS,
       };
-
-    // Widen to the outer boundaries of the terms it already covers, rather than forcing
-    // it into one — a two-term appointment is a real thing.
-    case 'spans_cadences':
-      return detail.suggested_start && detail.suggested_end
-        ? {
-            type: 'set_dates',
-            row_ids: finding.row_ids,
-            start_date: detail.suggested_start,
-            end_date: detail.suggested_end,
-          }
-        : null;
 
     default:
       return null;

@@ -14,6 +14,7 @@ import PublicFilterPopover, { type FilterOption } from '@/Components/Public/Base
 export type { FilterOption };
 
 withDefaults(defineProps<{
+  field?: string;
   label: string;
   options: FilterOption[];
   selected: string[];

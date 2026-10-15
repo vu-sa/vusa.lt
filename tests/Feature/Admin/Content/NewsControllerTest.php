@@ -25,7 +25,7 @@ beforeEach(function (): void {
         ['tenant_id' => $this->tenant->id]
     ))->hasAttached($this->newsManager, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])->create();
 
-    $communicationCoordinatorDuty->assignRole('Communication Coordinator');
+    $communicationCoordinatorDuty->assignRole('Komunikacijos koordinatorius');
 });
 
 describe('auth: simple user', function (): void {
@@ -162,7 +162,7 @@ describe('auth: news manager', function (): void {
         $duty = Duty::factory()->for($institution)
             ->hasAttached($orphanManager, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])
             ->create();
-        $duty->assignRole('Communication Coordinator');
+        $duty->assignRole('Komunikacijos koordinatorius');
 
         asUser($orphanManager)->get(route('news.create'))->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -172,7 +172,7 @@ describe('auth: news manager', function (): void {
     });
 
     test('can store news', function (): void {
-        asUser($this->newsManager)->post(route('news.store'), [
+        $response = asUser($this->newsManager)->post(route('news.store'), [
             'title' => 'News 1',
             'permalink' => 'news-1',
             'content' => [
@@ -190,7 +190,11 @@ describe('auth: news manager', function (): void {
             'publish_time' => now()->timestamp,
             'short' => 'Short news',
             'tenant_id' => $this->managerTenant->id,
-        ])->assertStatus(302)->assertRedirectToRoute('news.index');
+        ])->assertStatus(302)->assertSessionHasNoErrors();
+
+        $created = News::where('title', 'News 1')->sole();
+        $response->assertRedirectToRoute('news.edit', $created)->assertSessionHas('success');
+        asUser($this->newsManager)->get(route('news.edit', $created))->assertOk();
     });
 
     test('show_breadcrumbs round-trips through store and update', function (): void {
@@ -216,7 +220,7 @@ describe('auth: news manager', function (): void {
             'short' => 'Short news',
             'show_breadcrumbs' => false,
             'tenant_id' => $this->managerTenant->id,
-        ])->assertStatus(302)->assertRedirectToRoute('news.index');
+        ])->assertStatus(302)->assertRedirectToRoute('news.edit', News::query()->latest('id')->firstOrFail());
 
         $this->assertDatabaseHas('news', [
             'permalink' => $permalink,
@@ -399,7 +403,7 @@ describe('auth: news manager', function (): void {
                         'json_content' => [],
                         'options' => [
                             'title' => ['lt' => 'Klausimas', 'en' => 'Question'],
-                            'placeholder' => ['lt' => 'Atsakykite...', 'en' => 'Answer...'],
+                            'placeholder' => ['lt' => 'Atsakyk...', 'en' => 'Answer...'],
                             'isClosed' => false,
                             'closedMessage' => ['lt' => 'Uždaryta', 'en' => 'Closed'],
                         ],
@@ -424,7 +428,7 @@ describe('auth: news manager', function (): void {
         $duty = Duty::factory()->for($institution)
             ->hasAttached($orphanManager, ['start_date' => now()->subDay(), 'end_date' => now()->addDays(1)])
             ->create();
-        $duty->assignRole('Communication Coordinator');
+        $duty->assignRole('Komunikacijos koordinatorius');
 
         $initialCount = News::count();
 
@@ -515,7 +519,7 @@ describe('auth: news manager', function (): void {
         ]);
 
         $response->assertStatus(302)
-            ->assertRedirectToRoute('news.index')
+            ->assertRedirectToRoute('news.edit', News::query()->latest('id')->firstOrFail())
             ->assertSessionHas('success');
 
         // Scoped per tenant: the other tenant's identical slug doesn't force a suffix here.
@@ -671,5 +675,44 @@ describe('auth: super admin', function (): void {
             'title' => 'Super admin news',
             'tenant_id' => $otherTenant->id,
         ]);
+    });
+});
+
+describe('bulk actions', function (): void {
+    beforeEach(function (): void {
+        $this->managerTenant = $this->newsManager->duties()->first()->institution->tenant;
+    });
+
+    test('bulk status maps published onto the draft flag of every selected article', function (): void {
+        $drafts = News::factory()->count(2)->for($this->managerTenant)->create(['draft' => true]);
+
+        asUser($this->newsManager)
+            ->patch(route('news.bulkStatus'), ['ids' => $drafts->pluck('id')->all(), 'published' => true])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        expect($drafts->map(fn (News $news) => (bool) $news->fresh()->draft)->all())->toBe([false, false]);
+    });
+
+    test('bulk status refuses the whole batch when one article is outside the actor\'s tenant', function (): void {
+        $own = News::factory()->for($this->managerTenant)->create(['draft' => false]);
+        $foreign = News::factory()->for(Tenant::query()->where('id', '!=', $this->managerTenant->id)->firstOrFail())->create(['draft' => false]);
+
+        asUser($this->newsManager)
+            ->patch(route('news.bulkStatus'), ['ids' => [$own->id, $foreign->id], 'published' => false])
+            ->assertStatus(403);
+
+        expect($own->fresh()->draft)->toBeFalsy();
+    });
+
+    test('bulk delete soft-deletes every selected article', function (): void {
+        $news = News::factory()->count(2)->for($this->managerTenant)->create();
+
+        asUser($this->newsManager)
+            ->delete(route('news.bulkDestroy'), ['ids' => $news->pluck('id')->all()])
+            ->assertRedirect()
+            ->assertSessionHas('info');
+
+        $news->each(fn (News $article) => $this->assertSoftDeleted('news', ['id' => $article->id]));
     });
 });

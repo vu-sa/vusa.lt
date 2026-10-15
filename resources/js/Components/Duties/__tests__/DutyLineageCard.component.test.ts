@@ -16,14 +16,14 @@ const activeMember = {
   id: 'a',
   name: 'Active',
   pivot: { start_date: new Date(year - 3, 9, 1).toISOString(), end_date: null, tenant_id: null },
-} as any;
+} as App.Entities.User;
 
 // Old member ended well in the past — only in an older bucket.
 const oldMember = {
   id: 'o',
   name: 'Old',
   pivot: { start_date: new Date(year - 3, 9, 1).toISOString(), end_date: new Date(year - 2, 5, 1).toISOString(), tenant_id: null },
-} as any;
+} as App.Entities.User;
 
 describe('DutyLineageCard', () => {
   it('marks the current academic year and lists active members there', () => {

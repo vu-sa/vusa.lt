@@ -12,7 +12,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
     $this->page = Page::factory()->for($this->tenant)->create([
         'title' => 'Test puslapis',
@@ -20,6 +20,27 @@ beforeEach(function (): void {
         'lang' => 'lt',
     ]);
 });
+
+test('creation falls back to an accessible page when the editor is forbidden', function (bool $canRead, string $destination): void {
+    $actor = makeUser($this->tenant);
+    $actor->givePermissionTo('pages.create.padalinys');
+    if ($canRead) {
+        $actor->givePermissionTo('pages.read.padalinys');
+    }
+    $data = getControllerTestData('Page')['valid'];
+    $data['title'] = 'Sukurtas puslapis';
+    $data['tenant_id'] = $this->tenant->id;
+
+    asUser($actor)->post(route('pages.store'), $data)
+        ->assertRedirectToRoute($destination)->assertSessionHas('success')->assertSessionHasNoErrors();
+
+    $created = Page::where('title', $data['title'])->sole();
+    expect($actor->can('update', $created))->toBeFalse();
+    asUser($actor)->get(route($destination))->assertOk();
+})->with([
+    'read access returns to the list' => [true, 'pages.index'],
+    'create-only access returns to the dashboard' => [false, 'dashboard'],
+]);
 
 describe('unauthorized access', function (): void {
     test('cannot access index page', function (): void {
@@ -72,8 +93,9 @@ describe('authorized access', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Content/IndexPages')
-                ->has('pages')
-                ->has('pages.data')
+                ->has('deletedCount')
+                // Live rows come from Typesense; the page never ships them.
+                ->missing('pages')
             );
     });
 
@@ -91,12 +113,13 @@ describe('authorized access', function (): void {
 
     test('can store page with valid data', function (): void {
         $validData = getControllerTestData('Page')['valid'];
+        $validData['title'] = 'Sukurtas puslapis';
         $validData['tenant_id'] = $this->tenant->id;
 
-        asUser($this->admin)
+        $response = asUser($this->admin)
             ->post(route('pages.store'), $validData)
             ->assertStatus(302)
-            ->assertRedirect(route('pages.index'))
+            ->assertSessionHasNoErrors()
             ->assertSessionHas('success');
 
         // The permalink is no longer client-supplied — the server derives it from the title
@@ -108,6 +131,10 @@ describe('authorized access', function (): void {
             'is_active' => $validData['is_active'],
             'tenant_id' => $this->tenant->id,
         ]);
+
+        $created = Page::where('title', $validData['title'])->sole();
+        $response->assertRedirectToRoute('pages.edit', $created)->assertSessionHas('success');
+        asUser($this->admin)->get(route('pages.edit', $created))->assertOk();
     });
 
     test('cannot store page with invalid data', function (): void {
@@ -249,26 +276,27 @@ describe('filtering and search', function (): void {
         ]);
     });
 
-    test('can filter pages by search term', function (): void {
+    // The live list is searched in Typesense; the database only answers for the trash.
+    test('can search the trashed pages by title', function (): void {
+        Page::query()->each(fn (Page $page) => $page->delete());
+
         asUser($this->admin)
-            ->get(route('pages.index', ['search' => 'Test']))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/IndexPages')
-                ->has('pages.data')
-                ->where('pages.data', fn ($data) => collect($data)->contains(fn ($page) => str_contains($page['title'], 'Test')))
-            );
+            ->getJson(route('api.v1.admin.trash.index', ['collection' => 'pages', 'search' => 'Another']))
+            ->assertOk()
+            ->assertJsonPath('data.total', 1)
+            ->assertJsonPath('data.items.0.title', 'Another page');
     });
 
-    test('can filter pages by language', function (): void {
-        asUser($this->admin)
-            ->get(route('pages.index', ['filters' => json_encode(['lang' => ['en']])]))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/IndexPages')
-                ->has('pages.data')
-                ->where('pages.data', fn ($data) => collect($data)->every(fn ($page) => $page['lang'] === 'en'))
-            );
+    test('can filter the trashed pages by language', function (): void {
+        Page::query()->each(fn (Page $page) => $page->delete());
+
+        $items = collect(asUser($this->admin)
+            ->getJson(route('api.v1.admin.trash.index', ['collection' => 'pages', 'filters' => json_encode(['lang' => ['en']])]))
+            ->assertOk()
+            ->json('data.items'));
+
+        expect($items)->not->toBeEmpty()
+            ->and($items->every(fn (array $page): bool => $page['lang'] === 'en'))->toBeTrue();
     });
 });
 
@@ -310,7 +338,7 @@ describe('edge cases and business logic', function (): void {
         asUser($this->admin)
             ->post(route('pages.store'), $validData)
             ->assertStatus(302)
-            ->assertRedirect(route('pages.index'))
+            ->assertRedirectToRoute('pages.edit', Page::query()->latest('id')->firstOrFail())
             ->assertSessionHas('success');
 
         // Scoped per tenant: the other tenant's identical slug doesn't force a suffix here.
@@ -366,7 +394,7 @@ describe('edge cases and business logic', function (): void {
         asUser($this->admin)
             ->post(route('pages.store'), $specialCharsData)
             ->assertStatus(302)
-            ->assertRedirect(route('pages.index'));
+            ->assertRedirectToRoute('pages.edit', Page::query()->latest('id')->firstOrFail());
 
         // Str::slug transliterates Lithuanian diacritics on its own — no explicit permalink needed.
         $this->assertDatabaseHas('pages', [
@@ -582,7 +610,7 @@ describe('content part width validation', function (): void {
             'json_content' => [],
             'options' => [
                 'title' => ['lt' => 'Klausimas', 'en' => 'Question'],
-                'placeholder' => ['lt' => 'Atsakykite...', 'en' => 'Answer...'],
+                'placeholder' => ['lt' => 'Atsakyk...', 'en' => 'Answer...'],
                 'isClosed' => true,
                 'closedMessage' => ['lt' => 'Uždaryta', 'en' => 'Closed'],
             ],
@@ -691,18 +719,25 @@ describe('tenant isolation', function (): void {
     beforeEach(function (): void {
         $this->otherTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->first();
         $this->otherPage = Page::factory()->for($this->otherTenant)->create();
-        $this->otherAdmin = makeTenantUserWithRole('Communication Coordinator', $this->otherTenant);
+        $this->otherAdmin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->otherTenant);
     });
 
-    test('user only sees pages from their tenant', function (): void {
+    test('user only counts and sees trashed pages from their tenant', function (): void {
+        $this->otherPage->delete();
+        $this->page->delete();
+
         asUser($this->admin)
             ->get(route('pages.index'))
             ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Content/IndexPages')
-                ->has('pages.data')
-                ->where('pages.data', fn ($data) => collect($data)->every(fn ($page) => $page['tenant_id'] === $this->tenant->id))
-            );
+            ->assertInertia(fn (Assert $page) => $page->where('deletedCount', 1));
+
+        $ids = collect(asUser($this->admin)
+            ->getJson(route('api.v1.admin.trash.index', ['collection' => 'pages']))
+            ->assertOk()
+            ->json('data.items'))->pluck('id');
+
+        expect($ids)->toContain((string) $this->page->id)
+            ->not->toContain((string) $this->otherPage->id);
     });
 
     test('cannot access other tenant page', function (): void {
@@ -718,5 +753,75 @@ describe('tenant isolation', function (): void {
         asUser($this->admin)
             ->patch(route('pages.update', $this->otherPage), $updateData)
             ->assertStatus(403); // Authorization failure - cannot update other tenant's page
+    });
+});
+
+describe('bulk actions', function (): void {
+    beforeEach(function (): void {
+        $this->otherPage = Page::factory()->for($this->tenant)->create(['is_active' => true]);
+        $this->page->update(['is_active' => true]);
+    });
+
+    test('bulk status unpublishes every selected page', function (): void {
+        asUser($this->admin)
+            ->patch(route('pages.bulkStatus'), ['ids' => [$this->page->id, $this->otherPage->id], 'published' => false])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        expect($this->page->fresh()->is_active)->toBeFalse()
+            ->and($this->otherPage->fresh()->is_active)->toBeFalse();
+    });
+
+    test('bulk status refuses the whole batch when one page is outside the actor\'s tenant', function (): void {
+        $foreignTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $foreignPage = Page::factory()->for($foreignTenant)->create(['is_active' => true]);
+
+        asUser($this->admin)
+            ->patch(route('pages.bulkStatus'), ['ids' => [$this->page->id, $foreignPage->id], 'published' => false])
+            ->assertStatus(403);
+
+        expect($this->page->fresh()->is_active)->toBeTrue()
+            ->and($foreignPage->fresh()->is_active)->toBeTrue();
+    });
+
+    test('bulk status is forbidden without page permissions', function (): void {
+        asUser($this->user)
+            ->patch(route('pages.bulkStatus'), ['ids' => [$this->page->id], 'published' => false])
+            ->assertStatus(403);
+    });
+
+    test('bulk status validates its payload', function (): void {
+        asUser($this->admin)
+            ->patch(route('pages.bulkStatus'), ['ids' => [], 'published' => true])
+            ->assertSessionHasErrors('ids');
+
+        asUser($this->admin)
+            ->patch(route('pages.bulkStatus'), ['ids' => [999_999], 'published' => true])
+            ->assertSessionHasErrors('ids.0');
+
+        asUser($this->admin)
+            ->patch(route('pages.bulkStatus'), ['ids' => [$this->page->id]])
+            ->assertSessionHasErrors('published');
+    });
+
+    test('bulk delete soft-deletes every selected page', function (): void {
+        asUser($this->admin)
+            ->delete(route('pages.bulkDestroy'), ['ids' => [$this->page->id, $this->otherPage->id]])
+            ->assertRedirect()
+            ->assertSessionHas('info');
+
+        $this->assertSoftDeleted('pages', ['id' => $this->page->id]);
+        $this->assertSoftDeleted('pages', ['id' => $this->otherPage->id]);
+    });
+
+    test('bulk delete refuses the whole batch when one page is outside the actor\'s tenant', function (): void {
+        $foreignTenant = Tenant::query()->where('id', '!=', $this->tenant->id)->firstOrFail();
+        $foreignPage = Page::factory()->for($foreignTenant)->create();
+
+        asUser($this->admin)
+            ->delete(route('pages.bulkDestroy'), ['ids' => [$this->page->id, $foreignPage->id]])
+            ->assertStatus(403);
+
+        $this->assertNotSoftDeleted('pages', ['id' => $this->page->id]);
     });
 });

@@ -42,7 +42,7 @@
     </div>
 
     <p class="text-xs text-muted-foreground">
-      {{ $t('Spustelėkite arba vilkite paveikslėlį, kad nustatytumėte fokuso tašką.') }}
+      {{ $t('Spustelėk arba vilk paveikslėlį, kad nustatytum fokuso tašką.') }}
       <span class="font-mono text-foreground">{{ displayValue }}</span>
     </p>
   </div>

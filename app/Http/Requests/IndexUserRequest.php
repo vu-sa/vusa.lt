@@ -9,4 +9,14 @@ class IndexUserRequest extends BaseIndexRequest
     protected array $defaultSorting = [
         ['id' => 'name', 'desc' => false],
     ];
+
+    #[\Override]
+    public function rules(): array
+    {
+        return [
+            ...parent::rules(),
+            'future_duty' => 'nullable|in:scheduled',
+            'membership' => 'nullable|in:current,former',
+        ];
+    }
 }

@@ -1,11 +1,13 @@
-@component('mail::message')
-# Informacija apie užpildytą registraciją
+<x-mail::message>
+# {{ __('mail.member_inform.heading') }}
 
-Labas! Gavai šį laišką, nes [VU SA registracijos puslapyje]({{ route('member-registration') }}) {{ $name }} užpildė registraciją į *{{ $institution->name }}*.
+{{ __('mail.greeting_generic') }}
 
-Visą registracijos informaciją gali pamatyti [čia]({{ route('forms.show', $form_id) }}).
+{{ __('mail.member_inform.intro', ['name' => $name, 'institution' => $institution->name]) }}
 
-Atitinkamą laišką gavo ir užsiregistravęs asmuo, kuriam (-ai) buvo pranešta, kad su juo bus susisiekta.
+[{{ __('mail.member_inform.view_button') }}]({{ route('forms.show', $form_id) }})
 
-Sėkmės!
-@endcomponent
+{{ __('mail.member_inform.registrant_notified') }}
+
+{{ __('mail.member_inform.goodbye') }}
+</x-mail::message>

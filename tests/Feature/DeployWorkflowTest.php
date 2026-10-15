@@ -1,6 +1,7 @@
 <?php
 
 use App\Console\Commands\DeploymentRun;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * The deploy pipeline's ordering *is* its correctness, and almost none of it is exercised by running
@@ -102,6 +103,12 @@ describe('the state the server is in before artisan boots', function () use ($sh
 });
 
 describe('the deploy workflows', function () use ($shared, $source): void {
+    // PublicAssetService reads the icon catalogue from bootstrap/icons; left out of the archive, the
+    // public menu silently falls back to fetching every icon from a third-party API.
+    it('ships the server-side build directories with the client assets', function () use ($shared, $source): void {
+        expect($source($shared))->toContain('tar -czf build.tar.gz public/build bootstrap/ssr bootstrap/icons');
+    });
+
     it('share one implementation so they cannot drift', function () use ($shared, $source): void {
         // These two files were ~90 duplicated lines that had already diverged: staging swallowed
         // deploy failures with `|| true`, production never ran git clean, one cleaned up its SSH keys
@@ -145,16 +152,55 @@ describe('the deploy workflows', function () use ($shared, $source): void {
             ->not->toContain('inputs.remote-branch');
     });
 
-    // A push to a branch with an open PR fires `push` and `pull_request` both, and the two runs
-    // never cancel each other (their concurrency keys are `refs/heads/<branch>` and
-    // `refs/pull/<n>/merge`). Only main and dev need a push run of their own — they are what the two
-    // deploy workflows hang their `workflow_run` triggers off.
-    it('runs CI once per push by limiting the push trigger to the deploy branches', function () use ($source): void {
-        $ci = $source('.github/workflows/ci.yml');
+    it('runs full CI once for same-repository dev pull requests and still checks other pull requests', function () use ($source): void {
+        $ci = Yaml::parse($source('.github/workflows/ci.yml'));
+        $devPr = "github.event_name == 'pull_request' && github.head_ref == 'dev' && github.event.pull_request.head.repo.full_name == github.repository";
+        $status = $ci['jobs']['status-check'];
+        $mirror = $status['steps'][0];
 
-        expect($ci)->toContain("push:\n    branches:\n      - main\n      - dev")
-            ->and($ci)->toContain('pull_request:')
-            ->and($ci)->not->toContain("push:\n    branches-ignore:");
+        foreach ($ci['jobs'] as $name => $job) {
+            if (in_array($name, ['changes', 'status-check'], strict: true)) {
+                continue;
+            }
+
+            expect((array) $job['needs'])->toContain('changes');
+        }
+
+        expect($ci['on']['push']['branches'])->toBe(['main', 'dev'])
+            ->and(array_key_exists('pull_request', $ci['on']))->toBeTrue()
+            ->and($ci['jobs']['changes']['if'])->toBe('${{ github.event_name != \'pull_request\' || github.head_ref != \'dev\' || github.event.pull_request.head.repo.full_name != github.repository }}')
+            ->and($status['name'])->toBe('CI Status')
+            ->and($status['if'])->toBe('always()')
+            ->and($status['permissions']['actions'])->toBe('read')
+            ->and($mirror['if'])->toBe('${{ '.$devPr.' }}')
+            ->and($mirror['env']['DEV_SHA'])->toBe('${{ github.event.pull_request.head.sha }}')
+            ->and($mirror['run'])->toContain('head_sha="$DEV_SHA"')
+            ->and($mirror['run'])->toContain('-f event=push')
+            ->and($mirror['run'])->toContain('success) exit 0')
+            ->and($mirror['run'])->toContain('*) echo "::error::Dev push CI')
+            ->and($mirror['run'])->toContain('No completed dev push CI found')
+            ->and($status['steps'][1]['if'])->toBe($ci['jobs']['changes']['if']);
+    });
+
+    it('comments documentation coverage from push runs, since the dev pull request run only mirrors them', function () use ($source): void {
+        $ci = Yaml::parse($source('.github/workflows/ci.yml'));
+        $comment = collect($ci['jobs']['php-tests']['steps'])
+            ->firstWhere('name', 'Comment documentation coverage on the PR');
+
+        expect($comment['if'])->toBe('always()')
+            ->and($comment['run'])->toContain('commits/$GITHUB_SHA/pulls')
+            ->and($comment['run'])->toContain('gh pr comment "$PR_NUMBER"');
+    });
+
+    it('only starts automatic deployments after push CI succeeds', function () use ($source): void {
+        $staging = Yaml::parse($source('.github/workflows/deploy-staging.yml'));
+        $production = Yaml::parse($source('.github/workflows/deploy.yml'));
+
+        foreach ([$staging['jobs']['resolve'], $production['jobs']['deploy']] as $job) {
+            expect($job['if'])->toContain("github.event_name == 'workflow_dispatch'")
+                ->toContain("github.event.workflow_run.event == 'push'")
+                ->toContain("github.event.workflow_run.conclusion == 'success'");
+        }
     });
 });
 
@@ -280,4 +326,14 @@ describe('environment template hygiene', function (): void {
 
         expect($unread)->toBeEmpty();
     });
+});
+
+it('keeps the optional Inertia renderer outside maintenance and skips disabled environments', function (): void {
+    $keys = array_keys(DeploymentRun::STEPS);
+    expect(array_search('ssr', $keys))->toBeGreaterThan(array_search('online', $keys))
+        ->and(DeploymentRun::STEPS['ssr'])->toMatchArray(['command' => 'inertia:stop-ssr', 'critical' => false, 'ssrOnly' => true]);
+    config(['inertia.ssr.enabled' => false]);
+    $this->artisan('deployment:run', ['--dry-run' => true])
+        ->expectsOutputToContain('Restart optional Inertia SSR renderer (SSR disabled)')
+        ->assertSuccessful();
 });

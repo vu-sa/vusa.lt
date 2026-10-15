@@ -19,13 +19,23 @@ class MergeDutiesRequest extends FormRequest
     {
         $keptDuty = Duty::find($this->target_duty_id);
 
-        if (! $keptDuty || ! $this->user()->can('update', $keptDuty)) {
+        if (! $keptDuty) {
+            return true;
+        }
+
+        if (! $this->user()->can('update', $keptDuty)) {
             return false;
         }
 
         $sourceIds = (array) $this->source_duty_ids;
 
-        foreach (Duty::query()->whereIn('id', $sourceIds)->get() as $sourceDuty) {
+        $sources = Duty::query()->whereIn('id', $sourceIds)->get();
+
+        if ($sources->count() !== count($sourceIds)) {
+            return true;
+        }
+
+        foreach ($sources as $sourceDuty) {
             if (! $this->user()->can('delete', $sourceDuty)) {
                 return false;
             }
@@ -42,7 +52,7 @@ class MergeDutiesRequest extends FormRequest
         return [
             'target_duty_id' => ['required', 'ulid', SoftDeleteRules::existsLive('duties')],
             'source_duty_ids' => ['required', 'array', 'min:1'],
-            'source_duty_ids.*' => ['required', 'ulid', SoftDeleteRules::existsLive('duties'), 'different:target_duty_id'],
+            'source_duty_ids.*' => ['required', 'ulid', 'distinct', SoftDeleteRules::existsLive('duties'), 'different:target_duty_id'],
         ];
     }
 

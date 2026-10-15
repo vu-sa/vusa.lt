@@ -2,7 +2,7 @@
 
 namespace App\Tiptap;
 
-use Illuminate\Support\Str;
+use App\Services\ContentHeadingAnchors;
 use Tiptap\Nodes\Heading;
 use Tiptap\Utils\HTML;
 
@@ -64,7 +64,7 @@ class CustomHeading extends Heading
 
         // Extract text content from the node to generate ID
         $text = $this->extractTextFromNode($node);
-        $id = Str::slug($text);
+        $id = $node->attrs->id ?? (ContentHeadingAnchors::slug($text) ?: 'heading');
 
         $size = $node->attrs->size ?? null;
         $accent = $node->attrs->accent ?? null;

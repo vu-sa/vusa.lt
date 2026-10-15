@@ -137,7 +137,7 @@
           <!-- Years Filter Popover -->
           <PublicFilterPopover
             :label="$t('search.years')"
-            :options="yearOptions"
+            :options="yearOptions" field="year"
             :selected="selectedYears"
             trigger-class="h-9 px-3"
             @toggle="toggleYear"
@@ -147,7 +147,7 @@
           <!-- Tenant / Padalinys Filter Popover -->
           <PublicFilterPopover
             :label="$t('Padalinys')"
-            :options="tenantOptions"
+            :options="tenantOptions" field="tenant_shortname"
             :selected="filters.tenants || []"
             searchable
             :search-placeholder="`${$t('Ieškoti padalinio')}...`"
@@ -160,7 +160,7 @@
           <PublicFilterPopover
             v-if="institutionTypeOptions.length > 0"
             :label="$t('search.institution_type')"
-            :options="institutionTypeOptions"
+            :options="institutionTypeOptions" field="institution_type_title"
             :selected="filters.institutionTypes || []"
             searchable
             :search-placeholder="`${$t('Ieškoti tipo')}...`"
@@ -345,7 +345,7 @@ import { useDebounceFn, useStorage } from '@vueuse/core';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
-import TagChip from '@/Components/Public/Base/TagChip.vue';
+import TagChip from '@/Components/Brand/TagChip.vue';
 import HairlineList from '@/Components/Public/Base/HairlineList.vue';
 import PublicFilterPopover, { type FilterOption } from '@/Components/Public/Base/PublicFilterPopover.vue';
 import MeetingCompactListItem from '@/Components/Public/Search/MeetingCompactListItem.vue';

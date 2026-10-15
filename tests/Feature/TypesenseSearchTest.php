@@ -100,10 +100,7 @@ test('search arrays contain required fields', function (): void {
 
 test('draft/inactive documents and calendar events are not searchable', function (): void {
     // Test that inactive documents are not searchable
-    $inactiveDocument = Document::factory()->create([
-        'is_active' => false,
-        'anonymous_url' => null, // This makes it not searchable
-    ]);
+    $inactiveDocument = Document::factory()->inactive()->create();
     expect($inactiveDocument->shouldBeSearchable())->toBeFalse();
 
     // Test that draft calendar events are not searchable
@@ -134,24 +131,33 @@ test('the public news index excludes drafts and scheduled articles', function ()
         ->and(PublicNews::find($scheduled->id)->shouldBeSearchable())->toBeFalse();
 });
 
-test('the admin pages index includes inactive and scheduled pages', function (): void {
+test('the admin pages index includes inactive pages', function (): void {
     $active = Page::factory()->create(['is_active' => true]);
     $inactive = Page::factory()->create(['is_active' => false]);
-    $scheduled = Page::factory()->create(['is_active' => true, 'publish_time' => now()->addDay()]);
 
     expect($active->shouldBeSearchable())->toBeTrue()
-        ->and($inactive->shouldBeSearchable())->toBeTrue()
-        ->and($scheduled->shouldBeSearchable())->toBeTrue();
+        ->and($inactive->shouldBeSearchable())->toBeTrue();
 });
 
-test('the public pages index excludes inactive and scheduled pages', function (): void {
+test('the admin pages document supports short tenant names and title sorting', function (): void {
+    $page = Page::factory()->create(['is_active' => true]);
+
+    $document = $page->toSearchableArray();
+    $publicDocument = PublicPage::findOrFail($page->id)->toSearchableArray();
+    $fields = collect(config('scout.typesense.model-settings.'.Page::class.'.collection-schema.fields'));
+
+    expect($document['tenant_shortname'])->toBe($page->tenant->shortname)
+        ->and($publicDocument)->not->toHaveKey('tenant_shortname')
+        ->and($fields->firstWhere('name', 'title')['sort'])->toBeTrue()
+        ->and($fields->firstWhere('name', 'tenant_shortname'))->not->toBeNull();
+});
+
+test('the public pages index excludes inactive pages', function (): void {
     $active = Page::factory()->create(['is_active' => true]);
     $inactive = Page::factory()->create(['is_active' => false]);
-    $scheduled = Page::factory()->create(['is_active' => true, 'publish_time' => now()->addDay()]);
 
     expect(PublicPage::find($active->id)->shouldBeSearchable())->toBeTrue()
-        ->and(PublicPage::find($inactive->id)->shouldBeSearchable())->toBeFalse()
-        ->and(PublicPage::find($scheduled->id)->shouldBeSearchable())->toBeFalse();
+        ->and(PublicPage::find($inactive->id)->shouldBeSearchable())->toBeFalse();
 });
 
 test('duty search array carries index-aligned member ids for current and previous members', function (): void {
@@ -213,5 +219,8 @@ test('user search array carries current and previous duties with aligned ids', f
         ->and($array['current_duty_ids'])->toHaveSameSize($array['current_duty_names'])
         ->and($array['previous_duty_ids'])->toContain((string) $previousDuty->id)
         // The current duty must not leak into the previous-duty buckets.
-        ->and($array['previous_duty_ids'])->not->toContain((string) $currentDuty->id);
+        ->and($array['previous_duty_ids'])->not->toContain((string) $currentDuty->id)
+        // Raw term dates stay index-aligned so the client can derive the active-years span.
+        ->and($array['term_start_dates'])->toEqualCanonicalizing([now()->subMonth()->toDateString(), now()->subYear()->toDateString()])
+        ->and($array['term_end_dates'])->toEqualCanonicalizing(['', now()->subMonth()->toDateString()]);
 });

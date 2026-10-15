@@ -63,7 +63,7 @@ class Image extends Node
             HTML::mergeAttributes(
                 $this->options['HTMLAttributes'],
                 $HTMLAttributes,
-                ['class' => 'tiptap-image max-w-full h-auto rounded-md '.(self::ALIGNMENT_CLASS[$align] ?? self::ALIGNMENT_CLASS['center'])],
+                ['class' => 'tiptap-image max-w-full h-auto '.(self::ALIGNMENT_CLASS[$align] ?? self::ALIGNMENT_CLASS['center'])],
             ),
             0,
         ];

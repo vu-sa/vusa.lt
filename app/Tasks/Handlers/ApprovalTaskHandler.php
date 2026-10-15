@@ -3,6 +3,7 @@
 namespace App\Tasks\Handlers;
 
 use App\Models\Task;
+use App\Models\User;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Database\Eloquent\Model;
@@ -27,7 +28,7 @@ class ApprovalTaskHandler extends BaseTaskHandler
     /**
      * @param  Model  $model
      */
-    public function completeForModel($model, string $reason): void
+    public function completeForModel($model, string $reason, ?User $completedBy = null): void
     {
         $tasks = Task::query()
             ->with('users')
@@ -37,7 +38,7 @@ class ApprovalTaskHandler extends BaseTaskHandler
             ->get();
 
         foreach ($tasks as $task) {
-            $this->complete($task, $reason);
+            $this->complete($task, $reason, $completedBy);
         }
     }
 }

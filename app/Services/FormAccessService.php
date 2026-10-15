@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\Responsibility;
 use App\Models\Form;
 use App\Models\User;
-use App\Settings\AtstovavimasSettings;
 use App\Settings\FormSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -14,7 +14,7 @@ class FormAccessService
     public function __construct(
         private readonly ModelAuthorizer $authorizer,
         private readonly FormSettings $formSettings,
-        private readonly AtstovavimasSettings $atstovavimasSettings,
+        private readonly ResponsibilityResolver $responsibilities,
     ) {}
 
     public function canViewAny(User $user): bool
@@ -37,8 +37,9 @@ class FormAccessService
         }
 
         if ($this->formSettings->student_rep_registration_form_id === $form->id) {
-            return $this->atstovavimasSettings->userIsInstitutionManager($user)
-                && $this->atstovavimasSettings->getManagerTenantIds($user)->isNotEmpty();
+            // Coordinators open it through their responsibility; anyone else needs the form read.
+            return $this->responsibilities->holdsAnywhere($user, Responsibility::StudentRepCoordination)
+                || ($this->hasTenantRead($user) && $this->visibleTenantIds($user)->isNotEmpty());
         }
 
         return false;

@@ -41,7 +41,10 @@ const TimelineGanttChartStub = defineComponent({
   name: 'TimelineGanttChart',
   props: {
     tenantFilter: Array,
+    height: String,
+    fullscreenActive: Boolean,
   },
+  emits: ['fullscreen'],
   setup() {
     return () => h('div', { 'data-testid': 'user-timeline-chart' });
   },
@@ -56,13 +59,13 @@ describe('UserTimelineSection', () => {
     vi.unstubAllGlobals();
   });
 
-  it('keeps tenant selection outside display settings without hiding cross-tenant relations', async () => {
+  function mountSection() {
     vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
       callback(0);
       return 1;
     });
 
-    wrapper = mount(UserTimelineSection, {
+    return mount(UserTimelineSection, {
       props: {
         institutions: [],
         meetings: [],
@@ -79,6 +82,10 @@ describe('UserTimelineSection', () => {
         },
       },
     });
+  }
+
+  it('keeps tenant selection outside display settings without hiding cross-tenant relations', async () => {
+    wrapper = mountSection();
     await nextTick();
 
     const filter = wrapper.getComponent(GanttFilterDropdownStub);
@@ -87,5 +94,32 @@ describe('UserTimelineSection', () => {
     expect(filter.props('tenants')).toBeUndefined();
     expect(filter.props('triggerLabelOverride')).toBe('Rodymo nustatymai');
     expect(chart.props('tenantFilter')).toEqual([]);
+  });
+
+  /**
+   * In place, not a modal: the chart that goes full screen is the same instance, so its
+   * scroll and zoom survive and dialogs it opens stack above it rather than behind.
+   */
+  it('takes the same chart full screen and back from its toolbar button', async () => {
+    wrapper = mountSection();
+    await nextTick();
+
+    const frame = () => wrapper.get('[data-slot="focus-mode-frame"]');
+    const chart = wrapper.getComponent(TimelineGanttChartStub);
+
+    expect(frame().attributes('data-active')).toBeUndefined();
+    expect(chart.props('height')).toBeUndefined();
+
+    await chart.vm.$emit('fullscreen');
+
+    expect(frame().attributes('data-active')).toBe('true');
+    expect(frame().classes()).toContain('fixed');
+    expect(chart.props('height')).toBe('100%');
+    expect(chart.props('fullscreenActive')).toBe(true);
+    expect(wrapper.findAllComponents(TimelineGanttChartStub)).toHaveLength(1);
+
+    await chart.vm.$emit('fullscreen');
+
+    expect(frame().attributes('data-active')).toBeUndefined();
   });
 });

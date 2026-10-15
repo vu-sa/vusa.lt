@@ -138,49 +138,6 @@ export const splitFileNameAndExtension = (fileName: string) => {
   return { name, extension };
 };
 
-/**
- * Get faculty name from padalinys.fullname
- * @param padalinys
- * @returns facultyName
- * @example getFacultyName({fullname: "Vilniaus universiteto Studentų atstovybė Matematikos ir informatikos fakultete"}) => "Matematikos ir informatikos fakultetas"
- */
-
-export const getFacultyName = ({ fullname }: { fullname: string }) => {
-  // split string into two parts, separated by string "Vilniaus universiteto Studentų atstovybė"
-  let facultyName = fullname.split(
-    'Vilniaus universiteto Studentų atstovybė',
-  )[1];
-
-  if (facultyName === undefined) {
-    return '';
-  }
-
-  // change faculty name only at the string ending from "ete" to "etas"
-  if (facultyName.endsWith('ete')) {
-    facultyName = facultyName.replace('ete', 'etas');
-  }
-  // also apply this to "tre" to "tas"
-  if (facultyName.endsWith('tre')) {
-    facultyName = facultyName.replace('tre', 'tras');
-  }
-
-  // also if ends with "ykloje", change to "ykla"
-  if (facultyName.endsWith('ykloje')) {
-    facultyName = facultyName.replace('ykloje', 'ykla');
-  }
-
-  // change "ute" to "utas"
-  if (facultyName.endsWith('ute')) {
-    facultyName = facultyName.replace('ute', 'utas');
-  }
-
-  if (facultyName.endsWith('joje')) {
-    facultyName = facultyName.replace('joje', 'ja');
-  }
-
-  return facultyName;
-};
-
 export const capitalize = (word: string) => {
   return word.charAt(0).toUpperCase() + word.slice(1);
 };
@@ -352,65 +309,54 @@ const inflectDutyName = (name: string, gender: DutyNameGender): string => {
   return name.slice(0, head.start + head.stem.length) + ending + name.slice(head.end);
 };
 
+export type DutyPronouns = string | { lt?: string | null; en?: string | null } | null | undefined;
+
+export interface DutyNameHolder {
+  name?: string | null;
+  pronouns?: DutyPronouns;
+}
+
+const pronounGender = (pronouns: string | null | undefined): DutyNameGender | null => {
+  const first = pronouns?.split('/')[0]?.trim().toLowerCase();
+  if (first === 'ji' || first === 'she') return 'feminine';
+  if (first === 'jis' || first === 'he') return 'masculine';
+  if (first === 'jie' || first === 'they') return 'plural';
+  return null;
+};
+
+export const resolveDutyPronouns = (pronouns: DutyPronouns, locale: string): string => {
+  if (typeof pronouns === 'string') return pronouns;
+  const preferred = pronouns?.[locale === 'en' ? 'en' : 'lt'];
+  if (pronounGender(preferred)) return preferred ?? '';
+  return [pronouns?.lt, pronouns?.en].find(value => pronounGender(value)) ?? '';
+};
+
 export const changeDutyNameEndings = (
-  contact: App.Entities.User | null | undefined,
-  dutyName: App.Entities.Duty['name'],
+  contact: DutyNameHolder | null | undefined,
+  dutyName: string,
   locale: string,
-  pronouns: string,
-  useOriginalDutyName: boolean,
-) => {
-  if (locale === 'en') {
-    return dutyName;
+  pronouns: DutyPronouns = contact?.pronouns,
+  useOriginalDutyName = false,
+): string => {
+  if (locale !== 'lt' || useOriginalDutyName) return dutyName;
+
+  const explicitGender = pronounGender(resolveDutyPronouns(pronouns, locale));
+  if (explicitGender) return inflectDutyName(dutyName, explicitGender);
+
+  const name = contact?.name?.trim().toLowerCase();
+  if (!name) return dutyName;
+
+  const firstName = name.split(/\s+/)[0];
+  if (firstName === 'katrin') return inflectDutyName(dutyName, 'feminine');
+  if (firstName === 'german') return dutyName;
+
+  // A recognisable first name wins over a surname shared by people of different genders.
+  for (const word of [firstName, name.split(/\s+/).at(-1) ?? '']) {
+    if (/(as|is|ys|us)$/.test(word)) return inflectDutyName(dutyName, 'masculine');
+    if (/[aė]$/.test(word)) return inflectDutyName(dutyName, 'feminine');
   }
 
-  // check if duty name should not be explicitly changed
-  if (useOriginalDutyName) return dutyName;
-
-  const splitPronouns = pronouns?.split('/');
-
-  const womanizedTitle = inflectDutyName(dutyName, 'feminine');
-  const pluralizedTitle = inflectDutyName(dutyName, 'plural');
-  const masculinedTitle = inflectDutyName(dutyName, 'masculine');
-
-  if (Array.isArray(splitPronouns) && splitPronouns.length > 1) {
-    if (splitPronouns[0] === 'ji' || splitPronouns[0] === 'she') {
-      return womanizedTitle;
-    }
-    else if (splitPronouns[0] === 'jie' || splitPronouns[0] === 'they') {
-      return pluralizedTitle;
-    }
-    else if (splitPronouns[0] === 'jis' || splitPronouns[0] === 'he') {
-      return masculinedTitle;
-    }
-  }
-
-  // If no pronouns are set, try to guess based on the name
-  if (!contact) {
-    return dutyName;
-  }
-
-  const firstName = contact.name.split(' ')[0];
-
-  const namesToWomanize = ['Katrin'];
-  if (namesToWomanize.includes(firstName)) {
-    return womanizedTitle;
-  }
-
-  const namesNotToWomanize = ['German'];
-  if (namesNotToWomanize.includes(firstName)) {
-    return dutyName;
-  }
-
-  if (contact.name.endsWith('ė') || firstName.endsWith('ė')) {
-    return womanizedTitle;
-  }
-
-  // check for first name ending with 's'
-  if (contact.name.endsWith('a') && !firstName.endsWith('s')) {
-    return womanizedTitle;
-  }
-
-  return dutyName ?? '';
+  return dutyName;
 };
 
 export interface DutyNameGenderVariants {
@@ -597,9 +543,36 @@ export function stripHtmlTags(html: string): string {
 }
 
 /**
+ * Drops `<a>` tags but keeps their text, for rich HTML previewed inside a card that is itself a
+ * link. A nested `<a>` is invalid HTML: the parser restructures SSR markup and hydration re-mounts it.
+ */
+export function unwrapLinks(html: string): string {
+  return html.replace(/<\/?a\b[^>]*>/gi, '');
+}
+
+/**
  * Whether a rich-text value carries any visible text once its markup is removed.
  * Used to decide if an empty-looking block should render at all.
  */
 export function hasHtmlText(html: string | null | undefined): boolean {
   return Boolean(html && stripHtmlTags(html).trim());
 }
+
+/** For user-authored text interpolated into markup that reaches `v-html`. */
+export function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Convert a string (e.g. kebab-case or snake_case) to camelCase.
+ */
+export const camelCase = (str: string): string => {
+  return str
+    .toLowerCase()
+    .replace(/[-_]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ''));
+};

@@ -39,7 +39,8 @@ test('assignment changes refresh names and contacts in the public institution in
     expect(indexedContactDocument(PublicInstitution::findOrFail($institution->id))['current_user_names'])
         ->toContain('Index Assignment Member');
 
-    $assignment->update(['end_date' => now()->toDateString()]);
+    // The end date is the last day in office, so yesterday's date has ended it.
+    $assignment->update(['end_date' => now()->subDay()->toDateString()]);
     app(SyncContactSearchIndexes::class)->handle(new DutiableChanged($assignment));
 
     $publicDocument = indexedContactDocument(PublicInstitution::findOrFail($institution->id));
@@ -162,3 +163,34 @@ test('synchronizer unsearches an institution from public index when it is inacti
         ->toThrow(ObjectNotFound::class);
 });
 
+test('user search presentation stays aligned when pronouns, assignment overrides and duty translations change', function (): void {
+    $duty = Duty::factory()->create(['name' => ['lt' => 'Koordinatorius', 'en' => 'Coordinator']]);
+    $user = User::factory()->create(['pronouns' => ['lt' => 'jis/jo', 'en' => 'he/him']]);
+    $assignment = Dutiable::factory()->forDuty($duty)->forUser($user)->create([
+        'start_date' => now()->subMonth(), 'end_date' => null, 'use_original_duty_name' => false,
+    ]);
+    app(SyncContactSearchIndexes::class)->handle(new DutiableChanged($assignment));
+
+    $user->update(['pronouns' => ['lt' => 'ji/jos', 'en' => 'she/her']]);
+    $assignment->update(['use_original_duty_name' => true]);
+    app(SyncContactSearchIndexes::class)->handle(new DutiableChanged($assignment));
+    $duty->update(['name' => ['lt' => 'Kuratorius', 'en' => 'Mentor']]);
+
+    $document = indexedContactDocument($user);
+
+    expect($document['pronouns_lt'])->toBe('ji/jos')
+        ->and($document['pronouns_en'])->toBe('she/her')
+        ->and($document['current_duty_ids'])->toBe([(string) $duty->id])
+        ->and($document['current_duty_names_lt'])->toBe(['Kuratorius'])
+        ->and($document['current_duty_names_en'])->toBe(['Mentor'])
+        ->and($document['current_duty_use_original_names'])->toBe([true]);
+
+    $assignment->update(['end_date' => now()->subDay()]);
+    app(SyncContactSearchIndexes::class)->handle(new DutiableChanged($assignment));
+    $document = indexedContactDocument($user);
+
+    expect($document['current_duty_names_lt'])->toBeEmpty()
+        ->and($document['previous_duty_ids'])->toBe([(string) $duty->id])
+        ->and($document['previous_duty_names_en'])->toBe(['Mentor'])
+        ->and($document['previous_duty_use_original_names'])->toBe([true]);
+});

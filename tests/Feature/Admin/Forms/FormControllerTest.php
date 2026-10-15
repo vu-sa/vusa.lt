@@ -13,7 +13,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 });
 
 describe('unauthorized access', function (): void {
@@ -106,10 +106,13 @@ describe('authorized access', function (): void {
         Form::factory()->for($this->tenant)->create([
             'name' => ['lt' => 'My Form', 'en' => 'My Form'],
             'publish_time' => now()->addDay(),
+            'updated_at' => now(),
         ]);
+        // The index sorts by updated_at desc; same-second timestamps would leave the order to chance.
         Form::factory()->for($otherTenant)->create([
             'name' => ['lt' => 'Other Form', 'en' => 'Other Form'],
             'publish_time' => now(),
+            'updated_at' => now()->subMinute(),
         ]);
 
         // Use Super Admin user for cross-tenant access
@@ -219,6 +222,7 @@ describe('form creation with fields', function (): void {
             'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
             'path' => ['lt' => 'registracija', 'en' => 'registration'],
             'tenant_id' => $this->tenant->id,
+            'redirect_to' => route('forms.index'),
             'publish_time' => now()->addHour()->toISOString(),
             'form_fields' => [
                 [
@@ -243,7 +247,7 @@ describe('form creation with fields', function (): void {
             ],
         ];
 
-        asUser($this->admin)
+        $response = asUser($this->admin)
             ->post(route('forms.store'), $formData)
             ->assertRedirect()
             ->assertSessionHas('success');
@@ -257,6 +261,9 @@ describe('form creation with fields', function (): void {
         $textField = $form->formFields->where('type', 'text')->first();
         expect($textField->is_required)->toBeTrue()
             ->and($textField->getTranslation('label', 'lt'))->toBe('Pilnas vardas');
+
+        $response->assertRedirectToRoute('forms.show', $form)->assertSessionHas('success');
+        asUser($this->admin)->get(route('forms.show', $form))->assertOk();
     });
 
     test('can export form responses', function (): void {
@@ -380,7 +387,7 @@ describe('updating form fields', function (): void {
         $field = FormField::factory()->for($form)->create([
             'type' => 'string',
             'label' => ['lt' => 'Vardas', 'en' => 'Name'],
-            'description' => ['lt' => 'Įrašykite vardą', 'en' => 'Enter your name'],
+            'description' => ['lt' => 'Įrašyk vardą', 'en' => 'Enter your name'],
         ]);
 
         $registration = Registration::factory()->for($form)->create();
@@ -397,7 +404,7 @@ describe('updating form fields', function (): void {
                         'id' => $field->id,
                         'type' => 'string',
                         'label' => ['lt' => 'Vardas', 'en' => 'Name'],
-                        'description' => ['lt' => 'Įrašykite vardą', 'en' => 'Enter your name'],
+                        'description' => ['lt' => 'Įrašyk vardą', 'en' => 'Enter your name'],
                         'is_required' => false,
                         'order' => 1,
                         'options' => null,
@@ -406,7 +413,7 @@ describe('updating form fields', function (): void {
             ])
             ->assertRedirect();
 
-        expect($field->fresh()->getTranslation('description', 'lt'))->toBe('Įrašykite vardą');
+        expect($field->fresh()->getTranslation('description', 'lt'))->toBe('Įrašyk vardą');
     });
 
     test('creates fields whose id carries the new- prefix', function (): void {

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -30,6 +32,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $file_date Document date (not upload date)
  * @property string|null $description
  * @property string|null $public_link SharePoint anonymous sharing link
+ * @property string|null $public_link_permission_id SharePoint permission behind public_link, deleted to revoke it
  * @property Carbon|null $public_link_expires_at
  * @property Carbon|null $last_synced_at
  * @property Carbon|null $deleted_externally_at Set when file deleted in SharePoint
@@ -43,13 +46,14 @@ use Illuminate\Support\Carbon;
  * @method static \Database\Factories\FileableFileFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile notDeletedExternally()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile ofType(string $type)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|FileableFile query()
  *
  * @mixin \Eloquent
  */
 #[Unguarded]
+#[Appends(['formatted_size'])]
+#[Hidden(['public_link_permission_id'])]
 class FileableFile extends Model
 {
     use HasFactory, HasUlids;
@@ -117,14 +121,6 @@ class FileableFile extends Model
     public function scopeOfType($query, string $type)
     {
         return $query->where('file_type', $type);
-    }
-
-    /**
-     * Scope: Exclude files that were deleted externally in SharePoint.
-     */
-    public function scopeNotDeletedExternally($query)
-    {
-        return $query->whereNull('deleted_externally_at');
     }
 
     /**

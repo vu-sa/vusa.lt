@@ -12,8 +12,8 @@
  * import { useApi } from '@/Composables/useApi';
  *
  * // Simple GET request
- * const { data, error, isFetching } = useApi<TaskIndicatorData[]>(
- *   route('api.admin.tasks.indicator')
+ * const { data, error, isFetching } = useApi<TutorialProgressData>(
+ *   route('api.v1.admin.tutorials.progress')
  * );
  *
  * // With options

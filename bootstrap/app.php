@@ -1,6 +1,8 @@
 <?php
 
+use App\Actions\ResolveForbiddenExplanation;
 use App\Http\Middleware\BlockRobotsOnStagingDomains;
+use App\Http\Middleware\EnsureGoalsExperiment;
 use App\Http\Middleware\ExtendPWASession;
 use App\Http\Middleware\GetNavigationForPublic;
 use App\Http\Middleware\HandleInertiaRequests;
@@ -11,6 +13,7 @@ use App\Http\Middleware\StagingEnvironmentWarnings;
 use App\Http\Middleware\StagingReadOnlyMode;
 use App\Http\Middleware\TenantPermission;
 use App\Http\Middleware\UpdateLastAction;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
@@ -22,6 +25,7 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Inertia\Inertia;
 use Laravel\Head\Inertia\ShareHead;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -54,6 +58,8 @@ return Application::configure(basePath: dirname(__DIR__))
     // truth for listeners; automatic discovery of app/Listeners would double-register them.
     ->withEvents(discover: false)
     ->withMiddleware(function (Middleware $middleware): void {
+        $isEditorRecovery = fn (Request $request): bool => $request->is('api/v1/admin/content-editor/*/drafts/*');
+        $middleware->convertEmptyStringsToNull(except: [$isEditorRecovery]);
         $middleware->prepend([
             StagingBasicAuth::class,
             BlockRobotsOnStagingDomains::class,
@@ -111,10 +117,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'locale' => SetLocale::class,
             'tenant.permission' => TenantPermission::class,
+            'experiment.goals' => EnsureGoalsExperiment::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (Throwable $e, Request $request): ?Response {
+            if ($request->is('atsakymas/*') && $e instanceof HttpException && in_array($e->getStatusCode(), [403, 404], true)) {
+                return response()->view('activity-answers.unavailable', [], $e->getStatusCode());
+            }
+
             // Maintenance mode gets the dedicated maintenance view instead of the generic
             // 503 page. PreventRequestsDuringMaintenance throws a plain HttpException with
             // no maintenance-specific type, so the only way to tell it apart from a genuine
@@ -131,6 +142,21 @@ return Application::configure(basePath: dirname(__DIR__))
                 return back()->with([
                     'error' => __($e->getMessage() ?: 'This action is unauthorized.'),
                 ]);
+            }
+
+            // A direct visit to an admin page (an email link, a bookmark) explains what is
+            // missing instead of showing the public error page (U8).
+            if ($e instanceof HttpException && $e->getStatusCode() === 403
+                && $request->isMethod('GET') && $request->is('mano', 'mano/*')
+                && ! $request->expectsJson() && $request->user()) {
+                $refused = $e->getPrevious() instanceof AuthorizationException;
+
+                return Inertia::render('Admin/AccessDenied', [
+                    ...ResolveForbiddenExplanation::execute(
+                        $refused ? $request->attributes->get('denied_ability') : null,
+                    ),
+                    'message' => $refused || ! $e->getMessage() ? null : __($e->getMessage()),
+                ])->toResponse($request)->setStatusCode(403);
             }
 
             return null;

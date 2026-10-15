@@ -3,10 +3,6 @@
 return [
     'trigger' => 'Greiti veiksmai',
     'trigger_short' => 'Veiksmai',
-    'spotlight' => [
-        'title' => 'Nežinai, nuo ko pradėti?',
-        'description' => 'Paspaudęs čia rasi dažniausius veiksmus — pranešti apie posėdį, pažymėti, kad posėdžių nebus, ar papildyti jau įvykusį posėdį.',
-    ],
     'personas' => [
         'title' => 'Ką norėtum padaryti?',
         'representative' => [
@@ -41,7 +37,7 @@ return [
         ],
         'new_reservation' => [
             'title' => 'Rezervuoti inventorių',
-            'description' => 'Pasiimti VU SA daiktą ar patalpą.',
+            'description' => 'Pasiskolinti VU SA įrangą ar daiktą.',
         ],
         'duty_update' => [
             'title' => 'Atnaujinti pareigybes',
@@ -52,9 +48,27 @@ return [
             'description' => 'Laiko juostoje nustatyti, nuo kada iki kada žmonės eina pareigas.',
         ],
     ],
+    'report' => [
+        'title' => 'Pranešti apie veiklą',
+        'meeting' => [
+            'title' => 'Fiksuoti posėdį',
+            'description' => 'Posėdis įvyko arba įvyks — užfiksuok jį ir darbotvarkę.',
+        ],
+        'no_meeting' => [
+            'title' => 'Posėdžio nebuvo / nebus',
+            'description' => 'Pažymėk laikotarpį be posėdžių, kad negautum nereikalingų priminimų.',
+        ],
+    ],
+    'flows' => [
+        'new_meeting' => 'Naujas posėdis',
+        'no_meeting' => 'Posėdžio nebus',
+        'complete_meeting' => 'Papildyti posėdį',
+        'ask_activity' => 'Klausti apie posėdžius',
+    ],
     'institution' => [
         'title' => 'Kuriai institucijai?',
         'subtitle' => 'Rodomos institucijos, kuriose eini pareigas.',
+        'subtitle_internal' => 'Iš renginio kuriamas tik VU SA darinio posėdis.',
         'search' => 'Ieškoti institucijos',
         'empty' => 'Neturi institucijų, kurioms galėtum tai padaryti.',
         'no_meetings_yet' => 'Posėdžių dar nebuvo',
@@ -76,8 +90,10 @@ return [
             'other' => 'Nė vienas variantas netinka.',
         ],
         'when' => [
-            'title' => 'Kada vyks posėdis?',
-            'subtitle' => 'Siūlome pagal tai, kada ši institucija posėdžiaudavo iki šiol.',
+            'title' => 'Kada vyko ar vyks posėdis?',
+            'subtitle' => 'Šiandien, vakar arba pagal tai, kada ši institucija posėdžiaudavo iki šiol.',
+            'today' => 'Šiandien',
+            'yesterday' => 'Vakar',
             'usual_hint' => 'Artimiausias įprastas laikas',
             'week_after_hint' => 'Savaite vėliau',
             'custom' => 'Pasirinkti kitą datą…',
@@ -85,6 +101,7 @@ return [
         'date' => [
             'title' => 'Kurią dieną?',
             'subtitle' => 'Gali pasirinkti ir praėjusią dieną, jei posėdis jau įvyko.',
+            'label' => 'Data',
         ],
         'time' => [
             'title' => 'Kelintą valandą?',
@@ -92,7 +109,7 @@ return [
             'custom' => 'Nurodyti tikslų laiką…',
         ],
         'agenda' => [
-            'title' => 'Ką svarstysite?',
+            'title' => 'Ką svarstysi?',
             'subtitle' => 'Darbotvarkę galėsi papildyti ir vėliau.',
             'add' => 'Surašyti klausimus',
             'add_description' => 'Įrašyk, kokie klausimai bus svarstomi.',
@@ -115,8 +132,41 @@ return [
             'agenda' => 'Darbotvarkė',
             'agenda_count' => '{0} Nėra klausimų|{1} :count klausimas|[2,9] :count klausimai|[10,*] :count klausimų',
             'agenda_bulk' => 'Surašysiu sukūrus posėdį',
-            'submit' => 'Sukurti posėdį',
-            'submitting' => 'Kuriama…',
+            'submit' => 'Fiksuoti posėdį',
+            'submitting' => 'Fiksuojama…',
+        ],
+    ],
+    'activity_request' => [
+        'mode' => [
+            'title' => 'Ką rinksiesi?',
+            'subtitle' => 'Gali pasirinkti institucijas arba konkrečius žmones.',
+            'institutions' => 'Pagal institucijas',
+            'institutions_hint' => 'Klausime jų studentų atstovų.',
+            'people' => 'Pagal atstovus',
+            'people_hint' => 'Klausime pasirinktų atstovų apie visas jų institucijas.',
+        ],
+        'people' => [
+            'title' => 'Ko klausti?',
+            'subtitle' => 'Pasirink atstovus, kurių nori paklausti.',
+            'search' => 'Ieškok pagal vardą ar instituciją',
+            'empty' => 'Atstovų nerasta',
+            'continue' => 'Toliau (:count)',
+        ],
+        'institutions' => [
+            'title' => 'Apie kurias institucijas klausti?',
+            'subtitle' => 'Pasirink institucijas, apie kurias nori paklausti atstovų.',
+            'continue' => 'Toliau (:count)',
+        ],
+        'review' => [
+            'title' => 'Ką ir kam išsiųsime',
+            'subtitle' => 'Gavėjų klausimai bus viename pranešime. Laiškus gaus pagal savo pranešimų nustatymus.',
+            'recipients' => 'Gaus: :names · klausiame nuo :date',
+            'change_people' => 'Keisti atstovus',
+            'change_institutions' => 'Keisti institucijas',
+            'note' => 'Žinutė gavėjams (nebūtina)',
+            'note_placeholder' => 'Pvz., „Prašau atsakyti iki penktadienio – ruošiame ataskaitą.“',
+            'no_sign_in' => 'Gavėjas galės atsakyti neprisijungęs. Atsakymą išsaugos patvirtinęs.',
+            'submit' => 'Išsiųsti klausimus (:count)',
         ],
     ],
     'check_in' => [
@@ -155,6 +205,8 @@ return [
         'close' => 'Uždaryti',
         'change' => 'Keisti',
         'continue' => 'Toliau',
+        'step' => 'Žingsnis',
+        'review' => 'Peržiūra',
         'loading' => 'Kraunama…',
         'error' => 'Nepavyko įkelti duomenų. Bandyk dar kartą.',
     ],

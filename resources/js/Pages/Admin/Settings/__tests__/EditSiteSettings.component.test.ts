@@ -56,16 +56,9 @@ function createWrapper(props: {
     global: {
       stubs: {
         CollectionSelectDialog: CollectionSelectDialogStub,
-        AdminForm: {
-          template: '<form @submit.prevent><slot /></form>',
-          props: ['model'],
-        },
-        FormElement: {
-          template: '<section><slot name="title" /><slot name="description" /><slot /></section>',
-        },
-        UpsertModelLayout: { template: '<div><slot /></div>' },
-        PageContent: { template: '<div><slot /></div>' },
-        Label: { template: '<label><slot /></label>' },
+        FormPage: { props: ['title'], template: '<form @submit.prevent><slot /></form>' },
+        FormSection: { template: '<section><slot /></section>' },
+        FormFieldWrapper: { props: ['id', 'label', 'error'], template: '<div><label>{{ label }}</label><slot /></div>' },
         Button: { template: '<button type="button"><slot /></button>' },
       },
     },
@@ -103,6 +96,15 @@ describe('EditSiteSettings.vue — per-language privacy page pickers', () => {
     expect(dialogs[0]!.props('collection')).toBe('pages');
     expect(dialogs[0]!.props('baseFilterBy')).toBe('is_active:=true && lang:=lt');
     expect(dialogs[1]!.props('baseFilterBy')).toBe('is_active:=true && lang:=en');
+  });
+
+  it('labels each picker with its language code instead of an externally hosted flag', () => {
+    wrapper = createWrapper({ selectedPages: { lt: null, en: null } });
+
+    const labels = wrapper.findAll('label').map(label => label.text());
+    expect(labels[0]).toContain('· LT');
+    expect(labels[1]).toContain('· EN');
+    expect(wrapper.find('img').exists()).toBe(false);
   });
 
   it('seeds the form and initial hits from the server-provided summaries', () => {

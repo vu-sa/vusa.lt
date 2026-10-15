@@ -1,30 +1,29 @@
 <template>
   <div class="comment-composer">
-    <button
-      v-if="collapsible && !isExpanded"
-      type="button"
-      :class="[
-        'w-full rounded-lg border border-zinc-200/80 bg-white px-3.5 py-2.5 text-left transition-colors',
-        'hover:border-zinc-300 hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-vusa-red/30',
-        'dark:border-zinc-700/80 dark:bg-zinc-900 dark:hover:border-zinc-600 dark:hover:bg-zinc-900/50',
-      ]"
-      @click="expand"
-    >
-      <span class="text-zinc-500 dark:text-zinc-400">{{ placeholder || $t('Parašykite komentarą…') }}</span>
-    </button>
-    <div
-      v-else
-      ref="composerRef"
-      class="rounded-lg border border-zinc-200 bg-white focus-within:border-vusa-red/50 focus-within:ring-1 focus-within:ring-vusa-red/30 dark:border-zinc-700 dark:bg-zinc-900"
-      @focusout="onFocusOut"
-    >
+    <div class="border border-border bg-background focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20">
       <EditorContent :editor />
-      <div class="flex items-center justify-between gap-2 border-t border-zinc-100 px-2 py-1.5 dark:border-zinc-800">
-        <div class="flex items-center gap-2">
-          <span class="text-xs text-muted-foreground">{{ $t('Naudokite @ paminėti') }}</span>
-          <slot name="leading" />
+      <div class="flex items-center justify-between gap-2 border-t border-border px-2 py-1">
+        <div class="flex shrink-0 items-center gap-1">
+          <Button type="button" variant="ghost" size="xs" voice="sentence" class="text-muted-foreground" @click="insertMention">
+            <AtSign class="size-3.5" />
+            {{ $t('Paminėti') }}
+          </Button>
+          <template v-if="$slots.leading">
+            <Separator orientation="vertical" class="mx-1 bg-border data-[orientation=vertical]:h-5" />
+            <slot name="leading" />
+          </template>
         </div>
-        <div class="flex items-center gap-1.5">
+        <p
+          v-if="notifiedNames.length"
+          class="flex min-w-0 flex-1 items-center justify-end gap-1 pr-2 text-xs text-muted-foreground"
+          :title="`${$t('Pranešimą apie paminėjimą gaus:')} ${notifiedNames.join(', ')}`"
+          data-testid="mention-notice"
+        >
+          <Bell class="size-3.5 shrink-0" aria-hidden="true" />
+          <span class="sr-only sm:not-sr-only shrink-0">{{ $t('Pranešimą gaus:') }}</span>
+          <span class="truncate font-medium text-foreground">{{ notifiedNames.join(', ') }}</span>
+        </p>
+        <div class="flex shrink-0 items-center gap-1.5">
           <Button v-if="showCancel" type="button" variant="ghost" size="sm" @click="$emit('cancel')">
             {{ $t('Atšaukti') }}
           </Button>
@@ -40,7 +39,8 @@
 </template>
 
 <script setup lang="ts">
-import { type Component, computed, nextTick, onBeforeUnmount, ref } from 'vue';
+import { type Component, computed, onBeforeUnmount, ref } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import { EditorContent, useEditor, VueRenderer } from '@tiptap/vue-3';
 import Mention from '@tiptap/extension-mention';
 import { Placeholder } from '@tiptap/extensions';
@@ -48,10 +48,11 @@ import { StarterKit } from '@tiptap/starter-kit';
 import type { SuggestionKeyDownProps, SuggestionProps } from '@tiptap/suggestion';
 import { computePosition, flip, offset, shift } from '@floating-ui/dom';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Loader2, Send } from 'lucide-vue-next';
+import { AtSign, Bell, Loader2, Send } from '@lucide/vue';
 
 import CommentMentionList from '@/Components/Discussions/CommentMentionList.vue';
 import { Button } from '@/Components/ui/button';
+import { Separator } from '@/Components/ui/separator';
 import type { MentionableUser } from '@/Types/discussions';
 
 const props = withDefaults(defineProps<{
@@ -62,21 +63,26 @@ const props = withDefaults(defineProps<{
   showCancel?: boolean;
   autofocus?: boolean;
   content?: string;
-  collapsible?: boolean;
+  /** Edits never re-send mention notifications, so don't promise one. */
+  quietMentions?: boolean;
 }>(), {
   mentionables: () => [],
   submitting: false,
   showCancel: false,
   autofocus: false,
   content: '',
-  collapsible: false,
 });
 
 const emit = defineEmits<{ submit: [html: string]; cancel: [] }>();
 
 const isEmpty = ref(props.content.trim() === '');
-const isExpanded = ref(!props.collapsible || props.autofocus || props.content.trim() !== '');
-const composerRef = ref<HTMLDivElement | null>(null);
+const mentions = ref<{ id: string; label: string }[]>([]);
+const currentUserId = computed(() => (usePage().props.auth as { user?: { id: string } } | undefined)?.user?.id);
+
+// The author is never notified of their own mention.
+const notifiedNames = computed(() => (props.quietMentions
+  ? []
+  : [...new Map(mentions.value.filter(mention => mention.id !== currentUserId.value).map(mention => [mention.id, mention.label])).values()]));
 
 /**
  * Mount a Vue suggestion list with VueRenderer and position it with floating-ui
@@ -163,16 +169,23 @@ const editor = useEditor({
       },
     }),
     Placeholder.configure({
-      placeholder: props.placeholder || $t('Parašykite komentarą…'),
+      placeholder: props.placeholder || $t('Parašyk komentarą…'),
     }),
   ],
   editorProps: {
     attributes: {
-      class: 'focus:outline-none px-3.5 py-2.5 min-h-12 text-zinc-800 dark:text-zinc-200',
+      class: 'focus:outline-none px-3.5 py-2.5 min-h-10 text-foreground',
     },
   },
   onUpdate: ({ editor: instance }) => {
     isEmpty.value = instance.isEmpty;
+    const found: { id: string; label: string }[] = [];
+    instance.state.doc.descendants((node) => {
+      if (node.type.name === 'mention') {
+        found.push({ id: String(node.attrs.id), label: String(node.attrs.label ?? node.attrs.id) });
+      }
+    });
+    mentions.value = found;
   },
 });
 
@@ -184,29 +197,16 @@ function submit() {
   emit('submit', instance.getHTML());
 }
 
-function expand() {
-  if (!props.collapsible) {
+/** The suggestion plugin only triggers on an `@` that starts a word, so pad it after other text. */
+function insertMention() {
+  const instance = editor.value;
+  if (!instance) {
     return;
   }
-  isExpanded.value = true;
-  void nextTick(() => {
-    editor.value?.commands.focus();
-  });
-}
-
-function onFocusOut(event: FocusEvent) {
-  if (!props.collapsible || !isExpanded.value) {
-    return;
-  }
-  const target = event.relatedTarget as HTMLElement | null;
-  // Keep the composer expanded when focus moves into a dialog (e.g. poll composer)
-  // so the trigger stays mounted and the dialog can open properly.
-  if (target?.closest('[role="dialog"]')) {
-    return;
-  }
-  if (composerRef.value && (!target || !composerRef.value.contains(target)) && isEmpty.value) {
-    isExpanded.value = false;
-  }
+  const { from } = instance.state.selection;
+  const before = instance.state.doc.textBetween(Math.max(0, from - 1), from, '\n', '\n');
+  const prefix = before === '' || /\s/.test(before) ? '' : ' ';
+  instance.chain().focus().insertContent(`${prefix}@`).run();
 }
 
 /**
@@ -215,9 +215,7 @@ function onFocusOut(event: FocusEvent) {
 function reset() {
   editor.value?.commands.clearContent(true);
   isEmpty.value = true;
-  if (props.collapsible) {
-    isExpanded.value = false;
-  }
+  mentions.value = [];
 }
 
 defineExpose({ reset });
@@ -250,7 +248,7 @@ onBeforeUnmount(() => {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   font-feature-settings: "kern", "liga", "calt";
-  caret-color: var(--vusa-red, #bd2835);
+  caret-color: var(--brand);
 }
 
 .comment-composer :deep(.ProseMirror) ::selection {
@@ -265,7 +263,7 @@ onBeforeUnmount(() => {
   border-radius: 0.3rem;
   padding: 0.05rem 0.3rem;
   font-weight: 600;
-  color: var(--vusa-red, #bd2835);
+  color: var(--brand);
   background: rgb(189 40 53 / 0.1);
 }
 

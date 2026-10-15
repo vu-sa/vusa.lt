@@ -151,6 +151,7 @@ describe('MainNavigationMenuContent.vue', () => {
     }]]));
 
     expect(wrapper.text()).toContain('NAUJA');
+    expect(wrapper.find('.before\\:bg-cat-8').exists()).toBe(true);
   });
 
   it('marks a featured link with a brand rule', () => {

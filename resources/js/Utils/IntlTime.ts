@@ -1,9 +1,16 @@
+/**
+ * @deprecated Legacy date/time utilities. For admin and standard date formatting,
+ * prefer canonical formatters from '@/Utils/dateTime' or useDateFormatter() (PR 2.6).
+ */
 import { LocaleEnum } from '@/Types/enums';
 
 const MINUTE_MILISECONDS = 60 * 1000;
 const HOUR_MILISECONDS = MINUTE_MILISECONDS * 60;
 const DAY_MILISECONDS = HOUR_MILISECONDS * 24;
 
+/**
+ * @deprecated Use formatNearDate from '@/Utils/dateTime' or useDateFormatter() instead (PR 2.6).
+ */
 export const formatRelativeTime = (
   time: number | Date,
   dateTimeOptions: Intl.RelativeTimeFormatOptions = {
@@ -49,6 +56,9 @@ export const formatRelativeTime = (
   }
 };
 
+/**
+ * @deprecated Use formatDate, formatTime, or formatDateTime from '@/Utils/dateTime' or useDateFormatter() instead (PR 2.6).
+ */
 export const formatStaticTime = (
   time: number | Date | undefined,
   dateTimeOptions: Intl.DateTimeFormatOptions = {
@@ -119,17 +129,6 @@ export const formatMonthAbbr = (
     .toUpperCase();
 };
 
-export const getDaysDifference = (time: number | Date) => {
-  const now = new Date();
-  const difference = new Date(time);
-
-  const daysDifference = Math.round(
-    (now.getTime() - difference.getTime()) / DAY_MILISECONDS,
-  );
-
-  return daysDifference;
-};
-
 // Calendar-specific utility functions
 
 /**
@@ -164,18 +163,6 @@ export const formatEventTime = (
   return formatStaticTime(time, {
     hour: 'numeric',
     minute: 'numeric',
-  }, locale);
-};
-
-/**
- * Format year for calendar events
- */
-export const formatEventYear = (
-  time: number | Date,
-  locale: LocaleEnum = LocaleEnum.LT,
-): string => {
-  return formatStaticTime(time, {
-    year: 'numeric',
   }, locale);
 };
 

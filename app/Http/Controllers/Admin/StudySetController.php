@@ -9,13 +9,15 @@ use App\Http\Requests\StoreStudySetRequest;
 use App\Http\Requests\UpdateStudySetRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
-use App\Models\LecturerReview;
 use App\Models\StudySet;
 use App\Models\StudySetCourse;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class StudySetController extends AdminController
 {
@@ -30,44 +32,17 @@ class StudySetController extends AdminController
     {
         $this->handleAuthorization('viewAny', StudySet::class);
 
-        $query = StudySet::query()->with('tenant:id,shortname')
-            ->withCount('courses');
-
-        $searchableColumns = ['name'];
-
-        $query = $this->applyTanstackFilters(
-            $query,
-            $request,
-            $this->tableService,
-            $searchableColumns,
-            [
-                'applySortBeforePagination' => true,
-                'tenantRelation' => 'tenant',
-                'permission' => 'studySets.read.padalinys',
-            ]
+        // A short list sent whole: the collection searches, sorts and filters it in the browser.
+        $query = $this->tableService->applyPermissionFiltering(
+            StudySet::query()->with('tenant:id,shortname')->withCount('courses')->orderBy('order'),
+            'tenant',
+            'studySets.read.padalinys',
+            $this->authorizer,
         );
 
-        $deletedCount = $this->getTrashedCount($query);
-
-        $studySets = $query->paginate($request->getPerPage())
-            ->withQueryString();
-
         return $this->inertiaResponse('Admin/StudySets/IndexStudySet', [
-            'studySets' => [
-                'data' => $studySets->getCollection()->map(fn ($studySet) => $studySet->toFullArray()),
-                'meta' => [
-                    'total' => $studySets->total(),
-                    'per_page' => $studySets->perPage(),
-                    'current_page' => $studySets->currentPage(),
-                    'last_page' => $studySets->lastPage(),
-                    'from' => $studySets->firstItem(),
-                    'to' => $studySets->lastItem(),
-                ],
-            ],
-            'filters' => $request->getFilters(),
-            'sorting' => $request->getSorting(),
-            'showDeleted' => $request->getShowDeleted(),
-            'deletedCount' => $deletedCount,
+            'studySets' => ($request->getShowDeleted() ? $query->onlyTrashed() : $query)->get()->map->toFullArray()->values(),
+            'deletedCount' => $this->scopedTrashedCount(StudySet::query(), 'tenant', 'studySets.read.padalinys'),
         ]);
     }
 
@@ -86,24 +61,27 @@ class StudySetController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreStudySetRequest $request)
+    public function store(StoreStudySetRequest $request, PostCreateRedirect $redirect)
     {
         $this->handleAuthorization('create', StudySet::class);
 
-        DB::transaction(function () use ($request): void {
+        $studySet = DB::transaction(function () use ($request): StudySet {
             $studySet = StudySet::create([
-                'name' => $request->input('name'),
-                'description' => $request->input('description'),
-                'order' => $request->input('order'),
-                'is_visible' => $request->input('is_visible', true),
-                'tenant_id' => $request->input('tenant_id'),
+                'name' => $request->validated('name'),
+                'description' => $request->validated('description'),
+                'order' => $request->validated('order'),
+                'is_visible' => $request->validated('is_visible', true),
+                'tenant_id' => $request->validated('tenant_id'),
             ]);
 
-            $this->syncCourses($studySet, $request->input('courses', []));
-            $this->syncReviews($studySet, $request->input('reviews', []));
+            $this->syncCourses($studySet, ($request->validated('courses') ?? []));
+            $this->syncReviews($studySet, ($request->validated('reviews') ?? []));
+
+            return $studySet;
         });
 
-        return $this->redirectToIndexWithSuccess('studySets', $this->entityMessage('created', 'studySet'));
+        return redirect($redirect->url($request->user(), $studySet, 'studySets.edit', 'update', 'studySets.index'))
+            ->with('success', $this->entityMessage('created', 'studySet'));
     }
 
     /**
@@ -121,6 +99,7 @@ class StudySetController extends AdminController
         return $this->inertiaResponse('Admin/StudySets/EditStudySet', [
             'studySet' => [
                 ...$studySet->toFullArray(),
+                'reviews' => $studySet->courses->flatMap(fn (StudySetCourse $course) => $course->reviews->map->toFullArray())->values(),
                 'courses' => $studySet->courses->map(fn (StudySetCourse $course) => [
                     ...$course->toFullArray(),
                     'reviews' => $course->reviews->map->toFullArray(),
@@ -139,15 +118,15 @@ class StudySetController extends AdminController
 
         DB::transaction(function () use ($request, $studySet): void {
             $studySet->update([
-                'name' => $request->input('name'),
-                'description' => $request->input('description'),
-                'order' => $request->input('order'),
-                'is_visible' => $request->input('is_visible', true),
-                'tenant_id' => $request->input('tenant_id'),
+                'name' => $request->validated('name'),
+                'description' => $request->validated('description'),
+                'order' => $request->validated('order'),
+                'is_visible' => $request->validated('is_visible', true),
+                'tenant_id' => $request->validated('tenant_id'),
             ]);
 
-            $this->syncCourses($studySet, $request->input('courses', []));
-            $this->syncReviews($studySet, $request->input('reviews', []));
+            $this->syncCourses($studySet, ($request->validated('courses') ?? []));
+            $this->syncReviews($studySet, ($request->validated('reviews') ?? []));
         });
 
         return back()->with('success', $this->entityMessage('updated', 'studySet'));
@@ -167,60 +146,52 @@ class StudySetController extends AdminController
 
     private function syncCourses(StudySet $studySet, array $courses): void
     {
-        $existingIds = $studySet->courses()->pluck('id')->toArray();
         $submittedIds = array_filter(array_column($courses, 'id'));
+        $studySet->courses()->whereNotIn('id', $submittedIds)->delete();
 
-        $toDelete = array_diff($existingIds, $submittedIds);
-        if (! empty($toDelete)) {
-            StudySetCourse::whereIn('id', $toDelete)->delete();
-        }
+        foreach ($courses as $index => $courseData) {
+            $attributes = Arr::only($courseData, ['name', 'order', 'semester', 'credits', 'is_visible']);
+            $attributes['is_visible'] ??= true;
 
-        foreach ($courses as $courseData) {
-            if (! empty($courseData['id']) && in_array($courseData['id'], $existingIds)) {
-                StudySetCourse::where('id', $courseData['id'])->update([
-                    'name' => $courseData['name'],
-                    'order' => $courseData['order'],
-                    'semester' => $courseData['semester'],
-                    'credits' => $courseData['credits'],
-                    'is_visible' => $courseData['is_visible'] ?? true,
-                ]);
+            if (! empty($courseData['id'])) {
+                $course = $studySet->courses()->find($courseData['id']);
+                if ($course === null) {
+                    throw ValidationException::withMessages(["courses.{$index}.id" => __('validation.exists', ['attribute' => 'id'])]);
+                }
+                $course->update($attributes);
             } else {
-                $studySet->courses()->create([
-                    'name' => $courseData['name'],
-                    'order' => $courseData['order'],
-                    'semester' => $courseData['semester'],
-                    'credits' => $courseData['credits'],
-                    'is_visible' => $courseData['is_visible'] ?? true,
-                ]);
+                $studySet->courses()->create($attributes);
             }
         }
     }
 
     private function syncReviews(StudySet $studySet, array $reviews): void
     {
-        $existingIds = $studySet->reviews()->pluck('lecturer_reviews.id')->toArray();
-        $submittedIds = array_filter(array_column($reviews, 'id'));
-
-        $toDelete = array_diff($existingIds, $submittedIds);
-        if (! empty($toDelete)) {
-            LecturerReview::whereIn('id', $toDelete)->delete();
+        $courses = $studySet->courses()->get()->keyBy('id');
+        foreach ($reviews as $index => $reviewData) {
+            if (! $courses->has($reviewData['study_set_course_id'])) {
+                throw ValidationException::withMessages([
+                    "reviews.{$index}.study_set_course_id" => __('validation.exists', ['attribute' => 'study_set_course_id']),
+                ]);
+            }
         }
 
-        foreach ($reviews as $reviewData) {
-            if (! empty($reviewData['id']) && in_array($reviewData['id'], $existingIds)) {
-                LecturerReview::where('id', $reviewData['id'])->update([
-                    'lecturer' => $reviewData['lecturer'],
-                    'comment' => $reviewData['comment'],
-                    'study_set_course_id' => $reviewData['study_set_course_id'],
-                    'is_visible' => $reviewData['is_visible'] ?? true,
-                ]);
+        $submittedIds = array_filter(array_column($reviews, 'id'));
+        $studySet->reviews()->whereNotIn('lecturer_reviews.id', $submittedIds)->get()->each->delete();
+
+        foreach ($reviews as $index => $reviewData) {
+            $attributes = Arr::only($reviewData, ['lecturer', 'comment', 'is_visible']);
+            $attributes['is_visible'] ??= true;
+            $course = $courses->get($reviewData['study_set_course_id']);
+
+            if (! empty($reviewData['id'])) {
+                $review = $studySet->reviews()->find($reviewData['id']);
+                if ($review === null) {
+                    throw ValidationException::withMessages(["reviews.{$index}.id" => __('validation.exists', ['attribute' => 'id'])]);
+                }
+                $review->update([...$attributes, 'study_set_course_id' => $course->id]);
             } else {
-                LecturerReview::create([
-                    'lecturer' => $reviewData['lecturer'],
-                    'comment' => $reviewData['comment'],
-                    'study_set_course_id' => $reviewData['study_set_course_id'],
-                    'is_visible' => $reviewData['is_visible'] ?? true,
-                ]);
+                $course->reviews()->create($attributes);
             }
         }
     }

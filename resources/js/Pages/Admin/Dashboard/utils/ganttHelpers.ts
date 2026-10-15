@@ -1,6 +1,6 @@
 /**
  * Shared helper functions for Gantt chart data transformations.
- * Used by UserTimelineSection, TenantTimelineSection, and FullscreenGanttModal.
+ * Used by UserTimelineSection and TenantTimelineSection.
  */
 import type {
   AtstovavimasInstitution,

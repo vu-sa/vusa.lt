@@ -7,11 +7,11 @@ import UsersAvatarGroup from '../UsersAvatarGroup.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { commonStubs } from '@/tests/stubs';
 
-const makeUsers = (n: number) =>
+const makeUsers = (n: number): App.Entities.User[] =>
   Array.from({ length: n }, (_, i) => ({
     id: `u${i + 1}`,
     name: `User ${i + 1}`,
-  }));
+  })) as unknown as App.Entities.User[];
 
 const adminPage = createMockPage({
   app: { path: '/mano/institutions/123' },
@@ -25,7 +25,7 @@ const adminPage = createMockPage({
 describe('UsersAvatarGroup', () => {
   it('does not render the expand control by default', () => {
     const wrapper = mount(UsersAvatarGroup, {
-      props: { users: makeUsers(3) as any, max: 4 },
+      props: { users: makeUsers(3), max: 4 },
       global: { stubs: commonStubs },
     });
     expect(wrapper.findComponent({ name: 'Popover' }).exists()).toBe(false);
@@ -41,7 +41,7 @@ describe('UsersAvatarGroup', () => {
     };
 
     const wrapper = mount(UsersAvatarGroup, {
-      props: { users: makeUsers(6) as any, max: 4, expandable: true },
+      props: { users: makeUsers(6), max: 4, expandable: true },
       global: { stubs: { ...commonStubs, ...extraStubs } },
     });
 
@@ -54,7 +54,7 @@ describe('UsersAvatarGroup', () => {
 
   it('wraps visible avatars in a link to the user page when clickable', () => {
     const wrapper = mount(UsersAvatarGroup, {
-      props: { users: makeUsers(2) as any, max: 4, clickable: true },
+      props: { users: makeUsers(2), max: 4, clickable: true },
       global: {
         stubs: {
           ...commonStubs,
@@ -69,7 +69,7 @@ describe('UsersAvatarGroup', () => {
 
   it('does not wrap avatars in links by default', () => {
     const wrapper = mount(UsersAvatarGroup, {
-      props: { users: makeUsers(2) as any, max: 4 },
+      props: { users: makeUsers(2), max: 4 },
       global: {
         stubs: {
           ...commonStubs,
@@ -84,7 +84,7 @@ describe('UsersAvatarGroup', () => {
     vi.mocked(usePage).mockReturnValue(adminPage);
 
     const wrapper = mount(UsersAvatarGroup, {
-      props: { users: makeUsers(2) as any, max: 4 },
+      props: { users: makeUsers(2), max: 4 },
       global: {
         stubs: {
           ...commonStubs,
@@ -104,7 +104,7 @@ describe('UsersAvatarGroup', () => {
     const userPopoverStub = { props: ['user', 'clickable'], template: '<div class="user-row" :data-clickable="clickable">{{ user?.name }}</div>' };
 
     const wrapper = mount(UsersAvatarGroup, {
-      props: { users: makeUsers(2) as any, max: 4, clickable: true },
+      props: { users: makeUsers(2), max: 4, clickable: true },
       global: {
         stubs: {
           ...commonStubs,
@@ -116,5 +116,42 @@ describe('UsersAvatarGroup', () => {
     const rows = wrapper.findAll('.user-row');
     expect(rows.length).toBe(2);
     expect(rows.every(row => row.attributes('data-clickable') === 'false')).toBe(true);
+  });
+
+  it('limits visible avatars on small screens when limitByScreen is true', () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: query.includes('639'),
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    }));
+
+    try {
+      const wrapper = mount(UsersAvatarGroup, {
+        props: { users: makeUsers(6), max: 4, limitByScreen: true },
+        global: { stubs: commonStubs },
+      });
+
+      // On small screens, maxVisibleUsers is capped at 2, remaining is 6 - 2 = 4
+      expect(wrapper.text()).toContain('+4');
+    }
+    finally {
+      window.matchMedia = originalMatchMedia;
+    }
+  });
+
+  it('keeps default max when limitByScreen is false', () => {
+    const wrapper = mount(UsersAvatarGroup, {
+      props: { users: makeUsers(6), max: 4, limitByScreen: false },
+      global: { stubs: commonStubs },
+    });
+
+    // With max 4, remaining is 6 - 4 = 2
+    expect(wrapper.text()).toContain('+2');
   });
 });

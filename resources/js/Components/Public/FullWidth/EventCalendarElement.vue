@@ -54,7 +54,7 @@
         <p class="mb-2 font-medium text-destructive">
           {{ $t("Nepavyko užkrauti kalendoriaus įvykių") }}
         </p>
-        <Button variant="brand-outline" size="public-sm" @click="refresh">
+        <Button voice="brand" variant="outline" size="sm" @click="refresh">
           <IFluentArrowSync16Regular class="size-4" />
           {{ $t("Bandyti dar kartą") }}
         </Button>
@@ -113,13 +113,13 @@
       </ul>
 
       <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-        <Button as="a" variant="brand" size="public" :href="route('calendar.list', { lang: locale })">
+        <Button as="a" variant="brand" size="lg" :href="route('calendar.list', { lang: locale })">
           <IFluentCalendarLtr20Regular class="size-4" />
           {{ $t('Visi renginiai') }}
         </Button>
-        <Button variant="brand-outline" size="public" @click="showModal = true">
+        <Button voice="brand" variant="outline" size="lg" @click="showModal = true">
           <IFluentArrowSync16Regular class="size-4" />
-          {{ $t('Sinchronizuoti kalendorių') }}
+          {{ $t('calendar.sync.button') }}
         </Button>
       </div>
     </div>
@@ -134,7 +134,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { Button } from '@/Components/ui/button';
 import { EyebrowLabel } from '@/Components/Public/Base';
-import CalendarSyncModal from '@/Components/Dialogs/CalendarSyncModal.vue';
+import CalendarSyncModal from '@/Components/Public/CalendarSyncModal.vue';
 import Skeleton from '@/Components/ui/skeleton/Skeleton.vue';
 import { useCalendarFetch } from '@/Services/ContentService';
 import { formatEventDateSpan, formatMonthAbbr } from '@/Utils/IntlTime';
@@ -162,8 +162,6 @@ const props = defineProps<{
   element?: { json_content: Calendar['json_content']; options: Calendar['options'] };
   /** Server-resolved payload (ContentPartResolver, via RichContentParser's `resolved` prop). */
   resolved?: { type: string; items: CalendarEvent[] } | null;
-  /** @deprecated Superseded by `resolved` — only HomePage still supplies this directly. */
-  prefetchedCalendar?: CalendarEvent[];
   /** Full-screen editor mode: the title and eyebrow become click-to-edit. Undefined/false
    *  elsewhere. The fetch configuration (limit/eventType/tenantScope) is edited through
    *  `CalendarBlockToolbar.vue`'s options popover instead. */
@@ -206,7 +204,7 @@ const locale = computed(() => (page.props.app.locale ?? LocaleEnum.LT) as Locale
 
 const showModal = ref(false);
 
-const serverCalendar = computed<CalendarEvent[] | undefined>(() => props.resolved?.items ?? props.prefetchedCalendar);
+const serverCalendar = computed<CalendarEvent[] | undefined>(() => props.resolved?.items);
 
 /**
  * Presence, not emptiness: `[]` from the resolver means "the server looked and there is nothing

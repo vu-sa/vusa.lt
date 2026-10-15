@@ -89,11 +89,7 @@ class ActivityRootResolver
         }
 
         if (! $parent instanceof Model) {
-            // Missing/soft-deleted parent -- e.g. mid cascade-delete of a
-            // Meeting, where an AgendaItem's row may already be gone by the
-            // time a Vote's "deleted" activity resolves its root -- or an
-            // orphan Content row with no owner. Fall back to the subject as
-            // its own root rather than throwing.
+            // Fall back to subject as its own root if parent was deleted mid-cascade or missing.
             return $this->asSelf($model);
         }
 

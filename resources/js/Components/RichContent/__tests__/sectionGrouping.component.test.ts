@@ -9,7 +9,7 @@ import RichContentParser from '../RichContentParser.vue';
  * See RCSection/SectionDisplay.vue and the `groupedContent` computed for the rules.
  */
 describe('RichContentParser section grouping', () => {
-  it('wraps following blocks inside the section element until the next marker', () => {
+  it('wraps following blocks inside the section element until the next marker', async () => {
     const wrapper = mount(RichContentParser, {
       props: {
         content: [
@@ -22,6 +22,8 @@ describe('RichContentParser section grouping', () => {
       },
     });
 
+    await flushPromises();
+    await vi.dynamicImportSettled();
     const sections = wrapper.findAll('section');
     expect(sections).toHaveLength(2);
     // The first section's rc-canvas holds exactly the two tiptap blocks before "Second".

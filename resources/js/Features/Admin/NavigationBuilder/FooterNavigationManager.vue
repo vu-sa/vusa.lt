@@ -5,7 +5,7 @@
     </p>
 
     <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      <div v-for="column in columns" :key="column.id" class="rounded-lg border bg-background">
+      <div v-for="column in columns" :key="column.id" class="border bg-background">
         <div class="flex items-center gap-2 border-b p-3">
           <span class="min-w-0 flex-1 truncate text-sm font-semibold" :class="[!column.is_active && 'opacity-60']">
             {{ column.name || `#${column.id}` }}
@@ -83,7 +83,7 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link } from '@inertiajs/vue3';
-import { Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { Pencil, Plus, Trash2 } from '@lucide/vue';
 
 import NavigationLinkCard from './NavigationLinkCard.vue';
 import type { AdminFooterColumn, AdminNavigationLink } from './types';

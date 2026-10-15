@@ -35,16 +35,13 @@ describe('BannerForm.vue', () => {
       global: {
         stubs: {
           ...commonStubs,
-          AdminForm: {
-            template: '<form @submit.prevent><slot /></form>',
-            props: ['model'],
-          },
-          FormElement: {
-            template: '<section><slot /></section>',
+          FormPage: {
+            template: '<div data-testid="form-page"><form @submit.prevent><slot name="title-status" /><slot name="header-actions" /><slot /><slot name="aside" /><slot name="danger-zone" /></form></div>',
+            props: ['title', 'barTitle', 'backHref', 'backLabel', 'processing', 'dirty', 'errors', 'fieldIds', 'mode', 'entityType'],
           },
           FormFieldWrapper: {
             template: '<div><label>{{ label }}</label><slot /></div>',
-            props: ['id', 'label', 'required'],
+            props: ['id', 'label', 'required', 'hint', 'error'],
           },
           Input: {
             template: '<input data-testid="input" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" />',
@@ -52,13 +49,11 @@ describe('BannerForm.vue', () => {
           },
           ImageUpload: {
             template: '<div data-testid="image-upload" />',
-            props: ['url', 'mode', 'folder', 'cropper', 'existingUrl'],
+            props: ['url', 'mode', 'folder', 'cropper', 'existingUrl', 'fullWidth'],
           },
-          // Mirrors the real reka-ui Switch: binds modelValue, emits update:modelValue.
-          // This is exactly what the :checked anti-pattern failed to honour.
-          Switch: {
-            template: '<button type="button" role="switch" :aria-checked="modelValue" @click="$emit(\'update:modelValue\', !modelValue)" />',
-            props: ['modelValue'],
+          ConfirmDialog: {
+            props: ['open'],
+            template: '<div v-if="open"><button data-testid="confirm-delete" @click="$emit(\'confirm\')">Confirm</button></div>',
           },
         },
       },
@@ -78,21 +73,36 @@ describe('BannerForm.vue', () => {
     expect(wrapper.find('form').exists()).toBe(true);
   });
 
-  it('reflects the initial is_active state on the switch', () => {
+  it('reflects the initial is_active state in ContentPublishPanel', () => {
     wrapper = createWrapper({ banner: { ...defaultBanner, is_active: 1 } });
-    const toggle = wrapper.find('[role="switch"]');
-    expect(toggle.attributes('aria-checked')).toBe('true');
+    const vm = wrapper.vm as unknown as { form: { is_active: number } };
+    expect(vm.form.is_active).toBe(1);
+    expect(wrapper.find('[data-testid="banner-status-published"]').exists()).toBe(true);
   });
 
-  it('toggles form.is_active when the switch is clicked (model-value binding)', async () => {
+  it('toggles form.is_active when published status is clicked', async () => {
     wrapper = createWrapper();
-    const vm = wrapper.vm as any;
+    const vm = wrapper.vm as unknown as { form: { is_active: number } };
     expect(vm.form.is_active).toBe(0);
 
-    await wrapper.find('[role="switch"]').trigger('click');
+    await wrapper.find('[data-testid="banner-status-published"]').trigger('click');
     expect(vm.form.is_active).toBe(1);
 
-    await wrapper.find('[role="switch"]').trigger('click');
+    await wrapper.find('[data-testid="banner-status-draft"]').trigger('click');
     expect(vm.form.is_active).toBe(0);
+  });
+
+  it('emits delete when confirm delete is clicked', async () => {
+    wrapper = createWrapper({ enableDelete: true, banner: { ...defaultBanner, id: 10 } });
+
+    const deleteBtn = wrapper.find('button.border-destructive\\/40');
+    expect(deleteBtn.exists()).toBe(true);
+    await deleteBtn.trigger('click');
+
+    const confirmBtn = wrapper.find('[data-testid="confirm-delete"]');
+    expect(confirmBtn.exists()).toBe(true);
+    await confirmBtn.trigger('click');
+
+    expect(wrapper.emitted('delete')).toBeTruthy();
   });
 });

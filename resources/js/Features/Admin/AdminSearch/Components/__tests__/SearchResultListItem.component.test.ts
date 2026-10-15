@@ -24,6 +24,7 @@ describe('SearchResultListItem selection mode', () => {
     const wrapper = mountItem({ selectable: true, multiple: true });
     const checkbox = wrapper.find('[role="checkbox"]');
     expect(checkbox.exists()).toBe(true);
+    expect(checkbox.attributes('aria-label')).toBe('Alpha');
     await checkbox.trigger('click');
     expect(wrapper.emitted('toggle')).toHaveLength(1);
   });
@@ -32,6 +33,8 @@ describe('SearchResultListItem selection mode', () => {
     const wrapper = mountItem({ selectable: true, multiple: false });
     // The radio dot is a plain button inside the selection affordance.
     const radio = wrapper.find('button');
+    expect(radio.attributes('aria-label')).toBe('Alpha');
+    expect(radio.attributes('aria-pressed')).toBe('false');
     await radio.trigger('click');
     expect(wrapper.emitted('toggle')).toHaveLength(1);
   });

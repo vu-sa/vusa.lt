@@ -4,14 +4,7 @@
  * Handles building search parameters and filter strings for Typesense.
  * Provides utilities for converting between URL params and Typesense filters.
  */
-
-import type {
-  AdminSearchFilters,
-  AdminFacet,
-  AdminSearchResponse,
-  CollectionFacetConfig,
-  AdminCollection,
-} from '../Types/AdminSearchTypes';
+import type { AdminSearchFilters, AdminFacet, CollectionFacetConfig } from '../Types/AdminSearchTypes';
 
 /**
  * Build a Typesense filter_by string from admin search filters
@@ -291,83 +284,4 @@ export function toggleNumericFilterValue(
   }
 
   return [...values, valueToToggle];
-}
-
-/**
- * Validate that search results match expected collection
- */
-export function validateSearchResults<T>(
-  results: unknown[],
-  collection: AdminCollection,
-): T[] {
-  // Basic validation - just ensure it's an array
-  if (!Array.isArray(results)) {
-    console.warn(`Invalid search results for ${collection}`);
-    return [];
-  }
-
-  return results as T[];
-}
-
-/**
- * Format a Typesense timestamp to human-readable date
- */
-export function formatTimestamp(timestamp: number, locale = 'lt-LT'): string {
-  if (!timestamp) return '';
-
-  const date = new Date(timestamp * 1000);
-  return date.toLocaleDateString(locale, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
-}
-
-/**
- * Format a Typesense timestamp to ISO date string
- */
-export function formatTimestampISO(timestamp: number): string {
-  if (!timestamp) return '';
-
-  const date = new Date(timestamp * 1000);
-  return date.toISOString().split('T')[0];
-}
-
-/**
- * Extract unique years from search results for year filter
- */
-export function extractYearsFromResults<T extends { year?: number }>(
-  results: T[],
-): number[] {
-  const years = new Set<number>();
-
-  for (const result of results) {
-    if (result.year) {
-      years.add(result.year);
-    }
-  }
-
-  return Array.from(years).sort((a, b) => b - a); // Descending
-}
-
-/**
- * Generate a sort_by string for Typesense
- */
-export function buildSortString(sortBy: string, direction: 'asc' | 'desc' = 'desc'): string {
-  return `${sortBy}:${direction}`;
-}
-
-/**
- * Parse sort param from URL
- */
-export function parseSortParam(sortParam: string | null): { field: string; direction: 'asc' | 'desc' } | null {
-  if (!sortParam) return null;
-
-  const [field, direction] = sortParam.split(':');
-  if (!field) return null;
-
-  return {
-    field,
-    direction: direction === 'asc' ? 'asc' : 'desc',
-  };
 }

@@ -1,7 +1,7 @@
 <template>
   <ActionWindowScreen
     :title="$t('action_window.institution.search_title')"
-    :subtitle="$t('action_window.institution.search_subtitle')"
+    :subtitle="draft.calendarEvent ? $t('action_window.institution.subtitle_internal') : $t('action_window.institution.search_subtitle')"
   >
     <div class="pb-3">
       <Input
@@ -12,7 +12,7 @@
     </div>
 
     <div v-if="controller.isSearching.value && hits.length === 0" class="flex flex-col gap-2">
-      <Skeleton v-for="n in 3" :key="n" class="h-16 w-full rounded-xl" />
+      <Skeleton v-for="n in 3" :key="n" class="h-16 w-full" />
     </div>
 
     <EmptyState
@@ -33,7 +33,6 @@
           :title="hit.title"
           :description="hit.subtitle"
           :icon="Landmark"
-          gradient="from-indigo-500/15 to-violet-500/15 dark:from-indigo-400/12 dark:to-violet-400/12"
           @click="pick(hit)"
         />
       </ActionChoiceList>
@@ -41,7 +40,7 @@
       <Button
         v-if="controller.hasMoreResults.value"
         variant="ghost"
-        class="mt-2 w-full"
+        class="mt-2 w-full pointer-coarse:h-11"
         :disabled="controller.isLoadingMore.value"
         @click="controller.loadMore"
       >
@@ -54,7 +53,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Landmark } from 'lucide-vue-next';
+import { Landmark } from '@lucide/vue';
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';
@@ -69,17 +68,35 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 import { Skeleton } from '@/Components/ui/skeleton';
 
-const { advance, setInstitution } = useActionWindow();
+const { draft, advance, setInstitution } = useActionWindow();
 const { institutionSearch } = useActionWindowData();
 
 /**
- * The tenants the caller may file a meeting under. All-scope callers send no filter —
- * the scoped Typesense key still bounds what they may read, and StoreMeetingRequest's
- * tenant-scope rule is what actually decides.
+ * The tenants the caller may file a meeting under. All-scope callers send no tenant filter —
+ * the scoped Typesense key still bounds what they may read, and StoreMeetingRequest is what
+ * actually decides. From a calendar event, only VU SA's own bodies (mirrors
+ * InstitutionScopeResolver::forInstitution()).
  */
-const baseFilterBy = institutionSearch.value.tenant_ids.length > 0
-  ? `tenant_ids:[${institutionSearch.value.tenant_ids.join(',')}]`
-  : undefined;
+const buildBaseFilterBy = (): string | undefined => {
+  const { tenant_ids, internal_type_ids, external_type_ids } = institutionSearch.value;
+  const clauses: string[] = [];
+
+  if (tenant_ids.length > 0) {
+    clauses.push(`tenant_ids:[${tenant_ids.join(',')}]`);
+  }
+
+  if (draft.calendarEvent) {
+    // No internal type at all means no internal body; 0 is never a type id.
+    clauses.push(`type_ids:[${internal_type_ids.length > 0 ? internal_type_ids.join(',') : 0}]`);
+    if (external_type_ids.length > 0) {
+      clauses.push(`type_ids:!=[${external_type_ids.join(',')}]`);
+    }
+  }
+
+  return clauses.length > 0 ? clauses.join(' && ') : undefined;
+};
+
+const baseFilterBy = buildBaseFilterBy();
 
 // A plain list, not the admin search page's split view: this window is one question
 // per screen, and facets/detail panes have no room in it.
@@ -101,9 +118,9 @@ const emptyTitle = computed(() =>
 );
 
 const pick = (hit: NormalizedSearchHit) => {
-  // Governance scope is not in the search document, so `isInternal` stays unknown and
-  // the review hides the "announce publicly" option rather than offering a refusal.
-  setInstitution({ id: hit.recordId, name: hit.title });
+  // Governance scope is not in the search document, so `isInternal` is known only when the
+  // filter above enforced it; otherwise the review hides the "announce publicly" option.
+  setInstitution({ id: hit.recordId, name: hit.title, isInternal: draft.calendarEvent ? true : undefined });
   advance('meeting.type');
 };
 </script>

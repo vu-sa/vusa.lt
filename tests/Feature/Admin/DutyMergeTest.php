@@ -1,13 +1,12 @@
 <?php
 
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Models\User;
-use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +15,7 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->first();
 
-    $role = Role::firstOrCreate(['name' => 'Communication Coordinator', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'Komunikacijos koordinatorius', 'guard_name' => 'web']);
     $role->givePermissionTo([
         'duties.read.padalinys',
         'duties.create.padalinys',
@@ -26,7 +25,7 @@ beforeEach(function (): void {
 
     $this->dutyManager = makeUser($this->tenant);
     $this->dutyManagerDuty = $this->dutyManager->duties()->first();
-    $this->dutyManagerDuty->assignRole('Communication Coordinator');
+    $this->dutyManagerDuty->assignRole('Komunikacijos koordinatorius');
 
     $this->institution = $this->dutyManagerDuty->institution;
 
@@ -55,6 +54,15 @@ describe('unauthorized access', function (): void {
 });
 
 describe('merging assignments', function (): void {
+    test('rejects duplicate source duty ids without deleting the source', function (): void {
+        asUser($this->dutyManager)->post(route('duties.mergeDuties'), [
+            'target_duty_id' => $this->target->id,
+            'source_duty_ids' => [$this->source->id, $this->source->id],
+        ])->assertSessionHasErrors('source_duty_ids.1');
+
+        expect($this->source->fresh()->trashed())->toBeFalse();
+    });
+
     test('moves dutiables onto the kept duty and soft-deletes the source', function (): void {
         Dutiable::factory()->forDuty($this->source)->ended()->create();
         Dutiable::factory()->forDuty($this->source)->active()->create();
@@ -174,8 +182,8 @@ describe('merging related pivots', function (): void {
     });
 
     test('moves types onto the kept duty without duplicating a type both already share', function (): void {
-        $shared = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
-        $onlyOnSource = Type::factory()->create(['model_type' => MorphMap::alias(Duty::class)]);
+        $shared = DutyType::factory()->create([]);
+        $onlyOnSource = DutyType::factory()->create([]);
 
         $this->target->types()->attach($shared->id);
         $this->source->types()->attach([$shared->id, $onlyOnSource->id]);
@@ -185,14 +193,14 @@ describe('merging related pivots', function (): void {
             'source_duty_ids' => [$this->source->id],
         ]);
 
-        $keptTypeIds = $this->target->fresh()->types()->pluck('types.id')->all();
+        $keptTypeIds = $this->target->fresh()->types()->pluck('duty_types.id')->all();
 
         expect($keptTypeIds)->toContain($shared->id, $onlyOnSource->id)
-            ->and(DB::table('typeables')->where('typeable_id', $this->source->id)->count())->toBe(0);
+            ->and(DB::table('duty_duty_type')->where('duty_id', $this->source->id)->count())->toBe(0);
     });
 
     test('moves admin roles onto the kept duty', function (): void {
-        $extraRole = Role::firstOrCreate(['name' => 'Resource Manager', 'guard_name' => 'web']);
+        $extraRole = Role::firstOrCreate(['name' => 'Išteklių administratorius', 'guard_name' => 'web']);
         $this->source->assignRole($extraRole);
 
         asUser($this->dutyManager)->post(route('duties.mergeDuties'), [
@@ -220,5 +228,13 @@ describe('after merging', function (): void {
             'target_duty_id' => $this->target->id,
             'source_duty_ids' => [$this->target->id],
         ])->assertSessionHasErrors('source_duty_ids.0');
+    });
+});
+
+describe('legacy redirect', function (): void {
+    test('get merge redirects to duties index with info flash', function (): void {
+        asUser($this->dutyManager)->get(route('duties.merge'))
+            ->assertRedirect(route('duties.index'))
+            ->assertSessionHas('info');
     });
 });

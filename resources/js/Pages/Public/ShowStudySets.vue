@@ -82,6 +82,7 @@
 
         <Button
           v-if="hasActiveFilters"
+          voice="brand"
           variant="ghost"
           size="sm"
           class="shrink-0"
@@ -198,6 +199,7 @@
                       <td class="py-3 pl-3 text-right">
                         <Button
                           v-if="course.reviews.length > 0"
+                          voice="brand"
                           type="button"
                           variant="ghost"
                           size="sm"
@@ -387,7 +389,7 @@ watch(selectedTenantId, (newId) => {
     url.searchParams.delete('faculty');
   }
 
-  window.history.replaceState({}, '', url.toString());
+  window.history.replaceState(window.history.state, '', url.toString());
 
   resetFilters();
 });

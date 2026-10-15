@@ -69,7 +69,7 @@ Follow this exact checklist for implementing a new model:
   - Add menu item to appropriate category in `ShowAdministration.vue`
   - Update category `show` condition to include new model permission
   - Add relationship types to model interface in `models.d.ts`
-  - Create description files in `docs/_parts/[model]/[lt|en]/description.md`
+  - Document the model on its reference page in `docs/` (LT) and `docs/en/` (EN), with `area:`/`models:` frontmatter
   - Update `canUseRoutes` object in index component
 
 ### 6. Testing Layer

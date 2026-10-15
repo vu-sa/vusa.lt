@@ -3,6 +3,7 @@
 namespace App\Settings;
 
 use App\Models\Page;
+use Illuminate\Support\Facades\Cache;
 use Spatie\LaravelSettings\Settings;
 
 /**
@@ -29,6 +30,44 @@ class SiteSettings extends Settings
     public static function group(): string
     {
         return 'site';
+    }
+
+    #[\Override]
+    public function save(): self
+    {
+        parent::save();
+
+        self::forgetCachedPrivacyPageUrls();
+
+        return $this;
+    }
+
+    /**
+     * {@see privacyPageUrl()} cached, for the cookie banner on every page. Loading this
+     * settings group and the page costs three queries otherwise.
+     */
+    public static function cachedPrivacyPageUrl(string $locale): ?string
+    {
+        // Cached as '' when unset, since the cache treats a stored null as a miss.
+        $url = Cache::rememberForever(self::privacyPageUrlCacheKey($locale),
+            fn () => app(self::class)->privacyPageUrl($locale) ?? '');
+
+        return $url === '' ? null : $url;
+    }
+
+    /**
+     * Called when the settings, a page or a tenant subdomain may have changed the URL.
+     */
+    public static function forgetCachedPrivacyPageUrls(): void
+    {
+        foreach (['lt', 'en'] as $locale) {
+            Cache::forget(self::privacyPageUrlCacheKey($locale));
+        }
+    }
+
+    private static function privacyPageUrlCacheKey(string $locale): string
+    {
+        return "privacy-page-url:{$locale}";
     }
 
     /**

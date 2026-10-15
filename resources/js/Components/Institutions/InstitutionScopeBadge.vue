@@ -6,8 +6,10 @@
   -->
   <Badge
     data-slot="institution-scope-badge"
-    :variant="scope === InstitutionScope.Vusa ? 'secondary' : 'outline'"
-    :class="cn('gap-1 text-[10px]', scope !== InstitutionScope.Vusa && 'border-sky-600/40 text-sky-700 dark:border-sky-400/40 dark:text-sky-300', props.class)"
+    variant="outline"
+    :class="cn('gap-1 text-xs', scope === InstitutionScope.Vusa
+      ? 'border-brand/40 bg-brand/5 text-brand'
+      : 'border-[#78003F]/40 bg-[#78003F]/10 text-[#78003F] dark:border-[#d99fbd]/40 dark:bg-[#78003F]/25 dark:text-[#d99fbd]', props.class)"
     :title="$t('forms.helpers.governance_scope_hint')"
   >
     <component :is="scope === InstitutionScope.Vusa ? Home : Landmark" class="size-3 shrink-0" />
@@ -18,7 +20,7 @@
 <script setup lang="ts">
 import { computed, type HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Home, Landmark } from 'lucide-vue-next';
+import { Home, Landmark } from '@lucide/vue';
 
 import { Badge } from '@/Components/ui/badge';
 import { InstitutionScope } from '@/Types/enums';

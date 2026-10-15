@@ -1,41 +1,44 @@
 <template>
-  <div class="flex items-start gap-2.5 w-full min-w-[280px]">
+  <div class="flex w-full min-w-[280px] items-start gap-2.5">
     <!-- Icon -->
     <div
       :class="[
-        'flex items-center justify-center size-8 rounded-full shrink-0',
-        colors.combined
+        'flex size-8 shrink-0 items-center justify-center border border-border',
+        colors.combined,
       ]"
     >
       <component :is="IconComponent" class="size-4" />
     </div>
 
     <!-- Content -->
-    <div class="flex-1 min-w-0 py-0.5">
-      <p class="font-medium text-xs text-zinc-900 dark:text-zinc-100 truncate">
+    <div class="min-w-0 flex-1 py-0.5">
+      <p class="truncate text-xs font-semibold text-foreground">
         {{ title }}
       </p>
       <p
-        class="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 mt-0.5"
+        class="mt-0.5 line-clamp-2 text-xs text-muted-foreground"
         v-html="message"
       />
     </div>
 
     <!-- View action -->
-    <button
+    <NotificationLink
       v-if="url"
-      class="inline-flex items-center justify-center size-7 rounded-md text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800 transition-colors shrink-0"
-      @click="handleView"
+      :href="url"
+      :aria-label="$t('Peržiūrėti')"
+      class="inline-flex size-7 shrink-0 items-center justify-center border border-border text-muted-foreground transition-colors hover:border-brand hover:text-foreground"
     >
-      <IFluentArrowRight16Filled class="size-4" />
-    </button>
+      <ArrowRight class="size-3.5" />
+    </NotificationLink>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
+import { ArrowRight, Bell } from '@lucide/vue';
+
+import NotificationLink from './NotificationLink.vue';
 
 import {
   getNotificationIcon,
@@ -46,29 +49,25 @@ import {
   notificationColors,
   type Notification,
 } from '@/Composables/useNotificationFormatting';
-import IFluentAlert24Regular from '~icons/fluent/alert24-regular';
-import IFluentArrowRight16Filled from '~icons/fluent/arrow-right16-filled';
 
 const props = defineProps<{
   notification?: Notification;
 }>();
 
-// Helper to check if notification is valid
 const hasValidNotification = computed(() => {
   return props.notification && props.notification.data && typeof props.notification.data === 'object';
 });
 
-// Use computed to handle potentially undefined notification
 const colors = computed(() => {
   if (!hasValidNotification.value) {
-    return notificationColors.gray;
+    return notificationColors.neutral;
   }
   return getNotificationColorClasses(props.notification!);
 });
 
 const IconComponent = computed(() => {
   if (!hasValidNotification.value) {
-    return IFluentAlert24Regular;
+    return Bell;
   }
   return getNotificationIcon(props.notification!);
 });
@@ -94,9 +93,4 @@ const url = computed(() => {
   return getNotificationUrl(props.notification!);
 });
 
-const handleView = () => {
-  if (url.value) {
-    router.visit(url.value);
-  }
-};
 </script>

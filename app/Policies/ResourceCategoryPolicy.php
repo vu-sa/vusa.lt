@@ -26,14 +26,18 @@ class ResourceCategoryPolicy
 {
     public function __construct(protected ModelAuthorizer $authorizer) {}
 
+    /**
+     * Every member may see resources (BaselineAccess), so reading the category admin is tied to
+     * managing resources, not to reading them.
+     */
     public function viewAny(User $user): bool
     {
-        return $this->checkResourceAbility($user, CRUDEnum::READ->label());
+        return $this->checkResourceAbility($user, CRUDEnum::UPDATE->label());
     }
 
     public function view(User $user, ResourceCategory $resourceCategory): bool
     {
-        return $this->checkResourceAbility($user, CRUDEnum::READ->label());
+        return $this->checkResourceAbility($user, CRUDEnum::UPDATE->label());
     }
 
     public function create(User $user): bool

@@ -2,10 +2,9 @@
 
 return [
     'timeline' => [
-        'title' => 'Duty periods',
+        'title' => 'Period manager',
         'description' => 'Review and manage duty periods in one place.',
         'open' => 'Manage periods',
-        'row_count' => ':count rows',
         'show_ended' => 'Show ended',
         'ended_hidden' => 'Ended periods are hidden',
         'collapse_all' => 'Collapse all',
@@ -26,12 +25,8 @@ return [
             'suggestions' => 'Suggested fixes',
             'multi_hint' => ':editable of :total selected rows can be changed.',
             'save' => 'Changes',
-        ],
-
-        'zoom' => [
-            'label' => 'Zoom',
-            'in' => 'Zoom in',
-            'out' => 'Zoom out',
+            'open_panel' => 'Selection and suggestions',
+            'selection_hint' => 'Select a bar in the chart or tick the box next to a name.',
         ],
 
         'legend' => [
@@ -62,6 +57,7 @@ return [
             'drag_edges' => 'Drag an edge to change the start or end; it snaps to a cadence boundary.',
             'precise' => 'Alt — no snapping, exact day. Ctrl (⌘) — move every selected row together.',
             'cancel' => 'Esc — cancel the drag.',
+            'fullscreen' => 'Full screen gives the chart more room; Esc brings you back.',
         ],
 
         'filters' => [
@@ -95,8 +91,6 @@ return [
             'ex_officio' => 'Ex officio',
             'ex_officio_managed' => 'These dates follow the “:duty” duty and can only be changed there.',
             'select_source' => 'Select the source row',
-            'aligned' => 'Matches the cadence start.',
-            'off_by' => ':days days from the cadence start.',
             'not_editable' => 'You cannot edit this row.',
         ],
 
@@ -160,29 +154,37 @@ return [
                 'inverted' => 'Ends before it starts',
                 'overlap' => 'Overlapping periods',
                 'boundary_shared' => 'One period ends on the day the next begins',
-                'open_ended_stale' => 'Open-ended although the cadence has ended',
+                'open_ended_stale' => 'Open-ended since an earlier cadence',
                 'ex_officio_drift' => 'Ex officio dates differ from their source',
                 'off_cadence' => 'Date does not match the cadence boundary',
-                'spans_cadences' => 'Spans more than one cadence',
+                'spans_cadences' => 'Re-elected across cadences',
                 'understaffed' => 'Fewer holders than places to occupy',
                 'orphan_derived_suspect' => 'Suspicious ex officio row with no source',
             ],
             'detail' => [
                 'end_move' => 'end :from → :to',
                 'clear_end' => 'the end would be cleared',
-                'close_at' => 'end on :date',
+                'close_at' => 'if no longer held – end on :date',
                 'drift_start' => 'start is :days days off',
                 'drift_end' => 'end is :days days off',
-                'spans' => ':count cadences · would become :start → :end',
+                'spans' => ':count cadences',
                 'understaffed' => ':active of :places places filled',
                 'ex_officio_drift' => 'Fix this by moving the source row.',
             ],
             'orphan_note' => 'These rows grant real permissions and their link to a source is already gone, so nothing here touches them automatically. Run “duties:audit-ex-officio”.',
         ],
 
+        'fullscreen' => [
+            'enter' => 'Full screen',
+            'exit' => 'Exit full screen',
+            'region' => 'Duty periods chart',
+        ],
+
         'page' => [
-            'title' => 'Duty periods',
-            'description' => 'Review and repair every duty period across one institution.',
+            'title' => 'Period manager',
+            'eyebrow' => 'ViSAK · Period manager',
+            'open_institution' => 'Open institution',
+            'description' => 'Every duty period of an institution on one timeline: who held which seat, when and for how long.',
             'pick_institution' => 'Pick an institution',
             'change_institution' => 'Change institution',
             'your_institutions' => 'Your institutions',
@@ -190,9 +192,12 @@ return [
             'no_scope' => 'Pick an institution to see its periods.',
         ],
 
-        'spotlight' => [
-            'title' => 'Periods can be managed in one place',
-            'description' => 'Instead of editing each member’s period on its own page, open the timeline and fix them all at once.',
-        ],
+    ],
+
+    'assign' => [
+        'already_assigned' => 'This member already holds this duty during that period.',
+        'quota_exceeded' => 'The tenant quota (:quota) has been exceeded.',
+        'last_day_notice' => 'Today is the last day in office. The member remains active until the end of the day, and the term stays in the history.',
+        'still_active_today' => ':name is still in office today. The term ends after today and stays in the history.',
     ],
 ];

@@ -18,8 +18,13 @@ width: 100% !important;
 }
 
 @media only screen and (max-width: 500px) {
-.button {
+.button:not(.button-neutral) {
 width: 100% !important;
+}
+
+.activity-actions td {
+display: block !important;
+padding: 0 0 8px !important;
 }
 }
 </style>

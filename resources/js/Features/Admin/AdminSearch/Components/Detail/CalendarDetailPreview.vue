@@ -37,7 +37,7 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t, getActiveLanguage } from 'laravel-vue-i18n';
-import { Pencil } from 'lucide-vue-next';
+import { Pencil } from '@lucide/vue';
 
 import { formatSearchDateTime } from '../../Utils/searchHitMappers';
 

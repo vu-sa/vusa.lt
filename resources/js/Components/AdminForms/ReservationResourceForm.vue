@@ -10,6 +10,9 @@
 
     <!-- Form content -->
     <div v-else class="space-y-4">
+      <p v-for="(error, field) in reservationResourceForm.errors" :key="field" role="alert" class="text-sm text-destructive">
+        {{ error }}
+      </p>
       <!-- Date Range Picker -->
       <div class="space-y-2">
         <Label for="reservation-period">{{ capitalize($t('entities.reservation.period')) }} <span class="text-destructive">*</span></Label>
@@ -35,13 +38,13 @@
             <Button type="button" variant="outline" class="w-full justify-between font-normal">
               <span class="inline-flex items-center gap-2 truncate" :class="{ 'text-muted-foreground': !selectedResource }">
                 <component :is="ResourceIcon" class="size-4" />
-                {{ selectedResource?.name ?? `${$t('Pasirinkite')}...` }}
+                {{ selectedResource?.name ?? `${$t('Pasirink')}...` }}
               </span>
               <span class="flex shrink-0 items-center gap-2">
                 <Badge v-if="selectedResource?.tenant?.shortname" variant="outline" class="text-xs">
                   {{ selectedResource.tenant.shortname }}
                 </Badge>
-                <IFluentChevronDown24Regular class="size-4 opacity-50" />
+                <ChevronDown class="size-4 opacity-50" />
               </span>
             </Button>
           </template>
@@ -77,6 +80,7 @@
 </template>
 
 <script setup lang="ts">
+import { ChevronDown } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { type InertiaForm, router, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch, onMounted } from 'vue';
@@ -88,7 +92,7 @@ import { Label } from '@/Components/ui/label';
 import { Badge } from '@/Components/ui/badge';
 import { Spinner } from '@/Components/ui/spinner';
 import { NumberField } from '@/Components/ui/number-field';
-import { DateRangePicker } from '@/Components/ui/date-range-picker';
+import { DateRangePicker } from '@/Components/ui/date-picker';
 import { capitalize } from '@/Utils/String';
 import { ResourceIcon } from '@/Components/icons';
 import { ResourceSelectDialog } from '@/Features/Admin/AdminSearch/Components/Select';

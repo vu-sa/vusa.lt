@@ -1,7 +1,7 @@
 <template>
   <CalendarHeadCell
     data-slot="calendar-head-cell"
-    :class="cn('text-zinc-500 rounded-md w-8 font-normal text-[0.8rem] dark:text-zinc-400', props.class)"
+    :class="cn('text-muted-foreground w-8 font-normal text-[0.8rem]', props.class)"
     v-bind="forwardedProps"
   >
     <slot />

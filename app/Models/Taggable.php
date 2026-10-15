@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\Typesense\SyncContentSearch;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
@@ -26,6 +27,12 @@ use Illuminate\Support\Carbon;
 class Taggable extends MorphPivot
 {
     use HasFactory;
+
+    protected static function booted(): void
+    {
+        static::saved(fn (self $pivot) => SyncContentSearch::taggableAfterCommit($pivot->taggable_type, $pivot->taggable_id));
+        static::deleted(fn (self $pivot) => SyncContentSearch::taggableAfterCommit($pivot->taggable_type, $pivot->taggable_id));
+    }
 
     public function tag()
     {

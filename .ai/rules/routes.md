@@ -1,7 +1,8 @@
 ---
 paths:
-  - routes/api.php
-  - 'routes/admin.php,routes/web.php'
+  - 'routes/api.php'
+  - 'routes/admin.php'
+  - 'routes/web.php'
 ---
 
 # Routes

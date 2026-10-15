@@ -73,11 +73,13 @@ class StudySet extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    /** @return HasMany<StudySetCourse, $this> */
     public function courses(): HasMany
     {
         return $this->hasMany(StudySetCourse::class);
     }
 
+    /** @return HasManyThrough<LecturerReview, StudySetCourse, $this> */
     public function reviews(): HasManyThrough
     {
         return $this->hasManyThrough(LecturerReview::class, StudySetCourse::class);

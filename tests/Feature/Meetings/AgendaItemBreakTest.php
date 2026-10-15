@@ -3,28 +3,27 @@
 use App\Enums\AgendaItemType;
 use App\Enums\InstitutionScope;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
-use App\Models\Type;
 use App\Services\MeetingCompletionService;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
 
-    $externalType = Type::factory()->forInstitutions(InstitutionScope::University)->create();
+    $externalType = InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create();
     $this->institution = Institution::factory()->for($this->tenant)->create();
     $this->institution->types()->attach($externalType);
 
     $this->meeting = Meeting::factory()->create();
     $this->meeting->institutions()->attach($this->institution);
 
-    $this->admin = makeTenantUserWithRole('Communication Coordinator', $this->tenant);
+    $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 });
 
 test('break is an accepted agenda item type', function (): void {
@@ -58,21 +57,16 @@ test('a break is counted as a completed agenda item', function (): void {
         ->and($counts['unset'])->toBe(0);
 });
 
-test('the index does not list a break-only meeting as incomplete', function (): void {
+test('the collection does not list a break-only meeting as incomplete', function (): void {
     AgendaItem::factory()->for($this->meeting)->break()->create(['order' => 1]);
 
     $incomplete = Meeting::factory()->create();
     $incomplete->institutions()->attach($this->institution);
     AgendaItem::factory()->for($incomplete)->voting()->create(['order' => 1]);
 
-    // The index filter is built in SQL, so it holds its own notion of "needs a vote" and
-    // has to agree with the enum.
-    asUser($this->admin)
-        ->get(route('meetings.index', ['filters' => json_encode(['completion_status' => ['incomplete']])]))
-        ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page
-            ->has('data', 1)
-            ->where('data.0.id', $incomplete->id));
+    // The collection's completion facet reads the search document.
+    expect($this->meeting->fresh()->toSearchableArray()['completion_status'])->not->toBe('incomplete')
+        ->and($incomplete->fresh()->toSearchableArray()['completion_status'])->toBe('incomplete');
 });
 
 test('the vote-free types are exactly the non-voting ones', function (): void {

@@ -121,10 +121,12 @@ describe('useDutiableDiagnostics', () => {
     expect(codes(findings.value)).not.toContain('overlap');
   });
 
-  it('flags an open-ended row whose own term is long over', () => {
+  /** Informational: most open rows from an earlier term are re-elected members still serving. */
+  it('notes an open-ended row whose own term is long over, without calling it a fault', () => {
     const { findings } = analyze([makeRow({ end_date: null })]);
     const finding = findings.value.find(f => f.code === 'open_ended_stale')!;
 
+    expect(finding.severity).toBe('info');
     expect(finding.detail).toMatchObject({ suggested_end: '2025-06-30' });
   });
 
@@ -209,8 +211,18 @@ describe('fixOperationFor', () => {
 
   it('closes a stale open-ended row at its own term end', () => {
     expect(fixOperationFor({
-      code: 'open_ended_stale', severity: 'warning', row_ids: ['a'], detail: { suggested_end: '2025-06-30' },
+      code: 'open_ended_stale', severity: 'info', row_ids: ['a'], detail: { suggested_end: '2025-06-30' },
     })).toEqual({ type: 'close_open_ended', row_ids: ['a'], end_date: '2025-06-30' });
+  });
+
+  /** A re-election is not a fault; widening real dates to term edges would be a guess. */
+  it('offers no fix for a row that spans several cadences', () => {
+    expect(fixOperationFor({
+      code: 'spans_cadences',
+      severity: 'info',
+      row_ids: ['a'],
+      detail: { count: 2, suggested_start: '2023-07-01', suggested_end: '2025-06-30' },
+    })).toBeNull();
   });
 
   it('offers no automatic fix where guessing would take real access away', () => {

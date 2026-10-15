@@ -45,11 +45,14 @@ class DutySearchApiController extends ApiController
                 ? $match['duty']->current_users->pluck('name')->take(2)->values()
                 : [],
             'places_to_occupy' => $match['duty']->places_to_occupy,
+            'is_active' => (bool) $match['duty']->is_active,
+            'can_view' => $actor->can('view', $match['duty']),
             'can_manage' => $actor->can('update', $match['duty']),
         ];
 
         return $this->jsonSuccess([
             'same_institution' => $result['same_institution']->map($mapMatch)->values(),
+            'same_tenant' => $result['same_tenant']->map($mapMatch)->values(),
             'other_institution' => $result['other_institution']->map($mapMatch)->values(),
             'other_institution_count' => $result['other_institution_count'],
         ]);

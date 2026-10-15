@@ -51,7 +51,7 @@ test('returns tenant-scoped totals, series and top pages', function (): void {
     fakeUmami();
 
     $tenant = Tenant::query()->first();
-    $user = makeTenantUser('Communication Coordinator', $tenant);
+    $user = makeTenantUser('Komunikacijos koordinatorius', $tenant);
 
     $response = asUser($user)->getJson(
         route('api.v1.admin.analytics.overview', ['tenant_id' => $tenant->id])
@@ -74,7 +74,7 @@ test('scopes the upstream request to the tenant hostname', function (): void {
     fakeUmami();
 
     $tenant = Tenant::query()->first();
-    $user = makeTenantUser('Communication Coordinator', $tenant);
+    $user = makeTenantUser('Komunikacijos koordinatorius', $tenant);
 
     asUser($user)->getJson(route('api.v1.admin.analytics.overview', ['tenant_id' => $tenant->id]))
         ->assertSuccessful();
@@ -91,7 +91,7 @@ test('forbids reading a tenant the user does not manage', function (): void {
     $ownTenant = Tenant::query()->first();
     $otherTenant = Tenant::query()->where('id', '!=', $ownTenant->id)->first();
 
-    $user = makeTenantUser('Communication Coordinator', $ownTenant);
+    $user = makeTenantUser('Komunikacijos koordinatorius', $ownTenant);
 
     asUser($user)->getJson(
         route('api.v1.admin.analytics.overview', ['tenant_id' => $otherTenant->id])
@@ -104,7 +104,7 @@ test('reports unavailable instead of failing when umami is down', function (): v
     ]);
 
     $tenant = Tenant::query()->first();
-    $user = makeTenantUser('Communication Coordinator', $tenant);
+    $user = makeTenantUser('Komunikacijos koordinatorius', $tenant);
 
     asUser($user)->getJson(route('api.v1.admin.analytics.overview', ['tenant_id' => $tenant->id]))
         ->assertSuccessful()
@@ -117,7 +117,7 @@ test('reports unavailable when the api is not configured', function (): void {
     config()->set('services.umami.api_url', null);
 
     $tenant = Tenant::query()->first();
-    $user = makeTenantUser('Communication Coordinator', $tenant);
+    $user = makeTenantUser('Komunikacijos koordinatorius', $tenant);
 
     asUser($user)->getJson(route('api.v1.admin.analytics.overview', ['tenant_id' => $tenant->id]))
         ->assertSuccessful()
@@ -144,7 +144,7 @@ test('re-authenticates once when the cached token has expired', function (): voi
     ]);
 
     $tenant = Tenant::query()->first();
-    $user = makeTenantUser('Communication Coordinator', $tenant);
+    $user = makeTenantUser('Komunikacijos koordinatorius', $tenant);
 
     asUser($user)->getJson(route('api.v1.admin.analytics.overview', ['tenant_id' => $tenant->id]))
         ->assertSuccessful()
@@ -156,7 +156,7 @@ test('re-authenticates once when the cached token has expired', function (): voi
 
 test('rejects an unknown period', function (): void {
     $tenant = Tenant::query()->first();
-    $user = makeTenantUser('Communication Coordinator', $tenant);
+    $user = makeTenantUser('Komunikacijos koordinatorius', $tenant);
 
     asUser($user)->getJson(
         route('api.v1.admin.analytics.overview', ['tenant_id' => $tenant->id, 'period' => 'forever'])

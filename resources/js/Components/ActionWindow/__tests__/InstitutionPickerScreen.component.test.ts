@@ -9,7 +9,7 @@ import { commonStubs } from '@/tests/stubs';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const apiInstitutions: unknown[] = [];
-const institutionSearch = ref({ enabled: false, tenant_ids: [] as number[] });
+const institutionSearch = ref({ enabled: false, tenant_ids: [] as number[], internal_type_ids: [] as number[], external_type_ids: [] as number[] });
 
 // Real refs, not `{ value }` literals: the template unwraps refs, and a plain
 // object is truthy — `v-if="isLoading"` would pin the screen on its skeleton.
@@ -26,7 +26,7 @@ vi.mock('@/Composables/useActionWindowData', () => ({
 }));
 
 const withStatus = (status: Record<string, unknown>) => {
-  institutionSearch.value = { enabled: false, tenant_ids: [] };
+  institutionSearch.value = { enabled: false, tenant_ids: [], internal_type_ids: [], external_type_ids: [] };
   apiInstitutions.length = 0;
   apiInstitutions.push({
     id: '1',
@@ -115,9 +115,26 @@ describe('InstitutionPickerScreen.vue', () => {
 
   it('offers the wider institution search when the caller may create beyond their duties', async () => {
     const wrapper = withStatus({});
-    institutionSearch.value = { enabled: true, tenant_ids: [16] };
+    institutionSearch.value = { enabled: true, tenant_ids: [16], internal_type_ids: [], external_type_ids: [] };
     await wrapper.vm.$nextTick();
 
     expect(wrapper.text()).toContain('action_window.institution.other');
+  });
+
+  it('lists only VU SA bodies for a meeting created from a calendar event', () => {
+    withStatus({});
+    apiInstitutions.push({ ...(apiInstitutions[0] as object), id: '2', name: 'VU Senatas', is_internal: false });
+
+    const wrapper = mount(defineComponent({
+      setup() {
+        const window = createActionWindowProvider();
+        window.open({ flow: 'meeting.create', calendarEvent: { id: 5, title: 'Posėdis', date: '2026-11-03 18:00:00' } });
+        return () => h(InstitutionPickerScreen);
+      },
+    }), { global: { stubs: { ...commonStubs } } });
+
+    expect(wrapper.text()).toContain('VU SA MIF');
+    expect(wrapper.text()).not.toContain('VU Senatas');
+    expect(wrapper.text()).toContain('action_window.institution.subtitle_internal');
   });
 });

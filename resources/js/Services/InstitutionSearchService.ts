@@ -25,6 +25,8 @@ interface RawInstitutionDocument {
   name_en?: string;
   short_name_lt?: string;
   short_name_en?: string;
+  description_lt?: string | null;
+  description_en?: string | null;
   type_slugs?: string[];
   type_titles_lt?: string[];
   type_titles_en?: string[];
@@ -51,7 +53,7 @@ interface SearchResponse {
 }
 
 interface SearchClient {
-  search: (collection: string, searchParams: SearchParams) => Promise<SearchResponse>;
+  search: (collection: string, searchParams: SearchParams, signal?: AbortSignal) => Promise<SearchResponse>;
 }
 
 interface ContactHit {
@@ -84,10 +86,13 @@ export class InstitutionSearchService {
   private typesenseClient: SearchClient | null = null;
   private abortController: AbortController | null = null;
   private collectionName: string;
+  private typeDescendants: Record<string, string[]>;
 
-  constructor(typesenseClient: SearchClient | null, collectionName?: string) {
+  /** `typeDescendants` maps a type slug to its sub-type slugs, so filtering by a parent includes them. */
+  constructor(typesenseClient: SearchClient | null, collectionName?: string, typeDescendants: Record<string, string[]> = {}) {
     this.typesenseClient = typesenseClient;
     this.collectionName = collectionName || 'public_institutions';
+    this.typeDescendants = typeDescendants;
   }
 
   setClient(client: SearchClient | null) {
@@ -124,22 +129,14 @@ export class InstitutionSearchService {
     // Cancel previous request
     this.cancelCurrentSearch();
     this.abortController = new AbortController();
+    const controller = this.abortController;
 
     // Build search parameters
     const searchParams = this.buildSearchParams(filters, perPage, isLoadMore, currentPage, locale);
 
     try {
-      // Execute search with timeout
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Search request timed out')), 10000);
-      });
-
-      const searchPromise = this.typesenseClient.search(this.collectionName, searchParams);
-      const response = await Promise.race([searchPromise, timeoutPromise]);
-
-      if (this.abortController?.signal.aborted) {
-        throw new Error('Search was cancelled');
-      }
+      const response = await this.typesenseClient.search(this.collectionName, searchParams, controller.signal);
+      if (controller.signal.aborted) throw new DOMException('Search was cancelled', 'AbortError');
 
       // Process results — normalize Typesense flat fields into the shape components expect
       const hits = response.hits?.map(hit => this.normalizeDocument(hit.document, locale)) || [];
@@ -207,6 +204,11 @@ export class InstitutionSearchService {
     };
 
     // Build filter conditions
+    searchParams.facetFilters = Object.fromEntries([
+      ['tenant_shortname', this.buildFilterConditions({ ...filters, tenants: [] }).join(' && ')],
+      ['type_slugs', this.buildFilterConditions({ ...filters, types: [] }).join(' && ')],
+      ['has_contacts', this.buildFilterConditions({ ...filters, hasContacts: null }).join(' && ')],
+    ]);
     const filterConditions = this.buildFilterConditions(filters);
     if (filterConditions.length > 0) {
       searchParams.filter_by = filterConditions.join(' && ');
@@ -224,10 +226,9 @@ export class InstitutionSearchService {
       filterConditions.push(`(${tenantConditions.join(' || ')})`);
     }
 
-    // Type filters - use exact match for each type slug
     if (filters.types.length > 0) {
-      const typeConditions = filters.types.map(t => `type_slugs:="${t}"`);
-      filterConditions.push(`(${typeConditions.join(' || ')})`);
+      const slugs = [...new Set(filters.types.flatMap(slug => [slug, ...(this.typeDescendants[slug] ?? [])]))];
+      filterConditions.push(`(${slugs.map(slug => `type_slugs:="${slug}"`).join(' || ')})`);
     }
 
     // Has contacts filter
@@ -293,10 +294,13 @@ export class InstitutionSearchService {
             )
           : []);
 
+    const description = (locale === 'en' ? doc.description_en || doc.description_lt : doc.description_lt || doc.description_en) || null;
+
     return {
       ...doc,
       name,
       short_name,
+      description,
       types,
       tenant,
       contacts,

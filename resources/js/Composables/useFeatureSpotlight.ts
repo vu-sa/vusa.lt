@@ -1,36 +1,10 @@
 /**
- * useFeatureSpotlight - A lightweight composable for highlighting new features
- *
- * Provides a simple way to draw attention to new UI elements without a full tour:
- * - Pulsing indicator/badge on the element
- * - Tooltip on hover/click with description
- * - Persisted dismissed state (synced to backend via API)
- *
- * Uses the same storage mechanism as useProductTour for consistency.
- *
- * @example
- * ```vue
- * <script setup>
- * const spotlight = useFeatureSpotlight('tenant-tab-v1');
- * </script>
- *
- * <template>
- *   <div class="relative">
- *     <TabsTrigger ref="spotlight.targetRef">Tenant</TabsTrigger>
- *     <SpotlightBadge v-if="spotlight.isVisible.value" @dismiss="spotlight.dismiss" />
- *   </div>
- * </template>
- * ```
+ * Pairs with SpotlightPopover and persists dismissal through tutorial progress.
  */
-
 import { ref, computed } from 'vue';
 
 import { useApiMutation } from './useApi';
-import {
-  globalProgress,
-  updateProgress,
-  removeProgress,
-} from './useTutorialProgress';
+import { globalProgress, updateProgress, removeProgress } from './useTutorialProgress';
 
 // Prefix for spotlight IDs to distinguish from tours
 const SPOTLIGHT_PREFIX = 'spotlight-';
@@ -52,11 +26,8 @@ export interface FeatureSpotlightOptions {
    */
   enabled?: boolean;
 
-  /**
-   * Position of the popover relative to the target element
-   * @default 'bottom'
-   */
-  position?: 'top' | 'bottom' | 'left' | 'right' | 'top-right';
+  /** Preferred side of the popover, matching SpotlightPopover's `side` prop. */
+  side?: 'top' | 'bottom' | 'left' | 'right';
 
   /**
    * Callback when spotlight is dismissed
@@ -65,7 +36,7 @@ export interface FeatureSpotlightOptions {
 }
 
 export function useFeatureSpotlight(spotlightId: string, options: FeatureSpotlightOptions = {}) {
-  const { title = '', description = '', enabled = true, position = 'bottom', onDismiss } = options;
+  const { title = '', description = '', enabled = true, side = 'bottom', onDismiss } = options;
 
   // Internal ID with prefix
   const internalId = `${SPOTLIGHT_PREFIX}${spotlightId}`;
@@ -162,7 +133,7 @@ export function useFeatureSpotlight(spotlightId: string, options: FeatureSpotlig
     // Configuration
     title,
     description,
-    position,
+    side,
 
     // Actions
     dismiss,
@@ -171,6 +142,3 @@ export function useFeatureSpotlight(spotlightId: string, options: FeatureSpotlig
     hidePopover,
   };
 }
-
-// Re-export the shared init function for convenience
-export { initProgress as syncSpotlightProgress } from './useTutorialProgress';

@@ -10,6 +10,7 @@ use App\Events\ApprovalRequested;
 use App\Models\Approval;
 use App\Models\Pivots\ReservationResource;
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -42,21 +43,30 @@ class ApprovalService
         User $user,
         ApprovalDecision $decision,
         ?string $notes = null,
-        ?int $step = null
+        ?int $step = null,
+        ?int $approvedQuantity = null
     ): Approval {
-        $step ??= $approvable->currentApprovalStep();
+        return DB::transaction(function () use ($approvable, $user, $decision, $notes, $step, $approvedQuantity): Approval {
+            if ($approvable instanceof ReservationResource) {
+                $locked = ReservationResource::query()->lockForUpdate()->findOrFail($approvable->getKey());
+                $approvable->setRawAttributes($locked->getAttributes(), true);
+                $approvable->unsetRelations();
+            }
 
-        // Validate user can approve at this step with this decision
-        if (! $approvable->canBeApprovedBy($user, $step, $decision)) {
-            throw new \InvalidArgumentException('User cannot approve this item at the given step.');
-        }
+            $step ??= $approvable->currentApprovalStep();
 
-        // Validate that this decision is allowed for the current state
-        if (! $approvable->isDecisionAllowed($decision)) {
-            throw new \InvalidArgumentException(__('Šis veiksmas negalimas dabartinėje būsenoje.'));
-        }
+            if (! $approvable->canBeApprovedBy($user, $step, $decision)) {
+                throw new \InvalidArgumentException('User cannot approve this item at the given step.');
+            }
 
-        $approval = DB::transaction(function () use ($approvable, $user, $decision, $notes, $step) {
+            if (! $approvable->isDecisionAllowed($decision)) {
+                throw new \InvalidArgumentException(__('Šis veiksmas negalimas dabartinėje būsenoje.'));
+            }
+
+            if ($approvable instanceof ReservationResource && $decision === ApprovalDecision::Approved && $approvedQuantity !== null) {
+                $approvable->updateApprovedQuantity($approvedQuantity);
+            }
+
             $approval = Approval::create([
                 'approvable_type' => $approvable->getMorphClass(),
                 'approvable_id' => $approvable->getKey(),
@@ -66,16 +76,11 @@ class ApprovalService
                 'notes' => $notes,
             ]);
 
+            event(new ApprovalDecisionMade($approval, $approvable));
+            $this->handlePostDecision($approvable, $decision, $step);
+
             return $approval;
         });
-
-        // Dispatch decision event
-        event(new ApprovalDecisionMade($approval, $approvable));
-
-        // Check if this decision completes the step or terminates the flow
-        $this->handlePostDecision($approvable, $decision, $step);
-
-        return $approval;
     }
 
     /**
@@ -147,7 +152,8 @@ class ApprovalService
     /**
      * Move one reservation resource back by one approved lifecycle step.
      *
-     * @throws \InvalidArgumentException If the user cannot backtrack the item or no active approval exists.
+     * @throws AuthorizationException If the user cannot backtrack the item.
+     * @throws \InvalidArgumentException If the lifecycle state cannot be backtracked.
      */
     public function backtrack(ReservationResource $reservationResource, User $user, ?string $notes = null): Approval
     {
@@ -158,7 +164,7 @@ class ApprovalService
                 ->findOrFail($reservationResource->getKey());
 
             if (! $lockedResource->canBeApprovedBy($user, null, ApprovalDecision::Approved)) {
-                throw new \InvalidArgumentException(__('reservations.messages.backtrack_forbidden'));
+                throw new AuthorizationException(__('reservations.messages.backtrack_forbidden'));
             }
 
             $targetState = $lockedResource->getBacktrackTargetState();
@@ -200,18 +206,33 @@ class ApprovalService
      */
     public function bulkBacktrack(Collection $reservationResources, User $user, ?string $notes = null): array
     {
-        $approvals = collect();
-        $errors = [];
+        return DB::transaction(function () use ($reservationResources, $user, $notes): array {
+            $lockedResources = $reservationResources->map(function (ReservationResource $reservationResource) use ($user): ReservationResource {
+                $lockedResource = ReservationResource::query()
+                    ->with(['resource.tenant', 'reservation.users'])
+                    ->lockForUpdate()
+                    ->findOrFail($reservationResource->getKey());
 
-        foreach ($reservationResources as $reservationResource) {
-            try {
-                $approvals->push($this->backtrack($reservationResource, $user, $notes));
-            } catch (\InvalidArgumentException $exception) {
-                $errors[] = $exception->getMessage();
+                if (! $lockedResource->canBeApprovedBy($user, null, ApprovalDecision::Approved)) {
+                    throw new AuthorizationException(__('reservations.messages.backtrack_forbidden'));
+                }
+
+                return $lockedResource;
+            });
+
+            $approvals = collect();
+            $errors = [];
+
+            foreach ($lockedResources as $reservationResource) {
+                try {
+                    $approvals->push($this->backtrack($reservationResource, $user, $notes));
+                } catch (\InvalidArgumentException $exception) {
+                    $errors[] = $exception->getMessage();
+                }
             }
-        }
 
-        return ['approvals' => $approvals, 'errors' => $errors];
+            return ['approvals' => $approvals, 'errors' => $errors];
+        });
     }
 
     /**

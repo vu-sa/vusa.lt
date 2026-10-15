@@ -67,6 +67,19 @@ return [
             'block_for' => null,
         ],
 
+        // The default connection, but for jobs that run longer than 90 s (SharePoint discovery and file
+        // checks): a job still running past retry_after would be handed to a second worker. Keep it above their timeout.
+        'long-running' => [
+            ...match (env('QUEUE_CONNECTION', 'database')) {
+                'redis' => ['driver' => 'redis', 'connection' => 'default', 'block_for' => null],
+                'sync' => ['driver' => 'sync'],
+                default => ['driver' => 'database', 'table' => 'jobs'],
+            },
+            // Its own name per environment, like the default redis queue, in case staging shares production's backend.
+            'queue' => env('APP_ENV') === 'staging' ? 'staging-long-running' : 'long-running',
+            'retry_after' => 2100,
+        ],
+
     ],
 
     /*

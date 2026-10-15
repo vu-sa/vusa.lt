@@ -110,9 +110,9 @@ class NavigationLinkApiController extends ApiController
 
     private function resolveDocumentUrl(int|string $id): ?string
     {
-        $document = Document::query()->find($id);
+        $document = Document::query()->published()->find($id);
 
-        if (! $document || ! $document->anonymous_url) {
+        if (! $document) {
             return null;
         }
 

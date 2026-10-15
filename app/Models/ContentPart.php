@@ -6,6 +6,8 @@ use App\Enums\ContentPartEnum;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\ContentService;
 use App\Services\HtmlSanitizerService;
+use App\Services\Typesense\SyncContentSearch;
+use App\Support\PublicCacheTags;
 use App\Tiptap\TiptapEditor;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -142,8 +144,14 @@ class ContentPart extends Model
             }
         });
 
-        static::saved(fn (self $part) => $part->forgetPublicContentCaches());
-        static::deleted(fn (self $part) => $part->forgetPublicContentCaches());
+        static::saved(function (self $part): void {
+            $part->forgetPublicContentCaches();
+            SyncContentSearch::afterCommit((int) $part->content_id);
+        });
+        static::deleted(function (self $part): void {
+            $part->forgetPublicContentCaches();
+            SyncContentSearch::afterCommit((int) $part->content_id);
+        });
     }
 
     private function forgetPublicContentCaches(): void
@@ -153,9 +161,10 @@ class ContentPart extends Model
 
         if ($content->page !== null) {
             $page = $content->page;
-            Cache::tags(['pages', "tenant_{$page->tenant_id}", "locale_{$page->lang}"])->flush();
+            Cache::tags([PublicCacheTags::pages((int) $page->tenant_id, (string) $page->lang)])->flush();
         }
 
+        // Every homepage: a tenant without its own falls back to the main tenant's.
         if ($content->tenantHomepageContent !== null) {
             Cache::tags(['homepage'])->flush();
         }
@@ -276,7 +285,7 @@ class ContentPart extends Model
                 return null;
             }
             // Use updated_at timestamp in cache key for automatic invalidation on edit
-            $cacheKey = "content_part_html_{$this->id}_{$this->updated_at->timestamp}";
+            $cacheKey = $this->htmlCacheKey();
 
             return Cache::remember($cacheKey, 86400, fn () => $this->renderTiptapHtml());
         });
@@ -285,7 +294,7 @@ class ContentPart extends Model
     /**
      * Render TipTap JSON content to HTML using the PHP TipTap editor.
      */
-    protected function renderTiptapHtml(): string
+    protected function renderTiptapHtml(): ?string
     {
         try {
             $editor = new TiptapEditor;
@@ -299,10 +308,9 @@ class ContentPart extends Model
             return app(HtmlSanitizerService::class)
                 ->sanitizeRichContent($editor->setContent($content)->getHTML());
         } catch (\Throwable $e) {
-            // Log error but don't break the page - frontend will fallback to JS rendering
             Log::warning("TipTap rendering failed for ContentPart {$this->id}: {$e->getMessage()}");
 
-            return '';
+            return null;
         }
     }
 
@@ -311,8 +319,15 @@ class ContentPart extends Model
      */
     public function clearHtmlCache(): void
     {
-        $cacheKey = "content_part_html_{$this->id}_{$this->updated_at->timestamp}";
+        $cacheKey = $this->htmlCacheKey();
         Cache::forget($cacheKey);
+    }
+
+    private function htmlCacheKey(): string
+    {
+        $version = hash('sha256', json_encode($this->json_content, JSON_THROW_ON_ERROR));
+
+        return "content_part_html_{$this->id}_{$this->updated_at->timestamp}_{$version}";
     }
 
     /**
@@ -320,14 +335,7 @@ class ContentPart extends Model
      */
     public function isValidType(): bool
     {
-        try {
-            // Attempt to create an enum from the type string
-            ContentPartEnum::from($this->type);
-
-            return true;
-        } catch (\Throwable) {
-            return false;
-        }
+        return ContentPartEnum::tryFrom($this->type) !== null;
     }
 
     /**
@@ -335,124 +343,162 @@ class ContentPart extends Model
      */
     public function getSearchableContent(): string
     {
+        return match ($this->type) {
+            'tiptap' => $this->extractTextFromTiptap($this->json_content),
+            'shadcn-card' => ($this->options['title'] ?? '').' '.$this->extractTextFromTiptap($this->json_content),
+            'shadcn-accordion' => $this->accordionSearchText(),
+            'hero' => $this->heroSearchText(),
+            'news', 'calendar' => $this->json_content['title'] ?? '',
+            'carousel-slide-deck' => $this->slideDeckSearchText(),
+            'hero-carousel' => $this->heroCarouselSearchText(),
+            'card-stack' => $this->joinItemFields($this->json_content ?? [], ['title', 'description']),
+            'photo-gallery' => $this->joinItemFields($this->json_content ?? [], ['alt']),
+            'content-grid' => $this->contentGridSearchText(),
+            'link-list' => $this->linkListSearchText(),
+            'event-list' => ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '').' '.
+                ($this->options['emptyMessage'] ?? ''),
+            'person-quote' => $this->personQuoteSearchText(),
+            // A marker block: the blocks it wraps are indexed as their own parts.
+            'section' => ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? ''),
+            'timetable' => ($this->options['title'] ?? '').' '.$this->joinItemFields($this->json_content ?? [], ['title']),
+            'process-steps' => $this->processStepsSearchText(),
+            default => '',
+        };
+    }
+
+    /**
+     * Each item's fields in order, every value followed by a space.
+     *
+     * @param  iterable<array<string, mixed>>  $items
+     * @param  list<string>  $fields
+     */
+    private function joinItemFields(iterable $items, array $fields): string
+    {
         $content = '';
 
-        // Extract text content based on the type
-        switch ($this->type) {
-            case 'tiptap':
-                // Extract text from Tiptap JSON
-                $content = $this->extractTextFromTiptap($this->json_content);
-                break;
-            case 'shadcn-card':
-                // Cards have title in options and content in json_content
-                $content = $this->options['title'] ?? '';
-                $content .= ' '.$this->extractTextFromTiptap($this->json_content);
-                break;
-            case 'shadcn-accordion':
-                // Process each accordion item
-                foreach ($this->json_content as $item) {
-                    $content .= ($item['label'] ?? '').' ';
-                    $content .= $this->extractTextFromTiptap($item['content'] ?? []);
-                }
-                break;
-            case 'hero':
-                // Extract text from hero section
-                $content = ($this->json_content['title'] ?? '').' '.
-                           ($this->json_content['description'] ?? '');
-                foreach ($this->json_content['buttons'] ?? [] as $button) {
-                    $content .= ' '.($button['text'] ?? '');
-                }
-                break;
-            case 'news':
-            case 'calendar':
-                $content = $this->json_content['title'] ?? '';
-                break;
-            case 'carousel-slide-deck':
-                foreach ($this->json_content as $slide) {
-                    $content .= ($slide['title'] ?? '').' ';
-                    $content .= ($slide['badge'] ?? '').' ';
-                    $content .= $this->extractTextFromTiptap($slide['description'] ?? []).' ';
-                }
-                break;
-            case 'hero-carousel':
-                foreach ($this->json_content as $slide) {
-                    $content .= ($slide['eyebrow'] ?? '').' ';
-                    $content .= ($slide['title'] ?? '').' ';
-                    $content .= ($slide['subtitle'] ?? '').' ';
-                    $content .= $this->extractTextFromTiptap($slide['description'] ?? []).' ';
-                    foreach ($slide['buttons'] ?? [] as $button) {
-                        $content .= ($button['text'] ?? '').' ';
-                    }
-                }
-                break;
-            case 'card-stack':
-                foreach ($this->json_content as $card) {
-                    $content .= ($card['title'] ?? '').' ';
-                    $content .= ($card['description'] ?? '').' ';
-                }
-                break;
-            case 'photo-gallery':
-                foreach ($this->json_content as $image) {
-                    $content .= ($image['alt'] ?? '').' ';
-                }
-                break;
-            case 'content-grid':
-                $content = ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '').' ';
-                foreach ($this->json_content as $row) {
-                    foreach ($row['columns'] ?? [] as $column) {
-                        $columnContent = $column['content'] ?? [];
-                        if (($columnContent['type'] ?? null) === 'tiptap') {
-                            $content .= $this->extractTextFromTiptap($columnContent['value'] ?? []).' ';
-                        } elseif (($columnContent['type'] ?? null) === 'image') {
-                            $content .= ($columnContent['alt'] ?? '').' ';
-                        } elseif (($columnContent['type'] ?? null) === 'card') {
-                            $cardValue = $columnContent['value'] ?? [];
-                            $content .= ($cardValue['title'] ?? '').' '.($cardValue['description'] ?? '').' ';
-                        }
-                    }
-                }
-                break;
-            case 'link-list':
-                // Author-written text only — resolved news/pages titles are already
-                // indexed under their own News/Page documents and would go stale the
-                // moment the referenced record is renamed.
-                $content = ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '');
-                foreach ($this->json_content['links'] ?? [] as $link) {
-                    $content .= ' '.($link['title'] ?? '');
-                }
-                break;
-            case 'event-list':
-                $content = ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '').' '.
-                           ($this->options['emptyMessage'] ?? '');
-                break;
-            case 'person-quote':
-                $content = $this->extractTextFromTiptap($this->json_content['quote'] ?? []);
-                $snapshot = $this->json_content['snapshot'] ?? [];
-                $content .= ' '.($snapshot['name'] ?? '').' '.($snapshot['attribution'] ?? '');
-                break;
-            case 'section':
-                // A marker block with no content of its own (see RichContentParser.vue's
-                // groupedContent) — only its own title/subtitle are searchable text; the
-                // blocks it wraps are indexed independently as their own parts.
-                $content = ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '');
-                break;
-            case 'timetable':
-                $content = ($this->options['title'] ?? '').' ';
-                foreach ($this->json_content ?? [] as $row) {
-                    $content .= ($row['title'] ?? '').' ';
-                }
-                break;
-            case 'process-steps':
-                $content = ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '').' ';
-                foreach ($this->json_content ?? [] as $step) {
-                    $title = is_array($step['title'] ?? null) ? $this->extractTextFromTiptap($step['title']) : strip_tags($step['title'] ?? '');
-                    $text = is_array($step['text'] ?? null) ? $this->extractTextFromTiptap($step['text']) : strip_tags($step['text'] ?? '');
-                    $content .= $title.' '.$text.' ';
-                }
-                break;
+        foreach ($items as $item) {
+            foreach ($fields as $field) {
+                $content .= ($item[$field] ?? '').' ';
+            }
         }
 
         return $content;
+    }
+
+    private function accordionSearchText(): string
+    {
+        $content = '';
+
+        foreach ($this->json_content as $item) {
+            $content .= ($item['label'] ?? '').' ';
+            $content .= $this->extractTextFromTiptap($item['content'] ?? []);
+        }
+
+        return $content;
+    }
+
+    private function heroSearchText(): string
+    {
+        $content = ($this->json_content['title'] ?? '').' '.($this->json_content['description'] ?? '');
+
+        foreach ($this->json_content['buttons'] ?? [] as $button) {
+            $content .= ' '.($button['text'] ?? '');
+        }
+
+        return $content;
+    }
+
+    private function slideDeckSearchText(): string
+    {
+        $content = '';
+
+        foreach ($this->json_content as $slide) {
+            $content .= $this->joinItemFields([$slide], ['title', 'badge']);
+            $content .= $this->extractTextFromTiptap($slide['description'] ?? []).' ';
+        }
+
+        return $content;
+    }
+
+    private function heroCarouselSearchText(): string
+    {
+        $content = '';
+
+        foreach ($this->json_content as $slide) {
+            $content .= $this->joinItemFields([$slide], ['eyebrow', 'title', 'subtitle']);
+            $content .= $this->extractTextFromTiptap($slide['description'] ?? []).' ';
+            $content .= $this->joinItemFields($slide['buttons'] ?? [], ['text']);
+        }
+
+        return $content;
+    }
+
+    private function contentGridSearchText(): string
+    {
+        $content = ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '').' ';
+
+        foreach ($this->json_content as $row) {
+            foreach ($row['columns'] ?? [] as $column) {
+                $content .= $this->contentGridColumnText($column['content'] ?? []);
+            }
+        }
+
+        return $content;
+    }
+
+    /**
+     * @param  array<string, mixed>  $columnContent
+     */
+    private function contentGridColumnText(array $columnContent): string
+    {
+        return match ($columnContent['type'] ?? null) {
+            'tiptap' => $this->extractTextFromTiptap($columnContent['value'] ?? []).' ',
+            'image' => ($columnContent['alt'] ?? '').' ',
+            'card' => ($columnContent['value']['title'] ?? '').' '.($columnContent['value']['description'] ?? '').' ',
+            default => '',
+        };
+    }
+
+    /**
+     * Author-written text only: resolved news/page titles are indexed under their own
+     * documents and would go stale when the referenced record is renamed.
+     */
+    private function linkListSearchText(): string
+    {
+        $content = ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '');
+
+        foreach ($this->json_content['links'] ?? [] as $link) {
+            $content .= ' '.($link['title'] ?? '');
+        }
+
+        return $content;
+    }
+
+    private function personQuoteSearchText(): string
+    {
+        $snapshot = $this->json_content['snapshot'] ?? [];
+
+        return $this->extractTextFromTiptap($this->json_content['quote'] ?? [])
+            .' '.($snapshot['name'] ?? '').' '.($snapshot['attribution'] ?? '');
+    }
+
+    private function processStepsSearchText(): string
+    {
+        $content = ($this->options['title'] ?? '').' '.($this->options['subtitle'] ?? '').' ';
+
+        foreach ($this->json_content ?? [] as $step) {
+            $content .= $this->stepFieldText($step['title'] ?? null).' '.$this->stepFieldText($step['text'] ?? null).' ';
+        }
+
+        return $content;
+    }
+
+    /**
+     * Step fields are Tiptap JSON in new parts and HTML strings in older ones.
+     */
+    private function stepFieldText(mixed $value): string
+    {
+        return is_array($value) ? $this->extractTextFromTiptap($value) : strip_tags($value ?? '');
     }
 
     /**

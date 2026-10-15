@@ -43,7 +43,19 @@ class AtstovavimasApiController extends ApiController
         $tenantIds = $this->authorizedTenantIds($request->validated('tenant_ids'), $user);
 
         return $this->jsonSuccess(
-            $this->rememberVisak('timeline', $tenantIds, $request->boolean('refresh'), fn () => $this->dashboardService->tenantTimeline($tenantIds->all()))
+            $this->rememberVisak('timeline', $tenantIds->sort()->implode(','), $request->boolean('refresh'), fn () => $this->dashboardService->tenantTimeline($tenantIds->all()))
+        );
+    }
+
+    /**
+     * The padaliniai Gantt rows: open to every admin, trimmed per row to what they may read.
+     */
+    public function gantt(AtstovavimasTenantRequest $request): JsonResponse
+    {
+        $access = $this->dashboardService->ganttInstitutionAccess($this->requireAuth($request), $request->tenantIds());
+
+        return $this->jsonSuccess(
+            $this->rememberVisak('gantt', $this->accessScope($access), $request->boolean('refresh'), fn () => $this->dashboardService->ganttInstitutions($access))
         );
     }
 
@@ -56,7 +68,7 @@ class AtstovavimasApiController extends ApiController
         return $this->jsonSuccess(
             $this->rememberVisak(
                 'status_history',
-                $tenantIds,
+                $tenantIds->sort()->implode(','),
                 $request->boolean('refresh'),
                 fn () => $this->dashboardService->tenantStatusHistory($tenantIds->all(), $days),
                 (string) $days,
@@ -67,17 +79,16 @@ class AtstovavimasApiController extends ApiController
 
     public function meetings(AtstovavimasMeetingsRequest $request): JsonResponse
     {
-        $user = $this->requireAuth($request);
-        $tenantIds = $this->authorizedTenantIds($request->validated('tenant_ids'), $user);
+        $access = $this->dashboardService->ganttInstitutionAccess($this->requireAuth($request), $request->tenantIds());
         $from = Carbon::parse($request->validated('from'))->startOfDay();
         $until = Carbon::parse($request->validated('until'))->endOfDay();
 
         return $this->jsonSuccess(
             $this->rememberVisak(
                 'meetings',
-                $tenantIds,
+                $this->accessScope($access),
                 $request->boolean('refresh'),
-                fn () => $this->dashboardService->tenantMeetings($tenantIds->all(), $from, $until),
+                fn () => $this->dashboardService->ganttMeetings($access, $from, $until),
                 $from->toDateString().':'.$until->toDateString(),
             )
         );
@@ -98,11 +109,11 @@ class AtstovavimasApiController extends ApiController
     }
 
     /**
-     * @param  Collection<int, int>  $tenantIds
+     * @param  string  $scope  what the payload depends on: a tenant set, or a Gantt access map
      */
-    private function rememberVisak(string $kind, Collection $tenantIds, bool $bypassCache, Closure $callback, string $suffix = '', ?int $ttlSeconds = null): mixed
+    private function rememberVisak(string $kind, string $scope, bool $bypassCache, Closure $callback, string $suffix = '', ?int $ttlSeconds = null): mixed
     {
-        $key = 'visak:'.$kind.':'.md5($tenantIds->sort()->implode(',').':'.$suffix);
+        $key = 'visak:'.$kind.':'.md5($scope.':'.$suffix);
 
         if ($bypassCache) {
             Cache::forget($key);
@@ -123,6 +134,17 @@ class AtstovavimasApiController extends ApiController
         }
 
         return $value;
+    }
+
+    /**
+     * Keyed by the resolved rows and their projections, so users who may read the same rows share
+     * an entry and one user's full rows never serve another's public ones.
+     *
+     * @param  Collection<string, string>  $access
+     */
+    private function accessScope(Collection $access): string
+    {
+        return $access->sortKeys()->map(fn (string $projection, string $institutionId) => $institutionId.'='.$projection)->implode(',');
     }
 
     /**

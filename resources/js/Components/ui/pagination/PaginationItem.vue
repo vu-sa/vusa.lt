@@ -2,6 +2,7 @@
   <PaginationListItem data-slot="pagination-item" v-bind="delegatedProps" :class="cn(
     buttonVariants({
       variant: isActive ? 'outline' : 'ghost',
+      voice: 'plain',
       size,
     }),
     props.class)">

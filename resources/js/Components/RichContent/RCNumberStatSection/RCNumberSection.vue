@@ -50,7 +50,7 @@
 
     <Popover v-if="editable" :open="hotspots?.isPopoverOpen(statisticHotspotId)" @update:open="onStatisticPopoverOpenChange">
       <PopoverAnchor :reference="statisticsRef ?? undefined" />
-      <PopoverContent v-if="hotspots?.isPopoverOpen(statisticHotspotId) && currentStatistic" data-surface="public" class="w-64" @close-auto-focus.prevent>
+      <PopoverContent v-if="hotspots?.isPopoverOpen(statisticHotspotId) && currentStatistic" class="w-64" @close-auto-focus.prevent>
         <div class="flex flex-col gap-4">
           <Field>
             <FieldLabel>{{ $t('rich-content.stat_number') }}</FieldLabel>

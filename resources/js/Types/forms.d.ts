@@ -14,7 +14,6 @@ declare global {
       | 'organizer'
       | 'cto_url'
       | 'facebook_url'
-      | 'video_url'
       | 'main_image_focal_point'
       | 'is_draft'
       | 'is_all_day'

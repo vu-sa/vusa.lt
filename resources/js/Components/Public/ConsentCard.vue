@@ -7,19 +7,19 @@
       <div class="flex items-start gap-3">
         <IFluentCookies24Regular class="mt-0.5 size-5 shrink-0 text-brand" />
         <p class="text-sm leading-relaxed text-muted-foreground">
-          {{ $t("Naudojame seanso slapukus, kurie yra privalomi tinklalapio veikimui.") }}
-          {{ $t("Lankomumo statistiką renkame be slapukų ir be asmens duomenų.") }}
+          {{ $t("consent.session_cookies") }}
+          {{ $t("consent.cookieless_analytics") }}
         </p>
       </div>
 
       <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div v-if="privacyPageUrl" class="flex items-center justify-center sm:justify-start">
-          <Button as="a" :href="privacyPageUrl" target="_blank" rel="noopener noreferrer" size="public-sm" variant="brand-outline">
-            {{ $t("Privatumo politika") }}
+          <Button voice="brand" as="a" :href="privacyPageUrl" target="_blank" rel="noopener noreferrer" size="sm" variant="outline">
+            {{ $t("consent.privacy_policy") }}
           </Button>
         </div>
 
-        <Button size="public-sm" variant="brand" class="w-full sm:w-auto" @click="acknowledge">
+        <Button size="sm" variant="brand" class="w-full sm:w-auto" @click="acknowledge">
           {{ $t("Supratau") }}
         </Button>
       </div>

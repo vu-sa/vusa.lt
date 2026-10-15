@@ -9,7 +9,7 @@ pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
     $this->normalUser = makeTenantUser();
-    $this->admin = makeTenantUser('Communication Coordinator');
+    $this->admin = makeTenantUser('Komunikacijos koordinatorius');
 });
 
 describe('Authentication Security', function (): void {

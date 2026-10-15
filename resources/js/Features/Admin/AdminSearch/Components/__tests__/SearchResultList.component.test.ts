@@ -23,7 +23,7 @@ const hits = [makeHit('meetings-1', 'Alpha'), makeHit('meetings-2', 'Beta')];
 describe('SearchResultList', () => {
   it('shows the initial hint before searching', () => {
     const wrapper = mount(SearchResultList, { props: { hits: [], hasSearched: false } });
-    expect(wrapper.text()).toContain('Pradėkite rašyti');
+    expect(wrapper.text()).toContain('Pradėk rašyti');
   });
 
   it('shows the empty message after searching with no results', () => {

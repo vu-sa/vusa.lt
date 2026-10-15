@@ -1,9 +1,12 @@
 <template>
   <Dialog v-model:open="dialogOpen">
     <DialogTrigger as-child>
-      <Button :loading :size>
-        <slot />
-      </Button>
+      <!-- Callers pass their own button so it matches the actions around it. -->
+      <slot name="trigger" :loading>
+        <Button :size :disabled="loading" variant="outline" voice="sentence">
+          <slot />
+        </Button>
+      </slot>
     </DialogTrigger>
     <DialogContent class="sm:max-w-[95vw] w-[1400px] h-[85vh] p-0 gap-0 overflow-hidden" :show-close-button="true">
       <DialogTitle class="sr-only">
@@ -15,20 +18,20 @@
 </template>
 
 <script setup lang="ts">
-import { PublicClientApplication } from '@azure/msal-browser';
+import type { PublicClientApplication } from '@azure/msal-browser';
 import { combine } from '@pnp/core';
 import { usePage } from '@inertiajs/vue3';
 import { ref, watch, nextTick } from 'vue';
 
 import type { FilePickerOptions, Item } from './picker.ts';
 
-import { Button } from '@/Components/ui/button';
+import { Button, type ButtonVariants } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from '@/Components/ui/dialog';
 
 defineProps<{
   loading?: boolean;
   round?: boolean;
-  size?: string;
+  size?: ButtonVariants['size'];
 }>();
 
 const emit = defineEmits<{
@@ -112,8 +115,15 @@ let msalReady: Promise<unknown> | null = null;
 
 function ensureMsal(): Promise<unknown> {
   if (!msalReady) {
-    msalApp = new PublicClientApplication(msalParams);
-    msalReady = msalApp.initialize().then(() => msalApp!.handleRedirectPromise().catch(() => null));
+    msalReady = import('@azure/msal-browser').then(async ({ PublicClientApplication }) => {
+      msalApp = new PublicClientApplication(msalParams);
+      await msalApp.initialize();
+      return msalApp.handleRedirectPromise().catch(() => null);
+    }).catch((error: unknown) => {
+      msalReady = null;
+      msalApp = null;
+      throw error;
+    });
   }
 
   return msalReady;

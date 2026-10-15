@@ -11,6 +11,7 @@
  * a subtle loading indicator (consumers should delay it ~300ms to avoid flashes).
  */
 import { computed, ref, shallowRef, type ComputedRef } from 'vue';
+import { useDebounceFn } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import type { AtstovavimasTenantMeeting, GanttMeeting } from '../types';
@@ -73,7 +74,6 @@ export function useTenantMeetings(tenantIds: () => Array<string | number>) {
   const lastError = ref<string | null>(null);
 
   let pendingRange: Window | null = null;
-  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
   let inFlight = false;
   // Incremented on reset: in-flight responses from a previous tenant set are dropped
   let generation = 0;
@@ -213,6 +213,10 @@ export function useTenantMeetings(tenantIds: () => Array<string | number>) {
     }
   }
 
+  const debouncedFlush = useDebounceFn(() => {
+    void flushPendingRange();
+  }, FETCH_DEBOUNCE_MS);
+
   /**
    * Ensure meetings are loaded for [from, until] (plus a buffer on each side).
    * Debounced; fetches only the missing month-quantized segments.
@@ -232,15 +236,12 @@ export function useTenantMeetings(tenantIds: () => Array<string | number>) {
       pendingRange ? Math.max(pendingRange.until, untilTs) : untilTs,
     );
 
-    if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      void flushPendingRange();
-    }, FETCH_DEBOUNCE_MS);
+    debouncedFlush();
   }
 
   /** Re-fetch all currently loaded windows, bypassing the server cache. */
   async function refresh(): Promise<void> {
-    if (debounceTimer) clearTimeout(debounceTimer);
+    debouncedFlush.cancel();
     pendingRange = null;
 
     isFetching.value = true;
@@ -274,7 +275,7 @@ export function useTenantMeetings(tenantIds: () => Array<string | number>) {
 
   /** Drop all loaded meetings and windows (e.g. when the tenant selection changes). */
   function reset(): void {
-    if (debounceTimer) clearTimeout(debounceTimer);
+    debouncedFlush.cancel();
     pendingRange = null;
     generation += 1;
     meetingsById.value = new Map();

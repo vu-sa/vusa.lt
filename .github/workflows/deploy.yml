@@ -2,6 +2,10 @@ name: Deploy To Production
 
 concurrency: production
 
+permissions:
+  contents: read
+  actions: read
+
 on:
   workflow_dispatch:
   workflow_run:
@@ -13,8 +17,8 @@ on:
 
 jobs:
   deploy:
-    # Only deploy if tests were successful or this is a manual trigger
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    # Only a successful branch push or a manual trigger can deploy.
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success') }}
     uses: ./.github/workflows/deploy-common.yml
     secrets: inherit
     with:
@@ -29,3 +33,4 @@ jobs:
       # Never on production: its repo root holds ~1 GB of untracked directories (two copies of the
       # old LimeSurvey install) that `git clean -fd` would silently delete.
       clean-untracked: false
+      docs-screenshots-branch: main

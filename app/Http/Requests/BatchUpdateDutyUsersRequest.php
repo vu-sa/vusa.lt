@@ -69,7 +69,7 @@ class BatchUpdateDutyUsersRequest extends FormRequest
             'user_changes.*.study_program_id' => ['nullable', 'string', SoftDeleteRules::existsLive('study_programs')],
             'new_users' => 'nullable|array',
             'new_users.*.name' => 'required|string|max:255',
-            'new_users.*.email' => ['required', 'email', UniqueAmongTrashed::of('users', 'email')],
+            'new_users.*.email' => ['nullable', 'email', UniqueAmongTrashed::of('users', 'email')],
             'new_users.*.phone' => 'nullable|string|max:50',
             'new_users.*.temp_id' => 'required|string',
             'places_to_occupy' => 'nullable|integer|min:1',
@@ -115,20 +115,20 @@ class BatchUpdateDutyUsersRequest extends FormRequest
                         ->where('tenant_id', $tenant->id)
                         ->where(function ($query): void {
                             $query->whereNull('end_date')
-                                ->orWhere('end_date', '>=', now());
+                                ->orWhereDate('end_date', '>=', today());
                         })
                         ->count();
                 }
 
                 // Count by tenant_id column — explicit and accurate.
-                // Must match Duty::current_users() semantics (end_date >= now()) so a
-                // rep end-dated today is no longer counted toward the quota.
+                // Must match Duty::current_users() semantics (the end date is the last day
+                // in office), so a rep end-dated today still counts toward the quota.
                 $currentCount = Dutiable::where('duty_id', $duty->id)
                     ->where('dutiable_type', MorphMap::alias(User::class))
                     ->where('tenant_id', $tenant->id)
                     ->where(function ($query): void {
                         $query->whereNull('end_date')
-                            ->orWhere('end_date', '>=', now());
+                            ->orWhereDate('end_date', '>=', today());
                     })
                     ->count();
 

@@ -15,9 +15,9 @@ use Illuminate\Support\Collection;
 /**
  * Recompute who carries the still-open tasks of one institution term.
  *
- * Run after the administrator roster for a term changes, or after the term's own dates
+ * Run after the secretary roster for a term changes, or after the term's own dates
  * move. Because {@see ResolveTaskAssignees} falls back to date-scoped members on its own,
- * this handles both directions: nominating administrators takes the task off the wider
+ * this handles both directions: nominating secretaries takes the task off the wider
  * membership, and removing the last one hands it back.
  *
  * Deliberately silent — assignees are synced through the relation rather than
@@ -41,7 +41,7 @@ class ResyncTaskAssigneesForCadence
      * The window is passed in rather than read off the cadence because a term whose dates
      * just moved has to be swept where it *was* as well as where it is now: a meeting that
      * fell out of it needs handing back to the membership just as much as one that fell in
-     * needs handing to the administrators.
+     * needs handing to the secretaries.
      *
      * @param  Collection<int, Institution>  $institutions
      * @return int the number of tasks whose assignees were rewritten
@@ -49,6 +49,20 @@ class ResyncTaskAssigneesForCadence
     public static function forTerm(Cadence $cadence, Collection $institutions, Carbon $from, Carbon $to): int
     {
         return $institutions->sum(fn (Institution $institution) => self::within($institution, $cadence, $from, $to));
+    }
+
+    /**
+     * Re-staff every term the institution has secretaries on — for when the ladder it
+     * follows switches between the shared one and its own overrides.
+     *
+     * @return int the number of tasks whose assignees were rewritten
+     */
+    public static function forInstitution(Institution $institution): int
+    {
+        return Cadence::query()
+            ->whereHas('secretaryAssignments', fn ($query) => $query->where('institution_id', $institution->getKey()))
+            ->get()
+            ->sum(fn (Cadence $cadence) => self::execute($institution, $cadence));
     }
 
     /**
@@ -60,7 +74,7 @@ class ResyncTaskAssigneesForCadence
     public static function institutionsStaffedOn(Cadence $cadence): Collection
     {
         return Institution::query()
-            ->whereHas('administratorAssignments', fn ($query) => $query->where('cadence_id', $cadence->getKey()))
+            ->whereHas('secretaryAssignments', fn ($query) => $query->where('cadence_id', $cadence->getKey()))
             ->get();
     }
 

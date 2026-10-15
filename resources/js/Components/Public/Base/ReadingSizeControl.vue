@@ -50,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import IFluentAdd24Regular from '~icons/fluent/add-24-regular';
@@ -69,7 +69,17 @@ import IFluentTextFontSize24Regular from '~icons/fluent/text-font-size-24-regula
 const STORAGE_KEY = 'vusa-reading-scale';
 const READING_SCALES = [1, 1.15, 1.3, 1.5] as const;
 
-const stepIndex = ref(0);
+const stepIndex = useStorage<number>(STORAGE_KEY, 0, undefined, {
+  flush: 'sync',
+  initOnMounted: true,
+  serializer: {
+    read: (raw: string) => {
+      const parsed = Number.parseInt(raw, 10);
+      return Number.isInteger(parsed) && parsed >= 0 && parsed < READING_SCALES.length ? parsed : 0;
+    },
+    write: (value: number) => String(value),
+  },
+});
 
 function step(direction: 1 | -1): void {
   const next = stepIndex.value + direction;
@@ -77,30 +87,5 @@ function step(direction: 1 | -1): void {
   if (next < 0 || next >= READING_SCALES.length) return;
 
   stepIndex.value = next;
-  persist(next);
 }
-
-function persist(value: number): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, String(value));
-  }
-  catch {
-    // Private mode or blocked storage — the size still applies for this page view.
-  }
-}
-
-// Read on mount rather than at setup so SSR and the client agree on the initial markup; a stored
-// preference then applies on hydration.
-onMounted(() => {
-  try {
-    const stored = Number(localStorage.getItem(STORAGE_KEY));
-
-    if (Number.isInteger(stored) && stored >= 0 && stored < READING_SCALES.length) {
-      stepIndex.value = stored;
-    }
-  }
-  catch {
-    // Unreadable storage is not worth failing over — start at the default step.
-  }
-});
 </script>

@@ -2,7 +2,6 @@
 
 return [
     'title' => 'Pakeitimų istorija',
-    'spotlight_description' => 'Peržiūrėk, kas ir kada pakeitė šį įrašą — įskaitant susijusius pakeitimus.',
     'empty' => 'Pakeitimų nėra.',
     'load_more' => 'Rodyti daugiau',
     'loading' => 'Kraunama...',
@@ -69,5 +68,26 @@ return [
         'person-quote' => 'Citata',
         'section' => 'Skiltis',
         'spacer' => 'Tarpas',
+    ],
+    'status' => [
+        'today' => 'Aktyvus šiandien',
+        'week' => 'Aktyvus per 7 dienas',
+        'month' => 'Aktyvus per 30 dienų',
+        'stale' => 'Neaktyvus > 30 d.',
+        'never' => 'Niekada neprisijungęs',
+    ],
+    'status_short' => [
+        'today' => 'Šiandien',
+        'week' => 'Per 7 d.',
+        'month' => 'Per 30 d.',
+        'stale' => 'Seniai',
+        'never' => 'Niekada',
+    ],
+    'status_tooltip' => [
+        'today' => 'Prisijungė šiandien',
+        'week' => 'Prisijungė per pastarąsias 7 dienas',
+        'month' => 'Prisijungė per pastarąsias 30 dienų',
+        'stale' => 'Neprisijungė daugiau nei 30 dienų',
+        'never' => 'Niekada neprisijungė prie sistemos',
     ],
 ];

@@ -1,6 +1,11 @@
 <?php
 
 return [
+    'recommended_documents' => 'Rekomenduojami dokumentai',
+    'facet_search' => 'Ieškok filtro parinkties',
+    'facet_search_error' => 'Parinkčių paieška nepavyko. Bandyk dar kartą.',
+    'facet_search_loading' => 'Ieškoma parinkčių…',
+    'filters_spotlight_title' => 'Ieškok filtro parinkčių',
     // Search interface
     'search' => 'Paieška',
     'search_placeholder' => 'Ieškokite naujienų, puslapių, dokumentų, renginių...',
@@ -155,6 +160,9 @@ return [
     'document_link_badge' => 'Nuoroda',
     'document_link_hint' => 'Šis įrašas veda į išorinę svetainę',
     'document_link_unresolved' => 'Šis įrašas yra nuoroda į išorinę svetainę, tačiau tikslus adresas dar nenustatytas – atsidarys „SharePoint" peržiūra.',
+    'document_copy_link' => 'Kopijuoti nuorodą',
+    'document_copy_link_success' => 'Nuoroda nukopijuota į iškarpinę!',
+    'document_copy_link_error' => 'Nepavyko nukopijuoti nuorodos',
 
     // Search input specific
     'search_documents_placeholder' => 'Ieškoti dokumentų pagal pavadinimą...',
@@ -266,6 +274,7 @@ return [
     'view_mode_grid' => 'Tinklelis',
     'contact_singular' => 'kontaktas',
     'contacts_plural' => 'kontaktai',
+    'more_representatives' => '+ dar :count atstovas|+ dar :count atstovai|+ dar :count atstovų',
 
     // Search page navigation
     'go_to_documents' => 'Eiti į dokumentų paiešką',
