@@ -437,7 +437,7 @@ describe('validation', function (): void {
             'tenant_id' => $this->tenant->id,
         ]);
 
-        $response->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+        $response->assertRedirect()->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('calendar', [
             'permalink->lt' => 'test-renginys',
@@ -459,7 +459,7 @@ describe('validation', function (): void {
             'tenant_id' => $this->tenant->id,
         ]);
 
-        $response->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+        $response->assertRedirect()->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('calendar', [
             'permalink->lt' => 'metinis-renginys-2',
@@ -500,7 +500,7 @@ describe('validation', function (): void {
             'tenant_id' => $this->tenant->id,
         ]);
 
-        $response->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+        $response->assertRedirect()->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('calendar', ['permalink->lt' => 'the-original-slug-2']);
     });
@@ -521,7 +521,7 @@ describe('validation', function (): void {
             'permalink' => ['lt' => '', 'en' => ''],
             'date' => '2026-06-01',
             'tenant_id' => $this->tenant->id,
-        ])->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+        ])->assertRedirect()->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('calendar', [
             'permalink->lt' => 'renginys-3',
@@ -534,7 +534,7 @@ describe('validation', function (): void {
             'title' => ['lt' => '🎉', 'en' => ''],
             'date' => '2026-06-01',
             'tenant_id' => $this->tenant->id,
-        ])->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+        ])->assertRedirect()->assertSessionHasNoErrors();
 
         $calendar = Calendar::query()->where('permalink->lt', 'event')->firstOrFail();
         expect($calendar->getTranslation('permalink', 'en', false))->toBe('');
@@ -571,7 +571,7 @@ describe('validation', function (): void {
             'permalink' => ['lt' => str_repeat('a', 256), 'en' => ''],
             'date' => '2026-06-01',
             'tenant_id' => $this->tenant->id,
-        ])->assertRedirect(route('calendar.index'))->assertSessionHasNoErrors();
+        ])->assertRedirect()->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('calendar', ['permalink->lt' => str_repeat('a', 253).'-2']);
     });

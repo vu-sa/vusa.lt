@@ -38,8 +38,10 @@ test('the review form preserves an existing review when saving an edit', functio
         $page->script('document.documentElement.classList.remove("dark")');
     }
 
-    $page->click('[data-testid=form-page-save]')
-        ->assertSee(__('messages.updated.m', ['model' => trans_choice('entities.studySet.model', 1)]))
+    $page->click('[data-testid=form-page-save]');
+    // assertSee() doesn't wait; the toast only renders once the server has answered the PATCH.
+    waitForInertiaRender($page, '[data-sonner-toast][data-type=success]');
+    $page->assertSee(__('messages.updated.m', ['model' => trans_choice('entities.studySet.model', 1)]))
         ->assertNoJavaScriptErrors();
 
     expect($review->fresh()->getTranslation('lecturer', 'lt'))->toBe('Pakeistas dėstytojas')
