@@ -22,6 +22,12 @@ test('the tracker opts into web vitals collection', function (): void {
         ->assertSee('data-performance="true"', false);
 });
 
+test('the tracker ignores query strings so search URL updates are not counted as pageviews', function (): void {
+    $this->get(route('home', ['subdomain' => 'www', 'lang' => 'lt']))
+        ->assertOk()
+        ->assertSee('data-exclude-search="true"', false);
+});
+
 test('the tracker is omitted when no website id is configured', function (): void {
     config()->set('services.umami.website_id', null);
 

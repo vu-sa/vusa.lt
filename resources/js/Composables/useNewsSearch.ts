@@ -149,7 +149,7 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
 
     const newQuery = params.toString();
     const newUrl = `${window.location.pathname}${newQuery ? `?${newQuery}` : ''}`;
-    window.history.replaceState({}, '', newUrl);
+    window.history.replaceState(window.history.state, '', newUrl);
   };
 
   const parseUrlParams = () => {

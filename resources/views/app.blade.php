@@ -129,9 +129,12 @@
     {{-- Umami analytics: cookieless, public pages only. Absent when unconfigured (staging, CI). --}}
     {{-- data-performance opts into Web Vitals (TTFB/FCP/LCP/CLS); it is off by default and --}}
     {{-- the figures cannot be backfilled, so it is collected from the start. --}}
+    {{-- data-exclude-search: search pages write their filters into the URL with replaceState, --}}
+    {{-- which Umami would otherwise count as a pageview per keystroke. --}}
     @if (config('services.umami.website_id') && str_starts_with($page['component'] ?? '', 'Public/'))
         <script defer src="{{ config('services.umami.script_url') }}"
                 data-website-id="{{ config('services.umami.website_id') }}"
+                data-exclude-search="true"
                 data-performance="true"></script>
     @endif
 

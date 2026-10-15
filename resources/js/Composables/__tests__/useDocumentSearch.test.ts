@@ -6,6 +6,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
 import { createMockPage } from '@/tests/helpers/createMockPage';
+import { trackEvent } from '@/Plugins/umami';
+
+vi.mock('@/Plugins/umami', () => ({ trackEvent: vi.fn() }));
 
 // Mock dependencies
 vi.mock('@vueuse/core', async (importOriginal) => {
@@ -33,17 +36,20 @@ vi.mock('../useSearchClient', () => ({
 }));
 
 vi.mock('../../Services/DocumentSearchService', () => ({
-  DocumentSearchService: vi.fn().mockImplementation(() => ({
-    performSearch: vi.fn(() => Promise.resolve({
-      hits: [],
-      totalHits: 0,
-      totalPages: 0,
-      currentPage: 0,
-      facets: [],
-    })),
-    loadInitialFacets: vi.fn(() => Promise.resolve([])),
-    cancelCurrentSearch: vi.fn(),
-  })),
+  // A `function` implementation, because the composable constructs the service with `new`.
+  DocumentSearchService: vi.fn().mockImplementation(function () {
+    return {
+      performSearch: vi.fn(() => Promise.resolve({
+        hits: [],
+        totalHits: 0,
+        totalPages: 0,
+        currentPage: 0,
+        facets: [],
+      })),
+      loadInitialFacets: vi.fn(() => Promise.resolve([])),
+      cancelCurrentSearch: vi.fn(),
+    };
+  }),
 }));
 
 describe('useDocumentSearch (refactored)', () => {
@@ -155,6 +161,30 @@ describe('useDocumentSearch (refactored)', () => {
       expect(controller.activeSort.value).toBe('date_asc');
       controller.setSortBy('date_desc');
       expect(controller.activeSort.value).toBe('date_desc');
+    });
+  });
+
+  describe('search term analytics', () => {
+    it('reports a settled document search, and not the browse wildcard', async () => {
+      vi.useFakeTimers();
+      const { useDocumentSearch } = await import('../useDocumentSearch');
+      const controller = useDocumentSearch();
+      await controller.initializeSearchClient();
+
+      controller.search('*', true);
+      await vi.advanceTimersByTimeAsync(2500);
+      expect(trackEvent).not.toHaveBeenCalled();
+
+      controller.search('Stipendija', true);
+      await vi.advanceTimersByTimeAsync(2500);
+
+      expect(trackEvent).toHaveBeenCalledTimes(1);
+      expect(trackEvent).toHaveBeenCalledWith('search_submitted', {
+        term: 'stipendija',
+        results: 0,
+        source: 'documents',
+      });
+      vi.useRealTimers();
     });
   });
 

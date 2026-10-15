@@ -25,6 +25,7 @@ import { createTypesenseClients } from './useSearchClient';
 
 import { useBaseSearch, type BaseSearchService } from '@/Shared/Search/composables/useBaseSearch';
 import { FilterUtils } from '@/Shared/Search/services/FilterUtils';
+import { createSearchReporter } from '@/Shared/Search/searchReporter';
 import type { ProcessedSearchResult } from '@/Shared/Search/types';
 
 // Re-export types for backward compatibility
@@ -417,7 +418,7 @@ export const useDocumentSearch = (): DocumentSearchController => {
     // Update URL without page reload
     const newUrl = new URL(window.location.href);
     newUrl.search = params.toString();
-    window.history.replaceState({}, '', newUrl.toString());
+    window.history.replaceState(window.history.state, '', newUrl.toString());
   };
 
   /**
@@ -506,12 +507,26 @@ export const useDocumentSearch = (): DocumentSearchController => {
     { deep: true },
   );
 
+  const searchReporter = createSearchReporter('documents');
+
   // Also sync after search completes
   watch(
     () => baseSearch.status.value,
     (newStatus, oldStatus) => {
-      if (oldStatus === 'searching' && newStatus === 'idle' && !isInitialLoad) {
+      if (oldStatus !== 'searching' || newStatus !== 'idle') {
+        return;
+      }
+
+      if (!isInitialLoad) {
         syncFiltersToUrl();
+      }
+
+      const query = baseSearch.filters.value.query.trim();
+      if (query === '' || query === '*') {
+        searchReporter.reset();
+      }
+      else if (!baseSearch.error.value) {
+        searchReporter.report(query, baseSearch.totalHits.value);
       }
     },
   );
