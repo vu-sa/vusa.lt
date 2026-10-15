@@ -62,6 +62,7 @@ return [
         'pick' => 'Pasirink problemą',
     ],
     'agenda_item' => [
+        'none_linked' => 'Tikslų nesusieta.',
         'title' => 'Susiję tikslai',
         'link' => 'Pridėti prie tikslo',
         'link_description' => 'Klausimas taps tikslo veiksmu su posėdžio data.',

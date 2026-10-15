@@ -8,6 +8,7 @@
           'flex flex-col p-0',
           isMobile ? 'h-[92dvh] max-h-[92dvh]' : 'w-full sm:max-w-xl',
         ]"
+        @open-auto-focus="focusInitialField"
       >
         <form class="flex h-full min-h-0 flex-col" @submit.prevent="emit('submit')">
           <SheetHeader class="border-b border-border px-6 py-4">
@@ -93,8 +94,11 @@ const props = withDefaults(defineProps<{
   disabled?: boolean;
   /** Closing by the overlay, Esc or Atšaukti then asks before throwing edits away. */
   dirty?: boolean;
+  /** Id of the field to focus on open, instead of the first tabbable element. */
+  initialFocus?: string;
 }>(), {
   description: undefined,
+  initialFocus: undefined,
   saveLabel: undefined,
 });
 
@@ -106,6 +110,15 @@ const emit = defineEmits<{
 
 const isMobile = useIsMobile();
 const discardOpen = ref(false);
+
+const focusInitialField = (event: Event) => {
+  const field = props.initialFocus ? document.getElementById(props.initialFocus) : null;
+
+  if (field) {
+    event.preventDefault();
+    field.focus();
+  }
+};
 
 const close = () => {
   emit('cancel');

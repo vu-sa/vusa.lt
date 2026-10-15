@@ -97,6 +97,7 @@
   --animate-spotlight-breathe: spotlight-breathe 2.4s ease-in-out infinite;
   --animate-badge-pop: badge-pop 0.25s ease-out;
   --animate-autofill-flash: autofill-flash 0.9s ease-out;
+  --animate-attention-wash: attention-wash 1.8s ease-in-out 4;
 
   @keyframes accordion-down {
     from {
@@ -141,6 +142,14 @@
   @keyframes spotlight-breathe {
     50% {
       opacity: 0.45;
+    }
+  }
+
+  /* A control asking to be used: a brand wash that passes over it, then rests. */
+  @keyframes attention-wash {
+    30%,
+    60% {
+      background-color: color-mix(in oklab, var(--brand) 14%, transparent);
     }
   }
 

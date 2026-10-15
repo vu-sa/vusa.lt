@@ -41,7 +41,7 @@
 import { Link } from '@inertiajs/vue3';
 import { computed, inject, onBeforeUnmount, useId, watchEffect, type Component } from 'vue';
 
-import { OVERVIEW_STATUS_KEY } from './overviewStatus';
+import { OVERVIEW_STATUS_KEY, type OverviewStatusEntry } from './overviewStatus';
 
 const props = withDefaults(defineProps<{
   title: string;
@@ -49,6 +49,8 @@ const props = withDefaults(defineProps<{
   variant?: 'default' | 'home';
   empty?: boolean;
   emptyText?: string;
+  /** Offered in the status list in place of `emptyText`, e.g. to fill the section. */
+  emptyAction?: OverviewStatusEntry['action'];
   href?: string;
   hrefLabel?: string;
   count?: number | null;
@@ -58,6 +60,7 @@ const props = withDefaults(defineProps<{
   icon: undefined,
   variant: 'default',
   emptyText: undefined,
+  emptyAction: undefined,
   href: undefined,
   hrefLabel: undefined,
   count: undefined,
@@ -84,7 +87,7 @@ watchEffect(() => {
     return;
   }
 
-  statusRegistry.set(statusId, { title: props.title, emptyText: props.emptyText, icon: props.icon });
+  statusRegistry.set(statusId, { title: props.title, emptyText: props.emptyText, icon: props.icon, action: props.emptyAction });
 });
 
 onBeforeUnmount(() => statusRegistry?.remove(statusId));

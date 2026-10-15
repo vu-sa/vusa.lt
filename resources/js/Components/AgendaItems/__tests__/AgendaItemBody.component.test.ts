@@ -40,30 +40,11 @@ const typeButton = (wrapper: ReturnType<typeof mount>, value: string) =>
   wrapper.find(`[data-testid="agenda-item-type-${value}"]`);
 
 describe('AgendaItemBody', () => {
-  it('offers the four item types, a break included, as big taps', () => {
+  it('leaves choosing the type to the record page for an editor', () => {
     const { wrapper } = factory();
 
-    ['voting', 'informational', 'deferred', 'break'].forEach((value) => {
-      expect(typeButton(wrapper, value).exists()).toBe(true);
-    });
-  });
-
-  it('records the type on the form', async () => {
-    const { wrapper, form } = factory();
-
-    await typeButton(wrapper, 'break').trigger('click');
-
-    expect(form.type).toBe('break');
-  });
-
-  /** Choosing "Balsavimas" should make the outcome the next tap, not an "add a vote" step. */
-  it('opens the first vote as soon as the item becomes a vote', async () => {
-    const { wrapper, form } = factory({}, { type: null, votes: [] });
-
-    await typeButton(wrapper, 'voting').trigger('click');
-
-    expect(form.votes).toHaveLength(1);
-    expect(form.votes[0].is_main).toBe(true);
+    expect(wrapper.find('#agenda-item-type').exists()).toBe(false);
+    expect(typeButton(wrapper, 'voting').exists()).toBe(false);
   });
 
   it('shows the outcome only for a voting item', () => {
@@ -71,35 +52,10 @@ describe('AgendaItemBody', () => {
     expect(factory({}, { type: 'informational' }).wrapper.find('#agenda-item-votes').exists()).toBe(false);
   });
 
-  it('lets the type picker itself ask for a type, without a hint paragraph', () => {
-    const pending = factory({}, { type: null, votes: [] }).wrapper;
-    expect(pending.find('[data-testid="agenda-item-type-pending"]').exists()).toBe(true);
-    expect(pending.find('[data-slot="form-segmented-control"]').classes()).toContain('border-status-attention-border');
-
-    const chosen = factory({}, { type: 'informational' }).wrapper;
-    expect(chosen.find('[data-testid="agenda-item-type-pending"]').exists()).toBe(false);
-    expect(chosen.find('[data-slot="form-segmented-control"]').classes()).not.toContain('border-status-attention-border');
-  });
-
-  it('lets a chosen type be collapsed, but not an unset one', async () => {
-    const { wrapper } = factory();
-
-    await wrapper.find('[data-testid="agenda-item-type-collapse"]').trigger('click');
-    expect(wrapper.emitted('update:typeOpen')).toEqual([[false]]);
-
-    const pending = factory({}, { type: null, votes: [] }).wrapper;
-    expect(pending.find('[data-testid="agenda-item-type-collapse"]').exists()).toBe(false);
-  });
-
-  it('hides the picker while collapsed', () => {
-    expect(factory({ typeOpen: false }).wrapper.find('#agenda-item-type').exists()).toBe(false);
-  });
-
   it('reads the type as text for someone who cannot edit', () => {
     const { wrapper } = factory({ editable: false }, { type: 'informational' });
 
-    expect(typeButton(wrapper, 'voting').exists()).toBe(false);
-    expect(wrapper.text()).toContain('Informacinis');
+    expect(wrapper.get('#agenda-item-type').text()).toContain('Informacinis');
   });
 
   /** Time is a fact of the record, edited in the sheet — not a live control among the taps. */

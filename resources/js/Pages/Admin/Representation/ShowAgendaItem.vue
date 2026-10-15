@@ -80,6 +80,19 @@
       </Popover>
     </template>
 
+    <!-- An unset type is the status an editor can fix right here. -->
+    <template v-if="canUpdate && !form.type" #fact-status="{ fact }">
+      <button
+        type="button"
+        class="relative flex items-center gap-1.5 text-left font-semibold text-status-attention underline decoration-status-attention/50 underline-offset-4 transition-colors hover:decoration-status-attention focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring before:absolute before:-inset-y-3 before:inset-x-0"
+        data-testid="agenda-item-status-choose-type"
+        @click="typeDialogOpen = true"
+      >
+        <component :is="fact.status?.icon" class="size-4 shrink-0" aria-hidden="true" />
+        {{ $t(fact.status?.label ?? '') }}
+      </button>
+    </template>
+
     <template #fact-meeting>
       <Link :href="route('meetings.show', meeting?.id ?? agendaItem.meeting_id)" :class="LINK_CLASS">
         {{ meetingLabel || $t('Posėdis') }}
@@ -131,18 +144,8 @@
       <span v-else>{{ $t('meetings.record.internal_only') }}</span>
     </template>
 
-    <template v-if="canUpdate && !typeOpen" #alert>
-      <Button
-        variant="ghost"
-        size="sm"
-        voice="sentence"
-        class="text-muted-foreground pointer-coarse:h-11"
-        data-testid="agenda-item-change-type"
-        @click="typeOpen = true"
-      >
-        <Shapes class="size-4" />
-        {{ $t('meetings.item.change_type') }}
-      </Button>
+    <template v-if="canUpdate" #next-actions>
+      <RecordNextActions :actions="nextActions" />
     </template>
 
     <template #item>
@@ -151,33 +154,44 @@
       </p>
       <div v-else class="space-y-10">
         <AgendaItemBody
-          v-model:type-open="typeOpen"
           :form
           :editable="canUpdate"
           :requires-student-perspective
           @manage-votes="votesSheetOpen = true" />
 
-        <OverviewSection variant="home" :title="$t('meetings.item.description')" :icon="FileText" data-testid="agenda-item-description">
+        <OverviewSection
+          :empty="!descriptionText"
+          :empty-text="$t('meetings.item.description_empty')"
+          :empty-action="fillAction('description', $t('meetings.item.description_add'))"
+          variant="home"
+          :title="$t('meetings.item.description')"
+          :icon="FileText"
+          data-testid="agenda-item-description"
+        >
           <p v-if="descriptionText" class="max-w-prose whitespace-pre-line text-sm leading-relaxed text-foreground">
             {{ descriptionText }}
           </p>
-          <p v-else class="text-sm text-muted-foreground">
-            {{ $t('meetings.item.description_empty') }}
-          </p>
         </OverviewSection>
 
-        <OverviewSection v-if="requiresStudentPerspective" variant="home" :title="$t('meetings.item.student_position')" :icon="MessageSquareQuote">
+        <OverviewSection
+          v-if="requiresStudentPerspective"
+          :empty="!studentPositionText"
+          :empty-text="$t('meetings.item.student_position_empty')"
+          :empty-action="fillAction('student_position', $t('meetings.item.student_position_add'))"
+          variant="home"
+          :title="$t('meetings.item.student_position')"
+          :icon="MessageSquareQuote"
+        >
           <p v-if="studentPositionText" class="max-w-prose whitespace-pre-line text-sm leading-relaxed text-foreground">
             {{ studentPositionText }}
-          </p>
-          <p v-else class="text-sm text-muted-foreground">
-            {{ $t('meetings.item.student_position_empty') }}
           </p>
         </OverviewSection>
 
         <OverviewSection
           v-if="problems.length || canUpdate"
           variant="home"
+          :empty="!problems.length"
+          :empty-action="emptyProblemAction"
           :title="$t('Susijusios problemos')"
           :icon="AlertCircle"
           data-testid="agenda-item-problems"
@@ -196,9 +210,6 @@
             </Button>
           </template>
           <ProblemSummaryList v-if="problems.length" :problems :removable="canUpdate" @remove="unlinkProblem" />
-          <p v-else class="text-sm text-muted-foreground">
-            {{ $t('Jei šiame klausime atstovai kėlė studentų problemą, susiek ją – taip matysis, kur problema svarstyta.') }}
-          </p>
         </OverviewSection>
 
         <!-- Goals pilot: absent outside it. -->
@@ -222,6 +233,7 @@
     <AgendaItemSheetForm
       v-if="canUpdate"
       v-model:open="sheetOpen"
+      :focus-field="sheetFocusField"
       :form
       :save-then
       :default-start-time="defaultStartTimeFromPreviousItem()"
@@ -239,6 +251,8 @@
       :agenda-item-id="agendaItem.id"
       :linked-ids="problems.map(problem => problem.id)"
     />
+
+    <AgendaItemTypeDialog v-if="canUpdate" v-model:open="typeDialogOpen" :form />
 
     <AgendaItemVotesSheetForm
       v-if="canUpdate"
@@ -270,7 +284,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue';
 import { Deferred, Link, router, useForm } from '@inertiajs/vue3';
 import { useClipboard, useMediaQuery } from '@vueuse/core';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
@@ -278,6 +292,7 @@ import { AlertCircle, Check, CircleDashed, Copy, ExternalLink, FileText, Globe, 
 
 import { useToasts } from '@/Composables/useToasts';
 import AgendaItemBody from '@/Components/AgendaItems/AgendaItemBody.vue';
+import AgendaItemTypeDialog from '@/Components/AgendaItems/AgendaItemTypeDialog.vue';
 import AgendaItemNotesSidebar from '@/Components/AgendaItems/AgendaItemNotesSidebar.vue';
 import AgendaItemSheetForm from '@/Components/AgendaItems/AgendaItemSheetForm.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
@@ -285,7 +300,8 @@ import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import AgendaItemVotesSheetForm from '@/Components/AgendaItems/AgendaItemVotesSheetForm.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordNavigationContext } from '@/Components/Layouts/RecordPage.vue';
 import { missingFieldsLabel, type AgendaItemMissingAction } from '@/Components/Meetings/meetingCompletion';
-import { ConfirmDialog, OverviewSection } from '@/Components/Patterns';
+import { ConfirmDialog, OverviewSection, RecordNextActions, type RecordNextAction } from '@/Components/Patterns';
+import { createOverviewStatusRegistry, OVERVIEW_STATUS_KEY } from '@/Components/Patterns/overviewStatus';
 import ProblemLinkSheet from '@/Components/Problems/ProblemLinkSheet.vue';
 import AgendaItemGoalsPanel from '@/Features/Admin/Goals/AgendaItemGoalsPanel.vue';
 import type { LinkedGoal } from '@/Features/Admin/Goals/types';
@@ -293,6 +309,7 @@ import ProblemSummaryList, { type ProblemSummary } from '@/Components/Problems/P
 import { Button } from '@/Components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/Components/ui/sheet';
+import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import { agendaItemStatuses } from '@/Constants/statuses';
 import { getAgendaItemStatus } from '@/Composables/useAgendaItemStyling';
 import { enterAgendaItem } from '@/Composables/useRecordTrail';
@@ -351,6 +368,9 @@ const props = withDefaults(defineProps<{
   requiresStudentPerspective: true,
 });
 
+// Empty parts leave the content and offer themselves as fill-in actions in the record's next-actions strip.
+provide(OVERVIEW_STATUS_KEY, createOverviewStatusRegistry());
+
 const LINK_CLASS = 'text-brand underline decoration-brand/40 underline-offset-4 hover:decoration-brand';
 
 const isDesktop = useMediaQuery('(min-width: 1024px)');
@@ -370,9 +390,29 @@ const votesSheetOpen = ref(false);
 const notesOpen = ref(false);
 const deleteOpen = ref(false);
 const problemSheetOpen = ref(false);
+const sheetFocusField = ref<'description' | 'student_position' | null>(null);
+const emptyProblemAction = computed(() => canUpdate.value
+  ? { label: $t('Susieti problemą'), icon: getEntityTypeDefinition(ModelEnum.PROBLEM)?.icon, run: () => { problemSheetOpen.value = true; } }
+  : undefined);
+
+const fillAction = (field: 'description' | 'student_position', label: string) => (canUpdate.value
+  ? {
+      label,
+      run: () => {
+        sheetFocusField.value = field;
+        sheetOpen.value = true;
+      },
+    }
+  : undefined);
+
+watch(sheetOpen, (open) => {
+  if (!open) {
+    sheetFocusField.value = null;
+  }
+});
 
 function unlinkProblem(problem: ProblemSummary): void {
-  router.delete(route('agendaItems.problems.destroy', [props.agendaItem.id, problem.id]), { preserveScroll: true });
+  router.delete(route('agendaItems.problems.destroy', [props.agendaItem.id, problem.id]), { preserveScroll: true, except: ['goalLinks'] });
 }
 
 /**
@@ -412,7 +452,7 @@ const form = useForm<AgendaItemFormData>({
 });
 
 // A tap is a whole answer, so it saves quickly; the sheet saves on its own button.
-const { saveStatus, saveThen } = useAgendaItemAutosave(form, props.agendaItem.id, 700);
+const { saveStatus, saveThen } = useAgendaItemAutosave(form, props.agendaItem.id, 700, ['goalLinks']);
 
 // RecordPage renders the subtitle row whenever the slot exists, so it is only passed with something in it.
 const hasSubtitle = computed(() => !canUpdate.value || saveStatus.value !== 'idle' || !isDesktop.value);
@@ -485,8 +525,16 @@ const requestedFocus = typeof window !== 'undefined'
   ? new URLSearchParams(window.location.search).get('focus')
   : null;
 
-// The type is asked for until it is set, then folds into the status fact to leave room for the outcome.
-const typeOpen = ref(!props.agendaItem.type || (requestedFocus !== null && requestedFocus !== 'votes'));
+// The meeting's completion checklist links here with `?focus=type` to ask for a missing type.
+const typeDialogOpen = ref(canUpdate.value && requestedFocus === 'type');
+
+const nextActions = computed<RecordNextAction[]>(() => [{
+  key: 'change-type',
+  label: form.type ? $t('meetings.item.change_type') : $t('meetings.item.choose_type'),
+  icon: Shapes,
+  attention: !form.type,
+  run: () => { typeDialogOpen.value = true; },
+}]);
 
 const itemHref = (id: string) => route('agendaItems.show', { agendaItem: id });
 
@@ -558,13 +606,12 @@ const stopGuard = router.on('before', (event) => {
 onUnmounted(stopGuard);
 
 onMounted(() => {
-  if (!requestedFocus) {
+  if (requestedFocus !== 'votes') {
     return;
   }
 
   void nextTick(() => {
-    document.getElementById(requestedFocus === 'votes' ? 'agenda-item-votes' : 'agenda-item-type')
-      ?.scrollIntoView({ block: 'center' });
+    document.getElementById('agenda-item-votes')?.scrollIntoView({ block: 'center' });
   });
 });
 </script>

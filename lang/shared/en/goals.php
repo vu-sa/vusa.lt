@@ -62,6 +62,7 @@ return [
         'pick' => 'Pick a problem',
     ],
     'agenda_item' => [
+        'none_linked' => 'No goals linked.',
         'title' => 'Related goals',
         'link' => 'Add to a goal',
         'link_description' => 'The item becomes a step of the goal, dated by the meeting.',

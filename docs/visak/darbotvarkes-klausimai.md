@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Darbotvarkės klausimai
 area: agendaItems
 models: [AgendaItem, Vote]
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-15
 tests:
   - tests/Browser/AgendaItemPrivacyTest.php
   - resources/js/Components/Public/__tests__/PublicAgendaItemRow.component.test.ts
@@ -58,6 +58,13 @@ savo puslapį `/mano/agendaItems/{id}`.
 
 ## Kaip tai veikia
 
+Neužpildytas aprašymas, studentų pozicija, susijusios problemos ar tikslai nerodomi kaip atskiri
+skyriai. Po pagrindine informacija, virš turinio, rodoma viena veiksmų eilė: „Keisti tipą“ ir
+punktyriniai mygtukai tam, ką dar galima papildyti, pvz., „Pridėti aprašymą“ ar „Susieti problemą“.
+Paspaudus atsiveria redagavimo langas su tuo lauku arba susiejimo langas. Kas klausimo redaguoti
+negali, tuščių skyrių nemato.
+Susiję tikslai matomi tik bandomojoje tikslų funkcijoje.
+
 ### Matomumas: Tik viduje {#matomumas}
 
 Posėdis gali būti viešas, o atskiras jo klausimas skirtas vidaus darbui. Matomumas pasirenkamas
@@ -97,7 +104,9 @@ Redagavimo lange rodomas prieigos paaiškinimas ir viešos eilutės peržiūra.
 
 ### Klausimo tipas {#tipai}
 
-Kiekvienam klausimui pažymimas tipas. Kol jis nepažymėtas, klausimas laikomas nepilnu.
+Kiekvienam klausimui pažymimas tipas. Kol jis nepažymėtas, klausimas laikomas nepilnu. Tipas
+matomas klausimo būsenoje; pasirenkamas ar keičiamas mygtuku **Pasirinkti tipą** / **Keisti tipą**,
+kuris atveria atskirą langą su keturiais variantais. Jį galima pakeisti ir lange **Redaguoti punktą**.
 
 | Tipas | Kada | Reikia balsavimo? |
 |---|---|---|

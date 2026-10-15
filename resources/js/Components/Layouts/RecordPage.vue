@@ -166,13 +166,16 @@
           </dt>
           <dd class="mt-auto min-w-0 pt-1 text-sm font-medium text-foreground">
             <slot :name="`fact-${fact.key}`" :fact>
-              <span v-if="fact.status" :class="['inline-flex items-center gap-1.5 font-semibold', statusRoleParts[fact.status.role].text]">
-                <component :is="fact.status.icon" class="size-4 shrink-0" aria-hidden="true" />
-                {{ $t(fact.status.label) }}
-              </span>
-              <span v-if="fact.status && fact.detail" class="mt-0.5 block text-xs font-normal text-muted-foreground" data-slot="fact-detail">
-                {{ fact.detail }}
-              </span>
+              <!-- Block-level, so the icon cannot stretch the line box past the other facts' values. -->
+              <template v-if="fact.status">
+                <span :class="['flex items-center gap-1.5 font-semibold', statusRoleParts[fact.status.role].text]">
+                  <component :is="fact.status.icon" class="size-4 shrink-0" aria-hidden="true" />
+                  {{ $t(fact.status.label) }}
+                </span>
+                <span v-if="fact.detail" class="mt-0.5 block text-xs font-normal text-muted-foreground" data-slot="fact-detail">
+                  {{ fact.detail }}
+                </span>
+              </template>
               <a
                 v-else-if="fact.href && fact.external"
                 :href="fact.href"
@@ -193,6 +196,11 @@
 
       <div v-if="$slots.alert" class="mt-6">
         <slot name="alert" />
+      </div>
+
+      <!-- `empty:` hides the gap when the strip has nothing to offer (a read-only viewer). -->
+      <div v-if="$slots['next-actions']" class="mt-6 empty:hidden" data-slot="record-next-actions">
+        <slot name="next-actions" />
       </div>
 
       <nav v-if="sections.length >= 3" class="mt-8 hidden border-b border-border md:flex" :aria-label="$t('Įrašo skyriai')">

@@ -4,6 +4,7 @@
     :title="$t('meetings.item.edit')"
     :processing="form.processing"
     :dirty
+    :initial-focus="focusField ? FIELD_IDS[focusField] : undefined"
     @update:open="emit('update:open', $event)"
     @cancel="load"
     @submit="save"
@@ -87,6 +88,17 @@
       />
     </FormFieldWrapper>
 
+    <FormFieldWrapper id="agenda-item-sheet-type" :label="$t('meetings.item.type')" :error="form.errors.type">
+      <FormSegmentedControl
+        v-model="draftType"
+        :options="typeOptions"
+        :aria-label="$t('meetings.item.type')"
+        test-id-prefix="agenda-item-sheet-type"
+        stack-on-phone
+        class="[&>button]:gap-1 [&>button]:px-1.5 [&>button]:tracking-normal [&_svg]:size-3.5!"
+      />
+    </FormFieldWrapper>
+
     <FormFieldWrapper id="agenda-item-start-time" :label="$t('meetings.item.time')" :error="form.errors.end_time">
       <div class="flex items-center gap-2">
         <!-- TimePicker, not <input type="time">: the native control shows AM/PM in an English browser. -->
@@ -157,7 +169,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronDown, Languages, Trash2 } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
-import { SheetForm } from '@/Components/Patterns';
+import { agendaItemTypeOptions, applyAgendaItemType, type AgendaItemType } from '@/Components/AgendaItems/agendaItemTypes';
+import { FormSegmentedControl, SheetForm } from '@/Components/Patterns';
 import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
@@ -182,6 +195,8 @@ const props = withDefaults(defineProps<{
   isPublic?: boolean;
   canDelete?: boolean;
   order?: number;
+  /** Focused on open, when the sheet was opened to fill one field. */
+  focusField?: 'description' | 'student_position' | null;
 }>(), {
   defaultStartTime: null,
   meetingStartTime: null,
@@ -189,6 +204,7 @@ const props = withDefaults(defineProps<{
   isPublic: false,
   canDelete: false,
   order: undefined,
+  focusField: null,
 });
 
 const emit = defineEmits<{
@@ -197,9 +213,10 @@ const emit = defineEmits<{
 }>();
 
 const LOCALES = ['lt', 'en'] as const;
+const FIELD_IDS = { description: 'agenda-item-description', student_position: 'agenda-item-student-position' } as const;
 
 /** Votes are edited in AgendaItemVotesSheetForm, so this sheet stays about the item itself. */
-type TextDraft = Pick<AgendaItemFormData, 'title' | 'is_private' | 'public_title' | 'brought_by_students' | 'description' | 'student_position' | 'start_time' | 'end_time'>;
+type TextDraft = Pick<AgendaItemFormData, 'title' | 'type' | 'is_private' | 'public_title' | 'brought_by_students' | 'description' | 'student_position' | 'start_time' | 'end_time'>;
 
 function clone<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
@@ -207,6 +224,7 @@ function clone<T>(value: T): T {
 
 const fromForm = (): TextDraft => clone({
   title: props.form.title,
+  type: props.form.type,
   is_private: props.form.is_private ?? false,
   public_title: props.form.public_title ?? { lt: '', en: '' },
   brought_by_students: props.form.brought_by_students,
@@ -217,6 +235,13 @@ const fromForm = (): TextDraft => clone({
 });
 
 const draft = reactive<TextDraft>(fromForm());
+
+const typeOptions = agendaItemTypeOptions();
+// FormSegmentedControl needs a value; an unset type simply matches no option.
+const draftType = computed<AgendaItemType>({
+  get: () => draft.type as AgendaItemType,
+  set: (value) => { draft.type = value; },
+});
 const baseline = ref(JSON.stringify(draft));
 const locale = ref<'lt' | 'en'>('lt');
 
@@ -259,6 +284,9 @@ const publicHint = computed(() => (draft.is_private ? $t('meetings.privacy.inter
 const save = async () => {
   // eslint-disable-next-line vue/no-mutating-props -- Commit the draft to the parent-owned Inertia form on save.
   Object.assign(props.form, clone(draft));
+  if (draft.type) {
+    applyAgendaItemType(props.form, draft.type);
+  }
   // Inertia recalculates isDirty through a watcher before saveThen decides whether to submit.
   await nextTick();
 
