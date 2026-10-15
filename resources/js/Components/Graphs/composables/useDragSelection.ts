@@ -268,5 +268,3 @@ export function useDragSelection(
     cleanup,
   };
 }
-
-export type { DragSelectionState as DragState };

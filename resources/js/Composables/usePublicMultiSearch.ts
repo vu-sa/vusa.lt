@@ -12,7 +12,6 @@
  * lifted from the dedicated search services (DocumentSearchService, InstitutionSearchService,
  * MeetingSearchService) so behavior stays consistent with the dedicated pages.
  */
-
 import { reactive, ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useLocalStorage, useDebounceFn } from '@vueuse/core';
@@ -508,5 +507,3 @@ export const usePublicMultiSearch = (options: { perPage?: number; filteredPerPag
     browseQuery: BROWSE_QUERY,
   };
 };
-
-export type PublicMultiSearchController = ReturnType<typeof usePublicMultiSearch>;

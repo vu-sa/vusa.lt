@@ -5,7 +5,6 @@
  * across toasts, dropdown indicator, and full page views.
  * Handles both new standardized structure and legacy notification formats.
  */
-
 import { trans as $t } from 'laravel-vue-i18n';
 import type { Component } from 'vue';
 import { BriefcaseBusiness, CalendarCheck, CalendarDays, ClipboardList, Eye, FileCheck, ListTodo, Megaphone, MessageSquare, ShieldCheck, type LucideIcon } from '@lucide/vue';
@@ -528,40 +527,4 @@ export function getNotificationCategoryTag(notification: Notification): string {
  */
 export function formatNotificationTime(notification: Notification): string {
   return formatNearDate(notification.created_at);
-}
-
-/**
- * Group notifications by time period
- */
-export function groupNotificationsByTime(notifications: Notification[]): Map<string, Notification[]> {
-  const groups = new Map<string, Notification[]>();
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-  const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-  for (const notification of notifications) {
-    const date = new Date(notification.created_at);
-    let period: string;
-
-    if (date >= today) {
-      period = $t('Today');
-    }
-    else if (date >= yesterday) {
-      period = $t('Yesterday');
-    }
-    else if (date >= lastWeek) {
-      period = $t('This Week');
-    }
-    else {
-      period = $t('Earlier');
-    }
-
-    if (!groups.has(period)) {
-      groups.set(period, []);
-    }
-    groups.get(period)!.push(notification);
-  }
-
-  return groups;
 }

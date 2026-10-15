@@ -1,16 +1,4 @@
-import {
-  columnVisibilityFeature,
-  rowSelectionFeature,
-  rowSortingFeature,
-  tableFeatures,
-  useTable,
-  type ColumnDef,
-  type RowSelectionState,
-  type SortingState,
-  type Table,
-  type Updater,
-  type VisibilityState,
-} from '@tanstack/vue-table';
+import { columnVisibilityFeature, rowSelectionFeature, rowSortingFeature, tableFeatures, useTable, type ColumnDef, type RowSelectionState, type SortingState, type Table, type Updater, type VisibilityState } from '@tanstack/vue-table';
 import { useStorage } from '@vueuse/core';
 import { computed, watch, type Ref } from 'vue';
 
@@ -24,8 +12,6 @@ const features = tableFeatures({
   rowSelectionFeature,
   columnVisibilityFeature,
 });
-
-export type CollectionTableFeatures = typeof features;
 
 interface CollectionTableOptions<T> {
   /** Scopes the remembered column visibility. */

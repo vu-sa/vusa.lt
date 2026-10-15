@@ -29,21 +29,6 @@ export interface SearchError {
  */
 export type SearchStatus = 'idle' | 'searching' | 'loading-more' | 'loading-facets' | 'error';
 
-/**
- * Sort direction
- */
-export type SortDirection = 'asc' | 'desc';
-
-/**
- * Sort option for search results
- */
-export interface SortOption {
-  value: string;
-  label: string;
-  field: string;
-  direction: SortDirection;
-}
-
 // ============================================================================
 // Facet Types
 // ============================================================================
@@ -116,29 +101,6 @@ export interface BaseSearchFilters {
   query: string;
   tenants?: string[];
   [key: string]: unknown;
-}
-
-// ============================================================================
-// Search State Types
-// ============================================================================
-
-/**
- * Base search state - extend for model-specific state
- */
-export interface BaseSearchState<TFilters extends BaseSearchFilters, TFacet extends BaseFacet> {
-  status: SearchStatus;
-  hasResults: boolean;
-  totalHits: number;
-  query: string;
-  filters: TFilters;
-  facets: TFacet[];
-  initialFacets: TFacet[];
-  results: unknown[];
-  error: SearchError | null;
-  isOnline: boolean;
-  currentPage: number;
-  totalPages: number;
-  perPage: number;
 }
 
 /**
@@ -224,106 +186,6 @@ export interface AdminSearchConfig extends SearchProfileConfig {
   nodes: TypesenseNode[];
   expiresAt: number;
   isSuperAdmin: boolean;
-}
-
-// ============================================================================
-// Search Controller Interface
-// ============================================================================
-
-/**
- * Base search controller interface - minimum methods all search controllers should have
- */
-export interface BaseSearchController<
-  TFilters extends BaseSearchFilters,
-  TFacet extends BaseFacet,
-  TResult = unknown,
-> {
-  // State refs
-  status: { value: SearchStatus };
-  query: { value: string };
-  results: { value: TResult[] };
-  facets: { value: TFacet[] };
-  filters: { value: TFilters };
-  totalHits: { value: number };
-  error: { value: SearchError | null };
-  isOnline: { value: boolean };
-
-  // Pagination
-  currentPage: { value: number };
-  totalPages: { value: number };
-  perPage: { value: number };
-
-  // Computed
-  isSearching: { value: boolean };
-  isLoadingFacets: { value: boolean };
-  isLoadingMore: { value: boolean };
-  hasResults: { value: boolean };
-  hasActiveFilters: { value: boolean };
-  hasMoreResults: { value: boolean };
-  activeFilterCount: { value: number };
-
-  // Search methods
-  search: (query: string, immediate?: boolean) => void;
-  loadMore: () => void;
-  refresh: () => void;
-
-  // Filter methods
-  setFilter: (field: string, value: unknown) => void;
-  toggleFilter: (field: string, value: string | number) => void;
-  clearFilters: () => void;
-
-  // Error handling
-  retrySearch: () => void;
-  clearError: () => void;
-
-  // Initialization
-  initialize: () => Promise<void>;
-  loadInitialFacets: () => Promise<void>;
-}
-
-// ============================================================================
-// Search Service Interface
-// ============================================================================
-
-/**
- * Abstract search service interface
- * Implementations handle the actual Typesense API calls
- */
-export interface SearchService<TFilters extends BaseSearchFilters, TFacet extends BaseFacet> {
-  performSearch(
-    filters: TFilters,
-    perPage: number,
-    isLoadMore: boolean,
-    currentPage: number
-  ): Promise<ProcessedSearchResult<TFacet>>;
-
-  loadInitialFacets(): Promise<TFacet[]>;
-}
-
-// ============================================================================
-// Client Factory Types
-// ============================================================================
-
-/**
- * Search client type - either public or admin scoped
- */
-export type SearchClientType = 'public' | 'admin';
-
-/**
- * Client factory options
- */
-export interface SearchClientOptions {
-  type: SearchClientType;
-  collection?: string;
-  additionalSearchParameters?: Record<string, unknown>;
-}
-
-/**
- * Created search clients
- */
-export interface SearchClients {
-  typesenseClient: unknown;
-  searchClient?: unknown; // InstantSearch adapter (optional)
 }
 
 // ============================================================================

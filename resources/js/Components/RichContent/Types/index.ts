@@ -3,7 +3,7 @@ import { defineAsyncComponent, type Component } from 'vue';
 import { displayTypeRegistry, type ContentDisplayType } from './display';
 
 export { getSkeletonForType } from './display';
-export type { BlockWidth, ContentTypeSkeleton } from './display';
+export type { BlockWidth } from './display';
 
 // Re-export all type definitions
 export * from './types';

@@ -28,9 +28,6 @@ export interface ReservationStateCount {
   count: number;
 }
 
-/** The three buckets the KPI strip reports, in the order work arrives. */
-export type KpiStatus = Extract<ReservationRowStatus, 'created' | 'lent' | 'returned'>;
-
 /** KPI counts, derived on the client by computeReservationStats(). Counts reservations, not items. */
 export interface ReservationStats {
   awaiting: number;
@@ -48,9 +45,6 @@ export const ACTIONABLE_STATES: ReservationResourceState[] = ['created', 'reserv
 
 /** Reverse actions start with the latest lifecycle step represented in a mixed reservation. */
 export const BACKTRACKABLE_STATES: ReservationResourceState[] = ['returned', 'lent', 'reserved'];
-
-/** States nobody can act on any more. Hidden by default — they are archive, not work. */
-export const TERMINAL_STATUSES: ReservationRowStatus[] = ['returned', 'rejected', 'cancelled'];
 
 /**
  * The status dropdown offers these on top of the concrete states. `active` is the default: a
@@ -336,16 +330,6 @@ const STATUS_DOT_CLASSES: Record<ReservationRowStatus, string> = {
 export function getStatusDotClass(status: ReservationRowStatus): string {
   return STATUS_DOT_CLASSES[status];
 }
-
-/**
- * `active` is not one status but every open one, so it is shown as a small stack of their dots
- * rather than a single colour that would misrepresent it.
- */
-export const ACTIVE_STATUS_DOT_CLASSES: string[] = [
-  STATUS_DOT_CLASSES.created,
-  STATUS_DOT_CLASSES.reserved,
-  STATUS_DOT_CLASSES.lent,
-];
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const RETURNED_WINDOW_DAYS = 30;

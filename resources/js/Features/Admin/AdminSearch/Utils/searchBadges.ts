@@ -46,17 +46,3 @@ export function completionTone(value?: string | null): BadgeTone {
     default: return 'neutral';
   }
 }
-
-/** vote_alignment_status → tone. */
-export function alignmentTone(value?: string | null): BadgeTone {
-  switch (value) {
-    case 'aligned':
-    case 'all_match':
-    case 'match': return 'success';
-    case 'misaligned':
-    case 'all_mismatch':
-    case 'mismatch': return 'danger';
-    case 'mixed': return 'warning';
-    default: return 'neutral';
-  }
-}

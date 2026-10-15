@@ -1,14 +1,5 @@
 import { trans as $t } from 'laravel-vue-i18n';
-import {
-  ShieldCheck,
-  Package,
-  PackageCheck,
-  ClipboardCheck,
-  Clock,
-  FilePlus2,
-  FileCheck,
-  type LucideIcon,
-} from '@lucide/vue';
+import { ShieldCheck, Package, PackageCheck, ClipboardCheck, Clock, FilePlus2, FileCheck, type LucideIcon } from '@lucide/vue';
 import { differenceInDays, format, formatDistanceToNow, isToday, isTomorrow, parseISO } from 'date-fns';
 import type { Locale } from 'date-fns';
 
@@ -48,14 +39,6 @@ export interface TaskDisplayData {
     name: string;
     profile_photo_path?: string;
   }>;
-}
-
-/** Aggregate counts the task pages show above the list. */
-export interface TaskStats {
-  total: number;
-  completed: number;
-  overdue: number;
-  autoCompleting: number;
 }
 
 type ActionType = TaskActionType | string | null | undefined;
@@ -146,14 +129,6 @@ export function getTaskActionIcon(actionType: ActionType): LucideIcon {
 /** Icon + background in one class string, for the square action badge. */
 export function getTaskActionBadgeClasses(actionType: ActionType): string {
   return PALETTE_CLASSES[presentationFor(actionType).palette].badge;
-}
-
-export function getTaskActionBackgroundClass(actionType: ActionType): string {
-  return PALETTE_CLASSES[presentationFor(actionType).palette].background;
-}
-
-export function getTaskActionTextClass(actionType: ActionType): string {
-  return PALETTE_CLASSES[presentationFor(actionType).palette].text;
 }
 
 export function getTaskProgressStrokeClass(actionType: ActionType): string {

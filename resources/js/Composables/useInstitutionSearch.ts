@@ -3,18 +3,11 @@
  *
  * Uses shared search infrastructure with institution-specific functionality.
  */
-
 import { ref, computed, nextTick, type ComputedRef } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import { usePage } from '@inertiajs/vue3';
 
-import type {
-  InstitutionSearchFilters,
-  InstitutionFacet,
-  InstitutionSearchPreferences,
-  InstitutionSearchController,
-  SearchError,
-} from '../Types/InstitutionSearchTypes';
+import type { InstitutionSearchFilters, InstitutionFacet, InstitutionSearchPreferences, InstitutionSearchController, SearchError } from '../Types/InstitutionSearchTypes';
 import { InstitutionSearchService } from '../Services/InstitutionSearchService';
 
 import { createTypesenseClients } from './useSearchClient';
@@ -23,12 +16,7 @@ import { useBaseSearch, type BaseSearchService } from '@/Shared/Search/composabl
 import { FilterUtils } from '@/Shared/Search/services/FilterUtils';
 import type { ProcessedSearchResult } from '@/Shared/Search/types';
 
-// Re-export types for backward compatibility
-export type {
-  InstitutionSearchFilters,
-  InstitutionFacet,
-  InstitutionSearchPreferences,
-};
+export type { InstitutionSearchPreferences };
 
 // ============================================================================
 // Types

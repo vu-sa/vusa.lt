@@ -1,4 +1,4 @@
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 
 import { buildProfileParams } from '@/Shared/Search/profiles';
 import { documentWithMatch, type HighlightedHit } from '@/Shared/Search/matches';
@@ -6,35 +6,9 @@ import { facetSearches, mergeDisjunctiveFacets } from '@/Shared/Search/facets';
 import { buildInfix } from '@/Features/Admin/AdminSearch/Utils/searchParams';
 import { ErrorUtils } from '@/Shared/Search/services/SearchErrorUtils';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
-import type {
-  TypesenseNode,
-  AdminSearchConfig,
-  ScopedCollectionConfig,
-  MeetingSearchResult,
-  AgendaItemSearchResult,
-  NewsSearchResult,
-  PageSearchResult,
-  CalendarSearchResult,
-  InstitutionSearchResult,
-  DocumentSearchResult,
-  ResourceSearchResult,
-  DutySearchResult,
-  MultiSearchResults,
-} from '@/Shared/Search/types';
+import type { AdminSearchConfig, MultiSearchResults } from '@/Shared/Search/types';
 
-// Re-export types for backward compatibility
-export type {
-  MeetingSearchResult,
-  AgendaItemSearchResult,
-  NewsSearchResult,
-  PageSearchResult,
-  CalendarSearchResult,
-  InstitutionSearchResult,
-  DocumentSearchResult,
-  ResourceSearchResult,
-  DutySearchResult,
-  MultiSearchResults,
-} from '@/Shared/Search/types';
+export type { MultiSearchResults } from '@/Shared/Search/types';
 
 /**
  * Admin Search Types
@@ -1197,5 +1171,3 @@ export const useAdminSearch = () => {
     getDirectInstitutionIds,
   };
 };
-
-export type AdminSearchController = ReturnType<typeof useAdminSearch>;

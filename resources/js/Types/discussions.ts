@@ -86,12 +86,3 @@ export interface MentionableUser {
   name: string;
   profile_photo_path: string | null;
 }
-
-export interface DiscussionFeedItem {
-  id: string;
-  body: string;
-  created_at: string | null;
-  commentable_type: string | null;
-  commentable_id: string;
-  commentable_name: string | null;
-}

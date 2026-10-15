@@ -141,12 +141,3 @@ function formatDateShort(date: Date): string {
   const day = String(date.getDate()).padStart(2, '0');
   return `${month}-${day}`;
 }
-
-/**
- * Clear the drag selection rectangle
- */
-export function clearDragSelection(
-  g: d3.Selection<SVGGElement, unknown, null, undefined>,
-): void {
-  g.selectAll('.drag-selection-rect').remove();
-}

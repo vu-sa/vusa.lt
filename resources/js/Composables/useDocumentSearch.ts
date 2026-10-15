@@ -4,21 +4,11 @@
  * Refactored version using shared search infrastructure.
  * This composable extends useBaseSearch with document-specific functionality.
  */
-
-import { ref, computed, nextTick, watch, type Ref, type ComputedRef } from 'vue';
-import { useLocalStorage, useUrlSearchParams } from '@vueuse/core';
+import { ref, computed, nextTick, watch, type ComputedRef } from 'vue';
+import { useLocalStorage } from '@vueuse/core';
 import { usePage } from '@inertiajs/vue3';
 
-import type {
-  DocumentSearchFilters,
-  DocumentSearchSort,
-  DocumentFacet,
-  DocumentSearchPreferences,
-  DocumentSearchController,
-  SearchState,
-  SearchError,
-  SearchStatus,
-} from '../Types/DocumentSearchTypes';
+import type { DocumentSearchFilters, DocumentSearchSort, DocumentFacet, DocumentSearchPreferences, DocumentSearchController, SearchState, SearchError } from '../Types/DocumentSearchTypes';
 import { DocumentSearchService } from '../Services/DocumentSearchService';
 
 import { createTypesenseClients } from './useSearchClient';
@@ -27,12 +17,6 @@ import { useBaseSearch, type BaseSearchService } from '@/Shared/Search/composabl
 import { FilterUtils } from '@/Shared/Search/services/FilterUtils';
 import { createSearchReporter } from '@/Shared/Search/searchReporter';
 import type { ProcessedSearchResult } from '@/Shared/Search/types';
-
-// Re-export types for backward compatibility
-export type {
-  DocumentSearchFilters,
-  DocumentFacet,
-};
 
 // ============================================================================
 // Types

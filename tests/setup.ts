@@ -144,36 +144,6 @@ config.global.mocks = {
   },
 };
 
-// Enhanced TypesenseInstantSearchAdapter mock for comprehensive network mocking
-vi.mock('typesense-instantsearch-adapter', () => {
-  return {
-    default: vi.fn(() => ({
-      searchClient: {
-        search: vi.fn().mockResolvedValue({
-          results: [{
-            hits: [],
-            facets: {},
-            nbHits: 0,
-            page: 0,
-            nbPages: 1,
-            hitsPerPage: 24,
-            exhaustiveNbHits: true,
-            query: '',
-            params: '',
-          }],
-        }),
-        searchForFacetValues: vi.fn().mockResolvedValue([]),
-        clearCache: vi.fn(),
-        addAlgoliaAgent: vi.fn(),
-        initIndex: vi.fn(() => ({
-          search: vi.fn().mockResolvedValue({ hits: [], nbHits: 0 }),
-          searchForFacetValues: vi.fn().mockResolvedValue([]),
-        })),
-      },
-    })),
-  };
-});
-
 // Mock fetch for any remaining network calls
 Object.defineProperty(global, 'fetch', {
   writable: true,

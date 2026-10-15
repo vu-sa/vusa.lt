@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import type { Client } from 'typesense';
 
 import { InstitutionSearchService } from '../InstitutionSearchService';
 
@@ -42,7 +41,7 @@ describe('InstitutionSearchService', () => {
       }),
     };
 
-    service = new InstitutionSearchService(mockClient as unknown as Client, 'public_institutions');
+    service = new InstitutionSearchService(mockClient, 'public_institutions');
   });
 
   it('includes current_user_names in query_by parameters for search (lt locale)', async () => {
@@ -91,7 +90,7 @@ describe('InstitutionSearchService', () => {
   });
 
   it('expands a parent type filter to its sub-types', async () => {
-    service = new InstitutionSearchService(mockClient as unknown as Client, 'public_institutions', {
+    service = new InstitutionSearchService(mockClient, 'public_institutions', {
       'studentu-atstovu-organas': ['spk', 'gnk'],
     });
 
