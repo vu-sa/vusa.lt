@@ -15,12 +15,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watchEffect } from 'vue';
+import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import RichContentParser from '@/Components/RichContent/RichContentParser.vue';
 import FeedbackPopover from '@/Components/Public/FeedbackPopover.vue';
-import { usePageBreadcrumbs, useBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import NewsArticleLayout from '@/Components/Public/News/NewsArticleLayout.vue';
 import type { NewsItem } from '@/Types/contentParts';
 import IFluentNews24Regular from '~icons/fluent/news-24-regular';
@@ -43,7 +43,7 @@ const showBreadcrumbs = computed(() => props.article.show_breadcrumbs !== false)
 // `placement: 'band'` — the trail belongs inside the article's ink masthead, so PublicLayout
 // skips the bar it draws above page content for every other route. One trail, not two.
 usePageBreadcrumbs(() => {
-  // Author disabled breadcrumbs for this article — return nothing so the setter skips.
+  // Author disabled breadcrumbs for this article — an empty trail clears the previous page's.
   if (!showBreadcrumbs.value) return [];
 
   return BreadcrumbHelpers.publicContent([
@@ -59,12 +59,4 @@ usePageBreadcrumbs(() => {
     BreadcrumbHelpers.createBreadcrumbItem(props.article.title),
   ]);
 }, { placement: 'band' });
-
-// usePageBreadcrumbs persists breadcrumbs across navigation and only sets when the
-// getter is non-empty, so a suppressed article would otherwise inherit the *previous*
-// page's trail. Explicitly clear the global state whenever breadcrumbs are off.
-const { clear: clearBreadcrumbs } = useBreadcrumbs();
-watchEffect(() => {
-  if (!showBreadcrumbs.value) clearBreadcrumbs();
-});
 </script>

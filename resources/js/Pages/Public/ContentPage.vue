@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watchEffect } from 'vue';
+import { computed } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import FeedbackPopover from '@/Components/Public/FeedbackPopover.vue';
@@ -94,7 +94,7 @@ import RichContentParser from '@/Components/RichContent/RichContentParser.vue';
 import { extractAnchorLinks, type AnchorablePart } from '@/Components/RichContent/tocAnchors';
 import TableOfContents from '@/Components/Public/TableOfContents.vue';
 import { HairlineList, HairlineRow, MediaFrame } from '@/Components/Public/Base';
-import { usePageBreadcrumbs, useBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 
 type PageContentPart = AnchorablePart & { [key: string]: unknown };
 
@@ -161,7 +161,7 @@ const lastUpdatedDate = computed(() => props.page.last_edited_at || props.page.u
 // The trail lives inside the masthead when there is one; without a title band there is nowhere
 // to put it, so it falls back to the bar PublicLayout draws above page content.
 usePageBreadcrumbs(() => {
-  // Author disabled breadcrumbs for this page — return nothing so the setter skips.
+  // Author disabled breadcrumbs for this page — an empty trail clears the previous page's.
   if (!showBreadcrumbs.value) return [];
 
   const mainNavigation = inertiaPage.props.mainNavigation || [];
@@ -191,13 +191,6 @@ usePageBreadcrumbs(() => {
   ]);
 }, { placement: showTitle.value ? 'band' : 'layout' });
 
-// usePageBreadcrumbs persists breadcrumbs across navigation and only sets when the
-// getter is non-empty, so a suppressed page would otherwise inherit the *previous*
-// page's trail. Explicitly clear the global state whenever breadcrumbs are off.
-const { clear: clearBreadcrumbs } = useBreadcrumbs();
-watchEffect(() => {
-  if (!showBreadcrumbs.value) clearBreadcrumbs();
-});
 
 // Tiptap h2/h3(/h4) headings + titled section blocks (hero, accordion, card-stack, …) —
 // see tocAnchors.ts. A page built entirely from section blocks used to get an empty

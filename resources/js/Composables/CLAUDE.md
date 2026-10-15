@@ -25,9 +25,9 @@ usePageBreadcrumbs(
 ```
 
 ### Key Features
-- **Automatic lifecycle**: mount/unmount handled automatically
+- **SSR-safe**: the trail is written during setup (not on mount) into per-layout state, so it is in the server HTML and never leaks between SSR requests; an empty trail clears the previous page's
 - **Graceful fallbacks**: shows warnings in dev, fails silently in prod
-- **No flashing**: breadcrumbs persist during navigation
+- **No flashing**: phones shorten the trail with breakpoint classes, not a JS breakpoint, so hydration matches the server markup
 - **Public-only**: Admin navigation is handled cleanly by the shell tabs and workspace picker
 
 ### Architecture
