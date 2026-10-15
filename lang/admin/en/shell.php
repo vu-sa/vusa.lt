@@ -200,7 +200,7 @@ return [
         ],
         'no_meeting' => [
             'title' => 'No meeting held',
-            'description' => 'Mark that the institution did not meet this period',
+            'description' => 'Mark a period without meetings — so far or ahead',
         ],
         'complete_meeting' => [
             'title' => 'Complete a meeting',
@@ -217,10 +217,6 @@ return [
         'new_reservation' => [
             'title' => 'New reservation',
             'description' => 'Reserve equipment or other items',
-        ],
-        'new_news' => [
-            'title' => 'New news article',
-            'description' => 'Write a news article for the website',
         ],
         'duty_update' => [
             'title' => 'Duty update',

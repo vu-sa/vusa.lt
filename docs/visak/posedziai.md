@@ -142,7 +142,8 @@ Fiksuoti posėdį** (arba institucijos puslapyje **Fiksuoti veiklą**) ir veiksm
 
 Kiti **Veiksmai** veiksmai:
 
-- **Posėdžio nebuvo** – pranešti, kad institucija kurį laiką nesirinks (žr.
+- **Posėdžio nebuvo** – pranešti, kad institucija nesirinko nuo paskutinio posėdžio ar tavo
+  kadencijos pradžios ir (ar) kurį laiką nesirinks (žr.
   [Institucijos](/visak/institucijos#posedzio-nebuvo)). Jei vėliau užregistruojamas posėdis tame
   laikotarpyje, pranešimas sutrumpinamas.
 - **Užbaigti posėdį** – papildyti jau užregistruotą praėjusį posėdį. Pirmiausia siūlomi posėdžiai

@@ -200,7 +200,7 @@ return [
         ],
         'no_meeting' => [
             'title' => 'Posėdžio nebuvo',
-            'description' => 'Pažymėk, kad institucija šį periodą nesirinko',
+            'description' => 'Pažymėk laikotarpį be posėdžių — iki šiol ar ir į priekį',
         ],
         'complete_meeting' => [
             'title' => 'Užbaigti posėdį',
@@ -217,10 +217,6 @@ return [
         'new_reservation' => [
             'title' => 'Nauja rezervacija',
             'description' => 'Rezervuok įrangą ar kitus daiktus',
-        ],
-        'new_news' => [
-            'title' => 'Nauja naujiena',
-            'description' => 'Parašyk naujieną svetainei',
         ],
         'duty_update' => [
             'title' => 'Pareigybių atnaujinimas',

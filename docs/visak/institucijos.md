@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-16
 tests:
   - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
   - tests/Feature/Admin/Management/InstitutionControllerTest.php
@@ -24,6 +24,8 @@ tests:
   - tests/Feature/Notifications/InstitutionActivityAnswerTest.php
   - tests/Feature/Admin/Management/InstitutionActivityRequestControllerTest.php
   - resources/js/Components/ActionWindow/__tests__/ActivityRequestScreens.component.test.ts
+  - resources/js/Components/ActionWindow/__tests__/CheckInUntilScreen.component.test.ts
+  - tests/Feature/Api/Admin/ActionWindowApiControllerTest.php
   - resources/js/Components/Institutions/__tests__/InstitutionActivityReply.component.test.ts
   - tests/Browser/InstitutionActivityReplyTest.php
   - tests/Unit/InstitutionActivityStatusServiceTest.php
@@ -129,12 +131,20 @@ nebuvo**.
 
 ### Pranešimas „Posėdžio nebuvo“ {#posedzio-nebuvo}
 
-Jei institucija kurį laiką nesirenka (pvz., per sesiją), apie tai pranešama: nurodomas laikotarpis
-ir, jei reikia, pastaba (iki 500 simbolių). Tai galima padaryti per **Veiksmai → Posėdžio nebuvo**
-arba institucijos meniu **⋯ → Pridėti pažymą**.
+Jei institucija nesirinko ar kurį laiką nesirinks (pvz., per sesiją), apie tai pranešama: nurodomas
+laikotarpis ir, jei reikia, pastaba (iki 500 simbolių). Tai galima padaryti per **Veiksmai → Posėdžio
+nebuvo**, pradžios mygtuką **Posėdžio nebuvo** arba institucijos meniu **⋯ → Pridėti pažymą**.
 
+- Veiksmų lange laikotarpio pradžia parenkama pati ir parodoma su priežastimi: tai vėliausia iš
+  **tavo kadencijos pradžios** (ta pati, nuo kurios klausia [veiklos užklausos](#paklausti)),
+  **dienos po paskutinio posėdžio** ir **dienos po ankstesnio pranešimo**. Jei nė vienos nėra,
+  pradedama nuo šiandien.
+- Pabaiga renkama iš **Iki šiandien** (iki šiol posėdžių nebuvo), **Dar dvi savaites** ar **Iki
+  mėnesio pabaigos**, arba įvedamos savos datos. Jei jau užregistruotas būsimas posėdis, laikotarpis
+  baigiasi dieną prieš jį.
 - Pradžia gali būti ir praeityje. Pabaiga turi būti vėlesnė už pradžią ir ne vėliau kaip **po 3
-  mėnesių** nuo šiandien.
+  mėnesių** nuo šiandien. Laikotarpis negali apimti jau užregistruoto posėdžio.
+- Pranešimas, apimantis visą atviros veiklos užklausos laikotarpį, ją užbaigia.
 - Kol pranešimas galioja, institucijos būklė yra „Užfiksuotas kontaktas“, o užduotis dėl
   periodiškumo užbaigiama.
 - Jei vėliau užregistruojamas posėdis, patenkantis į pranešimo laikotarpį, pranešimas

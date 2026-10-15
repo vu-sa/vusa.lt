@@ -15,7 +15,7 @@ models: [News]
 
 # Naujienos
 
-Naujienos skirtos organizacijos ir padalinių veiklų ataskaitoms, pranešimams spaudai, studentams svarbioms žinioms ir svarbiems įvykiams viešinti. Kiekvienas padalinys skelbia savo naujienas savo svetainės dalyje, o bendras VU SA naujienas kuria centrinis biuras. Naują naujieną galima greitai sukurti bet kurioje sistemos vietoje per viršutinį meniu **Veiksmai → Nauja naujiena**.
+Naujienos skirtos organizacijos ir padalinių veiklų ataskaitoms, pranešimams spaudai, studentams svarbioms žinioms ir svarbiems įvykiams viešinti. Kiekvienas padalinys skelbia savo naujienas savo svetainės dalyje, o bendras VU SA naujienas kuria centrinis biuras.
 
 Skiltis pasiekiama adresu `/mano/news`.
 
@@ -85,10 +85,7 @@ Naujienų sąraše (`/mano/news`) gali ieškoti pagal pavadinimą:
 
 ### Naujos naujienos kūrimas
 
-Pradėti naują naujieną gali dviem būdais:
-
-1. Viršutinėje sistemos juostoje spausk **Veiksmai → Nauja naujiena** (greitasis veiksmas iš bet kurio puslapio).
-2. Naujienų sąraše (`/mano/news`) spausk **Nauja naujiena** (arba eik adresu `/mano/news/create`).
+Naujienų sąraše (`/mano/news`) spausk **Nauja naujiena** (arba eik adresu `/mano/news/create`).
 
 Formoje:
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\ActivityRequests\ResolveCheckInStarts;
 use App\Actions\GetTenantsForUpserts;
 use App\Enums\MeetingType;
 use App\Http\Controllers\Api\ApiController;
@@ -43,11 +44,13 @@ class ActionWindowApiController extends ApiController
         InstitutionActivityStatusService $activityStatus,
         Authorizer $authorizer,
         InstitutionScopeResolver $scopes,
+        ResolveCheckInStarts $checkInStarts,
     ): JsonResponse {
         $institutions = DutyService::getUserInstitutionsForDashboard();
+        $starts = $checkInStarts->execute(request()->user(), $institutions);
 
         return $this->jsonSuccess([
-            'institutions' => $this->institutionPayload($institutions, $activityStatus),
+            'institutions' => $this->institutionPayload($institutions, $activityStatus, $starts),
             'meetingsNeedingAttention' => $this->meetingPayload($institutions),
             'institutionSearch' => $this->institutionSearchScope($authorizer, $scopes),
         ]);
@@ -93,9 +96,10 @@ class ActionWindowApiController extends ApiController
 
     /**
      * @param  Collection<int, Institution>  $institutions
+     * @param  array<string, array{from: string|null, reason: string|null}>  $checkInStarts
      * @return array<int, array<string, mixed>>
      */
-    private function institutionPayload(Collection $institutions, InstitutionActivityStatusService $activityStatus): array
+    private function institutionPayload(Collection $institutions, InstitutionActivityStatusService $activityStatus, array $checkInStarts): array
     {
         return $institutions
             ->map(fn (Institution $institution) => [
@@ -106,6 +110,8 @@ class ActionWindowApiController extends ApiController
                 'is_internal' => $institution->governance_scope->isInternal(),
                 'meeting_pattern' => $this->meetingPattern($institution),
                 'activity_status' => $activityStatus->resolve($institution)->toArray(),
+                'check_in_from' => $checkInStarts[(string) $institution->id]['from'] ?? null,
+                'check_in_from_reason' => $checkInStarts[(string) $institution->id]['reason'] ?? null,
             ])
             ->sortBy([
                 fn (array $a, array $b) => $b['activity_status']['requires_action'] <=> $a['activity_status']['requires_action'],

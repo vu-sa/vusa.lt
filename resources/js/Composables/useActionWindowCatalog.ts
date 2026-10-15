@@ -20,9 +20,9 @@ import {
   CalendarOff,
   CalendarPlus,
   CalendarRange,
-  FileText,
   GraduationCap,
   Landmark,
+  LayoutGrid,
   MailQuestion,
   MessageSquareWarning,
   PencilLine,
@@ -51,6 +51,8 @@ export interface ActionWindowAction {
   requiresPermission: (can: ActionWindowPermissions) => boolean;
   /** Either push a screen inside the window, or leave for a page. */
   target: { kind: 'screen'; screen: ScreenId } | { kind: 'route'; route: string };
+  /** Not a catalog create action: shown only beside a persona's catalog actions, never alone. */
+  companion?: boolean;
 }
 
 export type PersonaKey = 'representative' | 'member' | 'coordinator';
@@ -144,14 +146,6 @@ export function buildPersonas(): ActionWindowPersona[] {
           target: { kind: 'screen', screen: 'activity.campaign' },
         },
         {
-          key: 'new_news',
-          title: $t('action_window.actions.new_news.title'),
-          description: $t('action_window.actions.new_news.description'),
-          icon: FileText,
-          requiresPermission: can => !!can.create.news,
-          target: { kind: 'route', route: 'news.create' },
-        },
-        {
           // Goals pilot: the server catalog only lists it inside the pilot.
           key: 'new_goal',
           title: $t('shell.actions.new_goal.title'),
@@ -178,6 +172,15 @@ export function buildPersonas(): ActionWindowPersona[] {
           requiresPermission: can => !!can.index.duty,
           target: { kind: 'route', route: 'dutiables.timeline' },
         },
+        {
+          key: 'manage_info',
+          title: $t('action_window.actions.manage_info.title'),
+          description: $t('action_window.actions.manage_info.description'),
+          icon: LayoutGrid,
+          requiresPermission: () => true,
+          target: { kind: 'route', route: 'administration' },
+          companion: true,
+        },
       ],
     },
   ];
@@ -197,6 +200,10 @@ export function useActionWindowCatalog() {
         ...persona,
         title: changeDutyNameEndings(page.props.auth?.user, persona.title, page.props.app.locale),
         actions: persona.actions.flatMap((action) => {
+          if (action.companion) {
+            return [action];
+          }
+
           const catalogAction = catalogActions.value.get(action.key);
 
           if (!catalogAction) {
@@ -213,7 +220,7 @@ export function useActionWindowCatalog() {
           }];
         }),
       }))
-      .filter(persona => persona.actions.length > 0),
+      .filter(persona => persona.actions.some(action => !action.companion)),
   );
 
   const hasAnyAction = computed(() => personas.value.length > 0);

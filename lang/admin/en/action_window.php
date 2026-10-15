@@ -15,7 +15,7 @@ return [
         ],
         'coordinator' => [
             'title' => 'As a coordinator',
-            'description' => 'Duties and cadences',
+            'description' => 'Duties, cadences and information',
         ],
     ],
     'actions' => [
@@ -24,8 +24,8 @@ return [
             'description' => 'A meeting is coming up or already happened — let us record it.',
         ],
         'no_meeting' => [
-            'title' => 'There will be no meetings for a while',
-            'description' => 'Exams or holidays, for example — so you stop getting reminders.',
+            'title' => 'There were or will be no meetings',
+            'description' => 'Mark a period without meetings — so you stop getting reminders.',
         ],
         'complete_meeting' => [
             'title' => 'Fill in a meeting',
@@ -46,6 +46,10 @@ return [
         'cadences' => [
             'title' => 'Manage duty periods',
             'description' => 'Set when people hold their duties, on a timeline.',
+        ],
+        'manage_info' => [
+            'title' => 'Manage information',
+            'description' => 'Every section you can open: pages, news, institutions and more.',
         ],
     ],
     'report' => [
@@ -171,20 +175,29 @@ return [
     ],
     'check_in' => [
         'explainer_title' => 'What does this mean?',
-        'explainer' => 'If you know there will be no meetings during a period (holidays, exam session), telling us helps avoid unnecessary reminders.',
+        'explainer' => 'Mark that the institution did not meet — from its last meeting or the start of your term until today. If you know there will be no meetings ahead either (exam session, holidays), extend the period forward. That way you get no unnecessary reminders or questions.',
+        'meeting_in_range' => 'A meeting is already recorded in this period (:date). Pick a period without meetings.',
         'until' => [
-            'title' => 'Until when will there be no meetings?',
-            'subtitle' => 'Starting from today.',
-            'two_weeks' => 'Two weeks',
+            'title' => 'Until when are there no meetings?',
+            'subtitle' => 'From :date (:reason).',
+            'reasons' => [
+                'tenure_start' => 'the start of your term',
+                'last_meeting' => 'the day after the last meeting',
+                'last_check_in' => 'the day after your previous report',
+                'today' => 'today',
+            ],
+            'until_today' => 'Until today',
+            'until_today_detail' => 'There were no meetings so far · :range',
+            'two_weeks' => 'Two more weeks',
             'month_end' => 'Until the end of the month',
-            'three_months' => 'Three months',
+            'next_meeting_cap' => 'The next meeting is on :date, so the period ends the day before.',
             'custom' => 'Pick dates…',
             'max_hint' => 'You can report at most three months ahead.',
             'from' => 'From',
             'to' => 'Until',
         ],
         'review' => [
-            'title' => 'Report that there will be no meetings',
+            'title' => 'Mark that there are no meetings',
             'subtitle' => 'Tap a row to change it.',
             'period' => 'Period',
             'note' => 'Note (optional)',

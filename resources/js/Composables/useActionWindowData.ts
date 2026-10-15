@@ -25,6 +25,9 @@ export interface ActionWindowInstitution {
   /** When this body usually meets, from its own history. Null when it has never met. */
   meeting_pattern: { weekday: number; time: string } | null;
   activity_status: InstitutionActivityStatus;
+  /** Where a "no meetings" period starts: the latest of the caller's term start, the day after the last meeting or check-in. */
+  check_in_from: string | null;
+  check_in_from_reason: 'tenure_start' | 'last_meeting' | 'last_check_in' | null;
 }
 
 export interface ActionWindowMeeting {

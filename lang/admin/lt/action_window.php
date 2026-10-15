@@ -15,7 +15,7 @@ return [
         ],
         'coordinator' => [
             'title' => 'Kaip koordinatorius',
-            'description' => 'Pareigybės ir kadencijos',
+            'description' => 'Pareigybės, kadencijos ir informacija',
         ],
     ],
     'actions' => [
@@ -24,8 +24,8 @@ return [
             'description' => 'Įvyks arba jau įvyko posėdis — užregistruokime jį.',
         ],
         'no_meeting' => [
-            'title' => 'Posėdžio kurį laiką nebus',
-            'description' => 'Pvz. sesija ar atostogos — kad negautum nereikalingų priminimų.',
+            'title' => 'Posėdžių nebuvo ar nebus',
+            'description' => 'Pažymėk laikotarpį be posėdžių — kad negautum nereikalingų priminimų.',
         ],
         'complete_meeting' => [
             'title' => 'Papildyti posėdį',
@@ -46,6 +46,10 @@ return [
         'cadences' => [
             'title' => 'Tvarkyti pareigybių laikotarpius',
             'description' => 'Laiko juostoje nustatyti, nuo kada iki kada žmonės eina pareigas.',
+        ],
+        'manage_info' => [
+            'title' => 'Tvarkyti informaciją',
+            'description' => 'Visi tau prieinami skyriai: puslapiai, naujienos, institucijos ir kita.',
         ],
     ],
     'report' => [
@@ -171,20 +175,29 @@ return [
     ],
     'check_in' => [
         'explainer_title' => 'Ką tai reiškia?',
-        'explainer' => 'Jei žinai, kad nurodytu laikotarpiu posėdžių nebus (pvz. atostogos, egzaminų sesija), pranešimas padės išvengti nereikalingų priminimų.',
+        'explainer' => 'Pažymėk, kad institucija nesirinko — nuo paskutinio posėdžio ar tavo kadencijos pradžios iki šiandien. Jei žinai, kad posėdžių nebus ir toliau (pvz. sesija, atostogos), pratęsk laikotarpį į priekį. Taip negausi nereikalingų priminimų ir klausimų.',
+        'meeting_in_range' => 'Šiuo laikotarpiu jau užfiksuotas posėdis (:date). Pasirink laikotarpį, kuriame posėdžių nebuvo.',
         'until' => [
-            'title' => 'Iki kada posėdžių nebus?',
-            'subtitle' => 'Pradedame nuo šiandien.',
-            'two_weeks' => 'Dvi savaites',
+            'title' => 'Iki kada posėdžių nėra?',
+            'subtitle' => 'Nuo :date (:reason).',
+            'reasons' => [
+                'tenure_start' => 'tavo kadencijos pradžia',
+                'last_meeting' => 'diena po paskutinio posėdžio',
+                'last_check_in' => 'diena po ankstesnio pranešimo',
+                'today' => 'šiandien',
+            ],
+            'until_today' => 'Iki šiandien',
+            'until_today_detail' => 'Iki šiol posėdžių nebuvo · :range',
+            'two_weeks' => 'Dar dvi savaites',
             'month_end' => 'Iki mėnesio pabaigos',
-            'three_months' => 'Tris mėnesius',
+            'next_meeting_cap' => 'Kitas posėdis numatytas :date, todėl laikotarpis baigiasi diena anksčiau.',
             'custom' => 'Pasirinkti datas…',
             'max_hint' => 'Ilgiausiai galima pranešti tris mėnesius į priekį.',
             'from' => 'Nuo',
             'to' => 'Iki',
         ],
         'review' => [
-            'title' => 'Pranešti, kad posėdžių nebus',
+            'title' => 'Pažymėti, kad posėdžių nėra',
             'subtitle' => 'Paspausk ant eilutės, jei nori ką nors pakeisti.',
             'period' => 'Laikotarpis',
             'note' => 'Pastaba (neprivaloma)',
