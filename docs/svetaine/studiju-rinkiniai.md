@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Studijų rinkiniai
 area: studySets
 models: [StudySet]
-last_reviewed: 2026-10-08
+last_reviewed: 2026-10-15
 tests:
   - tests/Browser/StudySetReviewsTest.php
   - tests/Feature/Admin/StudySets/StudySetControllerTest.php
@@ -17,6 +17,8 @@ Studijų rinkiniai skirti individualiųjų studijų (arba gretutinių / pasirenk
 Skiltis pasiekiama adresu `/mano/studySets`.
 
 ## Kaip tai veikia
+
+Sukūrus studijų rinkinį, atveriama jo redagavimo forma su dalykais ir atsiliepimais.
 
 - **Viešas puslapis:** paskelbti ir matomi rinkiniai rodomi viešoje svetainėje adresu `/ind-komplektai`, taip pat atitinkamo padalinio subdomene (pvz., `mif.vusa.lt/ind-komplektai`).
 - **Rinkinio struktūra:** kiekvienas studijų rinkinys susideda iš:

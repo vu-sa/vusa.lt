@@ -165,13 +165,17 @@ describe('authorized access', function (): void {
         ];
 
         $response = asUser($this->calendarManager)->post(route('calendar.store'), $calendarData);
-        $response->assertRedirect();
+        $response->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('calendar', [
             'title->lt' => 'Test renginys',
             'title->en' => 'Test event',
             'event_type_id' => $this->eventType->id,
         ]);
+
+        $created = Calendar::where('title->lt', 'Test renginys')->sole();
+        $response->assertRedirectToRoute('calendar.edit', $created)->assertSessionHas('success');
+        asUser($this->calendarManager)->get(route('calendar.edit', $created))->assertOk();
     });
 
     test('calendar manager can store a calendar event with a hero style', function (): void {

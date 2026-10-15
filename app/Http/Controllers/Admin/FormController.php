@@ -19,6 +19,7 @@ use App\Models\Institution;
 use App\Services\FormAccessService;
 use App\Services\FormRegistrationVisibilityService;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
 use App\Settings\FormSettings;
 use App\Support\LocalizedRouteSlugs;
@@ -151,7 +152,7 @@ class FormController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreFormRequest $request)
+    public function store(StoreFormRequest $request, PostCreateRedirect $redirect)
     {
         $form = new Form;
 
@@ -166,7 +167,8 @@ class FormController extends AdminController
             $form->formFields()->create(collect($formField)->only(self::FORM_FIELD_ATTRIBUTES)->all());
         });
 
-        return redirect(request()->redirect_to ?? route('forms.index'))->with('success', $this->entityMessage('created', 'form'));
+        return redirect($redirect->url($request->user(), $form, 'forms.show', 'view', 'forms.index'))
+            ->with('success', $this->entityMessage('created', 'form'));
     }
 
     /**

@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { router, type InertiaForm } from '@inertiajs/vue3';
+import type { InertiaForm } from '@inertiajs/vue3';
 
 import InstitutionForm from '@/Components/AdminForms/InstitutionForm.vue';
 
@@ -35,10 +35,6 @@ const institution = {
 } as unknown as App.Entities.Institution;
 
 const handleSubmit = (form: unknown) => {
-  (form as InertiaForm<Record<string, unknown>>).post(route('institutions.store'), {
-    onSuccess: () => {
-      router.visit(route('institutions.index'));
-    },
-  });
+  (form as InertiaForm<Record<string, unknown>>).post(route('institutions.store'));
 };
 </script>

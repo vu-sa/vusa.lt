@@ -124,10 +124,8 @@ describe('authorized access', function (): void {
             );
     });
 
-    test('can store user', function (): void {
-        // The duty must sit in the admin's own tenant — Duty::factory() would
-        // otherwise build its own Institution and Tenant, which UserDutyService
-        // now rejects.
+    test('coordinator opens the newly created user', function (): void {
+        $actor = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
         $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
 
         $userData = [
@@ -137,14 +135,18 @@ describe('authorized access', function (): void {
             'current_duties' => [$duty->id],
         ];
 
-        $response = asUser($this->admin)->post(route('users.store'), $userData);
+        $response = asUser($actor)->post(route('users.store'), $userData);
 
-        $response->assertRedirect();
+        $response->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('users', [
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        $created = User::where('email', 'test@example.com')->sole();
+        $response->assertRedirectToRoute('users.show', $created)->assertSessionHas('success');
+        asUser($actor)->get(route('users.show', $created))->assertOk();
     });
 
     test('can access user edit page', function (): void {

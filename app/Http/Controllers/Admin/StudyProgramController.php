@@ -14,6 +14,7 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\Pivots\Dutiable;
 use App\Models\StudyProgram;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -61,13 +62,13 @@ class StudyProgramController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreStudyProgramRequest $request)
+    public function store(StoreStudyProgramRequest $request, PostCreateRedirect $redirect)
     {
         $this->handleAuthorization('create', StudyProgram::class);
 
         $studyProgram = StudyProgram::create($request->validated());
 
-        return redirect()->route('studyPrograms.index')
+        return redirect($redirect->url($request->user(), $studyProgram, 'studyPrograms.edit', 'update', 'studyPrograms.index'))
             ->with('success', $this->entityMessage('created', 'studyProgram'));
     }
 

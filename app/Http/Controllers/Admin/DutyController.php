@@ -27,6 +27,7 @@ use App\Models\StudyProgram;
 use App\Models\User;
 use App\Services\DutyAssignmentService;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use App\Services\ResourceServices\DutyService;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Services\TanstackTableService;
@@ -105,7 +106,7 @@ class DutyController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreDutyRequest $request)
+    public function store(StoreDutyRequest $request, PostCreateRedirect $redirect)
     {
         $duty = new Duty;
 
@@ -118,10 +119,9 @@ class DutyController extends AdminController
 
         $this->assignments->syncRepresentatives($duty, $request->validated('current_users') ?? []);
 
-        // Load relationships needed for the response
         $duty->load('institution', 'types', 'current_users');
 
-        // Return JSON response for AJAX requests (inline creation in wizard)
+        // The duty-user wizard consumes this response without leaving its current step.
         if ($request->wantsJson() || $request->header('X-Inertia-Partial-Data')) {
             return response()->json([
                 'success' => true,
@@ -130,7 +130,8 @@ class DutyController extends AdminController
             ]);
         }
 
-        return back()->with('success', $this->entityMessage('created', 'duty'));
+        return redirect($redirect->url($request->user(), $duty, 'duties.show', 'view', 'duties.index'))
+            ->with('success', $this->entityMessage('created', 'duty'));
     }
 
     /**

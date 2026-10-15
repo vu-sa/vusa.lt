@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Kalendorius
 area: calendar
 models: [Calendar]
-last_reviewed: 2026-10-14
+last_reviewed: 2026-10-15
 tests:
   - tests/Feature/Admin/Calendar/CalendarControllerTest.php
   - tests/Feature/Public/CalendarCanonicalUrlTest.php
@@ -31,6 +31,8 @@ Skiltis pasiekiama adresu `/mano/calendar`.
 :::
 
 ## Kaip tai veikia
+
+Atskiroje formoje sukūrus renginį, atveriama jo redagavimo forma. Renginio kūrimas iš posėdžio puslapio palieka posėdyje.
 
 ### Viešas kalendorius ir iCal prenumerata
 

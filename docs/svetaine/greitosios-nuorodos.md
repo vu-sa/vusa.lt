@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Greitosios nuorodos
 area: quickLinks
 models: [QuickLink]
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-15
 tests:
   - tests/Feature/Admin/Content/QuickLinkControllerTest.php
   - tests/Browser/PublicInitialRenderTest.php
@@ -30,6 +30,8 @@ Skiltis pasiekiama adresu `/mano/quickLinks`.
 :::
 
 ## Kaip tai veikia
+
+Sukūrus greitąją nuorodą, atveriama jos redagavimo forma.
 
 ### Padalinių ir kalbų atskyrimas
 

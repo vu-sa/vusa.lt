@@ -16,6 +16,7 @@ use App\Models\PublicUrl;
 use App\Models\Tag;
 use App\Services\ContentEditorService;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -57,13 +58,14 @@ class PageController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StorePageRequest $request)
+    public function store(StorePageRequest $request, PostCreateRedirect $redirect)
     {
         $this->handleAuthorization('create', Page::class);
 
-        app(ContentEditorService::class)->save('pages', $request->validated(), $request->user());
+        $page = app(ContentEditorService::class)->save('pages', $request->validated(), $request->user());
 
-        return redirect()->route('pages.index')->with('success', $this->entityMessage('created', 'page'));
+        return redirect($redirect->url($request->user(), $page, 'pages.edit', 'update', 'pages.index'))
+            ->with('success', $this->entityMessage('created', 'page'));
     }
 
     /**

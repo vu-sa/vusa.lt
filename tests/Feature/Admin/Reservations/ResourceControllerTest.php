@@ -140,7 +140,7 @@ describe('destroy', function (): void {
 });
 
 describe('store', function (): void {
-    test('returns to the resources collection with a success flash', function (): void {
+    test('opens the created resource with a success flash', function (): void {
         $expectedMessage = __('messages.created.m', ['model' => trans_choice('entities.resource.model', 1)]);
 
         asUser($this->resourceManager)->post(route('resources.store'), [
@@ -152,13 +152,13 @@ describe('store', function (): void {
             'is_reservable' => true,
             'media' => [],
         ])
-            ->assertRedirect(route('resources.index'))
+            ->assertRedirectToRoute('resources.show', Resource::query()->latest('id')->firstOrFail())
             ->assertSessionHas('success');
 
-        asUser($this->resourceManager)->get(route('resources.index'))
+        asUser($this->resourceManager)->get(route('resources.show', Resource::query()->where('name->lt', 'Naujas')->sole()))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/Reservations/IndexResource')
+                ->component('Admin/Reservations/ShowResource')
                 ->where('flash.success', $expectedMessage));
     });
 });

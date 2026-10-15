@@ -1,7 +1,8 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-15
 tests:
+  - resources/js/Composables/__tests__/useContentEditor.component.test.ts
   - tests/Feature/Search/SearchExperienceTest.php
   - tests/Feature/Api/Admin/ContentEditorTest.php
   - tests/Browser/RichContentFullscreenEditorTest.php
@@ -27,6 +28,8 @@ Skiltis pasiekiama adresu `/mano/pages`.
 :::
 
 ## Kaip tai veikia
+
+Sukūrus puslapį, atveriama jo redagavimo forma. Įrašius pakeitimus jau atvertame redaktoriuje, liekama jame.
 
 Paieška randa išsaugotą pavadinimą, aprašymą, žymas ir turinio tekstą. Ištrauka po rezultato pavadinimu padeda suprasti atitikimą. Viešoje paieškoje išlieka tik viešai skelbiami įrašai. [Paieška ir filtrų skaičiai](/pagrindai/platforma#paieska-ir-pasirinkimas).
 

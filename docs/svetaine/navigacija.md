@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Navigacija
 area: navigation
 models: [Navigation]
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-15
 tests:
   - tests/Feature/Admin/Navigation/NavigationControllerTest.php
   - tests/Feature/Api/Admin/NavigationLinkApiControllerTest.php
@@ -27,6 +27,8 @@ Skiltis pasiekiama adresu `/mano/navigation`.
 :::
 
 ## Kaip tai veikia
+
+Sukūrus meniu punktą ar poraštės nuorodą, atveriama jo redagavimo forma.
 
 Svetainės navigaciją sudaro dvi atskiros zonos, valdomos toje pačioje sistemoje: **Antraštė (Header)** ir **Poraštė (Footer)**.
 

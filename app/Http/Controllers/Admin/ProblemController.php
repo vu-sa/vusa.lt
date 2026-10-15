@@ -19,6 +19,7 @@ use App\Models\Problem;
 use App\Models\ProblemCategory;
 use App\Services\AgendaItemPresenter;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
 use App\Support\Experiments\GoalsExperiment;
 use Illuminate\Http\RedirectResponse;
@@ -106,7 +107,7 @@ class ProblemController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreProblemRequest $request)
+    public function store(StoreProblemRequest $request, PostCreateRedirect $redirect)
     {
         $validated = $request->validated();
         $categories = $validated['categories'] ?? [];
@@ -126,7 +127,8 @@ class ProblemController extends AdminController
             $problem->institutions()->sync($institutions);
         }
 
-        return $this->redirectToIndexWithSuccess('problems', $this->entityMessage('created', 'problem'));
+        return redirect($redirect->url($request->user(), $problem, 'problems.show', 'view', 'problems.index'))
+            ->with('success', $this->entityMessage('created', 'problem'));
     }
 
     /**

@@ -11,11 +11,12 @@ use App\Http\Requests\UpdatePageRequest;
 use App\Models\News;
 use App\Models\Page;
 use App\Services\ContentEditorService;
+use App\Services\PostCreateRedirect;
 use Illuminate\Http\JsonResponse;
 
 class ContentEditorApiController extends ApiController
 {
-    public function __construct(private readonly ContentEditorService $editor) {}
+    public function __construct(private readonly ContentEditorService $editor, private readonly PostCreateRedirect $redirect) {}
 
     public function show(string $kind, int $record): JsonResponse
     {
@@ -64,6 +65,8 @@ class ContentEditorApiController extends ApiController
         }
         unset($part);
 
-        return $this->jsonSuccess($snapshot);
+        return $this->jsonSuccess($snapshot, meta: $record === null ? [
+            'redirect_url' => $this->redirect->url($request->user(), $item, "{$kind}.edit", 'update', "{$kind}.index"),
+        ] : []);
     }
 }

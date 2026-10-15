@@ -368,6 +368,20 @@ describe('authorized access', function (): void {
             );
     });
 
+    test('inline institution creation returns the model without navigating away', function (array $headers): void {
+        $response = asUser($this->admin)->withHeaders($headers)->post(route('institutions.store'), [
+            'name' => ['lt' => 'Vedlio institucija', 'en' => 'Wizard institution'],
+            'tenant_id' => $this->tenant->id,
+        ]);
+
+        $created = Institution::where('name->lt', 'Vedlio institucija')->sole();
+        $response->assertOk()->assertJsonPath('success', true)->assertJsonPath('institution.id', $created->id);
+        expect($response->headers->has('Location'))->toBeFalse();
+    })->with([
+        'JSON accept header' => [['Accept' => 'application/json']],
+        'legacy partial-data header' => [['X-Inertia-Partial-Data' => 'created']],
+    ]);
+
     test('can store institution', function (): void {
         $institutionData = [
             'name' => ['lt' => 'Test Institution', 'en' => 'Test Institution EN'],
@@ -379,7 +393,7 @@ describe('authorized access', function (): void {
 
         $response = asUser($this->admin)->post(route('institutions.store'), $institutionData);
 
-        $response->assertRedirect();
+        $response->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('institutions', [
             'alias' => 'test-institution',
@@ -388,6 +402,10 @@ describe('authorized access', function (): void {
 
         expect(Institution::query()->where('alias', 'test-institution')->firstOrFail()
             ->getTranslation('working_hours', 'lt'))->toBe('I–V 9:00–17:00');
+
+        $created = Institution::where('alias', 'test-institution')->sole();
+        $response->assertRedirectToRoute('institutions.show', $created)->assertSessionHas('success');
+        asUser($this->admin)->get(route('institutions.show', $created))->assertOk();
     });
 
     test('can access institution edit page', function (): void {

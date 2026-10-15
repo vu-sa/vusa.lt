@@ -31,6 +31,7 @@ use App\Models\Task;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionRelationService;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Settings\CadenceSettings;
 use App\Settings\MeetingSettings;
@@ -86,7 +87,7 @@ class InstitutionController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreInstitutionRequest $request)
+    public function store(StoreInstitutionRequest $request, PostCreateRedirect $redirect)
     {
         $institution = new Institution;
 
@@ -94,10 +95,9 @@ class InstitutionController extends AdminController
 
         $institution->syncAudited('types', $request->types);
 
-        // Load relationships needed for the response
         $institution->load('tenant:id,shortname', 'types');
 
-        // Return JSON response for AJAX requests (inline creation in wizard)
+        // The duty-user wizard consumes this response without leaving its current step.
         if ($request->wantsJson() || $request->header('X-Inertia-Partial-Data')) {
             return response()->json([
                 'success' => true,
@@ -106,7 +106,8 @@ class InstitutionController extends AdminController
             ]);
         }
 
-        return back()->with('success', $this->entityMessage('created', 'institution'));
+        return redirect($redirect->url($request->user(), $institution, 'institutions.show', 'viewSummary', 'institutions.index'))
+            ->with('success', $this->entityMessage('created', 'institution'));
     }
 
     /**

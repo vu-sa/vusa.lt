@@ -12,6 +12,7 @@ use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Banner;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Cache;
@@ -83,7 +84,7 @@ class BannerController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreBannerRequest $request)
+    public function store(StoreBannerRequest $request, PostCreateRedirect $redirect)
     {
         $this->handleAuthorization('create', Banner::class);
 
@@ -101,7 +102,8 @@ class BannerController extends AdminController
 
         Cache::forget('banners-'.$banner->tenant_id);
 
-        return redirect()->route('banners.index')->with('success', $this->entityMessage('created', 'banner'));
+        return redirect($redirect->url($request->user(), $banner, 'banners.edit', 'update', 'banners.index'))
+            ->with('success', $this->entityMessage('created', 'banner'));
     }
 
     /**

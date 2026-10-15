@@ -10,6 +10,7 @@ use App\Http\Traits\HandlesSoftDeletes;
 use App\Models\Navigation;
 use App\Models\Tag;
 use App\Services\NavigationService;
+use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -89,7 +90,7 @@ class NavigationController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreNavigationRequest $request)
+    public function store(StoreNavigationRequest $request, PostCreateRedirect $redirect)
     {
         $validated = $request->validated();
 
@@ -113,7 +114,8 @@ class NavigationController extends AdminController
 
         $navigation->save();
 
-        return $this->redirectToIndexWithSuccess('navigation', $this->entityMessage('created', 'navigation'));
+        return redirect($redirect->url($request->user(), $navigation, 'navigation.edit', 'update', 'navigation.index'))
+            ->with('success', $this->entityMessage('created', 'navigation'));
     }
 
     /**

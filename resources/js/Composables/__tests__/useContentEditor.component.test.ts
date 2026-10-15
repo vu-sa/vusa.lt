@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, reactive } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
-import type { InertiaForm } from '@inertiajs/vue3';
+import { router, type InertiaForm } from '@inertiajs/vue3';
 
 import { useContentEditor, blankTranslation, cloneTranslation, type ContentEditorData } from '../useContentEditor';
 
@@ -9,18 +9,27 @@ const http = vi.hoisted(() => ({ get: vi.fn(), put: vi.fn(), delete: vi.fn(), re
 const storage = vi.hoisted(() => vi.fn());
 vi.mock('../contentEditorHttp', () => ({ contentEditorHttp: http }));
 vi.mock('../contentEditorStorage', () => ({ recoveryStorage: storage }));
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const wrappers: ReturnType<typeof mount>[] = [];
-function session(data: ContentEditorData = { id: 1, title: 'Original', content_version: 'old', content: { parts: [] } }) {
+function session(data: ContentEditorData = { id: 1, title: 'Original', content_version: 'old', content: { parts: [] } }, stay = true) {
   const state = reactive({ ...data, processing: false, errors: {} });
-  const fields = Object.keys(data);
+  const fields = [...new Set([...Object.keys(data), 'id', 'content_version', 'permalink'])];
   const form = Object.assign(state, {
     data: () => Object.fromEntries(fields.map(field => [field, state[field as keyof typeof state]])),
     defaults: vi.fn(), clearErrors: vi.fn(), setError: vi.fn(),
   }) as unknown as InertiaForm<ContentEditorData>;
   let editor!: ReturnType<typeof useContentEditor>;
-  wrappers.push(mount(defineComponent({ setup() { editor = useContentEditor('pages', form, { stay: true }); return () => null; } })));
-  return { form, get editor() { return editor; } };
+  wrappers.push(mount(defineComponent({
+    setup() {
+      editor = useContentEditor('pages', form, { stay });
+      return () => null;
+    },
+  })));
+  return {
+    form,
+    get editor() { return editor; },
+  };
 }
 
 beforeEach(() => {
@@ -31,11 +40,58 @@ beforeEach(() => {
   http.delete.mockResolvedValue({ data: { data: null } });
   storage.mockResolvedValue(undefined);
 });
-afterEach(() => { wrappers.splice(0).forEach(wrapper => wrapper.unmount()); vi.restoreAllMocks(); });
+afterEach(() => {
+  wrappers.splice(0).forEach(wrapper => wrapper.unmount());
+  vi.restoreAllMocks();
+});
 
 describe('content recovery and saves', () => {
+  it.each([
+    ['server destination', { redirect_url: '/mano/pages' }, '/mano/pages'],
+    ['older response', undefined, '/mocked-route/pages.edit'],
+  ])('opens the %s after creating a page', async (_label, meta, destination) => {
+    const active = session({ title: 'New page', content: { parts: [] } }, false);
+    await flushPromises();
+    http.request.mockResolvedValue({ data: { data: { id: 7, title: 'New page', content: { parts: [] } }, meta } });
+
+    await active.editor.save();
+
+    expect(router.visit).toHaveBeenCalledExactlyOnceWith(destination);
+    expect(active.form.defaults).toHaveBeenLastCalledWith();
+  });
+
+  it('keeps an explicit in-place creation save in its current context', async () => {
+    const active = session({ title: 'New page', content: { parts: [] } });
+    await flushPromises();
+    http.request.mockResolvedValue({ data: { data: { id: 7, title: 'New page', content: { parts: [] } }, meta: { redirect_url: '/mano/pages' } } });
+
+    await active.editor.save();
+
+    expect(router.visit).not.toHaveBeenCalled();
+  });
+
+  it('does not navigate away from changes typed while creation is saving', async () => {
+    let finish!: (value: unknown) => void;
+    const active = session({ title: 'New page', content: { parts: [] } }, false);
+    await flushPromises();
+    http.request.mockImplementation(() => new Promise((resolve) => {
+      finish = resolve;
+    }));
+    const saving = active.editor.save();
+    await flushPromises();
+    active.form.title = 'Newer edits';
+    finish({ data: { data: { id: 7, title: 'New page', content: { parts: [] } }, meta: { redirect_url: '/mano/pages' } } });
+
+    await saving;
+
+    expect(router.visit).not.toHaveBeenCalled();
+    expect(active.form.title).toBe('Newer edits');
+  });
+
   it('opens a new editor when browser storage is blocked', async () => {
-    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new DOMException('Blocked', 'SecurityError'); });
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new DOMException('Blocked', 'SecurityError');
+    });
     const active = session({ title: '', content: { parts: [] } });
     await flushPromises();
     expect(active.editor.ready.value).toBe(true);
@@ -66,7 +122,9 @@ describe('content recovery and saves', () => {
 
   it('preserves typing during a save and retains recovery for those newer changes', async () => {
     let finish!: (value: unknown) => void;
-    http.request.mockImplementation(() => new Promise((resolve) => { finish = resolve; }));
+    http.request.mockImplementation(() => new Promise((resolve) => {
+      finish = resolve;
+    }));
     const active = session();
     await flushPromises();
     active.form.title = 'Sent';

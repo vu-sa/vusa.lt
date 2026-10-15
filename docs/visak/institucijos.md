@@ -3,8 +3,9 @@ doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-15
 tests:
+  - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
   - tests/Feature/Admin/Management/InstitutionControllerTest.php
   - tests/Feature/Admin/Management/InstitutionCheckInTest.php
   - tests/Feature/Admin/People/InstitutionSecretaryTest.php
@@ -51,6 +52,8 @@ puslapį `/mano/institutions/{id}`.
 <DocScreenshot name="institution-record" alt="Institucijos puslapis: veiklos būklė, rūšis, padalinys, nariai, posėdžių viešumas ir paskutiniai posėdžiai" caption="Atstovės vaizdas: jos institucijos būklė, nariai ir paskutiniai posėdžiai." />
 
 ## Kaip tai veikia
+
+Atskiroje formoje sukūrus instituciją, atveriamas jos puslapis. Pareigybių atnaujinimo vedlyje institucija sukuriama liekant vedlyje.
 
 ### Rūšis ir tipai
 

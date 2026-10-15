@@ -216,6 +216,10 @@ describe('validation', function (): void {
             'degree' => 'BA',
             'tenant_id' => $this->tenant->id,
         ]);
+
+        $created = StudyProgram::where('name->lt', $data['name']['lt'])->sole();
+        $response->assertRedirectToRoute('studyPrograms.edit', $created)->assertSessionHas('success');
+        asUser($this->admin)->get(route('studyPrograms.edit', $created))->assertOk();
     });
 
     test('update modifies study program with valid data', function (): void {

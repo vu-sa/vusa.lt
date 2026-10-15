@@ -135,6 +135,10 @@ describe('authorized access', function (): void {
             'credits' => 6,
             'semester' => 'autumn',
         ]);
+
+        $created = StudySet::where('name->lt', 'Naujas komplektas')->sole();
+        $response->assertRedirectToRoute('studySets.edit', $created)->assertSessionHas('success');
+        asUser($this->admin)->get(route('studySets.edit', $created))->assertOk();
     });
 
     test('cannot store study set without required fields', function (): void {

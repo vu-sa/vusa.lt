@@ -205,10 +205,10 @@ describe('authorized access', function (): void {
         $validData['name'] = 'New Navigation '.$uniqueSuffix;
         $validData['url'] = '/new-nav-'.$uniqueSuffix;
 
-        asUser($this->admin)
+        $response = asUser($this->admin)
             ->post(route('navigation.store'), $validData)
             ->assertStatus(302)
-            ->assertRedirect(route('navigation.index'))
+            ->assertSessionHasNoErrors()
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('navigation', [
@@ -217,6 +217,10 @@ describe('authorized access', function (): void {
             'parent_id' => $validData['parent_id'],
             'lang' => $validData['lang'],
         ]);
+
+        $created = Navigation::where('name', $validData['name'])->sole();
+        $response->assertRedirectToRoute('navigation.edit', $created)->assertSessionHas('success');
+        asUser($this->admin)->get(route('navigation.edit', $created))->assertOk();
     });
 
     test('navigation is created with correct order', function (): void {

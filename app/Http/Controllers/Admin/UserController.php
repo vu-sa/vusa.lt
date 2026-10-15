@@ -21,6 +21,7 @@ use App\Models\Role;
 use App\Models\StudyProgram;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use App\Services\ResourceServices\UserDutyService;
 use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Collection;
@@ -110,9 +111,9 @@ class UserController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreUserRequest $request)
+    public function store(StoreUserRequest $request, PostCreateRedirect $redirect)
     {
-        DB::transaction(function () use ($request): void {
+        $user = DB::transaction(function () use ($request): User {
             $user = new User;
 
             $validatedData = $request->safe();
@@ -134,9 +135,12 @@ class UserController extends AdminController
             if (User::find(Auth::id())->isSuperAdmin()) {
                 $user->roles()->sync($request->validated('roles') ?? []);
             }
+
+            return $user;
         });
 
-        return $this->redirectResponse('users.index')->with('success', $this->entityMessage('created', 'user'));
+        return redirect($redirect->url($request->user(), $user, 'users.show', 'view', 'users.index'))
+            ->with('success', $this->entityMessage('created', 'user'));
     }
 
     /**

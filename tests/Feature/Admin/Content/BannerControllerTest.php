@@ -89,10 +89,10 @@ describe('authorized access', function (): void {
         $validData['title'] = 'Naujas baneris '.$uniqueSuffix;
         $validData['image_url'] = 'https://example.com/banner-'.$uniqueSuffix.'.jpg';
 
-        asUser($this->admin)
+        $response = asUser($this->admin)
             ->post(route('banners.store'), $validData)
             ->assertStatus(302)
-            ->assertRedirect(route('banners.index'))
+            ->assertSessionHasNoErrors()
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('banners', [
@@ -102,6 +102,10 @@ describe('authorized access', function (): void {
             'is_active' => $validData['is_active'],
             'tenant_id' => $this->tenant->id,
         ]);
+
+        $created = Banner::where('title', $validData['title'])->sole();
+        $response->assertRedirectToRoute('banners.edit', $created)->assertSessionHas('success');
+        asUser($this->admin)->get(route('banners.edit', $created))->assertOk();
     });
 
     test('can store banner without a logo — it renders as a text mark instead', function (): void {
@@ -113,7 +117,7 @@ describe('authorized access', function (): void {
         asUser($this->admin)
             ->post(route('banners.store'), $validData)
             ->assertStatus(302)
-            ->assertRedirect(route('banners.index'))
+            ->assertRedirectToRoute('banners.edit', Banner::query()->latest('id')->firstOrFail())
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('banners', [

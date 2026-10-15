@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Formos ir registracijos
 area: forms
 models: [Form, Registration]
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-15
 tests:
   - tests/Feature/Admin/Forms/FormControllerTest.php
   - tests/Feature/Admin/Forms/FormAccessTest.php
@@ -36,6 +36,8 @@ Formų sąrašas pasiekiamas adresu `/mano/forms`, o kiekviena forma atveriama a
 :::
 
 ## Kaip tai veikia
+
+Sukūrus registracijos formą, atveriamas jos puslapis su laukais ir registracijomis.
 
 ### Formos struktūra ir viešinimas {#struktura}
 

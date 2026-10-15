@@ -2,8 +2,13 @@
 doc_status: reviewed
 title: Platforma
 area: actionWindow
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-15
 tests:
+  - tests/Browser/PostCreateNavigationTest.php
+  - tests/Feature/Admin/Content/PageControllerTest.php
+  - tests/Feature/Api/Admin/ContentEditorTest.php
+  - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
+  - resources/js/Composables/__tests__/useContentEditor.component.test.ts
   - tests/Feature/System/SharedInertiaPropsTest.php
   - resources/js/Composables/__tests__/useActionWindowCatalog.test.ts
   - tests/Feature/Search/SearchExperienceTest.php
@@ -112,6 +117,21 @@ Kuriant narį ar pareigybę, perspėjimas apie galimą dublikatą parodo sutapim
 
 Redaguojant įrašo pavadinimą, didžioji formos antraštė iškart atspindi rašomą tekstą. Viršutinėje
 juostoje lieka išsaugotas įrašo pavadinimas, o kuriant – formos paskirtis, pvz., „Nauja naujiena“.
+
+### Po sukūrimo {#po-sukurimo}
+
+<ChangelogNote version="v3.0" date="2026-10-02" title="Sukurto įrašo atvėrimas">
+
+Atskiroje formoje sukūrus narį, pareigybę, instituciją, registracijos formą, problemą, išteklių ar rolę,
+atveriamas naujo įrašo puslapis. Sukūrus naujieną, puslapį, renginį, banerį, greitąją nuorodą,
+studijų programą, studijų rinkinį ar meniu punktą, atveriama jo redagavimo forma.
+
+</ChangelogNote>
+
+Jei sukurti įrašą galima, bet jo puslapio peržiūrėti ar redaguoti neleidžiama, atveriamas prieinamas
+sąrašas; jei neprieinamas ir jis – **Pradžia**. Sėkmingai sukurtas įrašas išlieka išsaugotas.
+Kuriant instituciją ar pareigybę vedlyje arba pridedant susijusį įrašą atvertame puslapyje,
+liekama tame pačiame veiksme. Esamų įrašų redagavimo, šalinimo ir atkūrimo eiga nesikeičia.
 
 ## Bendrosios platformos galimybės {#bendrosios-galimybes}
 

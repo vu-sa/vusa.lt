@@ -41,6 +41,8 @@ Narių sąrašas pasiekiamas adresu `/mano/users`, o kiekvieno nario profilio ko
 
 ## Kaip tai veikia
 
+Atskiroje formoje sukūrus narį, atveriamas jo puslapis.
+
 ### Tapatybė ir prisijungimas {#tapatybe}
 
 Nario paskyrą sudaro:

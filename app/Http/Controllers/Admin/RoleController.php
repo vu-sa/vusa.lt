@@ -16,6 +16,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Permissions\PermissionMapBuilder;
+use App\Services\PostCreateRedirect;
 use App\Support\Permissions\BaselineAccess;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -49,13 +50,16 @@ class RoleController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRoleRequest $request)
+    public function store(StoreRoleRequest $request, PostCreateRedirect $redirect)
     {
         $this->handleAuthorization('create', Role::class);
 
-        $role = Role::create($request->validated());
+        $role = new Role;
+        $role->fill($request->validated());
+        $role->save();
 
-        return redirect()->route('roles.index')->with('success', $this->entityMessage('created', 'role'));
+        return redirect($redirect->url($request->user(), $role, 'roles.show', 'view', 'roles.index'))
+            ->with('success', $this->entityMessage('created', 'role'));
     }
 
     /**

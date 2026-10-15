@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Baneriai
 area: banners
 models: [Banner]
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-15
 tests:
   - tests/Feature/Admin/Content/BannerControllerTest.php
   - tests/Feature/Api/Admin/BannerApiControllerTest.php
@@ -27,6 +27,8 @@ Skiltis pasiekiama adresu `/mano/banners`.
 :::
 
 ## Kaip tai veikia
+
+Sukūrus banerį, atveriama jo redagavimo forma.
 
 ### Rodymas svetainėje ir prioritetas
 

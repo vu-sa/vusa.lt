@@ -172,7 +172,7 @@ describe('auth: news manager', function (): void {
     });
 
     test('can store news', function (): void {
-        asUser($this->newsManager)->post(route('news.store'), [
+        $response = asUser($this->newsManager)->post(route('news.store'), [
             'title' => 'News 1',
             'permalink' => 'news-1',
             'content' => [
@@ -190,7 +190,11 @@ describe('auth: news manager', function (): void {
             'publish_time' => now()->timestamp,
             'short' => 'Short news',
             'tenant_id' => $this->managerTenant->id,
-        ])->assertStatus(302)->assertRedirectToRoute('news.index');
+        ])->assertStatus(302)->assertSessionHasNoErrors();
+
+        $created = News::where('title', 'News 1')->sole();
+        $response->assertRedirectToRoute('news.edit', $created)->assertSessionHas('success');
+        asUser($this->newsManager)->get(route('news.edit', $created))->assertOk();
     });
 
     test('show_breadcrumbs round-trips through store and update', function (): void {
@@ -216,7 +220,7 @@ describe('auth: news manager', function (): void {
             'short' => 'Short news',
             'show_breadcrumbs' => false,
             'tenant_id' => $this->managerTenant->id,
-        ])->assertStatus(302)->assertRedirectToRoute('news.index');
+        ])->assertStatus(302)->assertRedirectToRoute('news.edit', News::query()->latest('id')->firstOrFail());
 
         $this->assertDatabaseHas('news', [
             'permalink' => $permalink,
@@ -515,7 +519,7 @@ describe('auth: news manager', function (): void {
         ]);
 
         $response->assertStatus(302)
-            ->assertRedirectToRoute('news.index')
+            ->assertRedirectToRoute('news.edit', News::query()->latest('id')->firstOrFail())
             ->assertSessionHas('success');
 
         // Scoped per tenant: the other tenant's identical slug doesn't force a suffix here.

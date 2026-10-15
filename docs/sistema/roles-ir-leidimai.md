@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Rolės ir leidimai
 area: roles
 models: [Role, Permission]
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-15
 tests:
   - tests/Feature/Admin/Permissions/RoleControllerTest.php
   - tests/Feature/Admin/Permissions/PermissionControllerTest.php
@@ -30,6 +30,8 @@ kurios pareigybės ją naudoja.
 :::
 
 ## Kaip tai veikia
+
+Sukūrus rolę, atveriamas jos puslapis, kuriame galima nustatyti teises.
 
 Prieigą aprašo leidimai ir rolės:
 
@@ -62,7 +64,7 @@ Naujos rolės kuriamos centralizuotai, kai atsiranda nauja darbo sritis:
 
 1. Rolių sąrašo viršuje paspausk **Nauja rolė**.
 2. Įvesk unikalų rolės pavadinimą lietuvių kalba (pvz., *Projektų koordinatorius*).
-3. Išsaugok. Grįžęs į rolių sąrašą, atverk naują rolę ir nustatyk jos teises.
+3. Išsaugok. Atsivėrusiame naujos rolės puslapyje nustatyk jos teises.
 
 ### Rolės teisių nustatymas (`/mano/roles/{id}`)
 

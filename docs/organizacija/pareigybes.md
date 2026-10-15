@@ -5,6 +5,8 @@ area: duties
 models: [Duty, Role, Tenant, Type, Institution, DutyResponsibility]
 last_reviewed: 2026-10-15
 tests:
+  - tests/Browser/PostCreateNavigationTest.php
+  - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
   - resources/js/Utils/__tests__/String.test.ts
   - resources/js/Features/Admin/DutiableTimeline/__tests__/dutyNames.test.ts
   - tests/Feature/Public/ContactEagerLoadingTest.php
@@ -59,6 +61,8 @@ Pareigybių sąrašas pasiekiamas adresu `/mano/duties`, o kiekviena pareigybė 
 `/mano/duties/{id}`.
 
 ## Kaip tai veikia
+
+Atskiroje formoje sukūrus pareigybę, atveriamas jos puslapis, kuriame galima tvarkyti narius ir ryšius.
 
 ### Teisės ir rolės per pareigybes {#teises-ir-roles}
 
