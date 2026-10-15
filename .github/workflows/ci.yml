@@ -32,6 +32,7 @@ jobs:
             - 'composer.lock'
             - 'phpunit.xml'
             - 'phpstan.neon'
+            - 'phpmd.yml'
           js:
             - '**/*.vue'
             - '**/*.js'
@@ -61,6 +62,8 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+          # Full history, so the PHPMD step can diff against the base branch.
+          fetch-depth: 0
 
       - name: Download build artifacts
         uses: actions/download-artifact@v8
@@ -89,6 +92,23 @@ jobs:
 
       - name: Running Static Analysis
         run: vendor/bin/phpstan analyze --no-progress --memory-limit=1G
+
+      # Only the files this change touches, existing findings included (migrate on touch). Advisory like typecheck.
+      - name: Complexity check (PHPMD)
+        env:
+          BASE: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || github.event.before }}
+        run: |
+          if ! git rev-parse --verify --quiet "$BASE^{commit}" > /dev/null; then
+            echo "No base commit to diff against; skipping."
+            exit 0
+          fi
+          files=$(git diff --name-only --diff-filter=AM "$BASE"...HEAD -- 'app/*.php')
+          if [ -z "$files" ]; then
+            echo "No changed PHP files under app/."
+            exit 0
+          fi
+          vendor/bin/phpmd analyze $files --no-progress --format github
+        continue-on-error: true
 
   php-tests:
     needs: [changes, setup]

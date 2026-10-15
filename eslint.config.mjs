@@ -465,6 +465,17 @@ export default tseslint.config(
     },
   },
 
+  // Size signals, the frontend counterpart of phpmd: warnings to split on touch, never a block.
+  {
+    files: ['resources/js/**/*.{vue,ts}'],
+    ignores: ['resources/js/Components/ui/**'],
+    rules: {
+      'complexity': ['warn', 15],
+      'max-depth': ['warn', 4],
+      'max-lines': ['warn', { max: 500, skipBlankLines: true, skipComments: true }],
+    },
+  },
+
   // Shadcn UI primitives and Inertia page routes use single-word filenames by design (Button, Index, etc.).
   {
     files: [

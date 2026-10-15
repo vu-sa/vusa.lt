@@ -491,6 +491,7 @@ declare global {
       email?: string | null
       contacts_grouping: string
       places_to_occupy?: number | null
+      is_active: boolean
       created_at: string
       updated_at: string
       deleted_at?: string | null
@@ -517,6 +518,9 @@ declare global {
       resources?: Resource
       ex_officio_target_duties?: Duty[]
       ex_officio_source_duties?: Duty[]
+      former_names?: DutyName[]
+      predecessors?: Duty[]
+      successors?: Duty[]
       assignable_tenants?: Tenant[]
       comments?: Comment[]
       root_comments?: Comment[]
@@ -536,6 +540,9 @@ declare global {
       types_count: number
       ex_officio_target_duties_count: number
       ex_officio_source_duties_count: number
+      former_names_count: number
+      predecessors_count: number
+      successors_count: number
       assignable_tenants_count: number
       comments_count: number
       root_comments_count: number
@@ -557,6 +564,9 @@ declare global {
       institutions_exists: boolean
       ex_officio_target_duties_exists: boolean
       ex_officio_source_duties_exists: boolean
+      former_names_exists: boolean
+      predecessors_exists: boolean
+      successors_exists: boolean
       assignable_tenants_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
@@ -580,6 +590,24 @@ declare global {
       // exists
       duty_exists: boolean
       type_exists: boolean
+    }
+
+    export interface DutyName {
+      // columns
+      id: string
+      duty_id: string
+      name: Array<unknown>
+      used_until: string
+      created_at?: string | null
+      updated_at?: string | null
+      // mutators
+      translatable_columns_from: Array<unknown>
+      translations: unknown
+      // relations
+      duty?: Duty
+      // counts
+      // exists
+      duty_exists: boolean
     }
 
     export interface DutyResponsibility {
@@ -2405,7 +2433,7 @@ declare global {
     export interface User {
       // columns
       id: string
-      email: string
+      email?: string | null
       phone?: string | null
       facebook_url?: string | null
       name: string

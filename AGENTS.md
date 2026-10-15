@@ -73,11 +73,15 @@ All Laravel-related commands MUST run through Sail:
 ./vendor/bin/sail npm run build
 ./vendor/bin/sail npm run test         # frontend (Vitest)
 ./vendor/bin/sail npm run storybook
+./vendor/bin/sail composer phpmd       # complexity across app/; CI checks only changed files — see note below
+./vendor/bin/sail npm run knip         # unused files/exports/deps — run by hand, verify before deleting
 ```
 
 A transient Sail failure is not a blocker: retry the command and run `./vendor/bin/sail ps` before reporting Docker or Podman unavailable.
 
 **Exception — Claude Code on the web** (`CLAUDE_CODE_REMOTE=true`): Docker images can't be pulled there, so Sail never runs. `.claude/hooks/session-start.sh` installs dependencies natively and writes a SQLite `.env`; drop the `./vendor/bin/sail` prefix (`php artisan test --parallel --compact`, `npm run test`, `vendor/bin/pint --dirty`). MariaDB, Typesense, Reverb and Mailpit are unavailable, so verify with tests, not a running site; tests that opt into real Typesense (`usesTypesense()`) fail with `ConnectException` there — run those in CI.
+
+Note: `composer phpmd` has no baseline, so it lists every existing finding; CI runs it only on the PHP files a change touches, existing findings included — fix what you touch where reasonable. Pass paths to narrow it (`composer phpmd -- app/Models/Foo.php`). If numbers look stale, delete pdepend's cache (`~/.cache/pdepend` in the container).
 
 Note: `npm run typecheck` (`vue-tsc --noEmit`) is available and runs in CI, but is currently **non-blocking** (advisory only). Don't run ESLint fixes or chase typecheck findings unless explicitly asked — verify frontend changes with Vitest instead.
 
