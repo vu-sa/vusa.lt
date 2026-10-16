@@ -203,6 +203,14 @@ return [
         ],
     ],
 
+    'mailingList' => [
+        'model' => '{1} konferencija|[2,9] konferencijos|[10,*] konferencijų',
+        'gender' => 'f',
+        'address' => 'adresas',
+        'display_name' => 'pavadinimas',
+        'description' => 'aprašymas',
+    ],
+
     'goal' => [
         'model' => '{1} tikslas|[2,9] tikslai|[10,*] tikslų',
         'gender' => 'm',

@@ -8,25 +8,14 @@ use App\Models\ContentPart;
 use App\Models\Duty;
 use App\Models\InstitutionLink;
 use App\Models\InstitutionTypeLink;
+use App\Models\MailingListExclusion;
+use App\Models\MailingListSource;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Step;
 use App\Models\TenantHomepageContent;
 use App\Models\Vote;
 
-/**
- * Maps a child model class to the relation name(s) that lead to its "root" for
- * activity log roll-up purposes -- e.g. a Vote's root is its AgendaItem's
- * Meeting, so editing a vote surfaces in the meeting's activity feed. A model
- * absent from PARENTS is its own root.
- *
- * A value may be a single relation name, or a list of candidate relation
- * names tried in order -- needed for Content, whose owner (News, Page, or
- * Tenant) has no discriminator column; see App\Services\ActivityRootResolver.
- *
- * Kept in sync with the backfill in
- * database/migrations/2026_08_02_090000_add_root_subject_to_activity_log.php
- * and read at runtime by App\Services\ActivityRootResolver.
- */
+/** Child activities follow these relations to their canonical record's history. */
 class ActivityRoots
 {
     /**
@@ -46,6 +35,8 @@ class ActivityRoots
         Step::class => ['goal', 'problem'],
         InstitutionLink::class => 'source',
         InstitutionTypeLink::class => 'source',
+        MailingListSource::class => 'mailingList',
+        MailingListExclusion::class => 'mailingList',
     ];
 
     /**
