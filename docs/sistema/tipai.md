@@ -3,11 +3,12 @@ doc_status: reviewed
 title: Tipai ir kategorijos
 area: types
 models: [InstitutionType, DutyType, EventType, ResourceCategory, ProblemCategory]
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-16
 tests:
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Feature/Migrations/SplitTypesTest.php
   - resources/js/Pages/Admin/ModelMeta/__tests__/IndexDomainTypes.test.ts
+  - resources/js/Pages/Admin/ModelMeta/__tests__/ShowType.test.ts
   - tests/Browser/TypeDirectoryTest.php
 ---
 
