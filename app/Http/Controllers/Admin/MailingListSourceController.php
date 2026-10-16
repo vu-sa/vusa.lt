@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Requests\MailingLists\StoreMailingListSourceRequest;
 use App\Listeners\QueueMailingListSync;
 use App\Models\MailingList;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\RedirectResponse;
 
 /**
@@ -18,17 +19,21 @@ class MailingListSourceController extends AdminController
     {
         $type = MailingListSourceType::from($request->validated('type'));
 
-        $mailingList->withSyncLock(fn () => $mailingList->sources()->create([
-            ...$request->safe()->only(['type', 'address_mode', 'note', 'expires_on']),
-            'source_id' => $type === MailingListSourceType::Email ? null : (string) $request->validated('source_id'),
-            'email' => $type === MailingListSourceType::Email ? $request->validated('email') : null,
-            'display_name' => $type === MailingListSourceType::Email ? $request->validated('display_name') : null,
-            'filters' => [
-                ...($this->filters($type, (array) $request->validated('filters', [])) ?? []),
-                'authorized_tenant_ids' => $request->authorizedTenantIds(),
-            ],
-            'created_by' => $request->user()->id,
-        ]));
+        try {
+            $mailingList->withSyncLock(fn () => $mailingList->sources()->create([
+                ...$request->safe()->only(['type', 'address_mode', 'note', 'expires_on']),
+                'source_id' => $type === MailingListSourceType::Email ? null : (string) $request->validated('source_id'),
+                'email' => $type === MailingListSourceType::Email ? $request->validated('email') : null,
+                'display_name' => $type === MailingListSourceType::Email ? $request->validated('display_name') : null,
+                'filters' => [
+                    ...($this->filters($type, (array) $request->validated('filters', [])) ?? []),
+                    'authorized_tenant_ids' => $request->authorizedTenantIds(),
+                ],
+                'created_by' => $request->user()->id,
+            ]));
+        } catch (LockTimeoutException) {
+            return back()->with('error', __('mailing_lists.messages.update_failed'));
+        }
 
         QueueMailingListSync::queueSync();
 
@@ -40,12 +45,16 @@ class MailingListSourceController extends AdminController
         $this->handleAuthorization('update', $mailingList);
 
         // Resolved through the list so a crafted id cannot reach another list's source.
-        $mailingList->withSyncLock(function () use ($mailingList, $source): void {
-            $model = $mailingList->sources()->find($source);
-            abort_if($model === null, 404);
+        try {
+            $mailingList->withSyncLock(function () use ($mailingList, $source): void {
+                $model = $mailingList->sources()->find($source);
+                abort_if($model === null, 404);
 
-            $model->delete();
-        });
+                $model->delete();
+            });
+        } catch (LockTimeoutException) {
+            return back()->with('error', __('mailing_lists.messages.update_failed'));
+        }
         QueueMailingListSync::queueSync();
 
         return back()->with('success', __('mailing_lists.messages.source_removed'));

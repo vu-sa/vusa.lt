@@ -14,6 +14,7 @@ use App\Http\Requests\MailingLists\StoreMailingListRequest;
 use App\Http\Requests\MailingLists\SyncMailingListRequest;
 use App\Http\Requests\MailingLists\UpdateMailingListModeRequest;
 use App\Http\Requests\MailingLists\UpdateMailingListRequest;
+use App\Jobs\SyncManagedMailingLists;
 use App\Listeners\QueueMailingListSync;
 use App\Models\Duty;
 use App\Models\DutyType;
@@ -26,6 +27,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Mailman\MailmanClient;
 use App\Services\ModelAuthorizer as Authorizer;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -142,30 +144,35 @@ class MailingListController extends AdminController
 
     public function show(ShowMailingListRequest $request, MailingList $mailingList): Response
     {
-        $this->handleAuthorization('view', $mailingList);
+        $this->handleAuthorization('viewArchive', $mailingList);
 
         $user = $request->user();
-        $mailingList->load(['tenant:id,shortname', 'sources', 'exclusions']);
+        $canView = $user->can('view', $mailingList);
+        $canUpdate = $user->can('update', $mailingList);
+        $mailingList->load($canView ? ['tenant:id,shortname', 'sources', 'exclusions'] : ['tenant:id,shortname']);
 
         return $this->inertiaResponse('Admin/MailingLists/ShowMailingList', [
             'mailingList' => [
                 ...$this->summary($mailingList),
                 'last_sync_error' => $mailingList->last_sync_status === MailingListSyncStatus::Failed ? __('mailing_lists.messages.sync_failed') : null,
                 'archive_fetched_at' => $mailingList->archive_fetched_at?->toIso8601String(),
-                'archive_complete' => $mailingList->archive_backfilled_at !== null,
+                'archive_complete' => $this->isArchiveComplete($mailingList),
                 'archive_imported' => $mailingList->messages()->count(),
                 'archive_total' => $mailingList->archive_backfill_total,
             ],
-            'sources' => $this->presentSources($mailingList->sources),
-            'exclusions' => $mailingList->exclusions->map->only(['id', 'email', 'note'])->values(),
-            'roster' => Inertia::defer(fn (): Collection => $mailingList->members()->get()->map->only(['email', 'display_name', 'reasons'])->values(), 'roster'),
-            'diff' => Inertia::defer(fn (): ?array => $user->can('update', $mailingList) ? $this->diffFor($mailingList, $user) : null, 'roster'),
+            'sources' => $canView ? $this->presentSources($mailingList->sources) : [],
+            'exclusions' => $canView ? $mailingList->exclusions->map->only(['id', 'email', 'note'])->values() : [],
+            'roster' => Inertia::defer(fn (): Collection => $canView
+                ? $mailingList->members()->get()->map->only(['email', 'display_name', 'reasons'])->values()
+                : collect(), 'roster'),
+            'diff' => Inertia::defer(fn (): ?array => $canUpdate ? $this->diffFor($mailingList, $user) : null, 'roster'),
             'messages' => Inertia::scroll(fn () => $this->messagesFor($mailingList, $request->validated('messages_page', 1)))->defer('archive'),
-            'sourceOptions' => Inertia::optional(fn (): ?array => $user->can('update', $mailingList) ? $this->sourceOptions($mailingList) : null),
+            'sourceOptions' => Inertia::optional(fn (): ?array => $canUpdate ? $this->sourceOptions($mailingList) : null),
             'mailmanConfigured' => $this->mailman->isConfigured(),
             'tenants' => GetTenantsForUpserts::execute('mailingLists.update.padalinys', $this->authorizer),
             'can' => [
-                'update' => $user->can('update', $mailingList),
+                'view' => $canView,
+                'update' => $canUpdate,
             ],
         ]);
     }
@@ -175,7 +182,7 @@ class MailingListController extends AdminController
         try {
             $mailingList->withSyncLock(function () use ($request, $mailingList): void {
                 if ($this->mailman->isConfigured()) {
-                    $this->mailman->updateConfig($this->listId($mailingList), [
+                    $this->mailman->updateConfig($mailingList->mailmanListId(), [
                         'display_name' => $request->validated('display_name'),
                         'description' => (string) $request->validated('description'),
                     ]);
@@ -202,9 +209,13 @@ class MailingListController extends AdminController
             return $this->runSync($mailingList, $sync, $request->validated('preview_token'), $request->user(), activate: true);
         }
 
-        $mailingList->withSyncLock(fn () => $mailingList->update([
-            'mode' => $mode, 'last_sync_status' => null, 'last_sync_error' => null,
-        ]));
+        try {
+            $mailingList->withSyncLock(fn () => $mailingList->update([
+                'mode' => $mode, 'last_sync_status' => null, 'last_sync_error' => null,
+            ]));
+        } catch (LockTimeoutException) {
+            return back()->with('error', __('mailing_lists.messages.update_failed'));
+        }
 
         QueueMailingListSync::queueSync();
 
@@ -243,7 +254,7 @@ class MailingListController extends AdminController
         }
 
         try {
-            $diff = $sync->apply($mailingList, $previewToken, $user, $activate);
+            $diff = $sync->verify($mailingList, $previewToken, $user, $activate);
         } catch (ValidationException $exception) {
             return back()->with('error', __('mailing_lists.messages.stale_preview'));
         } catch (Throwable $exception) {
@@ -256,12 +267,9 @@ class MailingListController extends AdminController
             return back()->with('error', __('mailing_lists.messages.needs_review'));
         }
 
-        QueueMailingListSync::queueSync();
+        SyncManagedMailingLists::dispatch($mailingList->id, $previewToken, $user?->id, $activate)->afterCommit();
 
-        return back()->with('success', __('mailing_lists.messages.synced', [
-            'added' => count($diff->toAdd),
-            'removed' => count($diff->toRemove),
-        ]));
+        return back()->with('success', __('mailing_lists.messages.sync_queued'));
     }
 
     /**
@@ -278,11 +286,17 @@ class MailingListController extends AdminController
             'tenant' => $list->tenant->only(['id', 'shortname']),
             'archive_policy' => $list->archive_policy,
             'member_count' => $list->member_count,
-            'posts_last_year' => $list->archive_backfilled_at !== null ? $list->posts_last_year : null,
+            'posts_last_year' => $this->isArchiveComplete($list) ? $list->posts_last_year : null,
             'last_post_at' => $list->last_post_at?->toIso8601String(),
             'last_synced_at' => $list->last_synced_at?->toIso8601String(),
             'last_sync_status' => $list->last_sync_status?->value,
         ];
+    }
+
+    private function isArchiveComplete(MailingList $list): bool
+    {
+        return $list->archive_backfilled_at !== null
+            || ($list->archive_fetched_at !== null && $list->archive_head_hash === null);
     }
 
     /**
@@ -387,10 +401,5 @@ class MailingListController extends AdminController
             'mailingLists' => MailingList::query()->whereIn('tenant_id', $tenantIds)->whereKeyNot($mailingList->id)->orderBy('address')->get(['id', 'address'])
                 ->map->only(['id', 'address']),
         ];
-    }
-
-    private function listId(MailingList $mailingList): string
-    {
-        return $mailingList->mailman_list_id ?? MailingList::listIdFor($mailingList->address);
     }
 }

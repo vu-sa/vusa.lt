@@ -8,7 +8,7 @@ class ShowMailingListRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('view', $this->route('mailingList'));
+        return $this->user()->can('viewArchive', $this->route('mailingList'));
     }
 
     public function rules(): array

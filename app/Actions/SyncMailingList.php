@@ -21,7 +21,7 @@ class SyncMailingList
 
     public function preview(MailingList $mailingList): MailingListDiff
     {
-        $current = collect($this->mailman->roster($this->listId($mailingList)))->keyBy('email');
+        $current = collect($this->mailman->roster($mailingList->mailmanListId()))->keyBy('email');
         $desired = ResolveMailingListMembers::execute($mailingList)->keyBy('email');
 
         return new MailingListDiff(
@@ -40,6 +40,29 @@ class SyncMailingList
             'expires' => now()->addMinutes(15)->timestamp,
             'fingerprint' => $this->fingerprint($list, $diff),
         ], JSON_THROW_ON_ERROR));
+    }
+
+    public function verify(MailingList $mailingList, ?string $previewToken = null, ?User $causer = null, bool $activate = false): MailingListDiff
+    {
+        return $mailingList->withSyncLock(function () use ($mailingList, $previewToken, $causer, $activate): MailingListDiff {
+            $mailingList->refresh();
+
+            $diff = $this->preview($mailingList);
+
+            if ($activate || $previewToken !== null) {
+                $this->validateReview($mailingList, $diff, $previewToken, $causer);
+            }
+
+            if ($diff->needsReview() && $previewToken === null) {
+                $mailingList->update([
+                    'last_sync_status' => MailingListSyncStatus::NeedsReview,
+                    'last_sync_error' => null,
+                    'last_synced_at' => now(),
+                ]);
+            }
+
+            return $diff;
+        });
     }
 
     public function apply(MailingList $mailingList, ?string $previewToken = null, ?User $causer = null, bool $activate = false): MailingListDiff
@@ -99,11 +122,13 @@ class SyncMailingList
             } catch (Throwable $snapshotException) {
                 report($snapshotException);
             }
-            $mailingList->update([
-                'last_sync_status' => MailingListSyncStatus::Failed,
-                'last_sync_error' => mb_substr($exception->getMessage(), 0, 1000),
-                'last_synced_at' => now(),
-            ]);
+            if ($mailingList->isManaged()) {
+                $mailingList->update([
+                    'last_sync_status' => MailingListSyncStatus::Failed,
+                    'last_sync_error' => mb_substr($exception->getMessage(), 0, 1000),
+                    'last_synced_at' => now(),
+                ]);
+            }
 
             throw $exception;
         }
@@ -121,7 +146,7 @@ class SyncMailingList
 
     private function refreshSnapshot(MailingList $mailingList): void
     {
-        $roster = $this->mailman->roster($this->listId($mailingList));
+        $roster = $this->mailman->roster($mailingList->mailmanListId());
 
         $this->storeSnapshot($mailingList, array_map(
             fn (array $member) => new MailingListRecipient($member['email'], $member['display_name'], null, []),
@@ -159,7 +184,7 @@ class SyncMailingList
 
     private function write(MailingList $mailingList, MailingListDiff $diff): void
     {
-        $listId = $this->listId($mailingList);
+        $listId = $mailingList->mailmanListId();
 
         // Leave time to restore delivery settings and refresh the snapshot before the worker timeout.
         $deadline = microtime(true) + 480;
@@ -223,10 +248,5 @@ class SyncMailingList
         }
 
         $activity->log('members_synced');
-    }
-
-    private function listId(MailingList $mailingList): string
-    {
-        return $mailingList->mailman_list_id ?? MailingList::listIdFor($mailingList->address);
     }
 }

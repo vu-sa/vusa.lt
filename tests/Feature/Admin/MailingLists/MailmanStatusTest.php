@@ -26,6 +26,7 @@ test('reports disabled, not broken, where Mailman is not enabled', function (): 
 });
 
 test('is healthy when both logins work and no managed list is stuck', function (): void {
+    MailingList::factory()->create(['last_sync_status' => MailingListSyncStatus::Failed]);
     Http::fake([
         'https://konf.test/mailman-api/3.1/lists*' => Http::response(['entries' => [], 'total_size' => 56]),
         'https://konf.test/archives/api/lists/*' => Http::response(['count' => 56, 'results' => []]),
@@ -33,6 +34,7 @@ test('is healthy when both logins work and no managed list is stuck', function (
 
     expect(app(SystemMonitorService::class)->getMailmanStatus())
         ->status->toBe('healthy')
+        ->lists_needing_attention->toBe(0)
         ->api->toBe('ok')
         ->archive->toBe('ok');
 });
@@ -68,7 +70,6 @@ test('needs attention when the archive login fails or a managed list is stuck', 
         ->status->toBe('warning')
         ->lists_needing_attention->toBe(1);
 });
-
 
 test('an HTTP success with a malformed health payload is not healthy', function (): void {
     Http::fake([

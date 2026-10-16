@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\Actions\SyncMailingList;
 use App\Enums\MailingListMode;
 use App\Models\MailingList;
+use App\Models\User;
 use App\Services\Mailman\MailmanClient;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
@@ -27,8 +28,12 @@ class SyncManagedMailingLists implements ShouldBeUniqueUntilProcessing, ShouldQu
 
     public int $uniqueFor = 900;
 
-    public function __construct(public ?string $mailingListId = null)
-    {
+    public function __construct(
+        public ?string $mailingListId = null,
+        public ?string $previewToken = null,
+        public ?string $causerId = null,
+        public bool $activate = false,
+    ) {
         $this->onConnection('long-running');
     }
 
@@ -45,14 +50,17 @@ class SyncManagedMailingLists implements ShouldBeUniqueUntilProcessing, ShouldQu
             return;
         }
 
-        $list = MailingList::query()->where('mode', MailingListMode::Managed)->find($this->mailingListId);
+        $list = MailingList::query()
+            ->when(! $this->activate, fn ($query) => $query->where('mode', MailingListMode::Managed))
+            ->find($this->mailingListId);
         if ($list === null) {
             return;
         }
         try {
-            $sync->apply($list);
+            $causer = $this->causerId !== null ? User::query()->find($this->causerId) : null;
+            $sync->apply($list, $this->previewToken, $causer, $this->activate);
         } catch (LockTimeoutException) {
-            self::dispatch($list->id)->delay(now()->addMinute());
+            self::dispatch($list->id, $this->previewToken, $this->causerId, $this->activate)->delay(now()->addMinute());
         } catch (Throwable $exception) {
             Log::warning('Mailing list sync failed', ['list' => $list->address, 'error' => $exception->getMessage()]);
         }
@@ -60,6 +68,10 @@ class SyncManagedMailingLists implements ShouldBeUniqueUntilProcessing, ShouldQu
 
     public function uniqueId(): string
     {
-        return $this->mailingListId ?? 'all';
+        if ($this->mailingListId === null) {
+            return 'all';
+        }
+
+        return $this->mailingListId.($this->activate ? ':activate' : '').($this->previewToken !== null ? ':review' : '');
     }
 }

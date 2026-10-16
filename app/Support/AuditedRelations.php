@@ -31,6 +31,7 @@ class AuditedRelations
     public const RELATIONS = [
         Duty::class => [
             'users' => ['display' => 'name'],
+            'types' => ['display' => 'title'],
         ],
         Meeting::class => [
             'institutions' => ['display' => 'name'],
