@@ -50,6 +50,13 @@ describe('SystemStatus', () => {
     expect(wrapper.findAll('article')).toHaveLength(2);
   });
 
+  it('marks a service unused in this environment as disabled, not unknown', () => {
+    const wrapper = mount(SystemStatus, { props: { ...props, status: { reverb: { status: 'disabled' } } } });
+
+    expect(wrapper.get('article').text()).toContain('Išjungta');
+    expect(wrapper.get('article').text()).not.toContain('Nežinoma');
+  });
+
   it('shows the device split with a row per day', () => {
     const wrapper = mount(SystemStatus, { props });
     const section = wrapper.get('[data-testid="device-metrics"]');
