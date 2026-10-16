@@ -187,11 +187,12 @@ const props = defineProps<{
   deviceMetrics?: DeviceMetrics;
   maintenanceActions?: MaintenanceAction[];
 }>();
-const labels: Record<string, string> = { redis: 'Redis', database: 'Duomenų bazė', cache: 'Talpykla', typesense: 'Typesense', scheduler: 'Planuoklė', digest: 'Laiškų eilė', mail: 'El. paštas', sharepoint_documents: 'SharePoint dokumentai', system: 'Sistema', integrations: 'Integracijos' };
+const labels: Record<string, string> = { redis: 'Redis', database: 'Duomenų bazė', cache: 'Talpykla', typesense: 'Typesense', scheduler: 'Planuoklė', queue: 'Užduočių eilė', reverb: 'Reverb', digest: 'Laiškų eilė', mail: 'El. paštas', sharepoint_documents: 'SharePoint dokumentai', system: 'Sistema', integrations: 'Integracijos' };
 const present = (status?: string): StatusPresentation => {
   if (['healthy', 'connected', 'working', 'configured'].includes(status ?? '')) return { label: $t('Veikia'), role: 'success', icon: CircleCheck };
   if (['warning', 'degraded'].includes(status ?? '')) return { label: $t('Reikia dėmesio'), role: 'attention', icon: TriangleAlert };
   if (['error', 'failed', 'disconnected'].includes(status ?? '')) return { label: $t('Neveikia'), role: 'danger', icon: CircleX };
+  if (status === 'disabled') return { label: $t('Išjungta'), role: 'neutral', icon: CircleDashed };
   return { label: $t('Nežinoma'), role: 'neutral', icon: CircleDashed };
 };
 const scalarDetails = (check: ServiceStatus) => Object.entries(check)
