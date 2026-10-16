@@ -10,6 +10,7 @@ use App\Events\ReservationResourceCreated;
 use App\Events\StudentRepRegistrationCreated;
 use App\Events\TaskCreated;
 use App\Listeners\BlockExternalNotificationsOnStaging;
+use App\Listeners\DiagnoseHealth;
 use App\Listeners\HandleDutiableChange;
 use App\Listeners\HandleTaskCreated;
 use App\Listeners\NotifyUsersOfComment;
@@ -40,6 +41,7 @@ use App\Tasks\Subscribers\InstitutionCheckInTaskSubscriber;
 use App\Tasks\Subscribers\MeetingTaskSubscriber;
 use App\Tasks\Subscribers\ReservationTaskSubscriber;
 use Illuminate\Auth\Events\Login;
+use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Notifications\Events\NotificationSending;
 use NotificationChannels\WebPush\Events\NotificationFailed;
@@ -95,6 +97,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         Login::class => [
             RecordDeviceLogin::class,
+        ],
+        DiagnosingHealth::class => [
+            DiagnoseHealth::class,
         ],
         NotificationFailed::class => [
             PruneRejectedPushSubscription::class,

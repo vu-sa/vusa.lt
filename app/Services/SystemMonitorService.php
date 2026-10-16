@@ -17,6 +17,8 @@ use Typesense\Client;
 
 class SystemMonitorService
 {
+    public function __construct(private readonly ServiceProbes $probes = new ServiceProbes) {}
+
     /**
      * How long a live SMTP probe is cached.
      *
@@ -45,9 +47,19 @@ class SystemMonitorService
     public const string HEARTBEAT_CACHE_KEY = 'scheduler.last_run';
 
     /**
+     * Written by the QueueHeartbeat job the scheduler dispatches every minute, so a stale value
+     * means the default-queue workers stopped picking up jobs (or the scheduler stopped).
+     */
+    public const string QUEUE_HEARTBEAT_CACHE_KEY = 'queue.last_processed';
+
+    private const int QUEUE_HEALTHY_SECONDS = 600;
+
+    private const int QUEUE_WARNING_SECONDS = 3600;
+
+    /**
      * Get a complete snapshot of system health.
      *
-     * @return array{redis: array, database: array, cache: array, typesense: array, scheduler: array, digest: array, mail: array, sharepoint_documents: array, integrations: array, system: array}
+     * @return array{redis: array, database: array, cache: array, typesense: array, scheduler: array, queue: array, reverb: array, digest: array, mail: array, sharepoint_documents: array, integrations: array, system: array}
      */
     public function getAllStatus(): array
     {
@@ -57,6 +69,8 @@ class SystemMonitorService
             'cache' => $this->getCacheStatus(),
             'typesense' => $this->getTypesenseStatus(),
             'scheduler' => $this->getSchedulerStatus(),
+            'queue' => $this->getQueueStatus(),
+            'reverb' => $this->probes->reverbStatus(),
             'digest' => $this->getDigestStatus(),
             'mail' => $this->getMailStatus(),
             'sharepoint_documents' => $this->getDocumentDiscoveryStatus(),
@@ -77,7 +91,37 @@ class SystemMonitorService
      */
     public function getSchedulerStatus(): array
     {
-        $lastRun = Cache::get(self::HEARTBEAT_CACHE_KEY);
+        return $this->heartbeatStatus(
+            self::HEARTBEAT_CACHE_KEY,
+            self::SCHEDULER_HEALTHY_SECONDS,
+            self::SCHEDULER_WARNING_SECONDS,
+            neverMessage: 'The scheduler has never reported in. Check that cron runs `schedule:run`.',
+            staleMessage: 'The scheduler has not run recently. Check that cron runs `schedule:run`.',
+        );
+    }
+
+    /**
+     * Report whether the default-queue workers are processing jobs.
+     *
+     * @return array<string, mixed>
+     */
+    public function getQueueStatus(): array
+    {
+        return $this->heartbeatStatus(
+            self::QUEUE_HEARTBEAT_CACHE_KEY,
+            self::QUEUE_HEALTHY_SECONDS,
+            self::QUEUE_WARNING_SECONDS,
+            neverMessage: 'No queue worker has processed the heartbeat job yet. Check the `laravel-worker` supervisor program.',
+            staleMessage: 'Queue workers have not processed a job recently. Check the `laravel-worker` supervisor program.',
+        );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function heartbeatStatus(string $cacheKey, int $healthySeconds, int $warningSeconds, string $neverMessage, string $staleMessage): array
+    {
+        $lastRun = Cache::get($cacheKey);
 
         if (! is_string($lastRun) || $lastRun === '') {
             return [
@@ -85,7 +129,7 @@ class SystemMonitorService
                 'running' => false,
                 'last_run' => null,
                 'seconds_since_last_run' => null,
-                'message' => 'The scheduler has never reported in. Check that cron runs `schedule:run`.',
+                'message' => $neverMessage,
                 'last_check' => now()->toISOString(),
             ];
         }
@@ -94,8 +138,8 @@ class SystemMonitorService
         $secondsSince = (int) $lastRunAt->diffInSeconds(now(), absolute: true);
 
         $status = match (true) {
-            $secondsSince <= self::SCHEDULER_HEALTHY_SECONDS => 'healthy',
-            $secondsSince <= self::SCHEDULER_WARNING_SECONDS => 'warning',
+            $secondsSince <= $healthySeconds => 'healthy',
+            $secondsSince <= $warningSeconds => 'warning',
             default => 'error',
         };
 
@@ -104,9 +148,7 @@ class SystemMonitorService
             'running' => $status === 'healthy',
             'last_run' => $lastRunAt->toISOString(),
             'seconds_since_last_run' => $secondsSince,
-            'message' => $status === 'healthy'
-                ? null
-                : 'The scheduler has not run recently. Check that cron runs `schedule:run`.',
+            'message' => $status === 'healthy' ? null : $staleMessage,
             'last_check' => now()->toISOString(),
         ];
     }
