@@ -3,6 +3,7 @@
 use App\Jobs\SyncManagedMailingLists;
 use App\Listeners\QueueMailingListSync;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\MailingList;
 use App\Models\Tenant;
@@ -25,14 +26,20 @@ it('fans out managed lists into separate jobs on the long-running connection', f
     Queue::assertPushed(SyncManagedMailingLists::class, 1);
 });
 
-it('queues membership updates after a duty mailbox changes', function (): void {
+it('queues membership updates after a duty mailbox or duty types change', function (): void {
     $this->freezeTime();
     $duty = Duty::factory()->for(Institution::factory()->for(Tenant::main()))->create();
+    $dutyType = DutyType::factory()->create();
     MailingList::factory()->managed()->create();
     Queue::fake([SyncManagedMailingLists::class]);
     config(['services.mailman.enabled' => true, 'services.mailman.api_url' => 'https://konf.test/3.1', 'services.mailman.username' => 'app']);
 
     $duty->update(['email' => 'new-mailbox@vusa.lt']);
+
+    Queue::assertPushed(SyncManagedMailingLists::class, fn ($job) => $job->delay->equalTo(now()->addMinutes(5)) && $job->afterCommit);
+
+    Queue::fake([SyncManagedMailingLists::class]);
+    $duty->syncAudited('types', [$dutyType->id]);
 
     Queue::assertPushed(SyncManagedMailingLists::class, fn ($job) => $job->delay->equalTo(now()->addMinutes(5)) && $job->afterCommit);
 });

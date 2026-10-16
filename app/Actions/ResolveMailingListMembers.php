@@ -58,7 +58,7 @@ class ResolveMailingListMembers
     {
         $this->date = $date;
 
-        $this->collectSources($mailingList, [...$visitedListIds, $mailingList->id]);
+        $this->collectSources($mailingList, [...$visitedListIds, strtolower($mailingList->id)]);
 
         foreach ($this->holders as $userId => $holder) {
             $this->addAddress(new MailingListRecipient($holder['email'], $holder['name'], $userId, $holder['reasons'], $holder['fromAssignment']));
@@ -111,11 +111,12 @@ class ResolveMailingListMembers
      */
     private function collectNestedList(MailingListSource $source, array $visitedListIds): void
     {
-        if ($source->source_id === null || in_array($source->source_id, $visitedListIds, true)) {
+        $sourceId = strtolower((string) $source->source_id);
+        if ($sourceId === '' || in_array($sourceId, $visitedListIds, true)) {
             return;
         }
 
-        $nested = MailingList::query()->find($source->source_id);
+        $nested = MailingList::query()->find($sourceId);
 
         $tenantIds = $source->filter('authorized_tenant_ids');
         if ($nested === null || (is_array($tenantIds) && ! in_array($nested->tenant_id, $tenantIds, true))) {

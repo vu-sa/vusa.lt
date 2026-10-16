@@ -19,7 +19,7 @@ class FetchMailingListArchive
             $this->deadline = microtime(true) + 600;
             $mailingList->refresh();
             if (! $this->hyperkitty->hasArchive($mailingList->address)) {
-                $mailingList->update(['archive_fetched_at' => now(), 'archive_backfilled_at' => now()]);
+                $mailingList->update(['archive_fetched_at' => now()]);
 
                 return 0;
             }
@@ -113,7 +113,7 @@ class FetchMailingListArchive
             'subject' => isset($email['subject']) ? mb_substr((string) $email['subject'], 0, 255) : null,
             'sender_name' => isset($email['sender_name']) ? mb_substr((string) $email['sender_name'], 0, 255) : null,
             'sender_email' => HyperkittyClient::senderEmail($email['sender']['address'] ?? null),
-            'sent_at' => isset($email['date']) ? Carbon::parse($email['date']) : null,
+            'sent_at' => isset($email['date']) ? Carbon::parse($email['date'])->setTimezone(config('app.timezone')) : null,
             'body_text' => $detail['body_text'],
             'attachments' => $detail['attachments'],
             'url' => $this->hyperkitty->messageUrl($list->address, $hash),

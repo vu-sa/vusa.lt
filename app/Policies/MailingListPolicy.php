@@ -21,15 +21,19 @@ class MailingListPolicy extends ModelPolicy
         $this->pluralModelName = Str::plural(ModelEnum::MAILING_LIST->label());
     }
 
+    #[\Override]
+    public function view(User $user, Model $mailingList): bool
+    {
+        return $this->commonChecker($user, $mailingList, CRUDEnum::READ->label(), $this->pluralModelName, false);
+    }
+
     /**
      * Like Mailman's private archive: list managers, plus anyone subscribed through one of
      * their own addresses (main email, an assignment's email or a duty mailbox they hold now).
      */
-    #[\Override]
-    public function view(User $user, Model $mailingList): bool
+    public function viewArchive(User $user, MailingList $mailingList): bool
     {
-        return $this->commonChecker($user, $mailingList, CRUDEnum::READ->label(), $this->pluralModelName, false)
-            || ($mailingList instanceof MailingList && $this->isSubscribed($user, $mailingList));
+        return $this->view($user, $mailingList) || $this->isSubscribed($user, $mailingList);
     }
 
     #[\Override]

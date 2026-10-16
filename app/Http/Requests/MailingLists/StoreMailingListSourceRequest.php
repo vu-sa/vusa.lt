@@ -27,7 +27,10 @@ class StoreMailingListSourceRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         if (is_string($this->input('email'))) {
-            $this->merge(['email' => strtolower(trim((string) $this->input('email')))]);
+            $this->merge(['email' => strtolower(trim($this->input('email')))]);
+        }
+        if (is_string($this->input('source_id'))) {
+            $this->merge(['source_id' => strtolower(trim($this->input('source_id')))]);
         }
     }
 

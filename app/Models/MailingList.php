@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * A Mailman list ("konferencija") on konf.vusa.lt. Mailman delivers, moderates and archives;
@@ -77,6 +78,14 @@ class MailingList extends Model
 {
     use HasFactory, HasUlids, LogsModelActivity;
 
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['display_name', 'description', 'tenant_id', 'mode'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges();
+    }
+
     /** @return BelongsTo<Tenant, $this> */
     public function tenant(): BelongsTo
     {
@@ -121,6 +130,11 @@ class MailingList extends Model
     public function isManaged(): bool
     {
         return $this->mode === MailingListMode::Managed;
+    }
+
+    public function mailmanListId(): string
+    {
+        return $this->mailman_list_id ?? self::listIdFor($this->address);
     }
 
     /** Mailman's list id: the address with "@" swapped for ".". */

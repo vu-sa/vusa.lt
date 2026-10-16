@@ -14,6 +14,8 @@ use App\Models\User;
 use App\ValueObjects\MailingListRecipient;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 pest()->use(RefreshDatabase::class);
 
@@ -173,12 +175,22 @@ describe('addresses', function (): void {
     });
 });
 
-test('a nested list is included once even when lists include each other', function (): void {
+test('a nested list is included once even when lists include each other or reference an uppercase ULID', function (): void {
     $other = MailingList::factory()->managed()->create(['tenant_id' => $this->main->id]);
     mailingListSource($other, MailingListSourceType::Email, attributes: ['email' => 'nested@vusa.lt']);
-    mailingListSource($other, MailingListSourceType::MailingList, $this->list->id);
-    mailingListSource($this->list, MailingListSourceType::MailingList, $other->id);
+    mailingListSource($other, MailingListSourceType::MailingList, strtoupper($this->list->id));
+    mailingListSource($this->list, MailingListSourceType::MailingList, strtoupper($other->id));
     mailingListSource($this->list, MailingListSourceType::Email, attributes: ['email' => 'own@vusa.lt']);
+
+    DB::table('mailing_list_sources')->insert([
+        'id' => (string) Str::ulid(),
+        'mailing_list_id' => $this->list->id,
+        'type' => MailingListSourceType::MailingList->value,
+        'source_id' => strtoupper($this->list->id),
+        'address_mode' => MailingListAddressMode::Holder->value,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
 
     expect(mailingListEmails($this->list))->toBe(['nested@vusa.lt', 'own@vusa.lt']);
 });
@@ -232,7 +244,6 @@ test('a stored source boundary still applies when its duty moves to another tena
 
     expect(mailingListEmails($this->list))->toBe([]);
 });
-
 
 test('a deleted root duty type does not continue including its live descendants', function (): void {
     $root = DutyType::factory()->create();

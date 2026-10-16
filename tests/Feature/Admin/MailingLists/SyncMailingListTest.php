@@ -195,6 +195,7 @@ test('a failed activation preserves manual mode and the actual roster', function
 
     expect(fn () => $sync->apply($this->list, $token, $user, activate: true))->toThrow(MailmanException::class);
     expect($this->list->fresh()->isManaged())->toBeFalse()
+        ->and($this->list->fresh()->last_sync_status)->toBeNull()
         ->and($this->list->members()->pluck('email')->all())->toBe(['existing@vusa.lt']);
 });
 

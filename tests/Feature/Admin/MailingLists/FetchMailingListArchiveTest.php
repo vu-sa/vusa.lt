@@ -46,7 +46,7 @@ test('copies new posts with their text and attachments, stopping at the first st
             'count' => 3,
             'next' => null,
             'results' => [
-                archivedEmail('NEW', '2026-10-01T12:00:00+03:00'),
+                archivedEmail('NEW', '2026-10-01T09:00:00Z'),
                 archivedEmail('OLD', '2026-01-01T10:00:00+02:00'),
                 archivedEmail('OLDER', '2025-12-01T10:00:00+02:00'),
             ],
@@ -64,19 +64,29 @@ test('copies new posts with their text and attachments, stopping at the first st
         ->sender_email->toBe('akadem@vusa.lt')
         ->thread_id->toBe('THREADNEW')
         ->body_text->toBe("Sveiki,\nregistracija atidaryta.")
+        ->and($message->sent_at->format('Y-m-d H:i:s'))->toBe('2026-10-01 12:00:00')
         ->and($message->attachments[0]['name'])->toBe('mokymai.pdf')
-        ->and($this->list->fresh()->last_post_at->toDateString())->toBe('2026-10-01');
+        ->and($this->list->fresh()->last_post_at->format('Y-m-d H:i:s'))->toBe('2026-10-01 12:00:00');
     Http::assertNotSent(fn (Request $request) => str_contains($request->url(), '/email/OLDER/'));
 });
 
-test('a list nobody has posted to yet has no archive and is not an error', function (): void {
+test('a list nobody has posted to yet has no archive and still backfills full history once messages appear', function (): void {
     Http::fake([
         ARCHIVES.'/api/list/akad.etika@konf.vusa.lt/' => Http::response(['detail' => 'Not found.'], 404),
     ]);
 
-    expect(app(FetchMailingListArchive::class)->execute($this->list))->toBe(0)
-        ->and($this->list->fresh()->archive_fetched_at)->not->toBeNull();
+    $fetch = app(FetchMailingListArchive::class);
+    expect($fetch->execute($this->list))->toBe(0)
+        ->and($this->list->fresh()->archive_fetched_at)->not->toBeNull()
+        ->and($this->list->fresh()->archive_backfilled_at)->toBeNull();
     Http::assertNotSent(fn (Request $request) => str_contains($request->url(), '/emails/'));
+
+    $emails = array_map(fn ($n) => archivedEmail('HASH'.$n, '2026-10-01T12:00:00Z'), range(60, 1));
+    fakeArchivePages($emails);
+
+    expect($fetch->execute($this->list))->toBe(60)
+        ->and($this->list->messages()->count())->toBe(60)
+        ->and($this->list->fresh()->archive_backfilled_at)->not->toBeNull();
 });
 
 /** @param list<array<string, mixed>> $emails */

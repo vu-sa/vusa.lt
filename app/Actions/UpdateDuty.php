@@ -46,7 +46,7 @@ class UpdateDuty
             }
 
             $duty->syncRoles($roles);
-            $duty->types()->sync($data['types'] ?? []);
+            $duty->syncAudited('types', $data['types'] ?? []);
 
             $previousTargetIds = $duty->exOfficioTargetDuties()->pluck('duties.id')->all();
             $newTargetIds = array_filter($data['ex_officio_target_duty_ids'] ?? []);

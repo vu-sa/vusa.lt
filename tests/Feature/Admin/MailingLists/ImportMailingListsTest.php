@@ -43,4 +43,12 @@ it('imports new manual lists and refreshes metadata without replacing managed so
         ->and($new->members()->sole()->email)->toBe('member@vusa.lt');
     Http::assertNotSent(fn (Request $request) => $request->method() !== 'GET');
     Queue::assertPushed(SyncManagedMailingLists::class);
+
+    $lock = cache()->lock('mailing-list:'.$managed->id, 900);
+    $lock->get();
+    try {
+        expect(app(ImportMailingLists::class)->execute())->toBe(['created' => 0, 'updated' => 1]);
+    } finally {
+        $lock->release();
+    }
 });
