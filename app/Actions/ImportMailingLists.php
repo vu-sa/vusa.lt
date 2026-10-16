@@ -7,6 +7,7 @@ use App\Listeners\QueueMailingListSync;
 use App\Models\MailingList;
 use App\Models\Tenant;
 use App\Services\Mailman\MailmanClient;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 
 /**
  * Mirrors every Mailman list into the app. New lists arrive unmanaged and belong to the
@@ -37,29 +38,33 @@ class ImportMailingLists
 
             $mailingList = MailingList::query()->firstOrNew(['address' => $address]);
 
-            $mailingList->withSyncLock(function () use ($mailingList, $list, $address, $config, $mainTenantId, &$created, &$updated): void {
-                if ($mailingList->exists) {
-                    $mailingList->refresh();
+            try {
+                $mailingList->withSyncLock(function () use ($mailingList, $list, $address, $config, $mainTenantId, &$created, &$updated): void {
+                    if ($mailingList->exists) {
+                        $mailingList->refresh();
+                    }
+                    $mailingList->fill([
+                        'mailman_list_id' => (string) $list['list_id'],
+                        'display_name' => filled($config['display_name'] ?? null) ? (string) $config['display_name'] : $address,
+                        'description' => filled($config['description'] ?? null) ? (string) $config['description'] : $mailingList->description,
+                        'archive_policy' => $config['archive_policy'] ?? null,
+                    ]);
+
+                    if (! $mailingList->exists) {
+                        $mailingList->fill(['tenant_id' => $mainTenantId, 'mode' => MailingListMode::Unmanaged]);
+                        $created++;
+                    } else {
+                        $updated++;
+                    }
+
+                    $mailingList->save();
+                });
+
+                if (! $mailingList->isManaged()) {
+                    $this->sync->refreshUnmanaged($mailingList);
                 }
-                $mailingList->fill([
-                    'mailman_list_id' => (string) $list['list_id'],
-                    'display_name' => filled($config['display_name'] ?? null) ? (string) $config['display_name'] : $address,
-                    'description' => filled($config['description'] ?? null) ? (string) $config['description'] : $mailingList->description,
-                    'archive_policy' => $config['archive_policy'] ?? null,
-                ]);
-
-                if (! $mailingList->exists) {
-                    $mailingList->fill(['tenant_id' => $mainTenantId, 'mode' => MailingListMode::Unmanaged]);
-                    $created++;
-                } else {
-                    $updated++;
-                }
-
-                $mailingList->save();
-            });
-
-            if (! $mailingList->isManaged()) {
-                $this->sync->refreshUnmanaged($mailingList);
+            } catch (LockTimeoutException) {
+                continue;
             }
         }
 

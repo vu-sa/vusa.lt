@@ -2,7 +2,7 @@
   <RecordPage
     v-model:section="currentSection"
     :aria-busy="processing"
-    :history-subject="{ type: 'mailing_list', id: mailingList.id }"
+    :history-subject="canView ? { type: 'mailing_list', id: mailingList.id } : undefined"
     :title="mailingList.display_name"
     :entity-type="ModelEnum.MAILING_LIST"
     :status="mailingListModes[mailingList.mode]"
@@ -21,7 +21,7 @@
       <RecordNextActions :actions="[{ key: 'sources', label: $t('mailing_lists.sources.add'), icon: Layers, run: showSources }]" />
     </template>
 
-    <template v-if="!mailmanConfigured || mailingList.last_sync_status === 'needs_review' || mailingList.last_sync_status === 'failed'" #alert>
+    <template v-if="canView && (!mailmanConfigured || mailingList.last_sync_status === 'needs_review' || mailingList.last_sync_status === 'failed')" #alert>
       <p class="border-l-2 border-status-attention-border pl-3 text-sm">
         {{ !mailmanConfigured ? $t('mailing_lists.not_configured') : mailingList.last_sync_status === 'failed'
           ? (mailingList.last_sync_error ?? $t('mailing_lists.messages.sync_failed'))
@@ -29,7 +29,7 @@
       </p>
     </template>
 
-    <template #gavejai>
+    <template v-if="canView" #gavejai>
       <Deferred data="roster">
         <template #fallback>
           <CollectionSkeleton :rows="4" />
@@ -44,7 +44,7 @@
       </Deferred>
     </template>
 
-    <template #saltiniai>
+    <template v-if="canView" #saltiniai>
       <MailingListSources
         :mailing-list-id="mailingList.id"
         :sources
@@ -136,10 +136,11 @@ const props = defineProps<{
   sourceOptions?: MailingListSourceOptions | null;
   mailmanConfigured: boolean;
   tenants: App.Entities.Tenant[];
-  can: { update: boolean };
+  can: { view?: boolean; update: boolean };
 }>();
 
-const currentSection = ref(!props.sources.length && props.can.update ? 'saltiniai' : 'gavejai');
+const canView = computed(() => props.can.view !== false);
+const currentSection = ref(!canView.value ? 'archyvas' : (!props.sources.length && props.can.update ? 'saltiniai' : 'gavejai'));
 const editOpen = ref(false);
 const confirmManagedOpen = ref(false);
 const confirmUnmanagedOpen = ref(false);
@@ -178,8 +179,12 @@ const facts = computed<RecordFact[]>(() => [
 ]);
 
 const sections = computed<RecordPageSection[]>(() => [
-  { value: 'gavejai', label: $t('mailing_lists.sections.recipients'), count: props.mailingList.member_count },
-  { value: 'saltiniai', label: $t('mailing_lists.sections.sources'), count: props.sources.length },
+  ...(canView.value
+    ? [
+        { value: 'gavejai', label: $t('mailing_lists.sections.recipients'), count: props.mailingList.member_count },
+        { value: 'saltiniai', label: $t('mailing_lists.sections.sources'), count: props.sources.length },
+      ]
+    : []),
   { value: 'archyvas', label: $t('mailing_lists.sections.archive') },
 ]);
 

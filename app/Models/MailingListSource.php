@@ -7,6 +7,7 @@ use App\Enums\MailingListAddressMode;
 use App\Enums\MailingListSourceType;
 use App\Models\Traits\LogsModelActivity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -75,6 +76,12 @@ class MailingListSource extends Model
     public function filter(string $key, mixed $default = null)
     {
         return ($this->filters ?? [])[$key] ?? $default;
+    }
+
+    /** @return Attribute<string|null, string|int|null> */
+    protected function sourceId(): Attribute
+    {
+        return Attribute::make(set: fn (string|int|null $value) => $value === null ? null : strtolower(trim((string) $value)));
     }
 
     protected function casts(): array

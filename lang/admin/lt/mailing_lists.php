@@ -203,6 +203,7 @@ return [
         'not_configured' => 'Ryšys su Mailman nesukonfigūruotas.',
         'imported' => 'Atnaujinta iš Mailman: naujų :created, atnaujintų :updated.',
         'synced' => 'Sinchronizuota: pridėta :added, pašalinta :removed.',
+        'sync_queued' => 'Sinchronizacija suplanuota.',
         'sync_failed' => 'Nepavyko sinchronizuoti su Mailman. Bandyk vėliau.',
         'preview_failed' => 'Nepavyko gauti gavėjų iš Mailman.',
         'needs_review' => 'Sinchronizacija pašalintų daug gavėjų, todėl laukia peržiūros.',

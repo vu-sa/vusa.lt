@@ -203,6 +203,7 @@ return [
         'not_configured' => 'The Mailman connection is not configured.',
         'imported' => 'Refreshed from Mailman: :created new, :updated updated.',
         'synced' => 'Synced: :added added, :removed removed.',
+        'sync_queued' => 'Sync queued.',
         'sync_failed' => 'Could not sync with Mailman. Try again later.',
         'preview_failed' => 'Could not load recipients from Mailman.',
         'needs_review' => 'The sync would remove many recipients, so it waits for review.',

@@ -14,7 +14,7 @@ const diff: MailingListDiffPayload = {
   needs_review: true, preview_token: 'review-1',
 };
 
-function mountPage(preview?: MailingListDiffPayload, update = true) {
+function mountPage(preview?: MailingListDiffPayload, can: { view?: boolean; update: boolean } = { update: true }) {
   return mount(ShowMailingList, {
     props: {
       mailingList: {
@@ -24,13 +24,14 @@ function mountPage(preview?: MailingListDiffPayload, update = true) {
         last_sync_status: null, last_sync_error: null, archive_fetched_at: null,
         archive_complete: false, archive_imported: 0, archive_total: 0,
       },
-      sources: [], exclusions: [], can: { update }, tenants: [], mailmanConfigured: true, diff: preview,
+      sources: [], exclusions: [], can, tenants: [], mailmanConfigured: true, diff: preview,
     },
     global: {
       stubs: {
         ...commonStubs,
         RecordPage: {
-          props: ['primaryAction', 'overflowActions'], emits: ['action'],
+          name: 'RecordPage',
+          props: ['primaryAction', 'overflowActions', 'sections', 'historySubject'], emits: ['action'],
           template: `<div><button v-if="primaryAction" data-testid="primary" :data-action="primaryAction.key" @click="$emit('action', primaryAction.key)">{{ primaryAction.label }}</button></div>`,
         },
         MailingListSheetForm: true,
@@ -75,8 +76,11 @@ describe('mailing list review', () => {
     expect(router.patch).not.toHaveBeenCalled();
   });
 
-  it('hides management actions from a read-only subscriber', () => {
-    const wrapper = mountPage(diff, false);
+  it('hides management actions, roster sections and history from an archive-only subscriber', () => {
+    const wrapper = mountPage(diff, { view: false, update: false });
     expect(wrapper.find('[data-testid="primary"]').exists()).toBe(false);
+    const recordPage = wrapper.findComponent({ name: 'RecordPage' });
+    expect(recordPage.props('sections')).toEqual([expect.objectContaining({ value: 'archyvas' })]);
+    expect(recordPage.props('historySubject')).toBeUndefined();
   });
 });

@@ -2,6 +2,7 @@
 
 namespace App\Services\Mailman;
 
+use App\Models\MailingList;
 use App\Support\StagingProtection;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
@@ -88,7 +89,7 @@ class MailmanClient
         $this->ensureWritable();
         $this->send('POST', 'lists', ['fqdn_listname' => $address, 'style_name' => 'private-default']);
 
-        $listId = str_replace('@', '.', strtolower($address));
+        $listId = MailingList::listIdFor($address);
         try {
             $this->updateConfig($listId, $config);
         } catch (\Throwable $exception) {

@@ -43,17 +43,23 @@ class HyperkittyClient
             || ! array_key_exists('next', $page) || ($page['next'] !== null && ! is_string($page['next']))) {
             throw new MailmanException('HyperKitty returned an invalid archive page.');
         }
-        foreach ($page['results'] as $email) {
+
+        $this->assertValidEmailResults($page['results'], $page['next'], $page['count'], $offset);
+
+        return $page;
+    }
+
+    /** @param list<mixed> $results */
+    private function assertValidEmailResults(array $results, ?string $next, int $count, int $offset): void
+    {
+        foreach ($results as $email) {
             if (! is_array($email) || ! is_string($email['message_id_hash'] ?? null) || $email['message_id_hash'] === '') {
                 throw new MailmanException('HyperKitty returned an invalid archived message.');
             }
         }
-        if (($page['results'] === [] && $page['next'] !== null)
-            || ($page['next'] === null && $offset + count($page['results']) < $page['count'])) {
+        if (($results === [] && $next !== null) || ($next === null && $offset + count($results) < $count)) {
             throw new MailmanException('HyperKitty returned an incomplete archive page.');
         }
-
-        return $page;
     }
 
     /**

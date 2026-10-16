@@ -12,6 +12,9 @@ use App\Models\DutyType;
 use App\Models\Goal;
 use App\Models\Institution;
 use App\Models\InstitutionType;
+use App\Models\MailingList;
+use App\Models\MailingListExclusion;
+use App\Models\MailingListSource;
 use App\Models\Meeting;
 use App\Models\Navigation;
 use App\Models\News;
@@ -58,6 +61,7 @@ class Auditables
         'dutyType' => DutyType::class,
         'user' => User::class,
         'tenant' => Tenant::class,
+        'mailing_list' => MailingList::class,
     ];
 
     /**
@@ -73,6 +77,8 @@ class Auditables
         'contentPart' => ContentPart::class,
         // Goals pilot: a step rolls up into its goal, or its problem when it has no goal.
         'step' => Step::class,
+        'mailingListSource' => MailingListSource::class,
+        'mailingListExclusion' => MailingListExclusion::class,
     ];
 
     /**
