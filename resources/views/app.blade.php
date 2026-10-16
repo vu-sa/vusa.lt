@@ -118,12 +118,10 @@
     @googlefonts
 
     {{-- CSS and JS --}}
-    {{-- Naming the surface entry and page lets Vite emit their CSS and modulepreloads up front,
-         instead of after app.ts → surface → page dynamic-import hops. --}}
+    @vite(['resources/css/app.css', 'resources/js/app.ts'])
+    {{-- Page and layout CSS up front, instead of after app.ts → surface → page import hops. --}}
     @if ($designSurface)
-        @vite(['resources/css/app.css', 'resources/js/app.ts', "resources/js/{$designSurface}.ts", "resources/js/Pages/{$page['component']}.vue"])
-    @else
-        @vite(['resources/css/app.css', 'resources/js/app.ts'])
+        {{ \App\Support\PageStylesheets::for($designSurface, $page['component']) }}
     @endif
 
     {{-- Ziggy Routes --}}

@@ -391,6 +391,7 @@ const SaveState: FunctionalComponent<{ state: SaveStateKind }> = ({ state }) => 
     ],
     'role': 'status',
     'aria-live': 'polite',
+    'data-save-state': state,
   }, [
     state === 'saving' && h(Loader2, { class: 'size-3 animate-spin' }),
     state === 'dirty' && h('span', { class: 'size-1.5 bg-[var(--status-attention)] motion-safe:animate-pulse' }),
