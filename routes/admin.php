@@ -295,6 +295,16 @@ Route::middleware('experiment.goals')->group(function (): void {
     });
 });
 
+// Konferencijos: Mailman lists whose membership the app keeps in sync with duties.
+Route::post('mailingLists/import', [MailingListController::class, 'import'])->name('mailingLists.import');
+Route::resource('mailingLists', MailingListController::class)->only(['index', 'create', 'store', 'show', 'update']);
+Route::patch('mailingLists/{mailingList}/mode', [MailingListController::class, 'updateMode'])->name('mailingLists.mode');
+Route::post('mailingLists/{mailingList}/sync', [MailingListController::class, 'sync'])->name('mailingLists.sync');
+Route::post('mailingLists/{mailingList}/sources', [MailingListSourceController::class, 'store'])->name('mailingLists.sources.store');
+Route::delete('mailingLists/{mailingList}/sources/{source}', [MailingListSourceController::class, 'destroy'])->name('mailingLists.sources.destroy');
+Route::post('mailingLists/{mailingList}/exclusions', [MailingListExclusionController::class, 'store'])->name('mailingLists.exclusions.store');
+Route::delete('mailingLists/{mailingList}/exclusions/{exclusion}', [MailingListExclusionController::class, 'destroy'])->name('mailingLists.exclusions.destroy');
+
 Route::post('institutions/{institution}/links', [InstitutionLinkController::class, 'store'])->name('institutions.links.store');
 Route::resource('institutionLinks', InstitutionLinkController::class)->only(['update', 'destroy']);
 Route::post('institutionTypes/{type}/links', [InstitutionTypeLinkController::class, 'store'])->name('institutionTypes.links.store');

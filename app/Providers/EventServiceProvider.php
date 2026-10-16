@@ -7,6 +7,7 @@ use App\Events\DutiableChanged;
 use App\Events\FileableNameUpdated;
 use App\Events\MemberRegistrationCreated;
 use App\Events\ReservationResourceCreated;
+use App\Events\SearchRelationChanged;
 use App\Events\StudentRepRegistrationCreated;
 use App\Events\TaskCreated;
 use App\Listeners\BlockExternalNotificationsOnStaging;
@@ -14,6 +15,7 @@ use App\Listeners\HandleDutiableChange;
 use App\Listeners\HandleTaskCreated;
 use App\Listeners\NotifyUsersOfComment;
 use App\Listeners\PruneRejectedPushSubscription;
+use App\Listeners\QueueMailingListSync;
 use App\Listeners\QueueNotificationForDigest;
 use App\Listeners\RecordDeviceLogin;
 use App\Listeners\ReservationResource\HandleReservationResourceCreated;
@@ -28,6 +30,9 @@ use App\Listeners\SyncRelationSearchIndex;
 use App\Listeners\UpdateSharepointFolder;
 use App\Models\Document;
 use App\Models\Duty;
+use App\Models\DutyType;
+use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Role;
 use App\Models\RoleType;
 use App\Models\User;
@@ -57,6 +62,7 @@ class EventServiceProvider extends ServiceProvider
      */
     #[\Override]
     protected $listen = [
+        SearchRelationChanged::class => [QueueMailingListSync::class],
         SocialiteWasCalled::class => [
             MicrosoftExtendSocialite::class.'@handle',
         ],
@@ -74,6 +80,7 @@ class EventServiceProvider extends ServiceProvider
             HandleDutiableChange::class,
             SyncExOfficioDutiables::class,
             SyncContactSearchIndexes::class,
+            QueueMailingListSync::class,
         ],
         ReservationResourceCreated::class => [
             HandleReservationResourceCreated::class,
@@ -129,6 +136,9 @@ class EventServiceProvider extends ServiceProvider
     #[\Override]
     public function boot()
     {
+        foreach ([Duty::class, User::class, Institution::class, DutyType::class, InstitutionType::class] as $model) {
+            $model::observe(QueueMailingListSync::class);
+        }
         Document::observe(DocumentObserver::class);
         RoleType::observe(RoleTypeObserver::class);
         // Permission cache invalidation for users, roles, duties

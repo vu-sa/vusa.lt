@@ -24,11 +24,12 @@ priklauso ir jų teisės platformoje.
 | Pareigybių atnaujinimas | `/mano/duties-update-users` | Turintys teisę kurti pareigybes |
 | Padaliniai | `/mano/tenants` | Turintys teisę matyti padalinius |
 | Studijų programos | `/mano/studyPrograms` | Turintys teisę matyti studijų programas |
+| Konferencijos | `/mano/mailingLists` | Turintys teisę matyti konferencijas |
 | Narių / studentų atstovų registracija | `/mano/forms/{id}` | Galintys peržiūrėti atitinkamą formą (nustatoma nustatymuose) |
 | Formos | `/mano/forms` | Turintys teisę matyti formas |
 
-Mygtukas **Veiksmai** šioje srityje siūlo **Pareigybių atnaujinimas** ir **Pareigybių
-laikotarpiai**.
+Mygtukas **Veiksmai** šioje srityje siūlo **Pareigybių atnaujinimas**, **Pareigybių
+laikotarpiai** ir **Konferencija**.
 
 ::: tip Svarbu administratoriams
 Pakeitus pareigybės narius, pasikeičia ir jų teisės, nes teisės ateina per pareigybių roles

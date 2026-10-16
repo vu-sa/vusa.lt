@@ -122,6 +122,7 @@ return [
         'pareigybiu_atnaujinimas' => 'Pareigybių atnaujinimas',
         'padaliniai' => 'Padaliniai',
         'studiju_programos' => 'Studijų programos',
+        'konferencijos' => 'Konferencijos',
         'registracija_nariai' => 'Narių registracija',
         'registracija_atstovai' => 'Studentų atstovų registracija',
         'formos' => 'Formos',
@@ -169,6 +170,7 @@ return [
         'pareigybiu_atnaujinimas' => 'Pakeisk, kas eina pareigybes',
         'padaliniai' => 'VU SA padaliniai ir jų duomenys',
         'studiju_programos' => 'VU studijų programų sąrašas',
+        'konferencijos' => 'Mailman konferencijos, jų gavėjai ir archyvas',
         'registracija_nariai' => 'Naujų narių prašymai',
         'registracija_atstovai' => 'Naujų studentų atstovų prašymai',
         'formos' => 'Anketos ir jų atsakymai',
@@ -221,6 +223,10 @@ return [
         'duty_update' => [
             'title' => 'Pareigybių atnaujinimas',
             'description' => 'Atnaujink narius keliose pareigybėse iš karto',
+        ],
+        'mailing_list' => [
+            'title' => 'Konferencija',
+            'description' => 'Nauja Mailman konferencija, kurios gavėjai seka pareigybes',
         ],
         'duty_periods' => [
             'title' => 'Laikotarpių tvarkyklė',

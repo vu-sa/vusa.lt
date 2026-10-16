@@ -10,6 +10,7 @@ use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\TypeTree;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
@@ -244,24 +245,7 @@ class ResponsibilityResolver
      */
     private function withDescendants(array $typeIds): array
     {
-        $children = [];
-
-        foreach ($this->typeParents() as $id => $parent) {
-            if ($parent !== null) {
-                $children[$parent][] = $id;
-            }
-        }
-
-        $result = $typeIds;
-        $frontier = $typeIds;
-
-        while ($frontier !== []) {
-            $frontier = array_values(array_unique(array_merge(...array_map(fn (int $id) => $children[$id] ?? [], $frontier))));
-            $frontier = array_values(array_diff($frontier, $result));
-            $result = [...$result, ...$frontier];
-        }
-
-        return $result;
+        return TypeTree::withDescendants($this->typeParents(), $typeIds);
     }
 
     /**

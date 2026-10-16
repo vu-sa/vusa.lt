@@ -15,4 +15,9 @@ class StagingResourceReadOnlyException extends HttpException
     {
         return new self(403, 'SharePoint modifications in staging are limited to the test site.');
     }
+
+    public static function mailman(): self
+    {
+        return new self(403, 'Mailing list changes are disabled in staging because Mailman is shared with production.');
+    }
 }

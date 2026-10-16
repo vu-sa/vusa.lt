@@ -32,6 +32,7 @@ class StagingIsolationService
             ...$this->ssrErrors(),
             ...$this->pushErrors(),
             ! $this->missing(config('services.umami.website_id')) ? 'UMAMI_WEBSITE_ID must be empty.' : null,
+            config('services.mailman.enabled') === true ? 'MAILMAN_ENABLED must be false.' : null,
         ]));
     }
 

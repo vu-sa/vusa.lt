@@ -30,6 +30,7 @@ enum ModelEnum: string
     case GOAL = 'goal';
     case INSTITUTION = 'institution';
     case INSTITUTION_TYPE = 'institution_type';
+    case MAILING_LIST = 'mailing_list';
     case MEETING = 'meeting';
     case NAVIGATION = 'navigation';
     case NEWS = 'news';
@@ -100,6 +101,7 @@ enum ModelEnum: string
             'quickLinks' => ['padalinys', '*'],
             'problems' => ['padalinys', '*'],
             'goals' => ['padalinys', '*'],
+            'mailingLists' => ['padalinys', '*'],
 
             // Special case: institutions allow "own" scope only for read operations
             // This is handled in the InstitutionPolicy and a special case in the seeder
