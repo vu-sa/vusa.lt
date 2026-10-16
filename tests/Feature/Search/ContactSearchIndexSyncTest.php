@@ -163,6 +163,19 @@ test('synchronizer unsearches an institution from public index when it is inacti
         ->toThrow(ObjectNotFound::class);
 });
 
+test('saving an institution removes and restores its public search document with its active status', function (): void {
+    $institution = Institution::factory()->create(['is_active' => true]);
+    $publicInstitution = PublicInstitution::findOrFail($institution->id);
+
+    expect(indexedContactDocument($publicInstitution)['id'])->toBe((string) $institution->id);
+
+    $institution->update(['is_active' => false]);
+    expect(fn () => indexedContactDocument($publicInstitution))->toThrow(ObjectNotFound::class);
+
+    $institution->update(['is_active' => true]);
+    expect(indexedContactDocument($publicInstitution)['id'])->toBe((string) $institution->id);
+});
+
 test('user search presentation stays aligned when pronouns, assignment overrides and duty translations change', function (): void {
     $duty = Duty::factory()->create(['name' => ['lt' => 'Koordinatorius', 'en' => 'Coordinator']]);
     $user = User::factory()->create(['pronouns' => ['lt' => 'jis/jo', 'en' => 'he/him']]);

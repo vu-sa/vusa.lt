@@ -126,6 +126,7 @@ return [
         'field_placeholder' => 'Helper text in the field',
     ],
     'helpers' => [
+        'institution_active_hint' => 'Inactive institutions are hidden from public lists and search, and their contact pages are unavailable. No new meeting-frequency tasks are created for them.',
         'tag_alias_hint' => 'An additional name for the tag (optional). If left empty, it will be generated automatically from the name.',
         'is_topic_hint' => 'Topics get their own page collecting every related news article, page and event.',
         'form_main_info' => 'Basic information about the registration form.',

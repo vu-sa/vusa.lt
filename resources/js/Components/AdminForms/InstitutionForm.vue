@@ -123,7 +123,7 @@
         <FormToggleRow
           v-model="isActive"
           :label="$t('Aktyvi institucija')"
-          :hint="$t('Neaktyvios institucijos nebelaukiamos posėdžių ir nerodomos viešame sąraše.')"
+          :hint="$t('forms.helpers.institution_active_hint')"
         />
 
         <TenantSelectField

@@ -126,6 +126,7 @@ return [
         'field_placeholder' => 'Pagalbinis tekstas laukelyje',
     ],
     'helpers' => [
+        'institution_active_hint' => 'Neaktyvi institucija nerodoma viešuose sąrašuose ir paieškoje, o jos kontaktų puslapis nepasiekiamas. Jai nebekuriamos posėdžių periodiškumo užduotys.',
         'tag_alias_hint' => 'Papildomas pavadinimas žymai (neprivalomas). Jei neįvestas, bus sugeneruotas automatiškai iš pavadinimo.',
         'is_topic_hint' => 'Temos rodomos atskirame puslapyje, kuriame surenkamos visos su ja susijusios naujienos, puslapiai ir renginiai.',
         'form_main_info' => 'Pagrindinė informacija apie registracijos formą.',

@@ -120,7 +120,7 @@ class ContactController extends PublicController
         $types = $type->getDescendantsAndSelf();
 
         if ($this->tenant->isMain()) {
-            $institution = Institution::where('alias', '=', 'centrinis-biuras')->first();
+            $institution = Institution::where('alias', '=', 'centrinis-biuras')->firstOrFail();
         } else {
             $institution = Institution::where('alias', '=', $this->tenant->alias)->firstOrFail();
         }
@@ -185,6 +185,8 @@ class ContactController extends PublicController
         string $title,
         ?string $activeDutyTypeTab = 'all'
     ) {
+        abort_unless($institution->is_active === 1, 404);
+
         $institution->loadMissing('tenant');
 
         // Load meetings and group by academic year
@@ -347,7 +349,7 @@ class ContactController extends PublicController
         // For padaliniai type, use the traditional ShowContactCategory view
         if ($type->slug === 'padaliniai') {
             $institutions = $type->load(['institutions' => function ($query): void {
-                $query->orderBy('name')->with(['tenant' => function ($query): void {
+                $query->where('is_active', true)->orderBy('name')->with(['tenant' => function ($query): void {
                     $query->where('type', TenantType::Padalinys);
                 }, 'types']);
             }])->institutions;

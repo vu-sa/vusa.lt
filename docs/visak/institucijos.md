@@ -13,6 +13,8 @@ tests:
   - tests/Feature/Migrations/RemoveInstitutionNotificationMutesTest.php
   - tests/Feature/Institutions/InstitutionScopeTest.php
   - tests/Feature/Public/PublicMeetingVisibilityTest.php
+  - tests/Feature/Public/ContactControllerTest.php
+  - tests/Feature/Search/ContactSearchIndexSyncTest.php
   - tests/Feature/SoftDelete/ForceDeleteGuardsTest.php
   - tests/Feature/Tasks/InstitutionSecretaryTaskResyncTest.php
   - tests/Feature/Tasks/RepopulateInstitutionTasksTest.php
@@ -57,6 +59,27 @@ puslapį `/mano/institutions/{id}`.
 ## Kaip tai veikia
 
 Atskiroje formoje sukūrus instituciją, atveriamas jos puslapis. Pareigybių atnaujinimo vedlyje institucija sukuriama liekant vedlyje.
+
+### Aktyvi ir neaktyvi institucija {#aktyvumas}
+
+Institucijos redagavimo formoje išjungus **Aktyvi institucija** ir išsaugojus, institucija
+neberodoma viešuose kontaktų sąrašuose ir paieškoje. Jos viešas kontaktų puslapis nepasiekiamas
+nei pagal identifikatorių, nei pagal trumpąjį adresą; padalinio koordinatorių ir kuratorių
+kontaktų puslapiai taip pat nepasiekiami, jei pagrindinė padalinio institucija neaktyvi.
+Prisijungusiam nariui šiuose viešuose adresuose taikoma ta pati taisyklė.
+
+Neaktyviai institucijai nebekuriamos naujos posėdžių periodiškumo užduotys. Esamos užduotys
+automatiškai neužbaigiamos, narių pareigos ir teisės nesikeičia, o ankstesnių posėdžių
+viešumas ir toliau priklauso nuo posėdžių viešumo nustatymų.
+Teisę valdyti instituciją turintys nariai ją ir toliau gali atidaryti bei redaguoti Mano VU SA.
+Vėl įjungus **Aktyvi institucija** ir išsaugojus, viešas kontaktų puslapis, sąrašų ir paieškos
+įrašai tampa prieinami.
+
+<ChangelogNote version="v3.0" date="2026-10-02" title="Neaktyvių institucijų viešumas">
+
+Neaktyvios institucijos kontaktų puslapis viešai nepasiekiamas, o institucija nerodoma ir padalinių kontaktų sąraše.
+
+</ChangelogNote>
 
 ### Rūšis ir tipai
 

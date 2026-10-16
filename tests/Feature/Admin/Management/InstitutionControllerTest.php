@@ -440,6 +440,20 @@ describe('authorized access', function (): void {
         ]);
     });
 
+    test('can deactivate an institution and keep managing its admin record', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id, 'is_active' => true]);
+
+        asUser($this->admin)->put(route('institutions.update', $institution), [
+            'name' => ['lt' => 'Neaktyvi institucija', 'en' => 'Inactive institution'],
+            'tenant_id' => $this->tenant->id,
+            'is_active' => false,
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('institutions', ['id' => $institution->id, 'is_active' => false]);
+        asUser($this->admin)->get(route('institutions.show', $institution))->assertOk();
+        asUser($this->admin)->get(route('institutions.edit', $institution))->assertOk();
+    });
+
     test('can delete institution', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
