@@ -7,6 +7,7 @@ use App\Actions\GetInstitutionSecretaries;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetTypeFiles;
 use App\Actions\GetUserTenantShortnames;
+use App\Actions\UpdateInstitution;
 use App\Enums\InstitutionRelationKind;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexInstitutionRequest;
@@ -29,6 +30,7 @@ use App\Models\Problem;
 use App\Models\StudyProgram;
 use App\Models\Task;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\InstitutionDeactivationService;
 use App\Services\InstitutionRelationService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
@@ -310,6 +312,7 @@ class InstitutionController extends AdminController
         Inertia::share('seo.title', $institution->name);
 
         return $this->inertiaResponse('Admin/People/EditInstitution', [
+            'deactivation' => app(InstitutionDeactivationService::class)->summary($institution),
             'institution' => [
                 ...$institution->toFullArray(),
                 'types' => $institution->types->pluck('id'),
@@ -322,19 +325,9 @@ class InstitutionController extends AdminController
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateInstitutionRequest $request, Institution $institution)
+    public function update(UpdateInstitutionRequest $request, Institution $institution, UpdateInstitution $update)
     {
-        $institution->fill($request->safe()->except('tenant_id', 'types'));
-
-        // check if super admin, then update tenant_id
-        if (auth()->user()->isSuperAdmin()) {
-            $institution->fill($request->safe()->only('tenant_id'));
-        }
-
-        $institution->save();
-
-        // get only types id
-        $institution->syncAudited('types', $request->types);
+        $update->execute($institution, $request->validated(), $request->user());
 
         return back()->with('success', $this->entityMessage('updated', 'institution'));
     }

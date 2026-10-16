@@ -5,8 +5,10 @@ namespace App\Actions;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use App\Services\DutyAssignmentService;
 use App\Support\MorphMap;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * When an ex-officio target duty is added to or removed from a source duty,
@@ -62,8 +64,19 @@ class BackfillExOfficioTargetDuty
 
     private static function createOrAdopt(Dutiable $source, string $targetDutyId, ?Duty $targetDuty): void
     {
+        DB::transaction(function () use ($source, $targetDutyId, $targetDuty): void {
+            if ($targetDuty === null || ! app(DutyAssignmentService::class)->lockExOfficioContext($source, $targetDuty)) {
+                return;
+            }
+
+            self::createForActiveTarget($source, $targetDutyId, $targetDuty);
+        });
+    }
+
+    private static function createForActiveTarget(Dutiable $source, string $targetDutyId, Duty $targetDuty): void
+    {
         $userId = $source->dutiable_id;
-        $resolvedTenantId = $targetDuty ? ResolveExOfficioTenantId::execute($source, $targetDuty) : null;
+        $resolvedTenantId = ResolveExOfficioTenantId::execute($source, $targetDuty);
 
         $existing = Dutiable::where('via_dutiable_id', $source->id)
             ->where('duty_id', $targetDutyId)

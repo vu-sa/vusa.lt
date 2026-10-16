@@ -126,7 +126,12 @@ return [
         'field_placeholder' => 'Helper text in the field',
     ],
     'helpers' => [
-        'institution_active_hint' => 'Inactive institutions are hidden from public lists and search, and their contact pages are unavailable. No new meeting-frequency tasks are created for them.',
+        'institution_active_hint' => 'Saving the inactive status hides the institution publicly and ends its members’ current duty assignments.',
+        'institution_deactivation_consequence' => 'Saving will end duty assignments (:count). Their last active day will be :date. Access granted by these assignments will end immediately.',
+        'institution_deactivation_blocked' => 'First cancel, move or correct duty assignments starting today or later. You can then mark the institution inactive.',
+        'institution_assignment_closed' => 'Only historical assignments can be recorded for inactive institutions. Do not reopen a closed period; create a new period in an active institution.',
+        'institution_reactivation_hint' => 'Reactivating the institution does not restore ended assignments. Members will need new duty assignment periods.',
+        'institution_resolve_terms' => 'Manage duty assignment periods',
         'tag_alias_hint' => 'An additional name for the tag (optional). If left empty, it will be generated automatically from the name.',
         'is_topic_hint' => 'Topics get their own page collecting every related news article, page and event.',
         'form_main_info' => 'Basic information about the registration form.',

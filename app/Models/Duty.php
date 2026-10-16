@@ -32,6 +32,7 @@ use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\ValidationException;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Permission\Traits\HasRoles;
@@ -215,6 +216,7 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
         ];
     }
 
+    /** @return HasMany<Dutiable, $this> */
     public function dutiables(): HasMany
     {
         return $this->hasMany(Dutiable::class);
@@ -295,6 +297,7 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
         return $this->belongsToMany(DutyType::class)->using(DutyDutyType::class);
     }
 
+    /** @return BelongsTo<Institution, $this> */
     public function institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class);
@@ -407,6 +410,13 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
     protected static function booted()
     {
         static::saving(function (Duty $duty): void {
+            if ($duty->exists && $duty->isDirty('institution_id') && $duty->dutiables()->current()->exists()
+                && ! Institution::withTrashed()->find($duty->institution_id)?->is_active) {
+                throw ValidationException::withMessages([
+                    'institution_id' => __('forms.helpers.institution_assignment_closed'),
+                ]);
+            }
+
             // Dispatch event when name is about to change - SharePoint must succeed first
             if ($duty->isDirty('name')) {
                 FileableNameUpdated::dispatch($duty);

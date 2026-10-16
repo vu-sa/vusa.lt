@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\Duty;
 use App\Models\DutyName;
+use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Support\MorphMap;
 use Illuminate\Support\Collection;
@@ -30,9 +31,11 @@ class MergeDuties
     {
         return DB::transaction(function () use ($kept, $sources): array {
             $sourceIds = $sources->pluck('id')->all();
+            Institution::withTrashed()->whereIn('id', $sources->pluck('institution_id')->push($kept->institution_id))
+                ->orderBy('id')->lockForUpdate()->get();
 
             $movedAssignments = Dutiable::query()->whereIn('duty_id', $sourceIds)->count();
-            Dutiable::query()->whereIn('duty_id', $sourceIds)->update(['duty_id' => $kept->id]);
+            Dutiable::query()->whereIn('duty_id', $sourceIds)->each(fn (Dutiable $term) => $term->update(['duty_id' => $kept->id]));
 
             $summary = [
                 'moved_assignments' => $movedAssignments,

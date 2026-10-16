@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\User;
@@ -24,6 +25,8 @@ class UpdateDuty
     public function execute(Duty $duty, array $data): void
     {
         DB::transaction(function () use ($duty, $data): void {
+            Institution::withTrashed()->whereIn('id', [$duty->institution_id, $data['institution_id']])
+                ->orderBy('id')->lockForUpdate()->get();
             $duty->update(Arr::only($data, ['name', 'description', 'email', 'places_to_occupy', 'contacts_grouping', 'is_active']));
 
             if (array_key_exists('former_names', $data)) {

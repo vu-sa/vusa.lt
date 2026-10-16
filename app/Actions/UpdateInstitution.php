@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Actions;
+
+use App\Models\Institution;
+use App\Models\User;
+use App\Services\InstitutionDeactivationService;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\Enums\ActivityEvent;
+
+class UpdateInstitution
+{
+    public function __construct(private readonly InstitutionDeactivationService $deactivation) {}
+
+    /** @param array<string, mixed> $data */
+    public function execute(Institution $institution, array $data, User $actor): void
+    {
+        DB::transaction(function () use ($institution, $data, $actor): void {
+            $institution->refreshForUpdate();
+            $closing = (bool) $institution->is_active && array_key_exists('is_active', $data) && ! $data['is_active'];
+            $closedIds = $closing ? $this->deactivation->closeTerms($institution) : [];
+
+            $institution->fill(Arr::except($data, ['tenant_id', 'types']));
+            if ($actor->isSuperAdmin()) {
+                $institution->fill(Arr::only($data, ['tenant_id']));
+            }
+            $institution->save();
+            $institution->syncAudited('types', $data['types'] ?? []);
+
+            if ($closing) {
+                activity()->performedOn($institution)->causedBy($actor)->event(ActivityEvent::Updated)
+                    ->withProperties(['reason' => 'institution_deactivation', 'end_date' => today()->subDay()->toDateString(), 'dutiable_ids' => $closedIds])
+                    ->log('institution_deactivated');
+            }
+        }, 3);
+    }
+}

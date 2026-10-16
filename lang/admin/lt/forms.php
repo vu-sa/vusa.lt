@@ -126,7 +126,12 @@ return [
         'field_placeholder' => 'Pagalbinis tekstas laukelyje',
     ],
     'helpers' => [
-        'institution_active_hint' => 'Neaktyvi institucija nerodoma viešuose sąrašuose ir paieškoje, o jos kontaktų puslapis nepasiekiamas. Jai nebekuriamos posėdžių periodiškumo užduotys.',
+        'institution_active_hint' => 'Išsaugojus neaktyvią būseną, institucija neberodoma viešai, o dabartinės narių pareigos užbaigiamos.',
+        'institution_deactivation_consequence' => 'Išsaugojus bus užbaigti pareigybių laikotarpiai (:count). Paskutinė pareigų diena – :date. Iš šių pareigų gaunama prieiga baigsis iškart.',
+        'institution_deactivation_blocked' => 'Pirmiau atšauk, perkelk arba pataisyk šiandien ar vėliau prasidedančius pareigybių laikotarpius. Tada galėsi pažymėti instituciją neaktyvia.',
+        'institution_assignment_closed' => 'Neaktyviai institucijai galima įrašyti tik buvusias pareigas. Užbaigto laikotarpio neatverk iš naujo – aktyvioje institucijoje sukurk naują laikotarpį.',
+        'institution_reactivation_hint' => 'Vėl aktyvavus instituciją, užbaigtos pareigos neatnaujinamos. Nariams reikės naujų pareigybių laikotarpių.',
+        'institution_resolve_terms' => 'Tvarkyti pareigybių laikotarpius',
         'tag_alias_hint' => 'Papildomas pavadinimas žymai (neprivalomas). Jei neįvestas, bus sugeneruotas automatiškai iš pavadinimo.',
         'is_topic_hint' => 'Temos rodomos atskirame puslapyje, kuriame surenkamos visos su ja susijusios naujienos, puslapiai ir renginiai.',
         'form_main_info' => 'Pagrindinė informacija apie registracijos formą.',

@@ -4,6 +4,7 @@
     :assignable-tenants
     :institution
     :institution-types
+    :deactivation
     @submit:form="(form) => form.patch(route('institutions.update', institution.id), { preserveScroll: true })"
     @delete="() => router.delete(route('institutions.destroy', institution.id))"
   />
@@ -12,11 +13,12 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 
-import InstitutionForm from '@/Components/AdminForms/InstitutionForm.vue';
+import InstitutionForm, { type InstitutionDeactivationSummary } from '@/Components/AdminForms/InstitutionForm.vue';
 
 defineProps<{
   institution: App.Entities.Institution;
   institutionTypes: Array<App.Entities.InstitutionType>;
   assignableTenants: Array<App.Entities.Tenant>;
+  deactivation: InstitutionDeactivationSummary;
 }>();
 </script>

@@ -4,6 +4,7 @@ namespace App\Models\Pivots;
 
 use App\Events\DutiableChanged;
 use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\Traits\HasTranslations;
@@ -20,6 +21,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphPivot;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -31,6 +34,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $dutiable_type
  * @property Carbon $start_date
  * @property Carbon|null $end_date
+ * @property bool $ended_by_institution_deactivation
  * @property string|null $study_program_id
  * @property array|string|null $study_program_note
  * @property string|null $additional_email
@@ -84,9 +88,39 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 ])]
 class Dutiable extends MorphPivot
 {
-    // NOTE: for some reason, if Searchable trait is used on this model, it will cause an error
-    // in the update route. But only if the queue driver is set to sync.
     use HasFactory, HasRelationships, HasTranslations, HasUlids;
+
+    protected $attributes = ['ended_by_institution_deactivation' => false];
+
+    protected $hidden = ['ended_by_institution_deactivation'];
+
+    #[\Override]
+    public function save(array $options = []): bool
+    {
+        return DB::transaction(function () use ($options): bool {
+            $duty = Duty::withTrashed()->find($this->duty_id);
+            $institution = $duty ? Institution::withTrashed()->lockForUpdate()->find($duty->institution_id) : null;
+            $stored = $this->exists ? self::query()->lockForUpdate()->find($this->id) : null;
+
+            if ($stored?->ended_by_institution_deactivation) {
+                if (! $this->isDirty('end_date')) {
+                    $this->end_date = $stored->end_date;
+                }
+                $this->ended_by_institution_deactivation = true;
+            }
+
+            if (! $this->exists || $this->isDirty(['start_date', 'end_date', 'duty_id'])) {
+                $current = $this->end_date === null || $this->end_date->gte(today());
+                if ($current && ($this->ended_by_institution_deactivation || ($institution !== null && ! $institution->is_active))) {
+                    throw ValidationException::withMessages([
+                        'end_date' => __('forms.helpers.institution_assignment_closed'),
+                    ]);
+                }
+            }
+
+            return parent::save($options);
+        });
+    }
 
     #[\Override]
     protected $dispatchesEvents = [
@@ -101,6 +135,7 @@ class Dutiable extends MorphPivot
             'start_date' => 'date:Y-m-d',
             'end_date' => 'date:Y-m-d',
             'use_original_duty_name' => 'boolean',
+            'ended_by_institution_deactivation' => 'boolean',
         ];
     }
 
