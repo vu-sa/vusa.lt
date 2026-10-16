@@ -57,4 +57,18 @@ describe('what the archive contains', function (): void {
         expect($source)->toContain('--defaults-extra-file=')
             ->and($source)->not->toContain("'-p'.");
     });
+
+    // The VPS hosts other customers' accounts; a 0644 dump hands them the whole database.
+    it('writes the archive readable by its owner only', function (): void {
+        $source = File::get(app_path('Console/Commands/DeploymentBackup.php'));
+        $path = tempnam(sys_get_temp_dir(), 'umask');
+        unlink($path);
+
+        Process::run(['bash', '-c', 'umask 077; echo x | gzip -c > '.escapeshellarg($path)]);
+        $mode = fileperms($path) & 0777;
+        unlink($path);
+
+        expect($source)->toContain('umask 077; set -eo pipefail')
+            ->and($mode)->toBe(0600);
+    });
 });

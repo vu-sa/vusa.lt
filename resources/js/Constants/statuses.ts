@@ -15,11 +15,13 @@ import {
   Coffee,
   Eye,
   FilePenLine,
+  Hand,
   Handshake,
   Inbox,
   Info,
   LoaderCircle,
   PackageOpen,
+  RefreshCw,
   RotateCcw,
   Search,
   ThumbsDown,
@@ -27,7 +29,7 @@ import {
   TriangleAlert,
 } from '@lucide/vue';
 
-import { DocumentStatus, GoalStatus, InstitutionActivityStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
+import { DocumentStatus, GoalStatus, InstitutionActivityStatus, MailingListMode, MailingListSyncStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
 
 export type StatusRole = 'neutral' | 'info' | 'progress' | 'attention' | 'success' | 'danger';
 
@@ -163,6 +165,17 @@ export const goalStatuses: Record<GoalStatus, StatusPresentation> = {
   [GoalStatus.Achieved]: status('Pasiektas', 'success', CircleCheck, true),
   [GoalStatus.NotAchieved]: status('Nepasiektas', 'danger', CircleX, true),
   [GoalStatus.Dropped]: status('Atsisakyta', 'neutral', CircleSlash, true),
+};
+
+export const mailingListModes: Record<MailingListMode, StatusPresentation> = {
+  [MailingListMode.Managed]: status('mailing_lists.modes.managed', 'success', RefreshCw),
+  [MailingListMode.Unmanaged]: status('mailing_lists.modes.unmanaged', 'neutral', Hand),
+};
+
+export const mailingListSyncStatuses: Record<MailingListSyncStatus, StatusPresentation> = {
+  [MailingListSyncStatus.Synced]: status('mailing_lists.sync_statuses.synced', 'success', CircleCheck),
+  [MailingListSyncStatus.NeedsReview]: status('mailing_lists.sync_statuses.needs_review', 'attention', TriangleAlert),
+  [MailingListSyncStatus.Failed]: status('mailing_lists.sync_statuses.failed', 'danger', CircleX),
 };
 
 export const supportRequestStatuses: Record<SupportRequestStatus, StatusPresentation> = {

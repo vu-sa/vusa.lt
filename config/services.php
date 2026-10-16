@@ -74,4 +74,21 @@ return [
         'api_key' => env('CARTO_API_KEY'),
     ],
 
+    /*
+     * Mailman 3 on konf.vusa.lt ("konferencijos"). The core REST API and HyperKitty's archive
+     * API sit behind an HTTPS proxy on konf that only admits the production server. Staging
+     * must keep MAILMAN_ENABLED false (StagingIsolationService) — it shares production's IP.
+     */
+    'mailman' => [
+        'enabled' => (bool) env('MAILMAN_ENABLED', false),
+        'api_url' => env('MAILMAN_API_URL'),
+        'username' => env('MAILMAN_USERNAME'),
+        'password' => env('MAILMAN_PASSWORD'),
+        'domain' => env('MAILMAN_DOMAIN', 'konf.vusa.lt'),
+        'archives_url' => env('MAILMAN_ARCHIVES_URL'),
+        'archives_public_url' => env('MAILMAN_ARCHIVES_PUBLIC_URL'),
+        'archives_username' => env('MAILMAN_ARCHIVES_USERNAME'),
+        'archives_password' => env('MAILMAN_ARCHIVES_PASSWORD'),
+    ],
+
 ];

@@ -2,7 +2,12 @@
 
 namespace App\Services;
 
+use App\Enums\MailingListMode;
+use App\Enums\MailingListSyncStatus;
 use App\Enums\SearchableModelEnum;
+use App\Models\MailingList;
+use App\Services\Mailman\HyperkittyClient;
+use App\Services\Mailman\MailmanClient;
 use App\Services\Typesense\TypesenseManager;
 use App\Settings\DocumentDiscoverySettings;
 use Illuminate\Support\Carbon;
@@ -47,7 +52,7 @@ class SystemMonitorService
     /**
      * Get a complete snapshot of system health.
      *
-     * @return array{redis: array, database: array, cache: array, typesense: array, scheduler: array, digest: array, mail: array, sharepoint_documents: array, integrations: array, system: array}
+     * @return array{redis: array, database: array, cache: array, typesense: array, scheduler: array, digest: array, mail: array, sharepoint_documents: array, mailman: array, integrations: array, system: array}
      */
     public function getAllStatus(): array
     {
@@ -60,6 +65,7 @@ class SystemMonitorService
             'digest' => $this->getDigestStatus(),
             'mail' => $this->getMailStatus(),
             'sharepoint_documents' => $this->getDocumentDiscoveryStatus(),
+            'mailman' => $this->getMailmanStatus(),
             'integrations' => $this->getIntegrationsStatus(),
             'system' => $this->getSystemStatus(),
         ];
@@ -132,12 +138,12 @@ class SystemMonitorService
         $lastRun = $lastDiscoveryAt ? Carbon::parse($lastDiscoveryAt) : null;
         $minutesSince = $lastRun ? (int) $lastRun->diffInMinutes(now(), absolute: true) : null;
 
-        $status = match (true) {
-            $minutesSince === null => 'warning',
-            $minutesSince <= 60 && $skippedFiles > 0 => 'warning',
-            $minutesSince <= 60 => 'healthy',
-            $minutesSince <= 24 * 60 => 'warning',
-            default => 'error',
+        [$status, $message] = match (true) {
+            $minutesSince === null => ['warning', 'Document discovery has not finished yet. Run `sharepoint:discover-documents --dry-run` to check.'],
+            $minutesSince <= 60 && $skippedFiles > 0 => ['warning', "Document discovery skips {$skippedFiles} file(s) that keep failing. Search the logs for 'gave up on items'."],
+            $minutesSince <= 60 => ['healthy', null],
+            $minutesSince <= 24 * 60 => ['warning', 'Document discovery has not finished recently. Check the logs and the long-running queue worker.'],
+            default => ['error', 'Document discovery has not finished for over a day. New SharePoint files are not reaching Dokumentai.'],
         };
 
         return [
@@ -146,12 +152,7 @@ class SystemMonitorService
             'minutes_since_last_run' => $minutesSince,
             'last_full_run' => $lastFullDiscoveryAt,
             'skipped_files' => $skippedFiles,
-            'message' => match (true) {
-                $status === 'healthy' => null,
-                $status === 'warning' && $minutesSince !== null && $minutesSince <= 60 => "Document discovery skips {$skippedFiles} file(s) that keep failing. Search the logs for 'gave up on items'.",
-                $status === 'warning' => $lastRun ? 'Document discovery has not finished recently. Check the logs and the long-running queue worker.' : 'Document discovery has not finished yet. Run `sharepoint:discover-documents --dry-run` to check.',
-                default => 'Document discovery has not finished for over a day. New SharePoint files are not reaching Dokumentai.',
-            },
+            'message' => $message,
             'last_check' => now()->toISOString(),
         ];
     }
@@ -290,6 +291,69 @@ class SystemMonitorService
                 'message' => 'The mail server rejected the connection or the credentials.',
                 'checked_at' => now()->toISOString(),
             ];
+        }
+    }
+
+    /**
+     * Konferencijos: whether both Mailman logins work and whether any managed list is stuck.
+     *
+     * @return array<string, mixed>
+     */
+    public function getMailmanStatus(): array
+    {
+        $mailman = app(MailmanClient::class);
+        $hyperkitty = app(HyperkittyClient::class);
+
+        $lists = rescue(fn (): array => [
+            'managed_lists' => MailingList::query()->where('mode', MailingListMode::Managed)->count(),
+            'lists_needing_attention' => MailingList::query()
+                ->where('mode', MailingListMode::Managed)
+                ->whereIn('last_sync_status', [MailingListSyncStatus::Failed, MailingListSyncStatus::NeedsReview])
+                ->count(),
+            'last_sync' => MailingList::query()->max('last_synced_at'),
+            'last_archive_fetch' => MailingList::query()->max('archive_fetched_at'),
+        ], ['managed_lists' => null, 'lists_needing_attention' => 0, 'last_sync' => null, 'last_archive_fetch' => null], report: false);
+
+        if (! $mailman->isConfigured()) {
+            return [
+                'status' => 'disabled',
+                'message' => 'Mailman is not enabled in this environment.',
+                ...$lists,
+            ];
+        }
+
+        $probe = Cache::remember('system.mailman_status', self::MAIL_CHECK_TTL, fn (): array => [
+            'api' => $this->probe(fn () => $mailman->ping()),
+            'archive' => $hyperkitty->isConfigured() ? $this->probe(fn () => $hyperkitty->ping()) : 'not configured',
+            'checked_at' => now()->toISOString(),
+        ]);
+
+        $warningMessage = match (true) {
+            $probe['archive'] !== 'ok' => 'Archive: '.$probe['archive'],
+            $lists['lists_needing_attention'] > 0 => 'Some managed lists failed to sync or wait for review.',
+            default => null,
+        };
+        $apiOk = $probe['api'] === 'ok';
+
+        return [
+            'status' => ! $apiOk ? 'error' : ($warningMessage ? 'warning' : 'healthy'),
+            'error' => $apiOk ? null : 'Mailman API: '.$probe['api'],
+            'message' => $apiOk ? $warningMessage : null,
+            'api' => $probe['api'],
+            'archive' => $probe['archive'],
+            ...$lists,
+            'checked_at' => $probe['checked_at'],
+        ];
+    }
+
+    private function probe(callable $call): string
+    {
+        try {
+            $call();
+
+            return 'ok';
+        } catch (\Throwable $e) {
+            return mb_substr($e->getMessage(), 0, 200);
         }
     }
 
@@ -499,41 +563,42 @@ class SystemMonitorService
      */
     public function getIntegrationsStatus(): array
     {
+        $msConfigured = ! empty(config('services.microsoft.client_id')) && ! empty(config('services.microsoft.client_secret'));
+        $spConfigured = ! empty(config('filesystems.sharepoint.client_id')) && ! empty(config('filesystems.sharepoint.client_secret'));
+        $mailConfigured = ! empty(config('mail.mailers.smtp.host'));
+        $scoutConfigured = ! empty(config('scout.driver')) && config('scout.driver') !== 'null';
+
         return [
             'microsoft' => [
-                'configured' => ! empty(config('services.microsoft.client_id')) &&
-                              ! empty(config('services.microsoft.client_secret')),
+                'configured' => $msConfigured,
                 'client_id_set' => ! empty(config('services.microsoft.client_id')),
                 'client_secret_set' => ! empty(config('services.microsoft.client_secret')),
                 'redirect_uri' => config('services.microsoft.redirect'),
-                'status' => (! empty(config('services.microsoft.client_id')) &&
-                           ! empty(config('services.microsoft.client_secret'))) ? 'configured' : 'missing',
+                'status' => $msConfigured ? 'configured' : 'missing',
             ],
             'sharepoint' => [
-                'configured' => ! empty(config('filesystems.sharepoint.client_id')) &&
-                              ! empty(config('filesystems.sharepoint.client_secret')),
+                'configured' => $spConfigured,
                 'client_id_set' => ! empty(config('filesystems.sharepoint.client_id')),
                 'client_secret_set' => ! empty(config('filesystems.sharepoint.client_secret')),
                 'tenant_id' => config('filesystems.sharepoint.tenant_id'),
-                'status' => (! empty(config('filesystems.sharepoint.client_id')) &&
-                           ! empty(config('filesystems.sharepoint.client_secret'))) ? 'configured' : 'missing',
+                'status' => $spConfigured ? 'configured' : 'missing',
             ],
             'mail' => [
                 'driver' => config('mail.default'),
                 'host' => config('mail.mailers.smtp.host'),
                 'port' => config('mail.mailers.smtp.port'),
                 'encryption' => config('mail.mailers.smtp.encryption'),
-                'configured' => ! empty(config('mail.mailers.smtp.host')),
-                'status' => ! empty(config('mail.mailers.smtp.host')) ? 'configured' : 'missing',
+                'configured' => $mailConfigured,
+                'status' => $mailConfigured ? 'configured' : 'missing',
             ],
             'scout' => [
                 'driver' => config('scout.driver'),
-                'configured' => ! empty(config('scout.driver')) && config('scout.driver') !== 'null',
+                'configured' => $scoutConfigured,
                 'queue_enabled' => config('scout.queue'),
                 'after_commit' => config('scout.after_commit'),
                 'chunk_size' => config('scout.chunk.searchable'),
                 'typesense_configured' => TypesenseManager::isConfigured(),
-                'status' => (! empty(config('scout.driver')) && config('scout.driver') !== 'null') ? 'configured' : 'disabled',
+                'status' => $scoutConfigured ? 'configured' : 'disabled',
             ],
         ];
     }

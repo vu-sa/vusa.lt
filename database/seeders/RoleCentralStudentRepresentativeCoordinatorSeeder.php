@@ -47,6 +47,9 @@ class RoleCentralStudentRepresentativeCoordinatorSeeder extends Seeder
             'problems.create.*',
             'problems.update.*',
             'problems.delete.*',
+            'mailingLists.create.*',
+            'mailingLists.read.*',
+            'mailingLists.update.*',
         ]);
     }
 }

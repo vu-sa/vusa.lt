@@ -46,6 +46,9 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
             'problems.create.padalinys',
             'problems.update.padalinys',
             'problems.delete.padalinys',
+            'mailingLists.create.padalinys',
+            'mailingLists.read.padalinys',
+            'mailingLists.update.padalinys',
         ]);
 
         $role->attachable_types()->attach(DutyType::query()->where('slug', 'studentu-atstovai')->firstOrFail());

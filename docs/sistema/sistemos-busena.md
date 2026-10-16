@@ -35,6 +35,7 @@ Atvėrus puslapį arba paspaudus **Atnaujinti**, pateikiamas devynių komponent�
 - **Planuoklė** – periodinių fono užduočių planuoklė;
 - **Laiškų eilė** – laukiančių išsiųsti pranešimų santraukų eilė;
 - **El. paštas** – SMTP pašto siuntimo integracija;
+- **Konferencijos (Mailman)** – ar veikia ryšys su `konf.vusa.lt` Mailman ir jo archyvu, kiek konferencijų valdoma automatiškai ir ar kurios nors sinchronizacija nepavyko ar laukia peržiūros (žr. [Konferencijos](/organizacija/konferencijos)). Kur Mailman neįjungtas, rodoma „Išjungta“;
 - **Sistema** – serverio PHP versija, atminties limitas ir aplinkos nustatymai;
 - **Integracijos** – išorinių paslaugų (Microsoft 365, SharePoint, el. pašto ir paieškos) konfigūracija. Ši patikra nustato, ar užpildyti nustatymai, bet ryšio su paslaugomis netikrina.
 

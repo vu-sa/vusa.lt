@@ -13,6 +13,7 @@ use App\Models\Goal;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionType;
+use App\Models\MailingList;
 use App\Models\Meeting;
 use App\Models\Navigation;
 use App\Models\News;
@@ -45,7 +46,7 @@ use Illuminate\Support\Facades\Cache;
 class AdminNavigationCatalog
 {
     /** Bump the suffix when the payload shape or a gate changes, so a deploy never serves the old menu from cache. */
-    public const string CACHE_PREFIX = 'admin-navigation-v9-';
+    public const string CACHE_PREFIX = 'admin-navigation-v10-';
 
     private const int CACHE_TTL = 1800;
 
@@ -272,11 +273,13 @@ class AdminNavigationCatalog
                 new Section('pareigybiu_atnaujinimas', 'shell.sections.pareigybiu_atnaujinimas', 'duties.updateUsersWizard', [], 'duty', Visibility::can('create', Duty::class), descriptionKey: 'shell.section_descriptions.pareigybiu_atnaujinimas'),
                 new Section('padaliniai', 'shell.sections.padaliniai', 'tenants.index', [], 'tenant', Visibility::can('viewAny', Tenant::class), descriptionKey: 'shell.section_descriptions.padaliniai'),
                 new Section('studiju_programos', 'shell.sections.studiju_programos', 'studyPrograms.index', [], 'study_program', Visibility::can('viewAny', StudyProgram::class), [CollectionAction::merge(Visibility::can('viewAny', StudyProgram::class))], descriptionKey: 'shell.section_descriptions.studiju_programos'),
+                new Section('konferencijos', 'shell.sections.konferencijos', 'mailingLists.index', [], 'mailing_list', Visibility::can('viewAny', MailingList::class), descriptionKey: 'shell.section_descriptions.konferencijos'),
             ],
             overview: new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.organizacija', [], null, Visibility::always()),
             createActions: [
                 CreateAction::route('duty_update', 'shell.actions.duty_update.title', 'shell.actions.duty_update.description', 'duty', 'duties.updateUsersWizard', Visibility::can('create', Duty::class)),
                 CreateAction::route('duty_periods', 'shell.actions.duty_periods.title', 'shell.actions.duty_periods.description', 'dutiable', 'dutiables.timeline', Visibility::can('viewAny', Duty::class)),
+                CreateAction::route('mailing_list', 'shell.actions.mailing_list.title', 'shell.actions.mailing_list.description', 'mailing_list', 'mailingLists.create', Visibility::can('create', MailingList::class)),
             ],
         );
     }

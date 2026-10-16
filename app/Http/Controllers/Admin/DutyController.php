@@ -113,7 +113,7 @@ class DutyController extends AdminController
         $validatedData = $request->safe();
         $duty->fill(collect($validatedData)->except('types', 'roles', 'current_users', 'ex_officio_target_duty_ids', 'assignable_tenants')->toArray())->save();
 
-        $duty->types()->sync($request->types);
+        $duty->syncAudited('types', $request->validated('types') ?? []);
         $duty->exOfficioTargetDuties()->sync($request->ex_officio_target_duty_ids ?? []);
         $duty->assignableTenants()->sync($this->assignments->buildAssignableTenantsSync($request->validated('assignable_tenants') ?? []));
 
