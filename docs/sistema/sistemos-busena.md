@@ -2,10 +2,12 @@
 doc_status: reviewed
 title: Sistemos būsena
 area: systemStatus
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-16
 tests:
   - tests/Feature/System/SystemStatusTest.php
   - tests/Unit/Services/SystemMonitorServiceTest.php
+  - tests/Feature/SystemMonitorStatusTest.php
+  - tests/Feature/System/HealthUpTest.php
   - resources/js/Pages/Admin/__tests__/SystemStatus.component.test.ts
 ---
 
@@ -26,13 +28,15 @@ Puslapyje pateikiama trijų rūšių informacija: paslaugų sveikatos patikros, 
 
 ### Paslaugų stebėsena
 
-Atvėrus puslapį arba paspaudus **Atnaujinti**, pateikiamas devynių komponentų būsenos pjūvis. Automatinio periodinio atnaujinimo nėra:
+Atvėrus puslapį arba paspaudus **Atnaujinti**, pateikiamas pagrindinių komponentų būsenos pjūvis. Automatinio periodinio atnaujinimo nėra:
 
 - **Redis** – greitoji atmintis ir sesijų saugykla;
 - **Duomenų bazė** – ryšys su MySQL duomenų baze ir lentelių būklė;
 - **Talpykla** – programos duomenų talpykla;
 - **Typesense** – greitosios paieškos variklis;
 - **Planuoklė** – periodinių fono užduočių planuoklė;
+- **Užduočių eilė** – ar foninės užduotys (laiškai, sinchronizacijos) iš tikrųjų vykdomos;
+- **Reverb** – tiesioginių atnaujinimų (pranešimų realiuoju laiku) serveris;
 - **Laiškų eilė** – laukiančių išsiųsti pranešimų santraukų eilė;
 - **El. paštas** – SMTP pašto siuntimo integracija;
 - **Konferencijos (Mailman)** – ar veikia ryšys su `konf.vusa.lt` Mailman ir jo archyvu, kiek konferencijų valdoma automatiškai ir ar kurios nors sinchronizacija nepavyko ar laukia peržiūros (žr. [Konferencijos](/organizacija/konferencijos)). Kur Mailman neįjungtas, rodoma „Išjungta“;
@@ -43,6 +47,7 @@ Kiekviena paslauga turi būsenos ženkliuką:
 - **Veikia** (žalia) – konkreti patikra sėkminga; tai nėra visų paslaugos funkcijų patvirtinimas.
 - **Reikia dėmesio** (geltona) – paslauga veikia, tačiau pastebėtas vėlinimas arba išnaudotas išteklių limitas.
 - **Neveikia** (raudona) – sutriko ryšys arba įvyko klaida.
+- **Išjungta** (pilka) – paslauga šioje aplinkoje nenaudojama.
 - **Nežinoma** (pilka) – būsenos nepavyko nustatyti.
 
 Kortelėje pateikiami iki keturių svarbiausių paslaugos parametrų (pvz., ryšio vėlinimas, laukiančių elementų skaičius ar versija).
@@ -106,6 +111,7 @@ Skiltis matoma tik nariams, turintiems teisę peržiūrėti roles. Priežiūros 
 
 - **Foninės užduotys**: ilgiau trunkančios komandos (paieškos perindeksavimas, failų sinchronizavimas) automatiškai siunčiamos į foninę eilę, kad neužblokuotų sistemos.
 - **Laiko žyma**: po paslaugų kortelėmis nurodomas tikslus paskutinio duomenų patikrinimo laikas.
+- **Išorinė stebėsena**: adresas `/up` praneša, kad svetainė neveikia, jei sutriko bent viena jai būtina paslauga (duomenų bazė, Redis, paieška, Reverb, planuoklė, užduočių eilė ar vieta diske). Šį adresą reguliariai tikrina išorinė stebėsenos paslauga, kuri įspėja IT administratorius. El. paštas ir analitika į šią patikrą neįeina.
 
 ## Techninė informacija {#technine-informacija}
 
@@ -114,6 +120,9 @@ Skiltis matoma tik nariams, turintiems teisę peržiūrėti roles. Priežiūros 
   - `systemStatus.maintenance` (`POST /mano/system-status/maintenance`) – priežiūros veiksmui vykdyti.
 - Prieigą prie peržiūros tikrina `RolePolicy::viewAny`.
 - Priežiūros užklausa: `RunSystemMaintenanceRequest`, tikrinanti `isSuperAdmin()` ir `SystemMaintenanceAction` enumą.
-- Stebėjimo tarnyba: `SystemMonitorService::getAllStatus()`.
+- Stebėjimo tarnyba: `SystemMonitorService::getAllStatus()`; greitosios patikros (`/up`): `ServiceProbes`.
+- Užduočių eilės gyvybės signalas: planuoklė kas minutę siunčia `QueueHeartbeat` į numatytąją eilę; būsena „Veikia“, jei jis įvykdytas per 10 min. Eilė `long-running` netikrinama.
+- `GET /up` (Laravel sveikatos maršrutas): klausytojas `DiagnoseHealth` grąžina 500, jei neveikia duomenų bazė, Redis, Typesense, Reverb (kai `broadcasting.default` = `reverb`), planuoklė ar eilė (> 5 / 10 min.) arba diskas užpildytas ≥ 95 %. Rezultatas talpinamas 30 s; viešai rodoma tik būsena, o nepavykusių patikrų sąrašas rašomas į žurnalą. Kai `APP_DEBUG=true` (pvz., bandomojoje aplinkoje), Laravel klaidą parodo vietoj 500.
+- Išorinės stebėsenos taškai (UptimeRobot): `https://www.vusa.lt/up`, `https://analytics.vusa.lt/api/heartbeat` (Umami ir PostgreSQL), `https://search.vusa.lt/health`.
 - Įrenginių apskaita: `DeviceMetricService::getRecentMetrics(30)` iš `device_metrics` lentelės.
 - Galimi priežiūros veiksmai (`SystemMaintenanceAction`): `refresh-public-content`, `clear-application-cache` (trikdantis), `restart-queue-workers`, `send-test-mail`, `sync-public-search` (eilė `search:sync-public`), `refresh-institution-activity` (eilė `institutions:refresh-activity-status`), `sync-sharepoint-documents` (eilė `sharepoint:sync-documents`), `reindex-search` (eilė `search:reindex`, trikdantis).

@@ -2,6 +2,7 @@
 
 use App\Actions\Schedulable\TaskNotifier;
 use App\Jobs\DiscoverSharepointDocumentsJob;
+use App\Jobs\QueueHeartbeat;
 use App\Jobs\SyncFileableFilesJob;
 use App\Jobs\SyncStaleDocumentsJob;
 use App\Models\ContentEditorDraft;
@@ -193,6 +194,11 @@ if (config('app.env') === 'staging') {
 Schedule::call(fn () => Cache::forever(SystemMonitorService::HEARTBEAT_CACHE_KEY, now()->toIso8601String()))
     ->everyMinute()
     ->name('scheduler-heartbeat');
+
+// Proves the default-queue workers pick up jobs; read by getQueueStatus() and `/up`.
+Schedule::job(new QueueHeartbeat)
+    ->everyMinute()
+    ->name('queue-heartbeat');
 
 // Unfinished reservation carts expire after config('vusa.reservation_draft_ttl_days') without changes.
 Schedule::command('model:prune', ['--model' => [ReservationDraft::class]])
