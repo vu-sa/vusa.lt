@@ -28,6 +28,10 @@ class MergeDutiables
      */
     public static function isMergeable(Collection $rows): bool
     {
+        if ($rows->contains(fn (Dutiable $row) => $row->ended_by_institution_deactivation)) {
+            return false;
+        }
+
         if ($rows->count() < 2) {
             return false;
         }

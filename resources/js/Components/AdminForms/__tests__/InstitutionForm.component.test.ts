@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import InstitutionForm from '@/Components/AdminForms/InstitutionForm.vue';
+import FormToggleRow from '@/Components/Patterns/FormToggleRow.vue';
 import { commonStubs } from '@/tests/stubs';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
@@ -56,6 +57,47 @@ describe('InstitutionForm.vue', () => {
 
   afterEach(() => {
     wrapper?.unmount();
+  });
+
+  it('shows the consequences and blockers only when an active institution is being deactivated', async () => {
+    const actual = await vi.importActual<typeof Inertia>('@inertiajs/vue3');
+    vi.mocked(useForm).mockImplementationOnce(actual.useForm);
+    wrapper = mountForm({
+      deactivation: {
+        endingCount: 2,
+        effectiveEndDate: '2026-10-15',
+        blockers: [{ duty: 'Būsimas koordinatorius', startDate: '2026-11-01' }],
+      },
+    });
+    expect(wrapper.find('[data-testid="institution-deactivation-warning"]').exists()).toBe(false);
+
+    wrapper.findComponent(FormToggleRow).vm.$emit('update:modelValue', false);
+    await wrapper.vm.$nextTick();
+
+    const warning = wrapper.get('[data-testid="institution-deactivation-warning"]');
+    expect(warning.text()).toContain('forms.helpers.institution_deactivation_consequence');
+    expect(warning.text()).toContain('Būsimas koordinatorius');
+    expect(warning.find('a').attributes('href')).toContain('institutions.show');
+
+    await wrapper.setProps({ institution: { ...institution, is_active: false } });
+    expect(wrapper.find('[data-testid="institution-deactivation-warning"]').exists()).toBe(false);
+
+    wrapper.findComponent(FormToggleRow).vm.$emit('update:modelValue', true);
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-testid="institution-deactivation-warning"]').exists()).toBe(false);
+  });
+
+  it('does not warn about ending terms when reactivating an inactive institution', async () => {
+    const actual = await vi.importActual<typeof Inertia>('@inertiajs/vue3');
+    vi.mocked(useForm).mockImplementationOnce(actual.useForm);
+    wrapper = mountForm({
+      institution: { ...institution, is_active: false },
+      deactivation: { endingCount: 0, effectiveEndDate: '2026-10-15', blockers: [] },
+    });
+    wrapper.findComponent(FormToggleRow).vm.$emit('update:modelValue', true);
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('[data-testid="institution-deactivation-warning"]').exists()).toBe(false);
   });
 
   it('updates the draft headline while keeping the saved title in the top bar', async () => {

@@ -7,9 +7,11 @@ use App\Events\DutiableChanged;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use App\Services\DutyAssignmentService;
 use App\Support\MorphMap;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\DB;
 
 class SyncExOfficioDutiables implements ShouldQueue
 {
@@ -78,6 +80,17 @@ class SyncExOfficioDutiables implements ShouldQueue
 
     private function syncDerivedRow(Dutiable $source, string $userId, Duty $targetDuty): void
     {
+        DB::transaction(function () use ($source, $userId, $targetDuty): void {
+            if (! app(DutyAssignmentService::class)->lockExOfficioContext($source, $targetDuty)) {
+                return;
+            }
+
+            $this->syncActiveTarget($source, $userId, $targetDuty);
+        });
+    }
+
+    private function syncActiveTarget(Dutiable $source, string $userId, Duty $targetDuty): void
+    {
         $targetDutyId = $targetDuty->id;
         $resolvedTenantId = ResolveExOfficioTenantId::execute($source, $targetDuty);
 
@@ -89,11 +102,18 @@ class SyncExOfficioDutiables implements ShouldQueue
             ->first();
 
         if ($derived) {
+            if ($derived->ended_by_institution_deactivation) {
+                return;
+            }
             $derived->start_date = $source->start_date;
             $derived->end_date = $source->end_date;
             $derived->tenant_id = $resolvedTenantId;
             $derived->save();
 
+            return;
+        }
+
+        if ($source->ended_by_institution_deactivation) {
             return;
         }
 

@@ -33,6 +33,7 @@ const stubs = {
     `,
   },
   UserTermRow: {
+    name: 'UserTermRow',
     props: ['duty', 'canManage'],
     emits: ['edit', 'end'],
     template: '<div class="term-row" :data-can-manage="canManage" @click="$emit(\'edit\')">{{ duty.name }}</div>',
@@ -94,6 +95,19 @@ const createWrapper = (overrides: Record<string, unknown> = {}, can: Record<stri
 const tabs = (wrapper: ReturnType<typeof mount>) => wrapper.find('[data-testid="tabs"]').text();
 
 describe('ShowUser.vue', () => {
+  it('keeps ended assignments from inactive institutions in the previous duties group', () => {
+    const ended = makeDuty({
+      institution: { id: 'inactive', name: 'Neaktyvi institucija', is_active: false },
+      pivot: { id: 'closed', start_date: '2024-01-01', end_date: '2024-06-30' },
+    });
+    const wrapper = createWrapper({ current_duties: [], previous_duties: [ended] });
+
+    expect(wrapper.find('[data-group="current"]').exists()).toBe(false);
+    const row = wrapper.get('[data-group="previous"]').findComponent({ name: 'UserTermRow' });
+    expect(row.props('duty').institution.name).toBe('Neaktyvi institucija');
+    expect(row.props('duty').pivot.end_date).toBe('2024-06-30');
+    expect(row.props('canManage')).toBe(false);
+  });
   afterEach(() => vi.useRealTimers());
 
   beforeEach(() => {

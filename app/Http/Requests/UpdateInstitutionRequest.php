@@ -2,10 +2,23 @@
 
 namespace App\Http\Requests;
 
+use App\Services\InstitutionDeactivationService;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class UpdateInstitutionRequest extends InstitutionRequest
 {
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            if ($validator->errors()->isEmpty() && $this->has('is_active') && ! $this->boolean('is_active') && $this->institution->is_active) {
+                if (app(InstitutionDeactivationService::class)->summary($this->institution)['blockers'] !== []) {
+                    $validator->errors()->add('is_active', __('forms.helpers.institution_deactivation_blocked'));
+                }
+            }
+        });
+    }
+
     /**
      * Determine if the user is authorized to make this request.
      */

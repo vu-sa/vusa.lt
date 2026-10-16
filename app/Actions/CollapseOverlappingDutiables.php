@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Folds overlapping dutiable rows for a single duty into one row per holder.
@@ -76,6 +77,10 @@ class CollapseOverlappingDutiables
      */
     private static function overlapsRunningInterval(Dutiable $survivor, Dutiable $next): bool
     {
+        if ($survivor->ended_by_institution_deactivation || $next->ended_by_institution_deactivation) {
+            return false;
+        }
+
         return $survivor->end_date === null || $next->start_date->lte($survivor->end_date);
     }
 
@@ -87,6 +92,12 @@ class CollapseOverlappingDutiables
      */
     public static function foldInto(Dutiable $survivor, Dutiable $loser): void
     {
+        if ($survivor->ended_by_institution_deactivation || $loser->ended_by_institution_deactivation) {
+            throw ValidationException::withMessages([
+                'rows' => __('forms.helpers.institution_assignment_closed'),
+            ]);
+        }
+
         if ($survivor->end_date !== null) {
             $survivor->end_date = $loser->end_date === null || $loser->end_date->gt($survivor->end_date)
                 ? $loser->end_date

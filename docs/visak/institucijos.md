@@ -14,6 +14,8 @@ tests:
   - tests/Feature/Institutions/InstitutionScopeTest.php
   - tests/Feature/Public/PublicMeetingVisibilityTest.php
   - tests/Feature/Public/ContactControllerTest.php
+  - tests/Feature/Institutions/InstitutionDeactivationTest.php
+  - tests/Browser/InstitutionDeactivationTest.php
   - tests/Feature/Search/ContactSearchIndexSyncTest.php
   - tests/Feature/SoftDelete/ForceDeleteGuardsTest.php
   - tests/Feature/Tasks/InstitutionSecretaryTaskResyncTest.php
@@ -62,22 +64,42 @@ Atskiroje formoje sukūrus instituciją, atveriamas jos puslapis. Pareigybių at
 
 ### Aktyvi ir neaktyvi institucija {#aktyvumas}
 
+<DocScreenshot name="institution-deactivation" alt="Institucijos redagavimo forma prieš užbaigiant veiklą: įspėjimas apie užbaigiamas pareigas ir paskutinę pareigų dieną" caption="Prieš išsaugant neaktyvią būseną parodomos pasekmės narių pareigoms." />
+
 Institucijos redagavimo formoje išjungus **Aktyvi institucija** ir išsaugojus, institucija
 neberodoma viešuose kontaktų sąrašuose ir paieškoje. Jos viešas kontaktų puslapis nepasiekiamas
 nei pagal identifikatorių, nei pagal trumpąjį adresą; padalinio koordinatorių ir kuratorių
 kontaktų puslapiai taip pat nepasiekiami, jei pagrindinė padalinio institucija neaktyvi.
 Prisijungusiam nariui šiuose viešuose adresuose taikoma ta pati taisyklė.
 
-Neaktyviai institucijai nebekuriamos naujos posėdžių periodiškumo užduotys. Esamos užduotys
-automatiškai neužbaigiamos, narių pareigos ir teisės nesikeičia, o ankstesnių posėdžių
-viešumas ir toliau priklauso nuo posėdžių viešumo nustatymų.
-Teisę valdyti instituciją turintys nariai ją ir toliau gali atidaryti bei redaguoti Mano VU SA.
-Vėl įjungus **Aktyvi institucija** ir išsaugojus, viešas kontaktų puslapis, sąrašų ir paieškos
-įrašai tampa prieinami.
+Išsaugojus neaktyvią būseną, dabartinių narių pareigybių laikotarpiai užbaigiami: paskutinė
+pareigų diena įrašoma vakar, todėl iš šių pareigų gaunama prieiga baigiasi iškart. Tai taikoma
+ir kitų padalinių deleguotiems nariams bei automatiškai gaunamoms ex-officio pareigoms.
+Iš institucijos pareigų gaunamos ex-officio pareigos kitose institucijose taip pat užbaigiamos;
+nesusijusios pareigos ir tiesiogiai suteiktos rolės lieka galioti.
+
+Jei pareigybių laikotarpiai prasideda šiandien ar vėliau, deaktyvavimas neleidžiamas.
+Formoje rodomos trukdančios pareigybės ir jų pradžios datos. Pirmiau šiuos laikotarpius
+reikia atšaukti, perkelti arba pataisyti institucijos puslapyje.
+
+Anksčiau užbaigti laikotarpiai ir jų datos nesikeičia. Buvusios pareigos su institucijos
+pavadinimu ir datomis lieka nario puslapyje bei skiltyje **Rolės ir pareigybės**; pastarojoje
+rodoma iki 10 užbaigtų laikotarpių. Pareigybių aprašai ir jų atskira aktyvumo būsena išlieka.
+
+Neaktyviai institucijai galima įrašyti tik buvusias pareigas, kurių pabaigos data ankstesnė
+už šiandieną. Vėl aktyvavus instituciją, viešas kontaktų puslapis, sąrašų ir paieškos įrašai
+tampa prieinami, tačiau užbaigti laikotarpiai neatveriami iš naujo net vykdant ex-officio
+sinchronizavimą. Grįžtančiam nariui kuriamas naujas laikotarpis.
+
+Neaktyviai institucijai nebekuriamos naujos posėdžių periodiškumo užduotys, o esamos užduotys
+automatiškai neužbaigiamos. Ankstesnių posėdžių viešumas ir toliau priklauso nuo posėdžių
+viešumo nustatymų. Teisę valdyti instituciją turintys nariai ją ir toliau gali redaguoti Mano VU SA.
+Anksčiau neaktyviomis pažymėtų institucijų pareigos automatiškai nekeičiamos, nes jų uždarymo datos nežinomos.
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Neaktyvių institucijų viešumas">
 
-Neaktyvios institucijos kontaktų puslapis viešai nepasiekiamas, o institucija nerodoma ir padalinių kontaktų sąraše.
+Pažymėjus instituciją neaktyvia, užbaigiamos dabartinės narių pareigos ir iš jų gaunamos ex-officio pareigos.
+Istorija išsaugoma, o viešas kontaktų puslapis tampa nepasiekiamas.
 
 </ChangelogNote>
 
