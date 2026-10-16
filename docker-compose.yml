@@ -178,6 +178,80 @@ services:
             - mariadb
             - redis
 
+    # Konferencijos: a local Mailman 3 standing in for konf.vusa.lt. Opt-in, so a plain `sail up`
+    # skips it: set COMPOSE_PROFILES=mailman in .env, then `sail up -d` and docker/mailman/seed.sh.
+    mailman-core:
+        image: 'maxking/mailman-core:0.5.2'
+        profiles: [mailman]
+        hostname: mailman-core
+        environment:
+            DATABASE_URL: 'postgresql://mailman:mailman@mailman-db/mailman'
+            DATABASE_TYPE: postgres
+            DATABASE_CLASS: mailman.database.postgresql.PostgreSQLDatabase
+            HYPERKITTY_API_KEY: '${MAILMAN_LOCAL_ARCHIVER_KEY:-local-archiver-key}'
+            HYPERKITTY_URL: 'http://mailman-web:8000/hyperkitty/'
+            MAILMAN_REST_USER: '${MAILMAN_USERNAME:-vusa-app}'
+            MAILMAN_REST_PASSWORD: '${MAILMAN_PASSWORD:-vusa-local}'
+            # Every message a list sends lands in Mailpit (http://localhost:8025).
+            SMTP_HOST: mailpit
+            SMTP_PORT: 1025
+            TZ: Europe/Vilnius
+        volumes:
+            - 'sail-mailman-core:/opt/mailman'
+        depends_on:
+            mailman-db:
+                condition: service_healthy
+        networks:
+            - sail
+    mailman-web:
+        image: 'maxking/mailman-web:0.5.2'
+        profiles: [mailman]
+        hostname: mailman-web
+        ports:
+            - '${FORWARD_MAILMAN_WEB_PORT:-8095}:8000'
+        environment:
+            DATABASE_URL: 'postgresql://mailman:mailman@mailman-db/mailman'
+            DATABASE_TYPE: postgres
+            HYPERKITTY_API_KEY: '${MAILMAN_LOCAL_ARCHIVER_KEY:-local-archiver-key}'
+            MAILMAN_REST_URL: 'http://mailman-core:8001'
+            MAILMAN_REST_USER: '${MAILMAN_USERNAME:-vusa-app}'
+            MAILMAN_REST_PASSWORD: '${MAILMAN_PASSWORD:-vusa-local}'
+            SECRET_KEY: local-mailman-web-secret
+            SERVE_FROM_DOMAIN: localhost
+            DJANGO_ALLOWED_HOSTS: 'localhost,mailman-web'
+            # The image expects an nginx in front for /static; locally uWSGI serves it itself.
+            UWSGI_STATIC_MAP: '/static=/opt/mailman-web-data/static'
+            # The archive service account the app reads HyperKitty with, created on first start.
+            MAILMAN_ADMIN_USER: '${MAILMAN_ARCHIVES_USERNAME:-vusa-app-archive}'
+            MAILMAN_ADMIN_EMAIL: 'it@vusa.lt'
+            DJANGO_SUPERUSER_PASSWORD: '${MAILMAN_ARCHIVES_PASSWORD:-vusa-local}'
+            SMTP_HOST: mailpit
+            SMTP_PORT: 1025
+            TZ: Europe/Vilnius
+        volumes:
+            - 'sail-mailman-web:/opt/mailman-web-data'
+        depends_on:
+            mailman-db:
+                condition: service_healthy
+            mailman-core:
+                condition: service_started
+        networks:
+            - sail
+    mailman-db:
+        image: 'postgres:16-alpine'
+        profiles: [mailman]
+        environment:
+            POSTGRES_DB: mailman
+            POSTGRES_USER: mailman
+            POSTGRES_PASSWORD: mailman
+        volumes:
+            - 'sail-mailman-db:/var/lib/postgresql/data'
+        networks:
+            - sail
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U mailman -d mailman"]
+            retries: 5
+            timeout: 5s
 networks:
     sail:
         driver: bridge
@@ -191,4 +265,10 @@ volumes:
     sail-typesense:
         driver: local
     sail-umami-db:
+        driver: local
+    sail-mailman-core:
+        driver: local
+    sail-mailman-web:
+        driver: local
+    sail-mailman-db:
         driver: local

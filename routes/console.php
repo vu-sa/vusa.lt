@@ -120,6 +120,23 @@ Schedule::command('institutions:refresh-activity-status')
     ->name('refresh-institution-activity-status')
     ->withoutOverlapping(30);
 
+// Mailing lists: membership follows duties (terms end with no save to react to), and the
+// archive copy and list stats follow Mailman. Both are no-ops until Mailman is configured.
+Schedule::command('mailing-lists:sync')
+    ->dailyAt('04:00')
+    ->name('sync-mailing-lists')
+    ->withoutOverlapping(30);
+
+Schedule::command('mailing-lists:import')
+    ->dailyAt('04:30')
+    ->name('import-mailing-lists')
+    ->withoutOverlapping(30);
+
+Schedule::command('mailing-lists:fetch-archives')
+    ->hourly()
+    ->name('fetch-mailing-list-archives')
+    ->withoutOverlapping(30);
+
 // Prune stale digest items so a stalled mail pipeline cannot build an
 // unbounded backlog of notifications nobody will ever want to read.
 // The cutoff is deliberately conservative: a shorter one risks deleting

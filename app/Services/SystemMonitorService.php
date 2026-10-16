@@ -2,7 +2,12 @@
 
 namespace App\Services;
 
+use App\Enums\MailingListMode;
+use App\Enums\MailingListSyncStatus;
 use App\Enums\SearchableModelEnum;
+use App\Models\MailingList;
+use App\Services\Mailman\HyperkittyClient;
+use App\Services\Mailman\MailmanClient;
 use App\Services\Typesense\TypesenseManager;
 use App\Settings\DocumentDiscoverySettings;
 use Illuminate\Support\Carbon;
@@ -47,7 +52,7 @@ class SystemMonitorService
     /**
      * Get a complete snapshot of system health.
      *
-     * @return array{redis: array, database: array, cache: array, typesense: array, scheduler: array, digest: array, mail: array, sharepoint_documents: array, integrations: array, system: array}
+     * @return array{redis: array, database: array, cache: array, typesense: array, scheduler: array, digest: array, mail: array, sharepoint_documents: array, mailman: array, integrations: array, system: array}
      */
     public function getAllStatus(): array
     {
@@ -60,6 +65,7 @@ class SystemMonitorService
             'digest' => $this->getDigestStatus(),
             'mail' => $this->getMailStatus(),
             'sharepoint_documents' => $this->getDocumentDiscoveryStatus(),
+            'mailman' => $this->getMailmanStatus(),
             'integrations' => $this->getIntegrationsStatus(),
             'system' => $this->getSystemStatus(),
         ];
@@ -290,6 +296,69 @@ class SystemMonitorService
                 'message' => 'The mail server rejected the connection or the credentials.',
                 'checked_at' => now()->toISOString(),
             ];
+        }
+    }
+
+    /**
+     * Konferencijos: whether both Mailman logins work and whether any managed list is stuck.
+     *
+     * @return array<string, mixed>
+     */
+    public function getMailmanStatus(): array
+    {
+        $mailman = app(MailmanClient::class);
+        $hyperkitty = app(HyperkittyClient::class);
+
+        $lists = rescue(fn (): array => [
+            'managed_lists' => MailingList::query()->where('mode', MailingListMode::Managed)->count(),
+            'lists_needing_attention' => MailingList::query()
+                ->whereIn('last_sync_status', [MailingListSyncStatus::Failed, MailingListSyncStatus::NeedsReview])
+                ->count(),
+            'last_sync' => MailingList::query()->max('last_synced_at'),
+            'last_archive_fetch' => MailingList::query()->max('archive_fetched_at'),
+        ], ['managed_lists' => null, 'lists_needing_attention' => 0, 'last_sync' => null, 'last_archive_fetch' => null], report: false);
+
+        if (! $mailman->isConfigured()) {
+            return [
+                'status' => 'disabled',
+                'message' => 'Mailman is not enabled in this environment.',
+                ...$lists,
+            ];
+        }
+
+        $probe = Cache::remember('system.mailman_status', self::MAIL_CHECK_TTL, fn (): array => [
+            'api' => $this->probe(fn () => $mailman->ping()),
+            'archive' => $hyperkitty->isConfigured() ? $this->probe(fn () => $hyperkitty->ping()) : 'not configured',
+            'checked_at' => now()->toISOString(),
+        ]);
+
+        $status = match (true) {
+            $probe['api'] !== 'ok' => 'error',
+            $probe['archive'] !== 'ok' || $lists['lists_needing_attention'] > 0 => 'warning',
+            default => 'healthy',
+        };
+
+        return [
+            'status' => $status,
+            'error' => $probe['api'] !== 'ok' ? 'Mailman API: '.$probe['api'] : null,
+            'message' => $status === 'warning'
+                ? ($probe['archive'] !== 'ok' ? 'Archive: '.$probe['archive'] : 'Some managed lists failed to sync or wait for review.')
+                : null,
+            'api' => $probe['api'],
+            'archive' => $probe['archive'],
+            ...$lists,
+            'checked_at' => $probe['checked_at'],
+        ];
+    }
+
+    private function probe(callable $call): string
+    {
+        try {
+            $call();
+
+            return 'ok';
+        } catch (\Throwable $e) {
+            return mb_substr($e->getMessage(), 0, 200);
         }
     }
 

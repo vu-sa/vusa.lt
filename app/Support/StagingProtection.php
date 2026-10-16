@@ -49,6 +49,12 @@ final class StagingProtection
             || in_array($driveId, config('filesystems.sharepoint.production.drive_ids', []), true);
     }
 
+    /** Staging shares production's IP, which the Mailman proxy admits, so it never writes there. */
+    public static function mailmanIsReadOnly(): bool
+    {
+        return config('app.env') === 'staging';
+    }
+
     public static function ensureFilesAreWritable(): void
     {
         if (self::filesAreReadOnly()) {
@@ -67,6 +73,13 @@ final class StagingProtection
     {
         if (self::sharepointIsReadOnly($siteId, $driveId)) {
             throw StagingResourceReadOnlyException::sharepoint();
+        }
+    }
+
+    public static function ensureMailmanIsWritable(): void
+    {
+        if (self::mailmanIsReadOnly()) {
+            throw StagingResourceReadOnlyException::mailman();
         }
     }
 }

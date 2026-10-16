@@ -140,6 +140,7 @@ const props = defineProps<{
   error?: string;
   /** Offer duties no longer staffed, e.g. when linking a predecessor. */
   includeInactive?: boolean;
+  tenantIds?: number[];
 }>();
 
 const emit = defineEmits<(e: 'update:modelValue', value: DutyHit | null) => void>();
@@ -157,7 +158,10 @@ const collection = useAdminCollectionSearch({
   loadFacetsOnMount: false,
   searchOnMount: false,
   perPage: 8,
-  baseFilterBy: () => (props.includeInactive ? undefined : 'is_active:!=false'),
+  baseFilterBy: () => [
+    props.includeInactive ? undefined : 'is_active:!=false',
+    props.tenantIds ? `home_tenant_id:=[${props.tenantIds.length ? props.tenantIds.join(',') : '-1'}]` : undefined,
+  ].filter(Boolean).join(' && ') || undefined,
 });
 
 const query = ref('');

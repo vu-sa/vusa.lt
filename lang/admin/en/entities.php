@@ -199,6 +199,14 @@ return [
         ],
     ],
 
+    'mailingList' => [
+        'model' => '{1} mailing list|[2,*] mailing lists',
+        'gender' => 'f',
+        'address' => 'address',
+        'display_name' => 'name',
+        'description' => 'description',
+    ],
+
     'goal' => [
         'model' => '{1} goal|[2,*] goals',
         'gender' => 'm',

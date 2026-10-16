@@ -147,6 +147,33 @@ export enum LocaleEnum {
     LT = 'lt',
     EN = 'en',
 }
+export enum MailingListAddressMode {
+    Holder = 'holder',
+    DutyMailbox = 'duty_mailbox',
+}
+export enum MailingListMode {
+    Unmanaged = 'unmanaged',
+    Managed = 'managed',
+}
+export enum MailingListSourceType {
+    Duty = 'duty',
+    DutyType = 'duty_type',
+    Institution = 'institution',
+    InstitutionType = 'institution_type',
+    MailingList = 'mailing_list',
+    Email = 'email',
+}
+export enum MailingListSyncStatus {
+    Synced = 'synced',
+    NeedsReview = 'needs_review',
+    Failed = 'failed',
+}
+export enum MailingListTenantScope {
+    All = 'all',
+    Main = 'main',
+    Padaliniai = 'padaliniai',
+    Selected = 'selected',
+}
 export enum MeetingType {
     InPerson = 'in-person',
     Remote = 'remote',
@@ -167,6 +194,7 @@ export enum ModelEnum {
     GOAL = 'goal',
     INSTITUTION = 'institution',
     INSTITUTION_TYPE = 'institution_type',
+    MAILING_LIST = 'mailing_list',
     MEETING = 'meeting',
     NAVIGATION = 'navigation',
     NEWS = 'news',

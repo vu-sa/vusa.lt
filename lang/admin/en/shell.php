@@ -122,6 +122,7 @@ return [
         'pareigybiu_atnaujinimas' => 'Duty update',
         'padaliniai' => 'Units',
         'studiju_programos' => 'Study programs',
+        'konferencijos' => 'Mailing lists',
         'registracija_nariai' => 'Member registration',
         'registracija_atstovai' => 'Student rep registration',
         'formos' => 'Forms',
@@ -169,6 +170,7 @@ return [
         'pareigybiu_atnaujinimas' => 'Change who holds duties',
         'padaliniai' => 'VU SR units and their details',
         'studiju_programos' => 'List of VU study programmes',
+        'konferencijos' => 'Mailman mailing lists, their recipients and archive',
         'registracija_nariai' => 'New member applications',
         'registracija_atstovai' => 'New student rep applications',
         'formos' => 'Forms and their responses',
@@ -221,6 +223,10 @@ return [
         'duty_update' => [
             'title' => 'Duty update',
             'description' => 'Update members across several duties at once',
+        ],
+        'mailing_list' => [
+            'title' => 'Mailing list',
+            'description' => 'A new Mailman list whose recipients follow duties',
         ],
         'duty_periods' => [
             'title' => 'Period manager',

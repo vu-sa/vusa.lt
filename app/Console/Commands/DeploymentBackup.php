@@ -40,7 +40,7 @@ class DeploymentBackup extends Command
     {
         $backupDir = storage_path('backups');
 
-        if (! is_dir($backupDir) && ! mkdir($backupDir, 0755, true) && ! is_dir($backupDir)) {
+        if (! is_dir($backupDir) && ! mkdir($backupDir, 0700, true) && ! is_dir($backupDir)) {
             $this->error('Failed to create backup directory: '.$backupDir);
 
             return self::FAILURE;
@@ -152,9 +152,9 @@ class DeploymentBackup extends Command
         // Without -e, `{ failing_dump; schema_dump; }` exits with the schema dump's status — so a data
         // dump that died halfway produced a truncated archive that still ended in "-- Dump completed"
         // and passed every check below. Verified: `bash -c 'set -o pipefail; { false; echo x; } | cat'`
-        // exits 0; adding -e exits 1.
+        // exits 0; adding -e exits 1. `umask 077` keeps the dump unreadable to the box's other users.
         $script = sprintf(
-            'set -eo pipefail; { %s; } | gzip -c > %s',
+            'umask 077; set -eo pipefail; { %s; } | gzip -c > %s',
             implode('; ', $passes),
             escapeshellarg($temp),
         );

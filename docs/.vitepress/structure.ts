@@ -107,6 +107,7 @@ export const guide: GuideChapter[] = [
       { text: 'Pareigybių atnaujinimas', link: '/organizacija/pareigybiu-atnaujinimas' },
       { text: 'Padaliniai', link: '/organizacija/padaliniai' },
       { text: 'Studijų programos', link: '/organizacija/studiju-programos' },
+      { text: 'Konferencijos', link: '/organizacija/konferencijos' },
       { text: 'Formos ir registracijos', link: '/organizacija/formos-ir-registracijos' },
     ],
   },
