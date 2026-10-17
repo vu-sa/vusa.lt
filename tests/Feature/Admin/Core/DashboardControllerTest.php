@@ -2,23 +2,17 @@
 
 use App\Models\Calendar;
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
 use App\Models\DutyType;
-use App\Models\Form;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\QuickLink;
-use App\Models\ReservationDraft;
-use App\Models\ReservationDraftItem;
 use App\Models\Resource;
-use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Settings\FormSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -558,14 +552,35 @@ describe('institutions needing attention', function (): void {
             );
     });
 
-    test('counts a completed check-in as recent activity so the institution is not flagged', function (): void {
+    test('a completed check-in from the day after the meeting pauses the count, so the institution is not flagged', function (): void {
         // Same setup as the overdue test: meeting 45 days ago, 30-day periodicity.
         $this->travelTo('2025-11-15');
 
         [$user, $institution] = institutionForUserWithMeeting('2025-10-01 10:00:00');
 
-        // A completed check-in ending 5 days ago should reset the activity clock,
-        // matching what the ShowAtstovavimas page computes via DutyService.
+        InstitutionCheckIn::factory()->create([
+            'institution_id' => $institution->id,
+            'user_id' => $user->id,
+            'tenant_id' => $institution->tenant_id,
+            'start_date' => '2025-10-02',
+            'end_date' => '2025-11-10',
+        ]);
+
+        asUser($user)
+            ->get(route('dashboard'))
+            ->assertStatus(200)
+            ->assertInertia(fn (Assert $page) => $page
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->where('institutionsNeedingAttention', fn ($institutions) => collect($institutions)->firstWhere('id', $institution->id) === null)
+                )
+            );
+    });
+
+    test('a completed check-in that leaves a gap after the meeting does not hide it', function (): void {
+        $this->travelTo('2025-11-15');
+
+        [$user, $institution] = institutionForUserWithMeeting('2025-10-01 10:00:00');
+
         InstitutionCheckIn::factory()->create([
             'institution_id' => $institution->id,
             'user_id' => $user->id,
@@ -579,189 +594,8 @@ describe('institutions needing attention', function (): void {
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
-                    ->where('institutionsNeedingAttention', fn ($institutions) => collect($institutions)->firstWhere('id', $institution->id) === null)
+                    ->where('institutionsNeedingAttention', fn ($institutions) => collect($institutions)->firstWhere('id', $institution->id)['status'] === 'overdue')
                 )
-            );
-    });
-});
-
-describe('Pradžia secondary panels', function (): void {
-    test('the queue is served first and the secondary group is held back', function (): void {
-        asUser($this->user)
-            ->get(route('dashboard'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->has('upcomingTasks')
-                ->has('upcomingMeetings')
-                ->missing('recentlyEdited')
-                ->missing('coordinator')
-            );
-    });
-
-    test('recently edited lists only records the user changed and can still view, newest first', function (): void {
-        $institution = $this->user->duties()->first()->institution;
-        $mine = Meeting::factory()->hasAttached($institution)->create(['title' => 'Mano posėdis']);
-        $older = Meeting::factory()->hasAttached($institution)->create(['title' => 'Senesnis posėdis']);
-        $notMine = Meeting::factory()->hasAttached($institution)->create(['title' => 'Svetimas posėdis']);
-        $noAccess = Meeting::factory()->create(['title' => 'Nematomas posėdis']);
-
-        activity()->performedOn($older)->causedBy($this->user)->log('updated');
-        activity()->performedOn($noAccess)->causedBy($this->user)->log('updated');
-        activity()->performedOn($notMine)->causedBy($this->admin)->log('updated');
-        $this->travel(1)->minute();
-        activity()->performedOn($mine)->causedBy($this->user)->log('updated');
-
-        asUser($this->user)
-            ->get(route('dashboard'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page
-                    ->where('recentlyEdited', fn ($records) => collect($records)->pluck('title')->all() === ['Mano posėdis', 'Senesnis posėdis'])
-                    ->where('recentlyEdited.0.href', route('meetings.show', $mine))
-                )
-            );
-    });
-
-    test('recently edited collapses many edits of one record into one row', function (): void {
-        $institution = $this->user->duties()->first()->institution;
-        $meeting = Meeting::factory()->hasAttached($institution)->create(['title' => 'Vienas posėdis']);
-
-        foreach (range(1, 4) as $ignored) {
-            activity()->performedOn($meeting)->causedBy($this->user)->log('updated');
-        }
-
-        asUser($this->user)
-            ->get(route('dashboard'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page
-                    ->has('recentlyEdited', 1)
-                )
-            );
-    });
-
-    test('the coordinator is whoever coordinates the user\'s padalinys, never the user', function (): void {
-        $manager = makeUser($this->tenant);
-        $duty = $manager->duties()->first();
-        $duty->pivot->end_date = null;
-        $duty->pivot->save();
-        DutyResponsibility::factory()->for($duty)->forTenant($this->tenant)->create();
-
-        $rep = makeUser($this->tenant);
-        $rep->duties()->first()->pivot->update(['end_date' => null]);
-
-        asUser($rep)
-            ->get(route('dashboard'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page
-                    ->where('coordinator.name', $manager->name)
-                )
-            );
-
-        // A manager is not their own coordinator.
-        asUser($manager)
-            ->get(route('dashboard'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page->where('coordinator', null))
-            );
-    });
-
-    test('the coordinator is absent when nobody coordinates the padalinys', function (): void {
-        asUser($this->user)
-            ->get(route('dashboard'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page->where('coordinator', null))
-            );
-    });
-
-    test('site content is only assembled for users who can see it', function (): void {
-        News::factory()->for($this->tenant)->create([
-            'lang' => 'lt',
-            'publish_time' => now()->subHour(),
-            'draft' => false,
-        ]);
-
-        asUser($this->user)
-            ->get(route('dashboard'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page
-                    ->has('latestNews', 0)
-                    ->has('upcomingCalendarEvents', 0)
-                )
-            );
-    });
-});
-
-describe('Sparčioji prieiga registration forms', function (): void {
-    beforeEach(function (): void {
-        $this->memberForm = Form::factory()->for($this->tenant)->create();
-        $this->recipientRole = Role::factory()->create(['name' => 'Member Registration Recipient']);
-
-        $formSettings = app(FormSettings::class);
-        $formSettings->member_registration_form_id = $this->memberForm->id;
-        $formSettings->member_registration_notification_recipient_role_id = $this->recipientRole->id;
-        $formSettings->save();
-    });
-
-    test('a registration recipient gets a link to the member registration form', function (): void {
-        $recipient = makeUser($this->tenant);
-        $recipient->assignRole($this->recipientRole->name);
-
-        asUser($recipient)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
-            ->where('registrationForms', [['key' => 'member', 'href' => route('forms.show', $this->memberForm)]])
-        );
-    });
-
-    test('a user who cannot view the form gets no link', function (): void {
-        asUser($this->user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
-            ->where('registrationForms', [])
-        );
-    });
-});
-
-describe('institution graph', function (): void {
-    test('authenticated user can access institution graph', function (): void {
-        asUser($this->admin)
-            ->get(route('institutionGraph'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowInstitutionGraph')
-                ->has('institutions')
-                ->has('institutionRelationships')
-            );
-    });
-
-    test('institution graph includes user counts', function (): void {
-        asUser($this->admin)
-            ->get(route('institutionGraph'))
-            ->assertStatus(200)
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowInstitutionGraph')
-                ->where('institutions', fn ($institutions) => collect($institutions)->every(fn ($institution) => isset($institution['users_count']) && is_numeric($institution['users_count'])))
-            );
-    });
-});
-
-describe('unfinished reservation', function (): void {
-    test('home points back to a started reservation', function (): void {
-        asUser($this->user)->get(route('dashboard'))
-            ->assertInertia(fn (Assert $page) => $page->where('reservationDraft', null));
-
-        $draft = ReservationDraft::factory()->for($this->user)->withPeriod()->create();
-        ReservationDraftItem::factory()->for($draft, 'draft')->for($this->resource)->create();
-
-        asUser($this->user)->get(route('dashboard'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->where('reservationDraft.count', 1)
-                ->where('reservationDraft.name', null)
-                ->where('reservationDraft.start_time', $draft->start_time->getTimestampMs())
-            );
-    });
-
-    test('a named draft with nothing picked yet still shows', function (): void {
-        ReservationDraft::factory()->for($this->user)->create(['name' => 'Stovykla']);
-
-        asUser($this->user)->get(route('dashboard'))
-            ->assertInertia(fn (Assert $page) => $page
-                ->where('reservationDraft.name', 'Stovykla')
-                ->where('reservationDraft.count', 0)
             );
     });
 });

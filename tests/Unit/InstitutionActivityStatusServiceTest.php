@@ -106,7 +106,7 @@ describe('InstitutionActivityStatusService', function (): void {
             ->and($status->status->requiresAction())->toBeFalse();
     });
 
-    test('an active check-in provides coverage and a completed check-in becomes the activity reference', function (): void {
+    test('an active check-in provides coverage and a completed check-in right after a meeting pauses the count', function (): void {
         $service = app(InstitutionActivityStatusService::class);
         $meetingDates = ['2025-10-01 10:00:00'];
         $at = CarbonImmutable::parse('2025-11-15 12:00:00');
@@ -125,7 +125,35 @@ describe('InstitutionActivityStatusService', function (): void {
             ->and($expired->status)->toBe(InstitutionActivityStatus::Healthy)
             ->and($expired->lastActivityType)->toBe('check_in')
             ->and($expired->lastActivityAt?->toDateString())->toBe('2025-10-31')
-            ->and($expired->effectiveDaysSinceActivity)->toBe(14);
+            ->and($expired->effectiveDaysSinceActivity)->toBe(14)
+            ->and($expired->lastCheckInStart?->toDateString())->toBe('2025-10-01')
+            ->and($expired->lastCheckInEnd?->toDateString())->toBe('2025-10-31');
+    });
+
+    test('a check-in that leaves a gap after the last meeting cannot hide it', function (): void {
+        $status = app(InstitutionActivityStatusService::class)->resolve(
+            institutionForActivityStatus(
+                meetingDates: ['2026-01-30 10:00:00'],
+                checkInRanges: [['2026-07-01', '2026-10-16']],
+            ),
+            CarbonImmutable::parse('2026-10-18 12:00:00'),
+        );
+
+        expect($status->status)->toBe(InstitutionActivityStatus::Overdue)
+            ->and($status->lastMeetingAt?->toDateString())->toBe('2026-01-30')
+            ->and($status->lastCheckInStart?->toDateString())->toBe('2026-07-01')
+            ->and($status->lastCheckInEnd?->toDateString())->toBe('2026-10-16')
+            ->and($status->effectiveDaysSinceActivity)->toBeGreaterThan(100);
+    });
+
+    test('with check-ins and no meeting, counting starts at the first check-in', function (): void {
+        $status = app(InstitutionActivityStatusService::class)->resolve(
+            institutionForActivityStatus(checkInRanges: [['2025-10-01', '2025-10-31']]),
+            CarbonImmutable::parse('2025-11-15 12:00:00'),
+        );
+
+        expect($status->status)->toBe(InstitutionActivityStatus::Healthy)
+            ->and($status->effectiveDaysSinceActivity)->toBe(14);
     });
 
     test('a check-in ending before summer vacation prevents a false approaching warning', function (): void {
@@ -137,11 +165,12 @@ describe('InstitutionActivityStatusService', function (): void {
             CarbonImmutable::parse('2026-07-26 12:00:00'),
         );
 
+        // Jun 2–17 count; the check-in and the summer are skipped.
         expect($status->status)->toBe(InstitutionActivityStatus::Healthy)
             ->and($status->lastActivityType)->toBe('check_in')
             ->and($status->lastActivityAt?->toDateString())->toBe('2026-06-30')
-            ->and($status->effectiveDaysSinceActivity)->toBe(0)
-            ->and($status->progressPercentage)->toBe(0);
+            ->and($status->effectiveDaysSinceActivity)->toBe(16)
+            ->and($status->progressPercentage)->toBe(53);
     });
 
     test('inherits periodicity from the institution type', function (): void {

@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Apžvalga
 area: dashboard
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-18
 tests:
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php
   - tests/Feature/Admin/Core/CoordinatorOnRepScreensTest.php
@@ -12,6 +12,7 @@ tests:
   - tests/Unit/InstitutionActivityStatusServiceTest.php
   - tests/Unit/Enums/InstitutionActivityStatusTest.php
   - tests/Unit/Services/AcademicCalendarServiceTest.php
+  - resources/js/Components/Institutions/__tests__/institutionActivity.test.ts
   - tests/Unit/Services/MeetingCompletionServiceTest.php
   - resources/js/Pages/Admin/Dashboard/__tests__/ShowAtstovavimas.component.test.ts
   - resources/js/Components/Home/__tests__/HomeSections.component.test.ts
@@ -61,12 +62,26 @@ Būsena nustatoma taip (tikrinama iš eilės, galioja pirmoji tinkanti):
 | **Artėja terminas** | Praėjo bent 80 % periodiškumo |
 | **Aktyvi** | Visais kitais atvejais |
 
-**Paskutinė veikla** yra vėliausias praėjęs posėdis arba pasibaigęs pranešimas apie veiklą. Po
-pranešimo dienos skaičiuojamos nuo kitos dienos po jo pabaigos.
+Dienos skaičiuojamos nuo **paskutinio posėdžio** (jei posėdžių dar nebuvo – nuo pirmojo pranešimo apie
+veiklą pradžios). Neskaičiuojamos dienos, kurias apima pranešimas apie veiklą: pranešimas sustabdo
+skaičiavimą, bet jo neatnaujina. Todėl pranešimas, prasidedantis kitą dieną po posėdžio, institucijai
+duoda visą periodiškumą po jo pabaigos, o pranešimas, palikęs tarpą po posėdžio, to tarpo nepaslepia:
+pvz., jei paskutinis posėdis vyko sausio 30 d., o pranešimas apima liepos 1 – spalio 16 d., vasario–birželio
+dienos vis tiek skaičiuojamos ir institucija rodoma kaip vėluojanti.
 
 Dienos skaičiuojamos **be akademinių atostogų**: liepos 1 – rugpjūčio 31 d., gruodžio 24 – sausio 1 d.,
 nuo paskutinio sausio pirmadienio iki vasario 4 d. ir Velykų atostogų (savaitė prieš Velykas ir dvi
 dienos po jų). Todėl po vasaros institucija iš karto „nevėluoja“.
+
+Prie būsenos visada nurodomas paskutinis posėdis, o jei po jo buvo pranešimas apie veiklą – ir to
+pranešimo laikotarpis.
+
+<ChangelogNote version="v3.1" date="2026-10-17" title="Pranešimas apie veiklą sustabdo skaičiavimą">
+
+Anksčiau pasibaigęs pranešimas apie veiklą skaičiavimą pradėdavo iš naujo, net jei prieš jį liko
+neapimtų dienų be posėdžių.
+
+</ChangelogNote>
 
 **Dėmesio reikia** institucijoms, kurių būsena yra **Vėluoja**, **Nėra veiklos** arba **Artėja
 terminas**. Jos rikiuojamos būtent tokia tvarka.

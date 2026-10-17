@@ -18,6 +18,9 @@ export interface InstitutionActivityStatus {
   last_meeting_at: string | null;
   next_meeting_at: string | null;
   active_check_in_until: string | null;
+  /** The ended check-in after the last meeting; it pauses the count but never restarts it. */
+  last_check_in_start?: string | null;
+  last_check_in_end?: string | null;
 }
 
 export interface InstitutionActivityInsight extends InstitutionActivityStatus {

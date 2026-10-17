@@ -17,6 +17,9 @@ readonly class InstitutionActivityStatusData
         public ?CarbonImmutable $lastMeetingAt = null,
         public ?CarbonImmutable $nextMeetingAt = null,
         public ?CarbonImmutable $activeCheckInUntil = null,
+        /** The ended check-in after the last meeting, if any; shown beside it so the status reads true. */
+        public ?CarbonImmutable $lastCheckInStart = null,
+        public ?CarbonImmutable $lastCheckInEnd = null,
     ) {}
 
     /**
@@ -31,7 +34,9 @@ readonly class InstitutionActivityStatusData
      *     last_activity_at: string|null,
      *     last_meeting_at: string|null,
      *     next_meeting_at: string|null,
-     *     active_check_in_until: string|null
+     *     active_check_in_until: string|null,
+     *     last_check_in_start: string|null,
+     *     last_check_in_end: string|null
      * }
      */
     public function toArray(): array
@@ -48,6 +53,8 @@ readonly class InstitutionActivityStatusData
             'last_meeting_at' => $this->lastMeetingAt?->toISOString(),
             'next_meeting_at' => $this->nextMeetingAt?->toISOString(),
             'active_check_in_until' => $this->activeCheckInUntil?->toDateString(),
+            'last_check_in_start' => $this->lastCheckInStart?->toDateString(),
+            'last_check_in_end' => $this->lastCheckInEnd?->toDateString(),
         ];
     }
 }

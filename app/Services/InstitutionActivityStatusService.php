@@ -30,15 +30,10 @@ class InstitutionActivityStatusService
         $today = $moment->startOfDay();
         $periodicityDays = $institution->meeting_periodicity_days;
 
-        $nextMeetingAt = $institution->meetings
+        $nextMeeting = $institution->meetings
             ->filter(fn (Meeting $meeting): bool => $meeting->start_time->gt($moment))
-            ->min(fn (Meeting $meeting) => $meeting->start_time->getTimestamp());
-
-        $nextMeeting = $nextMeetingAt !== null
-            ? $institution->meetings->first(
-                fn (Meeting $meeting): bool => $meeting->start_time->getTimestamp() === $nextMeetingAt
-            )
-            : null;
+            ->sortBy(fn (Meeting $meeting): int => $meeting->start_time->getTimestamp())
+            ->first();
 
         $activeCheckIn = $institution->checkIns
             ->first(fn (InstitutionCheckIn $checkIn): bool => $checkIn->start_date->lte($today)
@@ -49,15 +44,10 @@ class InstitutionActivityStatusService
             ->sortByDesc(fn (InstitutionCheckIn $checkIn): int => $checkIn->end_date->getTimestamp())
             ->first();
 
-        $lastMeetingAt = $institution->meetings
+        $lastMeeting = $institution->meetings
             ->filter(fn (Meeting $meeting): bool => $meeting->start_time->lte($moment))
-            ->max(fn (Meeting $meeting) => $meeting->start_time->getTimestamp());
-
-        $lastMeeting = $lastMeetingAt !== null
-            ? $institution->meetings->first(
-                fn (Meeting $meeting): bool => $meeting->start_time->getTimestamp() === $lastMeetingAt
-            )
-            : null;
+            ->sortByDesc(fn (Meeting $meeting): int => $meeting->start_time->getTimestamp())
+            ->first();
 
         $lastMeetingDate = $lastMeeting
             ? CarbonImmutable::instance($lastMeeting->start_time)
@@ -76,12 +66,17 @@ class InstitutionActivityStatusService
         $lastActivityAt = $checkInIsLatestActivity
             ? $completedCheckInEnd
             : $lastMeetingDate;
-        $activityCalculationStart = $checkInIsLatestActivity
-            ? $completedCheckInEnd->addDay()
-            : $lastMeetingDate;
-        $effectiveDays = $activityCalculationStart
-            ? $this->academicCalendar->effectiveDaysBetween($activityCalculationStart, $moment)
-            : null;
+        $effectiveDays = $this->countedDays(
+            $lastMeetingDate,
+            $institution->checkIns
+                ->map(fn (InstitutionCheckIn $checkIn): array => [
+                    'start' => CarbonImmutable::instance($checkIn->start_date)->startOfDay(),
+                    'end' => CarbonImmutable::instance($checkIn->end_date)->startOfDay(),
+                ])
+                ->values()
+                ->all(),
+            $moment,
+        );
         $progressPercentage = $effectiveDays !== null
             ? (int) round(($effectiveDays / $periodicityDays) * 100)
             : null;
@@ -108,14 +103,45 @@ class InstitutionActivityStatusService
             activeCheckInUntil: $activeCheckIn
                 ? CarbonImmutable::instance($activeCheckIn->end_date)
                 : null,
+            lastCheckInStart: $checkInIsLatestActivity
+                ? CarbonImmutable::instance($latestCompletedCheckIn->start_date)
+                : null,
+            lastCheckInEnd: $checkInIsLatestActivity ? $completedCheckInEnd : null,
         );
+    }
+
+    /**
+     * Days counted towards the periodicity: from the last meeting (or, with none, the first
+     * check-in), skipping vacations and every day a check-in covered. A check-in pauses the
+     * clock; it never restarts it, so it cannot hide an uncovered gap before it began.
+     *
+     * Shared with AtstovavimasDashboardService's status-history sweep. Null when there is
+     * neither a meeting nor a check-in that has started.
+     *
+     * @param  list<array{start: CarbonImmutable, end: CarbonImmutable}>  $checkIns  inclusive days
+     */
+    public function countedDays(?CarbonImmutable $lastMeeting, array $checkIns, CarbonInterface $moment): ?int
+    {
+        $today = CarbonImmutable::instance($moment)->startOfDay();
+        $started = array_values(array_filter($checkIns, fn (array $checkIn): bool => $checkIn['start']->lte($today)));
+
+        $from = $lastMeeting ?? array_reduce(
+            $started,
+            fn (?CarbonImmutable $earliest, array $checkIn): CarbonImmutable => $earliest === null || $checkIn['start']->lt($earliest) ? $checkIn['start'] : $earliest,
+        );
+
+        if ($from === null) {
+            return null;
+        }
+
+        return $this->academicCalendar->effectiveDaysBetween($from, $moment, $started);
     }
 
     /**
      * The pure decision rule behind an institution's activity status, shared by
      * resolve() and AtstovavimasDashboardService's status-history sweep — the
-     * latter recomputes hasUpcomingMeeting/hasActiveCheckIn/hasActivity/effectiveDays
-     * itself (for performance, across many dates) but must classify them identically.
+     * latter derives hasUpcomingMeeting/hasActiveCheckIn/hasActivity itself (for
+     * performance, across many dates) and effectiveDays through countedDays().
      * $effectiveDays is ignored when $hasActivity is false.
      */
     public function classify(

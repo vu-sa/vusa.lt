@@ -104,6 +104,17 @@ describe('effectiveDaysBetween', function (): void {
 
         expect($days)->toBeLessThan((int) $calendarDays)->toBeGreaterThan(0);
     });
+
+    test('skips pause days, counting a pause that overlaps a vacation once', function (): void {
+        // 2025-06-01 → 2025-09-11: summer (Jul 1 – Aug 31) is 62 days; the pause adds Jun 21–30.
+        $days = $this->calendar->effectiveDaysBetween(
+            CarbonImmutable::parse('2025-06-01'),
+            CarbonImmutable::parse('2025-09-11'),
+            [['start' => CarbonImmutable::parse('2025-06-21'), 'end' => CarbonImmutable::parse('2025-07-15')]],
+        );
+
+        expect($days)->toBe(102 - 62 - 10);
+    });
 });
 
 describe('addEffectiveDays', function (): void {

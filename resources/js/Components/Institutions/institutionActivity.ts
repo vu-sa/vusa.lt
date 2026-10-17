@@ -13,7 +13,8 @@ interface DateFormatters {
  * What is known about a body's meetings, in one line: what is already scheduled comes before
  * what is overdue. A body can hold both an upcoming meeting and an active check-in, and
  * showing only one of them was what made the list look wrong ("no meetings until October"
- * beside a meeting next Tuesday).
+ * beside a meeting next Tuesday). A check-in is always named beside the last meeting, since
+ * it pauses the count and the status rests on both.
  */
 export function describeInstitutionActivity(status: InstitutionActivityStatus, dates: DateFormatters): string {
   const parts: string[] = [];
@@ -26,17 +27,28 @@ export function describeInstitutionActivity(status: InstitutionActivityStatus, d
     parts.push(parts.length > 0
       ? $t('action_window.institution.check_in_until_short', { date: dates.day(status.active_check_in_until) })
       : $t('action_window.institution.check_in_until', { date: dates.day(status.active_check_in_until) }));
+
+    if (parts.length === 1 && status.last_meeting_at) {
+      parts.push($t('action_window.institution.last_meeting_short', { date: dates.fullDay(status.last_meeting_at) }));
+    }
   }
 
   if (parts.length > 0) {
     return parts.join(' · ');
   }
 
-  // The date, not `effective_days_since_activity`: that counter skips vacation periods,
+  // The date, not `effective_days_since_activity`: that counter skips vacations and check-ins,
   // so rendering it as "N days ago" told the reader something no calendar agrees with.
-  if (status.last_meeting_at) {
-    return $t('action_window.institution.last_meeting', { date: dates.fullDay(status.last_meeting_at) });
+  parts.push(status.last_meeting_at
+    ? $t('action_window.institution.last_meeting', { date: dates.fullDay(status.last_meeting_at) })
+    : $t('action_window.institution.no_meetings_yet'));
+
+  if (status.last_check_in_start && status.last_check_in_end) {
+    parts.push($t('action_window.institution.check_in_period', {
+      from: dates.day(status.last_check_in_start),
+      until: dates.day(status.last_check_in_end),
+    }));
   }
 
-  return $t('action_window.institution.no_meetings_yet');
+  return parts.join(' · ');
 }

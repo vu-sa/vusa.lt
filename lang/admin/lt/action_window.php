@@ -85,6 +85,8 @@ return [
         'check_in_until' => 'Pažymėta, kad posėdžio nebus iki :date',
         'check_in_until_short' => 'posėdžių nebus iki :date',
         'next_meeting' => 'Posėdis :date',
+        'last_meeting_short' => 'paskutinis posėdis :date',
+        'check_in_period' => 'pažymėta, kad posėdžių nebuvo :from – :until',
     ],
     'meeting' => [
         'type' => [

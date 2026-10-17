@@ -85,6 +85,8 @@ return [
         'check_in_until' => 'Marked as having no meeting until :date',
         'check_in_until_short' => 'no meetings until :date',
         'next_meeting' => 'Meeting on :date',
+        'last_meeting_short' => 'last meeting on :date',
+        'check_in_period' => 'marked as no meetings :from – :until',
     ],
     'meeting' => [
         'type' => [

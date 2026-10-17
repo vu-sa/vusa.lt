@@ -902,7 +902,7 @@
   "Nuotolinis posėdis": "Remote meeting",
   "Parašyti": "Write to them",
   "Pasirink įrašą, kad matytum jo peržiūrą.": "Select an item to preview it.",
-  "Paskutinė veikla prieš :days d.": "Last activity :days days ago",
+  "Skaičiuojama :days iš :periodicity d.": "Counted :days of :periodicity days",
   "Peržiūra": "Preview",
   "Posėdžių dar nėra": "No meetings yet",
   "Punktų: :count": "Agenda items: :count",

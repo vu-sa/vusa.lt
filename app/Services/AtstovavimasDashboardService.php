@@ -34,7 +34,6 @@ class AtstovavimasDashboardService
 
     public function __construct(
         private readonly InstitutionActivityStatusService $activityStatusService,
-        private readonly AcademicCalendarService $academicCalendar,
         private readonly ModelAuthorizer $authorizer,
         private readonly MeetingSettings $meetingSettings,
         private readonly AtstovavimasSettings $atstovavimasSettings,
@@ -227,17 +226,11 @@ class AtstovavimasDashboardService
                     }
                 }
 
-                $checkInIsLatestActivity = $latestCompletedCheckInEnd !== null
-                    && ($lastMeetingInstant === null || $latestCompletedCheckInEnd->endOfDay()->gt($lastMeetingInstant));
-                $hasActivity = $checkInIsLatestActivity || $lastMeetingInstant !== null;
+                $hasActivity = $latestCompletedCheckInEnd !== null || $lastMeetingInstant !== null;
 
-                $effectiveDays = 0;
-                if ($hasActivity) {
-                    $activityCalculationStart = $checkInIsLatestActivity
-                        ? $latestCompletedCheckInEnd->addDay()
-                        : $lastMeetingInstant;
-                    $effectiveDays = $this->academicCalendar->effectiveDaysBetween($activityCalculationStart, $moment);
-                }
+                $effectiveDays = $hasActivity
+                    ? $this->activityStatusService->countedDays($lastMeetingInstant, $checkInIntervals[$i], $moment) ?? 0
+                    : 0;
 
                 $statuses[] = $this->activityStatusService->classify(
                     hasUpcomingMeeting: $hasUpcomingMeeting,

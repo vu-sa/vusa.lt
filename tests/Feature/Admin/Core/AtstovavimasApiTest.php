@@ -230,8 +230,8 @@ test('status history sweep matches resolve() day-by-day, including meeting/check
         'end_date' => now()->subDays(40)->toDateString(),
     ]);
 
-    // C: a meeting, later overtaken by a check-in as the "latest activity" —
-    // exercises the checkInIsLatestActivity comparison against a real meeting.
+    // C: a meeting, then a check-in that leaves a gap after it — the check-in
+    // pauses the count, so the days before it still count.
     $institutionC = Institution::factory()->for($this->tenant)->create([
         'meeting_periodicity_days' => 10,
     ]);

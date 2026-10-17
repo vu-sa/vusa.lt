@@ -192,6 +192,9 @@ nebuvo**, pradžios mygtuką **Posėdžio nebuvo** arba institucijos meniu **⋯
 - Pranešimas, apimantis visą atviros veiklos užklausos laikotarpį, ją užbaigia.
 - Kol pranešimas galioja, institucijos būklė yra „Užfiksuotas kontaktas“, o užduotis dėl
   periodiškumo užbaigiama.
+- Pasibaigęs pranešimas skaičiavimo neatnaujina: jo dienos tiesiog neskaičiuojamos, o dienos be posėdžių
+  prieš pranešimo pradžią lieka. Todėl pranešimą verta pradėti nuo dienos po paskutinio posėdžio
+  (žr. [Institucijos būsena](/visak/apzvalga#busenos)).
 - Jei vėliau užregistruojamas posėdis, patenkantis į pranešimo laikotarpį, pranešimas
   **sutrumpinamas** iki dienos prieš posėdį. Jei posėdis yra pranešimo pradžios dieną ar anksčiau,
   pranešimas **ištrinamas**.

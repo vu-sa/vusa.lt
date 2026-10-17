@@ -25,7 +25,7 @@
           <template v-if="institution.tenant_name">{{ institution.tenant_name }}</template>
           <template v-if="institution.tenant_name && institution.effective_days_since_activity !== null"> · </template>
           <template v-if="institution.effective_days_since_activity !== null">
-            {{ $t('Paskutinė veikla prieš :days d.', { days: String(institution.effective_days_since_activity) }) }}
+            {{ $t('Skaičiuojama :days iš :periodicity d.', { days: String(institution.effective_days_since_activity), periodicity: String(institution.periodicity_days) }) }}
           </template>
         </span>
       </span>

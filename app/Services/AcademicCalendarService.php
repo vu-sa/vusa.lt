@@ -69,17 +69,18 @@ class AcademicCalendarService
     }
 
     /**
-     * Days between two dates, excluding days that fall inside a vacation period.
+     * Days between two dates, excluding days that fall inside a vacation period or one of
+     * `$pauses` (inclusive day ranges, e.g. check-ins). Order-insensitive and never negative.
      *
-     * Order-insensitive and never negative.
+     * @param  list<array{start: CarbonInterface, end: CarbonInterface}>  $pauses
      */
-    public function effectiveDaysBetween(CarbonInterface $from, CarbonInterface $to): int
+    public function effectiveDaysBetween(CarbonInterface $from, CarbonInterface $to, array $pauses = []): int
     {
         [$start, $end] = $this->orderedDays($from, $to);
 
         $totalDays = (int) $start->diffInDays($end);
 
-        return max(0, $totalDays - $this->vacationDaysBetween($start, $end));
+        return max(0, $totalDays - $this->excludedDaysBetween($start, $end, $pauses));
     }
 
     /**
@@ -160,16 +161,26 @@ class AcademicCalendarService
     }
 
     /**
-     * Number of vacation days in the half-open range [$start, $end), matching how
+     * Number of vacation and pause days in the half-open range [$start, $end), matching how
      * effectiveDaysBetween() counts total days. Overlapping periods are merged so
      * shared days are not subtracted twice.
+     *
+     * @param  list<array{start: CarbonInterface, end: CarbonInterface}>  $pauses
      */
-    private function vacationDaysBetween(CarbonImmutable $start, CarbonImmutable $end): int
+    private function excludedDaysBetween(CarbonImmutable $start, CarbonImmutable $end, array $pauses): int
     {
         /** @var list<array{0: CarbonImmutable, 1: CarbonImmutable}> $intervals */
         $intervals = [];
 
-        foreach ($this->vacationPeriods($start, $end) as $period) {
+        $periods = [
+            ...$this->vacationPeriods($start, $end),
+            ...array_map(fn (array $pause): array => [
+                'start' => CarbonImmutable::instance($pause['start'])->startOfDay(),
+                'end' => CarbonImmutable::instance($pause['end'])->startOfDay(),
+            ], $pauses),
+        ];
+
+        foreach ($periods as $period) {
             $from = $period['start']->max($start);
             // Period bounds are inclusive, the range is half-open.
             $until = $period['end']->addDay()->min($end);
