@@ -2,7 +2,6 @@
 
 namespace App\Support\Media;
 
-use Illuminate\Support\Uri;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
@@ -19,12 +18,12 @@ final class ImageData
     public static function fromMedia(Media $media): array
     {
         $width = self::intOrNull($media->getCustomProperty('width'));
-        $url = self::url($media);
+        $url = $media->getUrl();
 
         return [
             'id' => $media->id,
             'url' => $url,
-            'thumb' => $media->hasGeneratedConversion('thumb') ? self::url($media, 'thumb') : $url,
+            'thumb' => $media->hasGeneratedConversion('thumb') ? $media->getUrl('thumb') : $url,
             'srcset' => self::srcset($media, $url, $width),
             'width' => $width,
             'height' => self::intOrNull($media->getCustomProperty('height')),
@@ -32,14 +31,6 @@ final class ImageData
             'alt' => self::stringOrNull($media->getCustomProperty('alt')),
             'author' => self::stringOrNull($media->getCustomProperty('author')),
         ];
-    }
-
-    public static function url(Media $media, string $conversion = ''): string
-    {
-        $url = $media->getUrl($conversion);
-        $version = $media->getCustomProperty('image_policy');
-
-        return $version ? (string) Uri::of($url)->withQuery(['v' => $version]) : $url;
     }
 
     /** @return array<string, string|int|null> */
@@ -96,7 +87,7 @@ final class ImageData
             }
 
             $descriptor = $width === null ? $conversionWidth : min($conversionWidth, $width);
-            $candidates[$descriptor] ??= self::url($media, $name);
+            $candidates[$descriptor] ??= $media->getUrl($name);
         }
 
         if ($width !== null && ! isset($candidates[$width]) && $width > (array_key_last($candidates) ?? 0)) {

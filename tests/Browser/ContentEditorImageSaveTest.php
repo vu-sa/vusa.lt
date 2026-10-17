@@ -41,3 +41,41 @@ it('confirms an uploaded image save and permits saving again', function (string 
     $page->assertDontSee('Kažkas išsaugojo naujesnę versiją')->assertNoJavaScriptErrors();
     $page->screenshot(fullPage: false, filename: 'content-image-save-'.$kind);
 })->with(['news', 'pages']);
+
+it('renders pending upload feedback in the built editor on phone and desktop in both themes', function (): void {
+    Storage::fake('spatieMediaLibrary');
+    Storage::fake('local');
+    Queue::fake([PerformConversionsJob::class]);
+    $tenant = Tenant::first();
+    $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
+    $record = News::factory()->for($tenant)->create(['lang' => 'lt', 'image' => null]);
+    $uploadPath = UploadedFile::fake()->image('upload-feedback.webp', 800, 400)
+        ->storeAs('browser-fixtures', 'upload-feedback.webp', 'local');
+    $page = loginAsAdmin($user);
+    $page->navigate("/mano/news/{$record->id}/edit");
+    waitForInertiaRender($page, '[data-slot=upload] input[type=file]');
+    $page->script('(() => {
+        const fetch = window.fetch.bind(window);
+        window.fetch = async (...args) => {
+            if (String(args[0]).includes("/pending-uploads")) {
+                await new Promise(resolve => { window.releaseImageUpload = resolve; });
+            }
+            return fetch(...args);
+        };
+    })()');
+    $page->attach('[data-slot=upload] input[type=file]', Storage::disk('local')->path($uploadPath));
+    waitForInertiaRender($page, '[data-slot=image-upload-status]');
+
+    foreach ([390, 1440] as $width) {
+        $page->resize($width, 1000);
+        foreach (['light', 'dark'] as $theme) {
+            $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
+            $page->script('document.querySelector("[data-slot=image-upload-status]").scrollIntoView({ block: "center" })');
+            $page->assertNoJavaScriptErrors()->screenshot(fullPage: false, filename: "image-upload-{$width}-{$theme}");
+        }
+    }
+
+    $page->script('window.releaseImageUpload()');
+    waitForInertiaRender($page, '[data-slot=image-upload-success]');
+    $page->assertNoJavaScriptErrors();
+});

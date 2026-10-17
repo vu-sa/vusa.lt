@@ -64,7 +64,7 @@
           :src="photo"
           :alt="user.name"
           loading="lazy"
-          :style="{ objectPosition: focalPoint }"
+          :focal-point
           @error="imageError = true" />
         <div
           v-else

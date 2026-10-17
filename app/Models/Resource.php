@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
@@ -106,6 +107,14 @@ class Resource extends Model implements GuardsForceDelete, ImageMediaOwner
     public function registerMediaCollections(): void
     {
         $this->registerImageCollection('images', single: false);
+    }
+
+    public function afterImageMediaChanged(string $collection): void
+    {
+        DB::afterCommit(function (): void {
+            $this->unsetRelation('media');
+            $this->searchable();
+        });
     }
 
     public function toSearchableArray(): array

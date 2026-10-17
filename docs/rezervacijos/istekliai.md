@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Ištekliai
 area: resources
 models: [Resource]
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-17
 tests:
   - tests/Feature/Admin/Reservations/ResourceControllerTest.php
   - tests/Feature/Api/Admin/ResourceAvailabilityApiControllerTest.php
@@ -48,6 +48,8 @@ Sukūrus išteklių, atveriamas jo puslapis su prieinamumu ir rezervacijomis.
 | Galima rezervuoti | Taip | Jei išjungta, išteklius matomas sąraše, bet jo įdėti į krepšelį negalima. |
 | Kategorija | Ne | Žr. [Kategorijos](/rezervacijos/kategorijos). |
 | Nuotraukos | Ne | JPG, PNG arba WEBP, iki 10 MB kiekviena. Jas mato ir rezervuojantys. |
+
+Išteklių sąrašo miniatiūra imama iš pirmos likusios nuotraukos. Pridėjus ar pašalinus nuotraukas, ji atnaujinama ir paieškoje; pašalinus visas nuotraukas miniatiūra neberodoma.
 
 ### Užimtumas {#uzimtumas}
 

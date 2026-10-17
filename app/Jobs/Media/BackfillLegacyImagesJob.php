@@ -6,6 +6,7 @@ use App\Listeners\RefreshImageCacheAfterConversion;
 use App\Services\Media\LegacyImageImporter;
 use App\Services\Media\LegacyImageSource;
 use App\Services\Media\LegacyImageTargets;
+use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +20,7 @@ use Throwable;
  */
 class BackfillLegacyImagesJob implements ShouldQueue
 {
-    use Queueable;
+    use Batchable, Queueable;
 
     public int $tries = 1;
 
@@ -35,6 +36,10 @@ class BackfillLegacyImagesJob implements ShouldQueue
 
     public function handle(LegacyImageImporter $importer, ?callable $progress = null): void
     {
+        if ($this->batch()?->cancelled()) {
+            return;
+        }
+
         $definition = LegacyImageTargets::TARGETS[$this->target];
         $outcomes = [];
 

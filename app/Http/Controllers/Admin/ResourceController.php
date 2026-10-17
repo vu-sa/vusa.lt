@@ -75,6 +75,8 @@ class ResourceController extends AdminController
             app(AddImageMedia::class)->execute($resource, $image['file'], 'images');
         }
 
+        $resource->afterImageMediaChanged('images');
+
         return redirect($redirect->url($request->user(), $resource, 'resources.show', 'view', 'resources.index'))
             ->with('success', $this->entityMessage('created', 'resource'));
     }
@@ -206,12 +208,10 @@ class ResourceController extends AdminController
         $resource->fill($request->safe()->except('media'));
         $resource->save();
 
-        // first, intersect existing media with id from request, delete one's that didn't match
         $resource->getMedia('images')
             ->filter(fn ($image) => ! in_array($image->id, array_column($request->validated('media'), 'id')))
             ->each(fn ($image) => $image->delete());
 
-        // then add new media
         if ($request->validated('media')) {
             foreach ($request->validated('media') as $image) {
                 if ($image['status'] === 'pending' && $image['file']) {
@@ -219,6 +219,8 @@ class ResourceController extends AdminController
                 }
             }
         }
+
+        $resource->afterImageMediaChanged('images');
 
         return back()
             ->with('success', $this->entityMessage('updated', 'resource'));

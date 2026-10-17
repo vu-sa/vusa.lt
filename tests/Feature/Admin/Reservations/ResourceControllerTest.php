@@ -1,12 +1,20 @@
 <?php
 
+use App\Actions\Media\AddImageMedia;
 use App\Models\Reservation;
 use App\Models\Resource;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\Media\ImageConversions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
+use Spatie\MediaLibrary\Conversions\Conversion;
+use Spatie\MediaLibrary\Conversions\Events\ConversionHasBeenCompletedEvent;
+use Spatie\MediaLibrary\Conversions\Jobs\PerformConversionsJob;
+use Typesense\Client;
 
 pest()->use(RefreshDatabase::class);
 
@@ -106,6 +114,67 @@ describe('update', function (): void {
 
         expect($this->resource->fresh()->getMedia('images'))->toBeEmpty();
     });
+});
+
+describe('image search synchronization', function (): void {
+    beforeEach(function (): void {
+        usesTypesense();
+        config(['scout.queue' => false]);
+        Storage::fake('spatieMediaLibrary');
+        Queue::fake([PerformConversionsJob::class]);
+    });
+
+    test('a newly created resource indexes its uploaded image', function (): void {
+        asUser($this->resourceManager)->post(route('resources.store'), [
+            'name' => ['lt' => 'Nuotraukos testas', 'en' => 'Image test'],
+            'description' => ['lt' => 'Aprašas', 'en' => 'Description'],
+            'identifier' => 'PHOTO-CREATE',
+            'location' => 'Vilnius',
+            'tenant_id' => $this->tenant->id,
+            'capacity' => 1,
+            'is_reservable' => true,
+            'media' => [['file' => UploadedFile::fake()->image('created.jpg')]],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $resource = Resource::where('identifier', 'PHOTO-CREATE')->sole();
+        $document = (new Client(config('scout.typesense.client-settings')))->collections[$resource->searchableAs()]->documents[$resource->id]->retrieve();
+        expect($document['image_url'])->toBe($resource->getFirstMedia('images')->getUrl());
+    });
+
+    test('finished conversions replace the indexed original without changing the edit timestamp', function (): void {
+        $media = app(AddImageMedia::class)->execute($this->resource, UploadedFile::fake()->image('converted.jpg'), 'images');
+        $this->resource->afterImageMediaChanged('images');
+        $updatedAt = $this->resource->fresh()->updated_at;
+        $this->travel(5)->minutes();
+
+        foreach (array_keys(ImageConversions::WIDTHS) as $conversion) {
+            $media->markAsConversionGenerated($conversion);
+        }
+        event(new ConversionHasBeenCompletedEvent($media, Conversion::create('wide')));
+
+        $document = (new Client(config('scout.typesense.client-settings')))->collections[$this->resource->searchableAs()]->documents[$this->resource->id]->retrieve();
+        expect($document['image_url'])->toBe($media->getUrl('thumb'))
+            ->and($this->resource->fresh()->updated_at->equalTo($updatedAt))->toBeTrue();
+    });
+
+    test('removing gallery images republishes the remaining first image or an empty image', function (bool $removeAll): void {
+        app(AddImageMedia::class)->execute($this->resource, UploadedFile::fake()->image('first.jpg'), 'images');
+        $second = app(AddImageMedia::class)->execute($this->resource, UploadedFile::fake()->image('second.jpg'), 'images');
+        $this->resource->afterImageMediaChanged('images');
+
+        asUser($this->resourceManager)->patch(route('resources.update', $this->resource), [
+            'name' => $this->resource->getTranslations('name'),
+            'description' => $this->resource->getTranslations('description'),
+            'location' => $this->resource->location,
+            'tenant_id' => $this->tenant->id,
+            'capacity' => $this->resource->capacity,
+            'is_reservable' => true,
+            'media' => $removeAll ? [] : [['id' => $second->id, 'status' => 'finished']],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $document = (new Client(config('scout.typesense.client-settings')))->collections[$this->resource->searchableAs()]->documents[$this->resource->id]->retrieve();
+        expect($document['image_url'])->toBe($removeAll ? '' : $second->getUrl());
+    })->with([false, true]);
 });
 
 describe('index', function (): void {

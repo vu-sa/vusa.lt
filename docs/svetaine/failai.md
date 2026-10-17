@@ -5,6 +5,8 @@ area: files
 models: [File]
 last_reviewed: 2026-10-17
 tests:
+  - tests/Browser/ContentEditorImageSaveTest.php
+  - resources/js/Components/ui/upload/__tests__/ImageUploadMedia.component.test.ts
   - tests/Feature/Jobs/Media/UpgradeImageMediaTest.php
   - tests/Feature/Public/ResizedImageControllerTest.php
   - resources/js/Types/__tests__/media.test.ts
@@ -57,6 +59,7 @@ Formose įkeltos nuotraukos saugomos prie įrašo, o svetainė kiekvienam ekranu
 
 </ChangelogNote>
 
+- Pasirinkus failą iš karto rodoma jo peržiūra. Kol rodoma **Įkeliama…**, nuotrauka dar siunčiama ir paruošiama; baigus rodomas patvirtinimas. Nepavykus įkelti, klaida lieka po nuotrauka ir galima spausti **Bandyk dar kartą** arba pasirinkti kitą failą. Nepavykęs pakeitimas anksčiau išsaugotos nuotraukos nepanaikina.
 - Nuotrauka formoje įkeliama iš karto, bet įrašui priskiriama tik paspaudus **Išsaugoti**. Neišsaugotos nuotraukos po mėnesio ištrinamos. Per valandą vienas žmogus gali įkelti iki 50 nuotraukų.
 - Priskirti nuotrauką gali tas, kas gali redaguoti įrašą: naujienos nuotrauką – naujienos redaktorius, nario nuotrauką – pats narys arba narius tvarkantis koordinatorius. Kito žmogaus įkeltos, dar neišsaugotos nuotraukos panaudoti negalima.
 - Įkelta nuotrauka sumažinama iki 3840 px ilgesniosios kraštinės ir išsaugoma WebP formatu. Papildomai sukuriamos 400, 900, 1600 ir 2400 px pločio versijos – svetainė jas parenka pagal ekraną.

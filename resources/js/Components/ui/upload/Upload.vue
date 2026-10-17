@@ -192,7 +192,7 @@ async function doUpload(file: UploadFile) {
 }
 
 function handleFiles(fileList: FileList | null) {
-  if (!fileList || (!isSingle.value && !canUpload.value)) return;
+  if (props.disabled || !fileList || (!isSingle.value && !canUpload.value)) return;
 
   const newFiles = Array.from(fileList);
   const availableSlots = isSingle.value ? 1 : props.max - files.value.length;

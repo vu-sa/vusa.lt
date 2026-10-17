@@ -5,6 +5,8 @@
     :accept
     :max-size
     deferred
+    :disabled="isBusy"
+    :aria-busy="isBusy"
     list-type="image-card"
     :class="cn('w-full', props.class)"
     @update:files="handleFilesUpdate"
@@ -31,20 +33,24 @@
             :style="focalPoint ? { objectPosition: previewObjectPosition } : undefined"
           >
 
-          <!-- Compression indicator -->
           <div
-            v-if="isCompressing"
-            class="absolute inset-0 flex items-center justify-center bg-black/50"
+            v-if="isBusy"
+            class="absolute inset-0 z-10 flex items-center justify-center bg-background/85 text-foreground"
+            role="status"
+            aria-live="polite"
+            data-slot="image-upload-status"
           >
-            <div class="flex flex-col items-center gap-2 text-white">
-              <Loader2 class="size-6 animate-spin" />
-              <span class="text-sm">{{ $t("Optimizuojama...") }}</span>
+            <div class="flex flex-col items-center gap-2">
+              <Loader2 class="size-6 motion-safe:animate-spin" aria-hidden="true" />
+              <span class="text-sm">
+                {{ $t(isCompressing ? 'forms.image_upload.optimizing' : 'forms.image_upload.uploading') }}
+              </span>
             </div>
           </div>
 
           <!-- New file indicator -->
           <div
-            v-if="isNewFile && !isCompressing"
+            v-if="isNewFile && !isBusy && localFiles[0]?.status === 'success'"
             class="absolute bottom-2 left-2 flex items-center gap-1 border border-border bg-background px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-foreground shadow-xs"
           >
             <UploadIcon class="size-3" />
@@ -63,6 +69,7 @@
             <Button
               v-if="cropper && previewUrl && localFiles[0]"
               type="button"
+              :disabled="isBusy"
               variant="secondary"
               size="sm"
               class="border border-border bg-background/90 text-foreground backdrop-blur"
@@ -75,6 +82,7 @@
             <!-- Replace button -->
             <Button
               type="button"
+              :disabled="isBusy"
               variant="secondary"
               size="sm"
               class="border border-border bg-background/90 text-foreground backdrop-blur"
@@ -88,6 +96,7 @@
             <Button
               v-if="localFiles[0]"
               type="button"
+              :disabled="isBusy"
               variant="destructive"
               size="sm"
               @click="removeFile(localFiles[0] as UploadFile)"
@@ -98,8 +107,9 @@
 
           <!-- Success indicator -->
           <div
-            v-if="isNewFile && !isCompressing"
+            v-if="isNewFile && !isBusy && localFiles[0]?.status === 'success'"
             class="absolute bottom-2 right-2 flex size-6 items-center justify-center border border-border bg-background text-[var(--status-success)] shadow-xs"
+            data-slot="image-upload-success"
           >
             <Check class="size-3.5" />
           </div>
@@ -109,6 +119,7 @@
         <Button
           v-if="focalPoint && hasContent && previewUrl"
           type="button"
+          :disabled="isBusy || localFiles[0]?.status === 'error'"
           variant="outline"
           size="sm"
           class="mt-2"
@@ -168,6 +179,11 @@
           >
             <img v-if="f.url" :src="f.url" :alt="f.name" class="h-full w-full object-cover">
 
+            <div v-if="f.status === 'uploading'" class="absolute inset-0 z-10 flex items-center justify-center bg-background/85 text-foreground" role="status">
+              <Loader2 class="size-5 motion-safe:animate-spin" aria-hidden="true" />
+              <span class="sr-only">{{ $t('forms.image_upload.uploading') }}</span>
+            </div>
+
             <!-- New file indicator -->
             <div
               v-if="f.file"
@@ -180,6 +196,7 @@
             <Button
               v-if="cropper && f.url"
               type="button"
+              :disabled="isBusy"
               variant="secondary"
               size="icon-xs"
               class="absolute left-1 top-1 opacity-0 shadow-xs transition-opacity group-hover:opacity-100"
@@ -191,6 +208,7 @@
             <!-- Remove button -->
             <Button
               type="button"
+              :disabled="isBusy"
               variant="destructive"
               size="icon-xs"
               class="absolute right-1 top-1 opacity-0 shadow-xs transition-opacity group-hover:opacity-100"
@@ -222,6 +240,18 @@
           </UploadDropzone>
         </div>
       </template>
+
+      <div
+        v-for="failed in localFiles.filter(f => f.status === 'error')"
+        :key="failed.id"
+        class="mt-2 flex flex-wrap items-center gap-2 text-sm text-[var(--status-danger)]"
+        role="alert"
+      >
+        <span>{{ failed.error }}</span>
+        <Button v-if="isImmediate && failed.file" type="button" variant="outline" :disabled="isBusy" @click="retryUpload(failed)">
+          {{ $t('forms.image_upload.retry') }}
+        </Button>
+      </div>
     </template>
   </Upload>
 
@@ -251,21 +281,9 @@
 </template>
 
 <script setup lang="ts">
-/**
- * ImageUpload - A unified image upload component with cropping, compression, and deferred/immediate modes.
- *
- * Features:
- * - Single or multiple image uploads (controlled by `max` prop)
- * - Browser-side compression before upload/submit
- * - Optional image cropping via integrated cropper modal
- * - Optional focal point picker in a dialog
- * - Deferred mode: Files stored locally for form submission (Spatie Media Library)
- * - Media mode: Files staged on the server right away; `v-model:image` holds the ImageData the form posts
- * - Immediate mode (legacy): Files uploaded to a shared folder and URL returned
- * - Existing image preview for edit forms
- */
-import { computed, defineAsyncComponent, ref, watch, onMounted, nextTick } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { computed, defineAsyncComponent, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { trans } from 'laravel-vue-i18n';
 import { Check, Crop, Crosshair, ImagePlus, Loader2, Plus, RefreshCw, Trash2, Upload as UploadIcon, X } from '@lucide/vue';
 import { toast } from 'vue-sonner';
 
@@ -280,7 +298,6 @@ import { useImageCompression, type CompressionOptions, type CompressionResult } 
 import { cn } from '@/Utils/Shadcn/utils';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent } from '@/Components/ui/dialog';
-import { Label } from '@/Components/ui/label';
 import type { ImageData } from '@/Types/media';
 
 export interface ImageUploadProps {
@@ -356,7 +373,14 @@ const stagedImages = new Map<string, ImageData>();
 // Local state
 const localFiles = ref<UploadFile[]>([]);
 const isCompressing = ref(false);
-const compressionProgress = ref<Map<string, number>>(new Map());
+const isBusy = ref(false);
+let uploadController: AbortController | null = null;
+let disposed = false;
+
+onBeforeUnmount(() => {
+  disposed = true;
+  uploadController?.abort();
+});
 
 // Cropper modal state
 const showCropperModal = ref(false);
@@ -367,7 +391,7 @@ const cropperFileId = ref<string | null>(null);
 const showFocalPointModal = ref(false);
 
 // Compression composable
-const { compressImage, formatFileSize } = useImageCompression();
+const { compressImage } = useImageCompression();
 
 // Computed
 const isSingle = computed(() => props.max === 1);
@@ -392,13 +416,6 @@ function setFocalPoint(value: string | null) {
 
   emit('update:focalPointValue', value);
 }
-const hasExistingImages = computed(() => {
-  if (isSingle.value) {
-    return !!props.existingUrl || !!url.value;
-  }
-  return props.existingUrls.length > 0 || urls.value.length > 0;
-});
-
 const previewObjectPosition = computed(() => {
   if (!props.focalPoint) return undefined;
   return currentFocalPoint.value ?? '50% 30%';
@@ -517,38 +534,49 @@ async function processFile(rawFile: File): Promise<File> {
 
 // Handle files update from Upload component
 async function handleFilesUpdate(newFiles: UploadFile[]) {
-  // Find newly added files (have file object and aren't processed yet)
-  const filesToProcess = newFiles.filter(
-    f => f.file && !f.id.startsWith('processed-') && !f.id.startsWith('existing-'),
+  if (isBusy.value || disposed) return;
+
+  localFiles.value = [...newFiles];
+  const filesToProcess = localFiles.value.filter(
+    f => f.file && f.status !== 'error' && !f.id.startsWith('processed-') && !f.id.startsWith('existing-'),
   );
 
-  // Process new files with compression
-  for (const uploadFile of filesToProcess) {
-    if (!uploadFile.file) continue;
+  isBusy.value = filesToProcess.length > 0;
+  try {
+    for (const uploadFile of filesToProcess) {
+      if (!uploadFile.file) continue;
+      if (isImmediate.value) uploadFile.status = 'pending';
+      try {
+        const processedFile = await processFile(uploadFile.file);
+        if (disposed) return;
 
-    const originalFile = uploadFile.file;
-    const processedFile = await processFile(originalFile);
-
-    // Update the file reference
-    uploadFile.file = processedFile;
-    uploadFile.id = `processed-${uploadFile.id}`;
-
-    // For immediate mode, upload right away
-    if (isImmediate.value) {
-      await uploadFileToServer(uploadFile);
+        uploadFile.file = processedFile;
+        uploadFile.id = `processed-${uploadFile.id}`;
+        if (isImmediate.value) await uploadFileToServer(uploadFile);
+      }
+      catch {
+        if (disposed) return;
+        uploadFile.status = 'error';
+        uploadFile.error = trans('forms.image_upload.failed');
+      }
     }
+    if (!disposed) updateModels();
   }
-
-  localFiles.value = newFiles;
-  updateModels();
+  finally {
+    isBusy.value = false;
+  }
 }
 
 // Upload file to server (immediate mode)
 async function uploadFileToServer(uploadFile: UploadFile) {
-  if (!uploadFile.file) return;
+  if (!uploadFile.file || disposed) return;
 
+  const controller = new AbortController();
+  uploadController = controller;
   uploadFile.status = 'uploading';
   uploadFile.progress = 0;
+  uploadFile.error = undefined;
+  let failureMessage = trans('forms.image_upload.failed');
 
   const formData = new FormData();
   formData.append('image', uploadFile.file);
@@ -561,6 +589,7 @@ async function uploadFileToServer(uploadFile: UploadFile) {
   try {
     const response = await fetch(route(isMedia.value ? 'api.v1.admin.pendingUploads.store' : 'files.uploadImage'), {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         'X-CSRF-TOKEN': usePage().props.csrf_token as string,
         'Accept': 'application/json',
@@ -570,10 +599,12 @@ async function uploadFileToServer(uploadFile: UploadFile) {
 
     if (!response.ok) {
       const body = await response.json().catch(() => null) as { message?: string } | null;
-      throw new Error(body?.message ?? `Upload failed: ${response.status}`);
+      failureMessage = body?.message ?? failureMessage;
+      throw new Error(failureMessage);
     }
 
     const data = await response.json();
+    if (disposed || controller.signal.aborted) return;
 
     if (isMedia.value) {
       const staged = data.data as ImageData;
@@ -586,20 +617,35 @@ async function uploadFileToServer(uploadFile: UploadFile) {
 
     updateModels();
   }
-  catch (error) {
-    console.error('[ImageUpload] Upload error:', error);
+  catch {
+    if (disposed || controller.signal.aborted) return;
     uploadFile.status = 'error';
-    uploadFile.error = error instanceof Error ? error.message : 'Upload failed';
+    uploadFile.error = failureMessage;
 
     if (isMedia.value) {
       toast.error(uploadFile.error);
     }
+  }
+  finally {
+    if (uploadController === controller) uploadController = null;
+  }
+}
+
+async function retryUpload(uploadFile: UploadFile) {
+  if (isBusy.value || disposed) return;
+  isBusy.value = true;
+  try {
+    await uploadFileToServer(uploadFile);
+  }
+  finally {
+    isBusy.value = false;
   }
 }
 
 // Update v-model values
 function updateModels() {
   if (isSingle.value) {
+    if (isImmediate.value && localFiles.value[0] && localFiles.value[0].status !== 'success') return;
     // Single file mode
     const currentFile = localFiles.value.find(f => f.file);
     file.value = currentFile?.file ?? null;
@@ -637,6 +683,7 @@ function updateModels() {
 
 // Handle file removal
 function handleRemove(removedFile: UploadFile) {
+  if (isBusy.value) return;
   // Check if this is an existing file
   if (removedFile.id.startsWith('existing-')) {
     const existingId = removedFile.id.replace('existing-', '');
@@ -655,7 +702,7 @@ function handleRemove(removedFile: UploadFile) {
 
 // Open cropper modal
 function openCropper(uploadFile: UploadFile) {
-  if (!props.cropper || !uploadFile.url) return;
+  if (isBusy.value || !props.cropper || !uploadFile.url) return;
 
   cropperImageUrl.value = uploadFile.url;
   cropperFileId.value = uploadFile.id;
@@ -664,6 +711,7 @@ function openCropper(uploadFile: UploadFile) {
 
 // Handle crop finish
 async function handleCropFinish(data: { dataUrl: string; blob: Blob }) {
+  if (isBusy.value || disposed) return;
   showCropperModal.value = false;
 
   // Find the file being cropped
@@ -679,31 +727,36 @@ async function handleCropFinish(data: { dataUrl: string; blob: Blob }) {
   const fileName = uploadFile.name.replace(/\.[^.]+$/, extension);
   const croppedFile = new File([data.blob], fileName, { type: fileType });
 
-  // Default crop output has already been encoded at the target quality.
-  const processedFile = typeof props.compress === 'object'
-    ? await processFile(croppedFile)
-    : croppedFile;
+  isBusy.value = true;
+  try {
+    // Default crop output has already been encoded at the target quality.
+    const processedFile = typeof props.compress === 'object' ? await processFile(croppedFile) : croppedFile;
+    if (disposed) return;
 
-  // Update the file
-  uploadFile.file = processedFile;
-  uploadFile.url = processedFile === croppedFile
-    ? data.dataUrl
-    : await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result));
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(processedFile);
-      });
-  uploadFile.name = processedFile.name;
+    uploadFile.file = processedFile;
+    uploadFile.url = processedFile === croppedFile
+      ? data.dataUrl
+      : await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => reject(reader.error);
+          reader.readAsDataURL(processedFile);
+        });
+    uploadFile.name = processedFile.name;
 
-  // Re-upload in immediate mode
-  if (isImmediate.value) {
-    await uploadFileToServer(uploadFile as UploadFile);
+    if (isImmediate.value) await uploadFileToServer(uploadFile);
+    if (!disposed) updateModels();
   }
-
-  updateModels();
-  cropperImageUrl.value = null;
-  cropperFileId.value = null;
+  catch {
+    if (disposed) return;
+    uploadFile.status = 'error';
+    uploadFile.error = trans('forms.image_upload.failed');
+  }
+  finally {
+    isBusy.value = false;
+    cropperImageUrl.value = null;
+    cropperFileId.value = null;
+  }
 }
 
 function handleCropCancel() {

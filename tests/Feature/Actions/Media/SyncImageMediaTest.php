@@ -5,6 +5,8 @@ use App\Actions\Media\SyncImageMedia;
 use App\Models\Banner;
 use App\Models\News;
 use App\Models\PendingUpload;
+use App\Models\Pivots\Dutiable;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Services\Media\LegacyImageResolver;
 use App\Support\Media\ImageData;
@@ -183,4 +185,25 @@ test('a legacy image that cannot be imported keeps its edits in the legacy colum
     expect($news->getMedia('image'))->toBeEmpty()
         ->and($news->image)->toBe('https://example.com/photo.jpg')
         ->and($news->imageData('image')['author'])->toBe('Ona');
+});
+
+test('a non-super-admin can copy an assignment photo only within their granted tenant scope', function (): void {
+    $role = Role::create(['name' => 'Assignment photo reader', 'guard_name' => 'web']);
+    $role->givePermissionTo('dutiables.read.padalinys');
+    $duty = $this->admin->duties()->first();
+    $duty->assignRole($role);
+    $source = Dutiable::factory()->forDuty($duty)->forUser($this->admin)->create();
+    $destination = Dutiable::factory()->forDuty($duty)->forUser($this->admin)->create();
+    $original = app(AddImageMedia::class)->execute($source, UploadedFile::fake()->image('assignment.png'), 'photo');
+
+    app(SyncImageMedia::class)->execute($destination, 'photo', ['id' => $original->id], $this->admin);
+
+    expect($this->admin->isSuperAdmin())->toBeFalse()
+        ->and($destination->fresh()->getFirstMedia('photo')->id)->not->toBe($original->id)
+        ->and($source->fresh()->getFirstMedia('photo')->id)->toBe($original->id);
+
+    $foreign = Dutiable::factory()->create();
+    $foreignImage = app(AddImageMedia::class)->execute($foreign, UploadedFile::fake()->image('foreign.png'), 'photo');
+    expect(fn () => app(SyncImageMedia::class)->execute($destination, 'photo', ['id' => $foreignImage->id], $this->admin))
+        ->toThrow(ValidationException::class);
 });

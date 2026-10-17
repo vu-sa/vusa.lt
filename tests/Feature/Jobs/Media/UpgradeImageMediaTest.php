@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Media\AddImageMedia;
+use App\Jobs\Media\BackfillLegacyImagesJob;
 use App\Jobs\Media\UpgradeImageMedia;
 use App\Models\Calendar;
 use App\Models\Institution;
@@ -301,4 +302,45 @@ test('on staging the focal point moves but production\'s files are not touched',
     expect($media->refresh()->getCustomProperty('focal_point'))->toBe('30% 70%')
         ->and(app(ImageMigration::class)->cleanup($media))->toBeFalse();
     Storage::disk('spatieMediaLibrary')->assertExists($paths->getPathForConversions($media).'event-webp.webp');
+});
+
+test('a real dispatch accepts every job into the batch', function (): void {
+    app(AddImageMedia::class)->execute(Page::factory()->create(), UploadedFile::fake()->image('photo.jpg', 800, 400), 'featured_image');
+    News::factory()->create(['image' => '/uploads/news/old.jpg']);
+    // Only the queue is faked: PendingBatch's own checks (e.g. the Batchable trait) still run.
+    Queue::fake();
+
+    $this->artisan('media:migrate-images', ['--detach' => true])->assertSuccessful();
+
+    Queue::assertPushed(UpgradeImageMedia::class, fn (UpgradeImageMedia $job): bool => $job->batchId !== null);
+    Queue::assertPushed(BackfillLegacyImagesJob::class, fn (BackfillLegacyImagesJob $job): bool => $job->batchId !== null);
+});
+
+test('cancelled media batches leave uploads and legacy images untouched', function (): void {
+    $media = app(AddImageMedia::class)->execute(Page::factory()->create(), UploadedFile::fake()->image('cancelled.jpg'), 'featured_image');
+    $media->forgetCustomProperty('image_policy')->save();
+    $before = $media->fresh()->getAttributes();
+    $news = News::factory()->create(['image' => '/uploads/news/cancelled.jpg']);
+
+    foreach ([new UpgradeImageMedia([$media->id]), new BackfillLegacyImagesJob('news', [$news->id])] as $job) {
+        [$job, $batch] = $job->withFakeBatch();
+        $batch->cancel();
+        app()->call([$job, 'handle']);
+    }
+
+    expect($media->fresh()->getAttributes())->toBe($before)
+        ->and($news->fresh()->getMedia('image'))->toBeEmpty();
+});
+
+test('image references and cached conversion URLs need no version query string', function (): void {
+    $owner = Institution::factory()->create();
+    $media = app(AddImageMedia::class)->execute($owner, UploadedFile::fake()->image(str_repeat('long-name-', 12).'.jpg'), 'image');
+    upgradeMedia([$media->id]);
+    $owner->refreshImageCache('image');
+    $data = $owner->fresh()->imageData('image');
+
+    expect($data['url'])->not->toContain('?')
+        ->and($data['thumb'])->not->toContain('?')
+        ->and($data['srcset'])->not->toContain('?')
+        ->and(strlen($owner->fresh()->image_url))->toBeLessThanOrEqual(125);
 });

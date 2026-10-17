@@ -10,6 +10,7 @@ use App\Services\ImageUploadService;
 use App\Services\Media\LegacyImageResolver;
 use App\Support\Media\ImageConversions;
 use App\Support\StagingProtection;
+use Illuminate\Bus\Batchable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -22,7 +23,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class UpgradeImageMedia implements ShouldQueue
 {
-    use Queueable;
+    use Batchable, Queueable;
 
     public int $timeout = 1800;
 
@@ -52,6 +53,10 @@ class UpgradeImageMedia implements ShouldQueue
 
     public function handle(ImageUploadService $images, FileManipulator $files, LegacyImageResolver $resolver): void
     {
+        if ($this->batch()?->cancelled()) {
+            return;
+        }
+
         $queued = config('media-library.queue_conversions_by_default');
         $muted = RefreshImageCacheAfterConversion::$muted;
         config(['media-library.queue_conversions_by_default' => false]);

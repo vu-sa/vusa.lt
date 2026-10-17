@@ -82,8 +82,8 @@ trait HasImageMedia
 
         if ($media !== null) {
             $url = self::relativeImageUrl($media->hasGeneratedConversion($columns['conversion'])
-                ? ImageData::url($media, $columns['conversion'])
-                : ImageData::url($media));
+                ? $media->getUrl($columns['conversion'])
+                : $media->getUrl());
         }
 
         $values = [$columns['url'] => $url];

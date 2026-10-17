@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\CollapseOverlappingDutiables;
 use App\Actions\Media\AddImageMedia;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
@@ -139,7 +140,7 @@ describe('merging dutiables', function (): void {
 
         Dutiable::factory()->forDuty($sharedDuty)->forUser($kept)->create(['start_date' => '2024-01-01', 'end_date' => null]);
         $mergedRow = Dutiable::factory()->forDuty($sharedDuty)->forUser($merged)->create(['start_date' => '2024-06-01', 'end_date' => '2024-12-01']);
-        $photo = app(AddImageMedia::class)->execute($mergedRow, UploadedFile::fake()->image('seat.png'), 'photo');
+        $photo = app(AddImageMedia::class)->execute($mergedRow, UploadedFile::fake()->image('seat.png'), 'photo', properties: ['focal_point' => '20% 30%']);
 
         asUser($this->admin)->post(route('users.mergeUsers'), [
             'kept_user_id' => $kept->id,
@@ -148,7 +149,59 @@ describe('merging dutiables', function (): void {
 
         $survivor = Dutiable::where('duty_id', $sharedDuty->id)->where('dutiable_id', $kept->id)->sole();
 
-        expect($survivor->getFirstMedia('photo')?->id)->toBe($photo->id);
+        expect($survivor->getFirstMedia('photo')?->id)->toBe($photo->id)
+            ->and($survivor->additional_photo)->toContain('/'.$photo->id.'/')
+            ->and($survivor->additional_photo_focal_point)->toBe('20% 30%');
+    });
+
+    test('the winning media replaces stale cached photo values after a collapse', function (bool $survivorHasMedia): void {
+        Storage::fake('spatieMediaLibrary');
+        $duty = $this->admin->duties()->first();
+        $survivor = Dutiable::factory()->forDuty($duty)->forUser($this->admin)->create([
+            'additional_photo' => '/stale.jpg', 'additional_photo_focal_point' => '90% 90%',
+        ]);
+        $loser = Dutiable::factory()->forDuty($duty)->forUser($this->admin)->create();
+        $photo = app(AddImageMedia::class)->execute($survivorHasMedia ? $survivor : $loser, UploadedFile::fake()->image('winner.jpg'), 'photo', properties: ['focal_point' => '10% 20%']);
+
+        DB::transaction(fn () => CollapseOverlappingDutiables::foldInto($survivor, $loser));
+
+        expect($survivor->fresh()->getFirstMedia('photo')->id)->toBe($photo->id)
+            ->and($survivor->fresh()->additional_photo)->toContain('/'.$photo->id.'/')
+            ->and($survivor->fresh()->additional_photo_focal_point)->toBe('10% 20%');
+    })->with([false, true]);
+
+    test('legacy photo and focal point remain paired during a collapse', function (bool $survivorHasPhoto): void {
+        $duty = $this->admin->duties()->first();
+        $survivor = Dutiable::factory()->forDuty($duty)->forUser($this->admin)->create([
+            'additional_photo' => $survivorHasPhoto ? '/kept.jpg' : null,
+            'additional_photo_focal_point' => null,
+        ]);
+        $loser = Dutiable::factory()->forDuty($duty)->forUser($this->admin)->create([
+            'additional_photo' => '/loser.jpg', 'additional_photo_focal_point' => '70% 80%',
+        ]);
+
+        DB::transaction(fn () => CollapseOverlappingDutiables::foldInto($survivor, $loser));
+
+        expect($survivor->fresh()->additional_photo)->toBe($survivorHasPhoto ? '/kept.jpg' : '/loser.jpg')
+            ->and($survivor->fresh()->additional_photo_focal_point)->toBe($survivorHasPhoto ? null : '70% 80%');
+    })->with([false, true]);
+
+    test('rolling back a collapse restores media ownership and leaves its files intact', function (): void {
+        Storage::fake('spatieMediaLibrary');
+        $duty = $this->admin->duties()->first();
+        $survivor = Dutiable::factory()->forDuty($duty)->forUser($this->admin)->create(['additional_photo' => '/kept.jpg']);
+        $loser = Dutiable::factory()->forDuty($duty)->forUser($this->admin)->create();
+        $photo = app(AddImageMedia::class)->execute($loser, UploadedFile::fake()->image('rollback.jpg'), 'photo');
+        $path = $photo->getPathRelativeToRoot();
+
+        DB::beginTransaction();
+        CollapseOverlappingDutiables::foldInto($survivor, $loser);
+        $loser->delete();
+        DB::rollBack();
+
+        expect($photo->fresh()->model_id)->toBe($loser->id)
+            ->and($survivor->fresh()->additional_photo)->toBe('/kept.jpg');
+        Storage::disk('spatieMediaLibrary')->assertExists($path);
     });
 
     test('does not collapse two genuinely separate stints on the same duty', function (): void {

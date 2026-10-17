@@ -208,19 +208,22 @@ interface PhotoPivot {
 
 // The first assignment decides: its own photo wins, otherwise the profile photo. Url, srcset and
 // focal point always come from the same photo. Object.values since `duties` may be keyed.
-const photo = computed(() => {
-  const profile = {
-    url: props.contact.profile_photo_path ?? '',
-    media: props.contact.profile_photo_media ?? null,
-    focal: props.contact.profile_photo_focal_point ?? '50% 30%',
+function photoSource(media: ImageData | null | undefined, url?: string | null, focal?: string | null) {
+  return {
+    url: media?.url || url || '',
+    media: media ?? null,
+    focal: media?.focal_point ?? focal ?? '50% 30%',
   };
+}
+
+const photo = computed(() => {
   const pivot = (Object.values(props.contact.duties ?? []).find(duty => duty.pivot)?.pivot
     ?? props.contact.pivot) as PhotoPivot | undefined;
 
-  if (pivot?.additional_photo) {
-    return { url: pivot.additional_photo, media: pivot.photo_media ?? null, focal: pivot.additional_photo_focal_point ?? profile.focal };
+  if (pivot?.photo_media?.url || pivot?.additional_photo) {
+    return photoSource(pivot.photo_media, pivot.additional_photo, pivot.additional_photo_focal_point);
   }
 
-  return profile;
+  return photoSource(props.contact.profile_photo_media, props.contact.profile_photo_path, props.contact.profile_photo_focal_point);
 });
 </script>
