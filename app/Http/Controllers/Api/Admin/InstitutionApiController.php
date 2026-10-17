@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\StoreInstitutionRequest;
 use App\Models\Institution;
 use App\Services\InstitutionRelationService;
 use Illuminate\Http\JsonResponse;
@@ -54,5 +55,22 @@ class InstitutionApiController extends ApiController
                 ])->values(),
             'related_institutions' => app(InstitutionRelationService::class)->summaryFor($institution),
         ]);
+    }
+
+    public function store(StoreInstitutionRequest $request): JsonResponse
+    {
+        $this->authorizeApi('create', Institution::class);
+
+        $institution = new Institution;
+
+        $institution->fill($request->safe()->except('types'))->save();
+
+        $institution->syncAudited('types', $request->types);
+
+        $institution->load('tenant:id,shortname', 'types');
+
+        return $this->jsonCreated([
+            'institution' => $institution,
+        ], $this->entityMessage('created', 'institution'));
     }
 }

@@ -44,7 +44,6 @@ const EXCLUDED_FROM_CATALOG = [
     'profile.roles' => 'Mano rolės ir pareigybės, reached from the account menu and every 403 page (PR 5.9)',
     'profile.notifications' => 'Pranešimų nustatymai, reached from the account menu and Paskyra (PR 9.9)',
     'mySupportRequests.index' => 'Pagalba entry point, not a workspace section (PR 4.4)',
-    'push-subscription.index' => 'device push-subscription settings, no navigational destination',
     'settings.cadences.index' => 'reached from within Nustatymai, not a top-level section',
     'search.index' => 'legacy redirect; cross-entity search lives in the command palette',
 ];
@@ -54,8 +53,8 @@ const EXCLUDED_FROM_CATALOG = [
  * menu or Pagalba, or are legacy redirects that never render (`SearchController`'s own docblocks).
  */
 const WORKSPACELESS_ROUTES = [
-    'administration', 'profile', 'profile.roles', 'profile.notifications', 'approvals.history', 'mySupportRequests.index', 'mySupportRequests.create',
-    'push-subscription.index', 'search.index', 'search.agendaItems', 'search.institutions',
+    'administration', 'profile', 'profile.roles', 'profile.notifications', 'mySupportRequests.index', 'mySupportRequests.create',
+    'search.index', 'search.agendaItems', 'search.institutions',
     'search.meetings', 'search.resources',
     // Redirects straight out to the file's anonymous SharePoint link; never rendered as a page.
     'fileableFiles.open',

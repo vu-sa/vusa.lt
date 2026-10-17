@@ -368,19 +368,15 @@ describe('authorized access', function (): void {
             );
     });
 
-    test('inline institution creation returns the model without navigating away', function (array $headers): void {
-        $response = asUser($this->admin)->withHeaders($headers)->post(route('institutions.store'), [
+    test('inline institution creation via API returns the created model', function (): void {
+        $response = asUser($this->admin)->postJson(route('api.v1.admin.institutions.store'), [
             'name' => ['lt' => 'Vedlio institucija', 'en' => 'Wizard institution'],
             'tenant_id' => $this->tenant->id,
         ]);
 
         $created = Institution::where('name->lt', 'Vedlio institucija')->sole();
-        $response->assertOk()->assertJsonPath('success', true)->assertJsonPath('institution.id', $created->id);
-        expect($response->headers->has('Location'))->toBeFalse();
-    })->with([
-        'JSON accept header' => [['Accept' => 'application/json']],
-        'legacy partial-data header' => [['X-Inertia-Partial-Data' => 'created']],
-    ]);
+        $response->assertCreated()->assertJsonPath('success', true)->assertJsonPath('data.institution.id', $created->id);
+    });
 
     test('can store institution', function (): void {
         $institutionData = [

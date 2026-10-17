@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Contracts\Approvable;
 use App\Enums\ApprovalDecision;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\Concerns\ApiResponses;
-use App\Http\Requests\Approvals\ApprovalHistoryRequest;
 use App\Http\Requests\Approvals\BacktrackApprovalsRequest;
 use App\Http\Requests\Approvals\BulkStoreApprovalRequest;
 use App\Http\Requests\Approvals\ResolveApprovalsRequest;
@@ -20,8 +18,6 @@ use App\Support\MorphMap;
 
 class ApprovalController extends AdminController
 {
-    use ApiResponses;
-
     public function __construct(protected ApprovalService $approvalService) {}
 
     /**
@@ -231,33 +227,5 @@ class ApprovalController extends AdminController
         }
 
         return $model;
-    }
-
-    /**
-     * Get approval history for a model.
-     */
-    public function history(ApprovalHistoryRequest $request)
-    {
-        $validated = $request->validated();
-
-        $approvable = $this->resolveApprovable($validated['approvable_type'], $validated['approvable_id']);
-
-        if (! $approvable) {
-            return $this->jsonNotFound('Model not found');
-        }
-
-        // The history carries approver names and their internal notes, so reading it follows
-        // the approvable's own view ability rather than being open to any authenticated user.
-        $this->handleAuthorization('view', $approvable);
-
-        $approvals = $approvable->approvals()
-            ->with([
-                'user:id,name,profile_photo_path',
-                'revertedBy:id,name,profile_photo_path',
-            ])
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return $this->jsonSuccess($approvals);
     }
 }

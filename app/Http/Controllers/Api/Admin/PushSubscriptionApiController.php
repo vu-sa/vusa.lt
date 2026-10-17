@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Api\Admin;
 
-use App\Http\Controllers\Concerns\ApiResponses;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\DestroyPushSubscriptionRequest;
 use App\Http\Requests\StorePushSubscriptionRequest;
 use App\Models\User;
@@ -16,10 +15,8 @@ use NotificationChannels\WebPush\Events\NotificationFailed;
 use NotificationChannels\WebPush\Events\NotificationSent;
 use NotificationChannels\WebPush\PushSubscription;
 
-class PushSubscriptionController extends Controller
+class PushSubscriptionApiController extends ApiController
 {
-    use ApiResponses;
-
     /**
      * Get all push subscriptions for the authenticated user.
      */
@@ -55,7 +52,6 @@ class PushSubscriptionController extends Controller
      */
     public function store(StorePushSubscriptionRequest $request): JsonResponse
     {
-
         /** @var User $user */
         $user = Auth::user();
 
@@ -87,7 +83,6 @@ class PushSubscriptionController extends Controller
      */
     public function destroy(DestroyPushSubscriptionRequest $request): JsonResponse
     {
-
         /** @var User $user */
         $user = Auth::user();
 

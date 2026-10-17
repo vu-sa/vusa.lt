@@ -250,7 +250,7 @@ describe('ApprovalController@history', function (): void {
 
     test('resource manager can read the approval history', function (): void {
         asUser($this->resourceManager)
-            ->getJson(route('approvals.history', [
+            ->getJson(route('api.v1.admin.approvals.history', [
                 'approvable_type' => 'reservation_resource',
                 'approvable_id' => (string) $this->reservationResource->id,
             ]))
@@ -260,7 +260,7 @@ describe('ApprovalController@history', function (): void {
 
     test('reservation owner can read the approval history', function (): void {
         asUser($this->user)
-            ->getJson(route('approvals.history', [
+            ->getJson(route('api.v1.admin.approvals.history', [
                 'approvable_type' => 'reservation_resource',
                 'approvable_id' => (string) $this->reservationResource->id,
             ]))
@@ -271,7 +271,7 @@ describe('ApprovalController@history', function (): void {
         $outsider = makeUser($this->tenant);
 
         asUser($outsider)
-            ->getJson(route('approvals.history', [
+            ->getJson(route('api.v1.admin.approvals.history', [
                 'approvable_type' => 'reservation_resource',
                 'approvable_id' => (string) $this->reservationResource->id,
             ]))
@@ -397,7 +397,7 @@ describe('ApprovalController@backtrack', function (): void {
         ]);
 
         asUser($this->resourceManager)
-            ->getJson(route('approvals.history', [
+            ->getJson(route('api.v1.admin.approvals.history', [
                 'approvable_type' => 'reservation_resource',
                 'approvable_id' => (string) $this->reservationResource->id,
             ]))

@@ -103,15 +103,6 @@ class InstitutionController extends AdminController
 
         $institution->load('tenant:id,shortname', 'types');
 
-        // The duty-user wizard consumes this response without leaving its current step.
-        if ($request->wantsJson() || $request->header('X-Inertia-Partial-Data')) {
-            return response()->json([
-                'success' => true,
-                'message' => $this->entityMessage('created', 'institution'),
-                'institution' => $institution,
-            ]);
-        }
-
         return redirect($redirect->url($request->user(), $institution, 'institutions.show', 'viewSummary', 'institutions.index'))
             ->with('success', $this->entityMessage('created', 'institution'));
     }

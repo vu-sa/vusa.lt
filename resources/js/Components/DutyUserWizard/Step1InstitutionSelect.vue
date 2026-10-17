@@ -474,10 +474,12 @@ const validateCreateForm = (): boolean => {
 const createInstitution = () => {
   if (!validateCreateForm()) return;
 
-  http.post(route('institutions.store'), {
-    onSuccess: (response: any) => {
-      if (response?.institution) {
-        addInstitution?.(response.institution);
+  http.post(route('api.v1.admin.institutions.store'), {
+    onSuccess: (response: unknown) => {
+      const res = response as { data?: { institution?: App.Entities.Institution }; institution?: App.Entities.Institution } | undefined;
+      const institution = res?.data?.institution ?? res?.institution;
+      if (institution) {
+        addInstitution?.(institution);
         toast.success($t('Institucija sėkmingai sukurta'));
         cancelCreate();
       }

@@ -304,7 +304,7 @@ export function usePWA() {
 
       // Send subscription to server with content encoding and device name
       // PushEncryptionKeyName tells the server which encryption format to use
-      const response = await fetch(route('push-subscription.store'), {
+      const response = await fetch(route('api.v1.admin.pushSubscriptions.store'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -358,7 +358,7 @@ export function usePWA() {
           await subscription.unsubscribe();
 
           // Remove from server
-          const response = await fetch(route('push-subscription.destroy'), {
+          const response = await fetch(route('api.v1.admin.pushSubscriptions.destroy'), {
             method: 'DELETE',
             headers: {
               'Content-Type': 'application/json',
@@ -387,7 +387,7 @@ export function usePWA() {
 
       // Fallback: If we have a stored endpoint but no SW, try server-only removal
       if (currentBrowserEndpoint.value) {
-        const response = await fetch(route('push-subscription.destroy'), {
+        const response = await fetch(route('api.v1.admin.pushSubscriptions.destroy'), {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -424,7 +424,7 @@ export function usePWA() {
   // Remove a subscription by ID (for device management)
   const removeSubscriptionById = async (id: number): Promise<boolean> => {
     try {
-      const response = await fetch(route('push-subscription.destroyById', { id }), {
+      const response = await fetch(route('api.v1.admin.pushSubscriptions.destroyById', { id }), {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -454,7 +454,7 @@ export function usePWA() {
   // Fetch all push subscriptions for device management
   const fetchPushSubscriptions = async (): Promise<PushSubscriptionDevice[]> => {
     try {
-      const response = await fetch(route('push-subscription.index'), {
+      const response = await fetch(route('api.v1.admin.pushSubscriptions.index'), {
         headers: {
           'Accept': 'application/json',
           'X-CSRF-TOKEN': getCsrfToken(),
