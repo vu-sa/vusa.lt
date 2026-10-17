@@ -210,7 +210,7 @@ describe('ContactWithPhoto', () => {
       const img = mountCard(contact, []).get('img');
 
       expect(img.attributes('src')).toBe('/uploads/files/assignment.jpg');
-      expect(img.attributes('srcset')).not.toContain('profile.webp');
+      expect(img.attributes('srcset')).toBeUndefined();
       expect(img.attributes('style')).toContain('object-position: 10% 20%');
     });
 
