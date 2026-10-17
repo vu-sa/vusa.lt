@@ -247,7 +247,8 @@ class ContactController extends PublicController
             // The page reads image_url; it comes from the image's media now.
             'institution' => $institution->unsetRelation('duties')
                 ->setAttribute('image_url', $institution->imageData('image')['url'] ?? null)
-                ->setAttribute('image_media', $institution->imageData('image')),
+                ->setAttribute('image_media', $institution->imageData('image'))
+                ->unsetRelation('media'),
             'currentYearMeetings' => $groupedMeetings['current'] ?? null,
             'previousYearsMeetings' => $groupedMeetings['previous'] ?? [],
             'hasMeetings' => ! empty($groupedMeetings),

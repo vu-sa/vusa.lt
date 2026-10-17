@@ -10,8 +10,10 @@ use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Throwable;
 
 /**
  * Applies an ImageData object posted by a form to one image collection of a record.
@@ -146,10 +148,60 @@ class SyncImageMedia
      */
     private function updateCurrent(Model&ImageMediaOwner $owner, string $collection, array $ref): bool
     {
-        // Transitional(legacy-images): drop the import fallback once nothing is pending.
-        $media = $owner->getFirstMedia($collection) ?? $this->legacyImporter->importCollection($owner, $collection);
+        $media = $owner->getFirstMedia($collection) ?? $this->importLegacy($owner, $collection);
 
-        return $media !== null && $this->applyProperties($media, $ref);
+        if ($media === null) {
+            // Not a media change: refreshing the cache now would clear the legacy URL column.
+            $this->updateLegacyColumns($owner, $collection, $ref);
+
+            return false;
+        }
+
+        return $this->applyProperties($media, $ref);
+    }
+
+    /**
+     * Transitional(legacy-images): drop with updateLegacyColumns() once nothing is pending.
+     * An undecodable legacy file must not make the whole record unsaveable.
+     */
+    private function importLegacy(Model&ImageMediaOwner $owner, string $collection): ?Media
+    {
+        try {
+            return $this->legacyImporter->importCollection($owner, $collection);
+        } catch (Throwable $exception) {
+            Log::warning('Legacy image import failed on save', [
+                'model' => $owner->getMorphClass(),
+                'id' => $owner->getKey(),
+                'collection' => $collection,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * An image that cannot be imported (foreign, missing, undecodable) keeps its edits in the legacy
+     * columns, which the importer reads once the file can be imported. Alt text has no column.
+     *
+     * @param  array<string, mixed>  $ref
+     */
+    private function updateLegacyColumns(Model&ImageMediaOwner $owner, string $collection, array $ref): void
+    {
+        $columns = $owner->legacyImageColumns()[$collection] ?? [];
+        $values = [];
+
+        foreach (['focal' => 'focal_point', 'author' => 'author'] as $column => $property) {
+            if (isset($columns[$column]) && array_key_exists($property, $ref)) {
+                $values[$columns[$column]] = is_string($ref[$property]) && $ref[$property] !== '' ? $ref[$property] : null;
+            }
+        }
+
+        $owner->forceFill($values);
+
+        if ($values !== [] && $owner->isDirty(array_keys($values))) {
+            $owner->save();
+        }
     }
 
     /**

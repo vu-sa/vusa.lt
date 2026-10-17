@@ -34,7 +34,12 @@ class StorePendingUploadRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                if (PendingUpload::query()->whereBelongsTo($this->user())->count() >= PendingUpload::MAX_PER_USER) {
+                $recent = PendingUpload::query()
+                    ->whereBelongsTo($this->user())
+                    ->where('created_at', '>=', now()->subHour())
+                    ->count();
+
+                if ($recent >= PendingUpload::MAX_PER_HOUR) {
                     $validator->errors()->add('image', __('files.pending_upload_limit'));
                 }
             },

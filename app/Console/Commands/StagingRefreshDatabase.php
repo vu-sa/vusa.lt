@@ -73,17 +73,22 @@ class StagingRefreshDatabase extends Command
                 return self::FAILURE;
             }
 
+            // Checked before the drop: refusing after the import would leave production data unscrubbed.
+            $mediaRootError = $mediaStore->rootError();
+
+            if ($mediaRootError !== null) {
+                $this->error('Refused to empty the staging media disk: '.$mediaRootError);
+
+                return self::FAILURE;
+            }
+
             $this->info('Restoring from '.$backup);
 
             if (! $this->dropAllTables() || ! $this->import($backup)) {
                 return self::FAILURE;
             }
 
-            if (! $mediaStore->wipe()) {
-                $this->error('Refused to empty the staging media disk: '.$mediaStore->rootError());
-
-                return self::FAILURE;
-            }
+            $mediaStore->wipe();
 
             $this->info('Emptied the staging media disk.');
         }

@@ -543,7 +543,7 @@ const descriptionLocale = ref<(typeof LOCALES)[number]>('lt');
 
 const hasExtras = () => hasDescription.value
   || form.additional_email.trim() !== ''
-  || !!form.additional_photo
+  || !!form.photo_media
   || form.use_original_duty_name
   || !!form.study_program_id
   || hasText(form.study_program_note);

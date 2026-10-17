@@ -84,3 +84,22 @@ test('padaliniai category lists only active institutions and reflects reactivati
         ->where('institutions', fn ($institutions) => collect($institutions)->pluck('id')->contains($inactive->id))
     );
 });
+
+test('an institution without media keeps its legacy image in public props', function (): void {
+    $tenant = Tenant::main();
+    $institution = Institution::factory()->create([
+        'tenant_id' => $tenant->id,
+        'is_active' => true,
+        'image_url' => '/uploads/institutions/sabas.jpg',
+        'image_focal_point' => '40% 60%',
+    ]);
+    $tenant->update(['primary_institution_id' => $institution->id]);
+
+    $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('institution.image_url', '/uploads/institutions/sabas.jpg')
+            ->missing('institution.media')
+            ->where('tenants', fn ($tenants) => collect($tenants)->firstWhere('id', $tenant->id)['primary_institution']['image_url'] === '/uploads/institutions/sabas.jpg')
+        );
+});

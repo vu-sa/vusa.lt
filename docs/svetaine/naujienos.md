@@ -63,9 +63,9 @@ Naujienos turinio blokai redaguojami taip pat kaip [puslapiuose](/svetaine/pusla
 
 Nepavykęs išsaugojimas palieka pakeitimus formoje. Jei kolega jau išsaugojo naujesnę versiją, pirmiausia verta ją peržiūrėti.
 
-Sėkmingą išsaugojimą patvirtina pranešimas **Išsaugota**, taip pat ir pakeitus tik nuotrauką, jos autorių ar fokusavimo tašką. Nuotraukos apdorojimas nesukelia netikro versijų neatitikimo: jei kitų pakeitimų nėra, galima išsaugoti dar kartą be įspėjimo.
-
 </ChangelogNote>
+
+Sėkmingą išsaugojimą patvirtina pranešimas **Išsaugota**, taip pat ir pakeitus tik nuotrauką, jos autorių ar fokusavimo tašką. Nuotraukos apdorojimas nesukelia netikro versijų neatitikimo: jei kitų pakeitimų nėra, galima išsaugoti dar kartą be įspėjimo.
 
 **Juodraštis** matomas tik sistemoje. Pasirinkus **Paskelbta** ir išsaugojus, naujiena tampa pasiekiama pagal viešą nuorodą. Jei paskelbimo laikas ateityje, paieškoje ir naujienų sąrašuose ji pasirodys nuo pasirinkto laiko; pati nuoroda jau veikia.
 

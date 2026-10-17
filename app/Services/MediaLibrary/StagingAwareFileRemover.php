@@ -3,15 +3,20 @@
 namespace App\Services\MediaLibrary;
 
 use App\Support\StagingProtection;
+use Illuminate\Support\Facades\DB;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\MediaLibrary\Support\FileRemover\DefaultFileRemover;
 
 class StagingAwareFileRemover extends DefaultFileRemover
 {
+    /**
+     * Waits for commit: a rolled-back delete (e.g. the self-lockout guard) restores the row, and
+     * its files must still be there.
+     */
     public function removeAllFiles(Media $media): void
     {
         if (StagingProtection::diskIsWritable($media->disk) && StagingProtection::diskIsWritable($media->conversions_disk)) {
-            parent::removeAllFiles($media);
+            DB::afterCommit(fn () => parent::removeAllFiles($media));
         }
     }
 

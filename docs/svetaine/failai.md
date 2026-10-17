@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Failai
 area: files
 models: [File]
-last_reviewed: 2026-10-08
+last_reviewed: 2026-10-17
 tests:
   - tests/Feature/Admin/Resources/FilesControllerTest.php
   - tests/Feature/Api/Admin/FileApiControllerTest.php
@@ -49,18 +49,18 @@ Kad skirtingų padalinių failai nesusimaišytų ir nebūtų atsitiktinai perra�
 
 ### Formų nuotraukos {#formu-nuotraukos}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Nuotraukos priklauso įrašui">
+<ChangelogNote version="v3.1" date="2026-10-17" title="Nuotraukos priklauso įrašui">
 
 Formose įkeltos nuotraukos saugomos prie įrašo, o svetainė kiekvienam ekranui parenka tinkamo dydžio versiją.
 
 </ChangelogNote>
 
-- Nuotrauka formoje įkeliama iš karto, bet įrašui priskiriama tik paspaudus **Išsaugoti**. Neišsaugotos nuotraukos po mėnesio ištrinamos.
+- Nuotrauka formoje įkeliama iš karto, bet įrašui priskiriama tik paspaudus **Išsaugoti**. Neišsaugotos nuotraukos po mėnesio ištrinamos. Per valandą vienas žmogus gali įkelti iki 50 nuotraukų.
 - Priskirti nuotrauką gali tas, kas gali redaguoti įrašą: naujienos nuotrauką – naujienos redaktorius, nario nuotrauką – pats narys arba narius tvarkantis koordinatorius. Kito žmogaus įkeltos, dar neišsaugotos nuotraukos panaudoti negalima.
 - Įkelta nuotrauka sumažinama iki 2400 px ilgesniosios kraštinės ir išsaugoma WebP formatu. Papildomai sukuriamos 400, 900 ir 1600 px pločio versijos – svetainė jas parenka pagal ekraną.
 - Fokuso taškas, nuotraukos autorius ir aprašas saugomi kartu su nuotrauka, todėl pakeitus nuotrauką jie nepasimeta kitame įraše.
 - Ta pati nuotrauka gali būti naudojama keliuose įrašuose tik kaip kopija – pvz., kuriant naujienos vertimą jos nuotrauka nukopijuojama.
-- Senosios nuotraukos iš bendrų aplankų (`news`, `contacts`, `banners`, `institutions`) perkeltos prie įrašų. Pačius senus failus galima tvarkyti tik po to, kai patikrinama, kad jų niekas nebenaudoja.
+- Senosios nuotraukos iš bendrų aplankų (`news`, `contacts`, `banners`, `institutions`) po atnaujinimo palaipsniui nukopijuojamos prie įrašų; kol tai vyksta, rodoma senoji nuotrauka. Nuotraukos iš kitų svetainių ir nebeegzistuojantys failai lieka kaip buvę – jų fokuso tašką ir autorių vis tiek galima keisti. Pačius senus failus galima tvarkyti tik po to, kai patikrinama, kad jų niekas nebenaudoja.
 
 ### Įkėlimų apdorojimas {#ikelimas}
 

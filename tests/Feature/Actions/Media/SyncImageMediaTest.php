@@ -11,6 +11,7 @@ use App\Support\Media\ImageData;
 use App\Support\Media\LegacyImageUrl;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -50,6 +51,19 @@ test('a new image replaces the previous one', function (): void {
 
     expect($this->banner->refresh()->getMedia('image')->pluck('id')->all())->toBe([$second->id])
         ->and(Media::query()->find($first->id))->toBeNull();
+});
+
+test('a rolled-back replacement keeps the previous image\'s files', function (): void {
+    $first = stageImage($this->admin);
+    app(SyncImageMedia::class)->execute($this->banner, 'image', ['id' => $first->id], $this->admin);
+    $path = $first->refresh()->getPathRelativeToRoot();
+
+    DB::beginTransaction();
+    app(SyncImageMedia::class)->execute($this->banner, 'image', ['id' => stageImage($this->admin, 'new.png')->id], $this->admin);
+    DB::rollBack();
+
+    expect($this->banner->refresh()->getFirstMedia('image')->id)->toBe($first->id);
+    Storage::disk('spatieMediaLibrary')->assertExists($path);
 });
 
 test('another person\'s staged upload cannot be claimed', function (): void {
@@ -140,4 +154,33 @@ test('saving an unchanged bare news image imports it instead of removing it', fu
     } finally {
         File::deleteDirectory($uploads);
     }
+});
+
+test('an undecodable legacy file leaves the record saveable and its url in place', function (): void {
+    $uploads = sys_get_temp_dir().'/legacy-broken-'.Str::random(8);
+    File::ensureDirectoryExists($uploads.'/banners');
+    File::put($uploads.'/banners/broken.png', 'not an image');
+    app()->instance(LegacyImageResolver::class, new LegacyImageResolver($uploads, $uploads));
+    try {
+        $this->banner->update(['image_url' => '/uploads/banners/broken.png']);
+
+        app(SyncImageMedia::class)->execute($this->banner, 'image', ['id' => null, 'alt' => 'Partneris'], $this->admin);
+
+        expect($this->banner->refresh()->getMedia('image'))->toBeEmpty()
+            ->and($this->banner->image_url)->toBe('/uploads/banners/broken.png');
+    } finally {
+        File::deleteDirectory($uploads);
+    }
+});
+
+test('a legacy image that cannot be imported keeps its edits in the legacy columns', function (): void {
+    $news = News::factory()->for($this->tenant)->create(['image' => 'https://example.com/photo.jpg', 'image_author' => 'Jonas']);
+
+    app(SyncImageMedia::class)->execute($news, 'image', ['id' => null, 'author' => 'Ona'], $this->admin);
+
+    $news->refresh();
+
+    expect($news->getMedia('image'))->toBeEmpty()
+        ->and($news->image)->toBe('https://example.com/photo.jpg')
+        ->and($news->imageData('image')['author'])->toBe('Ona');
 });

@@ -40,7 +40,8 @@ class PendingUpload extends Model implements ImageMediaOwner
 
     public const string COLLECTION = 'upload';
 
-    public const int MAX_PER_USER = 50;
+    /** Hourly, not lifetime: superseded uploads (re-crops, re-picks) stay until pruned. */
+    public const int MAX_PER_HOUR = 50;
 
     /** Outlives the 30-day content editor drafts that may still reference an upload. */
     public const int TTL_DAYS = 32;

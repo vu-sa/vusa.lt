@@ -189,5 +189,5 @@ return [
         'success' => 'Image optimized successfully',
         'error' => 'Failed to optimize image',
     ],
-    'pending_upload_limit' => 'You have too many unsaved photos. Save or discard your open forms and try again.',
+    'pending_upload_limit' => 'You have uploaded too many photos in the last hour. Wait a while and try again.',
 ];

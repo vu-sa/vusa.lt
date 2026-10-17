@@ -26,7 +26,10 @@ final class ImageConversions
     public static function register(HasMedia $model): void
     {
         foreach (self::WIDTHS as $name => $width) {
+            // The server's cwebp optimizer would re-encode this at -q 90: bigger and slower. Called
+            // first: the forwarded manipulations below are typed as ImageDriver, not Conversion.
             $model->addMediaConversion($name)
+                ->nonOptimized()
                 ->fit(Fit::Max, $width, 10000)
                 ->format('webp')
                 ->quality(80);

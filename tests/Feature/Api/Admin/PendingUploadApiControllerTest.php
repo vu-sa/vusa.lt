@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Media\AddImageMedia;
 use App\Models\PendingUpload;
 use App\Models\Tenant;
 use App\Support\Media\ImageConversions;
@@ -45,15 +46,37 @@ test('only images are accepted', function (): void {
     ])->assertJsonValidationErrors('image');
 });
 
-test('a user cannot hoard unsaved uploads', function (): void {
+test('a user cannot flood uploads within an hour', function (): void {
     Storage::fake('spatieMediaLibrary');
-    PendingUpload::query()->insert(collect(range(1, PendingUpload::MAX_PER_USER))
+    PendingUpload::query()->insert(collect(range(1, PendingUpload::MAX_PER_HOUR))
         ->map(fn () => ['id' => (string) Str::ulid(), 'user_id' => $this->user->id, 'created_at' => now(), 'updated_at' => now()])
         ->all());
 
     asUser($this->user)->postJson(route('api.v1.admin.pendingUploads.store'), [
         'image' => UploadedFile::fake()->image('photo.jpg'),
     ])->assertJsonValidationErrors(['image' => __('files.pending_upload_limit')]);
+});
+
+test('older unclaimed uploads do not count towards the limit', function (): void {
+    Storage::fake('spatieMediaLibrary');
+    PendingUpload::query()->insert(collect(range(1, PendingUpload::MAX_PER_HOUR))
+        ->map(fn () => ['id' => (string) Str::ulid(), 'user_id' => $this->user->id, 'created_at' => now()->subHours(2), 'updated_at' => now()])
+        ->all());
+
+    asUser($this->user)->postJson(route('api.v1.admin.pendingUploads.store'), [
+        'image' => UploadedFile::fake()->image('photo.jpg'),
+    ])->assertCreated();
+});
+
+test('a failed upload leaves no empty staged row', function (): void {
+    Storage::fake('spatieMediaLibrary');
+    $this->mock(AddImageMedia::class)->shouldReceive('execute')->andThrow(new RuntimeException('decode failed'));
+
+    asUser($this->user)->postJson(route('api.v1.admin.pendingUploads.store'), [
+        'image' => UploadedFile::fake()->image('photo.jpg'),
+    ])->assertServerError();
+
+    expect(PendingUpload::query()->whereBelongsTo($this->user)->exists())->toBeFalse();
 });
 
 test('on staging uploads go to staging\'s own media disk while shared folders stay read-only', function (): void {

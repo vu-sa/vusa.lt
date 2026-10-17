@@ -108,6 +108,14 @@ export function useContentEditor<T extends Record<string, unknown>>(kind: Conten
       for (const field of ['featured_image_media', 'meta_description', 'short', 'image_media']) {
         if (field in copy) copy[field] ??= '';
       }
+      // Like content_version on the server: conversions finishing must not read as an edit.
+      for (const field of ['featured_image_media', 'image_media']) {
+        const image = copy[field];
+        if (image && typeof image === 'object') {
+          const { id, focal_point, alt, author } = image as Record<string, unknown>;
+          copy[field] = { id, focal_point, alt, author };
+        }
+      }
       if ('highlights' in copy) copy.highlights ??= [];
       if (copy.content) copy.content.parts = copy.content.parts.map(part => ({ id: part.id, type: part.type, json_content: part.json_content, options: part.options }));
       const ordered = (item: unknown): unknown => Array.isArray(item)

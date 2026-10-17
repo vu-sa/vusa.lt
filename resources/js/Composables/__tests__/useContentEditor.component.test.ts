@@ -276,6 +276,14 @@ describe('content recovery and saves', () => {
     expect(active.form.content_version).toBe('paired');
   });
 
+  it('acknowledges a language link after the image conversions finished', async () => {
+    const image = { id: 9, url: '/uploads/media/9/photo.jpg', thumb: '/uploads/media/9/photo.jpg', srcset: null, focal_point: null, alt: null, author: 'Ona' };
+    const active = session({ id: 1, title: 'Original', content_version: 'old', other_lang_id: null, image_media: image, content: { parts: [] } });
+    await flushPromises();
+    active.editor.acknowledgePairing({ id: 1, title: 'Original', content_version: 'paired', other_lang_id: 2, image_media: { ...image, thumb: '/uploads/media/9/conversions/photo-thumb.webp', srcset: '/uploads/media/9/conversions/photo-medium.webp 800w' }, content: { parts: [] } });
+    expect(active.form.content_version).toBe('paired');
+  });
+
   it('updates an already-created record recovered through its creation form', async () => {
     storage.mockResolvedValue({ snapshot: { id: 7, title: 'Recovered', content_version: 'saved', content: { parts: [] } }, updated_at: new Date().toISOString() });
     const active = session({ id: undefined, title: '', content_version: undefined, content: { parts: [] } });

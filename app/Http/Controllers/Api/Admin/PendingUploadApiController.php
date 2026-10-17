@@ -9,6 +9,7 @@ use App\Models\PendingUpload;
 use App\Support\Media\ImageData;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 
 class PendingUploadApiController extends ApiController
 {
@@ -17,8 +18,12 @@ class PendingUploadApiController extends ApiController
         /** @var UploadedFile $file */
         $file = $request->file('image');
 
-        $upload = PendingUpload::create(['user_id' => $request->user()->id]);
+        $media = DB::transaction(fn () => $addImage->execute(
+            PendingUpload::create(['user_id' => $request->user()->id]),
+            $file,
+            PendingUpload::COLLECTION,
+        ));
 
-        return $this->jsonCreated(ImageData::fromMedia($addImage->execute($upload, $file, PendingUpload::COLLECTION)));
+        return $this->jsonCreated(ImageData::fromMedia($media));
     }
 }

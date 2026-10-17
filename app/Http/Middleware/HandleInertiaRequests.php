@@ -223,7 +223,7 @@ class HandleInertiaRequests extends Middleware
         // Institution saves forget this key too, since the primary institution is cached with it.
         return Cache::rememberForever(self::TENANTS_CACHE_KEY,
             fn () => Tenant::orderBy('shortname_vu')
-                ->with(['primary_institution' => fn ($query) => $query->select('id', 'short_name')->with('media')])
+                ->with(['primary_institution' => fn ($query) => $query->select('id', 'short_name', 'image_url', 'image_focal_point')->with('media')])
                 ->get(['id', 'alias', 'shortname', 'fullname', 'type', 'primary_institution_id'])
                 ->each(function (Tenant $tenant): void {
                     $institution = $tenant->primary_institution;
@@ -232,7 +232,8 @@ class HandleInertiaRequests extends Middleware
                         return;
                     }
 
-                    // The navigation reads these two keys; they come from the image's media now.
+                    // The navigation reads these two keys; they come from the image's media, or the
+                    // selected legacy columns until it has one.
                     $image = $institution->imageData('image');
                     $institution->setAttribute('image_url', $image['thumb'] ?? null);
                     $institution->setAttribute('image_focal_point', $image['focal_point'] ?? null);
