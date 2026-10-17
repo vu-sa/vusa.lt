@@ -16,6 +16,16 @@ return [
     'duplicate_use_profile' => 'Use this profile',
     'duplicate_open_profile' => 'Open',
     'duplicate_contact_admins' => 'Contact that unit\'s administrators',
+    'merge' => [
+        'name_mismatch' => 'Only records of the same person can be merged, and the name of :name does not match.',
+        'name_changed' => 'The name of :name has already been changed, so these records cannot be merged.',
+        'direct_roles' => ':name has a directly assigned role. Remove it before merging.',
+        'outside_scope' => 'Only administrators covering every unit of both records can merge them.',
+        'action' => 'Merge',
+        'login_email' => 'Sign-in email',
+        'login_email_hint' => 'The other email addresses will no longer sign in.',
+        'permanent' => 'The merged records will be deleted permanently.',
+    ],
     'no_tenant' => 'No unit',
     'filters' => [
         'duty_timing' => 'Duty timing',

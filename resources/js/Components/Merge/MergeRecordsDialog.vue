@@ -18,6 +18,7 @@
               v-for="record in records"
               :key="String(record.id)"
               :variant="String(targetId) === String(record.id) ? 'secondary' : 'outline'"
+              :disabled="!isKeepable(record)"
               class="h-auto justify-start px-3 py-2 text-left"
               @click="targetId = record.id"
             >
@@ -56,6 +57,8 @@
         <p v-if="targetId" class="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
           {{ $t('Bus paliktas pasirinktas įrašas, o :count kiti įrašai bus sujungti į jį.', { count: sourceIds.length }) }}
         </p>
+
+        <slot v-if="targetId" name="details" :target-id />
       </div>
 
       <DialogFooter>
@@ -99,6 +102,10 @@ const props = defineProps<{
   submitUrl: string;
   targetField: string;
   sourceField: string;
+  /** Ids that may be kept; every record when omitted. */
+  keepableIds?: (string | number)[];
+  /** Sent along with the ids, e.g. a choice made in the details slot. */
+  extraPayload?: Record<string, unknown>;
 }>();
 
 const emit = defineEmits<{
@@ -117,6 +124,9 @@ const sourceIds = computed(() => props.records
   .map(record => record.id)
   .filter(id => String(id) !== String(targetId.value)));
 
+const isKeepable = (record: MergeRecord) =>
+  !props.keepableIds || props.keepableIds.some(id => String(id) === String(record.id));
+
 watch(() => props.open, (open) => {
   if (!open) {
     return;
@@ -124,8 +134,10 @@ watch(() => props.open, (open) => {
 
   query.value = '';
   candidates.value = [];
-  targetId.value = null;
-});
+  // With a single possible target there is nothing to choose.
+  const keepable = props.records.filter(isKeepable);
+  targetId.value = props.keepableIds && keepable.length === 1 ? (keepable[0]?.id ?? null) : null;
+}, { immediate: true });
 
 const search = () => {
   clearTimeout(searchTimeout);
@@ -163,6 +175,7 @@ const submit = () => {
 
   isSubmitting.value = true;
   router.post(props.submitUrl, {
+    ...props.extraPayload,
     [props.targetField]: targetId.value,
     [props.sourceField]: sourceIds.value,
   }, {

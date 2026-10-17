@@ -359,6 +359,15 @@ describe('name normalisation', function (): void {
             ->not->toBe(UserSimilarityFinder::normaliseName('Jonas Petraitis'));
     });
 
+    test('names match the way the merge guard needs them to', function (string $first, string $second, bool $matches): void {
+        expect(UserSimilarityFinder::namesMatch($first, $second))->toBe($matches);
+    })->with([
+        'reordered, no diacritics' => ['Jonas Čiurlionis', 'Ciurlionis Jonas', true],
+        'dashed surname' => ['Ona Pavardė-Pavardienė', 'Ona Pavardė Pavardienė', true],
+        'middle name' => ['Justinas Petras Lisauskas', 'Justinas Lisauskas', true],
+        'one shared part' => ['Justinas Lisauskas', 'Justinas Petraitis', false],
+    ]);
+
     test('masking leaves the domain readable', function (): void {
         expect(UserSimilarityFinder::maskEmail('jonas.jonaitis@stud.vu.lt'))->toBe('j***@stud.vu.lt')
             ->and(UserSimilarityFinder::maskEmail(null))->toBeEmpty();

@@ -151,7 +151,7 @@ return [
     ],
 
     'user' => [
-        'merged' => 'Kontaktai sėkmingai sujungti!',
+        'merged' => 'Nariai sėkmingai sujungti.',
         'password_created' => 'Slaptažodis sėkmingai sukurtas!',
         'password_deleted' => 'Slaptažodis sėkmingai ištrintas!',
     ],

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\BuildUserIndexQuery;
 use App\Actions\DeleteUserPassword;
+use App\Actions\FindMergeableUserDuplicates;
 use App\Actions\GenerateUserPassword;
 use App\Actions\Media\SyncImageMedia;
 use App\Actions\MergeUsers;
@@ -221,6 +222,7 @@ class UserController extends AdminController
                 'profile_photo_media' => $user->imageData('profile_photo'),
             ],
             'canUpdateIdentity' => $actor->can('updateIdentity', $user),
+            'duplicates' => Inertia::defer(fn () => app(FindMergeableUserDuplicates::class)->execute($actor, $user)),
         ]);
     }
 
@@ -320,16 +322,20 @@ class UserController extends AdminController
     }
 
     /**
-     * Merge two user accounts.
+     * Merge duplicate user accounts into one.
      */
-    public function mergeUsers(MergeUsersRequest $request)
+    public function mergeUsers(MergeUsersRequest $request): RedirectResponse
     {
-        $keptUser = User::query()->find($request->kept_user_id);
-        $sources = User::query()->whereIn('id', $request->validated('source_user_ids'))->get();
+        $keptUser = $request->keptUser();
 
-        MergeUsers::execute($keptUser, $sources);
+        MergeUsers::execute($keptUser, $request->sourceUsers(), $request->validated('login_email'), $request->user());
 
-        return back()->with('success', __('messages.user.merged'));
+        // Merging from a duplicate's own edit page would send "back" to a deleted record.
+        $redirect = $request->validated('redirect_to_kept')
+            ? to_route('users.edit', $keptUser)
+            : back();
+
+        return $redirect->with('success', __('messages.user.merged'));
     }
 
     /**

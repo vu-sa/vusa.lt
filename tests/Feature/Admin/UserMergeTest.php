@@ -2,15 +2,22 @@
 
 use App\Actions\CollapseOverlappingDutiables;
 use App\Actions\Media\AddImageMedia;
+use App\Models\Approval;
+use App\Models\Comment;
+use App\Models\CommentReaction;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
+use App\Models\Problem;
 use App\Models\Reservation;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\ModelAuthorizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Activitylog\Models\Activity;
 
 pest()->use(RefreshDatabase::class);
 
@@ -21,53 +28,142 @@ beforeEach(function (): void {
     $this->institution = $this->admin->duties()->first()->institution;
 });
 
-describe('unauthorized access', function (): void {
+/** Duplicates carry the same name; the merge refuses anything else. */
+function makeNamedUser(Tenant $tenant, string $name = 'Jonas Jonaitis'): User
+{
+    $user = makeUser($tenant);
+    $user->forceFill(['name' => $name])->save();
+
+    return $user;
+}
+
+function mergeUsers(User $actor, User $kept, User|array $sources, ?string $loginEmail = null, array $extra = [])
+{
+    $sources = is_array($sources) ? $sources : [$sources];
+
+    return asUser($actor)->post(route('users.mergeUsers'), [
+        'kept_user_id' => $kept->id,
+        'source_user_ids' => collect($sources)->pluck('id')->all(),
+        'login_email' => $loginEmail ?? $kept->email,
+        ...$extra,
+    ]);
+}
+
+describe('authorization', function (): void {
     test('cannot merge without users update + delete permissions', function (): void {
         $outsider = makeUser($this->tenant);
-        $kept = makeUser($this->tenant);
-        $merged = makeUser($this->tenant);
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser($this->tenant);
 
-        $response = asUser($outsider)->post(route('users.mergeUsers'), [
-            'kept_user_id' => $kept->id,
-            'merged_user_id' => $merged->id,
-        ]);
+        $response = mergeUsers($outsider, $kept, $merged);
 
         expect($response->status())->toBe(403)
             ->and(User::find($merged->id))->not->toBeNull();
     });
+
+    test('cannot merge a record that belongs to a unit the admin does not manage', function (): void {
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser(Tenant::query()->whereKeyNot($this->tenant->id)->first());
+
+        expect(mergeUsers($this->admin, $kept, $merged)->status())->toBe(403)
+            ->and(User::find($merged->id))->not->toBeNull();
+    });
 });
 
-describe('merging dutiables', function (): void {
-    test('rejects duplicate source user ids without deleting the source', function (): void {
-        $kept = makeUser($this->tenant);
-        $source = makeUser($this->tenant);
+describe('merge guard', function (): void {
+    test('refuses records whose names do not match', function (): void {
+        $kept = makeNamedUser($this->tenant, 'Jonas Jonaitis');
+        $merged = makeNamedUser($this->tenant, 'Petras Petraitis');
 
-        asUser($this->admin)->post(route('users.mergeUsers'), [
-            'kept_user_id' => $kept->id,
-            'source_user_ids' => [$source->id, $source->id],
-        ])->assertSessionHasErrors('source_user_ids.1');
+        mergeUsers($this->admin, $kept, $merged)->assertSessionHasErrors('source_user_ids.0');
+
+        expect(User::find($merged->id))->not->toBeNull();
+    });
+
+    test('accepts the same name in another order, with diacritics or a middle name', function (string $otherName): void {
+        $kept = makeNamedUser($this->tenant, 'Jonas Čiurlionis');
+        $merged = makeNamedUser($this->tenant, $otherName);
+
+        mergeUsers($this->admin, $kept, $merged)->assertSessionHasNoErrors();
+
+        expect(User::withTrashed()->find($merged->id))->toBeNull();
+    })->with(['Ciurlionis Jonas', 'Jonas Petras Čiurlionis']);
+
+    test('refuses when either record has been renamed by its owner', function (string $renamed): void {
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser($this->tenant);
+        ${$renamed}->forceFill(['name_was_changed' => true])->save();
+
+        mergeUsers($this->admin, $kept, $merged)->assertSessionHasErrors('source_user_ids.0');
+
+        expect(User::find($merged->id))->not->toBeNull();
+    })->with(['kept', 'merged']);
+
+    test('refuses a source with a directly assigned role', function (): void {
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser($this->tenant);
+        $merged->assignRole(Role::query()->where('name', 'Komunikacijos koordinatorius')->firstOrFail());
+
+        // Holding a direct role puts the record beyond a unit admin, so use the central role.
+        $centralAdmin = makeTenantUserWithRole('Centrinio biuro komunikacijos koordinatorius', $this->tenant);
+
+        mergeUsers($centralAdmin, $kept, $merged)->assertSessionHasErrors('source_user_ids.0');
+
+        expect(User::find($merged->id))->not->toBeNull();
+    });
+
+    test('rejects duplicate source user ids without deleting the source', function (): void {
+        $kept = makeNamedUser($this->tenant);
+        $source = makeNamedUser($this->tenant);
+
+        mergeUsers($this->admin, $kept, [$source, $source])->assertSessionHasErrors('source_user_ids.1');
 
         expect($source->fresh()->trashed())->toBeFalse();
     });
 
+    test('rejects merging a user with themselves', function (): void {
+        $kept = makeNamedUser($this->tenant);
+
+        mergeUsers($this->admin, $kept, $kept)->assertSessionHasErrors('source_user_ids.0');
+    });
+});
+
+describe('login email', function (): void {
+    test('the kept record signs in with the chosen address of a merged record', function (): void {
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser($this->tenant);
+        $mergedEmail = $merged->email;
+
+        mergeUsers($this->admin, $kept, $merged, $mergedEmail)->assertSessionHasNoErrors();
+
+        expect($kept->fresh()->email)->toBe($mergedEmail)
+            ->and(User::withTrashed()->find($merged->id))->toBeNull();
+    });
+
+    test('rejects an address that belongs to none of the merged records', function (): void {
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser($this->tenant);
+
+        mergeUsers($this->admin, $kept, $merged, 'someone.else@vusa.lt')->assertSessionHasErrors('login_email');
+    });
+});
+
+describe('merging dutiables', function (): void {
     test('merges multiple source users into one kept user', function (): void {
-        $kept = makeUser($this->tenant);
-        $firstSource = makeUser($this->tenant);
-        $secondSource = makeUser($this->tenant);
+        $kept = makeNamedUser($this->tenant);
+        $firstSource = makeNamedUser($this->tenant);
+        $secondSource = makeNamedUser($this->tenant);
 
-        asUser($this->admin)->post(route('users.mergeUsers'), [
-            'kept_user_id' => $kept->id,
-            'source_user_ids' => [$firstSource->id, $secondSource->id],
-        ])->assertRedirect();
+        mergeUsers($this->admin, $kept, [$firstSource, $secondSource])->assertRedirect();
 
-        expect(User::find($firstSource->id))->toBeNull()
-            ->and(User::find($secondSource->id))->toBeNull()
+        expect(User::withTrashed()->find($firstSource->id))->toBeNull()
+            ->and(User::withTrashed()->find($secondSource->id))->toBeNull()
             ->and(User::find($kept->id))->not->toBeNull();
     });
 
-    test('repoints the merged user assignments onto the kept user and soft-deletes the source', function (): void {
-        $kept = makeUser($this->tenant);
-        $merged = makeUser($this->tenant);
+    test('repoints the merged user assignments onto the kept user', function (): void {
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser($this->tenant);
 
         $mergedDuty = Duty::factory()->create([
             'name' => ['lt' => 'Pirmininkas', 'en' => 'Chair'],
@@ -83,20 +179,15 @@ describe('merging dutiables', function (): void {
             'end_date' => null,
         ]);
 
-        asUser($this->admin)->post(route('users.mergeUsers'), [
-            'kept_user_id' => $kept->id,
-            'merged_user_id' => $merged->id,
-        ])->assertRedirect();
+        mergeUsers($this->admin, $kept, $merged)->assertRedirect();
 
         expect(Dutiable::where('dutiable_id', $merged->id)->count())->toBe(0)
-            ->and(Dutiable::where('dutiable_id', $kept->id)->where('duty_id', $mergedDuty->id)->count())->toBe(2)
-            ->and(User::withTrashed()->find($merged->id))->not->toBeNull()
-            ->and(User::find($merged->id))->toBeNull();
+            ->and(Dutiable::where('dutiable_id', $kept->id)->where('duty_id', $mergedDuty->id)->count())->toBe(2);
     });
 
     test('collapses overlapping assignments onto the kept user when both shared a duty', function (): void {
-        $kept = makeUser($this->tenant);
-        $merged = makeUser($this->tenant);
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser($this->tenant);
 
         $sharedDuty = Duty::factory()->create([
             'name' => ['lt' => 'Pirmininkas', 'en' => 'Chair'],
@@ -118,10 +209,7 @@ describe('merging dutiables', function (): void {
             'additional_email' => 'kept@vusa.lt',
         ]);
 
-        asUser($this->admin)->post(route('users.mergeUsers'), [
-            'kept_user_id' => $kept->id,
-            'merged_user_id' => $merged->id,
-        ]);
+        mergeUsers($this->admin, $kept, $merged);
 
         $rows = Dutiable::where('duty_id', $sharedDuty->id)->where('dutiable_id', $kept->id)->get();
 
@@ -134,18 +222,15 @@ describe('merging dutiables', function (): void {
 
     test('a collapsed assignment keeps the photo only the merged row had', function (): void {
         Storage::fake('spatieMediaLibrary');
-        $kept = makeUser($this->tenant);
-        $merged = makeUser($this->tenant);
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser($this->tenant);
         $sharedDuty = Duty::factory()->create(['institution_id' => $this->institution->id]);
 
         Dutiable::factory()->forDuty($sharedDuty)->forUser($kept)->create(['start_date' => '2024-01-01', 'end_date' => null]);
         $mergedRow = Dutiable::factory()->forDuty($sharedDuty)->forUser($merged)->create(['start_date' => '2024-06-01', 'end_date' => '2024-12-01']);
         $photo = app(AddImageMedia::class)->execute($mergedRow, UploadedFile::fake()->image('seat.png'), 'photo', properties: ['focal_point' => '20% 30%']);
 
-        asUser($this->admin)->post(route('users.mergeUsers'), [
-            'kept_user_id' => $kept->id,
-            'merged_user_id' => $merged->id,
-        ]);
+        mergeUsers($this->admin, $kept, $merged)->assertSessionHasNoErrors();
 
         $survivor = Dutiable::where('duty_id', $sharedDuty->id)->where('dutiable_id', $kept->id)->sole();
 
@@ -205,8 +290,8 @@ describe('merging dutiables', function (): void {
     });
 
     test('does not collapse two genuinely separate stints on the same duty', function (): void {
-        $kept = makeUser($this->tenant);
-        $merged = makeUser($this->tenant);
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser($this->tenant);
 
         $sharedDuty = Duty::factory()->create([
             'name' => ['lt' => 'Pirmininkas', 'en' => 'Chair'],
@@ -222,17 +307,14 @@ describe('merging dutiables', function (): void {
             'end_date' => '2023-12-31',
         ]);
 
-        asUser($this->admin)->post(route('users.mergeUsers'), [
-            'kept_user_id' => $kept->id,
-            'merged_user_id' => $merged->id,
-        ]);
+        mergeUsers($this->admin, $kept, $merged);
 
         expect(Dutiable::where('duty_id', $sharedDuty->id)->where('dutiable_id', $kept->id)->count())->toBe(2);
     });
 
     test('keeps owning-tenant and cross-tenant rows for the same duty as separate assignments', function (): void {
-        $kept = makeUser($this->tenant);
-        $merged = makeUser($this->tenant);
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser($this->tenant);
 
         $sharedDuty = Duty::factory()->create([
             'name' => ['lt' => 'Pirmininkas', 'en' => 'Chair'],
@@ -253,10 +335,7 @@ describe('merging dutiables', function (): void {
             'end_date' => null,
         ]);
 
-        asUser($this->admin)->post(route('users.mergeUsers'), [
-            'kept_user_id' => $kept->id,
-            'merged_user_id' => $merged->id,
-        ]);
+        mergeUsers($this->admin, $kept, $merged);
 
         $rows = Dutiable::where('duty_id', $sharedDuty->id)
             ->where('dutiable_id', $kept->id)
@@ -266,12 +345,29 @@ describe('merging dutiables', function (): void {
         expect($rows)->toHaveCount(2)
             ->and($rows->pluck('tenant_id')->unique()->values()->all())->toBe([null, $this->tenant->id]);
     });
+
+    test('the kept user holds the merged duties permissions straight away', function (): void {
+        $kept = makeNamedUser($this->tenant);
+        // Nothing for the kept record to take over, so no save of it clears the cache by accident.
+        $kept->forceFill(['phone' => '+37060000000', 'profile_photo_path' => '/p.jpg', 'profile_photo_focal_point' => '50% 50%'])->save();
+        $merged = makeNamedUser($this->tenant);
+        $duty = Duty::factory()->create(['institution_id' => $this->institution->id]);
+        $duty->assignRole('Komunikacijos koordinatorius');
+        Dutiable::factory()->forDuty($duty)->forUser($merged)->create(['start_date' => now()->subDay(), 'end_date' => null]);
+
+        // Warm the kept user's cached duties before the merge.
+        expect(app(ModelAuthorizer::class)->allows($kept, 'news.update.padalinys'))->toBeFalse();
+
+        mergeUsers($this->admin, $kept, $merged)->assertSessionHasNoErrors();
+
+        expect(app(ModelAuthorizer::class)->allows($kept->fresh(), 'news.update.padalinys'))->toBeTrue();
+    });
 });
 
 describe('transferring related records', function (): void {
     test('repoints reservations onto the kept user, dropping a duplicate the kept user already holds', function (): void {
-        $kept = makeUser($this->tenant);
-        $merged = makeUser($this->tenant);
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser($this->tenant);
 
         $sharedReservation = Reservation::factory()->create();
         $onlyMerged = Reservation::factory()->create();
@@ -281,43 +377,117 @@ describe('transferring related records', function (): void {
         $kept->reservations()->attach($sharedReservation->id);
         $merged->reservations()->attach([$sharedReservation->id, $onlyMerged->id]);
 
-        asUser($this->admin)->post(route('users.mergeUsers'), [
-            'kept_user_id' => $kept->id,
-            'merged_user_id' => $merged->id,
-        ]);
+        mergeUsers($this->admin, $kept, $merged);
 
         $keptReservationIds = DB::table('reservation_user')->where('user_id', $kept->id)->pluck('reservation_id')->all();
 
         expect($keptReservationIds)->toHaveCount(2)
-            ->and($keptReservationIds)->toContain($sharedReservation->id, $onlyMerged->id)
-            ->and(DB::table('reservation_user')->where('user_id', $merged->id)->count())->toBe(0);
+            ->and($keptReservationIds)->toContain($sharedReservation->id, $onlyMerged->id);
+    });
+
+    test('moves authored records, approvals, problems and follows', function (): void {
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser($this->tenant);
+
+        $comment = Comment::factory()->for($this->institution, 'commentable')->create(['user_id' => $merged->id]);
+        $approval = Approval::factory()->approved()->create(['user_id' => $merged->id]);
+        $problem = Problem::factory()->create(['created_by' => $merged->id, 'responsible_user_id' => $merged->id]);
+        $merged->followedInstitutions()->attach($this->institution->id);
+        $kept->followedInstitutions()->attach($this->institution->id);
+
+        mergeUsers($this->admin, $kept, $merged)->assertSessionHasNoErrors();
+
+        expect($comment->fresh()->user_id)->toBe($kept->id)
+            ->and($approval->fresh()->user_id)->toBe($kept->id)
+            ->and($problem->fresh()->created_by)->toBe($kept->id)
+            ->and($problem->fresh()->responsible_user_id)->toBe($kept->id)
+            ->and(DB::table('institution_follows')->where('user_id', $kept->id)->count())->toBe(1);
+    });
+
+    test('keeps one reaction when both records reacted the same way, and rewrites mentions', function (): void {
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser($this->tenant);
+
+        $comment = Comment::factory()->for($this->institution, 'commentable')->create(['mentioned_user_ids' => [$merged->id]]);
+        CommentReaction::factory()->create(['comment_id' => $comment->id, 'user_id' => $kept->id, 'emoji' => '👍']);
+        CommentReaction::factory()->create(['comment_id' => $comment->id, 'user_id' => $merged->id, 'emoji' => '👍']);
+        CommentReaction::factory()->create(['comment_id' => $comment->id, 'user_id' => $merged->id, 'emoji' => '🎉']);
+
+        mergeUsers($this->admin, $kept, $merged)->assertSessionHasNoErrors();
+
+        expect(CommentReaction::query()->where('user_id', $kept->id)->pluck('emoji')->sort()->values()->all())->toBe(['🎉', '👍'])
+            ->and($comment->fresh()->mentioned_user_ids)->toBe([$kept->id]);
+    });
+
+    test('fills profile fields the kept record is missing', function (): void {
+        $kept = makeNamedUser($this->tenant);
+        $kept->forceFill(['phone' => null])->save();
+        $merged = makeNamedUser($this->tenant);
+        $merged->forceFill(['phone' => '+37060000000'])->save();
+
+        mergeUsers($this->admin, $kept, $merged)->assertSessionHasNoErrors();
+
+        expect($kept->fresh()->phone)->toBe('+37060000000');
     });
 });
 
 describe('after merging', function (): void {
-    test('the merged user is soft-deleted and can be restored', function (): void {
-        $kept = makeUser($this->tenant);
-        $merged = makeUser($this->tenant);
+    test('the merged record is deleted permanently and the merge is logged', function (): void {
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser($this->tenant);
 
-        asUser($this->admin)->post(route('users.mergeUsers'), [
-            'kept_user_id' => $kept->id,
-            'merged_user_id' => $merged->id,
-        ]);
+        mergeUsers($this->admin, $kept, $merged)->assertSessionHasNoErrors();
 
-        expect(User::find($merged->id))->toBeNull()
-            ->and(User::withTrashed()->find($merged->id))->not->toBeNull();
+        $activity = Activity::query()->where('event', 'users_merged')->sole();
 
-        User::withTrashed()->find($merged->id)->restore();
-
-        expect(User::find($merged->id))->not->toBeNull();
+        expect(User::withTrashed()->find($merged->id))->toBeNull()
+            ->and($activity->subject_id)->toBe($kept->id)
+            ->and($activity->causer_id)->toBe($this->admin->id)
+            ->and($activity->properties['merged'][0]['email'])->toBe($merged->email);
     });
 
-    test('rejects merging a user with themselves', function (): void {
-        $kept = makeUser($this->tenant);
+    test('can send the admin on to the kept record', function (): void {
+        $kept = makeNamedUser($this->tenant);
+        $merged = makeNamedUser($this->tenant);
 
-        asUser($this->admin)->post(route('users.mergeUsers'), [
-            'kept_user_id' => $kept->id,
-            'merged_user_id' => $kept->id,
-        ])->assertSessionHasErrors('merged_user_id');
+        mergeUsers($this->admin, $kept, $merged, extra: ['redirect_to_kept' => true])
+            ->assertRedirect(route('users.edit', $kept));
     });
+});
+
+describe('duplicates on the edit form', function (): void {
+    test('lists other records of the same name once the deferred prop loads', function (): void {
+        $user = makeNamedUser($this->tenant);
+        $duplicate = makeNamedUser($this->tenant);
+        makeNamedUser($this->tenant, 'Petras Petraitis');
+
+        asUser($this->admin)->get(route('users.edit', $user))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->missing('duplicates')
+                ->loadDeferredProps(fn ($page) => $page
+                    ->has('duplicates', 1)
+                    ->where('duplicates.0.id', $duplicate->id)
+                    ->where('duplicates.0.email', $duplicate->email)
+                    ->where('duplicates.0.keepable_ids', [$user->id, $duplicate->id])
+                    ->where('duplicates.0.blocked_reason', null)));
+    });
+
+    test('explains why a renamed or out-of-scope duplicate cannot be merged', function (bool $renamed): void {
+        $user = makeNamedUser($this->tenant);
+        $duplicate = $renamed
+            ? makeNamedUser($this->tenant)
+            : makeNamedUser(Tenant::query()->whereKeyNot($this->tenant->id)->first());
+
+        if ($renamed) {
+            $duplicate->forceFill(['name_was_changed' => true])->save();
+        }
+
+        asUser($this->admin)->get(route('users.edit', $user))
+            ->assertInertia(fn ($page) => $page
+                ->loadDeferredProps(fn ($page) => $page
+                    ->where('duplicates.0.keepable_ids', [])
+                    ->where('duplicates.0.email', null)
+                    ->where('duplicates.0.blocked_reason', fn (?string $reason) => filled($reason))));
+    })->with(['renamed' => true, 'other unit' => false]);
 });

@@ -101,9 +101,14 @@
     :submit-url="route('users.mergeUsers')"
     target-field="kept_user_id"
     source-field="source_user_ids"
+    :extra-payload="{ login_email: loginEmail }"
     @close="mergeRecords = []"
     @merged="merged"
-  />
+  >
+    <template #details="{ targetId }">
+      <UserMergeDetails v-model="loginEmail" :records="mergeRecords" :target-id />
+    </template>
+  </MergeRecordsDialog>
   <CollectionConfirmAction :dialog="actions.dialog.value" @confirm="actions.confirm" @cancel="actions.pending.value = null" />
 </template>
 
@@ -121,6 +126,7 @@ import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Colle
 import { UserIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import MergeRecordsDialog, { type MergeRecord } from '@/Components/Merge/MergeRecordsDialog.vue';
+import UserMergeDetails from '@/Components/Merge/UserMergeDetails.vue';
 import { EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
@@ -150,7 +156,8 @@ const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?
 const canMerge = computed(() => hasCollectionAction('users.index', 'merge'));
 
 const mergeMode = ref(false);
-const mergeRecords = ref<MergeRecord[]>([]);
+const mergeRecords = ref<(MergeRecord & { email: string })[]>([]);
+const loginEmail = ref<string | null>(null);
 
 const source = useDatabaseCollectionSource<UserRow>({
   endpoint: route('api.v1.admin.users.index'),
@@ -223,8 +230,8 @@ const columns = computed<CollectionColumn[]>(() => [
 
 const userKey = (user: UserRow) => String(user.id);
 
-const toMergeRecords = (users: UserRow[]): MergeRecord[] =>
-  users.map(user => ({ id: user.id, label: user.name, context: user.email }));
+const toMergeRecords = (users: UserRow[]) =>
+  users.map(user => ({ id: user.id, label: user.name, context: user.email, email: user.email }));
 
 function merged(): void {
   mergeRecords.value = [];

@@ -16,6 +16,16 @@ return [
     'duplicate_use_profile' => 'Naudoti šį profilį',
     'duplicate_open_profile' => 'Peržiūrėti',
     'duplicate_contact_admins' => 'Kreipkis į to padalinio administratorius',
+    'merge' => [
+        'name_mismatch' => 'Sujungti galima tik to paties asmens įrašus, o :name vardas ir pavardė nesutampa.',
+        'name_changed' => ':name vardas ar pavardė jau buvo pakeisti, todėl šių įrašų sujungti negalima.',
+        'direct_roles' => ':name rolė priskirta tiesiogiai. Prieš sujungdamas ją pašalink.',
+        'outside_scope' => 'Sujungti gali administratoriai, kuriems priklauso visi abiejų įrašų padaliniai.',
+        'action' => 'Sujungti',
+        'login_email' => 'Prisijungimo el. paštas',
+        'login_email_hint' => 'Kiti el. paštai prisijungti nebeleis.',
+        'permanent' => 'Sujungti įrašai bus ištrinti visam laikui.',
+    ],
     'no_tenant' => 'Be padalinio',
     'filters' => [
         'duty_timing' => 'Pareigų pradžia',

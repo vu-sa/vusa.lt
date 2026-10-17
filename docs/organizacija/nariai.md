@@ -10,6 +10,7 @@ tests:
   - tests/Feature/Search/ContactSearchIndexSyncTest.php
   - tests/Feature/Admin/Management/UserControllerTest.php
   - tests/Feature/Admin/UserMergeTest.php
+  - tests/Feature/System/UserMergeCoverageTest.php
   - tests/Feature/Auth/UserUpdateAuthorizationTest.php
   - tests/Feature/Permissions/UserSelfLockoutTest.php
   - tests/Feature/Permissions/UserDestructiveAuthorizationTest.php
@@ -21,6 +22,7 @@ tests:
   - resources/js/Pages/Admin/People/__tests__/ShowUser.component.test.ts
   - resources/js/Components/AdminForms/__tests__/UserForm.component.test.ts
   - resources/js/Components/AdminForms/__tests__/DuplicateUserWarning.component.test.ts
+  - resources/js/Components/Merge/__tests__/MergeRecordsDialog.component.test.ts
   - resources/js/Composables/__tests__/useDuplicateUserCheck.test.ts
 ---
 
@@ -187,17 +189,34 @@ Atidarius formą per **Redaguoti narį** (`/mano/users/{id}/edit`):
 
 ### Narių sujungimas {#sujungimas}
 
-Jei tas pats asmuo užsiregistravo kelis kartus (pavyzdžiui, vieną kartą su `@stud.vu.lt`, o kitą – su asmeniniu
-`@gmail.com` adresu), šias paskyras galima sujungti į vieną:
+Kiekvienam asmeniui turėtų būti tik viena paskyra. Kartais tas pats žmogus sukuriamas dar kartą su kitu
+el. paštu (pavyzdžiui, vieną kartą su `@stud.vu.lt`, kitą – su asmeniniu adresu), tada abu įrašus galima sujungti.
+
+Sujungti galima tik to paties asmens įrašus:
+
+- **vardai ir pavardės turi sutapti** – žodžių tvarka, lietuviškos raidės ir antrasis vardas nesvarbūs
+  („Jonas Čiurlionis“ ir „Ciurlionis Jonas“ sutampa, „Jonas Jonaitis“ ir „Jonas Petraitis“ – ne);
+- **nė vienas įrašas negali turėti pakeisto vardo** – jei narys pats yra pasikeitęs vardą ar pavardę, sutapimu
+  nebegalima pasitikėti, todėl tokių įrašų sujungti negalima;
+- prijungiamas įrašas negali turėti tiesiogiai priskirtos rolės.
+
+**Nario redagavimo formoje** viršuje rodoma, jei sistemoje yra kitas to paties vardo įrašas. Jei turi teisę
+juos sujungti, prie įrašo matomas mygtukas **Sujungti**; jei ne – paaiškinama, kodėl.
+
+Sujungti galima ir iš narių sąrašo:
 
 1. Narių sąraše viršuje spausk **Sujungti narius** (įsijungia kelių įrašų žymėjimo režimas).
-2. Pažymėk bent du narius, kuriuos nori sujungti.
-3. Apačioje paspausk mygtuką **Sujungti** – atsidarys sujungimo langas.
-4. Pasirink, kurį profilį **pasilikti kaip pagrindinį**.
-5. Patvirtink sujungimą:
-   - Visi pareigybių laikotarpiai, užduotys, komentarai ir rezervacijos iš naikinamų paskyrų perkeliami į pagrindinį profilį.
-   - Prijungiamos paskyros perkeliamos į šiukšlinę.
-   - Prisijungimo tapatybė lieka pagrindinio nario el. pašto adresas.
+2. Pažymėk bent du narius ir apačioje spausk **Sujungti**.
+3. Pasirink, kurį įrašą palikti, ir **prisijungimo el. paštą** – vieną iš sujungiamų įrašų adresų.
+4. Patvirtink sujungimą.
+
+Sujungus:
+
+- pareigybių laikotarpiai, užduotys, komentarai, rezervacijos, patvirtinimai, problemos, sekami organai ir kiti
+  įrašai perkeliami į paliktą profilį; jei abu įrašai turėjo tą patį (pvz., abu sekė tą patį organą), lieka vienas;
+- paliktas profilis perima prijungto įrašo telefoną, nuotrauką ar įvardžius, jei pats jų neturėjo;
+- prijungti įrašai **ištrinami visam laikui** – į šiukšlinę jie nepatenka ir atkurti jų negalima;
+- prisijungti galima tik pasirinktu el. paštu, kiti sujungtų įrašų adresai prisijungti nebeleidžia.
 
 ### Šiukšlinė ir galutinis trynimas {#trynimas}
 
@@ -218,7 +237,7 @@ Jei tas pats asmuo užsiregistravo kelis kartus (pavyzdžiui, vieną kartą su `
 | Keisti nario el. paštą | – | ✓, tik jei narys priklauso tik šiam padaliniui | ✓, tik jei narys priklauso tik šiam padaliniui | ✓ | ✓ |
 | Keisti nario vardą ir pavardę | – | – | – | – | ✓ |
 | Priskirti padalinio pareigybes | – | ✓ | ✓ | ✓ | ✓ |
-| Sujungti narius | – | – | – | ✓ | ✓ |
+| Sujungti to paties asmens įrašus | – | ✓, tik savo padaliniui priklausančius | ✓, tik savo padaliniui priklausančius | ✓ | ✓ |
 | Keisti tiesiogines roles | – | – | – | – | ✓ |
 | Generuoti / trinti slaptažodį | – | – | – | – | ✓ |
 | Ištrinti narį į šiukšlinę | – | ✓, tik savo padaliniui priklausantį narį | ✓, tik savo padaliniui priklausantį narį | ✓ | ✓ |
@@ -256,7 +275,9 @@ nario padalinių prieiga arba kreipimasis į Centrinio biuro koordinatorių / Su
 - Vardo keitimas tikrinamas per `UserPolicy::updateName`, leidžiamas tik turintiems `isSuperAdmin()`.
 - Tapatybės (el. pašto) keitimas tikrinamas per `UserPolicy::updateIdentity`: reikalauja `users.update.*`
   arba visiško padalinių apėmimo (`tenantsContained`) be tiesioginių rolių (`!isProtected`).
-- Sujungimas (`users.mergeUsers`) reikalauja `users.update.*` leidimo (`UserPolicy::merge`).
+- Sujungimą (`users.mergeUsers`, `MergeUsersRequest`) leidžia `update` paliekamam nariui ir `delete` kiekvienam
+  prijungiamam (`UserPolicy::canActDestructively`, t. y. visiškas padalinių apėmimas). Vardų sutapimą ir pakeisto
+  vardo draudimą tikrina `UserMergeGuard` (`UserSimilarityFinder::namesMatch`).
 - Slaptažodžių generavimas ir šalinimas galimas tik Superadministratoriui (`GenerateUserPasswordRequest`).
 
 ### Kaip tai įgyvendinta
@@ -264,8 +285,11 @@ nario padalinių prieiga arba kreipimasis į Centrinio biuro koordinatorių / Su
 - Modelis `User` naudoja `HasRoles` (Spatie), `SoftDeletes`, `LogsModelActivity`, `Searchable` (Laravel Scout) ir `GuardsForceDeleteWhenReferenced`.
 - Užklausų filtravimą valdo `BuildUserIndexQuery`: sujungia filtrus pagal padalinius, atsižvelgia į
   pareigybių laikotarpius ir specialųjį filtrą `future_duty`.
-- Narių sujungimą atlieka `MergeUsers` veiksmas: transakcijoje perkelia `dutiables`, polimorfinius komentarus,
-  užduotis, rezervacijas, o prijungiamus įrašus pažymi ištrintais (`delete()`).
+- Narių sujungimą atlieka `MergeUsers` veiksmas: transakcijoje perkelia `dutiables` ir visus `users` nurodančius
+  stulpelius (sąrašai `REPOINT`, `REPOINT_DEDUPED`, `REPOINT_MORPH`, `DROP`), prijungiamus įrašus ištrina visam laikui
+  (`forceDelete()`), nustato pasirinktą prisijungimo el. paštą, įrašo `users_merged` veiklos įrašą ir išvalo paliekamo
+  nario teisių talpyklą. `UserMergeCoverageTest` neleidžia pridėti naujo `users` ryšio jo neįtraukus į `MergeUsers`.
+- Galimus dublikatus redagavimo formai (atidėtas `duplicates` laukas) pateikia `FindMergeableUserDuplicates`.
 - Galutinio trynimo apsauga `forceDeleteBlockedReason` tikrina išorinius ryšius: `Comment` (`user_id`),
   `InstitutionCheckIn` (`user_id`) ir `Problem` (`created_by`).
 - Savęs užsirakinimo apsaugą užtikrina `AdminController::guardSelfLockout` kartu su `UserPolicy::canActDestructively`
