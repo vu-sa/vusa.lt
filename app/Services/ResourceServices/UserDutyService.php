@@ -102,14 +102,13 @@ class UserDutyService
      *
      * The tree this produces is always intersected against getPermissableTenants()
      * on the frontend, so $permission only decides whether the *unabridged* list is
-     * returned. It still has to match the form being rendered — the edit form asking
-     * about `users.create.all` was simply wrong, even if harmless.
+     * returned.
      *
      * @param  ModelAuthorizer  $authorizer  The authorizer instance
      * @param  string  $permission  The all-scope permission that unlocks every tenant
      * @return EloquentCollection
      */
-    public static function getTenantsWithDutiesForForm(ModelAuthorizer $authorizer, string $permission = 'users.create.all')
+    public static function getTenantsWithDutiesForForm(ModelAuthorizer $authorizer, string $permission = 'users.create.*')
     {
         $user = Auth::user();
 
@@ -126,13 +125,7 @@ class UserDutyService
     }
 
     /**
-     * Get tenants the current user may act in for a given permission.
-     *
-     * The explicit `check()` is load-bearing, not decoration: ModelAuthorizer::getTenants()
-     * falls back to *every* tenant the actor holds any current duty in whenever
-     * `permissableDuties` is empty. Calling it without first confirming the actor
-     * actually holds the permission therefore hands back tenants they have no rights
-     * in — which, combined with an unfiltered duty attach, was an escalation path.
+     * Get tenants the current user may act in for a given permission; none when they do not hold it.
      *
      * @param  ModelAuthorizer  $authorizer  The authorizer instance
      * @param  string  $permission  The permission the tenants must be granted through
