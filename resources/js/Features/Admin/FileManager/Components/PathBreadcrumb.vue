@@ -3,7 +3,7 @@
     <button
       type="button"
       :class="[
-        'inline-flex min-h-11 items-center gap-1.5 px-1.5 py-0.5 font-medium transition-colors hover:text-brand',
+        'inline-flex min-h-9 items-center gap-1.5 pointer-coarse:min-h-11 px-1.5 py-0.5 font-medium transition-colors hover:text-brand',
         crumbs.length === 0 ? 'text-brand font-semibold' : 'text-muted-foreground',
       ]"
       @click="emit('navigate', rootPath)"
@@ -16,7 +16,7 @@
       <button
         type="button"
         :class="[
-          'inline-flex min-h-11 max-w-[160px] items-center truncate px-1.5 py-0.5 font-medium transition-colors hover:text-brand',
+          'inline-flex min-h-9 max-w-[160px] pointer-coarse:min-h-11 items-center truncate px-1.5 py-0.5 font-medium transition-colors hover:text-brand',
           index === crumbs.length - 1 ? 'text-foreground font-semibold' : 'text-muted-foreground',
         ]"
         :aria-current="index === crumbs.length - 1 ? 'location' : undefined"

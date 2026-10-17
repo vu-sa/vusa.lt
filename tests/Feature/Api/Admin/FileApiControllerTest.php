@@ -266,6 +266,16 @@ describe('thumbnails', function (): void {
         expect(Image::decodeBinary($response->streamedContent())->width())->toBe(640);
     });
 
+    test('the full-screen preview gets a large copy, not the 320px fallback', function (): void {
+        Storage::put($this->allowedPath.'/poster.jpg', Image::createImage(3000, 2000)->encodeUsingFileExtension('jpg')->toString());
+
+        $response = asUser($this->fileManager)
+            ->get(route('api.v1.admin.files.thumbnail', ['path' => $this->allowedPath.'/poster.jpg', 'w' => 2400]));
+
+        $response->assertOk();
+        expect(Image::decodeBinary($response->streamedContent())->width())->toBe(2400);
+    });
+
     test('an unlisted width falls back to the default instead of filling the cache disk', function (): void {
         $response = asUser($this->fileManager)
             ->get(route('api.v1.admin.files.thumbnail', ['path' => $this->allowedPath.'/real-photo.jpg', 'w' => 1337]));

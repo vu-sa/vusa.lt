@@ -27,6 +27,8 @@ class StagingReadOnlyMode
         'files.bulkDelete',
         'files.createDirectory',
         'files.compress',
+        'files.rename',
+        'files.move',
         'files.uploadImage',
         'api.v1.admin.files.store',
     ];

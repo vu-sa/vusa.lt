@@ -73,7 +73,7 @@ class FileApiController extends ApiController
     }
 
     /** @var list<int> Prevents one cached derivative per user-supplied pixel width. */
-    private const array THUMBNAIL_WIDTHS = [160, 320, 640, 1600];
+    private const array THUMBNAIL_WIDTHS = [160, 320, 640, 1600, 2400];
 
     /** @var list<string> SVG cannot be rasterised; other formats use the original. */
     private const array THUMBNAILABLE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];

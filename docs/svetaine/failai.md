@@ -23,6 +23,7 @@ tests:
   - resources/js/Features/Admin/FileManager/__tests__/FilePropertiesDrawer.component.test.ts
   - resources/js/Features/Admin/FileManager/__tests__/FileManagerUpload.component.test.ts
   - resources/js/Features/Admin/FileManager/__tests__/FileManagerView.component.test.ts
+  - resources/js/Features/Admin/FileManager/__tests__/FolderStrip.component.test.ts
 ---
 
 # Failai
@@ -95,27 +96,56 @@ Vieno pavadinimo failai neperrašo vienas kito, o neišsaugotas failas nepažymi
 
 ## Veiksmai
 
-### Failų naršyklė ir paieška
+### Failų naršyklė ir paieška {#narsykle}
+
+<ChangelogNote version="v3.6" date="2026-10-18" title="Patogesnė failų tvarkyklė">
+
+Aplankų medis lieka matomas slenkant, failų tipų filtras rodo plėtinius, o lentelėje matomos miniatiūros.
+
+</ChangelogNote>
 
 Failų tvarkyklėje (`/mano/files`) patogu naršyti tiek kompiuteryje, tiek telefone:
 
-- **Rodiniai:** viršuje gali perjungti **tinklelio** (patogu peržiūrėti nuotraukoms) arba **sąrašo** (patogu dokumentams su ilgais pavadinimais) rodinį.
-- **Rikiavimas:** rūšiuok pagal pavadinimą, įkėlimo datą ar failo dydį.
-- **Paieška:** viršutinėje paieškos juostoje gali ieškoti failų tik dabartiniame aplanke arba pažymėti paiešką visuose pasiekiamuose aplankuose.
+- **Aplankai:** kairėje rodomas aplankų medis – šaknis, visi aukštesni aplankai ir atverto aplanko poaplankiai. Jis lieka matomas slenkant. Tie patys poaplankiai rodomi ir virš failų, su elementų skaičiumi; ilgas sąrašas suskleidžiamas.
+- **Rodiniai:** **kortelės** patogios nuotraukoms, **lentelė** – dokumentams su ilgais pavadinimais. Abiejuose rodiniuose matomos nuotraukų miniatiūros.
+- **Failo tipas:** filtras rodo kiekvieno tipo plėtinius (pvz., *JPG, PNG, WEBP*) ir kiek tokių failų yra aplanke.
+- **Rikiavimas:** pagal pavadinimą, įkėlimo datą ar dydį, abiem kryptimis.
+- **Paieška:** ieškoma dabartiniame aplanke; **Visuose aplankuose** ieško ir poaplankiuose. Klavišas `/` perkelia į paieškos lauką.
+- **Rodoma po 50 failų**, daugiau – paspaudus **Rodyti daugiau**.
+- **Nuoroda į vaizdą:** adrese išsaugomas aplankas, paieška, tipas, rikiavimas, rodinys ir atvertas failas, todėl nuorodą galima nusiųsti kolegai, o mygtukas **Atgal** grąžina į tą patį vaizdą.
+- **Pažymėti žvaigždute** failai saugomi tavo naršyklėje ir rodomi skiltyje **Pažymėti žvaigždute**, net jei jie skirtinguose aplankuose.
 
 ### Failų įkėlimas ir aplankų kūrimas
 
-1. **Įkelti failus:** spausk **Įkelti** arba tiesiog nutempk failus pele iš savo kompiuterio į naršyklės langą. Įkėlimo juosta parodys, kiek failo jau įkelta.
-2. **Sukurti aplanką:** spausk **Naujas aplankas**, įrašyk pavadinimą ir patvirtink. Sukurtas aplankas iškart atsiras sąraše.
+1. **Įkelti failus:** spausk **Įkelti failus** arba nutempk failus į failų sąrašą. Nutempus failus ant aplanko, jie įkeliami į tą aplanką.
+2. **Sukurti aplanką:** spausk **Pridėti aplanką**, įrašyk pavadinimą ir patvirtink. Sukurtas aplankas iškart atsiras sąraše.
 
-### Failo savybės, peržiūra ir nuoroda
+### Failų žymėjimas ir grupiniai veiksmai {#zymejimas}
 
-Pasirinkus failą, dešinėje pusėje atsidaro **savybių skydelis** (`FilePropertiesDrawer`):
+- Failą pažymėti galima jo varnele, o kelis iš eilės – laikant **Shift**. **Ctrl** (**⌘**) + paspaudimas prideda failą prie pažymėtų, **Ctrl** + **A** pažymi visus rodomus.
+- Kai kas nors pažymėta, apačioje rodoma juosta: **Žymėti žvaigždute**, **Atsisiųsti**, **Perkelti** ir **Ištrinti**.
 
-- **Peržiūra:** atidaryk viso dydžio nuotraukos ar PDF dokumento peržiūros langą.
-- **Kopijuoti nuorodą:** vienu paspaudimu nukopijuok viešą nuorodą į iškarpinę, kad galėtum ją įklijuoti į naujieną ar išsiųsti kolegoms.
-- **Atsisiųsti:** atsisiųsk originalų failą į savo įrenginį.
-- **Glaudinti:** sumažink paveikslėlio failo dydį, kad puslapis greičiau įsikrautų.
+### Failo informacija, peržiūra ir nuoroda {#failo-informacija}
+
+Paspaudus failą atsidaro **informacijos skydelis** (telefone – iš apačios):
+
+- **Peržiūrėti:** nuotraukos rodomos per visą ekraną didelės raiškos versija, PDF, vaizdo ir garso įrašai atidaromi naršyklėje. Rodyklėmis (ir klaviatūros ← →) galima pereiti prie kito aplanko failo.
+- **Kopijuoti nuorodą:** nukopijuoja viešą nuorodą į iškarpinę.
+- **Atsisiųsti:** atsisiunčia originalų failą.
+- **Optimizuoti:** sumažina didelio JPG ar PNG paveikslėlio failo dydį.
+- Tie patys veiksmai pasiekiami ir per failo meniu **⋯**.
+
+### Pervadinimas ir perkėlimas {#pervadinimas}
+
+<ChangelogNote version="v3.6" date="2026-10-18" title="Failų pervadinimas ir perkėlimas">
+
+Failus ir aplankus galima pervadinti, failus – perkelti į kitą aplanką, o tuščius aplankus – ištrinti.
+
+</ChangelogNote>
+
+- **Pervadinti** galima failą arba aplanką. Failo plėtinys nesikeičia – jis pridedamas automatiškai.
+- **Perkelti** galima vieną ar kelis failus: pasirenkamas aplankas ir spaudžiama **Perkelti čia**. Jei paskirties aplanke jau yra toks pat pavadinimas, tas failas praleidžiamas, o kiti perkeliami.
+- Pervadinus ar perkėlus failą, pasikeičia jo nuoroda. Puslapiai ir naujienos, kuriose jis įdėtas, jo neberodys, todėl pervadinant failą iš karto parodoma, kur jis naudojamas. Nuorodos turinyje automatiškai neatnaujinamos.
 
 ### Naudojimo patikra ir saugus trynimas {#naudojimo-patikra}
 
@@ -127,17 +157,18 @@ Patikra randa failą visuose turinio blokuose, nuotraukų laukuose ir nuorodose,
 
 </ChangelogNote>
 
-- **Naudojimo patikra:** pasirinkęs failą, savybių skydelyje spausk **Tikrinti**. Sistema patikrina visus puslapių, naujienų ir padalinių pradinių puslapių turinio blokus, nuotraukų laukus (naujienų, puslapių, banerių, institucijų, narių), aprašymus ir nuorodas (renginių, pareigybių, formų, problemų, žymų, navigacijos, greitųjų nuorodų) bei dar neišsaugotus juodraščius. Įrašai šiukšlinėje taip pat skaičiuojami – juos atkūrus, failas vėl būtų reikalingas.
+- **Naudojimo patikra:** pasirinkęs failą, informacijos skydelyje spausk **Tikrinti naudojimą**. Sistema patikrina visus puslapių, naujienų ir padalinių pradinių puslapių turinio blokus, nuotraukų laukus (naujienų, puslapių, banerių, institucijų, narių), aprašymus ir nuorodas (renginių, pareigybių, formų, problemų, žymų, navigacijos, greitųjų nuorodų) bei dar neišsaugotus juodraščius. Įrašai šiukšlinėje taip pat skaičiuojami – juos atkūrus, failas vėl būtų reikalingas.
 - **Rezultatas:** jei failas naudojamas, matai sąrašą, kur jis panaudotas, ir gali atsidaryti tą įrašą. Patikra visada atliekama iš naujo, todėl rodo ir ką tik įterptas nuorodas.
 - **Kas nelaikoma naudojimu:** to paties pavadinimo failas kitame aplanke ir nuoroda į kitą svetainę (ne vusa.lt) su tokiu pačiu keliu.
 - **Trynimas:** jei failas nebenaudojamas, pasirink **Ištrinti**.
-- **Kelių failų trynimas:** pažymėk kelis failus ar aplankus ir spausk **Ištrinti pasirinktus**.
+- **Kelių failų trynimas:** pažymėk kelis failus ir apačios juostoje spausk **Ištrinti**.
+- **Aplanko trynimas:** aplanko meniu **⋯** pasirink **Ištrinti aplanką**. Ištrinti galima tik tuščią aplanką – jei jame dar yra failų ar poaplankių, meniu parodo, kiek jų liko.
 
 ## Kas ką gali {#teises}
 
 Jei nėra prieigos prie failų tvarkyklės, tiesioginė nuoroda parodo prieigos klaidą.
 Turint prieigą prie savo padalinio aplanko, bendrojo aplanko nuoroda nukreipia į pasiekiamą aplanką.
-Vien teisė peržiūrėti failus nesuteikia teisės kurti aplankų, glaudinti paveikslėlių ar trinti.
+Vien teisė peržiūrėti failus nesuteikia teisės kurti aplankų, optimizuoti paveikslėlių, pervadinti, perkelti ar trinti. Veiksmai, kurių atliktame aplanke negali, nerodomi.
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Grupinio trynimo teisės tikrinamos iš anksto">
 
@@ -152,7 +183,10 @@ Sąsajoje parodoma prieigos klaida; pasirinkimą galima pakeisti ir bandyti dar 
 | Matyti visus organizacijos aplankus | – | ✓ |
 | Įkelti failus į savo aplanką | ✓ | ✓ |
 | Kurti aplankus savo kataloge | ✓ | ✓ |
-| Trinti failus savo kataloge | ✓ | ✓ |
+| Trinti failus ir tuščius aplankus savo kataloge | ✓ | ✓ |
+| Pervadinti failus ir aplankus savo kataloge | ✓ | ✓ |
+| Perkelti failus tarp savo aplankų | ✓ | ✓ |
+| Pervadinti padalinio aplanką | – | ✓ |
 | Įkelti nuotrauką formoje | kas gali redaguoti įrašą | kas gali redaguoti įrašą |
 
 ## Pranešimai ir automatizavimas {#pranesimai}
@@ -175,7 +209,7 @@ Sąsajoje parodoma prieigos klaida; pasirinkimą galima pakeisti ir bandyti dar 
 
 ### Kaip tai įgyvendinta
 
-- Administravimo valdiklis: `App\Http\Controllers\Admin\FilesController`.
+- Administravimo valdikliai: `App\Http\Controllers\Admin\FilesController` ir `FileOrganizationController` (pervadinimas `files.rename` – `updateInDirectory` teisė tėviniame aplanke; perkėlimas `files.move` – `updateInDirectory` kiekviename šaltinio aplanke ir `createInDirectory` paskirties aplanke, tikrinama prieš perkeliant). Failų sąrašo puslapis gauna `abilities` – ką veikėjas gali atvertame aplanke.
 - API valdiklis: `App\Http\Controllers\Api\Admin\FileApiController` (aptarnauja asinchroninę failų naršyklę, paiešką ir miniatiūrų teikimą).
 - Failų saugojimo šaknis: `storage/app/public/files/`.
 - Bendri keliai, failų sąrašai ir grupiniai įkėlimai: `App\Services\FileStorageService`. `normalizeFilePath()` atmeta `..` segmentus ir neleidžia failų tvarkyklės keliui išeiti už `public/files` šaknies.

@@ -1,110 +1,87 @@
 <template>
   <aside
-    class="flex flex-col gap-6 bg-background p-4 border-b border-border lg:border-b-0 lg:border-r lg:min-w-[240px] lg:max-w-[260px]"
+    :class="[
+      'flex flex-col border-b border-border bg-background',
+      'lg:sticky lg:top-[var(--shell-chrome-height,0px)] lg:self-start lg:border-r lg:border-b-0',
+      'lg:h-[calc(var(--shell-scroll-height,100svh)-var(--shell-chrome-height,0px))]',
+    ]"
+    data-slot="file-manager-sidebar"
   >
-    <!-- View Navigation -->
-    <nav class="flex flex-row lg:flex-col gap-1 overflow-x-auto pb-1 lg:pb-0" aria-label="Failų rodiniai">
+    <nav class="flex gap-1 p-2 lg:flex-col lg:p-3" :aria-label="$t('files.ui.views')">
       <button
         v-for="item in navItems"
         :key="item.id"
         type="button"
+        :aria-current="activeView === item.id ? 'page' : undefined"
         :class="[
-          'flex min-h-11 items-center gap-2.5 px-3 text-sm font-medium transition-colors shrink-0',
+          'flex min-h-9 flex-1 items-center gap-2.5 px-3 text-sm transition-colors pointer-coarse:min-h-11 lg:flex-none',
           activeView === item.id
-            ? 'bg-brand/10 text-brand font-semibold'
+            ? 'bg-brand/10 font-semibold text-brand'
             : 'text-foreground hover:bg-secondary',
         ]"
-        @click="selectView(item.id)"
+        @click="$emit('update:activeView', item.id)"
       >
-        <component :is="item.icon" class="size-4 shrink-0 text-muted-foreground" :class="{ 'text-brand': activeView === item.id }" aria-hidden="true" />
-        <span class="flex-1 text-left">{{ item.label }}</span>
-        <span
-          v-if="item.badge"
-          class="inline-flex min-w-5 items-center justify-center bg-secondary px-1.5 py-0.5 text-[10px] font-bold text-muted-foreground"
-        >
-          {{ item.badge }}
-        </span>
+        <component :is="item.icon" :class="['size-4 shrink-0', activeView === item.id ? 'text-brand' : 'text-muted-foreground']" aria-hidden="true" />
+        <span class="flex-1 truncate text-left">{{ item.label }}</span>
+        <span v-if="item.badge" class="font-mono text-xs text-muted-foreground tabular-nums">{{ item.badge }}</span>
       </button>
     </nav>
 
-    <!-- Folders Section -->
-    <div class="border-t border-border pt-4">
-      <div class="flex items-center justify-between">
-        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+    <div class="hidden min-h-0 flex-1 flex-col border-t border-border lg:flex">
+      <div class="flex items-center justify-between py-1 pr-1 pl-4">
+        <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
           {{ $t('files.ui.folders') }}
         </p>
-        <button
-          type="button"
-          class="flex size-11 items-center justify-center text-muted-foreground transition-colors hover:text-brand"
+        <Button
+          v-if="canCreateFolder"
+          variant="ghost"
+          size="icon-sm"
           :title="$t('files.ui.add_folder')"
           :aria-label="$t('files.ui.add_folder')"
-          @click="$emit('openCreateFolder')"
+          @click="$emit('createFolder')"
         >
-          <FolderPlus class="size-3.5" aria-hidden="true" />
-        </button>
+          <FolderPlus class="size-4" aria-hidden="true" />
+        </Button>
       </div>
 
-      <div class="mt-2 flex flex-col gap-0.5 max-h-64 lg:max-h-80 overflow-y-auto">
-        <!-- Root Directory -->
-        <button
-          type="button"
-          :class="[
-            'flex min-h-11 items-center gap-2 px-2.5 py-1.5 text-left text-sm transition-colors',
-            activeView === 'browse' && isRoot
-              ? 'bg-brand/10 text-brand font-medium'
-              : 'text-foreground hover:bg-secondary',
-          ]"
-          @click="$emit('goHome')"
-        >
-          <Home class="size-4 shrink-0 text-muted-foreground" :class="{ 'text-brand': activeView === 'browse' && isRoot }" aria-hidden="true" />
-          <span class="truncate">{{ $t('files.ui.root') }}</span>
-        </button>
+      <ul class="min-h-0 flex-1 overflow-y-auto px-2 pb-3" :aria-label="$t('files.ui.folder_tree')">
+        <li v-for="node in tree" :key="node.path" class="group flex items-center">
+          <button
+            type="button"
+            :aria-current="node.current ? 'location' : undefined"
+            :style="{ paddingLeft: `${0.5 + node.depth * 0.875}rem` }"
+            :class="[
+              'flex min-h-9 min-w-0 flex-1 items-center gap-2 pr-2 text-left text-sm transition-colors pointer-coarse:min-h-11',
+              node.current ? 'bg-brand/10 font-semibold text-brand' : 'text-foreground hover:bg-secondary',
+            ]"
+            @click="$emit('openFolder', node.path)"
+          >
+            <component
+              :is="node.depth === 0 ? Home : node.current || node.ancestor ? FolderOpen : Folder"
+              :class="['size-4 shrink-0', node.current ? 'text-brand' : 'text-muted-foreground']"
+              aria-hidden="true"
+            />
+            <span class="truncate" :title="node.name">{{ node.name }}</span>
+            <span v-if="node.items === 0" class="ml-auto shrink-0 text-xs text-muted-foreground">{{ $t('files.ui.folder_empty_short') }}</span>
+          </button>
+          <ItemActionsMenu
+            v-if="node.child && actionsFor"
+            :label="node.name"
+            v-bind="actionsFor(node)"
+            trigger-class="text-muted-foreground"
+            @select="$emit('folderAction', $event, node)"
+          />
+        </li>
+      </ul>
 
-        <!-- Up / Parent Navigation if not at root -->
-        <button
-          v-if="!isRoot"
-          type="button"
-          class="flex min-h-11 items-center gap-2 px-2.5 py-1.5 text-left text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-          @click="$emit('goUp')"
-        >
-          <ArrowUp class="size-3.5 shrink-0" aria-hidden="true" />
-          <span class="truncate">.. ({{ $t('files.ui.go_back') }})</span>
-        </button>
-
-        <!-- Current subdirectories -->
-        <div v-if="directories.length === 0 && !isRoot" class="px-2.5 py-2 text-xs text-muted-foreground">
-          {{ $t('files.ui.no_folders_match') }}
-        </div>
-
-        <button
-          v-for="dir in directories"
-          :key="dir.path"
-          type="button"
-          :class="[
-            'flex min-h-11 items-center gap-2 px-2.5 py-1.5 text-left text-sm transition-colors group',
-            currentPath === dir.path && activeView === 'browse'
-              ? 'bg-brand/10 text-brand font-medium'
-              : 'text-foreground hover:bg-secondary',
-          ]"
-          @click="$emit('openFolder', dir.path)"
-        >
-          <Folder class="size-4 shrink-0 text-muted-foreground group-hover:text-brand transition-colors" aria-hidden="true" />
-          <span class="truncate flex-1">{{ dir.name }}</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Storage / Summary Info -->
-    <div class="mt-auto border-t border-border pt-4">
-      <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-        {{ $t('files.ui.location') }}
-      </p>
-      <p class="mt-1 text-xs text-foreground font-medium truncate" :title="currentPath">
-        {{ displayPath }}
-      </p>
-      <div class="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-        <span>{{ $t('files.ui.files_count', { count: String(filesCount) }) }}</span>
-        <span>{{ formattedTotalSize }}</span>
+      <div class="border-t border-border px-4 py-3 text-xs text-muted-foreground">
+        <p class="truncate font-medium text-foreground" :title="displayPath">
+          {{ displayPath }}
+        </p>
+        <p class="mt-1 flex justify-between gap-2 tabular-nums">
+          <span>{{ $t('files.ui.files_count', { count: String(filesCount) }) }}</span>
+          <span>{{ formatBytes(totalSize) }}</span>
+        </p>
       </div>
     </div>
   </aside>
@@ -113,51 +90,93 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUp, Clock, Folder, FolderPlus, Home, Star } from '@lucide/vue';
+import { Clock, Files, Folder, FolderOpen, FolderPlus, Home, Star } from '@lucide/vue';
 
-import type { ActiveView, DirectoryEntry } from '../types';
-import { formatBytes } from '../utils';
+import type { ActiveView, DirectoryEntry, ItemAction } from '../types';
+import { formatBytes, relativeToRoot, ROOT_PATH } from '../utils';
 
-const props = withDefaults(
-  defineProps<{
-    activeView: ActiveView;
-    directories: DirectoryEntry[];
-    currentPath: string;
-    starredCount?: number;
-    filesCount?: number;
-    totalSize?: number;
-  }>(),
-  {
-    starredCount: 0,
-    filesCount: 0,
-    totalSize: 0,
-  },
-);
+import ItemActionsMenu from './ItemActionsMenu.vue';
 
-const emit = defineEmits<{
-  'update:activeView': [view: ActiveView];
-  'openFolder': [path: string];
-  'openCreateFolder': [];
-  'goHome': [];
-  'goUp': [];
-}>();
+import { Button } from '@/Components/ui/button';
 
-const isRoot = computed(() => props.currentPath === 'public/files' || props.currentPath === 'public/files/');
+interface TreeNode {
+  path: string;
+  name: string;
+  depth: number;
+  items?: number;
+  current: boolean;
+  ancestor: boolean;
+  child: boolean;
+}
 
-const displayPath = computed(() => {
-  if (isRoot.value) return $t('files.ui.root');
-  return props.currentPath.replace(/^public\/files\/?/, '');
+const props = withDefaults(defineProps<{
+  activeView: ActiveView;
+  directories: DirectoryEntry[];
+  currentPath: string;
+  starredCount?: number;
+  filesCount?: number;
+  totalSize?: number;
+  canCreateFolder?: boolean;
+  actionsFor?: (directory: Pick<DirectoryEntry, 'path' | 'name' | 'items'>) => { actions: ItemAction[]; note?: string };
+}>(), {
+  starredCount: 0,
+  filesCount: 0,
+  totalSize: 0,
+  actionsFor: undefined,
 });
 
-const formattedTotalSize = computed(() => formatBytes(props.totalSize));
+defineEmits<{
+  'update:activeView': [view: ActiveView];
+  'openFolder': [path: string];
+  'folderAction': [key: string, directory: Pick<DirectoryEntry, 'path' | 'name' | 'items'>];
+  'createFolder': [];
+}>();
+
+const displayPath = computed(() => relativeToRoot(props.currentPath) || $t('files.ui.root'));
+
+/** Root → each ancestor → the open folder → its subfolders, so every level up stays one click away. */
+const tree = computed<TreeNode[]>(() => {
+  const segments = relativeToRoot(props.currentPath).split('/').filter(Boolean);
+  const chain: TreeNode[] = [{
+    path: ROOT_PATH,
+    name: $t('files.ui.root'),
+    depth: 0,
+    current: segments.length === 0,
+    ancestor: segments.length > 0,
+    child: false,
+  }];
+
+  segments.forEach((segment, index) => {
+    const isCurrent = index === segments.length - 1;
+    chain.push({
+      path: `${ROOT_PATH}/${segments.slice(0, index + 1).join('/')}`,
+      name: segment,
+      depth: index + 1,
+      current: isCurrent,
+      ancestor: !isCurrent,
+      child: false,
+    });
+  });
+
+  const childDepth = segments.length + 1;
+
+  return [
+    ...chain,
+    ...props.directories.map(directory => ({
+      path: directory.path,
+      name: directory.name,
+      depth: childDepth,
+      items: directory.items,
+      current: false,
+      ancestor: false,
+      child: true,
+    })),
+  ];
+});
 
 const navItems = computed(() => [
-  { id: 'browse' as const, label: $t('files.ui.root'), icon: Home },
-  { id: 'starred' as const, label: $t('Pažymėti'), icon: Star, badge: props.starredCount || undefined },
-  { id: 'recent' as const, label: $t('Naujausi'), icon: Clock },
+  { id: 'browse' as const, label: $t('files.ui.view_browse'), icon: Files, badge: undefined },
+  { id: 'starred' as const, label: $t('files.ui.view_starred'), icon: Star, badge: props.starredCount || undefined },
+  { id: 'recent' as const, label: $t('files.ui.view_recent'), icon: Clock, badge: undefined },
 ]);
-
-function selectView(view: ActiveView) {
-  emit('update:activeView', view);
-}
 </script>

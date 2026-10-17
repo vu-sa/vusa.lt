@@ -1,194 +1,235 @@
 <template>
-  <div class="space-y-4">
-    <!-- Inline create-folder form in selection mode -->
-    <div v-if="props.selectionMode && showFolderUploadModal" class="border border-border p-4 bg-muted/30">
-      <div class="grid w-full max-w-sm items-center gap-1.5 mb-4">
+  <div class="relative" data-slot="file-manager">
+    <!-- The picker lives inside a dialog, so its create-folder form is inline rather than a second dialog. -->
+    <form
+      v-if="props.selectionMode && showCreateFolder"
+      class="mb-3 flex flex-col gap-2 border border-border bg-secondary/30 p-3 sm:flex-row sm:items-end"
+      @submit.prevent="createDirectory"
+    >
+      <div class="grid flex-1 gap-1.5">
         <Label for="folderNameInline">{{ $t('files.ui.new_folder_name') }}</Label>
         <Input id="folderNameInline" v-model="newFolderName" :placeholder="$t('files.ui.name_placeholder')" />
       </div>
       <div class="flex gap-2">
-        <Button :disabled="loading" :data-loading="loading" @click="createDirectory">
+        <Button type="submit" :disabled="busy || !newFolderName.trim()">
           {{ $t('files.ui.create') }}
         </Button>
-        <Button variant="outline" @click="showFolderUploadModal = false">
+        <Button type="button" variant="outline" voice="sentence" @click="closeCreateFolder">
           {{ $t('files.ui.cancel') }}
         </Button>
       </div>
-    </div>
+    </form>
 
-    <!-- Main Container: 2-column on desktop (standalone), 1-column in selection mode/mobile -->
     <div
       :class="[
-        'grid grid-cols-1 border border-border bg-border',
-        !props.small && !props.selectionMode ? 'lg:grid-cols-[240px_1fr]' : '',
+        'grid grid-cols-1 border-y border-border',
+        hasSidebar && 'lg:grid-cols-[260px_minmax(0,1fr)]',
+        props.selectionMode && 'border-x',
       ]"
     >
-      <!-- Left Sidebar (Full Mode) -->
       <FileManagerSidebar
-        v-if="!props.small && !props.selectionMode"
+        v-if="hasSidebar"
         :active-view
         :directories="displayedDirectories"
         :current-path="props.path"
-        :starred-count="starredSet.size"
-        :files-count="totalItems"
+        :starred-count="starredEntries.length"
+        :files-count="(props.files ?? []).length"
         :total-size
-        @update:active-view="activeView = $event"
-        @open-folder="handleFolderClickByPath"
-        @open-create-folder="openCreateFolder"
-        @go-home="goHome"
-        @go-up="handleBack"
+        :can-create-folder="abilities.createDirectory"
+        :actions-for="folderActionsFor"
+        @update:active-view="setActiveView"
+        @open-folder="openFolderPath"
+        @folder-action="handleFolderAction"
+        @create-folder="openCreateFolder"
       />
 
-      <!-- Right Main Panel -->
-      <section class="min-w-0 bg-background flex flex-col">
-        <!-- Toolbar & Breadcrumb Sub-bar -->
+      <section class="flex min-w-0 flex-col bg-background" :aria-label="$t('files.ui.files')">
         <FileManagerHeader
+          ref="headerRef"
           :path="props.path"
           :search
           :search-everywhere
           :searching="props.searching"
           :is-upload-mode
-          :selection-mode="props.selectionMode"
-          :small="props.small"
-          :allow-upload-in-selection="props.allowUploadInSelection"
+          :show-upload-toggle="props.selectionMode && props.allowUploadInSelection"
           :type-filter
+          :type-counts
+          :folder-count="shownDirectories.length"
+          :total-count="baseFiles.length"
           :sort-key
           :sort-dir
-          :view-mode
-          :total-items
-          :selected-count="selectedFiles.size"
-          :all-selected="allFilesSelected"
-          :active-view
+          :view-mode="view"
+          :result-count="displayedFiles.length"
+          :title="listTitle"
+          :sticky="!props.selectionMode"
           @update:search="search = $event"
           @update:search-everywhere="searchEverywhere = $event"
           @update:type-filter="typeFilter = $event"
-          @update:sort-key="sortKey = $event"
-          @update:sort-dir="sortDir = $event"
-          @update:view-mode="viewMode = $event"
+          @update:sort="setSort"
+          @update:view-mode="view = $event"
           @update:is-upload-mode="isUploadMode = $event"
-          @navigate-to-path="navigateToPath"
-          @show-create-folder="openCreateFolder"
-          @toggle-select-all="toggleSelectAllFiles"
-          @star-selected="toggleStarSelected"
-          @download-selected="downloadSelected"
-          @delete-selected="deleteSelectedFiles"
-          @clear-selection="clearSelection"
+          @navigate-to-path="openFolderPath"
         />
 
-        <!-- Compact Folder Strip (in selection mode / small mode) -->
-        <div v-if="(props.small || props.selectionMode) && !isRecursiveSearch" class="p-3 border-b border-border bg-muted/20">
-          <FolderStrip
-            :directories="displayedDirectories"
-            :loading="props.listLoading"
-            @open="handleFolderClick"
-          />
-        </div>
+        <TopProgressBar :active="busy || !!props.refreshing" :label="$t('files.ui.updating')" class="-mt-0.5" />
 
-        <!-- Upload Mode -->
-        <div v-if="isUploadMode && (!props.selectionMode || props.allowUploadInSelection)" class="p-4 flex-1">
+        <div v-if="isUploadMode" class="flex-1 p-4">
+          <div v-if="!props.selectionMode" class="mb-3 flex items-center justify-between gap-2">
+            <p class="text-sm text-muted-foreground">
+              {{ $t('files.ui.uploading_into') }} <span class="font-medium text-foreground">{{ currentFolderLabel }}</span>
+            </p>
+            <Button variant="outline" voice="sentence" size="sm" @click="isUploadMode = false">
+              <ArrowLeft class="size-4" aria-hidden="true" />
+              {{ $t('files.ui.back_to_files') }}
+            </Button>
+          </div>
           <FileUploadArea
             ref="uploadAreaRef"
-            :loading
+            :loading="busy"
             :force-accept="!!props.uploadAccept || !!props.uploadExtensions"
             :accept="props.uploadAccept || '*'"
             :extensions="props.uploadExtensions"
             @upload="handleFileUpload"
-            @files-selected="onFilesSelected"
           />
         </div>
 
-        <!-- Browse Mode (Grid / List) -->
         <FileGrid
           v-else
-          :paginated-files
+          :files="visibleFiles"
+          :total-files="displayedFiles.length"
+          :has-more="visibleFiles.length < displayedFiles.length"
+          :folders="displayedDirectories"
+          :view
           :selected-file
-          :selected-files
-          :starred-files="starredSet"
-          :is-multi-select-mode
+          :checked
+          :starred="starredSet"
+          :all-checked
           :selection-mode="props.selectionMode"
-          :loading="props.listLoading || props.searching"
-          :view-mode
-          :search
-          :total-items
-          :items-per-page
-          :current-page
-          :total-pages
-          :visible-pages
+          :loading="props.listLoading"
+          :filtered="isFiltered"
+          :accepts-drop="abilities.upload && (!props.selectionMode || props.allowUploadInSelection)"
+          :folder-name="currentFolderLabel"
+          :can-preview="(file) => previewKind(file.name) !== null"
+          :file-actions-for="props.selectionMode ? undefined : fileActionsFor"
+          :folder-actions-for="props.selectionMode ? undefined : folderActionsFor"
           @file-click="handleFileClick"
-          @file-double-click="handleFileDoubleClick"
-          @toggle-select="handleToggleSelect"
-          @toggle-star="handleToggleStar"
-          @preview-file="openLightboxPreview"
-          @files-dropped="handleFileUpload"
-          @update:items-per-page="itemsPerPage = $event"
-          @update:current-page="currentPage = $event"
+          @file-dblclick="handleFileDoubleClick"
+          @toggle-check="handleToggleCheck"
+          @toggle-check-all="checks.toggleAll"
+          @preview="(file) => (previewPath = file.path)"
+          @file-action="handleFileAction"
+          @open-folder="(directory) => openFolderPath(directory.path)"
+          @folder-action="handleFolderAction"
+          @drop-files="handleFileUpload"
+          @load-more="visibleCount += PAGE_SIZE"
+          @clear-filters="clearFilters"
         />
       </section>
     </div>
 
-    <!-- Right Slide-Over File Detail Drawer -->
+    <CollectionSelectionBar
+      v-if="!props.selectionMode && checked.size > 0"
+      :count="checked.size"
+      :count-label="$t('files.ui.checked')"
+      @clear="clearChecked"
+    >
+      <Button variant="outline" voice="sentence" size="sm" @click="starChecked">
+        <Star class="size-4" aria-hidden="true" />
+        <span class="hidden sm:inline">{{ $t('files.ui.star') }}</span>
+      </Button>
+      <Button variant="outline" voice="sentence" size="sm" @click="downloadChecked">
+        <Download class="size-4" aria-hidden="true" />
+        <span class="hidden sm:inline">{{ $t('files.ui.download') }}</span>
+      </Button>
+      <Button v-if="abilities.update" variant="outline" voice="sentence" size="sm" @click="moveTarget = [...checked]">
+        <FolderInput class="size-4" aria-hidden="true" />
+        <span class="hidden sm:inline">{{ $t('files.ui.move') }}</span>
+      </Button>
+      <Button
+        v-if="abilities.delete"
+        variant="outline"
+        voice="sentence"
+        size="sm"
+        class="text-destructive hover:border-destructive hover:text-destructive"
+        @click="pendingDelete = { kind: 'files', paths: [...checked] }"
+      >
+        <Trash2 class="size-4" aria-hidden="true" />
+        <span class="hidden sm:inline">{{ $t('files.ui.delete') }}</span>
+      </Button>
+    </CollectionSelectionBar>
+
     <FilePropertiesDrawer
-      :selected-file
-      :files="displayedFiles"
+      :file="selectedEntry"
       :selection-mode="props.selectionMode"
-      :is-starred="selectedFile ? starredSet.has(selectedFile) : false"
-      @preview="openLightboxForSelected"
-      @toggle-star="selectedFile ? handleToggleStar({ path: selectedFile } as FileEntry) : undefined"
-      @insert="handleInsertSelected"
-      @delete="selectedFile ? deleteFile(selectedFile) : undefined"
+      :is-starred="selectedEntry ? starredSet.has(selectedEntry.path) : false"
+      :abilities
+      @preview="selectedEntry && (previewPath = selectedEntry.path)"
+      @toggle-star="selectedEntry && toggleStar(selectedEntry)"
+      @insert="selectedEntry && emit('fileSelected', selectedEntry.path, 'browse')"
+      @delete="selectedEntry && (pendingDelete = { kind: 'file', paths: [selectedEntry.path] })"
+      @rename="selectedEntry && (renameTarget = { path: selectedEntry.path, name: selectedEntry.name, isFolder: false })"
+      @move="selectedEntry && (moveTarget = [selectedEntry.path])"
+      @copy-link="selectedEntry && copyLink(selectedEntry)"
       @close="selectedFile = null"
     />
 
-    <!-- Image Lightbox Modal -->
     <FilePreviewModal
-      :file="previewTarget"
-      @close="previewTarget = null"
+      v-model="previewPath"
+      :files="previewableFiles"
+      @details="(file) => { previewPath = null; selectedFile = file.path; }"
+      @copy-link="copyLink"
     />
 
-    <!-- Create Folder Dialog (Standalone) -->
-    <Dialog v-if="!props.selectionMode" :open="showFolderUploadModal" @update:open="handleFolderDialogClose">
-      <DialogContent class="sm:max-w-md rounded-none">
-        <DialogHeader>
-          <DialogTitle>{{ $t('files.ui.add_folder_title') }}</DialogTitle>
-          <DialogDescription>
-            {{ $t('files.ui.add_folder_description') }}
-          </DialogDescription>
-        </DialogHeader>
+    <Dialog v-if="!props.selectionMode" :open="showCreateFolder" @update:open="(open) => !open && closeCreateFolder()">
+      <DialogContent class="rounded-none sm:max-w-md">
+        <form class="grid gap-4" @submit.prevent="createDirectory">
+          <DialogHeader>
+            <DialogTitle>{{ $t('files.ui.add_folder_title') }}</DialogTitle>
+            <DialogDescription>
+              {{ $t('files.ui.add_folder_in', { folder: currentFolderLabel }) }}
+            </DialogDescription>
+          </DialogHeader>
 
-        <div class="grid gap-4 py-4">
           <div class="grid gap-2">
             <Label for="folderName">{{ $t('files.ui.new_folder_name') }}</Label>
-            <Input
-              id="folderName"
-              v-model="newFolderName"
-              :placeholder="$t('files.ui.folder_name_placeholder')"
-              @keyup.enter="createDirectory"
-            />
+            <Input id="folderName" v-model="newFolderName" :placeholder="$t('files.ui.folder_name_placeholder')" autocomplete="off" />
           </div>
-        </div>
 
-        <DialogFooter>
-          <Button variant="outline" @click="handleFolderDialogClose(false)">
-            {{ $t('files.ui.cancel') }}
-          </Button>
-          <Button
-            :disabled="loading || !newFolderName.trim()"
-            @click="createDirectory"
-          >
-            {{ $t('files.ui.create') }}
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button type="button" variant="outline" voice="sentence" @click="closeCreateFolder">
+              {{ $t('files.ui.cancel') }}
+            </Button>
+            <Button type="submit" variant="brand" :disabled="busy || !newFolderName.trim()">
+              {{ $t('files.ui.create') }}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
 
-    <!-- Delete Confirmation Dialog -->
     <ConfirmDialog
-      v-model:open="showDeleteModal"
-      :title="getDeleteTitle()"
-      :description="getDeleteMessage()"
+      :open="pendingDelete !== null"
+      :title="deleteTitle"
+      :description="deleteDescription"
       :confirm-label="$t('files.ui.delete')"
       destructive
-      @confirm="deleteFileConfirmed"
+      @update:open="(open) => !open && (pendingDelete = null)"
+      @confirm="confirmDelete"
+    />
+
+    <RenameDialog
+      v-if="renameTarget"
+      v-bind="renameTarget"
+      @close="renameTarget = null"
+      @renamed="handleRenamed"
+    />
+
+    <MoveDialog
+      v-if="moveTarget"
+      :paths="moveTarget"
+      :from="props.path"
+      @close="moveTarget = null"
+      @moved="handleMoved"
     />
   </div>
 </template>
@@ -196,21 +237,50 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { useStorage } from '@vueuse/core';
+import { useClipboard, useStorage } from '@vueuse/core';
 import { useFuse } from '@vueuse/integrations/useFuse';
 import { trans as $t } from 'laravel-vue-i18n';
+import {
+  ArrowLeft,
+  Download,
+  ExternalLink,
+  Eye,
+  FolderInput,
+  Info,
+  Link2,
+  PencilLine,
+  Star,
+  StarOff,
+  Trash2,
+} from '@lucide/vue';
 
 import FileGrid from './Components/FileGrid.vue';
 import FileManagerHeader from './Components/FileManagerHeader.vue';
 import FileManagerSidebar from './Components/FileManagerSidebar.vue';
 import FilePreviewModal from './Components/FilePreviewModal.vue';
 import FilePropertiesDrawer from './Components/FilePropertiesDrawer.vue';
-import FolderStrip from './Components/FolderStrip.vue';
-import type { ActiveView, DirectoryEntry, FileEntry, SortDir, SortKey, TypeFilter } from './types';
-import { matchesTypeFilter } from './utils';
+import MoveDialog from './Components/MoveDialog.vue';
+import RenameDialog from './Components/RenameDialog.vue';
+import type {
+  ActiveView,
+  DirectoryEntry,
+  FileEntry,
+  FileManagerAbilities,
+  FileManagerViewState,
+  FileViewMode,
+  ItemAction,
+  SortDir,
+  SortKey,
+  TypeFilter,
+} from './types';
+import { useFileChecks } from './useFileChecks';
+import { useStarredFiles } from './useStarredFiles';
+import { matchesTypeFilter, previewKind, publicUrl, relativeToRoot, TYPE_FILTER_KINDS } from './utils';
 
+import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
 import FileUploadArea from '@/Components/FileUpload/FileUploadArea.vue';
 import ConfirmDialog from '@/Components/Patterns/ConfirmDialog.vue';
+import TopProgressBar from '@/Components/Patterns/TopProgressBar.vue';
 import { Button } from '@/Components/ui/button';
 import {
   Dialog,
@@ -224,27 +294,39 @@ import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { uploadFiles, type UploadedFileResult } from '@/Composables/useFileUpload';
 import { useToasts } from '@/Composables/useToasts';
+import { getFileExtension, getFileKind } from '@/Utils/fileIcons';
 
-const props = defineProps<{
+type FolderLike = Pick<DirectoryEntry, 'path' | 'name' | 'items'>;
+
+interface PendingDelete { kind: 'file' | 'files' | 'folder'; paths: string[] }
+
+const props = withDefaults(defineProps<{
   directories: DirectoryEntry[];
   files: FileEntry[];
   path: string;
   small?: boolean;
-  /** Enable file selection mode */
+  /** Picking a file for an editor: clicks choose instead of opening details. */
   selectionMode?: boolean;
-  /** Allow showing upload UI even in selection mode */
   allowUploadInSelection?: boolean;
-  /** Optional accept string for uploads when in selection mode */
   uploadAccept?: string;
-  /** Optional limited extensions for uploads when in selection mode */
   uploadExtensions?: string[];
-  /** Whether the parent is still fetching the listing */
+  /** Navigating to another folder: the list is replaced by a skeleton. */
   listLoading?: boolean;
-  /** Recursive search results, when the caller is searching every folder */
+  /** Refreshing the open folder in place: the list stays, a progress line shows. */
+  refreshing?: boolean;
+  /** Recursive search results, when the caller is searching every folder. */
   searchResults?: FileEntry[] | null;
-  /** Whether a recursive search is in flight */
   searching?: boolean;
-}>();
+  /** Defaults to everything; the server enforces the real permissions either way. */
+  abilities?: FileManagerAbilities;
+  initialState?: Partial<FileManagerViewState>;
+}>(), {
+  uploadAccept: undefined,
+  uploadExtensions: undefined,
+  searchResults: null,
+  abilities: () => ({ upload: true, createDirectory: true, deleteDirectory: true, update: true, delete: true }),
+  initialState: () => ({}),
+});
 
 const emit = defineEmits<{
   back: [];
@@ -252,499 +334,497 @@ const emit = defineEmits<{
   fileSelected: [file: string, source: 'browse' | 'upload'];
   update: [path: string];
   search: [query: string, recursive: boolean];
+  stateChange: [state: FileManagerViewState];
 }>();
 
+const PAGE_SIZE = 50;
+
 const toasts = useToasts();
+const { copy } = useClipboard({ legacy: true });
 
-// State
-const showFolderUploadModal = ref(false);
-const showDeleteModal = ref(false);
-const selectedFileForDeletion = ref('');
-const newFolderName = ref('');
-const loading = ref(false);
-const selectedFile = ref<string | null>(null);
-const selectedFiles = ref<Set<string>>(new Set());
-const isMultiSelectMode = ref(false);
-const isUploadMode = ref(false);
-const uploadAreaRef = ref();
+const headerRef = ref<InstanceType<typeof FileManagerHeader> | null>(null);
+const uploadAreaRef = ref<InstanceType<typeof FileUploadArea> | null>(null);
 
-// Navigation & filtering state
-const activeView = ref<ActiveView>('browse');
-const typeFilter = ref<TypeFilter>('all');
-const sortKey = ref<SortKey>('name');
-const sortDir = ref<SortDir>('asc');
-const search = ref('');
+const [initialSortKey, initialSortDir] = (props.initialState.sort ?? 'name:asc').split(':') as [SortKey, SortDir];
+
+const search = ref(props.initialState.q ?? '');
 const searchEverywhere = ref(false);
-const itemsPerPage = ref(50);
-const currentPage = ref(1);
-const viewMode = useStorage<'grid' | 'list'>('fileManager-viewMode', 'grid');
+const typeFilter = ref<TypeFilter>(props.initialState.type ?? 'all');
+const sortKey = ref<SortKey>(initialSortKey);
+const sortDir = ref<SortDir>(initialSortDir);
+const activeView = ref<ActiveView>('browse');
+const visibleCount = ref(PAGE_SIZE);
+const storedView = useStorage<FileViewMode>('fileManager-view', 'cards');
+const view = ref<FileViewMode>(props.initialState.view ?? storedView.value);
 
-// Starred files in localStorage
-const starredList = useStorage<string[]>('fileManager-starred', []);
-const starredSet = computed(() => new Set(starredList.value));
+const selectedFile = ref<string | null>(props.initialState.file ?? null);
+const previewPath = ref<string | null>(null);
 
-// Lightbox preview target
-const previewTarget = ref<FileEntry | null>(null);
+const isUploadMode = ref(false);
+const busy = ref(false);
+const showCreateFolder = ref(false);
+const newFolderName = ref('');
+const pendingDelete = ref<PendingDelete | null>(null);
+const renameTarget = ref<{ path: string; name: string; isFolder: boolean } | null>(null);
+const moveTarget = ref<string[] | null>(null);
 
-// Fuse.js fuzzy search options
-const fuseOptions = computed(() => ({
-  fuseOptions: {
-    keys: ['name'],
-    threshold: 0.4,
-  },
-  matchAllWhenSearchEmpty: true,
-}));
+const starred = useStarredFiles();
+const starredEntries = starred.entries;
+const starredSet = starred.paths;
 
+const hasSidebar = computed(() => !props.small && !props.selectionMode);
+const abilities = computed(() => props.abilities);
+
+const fuseOptions = { fuseOptions: { keys: ['name'], threshold: 0.4 }, matchAllWhenSearchEmpty: true };
 const { results: fileSearchResults } = useFuse(search, () => props.files ?? [], fuseOptions);
 const { results: directorySearchResults } = useFuse(search, () => props.directories ?? [], fuseOptions);
 
-const shownFiles = computed(() => {
-  if (search.value === '') {
-    return props.files ?? [];
-  }
-  return fileSearchResults.value.map(result => result.item);
-});
-
-const shownDirectories = computed(() => {
-  if (search.value === '') {
-    return props.directories ?? [];
-  }
-  return directorySearchResults.value.map(result => result.item);
-});
-
 const isRecursiveSearch = computed(() => searchEverywhere.value && search.value.trim().length >= 2);
 
-const displayedDirectories = computed(() => (isRecursiveSearch.value ? [] : shownDirectories.value));
+const shownDirectories = computed<DirectoryEntry[]>(() => {
+  if (isRecursiveSearch.value || activeView.value !== 'browse') return [];
+  return search.value === '' ? (props.directories ?? []) : directorySearchResults.value.map(result => result.item);
+});
 
-// Filter & sort files
-const filteredAndSortedFiles = computed(() => {
-  let list: FileEntry[] = isRecursiveSearch.value ? (props.searchResults ?? []) : shownFiles.value;
+const displayedDirectories = computed(() => (typeFilter.value === 'all' || typeFilter.value === 'folder' ? shownDirectories.value : []));
 
-  // Active view filters
+/** Files before the type filter, which the filter menu counts. */
+const baseFiles = computed<FileEntry[]>(() => {
   if (activeView.value === 'starred') {
-    list = list.filter(f => starredSet.value.has(f.path));
+    const needle = search.value.trim().toLowerCase();
+    return starredEntries.value.filter(entry => !needle || entry.name.toLowerCase().includes(needle));
   }
+  if (isRecursiveSearch.value) return props.searchResults ?? [];
+  return search.value === '' ? (props.files ?? []) : fileSearchResults.value.map(result => result.item);
+});
 
-  // Type filters
-  if (typeFilter.value !== 'all') {
-    list = list.filter(f => matchesTypeFilter(f, typeFilter.value));
+const typeCounts = computed(() => {
+  const counts: Partial<Record<TypeFilter, number>> = {};
+  for (const file of baseFiles.value) {
+    const kind = getFileKind(file.name) as TypeFilter;
+    counts[kind] = (counts[kind] ?? 0) + 1;
   }
+  return counts;
+});
 
-  // Sorting
-  const dir = sortDir.value === 'asc' ? 1 : -1;
-  const sorted = [...list].sort((a, b) => {
-    if (activeView.value === 'recent') {
-      return (b.modified - a.modified);
-    }
-    if (sortKey.value === 'name') {
-      return a.name.localeCompare(b.name, 'lt') * dir;
-    }
-    if (sortKey.value === 'size') {
-      return ((a.size || 0) - (b.size || 0)) * dir;
-    }
+const displayedFiles = computed<FileEntry[]>(() => {
+  if (typeFilter.value === 'folder') return [];
+
+  const list = baseFiles.value.filter(file => matchesTypeFilter(file, typeFilter.value));
+  const key = activeView.value === 'recent' ? 'modified' : sortKey.value;
+  const dir = activeView.value === 'recent' ? -1 : sortDir.value === 'asc' ? 1 : -1;
+
+  return [...list].sort((a, b) => {
+    if (key === 'name') return a.name.localeCompare(b.name, 'lt', { numeric: true }) * dir;
+    if (key === 'size') return ((a.size || 0) - (b.size || 0)) * dir;
     return ((a.modified || 0) - (b.modified || 0)) * dir;
   });
-
-  return sorted;
 });
 
-const displayedFiles = computed(() => filteredAndSortedFiles.value);
+const visibleFiles = computed(() => displayedFiles.value.slice(0, visibleCount.value));
 
-const totalItems = computed(() => displayedFiles.value.length);
+const previewableFiles = computed(() => displayedFiles.value.filter(file => previewKind(file.name) !== null));
 
-const totalSize = computed(() => (props.files ?? []).reduce((acc, f) => acc + (f.size || 0), 0));
-
-const totalPages = computed(() => Math.max(1, Math.ceil(displayedFiles.value.length / itemsPerPage.value)));
-
-const paginatedFiles = computed(() => {
-  if (itemsPerPage.value >= displayedFiles.value.length) return displayedFiles.value;
-  const start = (currentPage.value - 1) * itemsPerPage.value;
-  return displayedFiles.value.slice(start, start + itemsPerPage.value);
+const selectedEntry = computed<FileEntry | null>(() => {
+  if (!selectedFile.value) return null;
+  return displayedFiles.value.find(file => file.path === selectedFile.value)
+    ?? (props.files ?? []).find(file => file.path === selectedFile.value)
+    ?? null;
 });
 
-const visiblePages = computed(() => {
-  const pages: (number | string)[] = [];
-  const total = totalPages.value;
-  const current = currentPage.value;
+const totalSize = computed(() => (props.files ?? []).reduce((sum, file) => sum + (file.size || 0), 0));
 
-  if (total <= 7) {
-    for (let i = 1; i <= total; i++) pages.push(i);
-  }
-  else {
-    pages.push(1);
-    if (current > 4) pages.push('...');
-    const start = Math.max(2, current - 1);
-    const end = Math.min(total - 1, current + 1);
-    for (let i = start; i <= end; i++) pages.push(i);
-    if (current < total - 3) pages.push('...');
-    if (total > 1) pages.push(total);
-  }
+const isFiltered = computed(() => search.value.trim() !== '' || typeFilter.value !== 'all');
 
-  return pages;
+const checks = useFileChecks(displayedFiles);
+const { checked, allChecked } = checks;
+
+const currentFolderLabel = computed(() => relativeToRoot(props.path).split('/').pop() || $t('files.ui.root'));
+
+const listTitle = computed(() => {
+  if (isRecursiveSearch.value) return $t('files.ui.search_everywhere_title', { search: search.value.trim() });
+  if (activeView.value === 'starred') return $t('files.ui.view_starred');
+  if (activeView.value === 'recent') return $t('files.ui.recent_title', { folder: currentFolderLabel.value });
+  return undefined;
 });
 
-const allFilesSelected = computed(() => {
-  return displayedFiles.value.length > 0 && displayedFiles.value.every(f => selectedFiles.value.has(f.path));
+const viewState = computed<FileManagerViewState>(() => ({
+  q: search.value,
+  type: typeFilter.value,
+  sort: `${sortKey.value}:${sortDir.value}`,
+  view: view.value,
+  file: selectedFile.value,
+}));
+
+watch(viewState, state => emit('stateChange', state));
+
+watch(view, (next) => {
+  storedView.value = next;
 });
 
-// Watchers
-watch([search, itemsPerPage, searchEverywhere, typeFilter, sortKey, sortDir, activeView], () => {
-  currentPage.value = 1;
+watch([search, searchEverywhere, typeFilter, sortKey, sortDir, activeView], () => {
+  visibleCount.value = PAGE_SIZE;
 });
 
 watch([search, searchEverywhere], ([query, recursive]) => {
   emit('search', query.trim(), recursive);
 });
 
-watch(isUploadMode, (newMode) => {
-  if (newMode) {
+watch(() => props.path, () => {
+  selectedFile.value = null;
+  clearChecked();
+  visibleCount.value = PAGE_SIZE;
+  isUploadMode.value = false;
+});
+
+/** A file that disappeared (deleted, moved, renamed) cannot stay open or ticked. */
+watch(() => props.files, (files) => {
+  const present = new Set((files ?? []).map(file => file.path));
+  if (selectedFile.value && !present.has(selectedFile.value) && activeView.value === 'browse' && !isRecursiveSearch.value) {
     selectedFile.value = null;
-    clearSelection();
-    isMultiSelectMode.value = false;
-    search.value = '';
-    currentPage.value = 1;
   }
-  else {
-    currentPage.value = 1;
+  checks.keepOnly(present);
+});
+
+watch(isUploadMode, (uploading) => {
+  if (uploading) {
+    selectedFile.value = null;
+    clearChecked();
   }
 });
 
-// Methods exposed to parent
 function openUpload() {
   isUploadMode.value = true;
 }
 
 function openCreateFolder() {
-  showFolderUploadModal.value = true;
+  showCreateFolder.value = true;
 }
 
-defineExpose({
-  openUpload,
-  openCreateFolder,
-});
+defineExpose({ openUpload, openCreateFolder });
 
-function handleFolderDialogClose(open: boolean) {
-  showFolderUploadModal.value = open;
-  if (!open) {
-    newFolderName.value = '';
+function setActiveView(next: ActiveView) {
+  activeView.value = next;
+  clearChecked();
+}
+
+function setSort(key: SortKey, dir: SortDir) {
+  sortKey.value = key;
+  sortDir.value = dir;
+}
+
+function clearFilters() {
+  search.value = '';
+  typeFilter.value = 'all';
+}
+
+function openFolderPath(path: string) {
+  activeView.value = 'browse';
+  search.value = '';
+  if (path !== props.path) {
+    emit('changeDirectory', path);
+  }
+}
+
+function closeCreateFolder() {
+  showCreateFolder.value = false;
+  newFolderName.value = '';
+}
+
+/** Inertia mutations redirect back, which already refreshes the page's listing; the picker fetches its own. */
+function afterMutation() {
+  if (props.selectionMode) {
+    emit('update', props.path);
+  }
+}
+
+function flashWarning(page: { props: { flash?: { warning?: string | null } } }) {
+  if (page.props.flash?.warning) {
+    toasts.info(page.props.flash.warning);
   }
 }
 
 function createDirectory() {
-  loading.value = true;
-  router.post(
-    route('files.createDirectory'),
-    { path: props.path, name: newFolderName.value },
-    {
-      preserveScroll: true,
-      preserveState: true,
-      onSuccess: () => {
-        toasts.success($t('files.ui.directory_created'));
-        showFolderUploadModal.value = false;
-        newFolderName.value = '';
-        emit('update', props.path);
-      },
-      onFinish: () => {
-        loading.value = false;
-      },
+  if (busy.value || !newFolderName.value.trim()) return;
+
+  busy.value = true;
+  router.post(route('files.createDirectory'), { path: props.path, name: newFolderName.value.trim() }, {
+    preserveScroll: true,
+    preserveState: true,
+    onSuccess: () => {
+      closeCreateFolder();
+      afterMutation();
     },
-  );
+    onFinish: () => {
+      busy.value = false;
+    },
+  });
 }
 
-function deleteFile(path: string) {
-  selectedFileForDeletion.value = path;
-  showDeleteModal.value = true;
-}
-
-function deleteFileConfirmed() {
-  loading.value = true;
-
-  if (selectedFileForDeletion.value.includes('|||')) {
-    const filesToDelete = selectedFileForDeletion.value.split('|||');
-    router.delete(route('files.bulkDelete'), {
-      data: { paths: filesToDelete },
-      preserveScroll: true,
-      preserveState: true,
-      onSuccess: (page) => {
-        if (page.props.flash?.error) {
-          toasts.error(page.props.flash.error);
-        }
-        else {
-          toasts.success($t('files.ui.files_deleted', { count: String(filesToDelete.length) }));
-          clearSelection();
-          emit('update', props.path);
-        }
-      },
-      onError: () => {
-        toasts.error($t('files.ui.delete_files_error'));
-      },
-      onFinish: () => {
-        loading.value = false;
-        showDeleteModal.value = false;
-      },
-    });
-  }
-  else if (selectedFileForDeletion.value.startsWith('FOLDER:')) {
-    const folderPath = selectedFileForDeletion.value.replace('FOLDER:', '');
-    router.delete(
-      route('files.deleteDirectory', { path: folderPath }),
-      {
-        preserveScroll: true,
-        preserveState: true,
-        onSuccess: (page) => {
-          if (page.props.flash?.error) {
-            toasts.error(page.props.flash.error);
-          }
-          else {
-            toasts.success($t('files.ui.folder_deleted'));
-            if (props.path === folderPath || props.path.startsWith(`${folderPath}/`)) {
-              const parentPath = folderPath.split('/').slice(0, -1).join('/') || 'public/files';
-              emit('changeDirectory', parentPath);
-            }
-            else {
-              emit('update', props.path);
-            }
-          }
-        },
-        onError: () => {
-          toasts.error($t('files.ui.delete_folder_error'));
-        },
-        onFinish: () => {
-          loading.value = false;
-          showDeleteModal.value = false;
-        },
-      },
-    );
-  }
-  else {
-    router.delete(
-      route('files.delete', { path: selectedFileForDeletion.value }),
-      {
-        preserveScroll: true,
-        preserveState: true,
-        onSuccess: (page) => {
-          if (page.props.flash?.error) {
-            toasts.error(page.props.flash.error);
-          }
-          else {
-            toasts.success($t('files.ui.file_deleted_short'));
-            emit('update', props.path);
-          }
-        },
-        onError: () => {
-          toasts.error($t('files.ui.delete_file_error'));
-        },
-        onFinish: () => {
-          loading.value = false;
-          showDeleteModal.value = false;
-        },
-      },
-    );
-  }
-}
-
-function handleFolderClick(folder: DirectoryEntry) {
-  selectedFile.value = null;
-  clearSelection();
-  currentPage.value = 1;
-  search.value = '';
-  emit('changeDirectory', folder.path);
-}
-
-function handleFolderClickByPath(path: string) {
-  selectedFile.value = null;
-  clearSelection();
-  currentPage.value = 1;
-  search.value = '';
-  emit('changeDirectory', path);
-}
-
-function goHome() {
-  activeView.value = 'browse';
-  search.value = '';
-  navigateToPath('public/files');
-}
-
-function handleBack() {
-  selectedFile.value = null;
-  clearSelection();
-  currentPage.value = 1;
-  emit('back');
-}
+/* --- Selection --------------------------------------------------------- */
 
 function isSelectable(name: string): boolean {
-  const allowed = props.uploadExtensions?.length
-    ? props.uploadExtensions.map(e => e.toLowerCase())
-    : null;
-  if (!allowed) return true;
-
-  const ext = name.includes('.') ? name.split('.').pop()?.toLowerCase() : undefined;
-  return !!ext && allowed.includes(ext);
+  if (!props.uploadExtensions?.length) return true;
+  return props.uploadExtensions.map(ext => ext.toLowerCase()).includes(getFileExtension(name));
 }
 
-function handleFileClick(file: FileEntry, _event?: MouseEvent) {
+function pick(file: FileEntry) {
+  if (!isSelectable(file.name)) {
+    toasts.error($t('files.ui.cannot_select_file_type'));
+    return;
+  }
+  selectedFile.value = file.path;
+  emit('fileSelected', file.path, 'browse');
+}
+
+function handleToggleCheck(file: FileEntry, event?: MouseEvent) {
+  if (event?.shiftKey) {
+    checks.range(file);
+  }
+  else {
+    checks.toggle(file);
+  }
+}
+
+function handleFileClick(file: FileEntry, event?: MouseEvent) {
   if (props.selectionMode) {
-    if (!isSelectable(file?.name || file?.path || '')) {
-      toasts.error($t('files.ui.cannot_select_file_type'));
-      return;
-    }
-    selectedFile.value = file.path;
-    emit('fileSelected', file.path, 'browse');
+    pick(file);
     return;
   }
 
-  if (isMultiSelectMode.value) {
-    handleToggleSelect(file);
-    return;
+  if (event?.shiftKey) {
+    checks.range(file);
   }
-
-  selectedFile.value = file.path === selectedFile.value ? null : file.path;
+  else if (event?.ctrlKey || event?.metaKey || checked.value.size > 0) {
+    checks.toggle(file);
+  }
+  else {
+    selectedFile.value = selectedFile.value === file.path ? null : file.path;
+  }
 }
 
 function handleFileDoubleClick(file: FileEntry) {
   if (props.selectionMode) {
-    if (!isSelectable(file?.name || file?.path || '')) {
-      toasts.error($t('files.ui.cannot_select_file_type'));
-      return;
-    }
-    selectedFile.value = file.path;
-    emit('fileSelected', file.path, 'browse');
-    return;
+    pick(file);
   }
-
-  // If image, open lightbox preview
-  if (/\.(jpg|jpeg|png|webp|gif|svg|avif)$/i.test(file.name)) {
-    openLightboxPreview(file);
-  }
-  else {
-    selectedFile.value = file.path;
+  else if (previewKind(file.name) !== null) {
+    selectedFile.value = null;
+    previewPath.value = file.path;
   }
 }
 
-function handleToggleSelect(file: FileEntry) {
-  if (selectedFiles.value.has(file.path)) {
-    selectedFiles.value.delete(file.path);
-  }
-  else {
-    selectedFiles.value.add(file.path);
-  }
-  selectedFiles.value = new Set(selectedFiles.value);
+function clearChecked() {
+  checks.clear();
 }
 
-function handleToggleStar(file: FileEntry) {
-  const { path } = file;
-  if (starredSet.value.has(path)) {
-    starredList.value = starredList.value.filter(p => p !== path);
+/* --- Actions ------------------------------------------------------------ */
+
+function fileActionsFor(file: FileEntry): ItemAction[] {
+  const isStarred = starredSet.value.has(file.path);
+  const actions: ItemAction[] = [];
+
+  if (previewKind(file.name) !== null) {
+    actions.push({ key: 'preview', label: $t('files.ui.preview'), icon: Eye });
   }
-  else {
-    starredList.value = [...starredList.value, path];
+  actions.push(
+    { key: 'details', label: $t('files.ui.details'), icon: Info },
+    { key: 'copyLink', label: $t('files.ui.copy_link'), icon: Link2 },
+    { key: 'open', label: $t('files.ui.open_original'), icon: ExternalLink },
+    { key: 'download', label: $t('files.ui.download'), icon: Download },
+    { key: 'star', label: isStarred ? $t('files.ui.unstar') : $t('files.ui.star'), icon: isStarred ? StarOff : Star },
+  );
+  if (abilities.value.update) {
+    actions.push(
+      { key: 'rename', label: $t('files.ui.rename'), icon: PencilLine },
+      { key: 'move', label: $t('files.ui.move'), icon: FolderInput },
+    );
+  }
+  if (abilities.value.delete) {
+    actions.push({ key: 'delete', label: $t('files.ui.delete'), icon: Trash2, destructive: true });
+  }
+
+  return actions;
+}
+
+function handleFileAction(key: string, file: FileEntry) {
+  switch (key) {
+    case 'preview':
+      previewPath.value = file.path;
+      break;
+    case 'details':
+      selectedFile.value = file.path;
+      break;
+    case 'copyLink':
+      copyLink(file);
+      break;
+    case 'open':
+      window.open(publicUrl(file.path), '_blank', 'noopener');
+      break;
+    case 'download':
+      downloadPaths([file.path]);
+      break;
+    case 'star':
+      toggleStar(file);
+      break;
+    case 'rename':
+      renameTarget.value = { path: file.path, name: file.name, isFolder: false };
+      break;
+    case 'move':
+      moveTarget.value = [file.path];
+      break;
+    case 'delete':
+      pendingDelete.value = { kind: 'file', paths: [file.path] };
+      break;
   }
 }
 
-function toggleStarSelected() {
-  selectedFiles.value.forEach((path) => {
-    if (starredSet.value.has(path)) {
-      starredList.value = starredList.value.filter(p => p !== path);
+function folderActionsFor(directory: FolderLike): { actions: ItemAction[]; note?: string } {
+  const actions: ItemAction[] = [];
+  let note: string | undefined;
+
+  if (abilities.value.update) {
+    actions.push({ key: 'rename', label: $t('files.ui.rename'), icon: PencilLine });
+  }
+  if (abilities.value.deleteDirectory) {
+    if ((directory.items ?? 0) === 0) {
+      actions.push({ key: 'delete', label: $t('files.ui.delete_folder'), icon: Trash2, destructive: true });
     }
     else {
-      starredList.value = [...starredList.value, path];
+      note = $t('files.ui.delete_folder_not_empty', { count: String(directory.items) });
     }
+  }
+
+  return { actions, note };
+}
+
+function handleFolderAction(key: string, directory: FolderLike) {
+  if (key === 'rename') {
+    renameTarget.value = { path: directory.path, name: directory.name, isFolder: true };
+  }
+  else if (key === 'delete') {
+    pendingDelete.value = { kind: 'folder', paths: [directory.path] };
+  }
+}
+
+function toggleStar(file: FileEntry) {
+  starred.toggle(file, props.path);
+}
+
+function starChecked() {
+  const count = starred.star(displayedFiles.value.filter(file => checked.value.has(file.path)), props.path);
+  toasts.success($t('files.ui.starred_count', { count: String(count) }));
+}
+
+function copyLink(file: FileEntry) {
+  void copy(`${window.location.origin}${publicUrl(file.path)}`).then(() => {
+    toasts.success($t('files.ui.link_copied'));
   });
 }
 
-function openLightboxPreview(file: FileEntry) {
-  previewTarget.value = file;
+/** Browsers drop all but the first of several downloads started in one tick. */
+function downloadPaths(paths: string[]) {
+  paths.forEach((path, index) => {
+    window.setTimeout(() => {
+      const anchor = document.createElement('a');
+      anchor.href = publicUrl(path);
+      anchor.download = path.split('/').pop() ?? '';
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+    }, index * 300);
+  });
 }
 
-function openLightboxForSelected() {
-  if (!selectedFile.value) return;
-  const file = displayedFiles.value.find(f => f.path === selectedFile.value);
-  if (file) {
-    previewTarget.value = file;
+function downloadChecked() {
+  downloadPaths([...checked.value]);
+}
+
+/* --- Rename, move, delete ---------------------------------------------- */
+
+function handleRenamed(from: string, to: string) {
+  renameTarget.value = null;
+  starred.rename(from, to);
+  if (selectedFile.value === from) {
+    selectedFile.value = to;
   }
-  else {
-    const url = `/uploads/${selectedFile.value.replace(/^public\//, '')}`;
-    window.open(url, '_blank');
+  afterMutation();
+}
+
+function handleMoved(destination: string) {
+  const moved = new Set(moveTarget.value ?? []);
+  moveTarget.value = null;
+  starred.move([...moved], destination);
+  if (selectedFile.value && moved.has(selectedFile.value)) {
+    selectedFile.value = null;
   }
+  clearChecked();
+  afterMutation();
 }
 
-function handleInsertSelected() {
-  if (!selectedFile.value) return;
-  emit('fileSelected', selectedFile.value, 'browse');
-}
-
-function downloadSelected() {
-  if (selectedFiles.value.size === 0) return;
-  const firstPath = Array.from(selectedFiles.value)[0];
-  const url = `/uploads/${firstPath.replace(/^public\//, '')}`;
-  window.open(url, '_blank');
-}
-
-function navigateToPath(targetPath: string) {
-  selectedFile.value = null;
-  clearSelection();
-  currentPage.value = 1;
-  emit('changeDirectory', targetPath);
-}
-
-function clearSelection() {
-  selectedFiles.value = new Set();
-}
-
-function toggleSelectAllFiles() {
-  if (allFilesSelected.value) {
-    clearSelection();
-  }
-  else {
-    const allPaths = displayedFiles.value.map(f => f.path);
-    selectedFiles.value = new Set(allPaths);
-  }
-}
-
-function deleteSelectedFiles() {
-  if (selectedFiles.value.size === 0) return;
-  const filesToDelete = Array.from(selectedFiles.value);
-  selectedFileForDeletion.value = filesToDelete.join('|||');
-  showDeleteModal.value = true;
-}
-
-function getFileName(filePath: string): string {
-  return filePath.split('/').pop() || 'Unknown file';
-}
-
-function getDeleteTitle(): string {
-  if (selectedFileForDeletion.value.startsWith('FOLDER:')) {
-    return $t('files.ui.confirm_delete_folder_title');
-  }
-  if (selectedFileForDeletion.value.includes('|||')) {
-    const fileCount = selectedFileForDeletion.value.split('|||').length;
-    return $t('files.ui.confirm_delete_files_title', { count: String(fileCount) });
-  }
+const deleteTitle = computed(() => {
+  const pending = pendingDelete.value;
+  if (!pending) return '';
+  if (pending.kind === 'folder') return $t('files.ui.confirm_delete_folder_title');
+  if (pending.kind === 'files') return $t('files.ui.confirm_delete_files_title', { count: String(pending.paths.length) });
   return $t('files.ui.confirm_delete_file_title');
+});
+
+const deleteDescription = computed(() => {
+  const pending = pendingDelete.value;
+  if (!pending) return '';
+  const names = pending.paths.map(path => path.split('/').pop() ?? path);
+  if (pending.kind === 'folder') return $t('files.ui.confirm_delete_folder_body', { name: names[0] });
+  if (pending.kind === 'files') {
+    const listed = names.slice(0, 5).join(', ') + (names.length > 5 ? '…' : '');
+    return `${$t('files.ui.confirm_delete_files_body', { count: String(names.length) })} ${listed}`;
+  }
+  return `${$t('files.ui.confirm_delete_file_body', { name: names[0] })} ${$t('files.ui.confirm_delete_file_note')}`;
+});
+
+function confirmDelete() {
+  const pending = pendingDelete.value;
+  if (!pending || busy.value) return;
+
+  pendingDelete.value = null;
+  busy.value = true;
+
+  const removed = new Set(pending.paths);
+  const options = {
+    preserveScroll: true,
+    preserveState: true,
+    onSuccess: (page: { props: { flash?: { warning?: string | null } } }) => {
+      flashWarning(page);
+      if (selectedFile.value && removed.has(selectedFile.value)) {
+        selectedFile.value = null;
+      }
+      checks.keepOnly(new Set([...checked.value].filter(path => !removed.has(path))));
+      starred.forget(pending.paths);
+      afterMutation();
+    },
+    onFinish: () => {
+      busy.value = false;
+    },
+  };
+
+  if (pending.kind === 'folder') {
+    router.delete(route('files.deleteDirectory', { path: pending.paths[0] }), options);
+  }
+  else if (pending.kind === 'files') {
+    router.delete(route('files.bulkDelete'), { ...options, data: { paths: pending.paths } });
+  }
+  else {
+    router.delete(route('files.delete', { path: pending.paths[0] }), options);
+  }
 }
 
-function getDeleteMessage(): string {
-  if (selectedFileForDeletion.value.startsWith('FOLDER:')) {
-    const folderPath = selectedFileForDeletion.value.replace('FOLDER:', '');
-    const folderName = folderPath.split('/').pop() || 'Unknown folder';
-    return `${$t('files.ui.confirm_delete_folder_body', { name: folderName })}\n\n${$t('files.ui.confirm_delete_folder_note')}`;
-  }
-  if (selectedFileForDeletion.value.includes('|||')) {
-    const fileCount = selectedFileForDeletion.value.split('|||').length;
-    const fileList = selectedFileForDeletion.value.split('|||')
-      .map(file => getFileName(file))
-      .join(', ');
-    return `${$t('files.ui.confirm_delete_files_body', { count: String(fileCount) })}\n\n${fileList}`;
-  }
-  const fileName = getFileName(selectedFileForDeletion.value);
-  return `${$t('files.ui.confirm_delete_file_body', { name: fileName })}\n\n${$t('files.ui.confirm_delete_file_note')}`;
-}
+/* --- Upload ------------------------------------------------------------- */
 
-async function handleFileUpload(files: File[]) {
-  loading.value = true;
+async function handleFileUpload(files: File[], targetPath: string = props.path) {
+  if (busy.value) return;
+  busy.value = true;
 
   try {
-    const result = await uploadFiles(files, props.path);
+    const result = await uploadFiles(files, targetPath);
 
     if (result.failed.length > 0) {
       toasts.error($t('files.errors.upload_partial', { count: String(result.failed.length) }));
@@ -764,7 +844,7 @@ async function handleFileUpload(files: File[]) {
     toasts.error(error instanceof Error ? error.message : $t('files.errors.upload_all_failed'));
   }
   finally {
-    loading.value = false;
+    busy.value = false;
   }
 }
 
@@ -778,28 +858,29 @@ function selectUploadedFile(uploaded: UploadedFileResult[]) {
   emit('fileSelected', file.path, 'upload');
 }
 
-function onFilesSelected(_files: File[]) {
-  // downstream handler
+/* --- Keyboard ----------------------------------------------------------- */
+
+function isTyping(target: EventTarget | null): boolean {
+  const element = target as HTMLElement | null;
+  return !!element && (['INPUT', 'TEXTAREA', 'SELECT'].includes(element.tagName) || element.isContentEditable);
 }
 
-// Global keyboard handlers
+const overlayOpen = computed(() => [selectedFile.value, previewPath.value, pendingDelete.value, renameTarget.value, moveTarget.value]
+  .some(value => value !== null) || showCreateFolder.value);
+
 function handleKeyDown(event: KeyboardEvent) {
-  if (event.key === 'Escape') {
-    if (previewTarget.value) {
-      previewTarget.value = null;
-      return;
-    }
-    if (selectedFile.value) {
-      selectedFile.value = null;
-      return;
-    }
-    if (selectedFiles.value.size > 0) {
-      clearSelection();
-    }
+  if (overlayOpen.value || props.selectionMode || isTyping(event.target)) return;
+
+  if (event.key === 'Escape' && checked.value.size > 0) {
+    clearChecked();
   }
-  else if ((event.ctrlKey || event.metaKey) && event.key === 'a' && isMultiSelectMode.value) {
+  else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a' && displayedFiles.value.length > 0) {
     event.preventDefault();
-    toggleSelectAllFiles();
+    checked.value = new Set(displayedFiles.value.map(file => file.path));
+  }
+  else if (event.key === '/') {
+    event.preventDefault();
+    headerRef.value?.focusSearch();
   }
 }
 
@@ -810,25 +891,9 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
 });
+
+// Kinds the type menu offers; kept here so a stale `?type=` from an old link falls back to all.
+if (typeFilter.value !== 'all' && typeFilter.value !== 'folder' && !(TYPE_FILTER_KINDS as readonly string[]).includes(typeFilter.value)) {
+  typeFilter.value = 'all';
+}
 </script>
-
-<style scoped>
-[data-loading="true"]::before {
-  content: "";
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  margin-right: 0.5rem;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  animation: spin 0.6s linear infinite;
-  vertical-align: text-bottom;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-</style>

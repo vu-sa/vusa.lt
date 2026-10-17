@@ -1,298 +1,256 @@
 <template>
   <!-- eslint-disable-next-line vuejs-accessibility/no-static-element-interactions -->
   <div
-    class="relative min-h-[440px] flex flex-col bg-background"
-    @dragover.prevent="dragOver = true"
+    class="relative flex min-h-[440px] flex-1 flex-col bg-background"
+    data-slot="file-grid"
+    @dragover.prevent="dragOver = acceptsDrop"
     @dragleave.prevent="onDragLeave"
     @drop.prevent="handleDrop"
   >
-    <!-- Drag & Drop Overlay -->
     <div
       v-if="dragOver"
-      class="pointer-events-none absolute inset-3 z-30 flex items-center justify-center border-2 border-dashed border-brand bg-background/90 backdrop-blur-xs"
+      class="pointer-events-none absolute inset-2 z-30 flex items-start justify-center border-2 border-dashed border-brand pt-6"
     >
-      <p class="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-brand">
-        <Upload class="size-5" aria-hidden="true" />
-        {{ $t('Paleisk failus čia') }}
+      <p class="flex items-center gap-2 bg-background px-3 py-2 text-sm font-bold text-brand">
+        <Upload class="size-4" aria-hidden="true" />
+        {{ $t('files.ui.drop_here', { folder: folderName }) }}
       </p>
     </div>
 
-    <!-- Loading Skeleton -->
-    <div v-if="loading" class="p-4 flex-1">
-      <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+    <div v-if="loading" class="p-4" data-testid="file-grid-skeleton">
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         <Skeleton v-for="i in 12" :key="i" class="aspect-[4/3] w-full rounded-none" />
       </div>
     </div>
 
-    <!-- Empty State -->
-    <div
-      v-else-if="paginatedFiles.length === 0"
-      class="m-4 flex min-h-[360px] flex-1 flex-col items-center justify-center gap-3 border border-dashed border-border p-6 text-center"
-    >
-      <Folder class="size-12 text-muted-foreground/60" aria-hidden="true" />
-      <h3 class="text-sm font-semibold text-foreground">
-        {{ search ? $t('files.ui.no_files_found') : $t('files.ui.empty_folder') }}
-      </h3>
-      <p class="text-xs text-muted-foreground max-w-sm">
-        {{
-          search
-            ? $t('files.ui.no_files_for_search', { search })
-            : $t('files.ui.empty_folder_help')
-        }}
-      </p>
-    </div>
+    <template v-else>
+      <FolderStrip
+        v-if="folders.length > 0"
+        :directories="folders"
+        :actions-for="folderActionsFor"
+        :accepts-drop
+        @open="$emit('openFolder', $event)"
+        @action="(key, dir) => $emit('folderAction', key, dir)"
+        @drop="(dir, dropped) => $emit('dropFiles', dropped, dir.path)"
+      />
 
-    <!-- Files Container -->
-    <div v-else class="p-4 flex-1">
-      <!-- Grid View -->
-      <div
-        v-if="viewMode === 'grid'"
-        class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
-      >
-        <FileItem
-          v-for="file in paginatedFiles"
-          :key="file.path"
-          :item="file"
-          :is-selected="selectedFile === file.path"
-          :is-multi-selected="selectedFiles.has(file.path)"
-          :is-starred="starredFiles?.has(file.path)"
-          :selection-mode
-          :is-multi-select-mode
-          @click="$emit('fileClick', file, $event)"
-          @double-click="$emit('fileDoubleClick', file)"
-          @toggle-select="$emit('toggleSelect', file)"
-          @toggle-star="$emit('toggleStar', file)"
-          @preview="$emit('previewFile', file)"
-        />
-      </div>
+      <EmptyState
+        v-if="files.length === 0"
+        :mode="filtered ? 'no-results' : 'empty'"
+        :icon="filtered ? undefined : FolderOpen"
+        :title="emptyTitle"
+        :description="emptyDescription"
+        :clear-label="filtered ? $t('files.ui.clear_filters') : undefined"
+        class="flex-1"
+        @clear="$emit('clearFilters')"
+      />
 
-      <!-- List View (Table) -->
-      <div v-else class="border border-border overflow-x-auto">
-        <table class="w-full text-left text-sm">
-          <thead class="border-b border-border bg-secondary/40 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-            <tr>
-              <th scope="col" class="w-10 px-3 py-2.5 text-center" />
-              <th scope="col" class="px-4 py-2.5">
-                {{ $t('files.ui.name') }}
-              </th>
-              <th scope="col" class="hidden sm:table-cell px-4 py-2.5 w-28 text-right">
-                {{ $t('files.ui.size') }}
-              </th>
-              <th scope="col" class="hidden md:table-cell px-4 py-2.5 w-36 text-right">
-                {{ $t('files.ui.modified') }}
-              </th>
-              <th scope="col" class="hidden lg:table-cell px-4 py-2.5 w-28 text-right">
-                {{ $t('files.ui.type') }}
-              </th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-border">
-            <tr
-              v-for="file in paginatedFiles"
-              :key="file.path"
-              :class="[
-                'cursor-pointer transition-colors',
-                selectedFile === file.path || selectedFiles.has(file.path)
-                  ? 'bg-brand/10'
-                  : 'hover:bg-secondary/60',
-              ]"
+      <div v-else class="flex-1 p-4">
+        <ul
+          v-if="view === 'cards'"
+          class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
+          :aria-label="$t('files.ui.files')"
+        >
+          <li v-for="file in files" :key="file.path">
+            <FileItem
+              :item="file"
+              :selected="selectedFile === file.path"
+              :checked="checked.has(file.path)"
+              :starred="starred.has(file.path)"
+              :show-checkbox="checked.size > 0"
+              :selection-mode
+              :can-preview="canPreview(file)"
+              :actions="fileActionsFor?.(file)"
               @click="$emit('fileClick', file, $event)"
-              @dblclick="$emit('fileDoubleClick', file)"
-            >
-              <!-- Checkbox -->
-              <td class="w-14 px-2 py-2 text-center">
-                <button
-                  type="button"
-                  :class="[
-                    'inline-flex size-11 items-center justify-center border transition-colors',
-                    selectedFiles.has(file.path) || selectedFile === file.path
-                      ? 'border-brand bg-brand-fill text-brand-foreground'
-                      : 'border-border',
-                  ]"
-                  :title="selectedFiles.has(file.path) || selectedFile === file.path ? $t('Atžymėti') : $t('Pažymėti')"
-                  :aria-label="selectedFiles.has(file.path) || selectedFile === file.path ? $t('Atžymėti') : $t('Pažymėti')"
-                  @click.stop="$emit('toggleSelect', file)"
-                >
-                  <Check v-if="selectedFiles.has(file.path) || selectedFile === file.path" class="size-3" aria-hidden="true" />
-                </button>
-              </td>
+              @dblclick="$emit('fileDblclick', file)"
+              @toggle-check="$emit('toggleCheck', file, $event)"
+              @preview="$emit('preview', file)"
+              @action="$emit('fileAction', $event, file)"
+            />
+          </li>
+        </ul>
 
-              <!-- Name & Icon -->
-              <td class="px-4 py-2">
-                <div class="flex items-center gap-2.5 min-w-0">
-                  <component
-                    :is="getFileIcon(file.name)"
-                    class="size-4 shrink-0 text-muted-foreground"
-                    aria-hidden="true"
+        <div v-else class="border border-border">
+          <table class="w-full table-fixed text-left text-sm">
+            <thead class="border-b border-border bg-secondary/40 text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+              <tr>
+                <th v-if="!selectionMode" scope="col" class="w-11 px-3 py-2">
+                  <Checkbox
+                    :model-value="allChecked ? true : checked.size > 0 ? 'indeterminate' : false"
+                    :aria-label="$t('files.ui.select_all')"
+                    @update:model-value="$emit('toggleCheckAll')"
                   />
-                  <span class="truncate text-sm font-medium text-foreground" :title="file.name">
-                    {{ file.name }}
-                  </span>
+                </th>
+                <th scope="col" class="px-3 py-2">
+                  {{ $t('files.ui.name') }}
+                </th>
+                <th scope="col" class="hidden w-24 px-3 py-2 text-right sm:table-cell">
+                  {{ $t('files.ui.size') }}
+                </th>
+                <th scope="col" class="hidden w-32 px-3 py-2 text-right md:table-cell">
+                  {{ $t('files.ui.modified') }}
+                </th>
+                <th v-if="fileActionsFor" scope="col" class="w-12 px-2 py-2">
+                  <span class="sr-only">{{ $t('files.ui.actions') }}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-border">
+              <tr
+                v-for="file in files"
+                :key="file.path"
+                :aria-selected="checked.has(file.path) || selectedFile === file.path"
+                :class="[
+                  'cursor-pointer transition-colors',
+                  checked.has(file.path) || selectedFile === file.path ? 'bg-brand/5' : 'hover:bg-secondary/60',
+                ]"
+                @click="$emit('fileClick', file, $event)"
+                @dblclick="$emit('fileDblclick', file)"
+              >
+                <td v-if="!selectionMode" class="px-3 py-1.5" @click.stop="$emit('toggleCheck', file, $event)">
+                  <Checkbox
+                    :model-value="checked.has(file.path)"
+                    :aria-label="checked.has(file.path) ? $t('files.ui.uncheck', { name: file.name }) : $t('files.ui.check', { name: file.name })"
+                  />
+                </td>
+                <td class="px-3 py-1.5">
                   <button
-                    v-if="starredFiles?.has(file.path)"
                     type="button"
-                    class="flex size-11 shrink-0 items-center justify-center text-status-attention fill-status-attention"
-                    :title="$t('Pašalinti iš pažymėtų')"
-                    :aria-label="$t('Pašalinti iš pažymėtų')"
-                    @click.stop="$emit('toggleStar', file)"
+                    class="flex w-full min-w-0 items-center gap-3 text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40"
+                    @click.stop="$emit('fileClick', file, $event)"
                   >
-                    <Star class="size-3.5 fill-status-attention" aria-hidden="true" />
+                    <FileThumb
+                      :path="file.path"
+                      :name="file.name"
+                      :width="160"
+                      icon-class="size-4 text-muted-foreground"
+                      class="size-10 shrink-0 border border-border"
+                    />
+                    <span class="min-w-0 flex-1">
+                      <span class="flex items-center gap-1.5">
+                        <span class="truncate font-medium text-foreground" :title="file.name">{{ file.name }}</span>
+                        <Star v-if="starred.has(file.path)" class="size-3 shrink-0 fill-status-attention text-status-attention" :aria-label="$t('files.ui.starred')" />
+                      </span>
+                      <span class="block truncate text-xs text-muted-foreground">
+                        <span class="uppercase">{{ getFileExtension(file.name) || '—' }}</span>
+                        <span class="sm:hidden"> · {{ formatBytes(file.size) }}</span>
+                        <template v-if="file.directory"> · {{ relativeToRoot(file.directory) || $t('files.ui.root') }}</template>
+                      </span>
+                    </span>
                   </button>
-                </div>
-              </td>
+                </td>
+                <td class="hidden px-3 py-1.5 text-right text-xs whitespace-nowrap text-muted-foreground tabular-nums sm:table-cell">
+                  {{ formatBytes(file.size) }}
+                </td>
+                <td class="hidden px-3 py-1.5 text-right text-xs whitespace-nowrap text-muted-foreground tabular-nums md:table-cell">
+                  {{ formatDate(file.modified) }}
+                </td>
+                <td v-if="fileActionsFor" class="px-2 py-1.5 text-right" @click.stop>
+                  <ItemActionsMenu :label="file.name" :actions="fileActionsFor(file)" @select="$emit('fileAction', $event, file)" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-              <!-- Size -->
-              <td class="hidden sm:table-cell px-4 py-2 text-right text-xs text-muted-foreground whitespace-nowrap">
-                {{ formatBytes(file.size) }}
-              </td>
-
-              <!-- Modified -->
-              <td class="hidden md:table-cell px-4 py-2 text-right text-xs text-muted-foreground whitespace-nowrap">
-                {{ formatDate(file.modified) }}
-              </td>
-
-              <!-- Type -->
-              <td class="hidden lg:table-cell px-4 py-2 text-right text-xs text-muted-foreground uppercase whitespace-nowrap">
-                {{ file.name.split('.').pop() || '—' }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <CollectionLoadMore :has-more :loading="false" @load="$emit('loadMore')" />
+        <p v-if="totalFiles > 0" class="pt-4 text-center text-xs text-muted-foreground tabular-nums">
+          {{ $t('files.ui.shown_of', { shown: String(files.length), total: String(totalFiles) }) }}
+        </p>
       </div>
-    </div>
-
-    <!-- Pagination Footer -->
-    <div
-      v-if="totalItems > 0 && !loading"
-      class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-border px-4 py-3 bg-muted/20 text-xs text-muted-foreground"
-    >
-      <div class="flex items-center gap-2">
-        <span>{{ $t('files.ui.show') }}</span>
-        <select
-          :value="itemsPerPage"
-          class="border border-border bg-background px-2 py-1 text-xs text-foreground outline-none"
-          @change="$emit('update:itemsPerPage', Number(($event.target as HTMLSelectElement).value))"
-        >
-          <option :value="25">
-            25
-          </option>
-          <option :value="50">
-            50
-          </option>
-          <option :value="100">
-            100
-          </option>
-          <option :value="totalItems">
-            {{ $t('files.ui.show_all') }}
-          </option>
-        </select>
-        <span>{{ $t('iš') }} {{ totalItems }}</span>
-      </div>
-
-      <!-- Pagination Buttons -->
-      <div v-if="totalPages > 1" class="flex items-center gap-1">
-        <button
-          type="button"
-          :disabled="currentPage <= 1"
-          class="inline-flex min-h-11 items-center border border-border px-2.5 font-medium transition-colors hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed"
-          @click="$emit('update:currentPage', currentPage - 1)"
-        >
-          {{ $t('files.ui.previous') }}
-        </button>
-
-        <template v-for="(page, idx) in visiblePages" :key="idx">
-          <span v-if="page === '...'" class="px-1 text-muted-foreground">...</span>
-          <button
-            v-else
-            type="button"
-            :class="[
-              'inline-flex min-h-11 min-w-11 items-center justify-center border font-medium transition-colors',
-              currentPage === page
-                ? 'border-brand bg-brand-fill text-brand-foreground font-bold'
-                : 'border-border hover:bg-secondary text-foreground',
-            ]"
-            @click="$emit('update:currentPage', Number(page))"
-          >
-            {{ page }}
-          </button>
-        </template>
-
-        <button
-          type="button"
-          :disabled="currentPage >= totalPages"
-          class="inline-flex min-h-11 items-center border border-border px-2.5 font-medium transition-colors hover:bg-secondary disabled:opacity-40 disabled:cursor-not-allowed"
-          @click="$emit('update:currentPage', currentPage + 1)"
-        >
-          {{ $t('files.ui.next') }}
-        </button>
-      </div>
-    </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Check, Folder, Star, Upload } from '@lucide/vue';
+import { FolderOpen, Star, Upload } from '@lucide/vue';
 
-import type { FileEntry } from '../types';
-import { formatBytes, formatDate } from '../utils';
+import type { DirectoryEntry, FileEntry, FileViewMode, ItemAction } from '../types';
+import { formatBytes, formatDate, relativeToRoot } from '../utils';
 
 import FileItem from './FileItem.vue';
+import FileThumb from './FileThumb.vue';
+import FolderStrip from './FolderStrip.vue';
+import ItemActionsMenu from './ItemActionsMenu.vue';
 
+import CollectionLoadMore from '@/Components/Collection/CollectionLoadMore.vue';
+import EmptyState from '@/Components/Patterns/EmptyState.vue';
+import { Checkbox } from '@/Components/ui/checkbox';
 import { Skeleton } from '@/Components/ui/skeleton';
-import { getFileIcon } from '@/Utils/fileIcons';
+import { getFileExtension } from '@/Utils/fileIcons';
 
-const props = withDefaults(
-  defineProps<{
-    paginatedFiles: FileEntry[];
-    selectedFile: string | null;
-    selectedFiles: Set<string>;
-    starredFiles?: Set<string>;
-    isMultiSelectMode?: boolean;
-    selectionMode?: boolean;
-    loading?: boolean;
-    viewMode: 'grid' | 'list';
-    search?: string;
-    totalItems: number;
-    itemsPerPage: number;
-    currentPage: number;
-    totalPages: number;
-    visiblePages: (number | string)[];
-  }>(),
-  {
-    starredFiles: () => new Set<string>(),
-    isMultiSelectMode: false,
-    selectionMode: false,
-    loading: false,
-    search: '',
-  },
-);
+type FolderLike = Pick<DirectoryEntry, 'path' | 'name' | 'items'>;
+
+const props = withDefaults(defineProps<{
+  files: FileEntry[];
+  totalFiles: number;
+  hasMore?: boolean;
+  folders?: DirectoryEntry[];
+  view: FileViewMode;
+  selectedFile: string | null;
+  checked: Set<string>;
+  starred?: Set<string>;
+  allChecked?: boolean;
+  selectionMode?: boolean;
+  loading?: boolean;
+  /** A search or type filter is narrowing the list. */
+  filtered?: boolean;
+  acceptsDrop?: boolean;
+  folderName?: string;
+  canPreview?: (file: FileEntry) => boolean;
+  fileActionsFor?: (file: FileEntry) => ItemAction[];
+  folderActionsFor?: (directory: FolderLike) => { actions: ItemAction[]; note?: string };
+}>(), {
+  folders: () => [],
+  starred: () => new Set<string>(),
+  folderName: '',
+  canPreview: () => false,
+  fileActionsFor: undefined,
+  folderActionsFor: undefined,
+});
 
 const emit = defineEmits<{
-  'fileClick': [file: FileEntry, event?: MouseEvent];
-  'fileDoubleClick': [file: FileEntry];
-  'toggleSelect': [file: FileEntry];
-  'toggleStar': [file: FileEntry];
-  'previewFile': [file: FileEntry];
-  'filesDropped': [files: File[]];
-  'update:currentPage': [page: number];
-  'update:itemsPerPage': [items: number];
+  fileClick: [file: FileEntry, event: MouseEvent];
+  fileDblclick: [file: FileEntry];
+  toggleCheck: [file: FileEntry, event: MouseEvent];
+  toggleCheckAll: [];
+  preview: [file: FileEntry];
+  fileAction: [key: string, file: FileEntry];
+  openFolder: [directory: FolderLike];
+  folderAction: [key: string, directory: FolderLike];
+  dropFiles: [files: File[], directory?: string];
+  loadMore: [];
+  clearFilters: [];
 }>();
 
 const dragOver = ref(false);
 
-function onDragLeave(e: DragEvent) {
-  if (!e.relatedTarget || (e.currentTarget as HTMLElement).contains(e.relatedTarget as Node)) {
+const emptyTitle = computed(() => {
+  if (props.filtered) return $t('files.ui.no_files_found');
+  return props.folders.length > 0 ? $t('files.ui.no_files_here') : $t('files.ui.empty_folder');
+});
+
+const emptyDescription = computed(() => {
+  if (props.filtered) return $t('files.ui.no_files_filtered_help');
+  if (props.selectionMode) return $t('files.ui.empty_folder_selection_help');
+  return props.acceptsDrop ? $t('files.ui.empty_folder_help') : undefined;
+});
+
+function onDragLeave(event: DragEvent) {
+  const target = event.relatedTarget as Node | null;
+  if (target && (event.currentTarget as HTMLElement).contains(target)) {
     return;
   }
   dragOver.value = false;
 }
 
-function handleDrop(e: DragEvent) {
+function handleDrop(event: DragEvent) {
   dragOver.value = false;
-  if (!e.dataTransfer?.files?.length) return;
-  const files = Array.from(e.dataTransfer.files);
-  emit('filesDropped', files);
+  const files = Array.from(event.dataTransfer?.files ?? []);
+  if (props.acceptsDrop && files.length > 0) {
+    emit('dropFiles', files);
+  }
 }
 </script>

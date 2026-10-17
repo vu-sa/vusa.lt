@@ -1,181 +1,122 @@
 <template>
   <div
     :class="[
-      'group relative flex flex-col border text-left transition-colors cursor-pointer select-none bg-background',
-      isSelected || isMultiSelected
-        ? 'border-brand bg-brand/5 ring-1 ring-brand'
-        : 'border-border hover:bg-secondary/60 hover:border-muted-foreground/30',
+      'group relative flex flex-col border bg-background transition-colors',
+      checked || selected
+        ? 'border-brand ring-1 ring-brand'
+        : 'border-border hover:border-muted-foreground/40',
     ]"
-    role="button"
-    tabindex="0"
-    :aria-selected="isSelected || isMultiSelected"
-    :aria-label="item.name"
-    @click="handleClick"
-    @dblclick="handleDoubleClick"
-    @keydown.enter="handleClick"
-    @keydown.space.prevent="handleClick"
+    data-slot="file-item"
   >
-    <!-- Checkbox Selector (Top-Left) -->
     <button
-      v-if="!isFolder"
       type="button"
-      :class="[
-        'absolute left-2 top-2 z-10 flex size-11 cursor-pointer items-center justify-center border transition-all focus-visible:opacity-100 pointer-coarse:opacity-100',
-        isMultiSelected || isSelected
-          ? 'border-brand bg-brand-fill text-brand-foreground opacity-100'
-          : 'border-border bg-background/90 text-foreground opacity-0 group-hover:opacity-100',
-      ]"
-      :title="isMultiSelected ? $t('Atžymėti') : $t('Pažymėti')"
-      :aria-label="isMultiSelected ? $t('Atžymėti') : $t('Pažymėti')"
-      @click.stop="$emit('toggleSelect', item)"
+      class="flex min-w-0 flex-col text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40"
+      :aria-pressed="selectionMode ? undefined : (checked || selected)"
+      :aria-label="item.name"
+      @click="$emit('click', $event)"
+      @dblclick="$emit('dblclick')"
     >
-      <Check v-if="isMultiSelected || isSelected" class="size-3.5" aria-hidden="true" />
+      <FileThumb
+        :path="item.path"
+        :name="item.name"
+        :width="320"
+        icon-class="size-10 text-muted-foreground"
+        class="aspect-[4/3] w-full border-b border-border"
+      />
+      <span class="flex min-w-0 flex-col gap-0.5 py-2 pr-10 pl-2.5">
+        <span class="truncate text-sm font-medium text-foreground" :title="item.name">{{ item.name }}</span>
+        <span class="flex items-center gap-1 truncate text-xs text-muted-foreground">
+          <Star v-if="starred" class="size-3 shrink-0 fill-status-attention text-status-attention" :aria-label="$t('files.ui.starred')" />
+          <span class="uppercase">{{ extension }}</span>
+          <span aria-hidden="true">·</span>
+          <span>{{ formatBytes(item.size) }}</span>
+        </span>
+        <span v-if="item.directory" class="truncate text-xs text-muted-foreground" :title="item.directory">{{ relativeToRoot(item.directory) || $t('files.ui.root') }}</span>
+      </span>
     </button>
 
-    <!-- Quick Preview Eye Button (Top-Right, Images only) -->
-    <button
-      v-if="isImage"
-      type="button"
+    <!-- The checkbox inside is the control; this wrapper widens its hit area and reads the shift key. -->
+    <!-- eslint-disable-next-line vuejs-accessibility/click-events-have-key-events, vuejs-accessibility/no-static-element-interactions -->
+    <span
+      v-if="!selectionMode"
       :class="[
-        'absolute right-2 top-2 z-10 flex size-11 cursor-pointer items-center justify-center',
-        'border border-border bg-background/90 text-muted-foreground opacity-0 transition-opacity',
-        'hover:text-brand hover:border-brand group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100',
+        'absolute top-1 left-1 flex size-8 items-center justify-center transition-opacity pointer-coarse:size-11',
+        checked || showCheckbox
+          ? 'opacity-100'
+          : 'opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100',
       ]"
-      :title="$t('Peržiūrėti')"
-      :aria-label="$t('Peržiūrėti')"
-      @click.stop="$emit('preview', item)"
+      @click.stop="$emit('toggleCheck', $event)"
     >
-      <Eye class="size-3.5" aria-hidden="true" />
-    </button>
+      <Checkbox
+        :model-value="checked"
+        class="bg-background/95"
+        :aria-label="checked ? $t('files.ui.uncheck', { name: item.name }) : $t('files.ui.check', { name: item.name })"
+      />
+    </span>
 
-    <!-- Media Frame (4:3 aspect ratio) -->
-    <div
-      class="relative flex aspect-[4/3] w-full items-center justify-center overflow-hidden border-b border-border bg-secondary/30"
+    <Button
+      v-if="canPreview"
+      variant="outline"
+      size="icon-sm"
+      :class="[
+        'absolute top-1.5 right-1.5 bg-background/95',
+        'opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100',
+      ]"
+      :title="$t('files.ui.preview')"
+      :aria-label="$t('files.ui.preview_name', { name: item.name })"
+      @click.stop="$emit('preview')"
     >
-      <!-- Image Thumbnail -->
-      <img
-        v-if="isImage && !thumbnailFailed"
-        :src="thumbnailSrc"
-        :alt="item.name"
-        loading="lazy"
-        decoding="async"
-        class="size-full object-cover transition-transform duration-200 group-hover:scale-105"
-        @error="handleThumbnailError"
-      >
+      <Eye class="size-4" aria-hidden="true" />
+    </Button>
 
-      <!-- Folder Icon -->
-      <Folder
-        v-else-if="isFolder"
-        class="size-10 text-brand transition-colors"
-        aria-hidden="true"
-      />
-
-      <!-- Type Icon Fallback -->
-      <component
-        :is="typeIcon"
-        v-else
-        class="size-9 text-muted-foreground transition-colors group-hover:text-foreground"
-        aria-hidden="true"
-      />
-    </div>
-
-    <!-- Caption / Details -->
-    <div class="flex items-start justify-between gap-1.5 p-2.5 min-w-0">
-      <div class="min-w-0 flex-1">
-        <p class="truncate text-xs font-semibold text-foreground leading-tight" :title="item.name">
-          {{ item.name }}
-        </p>
-        <p class="mt-1 text-[11px] text-muted-foreground leading-none">
-          <span v-if="isFolder">{{ $t('files.ui.folders') }}</span>
-          <span v-else>{{ formattedSize }}</span>
-        </p>
-      </div>
-
-      <!-- Star Indicator -->
-      <button
-        v-if="!isFolder"
-        type="button"
-        :class="[
-          'flex size-11 shrink-0 items-center justify-center transition-colors focus-visible:opacity-100 pointer-coarse:opacity-100',
-          isStarred
-            ? 'text-status-attention fill-status-attention opacity-100'
-            : 'text-muted-foreground/40 hover:text-status-attention opacity-0 group-hover:opacity-100',
-        ]"
-        :title="isStarred ? $t('Pašalinti iš pažymėtų') : $t('Pažymėti žvaigždute')"
-        :aria-label="isStarred ? $t('Pašalinti iš pažymėtų') : $t('Pažymėti žvaigždute')"
-        @click.stop="$emit('toggleStar', item)"
-      >
-        <Star class="size-3.5" :class="{ 'fill-status-attention': isStarred }" aria-hidden="true" />
-      </button>
-    </div>
+    <ItemActionsMenu
+      v-if="actions && actions.length > 0"
+      :label="item.name"
+      :actions
+      trigger-class="absolute right-1 bottom-1.5"
+      @select="$emit('action', $event)"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Check, Eye, Folder, Star } from '@lucide/vue';
+import { Eye, Star } from '@lucide/vue';
 
-import type { FileEntry } from '../types';
-import { formatBytes } from '../utils';
+import type { FileEntry, ItemAction } from '../types';
+import { formatBytes, relativeToRoot } from '../utils';
 
-import { getFileIcon } from '@/Utils/fileIcons';
+import FileThumb from './FileThumb.vue';
+import ItemActionsMenu from './ItemActionsMenu.vue';
 
-const props = withDefaults(
-  defineProps<{
-    item: FileEntry;
-    isSelected: boolean;
-    isMultiSelected: boolean;
-    selectionMode?: boolean;
-    isMultiSelectMode?: boolean;
-    isFolder?: boolean;
-    isStarred?: boolean;
-  }>(),
-  {
-    selectionMode: false,
-    isMultiSelectMode: false,
-    isFolder: false,
-    isStarred: false,
-  },
-);
+import { Button } from '@/Components/ui/button';
+import { Checkbox } from '@/Components/ui/checkbox';
+import { getFileExtension } from '@/Utils/fileIcons';
 
-const emit = defineEmits<{
-  click: [item: FileEntry, event?: MouseEvent];
-  doubleClick: [item: FileEntry];
-  toggleSelect: [item: FileEntry];
-  toggleStar: [item: FileEntry];
-  preview: [item: FileEntry];
+const props = withDefaults(defineProps<{
+  item: FileEntry;
+  /** Open in the details sheet. */
+  selected?: boolean;
+  /** Ticked for a bulk action. */
+  checked?: boolean;
+  starred?: boolean;
+  /** Something is ticked, so every checkbox stays visible. */
+  showCheckbox?: boolean;
+  selectionMode?: boolean;
+  canPreview?: boolean;
+  actions?: ItemAction[];
+}>(), {
+  actions: undefined,
+});
+
+defineEmits<{
+  click: [event: MouseEvent];
+  dblclick: [];
+  toggleCheck: [event: MouseEvent];
+  preview: [];
+  action: [key: string];
 }>();
 
-const isFolder = computed(() => props.isFolder || false);
-
-const isImage = computed(() => {
-  if (isFolder.value) return false;
-  return /\.(jpg|jpeg|png|webp|gif|svg|avif)$/i.test(props.item?.name ?? '');
-});
-
-const typeIcon = computed(() => getFileIcon(props.item?.name ?? props.item?.path ?? ''));
-
-const originalSrc = computed(() => `/uploads/${props.item?.path?.replace(/^public\//, '') || ''}`);
-
-const thumbnailFailed = ref(false);
-
-const thumbnailSrc = computed(() => {
-  if (thumbnailFailed.value) return originalSrc.value;
-  return route('api.v1.admin.files.thumbnail', { path: props.item?.path, w: 320 });
-});
-
-function handleThumbnailError() {
-  thumbnailFailed.value = true;
-}
-
-const formattedSize = computed(() => formatBytes(props.item?.size));
-
-function handleClick(e: MouseEvent) {
-  emit('click', props.item, e);
-}
-
-function handleDoubleClick() {
-  emit('doubleClick', props.item);
-}
+const extension = computed(() => getFileExtension(props.item.name) || '—');
 </script>
