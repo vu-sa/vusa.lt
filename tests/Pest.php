@@ -27,7 +27,8 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Tests\TestCase;
 use Typesense\Client;
 
-pest()->extend(TestCase::class)->in('Feature', 'Unit', 'Browser');
+$worktreeDirs = glob(dirname(__DIR__).'/.worktrees/*/tests/{Feature,Unit,Browser}', GLOB_BRACE) ?: [];
+pest()->extend(TestCase::class)->in('Feature', 'Unit', 'Browser', ...$worktreeDirs);
 
 // Browser-test configuration has to live here, not in tests/Browser/Pest.php: BootFiles only ever
 // includes Pest.php at the tests/ root (Pest\Bootstrappers\BootFiles::STRUCTURE), so a nested

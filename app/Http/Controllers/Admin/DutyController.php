@@ -121,15 +121,6 @@ class DutyController extends AdminController
 
         $duty->load('institution', 'types', 'current_users');
 
-        // The duty-user wizard consumes this response without leaving its current step.
-        if ($request->wantsJson() || $request->header('X-Inertia-Partial-Data')) {
-            return response()->json([
-                'success' => true,
-                'message' => $this->entityMessage('created', 'duty'),
-                'duty' => $duty,
-            ]);
-        }
-
         return redirect($redirect->url($request->user(), $duty, 'duties.show', 'view', 'duties.index'))
             ->with('success', $this->entityMessage('created', 'duty'));
     }

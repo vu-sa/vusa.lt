@@ -25,7 +25,7 @@ function pushFailure($subscription, int $status, string $body): NotificationFail
 
 test('the device list returns the user\'s subscriptions under data', function (): void {
     asUser($this->user)
-        ->getJson(route('push-subscription.index'))
+        ->getJson(route('api.v1.admin.pushSubscriptions.index'))
         ->assertOk()
         ->assertJsonPath('data.0.endpoint', 'https://fcm.googleapis.com/fcm/send/abc');
 });
