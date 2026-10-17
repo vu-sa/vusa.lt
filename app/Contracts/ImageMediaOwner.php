@@ -19,8 +19,6 @@ interface ImageMediaOwner extends HasMedia
 
     public function afterImageMediaChanged(string $collection): void;
 
-    public function afterImageCacheRefreshed(string $collection): void;
-
     /**
      * @return array<string, array{url: string, conversion: string, focal?: string, author?: string}>
      */
@@ -29,7 +27,7 @@ interface ImageMediaOwner extends HasMedia
     public function refreshImageCache(string $collection): bool;
 
     /**
-     * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+     * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
      *
      * @return array<string, array{url: string, focal?: string, author?: string}>
      */

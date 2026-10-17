@@ -27,6 +27,8 @@
 
       <MediaFrame
         v-if="page.featured_image"
+        :image="page.featured_image_media"
+        sizes="(min-width: 1280px) 576px, (min-width: 1024px) calc((100vw - 128px) / 2), calc(100vw - 48px)"
         :src="page.featured_image"
         :alt="page.title"
         ratio="4/3"
@@ -98,7 +100,10 @@ import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcru
 
 type PageContentPart = AnchorablePart & { [key: string]: unknown };
 
+import type { ImageData } from '@/Types/media';
+
 interface Page {
+  featured_image_media?: ImageData | null;
   title: string;
   layout?: 'default' | 'wide' | 'focused';
   show_table_of_contents?: boolean;

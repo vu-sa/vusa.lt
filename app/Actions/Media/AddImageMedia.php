@@ -3,6 +3,7 @@
 namespace App\Actions\Media;
 
 use App\Services\ImageUploadService;
+use App\Support\Media\ImageConversions;
 use App\Support\StagingProtection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
@@ -25,13 +26,17 @@ class AddImageMedia
         StagingProtection::ensureDiskIsWritable(config('media-library.disk_name'));
 
         $name ??= $source instanceof UploadedFile ? pathinfo($source->getClientOriginalName(), PATHINFO_FILENAME) : 'image';
-        $normalized = $this->images->normalize($source);
+        $bytes = $source instanceof UploadedFile ? (string) file_get_contents($source->getRealPath()) : $source;
+        $lossless = ($properties['lossless'] ?? false) || ImageConversions::isArtwork($bytes, $collection);
+        $normalized = $this->images->normalize($bytes, lossless: $lossless);
 
         return $owner->addMediaFromString($normalized['contents'])
             ->usingName($name)
             ->usingFileName(self::fileName($name))
             ->withCustomProperties([
                 ...$properties,
+                'lossless' => $lossless,
+                'image_policy' => ImageConversions::VERSION,
                 'width' => $normalized['width'],
                 'height' => $normalized['height'],
             ])

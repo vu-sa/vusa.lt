@@ -2,6 +2,7 @@
 
 namespace App\Support\Media;
 
+use Illuminate\Support\Uri;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
@@ -18,12 +19,12 @@ final class ImageData
     public static function fromMedia(Media $media): array
     {
         $width = self::intOrNull($media->getCustomProperty('width'));
-        $url = $media->getUrl();
+        $url = self::url($media);
 
         return [
             'id' => $media->id,
             'url' => $url,
-            'thumb' => $media->hasGeneratedConversion('thumb') ? $media->getUrl('thumb') : $url,
+            'thumb' => $media->hasGeneratedConversion('thumb') ? self::url($media, 'thumb') : $url,
             'srcset' => self::srcset($media, $url, $width),
             'width' => $width,
             'height' => self::intOrNull($media->getCustomProperty('height')),
@@ -33,8 +34,28 @@ final class ImageData
         ];
     }
 
+    public static function url(Media $media, string $conversion = ''): string
+    {
+        $url = $media->getUrl($conversion);
+        $version = $media->getCustomProperty('image_policy');
+
+        return $version ? (string) Uri::of($url)->withQuery(['v' => $version]) : $url;
+    }
+
+    /** @return array<string, string|int|null> */
+    public static function searchFields(?array $image, string $prefix = 'image'): array
+    {
+        return [
+            $prefix.'_display_url' => $image['url'] ?? null,
+            $prefix.'_srcset' => $image['srcset'] ?? null,
+            $prefix.'_width' => $image['width'] ?? null,
+            $prefix.'_height' => $image['height'] ?? null,
+            $prefix.'_focal_point' => $image['focal_point'] ?? null,
+        ];
+    }
+
     /**
-     * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+     * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
      *
      * @return ImageDataArray|null
      */
@@ -75,7 +96,7 @@ final class ImageData
             }
 
             $descriptor = $width === null ? $conversionWidth : min($conversionWidth, $width);
-            $candidates[$descriptor] ??= $media->getUrl($name);
+            $candidates[$descriptor] ??= self::url($media, $name);
         }
 
         if ($width !== null && ! isset($candidates[$width]) && $width > (array_key_last($candidates) ?? 0)) {

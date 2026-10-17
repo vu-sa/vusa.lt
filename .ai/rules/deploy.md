@@ -18,5 +18,10 @@ The outage runs from the `scp deployment/maintenance.php` in deploy-common.yml t
 - `DeploymentResume` derives step order from `DeploymentRun::STEPS`. Do not restate the order anywhere.
 - `staging:refresh-database` drops every table in the database it points at. Its `APP_ENV=staging` guard is deliberately not overridable — no `--force`, no prompt.
 
-## Heavy data backfills are queued from the migration, never run in it
-Migrations run inside the ~15 s maintenance window, and staging re-runs them every night against restored production data. A migration that moves files or rebuilds images only plucks ids and dispatches a chain on the `long-running` connection (precedent: `dispatch_legacy_image_backfill` → `LegacyImageBackfill`). The jobs are idempotent, change no owner timestamps, end with search upserts (never `search:reindex`), and expose a `--status` command that the follow-up release's guard checks. On staging, cap the work to a sample derived from APP_ENV.
+## Heavy data backfills are started by hand, never by a migration
+A backfill that moves files or rebuilds images ships as an artisan command and is run manually after deploy: on staging first, where it can be inspected, then on production. Migrations stay schema-only and never dispatch it. The command must be predictable:
+- With no options it does the whole job (queued on `long-running` as a batch with `allowFailures()`, ending in search upserts, never `search:reindex`). Anything smaller is an explicit flag (`--limit`, `--target`); never a cap derived from APP_ENV.
+- It is idempotent and resumable, has `--status` (the check a later removal release guards on) and `--sync` for running in the foreground, and shows progress (`.ai/rules/commands.md`).
+- Deleting what it replaced is a separate, explicit flag, never part of the default run.
+- Staging's nightly refresh restores production's database, so its results are gone the next morning; re-run it to test again.
+Precedent: `media:migrate-images`.

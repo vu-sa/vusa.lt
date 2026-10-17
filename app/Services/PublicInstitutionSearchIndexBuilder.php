@@ -6,6 +6,7 @@ use App\Enums\TenantType;
 use App\Models\Duty;
 use App\Models\PublicInstitution;
 use App\Settings\AtstovavimasSettings;
+use App\Support\Media\ImageData;
 use Illuminate\Support\Str;
 
 class PublicInstitutionSearchIndexBuilder
@@ -82,6 +83,7 @@ class PublicInstitutionSearchIndexBuilder
 
             // Media
             'image_url' => $institution->imageData('image')['url'] ?? null,
+            ...ImageData::searchFields($institution->imageData('image'), 'image'),
             'logo_url' => $institution->imageData('logo')['thumb'] ?? null,
             'has_logo' => $institution->imageData('logo') !== null,
             'facebook_url' => $institution->facebook_url,

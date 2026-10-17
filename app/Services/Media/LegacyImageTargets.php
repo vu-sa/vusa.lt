@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * The legacy URL columns that became image collections. Each model's legacyImageColumns() names
  * the columns; this only lists which collections to backfill.
  *
- * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+ * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
  */
 final class LegacyImageTargets
 {

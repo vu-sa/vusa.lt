@@ -2,8 +2,8 @@
   <img
     v-if="source"
     :src="source"
-    :srcset="image?.srcset ?? undefined"
-    :sizes="image?.srcset ? sizes : undefined"
+    :srcset="srcset ?? undefined"
+    :sizes="srcset ? sizes : undefined"
     :width="image?.width ?? undefined"
     :height="image?.height ?? undefined"
     :alt="alt || image?.alt || ''"
@@ -18,11 +18,12 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import type { ImageData } from '@/Types/media';
+import { cmsSrcset, type ImageData } from '@/Types/media';
 
 /**
  * An image from the media library: srcset from the shared conversions, the focal point as
- * object-position. `src` covers callers that only have a plain URL.
+ * object-position. `src` covers callers that only have a plain URL; file-manager URLs get a
+ * srcset from the `/img` resize route.
  */
 const props = withDefaults(defineProps<{
   image?: ImageData | null;
@@ -36,5 +37,6 @@ const props = withDefaults(defineProps<{
 }>(), { image: null, src: null, sizes: '100vw', alt: null, focalPoint: null });
 
 const source = computed(() => props.image?.url ?? props.src ?? null);
+const srcset = computed(() => props.image?.srcset ?? cmsSrcset(source.value));
 const objectPosition = computed(() => props.focalPoint ?? props.image?.focal_point ?? null);
 </script>

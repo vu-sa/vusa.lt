@@ -238,6 +238,7 @@ class PublicPageController extends PublicController
             'page' => [
                 ...$page->only('id', 'title', 'lang', 'tenant', 'permalink', 'other_lang_id', 'layout', 'show_table_of_contents', 'show_title', 'show_breadcrumbs', 'highlights', 'meta_description', 'last_edited_at', 'updated_at'),
                 'featured_image' => $page->getFeaturedImageUrl(),
+                'featured_image_media' => $page->imageData('featured_image'),
                 'content' => $page->content,
                 // Section listing for this page's direct children (`Page::children()`) —
                 // the permalink stays flat, this is presentation only.
@@ -360,6 +361,7 @@ class PublicPageController extends PublicController
                 ...$event->toArray(),
                 'googleLink' => $event->googleLink(),
                 'images' => $event->getMedia('images'),
+                'images_media' => $event->imageGallery('images'),
                 'public_url' => $event->publicUrl(app()->getLocale()),
             ]);
 
@@ -626,6 +628,7 @@ class PublicPageController extends PublicController
         return $events->map(fn (Calendar $event) => [
             ...$event->toArray(),
             'images' => $event->getMedia('images'),
+            'images_media' => $event->imageGallery('images'),
             'googleLink' => $event->googleLink(),
             'public_url' => $event->publicUrl(app()->getLocale()),
         ])->all();
@@ -680,6 +683,7 @@ class PublicPageController extends PublicController
             'event' => [
                 ...$calendar->toArray(),
                 'images' => $calendar->getMedia('images'),
+                'images_media' => $calendar->imageGallery('images'),
             ],
             'calendar' => $relatedEvents,
             'googleLink' => $calendar->googleLink(),

@@ -21,7 +21,7 @@ trait HasImageMedia
     protected function registerImageCollection(string $name, bool $single = true): MediaCollection
     {
         $collection = $this->addMediaCollection($name)->acceptsMimeTypes(ImageConversions::MIME_TYPES);
-        $collection->registerMediaConversions(fn () => ImageConversions::register($this));
+        $collection->registerMediaConversions(fn (?Media $media = null) => ImageConversions::register($this, $media));
 
         return $single ? $collection->singleFile() : $collection;
     }
@@ -48,15 +48,10 @@ trait HasImageMedia
     }
 
     /**
-     * Called after a form changed a collection, outside the media transaction. Media writes fire
-     * no owner model events, so reindexing and cache flushes hang off this.
+     * Called after a form changed a collection, and again once its conversions finish. Media writes
+     * fire no owner model events, so reindexing and cache flushes hang off this.
      */
     public function afterImageMediaChanged(string $collection): void {}
-
-    /**
-     * Called when a finished conversion changed the cached URL.
-     */
-    public function afterImageCacheRefreshed(string $collection): void {}
 
     /**
      * Owner columns that mirror a collection for readers that cannot eager-load media, keyed by
@@ -87,8 +82,8 @@ trait HasImageMedia
 
         if ($media !== null) {
             $url = self::relativeImageUrl($media->hasGeneratedConversion($columns['conversion'])
-                ? $media->getUrl($columns['conversion'])
-                : $media->getUrl());
+                ? ImageData::url($media, $columns['conversion'])
+                : ImageData::url($media));
         }
 
         $values = [$columns['url'] => $url];
@@ -126,7 +121,7 @@ trait HasImageMedia
      * The owner columns a collection replaced, keyed by collection: `url`, and optionally `focal`
      * and `author`.
      *
-     * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+     * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
      *
      * @return array<string, array{url: string, focal?: string, author?: string}>
      */
@@ -136,7 +131,7 @@ trait HasImageMedia
     }
 
     /**
-     * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+     * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
      *
      * @return ImageDataArray|null
      */

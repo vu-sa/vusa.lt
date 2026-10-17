@@ -11,7 +11,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * Copies a legacy image file into a record's collection. The source file is never moved or
  * deleted: the old folders stay until media:legacy-files confirms nothing references them.
  *
- * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+ * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
  */
 class LegacyImageImporter
 {

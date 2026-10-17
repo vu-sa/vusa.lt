@@ -100,7 +100,7 @@ class Banner extends Model implements ImageMediaOwner
     }
 
     /**
-     * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+     * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
      */
     public function legacyImageColumns(): array
     {

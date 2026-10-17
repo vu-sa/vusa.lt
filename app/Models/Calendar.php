@@ -208,7 +208,7 @@ class Calendar extends Model implements ImageMediaOwner
 
     /**
      * The focal point lives on the main image. Events whose main image predates that still have
-     * it in the column until AlignExistingMediaJob copies it over.
+     * it in the column until media:migrate-images copies it over.
      *
      * Transitional(legacy-images): read only the media property once the column is dropped.
      */
@@ -397,6 +397,7 @@ class Calendar extends Model implements ImageMediaOwner
             'is_remote' => (bool) $this->is_remote,
             'is_international' => (bool) $this->is_international,
             'main_image_url' => $this->main_image_url,
+            ...ImageData::searchFields($this->main_image_media, 'main_image'),
             'facebook_url' => $this->facebook_url,
             'cto_url' => $this->getTranslation('cto_url', app()->getLocale()) ?: $this->cto_url,
             'public_url' => $this->publicUrl(app()->getLocale()) ?? $this->publicUrl('lt') ?? $this->publicUrl('en'),

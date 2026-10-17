@@ -199,17 +199,17 @@
             :class="{ '': currentSlide === index }"
             @click="() => { carouselApi?.scrollTo(index); restartCarouselAutoplay(); }"
           >
-            <img
+            <MediaImage
               v-if="slide.imageSrc"
               :src="slide.imageSrc"
               :alt="slide.imageAlt || ''"
+              sizes="64px"
               class="w-14 h-10 sm:w-16 sm:h-12 object-cover rounded-lg transition-all duration-200"
               :class="{
                 'opacity-100 scale-105 blur-[1px]': currentSlide === index,
                 'opacity-70 hover:opacity-90 scale-100 hover:scale-105': currentSlide !== index
               }"
-              loading="lazy"
-            >
+              loading="lazy" />
             <div
               v-else
               class="w-14 h-10 sm:w-16 sm:h-12 flex items-center justify-center rounded-lg border border-border bg-muted/60 transition-all duration-200"
@@ -284,6 +284,7 @@
 </template>
 
 <script setup lang="ts">
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { computed, defineAsyncComponent, inject, onMounted, onUnmounted, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 

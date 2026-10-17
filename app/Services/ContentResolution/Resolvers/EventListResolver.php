@@ -159,6 +159,7 @@ final class EventListResolver implements ResolvesContentPart
             'isAllDay' => (bool) $event->is_all_day,
             'ctoUrl' => $event->cto_url,
             'imageUrl' => $event->main_image_url,
+            'image_media' => $event->main_image_media,
             // A redirect route that resolves the event's real URL server-side regardless
             // of subdomain — only used when the event has no permalink for this locale yet.
             'href' => $event->publicUrl($context->locale)

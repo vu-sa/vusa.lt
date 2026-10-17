@@ -90,7 +90,7 @@ const originalSrc = computed(() => {
 
 const previewSrc = computed(() => {
   if (!props.file) return '';
-  return route('api.v1.admin.files.thumbnail', { path: props.file.path, w: 1200 });
+  return route('api.v1.admin.files.thumbnail', { path: props.file.path, w: 2400 });
 });
 
 useEventListener('keydown', (e: KeyboardEvent) => {

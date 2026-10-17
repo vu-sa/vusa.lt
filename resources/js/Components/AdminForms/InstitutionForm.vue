@@ -69,13 +69,13 @@
             v-model:image="form.image_media"
             mode="media"
             cropper
-            compress
+            :compress="false"
             focal-point
           />
         </FormFieldWrapper>
 
         <FormFieldWrapper id="institution-logo" :label="$t('Logotipas')">
-          <ImageUpload v-model:image="form.logo_media" mode="media" cropper compress />
+          <ImageUpload v-model:image="form.logo_media" mode="media" cropper :compress="false" />
         </FormFieldWrapper>
       </div>
 

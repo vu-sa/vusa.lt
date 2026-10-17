@@ -1,6 +1,6 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-17
 tests:
   - resources/js/Composables/__tests__/useContentEditor.component.test.ts
   - tests/Feature/Search/SearchExperienceTest.php
@@ -161,3 +161,5 @@ Susiedamas kalbų versijas turi turėti teisę redaguoti abu susiejamus įrašus
 - Masiniai veiksmai: `NewsController::bulkUpdateStatus()` (`news.bulkStatus`) ir `bulkDestroy()` (`news.bulkDestroy`).
 - Paieška: Typesense indeksas su atitinkamu padalinio filtru.
 - Išsaugojimas tikrina įrašo versiją ir vienu veiksmu per `ContentEditorService` atnaujina naujieną, turinio blokus, žymas bei kalbų ryšius.
+
+Nuotraukoms parenkama ekrano dydį atitinkanti versija, taip pat naujienų paieškoje. Žr. [Nuotraukų dydžiai](/svetaine/failai#nuotrauku-dydziai).

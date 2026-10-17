@@ -275,6 +275,8 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
 
         // Attribution-line suggestions for the person-quote rich-content block —
         // derives "Role, Tenant" labels from a user's current duties.
+        Route::get('users/{user}/photo', [UserApiController::class, 'photo'])->withTrashed()->name('users.photo');
+
         Route::get('users/{user}/attributions', [UserAttributionApiController::class, 'index'])->name('users.attributions');
 
         // Previews the permalink/URL a News/Page create form would end up with for the title

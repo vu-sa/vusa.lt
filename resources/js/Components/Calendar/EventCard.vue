@@ -130,6 +130,7 @@ import IFluentCalendarLtr24Regular from '~icons/fluent/calendar-ltr-24-regular';
 import IFluentLocation16Regular from '~icons/fluent/location-16-regular';
 import IFluentGlobe20Regular from '~icons/fluent/globe-20-regular';
 import IFluentArrowUpRight20Regular from '~icons/fluent/arrow-up-right-20-regular';
+import { imageFromSearch } from '@/Types/media';
 import type { ImageData } from '@/Types/media';
 
 interface CalendarEventLike extends SearchMatchDocument {
@@ -207,7 +208,7 @@ const imageUrl = computed(() => {
   return ev.main_image_url ?? null;
 });
 
-const mainImageSrcset = computed(() => (props.event as CalendarEventLike).main_image_media?.srcset ?? undefined);
+const mainImageSrcset = computed(() => ((props.event as CalendarEventLike).main_image_media ?? imageFromSearch(props.event as unknown as Record<string, unknown>, 'main_image'))?.srcset ?? undefined);
 
 const normalizeDate = (d: number | Date | string | undefined | null): Date => {
   if (!d) return new Date();

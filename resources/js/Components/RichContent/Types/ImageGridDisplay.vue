@@ -8,13 +8,13 @@
           editable && !image.image && 'min-h-32',
         ]"
         class="relative overflow-hidden">
-        <img
+        <MediaImage
           :src="image.image"
+          sizes="(min-width: 1024px) 50vw, 100vw"
           class="!size-full rounded-md object-cover"
           :alt="image.alt || image.title || `Image ${index + 1}`"
           :title="image.title || image.alt || `Image ${index + 1}`"
-          :style="image.objectPosition ? { objectPosition: image.objectPosition } : undefined"
-        >
+          :style="image.objectPosition ? { objectPosition: image.objectPosition } : undefined" />
         <RCImageHotspot v-if="editable" :image-url="image.image" :alt="image.alt" :object-position="image.objectPosition"
           :block-key="blockKey ?? ''" :image-index="index" full-tile-trigger :can-move-up="index > 0"
           :can-move-down="index < element.json_content.length - 1" :can-delete="element.json_content.length > 1" @update:image="replaceImage(index, $event)"
@@ -53,6 +53,7 @@
 </template>
 
 <script setup lang="ts">
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { defineAsyncComponent, inject, nextTick } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 

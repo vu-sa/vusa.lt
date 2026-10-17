@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Nariai
 area: users
 models: [User]
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-17
 tests:
   - resources/js/Utils/__tests__/String.test.ts
   - tests/Feature/Search/ContactSearchIndexSyncTest.php
@@ -262,3 +262,5 @@ nario padalinių prieiga arba kreipimasis į Centrinio biuro koordinatorių / Su
   `InstitutionCheckIn` (`user_id`) ir `Problem` (`created_by`).
 - Savęs užsirakinimo apsaugą užtikrina `AdminController::guardSelfLockout` kartu su `UserPolicy::canActDestructively`
   (draudžiama trinti save).
+
+Kontaktų kortelėse ir nario peržiūroje parenkamos ryškesnės nuotraukų versijos. Mažiems avatarams siunčiamos miniatiūros. Žr. [Nuotraukų dydžiai](/svetaine/failai#nuotrauku-dydziai).

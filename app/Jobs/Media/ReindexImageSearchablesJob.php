@@ -3,6 +3,7 @@
 namespace App\Jobs\Media;
 
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Models\Calendar;
 use App\Models\Institution;
 use App\Models\News;
 use App\Models\PublicInstitution;
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\Cache;
  * Upserts the documents whose image URLs the backfill changed and forgets cached URLs. Never
  * search:reindex, which drops and recreates every collection.
  *
- * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+ * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
  */
 class ReindexImageSearchablesJob implements ShouldQueue
 {
@@ -34,7 +35,7 @@ class ReindexImageSearchablesJob implements ShouldQueue
 
     public function handle(): void
     {
-        foreach ([News::class, PublicNews::class, Institution::class, PublicInstitution::class, Resource::class] as $model) {
+        foreach ([Calendar::class, News::class, PublicNews::class, Institution::class, PublicInstitution::class, Resource::class] as $model) {
             $model::query()->searchable();
         }
 

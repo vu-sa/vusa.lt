@@ -13,6 +13,7 @@ use App\Services\HtmlSanitizerService;
 use App\Services\PublicUrlService;
 use App\Services\Typesense\SearchText;
 use App\Support\LocalizedRouteSlugs;
+use App\Support\Media\ImageData;
 use App\Support\PublicCacheTags;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
@@ -142,7 +143,7 @@ class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
     }
 
     /**
-     * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+     * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
      */
     public function legacyImageColumns(): array
     {
@@ -608,6 +609,7 @@ class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
             'short' => $this->short,
             'permalink' => $this->permalink,
             'image' => $this->imageData('image')['thumb'] ?? null,
+            ...ImageData::searchFields($this->imageData('image'), 'image'),
             // Falls back to created_at rather than now() so unscheduled drafts (no
             // publish_time yet) sort by when they were made, not by index time —
             // this collection now also carries records that are never published.

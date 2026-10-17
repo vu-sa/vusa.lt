@@ -25,7 +25,7 @@ test('a staged image is stored as a bounded webp with its dimensions', function 
     Storage::fake('spatieMediaLibrary');
 
     $response = asUser($this->user)->postJson(route('api.v1.admin.pendingUploads.store'), [
-        'image' => UploadedFile::fake()->image('Rudens šventė.jpg', 3600, 1800),
+        'image' => UploadedFile::fake()->image('Rudens šventė.jpg', 4000, 2000),
     ])->assertCreated();
 
     $upload = PendingUpload::query()->whereBelongsTo($this->user)->sole();
@@ -34,7 +34,7 @@ test('a staged image is stored as a bounded webp with its dimensions', function 
     expect($media->mime_type)->toBe('image/webp')
         ->and($media->file_name)->toBe('rudens-svente.webp')
         ->and($media->getCustomProperty('width'))->toBe(ImageConversions::ORIGINAL_MAX)
-        ->and($media->getCustomProperty('height'))->toBe(1200);
+        ->and($media->getCustomProperty('height'))->toBe(1920);
 
     $response->assertJsonPath('data.id', $media->id)
         ->assertJsonPath('data.width', ImageConversions::ORIGINAL_MAX);

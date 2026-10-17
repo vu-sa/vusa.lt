@@ -3,7 +3,7 @@
 namespace App\Support\Media;
 
 /**
- * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+ * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
  */
 final class LegacyImageUrl
 {

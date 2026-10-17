@@ -37,12 +37,10 @@ class MediaLegacyFiles extends Command
         }
 
         $group = $this->option('group');
-        $progress = $this->output->isVerbose() ? function (string $folder, int $checked, int $total, ?string $path, ?bool $referenced): void {
-            $this->line($path === null
-                ? "Scanning {$folder}..."
-                : "{$folder} [{$checked}/{$total}] {$path}: ".($referenced ? 'referenced' : 'unreferenced'));
-        } : null;
-        $result = $report->build(is_string($group) ? $group : null, $progress);
+        $result = $report->build(is_string($group) ? $group : null, $this->progress());
+        if (! $this->output->isVerbose()) {
+            $this->newLine(2);
+        }
 
         $this->table(
             ['Folder', 'Files', 'Unreferenced', 'Reclaimable'],
@@ -68,5 +66,37 @@ class MediaLegacyFiles extends Command
         $this->info("Deleted {$deleted->count()} file(s).");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * A bar per folder; with -v, one line per file instead.
+     *
+     * @return callable(string, int, int, ?string, ?bool): void
+     */
+    private function progress(): callable
+    {
+        $bar = null;
+
+        return function (string $folder, int $checked, int $total, ?string $path, ?bool $referenced) use (&$bar): void {
+            if ($this->output->isVerbose()) {
+                $this->line($path === null
+                    ? "Scanning {$folder}..."
+                    : "{$folder} [{$checked}/{$total}] {$path}: ".($referenced ? 'referenced' : 'unreferenced'));
+
+                return;
+            }
+
+            if ($path === null) {
+                $bar?->finish();
+                $this->line($bar === null ? $folder : "\n{$folder}");
+                $bar = $this->output->createProgressBar();
+                $bar->start();
+
+                return;
+            }
+
+            $bar?->setMaxSteps($total);
+            $bar?->setProgress($checked);
+        };
     }
 }

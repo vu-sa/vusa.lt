@@ -2,54 +2,18 @@
 
 namespace App\Services\Media;
 
-use App\Jobs\Media\AlignExistingMediaJob;
 use App\Jobs\Media\BackfillLegacyImagesJob;
 use App\Jobs\Media\ReindexImageSearchablesJob;
-use App\Models\Calendar;
-use App\Models\Resource;
-use App\Models\SupportRequest;
-use App\Support\MorphMap;
-use Illuminate\Support\Facades\Bus;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Queues the move of legacy image columns into media. Dispatching only plucks ids, so the
- * migration that calls it stays inside the deploy's maintenance window.
+ * Copies legacy image columns into media: queued jobs for media:migrate-images, or a foreground run.
  *
- * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+ * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
  */
 class LegacyImageBackfill
 {
     public const int CHUNK = 50;
-
-    /** Staging re-runs this every night on restored data; a sample exercises every path. */
-    public const int STAGING_SAMPLE = 200;
-
-    /**
-     * One chain: aligning existing media first frees the disk space Calendar's responsive images
-     * held, then the imports, then one reindex. Rows fail individually inside a link, so the
-     * chain only stops on something fatal; --status then shows what is left to re-queue.
-     */
-    public function dispatch(?string $onlyTarget = null, ?callable $progress = null): int
-    {
-        $imports = $this->importJobs($onlyTarget, $progress);
-        $chain = [
-            ...($onlyTarget === null ? $this->alignJobs() : []),
-            ...$imports,
-        ];
-
-        if ($chain === []) {
-            return 0;
-        }
-
-        if ($imports !== []) {
-            $chain[] = new ReindexImageSearchablesJob;
-        }
-
-        Bus::chain($chain)->onConnection('long-running')->dispatch();
-
-        return count($imports);
-    }
 
     /**
      * Imports synchronously, for local runs and for retrying what a stopped chain left behind.
@@ -58,8 +22,7 @@ class LegacyImageBackfill
     {
         $processed = false;
         foreach ($this->targets($onlyTarget) as $target) {
-            $query = LegacyImageTargets::rowsWithoutMedia($target);
-            $ids = $query->when($limit !== null, fn ($query) => $query->limit($limit))->pluck($query->getModel()->getKeyName())->all();
+            $ids = $this->pendingIds($target, $limit);
             $checked = 0;
             $total = count($ids);
             if ($progress !== null) {
@@ -124,50 +87,40 @@ class LegacyImageBackfill
     }
 
     /**
-     * @return list<BackfillLegacyImagesJob>
+     * @return array<string, list<BackfillLegacyImagesJob>> keyed by target
      */
-    private function importJobs(?string $onlyTarget, ?callable $progress): array
+    public function importJobs(?string $onlyTarget = null, ?int $limit = null): array
     {
         $jobs = [];
 
         foreach ($this->targets($onlyTarget) as $target) {
-            $query = LegacyImageTargets::rowsWithoutMedia($target);
-            $key = $query->getModel()->getKeyName();
-
-            if (config('app.env') === 'staging') {
-                $query->orderByDesc($key)->limit(static::STAGING_SAMPLE);
-            }
-
-            $ids = $query->pluck($key)->all();
-            if ($progress !== null) {
-                $progress($target, count($ids), (int) ceil(count($ids) / self::CHUNK));
-            }
-            foreach (array_chunk($ids, self::CHUNK) as $chunk) {
-                $jobs[] = new BackfillLegacyImagesJob($target, $chunk);
-            }
+            $jobs[$target] = array_map(
+                fn (array $chunk): BackfillLegacyImagesJob => new BackfillLegacyImagesJob($target, $chunk),
+                array_chunk($this->pendingIds($target, $limit), self::CHUNK),
+            );
         }
 
         return $jobs;
     }
 
     /**
-     * @return list<AlignExistingMediaJob>
+     * Newest first, so a limited run covers the records people are most likely to look at.
+     *
+     * @return list<int|string>
      */
-    private function alignJobs(): array
+    private function pendingIds(string $target, ?int $limit): array
     {
-        $ids = Media::query()
-            ->whereIn('model_type', array_map(MorphMap::alias(...), [Calendar::class, Resource::class, SupportRequest::class]))
-            ->orderBy('id')
-            ->pluck('id')
-            ->all();
+        /** @var Builder $query */
+        $query = LegacyImageTargets::rowsWithoutMedia($target);
+        $key = $query->getModel()->getKeyName();
 
-        return array_map(fn (array $chunk) => new AlignExistingMediaJob($chunk), array_chunk($ids, self::CHUNK));
+        return $query->when($limit !== null, fn (Builder $query) => $query->orderByDesc($key)->limit($limit))->pluck($key)->all();
     }
 
     /**
      * @return list<string>
      */
-    private function targets(?string $onlyTarget): array
+    public function targets(?string $onlyTarget): array
     {
         return $onlyTarget === null ? array_keys(LegacyImageTargets::TARGETS) : [$onlyTarget];
     }

@@ -2,9 +2,8 @@
 
 use App\Actions\Media\AddImageMedia;
 use App\Http\Middleware\HandleInertiaRequests;
-use App\Jobs\Media\AlignExistingMediaJob;
 use App\Jobs\Media\BackfillLegacyImagesJob;
-use App\Jobs\Media\ReindexImageSearchablesJob;
+use App\Jobs\Media\UpgradeImageMedia;
 use App\Listeners\RefreshImageCacheAfterConversion;
 use App\Models\Banner;
 use App\Models\Calendar;
@@ -15,6 +14,7 @@ use App\Services\Media\LegacyImageBackfill;
 use App\Services\Media\LegacyImageImporter;
 use App\Services\Media\LegacyImageResolver;
 use App\Services\Media\LegacyImageSource;
+use Illuminate\Bus\PendingBatch;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Bus;
@@ -38,22 +38,25 @@ afterEach(function (): void {
     File::deleteDirectory($this->uploads);
 });
 
-test('dispatching queues one chain: align existing media, import rows without media, then reindex', function (): void {
+test('the command queues one batch: existing media first, then rows without media', function (): void {
     Bus::fake();
     $calendar = Calendar::factory()->create();
-    app(AddImageMedia::class)->execute($calendar, UploadedFile::fake()->image('e.jpg'), 'images');
+    $media = app(AddImageMedia::class)->execute($calendar, UploadedFile::fake()->image('e.jpg'), 'images');
     $withImage = News::factory()->for($this->tenant)->create(['image' => '/uploads/news/rudens-sventė.jpg']);
     News::factory()->for($this->tenant)->create(['image' => null]);
 
-    app(LegacyImageBackfill::class)->dispatch();
+    $this->artisan('media:migrate-images', ['--detach' => true])
+        ->expectsOutputToContain('Follow it with: php artisan media:migrate-images --status')
+        ->assertSuccessful();
 
     // The seeded admin's faker photo URL is queued too; the resolver sorts it out when the job runs.
-    Bus::assertChained([
-        AlignExistingMediaJob::class,
-        fn (BackfillLegacyImagesJob $job) => $job->target === 'news.image' && $job->ids === [$withImage->id],
-        fn (BackfillLegacyImagesJob $job) => $job->target === 'users.profile_photo',
-        ReindexImageSearchablesJob::class,
-    ]);
+    Bus::assertBatched(function (PendingBatch $batch) use ($media, $withImage): bool {
+        $jobs = $batch->jobs->values();
+
+        return $jobs[0] instanceof UpgradeImageMedia && $jobs[0]->ids === [$media->id]
+            && $jobs->contains(fn ($job) => $job instanceof BackfillLegacyImagesJob && $job->target === 'news.image' && $job->ids === [$withImage->id])
+            && $jobs->contains(fn ($job) => $job instanceof BackfillLegacyImagesJob && $job->target === 'users.profile_photo');
+    });
 });
 
 test('the import copies the file, records where it came from and leaves the article untouched', function (): void {
@@ -108,28 +111,31 @@ test('the status separates what is left to import from what can never be importe
             LegacyImageSource::MISSING => 1,
         ]);
 
-    $this->artisan('media:backfill-legacy-images', ['--sync' => true, '--target' => 'news.image'])->assertSuccessful();
-    $this->artisan('media:backfill-legacy-images', ['--status' => true, '--target' => 'news.image'])
-        ->expectsOutputToContain('0 pending')
+    $this->artisan('media:migrate-images', ['--sync' => true, '--target' => 'news.image'])->assertSuccessful();
+    $this->artisan('media:migrate-images', ['--status' => true, '--target' => 'news.image'])
+        ->expectsOutputToContain('0 media to upgrade, 0 legacy rows to import')
         ->assertSuccessful();
 });
 
-test('on staging only a sample is imported each night', function (): void {
+test('a limit takes the newest rows of each step, on any environment', function (): void {
     Bus::fake();
     config(['app.env' => 'staging']);
     News::factory()->for($this->tenant)->count(3)->create(['image' => '/uploads/news/rudens-sventė.jpg']);
     $newest = News::query()->orderByDesc('id')->first();
 
-    $backfill = new class extends LegacyImageBackfill
-    {
-        public const int STAGING_SAMPLE = 1;
-    };
-    $backfill->dispatch('news.image');
+    $this->artisan('media:migrate-images', ['--target' => 'news.image', '--limit' => 1, '--detach' => true])->assertSuccessful();
 
-    Bus::assertChained([
-        fn (BackfillLegacyImagesJob $job) => $job->ids === [$newest->id],
-        ReindexImageSearchablesJob::class,
-    ]);
+    Bus::assertBatched(fn (PendingBatch $batch): bool => $batch->jobs->count() === 1 && $batch->jobs->first()->ids === [$newest->id]);
+});
+
+test('without a limit every row is queued, on staging too', function (): void {
+    Bus::fake();
+    config(['app.env' => 'staging']);
+    News::factory()->for($this->tenant)->count(3)->create(['image' => '/uploads/news/rudens-sventė.jpg']);
+
+    $this->artisan('media:migrate-images', ['--target' => 'news.image', '--detach' => true])->assertSuccessful();
+
+    Bus::assertBatched(fn (PendingBatch $batch): bool => count($batch->jobs->first()->ids) === 3);
 });
 
 test('import restores worker settings even when progress reporting fails', function (): void {
@@ -161,42 +167,42 @@ test('synchronous imports invalidate caches that contain image urls', function (
 
 test('verbose status shows the source and result of every checked row', function (string $flag): void {
     $news = News::factory()->for($this->tenant)->create(['image' => '/uploads/news/gone.jpg']);
-    $this->artisan('media:backfill-legacy-images', ['--status' => true, '--target' => 'news.image', $flag => true])
+    $this->artisan('media:migrate-images', ['--status' => true, '--target' => 'news.image', $flag => true])
         ->expectsOutputToContain('Checking news.image: 1 row(s).')
         ->expectsOutputToContain("news.image [1/1] #{$news->id} /uploads/news/gone.jpg: missing")
         ->doesntExpectOutputToContain('Checking users.profile_photo')
         ->assertSuccessful();
 })->with(['-v', '--verbose']);
 
-test('verbose synchronous imports respect the row limit and report missing sources', function (): void {
-    $news = News::factory()->for($this->tenant)->create(['image' => '/uploads/news/gone.jpg']);
-    News::factory()->for($this->tenant)->create(['image' => '/uploads/news/another.jpg']);
-    $this->artisan('media:backfill-legacy-images', ['--sync' => true, '--limit' => 1, '--target' => 'news.image', '--verbose' => true])
+test('verbose synchronous imports take the newest rows up to the limit and report missing sources', function (): void {
+    News::factory()->for($this->tenant)->create(['image' => '/uploads/news/gone.jpg']);
+    $newest = News::factory()->for($this->tenant)->create(['image' => '/uploads/news/another.jpg']);
+    $this->artisan('media:migrate-images', ['--sync' => true, '--limit' => 1, '--target' => 'news.image', '--verbose' => true])
         ->expectsOutputToContain('Checking news.image: 1 row(s).')
-        ->expectsOutputToContain("[1/1] #{$news->id} /uploads/news/gone.jpg: missing")
-        ->doesntExpectOutputToContain('another.jpg')
+        ->expectsOutputToContain("[1/1] #{$newest->id} /uploads/news/another.jpg: missing")
+        ->doesntExpectOutputToContain('gone.jpg')
         ->assertSuccessful();
 });
 
-test('verbose queued imports report target counts without inspecting files', function (): void {
+test('queued imports report target counts without inspecting files', function (): void {
     Bus::fake();
     News::factory()->for($this->tenant)->create(['image' => '/uploads/news/gone.jpg']);
-    $this->artisan('media:backfill-legacy-images', ['--target' => 'news.image', '--verbose' => true])
-        ->expectsOutputToContain('news.image: 1 row(s), 1 import chunk(s).')
+    $this->artisan('media:migrate-images', ['--target' => 'news.image', '--detach' => true])
+        ->expectsOutputToContain('Legacy news.image')
         ->doesntExpectOutputToContain('gone.jpg')
         ->assertSuccessful();
 });
 
 test('normal and quiet backfill output omit per-file progress', function (array $flags): void {
     News::factory()->for($this->tenant)->create(['image' => '/uploads/news/gone.jpg']);
-    $this->artisan('media:backfill-legacy-images', ['--status' => true, '--target' => 'news.image', ...$flags])
+    $this->artisan('media:migrate-images', ['--status' => true, '--target' => 'news.image', ...$flags])
         ->doesntExpectOutputToContain('Checking news.image')
         ->doesntExpectOutputToContain('gone.jpg')
         ->assertSuccessful();
 })->with([[[]], [['--verbose' => true, '--quiet' => true]]]);
 
 test('an empty target still reports the start of a verbose check', function (): void {
-    $this->artisan('media:backfill-legacy-images', ['--status' => true, '--target' => 'news.image', '--verbose' => true])
+    $this->artisan('media:migrate-images', ['--status' => true, '--target' => 'news.image', '--verbose' => true])
         ->expectsOutputToContain('Checking news.image: 0 row(s).')
         ->assertSuccessful();
 });
@@ -226,8 +232,18 @@ test('verbose import failures are reported while subsequent rows are still check
     $importer->shouldReceive('import')->once()->withArgs(fn ($owner, $collection) => $owner->id === $first->id && $collection === 'image')->andThrow(new RuntimeException('unreadable image'));
     $importer->shouldReceive('import')->once()->withArgs(fn ($owner, $collection) => $owner->id === $second->id && $collection === 'image')->andReturn(['outcome' => LegacyImageSource::MISSING, 'media' => null]);
     app()->instance(LegacyImageImporter::class, $importer);
-    $this->artisan('media:backfill-legacy-images', ['--sync' => true, '--target' => 'news.image', '--verbose' => true])
+    $this->artisan('media:migrate-images', ['--sync' => true, '--target' => 'news.image', '--verbose' => true])
         ->expectsOutputToContain("[1/2] #{$first->id} /uploads/news/failed.jpg: failed")
         ->expectsOutputToContain("[2/2] #{$second->id} /uploads/news/gone.jpg: missing")
+        ->assertSuccessful();
+});
+
+test('a foreground run shows a progress bar per step without any flag', function (): void {
+    News::factory()->for($this->tenant)->create(['image' => '/uploads/news/gone.jpg']);
+
+    $this->artisan('media:migrate-images', ['--sync' => true, '--target' => 'news.image'])
+        ->expectsOutputToContain('Legacy news.image')
+        ->expectsOutputToContain('1/1')
+        ->doesntExpectOutputToContain('gone.jpg')
         ->assertSuccessful();
 });

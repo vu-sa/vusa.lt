@@ -9,7 +9,7 @@ use Normalizer;
  * Finds the file behind a legacy image column value. Reads only; on staging the uploads root is
  * production's storage.
  *
- * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+ * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
  */
 class LegacyImageResolver
 {

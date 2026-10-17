@@ -25,6 +25,7 @@
             @keydown.space.prevent="openLightbox(entry.index)"
           >
             <ImageWithDecorations
+              :image="entry.image.image_media"
               :src="entry.image.src"
               :alt="entry.image.alt"
               :height-class="entry.image.heightClass || 'h-52'"

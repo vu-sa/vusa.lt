@@ -107,6 +107,7 @@ class ResourceController extends AdminController
                 'tenant' => $resource->tenant->only(['id', 'shortname']),
                 'category' => $resource->category?->name,
                 'images' => $resource->getMedia('images')->map(fn ($image) => $image->getUrl())->values(),
+                'images_media' => $resource->imageGallery('images'),
             ],
             'availableNow' => max(0, SerializeResourceAvailability::available($resource, $now, $now->copy()->addMinute())),
             'currentLoans' => $active->filter(fn (Reservation $reservation) => $reservation->pivot->start_time?->lte($now))->map($row)->values(),

@@ -50,6 +50,7 @@
         v-for="event in items" :key="event.id"
         :title="event.title"
         :cover-image="event.imageUrl"
+        :image="event.image_media"
         :cover-alt="event.title"
         :meta="dateSpan(event).primary"
         :href="event.href"

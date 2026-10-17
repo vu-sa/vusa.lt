@@ -203,7 +203,7 @@
           v-model:image="form.main_image_media"
           mode="media"
           cropper
-          compress
+          :compress="false"
           focal-point
         />
         <img
@@ -226,7 +226,7 @@
           :max="20"
           :existing-urls="existingGalleryImages"
           cropper
-          compress
+          :compress="false"
           folder="calendar"
           @remove:existing="removeExistingImage"
         />

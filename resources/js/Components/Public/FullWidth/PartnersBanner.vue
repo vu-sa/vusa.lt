@@ -13,9 +13,11 @@
           banner.link_url && 'group transition-colors hover:bg-secondary focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
         ]"
       >
-        <img
+        <MediaImage
           v-if="banner.image_media?.thumb ?? banner.image_url"
-          :src="banner.image_media?.thumb ?? banner.image_url"
+          :image="banner.image_media"
+          sizes="200px"
+          :src="banner.image_url"
           :alt="banner.title"
           loading="lazy"
           :class="[
@@ -27,7 +29,7 @@
             // grayscale on hover to cancel the plain (light-mode) `group-hover:grayscale-0`.
             'dark:invert dark:group-hover:grayscale',
           ]"
-        >
+        />
         <span
           v-else
           class="text-base font-bold uppercase leading-tight tracking-wide text-foreground transition-colors group-hover:text-brand"
@@ -40,6 +42,7 @@
 </template>
 
 <script setup lang="ts">
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import SmartLink from '@/Components/Public/SmartLink.vue';

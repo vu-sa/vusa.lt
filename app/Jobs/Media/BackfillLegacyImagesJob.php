@@ -15,7 +15,7 @@ use Throwable;
  * Copies one chunk of legacy images into media. Conversions run inline so a few thousand imports
  * do not flood the default queue, and owners are not touched: the backfill is not an edit.
  *
- * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+ * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
  */
 class BackfillLegacyImagesJob implements ShouldQueue
 {

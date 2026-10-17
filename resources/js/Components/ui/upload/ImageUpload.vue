@@ -290,7 +290,8 @@ export interface ImageUploadProps {
   mode?: 'deferred' | 'media' | 'immediate';
   /** Enable cropping functionality */
   cropper?: boolean;
-  /** Enable browser-side compression (true for defaults, or pass custom options) */
+  /** Browser-side compression (true for defaults, or custom options). Defaults to on, except in
+   *  `media` mode, where the server re-encodes the upload anyway. */
   compress?: boolean | CompressionOptions;
   /** Folder path for immediate mode uploads */
   folder?: string;
@@ -318,7 +319,7 @@ const props = withDefaults(defineProps<ImageUploadProps>(), {
   max: 1,
   mode: 'deferred',
   cropper: false,
-  compress: true,
+  compress: undefined,
   folder: 'uploads',
   existingUrl: null,
   existingUrls: () => [],
@@ -409,10 +410,11 @@ const compressionOptions = computed<CompressionOptions>(() => {
     return props.compress;
   }
   return {
-    maxSizeMB: props.cropper ? 3 : 2,
-    maxWidthOrHeight: isMedia.value ? 2400 : props.cropper ? 2048 : 1600,
+    // Under the 10 MB request cap without forcing extra quality loss on a 3840px photo.
+    maxSizeMB: 8,
+    maxWidthOrHeight: 3840,
     fileType: 'image/webp',
-    quality: props.cropper ? 0.9 : 0.8,
+    quality: 0.9,
   };
 });
 
@@ -495,8 +497,10 @@ watch(
 );
 
 // Process file with compression
+const compressionEnabled = computed(() => props.compress ?? props.mode !== 'media');
+
 async function processFile(rawFile: File): Promise<File> {
-  if (!props.compress) {
+  if (!compressionEnabled.value) {
     return rawFile;
   }
 

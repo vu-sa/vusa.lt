@@ -166,4 +166,30 @@ describe('ContactWithPhoto', () => {
       expect(wrapper.find('a[href^="tel:"]').exists()).toBe(false);
     });
   });
+
+  describe('photo', () => {
+    const profileMedia = { id: 1, url: '/uploads/media/1/profile.webp', thumb: '/t.webp', srcset: '/uploads/media/1/profile.webp 1200w',
+      width: 1200, height: 900, focal_point: null, alt: null, author: null };
+
+    it('shows an assignment photo instead of the profile photo, even before it has media', () => {
+      const contact = makeContact({
+        profile_photo_path: '/uploads/media/1/profile.webp',
+        profile_photo_media: profileMedia,
+        duties: [makeDuty({ pivot: { additional_photo: '/uploads/files/assignment.jpg', additional_photo_focal_point: '10% 20%' } })],
+      });
+      const img = mountCard(contact, []).get('img');
+
+      expect(img.attributes('src')).toBe('/uploads/files/assignment.jpg');
+      expect(img.attributes('srcset')).not.toContain('profile.webp');
+      expect(img.attributes('style')).toContain('object-position: 10% 20%');
+    });
+
+    it('uses the profile photo with its srcset when the assignment has none', () => {
+      const contact = makeContact({ profile_photo_path: '/uploads/media/1/profile.webp', profile_photo_media: profileMedia, duties: [makeDuty()] });
+      const img = mountCard(contact, []).get('img');
+
+      expect(img.attributes('src')).toBe(profileMedia.url);
+      expect(img.attributes('srcset')).toBe(profileMedia.srcset);
+    });
+  });
 });

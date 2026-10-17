@@ -15,8 +15,8 @@ use Intervention\Image\Laravel\Facades\Image;
 class ImageUploadService
 {
     protected array $defaultOptions = [
-        'maxWidth' => 1600,
-        'quality' => 75,
+        'maxWidth' => ImageConversions::ORIGINAL_MAX,
+        'quality' => ImageConversions::MASTER_QUALITY,
         'format' => 'webp',
     ];
 
@@ -34,8 +34,12 @@ class ImageUploadService
             ? ($source->getSize() ?: 0)
             : strlen($source);
 
-        $image = Image::decode($source);
-        $image = $image->scaleDown(width: $opts['maxWidth']);
+        $contents = $source instanceof UploadedFile ? (string) file_get_contents($source->getRealPath()) : $source;
+        if (ImageConversions::isArtwork($contents)) {
+            $opts['quality'] = 100;
+        }
+        $image = Image::decode($contents);
+        $image = $image->scaleDown(width: $opts['maxWidth'], height: $opts['maxWidth']);
 
         if ($opts['format'] === 'webp') {
             $image = $image->encodeUsingFormat(Format::WEBP, quality: $opts['quality']);
@@ -57,7 +61,7 @@ class ImageUploadService
      *
      * @return array{contents: string, width: int, height: int}
      */
-    public function normalize(UploadedFile|string $source, int $maxEdge = ImageConversions::ORIGINAL_MAX): array
+    public function normalize(UploadedFile|string $source, int $maxEdge = ImageConversions::ORIGINAL_MAX, bool $lossless = false): array
     {
         $contents = $source instanceof UploadedFile ? (string) file_get_contents($source->getRealPath()) : $source;
         $size = @getimagesizefromstring($contents);
@@ -69,7 +73,7 @@ class ImageUploadService
         $image = Image::decode($contents)->scaleDown(width: $maxEdge, height: $maxEdge);
 
         return [
-            'contents' => (string) $image->encodeUsingFormat(Format::WEBP, quality: 82),
+            'contents' => (string) $image->encodeUsingFormat(Format::WEBP, quality: $lossless ? 100 : ImageConversions::MASTER_QUALITY),
             'width' => $image->width(),
             'height' => $image->height(),
         ];

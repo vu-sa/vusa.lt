@@ -27,10 +27,18 @@ describe('MediaImage', () => {
   });
 
   it('falls back to a plain url without srcset', () => {
-    const img = mount(MediaImage, { props: { src: '/uploads/news/old.jpg' } }).find('img');
+    const img = mount(MediaImage, { props: { src: 'https://example.com/old.jpg' } }).find('img');
 
-    expect(img.attributes('src')).toBe('/uploads/news/old.jpg');
+    expect(img.attributes('src')).toBe('https://example.com/old.jpg');
     expect(img.attributes('srcset')).toBeUndefined();
+  });
+
+  it('gives a file-manager url resized candidates and the sizes hint', () => {
+    const img = mount(MediaImage, { props: { src: '/uploads/files/hero.jpg', sizes: '50vw' } }).find('img');
+
+    expect(img.attributes('src')).toBe('/uploads/files/hero.jpg');
+    expect(img.attributes('srcset')).toContain('/img/2400/files/hero.jpg 2400w');
+    expect(img.attributes('sizes')).toBe('50vw');
   });
 
   it('renders nothing without an image', () => {
@@ -43,3 +51,4 @@ describe('MediaImage', () => {
     expect(img.attributes('style')).toContain('object-position: 50% 50%');
   });
 });
+

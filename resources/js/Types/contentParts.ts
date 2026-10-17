@@ -410,6 +410,7 @@ export interface HeroCarousel {
 export interface PhotoGalleryGrid {
   json_content: {
     src: string;
+    image_media?: ImageData | null;
     alt: string;
     title?: string;
     heightClass?: string;
@@ -459,6 +460,7 @@ export interface LinkList {
 
 /** One resolved link-list item — shape emitted by `LinkListResolver::resolvePart()`. */
 export interface LinkListResolvedItem {
+  image_media?: ImageData | null;
   id: number | string | null;
   title: string;
   href: string;
@@ -503,6 +505,7 @@ export interface EventList {
 
 /** One resolved event — shape emitted by `EventListResolver::mapEvent()`. */
 export interface EventListResolvedItem {
+  image_media?: ImageData | null;
   id: number;
   title: string;
   date: string | null;

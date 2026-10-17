@@ -62,7 +62,7 @@
       <MediaFrame
         :image="article.image_media"
         :src="article.image as string"
-        sizes="(min-width: 896px) 896px, 100vw"
+        sizes="(min-width: 896px) 848px, (min-width: 640px) calc(100vw - 48px), calc(100vw - 40px)"
         :alt="article.title"
         ratio="16/9"
         :grayscale="false"

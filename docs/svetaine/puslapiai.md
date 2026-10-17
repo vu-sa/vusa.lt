@@ -1,6 +1,6 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-17
 tests:
   - resources/js/Composables/__tests__/useContentEditor.component.test.ts
   - tests/Feature/Search/SearchExperienceTest.php
@@ -187,3 +187,5 @@ Rolė **Padalinio puslapių redaktorius** skirta komandos nariams ar koordinator
 - Paieškos variklis: Typesense indeksas su apribotais API raktais (`useTypesenseCollectionSource`).
 - Masiniai veiksmai: `PageController::bulkUpdateStatus()` (`pages.bulkStatus`) ir `bulkDestroy()` (`pages.bulkDestroy`).
 - Nuorodų peradresavimai: valdomi per `App\Models\PublicUrl` modelį.
+
+Puslapio, turinio blokų ir teksto nuotraukoms parenkama ekrano dydį atitinkanti versija. Žr. [Nuotraukų dydžiai](/svetaine/failai#nuotrauku-dydziai).

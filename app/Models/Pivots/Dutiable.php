@@ -180,13 +180,8 @@ class Dutiable extends MorphPivot implements ImageMediaOwner
         }
     }
 
-    public function afterImageCacheRefreshed(string $collection): void
-    {
-        $this->afterImageMediaChanged($collection);
-    }
-
     /**
-     * Transitional(legacy-images): remove when media:backfill-legacy-images --status shows 0 pending.
+     * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
      */
     public function legacyImageColumns(): array
     {

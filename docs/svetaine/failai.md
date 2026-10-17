@@ -5,6 +5,9 @@ area: files
 models: [File]
 last_reviewed: 2026-10-17
 tests:
+  - tests/Feature/Jobs/Media/UpgradeImageMediaTest.php
+  - tests/Feature/Public/ResizedImageControllerTest.php
+  - resources/js/Types/__tests__/media.test.ts
   - tests/Feature/Admin/Resources/FilesControllerTest.php
   - tests/Feature/Api/Admin/FileApiControllerTest.php
   - tests/Feature/Services/FileStorageServiceTest.php
@@ -57,10 +60,22 @@ Formose įkeltos nuotraukos saugomos prie įrašo, o svetainė kiekvienam ekranu
 
 - Nuotrauka formoje įkeliama iš karto, bet įrašui priskiriama tik paspaudus **Išsaugoti**. Neišsaugotos nuotraukos po mėnesio ištrinamos. Per valandą vienas žmogus gali įkelti iki 50 nuotraukų.
 - Priskirti nuotrauką gali tas, kas gali redaguoti įrašą: naujienos nuotrauką – naujienos redaktorius, nario nuotrauką – pats narys arba narius tvarkantis koordinatorius. Kito žmogaus įkeltos, dar neišsaugotos nuotraukos panaudoti negalima.
-- Įkelta nuotrauka sumažinama iki 2400 px ilgesniosios kraštinės ir išsaugoma WebP formatu. Papildomai sukuriamos 400, 900 ir 1600 px pločio versijos – svetainė jas parenka pagal ekraną.
+- Įkelta nuotrauka sumažinama iki 3840 px ilgesniosios kraštinės ir išsaugoma WebP formatu. Papildomai sukuriamos 400, 900, 1600 ir 2400 px pločio versijos – svetainė jas parenka pagal ekraną.
 - Fokuso taškas, nuotraukos autorius ir aprašas saugomi kartu su nuotrauka, todėl pakeitus nuotrauką jie nepasimeta kitame įraše.
 - Ta pati nuotrauka gali būti naudojama keliuose įrašuose tik kaip kopija – pvz., kuriant naujienos vertimą jos nuotrauka nukopijuojama.
 - Senosios nuotraukos iš bendrų aplankų (`news`, `contacts`, `banners`, `institutions`) po atnaujinimo palaipsniui nukopijuojamos prie įrašų; kol tai vyksta, rodoma senoji nuotrauka. Nuotraukos iš kitų svetainių ir nebeegzistuojantys failai lieka kaip buvę – jų fokuso tašką ir autorių vis tiek galima keisti. Pačius senus failus galima tvarkyti tik po to, kai patikrinama, kad jų niekas nebenaudoja.
+
+### Nuotraukų dydžiai {#nuotrauku-dydziai}
+
+<ChangelogNote version="v3.1" date="2026-10-17" title="Ryškesnės nuotraukos">
+
+Svetainė kiekvienai vietai parenka pakankamo dydžio nuotraukos versiją, todėl nuotraukos ryškios ir didelės raiškos ekranuose.
+
+</ChangelogNote>
+
+- Ir formų, ir failų tvarkyklėje įkeltos nuotraukos saugomos iki 3840 px ilgesniosios kraštinės. Naršyklė pagal ekraną ir vietą puslapyje parsisiunčia mažesnę versiją, todėl mažoms kortelėms, meniu ir avatarams siunčiami nedideli failai.
+- Logotipai, ekrano nuotraukos pagalbos užklausose ir permatomi paveikslėliai saugomi be kokybės nuostolių, kad raidės liktų aiškios.
+- Anksčiau įkeltų, jau sumažintų nuotraukų kokybės atkurti negalima. Kur nuotrauka atrodo neryški, reikia įkelti didesnį originalą.
 
 ### Įkėlimų apdorojimas {#ikelimas}
 
@@ -70,7 +85,7 @@ Vieno pavadinimo failai neperrašo vienas kito, o neišsaugotas failas nepažymi
 
 </ChangelogNote>
 
-- Vienas failas gali būti iki **50 MB**. JPEG, PNG ir WebP paveikslėliai sumažinami iki 1600 px pločio ir saugomi WebP formatu. GIF animacijos, SVG ir kiti failai grupinio įkėlimo metu nekeičiami.
+- Vienas failas gali būti iki **50 MB**. JPEG, PNG ir WebP paveikslėliai sumažinami iki 3840 px ilgesniosios kraštinės ir saugomi WebP formatu. GIF animacijos, SVG ir kiti failai grupinio įkėlimo metu nekeičiami.
 - Jei pavadinimas jau užimtas, naujam failui pridedama laiko žyma, o prireikus – ir skaitiklis. Ankstesnis failas išlieka, net jei keli įkėlimai vyksta vienu metu.
 - Jei dalies failų išsaugoti nepavyksta, sėkmingai įkelti failai išlieka, o pranešime nurodomi nepavykę failai. Jei aplanką tuo metu naudoja kitas įkėlimas, galima bandyti dar kartą.
 - Prieiga peržiūrėti aplanką savaime nesuteikia teisės į jį įkelti failų. Įkėlimui tikrinamos būtent to aplanko kūrimo teisės.
@@ -162,10 +177,12 @@ Sąsajoje parodoma prieigos klaida; pasirinkimą galima pakeisti ir bandyti dar 
 - Failų saugojimo šaknis: `storage/app/public/files/`.
 - Bendri keliai, failų sąrašai ir grupiniai įkėlimai: `App\Services\FileStorageService`. `normalizeFilePath()` atmeta `..` segmentus ir neleidžia failų tvarkyklės keliui išeiti už `public/files` šaknies.
 - Įkėlimo paskirtis ir kūrimo teisės: `StoreFilesRequest::uploadDirectory()`. Teksto redaktoriaus turinio aplankas nustatomas pagal kūrimo teisių apimtį.
-- Formų nuotraukos: Spatie Media Library kolekcijos per `App\Models\Traits\HasImageMedia` (konversijos `thumb` 400, `medium` 900, `large` 1600 px, WebP). Laikinai įkelta nuotrauka – `PendingUpload` (`POST /api/v1/admin/pending-uploads`), įrašui priskiriama per `App\Actions\Media\SyncImageMedia`, išvaloma `model:prune` po 32 dienų.
-- Senųjų nuotraukų perkėlimas: `media:backfill-legacy-images` (`--status` rodo, kas liko).
-- Išsamesnė eiga: `media:backfill-legacy-images --status -v` rodo kiekvieną tikrinamą įrašą, šaltinį ir rezultatą; `--sync -v` rodo perkėlimo eigą. Paleidus į eilę su `-v`, rodomas įrašų ir paketų skaičius, o darbo rezultatai rašomi į žurnalą.
+- Formų nuotraukos: Spatie Media Library kolekcijos per `App\Models\Traits\HasImageMedia` (originalas iki 3840 px; konversijos `thumb` 400, `medium` 900, `large` 1600, `wide` 2400 px, WebP; be nuostolių – `ImageConversions::isArtwork()`). Laikinai įkelta nuotrauka – `PendingUpload` (`POST /api/v1/admin/pending-uploads`), įrašui priskiriama per `App\Actions\Media\SyncImageMedia`, išvaloma `model:prune` po 32 dienų.
+- Nuotraukų perkėlimas: po diegimo rankiniu būdu paleidžiama `php artisan media:migrate-images` – pirmiausia staging aplinkoje, paskui produkcijoje. Komanda esamas formų nuotraukas pertvarko pagal dabartinius dydžius (didesnį originalą, jei jis išlikęs, iš naujo sumažina iki 3840 px ir sukuria visas versijas), o senąsias nuotraukas iš bendrų aplankų nukopijuoja prie įrašų. Darbai vykdomi `long-running` eilėje, o komanda rodo eigą, kol jie baigiasi (`--detach` – grįžti iškart).
+- Parinktys: `--status` rodo, kas liko; `--limit=N` apdoroja daugiausia N naujausių kiekviename žingsnyje (pvz., bandymui staging aplinkoje); `--target=news.image` – tik vieną seną stulpelį; `--sync` vykdo iškart, be eilės; `--cleanup` ištrina failus, kuriuos pakeitė baigti atnaujinimai. Be parinkčių apdorojama viskas. Paleisti iš naujo saugu – kas jau atlikta, praleidžiama.
+- Eiga: be parinkčių rodoma eigos juosta kiekvienam žingsniui; `-v` vietoj jos rodo kiekvieną tikrinamą įrašą, šaltinį ir rezultatą; `--quiet` paslepia išvestį.
 - Senųjų failų patikra: `media:legacy-files -v` rodo tikrinamus aplankus, failus, jų naudojimą ir eigą. Galima pridėti `--group=contacts` vienam aplankui. `--verbose` yra `-v` atitikmuo; `--quiet` paslepia įprastą išvestį ir eigą.
 - Rašymas: `FileUploadWriter` vienodai tvarko paprastus ir optimizuotus failus, tikrina rašymo rezultatą ir naudoja aplanko užraktą pavadinimui parinkti bei failui išsaugoti.
 - Naudojimo paieška: `App\Services\FileUsageScanner` turi tikrinamų stulpelių sąrašą (`targets()`). SQL užklausa atrenka eilutes pagal kelio dalis, kurios nesikeičia jokioje koduotėje, o `App\Services\FileUsage\FileReferenceMatcher` kiekvieną reikšmę iškoduoja (JSON, HTML entities, `%20`, NFC/NFD) ir lygina visą kelią `/uploads/files/…`. Senasis kelias `/uploads/…` (be `files/`) skaičiuojamas tik tada, kai tokiu adresu nėra kito failo.
 - Paveikslėlių glaudinimas: atliekamas per `Intervention\Image` biblioteką valdiklio metode `compressImage()`.
+- Failų tvarkyklės nuotraukų versijos: viešas maršrutas `/img/{plotis}/{kelias}` (`ResizedImageController`, `App\Support\Media\ResizableImage`, pločiai 400–3840 px) pagal poreikį sukuria ir išsaugo sumažintą kopiją; niekada nedidina. Turinio blokams `srcset` sudaro `cmsSrcset()`, tekstui – `ContentPart::html`.

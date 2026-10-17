@@ -64,10 +64,9 @@
                 <div v-else-if="column.content.type === 'image'" :class="editable ? 'relative overflow-hidden' : 'h-full'">
                   <template v-if="editable">
                     <div class="relative overflow-hidden" :class="[processedOptions.equalHeight ? 'h-full' : 'aspect-video', !imageSrc(column) && 'min-h-32']">
-                      <img
-                        :src="imageSrc(column)" class="!size-full rounded-md object-cover" :alt="column.content.alt || ''"
-                        :style="column.content.objectPosition ? { objectPosition: column.content.objectPosition } : undefined"
-                      >
+                      <MediaImage
+                        :src="imageSrc(column)" sizes="(min-width: 1024px) 50vw, 100vw" class="!size-full rounded-md object-cover" :alt="column.content.alt || ''"
+                        :style="column.content.objectPosition ? { objectPosition: column.content.objectPosition } : undefined" />
                       <RCImageHotspot
                         :image-url="imageSrc(column)" :alt="column.content.alt" :object-position="column.content.objectPosition"
                         :block-key="blockKey ?? ''" :image-index="cellFlatIndex(rowIndex, colIndex)" full-tile-trigger
@@ -94,7 +93,7 @@
                 <template v-else-if="column.content.type === 'card'">
                   <div v-if="editable" class="group relative flex h-full flex-col overflow-hidden border border-border bg-card">
                     <div class="relative aspect-[16/9] overflow-hidden bg-secondary" :class="{ 'min-h-32': !cardValue(column).image }">
-                      <img :src="cardValue(column).image" class="size-full object-cover" :alt="cardValue(column).imageAlt || ''">
+                      <MediaImage :src="cardValue(column).image" sizes="(min-width: 1024px) 33vw, 100vw" class="size-full object-cover" :alt="cardValue(column).imageAlt || ''" />
                       <RCImageHotspot
                         :image-url="cardValue(column).image ?? ''" :alt="cardValue(column).imageAlt"
                         :block-key="blockKey ?? ''" :image-index="cellFlatIndex(rowIndex, colIndex)" full-tile-trigger
@@ -181,6 +180,7 @@
 </template>
 
 <script setup lang="ts">
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { computed, defineAsyncComponent } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 

@@ -36,6 +36,13 @@ test('the report lists only legacy files nothing references', function (): void 
         ->assertSuccessful();
 });
 
+test('without flags a progress bar per folder is shown instead of file names', function (): void {
+    $this->artisan('media:legacy-files', ['--group' => 'contacts'])
+        ->expectsOutputToContain('2/2')
+        ->doesntExpectOutputToContain('forgotten.webp')
+        ->assertSuccessful();
+});
+
 test('verbose output shows each file and its progress within the requested folder', function (string $flag): void {
     $this->artisan('media:legacy-files', ['--group' => 'contacts', $flag => true])
         ->expectsOutputToContain('Scanning contacts...')
