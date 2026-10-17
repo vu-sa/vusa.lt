@@ -63,11 +63,10 @@
               data-card-link
               class="line-clamp-2 text-base font-medium text-foreground outline-none after:absolute after:inset-0 after:content-[''] group-hover:text-brand"
             >
-              <SearchMatch inline :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
-              <SearchMatch compact :match="item._searchMatch" :title="nameOf(item)" />
+              <SearchMatch :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
             </Link>
             <p class="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-              <span v-if="item.category_name">{{ item.category_name }}</span>
+              <span v-if="item.category_name"><SearchMatch :match="item._searchFieldMatches?.category_name" :title="item.category_name" /></span>
               <span v-if="item.tenant_shortname">{{ item.tenant_shortname }}</span>
               <span v-if="item.location">{{ item.location }}</span>
             </p>
@@ -107,11 +106,10 @@
             <EntityTypeMark v-else type="resource" size="lg" icon-only class="size-12 justify-center" />
             <span class="min-w-0 flex-1">
               <span class="block truncate text-base font-medium text-foreground">
-                <SearchMatch inline :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
-                <SearchMatch compact :match="item._searchMatch" :title="nameOf(item)" />
+                <SearchMatch :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
               </span>
               <span class="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                <span v-if="item.category_name">{{ item.category_name }}</span>
+                <span v-if="item.category_name"><SearchMatch :match="item._searchFieldMatches?.category_name" :title="item.category_name" /></span>
                 <span v-if="item.tenant_shortname">{{ item.tenant_shortname }}</span>
                 <span v-if="item.location">{{ item.location }}</span>
                 <span
@@ -138,11 +136,11 @@
           prefetch
           class="font-medium hover:text-brand"
         >
-          <SearchMatch inline :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
-          <SearchMatch compact :match="item._searchMatch" :title="nameOf(item)" />
+          <SearchMatch :match="matchTitle(nameOf(item), item._searchTitleMatches)" :title="nameOf(item)" />
         </Link>
         <template v-else-if="column.key === 'category'">
-          {{ item.category_name ?? '—' }}
+          <SearchMatch v-if="item.category_name" :match="item._searchFieldMatches?.category_name" :title="item.category_name" />
+          <template v-else>—</template>
         </template>
         <template v-else-if="column.key === 'tenant'">
           {{ item.tenant_shortname ?? '—' }}
@@ -204,7 +202,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Ban, CalendarClock, Plus } from 'lucide-vue-next';
+import { Ban, CalendarClock, Plus } from '@lucide/vue';
 import { capitalize, computed, onMounted, watch } from 'vue';
 
 import { matchTitle } from '@/Shared/Search/matches';

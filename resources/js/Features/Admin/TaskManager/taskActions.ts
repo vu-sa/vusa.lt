@@ -1,5 +1,5 @@
 import { trans as $t } from 'laravel-vue-i18n';
-import { Check, FileCheck, FilePlus2, Megaphone, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { Check, FileCheck, FilePlus2, Megaphone, RotateCcw, Trash2 } from '@lucide/vue';
 
 import type { CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import {

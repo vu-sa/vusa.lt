@@ -275,7 +275,7 @@ import {
   Edit3,
   Users,
   ArrowRight,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';

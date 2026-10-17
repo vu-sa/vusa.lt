@@ -52,9 +52,11 @@ describe('TenantSheetForm.vue', () => {
       alias: 'mif',
       shortname_vu: 'MIF',
       primary_institution_id: 1,
+      goals_enabled: true,
     });
 
     expect(wrapper.text()).toContain('Redaguoti padalinį');
+    expect(wrapper.text()).toContain('Įjungti tikslus');
 
     await wrapper.find('[data-testid="submit"]').trigger('click');
 

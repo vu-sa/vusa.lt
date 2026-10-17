@@ -8,10 +8,10 @@ Before planning or editing, find the row whose globs match the file's path and r
 | resources/js/Components/AdminForms/** | .ai/rules/admin-forms.md |
 | resources/js/Pages/Admin/ShowAdminHome.vue, resources/js/Components/Home/** | .ai/rules/admin-home.md |
 | app/**, tests/Feature/System/DutiableDetachConventionTest.php | .ai/rules/app.md |
-| app/Actions/Get*.php, app/Actions/Resolve*.php, app/Tasks/Subscribers/**, app/Models/InstitutionAdministrator.php, app/Services/CommentableMentionResolver.php, app/Console/Commands/SendMeetingReminders.php, app/Notifications/** | .ai/rules/audiences.md |
+| app/Actions/Get*.php, app/Actions/Resolve*.php, app/Tasks/Subscribers/**, app/Models/InstitutionSecretary.php, app/Services/CommentableMentionResolver.php, app/Console/Commands/SendMeetingReminders.php, app/Notifications/** | .ai/rules/audiences.md |
 | resources/js/Components/Public/Base/MediaFrame.vue | .ai/rules/base.md |
 | tests/Browser/** | .ai/rules/browser.md |
-| app/Models/Cadence.php, app/Policies/CadencePolicy.php, app/Actions/Cadences/**, app/Http/Requests/Cadences/**, resources/js/Components/Cadences/**, app/Http/Requests/UpdateInstitutionAdministratorsRequest.php, app/Actions/ResolveCadence*.php | .ai/rules/cadences.md |
+| app/Models/Cadence.php, app/Policies/CadencePolicy.php, app/Actions/Cadences/**, app/Http/Requests/Cadences/**, resources/js/Components/Cadences/**, app/Http/Requests/UpdateInstitutionSecretariesRequest.php, app/Actions/ResolveCadence*.php | .ai/rules/cadences.md |
 | docs/changelog/**, docs/en/changelog/** | .ai/rules/changelog.md |
 | config/vusa.php | .ai/rules/config.md |
 | resources/js/Components/Patterns/**, resources/js/Constants/** | .ai/rules/constants.md |

@@ -87,7 +87,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, defineAsyncComponent, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { AlertCircleIcon, RotateCwIcon, CheckCircleIcon } from 'lucide-vue-next';
+import { AlertCircleIcon, RotateCwIcon, CheckCircleIcon } from '@lucide/vue';
 import { toast } from 'vue-sonner';
 
 import type { TaskActionKey } from './taskActions';

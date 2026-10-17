@@ -1,4 +1,4 @@
-import { type Component, type InjectionKey, ref, readonly, provide, inject, onMounted, onUnmounted, watch, type Ref } from 'vue';
+import { type Component, type InjectionKey, ref, readonly, provide, inject, onUnmounted, watch, type Ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -36,11 +36,6 @@ type BreadcrumbContext = 'admin' | 'public';
  * this the layout would render a second one above the band.
  */
 export type BreadcrumbPlacement = 'layout' | 'band';
-
-// Global state for breadcrumbs
-const globalBreadcrumbs = ref<BreadcrumbItem[]>([]);
-const breadcrumbContext = ref<BreadcrumbContext>('public');
-const globalPlacement = ref<BreadcrumbPlacement>('layout');
 
 /**
  * Injection key for the breadcrumbs context
@@ -103,10 +98,13 @@ export function getHomeBreadcrumb(context: BreadcrumbContext = 'public'): Breadc
 }
 
 /**
- * Create global breadcrumb state
+ * Create breadcrumb state for the layout's subtree. Per instance, not module-level: the SSR server
+ * renders many requests in one process, and a shared trail would leak into the next visitor's page.
  */
 export function createBreadcrumbState(context: BreadcrumbContext = 'public') {
-  breadcrumbContext.value = context;
+  const globalBreadcrumbs = ref<BreadcrumbItem[]>([]);
+  const breadcrumbContext = ref<BreadcrumbContext>(context);
+  const globalPlacement = ref<BreadcrumbPlacement>('layout');
 
   /**
    * Set breadcrumbs (replaces all current breadcrumbs).
@@ -231,29 +229,28 @@ export function usePageBreadcrumbs(
       items = breadcrumbsOrGetter;
     }
 
-    if (items && items.length > 0) {
-      // Check if home is already included
-      const hasHome = items.some(item =>
-        item.href === getHomeBreadcrumb().href
-        || item.label === $t('Pradinis'),
-      );
-
-      // Prepend home if needed and not already present
-      const finalItems = (includeHome && !hasHome)
-        ? [getHomeBreadcrumb(), ...items]
-        : items;
-
-      set(finalItems, placement);
+    // A page that asks for no trail (e.g. an author hid it) must not keep the previous page's.
+    if (!items || items.length === 0) {
+      clear();
+      return;
     }
+
+    const hasHome = items.some(item =>
+      item.href === getHomeBreadcrumb().href
+      || item.label === $t('Pradinis'),
+    );
+
+    set((includeHome && !hasHome) ? [getHomeBreadcrumb(), ...items] : items, placement);
   }
 
-  // Watch for changes if it's a ref
+  // Written during setup, not on mount: SSR never mounts, so a mount-time write left the server
+  // HTML without a trail and it popped in after hydration.
   if ('value' in breadcrumbsOrGetter) {
     watch(() => breadcrumbsOrGetter.value, updateBreadcrumbs, { immediate: true });
   }
-
-  // Set breadcrumbs on mount
-  onMounted(updateBreadcrumbs);
+  else {
+    updateBreadcrumbs();
+  }
 
   // Only clear on unmount if explicitly requested and not persisting during navigation
   if (clearOnUnmount && !persistDuringNavigation) {

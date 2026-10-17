@@ -105,7 +105,7 @@
 <script setup lang="ts">
 import 'cropperjs';
 import type { CropperCanvas, CropperImage, CropperSelection } from 'cropperjs';
-import { Crop, LoaderCircle, RotateCcw, RotateCw, Undo2, ZoomIn, ZoomOut } from 'lucide-vue-next';
+import { Crop, LoaderCircle, RotateCcw, RotateCw, Undo2, ZoomIn, ZoomOut } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue';
 

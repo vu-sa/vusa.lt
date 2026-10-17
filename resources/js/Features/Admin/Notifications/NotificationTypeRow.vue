@@ -56,7 +56,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { BellOff, BellRing, Lock } from 'lucide-vue-next';
+import { BellOff, BellRing, Lock } from '@lucide/vue';
 
 import { controlVariants } from '@/Components/ui/control';
 import { NativeSelect } from '@/Components/ui/native-select';

@@ -16,7 +16,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ChevronLeft } from 'lucide-vue-next';
+import { ChevronLeft } from '@lucide/vue';
 import { CalendarPrev, type CalendarPrevProps, useForwardProps } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 

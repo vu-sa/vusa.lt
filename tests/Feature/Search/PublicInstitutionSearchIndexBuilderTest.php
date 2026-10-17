@@ -1,10 +1,12 @@
 <?php
 
+use App\Enums\TenantType;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Pivots\Dutiable;
 use App\Models\PublicInstitution;
+use App\Models\Tenant;
 use App\Models\User;
 use App\Services\PublicInstitutionSearchIndexBuilder;
 use App\Settings\AtstovavimasSettings;
@@ -62,6 +64,7 @@ test('PublicInstitutionSearchIndexBuilder includes contacts, current user names,
         ->and($searchable['contacts'][0]['name'])->toBe('Jonas Jonaitis')
         ->and($searchable['contacts'][0]['profile_photo_path'])->toBe('photos/jonas.jpg')
         ->and($searchable['contacts'][0]['profile_photo_focal_point'])->toBe('50% 25%')
+        ->and($searchable['contacts'][0]['email'])->toBe($duty->email)
         ->and($searchable['has_contacts'])->toBeTrue();
 });
 
@@ -85,6 +88,22 @@ test('PublicInstitutionSearchIndexBuilder sets is_student_representation false f
         ->and($searchable['has_contacts'])->toBeFalse();
 });
 
+test('PublicInstitutionSearchIndexBuilder indexes a plain-text description excerpt per locale', function (): void {
+    $institution = Institution::factory()->create([
+        'is_active' => true,
+        'description' => [
+            'lt' => '<p>Atstovaujame&nbsp;<strong>studentams</strong></p><p>'.str_repeat('ilgas tekstas ', 60).'</p>',
+            'en' => '',
+        ],
+    ]);
+
+    $searchable = app(PublicInstitutionSearchIndexBuilder::class)->build(PublicInstitution::findOrFail($institution->id));
+
+    expect($searchable['description_lt'])->toStartWith('Atstovaujame studentams ilgas tekstas')
+        ->not->toContain('<')
+        ->and(mb_strlen($searchable['description_lt']))->toBeLessThanOrEqual(403);
+});
+
 test('AtstovavimasSettings can configure custom student rep root type', function (): void {
     $settings = app(AtstovavimasSettings::class);
 
@@ -106,3 +125,27 @@ test('AtstovavimasSettings can configure custom student rep root type', function
     expect($settings->getStudentRepInstitutionTypeIds()->toArray())->toContain($customType->id, $childType->id)
         ->and($settings->getStudentRepInstitutionTypeSlugs()->toArray())->toContain('mano-atstovai', 'komitetas');
 });
+
+test('PublicInstitutionSearchIndexBuilder ranks key institutions ahead of the rest', function (TenantType $tenantType, bool $isPrimary, bool $isFeatured, int $expected): void {
+    $tenant = Tenant::factory()->create(['type' => $tenantType]);
+    $institution = Institution::factory()->create(['is_active' => true, 'tenant_id' => $tenant->id]);
+
+    if ($isPrimary) {
+        $tenant->update(['primary_institution_id' => $institution->id]);
+    }
+
+    if ($isFeatured) {
+        $institution->types()->attach(InstitutionType::factory()->create(['slug' => config('vusa.featured_institution_type')]));
+    }
+
+    $searchable = app(PublicInstitutionSearchIndexBuilder::class)->build(PublicInstitution::findOrFail($institution->id));
+
+    expect($searchable['display_priority'])->toBe($expected);
+})->with([
+    'VU SA itself' => [TenantType::Pagrindinis, true, false, 4],
+    'VU SA governing body' => [TenantType::Pagrindinis, false, true, 3],
+    'padalinys main institution' => [TenantType::Padalinys, true, false, 2],
+    'PKP main institution' => [TenantType::Pkp, true, false, 1],
+    'featured type outside pagrindinis' => [TenantType::Padalinys, false, true, 0],
+    'ordinary institution' => [TenantType::Pagrindinis, false, false, 0],
+]);

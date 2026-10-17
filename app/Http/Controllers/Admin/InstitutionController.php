@@ -8,6 +8,7 @@ use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetTypeFiles;
 use App\Actions\GetUserTenantShortnames;
 use App\Actions\Media\SyncImageMedia;
+use App\Actions\UpdateInstitution;
 use App\Enums\InstitutionRelationKind;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\IndexInstitutionRequest;
@@ -30,8 +31,10 @@ use App\Models\Problem;
 use App\Models\StudyProgram;
 use App\Models\Task;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\InstitutionDeactivationService;
 use App\Services\InstitutionRelationService;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Settings\CadenceSettings;
 use App\Settings\MeetingSettings;
@@ -87,7 +90,7 @@ class InstitutionController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreInstitutionRequest $request, SyncImageMedia $syncImage)
+    public function store(StoreInstitutionRequest $request, SyncImageMedia $syncImage, PostCreateRedirect $redirect)
     {
         $institution = new Institution;
 
@@ -96,10 +99,9 @@ class InstitutionController extends AdminController
 
         $institution->syncAudited('types', $request->types);
 
-        // Load relationships needed for the response
         $institution->load('tenant:id,shortname', 'types');
 
-        // Return JSON response for AJAX requests (inline creation in wizard)
+        // The duty-user wizard consumes this response without leaving its current step.
         if ($request->wantsJson() || $request->header('X-Inertia-Partial-Data')) {
             return response()->json([
                 'success' => true,
@@ -108,7 +110,8 @@ class InstitutionController extends AdminController
             ]);
         }
 
-        return back()->with('success', $this->entityMessage('created', 'institution'));
+        return redirect($redirect->url($request->user(), $institution, 'institutions.show', 'viewSummary', 'institutions.index'))
+            ->with('success', $this->entityMessage('created', 'institution'));
     }
 
     /**
@@ -311,6 +314,7 @@ class InstitutionController extends AdminController
         Inertia::share('seo.title', $institution->name);
 
         return $this->inertiaResponse('Admin/People/EditInstitution', [
+            'deactivation' => app(InstitutionDeactivationService::class)->summary($institution),
             'institution' => [
                 ...$institution->toFullArray(),
                 'image_media' => $institution->imageData('image'),
@@ -325,20 +329,9 @@ class InstitutionController extends AdminController
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateInstitutionRequest $request, Institution $institution, SyncImageMedia $syncImage)
+    public function update(UpdateInstitutionRequest $request, Institution $institution, UpdateInstitution $update)
     {
-        $institution->fill($request->safe()->except('tenant_id', 'types', 'image_media', 'logo_media'));
-
-        // check if super admin, then update tenant_id
-        if (auth()->user()->isSuperAdmin()) {
-            $institution->fill($request->safe()->only('tenant_id'));
-        }
-
-        $institution->save();
-
-        // get only types id
-        $institution->syncAudited('types', $request->types);
-        $this->syncImages($institution, $request->validated(), $syncImage);
+        $update->execute($institution, $request->validated(), $request->user());
 
         return back()->with('success', $this->entityMessage('updated', 'institution'));
     }

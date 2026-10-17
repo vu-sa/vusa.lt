@@ -1,5 +1,5 @@
 import type { Component } from 'vue';
-import { GraduationCap, Globe, Home, CalendarCheck, Settings2, Users } from 'lucide-vue-next';
+import { GraduationCap, Globe, Home, CalendarCheck, Settings2, Users } from '@lucide/vue';
 
 /**
  * Icon per navigation-catalog workspace key. The catalog ships no icons (only `entityType` per

@@ -51,7 +51,7 @@
 import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import type { ColumnDef } from '@tanstack/vue-table';
-import { Circle } from 'lucide-vue-next';
+import { Circle } from '@lucide/vue';
 
 import DataTableProvider from '../ui/data-table/DataTableProvider.vue';
 

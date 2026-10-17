@@ -20,7 +20,6 @@
 
       <PopoverContent
         v-if="hotspots.isPopoverOpen(hotspotId)"
-        data-surface="public"
         class="max-h-[calc(100dvh-2rem)] w-[min(32rem,calc(100vw-2rem))] overflow-y-auto"
         @close-auto-focus.prevent
         @pointer-down-outside="(e) => { if (isImageModalOpen) e.preventDefault(); }"

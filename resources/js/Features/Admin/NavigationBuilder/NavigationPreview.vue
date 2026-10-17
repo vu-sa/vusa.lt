@@ -9,10 +9,7 @@
            than the admin content area on a phone. Scroll it inside its own container
            rather than letting it push the whole page sideways. -->
       <div class="overflow-x-auto">
-        <!-- `data-surface="public"` for the same reason the block previews carry it: this renders
-             the public site's own menu component, so it should resolve the public palette and
-             radius scale rather than admin's. -->
-        <div data-surface="public" class="inline-block border font-public">
+        <div class="inline-block border">
           <MainNavigationMenuContent :item="toPreviewItem(root)" is-used-without-root are-links-disabled />
         </div>
       </div>

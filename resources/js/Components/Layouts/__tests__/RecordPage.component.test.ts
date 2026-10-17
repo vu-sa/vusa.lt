@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { CircleCheck } from 'lucide-vue-next';
+import { CircleCheck } from '@lucide/vue';
 import { describe, expect, it, vi } from 'vitest';
 import { router } from '@inertiajs/vue3';
 
@@ -53,6 +53,18 @@ describe('RecordPage', () => {
     expect(wrapper.text()).toContain('3 / 24');
     expect(wrapper.find('[data-testid="activity"]').exists()).toBe(true);
     expect(wrapper.findAll('[role="tab"]')).toHaveLength(3);
+  });
+
+  /** Phones stack every section, so the comments stay at the bottom there; only desktop tabs hide them. */
+  it('shows comments under the first tab only', async () => {
+    const wrapper = createWrapper();
+    const activity = () => wrapper.get('[data-slot="record-activity"]');
+
+    expect(activity().classes()).not.toContain('md:hidden');
+
+    await wrapper.findAll('[role="tab"]')[1]!.trigger('click');
+    expect(activity().classes()).toContain('md:hidden');
+    expect(activity().find('[data-testid="activity"]').exists()).toBe(true);
   });
 
   it('places title actions beside the title when requested', async () => {

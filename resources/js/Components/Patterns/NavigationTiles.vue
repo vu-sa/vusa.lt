@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
-import { ArrowRight } from 'lucide-vue-next';
+import { ArrowRight } from '@lucide/vue';
 import type { Component } from 'vue';
 
 import { RuledGrid } from '@/Components/Brand';

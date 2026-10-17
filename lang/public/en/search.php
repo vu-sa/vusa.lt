@@ -274,6 +274,7 @@ return [
     'view_mode_grid' => 'Grid',
     'contact_singular' => 'contact',
     'contacts_plural' => 'contacts',
+    'more_representatives' => '+ :count more representative|+ :count more representatives',
 
     // Search page navigation
     'go_to_documents' => 'Go to document search',

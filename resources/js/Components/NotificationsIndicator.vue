@@ -201,7 +201,7 @@
 import { computed, ref } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Bell, Check, Settings } from 'lucide-vue-next';
+import { Bell, Check, Settings } from '@lucide/vue';
 
 import { useRealtimeNotifications } from '@/Composables/useRealtimeNotifications';
 import { useUnreadNotificationCount } from '@/Composables/useUnreadNotificationCount';

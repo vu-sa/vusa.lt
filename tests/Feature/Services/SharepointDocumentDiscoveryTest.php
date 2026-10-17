@@ -200,6 +200,7 @@ test('Graph\'s own path is only a fallback when the folder tree cannot place a f
 });
 
 test('an imported document is matched by its list item id and keeps its publication', function (): void {
+    Queue::fake([SyncDocumentFromSharePointJob::class]);
     $document = Document::factory()->create(['sharepoint_id' => 'unique-1', 'title' => 'Senas', 'anonymous_url' => 'https://share/x']);
 
     $result = discoveryWithGraph([discoveryPage([discoveryFile('drive-1', 'UNIQUE-1')])], [
@@ -215,9 +216,23 @@ test('an imported document is matched by its list item id and keeps its publicat
         ->and($document->anonymous_url)->toBe('https://share/x')
         ->and($document->title)->toBe('Naujas')
         ->and($document->sharepoint_drive_item_id)->toBe('drive-1');
+
+    Queue::assertNotPushed(SyncDocumentFromSharePointJob::class);
+});
+
+test('a published document whose file moved to a new drive item has its public link checked again', function (): void {
+    Queue::fake([SyncDocumentFromSharePointJob::class]);
+    $document = Document::factory()->create(['sharepoint_id' => 'unique-1', 'sharepoint_drive_item_id' => 'drive-old']);
+
+    discoveryWithGraph([discoveryPage([discoveryFile('drive-new', 'unique-1')])], [
+        'drive-new' => ['eTag' => '"e"', 'fields' => []],
+    ])->run();
+
+    Queue::assertPushed(SyncDocumentFromSharePointJob::class, fn ($job) => $job->document->is($document));
 });
 
 test('files outside the document system folder are not listed, but imported ones keep syncing', function (): void {
+    Queue::fake([SyncDocumentFromSharePointJob::class]);
     $imported = Document::factory()->create(['sharepoint_id' => 'unique-2', 'title' => 'Senas']);
 
     $result = discoveryWithGraph([discoveryPage([
@@ -232,6 +247,8 @@ test('files outside the document system folder are not listed, but imported ones
         ->and(Document::query()->pluck('id')->all())->toBe([$imported->id])
         ->and($imported->refresh()->title)->toBe('Naujas')
         ->and($imported->removed_from_sharepoint_at)->toBeNull();
+
+    Queue::assertNotPushed(SyncDocumentFromSharePointJob::class);
 });
 
 test('the first run ever files existing documents as hidden, so only later files wait', function (): void {
@@ -279,6 +296,20 @@ test('a limited run adds a sample, removes nothing and keeps the feed position',
         ->and($result->created)->toBe(2)
         ->and($gone->refresh()->removed_from_sharepoint_at)->toBeNull()
         ->and(app(DocumentDiscoverySettings::class)->delta_link)->toBe('delta-1');
+});
+
+test('the command reports progress while it lists the archive', function (): void {
+    app()->instance(SharepointDocumentDiscovery::class, discoveryWithGraph(
+        [discoveryPage([discoveryFile('drive-1', 'unique-1')])],
+        ['drive-1' => ['eTag' => '"e"', 'fields' => []]],
+    ));
+
+    $this->artisan('sharepoint:discover-documents', ['--limit' => 1])
+        ->expectsOutputToContain('a limited run does this every time')
+        ->expectsOutputToContain('Read 4 items.')
+        ->expectsOutputToContain('Reading the fields of 1 new or changed files')
+        ->expectsOutputToContain('Saving 1 files')
+        ->assertSuccessful();
 });
 
 test('only document file types become documents', function (): void {
@@ -463,6 +494,7 @@ test('a file deleted in SharePoint is marked removed and leaves the public site'
 });
 
 test('a file restored from the recycle bin comes back with its status', function (): void {
+    Queue::fake([SyncDocumentFromSharePointJob::class]);
     $document = Document::factory()->removedFromSharepoint()->create(['sharepoint_id' => 'unique-1', 'sharepoint_drive_item_id' => 'drive-1']);
 
     $result = discoveryWithGraph([discoveryPage([discoveryFile('drive-1', 'unique-1')])], [
@@ -472,9 +504,12 @@ test('a file restored from the recycle bin comes back with its status', function
     expect($result->restored)->toBe(1)
         ->and($document->refresh()->removed_from_sharepoint_at)->toBeNull()
         ->and($document->isPublished())->toBeTrue();
+
+    Queue::assertPushed(SyncDocumentFromSharePointJob::class, fn ($job) => $job->document->is($document));
 });
 
 test('a full listing marks documents the archive no longer contains as removed', function (): void {
+    Queue::fake([SyncDocumentFromSharePointJob::class]);
     $kept = Document::factory()->create(['sharepoint_id' => 'unique-1', 'sharepoint_list_id' => DISCOVERY_LIST]);
     $gone = Document::factory()->create(['sharepoint_id' => 'unique-2', 'sharepoint_list_id' => DISCOVERY_LIST]);
     $otherLibrary = Document::factory()->create(['sharepoint_id' => 'unique-3', 'sharepoint_list_id' => 'another-list']);
@@ -486,6 +521,8 @@ test('a full listing marks documents the archive no longer contains as removed',
     expect($kept->refresh()->removed_from_sharepoint_at)->toBeNull()
         ->and($gone->refresh()->removed_from_sharepoint_at)->not->toBeNull()
         ->and($otherLibrary->refresh()->removed_from_sharepoint_at)->toBeNull();
+
+    Queue::assertNotPushed(SyncDocumentFromSharePointJob::class);
 });
 
 test('a run that would remove too many documents is refused and keeps the old delta link', function (): void {

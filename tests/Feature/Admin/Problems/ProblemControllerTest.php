@@ -187,7 +187,7 @@ describe('html sanitization', function (): void {
      * stored here would otherwise execute in a super admin's browser.
      */
     test('strips script from tiptap fields when storing', function (): void {
-        asUser($this->coordinator)->post(route('problems.store'), [
+        $response = asUser($this->coordinator)->post(route('problems.store'), [
             'title' => ['lt' => 'Problema', 'en' => 'Problem'],
             'description' => [
                 'lt' => '<p>Geras tekstas</p><script>alert(1)</script>',
@@ -198,7 +198,7 @@ describe('html sanitization', function (): void {
             'tenant_id' => $this->tenant->id,
             'occurred_at' => now()->subDay()->toDateString(),
             'status' => 'open',
-        ])->assertRedirect();
+        ])->assertSessionHasNoErrors();
 
         $problem = Problem::query()->whereJsonContainsLocale('title', 'lt', 'Problema')->sole();
 
@@ -208,6 +208,9 @@ describe('html sanitization', function (): void {
             ->and($problem->getTranslation('description', 'en'))->toContain('Good text')->not->toContain('onerror')
             ->and($problem->getTranslation('steps_taken', 'lt'))->not->toContain('<script')
             ->and($problem->getTranslation('solution', 'lt'))->not->toContain('javascript:');
+
+        $response->assertRedirectToRoute('problems.show', $problem)->assertSessionHas('success');
+        asUser($this->coordinator)->get(route('problems.show', $problem))->assertOk();
     });
 
     test('sanitizes on every write path, not just the controller', function (): void {

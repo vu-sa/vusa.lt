@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Kalendorius
 area: calendar
 models: [Calendar]
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-15
 tests:
   - tests/Feature/Admin/Calendar/CalendarControllerTest.php
   - tests/Feature/Public/CalendarCanonicalUrlTest.php
@@ -11,6 +11,7 @@ tests:
   - tests/Feature/Meetings/MeetingCalendarEventTest.php
   - tests/Unit/Actions/DuplicateCalendarActionTest.php
   - resources/js/Components/AdminForms/__tests__/CalendarForm.component.test.ts
+  - resources/js/Utils/__tests__/eventTypeFromTitle.test.ts
   - resources/js/Pages/Public/__tests__/CalendarEvent.component.test.ts
 ---
 
@@ -30,6 +31,8 @@ Skiltis pasiekiama adresu `/mano/calendar`.
 :::
 
 ## Kaip tai veikia
+
+Atskiroje formoje sukūrus renginį, atveriama jo redagavimo forma. Renginio kūrimas iš posėdžio puslapio palieka posėdyje.
 
 ### Viešas kalendorius ir iCal prenumerata
 
@@ -66,7 +69,7 @@ Viršuje spausk **Naujas renginys** (arba eik adresu `/mano/calendar/create`):
 2. **Pavadinimas** – įrašyk renginio pavadinimą lietuviškai ir angliškai.
 3. **Data ir laikas** – nurodyk renginio pradžią (data ir valanda). Jei renginys turi aiškią pabaigą, įvesk ir pabaigos laiką.
 4. **Vieta** – nurodyk fizinę vietą (pvz., „VU Didžioji aula, Universiteto g. 3“) arba nuotolinio susitikimo nuorodą (pvz., „MS Teams“).
-5. **Renginio tipas** – išskleidžiamajame sąraše parink atitinkamą tipą (jei reikia naujo tipo, jį sukuria centrinis biuras skiltyje [Renginių tipai](/svetaine/renginiu-tipai)).
+5. **Renginio tipas** – rašant pavadinimą tipas parenkamas pagal raktinius žodžius (pvz., „posėdis“, „mokymai“, „stovykla“), kol pats jo nepakeiti; automatiškai parinktas tipas pažymimas. Patikrink ir, jei reikia, parink kitą tipą arba **Be tipo** (jei reikia naujo tipo, jį sukuria centrinis biuras skiltyje [Renginių tipai](/svetaine/renginiu-tipai)).
 6. **Žymos** – priskirk aktualias žymas iš bendro žymų sąrašo.
 7. **Aprašymas** – naudodamasis raiškiojo teksto redaktoriumi pateik išsamią renginio programą, registracijos reikalavimus ir kitą svarbią informaciją.
 8. **Viršelis ir nuotraukos** – įkelk pagrindinį plakatą / viršelį, kuris bus rodomas kalendoriaus kortelėje, bei papildomus vaizdus.
@@ -82,6 +85,8 @@ registracijos nuorodą ir kalbų versijas.
 ### Posėdžių susiejimas su kalendoriaus renginiais
 
 Posėdžių skiltyje (`/mano/meetings/{id}`) organizatoriai gali vienu mygtuko paspaudimu sukurti viešą kalendoriaus renginį. Sistema automatiškai perkelia posėdžio pavadinimą, laiką, vietą ir darbotvarkę į kalendoriaus įrašą. Ištrynus kalendoriaus įrašą iš posėdžio puslapio, pašalinamas ir susietas kalendoriaus renginys.
+
+Galima ir atvirkščiai: renginio formoje paspaudus **Sukurti posėdį iš renginio**, posėdis sukuriamas su renginio data ir susiejamas su juo. Kalendoriuje skelbiami tik VU SA darinių posėdžiai, todėl šiuo atveju galima pasirinkti tik VU SA darinį.
 
 ### Šalinimas ir atkūrimas
 

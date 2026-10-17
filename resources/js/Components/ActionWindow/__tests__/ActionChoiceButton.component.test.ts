@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { CalendarPlus } from 'lucide-vue-next';
+import { CalendarPlus } from '@lucide/vue';
 
 import ActionChoiceButton from '@/Components/ActionWindow/ActionChoiceButton.vue';
 

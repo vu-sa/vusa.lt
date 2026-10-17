@@ -80,7 +80,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, Trash2 } from 'lucide-vue-next';
+import { ChevronDown, Trash2 } from '@lucide/vue';
 
 import CollectionFacetOptions from './CollectionFacetOptions.vue';
 import CollectionQuickFilters from './CollectionQuickFilters.vue';

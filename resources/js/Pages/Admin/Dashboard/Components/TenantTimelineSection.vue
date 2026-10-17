@@ -66,7 +66,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarRange } from 'lucide-vue-next';
+import { CalendarRange } from '@lucide/vue';
 
 import type {
   GanttMeeting,

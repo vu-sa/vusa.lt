@@ -39,7 +39,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ClipboardList } from 'lucide-vue-next';
+import { ClipboardList } from '@lucide/vue';
 import { computed } from 'vue';
 
 import type { HomeTask } from './types';

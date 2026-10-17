@@ -58,12 +58,12 @@ describe('useCommandActions', () => {
   it('uses navigation and create entries supplied by the catalog', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ adminNavigation: {
       workspaces: [workspace('organizacija', [section('nariai', 'users.index', 'user')], [
-        { key: 'new_news', label: 'shell.actions.new_news.title', description: null, entityType: 'news', target: { kind: 'route', routeName: 'news.create' } },
+        { key: 'duty_update', label: 'shell.actions.duty_update.title', description: null, entityType: 'duty', target: { kind: 'route', routeName: 'duties.updateUsersWizard' } },
       ])],
     } }));
 
     expect(resolve().actions.value.map(action => action.id))
-      .toEqual(expect.arrayContaining(['nav-organizacija-nariai', 'create-new_news', 'nav-profile']));
+      .toEqual(expect.arrayContaining(['nav-organizacija-nariai', 'create-duty_update', 'nav-profile']));
   });
 
   it('keeps only global exclusions when the catalog is empty', () => {

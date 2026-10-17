@@ -23,30 +23,47 @@
             <div class="grid gap-3 sm:grid-cols-2">
               <div>
                 <label :for="`date-${meeting.key}`" class="text-sm">{{ text.meeting_date }}</label>
-                <DatePicker :id="`date-${meeting.key}`" :model-value="meeting.date" :min-date="parseDate(start)" :max-date="parseDate(end)" :locale
-                  @update:model-value="meeting.date = $event?.toISOString().slice(0, 10) ?? ''" />
+                <DatePicker
+                  :id="`date-${meeting.key}`"
+                  :model-value="meeting.date"
+                  :min-date="parseDate(start)"
+                  :max-date="parseDate(end)"
+                  :locale
+                  required
+                  :aria-invalid="!!errors[`meetings.${index}.date`]"
+                  :aria-describedby="errors[`meetings.${index}.date`] ? `date-error-${meeting.key}` : undefined"
+                  @update:model-value="meeting.date = $event?.toISOString().slice(0, 10) ?? ''"
+                />
                 <input type="hidden" :name="`meetings[${index}][date]`" :value="meeting.date">
-                <p v-if="errors[`meetings.${index}.date`]" class="text-sm text-destructive">
+                <p v-if="errors[`meetings.${index}.date`]" :id="`date-error-${meeting.key}`" class="text-sm text-destructive">
                   {{ errors[`meetings.${index}.date`] }}
                 </p>
               </div>
               <div v-if="meeting.type !== 'email'">
                 <label :for="`time-${meeting.key}`" class="text-sm">{{ text.meeting_time }}</label>
-                <TimePicker :id="`time-${meeting.key}`" :model-value="timeValue(meeting.time)" placeholder="HH:mm" :minute-step="1" required
-                  @update:model-value="meeting.time = $event ? `${String($event.hour).padStart(2, '0')}:${String($event.minute).padStart(2, '0')}` : ''" />
+                <TimePicker
+                  :id="`time-${meeting.key}`"
+                  :model-value="timeValue(meeting.time)"
+                  placeholder="HH:mm"
+                  :minute-step="15"
+                  :suggest-from="{ hour: 8, minute: 0 }"
+                  :suggestion-hours="12"
+                  required
+                  :aria-invalid="!!errors[`meetings.${index}.time`]"
+                  :aria-describedby="errors[`meetings.${index}.time`] ? `time-error-${meeting.key}` : undefined"
+                  @update:model-value="meeting.time = $event ? `${String($event.hour).padStart(2, '0')}:${String($event.minute).padStart(2, '0')}` : ''"
+                />
                 <input type="hidden" :name="`meetings[${index}][time]`" :value="meeting.time">
-                <p v-if="errors[`meetings.${index}.time`]" class="text-sm text-destructive">
+                <p v-if="errors[`meetings.${index}.time`]" :id="`time-error-${meeting.key}`" class="text-sm text-destructive">
                   {{ errors[`meetings.${index}.time`] }}
                 </p>
               </div>
             </div>
             <label :for="`type-${meeting.key}`" class="block text-sm">{{ text.meeting_type }}</label>
-            <select :id="`type-${meeting.key}`" v-model="meeting.type" :name="`meetings[${index}][type]`" class="min-h-11 w-full border border-border bg-background px-3">
-              <option v-for="type in types" :key="type.value" :value="type.value">
-                {{ type.label }}
-              </option>
-            </select>
-            <p v-if="errors[`meetings.${index}.type`]" class="text-sm text-destructive">
+            <NativeSelect :id="`type-${meeting.key}`" v-model="meeting.type" :options="types" :error="errors[`meetings.${index}.type`]"
+              :aria-describedby="errors[`meetings.${index}.type`] ? `type-error-${meeting.key}` : undefined" />
+            <input type="hidden" :name="`meetings[${index}][type]`" :value="meeting.type">
+            <p v-if="errors[`meetings.${index}.type`]" :id="`type-error-${meeting.key}`" class="text-sm text-destructive">
               {{ errors[`meetings.${index}.type`] }}
             </p>
             <Button v-if="meetings.length > 1" type="button" variant="ghost" voice="sentence" @click="meetings.splice(index, 1)">
@@ -66,7 +83,7 @@
         <p v-if="errors.answer" class="text-sm text-destructive">
           {{ errors.answer }}
         </p>
-        <Button type="submit" class="min-h-11 w-full">
+        <Button type="submit" voice="sentence" class="min-h-11 w-full">
           {{ choice.submit }}
         </Button>
       </div>
@@ -81,6 +98,7 @@ import { parseDate } from '@internationalized/date';
 import { Button } from '@/Components/ui/button';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { TimePicker } from '@/Components/ui/time-picker';
+import { NativeSelect } from '@/Components/ui/native-select';
 
 const props = defineProps<{
   action: string; csrf: string; start: string; end: string; locale: string; chosen: string | null;

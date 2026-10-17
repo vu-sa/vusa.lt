@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Plus } from 'lucide-vue-next';
+import { Plus } from '@lucide/vue';
 import { computed } from 'vue';
 
 import { useCommandActions } from '@/Components/CommandPalette/useCommandActions';
@@ -42,12 +42,23 @@ const props = withDefaults(defineProps<{
 
 const { actions } = useCommandActions();
 
+/** What we want people to do more often comes first; "no meeting" sits beside "record a meeting" as its equal. */
+const PRIORITY = ['create-new_meeting', 'create-no_meeting', 'create-new_problem'];
+
 const shortcuts = computed(() => {
   const permitted = actions.value.filter(action => action.category === 'create');
-  const selected = permitted.filter((action, index) =>
-    action.workspaceKey && permitted.findIndex(candidate => candidate.workspaceKey === action.workspaceKey) === index);
-  const selectedIds = new Set(selected.map(action => action.id));
+  const prioritized = PRIORITY.flatMap(id => permitted.filter(action => action.id === id));
+  const rest = permitted.filter(action => !PRIORITY.includes(action.id));
+  const coveredWorkspaces = new Set(prioritized.map(action => action.workspaceKey));
+  const firstPerWorkspace = rest.filter((action, index) =>
+    action.workspaceKey && !coveredWorkspaces.has(action.workspaceKey)
+    && rest.findIndex(candidate => candidate.workspaceKey === action.workspaceKey) === index);
+  const selectedIds = new Set([...prioritized, ...firstPerWorkspace].map(action => action.id));
 
-  return [...selected, ...permitted.filter(action => !selectedIds.has(action.id))].slice(0, props.limit);
+  return [
+    ...prioritized,
+    ...firstPerWorkspace,
+    ...rest.filter(action => !selectedIds.has(action.id)),
+  ].slice(0, props.limit);
 });
 </script>

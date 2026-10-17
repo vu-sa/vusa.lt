@@ -68,7 +68,7 @@
 
 import { ref, computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown } from 'lucide-vue-next';
+import { ChevronDown } from '@lucide/vue';
 
 import type { FilterOption, FacetValue } from './types';
 

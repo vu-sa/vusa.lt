@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import { ChevronDown } from 'lucide-vue-next';
+import { ChevronDown } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { type InertiaForm, router, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch, onMounted } from 'vue';

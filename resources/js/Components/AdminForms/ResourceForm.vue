@@ -203,7 +203,7 @@
 import { Icon } from '@iconify/vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ArrowRight, Boxes, MapPin, Trash2 } from 'lucide-vue-next';
+import { ArrowRight, Boxes, MapPin, Trash2 } from '@lucide/vue';
 import { capitalize, computed, ref, watch } from 'vue';
 
 import FormFieldWrapper from './FormFieldWrapper.vue';

@@ -105,7 +105,7 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
 import { ref, watch, computed, type HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { XIcon, ChevronDownIcon, CheckIcon } from 'lucide-vue-next';
+import { XIcon, ChevronDownIcon, CheckIcon } from '@lucide/vue';
 import { ComboboxInput, ComboboxVirtualizer } from 'reka-ui';
 
 import {

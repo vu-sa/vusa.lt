@@ -43,8 +43,6 @@ trait HasCommonChecks
         ?string $resourceName = null,
         bool $hasManyTenants = true
     ): bool {
-        $authorizer = $this->authorizer;
-
         // WARNING: Uses the current object pluralModelName, it must be set, or a resource name must be provided
         $resource = $resourceName ?? $this->pluralModelName;
 
@@ -54,75 +52,71 @@ trait HasCommonChecks
             return false;
         }
 
-        // Build the permission string using model name and action
         $permissionBase = $resource.'.'.$ability.'.';
 
-        // Check for wildcard (.*) - all-access permission
-        if ($authorizer->allows($user, $permissionBase.PermissionScopeEnum::ALL->label())) {
+        return $this->authorizer->allows($user, $permissionBase.PermissionScopeEnum::ALL->label())
+            || $this->allowsOwnScope($user, $model, $permissionBase, $resource)
+            || $this->allowsPadalinysScope($user, $model, $permissionBase, $hasManyTenants);
+    }
+
+    /**
+     * Whether one of the user's duties is directly associated with the model.
+     */
+    private function allowsOwnScope(User $user, Model $model, string $permissionBase, string $resource): bool
+    {
+        $ownPermission = $permissionBase.PermissionScopeEnum::OWN->label();
+        $ownScope = $this->authorizer->scope($user, $ownPermission);
+
+        if (! $ownScope->granted) {
+            return false;
+        }
+
+        $permissableDuties = $ownScope->duties;
+
+        if ($this->authorizer->ownModelIds($user, $ownPermission, $permissableDuties, $resource)->contains($model->getKey())) {
             return true;
         }
 
-        // Check for "own" scope - user's duties directly associated with the model
-        $ownPermission = $permissionBase.PermissionScopeEnum::OWN->label();
-        $ownScope = $authorizer->scope($user, $ownPermission);
-
-        if ($ownScope->granted) {
-            $permissableDuties = $ownScope->duties;
-            $relationFromDuties = $resource;
-
-            $allowedIds = $authorizer->ownModelIds($user, $ownPermission, $permissableDuties, $relationFromDuties);
-
-            // Check for direct relationship
-            if ($allowedIds->contains($model->getKey())) {
-                return true;
-            }
-
-            // An institution is also "own" when one of the user's institutions is authorized to see it.
-            if ($resource === 'institutions' && $model instanceof Institution) {
-                $userInstitutionIds = $permissableDuties->pluck('institution_id')->filter()->map(fn ($id) => (string) $id);
-
-                if (app(InstitutionRelationService::class)->authorizedIdsFor($userInstitutionIds)->contains((string) $model->getKey())) {
-                    return true;
-                }
-            }
+        // An institution is also "own" when one of the user's institutions is authorized to see it.
+        if ($resource !== 'institutions' || ! $model instanceof Institution) {
+            return false;
         }
 
-        // Check for padalinys (tenant) scope - models belonging to user's tenants
+        $userInstitutionIds = $permissableDuties->pluck('institution_id')->filter()->map(fn ($id) => (string) $id);
+
+        return app(InstitutionRelationService::class)->authorizedIdsFor($userInstitutionIds)->contains((string) $model->getKey());
+    }
+
+    /**
+     * Whether the model belongs to one of the tenants the user holds the padalinys scope in.
+     */
+    private function allowsPadalinysScope(User $user, Model $model, string $permissionBase, bool $hasManyTenants): bool
+    {
         $tenantRelation = $hasManyTenants ? 'tenants' : 'tenant';
 
         // Globally scoped models (tags, types, categories, navigation) have no tenant
-        // relation at all. They are only ever granted the "*" scope, so this branch is
-        // normally unreachable — but loading a missing relation would throw a 500 rather
-        // than simply denying, so deny explicitly instead.
+        // relation and are only ever granted "*"; deny rather than 500 on loading it.
         if (! method_exists($model, $tenantRelation)) {
             return false;
         }
 
         // Scoped by non-ended duties only. Never resolve this from $user->tenants(), a
-        // HasManyDeep relation that includes every duty the user has ever held — an ended
-        // duty would grant padalinys-scope access through this branch.
-        $padalinysScope = $authorizer->scope($user, $permissionBase.PermissionScopeEnum::PADALINYS->label());
+        // HasManyDeep over every duty ever held — an ended duty would grant access here.
+        $padalinysScope = $this->authorizer->scope($user, $permissionBase.PermissionScopeEnum::PADALINYS->label());
 
-        if ($padalinysScope->granted) {
-            $permissableTenants = $padalinysScope->tenants;
-
-            $modelTenants = $model->loadMissing($tenantRelation)->getRelation($tenantRelation);
-
-            // Convert to collection for consistent handling
-            $modelCollection = new Collection;
-            if ($modelTenants instanceof Model) {
-                $modelCollection->push($modelTenants);
-            } elseif ($modelTenants instanceof Collection) {
-                $modelCollection = $modelTenants;
-            }
-
-            // Check if any tenant matches
-            if ($modelCollection->intersect($permissableTenants)->isNotEmpty()) {
-                return true;
-            }
+        if (! $padalinysScope->granted) {
+            return false;
         }
 
-        return false;
+        $modelTenants = $model->loadMissing($tenantRelation)->getRelation($tenantRelation);
+
+        $modelCollection = match (true) {
+            $modelTenants instanceof Collection => $modelTenants,
+            $modelTenants instanceof Model => new Collection([$modelTenants]),
+            default => new Collection,
+        };
+
+        return $modelCollection->intersect($padalinysScope->tenants)->isNotEmpty();
     }
 
     /**

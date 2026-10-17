@@ -19,6 +19,7 @@ return [
     ],
 
     'dashboard' => [
+        'secretary_hint' => 'You are the secretary for this institution (you are not a member of it).',
         'administered_hint' => 'You are the secretary for this institution (you are not a member of it).',
         'badge' => 'Secretary',
     ],

@@ -53,7 +53,7 @@ import {
   Info as InfoIcon,
   Megaphone,
   RotateCw as RotateCwIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';

@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Ištekliai
 area: resources
 models: [Resource]
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-15
 tests:
   - tests/Feature/Admin/Reservations/ResourceControllerTest.php
   - tests/Feature/Api/Admin/ResourceAvailabilityApiControllerTest.php
@@ -32,6 +32,8 @@ gali visi platformos naudotojai, o tvarko **išteklio padalinio** valdytojai.
 - Pavadinimą ir aprašymą pateikiame lietuvių ir anglų kalbomis.
 
 ## Kaip tai veikia
+
+Sukūrus išteklių, atveriamas jo puslapis su prieinamumu ir rezervacijomis.
 
 ### Išteklio duomenys
 

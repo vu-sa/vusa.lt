@@ -173,7 +173,7 @@
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref } from 'vue';
-import { ChevronDown, ExternalLink, Languages, LayoutGrid, Loader2, Star, Trash2 } from 'lucide-vue-next';
+import { ChevronDown, ExternalLink, Languages, LayoutGrid, Loader2, Star, Trash2 } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';

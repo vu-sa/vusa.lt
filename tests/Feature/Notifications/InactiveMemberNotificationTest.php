@@ -151,12 +151,12 @@ describe('secretaries are not members', function (): void {
         expect($accessible)->toContain($this->institution->id);
     });
 
-    test('and it reaches their dashboard, flagged as administered rather than held', function (): void {
+    test('and it reaches their dashboard, flagged as secretary rather than held', function (): void {
         asUser($this->nominee)->get(route('dashboard.atstovavimas'));
 
         $institutions = DutyService::getUserInstitutionsForDashboard();
 
         expect($institutions->pluck('id'))->toContain($this->institution->id)
-            ->and($institutions->firstWhere('id', $this->institution->id)->is_administered)->toBeTrue();
+            ->and($institutions->firstWhere('id', $this->institution->id)->is_secretary)->toBeTrue();
     });
 });

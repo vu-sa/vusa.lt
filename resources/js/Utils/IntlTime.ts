@@ -2,23 +2,7 @@
  * @deprecated Legacy date/time utilities. For admin and standard date formatting,
  * prefer canonical formatters from '@/Utils/dateTime' or useDateFormatter() (PR 2.6).
  */
-
 import { LocaleEnum } from '@/Types/enums';
-
-export {
-  formatDate,
-  formatTime,
-  formatDateTime,
-  formatNearDate,
-  formatDateFact,
-  VILNIUS_TIMEZONE,
-  type DateInput,
-  type FormatDateOptions,
-  type FormatTimeOptions,
-  type FormatDateTimeOptions,
-  type FormatNearOptions,
-  type DateFact,
-} from './dateTime';
 
 const MINUTE_MILISECONDS = 60 * 1000;
 const HOUR_MILISECONDS = MINUTE_MILISECONDS * 60;
@@ -145,20 +129,6 @@ export const formatMonthAbbr = (
     .toUpperCase();
 };
 
-/**
- * @deprecated Use date-fns or native Date comparison instead.
- */
-export const getDaysDifference = (time: number | Date) => {
-  const now = new Date();
-  const difference = new Date(time);
-
-  const daysDifference = Math.round(
-    (now.getTime() - difference.getTime()) / DAY_MILISECONDS,
-  );
-
-  return daysDifference;
-};
-
 // Calendar-specific utility functions
 
 /**
@@ -193,18 +163,6 @@ export const formatEventTime = (
   return formatStaticTime(time, {
     hour: 'numeric',
     minute: 'numeric',
-  }, locale);
-};
-
-/**
- * Format year for calendar events
- */
-export const formatEventYear = (
-  time: number | Date,
-  locale: LocaleEnum = LocaleEnum.LT,
-): string => {
-  return formatStaticTime(time, {
-    year: 'numeric',
   }, locale);
 };
 

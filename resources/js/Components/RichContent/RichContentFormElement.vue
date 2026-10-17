@@ -32,7 +32,7 @@
  * does pass `:resolved` (see `useContentPartPreview`).
  */
 import { trans as $t } from 'laravel-vue-i18n';
-import { Loader2 } from 'lucide-vue-next';
+import { Loader2 } from '@lucide/vue';
 
 import RichContentEditor from './RichContentEditor.vue';
 import type { ContentPart } from './Types';

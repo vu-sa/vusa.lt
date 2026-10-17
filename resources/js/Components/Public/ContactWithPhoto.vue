@@ -28,8 +28,7 @@
           </span>
         </h3>
 
-        <!-- Duties (hidden when the surrounding section already names the duty) -->
-        <div v-if="duties && !hideDutyNames" class="mt-1.5 space-y-1">
+        <div v-if="duties" class="mt-1.5 space-y-1">
           <p
             v-for="duty in duties"
             :key="duty.id"
@@ -37,6 +36,9 @@
           >
             <span class="min-w-0">
               <InflectedDutyName :name="duty.name" :holder="dutyHolder" :use-original-duty-name="duty.pivot?.use_original_duty_name" />
+              <span v-if="duty.contact_tenant" data-testid="contact-duty-tenant" class="text-muted-foreground/70">
+                · {{ duty.contact_tenant }}
+              </span>
               <span v-if="showAdditionalInfo(duty)" class="text-muted-foreground/70">
                 {{ showAdditionalInfo(duty) }}
               </span>
@@ -49,7 +51,7 @@
       </div>
 
       <!-- Main email in a separate line, below a separator, in brand color + action buttons -->
-      <div v-if="primaryEmail || contact.phone || contact.facebook_url" class="mt-5 border-t border-border pt-3">
+      <div v-if="primaryEmail || contact.phone || contact.facebook_url" class="mt-5 border-t border-border pt-4 pb-1">
         <div class="flex items-center justify-between gap-2">
           <div v-if="primaryEmail" class="flex min-w-0 items-center gap-1.5">
             <a
@@ -96,17 +98,8 @@
             <TooltipProvider v-if="contact.phone">
               <Tooltip>
                 <TooltipTrigger as-child>
-                  <a :href="`tel:${contact.phone}`" :aria-label="contact.phone">
-                    <button
-                      type="button"
-                      :class="[
-                        'inline-flex size-7 items-center justify-center border border-border',
-                        'bg-background text-muted-foreground transition-colors hover:border-brand hover:text-brand',
-                      ]"
-                    >
-                      <IFluentPhone20Regular class="size-3.5" />
-                      <span class="sr-only">{{ contact.phone }}</span>
-                    </button>
+                  <a :href="`tel:${contact.phone}`" :aria-label="contact.phone" :class="actionButtonClass">
+                    <IFluentPhone20Regular class="size-4" />
                   </a>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" class="px-3 py-1.5">
@@ -121,17 +114,9 @@
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Facebook"
+              :class="actionButtonClass"
             >
-              <button
-                type="button"
-                :class="[
-                  'inline-flex size-7 items-center justify-center border border-border',
-                  'bg-background text-muted-foreground transition-colors hover:border-brand hover:text-brand',
-                ]"
-              >
-                <ISimpleIconsFacebook class="size-3.5" />
-                <span class="sr-only">Facebook</span>
-              </button>
+              <ISimpleIconsFacebook class="size-4" />
             </a>
           </div>
         </div>
@@ -150,17 +135,20 @@ import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
 import { changeDutyNameEndings, type DutyPronouns } from '@/Utils/String';
-import IFluentMail20Regular from '~icons/fluent/mail-20-regular';
 import IFluentPhone20Regular from '~icons/fluent/phone-20-regular';
 import IFluentPerson24Regular from '~icons/fluent/person-24-regular';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 
 const props = defineProps<{
   contact: App.Entities.User & { duty_pronouns?: DutyPronouns };
-  duties: App.Entities.Duty[];
-  /** Hide duty names — used when contacts are already sectioned by duty. */
-  hideDutyNames?: boolean;
+  /** `contact_tenant` names the padalinys a member represents, set for tenant-ordered duties. */
+  duties: Array<App.Entities.Duty & { contact_tenant?: string | null }>;
 }>();
+
+const actionButtonClass = [
+  'inline-flex size-9 items-center justify-center border border-border',
+  'bg-background text-muted-foreground transition-colors hover:border-brand hover:text-brand',
+];
 
 const dutyHolder = computed(() => ({
   name: props.contact.name,

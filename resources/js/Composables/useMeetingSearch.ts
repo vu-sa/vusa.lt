@@ -4,17 +4,11 @@
  * Refactored version using shared search infrastructure.
  * This composable extends useBaseSearch with meeting-specific functionality.
  */
-
 import { ref, computed, nextTick, type Ref } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import { usePage } from '@inertiajs/vue3';
 
-import type {
-  MeetingSearchFilters,
-  MeetingFacet,
-  MeetingSearchPreferences,
-  MeetingSearchController,
-} from '../Types/MeetingSearchTypes';
+import type { MeetingSearchFilters, MeetingFacet, MeetingSearchPreferences, MeetingSearchController } from '../Types/MeetingSearchTypes';
 import { MeetingSearchService } from '../Services/MeetingSearchService';
 
 import { createTypesenseClients } from './useSearchClient';
@@ -22,12 +16,6 @@ import { createTypesenseClients } from './useSearchClient';
 import { useBaseSearch, type BaseSearchService } from '@/Shared/Search/composables/useBaseSearch';
 import { FilterUtils } from '@/Shared/Search/services/FilterUtils';
 import type { ProcessedSearchResult } from '@/Shared/Search/types';
-
-// Re-export types for backward compatibility
-export type {
-  MeetingSearchFilters,
-  MeetingFacet,
-};
 
 // ============================================================================
 // Types

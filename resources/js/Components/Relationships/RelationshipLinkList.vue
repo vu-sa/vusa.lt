@@ -73,7 +73,7 @@
 import { computed, ref } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowLeft, ArrowLeftRight, ArrowRight, Link2, Plus } from 'lucide-vue-next';
+import { ArrowLeft, ArrowLeftRight, ArrowRight, Link2, Plus } from '@lucide/vue';
 
 import RelationshipLinkSheet from './RelationshipLinkSheet.vue';
 import type { RelationKindOption, RelationshipLinkRow, RelationshipSubject, RelationshipTypeOption } from './types';

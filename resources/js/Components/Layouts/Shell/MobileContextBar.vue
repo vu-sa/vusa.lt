@@ -91,7 +91,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowRight, ChevronDown, LayoutGrid, Search } from 'lucide-vue-next';
+import { ArrowRight, ChevronDown, LayoutGrid, Search } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
 import TaskCountBadge from './TaskCountBadge.vue';

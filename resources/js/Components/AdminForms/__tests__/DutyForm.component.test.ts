@@ -51,7 +51,12 @@ const stubs = {
   MultiSelect: { name: 'MultiSelect', props: ['modelValue', 'options', 'id'], template: '<div :id="id" />' },
   SingleSelect: { template: '<div />' },
   NumberField: { template: '<input type="number" />' },
-  InstitutionSelectDialog: { template: '<div><slot name="trigger" /></div>' },
+  InstitutionSelectDialog: {
+    name: 'InstitutionSelectDialog',
+    props: ['initialHits'],
+    emits: ['confirm'],
+    template: '<div><slot name="trigger" /></div>',
+  },
   CollectionSelectDialog: { template: '<div><slot name="trigger" /></div>' },
   // Props are declared so tests can read what the form hands each picker.
   TransferList: { name: 'TransferList', props: ['modelValue', 'options', 'lockedOptions'], template: '<div />' },
@@ -467,5 +472,59 @@ describe('DutyForm.vue — picking which tenants may assign representatives', ()
 
     const { form } = wrapper.vm as unknown as { form: { roles: string[] } };
     expect(form.roles).toEqual([role1.id, role2.id]);
+  });
+});
+
+describe('DutyForm.vue — duty history', () => {
+  const existing = () => emptyDuty({
+    id: 'duty-1',
+    name: { lt: 'Komunikacijos koordinatorius', en: 'Communications Coordinator' },
+    is_active: true,
+    former_names: [],
+  });
+
+  const submittedForm = async (wrapper: ReturnType<typeof mount>) => {
+    wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    await nextTick();
+
+    return wrapper.emitted('submit:form')!.at(-1)![0] as Record<string, unknown>;
+  };
+
+  it('keeps the old name when the duty is renamed, unless the editor opts out', async () => {
+    const wrapper = mountForm(existing());
+
+    await wrapper.find('input#duty-name').setValue('Ryšių su visuomene koordinatorius');
+    await nextTick();
+
+    const kept = (await submittedForm(wrapper)).former_names as { name: { lt: string } }[];
+    expect(kept.map(former => former.name.lt)).toEqual(['Komunikacijos koordinatorius']);
+
+    await wrapper.find('[data-testid="keep-former-name"] button').trigger('click');
+    await nextTick();
+
+    expect((await submittedForm(wrapper)).former_names).toEqual([]);
+  });
+
+  it('offers the active switch only on an existing duty', () => {
+    expect(mountForm(existing()).find('[data-testid="toggle-duty-active"]').exists()).toBe(true);
+    expect(mountForm().find('[data-testid="toggle-duty-active"]').exists()).toBe(false);
+  });
+});
+
+describe('DutyForm.vue — institution picker', () => {
+  const institution = { id: 'inst-1', name: 'VU SA MIF', tenant: { id: 3, shortname: 'MIF' } };
+
+  it('pins the current institution as a real search hit and stores the record id on confirm', async () => {
+    const wrapper = mountForm(emptyDuty({ id: 'duty-1', institution_id: 'inst-1' }), { assignableInstitutions: [institution] });
+    const picker = wrapper.findComponent({ name: 'InstitutionSelectDialog' });
+
+    // A hit without its collection crashed the result row when the dialog opened.
+    expect(picker.props('initialHits')[0]).toMatchObject({ id: 'institutions-inst-1', recordId: 'inst-1', collection: 'institutions' });
+
+    picker.vm.$emit('confirm', [{ id: 'institutions-inst-2', recordId: 'inst-2' }]);
+    wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    await nextTick();
+
+    expect((wrapper.emitted('submit:form')!.at(-1)![0] as Record<string, unknown>).institution_id).toBe('inst-2');
   });
 });

@@ -287,7 +287,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
-import { CalendarCheck, CalendarX, ExternalLink, Merge, Trash2 } from 'lucide-vue-next';
+import { CalendarCheck, CalendarX, ExternalLink, Merge, Trash2 } from '@lucide/vue';
 
 import { timelineDutyName, timelineSourceDutyName } from './dutyNames';
 import DutiableExtrasBadge from './DutiableExtrasBadge.vue';

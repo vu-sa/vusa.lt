@@ -3,11 +3,12 @@ doc_status: reviewed
 title: Tipai ir kategorijos
 area: types
 models: [InstitutionType, DutyType, EventType, ResourceCategory, ProblemCategory]
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-16
 tests:
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Feature/Migrations/SplitTypesTest.php
   - resources/js/Pages/Admin/ModelMeta/__tests__/IndexDomainTypes.test.ts
+  - resources/js/Pages/Admin/ModelMeta/__tests__/ShowType.test.ts
   - tests/Browser/TypeDirectoryTest.php
 ---
 
@@ -41,7 +42,7 @@ konkretūs tipai ir kategorijos tvarkomi pasirinktame sąraše.
 
 ## Veiksmai
 
-Institucijos ar pareigybės tipą sukurk per **+ Sukurti**. Įrašyk lietuvišką ir anglišką
+Institucijos ar pareigybės tipą sukurk per **Veiksmai**. Įrašyk lietuvišką ir anglišką
 pavadinimus bei aprašymus. Tėvinį tipą pasirink iš tos pačios rūšies sąrašo; tipų hierarchija
 negali sudaryti rato. Iš institucijos tipo tėvų paveldima valdymo sritis.
 

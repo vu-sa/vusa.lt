@@ -2,8 +2,13 @@
 doc_status: reviewed
 title: Platforma
 area: actionWindow
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-15
 tests:
+  - tests/Browser/PostCreateNavigationTest.php
+  - tests/Feature/Admin/Content/PageControllerTest.php
+  - tests/Feature/Api/Admin/ContentEditorTest.php
+  - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
+  - resources/js/Composables/__tests__/useContentEditor.component.test.ts
   - tests/Feature/System/SharedInertiaPropsTest.php
   - resources/js/Composables/__tests__/useActionWindowCatalog.test.ts
   - tests/Feature/Search/SearchExperienceTest.php
@@ -32,6 +37,8 @@ tests:
   - tests/Feature/Admin/Search/SearchControllerTest.php
   - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
   - resources/js/Components/Layouts/Shell/__tests__/PaletteField.component.test.ts
+  - resources/js/Components/Layouts/Shell/__tests__/ShellTopBar.component.test.ts
+  - resources/js/Components/Layouts/Shell/__tests__/MobileBottomBar.component.test.ts
   - tests/Unit/Models/TranslatableExpectationsTest.php
   - tests/Feature/System/TranslationIntegrityTest.php
 ---
@@ -39,10 +46,10 @@ tests:
 # Platforma
 
 Mano VU SA sudaro **darbo sritys** (Mano, ViSAK, Rezervacijos, Svetainė, Organizacija, Sistema).
-Kiekviena sritis turi skiltis. Viršutinė juosta leidžia perjungti sritis, o mygtukas **+ Sukurti**
-atveria langą su visais tau leidžiamais kūrimo veiksmais.
+Kiekviena sritis turi skiltis. Viršutinė juosta leidžia perjungti sritis, o mygtukas **Veiksmai**
+atveria leidžiamus veiksmus: fiksuoti posėdį, pranešti apie jo nebuvimą ar kurti įrašus.
 
-<DocScreenshot name="action-window" narrow alt="Langas „Ką norėtum padaryti?“, atidaromas mygtuku „+ Sukurti“" caption="Mygtukas „+ Sukurti“ viršutinėje juostoje atveria šį langą." />
+<DocScreenshot name="action-window" narrow alt="Langas „Ką norėtum padaryti?“, atidaromas mygtuku „Veiksmai“" caption="Mygtukas „Veiksmai“ viršutinėje juostoje atveria šį langą." />
 
 Lango pasirinkimų „Kaip studentų atstovas“, „Kaip VU SA narys“ ir „Kaip koordinatorius“ galūnės
 pritaikomos pagal tavo profilio įvardžius, o jų nesant – pagal vardą. Pavyzdžiui, pasirinkus
@@ -56,14 +63,14 @@ išjungti. Jei kolega mato skiltį, kurios tu nematai, skiriasi jūsų teisės (
 
 ## Mygtukai ir klaviatūra {#mygtukai-ir-klaviatura}
 
-<ChangelogNote version="v3.0" date="2026-10-02" title="Viena kūrimo vieta ir darbo sričių navigacija">
+<ChangelogNote version="v3.0" date="2026-10-02" title="Bendras veiksmų langas ir darbo sričių navigacija">
 
-Vietoje seno administravimo meniu pasirenkama darbo sritis ir jos skiltis. **+ Sukurti** rodo
-leidžiamus kūrimo veiksmus; telefono juostose pasiekiami tie patys pagrindiniai darbai.
+Vietoje seno administravimo meniu pasirenkama darbo sritis ir jos skiltis. **Veiksmai** rodo
+leidžiamus veiksmus; telefono juostose pasiekiami tie patys pagrindiniai darbai.
 
 </ChangelogNote>
 
-Pagrindiniai kūrimo veiksmai išsiskiria ryškia spalva ir didžiosiomis raidėmis. Kiti veiksmai
+Mygtukas **Veiksmai** pažymėtas žymeklio simboliu ir rašomas didžiosiomis raidėmis. Pagrindiniai kūrimo veiksmai išsiskiria ryškia spalva ir didžiosiomis raidėmis. Kiti veiksmai
 rašomi įprastai, kad būtų lengviau juos perskaityti. Naršant klaviatūra, aktyvi nuoroda turi
 matomą apvadą.
 
@@ -81,14 +88,14 @@ Viršutinėje juostoje paspaudus paiešką arba klavišus **⌘/Ctrl + K**, atid
 Joje pateikiamos prieinamos skiltys, veiksmai ir įrašų paieška. Žvaigždute galima prisegti dažnai
 naudojamą puslapį – prisegtos nuorodos rodomos paletės pradžioje. Telefone paieška pasiekiama iš navigacijos.
 
-Paletėje rezultatai grupuojami pagal įrašo rūšį. **Rodyti visus** nuveda į atitinkamą sąrašą, kuriame galima tikslinti paiešką ir filtrus.
+Paletėje rezultatai pateikiami vienu sąrašu: pirmiausia įrašai, kurių vardas ar pavadinimas sutapo, o kiekviena eilutė nurodo įrašo rūšį (pvz., Narys, Pareigybė, Naujiena). **Rodyti visus** nuveda į atitinkamą sąrašą, kuriame galima tikslinti paiešką ir filtrus.
 Paieška nesuteikia naujų teisių: kitų įrašų ar jų veiksmų prieiga priklauso nuo tavo pareigų ir rolių.
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Paieška turinyje ir aiškesni filtrai">
 
 Puslapiai ir naujienos randami pagal išsaugotą turinio tekstą. Rezultato ištrauka parodo, kur sutapo paieška. Lietuvių ir anglų tekstuose paieška atpažįsta ir skirtingas žodžio formas. Pagal aktualumą rikiuojami teksto atitikmenys; pasirinktas rikiavimas pagal datą ar pavadinimą taikomas tiesiogiai.
 
-Pirmiausia rodomi atitikmenys paties įrašo varde ar pavadinime. Ieškant žmogaus vardo pirmiausia pateikiamas jo profilis, o pagal pareigybės pavadinimą, pavyzdžiui, „Prezidentė“ – pareigybė. Susijusių žmonių, pareigybių ir institucijų paminėjimai turi mažesnį svorį; dabartinė darbo sritis nekeičia paieškos rezultatų eilės. Sutapęs vardas ar pavadinimas paryškinamas pačioje antraštėje, taip pat viešoje dokumentų paieškoje. Dokumento pavadinimas randamas ir pradėjus rašyti žodį, pavyzdžiui, „įstat“. Trumpa turinio ištrauka pateikiama mažesniu šriftu tik tada, kai nekartoja vardo ar pavadinimo; HTML žymos nerodomos.
+Pirmiausia rodomi atitikmenys paties įrašo varde ar pavadinime. Ieškant žmogaus vardo pirmiausia pateikiamas jo profilis, o pagal pareigybės pavadinimą, pavyzdžiui, „Prezidentė“ – pareigybė. Susijusių žmonių, pareigybių ir institucijų paminėjimai turi mažesnį svorį; dabartinė darbo sritis nekeičia paieškos rezultatų eilės. Sutapęs vardas ar pavadinimas paryškinamas pačioje antraštėje, taip pat viešoje dokumentų paieškoje. Dokumento pavadinimas randamas ir pradėjus rašyti žodį, pavyzdžiui, „įstat“. Kitas sutapimas paryškinamas ten, kur ta reikšmė jau rodoma, pavyzdžiui, dokumento rūšyje. Turinio ištrauka rodoma vietoj trumpo aprašymo, todėl rezultatai rašant nepailgėja; HTML žymos nerodomos.
 
 </ChangelogNote>
 
@@ -112,6 +119,21 @@ Kuriant narį ar pareigybę, perspėjimas apie galimą dublikatą parodo sutapim
 
 Redaguojant įrašo pavadinimą, didžioji formos antraštė iškart atspindi rašomą tekstą. Viršutinėje
 juostoje lieka išsaugotas įrašo pavadinimas, o kuriant – formos paskirtis, pvz., „Nauja naujiena“.
+
+### Po sukūrimo {#po-sukurimo}
+
+<ChangelogNote version="v3.0" date="2026-10-02" title="Sukurto įrašo atvėrimas">
+
+Atskiroje formoje sukūrus narį, pareigybę, instituciją, registracijos formą, problemą, išteklių ar rolę,
+atveriamas naujo įrašo puslapis. Sukūrus naujieną, puslapį, renginį, banerį, greitąją nuorodą,
+studijų programą, studijų rinkinį ar meniu punktą, atveriama jo redagavimo forma.
+
+</ChangelogNote>
+
+Jei sukurti įrašą galima, bet jo puslapio peržiūrėti ar redaguoti neleidžiama, atveriamas prieinamas
+sąrašas; jei neprieinamas ir jis – **Pradžia**. Sėkmingai sukurtas įrašas išlieka išsaugotas.
+Kuriant instituciją ar pareigybę vedlyje arba pridedant susijusį įrašą atvertame puslapyje,
+liekama tame pačiame veiksme. Esamų įrašų redagavimo, šalinimo ir atkūrimo eiga nesikeičia.
 
 ## Bendrosios platformos galimybės {#bendrosios-galimybes}
 
@@ -176,7 +198,7 @@ Kai viskas gerai, ženkliuko dažniausiai nėra – rodoma tik tai, į ką verta
 - Platforma pagal nutylėjimą atsidaro **šviesia tema**, net jei tavo įrenginys nustatytas tamsiai.
   Tamsią temą galima įjungti pasirinkus savo vardą → **Išvaizda → Tamsi tema**; pasirinkimas išsaugomas.
 - **Išvaizda → Prieinamumas** leidžia padidinti tekstą, paryškinti linijas ir pabraukti nuorodas.
-- Telefone ir planšetėje galima atlikti tą patį, ką kompiuteryje: telefone mygtukas **+ Sukurti** ir
+- Telefone ir planšetėje galima atlikti tą patį, ką kompiuteryje: telefone mygtukas **Veiksmai** ir
   pranešimai persikelia į apatinę juostą, o niekas nepasiekiama tik užvedus pelę.
 - Klaviatūra: **?** parodo sparčiųjų klavišų sąrašą, **/** perkelia į sąrašo paiešką.
 
@@ -201,6 +223,6 @@ Būsena visada rodoma per `StatusBadge`, nenaudojant atskirų spalvų.
 - `StatusBadge` visada rodo žodį ir piktogramą, o spalvą ima iš būsenos vaidmens.
 - Stačiakampius kampus, šriftą ir fokuso apvadą naršyklėje tikrina `AdminDesignSurfaceTest`, šviesią
   temą pagal nutylėjimą – `DefaultThemeTest`, prieinamumo nustatymus – `AdminAccessibilityTest`,
-  telefono juostą ir sparčiuosius klavišus – `AdminShellTest`, langą **+ Sukurti** – `ActionWindowTest`.
+  telefono juostą ir sparčiuosius klavišus – `AdminShellTest`, langą **Veiksmai** – `ActionWindowTest`.
 - Laikiną ištrynimą (`SoftDeletes`) ir jo elgseną sąrašuose tikrina `SoftDeletableResourcesTest`; visiškas ištrynimas reikalauja `*.forceDelete` teisės, kurią turi tik super administratorius.
 - Daugiakalbių laukų elgseną (Spatie `HasTranslations`, `toFullArray()` administravimo formose ir `toArray()` lokalizuotai peržiūrai) bei vertimų vientisumą užtikrina `TranslatableExpectationsTest` ir `TranslationIntegrityTest`.

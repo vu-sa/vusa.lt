@@ -14,7 +14,8 @@ vi.stubGlobal('route', (name?: string, params?: Record<string, string>) => (name
 const stubs = {
   ...commonStubs,
   AgendaItemNotesSidebar: { template: '<div data-testid="notes" />' },
-  AgendaItemSheetForm: { name: 'AgendaItemSheetForm', props: ['open', 'form', 'canDelete', 'defaultStartTime'], template: '<div data-testid="sheet" :data-open="open" />' },
+  AgendaItemSheetForm: { name: 'AgendaItemSheetForm', props: ['open', 'form', 'canDelete', 'defaultStartTime', 'focusField'], template: '<div data-testid="sheet" :data-open="open" />' },
+  AgendaItemTypeDialog: { name: 'AgendaItemTypeDialog', props: ['open', 'form'], template: '<div data-testid="type-dialog" :data-open="open" />' },
   AgendaItemVotesSheetForm: { name: 'AgendaItemVotesSheetForm', props: ['open', 'form'], template: '<div data-testid="votes-sheet" :data-open="open" />' },
   RecordActivity: { template: '<div data-testid="activity" />' },
   AdminVotingHelpButton: { template: '<div />' },
@@ -74,6 +75,57 @@ const createWrapper = (props: Record<string, unknown> = {}) =>
   });
 
 describe('ShowAgendaItem.vue', () => {
+  it('offers empty parts as fill-in actions above the content that open their editor', async () => {
+    const wrapper = createWrapper({
+      agendaItem: { ...baseAgendaItem, description: { lt: '', en: '' } },
+      goalsExperiment: true,
+      goalLinks: { goals: [], options: [{ id: 'goal-1', title: 'Tikslas', tenant: 'VU SA' }] },
+    });
+    await wrapper.vm.$nextTick();
+
+    const actions = wrapper.get('[data-slot="record-next-action-list"]').findAll('button[data-tier="fill"]');
+    const action = (label: string) => actions.find(button => button.text() === label)!;
+    const sheet = () => wrapper.findComponent({ name: 'AgendaItemSheetForm' });
+
+    expect(wrapper.get('[data-slot="record-next-action-list"] button').attributes('data-testid')).toBe('record-next-action-change-type');
+    expect(wrapper.find('[data-slot="record-next-action-list"] [role="separator"]').exists()).toBe(true);
+    expect(actions.map(button => button.text())).toEqual([
+      'meetings.item.description_add',
+      'meetings.item.student_position_add',
+      'Susieti problemą',
+      'goals.agenda_item.link',
+    ]);
+    expect(wrapper.find('[data-testid="agenda-item-description"]').exists()).toBe(false);
+
+    await action('meetings.item.description_add').trigger('click');
+    expect(sheet().props('open')).toBe(true);
+    expect(sheet().props('focusField')).toBe('description');
+
+    sheet().vm.$emit('update:open', false);
+    await wrapper.vm.$nextTick();
+    expect(sheet().props('focusField')).toBeNull();
+
+    await action('meetings.item.student_position_add').trigger('click');
+    expect(sheet().props('focusField')).toBe('student_position');
+
+    await action('Susieti problemą').trigger('click');
+    expect(wrapper.findComponent({ name: 'ProblemLinkSheet' }).props('open')).toBe(true);
+
+    await action('goals.agenda_item.link').trigger('click');
+    expect(wrapper.findComponent({ name: 'AgendaItemGoalsPanel' }).findComponent({ name: 'SheetForm' }).props('open')).toBe(true);
+  });
+
+  it('hides empty parts and the next-actions strip from read-only viewers', async () => {
+    const wrapper = createWrapper({
+      agendaItem: { ...baseAgendaItem, description: { lt: '', en: '' } },
+      abilities: { update: false, delete: false },
+    });
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('[data-testid="agenda-item-description"]').exists()).toBe(false);
+    expect(wrapper.find('[data-slot="record-next-action-list"]').exists()).toBe(false);
+  });
+
   it('opens visibility editing from an unpadded text action', async () => {
     const wrapper = createWrapper();
     const action = wrapper.find('[data-testid="agenda-item-edit-visibility"]');
@@ -122,21 +174,46 @@ describe('ShowAgendaItem.vue', () => {
     expect(wrapper.find('[data-testid="sheet"]').exists()).toBe(false);
   });
 
-  it('folds a set type into a line under the facts and reopens it on demand', async () => {
+  it('keeps changing the type in the next-actions strip, opening the type window', async () => {
     const wrapper = createWrapper();
+    const dialog = () => wrapper.findComponent({ name: 'AgendaItemTypeDialog' });
 
     expect(wrapper.find('#agenda-item-type').exists()).toBe(false);
-    await wrapper.find('[data-testid="agenda-item-change-type"]').trigger('click');
+    expect(dialog().props('open')).toBe(false);
+    expect(wrapper.get('[data-testid="record-next-action-change-type"]').attributes('data-attention')).toBeUndefined();
 
-    expect(wrapper.find('[data-testid="agenda-item-type-voting"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="agenda-item-change-type"]').exists()).toBe(false);
+    await wrapper.get('[data-testid="record-next-action-change-type"]').trigger('click');
+
+    expect(dialog().props('open')).toBe(true);
+    expect(wrapper.find('[data-testid="record-next-action-change-type"]').exists()).toBe(true);
   });
 
-  it('keeps asking for the type while it is unset', () => {
+  it('asks to choose a missing type without opening the window by itself', () => {
     const wrapper = createWrapper({ agendaItem: { ...baseAgendaItem, type: null, votes: [] } });
 
-    expect(wrapper.find('[data-testid="agenda-item-type-voting"]').exists()).toBe(true);
-    expect(wrapper.find('[data-testid="agenda-item-change-type"]').exists()).toBe(false);
+    expect(wrapper.get('[data-testid="record-next-action-change-type"]').text()).toBe('meetings.item.choose_type');
+    expect(wrapper.get('[data-testid="record-next-action-change-type"]').attributes('data-attention')).toBe('true');
+    expect(wrapper.findComponent({ name: 'AgendaItemTypeDialog' }).props('open')).toBe(false);
+  });
+
+  it('lets an editor open the type window from an unset status', async () => {
+    const unset = { ...baseAgendaItem, type: null, votes: [] };
+    const wrapper = createWrapper({ agendaItem: unset });
+
+    await wrapper.get('[data-testid="agenda-item-status-choose-type"]').trigger('click');
+    expect(wrapper.findComponent({ name: 'AgendaItemTypeDialog' }).props('open')).toBe(true);
+
+    expect(createWrapper().find('[data-testid="agenda-item-status-choose-type"]').exists()).toBe(false);
+    expect(createWrapper({ agendaItem: unset, abilities: { update: false, delete: false } })
+      .find('[data-testid="agenda-item-status-choose-type"]').exists()).toBe(false);
+  });
+
+  it('opens the type window when the meeting checklist links here for a missing type', () => {
+    window.history.replaceState({}, '', '?focus=type');
+    const wrapper = createWrapper({ agendaItem: { ...baseAgendaItem, type: null, votes: [] } });
+    window.history.replaceState({}, '', '/');
+
+    expect(wrapper.findComponent({ name: 'AgendaItemTypeDialog' }).props('open')).toBe(true);
   });
 
   it('opens the text sheet from the primary action', async () => {

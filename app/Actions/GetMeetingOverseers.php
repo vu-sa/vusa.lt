@@ -20,7 +20,7 @@ use Illuminate\Support\Collection;
  * 4. Institution secretaries - people nominated to look after the institution for the
  *    term the meeting fell in ({@see GetInstitutionSecretaries})
  *
- * Deliberately not called "administrators": that word names source 4 alone, a checkable row
+ * Deliberately not called "secretaries": that word names source 4 alone, a checkable row
  * in `institution_secretaries`, and using it for the union of all four read as if
  * nominating someone were what put a coordinator on this list. Callers want the whole
  * notification audience anyway — reach for {@see ResolveMeetingNotificationAudience}, which

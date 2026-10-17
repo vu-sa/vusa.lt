@@ -282,5 +282,3 @@ export const useDocumentDisplay = (document: DocumentDisplayItem) => {
     trackDocumentClick,
   };
 };
-
-export type DocumentDisplayController = ReturnType<typeof useDocumentDisplay>;

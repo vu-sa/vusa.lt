@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import { buildProfileParams, splitSortExpressions, type SearchProfile } from '../profiles';
-import { documentWithMatch, matchTitle, type SearchMatchDocument } from '../matches';
+import { descriptionMatch, documentWithMatch, highlightText, matchTitle, type SearchMatchDocument } from '../matches';
 import { SearchClientFactory } from '../services/SearchClientFactory';
 
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
@@ -27,7 +27,7 @@ describe('search profiles and matches', () => {
   it('highlights inflected title words from stemmed fields without adding an excerpt', () => {
     const title = 'VU SA Įstatai (nuo 2025 m.)';
     const doc = documentWithMatch({ document: { title }, highlights: [{ field: 'search_text_lt', snippet: 'VU SA ⟦Įstatai⟧ (nuo 2025 m.)' }] }) as SearchMatchDocument;
-    const wrapper = mount(SearchMatch, { props: { match: matchTitle(title, doc._searchTitleMatches), inline: true } });
+    const wrapper = mount(SearchMatch, { props: { match: matchTitle(title, doc._searchTitleMatches) } });
     expect(wrapper.text()).toBe(title);
     expect(wrapper.get('mark').text()).toBe('Įstatai');
     expect(doc._searchMatch).toBeUndefined();
@@ -66,11 +66,9 @@ describe('search profiles and matches', () => {
       '&lt;p&gt;For &lt;strong&gt;⟦students⟧&lt;/strong&gt;&lt;/p&gt;&lt;p&gt;&amp;amp; representatives&lt;/p&gt;',
     ]) {
       const doc = documentWithMatch({ document: { title: 'Guide' }, highlights: [{ field: 'description', snippet }] });
-      const wrapper = mount(SearchMatch, { props: { match: doc._searchMatch, compact: true } });
+      const wrapper = mount(SearchMatch, { props: { match: doc._searchMatch } });
       expect(wrapper.text()).toBe('For students & representatives');
       expect(wrapper.find('mark').text()).toBe('students');
-      expect(wrapper.classes()).toContain('text-xs');
-      expect(wrapper.classes()).toContain('line-clamp-1');
     }
   });
 
@@ -85,14 +83,34 @@ describe('search profiles and matches', () => {
     expect(doc._searchMatch).toMatchObject({ field: 'description' });
   });
 
+  it('keeps metadata matches out of the excerpt and highlights them where the row shows them', () => {
+    const doc = documentWithMatch({ document: { title: 'Guide', content_type: 'VU SA Įstatai', summary: 'Rules for students' }, highlights: [
+      { field: 'content_type', snippet: 'VU SA ⟦Įstatai⟧' },
+      { field: 'summary', snippet: 'Rules for ⟦stud⟧ents' },
+    ] }) as SearchMatchDocument;
+    expect(doc._searchMatch?.field).toBe('summary');
+    expect(highlightText('Įstatai', doc._searchFieldMatches?.content_type)?.segments).toEqual([{ text: 'Įstatai', matched: true }]);
+    const summary = mount(SearchMatch, { props: { match: descriptionMatch(doc, 'summary') } });
+    expect(summary.text()).toBe('Rules for students');
+    expect(summary.get('mark').text()).toBe('stud');
+  });
+
+  it('prefers a row\'s own description field over a body excerpt', () => {
+    const doc = documentWithMatch({ document: { title: 'Guide', short: '<p>Short for students</p>' }, highlights: [
+      { field: 'body', snippet: 'Body about ⟦students⟧' },
+      { field: 'short', snippet: 'Short for ⟦students⟧' },
+    ] }) as SearchMatchDocument;
+    expect(descriptionMatch(doc, 'short')?.segments.map(segment => segment.text).join('')).toBe('Short for students');
+    expect(descriptionMatch(doc, 'summary')?.field).toBe('body');
+  });
+
   it('preserves the complete displayed title when the highlighted snippet is truncated', () => {
     const title = 'A long guide for students and their representatives';
     const doc = documentWithMatch({ document: { title }, highlights: [{ field: 'title', snippet: 'guide for ⟦students⟧ and their' }] }) as SearchMatchDocument;
     const match = matchTitle(title, doc._searchTitleMatches);
-    const wrapper = mount(SearchMatch, { props: { match, inline: true } });
+    const wrapper = mount(SearchMatch, { props: { match } });
     expect(wrapper.text()).toBe(title);
     expect(wrapper.get('mark').text()).toBe('students');
-    expect(wrapper.classes()).not.toContain('text-xs');
     expect(matchTitle('A different translation', doc._searchTitleMatches)).toBeUndefined();
   });
 });

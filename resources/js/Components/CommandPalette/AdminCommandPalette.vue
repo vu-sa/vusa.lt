@@ -2,23 +2,21 @@
   <PaletteDialog v-model:open="isOpen" :title="$t('Komandų paletė')"
     :description="$t('Ieškok veiksmų, posėdžių ir darbotvarkės punktų')">
     <!-- Custom search input (not CommandInput to avoid internal filtering) -->
-    <div class="flex h-12 items-center gap-2 border-b border-border px-3 pr-12">
-      <div class="relative flex size-4 items-center justify-center">
-        <Search v-if="!isSearching" class="size-4 shrink-0 text-muted-foreground" />
-        <div v-else class="size-4 animate-spin border-2 border-border border-t-foreground" />
-      </div>
+    <div class="relative flex h-14 items-center gap-3 border-b border-border px-4 pr-12">
+      <Search class="size-4 shrink-0 text-muted-foreground" />
       <input ref="searchInputRef" v-model="query" type="text" :placeholder="$t('shell.chrome.search_field')"
-        class="h-12 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground sm:text-sm"
+        class="h-14 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground sm:text-sm"
         @keydown.escape="close"
         @keydown.down.prevent="focusFirstResult"
         @keydown.enter.prevent="focusFirstResult">
+      <TopProgressBar :active="isSearching" class="absolute inset-x-0 -bottom-px" />
     </div>
 
     <CommandList class="max-h-[50vh] scroll-py-2 max-sm:max-h-none max-sm:flex-1 sm:max-h-[60vh]">
       <!-- Loading skeleton -->
       <div v-if="isSearching && query" class="space-y-1 p-2">
-        <div v-for="i in 3" :key="i" class="flex items-center gap-3 px-3 py-3">
-          <div class="size-8 animate-pulse bg-secondary" />
+        <div v-for="i in 3" :key="i" class="flex items-center gap-3 px-3 py-2">
+          <div class="size-10 animate-pulse bg-secondary" />
           <div class="flex-1 space-y-2">
             <div class="h-4 w-3/4 animate-pulse bg-secondary" />
             <div class="h-3 w-1/2 animate-pulse bg-secondary/70" />
@@ -28,7 +26,7 @@
 
       <template v-else>
         <!-- Pinned pages, then recents: both empty-state only (O20, O15) -->
-        <CommandGroup v-if="!query && pinnedItems.length > 0" :heading="$t('shell.palette.pinned')" class="px-2">
+        <PaletteGroup v-if="!query && pinnedItems.length > 0" :heading="$t('shell.palette.pinned')">
           <PaletteRow
             v-for="item in pinnedItems" :key="`pinned-${item.id}`"
             :value="`pinned-${item.id}`"
@@ -40,13 +38,14 @@
               <PinButton pinned @toggle="togglePin({ routeName: item.routeName, href: item.href, title: item.title })" />
             </template>
           </PaletteRow>
-        </CommandGroup>
+        </PaletteGroup>
 
-        <CommandGroup v-if="!query && topRecentItems.length > 0" :heading="$t('shell.palette.recent')" class="px-2">
+        <PaletteGroup v-if="!query && topRecentItems.length > 0" :heading="$t('shell.palette.recent')">
           <PaletteRow
             v-for="item in topRecentItems" :key="`recent-${item.type}-${item.id}`"
             :value="`recent-${item.type}-${item.id}`"
             :icon="resolvePageIcon(item.routeName, item.href)"
+            :entity-type="recentEntityType(item.type)"
             :title="item.title"
             :subtitle="getRecentTypeBadge(item.type)"
             @select="handleRecentSelect(item)"
@@ -58,35 +57,36 @@
               />
             </template>
           </PaletteRow>
-        </CommandGroup>
+        </PaletteGroup>
 
         <!-- Create -->
-        <CommandGroup v-if="createActions.length > 0" :heading="$t('shell.palette.create')" class="px-2">
+        <PaletteGroup v-if="createActions.length > 0" :heading="$t('shell.palette.actions')">
           <ActionResult v-for="action in createActions" :key="action.id" :action />
-        </CommandGroup>
+        </PaletteGroup>
 
         <!-- Go to: the current workspace first -->
-        <CommandGroup v-if="goToActions.length > 0" :heading="$t('shell.palette.go_to')" class="px-2">
+        <PaletteGroup v-if="goToActions.length > 0" :heading="$t('shell.palette.go_to')">
           <ActionResult v-for="action in goToActions" :key="action.id" :action />
-        </CommandGroup>
+        </PaletteGroup>
 
-        <!-- Flat interleaved search results -->
-        <CommandGroup v-if="flatHits.length > 0" class="px-2">
+        <!-- One ranked list across collections; each row names its type -->
+        <PaletteGroup v-if="flatHits.length > 0" :heading="$t('shell.palette.results')">
           <CommandItem
             v-for="hit in flatHits"
             :key="hit.id"
             :value="hit.id"
-            class="group cursor-pointer px-3 py-2.5 data-[highlighted]:bg-secondary"
+            :class="paletteRowClass"
             @select="handleHitSelect(hit)"
           >
             <SearchHitRow
               :hit
               show-actions
+              show-type
               @view="navigateToHref(hit.viewHref)"
               @edit="navigateToHref(hit.editHref)"
             />
           </CommandItem>
-        </CommandGroup>
+        </PaletteGroup>
 
         <!-- Rate limit warning -->
         <div v-if="searchError && searchError.includes('užklausų')" class="mx-4 my-2 border border-status-attention-border bg-status-attention-surface p-3">
@@ -143,12 +143,14 @@ import {
   ArrowUp,
   ArrowDown,
   SearchX,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import PaletteDialog from './PaletteDialog.vue';
 import { useCommandActions } from './useCommandActions';
 import ActionResult from './results/ActionResult.vue';
+import PaletteGroup from './results/PaletteGroup.vue';
 import PaletteRow from './results/PaletteRow.vue';
+import { paletteRowClass } from './results/paletteRowClass';
 import PinButton from './results/PinButton.vue';
 
 import { useAdminSearch, type MultiSearchResults } from '@/Composables/useAdminSearch';
@@ -163,11 +165,9 @@ import {
   type SearchCollectionKey,
 } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import SearchHitRow from '@/Features/Admin/AdminSearch/Components/SearchHitRow.vue';
-import {
-  CommandList,
-  CommandGroup,
-  CommandItem,
-} from '@/Components/ui/command';
+import { getEntityTypeDefinition } from '@/Constants/entityTypes';
+import { TopProgressBar } from '@/Components/Patterns';
+import { CommandList, CommandItem } from '@/Components/ui/command';
 
 /** Search collection → the catalog `entityType` whose section owns it, for workspace ranking. */
 const collectionEntityType: Record<SearchCollectionKey, string> = {
@@ -265,6 +265,7 @@ const performSearch = useDebounceFn(async (searchQuery: string) => {
   searchError.value = null;
 
   try {
+    // Equal limits, so no collection floods the ranked list.
     searchResults.value = await multiSearch(searchQuery, {
       meetingsLimit: 3,
       agendaItemsLimit: 3,
@@ -273,6 +274,9 @@ const performSearch = useDebounceFn(async (searchQuery: string) => {
       calendarLimit: 3,
       institutionsLimit: 3,
       documentsLimit: 3,
+      resourcesLimit: 3,
+      dutiesLimit: 3,
+      usersLimit: 3,
     });
   }
   catch (error) {
@@ -356,27 +360,15 @@ const handleRecentSelect = (item: RecentItem) => {
   }
 };
 
-// Get badge text for recent item type
+// Admin pages and actions have no record type; everything else reads the shared glossary.
+const recentEntityType = (type: RecentItem['type']): string | undefined => (
+  type === 'page' || type === 'action' ? undefined : type
+);
+
 const getRecentTypeBadge = (type: RecentItem['type']): string => {
-  switch (type) {
-    case 'meeting':
-      return $t('Posėdis');
-    case 'agenda_item':
-      return $t('Darbotvarkės punktas');
-    case 'action':
-      return $t('Veiksmas');
-    case 'news':
-      return $t('Naujiena');
-    case 'page':
-      return $t('Puslapis');
-    case 'calendar':
-      return $t('Renginys');
-    case 'institution':
-      return $t('Institucija');
-    case 'document':
-      return $t('Dokumentas');
-    default:
-      return '';
-  }
+  if (type === 'action') return $t('Veiksmas');
+  if (type === 'page') return $t('Puslapis');
+  const definition = getEntityTypeDefinition(type);
+  return definition ? $t(definition.label) : '';
 };
 </script>

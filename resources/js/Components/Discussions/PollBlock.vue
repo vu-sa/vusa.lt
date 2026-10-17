@@ -56,7 +56,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CheckCircle2, Circle, Clock, Lock } from 'lucide-vue-next';
+import { CheckCircle2, Circle, Clock, Lock } from '@lucide/vue';
 
 import { formatRelativeTime } from '@/Utils/IntlTime';
 import type { PollData, PollVoter } from '@/Types/discussions';

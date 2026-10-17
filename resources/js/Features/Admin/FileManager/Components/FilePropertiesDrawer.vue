@@ -224,7 +224,7 @@ import {
   Search,
   Star,
   Trash2,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { toast } from 'vue-sonner';
 
 import type { FileEntry } from '../types';

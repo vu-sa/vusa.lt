@@ -300,6 +300,7 @@ describe('usePublicMultiSearch', () => {
       expect(trackEvent).toHaveBeenCalledWith('search_submitted', {
         term: 'studentai',
         results: TOTAL_HITS,
+        source: 'global',
       });
     });
 
@@ -337,6 +338,7 @@ describe('usePublicMultiSearch', () => {
       expect(trackEvent).toHaveBeenCalledWith('search_submitted', {
         term: 'vusa',
         results: TOTAL_HITS,
+        source: 'global',
       });
 
       vi.useRealTimers();
@@ -378,6 +380,7 @@ describe('usePublicMultiSearch', () => {
       expect(trackEvent).toHaveBeenCalledWith('search_submitted', {
         term: 'nerandama',
         results: 0,
+        source: 'global',
       });
     });
 

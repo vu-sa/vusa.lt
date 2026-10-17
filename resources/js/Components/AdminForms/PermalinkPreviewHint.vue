@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Info, Link2 } from 'lucide-vue-next';
+import { Info, Link2 } from '@lucide/vue';
 
 defineProps<{
   preview: { permalink: string; url: string } | null;

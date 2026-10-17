@@ -272,7 +272,7 @@ import {
   Lock,
   Mail,
   X,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import MicrosoftButton from '@/Components/Buttons/MicrosoftLoginButton.vue';
 import { Carousel, CarouselContent, CarouselItem } from '@/Components/ui/carousel';

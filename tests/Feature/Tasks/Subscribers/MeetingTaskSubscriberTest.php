@@ -297,7 +297,7 @@ describe('MeetingTaskSubscriber', function (): void {
     });
 
     describe('notifications', function (): void {
-        test('notifies administrators when meeting is created', function (): void {
+        test('notifies overseers when meeting is created', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 
@@ -324,7 +324,7 @@ describe('MeetingTaskSubscriber', function (): void {
             Notification::assertSentTo($admin, MeetingCreatedNotification::class);
         });
 
-        test('notifies administrators when all agenda items are completed', function (): void {
+        test('notifies overseers when all agenda items are completed', function (): void {
             $tenant = Tenant::query()->where('type', '!=', 'pkp')->first()
                 ?? Tenant::factory()->create(['type' => 'padalinys']);
 

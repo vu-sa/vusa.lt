@@ -34,6 +34,7 @@ class StoreTenantRequest extends FormRequest
             'alias' => 'nullable|unique:tenants,alias',
             'shortname_vu' => 'nullable|unique:tenants,shortname_vu',
             'primary_institution_id' => ['nullable', SoftDeleteRules::existsLive('institutions')],
+            'goals_enabled' => ['sometimes', 'boolean'],
         ];
     }
 }

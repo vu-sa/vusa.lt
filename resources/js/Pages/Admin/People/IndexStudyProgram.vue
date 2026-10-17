@@ -71,7 +71,7 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Merge, Plus } from 'lucide-vue-next';
+import { Merge, Plus } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';

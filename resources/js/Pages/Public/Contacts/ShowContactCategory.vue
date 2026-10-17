@@ -5,7 +5,6 @@
       <meta v-if="typeDescription" name="description" :content="typeDescription">
     </Head>
 
-    <!-- Page Title Band per v0 redesign -->
     <PageTitleBand
       :eyebrow="pageEyebrow"
       :title="typeTitle"
@@ -39,11 +38,12 @@
       </div>
 
       <!-- Results Grid -->
-      <div v-if="institutions.length > 0" class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+      <div v-if="institutions.length > 0" class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
         <NewInstitutionCard
           v-for="institution in institutions"
           :key="institution.id"
           :institution
+          :omit-type-slugs="[type.slug]"
         />
       </div>
 
@@ -85,6 +85,7 @@ import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import NewInstitutionCard from '@/Components/Public/Institutions/NewInstitutionCard.vue';
+import { toPlainText } from '@/Components/Public/Institutions/useInstitutionCard';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
 import { TypeIcon } from '@/Components/icons';
 import IFluentPeople16Regular from '~icons/fluent/people-16-regular';
@@ -118,14 +119,16 @@ const typeTitle = computed(() => {
   return localized || Object.values((props.type.title as Record<string, string> | undefined) || {})[0] || props.type.slug;
 });
 
+// Stored as rich HTML; the lead and meta description need one plain paragraph.
 const typeDescription = computed(() => {
-  if (!props.type?.description) return '';
-  if (typeof props.type.description === 'string') {
-    return props.type.description;
+  const description = props.type?.description;
+  if (!description) return '';
+  if (typeof description === 'string') {
+    return toPlainText(description) ?? '';
   }
   const locale = (page.props.app as { locale?: string } | undefined)?.locale || 'lt';
-  const localized = (props.type.description as Record<string, string> | undefined)?.[locale];
-  return localized || Object.values((props.type.description as Record<string, string> | undefined) || {})[0] || '';
+  const translations = description as Record<string, string>;
+  return toPlainText(translations[locale] || Object.values(translations)[0]) ?? '';
 });
 
 // Breadcrumbs with band placement

@@ -196,7 +196,7 @@
 import { computed, ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Bell, BellOff, BellRing, ChevronDown, Info, Loader2, Mail as MailIcon, RotateCcw, Smartphone } from 'lucide-vue-next';
+import { Bell, BellOff, BellRing, ChevronDown, Info, Loader2, Mail as MailIcon, RotateCcw, Smartphone } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';

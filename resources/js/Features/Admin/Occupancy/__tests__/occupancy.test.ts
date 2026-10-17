@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { termStatus } from '../occupancy';
+import { termStatus, termYearSpan } from '../occupancy';
 
 describe('termStatus', () => {
   const today = '2026-09-20';
@@ -32,5 +32,31 @@ describe('termStatus', () => {
 
   it('accepts full ISO timestamps', () => {
     expect(termStatus({ start_date: '2026-01-01T00:00:00.000000Z', end_date: '2026-09-20T00:00:00.000000Z' }, today)).toBe('current');
+  });
+});
+
+describe('termYearSpan', () => {
+  const today = '2026-09-20';
+
+  it('runs from the first year to now while any term is in force', () => {
+    expect(termYearSpan([
+      { start_date: '2019-07-01', end_date: '2020-06-30' },
+      { start_date: '2025-07-01', end_date: null },
+    ], 'dabar', today)).toBe('2019–dabar');
+  });
+
+  it('ends at the last term\'s end for a former member', () => {
+    expect(termYearSpan([
+      { start_date: '2020-07-01', end_date: '2021-06-30' },
+      { start_date: '2019-07-01', end_date: '2020-06-30' },
+    ], 'dabar', today)).toBe('2019–2021');
+  });
+
+  it('collapses a single year', () => {
+    expect(termYearSpan([{ start_date: '2020-02-01', end_date: '2020-06-30' }], 'dabar', today)).toBe('2020');
+  });
+
+  it('has nothing to say without dated terms', () => {
+    expect(termYearSpan([], 'dabar', today)).toBeNull();
   });
 });

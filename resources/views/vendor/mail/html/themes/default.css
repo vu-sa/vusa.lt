@@ -1,6 +1,6 @@
 /*
  * Mano VU SA mail theme: the admin's paper and ink, expressed in what mail clients support.
- * Square corners, hairlines instead of shadows, one brand fill (the primary button), light only.
+ * Square corners, hairlines instead of shadows, neutral notification actions, light only.
  * Brand #bd2835 mirrors --brand in resources/css/theme/base-tokens.css.
  */
 
@@ -242,7 +242,7 @@ img {
     color: #27272a;
 }
 
-/* Buttons: the only brand fill in a message */
+/* Buttons */
 
 .action {
     -premailer-cellpadding: 0;
@@ -288,6 +288,23 @@ img {
     border-top: 11px solid #ffffff;
     box-shadow: 0 0 0 1px #18181b;
     color: #18181b;
+}
+
+.action-neutral {
+    margin: 20px 0;
+    text-align: left;
+}
+
+.button-neutral {
+    background-color: #ffffff;
+    border: 1px solid #71717a;
+    color: #27272a;
+    font-size: 14px;
+    letter-spacing: normal;
+    line-height: 20px;
+    padding: 11px 16px;
+    text-align: center;
+    text-transform: none;
 }
 
 /* Panels */

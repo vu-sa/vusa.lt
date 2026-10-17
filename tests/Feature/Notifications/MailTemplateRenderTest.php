@@ -69,7 +69,7 @@ describe('notification email', function (): void {
         $actionUrl = $notification->primaryAction()['url'];
 
         expect($rendered['html'])
-            ->toContain($institution->name, $deadline, $actionUrl, route('profile'), 'Mano VU SA')
+            ->toContain($institution->name, $deadline, $actionUrl, route('profile'), 'Mano VU SA', 'button-neutral')
             ->and($rendered['text'])
             ->toContain($institution->name, $deadline, $actionUrl, route('profile'));
     });
@@ -99,7 +99,7 @@ describe('notification email', function (): void {
 
         $rendered = renderNotificationMail($notification, $this->recipient);
 
-        expect($rendered['html'])->toContain(e($notification->primaryAction()['url']), e($notification->secondaryAction()['url']), 'button-secondary', __('notifications.action_not_mine'))
+        expect($rendered['html'])->toContain(e($notification->primaryAction()['url']), e($notification->secondaryAction()['url']), 'button-neutral', __('notifications.action_not_mine'))
             ->and($rendered['text'])->toContain($notification->secondaryAction()['url'], $notification->secondaryAction()['label']);
     });
 
@@ -189,4 +189,76 @@ describe('digest email', function (): void {
 
         expect($html)->toContain('Senas');
     });
+});
+
+test('activity mail keeps both choices and the reporting period in HTML and text', function (string $locale, string $campaign): void {
+    app()->setLocale($locale);
+    $request = InstitutionActivityRequest::factory()->create([
+        'campaign_type' => $campaign,
+        'period_start' => '2026-09-01',
+        'period_end' => '2026-09-30',
+        'requested_by_id' => $this->recipient->id,
+        'note' => 'Please reply by Friday.',
+    ]);
+    $notification = new InstitutionActivityNotification(new EloquentCollection([$request]));
+
+    $rendered = renderNotificationMail($notification, $this->recipient);
+
+    foreach (['html', 'text'] as $part) {
+        $content = html_entity_decode($rendered[$part]);
+        expect($content)->toContain('2026-09-01', '2026-09-30', 'Please reply by Friday.', $notification->primaryAction()['url'], $notification->secondaryAction()['url']);
+        expect(substr_count($content, 'Please reply by Friday.'))->toBe(1);
+        expect(substr_count($content, '2026-09-01'))->toBe(1);
+    }
+    expect($rendered['html'])->toContain('button-neutral')->not->toContain('table-layout:fixed', '#bd1737');
+    expect($rendered['subject'])->not->toStartWith('VU SA ·');
+})->with(['lt', 'en'])->with(['activity_confirmation', 'missing_meetings']);
+
+test('notification emails greet the recipient by first name in their locale', function (string $locale, string $name, string $greeting): void {
+    app()->setLocale($locale);
+    $this->recipient->name = $name;
+    $notification = new TaskAssignedNotification(Task::factory()->create());
+
+    $rendered = renderNotificationMail($notification, $this->recipient);
+
+    foreach (['html', 'text'] as $part) {
+        expect($rendered[$part])->toContain($greeting, __('mail.platform_description'), route('dashboard'));
+    }
+})->with([
+    ['lt', 'Jonas Jonaitis', 'Labas, Jonai!'],
+    ['lt', 'Agnė Agnaitė', 'Labas, Agne!'],
+    ['lt', 'Paulius Paulaitis', 'Labas, Pauliau!'],
+    ['lt', 'Jonai Jonaiti', 'Labas, Jonai!'],
+    ['lt', '', 'Labas!'],
+    ['en', 'Jonas Jonaitis', 'Hello, Jonas!'],
+    ['en', 'John Smith', 'Hello, John!'],
+]);
+
+test('activity emails keep the platform description and link in the footer', function (): void {
+    app()->setLocale('lt');
+    $this->recipient->name = 'Agnė Agnaitė';
+    $notification = new InstitutionActivityNotification(new EloquentCollection([InstitutionActivityRequest::factory()->create()]));
+
+    $rendered = renderNotificationMail($notification, $this->recipient);
+    $document = new DOMDocument;
+    @$document->loadHTML('<?xml encoding="utf-8" ?>'.$rendered['html']);
+    $xpath = new DOMXPath($document);
+    $footer = $xpath->query('//table[contains(concat(" ", normalize-space(@class), " "), " footer ")]')->item(0);
+
+    expect($rendered['html'])->toContain('Labas, Agne!', 'kaip studentų atstovo (-ės)', 'įjungta')
+        ->not->toContain('įjungei', 'Posėdžius ir darbotvarkes rasi');
+    expect($footer->textContent)->toContain(__('mail.platform_description'), __('mail.open_platform'));
+    expect($xpath->query('.//a', $footer)->item(0)->getAttribute('href'))->toBe(route('dashboard'));
+    expect($rendered['text'])->toContain('Labas, Agne!', __('mail.platform_description'), route('dashboard'));
+});
+
+test('digest greetings also use the Lithuanian first-name ending', function (): void {
+    app()->setLocale('lt');
+    $this->recipient->name = 'Jonas Jonaitis';
+    $digest = new NotificationDigest($this->recipient, ['task' => [['title' => 'Užduotis', 'body' => 'Turinys', 'url' => '/x']]]);
+    $markdown = new Markdown(view(), config('mail.markdown'));
+
+    foreach ([$digest->render(), $markdown->renderText('emails.notification-digest', $digest->content()->with)] as $content) {
+        expect((string) $content)->toContain('Labas, Jonai!', __('mail.platform_description'));
+    }
 });

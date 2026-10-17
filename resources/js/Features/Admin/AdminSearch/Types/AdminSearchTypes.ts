@@ -1,24 +1,4 @@
 /**
- * Admin Search Types
- *
- * Type definitions for the admin faceted search system.
- * These types support tenant-scoped search with facets across different collections.
- */
-
-// Re-export existing search result types from useAdminSearch
-export type {
-  MeetingSearchResult,
-  AgendaItemSearchResult,
-  NewsSearchResult,
-  PageSearchResult,
-  CalendarSearchResult,
-  InstitutionSearchResult,
-  DocumentSearchResult,
-  ResourceSearchResult,
-  DutySearchResult,
-} from '@/Composables/useAdminSearch';
-
-/**
  * Available admin collections for search
  */
 export type AdminCollection
@@ -72,31 +52,6 @@ export interface AdminSearchFilters {
 }
 
 /**
- * Meeting-specific filters
- */
-export interface MeetingSearchFilters extends AdminSearchFilters {
-  year?: number[];
-  completionStatus?: string[];
-  voteAlignmentStatus?: string[];
-  institutionType?: string[];
-  tenantShortnames?: string[];
-  isPublic?: boolean;
-}
-
-/**
- * Agenda item-specific filters
- */
-export interface AgendaItemSearchFilters extends AdminSearchFilters {
-  meetingYear?: number[];
-  studentVote?: string[];
-  decision?: string[];
-  isComplete?: boolean;
-  broughtByStudents?: boolean;
-  voteAlignmentStatus?: string[];
-  tenantShortnames?: string[];
-}
-
-/**
  * Date range filter value
  */
 export interface DateRange {
@@ -127,33 +82,6 @@ export interface AdminSearchError {
 }
 
 /**
- * Complete search state for a collection
- */
-export interface AdminSearchState<T = unknown> {
-  status: AdminSearchStatus;
-  query: string;
-  results: T[];
-  totalHits: number;
-  facets: AdminFacet[];
-  initialFacets: AdminFacet[];
-  currentPage: number;
-  totalPages: number;
-  perPage: number;
-  error: AdminSearchError | null;
-}
-
-/**
- * Search response from Typesense
- */
-export interface AdminSearchResponse<T = unknown> {
-  hits: T[];
-  totalHits: number;
-  facets: AdminFacet[];
-  page: number;
-  totalPages: number;
-}
-
-/**
  * Facet configuration for a collection
  */
 export interface FacetFieldConfig {
@@ -177,78 +105,10 @@ export interface CollectionFacetConfig {
 }
 
 /**
- * URL search params structure for state persistence
- */
-export interface AdminSearchUrlParams {
-  q?: string; // Search query
-  page?: string; // Current page
-  sort?: string; // Sort order
-  [key: string]: string | undefined; // Dynamic facet filters (e.g., year=2024, status=complete)
-}
-
-/**
  * Sort option configuration
  */
 export interface SortOption {
   value: string; // Typesense sort_by value
   label: string; // Display label
   icon?: string; // Optional icon
-}
-
-/**
- * Card action configuration
- */
-export interface SearchCardAction {
-  type: 'view' | 'edit' | 'delete';
-  label: string;
-  icon: string;
-  route?: string;
-  permission?: string; // Permission required (e.g., 'meetings.update.padalinys')
-  variant?: 'default' | 'ghost' | 'destructive';
-}
-
-/**
- * Props for collection search cards
- */
-export interface SearchCardProps<T> {
-  result: T;
-  actions?: SearchCardAction[];
-  isCompact?: boolean;
-}
-
-/**
- * Emits for search cards
- */
-export type SearchCardEmits = (e: 'action', action: SearchCardAction, id: string) => void;
-
-/**
- * Composable return type for useAdminCollectionSearch
- */
-export interface AdminCollectionSearchController<T = unknown> {
-  // State
-  state: AdminSearchState<T>;
-  filters: AdminSearchFilters;
-
-  // Computed
-  isSearching: boolean;
-  isLoadingFacets: boolean;
-  isLoadingMore: boolean;
-  hasResults: boolean;
-  hasActiveFilters: boolean;
-  hasMoreResults: boolean;
-  mergedFacets: AdminFacet[];
-  activeFilterCount: number;
-
-  // Actions
-  search: (query: string, immediate?: boolean) => Promise<void>;
-  setFilter: (field: string, value: unknown) => void;
-  toggleFilter: (field: string, value: string) => void;
-  clearFilters: () => void;
-  loadMore: () => Promise<void>;
-  setSortBy: (sortBy: string) => void;
-  refresh: () => Promise<void>;
-
-  // URL state
-  syncToUrl: () => void;
-  loadFromUrl: () => void;
 }

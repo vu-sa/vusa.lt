@@ -64,7 +64,7 @@
 
         <!-- Contacts Grouping -->
         <div class="space-y-1.5">
-          <Label class="text-xs font-semibold">{{ $t('Kontaktų grupavimas') }} *</Label>
+          <Label class="text-xs font-semibold">{{ $t('Kontaktų rikiavimas') }} *</Label>
           <Select v-model="http.contacts_grouping">
             <SelectTrigger :class="{ 'border-destructive': createErrors['contacts_grouping'] }">
               <SelectValue :placeholder="$t('Pasirink grupavimą')" />
@@ -342,7 +342,7 @@ import {
   Plus,
   ChevronDown,
   Loader2,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';

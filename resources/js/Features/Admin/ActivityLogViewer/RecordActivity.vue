@@ -1,16 +1,10 @@
 <template>
   <section aria-labelledby="record-activity-title">
-    <div class="flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <h2 id="record-activity-title" class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-foreground">
-          <History class="size-4 shrink-0 text-brand" aria-hidden="true" />
-          {{ $t('Veikla') }}
-        </h2>
-        <p class="mt-1 text-sm text-muted-foreground">
-          {{ $t('activity.comments_lead') }}
-        </p>
-      </div>
-    </div>
+    <h2 id="record-activity-title" class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-foreground">
+      <MessagesSquare class="size-4 shrink-0 text-brand" aria-hidden="true" />
+      {{ $t('Komentarai') }}
+      <span v-if="discussion.comments.value.length" class="text-muted-foreground">({{ discussion.comments.value.length }})</span>
+    </h2>
 
     <div class="mt-6 flex items-center gap-3 border-b border-border pb-6">
       <UserAvatar v-if="currentUser" :user="currentUser" :size="32" class="shrink-0" />
@@ -19,13 +13,12 @@
         class="min-w-0 flex-1"
         :mentionables="discussion.mentionables.value"
         :submitting="discussion.posting.value"
-        collapsible
         @submit="postComment"
       >
         <template #leading>
           <Dialog v-model:open="pollDialogOpen">
             <DialogTrigger as-child>
-              <Button variant="outline" size="xs" voice="sentence">
+              <Button variant="ghost" size="xs" voice="sentence" class="text-muted-foreground">
                 <BarChart3 class="size-3.5" />
                 {{ $t('Apklausa') }}
               </Button>
@@ -53,11 +46,7 @@
       <Skeleton v-for="index in 3" :key="index" class="h-20 w-full" />
     </div>
 
-    <p v-else-if="discussion.comments.value.length === 0" class="py-6 text-sm text-muted-foreground">
-      {{ $t('activity.comments_empty') }}
-    </p>
-
-    <div v-else class="divide-y divide-border border-b border-border">
+    <div v-else-if="discussion.comments.value.length" class="divide-y divide-border border-b border-border">
       <div v-for="comment in discussion.comments.value" :key="comment.id" class="py-5">
         <CommentThread
           :comment
@@ -80,7 +69,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { BarChart3, History } from 'lucide-vue-next';
+import { BarChart3, MessagesSquare } from '@lucide/vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import CommentComposer from '@/Components/Discussions/CommentComposer.vue';

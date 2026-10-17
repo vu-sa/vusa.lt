@@ -37,4 +37,3 @@ describe('calendars', () => {
     expect((wrapper.find('select[aria-label="Metai"]').element as HTMLSelectElement).value).toBe('2028');
   });
 });
-

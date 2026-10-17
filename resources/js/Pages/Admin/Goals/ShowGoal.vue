@@ -130,7 +130,7 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ClipboardCheck, ExternalLink, FileText, ListChecks, Pencil, Plus, Target, Trash2 } from 'lucide-vue-next';
+import { ClipboardCheck, ExternalLink, FileText, ListChecks, Pencil, Plus, Target, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';

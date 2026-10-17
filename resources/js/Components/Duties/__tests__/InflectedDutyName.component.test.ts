@@ -14,7 +14,6 @@ describe('InflectedDutyName.vue', () => {
     expect(wrapper.get('[data-testid="duty-ending-group"] > span mark').text()).toBe('Prezident');
     expect(wrapper.get('[data-testid="duty-ending-masculine"] mark').text()).toBe('as');
     expect(wrapper.get('[data-testid="duty-ending-feminine"] mark').text()).toBe('ė');
-    expect(wrapper.find('[data-slot="search-match"]').exists()).toBe(false);
     expect(wrapper.get('[data-testid="duty-gender-pair"]').classes()).toContain('sr-only');
   });
 

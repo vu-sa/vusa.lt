@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\ActivityRequests\ResolveCheckInStarts;
 use App\Actions\GetTenantsForUpserts;
 use App\Enums\MeetingType;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\DutyService;
 use Illuminate\Http\JsonResponse;
@@ -38,14 +40,19 @@ class ActionWindowApiController extends ApiController
      *
      * @routeName api.v1.admin.actionWindow.context
      */
-    public function context(InstitutionActivityStatusService $activityStatus, Authorizer $authorizer): JsonResponse
-    {
+    public function context(
+        InstitutionActivityStatusService $activityStatus,
+        Authorizer $authorizer,
+        InstitutionScopeResolver $scopes,
+        ResolveCheckInStarts $checkInStarts,
+    ): JsonResponse {
         $institutions = DutyService::getUserInstitutionsForDashboard();
+        $starts = $checkInStarts->execute(request()->user(), $institutions);
 
         return $this->jsonSuccess([
-            'institutions' => $this->institutionPayload($institutions, $activityStatus),
+            'institutions' => $this->institutionPayload($institutions, $activityStatus, $starts),
             'meetingsNeedingAttention' => $this->meetingPayload($institutions),
-            'institutionSearch' => $this->institutionSearchScope($authorizer),
+            'institutionSearch' => $this->institutionSearchScope($authorizer, $scopes),
         ]);
     }
 
@@ -58,9 +65,12 @@ class ActionWindowApiController extends ApiController
      * would only lead to a rejection from StoreMeetingRequest's tenant-scope rule.
      * All-scope callers get an empty list, meaning no tenant filter at all.
      *
-     * @return array{enabled: bool, tenant_ids: array<int, int>}
+     * The type ids let a meeting created from a calendar event narrow the search to VU SA's
+     * own bodies; the index stores type ids, not the scope they currently resolve to.
+     *
+     * @return array{enabled: bool, tenant_ids: array<int, int>, internal_type_ids: array<int, int>, external_type_ids: array<int, int>}
      */
-    private function institutionSearchScope(Authorizer $authorizer): array
+    private function institutionSearchScope(Authorizer $authorizer, InstitutionScopeResolver $scopes): array
     {
         $scope = $authorizer->scope(request()->user(), 'meetings.create.padalinys');
         $tenants = GetTenantsForUpserts::execute('meetings.create.padalinys', $authorizer);
@@ -70,6 +80,8 @@ class ActionWindowApiController extends ApiController
             'tenant_ids' => $scope->isAllScope
                 ? []
                 : $tenants->pluck('id')->map(fn ($id): int => (int) $id)->values()->all(),
+            'internal_type_ids' => $scopes->typeIdsResolvingInternal(),
+            'external_type_ids' => $scopes->typeIdsResolvingExternal(),
         ];
     }
 
@@ -84,9 +96,10 @@ class ActionWindowApiController extends ApiController
 
     /**
      * @param  Collection<int, Institution>  $institutions
+     * @param  array<string, array{from: string|null, reason: string|null}>  $checkInStarts
      * @return array<int, array<string, mixed>>
      */
-    private function institutionPayload(Collection $institutions, InstitutionActivityStatusService $activityStatus): array
+    private function institutionPayload(Collection $institutions, InstitutionActivityStatusService $activityStatus, array $checkInStarts): array
     {
         return $institutions
             ->map(fn (Institution $institution) => [
@@ -97,6 +110,8 @@ class ActionWindowApiController extends ApiController
                 'is_internal' => $institution->governance_scope->isInternal(),
                 'meeting_pattern' => $this->meetingPattern($institution),
                 'activity_status' => $activityStatus->resolve($institution)->toArray(),
+                'check_in_from' => $checkInStarts[(string) $institution->id]['from'] ?? null,
+                'check_in_from_reason' => $checkInStarts[(string) $institution->id]['reason'] ?? null,
             ])
             ->sortBy([
                 fn (array $a, array $b) => $b['activity_status']['requires_action'] <=> $a['activity_status']['requires_action'],

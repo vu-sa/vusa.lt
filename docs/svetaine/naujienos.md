@@ -1,7 +1,8 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-10-08
+last_reviewed: 2026-10-15
 tests:
+  - resources/js/Composables/__tests__/useContentEditor.component.test.ts
   - tests/Feature/Search/SearchExperienceTest.php
   - tests/Feature/Api/Admin/ContentEditorTest.php
   - tests/Feature/Admin/Content/NewsControllerTest.php
@@ -15,7 +16,7 @@ models: [News]
 
 # Naujienos
 
-Naujienos skirtos organizacijos ir padalinių veiklų ataskaitoms, pranešimams spaudai, studentams svarbioms žinioms ir svarbiems įvykiams viešinti. Kiekvienas padalinys skelbia savo naujienas savo svetainės dalyje, o bendras VU SA naujienas kuria centrinis biuras. Naują naujieną galima greitai sukurti bet kurioje sistemos vietoje per viršutinį meniu **+ Sukurti → Nauja naujiena**.
+Naujienos skirtos organizacijos ir padalinių veiklų ataskaitoms, pranešimams spaudai, studentams svarbioms žinioms ir svarbiems įvykiams viešinti. Kiekvienas padalinys skelbia savo naujienas savo svetainės dalyje, o bendras VU SA naujienas kuria centrinis biuras.
 
 Skiltis pasiekiama adresu `/mano/news`.
 
@@ -28,6 +29,8 @@ Skiltis pasiekiama adresu `/mano/news`.
 :::
 
 ## Kaip tai veikia
+
+Sukūrus naujieną, atveriama jos redagavimo forma. Įrašius pakeitimus jau atvertame redaktoriuje, liekama jame.
 
 Paieška randa išsaugotą pavadinimą, aprašymą, žymas ir turinio tekstą. Ištrauka po rezultato pavadinimu padeda suprasti atitikimą. Viešoje paieškoje išlieka tik viešai skelbiami įrašai. [Paieška ir filtrų skaičiai](/pagrindai/platforma#paieska-ir-pasirinkimas).
 
@@ -85,10 +88,7 @@ Naujienų sąraše (`/mano/news`) gali ieškoti pagal pavadinimą:
 
 ### Naujos naujienos kūrimas
 
-Pradėti naują naujieną gali dviem būdais:
-
-1. Viršutinėje sistemos juostoje spausk **+ Sukurti → Nauja naujiena** (greitasis veiksmas iš bet kurio puslapio).
-2. Naujienų sąraše (`/mano/news`) spausk **Nauja naujiena** (arba eik adresu `/mano/news/create`).
+Naujienų sąraše (`/mano/news`) spausk **Nauja naujiena** (arba eik adresu `/mano/news/create`).
 
 Formoje:
 

@@ -1,11 +1,12 @@
 <template>
   <CommandItem
     :value
-    class="u-touch group cursor-pointer gap-3 px-3 py-2 data-[highlighted]:bg-secondary"
+    :class="paletteRowClass"
     @select="emit('select')"
   >
-    <span class="flex size-8 shrink-0 items-center justify-center border border-border bg-background text-muted-foreground">
-      <component :is="icon" class="size-4" />
+    <EntityTypeMark v-if="entityType" :type="entityType" size="lg" icon-only />
+    <span v-else class="flex size-10 shrink-0 items-center justify-center border border-border bg-background text-foreground">
+      <component :is="icon" class="size-5" :stroke-width="1.75" />
     </span>
     <span class="min-w-0 flex-1">
       <span class="block truncate text-sm font-medium">{{ title }}</span>
@@ -18,6 +19,9 @@
 <script setup lang="ts">
 import type { Component } from 'vue';
 
+import { paletteRowClass } from './paletteRowClass';
+
+import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import { CommandItem } from '@/Components/ui/command';
 
 defineProps<{
@@ -25,6 +29,8 @@ defineProps<{
   icon: Component;
   title: string;
   subtitle?: string;
+  /** Shows the type's category mark instead of the plain icon tile. */
+  entityType?: string;
 }>();
 
 const emit = defineEmits<{ select: [] }>();

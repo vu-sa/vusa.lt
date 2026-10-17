@@ -161,8 +161,8 @@ const lodashImportPatterns = [
 ];
 // Icon sets that have been fully removed from the codebase.
 const removedIconPatterns = [
-  { group: ['~icons/mdi/*'], message: 'MDI was removed. Use lucide-vue-next for admin icons or ~icons/simple-icons/* for brand glyphs.' },
-  { group: ['@/Types/Icons/*'], message: 'Legacy default-export barrel was deleted. Use direct imports from lucide-vue-next or @/Components/icons.' },
+  { group: ['~icons/mdi/*'], message: 'MDI was removed. Use @lucide/vue for admin icons or ~icons/simple-icons/* for brand glyphs.' },
+  { group: ['@/Types/Icons/*'], message: 'Legacy default-export barrel was deleted. Use direct imports from @lucide/vue or @/Components/icons.' },
 ];
 
 const rawHuePattern = /^(?:bg|text|border|ring|fill|stroke|from|via|to|divide|outline|decoration|caret|accent)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)(?:-[\w.]+)?(?:\/[\d.]+)?$/; // eslint-disable-line max-len
@@ -419,7 +419,7 @@ export default tseslint.config(
         patterns: [
           ...lodashImportPatterns,
           ...removedIconPatterns,
-          { group: ['~icons/fluent/*'], message: 'Admin uses Lucide (lucide-vue-next). Fluent is reserved for Public surfaces.' },
+          { group: ['~icons/fluent/*'], message: 'Admin uses Lucide (@lucide/vue). Fluent is reserved for Public surfaces.' },
         ],
       }],
     },
@@ -438,7 +438,7 @@ export default tseslint.config(
         patterns: [
           ...lodashImportPatterns,
           ...removedIconPatterns,
-          { group: ['~icons/fluent/*'], message: 'Admin uses Lucide (lucide-vue-next). Fluent is reserved for Public surfaces.' },
+          { group: ['~icons/fluent/*'], message: 'Admin uses Lucide (@lucide/vue). Fluent is reserved for Public surfaces.' },
           {
             group: ['@/Components/ui/card', '@/Components/ui/card/*'],
             message: 'Use SectionCard from @/Components/Patterns for titled panels, or an entity component. Raw ui/card belongs in Components/**, not in a page.',
@@ -458,10 +458,21 @@ export default tseslint.config(
       'no-restricted-imports': ['warn', {
         paths: [
           ...lodashImportPaths,
-          { name: 'lucide-vue-next', message: 'Public uses Fluent (~icons/fluent/*) for a more stylized look. Lucide is reserved for Admin surfaces.' },
+          { name: '@lucide/vue', message: 'Public uses Fluent (~icons/fluent/*) for a more stylized look. Lucide is reserved for Admin surfaces.' },
         ],
         patterns: [...lodashImportPatterns, ...removedIconPatterns],
       }],
+    },
+  },
+
+  // Size signals, the frontend counterpart of phpmd: warnings to split on touch, never a block.
+  {
+    files: ['resources/js/**/*.{vue,ts}'],
+    ignores: ['resources/js/Components/ui/**'],
+    rules: {
+      'complexity': ['warn', 15],
+      'max-depth': ['warn', 4],
+      'max-lines': ['warn', { max: 500, skipBlankLines: true, skipComments: true }],
     },
   },
 

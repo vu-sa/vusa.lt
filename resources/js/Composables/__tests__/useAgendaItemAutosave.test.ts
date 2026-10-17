@@ -50,6 +50,17 @@ const setup = () => {
 };
 
 describe('useAgendaItemAutosave', () => {
+  it('leaves the given deferred props out of the reload after a save, so their panels keep the scroll', () => {
+    const { form } = fakeForm();
+    const autosave = effectScope().run(() => useAgendaItemAutosave(form as unknown as InertiaForm<AgendaItemFormData>, 'item-1', 700, ['goalLinks']))!;
+
+    form.type = 'voting';
+    form.isDirty = true;
+    autosave.submit();
+
+    expect(form.patch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ preserveScroll: true, except: ['goalLinks'] }));
+  });
+
   it('navigates only after a save that was already in flight has landed', () => {
     const { form, autosave, respond } = setup();
     const navigate = vi.fn();

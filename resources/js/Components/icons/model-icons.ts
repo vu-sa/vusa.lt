@@ -93,7 +93,6 @@ export const UserIcon = Person24Regular;
 export const AgendaItemIconFilled = DocumentBulletList24Filled;
 export const BannerIconFilled = ImageArrowBack24Filled;
 export const CalendarIconFilled = CalendarLtr24Filled;
-export const CategoryIconFilled = TextBulletListSquare24Filled;
 export const CommentIconFilled = Comment24Filled;
 export const DocumentIconFilled = DocumentMultiple24Filled;
 export const DutiableIconFilled = PersonClock24Filled;

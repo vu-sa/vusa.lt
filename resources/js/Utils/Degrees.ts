@@ -13,25 +13,3 @@ export function getDegreeOptions() {
     { label: 'Kita (Other)', value: DegreeEnum.OTHER },
   ];
 }
-
-/**
- * Get human-readable label for a degree value
- */
-export function getDegreeLabel(degree: DegreeEnum): string {
-  const options = getDegreeOptions();
-  return options.find(option => option.value === degree)?.label || degree;
-}
-
-/**
- * Get all degree values
- */
-export function getAllDegreeValues(): DegreeEnum[] {
-  return Object.values(DegreeEnum);
-}
-
-/**
- * Check if a value is a valid degree enum value
- */
-export function isValidDegree(value: string): value is DegreeEnum {
-  return Object.values(DegreeEnum).includes(value as DegreeEnum);
-}

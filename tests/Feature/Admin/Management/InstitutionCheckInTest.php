@@ -4,6 +4,7 @@ use App\Models\Duty;
 use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
+use App\Models\Meeting;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -34,6 +35,21 @@ test('allows creating check-in with past start date', function (): void {
         'start_date' => $startDateTime->toDateTimeString(),
         'end_date' => $endDateTime->toDateTimeString(),
     ]);
+});
+
+test('rejects a check-in period that contains a recorded meeting', function (): void {
+    $tenant = Tenant::factory()->create();
+    $user = makeAdminUser($tenant);
+    $institution = Institution::factory()->for($tenant)->create();
+    $meeting = Meeting::factory()->create(['start_time' => now()->subDays(10)]);
+    $meeting->institutions()->attach($institution->id);
+
+    asUser($user)->post(route('institutions.check-ins.store', $institution), [
+        'start_date' => now()->subMonth()->toDateString(),
+        'end_date' => now()->addWeek()->toDateString(),
+    ])->assertSessionHasErrors(['start_date']);
+
+    expect($institution->checkIns()->count())->toBe(0);
 });
 
 test('rejects check-in end date beyond three months', function (): void {

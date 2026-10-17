@@ -8,6 +8,8 @@ import type { NewsItem } from '@/Types/contentParts';
 
 export interface NewsDocument {
   _searchMatch?: import('@/Shared/Search/matches').SearchMatch;
+  _searchTitleMatches?: import('@/Shared/Search/matches').SearchMatch[];
+  _searchFieldMatches?: Record<string, import('@/Shared/Search/matches').SearchMatch>;
   id: string | number;
   title: string;
   short?: string;
@@ -149,7 +151,7 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
 
     const newQuery = params.toString();
     const newUrl = `${window.location.pathname}${newQuery ? `?${newQuery}` : ''}`;
-    window.history.replaceState({}, '', newUrl);
+    window.history.replaceState(window.history.state, '', newUrl);
   };
 
   const parseUrlParams = () => {
@@ -224,6 +226,8 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
       id: Number(doc.id),
       title: doc.title,
       _searchMatch: doc._searchMatch,
+      _searchTitleMatches: doc._searchTitleMatches,
+      _searchFieldMatches: doc._searchFieldMatches,
       short: doc.short ?? '',
       permalink: doc.permalink ?? null,
       image: doc.image ?? '',

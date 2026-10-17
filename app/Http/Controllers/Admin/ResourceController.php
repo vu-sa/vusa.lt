@@ -15,6 +15,7 @@ use App\Models\Resource;
 use App\Models\ResourceCategory;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use App\Support\StagingProtection;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -55,7 +56,7 @@ class ResourceController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreResourceRequest $request)
+    public function store(StoreResourceRequest $request, PostCreateRedirect $redirect)
     {
         $this->handleAuthorization('create', Resource::class);
 
@@ -74,7 +75,8 @@ class ResourceController extends AdminController
             app(AddImageMedia::class)->execute($resource, $image['file'], 'images');
         }
 
-        return redirect()->route('resources.index')->with('success', $this->entityMessage('created', 'resource'));
+        return redirect($redirect->url($request->user(), $resource, 'resources.show', 'view', 'resources.index'))
+            ->with('success', $this->entityMessage('created', 'resource'));
     }
 
     /**

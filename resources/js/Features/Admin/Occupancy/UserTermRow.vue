@@ -6,7 +6,7 @@
     <div class="min-w-0 space-y-1">
       <div class="flex flex-wrap items-center gap-2">
         <Link :href="route('duties.show', duty.id)" class="min-w-0 hover:underline">
-          <DutyLabel :duty="{ name: duty.name, institution: duty.institution }" :holder :use-original-duty-name="Boolean(term.use_original_duty_name)" />
+          <DutyLabel :duty="{ name: nameDuringTerm, institution: duty.institution }" :holder :use-original-duty-name="Boolean(term.use_original_duty_name)" />
         </Link>
         <span v-if="term.via_dutiable_id" :class="chipClass">{{ $t('Ex-officio') }}</span>
         <span v-if="term.tenant_id" :class="chipClass">{{ $t('Deleguota') }}</span>
@@ -41,10 +41,10 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Calendar, CalendarCheck, Edit3, TriangleAlert } from 'lucide-vue-next';
+import { Calendar, CalendarCheck, Edit3, TriangleAlert } from '@lucide/vue';
 import { computed } from 'vue';
 
-import { termStatus } from './occupancy';
+import { dutyNameOn, termStatus, type FormerDutyName } from './occupancy';
 
 import DutyLabel, { type DutyLabelHolder } from '@/Components/Duties/DutyLabel.vue';
 import { Button } from '@/Components/ui/button';
@@ -67,6 +67,7 @@ const props = defineProps<{
     id: string | number;
     name: string;
     contacts_grouping?: string | null;
+    former_names?: FormerDutyName[] | null;
     institution?: { name: string; tenant?: { shortname?: string | null } | null } | null;
     pivot?: Term | null;
   };
@@ -84,6 +85,7 @@ const chipClass = 'border border-border bg-secondary px-1.5 py-0.5 text-xs font-
 
 const term = computed<Term>(() => props.duty.pivot ?? {});
 const status = computed(() => termStatus(term.value));
+const nameDuringTerm = computed(() => dutyNameOn(props.duty.name, props.duty.former_names, term.value.start_date));
 
 // Ex-officio terms follow their source, and a term that is over has nothing left to end.
 const canEnd = computed(() => status.value === 'current' && !term.value.via_dutiable_id);

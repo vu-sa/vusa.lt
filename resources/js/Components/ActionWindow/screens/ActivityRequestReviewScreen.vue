@@ -88,7 +88,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { Send, MailX } from 'lucide-vue-next';
+import { Send, MailX } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';

@@ -7,6 +7,8 @@ import { SearchClientFactory, type TypesenseClient } from '@/Shared/Search/servi
 
 export interface CalendarEventDocument {
   _searchMatch?: import('@/Shared/Search/matches').SearchMatch;
+  _searchTitleMatches?: import('@/Shared/Search/matches').SearchMatch[];
+  _searchFieldMatches?: Record<string, import('@/Shared/Search/matches').SearchMatch>;
   id: string | number;
   title: string;
   title_lt?: string;
@@ -174,7 +176,7 @@ export function useCalendarSearch(options: UseCalendarSearchOptions = {}) {
 
     const newQuery = params.toString();
     const newUrl = `${window.location.pathname}${newQuery ? `?${newQuery}` : ''}`;
-    window.history.replaceState({}, '', newUrl);
+    window.history.replaceState(window.history.state, '', newUrl);
   };
 
   const parseUrlParams = () => {

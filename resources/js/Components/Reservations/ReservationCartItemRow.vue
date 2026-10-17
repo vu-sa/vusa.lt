@@ -74,7 +74,7 @@
 import { Link } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, Trash2 } from 'lucide-vue-next';
+import { AlertTriangle, Trash2 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
 import type { ReservationCartItem } from './types';

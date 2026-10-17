@@ -1,4 +1,4 @@
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 
 import { buildProfileParams } from '@/Shared/Search/profiles';
 import { documentWithMatch, type HighlightedHit } from '@/Shared/Search/matches';
@@ -6,35 +6,9 @@ import { facetSearches, mergeDisjunctiveFacets } from '@/Shared/Search/facets';
 import { buildInfix } from '@/Features/Admin/AdminSearch/Utils/searchParams';
 import { ErrorUtils } from '@/Shared/Search/services/SearchErrorUtils';
 import { createEmptyMultiSearchResults } from '@/Shared/Search/utils/createEmptyMultiSearchResults';
-import type {
-  TypesenseNode,
-  AdminSearchConfig,
-  ScopedCollectionConfig,
-  MeetingSearchResult,
-  AgendaItemSearchResult,
-  NewsSearchResult,
-  PageSearchResult,
-  CalendarSearchResult,
-  InstitutionSearchResult,
-  DocumentSearchResult,
-  ResourceSearchResult,
-  DutySearchResult,
-  MultiSearchResults,
-} from '@/Shared/Search/types';
+import type { AdminSearchConfig, MultiSearchResults } from '@/Shared/Search/types';
 
-// Re-export types for backward compatibility
-export type {
-  MeetingSearchResult,
-  AgendaItemSearchResult,
-  NewsSearchResult,
-  PageSearchResult,
-  CalendarSearchResult,
-  InstitutionSearchResult,
-  DocumentSearchResult,
-  ResourceSearchResult,
-  DutySearchResult,
-  MultiSearchResults,
-} from '@/Shared/Search/types';
+export type { MultiSearchResults } from '@/Shared/Search/types';
 
 /**
  * Admin Search Types
@@ -589,8 +563,8 @@ export const useAdminSearch = () => {
         ? `_text_match:desc,${dateField}:${direction}`
         : `${dateField}:${direction}`;
 
-    // Relevance tuning shared by every sub-search (mirrors config/scout.php
-    // typesense.model-settings, which the multi_search call does not otherwise apply).
+    // Fallback only: buildProfileParams replaces query_by, weights and tuning with the server's
+    // SearchProfiles (config/scout.php), so tune relevance there, not here.
     const commonTuning = {
       prioritize_exact_match: true,
       prioritize_token_position: true,
@@ -726,9 +700,9 @@ export const useAdminSearch = () => {
       searches.push({
         'collection': dutiesConfig.name,
         'q': query || '*',
-        'query_by': 'name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
-        'query_by_weights': '10,8,4,4,3,3,2',
-        'infix': buildInfix('name_lt,name_en,email,institution_name_lt,institution_name_en,current_user_names,previous_user_names', 'duties'),
+        'query_by': 'name_lt,name_en,email,former_names,institution_name_lt,institution_name_en,current_user_names,previous_user_names',
+        'query_by_weights': '10,8,4,4,4,3,3,2',
+        'infix': buildInfix('name_lt,name_en,email,former_names,institution_name_lt,institution_name_en,current_user_names,previous_user_names', 'duties'),
         // Duties have no meaningful date; tiebreak alphabetically by name.
         'sort_by': relevanceSort('name_lt', 'asc'),
         ...commonTuning,
@@ -839,11 +813,12 @@ export const useAdminSearch = () => {
             document: Record<string, unknown>;
             highlights?: HighlightedHit['highlights'];
             text_match?: number;
-            text_match_info?: { score?: string };
+            text_match_info?: { score?: string; tokens_matched?: number };
           }) => ({
             ...documentWithMatch(hit),
             _text_match: hit.text_match_info?.score
               ?? (hit.text_match != null ? String(hit.text_match) : '0'),
+            _tokens_matched: hit.text_match_info?.tokens_matched ?? 0,
           }),
         ) || [];
         (results[key] as unknown[]) = hits;
@@ -1196,5 +1171,3 @@ export const useAdminSearch = () => {
     getDirectInstitutionIds,
   };
 };
-
-export type AdminSearchController = ReturnType<typeof useAdminSearch>;

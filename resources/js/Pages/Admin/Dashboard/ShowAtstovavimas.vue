@@ -111,7 +111,7 @@
 import { Deferred, Link } from '@inertiajs/vue3';
 import { useIntersectionObserver, useMediaQuery } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowRight, Eye } from 'lucide-vue-next';
+import { ArrowRight, Eye } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
 
 import CoordinatorSkeleton from './Components/CoordinatorSkeleton.vue';
@@ -233,7 +233,8 @@ const attention = computed<InstitutionActivityInsight[]>(() =>
     .map(institution => ({
       id: String(institution.id),
       name: String(institution.name ?? ''),
-      is_administered: institution.is_administered === true,
+      is_secretary: institution.is_secretary === true || institution.is_administered === true,
+      is_administered: institution.is_secretary === true || institution.is_administered === true,
       ...institution.activity_status,
     })),
 );

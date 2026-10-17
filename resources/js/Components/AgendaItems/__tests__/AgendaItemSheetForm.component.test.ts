@@ -34,6 +34,16 @@ function factory(props: Record<string, unknown> = {}) {
 }
 
 describe('AgendaItemSheetForm', () => {
+  it('edits the type with the rest of the item, only applying it on save', async () => {
+    const { wrapper, form } = factory();
+
+    await wrapper.get('[data-testid="agenda-item-sheet-type-break"]').trigger('click');
+    expect(form.type).toBeUndefined();
+
+    await wrapper.get('form').trigger('submit');
+    expect(form.type).toBe('break');
+  });
+
   it('explains the selected visibility and future publication of a private meeting', async () => {
     const { wrapper } = factory({ isPublic: false });
     expect(wrapper.text()).toContain('meetings.privacy.disabled_lead');
@@ -111,6 +121,8 @@ describe('AgendaItemSheetForm', () => {
     const [start, end] = wrapper.findAllComponents({ name: 'TimePicker' });
 
     expect(start!.props('suggestFrom')).toEqual({ hour: 14, minute: 0 });
+    expect(start!.props('minuteStep')).toBe(15);
+    expect(end!.props('minuteStep')).toBe(15);
 
     await wrapper.find('input#agenda-item-start-time').setValue('15:10');
 

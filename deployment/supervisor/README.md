@@ -152,15 +152,17 @@ default queue. Without this program the long jobs simply wait in their queue.
 Its queue is `long-running` in production and `staging-long-running` on staging, like the default
 Redis queue, so the two environments never take each other's jobs even on a shared backend.
 
+It runs with `memory_limit=1024M`: discovery holds the whole archive listing in memory, and a full
+listing peaked at 555 MB RSS on staging (2026-10-16), past the CLI's 256M default.
+
 ### Replacing `laravel-sharepoint-worker` (one-off, as root)
 
 That program served a `sharepoint-sync` queue nothing dispatches to any more. Install the new program
-first, let the old one drain, then remove it:
+**after** the deploy — older code has no `long-running` connection, so the worker would crash into
+`FATAL` — then remove the old one once `sharepoint-sync` is empty:
 
 ```bash
 sudo cp deployment/supervisor/laravel-long-running-worker.conf /etc/supervisor/conf.d/
-sudo supervisorctl reread && sudo supervisorctl update
-# after the deploy, once `sharepoint-sync` is empty:
 sudo rm /etc/supervisor/conf.d/laravel-sharepoint-worker.conf
 sudo supervisorctl reread && sudo supervisorctl update
 ```

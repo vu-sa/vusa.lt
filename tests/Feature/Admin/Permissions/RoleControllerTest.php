@@ -105,7 +105,7 @@ describe('role store', function (): void {
     test('admin can create role with valid data', function (): void {
         $data = ['name' => 'Test Role'];
 
-        asUser($this->admin)
+        $response = asUser($this->admin)
             ->post(route('roles.store'), $data)
             ->assertRedirect()
             ->assertSessionHas('success');
@@ -113,6 +113,10 @@ describe('role store', function (): void {
         $this->assertDatabaseHas('roles', [
             'name' => 'Test Role',
         ]);
+
+        $created = Role::where('name', 'Test Role')->sole();
+        $response->assertRedirectToRoute('roles.show', $created)->assertSessionHas('success');
+        asUser($this->admin)->get(route('roles.show', $created))->assertOk();
     });
 
     test('admin cannot create role with duplicate name', function (): void {

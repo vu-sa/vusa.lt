@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Info } from 'lucide-vue-next';
+import { Info } from '@lucide/vue';
 
 defineProps<{ message?: string | null }>();
 </script>

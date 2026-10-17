@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { RefreshCwIcon } from 'lucide-vue-next';
+import { RefreshCwIcon } from '@lucide/vue';
 
 import { usePWA } from '@/Composables/usePWA';
 import { Button } from '@/Components/ui/button';

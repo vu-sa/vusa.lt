@@ -38,9 +38,11 @@ test('the review form preserves an existing review when saving an edit', functio
         $page->script('document.documentElement.classList.remove("dark")');
     }
 
-    $page->click('[data-testid=form-page-save]')
-        ->assertSee(__('messages.updated.m', ['model' => trans_choice('entities.studySet.model', 1)]))
-        ->assertNoJavaScriptErrors();
+    // Not the success toast: it auto-dismisses after ~4s and was already gone on a slow CI run.
+    waitForInertiaRender($page, '[data-testid=form-page-bar] [data-save-state=dirty]');
+    $page->click('[data-testid=form-page-save]');
+    waitForInertiaRender($page, '[data-testid=form-page-bar] [data-save-state=saved]');
+    $page->assertNoJavaScriptErrors();
 
     expect($review->fresh()->getTranslation('lecturer', 'lt'))->toBe('Pakeistas dėstytojas')
         ->and($course->reviews()->count())->toBe(1);

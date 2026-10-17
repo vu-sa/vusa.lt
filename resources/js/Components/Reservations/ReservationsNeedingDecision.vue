@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { Inbox } from 'lucide-vue-next';
+import { Inbox } from '@lucide/vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 

@@ -98,7 +98,7 @@ describe('authorized access', function (): void {
     });
 
     test('can store quick link with valid data', function (): void {
-        asUser($this->admin)
+        $response = asUser($this->admin)
             ->post(route('quickLinks.store'), [
                 'text' => 'New Quick Link',
                 'link' => 'https://new.example.com',
@@ -107,7 +107,7 @@ describe('authorized access', function (): void {
                 'is_important' => true,
             ])
             ->assertStatus(302)
-            ->assertRedirect(route('quickLinks.index'))
+            ->assertSessionHasNoErrors()
             ->assertSessionHas('success');
 
         $this->assertDatabaseHas('quick_links', [
@@ -115,6 +115,10 @@ describe('authorized access', function (): void {
             'link' => 'https://new.example.com',
             'lang' => 'lt',
         ]);
+
+        $created = QuickLink::where('text', 'New Quick Link')->sole();
+        $response->assertRedirectToRoute('quickLinks.edit', $created)->assertSessionHas('success');
+        asUser($this->admin)->get(route('quickLinks.edit', $created))->assertOk();
     });
 
     test('cannot store quick link without required fields', function (): void {

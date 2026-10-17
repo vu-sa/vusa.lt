@@ -247,7 +247,7 @@ it('restores a private server copy and saves it only after an explicit save', fu
         }
     }
     $page->click('[data-testid=content-recovery] button:has-text("Atkurti kopiją")');
-    waitForInertiaRender($page, '[data-testid=content-recovery] [role=status]:has-text("Atkūrimo kopija išsaugota")');
+    waitForInertiaRender($page, '[data-slot=content-recovery-status] [role=status]:has-text("Atkūrimo kopija išsaugota")');
     expect($this->page->fresh()->title)->toBe('Bandomasis puslapis');
     $page->click('[data-testid=form-page-save]');
     waitForInertiaRender($page, '[role=status]:has-text("Visi pakeitimai išsaugoti")');

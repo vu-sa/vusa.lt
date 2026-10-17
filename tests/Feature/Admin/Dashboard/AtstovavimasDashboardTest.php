@@ -266,16 +266,16 @@ describe('atstovavimas dashboard authorization', function (): void {
             );
     });
 
-    test('an institution where the user serves as secretary is included in user institutions as administered', function (): void {
-        $administeredInstitution = Institution::factory()->for($this->tenant)->create();
-        $cadence = Cadence::factory()->create(['institution_id' => $administeredInstitution->id]);
-        $this->user->secretariedInstitutions()->attach($administeredInstitution, ['cadence_id' => $cadence->id]);
+    test('an institution where the user serves as secretary is included in user institutions as secretary', function (): void {
+        $secretariedInstitution = Institution::factory()->for($this->tenant)->create();
+        $cadence = Cadence::factory()->create(['institution_id' => $secretariedInstitution->id]);
+        $this->user->secretariedInstitutions()->attach($secretariedInstitution, ['cadence_id' => $cadence->id]);
 
         asUser($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('userInstitutions', fn ($institutions) => collect($institutions)
-                    ->contains(fn ($inst) => data_get($inst, 'id') === $administeredInstitution->id && data_get($inst, 'is_administered') === true)
+                    ->contains(fn ($inst) => data_get($inst, 'id') === $secretariedInstitution->id && data_get($inst, 'is_secretary') === true)
                 )
             );
     });

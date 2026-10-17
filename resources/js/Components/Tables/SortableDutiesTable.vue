@@ -25,7 +25,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useSortable } from '@vueuse/integrations/useSortable';
-import { GripVertical } from 'lucide-vue-next';
+import { GripVertical } from '@lucide/vue';
 
 const contents = defineModel<Record<string, any>[]>();
 

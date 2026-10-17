@@ -116,7 +116,7 @@ import {
   zoomIdentity,
 } from 'd3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowLeftRight, ArrowRight, Maximize, Minus, Plus } from 'lucide-vue-next';
+import { ArrowLeftRight, ArrowRight, Maximize, Minus, Plus } from '@lucide/vue';
 
 import { EDGE_TYPE_STYLES, edgeCategory, edgeTypeColor, type RelationshipType, type RelationshipScope, SCOPE_STYLES, scopeColor } from './relationshipColors';
 

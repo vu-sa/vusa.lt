@@ -219,7 +219,7 @@ import {
   ChevronsRight,
   Sliders,
   X,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { Input } from '@/Components/ui/input';

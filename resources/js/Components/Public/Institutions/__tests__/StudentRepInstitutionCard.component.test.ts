@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
+import { transChoice } from 'laravel-vue-i18n';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -57,23 +58,47 @@ describe('StudentRepInstitutionCard', () => {
     });
 
     expect(wrapper.text()).toContain('VU SA MIF Taryba');
-    expect(wrapper.text()).toContain('Plačiau');
-    expect(wrapper.find('a').attributes('href')).toContain('/mocked-route/contacts.institution');
+    expect(wrapper.find('a').attributes('href')).toContain('/mocked-route/contacts.alias');
   });
 
-  it('renders student representatives with photo or initials', () => {
+  it('leaves out a type the page already names but keeps the unit', () => {
+    const institution = {
+      ...createMockInstitution(1),
+      types: [{ slug: 'gnk', title: 'Ginčų nagrinėjimo komisija' }],
+    } as unknown as App.Entities.Institution;
+
+    const labelOf = (omitTypeSlugs?: string[]) => mount(StudentRepInstitutionCard, {
+      props: { institution, omitTypeSlugs },
+      global: { stubs },
+    }).find('[data-slot="institution-card-eyebrow"]').text();
+
+    expect(labelOf()).toContain('Ginčų nagrinėjimo komisija');
+    expect(labelOf(['gnk'])).not.toContain('Ginčų nagrinėjimo komisija');
+    expect(labelOf(['gnk'])).toContain('VU SA MIF');
+  });
+
+  it('lists representatives without their duty names', () => {
+    const wrapper = mount(StudentRepInstitutionCard, {
+      props: { institution: createMockInstitution(1) },
+      global: { stubs },
+    });
+
+    expect(wrapper.text()).toContain('Vardenis Pavardenis');
+    expect(wrapper.text()).not.toContain('Narys');
+  });
+
+  it('renders student representatives with photo or initials without grayscale', () => {
     const institution = createMockInstitution(2);
     const wrapper = mount(StudentRepInstitutionCard, {
       props: { institution },
       global: { stubs },
     });
 
-    // First user has photo
+    // First user has photo (must NOT be grayscale)
     const img = wrapper.find('img');
     expect(img.exists()).toBe(true);
     expect(img.attributes('src')).toBe('/photos/vardenis.jpg');
-    expect(img.classes()).toContain('grayscale');
-    expect(img.classes()).toContain('group-hover:grayscale-0');
+    expect(img.classes()).not.toContain('grayscale');
 
     // Second user has initials fallback (Vardenė Pavardenytė => VP)
     expect(wrapper.text()).toContain('VP');
@@ -81,20 +106,17 @@ describe('StudentRepInstitutionCard', () => {
     expect(wrapper.text()).toContain('Vardenė Pavardenytė');
   });
 
-  it('limits to 6 representatives and shows +N daugiau counter', () => {
+  it('limits to 3 representatives and counts the rest', () => {
     const institution = createMockInstitution(8);
     const wrapper = mount(StudentRepInstitutionCard, {
       props: { institution },
       global: { stubs },
     });
 
-    // Exactly 6 rep items rendered
-    expect(wrapper.text()).toContain('Vardenis Pavardenis');
-    expect(wrapper.text()).toContain('Agnė Agnaitė');
-    expect(wrapper.text()).not.toContain('Tomas Tomaitis');
-
-    // Remaining counter: 8 - 6 = 2
-    expect(wrapper.text()).toContain('+2 daugiau');
+    expect(wrapper.findAll('li')).toHaveLength(3);
+    expect(wrapper.text()).toContain('Jonas Jonaitis');
+    expect(wrapper.text()).not.toContain('Petras Petraitis');
+    expect(transChoice).toHaveBeenCalledWith('search.more_representatives', 5);
   });
 
   it('renders fallback criteria text when institution has no contacts', () => {

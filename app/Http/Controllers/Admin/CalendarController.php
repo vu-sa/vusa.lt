@@ -19,6 +19,7 @@ use App\Models\EventType;
 use App\Models\PublicUrl;
 use App\Models\Tag;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\RedirectResponse;
@@ -74,7 +75,7 @@ class CalendarController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCalendarRequest $request, SyncImageMedia $syncImage)
+    public function store(StoreCalendarRequest $request, SyncImageMedia $syncImage, PostCreateRedirect $redirect)
     {
         $calendar = new Calendar;
 
@@ -94,7 +95,8 @@ class CalendarController extends AdminController
             'images' => ['collection' => 'images', 'single' => false],
         ]);
 
-        return redirect()->route('calendar.index')->with('success', $this->entityMessage('created', 'calendar'));
+        return redirect($redirect->url($request->user(), $calendar, 'calendar.edit', 'update', 'calendar.index'))
+            ->with('success', $this->entityMessage('created', 'calendar'));
     }
 
     /**

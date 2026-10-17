@@ -1,0 +1,86 @@
+<?php
+
+use App\Enums\TenantType;
+use App\Models\DutyType;
+use App\Models\Institution;
+use App\Models\InstitutionType;
+use App\Models\Tenant;
+use App\Support\LocalizedRouteSlugs;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
+
+pest()->use(RefreshDatabase::class);
+
+test('institution contact URLs follow deactivation and reactivation', function (string $routeName, string $locale): void {
+    $institution = Institution::factory()->create([
+        'tenant_id' => Tenant::main()->id,
+        'alias' => 'visibility-test',
+        'is_active' => true,
+        'name' => ['lt' => 'Matoma institucija', 'en' => 'Visible institution'],
+    ]);
+    $url = LocalizedRouteSlugs::route($routeName, [
+        'subdomain' => 'www', 'lang' => $locale,
+        'institution' => $routeName === 'contacts.alias' ? $institution->alias : $institution->id,
+    ], $locale);
+
+    $this->get($url)->assertOk();
+
+    $institution->update(['is_active' => false]);
+    $this->get($url)->assertNotFound();
+
+    $institution->update(['is_active' => true]);
+    $this->get($url)->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('Public/Contacts/ShowInstitution')
+        ->where('institution.id', $institution->id)
+    );
+})->with(['id' => 'contacts.institution', 'alias' => 'contacts.alias'])->with(['lt', 'en']);
+
+test('logging in does not expose inactive public institution pages', function (): void {
+    $tenant = Tenant::main();
+    $institution = Institution::factory()->create(['tenant_id' => $tenant->id, 'is_active' => false]);
+
+    asUser(makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant))
+        ->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
+        ->assertNotFound();
+});
+
+test('duty type contact URLs follow the primary institution visibility', function (string $subdomain, string $locale): void {
+    $tenant = $subdomain === 'www' ? Tenant::main() : Tenant::where('alias', $subdomain)->firstOrFail();
+    $alias = $tenant->isMain() ? 'centrinis-biuras' : $tenant->alias;
+    $institution = Institution::where('alias', $alias)->first()
+        ?? Institution::factory()->create([
+            'tenant_id' => $tenant->id,
+            'alias' => $alias,
+            'name' => ['lt' => 'Padalinio institucija', 'en' => 'Unit institution'],
+        ]);
+    $institution->update(['is_active' => true]);
+    DutyType::firstOrCreate(['slug' => 'koordinatoriai'], ['title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
+    $url = LocalizedRouteSlugs::route('contacts.dutyType', ['subdomain' => $subdomain, 'lang' => $locale, 'type' => 'koordinatoriai'], $locale);
+
+    $this->get($url)->assertOk();
+    $institution->update(['is_active' => false]);
+    $this->get($url)->assertNotFound();
+    $institution->update(['is_active' => true]);
+    $this->get($url)->assertOk();
+})->with(['www', 'mif'])->with(['lt', 'en']);
+
+test('padaliniai category lists only active institutions and reflects reactivation', function (): void {
+    $tenant = Tenant::where('type', TenantType::Padalinys)->firstOrFail();
+    $type = InstitutionType::where('slug', 'padaliniai')->firstOrFail();
+    $active = Institution::factory()->create(['tenant_id' => $tenant->id, 'is_active' => true]);
+    $inactive = Institution::factory()->create(['tenant_id' => $tenant->id, 'is_active' => false]);
+    $active->types()->attach($type);
+    $inactive->types()->attach($type);
+    $url = route('contacts.category', ['subdomain' => 'www', 'lang' => 'lt', 'type' => $type->slug]);
+
+    $this->get($url)->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->component('Public/Contacts/ShowContactCategory')
+        ->where('institutions', fn ($institutions) => collect($institutions)->pluck('id')->contains($active->id)
+            && ! collect($institutions)->pluck('id')->contains($inactive->id))
+    );
+
+    $inactive->update(['is_active' => true]);
+    $this->get($url)->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('institutions', fn ($institutions) => collect($institutions)->pluck('id')->contains($inactive->id))
+    );
+});

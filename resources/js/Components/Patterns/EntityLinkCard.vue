@@ -44,7 +44,7 @@
 <script setup lang="ts">
 import type { Component, HTMLAttributes } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { ChevronRight } from 'lucide-vue-next';
+import { ChevronRight } from '@lucide/vue';
 
 import { cn } from '@/Utils/Shadcn/utils';
 import { interactiveCardClass } from '@/Utils/interactiveCard';

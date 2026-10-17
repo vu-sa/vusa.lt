@@ -14,6 +14,7 @@ paths:
 ## Staging differences: brief banner, details dialog, notes at the action
 The staging banner stays one line (title · summary + "Kas kitaip?"); every difference is listed in its dialog, sourced from `useStaging().notes`.
 A difference that changes what an action does (read-only files, SharePoint target, who gets an email) is shown with `<StagingNote topic="…">` next to that action — Files/Index, FileableFilesPanel, ActivityRequestReviewScreen — never added to the banner text.
+The banner can be collapsed, so `StagingWatermark` (admin shell + public layout) is the marker that never goes away: fixed, `pointer-events-none`, `aria-hidden`, hidden in print.
 New difference = a topic in `useStaging` + `staging.topics.*` in lang/admin/{lt,en}/staging.php + a StagingNote where it bites.
 
 Staging mail (opt-in per notification, only to whoever caused it) is in audiences.md.

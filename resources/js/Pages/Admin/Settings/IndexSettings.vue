@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
-import { Building2, CalendarRange, FileText, Globe, KeyRound, ListChecks, Users } from 'lucide-vue-next';
+import { Building2, CalendarRange, FileText, Globe, KeyRound, ListChecks, Users } from '@lucide/vue';
 
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { NavigationTiles, OverviewSection, type NavigationTileItem } from '@/Components/Patterns';

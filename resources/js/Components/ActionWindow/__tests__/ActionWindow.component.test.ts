@@ -52,10 +52,6 @@ const createActionsForPermissions = (can: Record<string, unknown>) => {
     actions.push({ key: 'new_reservation', label: 'action_window.actions.new_reservation.title', description: null, entityType: null, target: { kind: 'route', routeName: 'reservations.create' } });
   }
 
-  if (create.news) {
-    actions.push({ key: 'new_news', label: 'action_window.actions.new_news.title', description: null, entityType: null, target: { kind: 'route', routeName: 'news.create' } });
-  }
-
   if (create.duty) {
     actions.push(
       { key: 'duty_update', label: 'action_window.actions.duty_update.title', description: null, entityType: null, target: { kind: 'route', routeName: 'duties.updateUsersWizard' } },

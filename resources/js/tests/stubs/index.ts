@@ -1,1 +1,1 @@
-export { commonStubs, stubDialog, stubDialogContent, stubDialogDescription, stubDialogFooter, stubDialogHeader, stubDialogTitle, stubDropdownMenu, stubDropdownMenuCheckboxItem, stubDropdownMenuContent, stubDropdownMenuGroup, stubDropdownMenuItem, stubDropdownMenuLabel, stubDropdownMenuSeparator, stubDropdownMenuTrigger, stubIcon, stubPopover, stubPopoverAnchor, stubPopoverContent, stubTooltip, stubTooltipContent, stubTooltipProvider, stubTooltipTrigger } from './common';
+export { commonStubs, stubIcon, stubPopover, stubPopoverAnchor, stubPopoverContent } from './common';

@@ -389,7 +389,7 @@ watch(selectedTenantId, (newId) => {
     url.searchParams.delete('faculty');
   }
 
-  window.history.replaceState({}, '', url.toString());
+  window.history.replaceState(window.history.state, '', url.toString());
 
   resetFilters();
 });

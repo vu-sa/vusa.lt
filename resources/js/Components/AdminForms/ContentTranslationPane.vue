@@ -55,7 +55,7 @@
 
 <script setup lang="ts">
 import { computed, provide, ref, useId, watch } from 'vue';
-import { ChevronRight, Copy } from 'lucide-vue-next';
+import { ChevronRight, Copy } from '@lucide/vue';
 import { useForm } from '@inertiajs/vue3';
 import { useManualRefHistory } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';

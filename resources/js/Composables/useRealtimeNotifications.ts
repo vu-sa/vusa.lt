@@ -15,7 +15,6 @@
  * @see https://laravel.com/docs/broadcasting
  * @see https://laravel.com/docs/notifications#broadcast-notifications
  */
-
 import { ref, computed, onUnmounted, watch, markRaw, h } from 'vue';
 import { usePage, router } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
@@ -259,41 +258,4 @@ export function useRealtimeNotifications() {
     connect,
     disconnect,
   };
-}
-
-/**
- * Mark a notification ID as seen (for deduplication with WebPush)
- * Call this when a push notification is received in the service worker
- * and you want to prevent the same notification from showing via broadcast
- */
-export function markNotificationAsSeen(notificationId: string): void {
-  recentNotificationIds.add(notificationId);
-  if (recentNotificationIds.size > 100) {
-    const firstId = recentNotificationIds.values().next().value;
-    if (firstId) {
-      recentNotificationIds.delete(firstId);
-    }
-  }
-}
-
-/**
- * Disconnect Echo instance completely
- * Call this on logout
- */
-export async function disconnectRealtimeNotifications(): Promise<void> {
-  if (userChannel) {
-    userChannel.unsubscribe?.();
-    userChannel = null;
-  }
-
-  if (echo) {
-    const { disconnectEcho } = await import('@/echo');
-    disconnectEcho();
-    echo = null;
-  }
-
-  isConnected.value = false;
-  isConnecting.value = false;
-  connectionError.value = null;
-  recentNotificationIds.clear();
 }

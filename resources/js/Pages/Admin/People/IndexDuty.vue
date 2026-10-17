@@ -33,7 +33,8 @@
             <CollectionPrimaryCell :title="title(item)" :href="isDeleted ? undefined : route('duties.show', item.id)">
               <InflectedDutyName :name="title(item)" />
             </CollectionPrimaryCell>
-            <span v-if="item.dutiables_count === 0" class="inline-flex shrink-0 items-center gap-1 text-xs text-status-attention"><CircleAlert class="size-3" aria-hidden="true" />{{ $t('Neužimta') }}</span>
+            <span v-if="item.is_active === false" class="shrink-0 text-xs text-muted-foreground" data-testid="duty-inactive">{{ $t('Neaktyvi') }}</span>
+            <span v-else-if="item.dutiables_count === 0" class="inline-flex shrink-0 items-center gap-1 text-xs text-status-attention"><CircleAlert class="size-3" aria-hidden="true" />{{ $t('Neužimta') }}</span>
           </div>
           <p v-if="institutionTitle(item)" class="mt-1 text-sm text-muted-foreground">
             {{ institutionTitle(item) }}
@@ -127,7 +128,7 @@
 <script setup lang="ts">
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ArrowRight, CircleAlert, Merge, Pencil, Plus, RotateCcw, Trash2 } from 'lucide-vue-next';
+import { ArrowRight, CircleAlert, Merge, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
@@ -144,7 +145,7 @@ import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 
 interface Translation { lt?: string; en?: string }
-type Duty = App.Entities.Duty & { name: Translation; email?: string | null; dutiables_count: number; institution?: { id: string | number; name?: Translation; short_name?: Translation | null } | null; types?: { id: string | number; title: Translation }[] };
+type Duty = App.Entities.Duty & { name: Translation; email?: string | null; dutiables_count: number; is_active?: boolean; institution?: { id: string | number; name?: Translation; short_name?: Translation | null } | null; types?: { id: string | number; title: Translation }[] };
 
 const props = defineProps<{ duties: { data: Duty[]; meta: { total: number; per_page: number; current_page: number; last_page: number } }; deletedCount?: number; showDeleted?: boolean }>();
 const isDeleted = computed(() => Boolean(props.showDeleted));
@@ -180,6 +181,7 @@ const source = useDatabaseCollectionSource<Duty>({
   facets: [{ field: 'data_quality', label: $t('Duomenų kokybė'), single: true, values: [
     { value: 'vacant', label: $t('Neužimtos') }, { value: 'missing_en_name', label: $t('Trūksta EN pavadinimo') },
     { value: 'missing_lt_name', label: $t('Trūksta LT pavadinimo') }, { value: 'duplicate_holders', label: $t('Pasikartojantys nariai') },
+    { value: 'inactive', label: $t('Neaktyvios') },
   ] }],
 });
 const columns = computed<CollectionColumn[]>(() => [

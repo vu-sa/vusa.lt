@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Eye } from 'lucide-vue-next';
+import { Eye } from '@lucide/vue';
 
 import type { HomeMeeting } from './types';
 

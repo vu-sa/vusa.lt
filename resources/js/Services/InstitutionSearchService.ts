@@ -25,6 +25,8 @@ interface RawInstitutionDocument {
   name_en?: string;
   short_name_lt?: string;
   short_name_en?: string;
+  description_lt?: string | null;
+  description_en?: string | null;
   type_slugs?: string[];
   type_titles_lt?: string[];
   type_titles_en?: string[];
@@ -84,10 +86,13 @@ export class InstitutionSearchService {
   private typesenseClient: SearchClient | null = null;
   private abortController: AbortController | null = null;
   private collectionName: string;
+  private typeDescendants: Record<string, string[]>;
 
-  constructor(typesenseClient: SearchClient | null, collectionName?: string) {
+  /** `typeDescendants` maps a type slug to its sub-type slugs, so filtering by a parent includes them. */
+  constructor(typesenseClient: SearchClient | null, collectionName?: string, typeDescendants: Record<string, string[]> = {}) {
     this.typesenseClient = typesenseClient;
     this.collectionName = collectionName || 'public_institutions';
+    this.typeDescendants = typeDescendants;
   }
 
   setClient(client: SearchClient | null) {
@@ -184,10 +189,11 @@ export class InstitutionSearchService {
       max_facet_values: 50,
       per_page: perPage,
       page: isLoadMore ? currentPage + 1 : 1,
-      // Smart sorting: relevance for searches, logos first then alphabetical for browsing
+      // Key institutions (display_priority) lead the browse list and win ties between similarly
+      // relevant hits; Typesense accepts at most three sort fields.
       sort_by: (query && query !== '*')
-        ? '_text_match:desc,has_logo:desc,name_lt:asc'
-        : (locale === 'en' ? 'has_logo:desc,name_en:asc,name_lt:asc' : 'has_logo:desc,name_lt:asc,name_en:asc'),
+        ? '_text_match(buckets: 10):desc,display_priority:desc,name_lt:asc'
+        : `display_priority:desc,has_logo:desc,${locale === 'en' ? 'name_en' : 'name_lt'}:asc`,
       prefix: true,
       infix: 'fallback',
       prioritize_exact_match: true,
@@ -221,10 +227,9 @@ export class InstitutionSearchService {
       filterConditions.push(`(${tenantConditions.join(' || ')})`);
     }
 
-    // Type filters - use exact match for each type slug
     if (filters.types.length > 0) {
-      const typeConditions = filters.types.map(t => `type_slugs:="${t}"`);
-      filterConditions.push(`(${typeConditions.join(' || ')})`);
+      const slugs = [...new Set(filters.types.flatMap(slug => [slug, ...(this.typeDescendants[slug] ?? [])]))];
+      filterConditions.push(`(${slugs.map(slug => `type_slugs:="${slug}"`).join(' || ')})`);
     }
 
     // Has contacts filter
@@ -290,10 +295,13 @@ export class InstitutionSearchService {
             )
           : []);
 
+    const description = (locale === 'en' ? doc.description_en || doc.description_lt : doc.description_lt || doc.description_en) || null;
+
     return {
       ...doc,
       name,
       short_name,
+      description,
       types,
       tenant,
       contacts,
@@ -343,7 +351,7 @@ export class InstitutionSearchService {
         max_facet_values: 50,
         per_page: 1,
         page: 1,
-        sort_by: 'has_logo:desc,name_lt:asc',
+        sort_by: 'display_priority:desc,has_logo:desc,name_lt:asc',
       };
 
       const response = await this.typesenseClient.search(this.collectionName, searchRequest);

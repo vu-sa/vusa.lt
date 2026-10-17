@@ -4,6 +4,8 @@ export interface OverviewStatusEntry {
   title: string;
   emptyText?: string;
   icon?: Component;
+  /** `icon` defaults to a plus; pass the model's icon when the action links a relation. */
+  action?: { label: string; run: () => void; icon?: Component };
 }
 
 /**

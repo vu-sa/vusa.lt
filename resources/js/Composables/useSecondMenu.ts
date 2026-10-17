@@ -101,20 +101,3 @@ export function useSecondMenu() {
     mainContentMarginClass,
   };
 }
-
-/**
- * Simplified version that only checks if second menu exists (no scroll tracking)
- * Use this when you only need to know about the menu existence, not visibility state.
- *
- * @example
- * ```vue
- * const hasSecondMenu = useHasSecondMenu();
- * ```
- */
-export function useHasSecondMenu() {
-  return computed(() => {
-    const page = usePage();
-    const links = page.props.tenant?.links;
-    return links && links.length > 0;
-  });
-}

@@ -41,7 +41,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Users, ChevronRight } from 'lucide-vue-next';
+import { Users, ChevronRight } from '@lucide/vue';
 
 import { SectionCard } from '@/Components/Patterns';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';

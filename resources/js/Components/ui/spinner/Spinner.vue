@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue';
-import { Loader2Icon } from 'lucide-vue-next';
+import { Loader2Icon } from '@lucide/vue';
 
 import { cn } from '@/Utils/Shadcn/utils';
 

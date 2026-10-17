@@ -28,7 +28,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import {
   CalendarPlus as CalendarPlusIcon,
   ClipboardList as ClipboardListIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import TaskDetails from './TaskDetails.vue';
 

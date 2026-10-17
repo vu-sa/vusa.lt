@@ -17,6 +17,7 @@ use App\Models\PublicUrl;
 use App\Models\Tag;
 use App\Services\ContentEditorService;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -67,11 +68,12 @@ class NewsController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreNewsRequest $request)
+    public function store(StoreNewsRequest $request, PostCreateRedirect $redirect)
     {
-        app(ContentEditorService::class)->save('news', $request->validated(), $request->user());
+        $news = app(ContentEditorService::class)->save('news', $request->validated(), $request->user());
 
-        return $this->redirectToIndexWithSuccess('news', $this->entityMessage('created', 'news'));
+        return redirect($redirect->url($request->user(), $news, 'news.edit', 'update', 'news.index'))
+            ->with('success', $this->entityMessage('created', 'news'));
     }
 
     /**

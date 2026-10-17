@@ -12,6 +12,7 @@ use App\Http\Traits\HasTanstackTables;
 use App\Models\StudySet;
 use App\Models\StudySetCourse;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use App\Services\TanstackTableService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Arr;
@@ -60,11 +61,11 @@ class StudySetController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreStudySetRequest $request)
+    public function store(StoreStudySetRequest $request, PostCreateRedirect $redirect)
     {
         $this->handleAuthorization('create', StudySet::class);
 
-        DB::transaction(function () use ($request): void {
+        $studySet = DB::transaction(function () use ($request): StudySet {
             $studySet = StudySet::create([
                 'name' => $request->validated('name'),
                 'description' => $request->validated('description'),
@@ -75,9 +76,12 @@ class StudySetController extends AdminController
 
             $this->syncCourses($studySet, ($request->validated('courses') ?? []));
             $this->syncReviews($studySet, ($request->validated('reviews') ?? []));
+
+            return $studySet;
         });
 
-        return $this->redirectToIndexWithSuccess('studySets', $this->entityMessage('created', 'studySet'));
+        return redirect($redirect->url($request->user(), $studySet, 'studySets.edit', 'update', 'studySets.index'))
+            ->with('success', $this->entityMessage('created', 'studySet'));
     }
 
     /**

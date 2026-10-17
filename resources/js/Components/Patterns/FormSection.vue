@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Globe } from 'lucide-vue-next';
+import { Globe } from '@lucide/vue';
 import { useId } from 'vue';
 
 withDefaults(defineProps<{

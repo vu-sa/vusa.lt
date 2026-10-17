@@ -139,7 +139,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { RotateCcw, SlidersHorizontal } from 'lucide-vue-next';
+import { RotateCcw, SlidersHorizontal } from '@lucide/vue';
 
 import { Button } from '@/Components/ui/button';
 import {

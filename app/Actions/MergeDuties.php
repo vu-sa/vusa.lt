@@ -3,6 +3,8 @@
 namespace App\Actions;
 
 use App\Models\Duty;
+use App\Models\DutyName;
+use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Support\MorphMap;
 use Illuminate\Support\Collection;
@@ -23,15 +25,17 @@ class MergeDuties
 {
     /**
      * @param  Collection<int, Duty>  $sources
-     * @return array{moved_assignments: int, collapsed_assignments: int, moved_types: int, moved_roles: int, moved_ex_officio: int, moved_tenant_quotas: int}
+     * @return array{moved_assignments: int, collapsed_assignments: int, moved_types: int, moved_roles: int, moved_ex_officio: int, moved_tenant_quotas: int, moved_former_names: int, moved_successions: int}
      */
     public static function execute(Duty $kept, Collection $sources): array
     {
         return DB::transaction(function () use ($kept, $sources): array {
             $sourceIds = $sources->pluck('id')->all();
+            Institution::withTrashed()->whereIn('id', $sources->pluck('institution_id')->push($kept->institution_id))
+                ->orderBy('id')->lockForUpdate()->get();
 
             $movedAssignments = Dutiable::query()->whereIn('duty_id', $sourceIds)->count();
-            Dutiable::query()->whereIn('duty_id', $sourceIds)->update(['duty_id' => $kept->id]);
+            Dutiable::query()->whereIn('duty_id', $sourceIds)->each(fn (Dutiable $term) => $term->update(['duty_id' => $kept->id]));
 
             $summary = [
                 'moved_assignments' => $movedAssignments,
@@ -40,6 +44,8 @@ class MergeDuties
                 'moved_roles' => self::repointMorphPivot('model_has_roles', 'model_id', 'model_type', 'role_id', $kept, $sourceIds),
                 'moved_ex_officio' => self::mergeExOfficioLinks($kept, $sourceIds),
                 'moved_tenant_quotas' => self::mergeDutyTenantQuotas($kept, $sourceIds),
+                'moved_former_names' => DutyName::query()->whereIn('duty_id', $sourceIds)->update(['duty_id' => $kept->id]),
+                'moved_successions' => self::mergeSuccessions($kept, $sourceIds),
             ];
 
             foreach ($sources as $source) {
@@ -50,6 +56,41 @@ class MergeDuties
 
             return $summary;
         });
+    }
+
+    /**
+     * Repoints predecessor links onto the kept duty; a link between two merged duties
+     * would become a self-link and is dropped, as is any pair the kept duty already has.
+     *
+     * @param  list<string>  $sourceIds
+     */
+    private static function mergeSuccessions(Duty $kept, array $sourceIds): int
+    {
+        $rows = DB::table('duty_successions')
+            ->whereIn('predecessor_id', $sourceIds)
+            ->orWhereIn('successor_id', $sourceIds)
+            ->get();
+
+        $repoint = fn (string $id) => in_array($id, $sourceIds, true) ? $kept->id : $id;
+        $moved = 0;
+
+        foreach ($rows as $row) {
+            $predecessorId = $repoint($row->predecessor_id);
+            $successorId = $repoint($row->successor_id);
+
+            if ($predecessorId !== $successorId) {
+                $moved += DB::table('duty_successions')->insertOrIgnore([
+                    'predecessor_id' => $predecessorId,
+                    'successor_id' => $successorId,
+                    'created_at' => $row->created_at,
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        DB::table('duty_successions')->whereIn('id', $rows->pluck('id'))->delete();
+
+        return $moved;
     }
 
     /**

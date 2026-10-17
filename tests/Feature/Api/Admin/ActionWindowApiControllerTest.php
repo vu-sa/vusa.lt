@@ -2,7 +2,10 @@
 
 use App\Enums\InstitutionScope;
 use App\Enums\MeetingType;
+use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
+use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -158,6 +161,62 @@ test('a user with no duties gets empty lists rather than an error', function ():
         ->and($response->json('data.meetingsNeedingAttention'))->toBe([]);
 });
 
+describe('check-in start', function (): void {
+    beforeEach(function (): void {
+        $this->user->duties()->updateExistingPivot($this->user->duties()->first()->id, ['start_date' => now()->subYear()]);
+    });
+
+    $startOf = fn (User $user): array => asUser($user)
+        ->getJson(route('api.v1.admin.actionWindow.context'))
+        ->assertOk()
+        ->json('data.institutions.0');
+
+    test('it starts at the caller’s term when nothing has happened since', function () use ($startOf): void {
+        pastMeetingFor($this->institution, 400);
+
+        expect($startOf($this->user))->toMatchArray([
+            'check_in_from' => now()->subYear()->toDateString(),
+            'check_in_from_reason' => 'tenure_start',
+        ]);
+    });
+
+    test('it starts the day after the last meeting within the term', function () use ($startOf): void {
+        pastMeetingFor($this->institution, 10);
+
+        expect($startOf($this->user))->toMatchArray([
+            'check_in_from' => now()->subDays(9)->toDateString(),
+            'check_in_from_reason' => 'last_meeting',
+        ]);
+    });
+
+    test('it starts after an earlier check-in rather than overlapping it', function () use ($startOf): void {
+        pastMeetingFor($this->institution, 30);
+        InstitutionCheckIn::factory()->create([
+            'institution_id' => $this->institution->id,
+            'start_date' => now()->subDays(20),
+            'end_date' => now()->subDays(5),
+        ]);
+
+        expect($startOf($this->user))->toMatchArray([
+            'check_in_from' => now()->subDays(4)->toDateString(),
+            'check_in_from_reason' => 'last_check_in',
+        ]);
+    });
+
+    test('a student representative starts at the term activity requests ask about', function () use ($startOf): void {
+        $repType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
+            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
+        $duty = Duty::factory()->for($this->institution)->hasAttached($repType, [], 'types')->create();
+        $rep = User::factory()->create();
+        $rep->duties()->attach($duty, ['start_date' => now()->subMonths(2), 'end_date' => null]);
+
+        expect($startOf($rep))->toMatchArray([
+            'check_in_from' => now()->subMonths(2)->toDateString(),
+            'check_in_from_reason' => 'tenure_start',
+        ]);
+    });
+});
+
 describe('wider institution search', function (): void {
     /**
      * The window offers "another institution" only to someone who could actually file a
@@ -196,5 +255,21 @@ describe('wider institution search', function (): void {
 
         expect($response->json('data.institutionSearch.enabled'))->toBeTrue()
             ->and($response->json('data.institutionSearch.tenant_ids'))->toBe([]);
+    });
+
+    /** A meeting created from a calendar event narrows the search to VU SA's own bodies by type. */
+    test('it sends the type ids that resolve to a VU SA body and to an external one', function (): void {
+        $vusa = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create();
+        $vusaChild = InstitutionType::factory()->create(['parent_id' => $vusa->id]);
+        $university = InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create();
+
+        $response = asUser(makeAdminUser($this->tenant))
+            ->getJson(route('api.v1.admin.actionWindow.context'))
+            ->assertOk();
+
+        expect($response->json('data.institutionSearch.internal_type_ids'))->toContain($vusa->id, $vusaChild->id)
+            ->not->toContain($university->id)
+            ->and($response->json('data.institutionSearch.external_type_ids'))->toContain($university->id)
+            ->not->toContain($vusa->id);
     });
 });

@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Dokumentai
 area: documents
 models: [Document]
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-10
 tests:
   - tests/Feature/Admin/Resources/DocumentControllerTest.php
   - tests/Feature/Admin/Resources/DocumentPublicationTest.php

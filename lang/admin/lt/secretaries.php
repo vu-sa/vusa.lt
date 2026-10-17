@@ -19,6 +19,7 @@ return [
     ],
 
     'dashboard' => [
+        'secretary_hint' => 'Esate šios institucijos sekretorius (ne narys).',
         'administered_hint' => 'Esate šios institucijos sekretorius (ne narys).',
         'badge' => 'Sekretorius',
     ],

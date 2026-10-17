@@ -81,7 +81,7 @@ kitos skiltys – pagal rolę.
 | Problemų kategorijos | `/mano/problemCategories` | Centrinio biuro koordinatoriai, redaguojantys visų padalinių problemas |
 | Tikslai *(bandomoji)* | `/mano/goals` | Tik bandomųjų padalinių nariai |
 
-Mygtukas **+ Sukurti** šioje srityje siūlo: **Fiksuoti posėdį**, **Posėdžio nebuvo**, **Užbaigti
+Mygtukas **Veiksmai** šioje srityje siūlo: **Fiksuoti posėdį**, **Posėdžio nebuvo**, **Užbaigti
 posėdį** (reikia teisės kurti posėdžius) ir **Nauja problema** (reikia teisės kurti problemas).
 
 ## Skyriaus puslapiai

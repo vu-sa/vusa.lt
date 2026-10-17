@@ -120,7 +120,7 @@
 import { useForm } from '@inertiajs/vue3';
 import { ref, watch, computed, reactive } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-vue-next';
+import { ArrowDown, ArrowUp, Plus, Trash2 } from '@lucide/vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';

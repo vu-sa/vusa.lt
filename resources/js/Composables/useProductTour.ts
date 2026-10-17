@@ -1,40 +1,10 @@
-/**
- * useProductTour - A composable for managing product tours with Driver.js
- *
- * Provides a Vue-friendly wrapper around Driver.js with:
- * - Backend synchronization of tour completion
- * - localStorage fallback for offline scenarios
- * - Reactive state for tour progress
- * - Support for versioned tours (increment version to show tour again)
- *
- * @example
- * ```ts
- * const { startTour, hasCompleted, isActive } = useProductTour('atstovavimas-overview-v1', {
- *   steps: [
- *     { element: '[data-tour="institution-card"]', popover: { title: 'Title', description: 'Desc' } }
- *   ]
- * });
- *
- * onMounted(() => {
- *   if (!hasCompleted.value) {
- *     startTour();
- *   }
- * });
- * ```
- */
-
+/** Tours share tutorial progress and fall back to local storage offline. */
 import { ref, computed, onUnmounted } from 'vue';
 import type { Driver, DriveStep, Config } from 'driver.js';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { useApiMutation } from './useApi';
-import {
-  globalProgress,
-  updateProgress,
-  removeProgress,
-  initProgress,
-  isInitialized,
-} from './useTutorialProgress';
+import { globalProgress, updateProgress, removeProgress, initProgress, isInitialized } from './useTutorialProgress';
 
 export interface ProductTourOptions {
   /**
@@ -324,14 +294,4 @@ export function useProductTour(options: ProductTourOptions) {
     resetTour,
     goToStep,
   };
-}
-
-// Re-export shared functions for backward compatibility
-export { initProgress as initTourProgress, globalProgress } from './useTutorialProgress';
-
-/**
- * Get current global tour progress
- */
-export function getTourProgress(): Record<string, string> {
-  return globalProgress.value;
 }

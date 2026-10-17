@@ -1,11 +1,13 @@
 <x-mail::message>
 # {{ $title }}
 
+{{ \App\Support\MailGreeting::forName($recipientName ?? null) }}
+
 {{ $body }}
 
 <x-mail::context :rows="$context" />
 
-<x-mail::button :url="$actionUrl">
+<x-mail::button color="neutral" align="left" :url="$actionUrl">
 {{ $actionText }}
 </x-mail::button>
 

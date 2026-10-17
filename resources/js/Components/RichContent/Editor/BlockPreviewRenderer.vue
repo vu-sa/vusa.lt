@@ -42,8 +42,8 @@
  * full-screen editor's `RCFullscreenBlock`). Several things a naive `<component :is>`
  * gets wrong that this fixes:
  *
- * - Surface: stamps `data-surface="public"`, so the preview resolves the public palette and
- *   radius scale rather than the admin one it is embedded in.
+ * - Surface: stamps `data-surface="public"`, so prose takes the published reading colour
+ *   rather than the admin editor's.
  * - Width: wraps in the same `.rc-canvas` column class RichContentParser would apply
  *   (`blockLayoutClasses`), so a block previewed at `full`/`wide` isn't silently clamped
  *   to the prose column the way the old per-surface implementations were.

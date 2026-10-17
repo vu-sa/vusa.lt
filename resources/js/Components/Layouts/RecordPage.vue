@@ -166,13 +166,16 @@
           </dt>
           <dd class="mt-auto min-w-0 pt-1 text-sm font-medium text-foreground">
             <slot :name="`fact-${fact.key}`" :fact>
-              <span v-if="fact.status" :class="['inline-flex items-center gap-1.5 font-semibold', statusRoleParts[fact.status.role].text]">
-                <component :is="fact.status.icon" class="size-4 shrink-0" aria-hidden="true" />
-                {{ $t(fact.status.label) }}
-              </span>
-              <span v-if="fact.status && fact.detail" class="mt-0.5 block text-xs font-normal text-muted-foreground" data-slot="fact-detail">
-                {{ fact.detail }}
-              </span>
+              <!-- Block-level, so the icon cannot stretch the line box past the other facts' values. -->
+              <template v-if="fact.status">
+                <span :class="['flex items-center gap-1.5 font-semibold', statusRoleParts[fact.status.role].text]">
+                  <component :is="fact.status.icon" class="size-4 shrink-0" aria-hidden="true" />
+                  {{ $t(fact.status.label) }}
+                </span>
+                <span v-if="fact.detail" class="mt-0.5 block text-xs font-normal text-muted-foreground" data-slot="fact-detail">
+                  {{ fact.detail }}
+                </span>
+              </template>
               <a
                 v-else-if="fact.href && fact.external"
                 :href="fact.href"
@@ -195,7 +198,12 @@
         <slot name="alert" />
       </div>
 
-      <nav v-if="sections.length >= 3" class="mt-8 hidden border-b border-border md:flex" :aria-label="$t('Įrašo skyriai')">
+      <!-- `empty:` hides the gap when the strip has nothing to offer (a read-only viewer). -->
+      <div v-if="$slots['next-actions']" class="mt-6 empty:hidden" data-slot="record-next-actions">
+        <slot name="next-actions" />
+      </div>
+
+      <nav v-if="hasTabs" class="mt-8 hidden border-b border-border md:flex" :aria-label="$t('Įrašo skyriai')">
         <button
           v-for="section in sections"
           :key="section.value"
@@ -231,7 +239,13 @@
             </section>
           </div>
 
-          <section v-if="$slots.activity" class="mt-12 border-t border-border pt-8">
+          <!-- Hidden, not unmounted, so the thread and any draft survive a tab switch. -->
+          <section
+            v-if="$slots.activity"
+            class="mt-12 border-t border-border pt-8"
+            :class="{ 'md:hidden': hasTabs && currentSection !== sections[0]?.value }"
+            data-slot="record-activity"
+          >
             <slot name="activity" />
           </section>
         </div>
@@ -261,7 +275,7 @@ import { computed, ref, watch } from 'vue';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { useResizeObserver } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronLeft, ChevronRight, History, MoreHorizontal } from 'lucide-vue-next';
+import { ChevronLeft, ChevronRight, History, MoreHorizontal } from '@lucide/vue';
 
 import ActionControl from './RecordPageAction.vue';
 
@@ -353,6 +367,7 @@ const emit = defineEmits<{
 }>();
 
 const currentSection = defineModel<string>('section', { default: '' });
+const hasTabs = computed(() => props.sections.length >= 3);
 
 if (!currentSection.value && props.sections.length) {
   currentSection.value = props.sections[0]!.value;

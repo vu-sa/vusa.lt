@@ -1,12 +1,7 @@
 import { trans as $t } from 'laravel-vue-i18n';
-import type { LucideIcon } from 'lucide-vue-next';
+import type { LucideIcon } from '@lucide/vue';
 
-import {
-  agendaItemStatuses,
-  statusRoleParts,
-  type AgendaItemStatus,
-  type StatusRole,
-} from '@/Constants/statuses';
+import { agendaItemStatuses, statusRoleParts, type AgendaItemStatus, type StatusRole } from '@/Constants/statuses';
 
 export type { AgendaItemStatus };
 
@@ -317,51 +312,6 @@ export function getNumberBadgeClass(item: AgendaItem, requiresStudentPerspective
 }
 
 /**
- * Get status text for an agenda item
- */
-export function getStatusText(item: AgendaItem): string {
-  // If type is not set, item needs type selection
-  if (item.type === null || item.type === undefined) return $t('Nepažymėtas');
-
-  if (item.type === 'informational') return $t('Informacinis');
-  if (item.type === 'deferred') return $t('Atidėtas');
-  if (item.type === 'break') return $t('Pertrauka');
-
-  const mainVote = getMainVote(item);
-
-  if (!mainVote?.decision) return $t('Neaptartas');
-
-  if (mainVote.is_consensus) return $t('Bendras sutarimas');
-  if (mainVote.decision === 'positive') return $t('Priimtas');
-  if (mainVote.decision === 'negative') return $t('Atmestas');
-  return $t('Neutralus sprendimas');
-}
-
-/**
- * Get status icon (checkmark, X, or empty)
- */
-export function getStatusIcon(item: AgendaItem): string {
-  if (item.type === 'informational' || item.type === 'deferred' || item.type === 'break') return '';
-
-  const mainVote = getMainVote(item);
-
-  if (!mainVote?.decision) return '';
-  if (mainVote.decision === 'positive') return '✓';
-  if (mainVote.decision === 'negative') return '✗';
-  return '';
-}
-
-/**
- * Get status text class for coloring
- */
-export function getStatusTextClass(item: AgendaItem, requiresStudentPerspective = true): string {
-  const status = getAgendaItemStatus(item, requiresStudentPerspective);
-
-  // An undiscussed vote is a quiet gap in a list, not an alarm on every row.
-  return status === 'no_vote' ? MUTED_TEXT : statusRoleParts[agendaItemStatuses[status].role].text;
-}
-
-/**
  * Get student vote label
  */
 export function getStudentVoteLabel(studentVote: VoteValue): string {
@@ -370,18 +320,6 @@ export function getStudentVoteLabel(studentVote: VoteValue): string {
     case 'negative': return $t('Nepritarė');
     case 'neutral': return $t('Susilaikė');
     default: return '';
-  }
-}
-
-/**
- * Get short student vote indicator
- */
-export function getStudentVoteShort(studentVote: VoteValue): string {
-  switch (studentVote) {
-    case 'positive': return '+';
-    case 'negative': return '-';
-    case 'neutral': return '0';
-    default: return '?';
   }
 }
 
@@ -402,51 +340,9 @@ const roleText = (value: VoteValue, fallback = MUTED_TEXT): string => {
   return role ? statusRoleParts[role].text : fallback;
 };
 
-/**
- * Decision colours the badge; its border turns danger when the students' vote lost.
- */
-export function getVoteBadgeClass(vote: Vote): string {
-  const role = getVoteValueRole(vote.decision);
-
-  if (!role || role === 'neutral') {
-    return `${statusRoleParts.neutral.surface} ${statusRoleParts.neutral.text} ${statusRoleParts.neutral.border}`;
-  }
-
-  const aligned = vote.decision === vote.student_vote;
-  const border = aligned ? statusRoleParts[role].border : statusRoleParts.danger.border;
-
-  return `${statusRoleParts[role].surface} ${statusRoleParts[role].text} ${border}`;
-}
-
-/** Student vote ink: alignment when both are known, otherwise the vote itself. */
-export function getStudentVoteAlignmentClass(vote: Vote): string {
-  if (vote.decision && vote.student_vote) {
-    return vote.decision === vote.student_vote ? statusRoleParts.success.text : statusRoleParts.danger.text;
-  }
-
-  return roleText(vote.student_vote);
-}
-
-/** Surface for a vote badge, from the perceived benefit to students. */
-export function getStudentBenefitBgClass(benefit: VoteValue): string {
-  return statusRoleParts[getVoteValueRole(benefit) ?? 'neutral'].surface;
-}
-
 /** Decision ink that stays readable on any benefit surface. */
 export function getDecisionTextColorClass(decision: VoteValue): string {
   return roleText(decision, 'text-foreground');
-}
-
-export function getStudentVoteIconClass(studentVote: VoteValue): string {
-  return roleText(studentVote);
-}
-
-export function getVoteStatusDotClass(vote: Vote): string {
-  if (!vote.decision && !vote.student_vote) {
-    return 'bg-muted-foreground/40';
-  }
-
-  return statusRoleParts[getVoteValueRole(vote.decision) ?? 'neutral'].dot;
 }
 
 // ============================================================================
@@ -456,22 +352,6 @@ export function getVoteStatusDotClass(vote: Vote): string {
 /** Ink for a vote value, e.g. in the public VoteStatusIndicator. */
 export function getVoteTextColorClass(value: VoteValue): string {
   return roleText(value, 'text-muted-foreground/60');
-}
-
-export function getVoteBgColorClass(value: VoteValue, isSelected = false): string {
-  if (!isSelected) {
-    return 'bg-muted';
-  }
-
-  return statusRoleParts[getVoteValueRole(value) ?? 'neutral'].surface;
-}
-
-export function getVoteBorderColorClass(value: VoteValue, isSelected = false): string {
-  if (!isSelected) {
-    return 'border-border';
-  }
-
-  return statusRoleParts[getVoteValueRole(value) ?? 'neutral'].border;
 }
 
 /**
@@ -517,72 +397,6 @@ export function hasDecisionData(item: AgendaItem): boolean {
   return mainVote.student_vote !== null || mainVote.decision !== null || mainVote.student_benefit !== null;
 }
 
-/**
- * Calculate student vote success rate for a list of agenda items
- * Returns percentage (0-100) of items where student_vote === decision
- * @param items - Array of agenda items with votes/main_vote loaded
- */
-export function calculateSuccessRate(items: AgendaItem[]): number {
-  if (items.length === 0) return 0;
-
-  const itemsWithVotes = items.filter((item) => {
-    const mainVote = getMainVote(item);
-    return mainVote?.student_vote && mainVote?.decision;
-  });
-
-  if (itemsWithVotes.length === 0) return 0;
-
-  const successfulItems = itemsWithVotes.filter((item) => {
-    const mainVote = getMainVote(item);
-    return mainVote?.student_vote === mainVote?.decision;
-  });
-
-  return Math.round((successfulItems.length / itemsWithVotes.length) * 100);
-}
-
-/**
- * Get success rate color class based on percentage
- */
-export function getSuccessRateColorClass(rate: number): string {
-  if (rate >= 75) return `${statusRoleParts.success.text} font-medium`;
-  if (rate >= 50) return `${statusRoleParts.attention.text} font-medium`;
-  return `${statusRoleParts.danger.text} font-medium`;
-}
-
-/**
- * Get vote alignment label for meeting-level display
- */
-export function getVoteAlignmentLabel(status: MeetingStatusSummary['voteAlignmentStatus']): string {
-  switch (status) {
-    case 'all_match':
-      return $t('Pozicija priimta');
-    case 'all_mismatch':
-      return $t('Pozicija nepriimta');
-    case 'mixed':
-      return $t('Dalinai priimta');
-    case 'neutral':
-      return $t('Neutralūs sprendimai');
-    default:
-      return $t('Nėra duomenų');
-  }
-}
-
-/**
- * Get badge variant for vote alignment status
- */
-export function getVoteAlignmentVariant(
-  status: MeetingStatusSummary['voteAlignmentStatus'],
-): 'default' | 'destructive' | 'secondary' {
-  switch (status) {
-    case 'all_match':
-      return 'default';
-    case 'all_mismatch':
-      return 'destructive';
-    default:
-      return 'secondary';
-  }
-}
-
 // ============================================================================
 // Individual Agenda Item Vote Comparison Helpers
 // ============================================================================
@@ -620,49 +434,4 @@ export function getVoteComparisonText(item: AgendaItem): string {
 export function getVoteComparisonColorClass(item: AgendaItem): string {
   if (!canCompareVotes(item)) return MUTED_TEXT;
   return isVoteAligned(item) ? statusRoleParts.success.text : statusRoleParts.attention.text;
-}
-
-/**
- * Composable hook for agenda item styling
- */
-export function useAgendaItemStyling() {
-  return {
-    // Agenda item functions
-    getMainVote,
-    getAgendaItemStatus,
-    getAgendaItemStatusMeta,
-    getVoteValueRole,
-    getMeetingStatusSummary,
-    getNumberBadgeClass,
-    getStatusText,
-    getStatusIcon,
-    getStatusTextClass,
-    hasDecisionData,
-    // Vote label functions
-    getStudentVoteLabel,
-    getStudentVoteShort,
-    getDecisionLabel,
-    getVoteDisplayLabel,
-    getStudentBenefitLabel,
-    // Vote styling functions
-    getVoteBadgeClass,
-    getStudentVoteAlignmentClass,
-    getVoteStatusDotClass,
-    getVoteTextColorClass,
-    getVoteBgColorClass,
-    getVoteBorderColorClass,
-    getStudentBenefitBgClass,
-    getDecisionTextColorClass,
-    getStudentVoteIconClass,
-    // Meeting-level functions
-    calculateSuccessRate,
-    getSuccessRateColorClass,
-    getVoteAlignmentLabel,
-    getVoteAlignmentVariant,
-    // Agenda item vote comparison
-    canCompareVotes,
-    isVoteAligned,
-    getVoteComparisonText,
-    getVoteComparisonColorClass,
-  };
 }

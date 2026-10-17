@@ -104,7 +104,7 @@
 
 <script setup lang="ts">
 import { CalendarDate, type DateValue } from '@internationalized/date';
-import { Calendar as CalendarIcon, Clock, X } from 'lucide-vue-next';
+import { Calendar as CalendarIcon, Clock, X } from '@lucide/vue';
 import { computed, ref, type HTMLAttributes } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 

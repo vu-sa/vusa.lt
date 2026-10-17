@@ -162,7 +162,7 @@
 import { computed, ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CircleCheck, CircleDashed, CircleX, Clock, LoaderCircle, Play, RefreshCw, TriangleAlert } from 'lucide-vue-next';
+import { CircleCheck, CircleDashed, CircleX, Clock, LoaderCircle, Play, RefreshCw, TriangleAlert } from '@lucide/vue';
 
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { ConfirmDialog, StatusBadge } from '@/Components/Patterns';

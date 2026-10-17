@@ -13,11 +13,13 @@
     </slot>
 
     <select
+      v-bind="$attrs"
       :id
       v-model="model"
       :disabled
       :required
       :aria-label
+      :aria-invalid="!!error"
       :class="cn(
         'w-full appearance-none border border-border bg-secondary/50 text-foreground transition-colors',
         'focus:border-brand focus:bg-background focus:outline-none focus:ring-2 focus:ring-brand/20',
@@ -58,7 +60,7 @@
 
 <script setup lang="ts">
 import type { Component, HTMLAttributes } from 'vue';
-import { ChevronDown } from 'lucide-vue-next';
+import { ChevronDown } from '@lucide/vue';
 
 import { cn } from '@/Utils/Shadcn/utils';
 
@@ -67,6 +69,8 @@ export interface NativeSelectOption {
   label: string;
   disabled?: boolean;
 }
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(defineProps<{
   id?: string;

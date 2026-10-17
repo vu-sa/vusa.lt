@@ -125,7 +125,7 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Building2, Eye, Pencil } from 'lucide-vue-next';
+import { Building2, Eye, Pencil } from '@lucide/vue';
 
 import DetailLayout from './DetailLayout.vue';
 import DetailRow from './DetailRow.vue';

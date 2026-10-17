@@ -28,7 +28,7 @@
       </div>
 
       <div
-        v-if="isFull && !isEditing"
+        v-if="isFull && !isEditing && rangeIsCurrent"
         class="border border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] p-3 text-xs text-[var(--status-attention)]"
         data-testid="assign-sheet-full-notice"
       >
@@ -49,8 +49,9 @@
       <MemberSearchField
         v-if="pickMember"
         v-model="member"
-        :taken-ids
-        :error="form.errors.user_id"
+        :taken-ids="takenInRange"
+        :allow-create="canCreateMember"
+        :error="form.errors.user_id || form.errors['new_user.name'] || form.errors['new_user.email']"
       />
       <div
         v-else-if="member"
@@ -85,6 +86,20 @@
         </div>
       </div>
 
+      <div v-if="cadenceOptions.length > 0 && !isExOfficio" class="space-y-1.5" data-testid="assign-cadence">
+        <Label for="assign-cadence" class="text-sm font-medium">
+          {{ $t('Kadencija') }}
+        </Label>
+        <NativeSelect
+          id="assign-cadence"
+          v-model="selectedCadence"
+          :options="cadenceOptions"
+        />
+        <p class="text-xs text-muted-foreground">
+          {{ cadenceHint }}
+        </p>
+      </div>
+
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div class="space-y-1.5" role="group" aria-labelledby="assign-start-label">
           <Label id="assign-start-label" class="text-sm font-medium">
@@ -110,7 +125,12 @@
         </div>
       </div>
 
-      <div class="space-y-4 border-t border-border pt-4">
+      <details :open="extrasOpen" class="group border-t border-border pt-4" data-testid="assign-extras" @toggle="onExtrasToggle">
+        <summary class="u-touch flex cursor-pointer select-none items-center justify-between text-sm font-semibold text-foreground">
+          <span>{{ $t('Papildomi nustatymai') }}</span>
+          <ChevronDown class="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
+        </summary>
+        <div v-if="extrasOpen" class="mt-4 space-y-4">
         <div class="space-y-1.5">
           <div class="flex items-center justify-between">
             <Label for="additional_email" class="text-sm font-medium">
@@ -154,7 +174,7 @@
           </p>
         </div>
 
-        <div v-if="availableStudyPrograms.length > 0" class="space-y-1.5">
+        <div v-if="showStudyProgram" class="space-y-1.5" data-testid="assign-study-program">
           <div class="flex items-center justify-between">
             <Label for="study_program_id" class="text-sm font-medium">
               {{ $t('Studijų programa') }}
@@ -179,7 +199,7 @@
           </p>
         </div>
 
-        <div v-if="availableStudyPrograms.length > 0" class="space-y-1.5">
+        <div v-if="showStudyProgram" class="space-y-1.5">
           <div class="flex items-center justify-between gap-2">
             <Label for="study_program_note" class="text-sm font-medium">
               {{ $t('Studijų programos pastaba') }}
@@ -231,12 +251,11 @@
           </div>
         </div>
 
-        <details :open="descriptionOpen" class="group border-t border-border pt-4" @toggle="onDescriptionToggle">
-          <summary class="u-touch flex cursor-pointer select-none items-center justify-between text-sm font-semibold text-foreground">
-            <span>{{ $t('Viešas aprašymas') }}</span>
-            <ChevronDown class="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
-          </summary>
-          <div v-if="descriptionOpen" class="mt-4 space-y-3">
+        <div class="space-y-3 border-t border-border pt-4">
+          <p class="text-sm font-medium text-foreground">
+            {{ $t('Papildomas aprašymas') }}
+          </p>
+          <div class="space-y-3">
             <p class="text-xs text-muted-foreground">
               {{ $t('Matoma vusa.lt') }} · {{ $t('Rodomas viešame kontaktų sąraše vietoj pareigybės aprašymo.') }}
             </p>
@@ -265,8 +284,9 @@
               {{ form.errors.description }}
             </p>
           </div>
-        </details>
-      </div>
+        </div>
+        </div>
+      </details>
 
       <template v-if="isEditing && !isExOfficio" #danger-zone>
         <div class="space-y-4">
@@ -339,12 +359,12 @@
 <script setup lang="ts">
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Briefcase, CalendarCheck, ChevronDown, Sparkles, Trash2 } from 'lucide-vue-next';
+import { Briefcase, CalendarCheck, ChevronDown, Sparkles, Trash2 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
 import DutySearchField, { type DutyHit } from './DutySearchField.vue';
 import MemberSearchField, { type MemberHit } from './MemberSearchField.vue';
-import { termStatus } from './occupancy';
+import { isCuratorDuty, termStatus } from './occupancy';
 
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
@@ -359,11 +379,28 @@ import { Input } from '@/Components/ui/input';
 import { ImageUpload } from '@/Components/ui/upload';
 import { imageFromCachedUrl } from '@/Types/media';
 import { Label } from '@/Components/ui/label';
+import { NativeSelect, type NativeSelectOption } from '@/Components/ui/native-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
+import { useApi } from '@/Composables/useApi';
 import { formatDate, todayIso } from '@/Utils/dateTime';
 
 type Dutiable = App.Entities.Dutiable & Record<string, unknown>;
+
+interface CadenceOption {
+  id: string;
+  label: string;
+  start_date: string;
+  end_date: string;
+  is_current: boolean;
+}
+
+/** A term already on the duty, to tell who holds it during the chosen dates. */
+export interface ExistingTerm {
+  user_id: string;
+  start_date?: string | null;
+  end_date?: string | null;
+}
 interface DescriptionText {
   lt: string;
   en: string;
@@ -371,6 +408,7 @@ interface DescriptionText {
 
 const LOCALES = ['lt', 'en'] as const;
 const NO_STUDY_PROGRAM = '__none__';
+const CUSTOM_DATES = 'custom';
 
 const props = withDefaults(defineProps<{
   open: boolean;
@@ -382,8 +420,10 @@ const props = withDefaults(defineProps<{
   user?: (App.Entities.User & Record<string, unknown>) | MemberHit | null;
   /** Offered programmes; narrowed to the chosen duty's tenant when the duty is picked in the sheet. */
   studyPrograms?: (App.Entities.StudyProgram & { tenant_id?: number | null })[];
-  /** Members who already hold the duty right now; they cannot be assigned again. */
+  /** Members who already hold the duty right now; used when `existingTerms` is not given. */
   takenIds?: string[];
+  /** Every term on the duty, so only people holding it during the chosen dates are blocked. */
+  existingTerms?: ExistingTerm[] | null;
   occupiedPlaces?: number;
 }>(), {
   duty: null,
@@ -391,6 +431,7 @@ const props = withDefaults(defineProps<{
   user: null,
   studyPrograms: () => [],
   takenIds: () => [],
+  existingTerms: null,
   occupiedPlaces: 0,
 });
 
@@ -419,7 +460,7 @@ const sheetTitle = computed(() => {
     return $t('Redaguoti pareigybės laikotarpį');
   }
 
-  return pickDuty.value ? $t('Pridėti pareigybę') : $t('Priskirti narį');
+  return pickDuty.value ? $t('Pridėti pareigybę') : $t('Priskirti');
 });
 const sheetDescription = computed(() => {
   if (isEditing.value) {
@@ -427,8 +468,22 @@ const sheetDescription = computed(() => {
   }
 
   return pickDuty.value
-    ? $t('Pasirink pareigybę ir nurodyk, nuo kada narys ją eina.')
-    : $t('Pasirink narį ir nurodyk, nuo kada jis eina šias pareigas.');
+    ? $t('Pasirink pareigybę ir kadenciją, kurią narys ją ėjo ar eina.')
+    : $t('Pasirink narį ir kadenciją — dabartinę ar ankstesnę.');
+});
+
+const page = usePage();
+const canCreateMember = computed(() => Boolean((page.props.auth as { can?: { create?: { user?: boolean } } } | undefined)?.can?.create?.user));
+
+/** Duty types are known on the duty record and from search; elsewhere the old behaviour stays. */
+const dutyTypeSlugs = computed<string[] | null>(() => {
+  if (pickDuty.value) {
+    return chosenDuty.value?.typeSlugs ?? null;
+  }
+
+  const types = (dutyContext.value as { types?: { slug?: string | null }[] } | null)?.types;
+
+  return Array.isArray(types) ? types.map(type => type.slug ?? '') : null;
 });
 
 const availableStudyPrograms = computed(() => {
@@ -441,6 +496,14 @@ const availableStudyPrograms = computed(() => {
   return props.studyPrograms.filter(program => program.tenant_id === tenantId);
 });
 const saveLabel = computed(() => (isEditing.value ? $t('Išsaugoti') : $t('Priskirti')));
+
+// A programme only means something on a curator's term; one already set is never hidden.
+const showStudyProgram = computed(() => availableStudyPrograms.value.length > 0 && (
+  dutyTypeSlugs.value === null
+  || isCuratorDuty(dutyTypeSlugs.value)
+  || !!props.dutiable?.study_program_id
+  || hasText(asNote(props.dutiable?.study_program_note))
+));
 
 const asDescription = (value: unknown): DescriptionText => {
   // A localized string means the payload was not the full translation map; keep it rather than blanking it on save.
@@ -466,6 +529,7 @@ const initialValues = () => ({
   study_program_note: asNote(props.dutiable?.study_program_note),
   description: asDescription(props.dutiable?.description),
   use_original_duty_name: Boolean(props.dutiable?.use_original_duty_name),
+  new_user: null as { name: string; email: string | null } | null,
   acknowledge_access_change: false,
 });
 
@@ -474,8 +538,15 @@ const form = useForm(initialValues());
 const hasText = (text: DescriptionText) => text.lt.trim() !== '' || text.en.trim() !== '';
 const hasDescription = computed(() => hasText(form.description));
 
-const descriptionOpen = ref(false);
+const extrasOpen = ref(false);
 const descriptionLocale = ref<(typeof LOCALES)[number]>('lt');
+
+const hasExtras = () => hasDescription.value
+  || form.additional_email.trim() !== ''
+  || !!form.additional_photo
+  || form.use_original_duty_name
+  || !!form.study_program_id
+  || hasText(form.study_program_note);
 
 const member = ref<MemberHit | null>(null);
 
@@ -486,13 +557,134 @@ const initialMember = (): MemberHit | null => {
 };
 
 watch(member, (hit) => {
-  form.user_id = hit ? String(hit.id) : '';
+  form.user_id = hit && !hit.isNew ? String(hit.id) : '';
+  form.new_user = hit?.isNew ? { name: hit.name, email: hit.email ?? null } : null;
 });
 
 watch(chosenDuty, (hit) => {
   form.duty_id = hit ? hit.id : '';
   // A programme belongs to one tenant, so a previous choice may no longer be on offer.
   form.study_program_id = null;
+});
+
+
+const cadenceDutyId = computed(() => (pickDuty.value ? chosenDuty.value?.id : dutyContext.value?.id) ?? null);
+const cadencesUrl = ref('');
+const { data: cadencesData, execute: fetchCadences } = useApi<CadenceOption[]>(cadencesUrl, {
+  immediate: false,
+  showErrorToast: false,
+});
+const cadences = computed(() => (cadencesUrl.value ? cadencesData.value ?? [] : []));
+const selectedCadence = ref<string>(CUSTOM_DATES);
+// A new term defaults to the current cadence once the list arrives.
+const awaitingDefaultCadence = ref(false);
+
+function loadCadences() {
+  const dutyId = cadenceDutyId.value;
+
+  if (!props.open || !dutyId || isExOfficio.value) {
+    cadencesUrl.value = '';
+    return;
+  }
+
+  cadencesUrl.value = route('api.v1.admin.duties.cadences', dutyId);
+  fetchCadences();
+}
+
+watch(cadenceDutyId, () => {
+  if (props.open) {
+    awaitingDefaultCadence.value = !isEditing.value;
+    loadCadences();
+  }
+});
+
+/** Joining mid-term starts today; a past or future term is recorded in full. */
+const presetFor = (cadence: CadenceOption) => {
+  const today = todayIso();
+
+  return {
+    start: cadence.is_current && cadence.start_date < today ? today : cadence.start_date,
+    end: cadence.end_date,
+  };
+};
+
+const matchingCadence = () => cadences.value.find((cadence) => {
+  const preset = presetFor(cadence);
+  const exact = form.start_date === cadence.start_date && form.end_date === cadence.end_date;
+
+  return exact || (form.start_date === preset.start && form.end_date === preset.end);
+});
+
+watch(cadences, (list) => {
+  if (list.length === 0) {
+    return;
+  }
+
+  if (awaitingDefaultCadence.value) {
+    awaitingDefaultCadence.value = false;
+    const current = list.find(cadence => cadence.is_current);
+
+    if (current) {
+      applyCadence(current);
+      return;
+    }
+  }
+
+  selectedCadence.value = matchingCadence()?.id ?? CUSTOM_DATES;
+});
+
+function applyCadence(cadence: CadenceOption) {
+  const preset = presetFor(cadence);
+  selectedCadence.value = cadence.id;
+  form.start_date = preset.start;
+  form.end_date = preset.end;
+}
+
+watch(selectedCadence, (id) => {
+  const cadence = cadences.value.find(option => option.id === id);
+
+  if (cadence && (form.start_date !== presetFor(cadence).start || form.end_date !== presetFor(cadence).end)) {
+    applyCadence(cadence);
+  }
+});
+
+const cadenceOptions = computed<NativeSelectOption[]>(() => cadences.value.length === 0
+  ? []
+  : [
+      ...cadences.value.map(cadence => ({
+        value: cadence.id,
+        label: cadence.is_current ? `${cadence.label} (${$t('dabartinė')})` : cadence.label,
+      })),
+      { value: CUSTOM_DATES, label: $t('Kitos datos') },
+    ]);
+
+const cadenceHint = computed(() => {
+  const cadence = cadences.value.find(option => option.id === selectedCadence.value);
+
+  if (!cadence) {
+    return $t('Nurodyk datas pats.');
+  }
+
+  return cadence.is_current
+    ? $t('Nuo šiandien iki kadencijos pabaigos.')
+    : $t('Visa kadencija: :start – :end.', { start: cadence.start_date, end: cadence.end_date });
+});
+
+const rangeIsCurrent = computed(() => termStatus({ start_date: form.start_date, end_date: form.end_date }) === 'current');
+
+/** Someone already holding the duty during these dates cannot get a second, overlapping term. */
+const takenInRange = computed(() => {
+  if (!props.existingTerms) {
+    return props.takenIds;
+  }
+
+  const start = form.start_date || todayIso();
+  const end = form.end_date;
+
+  return props.existingTerms
+    .filter(term => (!end || String(term.start_date ?? '').slice(0, 10) <= end)
+      && (!term.end_date || String(term.end_date).slice(0, 10) >= start))
+    .map(term => term.user_id);
 });
 
 watch(
@@ -507,23 +699,31 @@ watch(
     form.clearErrors();
     member.value = initialMember();
     chosenDuty.value = null;
-    descriptionOpen.value = hasDescription.value;
+    extrasOpen.value = hasExtras();
     descriptionLocale.value = 'lt';
+    selectedCadence.value = CUSTOM_DATES;
+    awaitingDefaultCadence.value = !isEditing.value;
+    loadCadences();
   },
   { immediate: true },
 );
 
 // The picker speaks UTC-noon Dates; the API and the form speak YYYY-MM-DD.
+const syncCadenceToDates = () => {
+  selectedCadence.value = matchingCadence()?.id ?? CUSTOM_DATES;
+};
 const startDate = computed({
   get: () => form.start_date,
   set: (value: Date | undefined) => {
     form.start_date = value ? formatDate(value) : '';
+    syncCadenceToDates();
   },
 });
 const endDate = computed({
   get: () => form.end_date,
   set: (value: Date | undefined) => {
     form.end_date = value ? formatDate(value) : null;
+    syncCadenceToDates();
   },
 });
 
@@ -534,8 +734,8 @@ const studyProgramValue = computed({
   },
 });
 
-const onDescriptionToggle = (event: Event) => {
-  descriptionOpen.value = (event.target as HTMLDetailsElement).open;
+const onExtrasToggle = (event: Event) => {
+  extrasOpen.value = (event.target as HTMLDetailsElement).open;
 };
 
 const endTermOpen = ref(false);
@@ -559,8 +759,9 @@ const submit = () => {
     form.acknowledge_access_change = acknowledge;
 
     const options = { preserveScroll: true, onSuccess: finish };
-    const payload = form.transform(data => ({
+    const payload = form.transform(({ new_user: newUser, ...data }) => ({
       ...data,
+      ...(newUser ? { new_user: newUser } : {}),
       description: hasText(data.description) ? data.description : null,
       study_program_note: hasText(data.study_program_note) ? data.study_program_note : null,
     }));

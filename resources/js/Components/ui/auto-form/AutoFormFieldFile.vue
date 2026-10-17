@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { Trash } from 'lucide-vue-next';
+import { Trash } from '@lucide/vue';
 import { ref } from 'vue';
 
 import type { FieldProps } from './interface';

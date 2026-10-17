@@ -82,7 +82,7 @@
 import { computed, ref } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ExternalLink, Star, Tags, Trash2 } from 'lucide-vue-next';
+import { ExternalLink, Star, Tags, Trash2 } from '@lucide/vue';
 import type { ColumnDef } from '@tanstack/vue-table';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';

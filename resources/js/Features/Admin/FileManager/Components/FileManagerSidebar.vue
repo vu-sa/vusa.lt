@@ -113,7 +113,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUp, Clock, Folder, FolderPlus, Home, Star } from 'lucide-vue-next';
+import { ArrowUp, Clock, Folder, FolderPlus, Home, Star } from '@lucide/vue';
 
 import type { ActiveView, DirectoryEntry } from '../types';
 import { formatBytes } from '../utils';

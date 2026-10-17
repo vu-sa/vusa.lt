@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
-import { ClipboardList } from 'lucide-vue-next';
+import { ClipboardList } from '@lucide/vue';
 
 import CoordinatorCard from '../CoordinatorCard.vue';
 import FollowedInstitutionsList from '../FollowedInstitutionsList.vue';
@@ -242,11 +242,11 @@ describe('InstitutionsNeedingAttention', () => {
   });
 
   it('marks an institution the user runs as secretary rather than sits in', () => {
-    const administered = mount(InstitutionsNeedingAttention, { props: { institutions: [{ ...institution, is_administered: true }] } });
+    const administered = mount(InstitutionsNeedingAttention, { props: { institutions: [{ ...institution, is_secretary: true }] } });
     const member = mount(InstitutionsNeedingAttention, { props: { institutions: [institution] } });
 
-    expect(administered.find('[data-slot="institution-administered-badge"]').text()).toContain('secretaries.dashboard.badge');
-    expect(member.find('[data-slot="institution-administered-badge"]').exists()).toBe(false);
+    expect(administered.find('[data-slot="institution-secretary-badge"]').text()).toContain('secretaries.dashboard.badge');
+    expect(member.find('[data-slot="institution-secretary-badge"]').exists()).toBe(false);
   });
 
   it('names the padalinys when the row carries one', () => {

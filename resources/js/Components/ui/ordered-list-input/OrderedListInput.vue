@@ -89,7 +89,7 @@
 <script setup lang="ts">
 import { ref, nextTick, type Component } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Plus, X } from 'lucide-vue-next';
+import { Plus, X } from '@lucide/vue';
 
 const props = withDefaults(defineProps<{
   /** Maximum number of items allowed */

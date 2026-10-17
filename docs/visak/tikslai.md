@@ -146,7 +146,7 @@ padaliniuose.
 
 ### Sukurti tikslą
 
-Spausk **+ Sukurti → Naujas tikslas** arba sąrašo mygtuką **Naujas tikslas**. Jei gali kurti
+Spausk **Veiksmai → Naujas tikslas** arba sąrašo mygtuką **Naujas tikslas**. Jei gali kurti
 tikslus tik viename padalinyje, jis parenkamas automatiškai.
 
 ### Užrašyti veiksmą

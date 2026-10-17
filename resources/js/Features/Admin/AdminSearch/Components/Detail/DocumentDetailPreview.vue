@@ -60,7 +60,7 @@
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Eye, ExternalLink } from 'lucide-vue-next';
+import { Eye, ExternalLink } from '@lucide/vue';
 
 import { toneClass } from '../../Utils/searchBadges';
 import { formatSearchDate } from '../../Utils/searchHitMappers';

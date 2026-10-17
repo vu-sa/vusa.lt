@@ -7,7 +7,7 @@
     <template v-if="canAssign" #action>
       <Button variant="outline" size="sm" class="gap-2" @click="$emit('assign')">
         <UserPlus class="h-4 w-4" />
-        {{ $t('Priskirti narį') }}
+        {{ $t('Priskirti') }}
       </Button>
     </template>
 
@@ -29,7 +29,7 @@
       </div>
       <Button v-if="canAssign" size="sm" class="gap-2" @click="$emit('assign')">
         <UserPlus class="h-4 w-4" />
-        {{ $t('Priskirti narį') }}
+        {{ $t('Priskirti') }}
       </Button>
     </div>
 
@@ -57,7 +57,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Users, UserPlus, UserX } from 'lucide-vue-next';
+import { Users, UserPlus, UserX } from '@lucide/vue';
 
 import DutyHolderCard from './DutyHolderCard.vue';
 

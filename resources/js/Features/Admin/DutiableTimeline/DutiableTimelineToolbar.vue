@@ -91,7 +91,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { EyeOff } from 'lucide-vue-next';
+import { EyeOff } from '@lucide/vue';
 
 import DutiableTimelineFilterMenu, { type FilterOption } from './DutiableTimelineFilterMenu.vue';
 import DutiableTimelineLegend from './DutiableTimelineLegend.vue';

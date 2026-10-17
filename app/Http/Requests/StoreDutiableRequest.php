@@ -8,6 +8,7 @@ use App\Models\Pivots\Dutiable;
 use App\Models\User;
 use App\Policies\DutyPolicy;
 use App\Rules\SoftDeleteRules;
+use App\Rules\UniqueAmongTrashed;
 use App\Services\ModelAuthorizer;
 use App\Support\MorphMap;
 use Carbon\Carbon;
@@ -25,11 +26,27 @@ class StoreDutiableRequest extends FormRequest
     public function authorize(): bool
     {
         $duty = $this->duty();
+
+        if ($duty === null) {
+            return false;
+        }
+
+        // A person created here belongs to no tenant yet, so only the duty side can be checked.
+        if ($this->isCreatingMember()) {
+            return $this->user()->can('create', User::class)
+                && app(DutyPolicy::class)->managePeople($this->user(), $duty);
+        }
+
         $targetUser = $this->filled('user_id')
             ? User::query()->find($this->input('user_id'))
             : null;
 
-        return $duty ? app(DutyPolicy::class)->managePeople($this->user(), $duty, $targetUser) : false;
+        return app(DutyPolicy::class)->managePeople($this->user(), $duty, $targetUser);
+    }
+
+    public function isCreatingMember(): bool
+    {
+        return ! $this->filled('user_id') && $this->filled('new_user.name');
     }
 
     #[\Override]
@@ -57,7 +74,12 @@ class StoreDutiableRequest extends FormRequest
     {
         return [
             'duty_id' => ['required', 'ulid', SoftDeleteRules::existsLive('duties')],
-            'user_id' => ['required', 'ulid', SoftDeleteRules::existsLive('users')],
+            'user_id' => ['required_without:new_user', 'nullable', 'ulid', SoftDeleteRules::existsLive('users')],
+            'new_user' => ['nullable', 'array'],
+            'new_user.name' => ['required_with:new_user', 'string', 'max:255'],
+            // Former members are often recorded without a known address.
+            'new_user.email' => ['nullable', 'email', UniqueAmongTrashed::of('users', 'email')],
+            'new_user.phone' => ['nullable', 'string', 'max:50'],
             'start_date' => ['required', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'study_program_id' => ['nullable', 'ulid', SoftDeleteRules::existsLive('study_programs')],
@@ -80,7 +102,7 @@ class StoreDutiableRequest extends FormRequest
                 return;
             }
 
-            if ($this->overlapsExistingTerm()) {
+            if (! $this->isCreatingMember() && $this->overlapsExistingTerm()) {
                 $v->errors()->add('user_id', __('dutiables.assign.already_assigned'));
 
                 return;
@@ -107,12 +129,14 @@ class StoreDutiableRequest extends FormRequest
 
         $adminTenantIds = app(ModelAuthorizer::class)
             ->tenants($this->user(), 'duties.update.padalinys')->pluck('id');
-        $memberTenantIds = User::query()->find($this->input('user_id'))?->tenants()->pluck('tenants.id') ?? collect();
+        $sharedTenantIds = $duty->assignableTenants->pluck('id')->intersect($adminTenantIds);
 
-        $tenantId = $duty->assignableTenants->pluck('id')
-            ->intersect($adminTenantIds)
-            ->intersect($memberTenantIds)
-            ->first();
+        // A new member has no tenant of their own yet; they join through the admin's.
+        $tenantId = $this->isCreatingMember()
+            ? $sharedTenantIds->first()
+            : $sharedTenantIds
+                ->intersect(User::query()->find($this->input('user_id'))?->tenants()->pluck('tenants.id') ?? collect())
+                ->first();
 
         return $tenantId === null ? null : (int) $tenantId;
     }
@@ -142,7 +166,8 @@ class StoreDutiableRequest extends FormRequest
     {
         $tenantId = $this->delegatedTenantId();
 
-        if ($tenantId === null) {
+        // A term that already ended occupies no seat today.
+        if ($tenantId === null || ($this->filled('end_date') && Carbon::parse($this->input('end_date'))->lt(today()))) {
             return;
         }
 

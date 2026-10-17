@@ -25,6 +25,9 @@ export interface ActionWindowInstitution {
   /** When this body usually meets, from its own history. Null when it has never met. */
   meeting_pattern: { weekday: number; time: string } | null;
   activity_status: InstitutionActivityStatus;
+  /** Where a "no meetings" period starts: the latest of the caller's term start, the day after the last meeting or check-in. */
+  check_in_from: string | null;
+  check_in_from_reason: 'tenure_start' | 'last_meeting' | 'last_check_in' | null;
 }
 
 export interface ActionWindowMeeting {
@@ -44,6 +47,9 @@ export interface ActionWindowMeeting {
 export interface ActionWindowInstitutionSearch {
   enabled: boolean;
   tenant_ids: number[];
+  /** Institution types resolving to a VU SA body, and to an external one; external wins on a mix. */
+  internal_type_ids: number[];
+  external_type_ids: number[];
 }
 
 export interface ActionWindowContextData {
@@ -80,7 +86,7 @@ export function useActionWindowData() {
   const institutions = computed(() => cached.value?.institutions ?? []);
   const meetings = computed(() => cached.value?.meetingsNeedingAttention ?? []);
   const institutionSearch = computed<ActionWindowInstitutionSearch>(
-    () => cached.value?.institutionSearch ?? { enabled: false, tenant_ids: [] },
+    () => cached.value?.institutionSearch ?? { enabled: false, tenant_ids: [], internal_type_ids: [], external_type_ids: [] },
   );
 
   return {

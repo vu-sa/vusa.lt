@@ -37,7 +37,7 @@ pakeitimų. Jau įtraukti v2 atnaujinimai lieka
 
 Svarbiausios pasikeitusios platformos sritys:
 
-- **Rasti veiksmą**: [darbo sritys, + Sukurti ir paieška](/pagrindai/platforma) pakeičia seną administravimo meniu.
+- **Rasti veiksmą**: [darbo sritys, Veiksmai ir paieška](/pagrindai/platforma) pakeičia seną administravimo meniu.
 - **Suprasti savo prieigą**: [Paskyra ir prieiga](/mano/paskyra-ir-prieiga) parodo tavo pareigas, roles ir jų istoriją; [datos](/pagrindai/padaliniai-ir-pareigybes#datos) paaiškina, kodėl prieigą gali gauti dar prieš pareigų pradžią.
 - **Perduoti pareigas ir koordinuoti**: [vedlys](/organizacija/pareigybiu-atnaujinimas) tvarko vieną pareigybę, o [atsakomybės](/pagrindai/atsakomybes) pakeičia koordinatorių rolės parinktį.
 - **Gauti pranešimus**: [kanalų parinktys](/pagrindai/pranesimai#kanalai) leidžia pasirinkti laiško pristatymą kiekvienam pranešimui; nutildymas nepaslepia darbo platformoje.

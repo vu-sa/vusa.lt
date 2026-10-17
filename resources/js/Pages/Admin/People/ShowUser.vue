@@ -3,6 +3,7 @@
     v-model:section="currentSection"
     :title="user.name"
     :entity-type="ModelEnum.USER"
+    :history-subject="{ type: 'user', id: String(user.id) }"
     :facts="recordFacts"
     :sections="tabs"
     :primary-action
@@ -28,6 +29,13 @@
     <template #fact-phone>
       <a v-if="user.phone" :href="`tel:${user.phone}`" class="tabular-nums underline underline-offset-4">{{ user.phone }}</a>
       <span v-else>—</span>
+    </template>
+
+    <!-- The same hover list as the members collection: where they serve now and served before. -->
+    <template #fact-years>
+      <MemberTermsSummary :duties="allTerms">
+        <span class="font-medium text-foreground">{{ yearSpan }}</span>
+      </MemberTermsSummary>
     </template>
 
     <template #alert>
@@ -121,21 +129,6 @@
         @open-task-detail="openTaskDetail"
       />
     </template>
-
-    <template #activity>
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 class="flex items-center gap-2 text-sm font-bold uppercase tracking-[0.18em] text-foreground">
-            <History class="size-4 shrink-0 text-brand" aria-hidden="true" />
-            {{ $t('Veikla') }}
-          </h2>
-          <p class="mt-1 text-sm text-muted-foreground">
-            {{ $t('Įrašo pakeitimai.') }}
-          </p>
-        </div>
-        <ActivityLogSheet subject-type="user" :subject-id="String(user.id)" />
-      </div>
-    </template>
   </RecordPage>
 
   <AssignDutyUserSheet
@@ -206,7 +199,7 @@ import { computed, defineAsyncComponent, ref } from 'vue';
 import { router, useForm, usePage } from '@inertiajs/vue3';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Briefcase, CalendarClock, CalendarRange, Copy, Edit3, History, KeyRound, Plus, Shield, Trash2 } from 'lucide-vue-next';
+import { Briefcase, CalendarClock, CalendarRange, Copy, Edit3, History, KeyRound, Plus, Shield, Trash2 } from '@lucide/vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
@@ -218,9 +211,8 @@ import { Input } from '@/Components/ui/input';
 import { MultiSelect } from '@/Components/ui/multi-select';
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
-import ActivityLogSheet from '@/Features/Admin/ActivityLogViewer/ActivityLogSheet.vue';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
-import { AssignDutyUserSheet, UserTermRow, termStatus } from '@/Features/Admin/Occupancy';
+import { AssignDutyUserSheet, MemberTermsSummary, UserTermRow, termStatus, termYearSpan } from '@/Features/Admin/Occupancy';
 import TaskManager from '@/Features/Admin/TaskManager/TaskManager.vue';
 import { ModelEnum } from '@/Types/enums';
 import { changeDutyNameEndings } from '@/Utils/String';
@@ -305,6 +297,7 @@ const dutyColumns = computed(() => [
 ].filter(column => column.groups.length > 0));
 
 const currentDuties = computed(() => dutyGroups.value.find(group => group.key === 'current')?.duties ?? []);
+const yearSpan = computed(() => termYearSpan(allTerms.value.map(duty => duty.pivot ?? {}), $t('dabar')));
 const roles = computed(() => props.user.roles ?? []);
 const showRolesSection = computed(() => roles.value.length > 0 || Boolean(props.can?.updateRoles));
 
@@ -328,7 +321,9 @@ const recordFacts = computed<RecordFact[]>(() => {
     facts.push({ key: 'facebook', label: 'Facebook', value: $t('Facebook'), href: props.user.facebook_url });
   }
 
-  facts.push({ key: 'duties', label: $t('Dabartinės pareigos'), value: String(currentDuties.value.length) });
+  if (yearSpan.value) {
+    facts.push({ key: 'years', label: $t('Veiklos metai'), value: yearSpan.value });
+  }
 
   if (props.user.last_action) {
     facts.push({ key: 'last_action', label: $t('Paskutinį kartą prisijungė'), value: formatStaticTime(props.user.last_action) });

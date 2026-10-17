@@ -35,7 +35,7 @@ class InstitutionActivityNotification extends BaseNotification implements SendsM
 
     public function title(object $notifiable): string
     {
-        return 'VU SA · '.__($this->first()->campaign_type->labelKey());
+        return __($this->first()->campaign_type->labelKey());
     }
 
     public function body(object $notifiable): string
@@ -151,8 +151,10 @@ class InstitutionActivityNotification extends BaseNotification implements SendsM
             ->subject(($staging ? '[Staging] ' : '').Str::limit($this->title($notifiable), 59, '…'))
             ->markdown('emails.institution-activity', [
                 'title' => $this->title($notifiable),
-                'body' => $this->body($notifiable),
-                'context' => $this->context($notifiable),
+                'recipientName' => $notifiable->name ?? null,
+                'body' => __($this->first()->campaign_type->bodyKey()),
+                'context' => $this->contextRows(['asked_by' => $this->first()->requestedBy?->name]),
+                'note' => $this->first()->requestedBy !== null ? $this->first()->note : null,
                 'questions' => $this->questions(),
                 'isSingle' => $this->isSingle(),
                 'category' => __($this->category()->labelKey()),
@@ -162,7 +164,7 @@ class InstitutionActivityNotification extends BaseNotification implements SendsM
 
     public function toDigestItem(object $notifiable): array
     {
-        return [...parent::toDigestItem($notifiable), 'activity_request_ids' => $this->requests->modelKeys(), 'activity_questions' => $this->questions()];
+        return [...parent::toDigestItem($notifiable), 'context' => $this->contextRows(['asked_by' => $this->first()->requestedBy?->name]), 'activity_request_ids' => $this->requests->modelKeys(), 'activity_questions' => $this->questions()];
     }
 
     private function questions(): array

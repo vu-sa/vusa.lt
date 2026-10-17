@@ -33,6 +33,11 @@ If you ran that (or the full `dev/sailsetup.sh` bootstrap) already, you have eve
 ./dev/storybook-setup.sh
 ```
 
+After that, `sail npm install` / `sail npm ci` keeps the Chromium build in step with the
+`playwright` version through the `postinstall` script (skipped when `CI` or `CLAUDE_CODE_REMOTE`
+is set). Without it, a Playwright bump fails every test with `PlaywrightOutdatedException`,
+reported as a bare "Assertion error" under `--compact`/`--parallel`.
+
 Tests that visit **public, tenant-subdomain-routed pages** need `www.vusa.test` to resolve to
 `127.0.0.1` from **inside** the Sail container. `docker-compose.yml` maps it via the
 `laravel.test` service's `extra_hosts`, so it survives container recreation. If you pulled that

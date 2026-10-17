@@ -42,11 +42,6 @@ export const formFieldTemplate: Pick<App.Entities.FormField, 'label' | 'descript
     option_source: null,
   };
 
-export const meetingTemplate = {
-  institution_id: null,
-  start_time: null,
-};
-
 export const newsTemplate = {
   title: '',
   permalink: '',
@@ -75,40 +70,6 @@ export const newsTemplate = {
   highlights: [],
 };
 
-export const pageTemplate = {
-  title: '',
-  permalink: '',
-  lang: 'lt',
-  other_lang_id: null,
-  tenant_id: null,
-  is_active: true,
-  content: {
-    parts: [
-      {
-        type: 'tiptap',
-        json_content: {},
-        key: 'initial-tiptap',
-      },
-    ],
-  },
-  highlights: [],
-  layout: 'default' as const,
-  featured_image_media: null,
-  meta_description: '',
-  publish_time: null,
-};
-
-export const typeTemplate: Pick<
-  App.Entities.InstitutionType,
-  'title' | 'slug' | 'description' | 'parent_id' | 'extra_attributes'
-> = {
-  title: { lt: '', en: '' },
-  slug: '',
-  description: { lt: '', en: '' },
-  parent_id: null,
-  extra_attributes: {},
-};
-
 export const tagTemplate: Pick<
   App.Entities.Tag,
   'name' | 'description' | 'alias' | 'is_topic'
@@ -117,27 +78,4 @@ export const tagTemplate: Pick<
   description: { lt: '', en: '' },
   alias: '',
   is_topic: false,
-};
-
-export const studySetTemplate = {
-  name: { lt: '', en: '' },
-  description: { lt: '', en: '' },
-  order: 0,
-  is_visible: true,
-  tenant_id: null as number | null,
-  courses: [] as Array<{
-    id?: string;
-    name: { lt: string; en: string };
-    semester: string;
-    credits: number;
-    order: number;
-    is_visible: boolean;
-  }>,
-  reviews: [] as Array<{
-    id?: string;
-    study_set_course_id: string;
-    lecturer: { lt: string; en: string };
-    comment: { lt: string; en: string };
-    is_visible: boolean;
-  }>,
 };

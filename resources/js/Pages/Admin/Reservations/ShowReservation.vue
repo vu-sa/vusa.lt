@@ -155,7 +155,7 @@
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { computed, ref, watch, capitalize } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
-import { Check, CheckCheck, Info, Plus, Trash2, UserPlus } from 'lucide-vue-next';
+import { Check, CheckCheck, Info, Plus, Trash2, UserPlus } from '@lucide/vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';

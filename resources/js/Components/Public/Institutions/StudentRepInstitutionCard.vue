@@ -1,185 +1,149 @@
 <template>
   <article
-    :class="[
-      'group flex h-full flex-col border border-border bg-white/40',
-      'transition-colors duration-200 hover:border-brand hover:bg-black/[0.03]',
-      'dark:bg-black/40 dark:hover:bg-black/55',
-    ]"
+    class="group relative flex h-full min-w-0 flex-col border border-border bg-card p-5 transition-colors duration-200 hover:border-brand"
     data-slot="student-rep-institution-card"
   >
-    <SmartLink :href="institutionUrl" class="plain flex flex-1 flex-col p-5 sm:p-6">
-      <!-- Header: Institution Name -->
-      <div>
-        <h3 class="text-base sm:text-lg font-bold leading-snug text-foreground transition-colors group-hover:text-brand line-clamp-2">
-          {{ institution.name }}
-        </h3>
-      </div>
+    <InstitutionCardHeading :eyebrow :href="url" :title="String(institution.name || '')" />
 
-      <div class="my-4 h-px w-full bg-border" />
+    <InstitutionCardDescription :text="description" />
 
-      <!-- Team grid: up to 6 reps in a 3-column layout -->
-      <div v-if="displayedContacts.length > 0" class="grid grid-cols-3 gap-3 sm:gap-4 flex-1 content-start">
-        <div
-          v-for="{ user, duty } in displayedContacts"
-          :key="`rep-${user.id}-${duty.id}`"
-          class="flex flex-col items-center text-center"
-        >
-          <!-- Square photo container with permanent grayscale -->
-          <div class="relative aspect-square w-full overflow-hidden bg-secondary border border-border/60">
-            <img
-              v-if="getContactPhoto(user, duty)"
-              :src="getContactPhoto(user, duty)"
-              :alt="user.name"
-              class="size-full object-cover grayscale group-hover:grayscale-0 transition duration-400 group-hover:scale-103"
-              :style="{ objectPosition: getContactFocalPoint(user, duty) }"
-              loading="lazy"
-            >
-            <div
-              v-else
-              class="size-full flex items-center justify-center bg-secondary text-muted-foreground font-mono text-xs sm:text-sm font-bold"
-            >
-              <span>{{ getInitials(user.name) }}</span>
-            </div>
-          </div>
-          <!-- Rep name -->
-          <p class="mt-1.5 text-center text-xs font-medium text-foreground line-clamp-2 leading-snug">
-            {{ user.name }}
-          </p>
-        </div>
-      </div>
-
-      <div v-else class="flex flex-1 items-center justify-center py-6 text-center text-xs text-muted-foreground">
-        {{ $t('Šiuo metu kontaktų nėra') }}
-      </div>
-
-      <!-- More contacts indicator -->
-      <div
-        v-if="remainingContactsCount > 0"
-        class="mt-3 text-center text-xs font-mono text-muted-foreground"
-      >
-        +{{ remainingContactsCount }} {{ $t('daugiau') }}
-      </div>
-
-      <!-- Spacer -->
-      <div class="flex-1 min-h-4" />
-
-      <!-- Footer action row (following events card: borderless inline link) -->
-      <div class="mt-4 border-t border-border pt-4 flex items-center justify-end">
-        <span
-          class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-foreground transition-colors group-hover:text-brand"
-        >
-          <span>{{ $t('Plačiau') }}</span>
-          <IFluentArrowRight16Regular class="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+    <div class="mt-5 border-t border-border pt-4">
+      <div class="flex items-baseline justify-between gap-3">
+        <p class="text-[0.625rem] font-bold uppercase tracking-[0.18em] text-muted-foreground">
+          {{ $t('Atstovai') }}
+        </p>
+        <span v-if="representatives.length > 0" class="font-mono text-xs text-muted-foreground">
+          {{ representatives.length }}
         </span>
       </div>
-    </SmartLink>
+
+      <ul v-if="representatives.length > 0" class="mt-3 flex flex-col gap-2.5">
+        <li
+          v-for="person in shownRepresentatives"
+          :key="person.id"
+          class="flex min-w-0 items-center gap-3"
+        >
+          <span class="relative size-9 shrink-0 overflow-hidden border border-border/60 bg-secondary">
+            <img
+              v-if="person.photo"
+              :src="person.photo"
+              :alt="person.name"
+              class="size-full object-cover"
+              :style="{ objectPosition: person.focalPoint }"
+              loading="lazy"
+            >
+            <span
+              v-else
+              class="flex size-full items-center justify-center font-mono text-xs font-bold text-muted-foreground"
+              aria-hidden="true"
+            >
+              {{ initials(person.name) }}
+            </span>
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block truncate text-sm font-bold text-foreground">{{ person.name }}</span>
+            <a
+              v-if="person.email"
+              :href="`mailto:${person.email}`"
+              class="relative z-10 block truncate text-xs text-brand transition-colors hover:text-foreground"
+            >
+              {{ person.email }}
+            </a>
+          </span>
+        </li>
+      </ul>
+
+      <p v-else class="mt-3 text-xs text-muted-foreground">
+        {{ $t('Šiuo metu kontaktų nėra') }}
+      </p>
+    </div>
+
+    <div class="mt-4 flex items-center justify-between gap-3 border-t border-border pt-4">
+      <span class="text-xs font-bold text-brand">
+        <template v-if="hiddenCount > 0">{{ $tChoice('search.more_representatives', hiddenCount) }}</template>
+      </span>
+      <InstitutionCardArrow />
+    </div>
   </article>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { usePage } from '@inertiajs/vue3';
-import { trans as $t } from 'laravel-vue-i18n';
+import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 
-import SmartLink from '@/Components/Public/SmartLink.vue';
-import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
-import { TenantType } from '@/Types/enums';
-import IFluentArrowRight16Regular from '~icons/fluent/arrow-right-16-regular';
+import InstitutionCardArrow from './InstitutionCardArrow.vue';
+import InstitutionCardDescription from './InstitutionCardDescription.vue';
+import InstitutionCardHeading from './InstitutionCardHeading.vue';
+import { type InstitutionCardData, useInstitutionCard } from './useInstitutionCard';
 
-const props = withDefaults(defineProps<{
-  institution: App.Entities.Institution;
-  href?: string | null;
-}>(), {
-  href: null,
-});
-
-const page = usePage();
-
-// Build institution URL
-const institutionUrl = computed(() => {
-  if (props.href) {
-    return props.href;
-  }
-  const locale = (page.props.app as { locale?: string } | undefined)?.locale || 'lt';
-  return route('contacts.institution', {
-    institution: props.institution.id,
-    // PKP tenants have no site of their own; their contacts live on www.
-    subdomain: props.institution.tenant?.type === TenantType.Pkp
-      ? 'www'
-      : resolveTenantSubdomain(props.institution.tenant?.id),
-    lang: locale,
-  });
-});
-
-interface ContactItem {
+/** A search hit flattens every current holder into `contacts`; an entity nests them in duties. */
+interface ContactHit {
   id: string;
   name: string;
-  duty_id?: string;
-  duty_name?: string;
+  email?: string | null;
   profile_photo_path?: string | null;
   profile_photo_focal_point?: string | null;
   additional_photo?: string | null;
   additional_photo_focal_point?: string | null;
 }
 
-// Extract contacts with their duties for this institution
-const contactsWithDuties = computed(() => {
-  const inst = props.institution as unknown as { contacts?: ContactItem[]; duties?: App.Entities.Duty[] };
-  if (inst.contacts && Array.isArray(inst.contacts) && inst.contacts.length > 0) {
-    return inst.contacts.map(c => ({
-      user: {
-        id: c.id,
-        name: c.name,
-        profile_photo_path: c.profile_photo_path ?? null,
-        profile_photo_focal_point: c.profile_photo_focal_point ?? null,
-        pivot: {
-          additional_photo: c.additional_photo ?? null,
-          additional_photo_focal_point: c.additional_photo_focal_point ?? null,
-        },
-      } as unknown as App.Entities.User,
-      duty: {
-        id: c.duty_id || 'default',
-        name: c.duty_name || '',
-        pivot: {
-          additional_photo: c.additional_photo ?? null,
-          additional_photo_focal_point: c.additional_photo_focal_point ?? null,
-        },
-      } as unknown as App.Entities.Duty,
-    }));
-  }
+interface Representative {
+  id: string;
+  name: string;
+  email: string | null;
+  photo: string | null;
+  focalPoint: string;
+}
 
-  const result: Array<{ user: App.Entities.User; duty: App.Entities.Duty }> = [];
-  props.institution.duties?.forEach((duty) => {
-    duty.current_users?.forEach((user) => {
-      result.push({ user, duty });
-    });
-  });
-  return result;
+const SHOWN_REPRESENTATIVES = 3;
+
+const props = defineProps<{
+  institution: (InstitutionCardData & { contacts?: ContactHit[]; duties?: App.Entities.Duty[] }) | App.Entities.Institution;
+  href?: string | null;
+  /** Types the page already names; left out of the card's label. */
+  omitTypeSlugs?: string[];
+}>();
+
+const { url, eyebrow, description } = useInstitutionCard(
+  () => props.institution as InstitutionCardData,
+  () => props.href,
+  () => props.omitTypeSlugs,
+);
+
+const representatives = computed<Representative[]>(() => {
+  const { contacts, duties } = props.institution as { contacts?: ContactHit[]; duties?: App.Entities.Duty[] };
+
+  const people: Representative[] = contacts?.length
+    ? contacts.map(contact => ({
+        id: String(contact.id),
+        name: contact.name,
+        email: contact.email ?? null,
+        photo: contact.additional_photo || contact.profile_photo_path || null,
+        focalPoint: contact.additional_photo_focal_point || contact.profile_photo_focal_point || '50% 30%',
+      }))
+    : (duties ?? []).flatMap(duty => (duty.current_users ?? []).map((user) => {
+        const pivot = user.pivot as { additional_photo?: string | null; additional_photo_focal_point?: string | null; additional_email?: string | null } | undefined;
+
+        return {
+          id: String(user.id),
+          name: user.name,
+          email: duty.email || pivot?.additional_email || user.email || null,
+          photo: pivot?.additional_photo || user.profile_photo_path || null,
+          focalPoint: pivot?.additional_photo_focal_point || user.profile_photo_focal_point || '50% 30%',
+        };
+      }));
+
+  // One person can hold several duties in the same institution.
+  return people.filter((person, index) => people.findIndex(other => other.id === person.id) === index);
 });
 
-const displayedContacts = computed(() => contactsWithDuties.value.slice(0, 6));
-const remainingContactsCount = computed(() => Math.max(0, contactsWithDuties.value.length - 6));
+const shownRepresentatives = computed(() => representatives.value.slice(0, SHOWN_REPRESENTATIVES));
+const hiddenCount = computed(() => Math.max(0, representatives.value.length - SHOWN_REPRESENTATIVES));
 
-// Get contact photo from user or duty pivot
-const getContactPhoto = (user: App.Entities.User, duty: App.Entities.Duty) => {
-  if (duty?.pivot?.additional_photo) return duty.pivot.additional_photo;
-  if (user.pivot?.additional_photo) return user.pivot.additional_photo;
-  return user.profile_photo_path ?? null;
-};
-
-// Get contact focal point from user or duty pivot
-const getContactFocalPoint = (user: App.Entities.User, duty: App.Entities.Duty) => {
-  if (duty?.pivot?.additional_photo_focal_point) return duty.pivot.additional_photo_focal_point;
-  if (user.pivot?.additional_photo_focal_point) return user.pivot.additional_photo_focal_point;
-  return user.profile_photo_focal_point ?? '50% 30%';
-};
-
-// Get initials from name
-const getInitials = (name: string) => {
+const initials = (name: string) => {
   const parts = name.split(' ').filter(Boolean);
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  }
-  return parts[0]?.substring(0, 2).toUpperCase() ?? '?';
+  return parts.length >= 2
+    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    : (parts[0]?.substring(0, 2).toUpperCase() ?? '?');
 };
 </script>

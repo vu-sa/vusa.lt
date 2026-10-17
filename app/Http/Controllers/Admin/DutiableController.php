@@ -13,6 +13,7 @@ use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 class DutiableController extends AdminController
 {
@@ -43,19 +44,30 @@ class DutiableController extends AdminController
     {
         $data = $request->safe();
         $duty = Duty::query()->findOrFail($data['duty_id']);
+        $tenantId = $request->delegatedTenantId();
 
-        $dutiable = $duty->auditRelationChange('users', fn () => Dutiable::create([
-            ...$data->only([
-                'duty_id', 'start_date', 'end_date', 'study_program_id', 'study_program_note',
-                'additional_email', 'description',
-            ]),
-            'dutiable_id' => $data['user_id'],
-            'dutiable_type' => MorphMap::alias(User::class),
-            'tenant_id' => $request->delegatedTenantId(),
-            'use_original_duty_name' => $data['use_original_duty_name'] ?? false,
-        ]));
+        DB::transaction(function () use ($request, $data, $duty, $tenantId, $syncImage): void {
+            $userId = $request->isCreatingMember()
+                ? User::create([
+                    'name' => $data['new_user']['name'],
+                    'email' => $data['new_user']['email'] ?? null,
+                    'phone' => $data['new_user']['phone'] ?? null,
+                ])->id
+                : $data['user_id'];
 
-        $syncImage->fromValidated($dutiable, 'photo', $request->validated(), 'photo_media', $request->user());
+            $dutiable = $duty->auditRelationChange('users', fn () => Dutiable::create([
+                ...$data->only([
+                    'duty_id', 'start_date', 'end_date', 'study_program_id', 'study_program_note',
+                    'additional_email', 'description',
+                ]),
+                'dutiable_id' => $userId,
+                'dutiable_type' => MorphMap::alias(User::class),
+                'tenant_id' => $tenantId,
+                'use_original_duty_name' => $data['use_original_duty_name'] ?? false,
+            ]));
+
+            $syncImage->fromValidated($dutiable, 'photo', $request->validated(), 'photo_media', $request->user());
+        });
 
         return back()->with('success', $this->entityMessage('created', 'dutiable'));
     }

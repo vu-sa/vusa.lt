@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown } from 'lucide-vue-next';
+import { ChevronDown } from '@lucide/vue';
 import { ref, watch } from 'vue';
 
 import { StatusBadge } from '@/Components/Patterns';

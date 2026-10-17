@@ -81,6 +81,8 @@ export function useAgendaItemAutosave(
   form: InertiaForm<AgendaItemFormData>,
   agendaItemId: string,
   debounceMs = 1500,
+  /** Deferred props a save cannot change: reloading them swaps their panels for skeletons and loses the scroll. */
+  except: string[] = [],
 ) {
   const lastSavedAt = ref<Date | null>(null);
   /** Callbacks waiting for the save in flight (and any edits made during it) to land. */
@@ -110,6 +112,7 @@ export function useAgendaItemAutosave(
       .patch(route('agendaItems.update', agendaItemId), {
         preserveScroll: true,
         preserveState: true,
+        except,
         onSuccess: () => {
           saved = true;
           form.defaults(JSON.parse(sent) as AgendaItemFormData);

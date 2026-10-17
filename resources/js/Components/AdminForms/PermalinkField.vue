@@ -75,7 +75,7 @@
 import { computed, ref } from 'vue';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, Check, Copy, ExternalLink, Info, Link2 } from 'lucide-vue-next';
+import { AlertTriangle, Check, Copy, ExternalLink, Info, Link2 } from '@lucide/vue';
 
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
 import { Label } from '@/Components/ui/label';

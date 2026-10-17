@@ -34,7 +34,7 @@ beforeEach(function (): void {
 });
 
 describe('experiment switch', function (): void {
-    test('tenants are disabled by default and tenant forms cannot enroll them', function (): void {
+    test('tenants are disabled by default and a super admin can enroll them from the tenant form', function (): void {
         expect($this->otherTenant->goals_enabled)->toBeFalse();
 
         asUser(makeAdminUser($this->tenant))->patch(route('tenants.update', $this->otherTenant), [
@@ -44,7 +44,7 @@ describe('experiment switch', function (): void {
             'goals_enabled' => true,
         ])->assertRedirect()->assertSessionHasNoErrors();
 
-        expect($this->otherTenant->fresh()->goals_enabled)->toBeFalse();
+        expect($this->otherTenant->fresh()->goals_enabled)->toBeTrue();
     });
 
     test('a current membership in any enabled tenant admits a user', function (): void {

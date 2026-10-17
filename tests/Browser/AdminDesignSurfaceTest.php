@@ -6,15 +6,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 /**
- * Mirrors PublicDesignSurfaceTest.php for the admin surface.
- * Reaching [data-surface="admin"] depends on:
- *
- * 1. App\Support\DesignSurface / app.blade.php stamping the attribute on <html> for every
- *    Admin/* page (covered server-side by tests/Feature/Public/DesignSurfaceTest.php);
- * 2. the compiled CSS actually resolving through it, and admin/surface.css being imported
- *    *before* public/surface.css so a nested rich-content preview still wins its own palette.
- *
- * (2) is the one that needs a browser.
+ * Mirrors PublicDesignSurfaceTest.php for admin pages: the attribute is stamped on a hard
+ * navigation and the shared radius scale and typeface resolve in a real browser.
  */
 it('resolves the admin token scope in the browser', function (): void {
     $user = makeUser(Tenant::query()->first());

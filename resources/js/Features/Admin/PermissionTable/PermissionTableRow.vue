@@ -73,7 +73,7 @@
 
 <script setup lang="ts">
 import { type Component, ref, computed, watchEffect, watch } from 'vue';
-import { Lock } from 'lucide-vue-next';
+import { Lock } from '@lucide/vue';
 
 import type { CRUDEnum } from '@/Types/enums';
 import { Checkbox } from '@/Components/ui/checkbox';

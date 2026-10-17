@@ -140,7 +140,7 @@ import { computed, ref } from 'vue';
 import { router, useHttp } from '@inertiajs/vue3';
 import { useClipboard, useDropZone } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CircleDashed, FolderOpen, Upload } from 'lucide-vue-next';
+import { CircleDashed, FolderOpen, Upload } from '@lucide/vue';
 
 import FileRow from './FileableFileRow.vue';
 import FileableUploadSheet from './FileableUploadSheet.vue';

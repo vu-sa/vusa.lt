@@ -64,12 +64,16 @@ interface Candidate {
   tenant?: { shortname: string } | null;
 }
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   open: boolean;
   agendaItemId: string;
   /** Already linked; left out of the list. */
   linkedIds: string[];
-}>();
+  /** The page's deferred props a link cannot change, kept out of the reload so the scroll holds. */
+  except?: string[];
+}>(), {
+  except: () => [],
+});
 const emit = defineEmits<{ 'update:open': [value: boolean] }>();
 
 const open = computed({ get: () => props.open, set: (value: boolean) => emit('update:open', value) });
@@ -112,6 +116,7 @@ function link(problem: Candidate): void {
 
   router.post(route('agendaItems.problems.store', props.agendaItemId), { problem_id: problem.id }, {
     preserveScroll: true,
+    except: props.except,
     onSuccess: () => {
       open.value = false;
       term.value = '';

@@ -9,13 +9,17 @@ import type { CadenceDraft, CadenceRow } from './index';
  * Both surfaces post to the same `settings.cadences.*` routes; who may do so is decided
  * by CadencePolicy from the `institution_id` in the payload, not by which page called.
  */
-export function useCadenceCrud(institutionId: string | null = null) {
+export function useCadenceCrud(institutionId: string | null = null, options: { only?: string[] } = {}) {
   const editingId = ref<string | null>(null);
   const adding = ref(false);
   const processing = ref(false);
 
+  // Without preserveState the redirect back remounts the page: the open tab resets and a
+  // deferred panel holding this editor drops to its skeleton, closing the form.
   const visitOptions = {
     preserveScroll: true,
+    preserveState: true,
+    ...(options.only ? { only: options.only } : {}),
     onStart: () => { processing.value = true; },
     onFinish: () => { processing.value = false; },
   };

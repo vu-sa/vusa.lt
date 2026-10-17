@@ -44,7 +44,7 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ListChecks, Plus } from 'lucide-vue-next';
+import { ListChecks, Plus } from '@lucide/vue';
 import { ref } from 'vue';
 
 import GoalStepList from './GoalStepList.vue';

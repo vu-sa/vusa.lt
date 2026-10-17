@@ -166,7 +166,7 @@ import { computed, onMounted, onUnmounted, ref, shallowRef, toRef, watch } from 
 import { router } from '@inertiajs/vue3';
 import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { PanelRight } from 'lucide-vue-next';
+import { PanelRight } from '@lucide/vue';
 
 import { bandLadder } from './cadencePools';
 import DutiableGantt from './DutiableGantt.vue';

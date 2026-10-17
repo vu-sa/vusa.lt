@@ -1,5 +1,5 @@
 <x-mail::message>
-# {{ __('notifications.digest_greeting', ['name' => $user->name]) }}
+# {{ \App\Support\MailGreeting::forName($user->name) }}
 
 {{ trans_choice('notifications.digest_subject', $totalCount, ['count' => $totalCount]) }}
 
@@ -12,7 +12,7 @@
 :more-url="$dashboardUrl" />
 
 @endforeach
-<x-mail::button :url="$dashboardUrl">
+<x-mail::button color="neutral" align="left" :url="$dashboardUrl">
 {{ __('notifications.digest_open_system') }}
 </x-mail::button>
 

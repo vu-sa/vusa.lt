@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, reactive } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
-import type { InertiaForm } from '@inertiajs/vue3';
+import { router, type InertiaForm } from '@inertiajs/vue3';
 import { toast } from 'vue-sonner';
 
 import { useContentEditor, blankTranslation, cloneTranslation, type ContentEditorData, type ContentKind } from '../useContentEditor';
@@ -11,11 +11,12 @@ const storage = vi.hoisted(() => vi.fn());
 vi.mock('../contentEditorHttp', () => ({ contentEditorHttp: http }));
 vi.mock('../contentEditorStorage', () => ({ recoveryStorage: storage }));
 vi.mock('vue-sonner', () => ({ toast: { success: vi.fn() } }));
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const wrappers: ReturnType<typeof mount>[] = [];
-function session(data: ContentEditorData = { id: 1, title: 'Original', content_version: 'old', content: { parts: [] } }, kind: ContentKind = 'pages') {
+function session(data: ContentEditorData = { id: 1, title: 'Original', content_version: 'old', content: { parts: [] } }, kind: ContentKind = 'pages', stay = true) {
   const state = reactive({ ...data, processing: false, errors: {} });
-  const fields = Object.keys(data);
+  const fields = [...new Set([...Object.keys(data), 'id', 'content_version', 'permalink'])];
   const form = Object.assign(state, {
     data: () => Object.fromEntries(fields.map(field => [field, state[field as keyof typeof state]])),
     defaults: vi.fn(), clearErrors: vi.fn(), setError: vi.fn(),
@@ -23,7 +24,7 @@ function session(data: ContentEditorData = { id: 1, title: 'Original', content_v
   let editor!: ReturnType<typeof useContentEditor>;
   wrappers.push(mount(defineComponent({
     setup() {
-      editor = useContentEditor(kind, form, { stay: true });
+      editor = useContentEditor(kind, form, { stay });
       return () => null;
     },
   })));
@@ -145,6 +146,48 @@ describe('content recovery and saves', () => {
     expect(active.form.image_media).toEqual(change === 'metadata' ? { ...canonical, alt: 'New alt', focal_point: '20% 30%', author: 'New author' } : edited);
     expect(active.form.defaults).toHaveBeenCalledWith(expect.objectContaining({ image_media: canonical }));
     expect(http.delete).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['server destination', { redirect_url: '/mano/pages' }, '/mano/pages'],
+    ['older response', undefined, '/mocked-route/pages.edit'],
+  ])('opens the %s after creating a page', async (_label, meta, destination) => {
+    const active = session({ title: 'New page', content: { parts: [] } }, 'pages', false);
+    await flushPromises();
+    http.request.mockResolvedValue({ data: { data: { id: 7, title: 'New page', content: { parts: [] } }, meta } });
+
+    await active.editor.save();
+
+    expect(router.visit).toHaveBeenCalledExactlyOnceWith(destination);
+    expect(active.form.defaults).toHaveBeenLastCalledWith();
+  });
+
+  it('keeps an explicit in-place creation save in its current context', async () => {
+    const active = session({ title: 'New page', content: { parts: [] } });
+    await flushPromises();
+    http.request.mockResolvedValue({ data: { data: { id: 7, title: 'New page', content: { parts: [] } }, meta: { redirect_url: '/mano/pages' } } });
+
+    await active.editor.save();
+
+    expect(router.visit).not.toHaveBeenCalled();
+  });
+
+  it('does not navigate away from changes typed while creation is saving', async () => {
+    let finish!: (value: unknown) => void;
+    const active = session({ title: 'New page', content: { parts: [] } }, 'pages', false);
+    await flushPromises();
+    http.request.mockImplementation(() => new Promise((resolve) => {
+      finish = resolve;
+    }));
+    const saving = active.editor.save();
+    await flushPromises();
+    active.form.title = 'Newer edits';
+    finish({ data: { data: { id: 7, title: 'New page', content: { parts: [] } }, meta: { redirect_url: '/mano/pages' } } });
+
+    await saving;
+
+    expect(router.visit).not.toHaveBeenCalled();
+    expect(active.form.title).toBe('Newer edits');
   });
 
   it('opens a new editor when browser storage is blocked', async () => {

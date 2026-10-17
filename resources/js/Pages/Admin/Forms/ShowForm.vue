@@ -141,7 +141,7 @@ import { router, usePage } from '@inertiajs/vue3';
 import type { CellContext, ColumnDef, HeaderContext, TableFeatures } from '@tanstack/vue-table';
 import { useClipboard } from '@vueuse/core';
 import { getActiveLanguage, trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Copy, Download, Edit, ExternalLink, Eye, Inbox, Trash2 } from 'lucide-vue-next';
+import { Copy, Download, Edit, ExternalLink, Eye, Inbox, Trash2 } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 

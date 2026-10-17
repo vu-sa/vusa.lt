@@ -69,7 +69,7 @@
 import { computed, ref } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Edit, Trash2, UserPlus } from 'lucide-vue-next';
+import { Edit, Trash2, UserPlus } from '@lucide/vue';
 
 import DiscussionPanel from '@/Components/Discussions/DiscussionPanel.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';

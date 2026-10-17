@@ -57,7 +57,7 @@
 import { computed, toRef } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { BellOff, MoreHorizontal, Settings } from 'lucide-vue-next';
+import { BellOff, MoreHorizontal, Settings } from '@lucide/vue';
 
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import NotificationCard from '@/Features/Admin/Notifications/NotificationCard.vue';

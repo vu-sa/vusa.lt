@@ -42,7 +42,7 @@
 </template>
 
 <script setup lang="ts">
-import { ListChecks, Save } from 'lucide-vue-next';
+import { ListChecks, Save } from '@lucide/vue';
 
 import { Button } from '@/Components/ui/button';
 

@@ -141,7 +141,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpRight, Eye, EyeOff, Plus } from 'lucide-vue-next';
+import { ArrowUpRight, Eye, EyeOff, Plus } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';

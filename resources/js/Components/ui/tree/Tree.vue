@@ -54,7 +54,7 @@
 
 <script setup lang="ts">
 import { computed, ref, type HTMLAttributes } from 'vue';
-import { ChevronRight } from 'lucide-vue-next';
+import { ChevronRight } from '@lucide/vue';
 
 import { Checkbox } from '@/Components/ui/checkbox';
 import { cn } from '@/Utils/Shadcn/utils';

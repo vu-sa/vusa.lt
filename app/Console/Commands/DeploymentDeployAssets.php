@@ -137,13 +137,12 @@ class DeploymentDeployAssets extends Command
 
         $this->info('Deploying documentation...');
 
-        $docsDir = base_path('public/docs');
+        $docsDir = base_path('public/gidas');
 
-        // Clear existing docs
         if (is_dir($docsDir)) {
             $this->removeDirectory($docsDir);
-            mkdir($docsDir, 0755, true);
         }
+        mkdir($docsDir, 0755, true);
 
         // Extract docs directly to docs directory
         $output = [];

@@ -184,7 +184,7 @@ describe('ShowReservation.vue', () => {
     expect(wrapper.find('[data-testid="tenant-filter"]').exists()).toBe(true);
     expect(visibleIds(wrapper)).toEqual(['r1', 'r2', 'r3']);
 
-    await wrapper.find('[data-testid="tenant-filter"] select').setValue('tenant-2');
+    await wrapper.find('select[data-testid="tenant-filter"]').setValue('tenant-2');
 
     expect(visibleIds(wrapper)).toEqual(['r2', 'r3']);
   });

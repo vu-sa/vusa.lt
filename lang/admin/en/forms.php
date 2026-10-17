@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'required_note' => 'Fields marked with an asterisk (*) are required; you can skip the others.',
     'fields' => [
         'name_and_surname' => 'Name and surname',
         'title' => 'Title',
@@ -99,7 +100,7 @@ return [
         'institutions' => 'Institutions',
         'types' => 'Types',
         'institution' => 'Institution',
-        'contacts_grouping' => 'Contacts grouping',
+        'contacts_grouping' => 'Contacts ordering',
         'duty_type' => 'Duty type',
         'main_organizer' => 'Main organizer',
         'meeting_url' => 'Meeting link',
@@ -125,6 +126,12 @@ return [
         'field_placeholder' => 'Helper text in the field',
     ],
     'helpers' => [
+        'institution_active_hint' => 'Saving the inactive status hides the institution publicly and ends its members’ current duty assignments.',
+        'institution_deactivation_consequence' => 'Saving will end duty assignments (:count). Their last active day will be :date. Access granted by these assignments will end immediately.',
+        'institution_deactivation_blocked' => 'First cancel, move or correct duty assignments starting today or later. You can then mark the institution inactive.',
+        'institution_assignment_closed' => 'Only historical assignments can be recorded for inactive institutions. Do not reopen a closed period; create a new period in an active institution.',
+        'institution_reactivation_hint' => 'Reactivating the institution does not restore ended assignments. Members will need new duty assignment periods.',
+        'institution_resolve_terms' => 'Manage duty assignment periods',
         'tag_alias_hint' => 'An additional name for the tag (optional). If left empty, it will be generated automatically from the name.',
         'is_topic_hint' => 'Topics get their own page collecting every related news article, page and event.',
         'form_main_info' => 'Basic information about the registration form.',
@@ -280,6 +287,9 @@ return [
         'contact_admins' => 'Contact that institution\'s administrators',
         'variant_hint' => 'The masculine/feminine or plural form is generated automatically from the holder\'s pronouns — there is no need to create a separate duty.',
         'other_institutions' => 'This duty also exists in :count other institution(s) — that is normal.',
+        'reason_former_name' => 'former name',
+        'inactive_hint' => 'You can reactivate an inactive duty — that keeps its history in one place.',
+        'same_tenant_title' => 'Similar duties in other institutions of this unit:',
     ],
     'validation' => [
         'agenda_item' => [

@@ -23,8 +23,6 @@ defineProps<{
 }>();
 
 const handleSubmit = (form: unknown) => {
-  (form as InertiaForm<Record<string, unknown>>).post(route('problems.store'), {
-    preserveScroll: true,
-  });
+  (form as InertiaForm<Record<string, unknown>>).post(route('problems.store'));
 };
 </script>

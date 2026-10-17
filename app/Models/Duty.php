@@ -32,6 +32,7 @@ use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\ValidationException;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Permission\Traits\HasRoles;
@@ -47,6 +48,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $email Commonly the @vusa.lt email address, which is used as the OAuth login. Personal mail is stored in users.email.
  * @property string $contacts_grouping
  * @property int|null $places_to_occupy Full number of positions to occupy for this duty
+ * @property bool $is_active
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
@@ -61,6 +63,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Duty> $exOfficioSourceDuties
  * @property-read Collection<int, Duty> $exOfficioTargetDuties
  * @property-read Collection<int, FileableFile> $fileableFiles
+ * @property-read Collection<int, DutyName> $formerNames
  * @property-read string|null $force_delete_blocked_reason
  * @property-read bool $has_protocol
  * @property-read bool $has_report
@@ -70,12 +73,14 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Meeting> $meetings
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read Collection<int, Permission> $permissions
+ * @property-read Collection<int, Duty> $predecessors
  * @property-read Collection<int, User> $previous_users
  * @property-read Collection<int, Reservation> $reservations
  * @property-read Collection<int, \App\Models\Resource> $resources
  * @property-read Collection<int, DutyResponsibility> $responsibilities
  * @property-read Collection<int, Role> $roles
  * @property-read Collection<int, Comment> $rootComments
+ * @property-read Collection<int, Duty> $successors
  * @property-read Collection<int, Task> $tasks
  * @property-read Collection<int, Permission> $teams
  * @property-read Collection<int, Tenant> $tenants
@@ -145,9 +150,17 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
         return app(EngineManager::class)->engine('typesense');
     }
 
+    #[\Override]
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
+
     public function toSearchableArray(): array
     {
-        $this->loadMissing(['institution.tenant', 'types', 'assignableTenants']);
+        $this->loadMissing(['institution.tenant', 'types', 'assignableTenants', 'formerNames']);
 
         $homeTenantId = $this->institution?->tenant_id ? (int) $this->institution->tenant_id : null;
 
@@ -174,6 +187,13 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
             'name_lt' => $this->getTranslation('name', 'lt') ?? '',
             'name_en' => $this->getTranslation('name', 'en'),
             'email' => $this->email,
+            'is_active' => (bool) ($this->is_active ?? true),
+            'former_names' => $this->formerNames
+                ->flatMap(fn (DutyName $former) => [$former->getTranslation('name', 'lt'), $former->getTranslation('name', 'en')])
+                ->filter()
+                ->unique()
+                ->values()
+                ->all(),
             'tenant_ids' => $tenantIds,
             'home_tenant_id' => $homeTenantId,
             'tenant_shortname' => $this->institution?->tenant?->shortname,
@@ -185,6 +205,7 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
                 ->filter()
                 ->values()
                 ->all(),
+            'type_slugs' => $this->types->pluck('slug')->filter()->values()->all(),
             // Names + ids stay index-aligned so the detail pane can render clickable member links.
             'current_user_names' => $currentUsers->pluck('name')->values()->all(),
             'current_user_ids' => $currentUsers->pluck('id')->map(fn ($id) => (string) $id)->values()->all(),
@@ -195,6 +216,7 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
         ];
     }
 
+    /** @return HasMany<Dutiable, $this> */
     public function dutiables(): HasMany
     {
         return $this->hasMany(Dutiable::class);
@@ -275,6 +297,7 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
         return $this->belongsToMany(DutyType::class)->using(DutyDutyType::class);
     }
 
+    /** @return BelongsTo<Institution, $this> */
     public function institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class);
@@ -330,6 +353,53 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
         return $this->belongsToMany(Duty::class, 'ex_officio_duties', 'target_duty_id', 'source_duty_id');
     }
 
+    /**
+     * Names the duty went by before, newest first.
+     *
+     * @return HasMany<DutyName, $this>
+     */
+    public function formerNames(): HasMany
+    {
+        return $this->hasMany(DutyName::class)->orderByDesc('used_until');
+    }
+
+    /**
+     * The name the duty carried on a given day, so a term from 2019 reads as it did then.
+     *
+     * @return array<string, string>|string|null
+     */
+    public function nameOn(\DateTimeInterface|string|null $date): array|string|null
+    {
+        if ($date === null) {
+            return $this->name;
+        }
+
+        $day = Carbon::parse($date)->toDateString();
+
+        // Oldest first: the earliest rename after the day is the name in force on it.
+        $former = $this->formerNames
+            ->sortBy(fn (DutyName $name) => $name->used_until->toDateString())
+            ->first(fn (DutyName $name) => $name->used_until->toDateString() >= $day);
+
+        return $former->name ?? $this->name;
+    }
+
+    /**
+     * Duties whose work this one took over (e.g. a combined coordinator split in two).
+     *
+     * @return BelongsToMany<Duty, $this>
+     */
+    public function predecessors(): BelongsToMany
+    {
+        return $this->belongsToMany(Duty::class, 'duty_successions', 'successor_id', 'predecessor_id')->withTimestamps();
+    }
+
+    /** @return BelongsToMany<Duty, $this> */
+    public function successors(): BelongsToMany
+    {
+        return $this->belongsToMany(Duty::class, 'duty_successions', 'predecessor_id', 'successor_id')->withTimestamps();
+    }
+
     /** Additional tenants whose admins may assign their own reps to this duty, with per-tenant quotas. */
     public function assignableTenants(): BelongsToMany
     {
@@ -340,6 +410,13 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
     protected static function booted()
     {
         static::saving(function (Duty $duty): void {
+            if ($duty->exists && $duty->isDirty('institution_id') && $duty->dutiables()->current()->exists()
+                && ! Institution::withTrashed()->find($duty->institution_id)?->is_active) {
+                throw ValidationException::withMessages([
+                    'institution_id' => __('forms.helpers.institution_assignment_closed'),
+                ]);
+            }
+
             // Dispatch event when name is about to change - SharePoint must succeed first
             if ($duty->isDirty('name')) {
                 FileableNameUpdated::dispatch($duty);

@@ -105,7 +105,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { LoaderCircle, X, Search } from 'lucide-vue-next';
+import { LoaderCircle, X, Search } from '@lucide/vue';
 
 import SearchSplitView from '../SearchSplitView.vue';
 import SearchDetailPane from '../SearchDetailPane.vue';

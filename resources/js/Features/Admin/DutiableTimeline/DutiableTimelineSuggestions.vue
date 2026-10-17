@@ -94,7 +94,7 @@
 import { usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronRight, Wrench } from 'lucide-vue-next';
+import { ChevronRight, Wrench } from '@lucide/vue';
 
 import { timelineDutyName } from './dutyNames';
 import { fixOperationFor } from './composables/useDutiableDiagnostics';

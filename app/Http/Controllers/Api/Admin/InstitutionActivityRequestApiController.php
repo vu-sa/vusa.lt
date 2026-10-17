@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\ActivityRequests\ResolveActivityRequestRecipients;
 use App\Actions\ActivityRequests\SendInstitutionActivityRequests;
 use App\Enums\InstitutionActivityCampaign;
 use App\Enums\Responsibility;
@@ -13,6 +14,7 @@ use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\ModelAuthorizer;
 use App\Services\ResponsibilityResolver;
+use App\Support\ActivityRequests\ActivityRequestPlanEntry;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -60,11 +62,11 @@ class InstitutionActivityRequestApiController extends ApiController
     /**
      * @route GET /api/v1/admin/activity-requests/people
      */
-    public function people(Request $request, ModelAuthorizer $authorizer, ResponsibilityResolver $responsibilities, SendInstitutionActivityRequests $send): JsonResponse
+    public function people(Request $request, ModelAuthorizer $authorizer, ResponsibilityResolver $responsibilities, ResolveActivityRequestRecipients $recipients): JsonResponse
     {
         $this->authorize('viewAny', InstitutionCheckIn::class);
 
-        return $this->jsonSuccess($send->people($this->reachable($request, $authorizer, $responsibilities)->get(['id', 'name'])));
+        return $this->jsonSuccess($recipients->people($this->reachable($request, $authorizer, $responsibilities)->get(['id', 'name'])));
     }
 
     /** @return Builder<Institution> */
@@ -90,15 +92,8 @@ class InstitutionActivityRequestApiController extends ApiController
         /** @var User $user */
         $user = $request->user();
 
-        return $this->jsonSuccess(array_map(fn (array $entry): array => [
-            'institution' => ['id' => (string) $entry['institution']->id, 'name' => is_string($entry['institution']->name) ? $entry['institution']->name : ''],
-            'recipients' => array_values($entry['recipient_periods']),
-            'excluded_recipients' => $entry['excluded_recipients'],
-            'recipient_count' => $entry['recipients']->count(),
-            'campaign_type' => $entry['campaign_type']->value,
-            'period_end' => $entry['period_end']->toDateString(),
-            'period_start' => $entry['period_start']->toDateString(),
-            'skip_reason' => $entry['skip_reason'],
-        ], $send->plan($request->institutions(), $user, InstitutionActivityCampaign::from($request->validated('campaign_type')), $request->pairs())));
+        $plan = $send->plan($request->institutions(), $user, InstitutionActivityCampaign::from($request->validated('campaign_type')), $request->pairs());
+
+        return $this->jsonSuccess(array_map(fn (ActivityRequestPlanEntry $entry): array => $entry->toPreviewArray(), $plan));
     }
 }

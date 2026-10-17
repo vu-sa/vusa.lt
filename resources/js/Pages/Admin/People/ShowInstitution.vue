@@ -98,6 +98,7 @@
               :own-cadences="management.cadences"
               :global-cadences="management.globalCadences"
               :defaults="management.cadenceDefaults"
+              :reload-only="['management']"
             />
           </OverviewSection>
         </div>
@@ -230,7 +231,7 @@ import {
   MailQuestion,
   Plus,
   UserCheck,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import InstitutionActivityRequestHistory, { type ActivityRequestHistory } from '@/Components/Institutions/InstitutionActivityRequestHistory.vue';
 import { CadenceSection } from '@/Components/Cadences';

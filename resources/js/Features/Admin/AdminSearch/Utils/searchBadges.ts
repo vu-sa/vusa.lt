@@ -1,4 +1,4 @@
-import { Circle, CircleCheck, CircleX, Info, TriangleAlert } from 'lucide-vue-next';
+import { Circle, CircleCheck, CircleX, Info, TriangleAlert } from '@lucide/vue';
 
 import { statusRoleClasses, type StatusRole } from '@/Constants/statuses';
 
@@ -43,20 +43,6 @@ export function completionTone(value?: string | null): BadgeTone {
     case 'complete': return 'success';
     case 'incomplete':
     case 'partial': return 'warning';
-    default: return 'neutral';
-  }
-}
-
-/** vote_alignment_status → tone. */
-export function alignmentTone(value?: string | null): BadgeTone {
-  switch (value) {
-    case 'aligned':
-    case 'all_match':
-    case 'match': return 'success';
-    case 'misaligned':
-    case 'all_mismatch':
-    case 'mismatch': return 'danger';
-    case 'mixed': return 'warning';
     default: return 'neutral';
   }
 }

@@ -39,13 +39,14 @@ beforeEach(() => {
 });
 
 describe('home actions', () => {
-  it('shows one permitted create action per workspace before repeats, with one brand fill', async () => {
+  it('pairs the meeting answers first, then a problem, then one action per other workspace, with one brand fill', async () => {
     state.actions = [
-      createAction('Fiksuoti posėdį', 'atstovavimas'),
-      createAction('Pranešti apie veiklą', 'atstovavimas'),
-      createAction('Nauja rezervacija', 'rezervacijos'),
-      createAction('Rašyti naujieną', 'svetaine'),
-      createAction('Nauja užduotis', 'organizacija'),
+      createAction('create-new_meeting', 'atstovavimas'),
+      createAction('create-complete_meeting', 'atstovavimas'),
+      createAction('create-new_problem', 'atstovavimas'),
+      createAction('create-no_meeting', 'atstovavimas'),
+      createAction('create-new_reservation', 'rezervacijos'),
+      createAction('create-duty_update', 'organizacija'),
     ];
 
     const wrapper = mount(CreateShortcuts);
@@ -53,13 +54,27 @@ describe('home actions', () => {
 
     expect(wrapper.find('h2').text()).toBe('home.create_title');
     expect(buttons.map(button => button.text())).toEqual([
-      'Fiksuoti posėdį', 'Nauja rezervacija', 'Rašyti naujieną', 'Nauja užduotis',
+      'create-new_meeting', 'create-no_meeting', 'create-new_problem', 'create-new_reservation',
     ]);
     expect(buttons.filter(button => button.classes().includes('bg-brand-fill'))).toHaveLength(1);
+    expect(buttons[0].classes()).toContain('bg-brand-fill');
     expect(buttons.every(button => button.classes().includes('normal-case'))).toBe(true);
 
     await buttons[1].trigger('click');
-    expect(state.actions[2].action).toHaveBeenCalledOnce();
+    expect(state.actions[3].action).toHaveBeenCalledOnce();
+  });
+
+  it('fills the shortcuts with one action per workspace when the user records no meetings', () => {
+    state.actions = [
+      createAction('create-new_reservation', 'rezervacijos'),
+      createAction('create-duty_update', 'organizacija'),
+      createAction('create-duty_periods', 'organizacija'),
+      createAction('create-new_problem', 'atstovavimas'),
+    ];
+
+    expect(mount(CreateShortcuts).findAll('button').map(button => button.text())).toEqual([
+      'create-new_problem', 'create-new_reservation', 'create-duty_update', 'create-duty_periods',
+    ]);
   });
 
   it('hides create actions when the catalog permits none', () => {

@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Pranešimai
 coverage: ignore
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-15
 tests:
   - tests/Feature/Notifications/NotificationFiringTest.php
   - tests/Feature/Notifications/DigestSystemTest.php
@@ -39,6 +39,10 @@ Pranešimai gali pasiekti tave trimis kanalais:
    - **Išjungta** – el. laiškai nesiunčiami. Pranešimai platformoje ir įrenginyje valdomi atskirai.
 3. **Pranešimai į įrenginį („push“)**: siunčiami tiesiai į tavo naršyklę ar telefoną, jei įrenginyje
    suteikei leidimą.
+
+Laiškai pradedami pasisveikinimu vardu; lietuviškai vartojamas šauksmininkas. Bendroje poraštėje trumpai paaiškinta, kas yra Mano VU SA, ir pateikiama nuoroda į platformą.
+
+Pranešimų laiškuose ir suvestinėse veiksmai pateikiami nedideliais neutraliais mygtukais. Ilgesni mygtukų pavadinimai telefone gali užimti kelias eilutes. Laiško pabaigoje yra nuoroda į pranešimų nustatymus.
 
 ## Skubumo lygiai ir numatytosios parinktys {#skubumas}
 

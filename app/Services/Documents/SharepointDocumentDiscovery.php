@@ -10,6 +10,7 @@ use App\Models\Document;
 use App\Models\Institution;
 use App\Services\SharepointGraphService;
 use App\Settings\DocumentDiscoverySettings;
+use Illuminate\Contracts\Cache\Lock;
 use Illuminate\Database\DetectsLostConnections;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -45,13 +46,26 @@ class SharepointDocumentDiscovery
 
     private const string THROTTLED_UNTIL = 'sharepoint-document-discovery:throttled';
 
+    private ?Lock $lock = null;
+
     public function __construct(private DocumentDiscoverySettings $settings) {}
+
+    /**
+     * Release this run's lock when the process is being stopped, which skips `run()`'s finally.
+     */
+    public function releaseLock(): void
+    {
+        $this->lock?->release();
+        $this->lock = null;
+    }
 
     /**
      * @param  int|null  $limit  Add at most this many new files, in folder order. Repeat to add the archive in
      *                           batches; a limited run removes nothing and keeps its place in the change feed unsaved.
+     * @param  (\Closure(string, int): void)|null  $progress  told each stage: `listing_all`/`listing_changes`, `reading` (items so far), `read` (items),
+     *                                                        `looking_up` (files), `looked_up` (so far), `throttled` (seconds), `storing` (files), `stored` (so far)
      */
-    public function run(bool $full = false, bool $dryRun = false, bool $allowMassRemoval = false, ?int $limit = null): DiscoveryResult
+    public function run(bool $full = false, bool $dryRun = false, bool $allowMassRemoval = false, ?int $limit = null, ?\Closure $progress = null): DiscoveryResult
     {
         if (Cache::has(self::THROTTLED_UNTIL)) {
             return DiscoveryResult::aborted('throttled', $full);
@@ -63,8 +77,10 @@ class SharepointDocumentDiscovery
             return DiscoveryResult::aborted('already_running', $full);
         }
 
+        $this->lock = $lock;
+
         try {
-            return $this->discover($full, $dryRun, $allowMassRemoval, $limit);
+            return $this->discover($full, $dryRun, $allowMassRemoval, $limit, $progress ?? function (): void {});
         } catch (SharepointThrottledException $e) {
             // The checkpoint is untouched, so the next run after the pause replays this one.
             Log::warning('SharePoint throttled document discovery; pausing it', ['seconds' => $e->retryAfterSeconds]);
@@ -72,7 +88,7 @@ class SharepointDocumentDiscovery
 
             return DiscoveryResult::aborted('throttled', $full);
         } finally {
-            $lock->release();
+            $this->releaseLock();
         }
     }
 
@@ -133,20 +149,15 @@ class SharepointDocumentDiscovery
         return new SharepointGraphService(driveId: config('filesystems.sharepoint.archive_drive_id'));
     }
 
-    private function discover(bool $full, bool $dryRun, bool $allowMassRemoval, ?int $limit): DiscoveryResult
+    /**
+     * @param  \Closure(string, int): void  $progress
+     */
+    private function discover(bool $full, bool $dryRun, bool $allowMassRemoval, ?int $limit, \Closure $progress): DiscoveryResult
     {
         $graph = $this->makeGraphService();
-        $link = $full ? null : $this->settings->delta_link;
+        [$items, $deltaLink, $isFull] = $this->readFeedOrRestart($graph, $full ? null : $this->settings->delta_link, $progress);
+        $progress('read', $items->count());
 
-        try {
-            [$items, $deltaLink] = $this->readFeed($graph, $link);
-        } catch (SharepointDeltaExpiredException) {
-            Log::warning('SharePoint delta link expired, starting a full document discovery');
-            $link = null;
-            [$items, $deltaLink] = $this->readFeed($graph, null);
-        }
-
-        $isFull = $link === null;
         // The first listing ever meets years of files nobody imported; they start hidden so
         // "Laukia" only collects what arrives afterwards. A later forced full run is not a first one.
         $isBaseline = $this->settings->last_full_run_at === null;
@@ -155,24 +166,7 @@ class SharepointDocumentDiscovery
         // Folders first: every file's path is rebuilt from them, and a renamed folder moves its contents.
         // Applied in memory only; nothing is written until the run has passed the removal guard.
         $tree = SharepointFolderTree::load();
-        $folderMoves = $tree->apply(
-            changed: $items->filter(fn (array $item): bool => ! $item['deleted'] && ($item['isFolder'] || $item['isRoot']))
-                ->mapWithKeys(fn (array $item): array => [$item['id'] => [
-                    'name' => $item['isRoot'] ? '' : (string) $item['name'],
-                    'parent' => $item['isRoot'] ? null : $item['parentId'],
-                ]])->all(),
-            deleted: $items->filter(fn (array $item): bool => $item['deleted'])->keys()->all(),
-            replace: $isFull,
-        );
-        // '' is the drive root; null means neither the tree nor Graph could place the item.
-        $items = $items->map(function (array $item) use ($tree): array {
-            if (! $item['isFolder'] && ! $item['deleted']) {
-                // Graph's own path is only a fallback when the tree cannot place the item.
-                $item['path'] = $tree->pathOf($item['parentId']) ?? $item['path'];
-            }
-
-            return $item;
-        });
+        [$items, $folderMoves] = $this->applyFolderTree($tree, $items, $isFull);
 
         // The whole library, so a full listing can tell a deleted file from one merely moved.
         $files = $items->filter(fn (array $item): bool => ! $item['deleted'] && $item['isFile'] && $item['listItemUniqueId'] !== null);
@@ -192,16 +186,7 @@ class SharepointDocumentDiscovery
             isFull: $isFull,
         );
 
-        $inScope = Document::query()->whereNull('removed_from_sharepoint_at')->count();
-        $removalLimit = max(self::MAX_REMOVALS, (int) ceil($inScope * self::MAX_REMOVAL_SHARE));
-
-        if ($removals->count() > $removalLimit && ! $allowMassRemoval) {
-            Log::error('SharePoint document discovery refused a mass removal', [
-                'would_remove' => $removals->count(),
-                'limit' => $removalLimit,
-                'full' => $isFull,
-            ]);
-
+        if (! $allowMassRemoval && $this->exceedsRemovalLimit($removals, $isFull)) {
             return DiscoveryResult::aborted('mass_removal', $isFull, $removals->count());
         }
 
@@ -212,8 +197,112 @@ class SharepointDocumentDiscovery
             });
         }
 
-        // Unchanged, already-linked files need no field lookup; on a delta run that is nearly all of them.
-        [$needsFields, $unchanged] = $tracked->partition(function (array $item) use ($existing): bool {
+        $needsFields = $this->reconcileUnchanged($tracked, $existing, $dryRun, $result);
+
+        if ($limit !== null) {
+            [$known, $new] = $needsFields->partition(fn (array $item): bool => $existing->has($item['listItemUniqueId']));
+            // Folder order, so repeated limited runs work through the archive predictably.
+            $needsFields = $known->concat($new->sortBy(fn (array $item): string => $item['path'].'/'.$item['name'], SORT_NATURAL | SORT_FLAG_CASE)->take($limit));
+        }
+
+        $progress('looking_up', $needsFields->count());
+        $resolveInstitution = $this->institutionResolver();
+        [$failedIds, $transientIds] = $this->upsertNeedingFields($graph, $needsFields, $existing, $isBaseline, $dryRun, $result, $resolveInstitution, $progress);
+
+        $result->removed = $removals->count();
+
+        if ($dryRun) {
+            return $result;
+        }
+
+        $removals->each(function (Document $document): void {
+            $document->removed_from_sharepoint_at = now();
+            $document->save();
+        });
+
+        $result->rematched = $this->rematchInstitutions($resolveInstitution);
+
+        return $this->finishRun($result, $needsFields, $failedIds, $transientIds, $deltaLink, $isFull, $limit);
+    }
+
+    /**
+     * @return array{0: Collection<string, FeedItem>, 1: string, 2: bool} items, deltaLink and whether the read was a full listing
+     */
+    private function readFeedOrRestart(SharepointGraphService $graph, ?string $link, \Closure $progress): array
+    {
+        try {
+            $progress($link === null ? 'listing_all' : 'listing_changes', 0);
+            [$items, $deltaLink] = $this->readFeed($graph, $link, $progress);
+        } catch (SharepointDeltaExpiredException) {
+            Log::warning('SharePoint delta link expired, starting a full document discovery');
+            $link = null;
+            $progress('listing_all', 0);
+            [$items, $deltaLink] = $this->readFeed($graph, null, $progress);
+        }
+
+        return [$items, $deltaLink, $link === null];
+    }
+
+    /**
+     * Apply the feed's folder changes to the tree and rebuild each file's path from it.
+     *
+     * @param  Collection<string, FeedItem>  $items
+     * @return array{0: Collection<string, FeedItem>, 1: array<string, string>} the items and the folder moves to persist
+     */
+    private function applyFolderTree(SharepointFolderTree $tree, Collection $items, bool $isFull): array
+    {
+        $folderMoves = $tree->apply(
+            changed: $items->filter(fn (array $item): bool => ! $item['deleted'] && ($item['isFolder'] || $item['isRoot']))
+                ->mapWithKeys(fn (array $item): array => [$item['id'] => [
+                    'name' => $item['isRoot'] ? '' : (string) $item['name'],
+                    'parent' => $item['isRoot'] ? null : $item['parentId'],
+                ]])->all(),
+            deleted: $items->filter(fn (array $item): bool => $item['deleted'])->keys()->all(),
+            replace: $isFull,
+        );
+        // '' is the drive root; null means neither the tree nor Graph could place the item.
+        $items = $items->map(function (array $item) use ($tree): array {
+            if (! $item['isFolder'] && ! $item['deleted']) {
+                // Graph's own path is only a fallback when the tree cannot place the item.
+                $item['path'] = $tree->pathOf($item['parentId']) ?? $item['path'];
+            }
+
+            return $item;
+        });
+
+        return [$items, $folderMoves];
+    }
+
+    /**
+     * @param  Collection<int, Document>  $removals
+     */
+    private function exceedsRemovalLimit(Collection $removals, bool $isFull): bool
+    {
+        $inScope = Document::query()->whereNull('removed_from_sharepoint_at')->count();
+        $removalLimit = max(self::MAX_REMOVALS, (int) ceil($inScope * self::MAX_REMOVAL_SHARE));
+
+        if ($removals->count() <= $removalLimit) {
+            return false;
+        }
+
+        Log::error('SharePoint document discovery refused a mass removal', [
+            'would_remove' => $removals->count(),
+            'limit' => $removalLimit,
+            'full' => $isFull,
+        ]);
+
+        return true;
+    }
+
+    /**
+     * Reconcile the location of unchanged, already-linked files and return the rest, which need a field lookup.
+     *
+     * @param  Collection<string, Document>  $existing
+     */
+    private function reconcileUnchanged(Collection $tracked, Collection $existing, bool $dryRun, DiscoveryResult $result): Collection
+    {
+        // On a delta run nearly every tracked file is unchanged.
+        $needsFieldLookup = function (array $item) use ($existing): bool {
             $document = $existing->get($item['listItemUniqueId']);
 
             return $document === null
@@ -222,7 +311,8 @@ class SharepointDocumentDiscovery
                 || $item['modifiedAt'] === null
                 || $document->sharepoint_modified_at === null
                 || ! $document->sharepoint_modified_at->equalTo($item['modifiedAt']);
-        });
+        };
+        $unchanged = $tracked->reject($needsFieldLookup);
 
         // A move or rename leaves the modification time alone, so location is reconciled without a lookup.
         foreach ($unchanged as $item) {
@@ -238,22 +328,39 @@ class SharepointDocumentDiscovery
             }
         }
 
-        if ($limit !== null) {
-            [$known, $new] = $needsFields->partition(fn (array $item): bool => $existing->has($item['listItemUniqueId']));
-            // Folder order, so repeated limited runs work through the archive predictably.
-            $needsFields = $known->concat($new->sortBy(fn (array $item): string => $item['path'].'/'.$item['name'], SORT_NATURAL | SORT_FLAG_CASE)->take($limit));
-        }
+        return $tracked->filter($needsFieldLookup);
+    }
 
-        $failedIds = [];
-        ['items' => $listItems, 'transient' => $transientIds] = $graph->getListItemsForDriveItems($needsFields->pluck('id')->values()->all());
+    /**
+     * @return \Closure(string): ?Institution memoised per run
+     */
+    private function institutionResolver(): \Closure
+    {
         $institutions = [];
-        $resolveInstitution = function (string $label) use (&$institutions): ?Institution {
+
+        return function (string $label) use (&$institutions): ?Institution {
             return array_key_exists($label, $institutions)
                 ? $institutions[$label]
                 : $institutions[$label] = SharepointDocumentFields::institutionFor($label);
         };
+    }
+
+    /**
+     * @param  Collection<string, Document>  $existing
+     * @param  \Closure(string): ?Institution  $resolveInstitution
+     * @param  \Closure(string, int): void  $progress
+     * @return array{0: list<string>, 1: list<string>} failed drive item ids, and those Graph reported as transient
+     */
+    private function upsertNeedingFields(SharepointGraphService $graph, Collection $needsFields, Collection $existing, bool $isBaseline, bool $dryRun, DiscoveryResult $result, \Closure $resolveInstitution, \Closure $progress): array
+    {
+        $failedIds = [];
+        ['items' => $listItems, 'transient' => $transientIds] = $graph->getListItemsForDriveItems($needsFields->pluck('id')->values()->all(), progress: $progress);
+
+        $progress('storing', $needsFields->count());
+        $stored = 0;
 
         foreach ($needsFields as $item) {
+            $progress('stored', $stored++);
             $listItem = $listItems[$item['id']] ?? null;
 
             if ($listItem === null) {
@@ -279,19 +386,17 @@ class SharepointDocumentDiscovery
             }
         }
 
-        $result->removed = $removals->count();
+        return [$failedIds, $transientIds];
+    }
 
-        if ($dryRun) {
-            return $result;
-        }
-
-        $removals->each(function (Document $document): void {
-            $document->removed_from_sharepoint_at = now();
-            $document->save();
-        });
-
-        $result->rematched = $this->rematchInstitutions($resolveInstitution);
-
+    /**
+     * Store the deltaLink once the run has nothing left to replay; otherwise the next run replays it.
+     *
+     * @param  list<string>  $failedIds
+     * @param  list<string>  $transientIds
+     */
+    private function finishRun(DiscoveryResult $result, Collection $needsFields, array $failedIds, array $transientIds, string $deltaLink, bool $isFull, ?int $limit): DiscoveryResult
+    {
         $blocking = $this->blockingFailures(
             failedIds: $failedIds,
             transientIds: array_values(array_intersect($failedIds, $transientIds)),
@@ -300,17 +405,19 @@ class SharepointDocumentDiscovery
         );
         $result->givenUp = count($failedIds) - count($blocking);
 
-        if ($blocking !== [] || $limit !== null) {
-            if ($blocking !== []) {
-                Log::warning('SharePoint document discovery left items for the next run', ['failed' => count($blocking)]);
-            }
+        if ($blocking !== []) {
+            Log::warning('SharePoint document discovery left items for the next run', ['failed' => count($blocking)]);
 
+            return $result;
+        }
+
+        if ($limit !== null) {
             return $result;
         }
 
         if ($result->givenUp > 0) {
             Log::error('SharePoint document discovery gave up on items that keep failing; they are retried when they change or at the weekly full listing', [
-                'drive_item_ids' => array_values(array_diff($failedIds, $blocking)),
+                'drive_item_ids' => $failedIds,
             ]);
         }
 
@@ -339,7 +446,8 @@ class SharepointDocumentDiscovery
         $isNew = $document === null;
         $fileChanged = ! $isNew && $document->sharepoint_modified_at !== null
             && ! $document->sharepoint_modified_at->equalTo($item['modifiedAt'] ?? $document->sharepoint_modified_at);
-        $driveItemChanged = ! $isNew && $document->sharepoint_drive_item_id !== $item['id'];
+        // A first link-up (no drive item id yet) is not a move; its link and .url target are unchanged.
+        $driveItemChanged = ! $isNew && $document->sharepoint_drive_item_id !== null && $document->sharepoint_drive_item_id !== $item['id'];
         $restored = ! $isNew && $document->removed_from_sharepoint_at !== null;
 
         if ($isNew) {
@@ -501,7 +609,7 @@ class SharepointDocumentDiscovery
      *
      * @return array{0: Collection<string, FeedItem>, 1: string}
      */
-    private function readFeed(SharepointGraphService $graph, ?string $link): array
+    private function readFeed(SharepointGraphService $graph, ?string $link, \Closure $progress): array
     {
         $items = collect();
         $deltaLink = null;
@@ -513,6 +621,8 @@ class SharepointDocumentDiscovery
                 $item = $this->normalize($driveItem);
                 $items->put($item['id'], $item);
             }
+
+            $progress('reading', $items->count());
 
             $link = $page['nextLink'];
             $deltaLink = $page['deltaLink'] ?? $deltaLink;

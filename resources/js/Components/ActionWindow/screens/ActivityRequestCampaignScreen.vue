@@ -5,7 +5,7 @@
         v-for="campaign in campaigns"
         :key="campaign"
         :title="$t(`activity_requests.campaigns.${campaign}`)"
-        :description="$t(`activity_requests.email.${campaign}`)"
+        :description="$t(`activity_requests.descriptions.${campaign}`)"
         :icon="MailQuestion"
         @click="choose(campaign)"
       />
@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { MailQuestion } from 'lucide-vue-next';
+import { MailQuestion } from '@lucide/vue';
 
 import ActionWindowScreen from '../ActionWindowScreen.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';

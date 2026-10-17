@@ -86,7 +86,7 @@
 import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
-import { ClipboardPaste, History, ListPlus } from 'lucide-vue-next';
+import { ClipboardPaste, History, ListPlus } from '@lucide/vue';
 
 import AgendaItemsEditor from '@/Components/ActionWindow/AgendaItemsEditor.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';

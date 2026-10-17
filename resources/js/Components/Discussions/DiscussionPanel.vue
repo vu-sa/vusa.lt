@@ -37,23 +37,15 @@
           class="min-w-0 flex-1"
           :mentionables
           :submitting="posting"
-          collapsible
           @submit="onPost"
         >
           <template #leading>
             <Dialog v-model:open="pollDialogOpen">
               <DialogTrigger as-child>
-                <button
-                  type="button"
-                  :class="[
-                    'inline-flex items-center gap-1 border border-border bg-background',
-                    'px-2 py-1 text-xs font-medium text-muted-foreground',
-                    'transition-colors hover:bg-accent hover:text-foreground',
-                  ]"
-                >
-                  <BarChart3 class="h-3.5 w-3.5" />
+                <Button variant="ghost" size="xs" voice="sentence" class="text-muted-foreground">
+                  <BarChart3 class="size-3.5" />
                   {{ $t('discussions.poll.button') }}
-                </button>
+                </Button>
               </DialogTrigger>
               <DialogContent class="max-w-lg">
                 <DialogHeader>
@@ -113,12 +105,13 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { BarChart3, MessagesSquare } from 'lucide-vue-next';
+import { BarChart3, MessagesSquare } from '@lucide/vue';
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import CommentComposer from '@/Components/Discussions/CommentComposer.vue';
 import CommentThread from '@/Components/Discussions/CommentThread.vue';
 import PollComposer from '@/Components/Discussions/PollComposer.vue';
+import { Button } from '@/Components/ui/button';
 import {
   Dialog,
   DialogContent,

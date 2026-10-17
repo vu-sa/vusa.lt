@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-import { router, type InertiaForm } from '@inertiajs/vue3';
+import type { InertiaForm } from '@inertiajs/vue3';
 
 import DutyForm from '@/Components/AdminForms/DutyForm.vue';
 
@@ -39,10 +39,6 @@ const duty = {
 };
 
 const handleSubmit = (form: InertiaForm<Record<string, unknown>>) => {
-  form.post(route('duties.store'), {
-    onSuccess: () => {
-      router.visit(route('duties.index'));
-    },
-  });
+  form.post(route('duties.store'));
 };
 </script>

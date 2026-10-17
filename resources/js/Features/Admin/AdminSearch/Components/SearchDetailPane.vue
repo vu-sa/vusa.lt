@@ -1,6 +1,8 @@
 <template>
   <div class="h-full">
-    <SearchMatch v-if="hit" compact :match="(hit.raw as { _searchMatch?: SearchMatchData })._searchMatch" :title="hit.title" class="px-4 pt-3" />
+    <p v-if="hit && excerpt" class="line-clamp-2 px-4 pt-3 text-sm text-muted-foreground">
+      <SearchMatch :match="excerpt" />
+    </p>
     <!-- Empty state -->
     <div v-if="!hit" class="flex h-full flex-col items-center justify-center px-6 text-center">
       <div class="mb-4 flex size-12 items-center justify-center rounded-full bg-muted/50">
@@ -79,8 +81,9 @@
 
 <script setup lang="ts">
 
+import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { MousePointerClick } from 'lucide-vue-next';
+import { MousePointerClick } from '@lucide/vue';
 
 import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
 
@@ -96,7 +99,7 @@ import CalendarDetailPreview from './Detail/CalendarDetailPreview.vue';
 import UserDetailPreview from './Detail/UserDetailPreview.vue';
 import GenericDetailPreview from './Detail/GenericDetailPreview.vue';
 
-import type { SearchMatch as SearchMatchData } from '@/Shared/Search/matches';
+import type { SearchMatchDocument } from '@/Shared/Search/matches';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import type {
   AgendaItemSearchResult,
@@ -111,7 +114,9 @@ import type {
   UserSearchResult,
 } from '@/Shared/Search/types';
 
-defineProps<{
+const props = defineProps<{
   hit: NormalizedSearchHit | null;
 }>();
+
+const excerpt = computed(() => (props.hit?.raw as SearchMatchDocument | undefined)?._searchMatch);
 </script>

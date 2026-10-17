@@ -49,7 +49,7 @@ return [
         'no_sections' => 'Skyrių nerasta',
         'tools' => 'Įrankiai',
         'sections' => 'Skyriai',
-        'create' => 'Sukurti',
+        'actions' => 'Veiksmai',
         'search' => 'Ieškoti',
         'search_field' => 'Ieškoti ar pereiti…',
         'menu' => 'Meniu',
@@ -81,11 +81,12 @@ return [
 
     'palette' => [
         'go_to' => 'Pereiti į',
-        'create' => 'Sukurti',
+        'actions' => 'Veiksmai',
         'pinned' => 'Prisegta',
         'recent' => 'Neseniai',
         'pin' => 'Prisegti',
         'unpin' => 'Atsegti',
+        'results' => 'Rezultatai',
     ],
 
     'sections' => [
@@ -199,7 +200,7 @@ return [
         ],
         'no_meeting' => [
             'title' => 'Posėdžio nebuvo',
-            'description' => 'Pažymėk, kad institucija šį periodą nesirinko',
+            'description' => 'Pažymėk laikotarpį be posėdžių — iki šiol ar ir į priekį',
         ],
         'complete_meeting' => [
             'title' => 'Užbaigti posėdį',
@@ -216,10 +217,6 @@ return [
         'new_reservation' => [
             'title' => 'Nauja rezervacija',
             'description' => 'Rezervuok įrangą ar kitus daiktus',
-        ],
-        'new_news' => [
-            'title' => 'Nauja naujiena',
-            'description' => 'Parašyk naujieną svetainei',
         ],
         'duty_update' => [
             'title' => 'Pareigybių atnaujinimas',

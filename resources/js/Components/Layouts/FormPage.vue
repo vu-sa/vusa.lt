@@ -135,7 +135,9 @@
           <span>{{ $t('Šia kalba trūksta laukų (:count)', { count: String(missingInCurrentLocale || 0) }) }}</span>
         </div>
 
-        <slot name="locale-addon" />
+        <div v-if="$slots['locale-addon']" class="ms-auto flex flex-wrap items-center gap-3">
+          <slot name="locale-addon" />
+        </div>
       </div>
     </header>
 
@@ -252,7 +254,7 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowLeft, ChevronDown, Eye, Languages, Loader2, Save } from 'lucide-vue-next';
+import { ArrowLeft, ChevronDown, Eye, Languages, Loader2, Save } from '@lucide/vue';
 import { useEventListener } from '@vueuse/core';
 import { computed, h, nextTick, onUnmounted, ref, useId, watch, type FunctionalComponent } from 'vue';
 
@@ -389,6 +391,7 @@ const SaveState: FunctionalComponent<{ state: SaveStateKind }> = ({ state }) => 
     ],
     'role': 'status',
     'aria-live': 'polite',
+    'data-save-state': state,
   }, [
     state === 'saving' && h(Loader2, { class: 'size-3 animate-spin' }),
     state === 'dirty' && h('span', { class: 'size-1.5 bg-[var(--status-attention)] motion-safe:animate-pulse' }),

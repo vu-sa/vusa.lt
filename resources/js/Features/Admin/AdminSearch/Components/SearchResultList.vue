@@ -62,7 +62,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Clock, Sparkles, SearchX, Loader2 } from 'lucide-vue-next';
+import { Clock, Sparkles, SearchX, Loader2 } from '@lucide/vue';
 
 import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
 

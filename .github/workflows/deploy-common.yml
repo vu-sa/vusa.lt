@@ -141,7 +141,7 @@ jobs:
       - name: Build docs
         run: |
           npm run docs:build
-          tar -czf docs.tar.gz -C public/docs .
+          tar -czf docs.tar.gz -C public/gidas .
 
       - name: Package build artifacts
         run: |

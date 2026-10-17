@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Formos ir registracijos
 area: forms
 models: [Form, Registration]
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-15
 tests:
   - tests/Feature/Admin/Forms/FormControllerTest.php
   - tests/Feature/Admin/Forms/FormAccessTest.php
@@ -36,6 +36,8 @@ Formų sąrašas pasiekiamas adresu `/mano/forms`, o kiekviena forma atveriama a
 :::
 
 ## Kaip tai veikia
+
+Sukūrus registracijos formą, atveriamas jos puslapis su laukais ir registracijomis.
 
 ### Formos struktūra ir viešinimas {#struktura}
 
@@ -130,7 +132,7 @@ Paspaudus formos pavadinimo atveriamas formos puslapis (`/mano/forms/{id}`):
 - Pasirinkimo laukams (`enum`) viršuje rodomi greitieji filtrai, leidžiantys filtruoti atsakymus pagal pasirinktas reikšmes.
 - Paspaudus bet kurios registracijos eilutės atsidaro **Registracijos peržiūros langas**, kuriame tvarkingai pateikiami visi studento atsakymai ir pateikimo laikas.
 - Skirtuke **Laukai** galima peržiūrėti visų klausimų struktūrą ir nustatymus.
-- Skirtuke **Veikla** galima rašyti vidinius komentarus tarp administratorių.
+- Skiltyje **Komentarai** galima rašyti vidinius komentarus tarp administratorių.
 
 ### Atsakymų eksportavimas į Excel {#eksportas}
 

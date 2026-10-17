@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Briefcase, User } from 'lucide-vue-next';
+import { Briefcase, User } from '@lucide/vue';
 
 import { Checkbox } from '@/Components/ui/checkbox';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';

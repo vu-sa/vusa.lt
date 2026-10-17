@@ -23,7 +23,8 @@ export interface AtstovavimasInstitution {
   has_public_meetings?: boolean;
   /** One of VU SA's own bodies rather than one it delegates representatives into. */
   is_internal?: boolean;
-  /** Reached through an administrator nomination, not a duty — the user is not a member. */
+  /** Reached through a secretary nomination, not a duty — the user is not a member. */
+  is_secretary?: boolean;
   is_administered?: boolean;
   /** Counted in the padaliniai tiles and attention list; false for a type the settings exclude. */
   in_summary?: boolean;

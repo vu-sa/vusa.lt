@@ -90,7 +90,7 @@ import { computed, ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { useDropZone } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { FileText, Upload, X } from 'lucide-vue-next';
+import { FileText, Upload, X } from '@lucide/vue';
 
 import { SheetForm } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';

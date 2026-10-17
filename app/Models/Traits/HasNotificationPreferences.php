@@ -134,11 +134,11 @@ trait HasNotificationPreferences
      */
     public function getAvailableNotificationEmails(): array
     {
-        $emails = [[
+        $emails = filled($this->email) ? [[
             'email' => $this->email,
             'label' => $this->email.' ('.__('notifications.preferences.personal_email').')',
             'type' => 'user',
-        ]];
+        ]] : [];
 
         /** @var Duty $duty */
         foreach ($this->current_duties()->get() as $duty) {
@@ -173,6 +173,7 @@ trait HasNotificationPreferences
             }
         }
 
-        return [app(NotificationRouter::class)->preferredEmail($this)];
+        // A former member recorded without an address simply receives no mail.
+        return array_filter([app(NotificationRouter::class)->preferredEmail($this)]);
     }
 }

@@ -1,15 +1,10 @@
 /**
  * Pairs with SpotlightPopover and persists dismissal through tutorial progress.
  */
-
 import { ref, computed } from 'vue';
 
 import { useApiMutation } from './useApi';
-import {
-  globalProgress,
-  updateProgress,
-  removeProgress,
-} from './useTutorialProgress';
+import { globalProgress, updateProgress, removeProgress } from './useTutorialProgress';
 
 // Prefix for spotlight IDs to distinguish from tours
 const SPOTLIGHT_PREFIX = 'spotlight-';
@@ -147,6 +142,3 @@ export function useFeatureSpotlight(spotlightId: string, options: FeatureSpotlig
     hidePopover,
   };
 }
-
-// Re-export the shared init function for convenience
-export { initProgress as syncSpotlightProgress } from './useTutorialProgress';

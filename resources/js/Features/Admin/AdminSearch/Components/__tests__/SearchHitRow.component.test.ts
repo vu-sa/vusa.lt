@@ -20,14 +20,14 @@ const hit = {
 } as NormalizedSearchHit;
 
 describe('SearchHitRow', () => {
-  it('keeps the matching context smaller than the title and limited to one line', () => {
+  it('explains an unseen match in place of the subtitle and names the type', () => {
     const wrapper = mount(SearchHitRow, {
-      props: { hit: { ...hit, raw: { _searchMatch: { field: 'current_user_names', segments: [{ text: 'Petras Petraitis', matched: true }] } } } },
+      props: { hit: { ...hit, subtitle: 'jonas@vusa.lt', raw: { _searchMatch: { field: 'body', segments: [{ text: 'Petras Petraitis', matched: true }] } } }, showType: true },
       global: { stubs: { EntityTypeMark: true } },
     });
-    const excerpt = wrapper.get('[data-slot="search-match"]');
-    expect(excerpt.classes()).toContain('text-xs');
-    expect(excerpt.classes()).toContain('line-clamp-1');
+    expect(wrapper.get('[data-field="body"]').text()).toBe('Petras Petraitis');
+    expect(wrapper.text()).not.toContain('jonas@vusa.lt');
+    expect(wrapper.get('[data-slot="search-hit-type"]').text()).toBe('Narys');
   });
   it('highlights the existing name without adding a duplicate excerpt', () => {
     const raw = documentWithMatch({ document: { name: hit.title }, highlights: [
@@ -35,16 +35,15 @@ describe('SearchHitRow', () => {
       { field: 'current_user_names', snippet: '⟦Jonas⟧ Jonaitis' },
     ] });
     const wrapper = mount(SearchHitRow, { props: { hit: { ...hit, raw } }, global: { stubs: { EntityTypeMark: true } } });
-    expect(wrapper.get('[data-slot="search-title-match"] mark').text()).toBe('Jonas');
-    expect(wrapper.find('[data-slot="search-match"]').exists()).toBe(false);
+    expect(wrapper.get('[data-field="name"] mark').text()).toBe('Jonas');
     expect(wrapper.text().match(/Jonas Jonaitis/g)).toHaveLength(1);
   });
 
   it('does not highlight a name when only a related record matched', () => {
     const raw = documentWithMatch({ document: { name: hit.title }, highlights: [{ field: 'current_duty_names', snippet: '⟦Prezidentė⟧' }] });
     const wrapper = mount(SearchHitRow, { props: { hit: { ...hit, raw } }, global: { stubs: { EntityTypeMark: true } } });
-    expect(wrapper.find('[data-slot="search-title-match"]').exists()).toBe(false);
-    expect(wrapper.get('[data-slot="search-match"] mark').text()).toBe('Prezidentė');
+    expect(wrapper.find('[data-field="name"]').exists()).toBe(false);
+    expect(wrapper.get('[data-field="current_duty_names"] mark').text()).toBe('Prezidentė');
   });
   it('shows context separately from status and names its quick actions', async () => {
     const wrapper = mount(SearchHitRow, {

@@ -46,7 +46,7 @@ describe('the email asks and links to a confirmation page (U21)', function (): v
     test('one institution gets yes and no buttons that open its answer page with the answer chosen', function (): void {
         $notification = activityNotification($this->activityRequest);
 
-        expect($notification->title($this->recipient))->toBe('VU SA · '.__('activity_requests.campaigns.activity_confirmation'))
+        expect($notification->title($this->recipient))->toBe(__('activity_requests.campaigns.activity_confirmation'))
             ->and($notification->primaryAction()['url'])->toContain('/atsakymas/'.$this->activityRequest->id, 'answer=met', 'signature=')
             ->and($notification->secondaryAction()['url'])->toContain('answer=not_met', 'signature=');
     });
@@ -61,7 +61,7 @@ describe('the email asks and links to a confirmation page (U21)', function (): v
         $mail = $notification->toMail($this->recipient);
         $text = (string) new Markdown(view(), config('mail.markdown'))->renderText($mail->markdown, $mail->data());
 
-        expect($notification->title($this->recipient))->toBe('VU SA · '.__('activity_requests.campaigns.activity_confirmation'))
+        expect($notification->title($this->recipient))->toBe(__('activity_requests.campaigns.activity_confirmation'))
             ->and($notification->secondaryAction())->toBeNull()
             ->and($text)->toContain($this->institution->name, $second->institution->name, '/atsakymas/'.$second->id);
     });
@@ -411,4 +411,11 @@ describe('several representatives of one institution', function (): void {
             'periods' => today()->subMonths(2)->toDateString().' – '.today()->subMonth()->subDay()->toDateString(),
         ]));
     });
+});
+
+test('the no-meeting confirmation names both fixed reporting dates', function (): void {
+    $this->activityRequest->update(['period_start' => '2026-09-01', 'period_end' => '2026-09-30', 'locale' => 'en']);
+
+    $this->get($this->activityRequest->answerUrl(InstitutionActivityAnswer::NotMet))
+        ->assertOk()->assertSee('from 2026-09-01 to 2026-09-30');
 });

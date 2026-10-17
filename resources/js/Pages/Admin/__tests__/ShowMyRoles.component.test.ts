@@ -36,6 +36,16 @@ beforeEach(() => {
 });
 
 describe('ShowMyRoles', () => {
+  it('preserves the institution and dates of ended assignments without requiring an institution link', () => {
+    const wrapper = mountPage({
+      ended: [term({ institutionName: 'Neaktyvi institucija', endDate: '2026-10-15' })],
+    });
+
+    const row = wrapper.get('[data-testid="ended-duties"] [data-slot="my-duty-term"]');
+    expect(row.text()).toContain('Neaktyvi institucija');
+    expect(row.text()).toContain('2026-10-15');
+    expect(row.find('a').exists()).toBe(false);
+  });
   it('lists the current duty with its institution, term and roles', () => {
     const wrapper = mountPage({ current: [term()] });
 

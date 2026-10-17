@@ -128,3 +128,15 @@ test('an institution with no current members notifies nobody, not its past membe
 
     Notification::assertNotSentTo($former, CommentPostedNotification::class);
 });
+
+test('duty mailboxes of the audience are not emailed, current or ended', function (): void {
+    $endedDuty = Duty::factory()->for($this->institution)->create(['email' => 'old-role@vusa.lt']);
+    $this->rep->duties()->attach($endedDuty, ['start_date' => now()->subYear(), 'end_date' => now()->subMonth()]);
+    $this->actingAs($this->author);
+
+    $this->agendaItem->comment('<p>Anyone around?</p>');
+
+    Notification::assertSentTo($this->rep, CommentPostedNotification::class);
+    Notification::assertNotSentTo($endedDuty, CommentPostedNotification::class);
+    Notification::assertNotSentTo($this->rep->duties()->first(), CommentPostedNotification::class);
+});

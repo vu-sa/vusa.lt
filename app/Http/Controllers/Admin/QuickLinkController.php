@@ -15,6 +15,7 @@ use App\Models\QuickLink;
 use App\Models\Tag;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -84,7 +85,7 @@ class QuickLinkController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreQuickLinkRequest $request)
+    public function store(StoreQuickLinkRequest $request, PostCreateRedirect $redirect)
     {
         $this->handleAuthorization('create', QuickLink::class);
 
@@ -95,14 +96,17 @@ class QuickLinkController extends AdminController
                 ->first()?->tenants->first()?->id;
         }
 
-        DB::transaction(function () use ($request, $tenant_id): void {
+        $quickLink = DB::transaction(function () use ($request, $tenant_id): QuickLink {
             $quickLink = new QuickLink;
             $quickLink->fill($request->safe()->only('text', 'link', 'lang', 'icon', 'is_important'));
             $quickLink->tenant()->associate($tenant_id);
             $quickLink->save();
+
+            return $quickLink;
         });
 
-        return redirect()->route('quickLinks.index')->with('success', $this->entityMessage('created', 'quickLink'));
+        return redirect($redirect->url($request->user(), $quickLink, 'quickLinks.edit', 'update', 'quickLinks.index'))
+            ->with('success', $this->entityMessage('created', 'quickLink'));
     }
 
     /**

@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Globe, Search } from 'lucide-vue-next';
+import { Globe, Search } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 const props = defineProps<{

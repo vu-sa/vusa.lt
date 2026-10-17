@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\Admin\ContentPartPreviewApiController;
 use App\Http\Controllers\Api\Admin\DocumentFolderApiController;
 use App\Http\Controllers\Api\Admin\DutiableTimelineApiController;
 use App\Http\Controllers\Api\Admin\DutyApiController;
+use App\Http\Controllers\Api\Admin\DutyCadenceApiController;
 use App\Http\Controllers\Api\Admin\DutySearchApiController;
 use App\Http\Controllers\Api\Admin\EventTypeApiController;
 use App\Http\Controllers\Api\Admin\FileApiController;
@@ -286,6 +287,9 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         Route::get('duties/similar', [DutySearchApiController::class, 'similar'])
             ->middleware('throttle:30,1')
             ->name('duties.similar');
+
+        // Term presets for the Priskirti sheet, current and past.
+        Route::get('duties/{duty}/cadences', [DutyCadenceApiController::class, 'index'])->name('duties.cadences');
 
         // Feeds the dutiable timeline editor (read-only; mutations go through
         // routes/admin.php so guardSelfLockout's Inertia flash still works).

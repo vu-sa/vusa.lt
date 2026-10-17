@@ -7,6 +7,16 @@ export enum ActionType {
     AgendaCompletion = 'agenda_completion',
     PeriodicityGap = 'periodicity_gap',
 }
+export enum ActivityRequestSkipReason {
+    NotAllowed = 'not_allowed',
+    NoRecipients = 'no_recipients',
+    NoPeriod = 'no_period',
+    MeetingRecorded = 'meeting_recorded',
+    NoRecordedMeetings = 'no_recorded_meetings',
+    RecordsComplete = 'records_complete',
+    CheckInActive = 'check_in_active',
+    AlreadyAsked = 'already_asked',
+}
 export enum AgendaItemType {
     Voting = 'voting',
     Informational = 'informational',

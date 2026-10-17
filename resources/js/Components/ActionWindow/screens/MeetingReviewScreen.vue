@@ -77,7 +77,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { trans as $t, transChoice as $tChoice, getActiveLanguage } from 'laravel-vue-i18n';
-import { CalendarPlus, TriangleAlert } from 'lucide-vue-next';
+import { CalendarPlus, TriangleAlert } from '@lucide/vue';
 
 import ActionWindowPrimaryButton from '../ActionWindowPrimaryButton.vue';
 import ActionWindowScreen from '../ActionWindowScreen.vue';

@@ -45,7 +45,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Eye, Info } from 'lucide-vue-next';
+import { Eye, Info } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { FormPanel } from '@/Components/Patterns';

@@ -34,6 +34,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Public contacts search
+    |--------------------------------------------------------------------------
+    |
+    | Institutions of this type in the pagrindinis tenant (Taryba, Parlamentas, ISF,
+    | Revizijos komisija) rank right after VU SA itself in the public contacts search.
+    |
+    */
+
+    'featured_institution_type' => 'vu-sa-darinys',
+
+    /*
+    |--------------------------------------------------------------------------
     | Social profiles
     |--------------------------------------------------------------------------
     |

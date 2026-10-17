@@ -305,7 +305,7 @@ import { ref, computed, watch, onMounted, defineAsyncComponent, nextTick } from 
 import { Deferred, Link, router } from '@inertiajs/vue3';
 import { useClipboard, useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, CalendarPlus, CalendarX, CircleCheck, CircleDashed, Copy, Edit, Globe, Link2, Plus, Trash2 } from 'lucide-vue-next';
+import { AlertTriangle, CalendarPlus, CalendarX, CircleCheck, CircleDashed, Copy, Edit, Globe, Link2, Plus, Trash2 } from '@lucide/vue';
 import { DialogDescription } from 'reka-ui';
 
 import { useToasts } from '@/Composables/useToasts';

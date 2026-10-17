@@ -61,13 +61,14 @@ describe('RecordActivity', () => {
     expect(fetchThread).toHaveBeenCalledTimes(1);
   });
 
-  it('invites the first comment when there are none', async () => {
+  it('offers only the composer when there are no comments yet', async () => {
     fetchThread.mockResolvedValue([]);
 
     const wrapper = mountActivity();
     await flushPromises();
 
+    expect(wrapper.find('.composer-stub').exists()).toBe(true);
     expect(wrapper.find('.thread-stub').exists()).toBe(false);
-    expect(wrapper.text()).toContain('activity.comments_empty');
+    expect(wrapper.find('section > p').exists()).toBe(false);
   });
 });

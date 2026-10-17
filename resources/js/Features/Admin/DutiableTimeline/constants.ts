@@ -20,12 +20,6 @@ export const SNAP_PX = 10;
 /** Width of the invisible resize handle at each end of an editable bar. */
 export const HANDLE_WIDTH_PX = 6;
 
-/**
- * Mirrors PlanDutiableTimelineChanges::DEFAULT_ALIGN_THRESHOLD_DAYS — past this an
- * off-cadence date reads as deliberate, and a bulk align leaves it alone.
- */
-export const DEFAULT_ALIGN_THRESHOLD_DAYS = 45;
-
 /** Where the persisted view settings live. Shared by every scope, like the meetings chart. */
 export const VIEW_STORAGE_KEY = 'dutiable-timeline-view';
 

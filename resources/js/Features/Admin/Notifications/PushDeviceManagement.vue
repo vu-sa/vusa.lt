@@ -143,7 +143,7 @@ import {
   Smartphone,
   Tablet,
   Trash2,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import { useApiMutation } from '@/Composables/useApi';
 import { usePWA, type PushSubscriptionDevice } from '@/Composables/usePWA';

@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { CalendarDate, type DateValue } from '@internationalized/date';
-import { Calendar as CalendarIcon } from 'lucide-vue-next';
+import { Calendar as CalendarIcon } from '@lucide/vue';
 
 import { Button } from '@/Components/ui/button';
 import { Calendar } from '@/Components/ui/calendar';

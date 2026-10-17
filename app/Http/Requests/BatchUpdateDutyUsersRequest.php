@@ -69,7 +69,7 @@ class BatchUpdateDutyUsersRequest extends FormRequest
             'user_changes.*.study_program_id' => ['nullable', 'string', SoftDeleteRules::existsLive('study_programs')],
             'new_users' => 'nullable|array',
             'new_users.*.name' => 'required|string|max:255',
-            'new_users.*.email' => ['required', 'email', UniqueAmongTrashed::of('users', 'email')],
+            'new_users.*.email' => ['nullable', 'email', UniqueAmongTrashed::of('users', 'email')],
             'new_users.*.phone' => 'nullable|string|max:50',
             'new_users.*.temp_id' => 'required|string',
             'places_to_occupy' => 'nullable|integer|min:1',

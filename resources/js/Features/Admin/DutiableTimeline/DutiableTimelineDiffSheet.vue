@@ -95,7 +95,7 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { ArrowRight, TriangleAlert } from 'lucide-vue-next';
+import { ArrowRight, TriangleAlert } from '@lucide/vue';
 
 import { timelineDutyName } from './dutyNames';
 import type { TimelinePlanPayload } from './types';

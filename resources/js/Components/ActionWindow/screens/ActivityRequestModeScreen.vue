@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { Landmark, Users } from 'lucide-vue-next';
+import { Landmark, Users } from '@lucide/vue';
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';

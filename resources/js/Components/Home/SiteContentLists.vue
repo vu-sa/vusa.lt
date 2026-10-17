@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarDays, Megaphone } from 'lucide-vue-next';
+import { CalendarDays, Megaphone } from '@lucide/vue';
 
 import type { HomeNewsPreview } from './types';
 

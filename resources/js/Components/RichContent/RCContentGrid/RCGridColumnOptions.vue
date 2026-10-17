@@ -16,7 +16,7 @@
     >
       <IFluentOptions24Regular class="size-3.5" />
     </button>
-    <PopoverContent v-if="hotspots.isPopoverOpen(hotspotId)" data-surface="public"
+    <PopoverContent v-if="hotspots.isPopoverOpen(hotspotId)"
       class="w-[min(20rem,calc(100vw-2rem))]"
       @close-auto-focus.prevent
     >

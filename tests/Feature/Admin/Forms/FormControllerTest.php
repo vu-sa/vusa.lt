@@ -222,6 +222,7 @@ describe('form creation with fields', function (): void {
             'description' => ['lt' => 'Aprašymas', 'en' => 'Description'],
             'path' => ['lt' => 'registracija', 'en' => 'registration'],
             'tenant_id' => $this->tenant->id,
+            'redirect_to' => route('forms.index'),
             'publish_time' => now()->addHour()->toISOString(),
             'form_fields' => [
                 [
@@ -246,7 +247,7 @@ describe('form creation with fields', function (): void {
             ],
         ];
 
-        asUser($this->admin)
+        $response = asUser($this->admin)
             ->post(route('forms.store'), $formData)
             ->assertRedirect()
             ->assertSessionHas('success');
@@ -260,6 +261,9 @@ describe('form creation with fields', function (): void {
         $textField = $form->formFields->where('type', 'text')->first();
         expect($textField->is_required)->toBeTrue()
             ->and($textField->getTranslation('label', 'lt'))->toBe('Pilnas vardas');
+
+        $response->assertRedirectToRoute('forms.show', $form)->assertSessionHas('success');
+        asUser($this->admin)->get(route('forms.show', $form))->assertOk();
     });
 
     test('can export form responses', function (): void {

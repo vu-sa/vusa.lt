@@ -65,7 +65,7 @@
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronDown, Trash2 } from 'lucide-vue-next';
+import { ChevronDown, Trash2 } from '@lucide/vue';
 
 import { ConfirmDialog } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';

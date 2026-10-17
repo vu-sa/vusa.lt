@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { CircleAlert, CloudCheck, CloudOff, GitCompareArrows, HardDrive, Loader2, ShieldCheck } from 'lucide-vue-next';
+import { CircleAlert, CloudCheck, CloudOff, GitCompareArrows, HardDrive, Loader2, ShieldCheck } from '@lucide/vue';
 
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';

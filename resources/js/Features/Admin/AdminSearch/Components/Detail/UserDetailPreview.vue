@@ -80,7 +80,7 @@
 import { computed } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Eye, Pencil } from 'lucide-vue-next';
+import { Eye, Pencil } from '@lucide/vue';
 
 import { getUserDuties } from '../../Utils/searchHitMappers';
 

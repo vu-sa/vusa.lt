@@ -10,7 +10,7 @@ use App\Tasks\Handlers\AgendaCompletionTaskHandler;
 use Illuminate\Support\Arr;
 
 /**
- * Notification sent to administrators when all meeting agenda items are completed.
+ * Notification sent to overseers and followers when all meeting agenda items are completed.
  */
 class MeetingAgendaCompletedNotification extends BaseNotification
 {

@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Studijų programos
 area: studyPrograms
 models: [StudyProgram]
-last_reviewed: 2026-10-01
+last_reviewed: 2026-10-15
 tests:
   - tests/Feature/Admin/Management/StudyProgramControllerTest.php
   - resources/js/Components/AdminForms/__tests__/StudyProgramForm.component.test.ts
@@ -20,6 +20,8 @@ Studijų programos platformoje priskiriamos [narių pareigybėms](/organizacija/
 Studijų programų skiltis pasiekiama adresu `/mano/studyPrograms`.
 
 ## Kaip tai veikia
+
+Sukūrus studijų programą, atveriama jos redagavimo forma.
 
 ### Pakopos ir laipsniai {#laipsniai}
 

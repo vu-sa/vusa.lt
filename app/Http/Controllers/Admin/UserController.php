@@ -22,6 +22,7 @@ use App\Models\Role;
 use App\Models\StudyProgram;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\PostCreateRedirect;
 use App\Services\ResourceServices\UserDutyService;
 use App\Services\TanstackTableService;
 use Illuminate\Database\Eloquent\Collection;
@@ -57,7 +58,7 @@ class UserController extends AdminController
                 'applySortBeforePagination' => true,
                 'tenantRelation' => 'tenants',
                 'permission' => 'users.read.padalinys',
-                'handledFilters' => ['future_duty'],
+                'handledFilters' => ['future_duty', 'membership'],
             ]
         );
 
@@ -111,9 +112,9 @@ class UserController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreUserRequest $request, SyncImageMedia $syncImage)
+    public function store(StoreUserRequest $request, SyncImageMedia $syncImage, PostCreateRedirect $redirect)
     {
-        DB::transaction(function () use ($request, $syncImage): void {
+        $user = DB::transaction(function () use ($request, $syncImage): User {
             $user = new User;
 
             $validatedData = $request->safe();
@@ -137,9 +138,12 @@ class UserController extends AdminController
             if (User::find(Auth::id())->isSuperAdmin()) {
                 $user->roles()->sync($request->validated('roles') ?? []);
             }
+
+            return $user;
         });
 
-        return $this->redirectResponse('users.index')->with('success', $this->entityMessage('created', 'user'));
+        return redirect($redirect->url($request->user(), $user, 'users.show', 'view', 'users.index'))
+            ->with('success', $this->entityMessage('created', 'user'));
     }
 
     /**
@@ -155,6 +159,7 @@ class UserController extends AdminController
                 'current_duties.current_users:id,name,profile_photo_path',
                 'upcoming_duties.institution.tenant',
                 'previous_duties.institution.tenant',
+                'previous_duties.formerNames',
                 'roles',
                 'tasks.taskable',
                 'tasks.users:id,name,email,profile_photo_path',

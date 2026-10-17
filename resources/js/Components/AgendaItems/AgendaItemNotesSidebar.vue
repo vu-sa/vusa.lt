@@ -138,7 +138,7 @@
 import { computed, ref } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Lock, Maximize2, Users } from 'lucide-vue-next';
+import { Lock, Maximize2, Users } from '@lucide/vue';
 
 import AgendaItemNotesEditor from '@/Components/AgendaItems/AgendaItemNotesEditor.vue';
 import SaveStatusChip from '@/Components/AgendaItems/NotesSaveStatusChip.vue';

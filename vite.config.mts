@@ -236,7 +236,6 @@ export default defineConfig(({ command, isSsrBuild }) => {
     ],
     resolve: {
       alias: [
-        { find: 'lucide-vue-next', replacement: '@lucide/vue' },
         { find: '@', replacement: '/resources/js' },
         { find: /^vue$/, replacement: 'vue/dist/vue.runtime.esm-bundler.js' },
         { find: 'ziggy-js', replacement: '/vendor/tightenco/ziggy/dist' },

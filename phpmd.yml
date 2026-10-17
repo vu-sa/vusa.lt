@@ -1,0 +1,28 @@
+name: VU SR complexity
+description: Method complexity only; PHPStan, Rector and Pint cover the other rulesets.
+paths:
+  - "app/"
+rules:
+  # Class-size counts (public methods, fields) fire on every Eloquent model and policy.
+  - ref: rulesets/codesize.xml
+    exclude:
+      - TooManyMethods
+      - TooManyPublicMethods
+      - TooManyFields
+      - ExcessivePublicCount
+      - ExcessiveClassLength
+      - NcssMethodCount
+      - NcssTypeCount
+      - NcssConstructorCount
+      - CyclomaticComplexity
+      - NPathComplexity
+      - ExcessiveClassComplexity
+  - ref: rulesets/codesize.xml/CyclomaticComplexity
+    properties:
+      maximum: 15
+  - ref: rulesets/codesize.xml/NPathComplexity
+    properties:
+      maximum: 500
+  - ref: rulesets/codesize.xml/ExcessiveClassComplexity
+    properties:
+      maximum: 80

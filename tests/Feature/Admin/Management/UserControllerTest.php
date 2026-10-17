@@ -85,6 +85,25 @@ describe('authorized access', function (): void {
             );
     });
 
+    test('separates current members from former ones', function (): void {
+        $current = makeUser($this->tenant);
+        $former = makeUser($this->tenant);
+        $former->dutiables()->update(['start_date' => '2019-07-01', 'end_date' => '2020-06-30']);
+
+        $listed = fn (string $membership) => collect(asUser($this->admin)
+            ->getJson(route('api.v1.admin.users.index', ['membership' => $membership]))
+            ->assertOk()
+            ->json('data.items'))->keyBy('id');
+
+        expect($listed('current')->keys())->toContain($current->id)->not->toContain($former->id)
+            ->and($listed('former')->keys())->toContain($former->id)->not->toContain($current->id)
+            ->and($listed('former')[$former->id]['is_current'])->toBeFalse()
+            ->and(substr($listed('former')[$former->id]['last_term_end'], 0, 10))->toBe('2020-06-30')
+            ->and($listed('current')[$current->id]['current_duties_count'])->toBe(1)
+            // The row's quick list names where each term was held.
+            ->and($listed('former')[$former->id]['duties'][0]['institution']['name'])->toBe($former->duties()->first()->institution->name);
+    });
+
     test('the trash is the same collection over soft-deleted members', function (): void {
         $gone = makeUser($this->tenant);
         $gone->delete();
@@ -105,10 +124,8 @@ describe('authorized access', function (): void {
             );
     });
 
-    test('can store user', function (): void {
-        // The duty must sit in the admin's own tenant — Duty::factory() would
-        // otherwise build its own Institution and Tenant, which UserDutyService
-        // now rejects.
+    test('coordinator opens the newly created user', function (): void {
+        $actor = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
         $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
 
         $userData = [
@@ -118,14 +135,18 @@ describe('authorized access', function (): void {
             'current_duties' => [$duty->id],
         ];
 
-        $response = asUser($this->admin)->post(route('users.store'), $userData);
+        $response = asUser($actor)->post(route('users.store'), $userData);
 
-        $response->assertRedirect();
+        $response->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('users', [
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        $created = User::where('email', 'test@example.com')->sole();
+        $response->assertRedirectToRoute('users.show', $created)->assertSessionHas('success');
+        asUser($actor)->get(route('users.show', $created))->assertOk();
     });
 
     test('can access user edit page', function (): void {
@@ -203,6 +224,17 @@ describe('authorized access', function (): void {
             'email' => 'updated@example.com',
             'phone' => '+370 987 6543',
         ]);
+    });
+
+    test('a former member without an email can still be saved', function (): void {
+        $user = makeUser($this->tenant);
+        $user->update(['email' => null]);
+
+        asUser($this->admin)->put(route('users.update', $user), ['name' => $user->name, 'email' => '', 'phone' => '+370 600 00000'])
+            ->assertSessionHasNoErrors();
+
+        expect($user->fresh()->phone)->toBe('+370 600 00000')
+            ->and($user->fresh()->email)->toBeNull();
     });
 
     test('can delete user', function (): void {

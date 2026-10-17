@@ -257,9 +257,6 @@ class AdminNavigationCatalog
                 new Section('dokumentai', 'shell.sections.dokumentai', 'documents.index', [], 'document', Visibility::permission('documents.read.padalinys'), descriptionKey: 'shell.section_descriptions.dokumentai'),
                 new Section('studiju_rinkiniai', 'shell.sections.studiju_rinkiniai', 'studySets.index', [], 'study_set', Visibility::can('viewAny', StudySet::class), descriptionKey: 'shell.section_descriptions.studiju_rinkiniai'),
             ],
-            createActions: [
-                CreateAction::route('new_news', 'shell.actions.new_news.title', 'shell.actions.new_news.description', 'news', 'news.create', Visibility::can('create', News::class)),
-            ],
         );
     }
 

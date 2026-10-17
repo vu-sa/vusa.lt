@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Search } from 'lucide-vue-next';
+import { Search } from '@lucide/vue';
 import { computed } from 'vue';
 
 import { Button } from '@/Components/ui/button';

@@ -123,7 +123,7 @@
 import type { Component, HTMLAttributes } from 'vue';
 import { computed, useSlots } from 'vue';
 import { Link } from '@inertiajs/vue3';
-import { ExternalLink, SearchX } from 'lucide-vue-next';
+import { ExternalLink, SearchX } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import TurtleMascot from '@/Components/Empty/TurtleMascot.vue';

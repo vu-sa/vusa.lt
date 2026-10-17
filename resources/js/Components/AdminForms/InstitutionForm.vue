@@ -121,8 +121,30 @@
         <FormToggleRow
           v-model="isActive"
           :label="$t('Aktyvi institucija')"
-          :hint="$t('Neaktyvios institucijos nebelaukiamos posėdžių ir nerodomos viešame sąraše.')"
+          :hint="$t('forms.helpers.institution_active_hint')"
         />
+        <p v-if="form.errors.is_active" class="text-sm text-destructive" role="alert">
+          {{ form.errors.is_active }}
+        </p>
+        <Alert v-if="isEditing && institution.is_active && !isActive && deactivation" data-testid="institution-deactivation-warning">
+          <AlertDescription class="space-y-2">
+            <p>{{ $t('forms.helpers.institution_deactivation_consequence', { count: deactivation.endingCount, date: formatDate(deactivation.effectiveEndDate) }) }}</p>
+            <p>{{ $t('forms.helpers.institution_reactivation_hint') }}</p>
+            <template v-if="deactivation.blockers.length">
+              <p>{{ $t('forms.helpers.institution_deactivation_blocked') }}</p>
+              <ul class="list-disc pl-4">
+                <li v-for="(blocker, index) in deactivation.blockers" :key="index">
+                  {{ blocker.duty }} · {{ formatDate(blocker.startDate) }}
+                </li>
+              </ul>
+              <Button as-child variant="link" size="sm">
+                <Link :href="route('institutions.show', institution.id)">
+                  {{ $t('forms.helpers.institution_resolve_terms') }}
+                </Link>
+              </Button>
+            </template>
+          </AlertDescription>
+        </Alert>
 
         <TenantSelectField
           id="institution-tenant"
@@ -202,9 +224,9 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Building2, CircleCheck, CircleSlash, Layers, Trash2 } from 'lucide-vue-next';
+import { Building2, CircleCheck, CircleSlash, Layers, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
@@ -218,6 +240,7 @@ import FormToggleRow from '@/Components/Patterns/FormToggleRow.vue';
 import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
 import { Button } from '@/Components/ui/button';
+import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { MultiSelect } from '@/Components/ui/multi-select';
@@ -225,15 +248,23 @@ import { Textarea } from '@/Components/ui/textarea';
 import { ImageUpload } from '@/Components/ui/upload';
 import type { ImageData } from '@/Types/media';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import { useDateFormatter } from '@/Composables/useDateFormatter';
 import type { StatusPresentation } from '@/Constants/statuses';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
 
 interface Translated { lt: string; en: string }
 
+export interface InstitutionDeactivationSummary {
+  endingCount: number;
+  blockers: Array<{ duty: string; startDate: string }>;
+  effectiveEndDate: string;
+}
+
 const props = defineProps<{
   institution: App.Entities.Institution;
   institutionTypes: App.Entities.InstitutionType[];
   assignableTenants: Array<App.Entities.Tenant>;
+  deactivation?: InstitutionDeactivationSummary;
   /** Create mode when set: keeps the draft across a failed submit. */
   rememberKey?: string;
   enableDelete?: boolean;
@@ -245,6 +276,7 @@ const emit = defineEmits<{
 }>();
 
 const isEditing = computed(() => !props.rememberKey);
+const { formatDate } = useDateFormatter();
 const activeLocale = ref<'lt' | 'en'>('lt');
 const deleteConfirmOpen = ref(false);
 

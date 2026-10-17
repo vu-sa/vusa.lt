@@ -35,7 +35,7 @@ that folder's `decisions.md`, `reps.md` and `plan.md` — read them with
 
 ## Public UI
 
-Public pages use the shared paper, ink, and brand palette under `data-surface="public"`.
+Public and admin pages share one paper, ink, and brand palette (global `:root`/`.dark`); `data-surface` on `<html>` only scopes the few rules that differ.
 `--accent` remains the shadcn hover surface; `--brand` and `--brand-fill` carry VU SA red or amber.
 Build from `ui/` → `Public/Base/` → `Public/<area>/` → `Public/Layouts/` → `Pages/Public/`.
 Use `Public/Base/` for domain-free primitives and `ui/button` for actions. Keep corners square and
@@ -73,11 +73,15 @@ All Laravel-related commands MUST run through Sail:
 ./vendor/bin/sail npm run build
 ./vendor/bin/sail npm run test         # frontend (Vitest)
 ./vendor/bin/sail npm run storybook
+./vendor/bin/sail composer phpmd       # complexity across app/; CI checks only changed files — see note below
+./vendor/bin/sail npm run knip         # unused files/exports/deps — run by hand, verify before deleting
 ```
 
 A transient Sail failure is not a blocker: retry the command and run `./vendor/bin/sail ps` before reporting Docker or Podman unavailable.
 
 **Exception — Claude Code on the web** (`CLAUDE_CODE_REMOTE=true`): Docker images can't be pulled there, so Sail never runs. `.claude/hooks/session-start.sh` installs dependencies natively and writes a SQLite `.env`; drop the `./vendor/bin/sail` prefix (`php artisan test --parallel --compact`, `npm run test`, `vendor/bin/pint --dirty`). MariaDB, Typesense, Reverb and Mailpit are unavailable, so verify with tests, not a running site; tests that opt into real Typesense (`usesTypesense()`) fail with `ConnectException` there — run those in CI.
+
+Note: `composer phpmd` has no baseline, so it lists every existing finding; CI runs it only on the PHP files a change touches, existing findings included — fix what you touch where reasonable. Pass paths to narrow it (`composer phpmd -- app/Models/Foo.php`). If numbers look stale, delete pdepend's cache (`~/.cache/pdepend` in the container).
 
 Note: `npm run typecheck` (`vue-tsc --noEmit`) is available and runs in CI, but is currently **non-blocking** (advisory only). Don't run ESLint fixes or chase typecheck findings unless explicitly asked — verify frontend changes with Vitest instead.
 
@@ -263,7 +267,7 @@ Full rules and a "what do I reach for" table: [resources/js/Components/CLAUDE.md
 
 | Surface | Primary set | Import path |
 |---|---|---|
-| Admin (`Pages/Admin/**`, admin Components) | **Lucide** | `import { Save, Lock } from 'lucide-vue-next'` |
+| Admin (`Pages/Admin/**`, admin Components) | **Lucide** | `import { Save, Lock } from '@lucide/vue'` |
 | Public (`Pages/Public/**`, `Components/Public/**`) | **Fluent** | `import IFluentX from '~icons/fluent/x24-regular'` |
 | Brand / social (FB, IG, Microsoft, Spotify…) | **Simple Icons** | `import ISimpleIconsFacebook from '~icons/simple-icons/facebook'` |
 | Dynamic (icon name stored as CMS data) | `@iconify/vue` | `<Icon :icon="\`fluent:${name}\`">` only for runtime-driven names |

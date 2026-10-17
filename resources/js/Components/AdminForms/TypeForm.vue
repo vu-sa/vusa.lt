@@ -111,7 +111,7 @@
 <script setup lang="ts">
 import { useForm, usePage } from '@inertiajs/vue3';
 import { isLoaded, loadLanguageAsync, trans as $t } from 'laravel-vue-i18n';
-import { Building2, SlidersHorizontal } from 'lucide-vue-next';
+import { Building2, SlidersHorizontal } from '@lucide/vue';
 import { computed, onMounted, ref } from 'vue';
 
 import TiptapEditor from '../TipTap/TiptapEditor.vue';

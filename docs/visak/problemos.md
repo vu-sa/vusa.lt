@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Problemos
 area: problems
 models: [Problem, ProblemCategory]
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-15
 tests:
   - tests/Feature/Admin/Problems/ProblemControllerTest.php
   - tests/Feature/Admin/Problems/AgendaItemProblemControllerTest.php
@@ -33,6 +33,8 @@ Problemų sąrašas pasiekiamas adresu `/mano/problems`, o kiekviena problema tu
 <DocScreenshot name="problem-record" alt="Problemos puslapis: būsena, kategorijos, institucija, įvykio data, trukmė, atsakingas asmuo ir skirtukai Aprašymas, Atlikti žingsniai, Sprendimas, Svarstyta posėdžiuose" caption="Vykdoma problema, kurią atstovė kėlė fakulteto tarybos posėdyje." />
 
 ## Kaip tai veikia
+
+Sukūrus problemą, atveriamas jos puslapis, kuriame galima tęsti jos sprendimo eigą.
 
 ### Ką sudaro problema
 
@@ -116,7 +118,7 @@ Sąraše visi padaliniai rodomi kartu, o savo padalinio problemas atsirenki grei
 
 Problemą užregistruoti gali:
 
-- per **+ Sukurti → Nauja problema** arba sąrašo mygtuką **Nauja problema**;
+- per **Veiksmai → Nauja problema** arba sąrašo mygtuką **Nauja problema**;
 - iš institucijos puslapio skirtuko **Problemos** – forma atsidaro jau su institucijos padaliniu ir
   pačia institucija.
 
@@ -176,7 +178,7 @@ problemas. Kitų padalinių problemų keisti negali.
 
 Problemos pačios pranešimų nesiunčia: paskyrus atsakingą asmenį ar pakeitus būseną, niekas
 pranešimo negauna. Automatiškai tik užpildoma ar išvaloma išsprendimo data (žr.
-[Būsenos](#busenos)). Aptarti problemą su kolegomis galima jos puslapio skiltyje **Veikla** (žr.
+[Būsenos](#busenos)). Aptarti problemą su kolegomis galima jos puslapio skiltyje **Komentarai** (žr.
 [Komentarai](/visak/komentarai)).
 
 ## Techninė informacija {#technine-informacija}

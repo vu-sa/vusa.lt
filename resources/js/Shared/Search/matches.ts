@@ -9,11 +9,15 @@ export interface HighlightedHit {
 }
 
 export interface SearchMatchDocument {
+  /** The best prose excerpt; it replaces a row's description, never sits beside it. */
   _searchMatch?: SearchMatch;
   _searchTitleMatches?: SearchMatch[];
+  /** Every other matched field, so a row can highlight the value where it already shows it. */
+  _searchFieldMatches?: Record<string, SearchMatch>;
 }
 
 const identityFields = new Set(['title', 'title_lt', 'title_en', 'name', 'name_lt', 'name_en']);
+export const PROSE_FIELDS = new Set(['body', 'short', 'summary', 'description', 'description_lt', 'description_en', 'meta_description', 'student_benefit']);
 
 function plainSnippet(value: string): string {
   let text = value.replace(/<mark>/g, '⟦').replace(/<\/mark>/g, '⟧');
@@ -73,9 +77,27 @@ function fullTitleMatch(title: string, snippet: SearchMatch): SearchMatch {
   return { field: snippet.field, segments };
 }
 
+function snippetsOf(item: NonNullable<HighlightedHit['highlights']>[number]): string[] {
+  return item.snippet ? [item.snippet] : item.snippets ?? [];
+}
+
+function fieldMatches(hit: HighlightedHit): Record<string, SearchMatch> {
+  const result: Record<string, SearchMatch> = {};
+  for (const item of hit.highlights ?? []) {
+    if (!item.field || identityFields.has(item.field) || item.field.startsWith('search_text_')) continue;
+    const snippet = snippetsOf(item).map(plainSnippet).find(text => text.includes('⟦'));
+    if (!snippet) continue;
+    const match = { field: item.field, segments: segmentsFromSnippet(snippet) };
+    const value = hit.document[item.field];
+    // A stored value is shown whole, so highlight all of it rather than Typesense's cut-down snippet.
+    result[item.field] = typeof value === 'string' ? fullTitleMatch(plainSnippet(value), match) : match;
+  }
+  return result;
+}
+
 export function documentWithMatch(hit: HighlightedHit): Record<string, unknown> {
   const titleMatches = (hit.highlights ?? []).filter(item => item.field && (identityFields.has(item.field) || item.field.startsWith('search_text_'))).flatMap((item) => {
-    return (item.snippet ? [item.snippet] : item.snippets ?? []).map((snippet) => {
+    return snippetsOf(item).map((snippet) => {
       const match = { field: item.field!, segments: segmentsFromSnippet(plainSnippet(snippet)) };
       const value = hit.document[item.field!];
       return identityFields.has(item.field!) && typeof value === 'string' ? fullTitleMatch(value, match) : match;
@@ -89,12 +111,39 @@ export function documentWithMatch(hit: HighlightedHit): Record<string, unknown> 
       if (titleMatch.segments.some(segment => segment.matched)) titleMatches.push(titleMatch);
     }
   }
-  const document = titleMatches.length ? { ...hit.document, _searchTitleMatches: titleMatches } : hit.document;
+  let document: Record<string, unknown> = titleMatches.length ? { ...hit.document, _searchTitleMatches: titleMatches } : hit.document;
+  const fields = fieldMatches(hit);
+  if (Object.keys(fields).length) document = { ...document, _searchFieldMatches: fields };
   const titles = [...identityFields].map(field => hit.document[field]).filter((value): value is string => typeof value === 'string').map(value => plainSnippet(value).toLocaleLowerCase());
-  const highlights = (hit.highlights ?? []).filter(item => item.field && !identityFields.has(item.field) && !item.field.startsWith('search_text_'));
+  const highlights = (hit.highlights ?? []).filter(item => item.field && PROSE_FIELDS.has(item.field));
   highlights.sort((a, b) => Number(b.field === 'body') - Number(a.field === 'body'));
-  const candidates = highlights.flatMap(item => (item.snippet ? [item.snippet] : item.snippets ?? []).map(snippet => ({ field: item.field, text: plainSnippet(snippet) })));
+  const candidates = highlights.flatMap(item => snippetsOf(item).map(snippet => ({ field: item.field, text: plainSnippet(snippet) })));
   const highlight = candidates.find(item => item.text.includes('⟦') && !titles.includes(item.text.replace(/[⟦⟧]/g, '').toLocaleLowerCase()));
   if (!highlight?.field) return document;
   return { ...document, _searchMatch: { field: highlight.field, segments: segmentsFromSnippet(highlight.text) } satisfies SearchMatch };
+}
+
+/** What a row's description slot shows: its own field highlighted in place, else the best prose excerpt. */
+export function descriptionMatch(document: SearchMatchDocument, field?: string): SearchMatch | undefined {
+  return (field ? document._searchFieldMatches?.[field] : undefined) ?? document._searchMatch;
+}
+
+/** Re-highlights a field's matched terms inside the text a row actually displays (e.g. a shortened label). */
+export function highlightText(text: string, match?: SearchMatch): SearchMatch | undefined {
+  if (!match) return undefined;
+  const highlighted = fullTitleMatch(text, match);
+  return highlighted.segments.some(segment => segment.matched) ? highlighted : undefined;
+}
+
+/** Whether the record's own name or title matched, as opposed to stemmed body text or a related record. */
+export function hasIdentityMatch(document: Record<string, unknown>): boolean {
+  const names = [...identityFields].map(field => document[field]).filter(value => typeof value === 'string');
+  return ((document as SearchMatchDocument)._searchTitleMatches ?? [])
+    .some(match => names.includes(match.segments.map(segment => segment.text).join('')));
+}
+
+/** A document's date chip, highlighted when the query matched its indexed date or year. */
+export function documentDateMatch(document: SearchMatchDocument, displayed: string): SearchMatch | undefined {
+  const fields = document._searchFieldMatches;
+  return highlightText(displayed, fields?.document_date_formatted) ?? highlightText(displayed, fields?.document_year);
 }

@@ -108,4 +108,17 @@ describe('DuplicateDutyWarning.vue', () => {
     expect(wrapper.find('[role="alert"]').exists()).toBe(true);
     expect(wrapper.text()).not.toContain('forms.duty_duplicate.other_institutions');
   });
+
+  it('names a match elsewhere in the tenant with a link to its record', () => {
+    const wrapper = mountWarning({ ...EMPTY, same_tenant: [makeMatch({ id: 'duty-9', reason: 'same_tenant', can_view: true })] });
+
+    expect(wrapper.find('[data-testid="duplicate-same-tenant"] a').attributes('href')).toBe('/mocked-route/duties.show');
+  });
+
+  it('marks an inactive match and suggests reviving it', () => {
+    const wrapper = mountWarning({ ...EMPTY, same_institution: [makeMatch({ is_active: false })] });
+
+    expect(wrapper.find('[data-testid="duplicate-inactive"]').exists()).toBe(true);
+    expect(wrapper.text()).toContain('forms.duty_duplicate.inactive_hint');
+  });
 });

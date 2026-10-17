@@ -3,18 +3,11 @@
  *
  * Uses shared search infrastructure with institution-specific functionality.
  */
-
 import { ref, computed, nextTick, type ComputedRef } from 'vue';
 import { useLocalStorage } from '@vueuse/core';
 import { usePage } from '@inertiajs/vue3';
 
-import type {
-  InstitutionSearchFilters,
-  InstitutionFacet,
-  InstitutionSearchPreferences,
-  InstitutionSearchController,
-  SearchError,
-} from '../Types/InstitutionSearchTypes';
+import type { InstitutionSearchFilters, InstitutionFacet, InstitutionSearchPreferences, InstitutionSearchController, SearchError } from '../Types/InstitutionSearchTypes';
 import { InstitutionSearchService } from '../Services/InstitutionSearchService';
 
 import { createTypesenseClients } from './useSearchClient';
@@ -23,12 +16,7 @@ import { useBaseSearch, type BaseSearchService } from '@/Shared/Search/composabl
 import { FilterUtils } from '@/Shared/Search/services/FilterUtils';
 import type { ProcessedSearchResult } from '@/Shared/Search/types';
 
-// Re-export types for backward compatibility
-export type {
-  InstitutionSearchFilters,
-  InstitutionFacet,
-  InstitutionSearchPreferences,
-};
+export type { InstitutionSearchPreferences };
 
 // ============================================================================
 // Types
@@ -93,7 +81,7 @@ class InstitutionSearchServiceAdapter implements BaseSearchService<InstitutionSe
 // Composable
 // ============================================================================
 
-export const useInstitutionSearch = (): InstitutionSearchController => {
+export const useInstitutionSearch = (options: { typeDescendants?: Record<string, string[]> } = {}): InstitutionSearchController => {
   // Extended preferences for institution search
   const institutionPreferences = useLocalStorage<InstitutionPreferences>('institution-search-preferences', {
     viewMode: 'grid', // Default to grid view for institutions
@@ -181,7 +169,7 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
           per_page: 24,
           facet_by: ['tenant_shortname', 'type_slugs', 'has_contacts'].join(','),
           max_facet_values: 50,
-          sort_by: 'duties_count:desc,updated_at:desc',
+          sort_by: 'display_priority:desc,has_logo:desc,name_lt:asc',
         },
         collectionSpecificSearchParameters,
       });
@@ -190,7 +178,7 @@ export const useInstitutionSearch = (): InstitutionSearchController => {
       typesenseClient.value = clients.typesenseClient;
 
       // Create institution service and adapter
-      institutionService.value = new InstitutionSearchService(typesenseClient.value, collectionName);
+      institutionService.value = new InstitutionSearchService(typesenseClient.value, collectionName, options.typeDescendants);
       const adapter = new InstitutionSearchServiceAdapter(institutionService.value, getCurrentLocale);
 
       // Set the service on base search

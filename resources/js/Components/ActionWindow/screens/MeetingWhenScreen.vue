@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { CalendarDays, CalendarSearch, History, type LucideIcon } from 'lucide-vue-next';
+import { CalendarDays, CalendarSearch, History, type LucideIcon } from '@lucide/vue';
 
 import ActionChoiceButton from '../ActionChoiceButton.vue';
 import ActionChoiceList from '../ActionChoiceList.vue';

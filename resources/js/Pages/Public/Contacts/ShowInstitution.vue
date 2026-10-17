@@ -6,10 +6,10 @@
     </Head>
 
     <!-- Hero Section based on v0 redesign -->
-    <section class="border-b border-border">
+    <section :class="availableDetails.length === 0 && 'border-b border-border'">
       <div
         class="mx-auto max-w-7xl px-5 py-12 sm:px-6 lg:px-8 lg:py-16"
-        :class="institution.image_url ? 'grid gap-x-10 gap-y-0 lg:grid-cols-[1.1fr_0.9fr] lg:gap-x-16' : ''"
+        :class="institution.image_url ? 'grid grid-cols-1 gap-x-10 gap-y-0 lg:grid-cols-[1.1fr_0.9fr] lg:gap-x-16' : ''"
       >
         <div class="flex flex-col justify-center">
           <!-- Inline Breadcrumbs -->
@@ -31,7 +31,7 @@
         <!-- Right-column photo card (photo only, no text or logo) -->
         <div
           v-if="institution.image_url"
-          class="relative flex aspect-video min-h-[240px] overflow-hidden border border-border bg-muted/20 sm:aspect-4/3 lg:max-h-[30rem]"
+          class="relative mt-8 flex aspect-4/3 overflow-hidden border border-border bg-muted/20 lg:mt-0 lg:max-h-[30rem]"
         >
           <img
             :src="institution.image_url"
@@ -41,7 +41,7 @@
           >
         </div>
 
-        <div v-if="institution.description" class="mt-2 max-w-3xl pl-5 sm:mt-3 sm:pl-7 lg:col-span-2">
+        <div v-if="institution.description" class="mt-6 max-w-3xl pl-5 sm:pl-7 lg:col-span-2 lg:mt-3">
           <div
             :class="[
               'typography text-base leading-relaxed text-muted-foreground',
@@ -63,7 +63,7 @@
     </section>
 
     <section v-if="availableDetails.length > 0">
-      <RuledGrid :columns="detailColumns" align="center" class="mx-auto max-w-7xl">
+      <RuledGrid :columns="detailColumns" align="center" top-rule="cells" class="mx-auto max-w-7xl">
         <component
           :is="item.href ? 'a' : 'div'"
           v-for="item in availableDetails"
@@ -129,49 +129,6 @@
           :institution-name="String(institution.name)"
         />
 
-        <!-- Mixed contact sections (grouped by duty) -->
-        <div v-else-if="hasMixedGrouping" class="space-y-10">
-          <div v-for="section in contactSections" :key="section.dutyName">
-            <!-- Section header -->
-            <div class="mb-5 border-b border-border pb-2">
-              <!-- eslint-disable-next-line vuejs-accessibility/heading-has-content -- InflectedDutyName supplies a stable screen-reader label. -->
-              <h3 class="text-lg font-bold text-foreground">
-                <InflectedDutyName :name="institutionDutyName(section.dutyName)" />
-              </h3>
-            </div>
-
-            <!-- Grouped duty contacts -->
-            <div v-if="section.type === 'grouped_duty'" class="space-y-6">
-              <div v-for="group in section.groups" :key="group.name">
-                <h4 class="mb-3 text-sm font-semibold text-muted-foreground">
-                  {{ group.name }}
-                </h4>
-                <div :class="contactGridClass">
-                  <ContactCard
-                    v-for="contact in group.contacts"
-                    :key="contact.id"
-                    :contact
-                    :duties="contact.duties || []"
-                    hide-duty-names
-                  />
-                </div>
-              </div>
-            </div>
-
-            <!-- Flat duty contacts -->
-            <div v-else :class="contactGridClass">
-              <ContactCard
-                v-for="contact in section.contacts"
-                :key="contact.id"
-                :contact
-                :duties="contact.duties || []"
-                hide-duty-names
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Flat contacts grid -->
         <div v-else :class="contactGridClass">
           <ContactCard
             v-for="contact in contacts"
@@ -294,7 +251,6 @@ import { computed, ref } from 'vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';
@@ -331,18 +287,6 @@ const contactGridClass = [
   'lg:[&>*:not(:nth-child(3n)):not(:last-child)]:border-r lg:[&>*:not(:nth-last-child(-n+3))]:border-b',
 ].join(' ');
 
-interface ContactGroup {
-  name: string;
-  contacts: Array<App.Entities.User>;
-}
-
-interface ContactSection {
-  type: 'grouped_duty' | 'flat_duty';
-  dutyName: string;
-  groups?: Array<ContactGroup>;
-  contacts?: Array<App.Entities.User>;
-}
-
 interface AcademicYearGroup {
   year_key: string;
   year_label: string;
@@ -364,9 +308,7 @@ interface DutyTypeTab {
 const $page = usePage();
 
 const props = defineProps<{
-  contacts?: Array<App.Entities.User>;
-  contactSections?: Array<ContactSection>;
-  hasMixedGrouping?: boolean;
+  contacts: Array<App.Entities.User & { duties?: Array<App.Entities.Duty & { contact_tenant?: string | null }> }>;
   institution: App.Entities.Institution;
   currentYearMeetings?: AcademicYearGroup;
   previousYearsMeetings?: Array<AcademicYearGroup>;
@@ -456,20 +398,6 @@ const extractSocialTag = (url: string, prefix = ''): string => {
   return url.trim();
 };
 
-const institutionDutyName = (name: string): string => {
-  const normalizedName = name.trim().toLocaleLowerCase();
-
-  if (['koordinatorius (-ė)', 'coordinator'].includes(normalizedName)) {
-    return $t('Koordinatoriai');
-  }
-
-  if (['kuratorius (-ė)', 'mentor'].includes(normalizedName)) {
-    return $t('Kuratoriai');
-  }
-
-  return name;
-};
-
 // Available details for mini-card grid (v0 redesign)
 const availableDetails = computed(() => {
   const items: Array<{
@@ -552,22 +480,12 @@ const availableDetails = computed(() => {
 
 const detailColumns = computed<RuledGridColumns>(() => {
   const count = availableDetails.value.length;
-  const wideColumns = Math.max(1, Math.min(count, 5)) as RuledGridColumns['base'];
-  return { base: 1, sm: count <= 1 ? 1 : 2, lg: count <= 5 ? wideColumns : 3 };
+  // Four fit one row; five or more wrap at three so the rows stay balanced.
+  const wideColumns = (count === 4 ? 4 : Math.max(1, Math.min(count, 3))) as RuledGridColumns['base'];
+  return { base: 1, sm: count <= 1 ? 1 : 2, lg: wideColumns };
 });
 
-// Check if there are any contacts
-const hasAnyContacts = computed(() => {
-  if (props.hasMixedGrouping) {
-    return (props.contactSections?.length ?? 0) > 0 && props.contactSections?.some((section) => {
-      if (section.type === 'grouped_duty') {
-        return section.groups?.some(group => (group.contacts?.length ?? 0) > 0);
-      }
-      return (section.contacts?.length ?? 0) > 0;
-    });
-  }
-  return (props.contacts?.length ?? 0) > 0;
-});
+const hasAnyContacts = computed(() => props.contacts.length > 0);
 
 // Calculate vote alignment for meetings using composable
 const getVoteAlignment = (meeting: App.Entities.Meeting): 'aligned' | 'mixed' | 'misaligned' | 'no_data' => {

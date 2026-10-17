@@ -5,7 +5,6 @@
       <meta name="description" :content="$t('search.institution_page_description')">
     </Head>
 
-    <!-- Page Title Band per v0 redesign -->
     <PageTitleBand
       :eyebrow="pageEyebrow"
       :title="$t('Kontaktai')"
@@ -33,6 +32,22 @@
     <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
       <!-- Search, Filter Controls & View Mode -->
       <div class="space-y-4">
+        <div v-if="rootTypes.length > 0" class="hidden flex-wrap items-center gap-1.5 pb-1 sm:flex">
+          <span class="mr-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            {{ $t('Kategorijos') }}:
+          </span>
+          <button
+            v-for="type in rootTypes"
+            :key="`quick-${type.slug}`"
+            type="button"
+            :aria-pressed="isTypeSelected(type.slug)"
+            :class="controlVariants({ size: 'sm', voice: 'sentence', active: isTypeSelected(type.slug) })"
+            @click="searchController.toggleType(type.slug)"
+          >
+            {{ type.title }}
+          </button>
+        </div>
+
         <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center">
           <!-- Search Input -->
           <div class="relative min-w-0 flex-1">
@@ -60,20 +75,13 @@
           <!-- Filter Button (opens filter popovers row) -->
           <button
             type="button"
-            :class="[
-              'inline-flex h-11 items-center justify-center gap-2 border px-5 text-xs font-bold uppercase tracking-wide transition-colors shrink-0',
-              showFilterBar || activeFilterCount > 0
-                ? 'border-brand text-brand bg-brand/5 hover:bg-brand/10'
-                : 'border-border bg-background text-foreground hover:border-brand hover:text-brand',
-            ]"
+            :aria-expanded="showFilterBar"
+            :class="controlVariants({ active: showFilterBar || activeFilterCount > 0 })"
             @click="showFilterBar = !showFilterBar"
           >
             <IFluentFilter20Regular class="size-4" />
             <span>{{ $t('Filtrai') }}</span>
-            <span
-              v-if="activeFilterCount > 0"
-              class="flex size-4 items-center justify-center bg-brand-fill text-brand-foreground text-[0.625rem] font-mono leading-none"
-            >
+            <span v-if="activeFilterCount > 0" :class="controlCountClass">
               {{ activeFilterCount }}
             </span>
             <IFluentChevronDown16Regular
@@ -88,6 +96,23 @@
           v-show="showFilterBar"
           class="flex flex-wrap items-center gap-2 border-t border-border/60 pt-3"
         >
+          <!-- On phones the quick categories live here instead of above the search -->
+          <div v-if="rootTypes.length > 0" data-testid="quick-types-panel" class="flex w-full flex-wrap items-center gap-1.5 pb-1 sm:hidden">
+            <span class="mr-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              {{ $t('Kategorijos') }}:
+            </span>
+            <button
+              v-for="type in rootTypes"
+              :key="`quick-panel-${type.slug}`"
+              type="button"
+              :aria-pressed="isTypeSelected(type.slug)"
+              :class="controlVariants({ size: 'sm', voice: 'sentence', active: isTypeSelected(type.slug) })"
+              @click="searchController.toggleType(type.slug)"
+            >
+              {{ type.title }}
+            </button>
+          </div>
+
           <!-- Tenant / Padalinys Filter Popover -->
           <PublicFilterPopover
             :label="$t('Padalinys')"
@@ -177,13 +202,15 @@
         </div>
       </div>
 
-      <!-- Results Count Bar -->
-      <div class="mt-8 flex items-center justify-between border-b border-border pb-3">
-        <div class="text-xs font-mono uppercase tracking-wider text-muted-foreground">
-          <span v-if="isSearching">
-            {{ $t('search.searching') }}
+      <div class="mt-8 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-border pb-4">
+        <div class="flex items-center gap-3">
+          <span class="flex size-8 items-center justify-center border border-brand/40 bg-brand/10 text-brand">
+            <IFluentBuilding20Regular class="size-4" />
           </span>
-          <span v-else>
+          <h2 class="text-sm font-bold uppercase tracking-[0.18em] text-foreground">
+            {{ $t('Kontaktai') }}
+          </h2>
+          <span class="text-xs text-muted-foreground font-mono">
             {{ totalHits }} {{ $t('search.results') }}
           </span>
         </div>
@@ -197,7 +224,7 @@
       <!-- Results -->
       <div class="mt-6">
         <!-- Initial Loading Skeletons -->
-        <div v-if="isSearching && !hasResults" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+        <div v-if="isSearching && !hasResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           <InstitutionResultsSkeleton
             v-for="i in 6"
             :key="`skeleton-${i}`"
@@ -233,22 +260,23 @@
         </div>
 
         <!-- Results Grid -->
-        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+        <div v-else class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           <template v-for="institution in institutions" :key="institution.id">
             <StudentRepInstitutionCard
               v-if="isStudentRepInstitution(institution)"
               :institution
+              :omit-type-slugs="filters.types"
             />
             <NewInstitutionCard
               v-else
               :institution
-              show-metadata
+              :omit-type-slugs="filters.types"
             />
           </template>
         </div>
 
         <!-- Loading More Skeletons -->
-        <div v-if="isLoadingMore" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+        <div v-if="isLoadingMore" class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           <InstitutionResultsSkeleton
             v-for="i in 3"
             :key="`more-skeleton-${i}`"
@@ -289,6 +317,7 @@ import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import TagChip from '@/Components/Brand/TagChip.vue';
 import PublicFilterPopover, { type FilterOption } from '@/Components/Public/Base/PublicFilterPopover.vue';
+import { controlCountClass, controlVariants } from '@/Components/ui/control';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import NewInstitutionCard from '@/Components/Public/Institutions/NewInstitutionCard.vue';
 import StudentRepInstitutionCard from '@/Components/Public/Institutions/StudentRepInstitutionCard.vue';
@@ -300,9 +329,16 @@ import IFluentFilter20Regular from '~icons/fluent/filter-20-regular';
 import IFluentChevronDown16Regular from '~icons/fluent/chevron-down-16-regular';
 import IFluentArrowRight16Regular from '~icons/fluent/arrow-right-16-regular';
 import IFluentPeople16Regular from '~icons/fluent/people-16-regular';
+import IFluentBuilding20Regular from '~icons/fluent/building-20-regular';
+
+interface InstitutionTypeNode {
+  slug: string;
+  title: string;
+  parent_slug: string | null;
+}
 
 interface Props {
-  institutionTypes?: Record<string, string>;
+  institutionTypes?: InstitutionTypeNode[];
   studentRepTypeSlugs?: string[];
 }
 
@@ -314,7 +350,7 @@ interface SearchInstitutionItem {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  institutionTypes: () => ({}),
+  institutionTypes: () => [],
   studentRepTypeSlugs: () => ['studentu-atstovu-organas'],
 });
 
@@ -326,8 +362,16 @@ const isStudentRepInstitution = (inst: SearchInstitutionItem): boolean => {
   return slugs.some(slug => props.studentRepTypeSlugs.includes(slug));
 };
 
+const childTypes = (slug: string) => props.institutionTypes.filter(type => type.parent_slug === slug);
+
+const descendantSlugs = (slug: string): string[] => childTypes(slug).flatMap(child => [child.slug, ...descendantSlugs(child.slug)]);
+
+const rootTypes = computed(() => props.institutionTypes.filter(type => !type.parent_slug));
+
 const page = usePage();
-const searchController = useInstitutionSearch();
+const searchController = useInstitutionSearch({
+  typeDescendants: Object.fromEntries(props.institutionTypes.map(type => [type.slug, descendantSlugs(type.slug)])),
+});
 const {
   results: institutions,
   isSearching,
@@ -370,9 +414,12 @@ usePageBreadcrumbs(
   { placement: 'band' },
 );
 
-// Type label resolver
 const getTypeLabel = (typeSlug: string) => {
-  return props.institutionTypes[typeSlug] || typeSlug;
+  return props.institutionTypes.find(type => type.slug === typeSlug)?.title || typeSlug;
+};
+
+const isTypeSelected = (slug: string) => {
+  return filters.value.types?.includes(slug) || false;
 };
 
 // Tenant options computed from facets
@@ -401,14 +448,20 @@ const typeFacet = computed(() => {
   return facets.value.find(f => f.field === 'type_slugs');
 });
 
+// Parents are listed above their sub-types. A parent filter also matches its sub-types, so its
+// own facet count would undercount; it gets none rather than a misleading one.
 const typeOptions = computed<FilterOption[]>(() => {
-  const facet = typeFacet.value;
-  if (!facet?.values) return [];
-  return facet.values.map(v => ({
-    value: String(v.value),
-    label: props.institutionTypes[String(v.value)] || String(v.value),
-    count: v.count,
-  }));
+  const counts = new Map((typeFacet.value?.values ?? []).map(v => [String(v.value), v.count]));
+
+  const branch = (type: InstitutionTypeNode, depth: number): FilterOption[] => {
+    const children = childTypes(type.slug);
+    return [
+      { value: type.slug, label: type.title, depth, count: children.length > 0 ? null : (counts.get(type.slug) ?? 0) },
+      ...children.flatMap(child => branch(child, depth + 1)),
+    ];
+  };
+
+  return rootTypes.value.flatMap(type => branch(type, 0));
 });
 
 const clearTypes = () => {

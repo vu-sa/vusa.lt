@@ -145,7 +145,7 @@
 import { Icon } from '@iconify/vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowDown, ArrowUp, ArrowUpDown, GripVertical, Link as LinkIcon, Plus, Star } from 'lucide-vue-next';
+import { ArrowDown, ArrowUp, ArrowUpDown, GripVertical, Link as LinkIcon, Plus, Star } from '@lucide/vue';
 import { useSortable } from '@vueuse/integrations/useSortable';
 import { computed, h, ref, toRef, type FunctionalComponent } from 'vue';
 

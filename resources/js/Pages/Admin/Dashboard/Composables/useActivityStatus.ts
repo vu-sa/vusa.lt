@@ -2,7 +2,6 @@
  * Activity status of a representative, on the shared status roles:
  * active (today / 7 days) → success, recent (30 days) → attention, stale → neutral, never → danger.
  */
-
 import { trans } from 'laravel-vue-i18n';
 
 import type { RepresentativeActivityCategory } from '../types';
@@ -75,33 +74,12 @@ export function getActivityTextClasses(category: RepresentativeActivityCategory 
   return statusRoleParts[getActivityRole(category)].text;
 }
 
-export function getActivityBadgeClasses(category: RepresentativeActivityCategory | undefined): string {
-  const parts = statusRoleParts[getActivityRole(category)];
-  return `${parts.surface} ${parts.text}`;
-}
-
-/**
- * Get short label for activity status (used in badges)
- */
-export function getActivityShortLabel(category: RepresentativeActivityCategory | undefined): string {
-  if (!category) return '';
-  return trans(`activity.status_short.${category}`);
-}
-
 /**
  * Get localized label for activity status (used in tooltips)
  */
 export function getActivityLabel(category: RepresentativeActivityCategory | undefined): string {
   if (!category) return '';
   return trans(`activity.status.${category}`);
-}
-
-/**
- * Get localized tooltip label (longer form for tooltips)
- */
-export function getActivityTooltipLabel(category: RepresentativeActivityCategory | undefined): string {
-  if (!category) return '';
-  return trans(`activity.status_tooltip.${category}`);
 }
 
 /**

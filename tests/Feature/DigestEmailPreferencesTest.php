@@ -24,6 +24,13 @@ beforeEach(function (): void {
 });
 
 describe('getAvailableNotificationEmails', function (): void {
+    test('a former member recorded without an email has nowhere to receive mail', function (): void {
+        $this->user->update(['email' => null]);
+
+        expect($this->user->getAvailableNotificationEmails())->toBe([])
+            ->and($this->user->notificationEmails())->toBe([]);
+    });
+
     test('returns user email when user has no duties', function (): void {
         $emails = $this->user->getAvailableNotificationEmails();
 

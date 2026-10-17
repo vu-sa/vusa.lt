@@ -63,6 +63,21 @@ describe('unauthorized access', function (): void {
 });
 
 describe('authorized access', function (): void {
+    test('inline duty creation returns the model without navigating away', function (array $headers): void {
+        $response = asUser($this->dutyManager)->withHeaders($headers)->post(route('duties.store'), [
+            'name' => ['lt' => 'Vedlio pareigybė', 'en' => 'Wizard duty'],
+            'institution_id' => $this->dutyManagerDuty->institution_id,
+            'contacts_grouping' => 'none',
+        ]);
+
+        $created = Duty::where('name->lt', 'Vedlio pareigybė')->sole();
+        $response->assertOk()->assertJsonPath('success', true)->assertJsonPath('duty.id', $created->id);
+        expect($response->headers->has('Location'))->toBeFalse();
+    })->with([
+        'JSON accept header' => [['Accept' => 'application/json']],
+        'legacy partial-data header' => [['X-Inertia-Partial-Data' => 'created']],
+    ]);
+
     test('duty manager can access duties index', function (): void {
         $response = asUser($this->dutyManager)->get(route('duties.index'));
         $response->assertOk();
@@ -89,12 +104,16 @@ describe('authorized access', function (): void {
             'places_to_occupy' => 1,
         ]);
 
-        $response->assertRedirect();
+        $response->assertSessionHasNoErrors();
 
         $this->assertDatabaseHas('duties', [
             'institution_id' => $institution->id,
             'email' => 'duty@example.com',
         ]);
+
+        $created = Duty::where('email', 'duty@example.com')->sole();
+        $response->assertRedirectToRoute('duties.show', $created)->assertSessionHas('success');
+        asUser($this->dutyManager)->get(route('duties.show', $created))->assertOk();
     });
 
     test('super admin can create new duty', function (): void {
@@ -124,7 +143,6 @@ describe('authorized access', function (): void {
             'name' => ['lt' => 'Atnaujinta pareiga', 'en' => 'Updated Duty'],
             'description' => ['lt' => 'Naujas aprašymas', 'en' => 'New description'],
             'email' => 'updated@example.com',
-            'is_active' => false,
             'institution_id' => $this->dutyManagerDuty->institution_id,
             'contacts_grouping' => 'none',
             'places_to_occupy' => 1,

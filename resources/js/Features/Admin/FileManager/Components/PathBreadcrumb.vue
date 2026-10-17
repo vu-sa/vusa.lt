@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { ChevronRight, Home } from 'lucide-vue-next';
+import { ChevronRight, Home } from '@lucide/vue';
 
 /** The folder path as clickable steps; the caller owns what a path means (local uploads or SharePoint). */
 defineProps<{

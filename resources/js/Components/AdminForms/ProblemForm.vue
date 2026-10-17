@@ -276,7 +276,7 @@
 import { useForm } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { ChevronsUpDown, CircleDot, Layers, Trash2, X } from 'lucide-vue-next';
+import { ChevronsUpDown, CircleDot, Layers, Trash2, X } from '@lucide/vue';
 import {
   ComboboxAnchor,
   ComboboxEmpty,

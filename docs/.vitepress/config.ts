@@ -17,13 +17,13 @@ export default defineConfig({
   },
   
   // Base URL path
-  base: '/docs/',
+  base: '/gidas/',
   
   // Enable last updated timestamp based on git
   lastUpdated: true,
   
   // GitHub integration settings
-  outDir: '../public/docs',
+  outDir: '../public/gidas',
   cleanUrls: true,
 
   // The generated coverage dashboard is read in-repo, never published; pdf/ holds the PDF build's sources.
@@ -116,7 +116,7 @@ export default defineConfig({
     warnAboutMissingScreenshots(siteConfig.srcDir)
 
     const changelogDir = path.resolve(__dirname, '../changelog')
-    const outDir = path.resolve(__dirname, '../..', 'public/docs')
+    const outDir = path.resolve(__dirname, '../..', 'public/gidas')
 
     try {
       // One file per major version (v1.md, v2.md, …); the highest major holds the newest entries.

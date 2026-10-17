@@ -191,7 +191,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Eye, House, Plus } from 'lucide-vue-next';
+import { Eye, House, Plus } from '@lucide/vue';
 import { computed } from 'vue';
 
 import { pageStatus } from './pageStatus';

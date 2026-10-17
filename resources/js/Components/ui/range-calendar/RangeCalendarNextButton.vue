@@ -17,7 +17,7 @@
 import type { RangeCalendarNextProps } from 'reka-ui';
 import type { HTMLAttributes } from 'vue';
 import { reactiveOmit } from '@vueuse/core';
-import { ChevronRight } from 'lucide-vue-next';
+import { ChevronRight } from '@lucide/vue';
 import { RangeCalendarNext, useForwardProps } from 'reka-ui';
 
 import { cn } from '@/Utils/Shadcn/utils';

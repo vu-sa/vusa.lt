@@ -12,7 +12,7 @@
         {{ imageUrl ? $t('rich-content.edit_image') : $t('rich-content.select_image') }}
       </span>
     </button>
-    <PopoverContent v-if="hotspots.isPopoverOpen(hotspotId)" data-surface="public"
+    <PopoverContent v-if="hotspots.isPopoverOpen(hotspotId)"
       class="max-h-[calc(100dvh-2rem)] w-[min(32rem,calc(100vw-2rem))] overflow-y-auto"
       @close-auto-focus.prevent @pointer-down-outside="(event) => { if (isImageModalOpen) event.preventDefault(); }"
       @interact-outside="(event) => { if (isImageModalOpen) event.preventDefault(); }">

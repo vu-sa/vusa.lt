@@ -21,6 +21,27 @@ beforeEach(function (): void {
     ]);
 });
 
+test('creation falls back to an accessible page when the editor is forbidden', function (bool $canRead, string $destination): void {
+    $actor = makeUser($this->tenant);
+    $actor->givePermissionTo('pages.create.padalinys');
+    if ($canRead) {
+        $actor->givePermissionTo('pages.read.padalinys');
+    }
+    $data = getControllerTestData('Page')['valid'];
+    $data['title'] = 'Sukurtas puslapis';
+    $data['tenant_id'] = $this->tenant->id;
+
+    asUser($actor)->post(route('pages.store'), $data)
+        ->assertRedirectToRoute($destination)->assertSessionHas('success')->assertSessionHasNoErrors();
+
+    $created = Page::where('title', $data['title'])->sole();
+    expect($actor->can('update', $created))->toBeFalse();
+    asUser($actor)->get(route($destination))->assertOk();
+})->with([
+    'read access returns to the list' => [true, 'pages.index'],
+    'create-only access returns to the dashboard' => [false, 'dashboard'],
+]);
+
 describe('unauthorized access', function (): void {
     test('cannot access index page', function (): void {
         asUser($this->user)
@@ -92,12 +113,13 @@ describe('authorized access', function (): void {
 
     test('can store page with valid data', function (): void {
         $validData = getControllerTestData('Page')['valid'];
+        $validData['title'] = 'Sukurtas puslapis';
         $validData['tenant_id'] = $this->tenant->id;
 
-        asUser($this->admin)
+        $response = asUser($this->admin)
             ->post(route('pages.store'), $validData)
             ->assertStatus(302)
-            ->assertRedirect(route('pages.index'))
+            ->assertSessionHasNoErrors()
             ->assertSessionHas('success');
 
         // The permalink is no longer client-supplied — the server derives it from the title
@@ -109,6 +131,10 @@ describe('authorized access', function (): void {
             'is_active' => $validData['is_active'],
             'tenant_id' => $this->tenant->id,
         ]);
+
+        $created = Page::where('title', $validData['title'])->sole();
+        $response->assertRedirectToRoute('pages.edit', $created)->assertSessionHas('success');
+        asUser($this->admin)->get(route('pages.edit', $created))->assertOk();
     });
 
     test('cannot store page with invalid data', function (): void {
@@ -312,7 +338,7 @@ describe('edge cases and business logic', function (): void {
         asUser($this->admin)
             ->post(route('pages.store'), $validData)
             ->assertStatus(302)
-            ->assertRedirect(route('pages.index'))
+            ->assertRedirectToRoute('pages.edit', Page::query()->latest('id')->firstOrFail())
             ->assertSessionHas('success');
 
         // Scoped per tenant: the other tenant's identical slug doesn't force a suffix here.
@@ -368,7 +394,7 @@ describe('edge cases and business logic', function (): void {
         asUser($this->admin)
             ->post(route('pages.store'), $specialCharsData)
             ->assertStatus(302)
-            ->assertRedirect(route('pages.index'));
+            ->assertRedirectToRoute('pages.edit', Page::query()->latest('id')->firstOrFail());
 
         // Str::slug transliterates Lithuanian diacritics on its own — no explicit permalink needed.
         $this->assertDatabaseHas('pages', [

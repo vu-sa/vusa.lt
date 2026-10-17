@@ -60,7 +60,7 @@
 import { Head, router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { FolderPlus, HardDrive, Upload } from 'lucide-vue-next';
+import { FolderPlus, HardDrive, Upload } from '@lucide/vue';
 import { ref } from 'vue';
 
 import FileManager from '@/Features/Admin/FileManager/FileManager.vue';

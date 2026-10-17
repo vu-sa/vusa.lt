@@ -58,7 +58,7 @@ import { StarterKit } from '@tiptap/starter-kit';
 import { Suggestion } from '@tiptap/suggestion';
 import { computePosition, flip, offset, shift } from '@floating-ui/dom';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Bold, Check, Italic, Link as LinkIcon, Strikethrough } from 'lucide-vue-next';
+import { Bold, Check, Italic, Link as LinkIcon, Strikethrough } from '@lucide/vue';
 import type { Awareness } from 'y-protocols/awareness';
 import type * as Y from 'yjs';
 

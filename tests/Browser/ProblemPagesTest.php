@@ -99,10 +99,11 @@ it('registers a problem through the form', function (): void {
     docsScreenshot($page, 'problem-form');
 
     $page->click('[data-testid=form-page-save]');
-    waitForInertiaRender($page, '[data-slot=collection-page]');
+    waitForInertiaRender($page, '[data-slot=record-title]');
 
-    expect(Problem::query()->where('title->lt', 'Per mažai vietų skaitykloje sesijos metu')->value('created_by'))
-        ->toBe($this->representative->id);
+    $problem = Problem::query()->where('title->lt', 'Per mažai vietų skaitykloje sesijos metu')->sole();
+    expect($problem->created_by)->toBe($this->representative->id);
+    $page->assertPathIs("/mano/problems/{$problem->id}");
 
     $page->assertNoJavaScriptErrors();
 });

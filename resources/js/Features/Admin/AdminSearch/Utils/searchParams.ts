@@ -18,7 +18,7 @@ export const INFIX_FIELDS: Record<string, Set<string>> = {
   institutions: new Set(['name_lt', 'name_en', 'short_name_lt', 'short_name_en', 'alias']),
   documents: new Set(['title', 'summary', 'name', 'content_type', 'document_year', 'document_date_formatted']),
   resources: new Set(['name_lt', 'name_en', 'description_lt', 'description_en', 'location']),
-  duties: new Set(['name_lt', 'name_en', 'institution_name_lt', 'institution_name_en']),
+  duties: new Set(['name_lt', 'name_en', 'former_names', 'institution_name_lt', 'institution_name_en']),
 };
 
 /**

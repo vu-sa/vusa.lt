@@ -68,6 +68,16 @@ describe('ContactWithPhoto', () => {
     wrapper.unmount();
   });
 
+  it('names the represented tenant next to the inflected duty', () => {
+    wrapper = mountCard(makeContact({ pronouns: 'ji / jos' }), [
+      makeDuty({ name: 'Parlamento narys', contact_tenant: 'VU SA MIF' }),
+    ]);
+
+    expect(wrapper.find('[data-testid="contact-duty-tenant"]').text()).toBe('· VU SA MIF');
+    expect(wrapper.text()).toContain('Parlamento narė');
+    wrapper.unmount();
+  });
+
   it('falls back to the other locale’s pronouns before guessing from the name', () => {
     wrapper = mountCard(makeContact({
       name: 'Jonas Jonaitis', pronouns: '', duty_pronouns: { lt: '', en: 'she / her' },
@@ -130,6 +140,19 @@ describe('ContactWithPhoto', () => {
 
       expect(wrapper.find('a[href^="mailto:"]').attributes('href')).toBe('mailto:pirm@vusa.lt');
       expect(wrapper.findAll('button').some(b => b.text().includes('+1'))).toBe(true);
+    });
+  });
+
+  describe('action links', () => {
+    it('renders phone and Facebook as plain links, not buttons nested in links', () => {
+      wrapper = mountCard(makeContact({ phone: '+37060000000', facebook_url: 'https://facebook.com/vusa' }), []);
+
+      const phone = wrapper.find('a[href="tel:+37060000000"]');
+      const facebook = wrapper.find('a[href="https://facebook.com/vusa"]');
+      expect(phone.exists()).toBe(true);
+      expect(facebook.exists()).toBe(true);
+      expect(phone.find('button').exists()).toBe(false);
+      expect(facebook.find('button').exists()).toBe(false);
     });
   });
 

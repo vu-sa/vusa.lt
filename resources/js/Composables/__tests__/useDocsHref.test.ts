@@ -8,14 +8,14 @@ describe('useDocsHref', () => {
   test('sends English users to the Lithuanian guide page, which has no translation', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ app: { locale: 'en' } }));
 
-    expect(useDocsHref('/rezervacijos/rezervacijos#busenos').value).toBe('/docs/rezervacijos/rezervacijos#busenos');
+    expect(useDocsHref('/rezervacijos/rezervacijos#busenos').value).toBe('/gidas/rezervacijos/rezervacijos#busenos');
   });
 
   test('keeps the bare base localized for the bilingual changelog', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ app: { locale: 'en' } }));
-    expect(useDocsHref().value).toBe('/docs/en');
+    expect(useDocsHref().value).toBe('/gidas/en');
 
     vi.mocked(usePage).mockReturnValue(createMockPage({ app: { locale: 'lt' } }));
-    expect(useDocsHref().value).toBe('/docs');
+    expect(useDocsHref().value).toBe('/gidas');
   });
 });

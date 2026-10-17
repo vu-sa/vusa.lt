@@ -31,13 +31,6 @@ export interface MeetingFacet {
   }>;
 }
 
-// Re-use search error, status, and state types from document search
-export type {
-  SearchError,
-  SearchStatus,
-  SearchState,
-} from './DocumentSearchTypes';
-
 // Meeting-specific preferences
 export interface MeetingSearchPreferences {
   viewMode: 'list' | 'compact';
@@ -99,28 +92,3 @@ export interface MeetingSearchController {
   initializeSearchClient: () => any;
   cancelPendingSearch?: () => void;
 }
-
-// Constants
-export const MEETING_SEARCH_CONSTANTS = {
-  MIN_QUERY_LENGTH: 3,
-  DEFAULT_PER_PAGE: 24,
-  MAX_RETRIES: 3,
-  SEARCH_TIMEOUT: 10000,
-  DEBOUNCE_DELAY: 300,
-  MAX_RECENT_SEARCHES: 10,
-  MAX_FACET_VALUES: 50,
-} as const;
-
-export const MEETING_FACET_FIELD_LABELS: Record<string, string> = {
-  tenant_shortname: 'Organization',
-  institution_type_title: 'Institution Type',
-  year: 'Year',
-  month: 'Month',
-  student_success_rate: 'Success Rate',
-} as const;
-
-export const SUCCESS_RATE_RANGES: Record<string, { label: string; min?: number; max?: number }> = {
-  high: { label: 'High (>75%)', min: 75 },
-  medium: { label: 'Medium (50-75%)', min: 50, max: 74 },
-  low: { label: 'Low (<50%)', max: 49 },
-} as const;

@@ -1,11 +1,6 @@
 // Source: https://github.com/sereneinserenade/tiptap-extension-video
 // Instructions: https://www.codemzy.com/blog/tiptap-video-embed-extension
-
 import { Node, nodeInputRule } from '@tiptap/core';
-
-export interface VideoOptions {
-  HTMLAttributes: Record<string, unknown>;
-}
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {

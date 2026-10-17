@@ -331,7 +331,7 @@
 import { Head, router } from '@inertiajs/vue3';
 import { refDebounced, useMediaQuery, useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ChevronRight, Eye, EyeOff, Folder, FolderTree, List, Search, Trash2, TriangleAlert } from 'lucide-vue-next';
+import { ChevronRight, Eye, EyeOff, Folder, FolderTree, List, Search, Trash2, TriangleAlert } from '@lucide/vue';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 import DocumentFileActions from './DocumentFileActions.vue';

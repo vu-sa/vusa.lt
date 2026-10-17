@@ -80,7 +80,7 @@ import { nextTick, shallowRef, unref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link } from '@inertiajs/vue3';
 import { insertNodeAt, removeNode, useSortable } from '@vueuse/integrations/useSortable';
-import { GripVertical, Pencil, Plus, Trash2 } from 'lucide-vue-next';
+import { GripVertical, Pencil, Plus, Trash2 } from '@lucide/vue';
 
 import NavigationColumn from './NavigationColumn.vue';
 import type { AdminNavigationLink, AdminNavigationRoot } from './types';

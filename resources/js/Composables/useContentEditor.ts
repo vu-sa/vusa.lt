@@ -286,7 +286,7 @@ export function useContentEditor<T extends Record<string, unknown>>(kind: Conten
         }
         catch { /* A blocked storage API must not turn a completed save into an error. */ }
         form.defaults();
-        router.visit(route(`${kind}.edit`, saved.id));
+        router.visit(data.meta?.redirect_url ?? route(`${kind}.edit`, saved.id));
       }
     }
     catch (error) {

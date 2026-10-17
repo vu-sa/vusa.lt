@@ -157,7 +157,7 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { CircleDot, Trash2 } from 'lucide-vue-next';
+import { CircleDot, Trash2 } from '@lucide/vue';
 import { capitalize, computed, ref } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';

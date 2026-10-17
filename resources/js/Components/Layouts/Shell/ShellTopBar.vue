@@ -43,10 +43,11 @@
           variant="brand"
           size="sm"
           class="hidden h-8 md:inline-flex pointer-coarse:h-11"
+          aria-haspopup="dialog"
           @click="emit('create')"
         >
-          <Plus class="size-4" />
-          {{ $t('shell.chrome.create') }}
+          <MousePointerClick class="size-4" />
+          {{ $t('shell.chrome.actions') }}
         </Button>
 
         <!-- Phones get notifications from the bottom bar. -->
@@ -65,7 +66,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Plus } from 'lucide-vue-next';
+import { MousePointerClick } from '@lucide/vue';
 import { computed } from 'vue';
 
 import PaletteField from './PaletteField.vue';

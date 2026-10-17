@@ -5,11 +5,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 /**
- * Public and admin pages share one stylesheet but not one palette: app.css redefines the design
- * tokens (canvas, ink, border, radius) under [data-surface="public"] / [data-surface="admin"], and
- * App\Support\DesignSurface (read by app.blade.php) is the only thing that turns either scope on.
- * If the attribute stops being emitted, the page silently falls back to the zinc canvas — a
- * regression with no error anywhere, which is why it is worth a test of its own.
+ * The palette is global, but the surface-specific rules (admin table numerals and progress bar,
+ * public prose colour) only apply through the attribute, and nothing errors if it goes missing.
  */
 it('marks public pages with the public design surface', function (): void {
     $html = (string) view('app', ['page' => ['component' => 'Public/HomePage', 'props' => []]]);
@@ -26,12 +23,14 @@ it('marks every admin page with the admin design surface, signed in or not', fun
     expect($html)
         ->toContain('data-surface="admin"')
         ->toContain('bg-background text-foreground')
-        ->toContain('font-public')
-        ->not->toContain('bg-zinc-50');
+        ->toContain('font-public');
 });
 
-it('leaves the surface off when the component is unknown', function (): void {
+it('leaves the surface off but keeps the shared palette when the component is unknown', function (): void {
     $html = (string) view('app', ['page' => ['props' => []]]);
 
-    expect($html)->not->toContain('data-surface');
+    expect($html)
+        ->not->toContain('data-surface')
+        ->toContain('bg-background text-foreground')
+        ->not->toContain('bg-zinc-50');
 });

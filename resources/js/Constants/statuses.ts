@@ -1,4 +1,4 @@
-import type { LucideIcon } from 'lucide-vue-next';
+import type { LucideIcon } from '@lucide/vue';
 import {
   Ban,
   CalendarCheck,
@@ -25,7 +25,7 @@ import {
   ThumbsDown,
   ThumbsUp,
   TriangleAlert,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import { DocumentStatus, GoalStatus, InstitutionActivityStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
 

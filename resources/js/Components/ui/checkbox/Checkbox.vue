@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import type { CheckboxRootEmits, CheckboxRootProps } from 'reka-ui';
-import { Check, Minus } from 'lucide-vue-next';
+import { Check, Minus } from '@lucide/vue';
 import { CheckboxIndicator, CheckboxRoot, useForwardPropsEmits } from 'reka-ui';
 import { computed, type HTMLAttributes } from 'vue';
 

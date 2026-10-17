@@ -75,7 +75,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Link, router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { useSortable } from '@vueuse/integrations/useSortable';
-import { Eye, Pencil, Plus } from 'lucide-vue-next';
+import { Eye, Pencil, Plus } from '@lucide/vue';
 
 import NavigationRootItem from './NavigationRootItem.vue';
 import NavigationPreview from './NavigationPreview.vue';

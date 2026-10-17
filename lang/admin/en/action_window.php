@@ -15,7 +15,7 @@ return [
         ],
         'coordinator' => [
             'title' => 'As a coordinator',
-            'description' => 'Duties and cadences',
+            'description' => 'Duties, cadences and information',
         ],
     ],
     'actions' => [
@@ -24,8 +24,8 @@ return [
             'description' => 'A meeting is coming up or already happened — let us record it.',
         ],
         'no_meeting' => [
-            'title' => 'There will be no meetings for a while',
-            'description' => 'Exams or holidays, for example — so you stop getting reminders.',
+            'title' => 'There were or will be no meetings',
+            'description' => 'Mark a period without meetings — so you stop getting reminders.',
         ],
         'complete_meeting' => [
             'title' => 'Fill in a meeting',
@@ -46,6 +46,10 @@ return [
         'cadences' => [
             'title' => 'Manage duty periods',
             'description' => 'Set when people hold their duties, on a timeline.',
+        ],
+        'manage_info' => [
+            'title' => 'Manage information',
+            'description' => 'Every section you can open: pages, news, institutions and more.',
         ],
     ],
     'report' => [
@@ -68,6 +72,7 @@ return [
     'institution' => [
         'title' => 'Which institution?',
         'subtitle' => 'Showing the institutions you hold a duty in.',
+        'subtitle_internal' => 'A meeting created from an event must belong to a VU SR body.',
         'search' => 'Search institutions',
         'empty' => 'You have no institutions you could do this for.',
         'no_meetings_yet' => 'No meetings yet',
@@ -146,44 +151,53 @@ return [
         ],
         'people' => [
             'title' => 'Whom to ask?',
-            'subtitle' => 'Student representatives in your institutions. Each gets one email about all of their institutions.',
+            'subtitle' => 'Choose the representatives you want to ask.',
             'search' => 'Search by name or institution',
             'empty' => 'No representatives found',
             'continue' => 'Continue (:count)',
         ],
         'institutions' => [
             'title' => 'Which institutions to ask about?',
-            'subtitle' => 'Their student representatives get the email “Did the institution meet?” and can answer without signing in.',
+            'subtitle' => 'Choose the institutions you want to ask representatives about.',
             'continue' => 'Continue (:count)',
         ],
         'review' => [
             'title' => 'What we will send, and to whom',
-            'subtitle' => 'Each recipient gets one email about all of their institutions.',
+            'subtitle' => 'Each recipient gets their questions in one notification. Emails follow their notification settings.',
             'recipients' => 'To: :names · asking since :date',
             'change_people' => 'Change representatives',
             'change_institutions' => 'Change institutions',
             'note' => 'Message to recipients (optional)',
             'note_placeholder' => 'E.g. “Please answer by Friday – we are preparing a report.”',
-            'no_sign_in' => 'The email has the buttons “Yes, it met”, “No, it did not” and “Not my institution”. A link opens the reply page; the answer is recorded only after the recipient confirms it.',
+            'no_sign_in' => 'Recipients can reply without signing in. Their answer is saved after they confirm it.',
             'submit' => 'Send questions (:count)',
         ],
     ],
     'check_in' => [
         'explainer_title' => 'What does this mean?',
-        'explainer' => 'If you know there will be no meetings during a period (holidays, exam session), telling us helps avoid unnecessary reminders.',
+        'explainer' => 'Mark that the institution did not meet — from its last meeting or the start of your term until today. If you know there will be no meetings ahead either (exam session, holidays), extend the period forward. That way you get no unnecessary reminders or questions.',
+        'meeting_in_range' => 'A meeting is already recorded in this period (:date). Pick a period without meetings.',
         'until' => [
-            'title' => 'Until when will there be no meetings?',
-            'subtitle' => 'Starting from today.',
-            'two_weeks' => 'Two weeks',
+            'title' => 'Until when are there no meetings?',
+            'subtitle' => 'From :date (:reason).',
+            'reasons' => [
+                'tenure_start' => 'the start of your term',
+                'last_meeting' => 'the day after the last meeting',
+                'last_check_in' => 'the day after your previous report',
+                'today' => 'today',
+            ],
+            'until_today' => 'Until today',
+            'until_today_detail' => 'There were no meetings so far · :range',
+            'two_weeks' => 'Two more weeks',
             'month_end' => 'Until the end of the month',
-            'three_months' => 'Three months',
+            'next_meeting_cap' => 'The next meeting is on :date, so the period ends the day before.',
             'custom' => 'Pick dates…',
             'max_hint' => 'You can report at most three months ahead.',
             'from' => 'From',
             'to' => 'Until',
         ],
         'review' => [
-            'title' => 'Report that there will be no meetings',
+            'title' => 'Mark that there are no meetings',
             'subtitle' => 'Tap a row to change it.',
             'period' => 'Period',
             'note' => 'Note (optional)',

@@ -100,7 +100,7 @@
 import { computed, ref, watch } from 'vue';
 import { watchDebounced } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Users, Search } from 'lucide-vue-next';
+import { Users, Search } from '@lucide/vue';
 
 import type {
   RepresentativeActivityStats,

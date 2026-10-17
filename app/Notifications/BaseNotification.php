@@ -249,6 +249,7 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             ->subject(Str::limit($this->title($notifiable), 59, '…'))
             ->action($action['label'], $action['url'])
             ->markdown('emails.notification', [
+                'recipientName' => $notifiable->name ?? null,
                 'title' => $this->title($notifiable),
                 'body' => $this->body($notifiable),
                 'context' => $this->context($notifiable),

@@ -42,7 +42,7 @@
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref } from 'vue';
-import { FileStack, SearchIcon } from 'lucide-vue-next';
+import { FileStack, SearchIcon } from '@lucide/vue';
 
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { EmptyState, NavigationTiles, OverviewSection, type NavigationTileItem } from '@/Components/Patterns';

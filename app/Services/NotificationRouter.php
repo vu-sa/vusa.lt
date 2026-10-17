@@ -39,7 +39,7 @@ class NotificationRouter
      * The first current duty address — a vusa.lt one first — else the personal email. Reps expect
      * mail at the role's inbox; it is also the address a signature shows, so a reply reaches the role.
      */
-    public function preferredEmail(User $user): string
+    public function preferredEmail(User $user): ?string
     {
         $dutyEmails = $user->current_duties()->pluck('duties.email')->filter()->values();
 

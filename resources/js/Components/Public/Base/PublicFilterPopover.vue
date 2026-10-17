@@ -87,7 +87,10 @@
             ]"
             @click="emit('toggle', option.value)"
           >
-            <span class="flex items-center gap-1.5 min-w-0">
+            <span
+              class="flex items-center gap-1.5 min-w-0"
+              :style="option.depth && !searchTerm ? { paddingInlineStart: `${option.depth}rem` } : undefined"
+            >
               <IFluentStar16Filled v-if="option.starred" class="size-3 shrink-0 text-brand" />
               <span class="text-sm font-medium text-foreground truncate">
                 {{ option.label }}
@@ -143,6 +146,8 @@ export interface FilterOption {
   count?: number | null;
   /** Marks an editorially-important option (e.g. a document type) with a star. */
   starred?: boolean;
+  /** Nesting level under a parent option listed above it; indents the label. */
+  depth?: number;
 }
 
 const props = withDefaults(defineProps<{

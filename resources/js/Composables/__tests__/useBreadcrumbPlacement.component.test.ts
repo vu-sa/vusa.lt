@@ -7,9 +7,6 @@ import { createBreadcrumbState, usePageBreadcrumbs } from '../useBreadcrumbsUnif
 /**
  * Breadcrumb *placement*: `layout` (PublicLayout's own bar) or `band` (the page draws the trail
  * inside its title band). It exists so a detail page shows one trail rather than two.
- *
- * The state is module-level, so the ordering here matters — each test mounts a fresh host that
- * writes, then reads back through the provided state.
  */
 function mountPage(placement?: 'layout' | 'band', label = 'Straipsnis') {
   // The page must be a *child* of the provider: `createBreadcrumbState` provides, and Vue's

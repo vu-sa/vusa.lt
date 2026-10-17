@@ -94,5 +94,3 @@ export const AccessibleImage = Image.extend({
     }];
   },
 });
-
-export default AccessibleImage;

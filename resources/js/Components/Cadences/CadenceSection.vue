@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { Pencil, Plus } from 'lucide-vue-next';
+import { Pencil, Plus } from '@lucide/vue';
 
 import CadenceList from './CadenceList.vue';
 import { prefillFrom, useCadenceCrud } from './useCadenceCrud';
@@ -74,9 +74,11 @@ const props = defineProps<{
   /** The shared ladder, which applies while there are no overrides. */
   globalCadences: CadenceRow[];
   defaults: { default_start_month_day: string; default_end_month_day: string };
+  /** Props to reload after a save, so the rest of the host page is left alone. */
+  reloadOnly?: string[];
 }>();
 
-const crud = useCadenceCrud(props.institutionId);
+const crud = useCadenceCrud(props.institutionId, { only: props.reloadOnly });
 const prefill = ref<CadenceDraft | null>(null);
 const editing = ref(false);
 

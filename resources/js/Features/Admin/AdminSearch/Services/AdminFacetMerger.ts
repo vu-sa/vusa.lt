@@ -5,13 +5,7 @@
  * (results from current query). This ensures users can see all filter options
  * even when current search has limited results.
  */
-
-import type {
-  AdminFacet,
-  AdminFacetValue,
-  AdminSearchFilters,
-  CollectionFacetConfig,
-} from '../Types/AdminSearchTypes';
+import type { AdminFacet, AdminFacetValue, AdminSearchFilters, CollectionFacetConfig } from '../Types/AdminSearchTypes';
 
 /**
  * Merges initial facets with current search facets.
@@ -133,60 +127,6 @@ function sortFacetValues(
 }
 
 /**
- * Filter facets to only include non-empty ones (or selected ones)
- * Useful for displaying facets in a cleaner UI
- */
-export function filterEmptyFacets(
-  facets: AdminFacet[],
-  hasActiveSearch: boolean,
-): AdminFacet[] {
-  return facets.filter((facet) => {
-    // Always show facets with values that have counts
-    if (facet.values.some(v => v.count == null || v.count > 0)) {
-      return true;
-    }
-
-    // During active search, show facets with selected values
-    if (hasActiveSearch) {
-      return facet.values.some(v => v.isSelected);
-    }
-
-    // In browse mode, show all facets for discoverability
-    return true;
-  });
-}
-
-/**
- * Calculate facet statistics for UI display
- */
-export function calculateFacetStats(facets: AdminFacet[]): {
-  totalFacets: number;
-  activeFacets: number;
-  totalValues: number;
-  selectedValues: number;
-} {
-  const totalFacets = facets.length;
-  let activeFacets = 0;
-  let totalValues = 0;
-  let selectedValues = 0;
-
-  facets.forEach((facet) => {
-    const hasActiveValues = facet.values.some(v => v.count == null || v.count > 0);
-    if (hasActiveValues) activeFacets++;
-
-    totalValues += facet.values.length;
-    selectedValues += facet.values.filter(v => v.isSelected).length;
-  });
-
-  return {
-    totalFacets,
-    activeFacets,
-    totalValues,
-    selectedValues,
-  };
-}
-
-/**
  * Sort facets by priority order from config
  */
 export function sortFacetsByConfig(
@@ -205,102 +145,4 @@ export function sortFacetsByConfig(
 
     return aPriority - bPriority;
   });
-}
-
-/**
- * Group facet values by category (useful for tenant hierarchies, etc.)
- */
-export function groupFacetValues<T extends AdminFacetValue>(
-  values: T[],
-  groupFn: (value: T) => string,
-): Record<string, T[]> {
-  const groups: Record<string, T[]> = {};
-
-  for (const value of values) {
-    const group = groupFn(value);
-    if (!groups[group]) {
-      groups[group] = [];
-    }
-    groups[group].push(value);
-  }
-
-  return groups;
-}
-
-/**
- * Format year values for year-pills display
- * Sorts descending and limits to recent years
- */
-export function formatYearFacetValues(
-  values: AdminFacetValue[],
-  maxYears = 10,
-): AdminFacetValue[] {
-  // Sort by year descending (assuming value is year string)
-  const sorted = [...values].sort((a, b) => {
-    const yearA = parseInt(a.value, 10);
-    const yearB = parseInt(b.value, 10);
-    return yearB - yearA;
-  });
-
-  // Limit to max years
-  return sorted.slice(0, maxYears);
-}
-
-/**
- * Process tenant hierarchy for facet display
- * Groups tenants into main org, padaliniai (units), and PKP
- */
-export function processTenantFacetValues(
-  values: AdminFacetValue[],
-): {
-  main: AdminFacetValue[];
-  padaliniai: AdminFacetValue[];
-  pkp: AdminFacetValue[];
-} {
-  const main: AdminFacetValue[] = [];
-  const padaliniai: AdminFacetValue[] = [];
-  const pkp: AdminFacetValue[] = [];
-
-  values.forEach((tenant) => {
-    const { value } = tenant;
-
-    // VU SA main organization - exact match only
-    if (value === 'VU SA') {
-      main.push(tenant);
-    }
-    // PKP (programs, clubs, projects)
-    else if (value.includes('PKP')) {
-      pkp.push(tenant);
-    }
-    // VU SA Padaliniai (faculty units)
-    else if (value.startsWith('VU SA ')) {
-      padaliniai.push(tenant);
-    }
-    // Other organizations
-    else {
-      main.push(tenant);
-    }
-  });
-
-  // Sort each group by count descending
-  const sortByCount = (a: AdminFacetValue, b: AdminFacetValue) => (b.count ?? -1) - (a.count ?? -1);
-
-  return {
-    main: main.sort(sortByCount),
-    padaliniai: padaliniai.sort(sortByCount),
-    pkp: pkp.sort(sortByCount),
-  };
-}
-
-/**
- * Format vote alignment status for display
- */
-export function formatVoteAlignmentStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    aligned: 'Atitinka',
-    misaligned: 'Neatitinka',
-    incomplete: 'Nepilna informacija',
-    unknown: 'Nežinoma',
-  };
-  return statusMap[status] || status;
 }

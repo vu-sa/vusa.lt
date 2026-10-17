@@ -27,7 +27,7 @@ class TenantController extends AdminController
 
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         return $this->inertiaResponse('Admin/People/IndexTenant', [
-            'tenants' => Tenant::query()->orderBy('fullname')->get(['id', 'fullname', 'shortname', 'alias', 'type'])
+            'tenants' => Tenant::query()->orderBy('fullname')->get(['id', 'fullname', 'shortname', 'alias', 'type', 'shortname_vu', 'primary_institution_id', 'goals_enabled'])
                 ->map(fn (Tenant $tenant) => [
                     ...$tenant->toArray(),
                     'can' => [
@@ -36,18 +36,6 @@ class TenantController extends AdminController
                     ],
                 ]),
             'assignableInstitutions' => Institution::query()->orderBy('name')->get(['id', 'name']),
-        ]);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $this->handleAuthorization('create', Tenant::class);
-
-        return $this->inertiaResponse('Admin/People/CreateTenant', [
-            'assignableInstitutions' => Institution::all(['id', 'name']),
         ]);
     }
 
@@ -63,19 +51,6 @@ class TenantController extends AdminController
         $tenant->save();
 
         return redirect()->route('tenants.index')->with('success', $this->entityMessage('created', 'tenant'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Tenant $tenant)
-    {
-        $this->handleAuthorization('update', $tenant);
-
-        return $this->inertiaResponse('Admin/People/EditTenant', [
-            'tenant' => $tenant,
-            'assignableInstitutions' => Institution::all(['id', 'name']),
-        ]);
     }
 
     /**

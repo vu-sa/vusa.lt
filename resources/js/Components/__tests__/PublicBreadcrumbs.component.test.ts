@@ -51,15 +51,15 @@ describe('PublicBreadcrumbs Fallback Mode', () => {
  * A host that provides real breadcrumb state, so the breadcrumbs can be rendered as pages
  * render them. `createBreadcrumbState` uses provide/inject, hence the wrapper component.
  */
-function renderWithTrail(variant?: 'inline') {
+function renderWithTrail(variant?: 'inline', trail = [
+  { label: 'Pradinis', href: '/lt' },
+  { label: 'Naujienos', href: '/lt/naujienos' },
+  { label: 'Straipsnis' },
+]) {
   const Host = defineComponent({
     setup() {
       const state = createBreadcrumbState('public');
-      state.set([
-        { label: 'Pradinis', href: '/lt' },
-        { label: 'Naujienos', href: '/lt/naujienos' },
-        { label: 'Straipsnis' },
-      ]);
+      state.set(trail);
 
       return () => h(PublicBreadcrumbs, variant ? { variant } : {});
     },
@@ -83,5 +83,22 @@ describe('PublicBreadcrumbs rendering', () => {
 
     expect(link.classes()).toContain('hover:text-brand');
     expect(link.classes().join(' ')).not.toContain('vusa-red');
+  });
+});
+
+describe('PublicBreadcrumbs shortening', () => {
+  /** Breakpoint classes, not a JS breakpoint, so the server renders what the phone hydrates. */
+  it('keeps home and the parent on phones and the last four on desktop', () => {
+    const labels = ['Pradinis', 'A', 'B', 'C', 'D', 'Tėvinis', 'Puslapis'];
+    const nav = renderWithTrail(undefined, labels.map(label => ({ label, href: '/lt' }))).find('nav');
+
+    const itemClass = (label: string) => nav.findAll(':scope > span').find(el => el.text().endsWith(label))?.classes();
+
+    expect(nav.text()).not.toMatch(/\bA\b|\bB\b/);
+    expect(itemClass('Pradinis')).not.toContain('max-sm:hidden');
+    expect(itemClass('C')).toContain('max-sm:hidden');
+    expect(itemClass('Tėvinis')).not.toContain('max-sm:hidden');
+    expect(itemClass('Puslapis')).toContain('max-sm:hidden');
+    expect(nav.find('[data-testid="breadcrumb-ellipsis"]').classes()).not.toContain('sm:hidden');
   });
 });

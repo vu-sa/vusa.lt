@@ -2,52 +2,46 @@
    Public surface
    ==================================================================================
 
-   `data-surface="public"` is stamped on <html> server-side by app.blade.php, from the same
-   `str_starts_with($page['component'], 'Public/')` check that already gates @head and Umami —
-   so it is correct before the first paint and composes with the .dark class the inline theme
-   script sets.
-
-   The palette is shared with admin (theme/surface-palette.css); this file holds what only the
-   public site does — reader preferences, toasts, the progress bar.
+   Reader preferences, toasts and reduced motion apply on every page, admin included. The few
+   rules only the public site takes are scoped to `[data-surface="public"]`, which app.blade.php
+   stamps on <html> (App\Support\DesignSurface).
    ================================================================================== */
 
 /* ------------------------------------------------------------------ */
-/* Accessibility preferences (public a11y menu)                        */
+/* Accessibility preferences (account/a11y menu)                       */
 /* ------------------------------------------------------------------ */
 
 /* Global text scaling — the root font size drives every rem-based size, so one variable
-   scales type, spacing and icons together. The same account-menu control now serves the opted-in
-   admin shell, whose surface reset sets the 100% baseline before this multiplier applies. */
-html:is([data-surface="public"], [data-surface="admin"]) {
+   scales type, spacing and icons together. */
+html {
   font-size: calc(100% * var(--a11y-font-scale, 1));
 }
 
-html.a11y-underline:is([data-surface="public"], [data-surface="admin"]) a {
+html.a11y-underline a {
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-/* Sonner ships its own fixed white/black palette and rounded, shadowed chrome. The public
-   surface reaches it through this generated DOM rather than a Vue component, so tokenise it here
-   where flash messages, the edit link, and the persistent staging notice stay in step. */
-[data-surface="public"] [data-sonner-toaster] {
+/* Sonner ships its own fixed white/black palette and rounded, shadowed chrome; it renders its own
+   DOM, so it is tokenised here rather than through a Vue component. */
+:root [data-sonner-toaster] {
   --normal-bg: var(--popover);
   --normal-border: var(--border);
   --normal-text: var(--popover-foreground);
   --border-radius: 0px;
 }
 
-[data-surface="public"] [data-sonner-toast][data-styled='true'] {
+:root [data-sonner-toast][data-styled='true'] {
   border-radius: 0;
   box-shadow: none;
   font-family: var(--font-public);
 }
 
-[data-surface="public"] [data-sonner-toast][data-styled='true'] [data-description] {
+:root [data-sonner-toast][data-styled='true'] [data-description] {
   color: var(--muted-foreground);
 }
 
-[data-surface="public"] [data-sonner-toast][data-styled='true'] [data-button] {
+:root [data-sonner-toast][data-styled='true'] [data-button] {
   border-radius: 0;
   background: var(--brand-fill);
   color: var(--brand-foreground);
@@ -56,26 +50,26 @@ html.a11y-underline:is([data-surface="public"], [data-surface="admin"]) a {
   text-transform: uppercase;
 }
 
-[data-surface="public"] [data-sonner-toast][data-styled='true'] [data-close-button] {
+:root [data-sonner-toast][data-styled='true'] [data-close-button] {
   border-color: var(--border);
   border-radius: 0;
   background: var(--popover);
   color: var(--popover-foreground);
 }
 
-[data-surface="public"] [data-sonner-toast][data-styled='true']:hover [data-close-button]:hover {
+:root [data-sonner-toast][data-styled='true']:hover [data-close-button]:hover {
   background: var(--secondary);
   border-color: var(--brand);
 }
 
-[data-surface="public"] [data-sonner-toast].public-toast {
+:root [data-sonner-toast].public-toast {
   border-top: 2px solid var(--brand);
 }
 
 /* High contrast pushes ink and paper apart. The brand moves in opposite directions per theme:
    *darker* red on white, *brighter* amber on near-black. Brightening the light accent is the
    intuitive move and the wrong one — it lowers contrast on paper. */
-html.a11y-contrast:is([data-surface="public"], [data-surface="admin"]) {
+html.a11y-contrast {
   --foreground: oklch(1 0 0);
   --muted-foreground: oklch(0.9 0.004 85);
   --border: oklch(1 0 0 / 40%);
@@ -83,7 +77,7 @@ html.a11y-contrast:is([data-surface="public"], [data-surface="admin"]) {
   --brand-fill: oklch(0.86 0.17 82);
 }
 
-html.a11y-contrast:is([data-surface="public"], [data-surface="admin"]):not(.dark) {
+html.a11y-contrast:not(.dark) {
   --background: oklch(1 0 0);
   --foreground: oklch(0.12 0.008 70);
   --muted-foreground: oklch(0.24 0.01 75);
@@ -92,12 +86,11 @@ html.a11y-contrast:is([data-surface="public"], [data-surface="admin"]):not(.dark
   --brand-fill: oklch(0.4 0.18 25);
 }
 
-/* Honour an OS-level reduced-motion request. Scoped to the public surface for now so the admin
-   interface keeps the behaviour it has today; widen it to :root during the admin revamp. */
+/* Honour an OS-level reduced-motion request. */
 @media (prefers-reduced-motion: reduce) {
-  [data-surface="public"] *,
-  [data-surface="public"] *::before,
-  [data-surface="public"] *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;

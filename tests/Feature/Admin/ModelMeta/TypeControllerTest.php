@@ -100,6 +100,18 @@ test('record exposes assigned owners and deferred files', function (): void {
             ->loadDeferredProps('files', fn (Assert $deferred) => $deferred->has('files')));
 });
 
+test('administrators get the type files upload on both dictionaries', function (string $resource, string $class, string $folder): void {
+    $type = $class::factory()->create(['title' => ['lt' => 'Senatas', 'en' => 'Senate']]);
+
+    asUser($this->admin)->get(route("{$resource}.show", $type))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Admin/ModelMeta/ShowType')
+            ->where('can.update', true)
+            ->where('sharepointPath', "General/Types/{$folder}/Senatas"));
+})->with([
+    ['institutionTypes', InstitutionType::class, 'Institutions'],
+    ['dutyTypes', DutyType::class, 'Duties'],
+]);
+
 test('assigned soft-deleted owners block permanent deletion', function (): void {
     $type = DutyType::factory()->create();
     $duty = Duty::factory()->create();

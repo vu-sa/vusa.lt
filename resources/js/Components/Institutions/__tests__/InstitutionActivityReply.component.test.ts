@@ -47,3 +47,34 @@ describe('signed activity reply', () => {
     expect(wrapper.find('button[aria-controls="answer-complete"]').attributes('aria-expanded')).toBe('true');
   });
 });
+
+it('suggests quarter-hours during the day while accepting exact times at any hour', async () => {
+  const wrapper = mount(InstitutionActivityReply, { props, global: { stubs: commonStubs } });
+  const time = wrapper.findComponent(TimePicker);
+  const suggestions = time.findAll('option').map(option => option.attributes('value'));
+
+  expect(suggestions).toHaveLength(49);
+  expect(suggestions.slice(0, 3)).toEqual(['08:00', '08:15', '08:30']);
+  expect(suggestions.at(-1)).toBe('20:00');
+  expect(time.find('input').element.value).toBe('');
+  for (const value of ['07:12', '14:32', '23:45']) {
+    await time.find('input').setValue(value);
+    expect(wrapper.find('input[name="meetings[0][time]"]').attributes('value')).toBe(value);
+  }
+});
+
+it('keeps format names in the POST payload and connects field errors to the inputs', async () => {
+  const wrapper = mount(InstitutionActivityReply, {
+    props: { ...props, errors: { 'meetings.0.date': 'Choose a date', 'meetings.0.time': 'Time required', 'meetings.0.type': 'Choose a format' } },
+    global: { stubs: commonStubs },
+  });
+
+  for (const field of ['date', 'time', 'type']) {
+    const input = wrapper.find(`#${field}-0`);
+    expect(input.attributes('aria-describedby')).toBe(`${field}-error-0`);
+    expect(input.attributes('aria-invalid')).toBe('true');
+  }
+  await wrapper.find('select#type-0').setValue('email');
+  expect(wrapper.find('input[name="meetings[0][type]"]').attributes('value')).toBe('email');
+  expect(wrapper.find('input[name="meetings[0][time]"]').exists()).toBe(false);
+});

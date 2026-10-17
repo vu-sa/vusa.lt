@@ -1,21 +1,17 @@
 /* ==================================================================================
-   Surface palette — shared by admin and public
+   Palette — one visual language for admin and public
    ==================================================================================
 
-   `data-surface="admin|public"` is stamped on <html> server-side by app.blade.php (via
-   App\Support\DesignSurface). Both surfaces speak one visual language, so they share one
-   palette; surface-specific behaviour (toasts, progress bar, a11y menu) stays in
-   admin/surface.css and public/surface.css. `--accent` keeps its shadcn meaning — the
-   hover/muted surface, never the brand (`--brand`).
+   Declared on :root/.dark rather than under `[data-surface]`, so pages on neither surface
+   (NotFound, error views) and teleported overlays get the same tokens. What still differs per
+   surface lives in admin/surface.css and public/surface.css. `--accent` keeps its shadcn meaning
+   — the hover/muted surface, never the brand (`--brand`).
    ================================================================================== */
 
-[data-surface] {
+:root {
   color-scheme: light;
 
-  /* The typeface is part of the surface, not something each shell remembers to apply. Setting it
-     here means anything the surface contains gets it — including content teleported out of the
-     Vue tree into <body> (popovers, dropdowns, dialogs), which is what used to render the
-     accessibility menu in the browser default while the page around it was Atkinson. */
+  /* Set on the root so content Reka teleports into <body> (popovers, dialogs) keeps the typeface. */
   font-family: var(--font-public);
 
   /* Warm paper canvas, near-black ink. No blue anywhere. */
@@ -49,26 +45,9 @@
      token in both themes without a `dark:` variant. See the dark block for why dark mode's
      version differs. */
   --border-opaque: var(--border);
-
-  /* Cornery, not round — a hard rule of the design. `rounded-full` is unaffected by this and
-     has to be removed per component. */
-  --radius: 0rem;
-  --radius-xs: 0px;
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-2xl: 0px;
-  --radius-3xl: 0px;
-  --radius-4xl: 0px;
 }
 
-/* Two selectors, because the surface is stamped in two places: on `<html>` (where `.dark` lands on
-   the same element), and on a *nested* wrapper for the admin editor's block previews (where
-   `.dark` is still up on `<html>`). Without the descendant form a nested surface inside a dark
-   page would resolve the light palette. */
-.dark[data-surface],
-.dark [data-surface] {
+.dark {
   color-scheme: dark;
   /* True near-black. Off-white ink. Amber brand (set globally on .dark). */
   --background: oklch(0.135 0.004 70);

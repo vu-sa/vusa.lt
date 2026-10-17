@@ -19,6 +19,37 @@ beforeEach(function (): void {
     $this->page = Page::factory()->for($this->tenant)->create(['lang' => 'lt']);
 });
 
+test('content creation supplies an accessible destination without redirecting the JSON request', function (string $kind, array $permissions, string $destination): void {
+    $actor = makeUser($this->tenant);
+    $actor->givePermissionTo($permissions);
+    $data = [
+        'title' => 'Created content',
+        'lang' => 'lt',
+        'draft' => true,
+        'is_active' => false,
+        'short' => 'Summary',
+        'tenant_id' => $this->tenant->id,
+        'content' => ['parts' => [['type' => 'tiptap', 'json_content' => ['type' => 'doc'], 'order' => 0]]],
+    ];
+
+    $response = asUser($actor)->postJson(route("api.v1.admin.contentEditor.{$kind}.store"), $data);
+
+    $response->assertOk()->assertJsonPath('success', true);
+    $recordClass = $kind === 'pages' ? Page::class : News::class;
+    $created = $recordClass::findOrFail($response->json('data.id'));
+    $expectedUrl = route($destination, str_ends_with($destination, '.edit') ? $created : []);
+    $response->assertJsonPath('meta.redirect_url', $expectedUrl);
+    expect($response->headers->has('Location'))->toBeFalse();
+    asUser($actor)->get($expectedUrl)->assertOk();
+})->with([
+    'page editor' => ['pages', ['pages.create.padalinys', 'pages.update.padalinys'], 'pages.edit'],
+    'page list' => ['pages', ['pages.create.padalinys', 'pages.read.padalinys'], 'pages.index'],
+    'page creator dashboard' => ['pages', ['pages.create.padalinys'], 'dashboard'],
+    'news editor' => ['news', ['news.create.padalinys', 'news.update.padalinys'], 'news.edit'],
+    'news list' => ['news', ['news.create.padalinys', 'news.read.padalinys'], 'news.index'],
+    'news creator dashboard' => ['news', ['news.create.padalinys'], 'dashboard'],
+]);
+
 function editorDraftUrl(Page $page): string
 {
     return route('api.v1.admin.contentEditor.drafts.update', ['kind' => 'pages', 'identity' => 'record-'.$page->id]);
@@ -60,7 +91,7 @@ test('manual saves persist page metadata and refuse stale record versions', func
     $url = route('api.v1.admin.contentEditor.pages.update', $this->page);
     $snapshot['meta_description'] = 'Description';
     $snapshot['highlights'] = ['One'];
-    $this->actingAs($this->admin)->patchJson($url, $snapshot)->assertOk()->assertJsonPath('data.meta_description', 'Description');
+    $this->actingAs($this->admin)->patchJson($url, $snapshot)->assertOk()->assertJsonPath('data.meta_description', 'Description')->assertJsonMissingPath('meta.redirect_url');
     expect($this->page->fresh()->highlights)->toBe(['One']);
     $snapshot['title'] = 'Stale title';
     $this->patchJson($url, $snapshot)->assertStatus(409);

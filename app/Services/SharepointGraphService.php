@@ -505,6 +505,8 @@ class SharepointGraphService
 
         $configuration = new DeltaRequestBuilderGetRequestConfiguration;
         $configuration->queryParameters = DeltaRequestBuilderGetRequestConfiguration::createQueryParameters();
+        // Graph's default ~250 items per page makes a full listing of the archive take minutes longer.
+        $configuration->queryParameters->top = 1000;
         $configuration->queryParameters->select = [
             'id', 'name', 'file', 'folder', 'root', 'deleted', 'eTag', 'lastModifiedDateTime',
             'parentReference', 'sharepointIds', 'webUrl',
@@ -536,15 +538,17 @@ class SharepointGraphService
      * permanent failure of that file's data.
      *
      * @param  list<string>  $driveItemIds
+     * @param  (\Closure(string, int): void)|null  $progress  told `looked_up` (items answered so far) and `throttled` (seconds it waits)
      * @return array{items: array<string, array{eTag: ?string, fields: array<string, mixed>}>, transient: list<string>}
      *
      * @throws SharepointThrottledException when SharePoint asks for a longer pause than is worth sleeping through
      */
-    public function getListItemsForDriveItems(array $driveItemIds, int $maxThrottleRetries = 6): array
+    public function getListItemsForDriveItems(array $driveItemIds, int $maxThrottleRetries = 6, ?\Closure $progress = null): array
     {
         $result = [];
         $transient = [];
         $pending = $driveItemIds;
+        $answered = 0;
 
         for ($attempt = 0; $pending !== [] && $attempt <= $maxThrottleRetries; $attempt++) {
             $throttled = [];
@@ -584,6 +588,9 @@ class SharepointGraphService
                         $result[$driveItemId] = $listItem;
                     }
                 }
+
+                $answered += count($chunk) - count(array_intersect($chunk, $throttled));
+                $progress?->__invoke('looked_up', $answered);
             }
 
             $pending = $throttled;
@@ -594,6 +601,7 @@ class SharepointGraphService
                 }
 
                 $this->logInfo('SharePoint throttled list item lookups, waiting', ['items' => count($pending), 'seconds' => $waitSeconds]);
+                $progress?->__invoke('throttled', $waitSeconds);
                 Sleep::for($waitSeconds)->seconds();
             }
         }

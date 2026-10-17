@@ -155,9 +155,9 @@ class DutyService
      * Get only user's directly assigned institutions for the dashboard.
      *
      * This is a lightweight version that only includes institutions where the user
-     * has non-ended duties, plus the ones they have been nominated to administer. Each
-     * result carries `is_administered` so the UI can say which is which — an
-     * administrator is not a member and must not be drawn as one.
+     * has non-ended duties, plus the ones they have been nominated to look after as secretary.
+     * Each result carries `is_secretary` so the UI can say which is which — a
+     * secretary is not a member and must not be drawn as one.
      *
      * @see getInstitutionsForDashboard() for full access including coordinator tenants
      */
@@ -171,11 +171,11 @@ class DutyService
             ->filter()
             ->unique();
 
-        $administeredInstitutionIds = $user->administeredInstitutions()
+        $secretariedInstitutionIds = $user->secretariedInstitutions()
             ->pluck('institutions.id')
             ->unique();
 
-        $userInstitutionIds = $dutyInstitutionIds->merge($administeredInstitutionIds)->unique();
+        $userInstitutionIds = $dutyInstitutionIds->merge($secretariedInstitutionIds)->unique();
 
         if ($userInstitutionIds->isEmpty()) {
             return collect();
@@ -185,11 +185,13 @@ class DutyService
             ->whereIn('id', $userInstitutionIds)
             ->get();
 
-        $institutions->each(fn (Institution $institution) => $institution->setAttribute(
-            'is_administered',
-            ! $dutyInstitutionIds->contains($institution->id)
-                && $administeredInstitutionIds->contains($institution->id),
-        ));
+        $institutions->each(function (Institution $institution) use ($dutyInstitutionIds, $secretariedInstitutionIds): void {
+            $isSecretary = ! $dutyInstitutionIds->contains($institution->id)
+                && $secretariedInstitutionIds->contains($institution->id);
+
+            $institution->setAttribute('is_secretary', $isSecretary);
+            $institution->setAttribute('is_administered', $isSecretary);
+        });
 
         return $institutions;
     }

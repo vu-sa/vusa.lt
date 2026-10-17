@@ -94,6 +94,17 @@ describe('normalizeHit', () => {
     expect(hit.href).toBe('https://files.example/d1.pdf');
   });
 
+  it('shows a member\'s years of activity, open-ended while a term is in force', () => {
+    const current = normalizeHit('users', { id: 'u1', name: 'Jonas', email: 'j@vusa.lt', term_start_dates: ['2021-09-01', '2024-09-01'], term_end_dates: ['2022-06-30', ''] });
+    const former = normalizeHit('users', { id: 'u2', name: 'Ona', email: 'o@vusa.lt', term_start_dates: ['2019-09-01'], term_end_dates: ['2021-06-30'] });
+
+    // Beside the name, not on the duty line, so the years never read as the duty's.
+    expect(current.aside).toBe('2021–dabar');
+    expect(current.meta).toBeUndefined();
+    expect(current.subtitle).toBe('j@vusa.lt');
+    expect(former.aside).toBe('2019–2021');
+  });
+
   it('falls back to a placeholder title when missing', () => {
     const hit = normalizeHit('institutions', { id: 'i1' });
 

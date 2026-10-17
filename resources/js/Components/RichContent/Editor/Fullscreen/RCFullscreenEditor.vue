@@ -120,7 +120,7 @@
 
 <script setup lang="ts">
 import { computed, inject, provide, ref, watch } from 'vue';
-import { ListTree } from 'lucide-vue-next';
+import { ListTree } from '@lucide/vue';
 import { moveArrayElement } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
 

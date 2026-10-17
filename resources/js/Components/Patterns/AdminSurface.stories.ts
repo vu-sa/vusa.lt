@@ -4,10 +4,8 @@ import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
 
 /**
- * The admin surface — `[data-surface="admin"]` in
- * resources/css/admin/surface.css, stamped on every admin page by app.blade.php. This is how a
- * reviewer sees the token scope without logging in: switch the toolbar's Surface to "Admin"
- * (pinned here via `globals`) and Theme to compare both modes.
+ * The admin canvas: the shared palette plus `[data-surface="admin"]` rules from
+ * resources/css/admin/surface.css. Switch the Theme toolbar to compare both modes.
  */
 const meta: Meta = {
   title: 'Patterns/Admin Surface',
@@ -27,7 +25,7 @@ export const Canvas: Story = {
           <p class="text-xs font-medium uppercase tracking-wide text-muted-foreground">Canvas · Ink</p>
           <p class="text-sm text-muted-foreground">
             bg-background / text-foreground — the warm paper (light) / near-black (dark) ground every
-            admin page sits on once opted in.
+            admin page sits on.
           </p>
         </div>
         <div class="border border-border p-4">
@@ -123,7 +121,7 @@ export const Typeface: Story = {
     template: `
       <div class="bg-background p-6 text-foreground">
         <p class="text-2xl font-bold">Atkinson Hyperlegible Next</p>
-        <p class="text-sm text-muted-foreground">Set on the scope itself, so teleported content (dialogs, the command palette, toasts) inherits it too.</p>
+        <p class="text-sm text-muted-foreground">Set on the root, so teleported content (dialogs, the command palette, toasts) inherits it too.</p>
       </div>
     `,
   }),

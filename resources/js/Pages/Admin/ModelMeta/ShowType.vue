@@ -152,7 +152,7 @@
 import { computed, ref } from 'vue';
 import { Deferred, Link, router } from '@inertiajs/vue3';
 import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
-import { Compass, Edit, FileText, Link2, Shield, Trash2 } from 'lucide-vue-next';
+import { Compass, Edit, FileText, Link2, Shield, Trash2 } from '@lucide/vue';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';

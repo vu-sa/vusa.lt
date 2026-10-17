@@ -71,7 +71,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
-import { CalendarOff as CalendarOffIcon, Info as InfoIcon, Building as BuildingIcon } from 'lucide-vue-next';
+import { CalendarOff as CalendarOffIcon, Info as InfoIcon, Building as BuildingIcon } from '@lucide/vue';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';

@@ -112,7 +112,7 @@ import {
   Filter,
   RotateCcw,
   PencilLine,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 import type { AdminFacet, AdminSearchFilters, CollectionFacetConfig } from '../Types/AdminSearchTypes';
 import { getFacetValueLabel } from '../Config/collectionFacetConfig';

@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Minus, Plus } from 'lucide-vue-next';
+import { Minus, Plus } from '@lucide/vue';
 
 import { Badge } from '@/Components/ui/badge';
 import type { ActivityRelationChange } from '@/Types/activityLog';

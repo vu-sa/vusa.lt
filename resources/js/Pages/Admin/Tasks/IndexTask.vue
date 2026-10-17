@@ -146,7 +146,7 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowRight } from 'lucide-vue-next';
+import { ArrowRight } from '@lucide/vue';
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 

@@ -247,6 +247,8 @@ Route::get('duties-update-users', [DutyController::class, 'updateUsersWizard'])-
 Route::post('duties/{duty}/batch-update-users', [DutyController::class, 'batchUpdateUsers'])->name('duties.batchUpdateUsers');
 Route::post('duties/{duty}/responsibilities', [DutyResponsibilityController::class, 'store'])->name('duties.responsibilities.store');
 Route::delete('duties/{duty}/responsibilities/{responsibility}', [DutyResponsibilityController::class, 'destroy'])->name('duties.responsibilities.destroy');
+Route::post('duties/{duty}/predecessors', [DutySuccessionController::class, 'store'])->name('duties.predecessors.store');
+Route::delete('duties/{duty}/predecessors/{predecessor}', [DutySuccessionController::class, 'destroy'])->name('duties.predecessors.destroy');
 // Dutiables (occupancies) created and managed through the unified Priskirti flow (Decision O21).
 // Declared before the resource so /dutiables/timeline can never be read as /dutiables/{dutiable}.
 Route::get('dutiables/timeline', [DutiableTimelineController::class, 'index'])->name('dutiables.timeline');
@@ -266,7 +268,7 @@ Route::post('tenants/{tenant}/quick-links', [TenantController::class, 'updateQui
 Route::get('tenants/{tenant}/main-page/edit', [TenantController::class, 'editMainPage'])->name('tenants.editMainPage');
 Route::post('tenants/{tenant}/main-page', [TenantController::class, 'updateMainPage'])->name('tenants.updateMainPage');
 
-Route::resource('tenants', TenantController::class);
+Route::resource('tenants', TenantController::class)->only(['index', 'store', 'update', 'destroy']);
 
 Route::get('forms/{form}/export', [FormController::class, 'export'])->name('forms.export');
 Route::resource('forms', FormController::class);

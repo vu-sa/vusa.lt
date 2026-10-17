@@ -13,13 +13,15 @@ vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () =>
 /** RecordPage is stubbed so the test can read what the page hands it and fire its emits. */
 const stubs = {
   RecordPage: {
-    props: ['title', 'sections', 'facts', 'primaryAction', 'overflowActions'],
+    props: ['title', 'sections', 'facts', 'primaryAction', 'overflowActions', 'historySubject'],
     emits: ['action'],
     template: `
       <div>
         <h1>{{ title }}</h1>
+        <div data-testid="fact-values">{{ facts.map(f => f.key + '=' + f.value).join('|') }}</div>
         <div data-testid="tabs">{{ sections.map(s => s.value + ':' + (s.count ?? '')).join('|') }}</div>
         <div data-testid="facts">{{ facts.map(f => f.key).join('|') }}</div>
+        <div data-testid="history-subject">{{ historySubject ? historySubject.type + ':' + historySubject.id : '' }}</div>
         <button v-if="primaryAction" data-testid="primary" @click="$emit('action', primaryAction.key)">{{ primaryAction.label }}</button>
         <button v-for="a in overflowActions" :key="a.key" :data-testid="'overflow-' + a.key" @click="$emit('action', a.key)">{{ a.label }}</button>
         <slot name="identity" />
@@ -27,11 +29,11 @@ const stubs = {
         <slot name="alert" />
         <slot name="duties" />
         <slot name="roles" />
-        <slot name="activity" />
       </div>
     `,
   },
   UserTermRow: {
+    name: 'UserTermRow',
     props: ['duty', 'canManage'],
     emits: ['edit', 'end'],
     template: '<div class="term-row" :data-can-manage="canManage" @click="$emit(\'edit\')">{{ duty.name }}</div>',
@@ -47,7 +49,6 @@ const stubs = {
     emits: ['confirm'],
     template: '<div v-if="open" :data-testid="`confirm`"><button data-testid="confirm-yes" @click="$emit(\'confirm\')" /></div>',
   },
-  ActivityLogSheet: { template: '<div data-testid="activity-log" />' },
   UserAvatar: { template: '<span class="avatar" />' },
   DutiableTimelineDialog: true,
   TaskManager: { template: '<div data-testid="task-manager" />' },
@@ -94,6 +95,19 @@ const createWrapper = (overrides: Record<string, unknown> = {}, can: Record<stri
 const tabs = (wrapper: ReturnType<typeof mount>) => wrapper.find('[data-testid="tabs"]').text();
 
 describe('ShowUser.vue', () => {
+  it('keeps ended assignments from inactive institutions in the previous duties group', () => {
+    const ended = makeDuty({
+      institution: { id: 'inactive', name: 'Neaktyvi institucija', is_active: false },
+      pivot: { id: 'closed', start_date: '2024-01-01', end_date: '2024-06-30' },
+    });
+    const wrapper = createWrapper({ current_duties: [], previous_duties: [ended] });
+
+    expect(wrapper.find('[data-group="current"]').exists()).toBe(false);
+    const row = wrapper.get('[data-group="previous"]').findComponent({ name: 'UserTermRow' });
+    expect(row.props('duty').institution.name).toBe('Neaktyvi institucija');
+    expect(row.props('duty').pivot.end_date).toBe('2024-06-30');
+    expect(row.props('canManage')).toBe(false);
+  });
   afterEach(() => vi.useRealTimers());
 
   beforeEach(() => {
@@ -128,6 +142,13 @@ describe('ShowUser.vue', () => {
     wrapper.unmount();
   });
 
+  /** Change history is about the record, so it opens from ⋯ like on every other record page. */
+  it('offers the change history from the record menu', () => {
+    const wrapper = createWrapper();
+
+    expect(wrapper.find('[data-testid="history-subject"]').text()).toMatch(/^user:/);
+  });
+
   it('counts current, upcoming, and previous assignments', () => {
     const wrapper = createWrapper({
       current_duties: [makeDuty(), makeDuty({ id: 'd3', pivot: { id: 'p3', start_date: '2024-07-01' } })],
@@ -136,6 +157,17 @@ describe('ShowUser.vue', () => {
     });
 
     expect(tabs(wrapper)).toContain('duties:4');
+  });
+
+  it('shows the years of activity instead of a current-duty count', () => {
+    const wrapper = createWrapper({
+      current_duties: [makeDuty({ pivot: { id: 'p1', start_date: '2024-07-01' } })],
+      upcoming_duties: [],
+      previous_duties: [makeDuty({ id: 'd4', pivot: { id: 'p4', start_date: '2020-01-01', end_date: '2021-01-01' } })],
+    });
+
+    expect(wrapper.get('[data-testid="fact-values"]').text()).toContain('years=2020–dabar');
+    expect(wrapper.get('[data-testid="facts"]').text()).not.toContain('duties');
   });
 
   it('takes the tasks count from the task stats', () => {

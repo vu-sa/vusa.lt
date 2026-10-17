@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/vue3-vite';
-import { Calendar, Inbox } from 'lucide-vue-next';
+import { Calendar, Inbox } from '@lucide/vue';
 
 import EmptyState from './EmptyState.vue';
 
@@ -21,7 +21,7 @@ export const FirstUseTeaching: Story = {
     description: 'Užfiksuok savo institucijos posėdį, kad repai galėtų sužinoti darbotvarkę ir balsavimo rezultatus.',
     actionLabel: 'Naujas posėdis',
     docsLabel: 'Kaip pildyti posėdžio duomenis?',
-    docsHref: 'https://vusa.lt/docs/posedziai',
+    docsHref: 'https://vusa.lt/gidas/posedziai',
   },
 };
 

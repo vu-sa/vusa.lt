@@ -233,7 +233,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Check, Folder, Star, Upload } from 'lucide-vue-next';
+import { Check, Folder, Star, Upload } from '@lucide/vue';
 
 import type { FileEntry } from '../types';
 import { formatBytes, formatDate } from '../utils';
