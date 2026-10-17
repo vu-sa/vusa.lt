@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Media\AddImageMedia;
 use App\Enums\SupportRequestStatus;
 use App\Enums\SupportRequestVisibility;
 use App\Models\Duty;
@@ -15,7 +16,9 @@ use App\Notifications\SupportRequestAssignedNotification;
 use App\Notifications\SupportRequestInvolvedNotification;
 use App\Notifications\SupportRequestStatusChangedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -317,4 +320,23 @@ describe('involved people', function (): void {
         Notification::assertSentTo([$this->user, $involved], SupportRequestStatusChangedNotification::class);
         Notification::assertNotSentTo($this->admin, SupportRequestStatusChangedNotification::class);
     });
+});
+
+test('removing evidence deletes its files and leaves other requests\' evidence alone', function (): void {
+    Storage::fake('spatieMediaLibrary');
+    $own = app(AddImageMedia::class)->execute($this->supportRequest, UploadedFile::fake()->image('a.png'), 'evidence');
+    $ownPath = $own->getPathRelativeToRoot();
+    $other = SupportRequest::factory()->create();
+    $foreign = app(AddImageMedia::class)->execute($other, UploadedFile::fake()->image('b.png'), 'evidence');
+
+    asUser($this->admin)->patch(route('supportRequests.update', $this->supportRequest->id), [
+        'title' => $this->supportRequest->title,
+        'description' => $this->supportRequest->description,
+        'visibility' => SupportRequestVisibility::Private->value,
+        'deleted_media_ids' => [$own->id, $foreign->id],
+    ])->assertRedirect();
+
+    expect($this->supportRequest->fresh()->getMedia('evidence'))->toBeEmpty()
+        ->and($other->fresh()->getMedia('evidence'))->toHaveCount(1);
+    Storage::disk('spatieMediaLibrary')->assertMissing($ownPath);
 });

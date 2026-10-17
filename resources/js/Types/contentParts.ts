@@ -4,6 +4,7 @@
 import type { BlockPresentation } from '@/Components/RichContent/bandLayout';
 import type { PlainPadding } from '@/Components/RichContent/sectionClasses';
 import type { BlockWidth } from '@/Components/RichContent/Types';
+import type { ImageData } from '@/Types/media';
 
 /**
  * Shared RCSection.vue chrome fields — mixed into the `options` of every type that
@@ -323,6 +324,7 @@ export interface NewsItem {
   publish_time: string;
   permalink: string | null;
   image: string | null;
+  image_media?: ImageData | null;
   /** Precomputed absolute URL — only set by callers that aggregate across tenants (e.g.
    *  TopicController), where the card can't assume the article belongs to the current
    *  page's tenant/subdomain. Falls back to the current-tenant-relative route otherwise. */
@@ -408,6 +410,7 @@ export interface HeroCarousel {
 export interface PhotoGalleryGrid {
   json_content: {
     src: string;
+    image_media?: ImageData | null;
     alt: string;
     title?: string;
     heightClass?: string;
@@ -457,6 +460,7 @@ export interface LinkList {
 
 /** One resolved link-list item — shape emitted by `LinkListResolver::resolvePart()`. */
 export interface LinkListResolvedItem {
+  image_media?: ImageData | null;
   id: number | string | null;
   title: string;
   href: string;
@@ -501,6 +505,7 @@ export interface EventList {
 
 /** One resolved event — shape emitted by `EventListResolver::mapEvent()`. */
 export interface EventListResolvedItem {
+  image_media?: ImageData | null;
   id: number;
   title: string;
   date: string | null;

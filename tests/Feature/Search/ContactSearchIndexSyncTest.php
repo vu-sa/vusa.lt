@@ -1,5 +1,7 @@
 <?php
 
+use App\Actions\CollapseOverlappingDutiables;
+use App\Actions\Media\AddImageMedia;
 use App\Events\DutiableChanged;
 use App\Listeners\SyncContactSearchIndexes;
 use App\Models\Duty;
@@ -9,6 +11,11 @@ use App\Models\PublicInstitution;
 use App\Models\User;
 use App\Services\ContactSearchIndexSynchronizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
+use Spatie\MediaLibrary\Conversions\Jobs\PerformConversionsJob;
 use Typesense\Client;
 use Typesense\Exceptions\ObjectNotFound;
 
@@ -59,6 +66,36 @@ test('assignment changes refresh names and contacts in the public institution in
 
     expect(indexedContactDocument($duty)['previous_user_names'])->toBeEmpty()
         ->and(indexedContactDocument($user)['previous_duty_names'])->toBeEmpty();
+});
+
+test('a collapsed assignment republishes its inherited photo only after commit', function (): void {
+    Storage::fake('spatieMediaLibrary');
+    Queue::fake([PerformConversionsJob::class]);
+    $institution = Institution::factory()->create(['is_active' => true]);
+    $duty = Duty::factory()->for($institution)->create();
+    $user = User::factory()->create();
+    $survivor = Dutiable::factory()->forDuty($duty)->forUser($user)->create([
+        'start_date' => now()->subMonths(2), 'end_date' => null,
+        'additional_photo' => '/stale.jpg',
+    ]);
+    $loser = Dutiable::factory()->forDuty($duty)->forUser($user)->create([
+        'start_date' => now()->subMonth(), 'end_date' => null,
+    ]);
+    $photo = app(AddImageMedia::class)->execute($loser, UploadedFile::fake()->image('merged.jpg'), 'photo', properties: ['focal_point' => '20% 40%']);
+    app(SyncContactSearchIndexes::class)->handle(new DutiableChanged($survivor));
+    $public = PublicInstitution::findOrFail($institution->id);
+    $before = indexedContactDocument($public);
+
+    DB::beginTransaction();
+    CollapseOverlappingDutiables::foldInto($survivor, $loser);
+    $loser->delete();
+    expect(indexedContactDocument($public))->toBe($before);
+    DB::commit();
+
+    $document = indexedContactDocument($public);
+    expect($document['contacts'])->toHaveCount(1)
+        ->and($document['contacts'][0]['additional_photo'])->toContain('/'.$photo->id.'/')->not->toBe('/stale.jpg')
+        ->and($document['contacts'][0]['additional_photo_focal_point'])->toBe('20% 40%');
 });
 
 test('editing a user or duty refreshes their copied search data', function (): void {

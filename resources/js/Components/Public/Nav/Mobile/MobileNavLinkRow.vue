@@ -17,8 +17,8 @@
       : 'text-sm hover:text-brand'"
     @click="$emit('close')"
   >
-    <img v-if="link.image" :src="link.image" alt="" class="size-14 shrink-0 object-cover"
-      :style="{ objectPosition: link.image_focal ?? '50% 50%' }">
+    <MediaImage v-if="link.image" :src="link.image" sizes="56px" alt="" class="size-14 shrink-0 object-cover"
+      :style="{ objectPosition: link.image_focal ?? '50% 50%' }" />
     <Icon v-else-if="link.icon" :icon="`fluent:${link.icon}`" class="size-5 shrink-0 text-muted-foreground" />
 
     <div class="min-w-0 flex-1">
@@ -37,6 +37,7 @@
 </template>
 
 <script setup lang="ts">
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { Icon } from '@iconify/vue';
 
 import SmartLink from '../../SmartLink.vue';

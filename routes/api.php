@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\Admin\MailQueueApiController;
 use App\Http\Controllers\Api\Admin\MeetingApiController;
 use App\Http\Controllers\Api\Admin\MergeCandidateApiController;
 use App\Http\Controllers\Api\Admin\NavigationLinkApiController;
+use App\Http\Controllers\Api\Admin\PendingUploadApiController;
 use App\Http\Controllers\Api\Admin\PermalinkPreviewApiController;
 use App\Http\Controllers\Api\Admin\ProblemApiController;
 use App\Http\Controllers\Api\Admin\ReservationApiController;
@@ -227,6 +228,11 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
             Route::get('files/thumbnail', [FileApiController::class, 'thumbnail'])->name('files.thumbnail');
         });
 
+        // Form images upload before their record is saved; the form's save attaches them.
+        Route::post('pending-uploads', [PendingUploadApiController::class, 'store'])
+            ->middleware('throttle:30,1')
+            ->name('pendingUploads.store');
+
         // Tutorials
         Route::get('tutorials/progress', [TutorialApiController::class, 'progress'])->name('tutorials.progress');
         Route::post('tutorials/complete', [TutorialApiController::class, 'markComplete'])->name('tutorials.complete');
@@ -269,6 +275,8 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
 
         // Attribution-line suggestions for the person-quote rich-content block —
         // derives "Role, Tenant" labels from a user's current duties.
+        Route::get('users/{user}/photo', [UserApiController::class, 'photo'])->withTrashed()->name('users.photo');
+
         Route::get('users/{user}/attributions', [UserAttributionApiController::class, 'index'])->name('users.attributions');
 
         // Previews the permalink/URL a News/Page create form would end up with for the title

@@ -73,6 +73,8 @@ class FileUsageScanner
      */
     public static function targets(): array
     {
+        // Transitional(legacy-images): drop news.image, pages.featured_image, banners.image_url and
+        // institutions.image_url/logo_url here in the same change that drops the columns.
         return [
             'contentParts' => [ContentPart::class, ['json_content', 'options']],
             'news' => [News::class, ['short', 'image']],
@@ -136,6 +138,23 @@ class FileUsageScanner
             'scanned_models' => array_keys(self::targets()),
             'scanned_at' => now()->toISOString(),
         ];
+    }
+
+    /**
+     * Whether anything references a file elsewhere under `public/uploads/`, e.g. `news/foto.webp`
+     * from a former shared form folder. Stops at the first referencing column.
+     */
+    public function isReferencedBelowUploads(string $pathBelowUploads): bool
+    {
+        $matcher = new FileReferenceMatcher($pathBelowUploads, true);
+
+        foreach (self::targets() as [$modelClass, $columns]) {
+            if ($this->matchingIds($modelClass, $columns, $matcher) !== []) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function relativePath(string $filePath): string

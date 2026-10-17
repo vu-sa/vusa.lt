@@ -38,7 +38,6 @@ class UpdateNewsRequest extends NewsRequest
                 UniqueAmongTrashed::of('news', 'permalink')->ignore($this->news->id)->where('tenant_id', $this->getTargetTenantId()),
                 fn (string $attribute, mixed $value, Closure $fail) => $this->assertPermalinkNotRetiredByAnother((string) $value, $fail),
             ],
-            'image' => 'nullable|string',
             'short' => 'nullable|string',
             'lang' => 'required|in:lt,en',
             'content_version' => [$this->is('api/*') ? 'required' : 'nullable', 'string', 'size:64'],

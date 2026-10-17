@@ -49,8 +49,8 @@ describe('ImageUpload crop flow', () => {
     await input.trigger('change');
     await vi.waitFor(() => expect(compression.compressImage).toHaveBeenCalledTimes(1));
     expect(compression.compressImage).toHaveBeenCalledWith(file, expect.objectContaining({
-      maxSizeMB: 3,
-      maxWidthOrHeight: 2048,
+      maxSizeMB: 8,
+      maxWidthOrHeight: 3840,
       quality: 0.9,
     }));
 

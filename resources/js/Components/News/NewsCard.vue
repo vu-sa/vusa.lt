@@ -11,6 +11,8 @@
     data-slot="news-card"
   >
     <MediaFrame
+      :image="news.image_media"
+      :sizes="imageSizes"
       :src="news.image ?? undefined"
       :alt="news.title"
       ratio="16/9"
@@ -62,6 +64,7 @@ import { computed } from 'vue';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { descriptionMatch, matchTitle } from '@/Shared/Search/matches';
 import MediaFrame from '@/Components/Brand/MediaFrame.vue';
+import type { ImageData } from '@/Types/media';
 import type { NewsItem } from '@/Types/contentParts';
 import { formatStaticTime } from '@/Utils/IntlTime';
 import { localizedRoute } from '@/Utils/LocalizedRoutes';
@@ -73,6 +76,7 @@ type PreviewNews = Pick<NewsItem, 'id' | 'title' | 'lang' | 'permalink' | 'image
   _searchMatch?: NewsItem['_searchMatch'];
   _searchTitleMatches?: NewsItem['_searchTitleMatches'];
   _searchFieldMatches?: NewsItem['_searchFieldMatches'];
+  image_media?: ImageData | null;
   short?: string;
   publish_time?: string | number | Date | null;
   public_url?: string | null;
@@ -91,6 +95,12 @@ const props = withDefaults(defineProps<{
 });
 
 const page = usePage<PageProps>();
+const imageSizes = computed(() => props.size === 'compact'
+  ? '(min-width: 640px) 144px, 112px'
+  : props.size === 'featured' || props.size === 'lg'
+    ? '(min-width: 1280px) 584px, (min-width: 1024px) calc((100vw - 104px) / 2), (min-width: 640px) calc(100vw - 48px), calc(100vw - 40px)'
+    : '(min-width: 1280px) 384px, (min-width: 1024px) calc((100vw - 128px) / 3), (min-width: 640px) calc((100vw - 80px) / 2), calc(100vw - 40px)');
+
 const showExcerpt = computed(() => props.showExcerpt ?? (props.size === 'lg' || props.size === 'featured'));
 const titleMatch = computed(() => matchTitle(props.news.title, props.news._searchTitleMatches));
 const excerptMatch = computed(() => descriptionMatch(props.news, 'short'));

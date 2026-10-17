@@ -10,7 +10,7 @@ return [
     'expand' => 'Open staging warning',
     'topics' => [
         'reset' => 'Changes do not last – data is copied from production every night.',
-        'files' => 'File storage is shared with production, so files are view-only.',
+        'files' => 'File storage is shared with production, so files are view-only. Photos you upload to records are kept until the nightly refresh.',
         'sharepoint_read_only' => 'SharePoint is shared with production, so documents are view-only.',
         'sharepoint_test_site' => 'SharePoint documents are uploaded to the test site.',
         'mail' => 'Emails are not sent, except "Ar vyko posėdis?" – it comes only to you, one per selected recipient.',

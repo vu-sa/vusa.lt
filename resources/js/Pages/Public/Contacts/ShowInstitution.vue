@@ -33,12 +33,13 @@
           v-if="institution.image_url"
           class="relative mt-8 flex aspect-4/3 overflow-hidden border border-border bg-muted/20 lg:mt-0 lg:max-h-[30rem]"
         >
-          <img
+          <MediaImage
+            :image="institution.image_media"
+            sizes="(min-width: 1280px) 518px, (min-width: 1024px) 45vw, calc(100vw - 48px)"
             :src="institution.image_url"
             :alt="institution.name"
             class="size-full object-cover contrast-105"
-            :style="{ objectPosition: institution.image_focal_point ?? '50% 30%' }"
-          >
+            :style="{ objectPosition: institution.image_focal_point ?? '50% 30%' }" />
         </div>
 
         <div v-if="institution.description" class="mt-6 max-w-3xl pl-5 sm:pl-7 lg:col-span-2 lg:mt-3">
@@ -247,6 +248,7 @@
 </template>
 
 <script setup lang="ts">
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { computed, ref } from 'vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';

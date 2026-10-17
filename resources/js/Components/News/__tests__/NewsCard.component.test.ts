@@ -31,3 +31,15 @@ describe('NewsCard', () => {
     expect(wrapper.get('a').attributes('prefetch')).toBeUndefined();
   });
 });
+
+it('keeps responsive image candidates on featured and grid cards', () => {
+  const image = { id: 1, url: '/master.webp', thumb: '/thumb.webp', srcset: '/thumb.webp 400w, /large.webp 1600w',
+    width: 1600, height: 900, focal_point: '40% 30%', alt: null, author: null };
+  for (const size of ['sm', 'featured'] as const) {
+    const wrapper = mount(NewsCard, { props: { news: { ...news, image_media: image }, size } });
+    const img = wrapper.get('img');
+    expect(img.attributes('srcset')).toBe(image.srcset);
+    expect(img.attributes('sizes')).toContain('calc(');
+    expect(img.attributes('style')).toContain('object-position: 40% 30%');
+  }
+});

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\BuildUserIndexQuery;
 use App\Actions\DeleteUserPassword;
 use App\Actions\GenerateUserPassword;
+use App\Actions\Media\SyncImageMedia;
 use App\Actions\MergeUsers;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\GenerateUserPasswordRequest;
@@ -111,15 +112,17 @@ class UserController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreUserRequest $request, PostCreateRedirect $redirect)
+    public function store(StoreUserRequest $request, SyncImageMedia $syncImage, PostCreateRedirect $redirect)
     {
-        $user = DB::transaction(function () use ($request): User {
+        $user = DB::transaction(function () use ($request, $syncImage): User {
             $user = new User;
 
             $validatedData = $request->safe();
-            $user->fill(collect($validatedData)->except(['current_duties', 'roles'])->toArray());
+            $user->fill(collect($validatedData)->except(['current_duties', 'roles', 'profile_photo_media'])->toArray());
 
             $user->save();
+
+            $syncImage->fromValidated($user, 'profile_photo', $request->validated(), 'profile_photo_media', $request->user());
 
             // Routed through the service so creation is held to the same tenant check
             // as editing; the old raw attach() accepted duty ids from any tenant.
@@ -213,7 +216,10 @@ class UserController extends AdminController
         $actor = Auth::user();
 
         return $this->inertiaResponse('Admin/People/EditUser', [
-            'user' => $user->load('current_duties')->makeVisible(['last_action'])->append('has_password')->toFullArray(),
+            'user' => [
+                ...$user->load('current_duties')->makeVisible(['last_action'])->append('has_password')->toFullArray(),
+                'profile_photo_media' => $user->imageData('profile_photo'),
+            ],
             'canUpdateIdentity' => $actor->can('updateIdentity', $user),
         ]);
     }
@@ -233,7 +239,7 @@ class UserController extends AdminController
         // UpdateUserRequest already rejects an identity change the actor may not make;
         // dropping the fields here as well means no future call path can slip one
         // through by skipping that validator.
-        $fields = ['facebook_url', 'phone', 'profile_photo_path', 'profile_photo_focal_point', 'pronouns', 'show_pronouns'];
+        $fields = ['facebook_url', 'phone', 'pronouns', 'show_pronouns'];
 
         if ($actor->can('updateName', $user)) {
             $fields[] = 'name';
@@ -258,6 +264,7 @@ class UserController extends AdminController
 
             DB::transaction(function () use ($request, $user, $actorIsSuperAdmin, $fields): void {
                 $user->update($request->safe()->only($fields));
+                app(SyncImageMedia::class)->fromValidated($user, 'profile_photo', $request->validated(), 'profile_photo_media', $request->user());
 
                 // only a super admin may change roles
                 if ($actorIsSuperAdmin && $request->has('roles')) {

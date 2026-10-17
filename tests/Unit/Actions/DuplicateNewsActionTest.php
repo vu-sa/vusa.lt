@@ -1,11 +1,14 @@
 <?php
 
 use App\Actions\DuplicateNewsAction;
+use App\Actions\Media\AddImageMedia;
 use App\Models\Content;
 use App\Models\ContentPart;
 use App\Models\News;
 use App\Models\Tag;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 pest()->use(RefreshDatabase::class);
 
@@ -308,5 +311,18 @@ describe('DuplicateNewsAction', function (): void {
 
         expect($duplicatedNews->other_lang_id)->toBeNull()
             ->and($duplicatedNews->id)->not()->toBe($originalNews->id);
+    });
+
+    test('gives the copy its own image', function (): void {
+        Storage::fake('spatieMediaLibrary');
+        $originalNews = News::factory()->create();
+        $original = app(AddImageMedia::class)->execute($originalNews, UploadedFile::fake()->image('photo.png'), 'image');
+
+        $duplicatedNews = DuplicateNewsAction::execute($originalNews);
+        $copy = $duplicatedNews->getFirstMedia('image');
+
+        expect($copy)->not->toBeNull()
+            ->and($copy->id)->not->toBe($original->id)
+            ->and($duplicatedNews->image)->toContain("/{$copy->id}/");
     });
 });

@@ -11,7 +11,8 @@
       <div v-if="style === 'photo'" class="grid gap-6" :class="smartGridCols(items.length)">
         <RCFeatureCard
           v-for="item in items" :key="item.id ?? item.href"
-          :title="item.title" :cover-image="item.imageUrl" :cover-alt="item.title"
+          :title="item.title" :cover-image="item.imageUrl"
+        :image="item.image_media" :cover-alt="item.title"
           :meta="publishedLabel(item.publishedAt)" :href="item.href"
         >
           <template #cover-fallback>
@@ -98,6 +99,7 @@ const items = computed(() => {
       title: link.title,
       href: link.url,
       imageUrl: link.imageUrl,
+      image_media: null,
       publishedAt: null,
     }));
   }

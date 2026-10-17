@@ -113,7 +113,7 @@
           <OverviewSection v-if="resource.images.length > 0" variant="home" :title="$t('reservations.resource.photos')" :icon="ImageIcon">
             <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
               <a
-                v-for="image in resource.images"
+                v-for="(image, index) in resource.images"
                 :key="image"
                 :href="image"
                 target="_blank"
@@ -121,7 +121,7 @@
                 class="block border border-border"
                 :aria-label="`${$t('reservations.resource.photos')}: ${resource.name ?? ''}`"
               >
-                <img :src="image" :alt="resource.name ?? ''" loading="lazy" class="aspect-square w-full object-cover">
+                <MediaImage :image="resource.images_media?.[index]" sizes="(min-width: 1024px) 240px, 45vw" :src="image" :alt="resource.name ?? ''" loading="lazy" class="aspect-square w-full object-cover" />
               </a>
             </div>
           </OverviewSection>
@@ -161,6 +161,8 @@
 </template>
 
 <script setup lang="ts">
+import MediaImage from '@/Components/Brand/MediaImage.vue';
+import type { ImageData } from '@/Types/media';
 import { Deferred, router } from '@inertiajs/vue3';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
@@ -192,6 +194,7 @@ interface ShowResourcePayload {
   tenant: { id: number; shortname: string } | null;
   category: string | null;
   images: string[];
+  images_media?: ImageData[];
 }
 
 interface ResourceManager {

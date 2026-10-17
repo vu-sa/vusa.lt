@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\HasImageValidation;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -11,6 +12,8 @@ use Illuminate\Foundation\Http\FormRequest;
  */
 class UpdateUserSettingsRequest extends FormRequest
 {
+    use HasImageValidation;
+
     public function authorize(): bool
     {
         return true;
@@ -25,8 +28,7 @@ class UpdateUserSettingsRequest extends FormRequest
             'name' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:255'],
             'facebook_url' => ['nullable', 'string', 'max:255'],
-            'profile_photo_path' => ['nullable', 'string'],
-            'profile_photo_focal_point' => ['nullable', 'array'],
+            ...$this->imageMediaRules('profile_photo_media', $this->user(), 'profile_photo'),
             'pronouns' => ['nullable', 'array'],
             'show_pronouns' => ['nullable', 'boolean'],
         ];

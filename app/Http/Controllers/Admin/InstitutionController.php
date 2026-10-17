@@ -7,6 +7,7 @@ use App\Actions\GetInstitutionSecretaries;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetTypeFiles;
 use App\Actions\GetUserTenantShortnames;
+use App\Actions\Media\SyncImageMedia;
 use App\Actions\UpdateInstitution;
 use App\Enums\InstitutionRelationKind;
 use App\Http\Controllers\AdminController;
@@ -89,11 +90,12 @@ class InstitutionController extends AdminController
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreInstitutionRequest $request, PostCreateRedirect $redirect)
+    public function store(StoreInstitutionRequest $request, SyncImageMedia $syncImage, PostCreateRedirect $redirect)
     {
         $institution = new Institution;
 
-        $institution->fill($request->safe()->except('types'))->save();
+        $institution->fill($request->safe()->except('types', 'image_media', 'logo_media'))->save();
+        $this->syncImages($institution, $request->validated(), $syncImage);
 
         $institution->syncAudited('types', $request->types);
 
@@ -315,6 +317,8 @@ class InstitutionController extends AdminController
             'deactivation' => app(InstitutionDeactivationService::class)->summary($institution),
             'institution' => [
                 ...$institution->toFullArray(),
+                'image_media' => $institution->imageData('image'),
+                'logo_media' => $institution->imageData('logo'),
                 'types' => $institution->types->pluck('id'),
             ],
             'institutionTypes' => InstitutionType::query()->get(),
@@ -330,6 +334,15 @@ class InstitutionController extends AdminController
         $update->execute($institution, $request->validated(), $request->user());
 
         return back()->with('success', $this->entityMessage('updated', 'institution'));
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function syncImages(Institution $institution, array $validated, SyncImageMedia $syncImage): void
+    {
+        $syncImage->fromValidated($institution, 'image', $validated, 'image_media', auth()->user());
+        $syncImage->fromValidated($institution, 'logo', $validated, 'logo_media', auth()->user());
     }
 
     /**

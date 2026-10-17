@@ -7,6 +7,7 @@ use App\Models\Traits\LogsModelActivity;
 use App\Services\ContentService;
 use App\Services\HtmlSanitizerService;
 use App\Services\Typesense\SyncContentSearch;
+use App\Support\Media\ResizableImage;
 use App\Support\PublicCacheTags;
 use App\Tiptap\TiptapEditor;
 use Illuminate\Contracts\Support\Arrayable;
@@ -305,8 +306,9 @@ class ContentPart extends Model
             // The JSON document itself is not HTML, so the write-time mutator can
             // do nothing for this path — a crafted node (an <img> with onerror,
             // say) only becomes markup here, at render.
-            return app(HtmlSanitizerService::class)
-                ->sanitizeRichContent($editor->setContent($content)->getHTML());
+            // srcset is added after sanitizing, which would strip it.
+            return ResizableImage::withSrcset(app(HtmlSanitizerService::class)
+                ->sanitizeRichContent($editor->setContent($content)->getHTML()));
         } catch (\Throwable $e) {
             Log::warning("TipTap rendering failed for ContentPart {$this->id}: {$e->getMessage()}");
 

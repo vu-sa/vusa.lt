@@ -2,13 +2,16 @@
 
 namespace App\Models\Pivots;
 
+use App\Contracts\ImageMediaOwner;
 use App\Events\DutiableChanged;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
+use App\Models\Traits\HasImageMedia;
 use App\Models\Traits\HasTranslations;
 use App\Models\User;
+use App\Services\ContactSearchIndexSynchronizer;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -86,9 +89,9 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
     'description',
     'use_original_duty_name',
 ])]
-class Dutiable extends MorphPivot
+class Dutiable extends MorphPivot implements ImageMediaOwner
 {
-    use HasFactory, HasRelationships, HasTranslations, HasUlids;
+    use HasFactory, HasImageMedia, HasRelationships, HasTranslations, HasUlids;
 
     protected $attributes = ['ended_by_institution_deactivation' => false];
 
@@ -150,6 +153,39 @@ class Dutiable extends MorphPivot
     protected function sanitizedHtmlTranslations(): array
     {
         return ['description'];
+    }
+
+    /**
+     * A photo for this one assignment, shown instead of the person's own. Loaded through a
+     * relation's pivot, the row must carry its `id` for media to resolve.
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->registerImageCollection('photo');
+    }
+
+    public function imageCacheColumns(): array
+    {
+        return ['photo' => ['url' => 'additional_photo', 'focal' => 'additional_photo_focal_point', 'conversion' => 'thumb']];
+    }
+
+    /**
+     * Not touch(): saving a dutiable fires DutiableChanged, which resets permission caches and
+     * re-runs the ex-officio sync for what is only a photo.
+     */
+    public function afterImageMediaChanged(string $collection): void
+    {
+        if ($this->duty !== null) {
+            app(ContactSearchIndexSynchronizer::class)->assignmentChanged($this->duty, $this->user);
+        }
+    }
+
+    /**
+     * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
+     */
+    public function legacyImageColumns(): array
+    {
+        return ['photo' => ['url' => 'additional_photo', 'focal' => 'additional_photo_focal_point']];
     }
 
     /**

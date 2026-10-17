@@ -1,10 +1,10 @@
 <template>
   <div class="relative">
-    <img :src :alt :loading :style="objectPosition ? `object-position: ${objectPosition}` : ''" :class="[
+    <MediaImage :image :src :alt :sizes :eager="loading === 'eager'" :style="objectPosition ? `object-position: ${objectPosition}` : ''" :class="[
       'w-full object-cover rounded-xl shadow-lg transition-transform duration-400',
       heightClass,
       { 'group-hover:scale-103': hoverScale }
-    ]">
+    ]" />
 
     <!-- Decorative elements -->
     <DecorativeElement v-for="decoration in decorations" :key="`${decoration.type}-${decoration.position}`"
@@ -47,6 +47,8 @@
 </template>
 
 <script setup lang="ts">
+import MediaImage from '@/Components/Brand/MediaImage.vue';
+import type { ImageData } from '@/Types/media';
 import { computed, type Component } from 'vue';
 
 import DecorativeElement from '@/Components/RichContent/DecorativeElement.vue';
@@ -65,6 +67,9 @@ interface OverlayContent {
 type OverlayCorner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
 interface Props {
+  image?: ImageData | null;
+  /** srcset width hint; overestimates suit the cropped (object-cover) frames used here. */
+  sizes?: string;
   src: string;
   alt: string;
   loading?: 'lazy' | 'eager';
@@ -98,6 +103,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  sizes: '(min-width: 1024px) 50vw, 100vw',
   loading: 'lazy',
   height: 'md',
   decorations: () => [],

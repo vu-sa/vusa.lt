@@ -3,8 +3,9 @@ doc_status: reviewed
 title: Nariai
 area: users
 models: [User]
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-17
 tests:
+  - resources/js/Components/Public/__tests__/ContactWithPhoto.component.test.ts
   - resources/js/Utils/__tests__/String.test.ts
   - tests/Feature/Search/ContactSearchIndexSyncTest.php
   - tests/Feature/Admin/Management/UserControllerTest.php
@@ -56,6 +57,13 @@ Prisijungimo el. paštui rekomenduojama naudoti asmeninį studentinį adresą (p
 o ne pareigybinį `@vusa.lt`. Pareigybiniai el. paštai keičiantis kadencijoms perduodami kitiems nariams,
 todėl asmeninė paskyros istorija turi likti susieta su konkrečiu žmogumi.
 :::
+
+### Nuotraukos {#nuotraukos}
+
+Viešoje kontaktų kortelėje pirmojo rodomo pareigybės laikotarpio nuotrauka turi pirmenybę prieš
+profilio nuotrauką. Jei laikotarpis savo nuotraukos neturi, rodoma profilio nuotrauka. Kartu
+naudojamas būtent tos nuotraukos fokuso taškas. Sujungus persidengiančius laikotarpius lieka
+išsaugomo laikotarpio nuotrauka, o jei jos nebuvo – prijungiamo laikotarpio nuotrauka.
 
 ### Teisės ir padaliniai per pareigybes {#padaliniai-ir-teises}
 
@@ -262,3 +270,5 @@ nario padalinių prieiga arba kreipimasis į Centrinio biuro koordinatorių / Su
   `InstitutionCheckIn` (`user_id`) ir `Problem` (`created_by`).
 - Savęs užsirakinimo apsaugą užtikrina `AdminController::guardSelfLockout` kartu su `UserPolicy::canActDestructively`
   (draudžiama trinti save).
+
+Kontaktų kortelėse ir nario peržiūroje parenkamos ryškesnės nuotraukų versijos. Mažiems avatarams siunčiamos miniatiūros. Žr. [Nuotraukų dydžiai](/svetaine/failai#nuotrauku-dydziai).

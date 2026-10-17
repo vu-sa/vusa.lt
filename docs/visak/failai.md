@@ -3,11 +3,13 @@ doc_status: reviewed
 title: Įrašų failai
 area: fileableFiles
 models: [FileableFile]
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-16
 tests:
   - tests/Feature/Admin/FileableFileControllerTest.php
   - tests/Feature/SyncFileableFilesJobTest.php
   - tests/Unit/Models/FileableFileTest.php
+  - tests/Feature/Admin/Resources/FileableFilePolicyTest.php
+  - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Unit/Services/Sharepoint/SharepointFileServiceTest.php
   - resources/js/Components/Files/__tests__/FileableFilesPanel.component.test.ts
   - resources/js/Components/Meetings/__tests__/MeetingPublicVisibilityDialog.component.test.ts
@@ -44,7 +46,9 @@ arba **Kita**. Posėdžio protokolas ir ataskaita rodomi atskirai, o jų būsena
 lauke **Po posėdžio** (žr. [Posėdžiai](/visak/posedziai#protokolas)).
 
 Institucijos ir pareigybės skirtuke **Failai** po jų pačių failais rodomi ir jų tipo failai
-(**Tipo dokumentai**), pvz., visų komitetų bendri šablonai. Juos tvarko tipą redaguojantys.
+(**Tipo dokumentai**), pvz., visų komitetų bendri šablonai. Įtraukiami ir tėvinių tipų failai.
+Tipo failus įkelia tipo įraše (**Sistema → Institucijų tipai** arba **Pareigybių tipai**, skirtukas
+**Failai**) tipą redaguojantys.
 
 ### Nuoroda į failą {#nuoroda}
 
@@ -111,6 +115,7 @@ Failų teisės seka paties įrašo teises:
 |---|---|
 | Matyti failus, juos atverti ir kopijuoti nuorodą | Kas mato visą įrašo puslapį (ne tik viešą jo pusę) |
 | Įkelti, ištrinti failus ir atšaukti nuorodas | Kas gali redaguoti įrašą |
+| Atverti tipo failą | Kas mato tipo įrašą, eina to tipo (ar jo vaikinio tipo) pareigas, yra tokios institucijos narys arba mato tokią instituciją savo padalinyje |
 
 Kas mato ir redaguoja posėdžius bei institucijas, aprašyta puslapiuose
 [Posėdžiai](/visak/posedziai#teises) ir [Institucijos](/visak/institucijos#teises).

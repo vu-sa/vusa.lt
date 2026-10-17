@@ -1,3 +1,5 @@
+import { imageFromSearch } from '@/Types/media';
+
 import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
@@ -231,6 +233,7 @@ export function useNewsSearch(options: UseNewsSearchOptions = {}) {
       short: doc.short ?? '',
       permalink: doc.permalink ?? null,
       image: doc.image ?? '',
+      image_media: imageFromSearch(doc as unknown as Record<string, unknown>),
       publish_time: publishIso,
       lang: doc.lang ?? locale.value,
     };

@@ -8,6 +8,8 @@
   >
     <img
       :src="photo.src"
+      :srcset="photo.srcset ?? undefined"
+      sizes="100vw"
       :alt="photo.alt"
       :style="{ objectPosition: photo.focalPoint }"
       loading="lazy"
@@ -54,10 +56,10 @@ const DAY_MS = 86_400_000;
 
 const photo = computed(() => {
   if (props.image) {
-    return { src: props.image.url, alt: '', focalPoint: props.image.focalPoint ?? '50% 30%' };
+    return { src: props.image.url, srcset: props.image.srcset, alt: '', focalPoint: props.image.focalPoint ?? '50% 30%' };
   }
 
-  return { ...communityPhotos[Math.floor(Date.now() / DAY_MS) % communityPhotos.length], focalPoint: '50% 30%' };
+  return { ...communityPhotos[Math.floor(Date.now() / DAY_MS) % communityPhotos.length], srcset: null, focalPoint: '50% 30%' };
 });
 
 const today = computed(() => new Intl.DateTimeFormat(locale.value, {

@@ -1,5 +1,5 @@
 <template>
-  <HoverCard :open-delay="300" :close-delay="100">
+  <HoverCard :open-delay="300" :close-delay="100" @update:open="loadPhoto">
     <HoverCardTrigger as-child>
       <template v-if="!showName">
         <Link
@@ -56,15 +56,16 @@
     <HoverCardContent class="w-64 overflow-hidden p-0">
       <!-- User photo / initials fallback -->
       <div class="relative aspect-[4/3] w-full overflow-hidden">
-        <img
+        <MediaImage
           v-if="photo && !imageError"
+          :image="preview?.image"
+          sizes="256px"
           class="h-full w-full object-cover"
           :src="photo"
           :alt="user.name"
           loading="lazy"
-          :style="{ objectPosition: focalPoint }"
-          @error="imageError = true"
-        >
+          :focal-point
+          @error="imageError = true" />
         <div
           v-else
           class="flex h-full w-full items-center justify-center bg-muted"
@@ -125,6 +126,9 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { Mail, Phone } from '@lucide/vue';
 
 import UserAvatar from './UserAvatar.vue';
+import MediaImage from '@/Components/Brand/MediaImage.vue';
+import { useApi } from '@/Composables/useApi';
+import type { ImageData } from '@/Types/media';
 
 import { useIsAdminContext } from '@/Composables/useIsAdminContext';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
@@ -189,6 +193,15 @@ const nameTextClass = computed(() => {
 const avatarWrapperClass = computed(() => {
   return avatarSizeClasses[avatarSize.value];
 });
+
+const photoEndpoint = computed(() => props.user.id ? route('api.v1.admin.users.photo', { user: props.user.id }) : '');
+const { data: preview, execute: fetchPhoto, isFetching: photoFetching } = useApi<{ image: ImageData | null }>(photoEndpoint, { immediate: false, showErrorToast: false });
+let fetchedPhotoFor: string | null = null;
+async function loadPhoto(open: boolean) {
+  if (!open || !isAdminContext.value || !canViewUserProfile.value || !props.user.id || photoFetching.value || fetchedPhotoFor === props.user.id) return;
+  fetchedPhotoFor = props.user.id;
+  await fetchPhoto();
+}
 
 const photo = computed(() => {
   if (props.user.src) return props.user.src;

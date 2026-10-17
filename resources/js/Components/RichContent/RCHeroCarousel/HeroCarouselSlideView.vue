@@ -1,7 +1,7 @@
 <template>
   <div :class="['relative', slideHeightClass]">
     <!-- Background photograph, grayscale by default -->
-    <img
+    <MediaImage
       v-if="slide.imageSrc"
       :src="slide.imageSrc"
       :alt="slide.imageAlt"
@@ -9,8 +9,7 @@
       :class="['absolute inset-0 size-full object-cover object-center', grayscale && 'grayscale', SCRIM_IMAGE_OPACITY[effectiveScrim]]"
       :loading="isFirstSlide || preloadImage ? 'eager' : 'lazy'"
       :fetchpriority="isFirstSlide ? 'high' : undefined"
-      draggable="false"
-    >
+      draggable="false" />
 
     <!-- Empty image placeholder in edit mode -->
     <div
@@ -177,6 +176,7 @@
 </template>
 
 <script setup lang="ts">
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { computed, defineAsyncComponent, inject } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 

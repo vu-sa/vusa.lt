@@ -33,7 +33,7 @@ class TopicController extends PublicController
             ->where('lang', $locale)
             ->where('draft', false)
             ->where('publish_time', '<=', now())
-            ->with('tenant:id,alias,shortname')
+            ->with('tenant:id,alias,shortname', 'media')
             ->orderByDesc('publish_time')
             ->limit(6)
             ->get(['id', 'title', 'short', 'image', 'permalink', 'lang', 'tenant_id', 'publish_time']);
@@ -71,6 +71,7 @@ class TopicController extends PublicController
                 'lang' => $article->lang,
                 'short' => $article->short,
                 'image' => $article->getImageUrl(),
+                'image_media' => $article->imageData('image'),
                 'permalink' => $article->permalink,
                 'publish_time' => $article->publish_time,
                 'public_url' => $article->publicUrl(),

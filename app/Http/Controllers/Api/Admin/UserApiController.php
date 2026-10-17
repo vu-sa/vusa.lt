@@ -18,6 +18,13 @@ class UserApiController extends ApiController
 
     public function __construct(private TanstackTableService $tableService, private ModelAuthorizer $authorizer) {}
 
+    public function photo(User $user): JsonResponse
+    {
+        $this->authorizeApi('view', $user);
+
+        return $this->jsonSuccess(['image' => $user->imageData('profile_photo')]);
+    }
+
     public function index(IndexUserRequest $request): JsonResponse
     {
         $this->authorizeApi('viewAny', User::class);

@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\ResolveForbiddenExplanation;
+use App\Http\Controllers\Public\ResizedImageController;
 use App\Http\Middleware\BlockRobotsOnStagingDomains;
 use App\Http\Middleware\EnsureGoalsExperiment;
 use App\Http\Middleware\ExtendPWASession;
@@ -13,6 +14,7 @@ use App\Http\Middleware\StagingEnvironmentWarnings;
 use App\Http\Middleware\StagingReadOnlyMode;
 use App\Http\Middleware\TenantPermission;
 use App\Http\Middleware\UpdateLastAction;
+use App\Support\Media\ResizableImage;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -47,6 +49,13 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->namespace('App\\Http\\Controllers\\Admin')
                 ->prefix('mano')
                 ->group(base_path('routes/admin.php'));
+
+            // Outside the web group: no session cookie, so browsers may cache the image.
+            Route::get('img/{width}/{path}', ResizedImageController::class)
+                ->whereIn('width', array_map(strval(...), ResizableImage::WIDTHS))
+                ->where('path', '.+')
+                ->middleware('throttle:images')
+                ->name('resizedImage');
 
             Route::middleware('web')
                 ->namespace('App\\Http\\Controllers')

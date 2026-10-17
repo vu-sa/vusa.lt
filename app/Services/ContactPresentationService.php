@@ -26,7 +26,9 @@ class ContactPresentationService
         $duties->each(fn (Duty $duty) => $duty->setRelation('institution', $institution));
 
         new EloquentCollection($duties->flatMap(fn (Duty $duty) => $duty->current_users->pluck('pivot'))->all())
-            ->load(['tenant:id,shortname', 'study_program:id,name']);
+            ->load(['tenant:id,shortname', 'study_program:id,name', 'media']);
+
+        new EloquentCollection($duties->flatMap(fn (Duty $duty) => $duty->current_users)->all())->load('media');
 
         $contacts = [];
 
@@ -121,6 +123,7 @@ class ContactPresentationService
             'facebook_url' => $user->facebook_url,
             'duties' => [],
             'profile_photo_path' => $user->profile_photo_path,
+            'profile_photo_media' => $user->imageData('profile_photo'),
             'profile_photo_focal_point' => $user->profile_photo_focal_point,
             'pronouns' => $user->pronouns,
             'duty_pronouns' => $user->getTranslations('pronouns'),
@@ -143,6 +146,7 @@ class ContactPresentationService
                 'use_original_duty_name' => (bool) $dutiable->use_original_duty_name,
                 'additional_email' => $dutiable->additional_email,
                 'additional_photo' => $dutiable->additional_photo,
+                'photo_media' => $dutiable->imageData('photo'),
                 'additional_photo_focal_point' => $dutiable->additional_photo_focal_point,
                 'description' => $dutiable->description,
                 'study_program' => $dutiable->study_program?->only(['id', 'name']),

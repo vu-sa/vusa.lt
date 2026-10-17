@@ -6,6 +6,8 @@
     data-slot="institution-card"
   >
     <MediaFrame
+      :image="institution.image_media ?? imageFromSearch(institution as unknown as Record<string, unknown>)"
+      sizes="(min-width: 1280px) 392px, (min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
       :src="institution.image_url ?? undefined"
       :alt="String(institution.name || '')"
       :focal-point="institution.image_focal_point"
@@ -81,6 +83,7 @@
 </template>
 
 <script setup lang="ts">
+import { imageFromSearch } from '@/Types/media';
 import InstitutionCardArrow from './InstitutionCardArrow.vue';
 import InstitutionCardDescription from './InstitutionCardDescription.vue';
 import InstitutionCardHeading from './InstitutionCardHeading.vue';

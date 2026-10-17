@@ -2,6 +2,7 @@ import { computed, type MaybeRefOrGetter, toValue } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
 import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
+import type { ImageData } from '@/Types/media';
 import { TenantType } from '@/Types/enums';
 import { stripHtmlTags } from '@/Utils/String';
 
@@ -14,6 +15,7 @@ export interface InstitutionCardData {
   email?: string | null;
   website?: string | null;
   image_url?: string | null;
+  image_media?: ImageData | null;
   image_focal_point?: string | null;
   logo_url?: string | null;
   facebook_url?: string | null;

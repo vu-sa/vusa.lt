@@ -1,12 +1,13 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-17
 tests:
   - resources/js/Composables/__tests__/useContentEditor.component.test.ts
   - tests/Feature/Search/SearchExperienceTest.php
   - tests/Feature/Api/Admin/ContentEditorTest.php
   - tests/Feature/Admin/Content/NewsControllerTest.php
   - tests/Browser/RichContentFullscreenEditorTest.php
+  - tests/Browser/ContentEditorImageSaveTest.php
   - tests/Feature/Admin/Content/NewsTagsTest.php
 title: Naujienos
 area: news
@@ -63,6 +64,8 @@ Naujienos turinio blokai redaguojami taip pat kaip [puslapiuose](/svetaine/pusla
 Nepavykęs išsaugojimas palieka pakeitimus formoje. Jei kolega jau išsaugojo naujesnę versiją, pirmiausia verta ją peržiūrėti.
 
 </ChangelogNote>
+
+Sėkmingą išsaugojimą patvirtina pranešimas **Išsaugota**, taip pat ir pakeitus tik nuotrauką, jos autorių ar fokusavimo tašką. Nuotraukos apdorojimas nesukelia netikro versijų neatitikimo: jei kitų pakeitimų nėra, galima išsaugoti dar kartą be įspėjimo.
 
 **Juodraštis** matomas tik sistemoje. Pasirinkus **Paskelbta** ir išsaugojus, naujiena tampa pasiekiama pagal viešą nuorodą. Jei paskelbimo laikas ateityje, paieškoje ir naujienų sąrašuose ji pasirodys nuo pasirinkto laiko; pati nuoroda jau veikia.
 
@@ -158,3 +161,5 @@ Susiedamas kalbų versijas turi turėti teisę redaguoti abu susiejamus įrašus
 - Masiniai veiksmai: `NewsController::bulkUpdateStatus()` (`news.bulkStatus`) ir `bulkDestroy()` (`news.bulkDestroy`).
 - Paieška: Typesense indeksas su atitinkamu padalinio filtru.
 - Išsaugojimas tikrina įrašo versiją ir vienu veiksmu per `ContentEditorService` atnaujina naujieną, turinio blokus, žymas bei kalbų ryšius.
+
+Nuotraukoms parenkama ekrano dydį atitinkanti versija, taip pat naujienų paieškoje. Žr. [Nuotraukų dydžiai](/svetaine/failai#nuotrauku-dydziai).

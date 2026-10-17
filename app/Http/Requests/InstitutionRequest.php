@@ -2,13 +2,16 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\HasImageValidation;
 use App\Http\Requests\Concerns\ValidatesTenantScope;
+use App\Models\Institution;
 use App\Rules\SoftDeleteRules;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class InstitutionRequest extends FormRequest
 {
+    use HasImageValidation;
     use ValidatesTenantScope;
 
     /**
@@ -39,15 +42,21 @@ class InstitutionRequest extends FormRequest
             'working_hours.en' => 'nullable|string|max:255',
             'phone' => 'nullable|string',
             'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope($this->tenantScopePermission)],
-            'image_url' => 'nullable|string',
-            'image_focal_point' => 'nullable|string|max:20',
-            'logo_url' => 'nullable|string',
             'facebook_url' => 'nullable|string',
             'instagram_url' => 'nullable|string',
             'is_active' => 'boolean',
             'types' => 'nullable|array',
             'types.*' => ['integer', 'distinct', SoftDeleteRules::existsLive('institution_types')],
             'meeting_periodicity_days' => 'nullable|integer|min:1|max:365',
+            ...$this->imageMediaRules('image_media', $this->institution() ?? new Institution, 'image'),
+            ...$this->imageMediaRules('logo_media', $this->institution() ?? new Institution, 'logo'),
         ];
+    }
+
+    private function institution(): ?Institution
+    {
+        $institution = $this->route('institution');
+
+        return $institution instanceof Institution ? $institution : null;
     }
 }

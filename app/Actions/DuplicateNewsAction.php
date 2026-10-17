@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\Content;
 use App\Models\News;
+use App\Support\StagingProtection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -44,6 +45,15 @@ class DuplicateNewsAction
 
             if (! empty($contentParts)) {
                 $newNews->content->parts()->createMany($contentParts);
+            }
+
+            // replicate() copied the original's media URL into the cache column; the copy needs its own file.
+            $image = $news->getFirstMedia('image');
+
+            if ($image !== null) {
+                StagingProtection::ensureDiskIsWritable(config('media-library.disk_name'));
+                $image->copy($newNews, 'image');
+                $newNews->refreshImageCache('image');
             }
 
             // Copy tags relationship

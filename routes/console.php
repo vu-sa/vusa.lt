@@ -5,6 +5,7 @@ use App\Jobs\DiscoverSharepointDocumentsJob;
 use App\Jobs\SyncFileableFilesJob;
 use App\Jobs\SyncStaleDocumentsJob;
 use App\Models\ContentEditorDraft;
+use App\Models\PendingUpload;
 use App\Models\ReservationDraft;
 use App\Models\User;
 use App\Services\SystemMonitorService;
@@ -184,3 +185,7 @@ Schedule::command('model:prune', ['--model' => [ReservationDraft::class]])
 Schedule::command('model:prune', ['--model' => [ContentEditorDraft::class]])
     ->dailyAt('03:40')
     ->name('prune-content-editor-drafts');
+
+Schedule::command('model:prune', ['--model' => [PendingUpload::class]])
+    ->dailyAt('03:45')
+    ->name('prune-pending-uploads');

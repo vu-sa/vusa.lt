@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Actions\GenerateUniqueSlug;
+use App\Actions\Media\SyncImageMedia;
 use App\Actions\PairTranslatedRecord;
 use App\Models\Content;
 use App\Models\News;
@@ -16,9 +17,15 @@ use Illuminate\Validation\ValidationException;
 
 class ContentEditorService
 {
-    public const PAGE_FIELDS = ['title', 'permalink', 'lang', 'parent_id', 'is_active', 'layout', 'show_table_of_contents', 'show_title', 'show_breadcrumbs', 'highlights', 'featured_image', 'meta_description'];
+    public const PAGE_FIELDS = ['title', 'permalink', 'lang', 'parent_id', 'is_active', 'layout', 'show_table_of_contents', 'show_title', 'show_breadcrumbs', 'highlights', 'meta_description'];
 
-    public const NEWS_FIELDS = ['title', 'permalink', 'lang', 'draft', 'publish_time', 'short', 'image', 'image_author', 'show_breadcrumbs', 'highlights'];
+    public const NEWS_FIELDS = ['title', 'permalink', 'lang', 'draft', 'publish_time', 'short', 'show_breadcrumbs', 'highlights'];
+
+    /** @var array<string, array{key: string, collection: string}> */
+    private const IMAGE = [
+        'pages' => ['key' => 'featured_image_media', 'collection' => 'featured_image'],
+        'news' => ['key' => 'image_media', 'collection' => 'image'],
+    ];
 
     public function snapshot(Page|News $record): array
     {
@@ -42,13 +49,17 @@ class ContentEditorService
             'created_at' => $record->created_at,
             'updated_at' => $record->updated_at,
         ];
+        $image = self::IMAGE[$record instanceof Page ? 'pages' : 'news'];
+        $data[$image['key']] = $record->imageData($image['collection']);
         $data['content']['parts'] = app(ContentHeadingAnchors::class)->normalize($data['content']['parts']);
         foreach (['show_breadcrumbs', 'show_title', 'show_table_of_contents'] as $field) {
             if (in_array($field, $fields, true)) {
                 $data[$field] = $record->{$field} ?? true;
             }
         }
-        $data['content_version'] = hash('sha256', json_encode(Arr::except($data, ['tenant', 'created_at']), JSON_THROW_ON_ERROR));
+        // URLs change when queued conversions finish; only what the editor changed counts.
+        $versioned = [...Arr::except($data, ['tenant', 'created_at']), $image['key'] => Arr::only($data[$image['key']] ?? [], ['id', 'focal_point', 'alt', 'author'])];
+        $data['content_version'] = hash('sha256', json_encode($versioned, JSON_THROW_ON_ERROR));
         if ($record instanceof Page) {
             $data['translated_parent_id'] = $record->parent?->other_lang_id;
         }
@@ -61,7 +72,7 @@ class ContentEditorService
         $model = $kind === 'pages' ? Page::class : News::class;
         Gate::forUser($user)->authorize($record ? 'update' : 'create', $record ?? $model);
 
-        return DB::transaction(function () use ($kind, $model, $data, $user, $record): Page|News {
+        $saved = DB::transaction(function () use ($kind, $model, $data, $user, $record): Page|News {
             if ($record !== null) {
                 $record = $model::whereKey($record->id)->lockForUpdate()->firstOrFail();
                 if (isset($data['content_version']) && ! hash_equals($this->snapshot($record)['content_version'], $data['content_version'])) {
@@ -98,14 +109,17 @@ class ContentEditorService
             if (array_key_exists('tags', $data)) {
                 $record->tags()->sync($data['tags'] ?? []);
             }
+            app(SyncImageMedia::class)->fromValidated($record, self::IMAGE[$kind]['collection'], $data, self::IMAGE[$kind]['key'], $user);
             if ($repairs) {
                 PairTranslatedRecord::execute($record, $data['other_lang_id']);
             }
 
             SyncContentSearch::afterCommit((int) $record->content_id);
 
-            return $record->fresh();
+            return $record;
         }, 3);
+
+        return $saved->fresh();
     }
 
     public function pairing(string $kind, Page|News|null $record, ?int $targetId, string $lang, User $user, bool $lock = false): array

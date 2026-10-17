@@ -4,14 +4,14 @@
     class="group relative flex flex-col bg-white/40 p-5 sm:p-6 transition-colors hover:bg-black/[0.03] dark:bg-black/40 dark:hover:bg-black/55"
   >
     <!-- Photo section (no avatars, no initials overlay) -->
-    <div v-if="imageUrl" class="relative aspect-[4/3] w-full overflow-hidden bg-secondary">
-      <img
-        :src="imageUrl"
+    <div v-if="photo.url" class="relative aspect-[4/3] w-full overflow-hidden bg-secondary">
+      <MediaImage
+        :image="photo.media"
+        sizes="(min-width: 1280px) 357px, (min-width: 1024px) calc((100vw - 208px) / 3), (min-width: 640px) calc((100vw - 144px) / 2), calc(100vw - 80px)"
+        :src="photo.url"
+        :focal-point="photo.focal"
         :alt="contact?.name"
-        class="size-full object-cover transition-transform duration-400 group-hover:scale-103"
-        loading="lazy"
-        :style="{ objectPosition: focalPoint }"
-      >
+        class="size-full object-cover transition-transform duration-400 group-hover:scale-103" />
     </div>
     <div v-else class="relative flex aspect-[4/3] w-full items-center justify-center bg-secondary/60 text-muted-foreground/40">
       <IFluentPerson24Regular class="size-12" />
@@ -126,6 +126,9 @@
 </template>
 
 <script setup lang="ts">
+import MediaImage from '@/Components/Brand/MediaImage.vue';
+import type { ImageData } from '@/Types/media';
+
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
@@ -140,7 +143,7 @@ import IFluentPerson24Regular from '~icons/fluent/person-24-regular';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 
 const props = defineProps<{
-  contact: App.Entities.User & { duty_pronouns?: DutyPronouns };
+  contact: App.Entities.User & { duty_pronouns?: DutyPronouns; profile_photo_media?: ImageData | null };
   /** `contact_tenant` names the padalinys a member represents, set for tenant-ordered duties. */
   duties: Array<App.Entities.Duty & { contact_tenant?: string | null }>;
 }>();
@@ -197,44 +200,30 @@ const showAdditionalInfo = (duty: App.Entities.Duty) => {
   return parts.length > 0 ? `(${parts.join(', ')})` : null;
 };
 
-// Uses the first duty assignment that has a per-assignment photo (dutiable.additional_photo),
-// falling back to the profile photo. Iterated via Object.keys since `duties` may not be
-// array-like depending on how the contact was serialized.
-const imageUrl = computed(() => {
-  for (const duty of Object.keys(props.contact.duties ?? [])) {
-    if (!props.contact.duties?.[duty].pivot) {
-      continue;
-    }
+interface PhotoPivot {
+  additional_photo?: string | null;
+  additional_photo_focal_point?: string | null;
+  photo_media?: ImageData | null;
+}
 
-    return (
-      props.contact.duties?.[duty].pivot.additional_photo ?? props.contact.profile_photo_path
-    );
+// The first assignment decides: its own photo wins, otherwise the profile photo. Url, srcset and
+// focal point always come from the same photo. Object.values since `duties` may be keyed.
+function photoSource(media: ImageData | null | undefined, url?: string | null, focal?: string | null) {
+  return {
+    url: media?.url || url || '',
+    media: media ?? null,
+    focal: media?.focal_point ?? focal ?? '50% 30%',
+  };
+}
+
+const photo = computed(() => {
+  const pivot = (Object.values(props.contact.duties ?? []).find(duty => duty.pivot)?.pivot
+    ?? props.contact.pivot) as PhotoPivot | undefined;
+
+  if (pivot?.photo_media?.url || pivot?.additional_photo) {
+    return photoSource(pivot.photo_media, pivot.additional_photo, pivot.additional_photo_focal_point);
   }
 
-  if (props.contact.pivot?.additional_photo) {
-    return props.contact.pivot?.additional_photo;
-  }
-
-  return props.contact.profile_photo_path ?? '';
-});
-
-const focalPoint = computed(() => {
-  for (const duty of Object.keys(props.contact.duties ?? [])) {
-    if (!props.contact.duties?.[duty].pivot) {
-      continue;
-    }
-
-    return (
-      props.contact.duties?.[duty].pivot.additional_photo_focal_point
-      ?? props.contact.profile_photo_focal_point
-      ?? '50% 30%'
-    );
-  }
-
-  if (props.contact.pivot?.additional_photo_focal_point) {
-    return props.contact.pivot.additional_photo_focal_point;
-  }
-
-  return props.contact.profile_photo_focal_point ?? '50% 30%';
+  return photoSource(props.contact.profile_photo_media, props.contact.profile_photo_path, props.contact.profile_photo_focal_point);
 });
 </script>
