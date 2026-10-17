@@ -9,7 +9,7 @@ tests:
   - resources/js/Components/ui/upload/__tests__/ImageUploadMedia.component.test.ts
   - tests/Feature/Jobs/Media/UpgradeImageMediaTest.php
   - tests/Feature/Public/ResizedImageControllerTest.php
-  - resources/js/Types/__tests__/media.test.ts
+  - resources/js/Components/Brand/__tests__/MediaImage.component.test.ts
   - tests/Feature/Admin/Resources/FilesControllerTest.php
   - tests/Feature/Api/Admin/FileApiControllerTest.php
   - tests/Feature/Services/FileStorageServiceTest.php
@@ -76,6 +76,7 @@ Svetainė kiekvienai vietai parenka pakankamo dydžio nuotraukos versiją, todė
 </ChangelogNote>
 
 - Ir formų, ir failų tvarkyklėje įkeltos nuotraukos saugomos iki 3840 px ilgesniosios kraštinės. Naršyklė pagal ekraną ir vietą puslapyje parsisiunčia mažesnę versiją, todėl mažoms kortelėms, meniu ir avatarams siunčiami nedideli failai.
+- Naršyklei siūlomos versijos neviršija originalo pločio. Jei mažesnės versijos nepakanka, siunčiamas originalas be papildomo kokybės praradimo.
 - Logotipai, ekrano nuotraukos pagalbos užklausose ir permatomi paveikslėliai saugomi be kokybės nuostolių, kad raidės liktų aiškios.
 - Anksčiau įkeltų, jau sumažintų nuotraukų kokybės atkurti negalima. Kur nuotrauka atrodo neryški, reikia įkelti didesnį originalą.
 
@@ -187,4 +188,4 @@ Sąsajoje parodoma prieigos klaida; pasirinkimą galima pakeisti ir bandyti dar 
 - Rašymas: `FileUploadWriter` vienodai tvarko paprastus ir optimizuotus failus, tikrina rašymo rezultatą ir naudoja aplanko užraktą pavadinimui parinkti bei failui išsaugoti.
 - Naudojimo paieška: `App\Services\FileUsageScanner` turi tikrinamų stulpelių sąrašą (`targets()`). SQL užklausa atrenka eilutes pagal kelio dalis, kurios nesikeičia jokioje koduotėje, o `App\Services\FileUsage\FileReferenceMatcher` kiekvieną reikšmę iškoduoja (JSON, HTML entities, `%20`, NFC/NFD) ir lygina visą kelią `/uploads/files/…`. Senasis kelias `/uploads/…` (be `files/`) skaičiuojamas tik tada, kai tokiu adresu nėra kito failo.
 - Paveikslėlių glaudinimas: atliekamas per `Intervention\Image` biblioteką valdiklio metode `compressImage()`.
-- Failų tvarkyklės nuotraukų versijos: viešas maršrutas `/img/{plotis}/{kelias}` (`ResizedImageController`, `App\Support\Media\ResizableImage`, pločiai 400–3840 px) pagal poreikį sukuria ir išsaugo sumažintą kopiją; niekada nedidina. Turinio blokams `srcset` sudaro `cmsSrcset()`, tekstui – `ContentPart::html`.
+- Failų tvarkyklės nuotraukų versijos: viešas maršrutas `/img/{plotis}/{kelias}` (`ResizedImageController`, `App\Support\Media\ResizableImage`, pločiai 400–3840 px) pagal poreikį sukuria ir išsaugo sumažintą kopiją; niekada nedidina. Turinio blokams serveris perduoda `ContentPart::image_srcsets`, tekstui versijas įterpia `ContentPart::html`. Sąraše yra tik už originalą mažesnės versijos ir tikrojo pločio originalas; nežinant matmenų naudojamas tik originalo adresas.

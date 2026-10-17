@@ -17,6 +17,13 @@ class ResizedImageController extends Controller
 
         abort_if($source === null, 404);
 
+        $dimensions = @getimagesize(Storage::path($source));
+        abort_if($dimensions === false, 404);
+        if ((int) $width >= $dimensions[0]) {
+            return response()->file(Storage::path($source), ['Content-Type' => $dimensions['mime']])
+                ->setPublic()->setMaxAge(604800);
+        }
+
         // The header bytes are enough to tell a transparent logo from a photo.
         $head = (string) file_get_contents(Storage::path($source), length: 65536);
         $quality = ImageConversions::isArtwork($head) ? 100 : ImageConversions::CONVERSION_QUALITY;

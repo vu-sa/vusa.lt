@@ -16,14 +16,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
 
-import { cmsSrcset, type ImageData } from '@/Types/media';
+import { cmsImageSrcsetsKey, type ImageData } from '@/Types/media';
 
 /**
  * An image from the media library: srcset from the shared conversions, the focal point as
- * object-position. `src` covers callers that only have a plain URL; file-manager URLs get a
- * srcset from the `/img` resize route.
+ * object-position. `src` covers plain URLs; CMS candidates come from server-checked source dimensions.
  */
 const props = withDefaults(defineProps<{
   image?: ImageData | null;
@@ -36,7 +35,8 @@ const props = withDefaults(defineProps<{
   focalPoint?: string | null;
 }>(), { image: null, src: null, sizes: '100vw', alt: null, focalPoint: null });
 
+const cmsImageSrcsets = inject(cmsImageSrcsetsKey);
 const source = computed(() => props.image?.url ?? props.src ?? null);
-const srcset = computed(() => props.image?.srcset ?? cmsSrcset(source.value));
+const srcset = computed(() => props.image?.srcset ?? (source.value ? cmsImageSrcsets?.value[source.value] : null));
 const objectPosition = computed(() => props.focalPoint ?? props.image?.focal_point ?? null);
 </script>

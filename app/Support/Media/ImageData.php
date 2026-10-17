@@ -64,7 +64,7 @@ final class ImageData
             'id' => null,
             'url' => (string) $url,
             'thumb' => (string) $url,
-            'srcset' => null,
+            'srcset' => ($path = ResizableImage::pathFromUrl((string) $url)) === null ? null : ResizableImage::srcset($path),
             'width' => null,
             'height' => null,
             'focal_point' => self::stringOrNull($focalPoint),

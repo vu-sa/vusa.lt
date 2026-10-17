@@ -49,7 +49,7 @@ use Spatie\Activitylog\Support\LogOptions;
  *
  * @mixin \Eloquent
  */
-#[Appends(['html'])]
+#[Appends(['html', 'image_srcsets'])]
 #[Fillable([
     'type',
     'json_content',
@@ -59,6 +59,15 @@ use Spatie\Activitylog\Support\LogOptions;
 class ContentPart extends Model
 {
     use HasFactory, LogsModelActivity;
+
+    protected function imageSrcsets(): Attribute
+    {
+        return Attribute::make(get: function (): array {
+            $content = $this->getAttribute('json_content');
+
+            return $content instanceof ArrayObject ? ResizableImage::sources($content->toArray()) : [];
+        });
+    }
 
     /**
      * ContentPart declares #[Fillable] (guarded === ['*']), so

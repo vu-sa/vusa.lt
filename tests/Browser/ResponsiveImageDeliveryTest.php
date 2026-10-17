@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Media\AddImageMedia;
+use App\Models\ContentPart;
 use App\Models\Page;
 use App\Models\Tenant;
 use App\Support\Media\ImageConversions;
@@ -42,4 +43,27 @@ test('the browser loads a generated image in the public page at phone and deskto
         expect($selected)->toContain('/conversions/')->not->toContain('undefined');
     }
     $page->assertNoJavaScriptErrors()->screenshot(fullPage: false, filename: 'responsive-image-delivery');
+});
+
+test('a CMS hero advertises its real source width and selects the original on a large screen', function (): void {
+    Storage::fake();
+    $file = UploadedFile::fake()->image('hero.jpg', 1600, 1067);
+    Storage::put('public/files/hero.jpg', file_get_contents($file->getRealPath()));
+    Route::get('/uploads/files/hero.jpg', fn () => response()->file(Storage::path('public/files/hero.jpg')));
+    $part = new ContentPart(['type' => 'hero-carousel', 'json_content' => [
+        ['imageSrc' => '/uploads/files/hero.jpg', 'imageAlt' => 'CMS hero', 'title' => 'Image delivery'],
+    ], 'options' => []]);
+    Route::get('/lt/_cms-image-audit', fn () => Inertia::render('Public/ContentPage', [
+        'navigationItemId' => 0,
+        'tenant' => Tenant::query()->first()->only(['id', 'alias', 'shortname']),
+        'page' => ['title' => 'CMS image delivery', 'layout' => 'wide', 'content' => ['parts' => [$part->toArray()]]],
+    ]))->middleware('web');
+
+    $page = visitPublicSubdomain('www', '/lt/_cms-image-audit')->resize(1440, 1000)
+        ->assertPresent('[data-slot=media-image][srcset]');
+    $page->page()->waitForFunction('(() => { const image = document.querySelector("main [data-slot=media-image]"); return image?.complete && image.naturalWidth > 0; })()');
+    expect($page->script('document.querySelector("main [data-slot=media-image]").srcset'))
+        ->toBe('/img/400/files/hero.jpg 400w, /img/900/files/hero.jpg 900w, /uploads/files/hero.jpg 1600w');
+    expect($page->script('document.querySelector("main [data-slot=media-image]").currentSrc'))->toContain('/uploads/files/hero.jpg');
+    $page->assertNoJavaScriptErrors()->screenshot(fullPage: false, filename: 'cms-hero-image-delivery');
 });

@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\ContentPart;
+use App\Support\Media\ImageData;
 use App\Support\Media\ResizableImage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -45,9 +47,11 @@ test('keeps transparent artwork lossless', function (): void {
 test('never enlarges a source smaller than the requested width', function (): void {
     storeFileManagerImage('public/files/small.jpg', 600, 400);
 
-    $response = $this->get('/img/2400/files/small.jpg')->assertOk();
+    $response = $this->get('/img/2400/files/small.jpg')->assertOk()->assertHeader('Content-Type', 'image/jpeg');
 
     expect(getimagesizefromstring(file_get_contents($response->baseResponse->getFile()->getPathname()))[0])->toBe(600);
+    expect(file_get_contents($response->baseResponse->getFile()->getPathname()))->toBe(Storage::get('public/files/small.jpg'));
+    expect(Storage::allFiles('thumbnails'))->toBe([]);
 });
 
 test('resolves legacy uploads urls the way RewriteUploadsUrl does', function (): void {
@@ -91,6 +95,7 @@ test('a replaced source gets a fresh copy', function (): void {
 });
 
 test('rich text gets srcset for same-site uploads only, keeping authored markup', function (): void {
+    storeFileManagerImage('public/files/My photo.png', 1600, 1067);
     $html = '<p>A &amp; B</p><img src="/uploads/files/My photo.png" alt="Autorius" width="240" data-align="left">'
         .'<img src="https://example.com/uploads/files/a.png"><img src="/uploads/media/1/a.webp">';
 
@@ -100,4 +105,18 @@ test('rich text gets srcset for same-site uploads only, keeping authored markup'
         'srcset="/img/400/files/My%20photo.png 400w', '<img src="https://example.com/uploads/files/a.png">', '<img src="/uploads/media/1/a.webp">')
         ->and(substr_count($rendered, 'srcset='))->toBe(1)
         ->and(ResizableImage::withSrcset('<p>No images</p>'))->toBe('<p>No images</p>');
+    expect($rendered)->toContain('/uploads/files/My%20photo.png 1600w')->not->toContain('2400w', '3840w', '/img/1600/');
+});
+
+test('CMS blocks serialize source-checked candidates including a nonstandard native width', function (): void {
+    storeFileManagerImage('public/files/hero.jpg', 1200, 800);
+    $part = new ContentPart(['type' => 'hero-carousel', 'json_content' => [
+        ['imageSrc' => '/uploads/files/hero.jpg'], ['imageSrc' => '/uploads/files/missing.jpg'],
+    ]]);
+
+    expect($part->toArray()['image_srcsets'])->toBe([
+        '/uploads/files/hero.jpg' => '/img/400/files/hero.jpg 400w, /img/900/files/hero.jpg 900w, /uploads/files/hero.jpg 1200w',
+    ]);
+    expect(ImageData::fromLegacy('/uploads/files/hero.jpg')['srcset'])->toBe($part->toArray()['image_srcsets']['/uploads/files/hero.jpg']);
+    expect(ResizableImage::withSrcset('<img src="/uploads/files/missing.jpg">'))->toBe('<img src="/uploads/files/missing.jpg">');
 });

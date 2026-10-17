@@ -1,10 +1,11 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
+import { computed } from 'vue';
 
 import MediaFrame from '../MediaFrame.vue';
 import MediaImage from '../MediaImage.vue';
 
-import type { ImageData } from '@/Types/media';
+import { cmsImageSrcsetsKey, type ImageData } from '@/Types/media';
 
 const image: ImageData = {
   id: 1,
@@ -34,11 +35,21 @@ describe('MediaImage', () => {
   });
 
   it('gives a file-manager url resized candidates and the sizes hint', () => {
-    const img = mount(MediaImage, { props: { src: '/uploads/files/hero.jpg', sizes: '50vw' } }).find('img');
+    const img = mount(MediaImage, {
+      props: { src: '/uploads/files/hero.jpg', sizes: '50vw' },
+      global: { provide: { [cmsImageSrcsetsKey as symbol]: computed(() => ({ '/uploads/files/hero.jpg': '/img/400/files/hero.jpg 400w, /uploads/files/hero.jpg 1600w' })) } },
+    }).find('img');
 
     expect(img.attributes('src')).toBe('/uploads/files/hero.jpg');
-    expect(img.attributes('srcset')).toContain('/img/2400/files/hero.jpg 2400w');
+    expect(img.attributes('srcset')).toContain('/uploads/files/hero.jpg 1600w');
+    expect(img.attributes('srcset')).not.toContain('2400w');
     expect(img.attributes('sizes')).toBe('50vw');
+  });
+
+  it('keeps the original when a CMS image has no checked dimensions', () => {
+    const img = mount(MediaImage, { props: { src: '/uploads/files/unknown.jpg' } }).find('img');
+    expect(img.attributes('srcset')).toBeUndefined();
+    expect(img.attributes('sizes')).toBeUndefined();
   });
 
   it('renders nothing without an image', () => {
@@ -51,4 +62,3 @@ describe('MediaImage', () => {
     expect(img.attributes('style')).toContain('object-position: 50% 50%');
   });
 });
-

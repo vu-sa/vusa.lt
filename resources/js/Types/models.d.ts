@@ -352,6 +352,7 @@ declare global {
     }
 
     export interface ContentPart {
+      image_srcsets?: Record<string, string>
       // columns
       id: number
       content_id: number

@@ -1,3 +1,5 @@
+import type { ComputedRef, InjectionKey } from 'vue';
+
 /** Mirrors App\Support\Media\ImageData. Forms post it back; `id` is what the server attaches. */
 export interface ImageData {
   id: number | null;
@@ -33,39 +35,5 @@ export function imageFromSearch(document: Record<string, unknown>, prefix = 'ima
     focal_point: text('focal_point'), alt: null, author: null };
 }
 
-const RESIZABLE_WIDTHS = [400, 900, 1600, 2400, 3840];
-
-/**
- * srcset for a file-manager or legacy `/uploads/` image, served scaled down by the `/img` route.
- * Mirrors App\Support\Media\ResizableImage; null for media-library, foreign and non-image URLs.
- */
-export function cmsSrcset(src: string | null | undefined): string | null {
-  if (!src) return null;
-
-  let url: URL;
-  try {
-    url = new URL(src, 'http://same.site');
-  } catch {
-    return null;
-  }
-
-  const sameSite = url.host === 'same.site'
-    || (typeof window !== 'undefined' && url.host === window.location.host)
-    || /(^|\.)vusa\.(lt|test)$/i.test(url.hostname);
-  if (!sameSite || !url.pathname.startsWith('/uploads/')) return null;
-
-  let path: string;
-  try {
-    path = decodeURIComponent(url.pathname.slice('/uploads/'.length));
-  } catch {
-    return null;
-  }
-
-  if (!/\.(jpe?g|png|webp)$/i.test(path) || /(^|\/)\.\.?(\/|$)/.test(path) || /^(media|staging-media)\//.test(path)) {
-    return null;
-  }
-
-  const encoded = path.normalize('NFC').split('/').map(encodeURIComponent).join('/');
-
-  return RESIZABLE_WIDTHS.map(width => `/img/${width}/${encoded} ${width}w`).join(', ');
-}
+/** Server-checked candidates for plain CMS image URLs. */
+export const cmsImageSrcsetsKey: InjectionKey<ComputedRef<Record<string, string>>> = Symbol('cmsImageSrcsets');

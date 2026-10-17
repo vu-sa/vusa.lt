@@ -10,8 +10,6 @@ use Normalizer;
 /**
  * File-manager and legacy images under `/uploads/`, which have no media-library conversions. The
  * `/img/{width}/{path}` route serves them scaled down so CMS images get a srcset too.
- *
- * Mirrored by `cmsSrcset()` in resources/js/Types/media.ts.
  */
 final class ResizableImage
 {
@@ -85,7 +83,11 @@ final class ResizableImage
             }
 
             $width = $img->getAttribute('width');
-            $img->setAttribute('srcset', self::srcset($path));
+            $srcset = self::srcset($path);
+            if ($srcset === null) {
+                continue;
+            }
+            $img->setAttribute('srcset', $srcset);
             $img->setAttribute('sizes', is_numeric($width) ? "min({$width}px, 100vw)" : '(min-width: 1024px) 928px, 100vw');
             $changed = true;
         }
@@ -93,11 +95,40 @@ final class ResizableImage
         return $changed ? $document->body->innerHTML : $html;
     }
 
-    public static function srcset(string $path): string
+    public static function srcset(string $path): ?string
     {
+        $source = self::storagePath($path);
+        $dimensions = $source === null ? false : @getimagesize(Storage::path($source));
+        if ($dimensions === false) {
+            return null;
+        }
+
+        $width = $dimensions[0];
+        $encoded = implode('/', array_map(rawurlencode(...), explode('/', $path)));
+
         return collect(self::WIDTHS)
+            ->filter(fn (int $candidate): bool => $candidate < $width)
             ->map(fn (int $width): string => self::url($path, $width).' '.$width.'w')
+            ->push('/uploads/'.$encoded.' '.$width.'w')
             ->implode(', ');
+    }
+
+    /** @return array<string, string> */
+    public static function sources(array $content): array
+    {
+        $sources = [];
+        array_walk_recursive($content, function (mixed $value) use (&$sources): void {
+            if (! is_string($value) || isset($sources[$value])) {
+                return;
+            }
+            $path = self::pathFromUrl($value);
+            $srcset = $path === null ? null : self::srcset($path);
+            if ($srcset !== null) {
+                $sources[$value] = $srcset;
+            }
+        });
+
+        return $sources;
     }
 
     public static function url(string $path, int $width): string
