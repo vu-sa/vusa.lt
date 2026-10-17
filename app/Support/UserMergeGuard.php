@@ -10,12 +10,17 @@ use App\Services\UserSimilarityFinder;
  *
  * Admins cannot rename people, so a matching name is the evidence that two records
  * are one person; a record its owner already renamed has lost that evidence.
+ * Super admins, who can rename anyone, vouch for the match themselves.
  */
 class UserMergeGuard
 {
     /** The translated reason this pair cannot be merged, or null when it can. */
-    public static function blockedReason(User $kept, User $source): ?string
+    public static function blockedReason(User $actor, User $kept, User $source): ?string
     {
+        if ($actor->isSuperAdmin()) {
+            return null;
+        }
+
         if ($kept->name_was_changed || $source->name_was_changed) {
             $renamed = $source->name_was_changed ? $source : $kept;
 

@@ -200,6 +200,9 @@ Sujungti galima tik to paties asmens įrašus:
   nebegalima pasitikėti, todėl tokių įrašų sujungti negalima;
 - prijungiamas įrašas negali turėti tiesiogiai priskirtos rolės.
 
+Superadministratorius gali sujungti ir įrašus, kurių vardai nesutampa ar buvo pakeisti – tai daroma iš narių
+sąrašo, nes redagavimo formoje rodomi tik to paties vardo įrašai. Tiesiogiai priskirtos rolės draudimas galioja visiems.
+
 **Nario redagavimo formoje** viršuje rodoma, jei sistemoje yra kitas to paties vardo įrašas. Jei turi teisę
 juos sujungti, prie įrašo matomas mygtukas **Sujungti**; jei ne – paaiškinama, kodėl.
 
@@ -277,7 +280,8 @@ nario padalinių prieiga arba kreipimasis į Centrinio biuro koordinatorių / Su
   arba visiško padalinių apėmimo (`tenantsContained`) be tiesioginių rolių (`!isProtected`).
 - Sujungimą (`users.mergeUsers`, `MergeUsersRequest`) leidžia `update` paliekamam nariui ir `delete` kiekvienam
   prijungiamam (`UserPolicy::canActDestructively`, t. y. visiškas padalinių apėmimas). Vardų sutapimą ir pakeisto
-  vardo draudimą tikrina `UserMergeGuard` (`UserSimilarityFinder::namesMatch`).
+  vardo draudimą tikrina `UserMergeGuard` (`UserSimilarityFinder::namesMatch`); `isSuperAdmin()` šią patikrą praleidžia,
+  o tiesioginių rolių patikra (`MergeUsersRequest::after()`) taikoma visiems.
 - Slaptažodžių generavimas ir šalinimas galimas tik Superadministratoriui (`GenerateUserPasswordRequest`).
 
 ### Kaip tai įgyvendinta

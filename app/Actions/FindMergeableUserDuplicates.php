@@ -26,7 +26,7 @@ class FindMergeableUserDuplicates
             ->map(function (array $match) use ($actor, $user): array {
                 /** @var User $other */
                 $other = $match['user'];
-                $reason = UserMergeGuard::blockedReason($user, $other);
+                $reason = UserMergeGuard::blockedReason($actor, $user, $other);
                 $keepableIds = $reason === null ? $this->keepableIds($actor, $user, $other) : [];
 
                 if ($reason === null && $keepableIds === []) {

@@ -75,7 +75,7 @@ class MergeUsersRequest extends FormRequest
                 }
 
                 foreach ($this->sourceUsers()->values() as $index => $source) {
-                    $reason = UserMergeGuard::blockedReason($keptUser, $source);
+                    $reason = UserMergeGuard::blockedReason($this->user(), $keptUser, $source);
 
                     // Moving a direct role along would grant access nobody reviewed.
                     if ($reason === null && ($source->roles()->exists() || $source->permissions()->exists())) {

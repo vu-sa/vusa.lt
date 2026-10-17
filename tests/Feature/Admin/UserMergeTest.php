@@ -99,18 +99,33 @@ describe('merge guard', function (): void {
         expect(User::find($merged->id))->not->toBeNull();
     })->with(['kept', 'merged']);
 
-    test('refuses a source with a directly assigned role', function (): void {
+    test('a super admin may merge records whose names differ or were changed', function (string $case): void {
+        $kept = makeNamedUser($this->tenant, 'Jonas Jonaitis');
+        $merged = makeNamedUser($this->tenant, $case === 'different' ? 'Petras Petraitis' : 'Jonas Jonaitis');
+
+        if ($case === 'renamed') {
+            $merged->forceFill(['name_was_changed' => true])->save();
+        }
+
+        mergeUsers(makeAdminUser($this->tenant), $kept, $merged)->assertSessionHasNoErrors();
+
+        expect(User::withTrashed()->find($merged->id))->toBeNull();
+    })->with(['different', 'renamed']);
+
+    test('refuses a source with a directly assigned role, even for a super admin', function (string $actorRole): void {
         $kept = makeNamedUser($this->tenant);
         $merged = makeNamedUser($this->tenant);
         $merged->assignRole(Role::query()->where('name', 'Komunikacijos koordinatorius')->firstOrFail());
 
         // Holding a direct role puts the record beyond a unit admin, so use the central role.
-        $centralAdmin = makeTenantUserWithRole('Centrinio biuro komunikacijos koordinatorius', $this->tenant);
+        $actor = $actorRole === 'super admin'
+            ? makeAdminUser($this->tenant)
+            : makeTenantUserWithRole('Centrinio biuro komunikacijos koordinatorius', $this->tenant);
 
-        mergeUsers($centralAdmin, $kept, $merged)->assertSessionHasErrors('source_user_ids.0');
+        mergeUsers($actor, $kept, $merged)->assertSessionHasErrors('source_user_ids.0');
 
         expect(User::find($merged->id))->not->toBeNull();
-    });
+    })->with(['central coordinator', 'super admin']);
 
     test('rejects duplicate source user ids without deleting the source', function (): void {
         $kept = makeNamedUser($this->tenant);
@@ -490,4 +505,16 @@ describe('duplicates on the edit form', function (): void {
                     ->where('duplicates.0.email', null)
                     ->where('duplicates.0.blocked_reason', fn (?string $reason) => filled($reason))));
     })->with(['renamed' => true, 'other unit' => false]);
+
+    test('offers a super admin to merge a renamed duplicate', function (): void {
+        $user = makeNamedUser($this->tenant);
+        $duplicate = makeNamedUser($this->tenant);
+        $duplicate->forceFill(['name_was_changed' => true])->save();
+
+        asUser(makeAdminUser($this->tenant))->get(route('users.edit', $user))
+            ->assertInertia(fn ($page) => $page
+                ->loadDeferredProps(fn ($page) => $page
+                    ->where('duplicates.0.keepable_ids', [$user->id, $duplicate->id])
+                    ->where('duplicates.0.blocked_reason', null)));
+    });
 });
