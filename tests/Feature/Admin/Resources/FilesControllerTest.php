@@ -12,6 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
@@ -119,6 +120,8 @@ describe('Files Controller - Inertia authorization', function (): void {
             'files.createDirectory' => ['path' => $directory, 'name' => 'new-folder'],
             'files.deleteDirectory' => ['path' => $directory.'/empty'],
             'files.bulkDelete' => ['paths' => [$filePath]],
+            'files.rename' => ['path' => $filePath, 'name' => 'renamed'],
+            'files.move' => ['paths' => [$filePath], 'destination' => $directory.'/empty'],
             default => ['path' => $filePath],
         };
         $referrer = route('dashboard');
@@ -150,6 +153,10 @@ describe('Files Controller - Inertia authorization', function (): void {
         'read-only bulk delete' => ['delete', 'files.bulkDelete', 'reader', 'allowed', 'files.errors.bulk_no_delete_permission'],
         'read-only compression' => ['post', 'files.compress', 'reader', 'allowed', 'files.errors.no_modify_permission'],
         'scan outside tenant' => ['post', 'files.scanUsage', 'manager', 'forbidden', 'files.errors.no_scan_permission'],
+        'read-only rename' => ['post', 'files.rename', 'reader', 'allowed', 'files.errors.no_rename_permission'],
+        'rename outside tenant' => ['post', 'files.rename', 'manager', 'forbidden', 'files.errors.no_rename_permission'],
+        'read-only move' => ['post', 'files.move', 'reader', 'allowed', 'files.errors.no_move_permission'],
+        'move outside tenant' => ['post', 'files.move', 'manager', 'forbidden', 'files.errors.no_move_permission'],
     ]);
 
     test('mixed-permission bulk deletion redirects without deleting permitted files', function (): void {
@@ -1212,5 +1219,158 @@ describe('Files Controller - Creation requires the create permission', function 
 
         expect($response->status())->toBe(302);
         $response->assertSessionDoesntHaveErrors(['permission']);
+    });
+});
+
+describe('Files Controller - Listing details', function (): void {
+    test('the page tells the browser what the actor may do and which folders are empty', function (): void {
+        Storage::makeDirectory($this->allowedPath.'/empty');
+        Storage::makeDirectory($this->allowedPath.'/full');
+        Storage::put($this->allowedPath.'/full/a.pdf', 'pdf');
+
+        asUser($this->fileManager)->get(route('files.index', ['path' => $this->allowedPath]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('abilities', [
+                    'upload' => true,
+                    'createDirectory' => true,
+                    'deleteDirectory' => true,
+                    'update' => true,
+                    'delete' => true,
+                ])
+                ->where('directories.0.name', 'empty')
+                ->where('directories.0.items', 0)
+                ->where('directories.1.name', 'full')
+                ->where('directories.1.items', 1)
+            );
+    });
+
+    test('a read-only actor is told it can change nothing', function (): void {
+        asUser(makeFileReader($this->institution))->get(route('files.index', ['path' => $this->allowedPath]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('abilities.upload', false)
+                ->where('abilities.deleteDirectory', false)
+                ->where('abilities.update', false)
+                ->where('abilities.delete', false)
+            );
+    });
+});
+
+describe('Files Controller - Rename', function (): void {
+    test('renames a file and keeps its extension', function (): void {
+        Storage::put($this->allowedPath.'/old.pdf', 'pdf');
+
+        asUser($this->fileManager)->post(route('files.rename'), ['path' => $this->allowedPath.'/old.pdf', 'name' => 'ataskaita-2026'])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        expect(Storage::exists($this->allowedPath.'/ataskaita-2026.pdf'))->toBeTrue()
+            ->and(Storage::exists($this->allowedPath.'/old.pdf'))->toBeFalse();
+    });
+
+    test('cannot change a file into another type', function (): void {
+        Storage::put($this->allowedPath.'/photo.jpg', 'jpg');
+
+        asUser($this->fileManager)->post(route('files.rename'), ['path' => $this->allowedPath.'/photo.jpg', 'name' => 'shell.php'])
+            ->assertRedirect();
+
+        expect(Storage::exists($this->allowedPath.'/shell.php.jpg'))->toBeTrue()
+            ->and(Storage::exists($this->allowedPath.'/shell.php'))->toBeFalse();
+    });
+
+    test('renames a folder with its contents', function (): void {
+        Storage::put($this->allowedPath.'/2025/a.pdf', 'pdf');
+
+        asUser($this->fileManager)->post(route('files.rename'), ['path' => $this->allowedPath.'/2025', 'name' => 'Archyvas 2025'])
+            ->assertSessionHas('success');
+
+        expect(Storage::exists($this->allowedPath.'/Archyvas 2025/a.pdf'))->toBeTrue()
+            ->and(Storage::directoryExists($this->allowedPath.'/2025'))->toBeFalse();
+    });
+
+    test('refuses a name already taken', function (): void {
+        Storage::put($this->allowedPath.'/a.pdf', 'a');
+        Storage::put($this->allowedPath.'/b.pdf', 'b');
+
+        asUser($this->fileManager)->post(route('files.rename'), ['path' => $this->allowedPath.'/a.pdf', 'name' => 'b.pdf'])
+            ->assertSessionHasErrors('name');
+
+        expect(Storage::get($this->allowedPath.'/b.pdf'))->toBe('b');
+    });
+
+    test('refuses a name that would leave the folder', function (string $name): void {
+        Storage::put($this->allowedPath.'/a.pdf', 'a');
+
+        asUser($this->fileManager)->post(route('files.rename'), ['path' => $this->allowedPath.'/a.pdf', 'name' => $name])
+            ->assertSessionHasErrors('name');
+
+        expect(Storage::exists($this->allowedPath.'/a.pdf'))->toBeTrue();
+    })->with(['traversal' => '..', 'separator' => '../../vusaother/a', 'backslash' => 'x\\y']);
+
+    test('cannot rename another tenant\'s file and gets 403 on a direct request', function (): void {
+        asUser($this->fileManager)->post(route('files.rename'), ['path' => $this->forbiddenPath.'/forbidden.txt', 'name' => 'mine'])
+            ->assertForbidden();
+
+        Storage::disk('public')->assertExists('files/padaliniai/vusaother/forbidden.txt');
+    });
+
+    test('cannot rename a tenant folder itself', function (): void {
+        asUser($this->fileManager)->post(route('files.rename'), ['path' => $this->allowedPath, 'name' => 'vusahijack'])
+            ->assertForbidden();
+    });
+});
+
+describe('Files Controller - Move', function (): void {
+    test('moves files into another folder', function (): void {
+        Storage::put($this->allowedPath.'/a.pdf', 'a');
+        Storage::put($this->allowedPath.'/b.pdf', 'b');
+        Storage::makeDirectory($this->allowedPath.'/archyvas');
+
+        asUser($this->fileManager)->post(route('files.move'), [
+            'paths' => [$this->allowedPath.'/a.pdf', $this->allowedPath.'/b.pdf'],
+            'destination' => $this->allowedPath.'/archyvas',
+        ])->assertSessionHas('success');
+
+        expect(Storage::exists($this->allowedPath.'/archyvas/a.pdf'))->toBeTrue()
+            ->and(Storage::exists($this->allowedPath.'/archyvas/b.pdf'))->toBeTrue()
+            ->and(Storage::exists($this->allowedPath.'/a.pdf'))->toBeFalse();
+    });
+
+    test('skips a file whose name is taken at the destination and says so', function (): void {
+        Storage::put($this->allowedPath.'/a.pdf', 'new');
+        Storage::put($this->allowedPath.'/b.pdf', 'b');
+        Storage::put($this->allowedPath.'/archyvas/a.pdf', 'old');
+
+        asUser($this->fileManager)->post(route('files.move'), [
+            'paths' => [$this->allowedPath.'/a.pdf', $this->allowedPath.'/b.pdf'],
+            'destination' => $this->allowedPath.'/archyvas',
+        ])->assertSessionHas('warning');
+
+        expect(Storage::get($this->allowedPath.'/archyvas/a.pdf'))->toBe('old')
+            ->and(Storage::get($this->allowedPath.'/a.pdf'))->toBe('new')
+            ->and(Storage::exists($this->allowedPath.'/archyvas/b.pdf'))->toBeTrue();
+    });
+
+    test('cannot move into another tenant\'s folder', function (): void {
+        Storage::put($this->allowedPath.'/a.pdf', 'a');
+
+        asUser($this->fileManager)->post(route('files.move'), [
+            'paths' => [$this->allowedPath.'/a.pdf'],
+            'destination' => $this->forbiddenPath,
+        ])->assertForbidden();
+
+        expect(Storage::exists($this->allowedPath.'/a.pdf'))->toBeTrue();
+    });
+
+    test('cannot take a file out of another tenant\'s folder', function (): void {
+        Storage::put($this->forbiddenPath.'/theirs.pdf', 'theirs');
+
+        asUser($this->fileManager)->post(route('files.move'), [
+            'paths' => [$this->forbiddenPath.'/theirs.pdf'],
+            'destination' => $this->allowedPath,
+        ])->assertForbidden();
+
+        expect(Storage::exists($this->forbiddenPath.'/theirs.pdf'))->toBeTrue();
     });
 });

@@ -67,10 +67,20 @@ class FilesController extends AdminController
 
         ['files' => $files, 'directories' => $directories, 'path' => $currentDirectory] = $this->fileStorage->listDirectory($path);
 
+        $user = $request->user();
+
         return $this->inertiaResponse('Admin/Files/Index', [
             'files' => $files,
             'directories' => $directories,
             'path' => $currentDirectory,
+            // Actions on what this folder lists; the UI hides what the actor cannot do.
+            'abilities' => [
+                'upload' => $user->can('createInDirectory', [File::class, $currentDirectory]),
+                'createDirectory' => $user->can('createInDirectory', [File::class, $currentDirectory]),
+                'deleteDirectory' => $user->can('deleteDirectory', [File::class, $currentDirectory]),
+                'update' => $user->can('updateInDirectory', [File::class, $currentDirectory]),
+                'delete' => $user->can('deleteInDirectory', [File::class, $currentDirectory]),
+            ],
         ]);
     }
 
@@ -400,32 +410,36 @@ class FilesController extends AdminController
             }
         }
 
+        return $this->bulkDeleteResponse($deletedCount, $skippedCount, $errors);
+    }
+
+    /** @param  list<string>  $errors */
+    private function bulkDeleteResponse(int $deletedCount, int $skippedCount, array $errors): RedirectResponse
+    {
+        $listedErrors = implode(', ', array_slice($errors, 0, 3));
+        $more = count($errors) > 3 ? ' '.__('files.messages.and_more', ['count' => count($errors) - 3]) : '';
+
         if ($deletedCount > 0 && $skippedCount === 0) {
             return back()->with('success', trans_choice('files.messages.bulk_deleted', $deletedCount, ['count' => $deletedCount]));
-        } elseif ($deletedCount > 0) {
+        }
+
+        if ($deletedCount > 0) {
             $message = trans_choice('files.messages.bulk_deleted_partial', $deletedCount, ['count' => $deletedCount]);
-            if (! empty($errors)) {
-                $message .= '. '.__('files.messages.bulk_skipped', [
-                    'count' => $skippedCount,
-                    'files' => implode(', ', array_slice($errors, 0, 3)),
-                ]);
-                if (count($errors) > 3) {
-                    $message .= ' '.__('files.messages.and_more', ['count' => count($errors) - 3]);
-                }
+
+            if ($errors !== []) {
+                $message .= '. '.__('files.messages.bulk_skipped', ['count' => $skippedCount, 'files' => $listedErrors]).$more;
             }
 
             return back()->with('warning', $message);
-        } else {
-            $errorMessage = __('files.errors.bulk_delete_all_failed');
-            if (! empty($errors)) {
-                $errorMessage .= ' '.__('files.messages.bulk_errors', ['files' => implode(', ', array_slice($errors, 0, 3))]);
-                if (count($errors) > 3) {
-                    $errorMessage .= ' '.__('files.messages.and_more', ['count' => count($errors) - 3]);
-                }
-            }
-
-            return back()->withErrors(['error' => $errorMessage]);
         }
+
+        $errorMessage = __('files.errors.bulk_delete_all_failed');
+
+        if ($errors !== []) {
+            $errorMessage .= ' '.__('files.messages.bulk_errors', ['files' => $listedErrors]).$more;
+        }
+
+        return back()->withErrors(['error' => $errorMessage]);
     }
 
     public function deleteDirectory(FilePathRequest $request): RedirectResponse
@@ -471,7 +485,7 @@ class FilesController extends AdminController
                 'directory_name' => $directoryName,
             ]);
 
-            return back();
+            return back()->with('success', __('files.messages.directory_deleted', ['name' => $directoryName]));
         } catch (\Exception $e) {
             Log::error('Error deleting directory', [
                 'path' => $path,

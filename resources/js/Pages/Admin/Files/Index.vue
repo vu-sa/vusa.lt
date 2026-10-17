@@ -1,100 +1,141 @@
 <template>
-  <div class="space-y-6">
+  <div>
     <Head :title="$t('shell.sections.failai')" />
 
-    <div class="flex flex-col gap-6 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
-      <div class="max-w-2xl">
-        <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-brand">
-          <HardDrive class="size-3.5" aria-hidden="true" />
-          {{ $t('shell.workspaces.svetaine.title') }} · {{ $t('shell.sections.failai') }}
-        </span>
-        <h1 class="u-display mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          {{ $t('shell.sections.failai') }}
-        </h1>
-        <p class="mt-2 text-sm leading-relaxed text-muted-foreground text-pretty">
-          {{ $t('Viešų ir vidinių svetainės failų naršymas, įkėlimas ir valdymas.') }}
-        </p>
-        <StagingNote topic="files" class="mt-3" />
-      </div>
-
-      <div class="flex items-center gap-2">
+    <CollectionTitleBand
+      :eyebrow="`${$t('shell.workspaces.svetaine.title')} · ${$t('shell.sections.failai')}`"
+      :title="$t('shell.sections.failai')"
+      :lead="$t('files.ui.lead')"
+      entity-type="file"
+    >
+      <template #actions>
+        <SpotlightPopover
+          v-if="props.abilities.createDirectory"
+          :title="$t('files.spotlight.title')"
+          :description="$t('files.spotlight.body')"
+          :is-dismissed="spotlight.isDismissed.value"
+          @dismiss="spotlight.dismiss()"
+        >
+          <Button
+            type="button"
+            variant="outline"
+            voice="sentence"
+            size="lg"
+            :aria-label="$t('files.ui.add_folder')"
+            @click="openCreateFolder"
+          >
+            <FolderPlus class="size-4" aria-hidden="true" />
+            <span class="hidden sm:inline">{{ $t('files.ui.add_folder') }}</span>
+          </Button>
+        </SpotlightPopover>
         <Button
+          v-if="props.abilities.upload"
           type="button"
           variant="brand"
+          size="lg"
           @click="fileManagerRef?.openUpload()"
         >
           <Upload class="size-4" aria-hidden="true" />
           {{ $t('files.ui.upload') }}
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          voice="sentence"
-          :aria-label="$t('files.ui.add_folder')"
-          @click="fileManagerRef?.openCreateFolder()"
-        >
-          <FolderPlus class="size-4" aria-hidden="true" />
-          <span class="hidden sm:inline">{{ $t('files.ui.add_folder') }}</span>
-        </Button>
-      </div>
-    </div>
+      </template>
+    </CollectionTitleBand>
+
+    <StagingNote topic="files" class="mb-4" />
 
     <FileManager
       ref="fileManagerRef"
       :files="props.files"
       :directories="props.directories"
       :path="props.path"
+      :abilities="props.abilities"
       :list-loading="navigating"
+      :refreshing
       :search-results
       :searching
-      @file-selected="openFile"
+      :initial-state
+      @change-directory="visitPath"
       @back="handleBack"
-      @change-directory="handleChangeDirectory"
       @update="handleUpdate"
       @search="handleSearch"
+      @state-change="syncUrl"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { Head, router } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
-import { FolderPlus, HardDrive, Upload } from '@lucide/vue';
+import { FolderPlus, Upload } from '@lucide/vue';
 import { ref } from 'vue';
 
 import FileManager from '@/Features/Admin/FileManager/FileManager.vue';
+import type {
+  DirectoryEntry,
+  FileEntry,
+  FileManagerAbilities,
+  FileManagerViewState,
+  FileViewMode,
+  TypeFilter,
+} from '@/Features/Admin/FileManager/types';
 import { useFileSearch } from '@/Features/Admin/FileManager/useFileSearch';
+import { parentPath } from '@/Features/Admin/FileManager/utils';
+import CollectionTitleBand from '@/Components/Collection/CollectionTitleBand.vue';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import StagingNote from '@/Components/StagingNote.vue';
 import { Button } from '@/Components/ui/button';
-
-const fileManagerRef = ref<InstanceType<typeof FileManager> | null>(null);
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 const props = defineProps<{
-  directories: Array<{ path: string; name: string; type: string }>;
-  files: Array<{ path: string; name: string; type: string; size: number; modified: number; mimeType: string }>;
+  directories: DirectoryEntry[];
+  files: FileEntry[];
   path: string;
+  abilities: FileManagerAbilities;
 }>();
 
+const fileManagerRef = ref<InstanceType<typeof FileManager> | null>(null);
+const spotlight = useFeatureSpotlight('files-folder-actions-v1');
+
 const navigating = ref(false);
+const refreshing = ref(false);
 const { results: searchResults, searching, search, clear: clearSearch } = useFileSearch();
+
+const DEFAULT_STATE: Omit<FileManagerViewState, 'view'> = { q: '', type: 'all', sort: 'name:asc', file: null };
+
+function readInitialState(): Partial<FileManagerViewState> {
+  const query = new URL(usePage().url, 'http://localhost').searchParams;
+  const state: Partial<FileManagerViewState> = {};
+
+  if (query.get('q')) state.q = query.get('q')!;
+  if (query.get('type')) state.type = query.get('type') as TypeFilter;
+  if (/^(name|modified|size):(asc|desc)$/.test(query.get('sort') ?? '')) state.sort = query.get('sort') as FileManagerViewState['sort'];
+  if (query.get('view') === 'cards' || query.get('view') === 'table') state.view = query.get('view') as FileViewMode;
+  if (query.get('file')) state.file = query.get('file');
+
+  return state;
+}
+
+const initialState = readInitialState();
 
 /**
  * Folder navigation is a real Inertia visit, so the open folder lives in `?path=` and the
- * browser's Back button walks back up the tree. Fetching the listing over JSON instead left
- * the URL on `/mano/files` the whole time, so Back exited the file manager entirely.
+ * browser's Back button walks back up the tree.
  */
 function visitPath(nextPath: string) {
   navigating.value = true;
   clearSearch();
 
+  // The type, sort and view carry over to the next folder; the search and open file do not.
+  const current = new URL(window.location.href).searchParams;
+  const kept = Object.fromEntries(['type', 'sort', 'view'].flatMap(key => (current.get(key) ? [[key, current.get(key)!]] : [])));
+
   router.get(
     route('files.index'),
-    { path: nextPath },
+    { path: nextPath, ...kept },
     {
       preserveState: true,
-      preserveScroll: true,
-      only: ['files', 'directories', 'path'],
+      only: ['files', 'directories', 'path', 'abilities'],
       onFinish: () => {
         navigating.value = false;
       },
@@ -102,26 +143,46 @@ function visitPath(nextPath: string) {
   );
 }
 
-function handleChangeDirectory(nextPath: string) {
-  visitPath(nextPath);
-}
-
 function handleBack() {
-  const segments = props.path.split('/');
-  if (segments.length > 2) segments.pop();
-  visitPath(segments.join('/'));
+  visitPath(parentPath(props.path));
 }
 
-/** Refresh in place after an upload or delete — not a navigation, so it must not push history. */
+/** Refresh in place after an upload — not a navigation, so the list stays and history is untouched. */
 function handleUpdate() {
-  navigating.value = true;
+  refreshing.value = true;
 
   router.reload({
     only: ['files', 'directories', 'path'],
     onFinish: () => {
-      navigating.value = false;
+      refreshing.value = false;
     },
   });
+}
+
+/** Filters, sort, view and the open file ride in the URL without a server round trip. */
+function syncUrl(state: FileManagerViewState) {
+  const url = new URL(window.location.href);
+  const params: Record<string, string | null> = {
+    q: state.q.trim() || null,
+    type: state.type === DEFAULT_STATE.type ? null : state.type,
+    sort: state.sort === DEFAULT_STATE.sort ? null : state.sort,
+    view: state.view === 'cards' ? null : state.view,
+    file: state.file,
+  };
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) {
+      url.searchParams.set(key, value);
+    }
+    else {
+      url.searchParams.delete(key);
+    }
+  });
+
+  const next = `${url.pathname}${url.search}`;
+  if (next !== `${window.location.pathname}${window.location.search}`) {
+    router.replace({ url: next, preserveState: true, preserveScroll: true });
+  }
 }
 
 const debouncedSearch = useDebounceFn((query: string) => search(query, props.path), 350);
@@ -134,7 +195,8 @@ function handleSearch(query: string, recursive: boolean) {
   debouncedSearch(query);
 }
 
-function openFile(filePath: string) {
-  window.open(filePath.replace(/^public\//, '/uploads/'), '_blank');
+function openCreateFolder() {
+  void spotlight.dismiss();
+  fileManagerRef.value?.openCreateFolder();
 }
 </script>

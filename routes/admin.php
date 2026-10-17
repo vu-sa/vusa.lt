@@ -228,6 +228,8 @@ Route::delete('files/deleteDirectory', [FilesController::class, 'deleteDirectory
 Route::post('files/upload-image', [FilesController::class, 'uploadImage'])->name('files.uploadImage');
 Route::delete('files/delete', [FilesController::class, 'delete'])->name('files.delete');
 Route::delete('files/bulk-delete', [FilesController::class, 'bulkDelete'])->name('files.bulkDelete');
+Route::post('files/rename', [FileOrganizationController::class, 'rename'])->name('files.rename');
+Route::post('files/move', [FileOrganizationController::class, 'move'])->name('files.move');
 Route::post('files/scan-usage', [FilesController::class, 'scanFileUsage'])->name('files.scanUsage');
 Route::get('files', [FilesController::class, 'index'])->name('files.index');
 Route::post('files/compress', [FilesController::class, 'compressImage'])->name('files.compress');

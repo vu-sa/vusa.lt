@@ -24,11 +24,10 @@ afterEach(() => {
 function mountDrawer() {
   wrapper = mount(FilePropertiesDrawer, {
     props: {
-      selectedFile: 'public/files/large.png',
-      files: [{ path: 'public/files/large.png', name: 'large.png', type: 'file', size: 600_000, modified: 1_700_000_000 }],
+      file: { path: 'public/files/large.png', name: 'large.png', type: 'file', size: 600_000, modified: 1_700_000_000 },
     },
     global: {
-      stubs: { Sheet: passthrough, SheetContent: passthrough, ConfirmDialog: ConfirmDialogStub },
+      stubs: { Sheet: passthrough, SheetContent: passthrough, SheetHeader: passthrough, SheetTitle: passthrough, SheetDescription: passthrough, ConfirmDialog: ConfirmDialogStub },
     },
   });
   return wrapper;
@@ -37,7 +36,7 @@ function mountDrawer() {
 describe('FilePropertiesDrawer image optimization', () => {
   it('keeps the image unchanged on cancel and submits the captured path on confirm', async () => {
     const drawer = mountDrawer();
-    const optimize = drawer.findAll('button').find(button => button.text().includes('Optimizuoti'));
+    const optimize = drawer.findAll('button').find(button => button.text().includes('files.ui.optimize'));
     expect(optimize).toBeDefined();
 
     await optimize!.trigger('click');
@@ -68,7 +67,7 @@ describe('FilePropertiesDrawer usage check', () => {
   }
 
   async function runScan(drawer: ReturnType<typeof mount>) {
-    const check = drawer.findAll('button').find(button => button.text().includes('Tikrinti'));
+    const check = drawer.findAll('button').find(button => button.text().includes('files.ui.check_usage'));
     await check!.trigger('click');
   }
 
@@ -104,7 +103,7 @@ describe('FilePropertiesDrawer usage check', () => {
     await runScan(drawer);
 
     const usage = drawer.find('[data-testid="file-usage"]');
-    expect(usage.text()).toContain('Saugu trinti');
+    expect(usage.text()).toContain('files.ui.usage_safe_badge');
     expect(usage.text()).toContain('files.messages.usage_safe');
     expect(usage.findAll('li')).toHaveLength(0);
   });

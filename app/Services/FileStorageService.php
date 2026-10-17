@@ -45,13 +45,19 @@ class FileStorageService
 
     /**
      * @param  list<string>|null  $extensions
-     * @return array{files: list<array<string, mixed>>, directories: list<array<string, string>>, path: string}
+     * @return array{files: list<array<string, mixed>>, directories: list<array{path: string, name: string, type: string, items: int}>, path: string}
      */
     public function listDirectory(string $path, ?array $extensions = null): array
     {
         $path = $this->normalizeFilePath($path);
         $directories = collect(Storage::directories($path))
-            ->map(fn (string $directory) => ['path' => $directory, 'name' => basename($directory), 'type' => 'directory'])
+            // `items` tells the browser whether a folder can be deleted (only empty ones can).
+            ->map(fn (string $directory) => [
+                'path' => $directory,
+                'name' => basename($directory),
+                'type' => 'directory',
+                'items' => count(Storage::files($directory)) + count(Storage::directories($directory)),
+            ])
             ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)->values()->all();
         $files = collect(Storage::files($path))
             ->filter(fn (string $file) => $extensions === null || in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), $extensions, true))
@@ -67,6 +73,66 @@ class FileStorageService
             ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)->values()->all();
 
         return ['files' => $files, 'directories' => $directories, 'path' => $path];
+    }
+
+    /**
+     * Renames a file or folder in place. A file keeps its extension, so a rename cannot turn an
+     * upload into a type StoreFilesRequest would have refused.
+     *
+     * @return array{status: 'renamed'|'unchanged'|'missing'|'taken'|'failed', name: string, path: string}
+     */
+    public function rename(string $path, string $name): array
+    {
+        $isDirectory = Storage::directoryExists($path);
+        $name = $isDirectory ? $name : $this->keepExtension($path, $name);
+        $target = dirname($path).'/'.$name;
+
+        $status = match (true) {
+            ! $isDirectory && ! Storage::fileExists($path) => 'missing',
+            $target === $path => 'unchanged',
+            // Case-only renames are allowed on case-insensitive disks, which report the target as existing.
+            Storage::exists($target) && strcasecmp($target, $path) !== 0 => 'taken',
+            ! Storage::move($path, $target) => 'failed',
+            default => 'renamed',
+        };
+
+        return ['status' => $status, 'name' => $name, 'path' => $target];
+    }
+
+    /**
+     * Moves files (never folders) into a directory, skipping any whose name is taken there.
+     *
+     * @param  list<string>  $sources
+     * @return array{moved: list<string>, skipped: list<string>}
+     */
+    public function moveFiles(array $sources, string $destination): array
+    {
+        $moved = [];
+        $skipped = [];
+
+        foreach ($sources as $source) {
+            $target = $destination.'/'.basename($source);
+            $movable = Storage::fileExists($source) && dirname($source) !== $destination && ! Storage::exists($target);
+
+            if ($movable && Storage::move($source, $target)) {
+                $moved[] = $target;
+            } else {
+                $skipped[] = basename($source);
+            }
+        }
+
+        return ['moved' => $moved, 'skipped' => $skipped];
+    }
+
+    private function keepExtension(string $path, string $name): string
+    {
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+
+        if ($extension === '' || strtolower(pathinfo($name, PATHINFO_EXTENSION)) === strtolower($extension)) {
+            return $name;
+        }
+
+        return $name.'.'.$extension;
     }
 
     // Offered instead of a directory the user cannot view: their first readable tenant's folder.

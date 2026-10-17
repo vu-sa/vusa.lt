@@ -57,10 +57,16 @@ function jsonResponse(ok: boolean, body: unknown, status = ok ? 200 : 422) {
   return { ok, status, json: () => Promise.resolve(body) };
 }
 
-/** Switch to the upload panel and hand FileUploadArea a file to emit upward. */
+/** Open the upload panel (the picker's toolbar toggle, or the page's button) and hand FileUploadArea a file. */
 async function startUpload(wrapper: ReturnType<typeof mount>) {
   const uploadToggle = wrapper.findAll('button').find(b => b.text().includes('files.ui.upload'));
-  await uploadToggle!.trigger('click');
+  if (uploadToggle) {
+    await uploadToggle.trigger('click');
+  }
+  else {
+    (wrapper.vm as unknown as { openUpload: () => void }).openUpload();
+    await flushPromises();
+  }
 
   const area = wrapper.findComponent({ name: 'FileUploadArea' });
   area.vm.$emit('upload', [new File(['x'], 'report.pdf', { type: 'application/pdf' })]);
