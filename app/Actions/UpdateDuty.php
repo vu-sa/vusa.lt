@@ -7,6 +7,7 @@ use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\User;
+use App\Observers\UserPermissionObserver;
 use App\Services\DutyAssignmentService;
 use App\Support\MorphMap;
 use Illuminate\Support\Arr;
@@ -48,7 +49,14 @@ class UpdateDuty
                 }
             }
 
+            $roleIdsBefore = $duty->roles()->pluck('roles.id')->sort()->values()->all();
             $duty->syncRoles($roles);
+
+            // syncRoles() fires no model event, so holders would keep the old roles in their cached duties.
+            if ($duty->roles()->pluck('roles.id')->sort()->values()->all() !== $roleIdsBefore) {
+                DB::afterCommit(fn () => app(UserPermissionObserver::class)->updatedDuty($duty));
+            }
+
             $duty->types()->sync($data['types'] ?? []);
 
             $previousTargetIds = $duty->exOfficioTargetDuties()->pluck('duties.id')->all();

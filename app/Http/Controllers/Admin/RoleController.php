@@ -15,12 +15,15 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Observers\UserPermissionObserver;
 use App\Services\Permissions\PermissionMapBuilder;
 use App\Services\PostCreateRedirect;
 use App\Support\Permissions\BaselineAccess;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Response;
+use Spatie\Permission\PermissionRegistrar;
 
 class RoleController extends AdminController
 {
@@ -156,9 +159,11 @@ class RoleController extends AdminController
             return back()->with('info', __('messages.role.not_deletable'));
         }
 
-        $this->clearCacheforRoleUsers($role);
+        $holderIds = $this->roleHolderIds($role);
 
         $role->delete();
+
+        $this->forgetAccessOf($holderIds);
 
         return back()->with('success', $this->entityMessage('deleted', 'role'));
     }
@@ -193,9 +198,10 @@ class RoleController extends AdminController
         $role->permissions()->detach($permissionsToDetach);
         $role->permissions()->attach($permissionsToAttach);
 
-        // $role->syncPermissions($validated['permissions']);
+        // Raw pivot writes skip the flush Spatie's own syncPermissions() would do.
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        $this->clearCacheforRoleUsers($role);
+        $this->forgetAccessOf($this->roleHolderIds($role));
 
         return back()->with('success', __('messages.role.permissions_updated'));
     }
@@ -217,18 +223,36 @@ class RoleController extends AdminController
 
         $validated = $request->validated();
 
+        // Holders of a duty just detached lose the role, so they are read before the sync.
+        $holderIds = $this->roleHolderIds($role);
+
         $role->duties()->sync($validated['duties']);
 
-        $this->clearCacheforRoleUsers($role);
+        $this->forgetAccessOf($holderIds->merge($this->roleHolderIds($role))->unique());
 
         return back()->with('success', __('messages.role.duties_updated'));
     }
 
-    protected function clearCacheforRoleUsers(Role $role)
+    /**
+     * @return Collection<int, string>
+     */
+    private function roleHolderIds(Role $role): Collection
     {
-        $role->usersThroughDuties->each(function ($user): void {
-            PermissionMapBuilder::forgetCachedMaps($user->id);
-            Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($user->id));
+        return $role->usersThroughDuties()->pluck('users.id')
+            ->merge($role->users()->pluck('users.id'))
+            ->unique()
+            ->values();
+    }
+
+    /**
+     * @param  Collection<int, string>  $userIds
+     */
+    private function forgetAccessOf(Collection $userIds): void
+    {
+        $userIds->each(function (string $userId): void {
+            app(UserPermissionObserver::class)->invalidateUserCache($userId);
+            PermissionMapBuilder::forgetCachedMaps($userId);
+            Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($userId));
         });
     }
 }

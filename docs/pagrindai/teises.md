@@ -1,12 +1,13 @@
 ---
 doc_status: reviewed
 title: Teisės ir rolės
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-17
 tests:
   - tests/Feature/Permissions/BaselineAccessTest.php
   - resources/js/Components/AdminForms/__tests__/RolePermissionForms.component.test.ts
   - resources/js/Features/Admin/PermissionTable/__tests__/PermissionTable.component.test.ts
   - tests/Feature/Admin/Permissions/RoleControllerTest.php
+  - tests/Feature/Permissions/RoleChangeRevokesAccessTest.php
   - tests/Feature/System/ModelPermissionSeederTest.php
 ---
 
@@ -73,6 +74,9 @@ apsaugo nuo teisių išsidalijimo per tipus.
 4. Pagal apimtį nustatoma, kuriems padaliniams ar įrašams teisė galioja.
 
 Jei teisės neturi, ji **neišplečiama**: sistema nerodo nieko, o ne „bent jau savo padalinio“.
+
+Pakeitus rolės teises, rolės pareigybes ar pareigybės roles, nauja prieiga galioja nuo kito puslapio
+atvėrimo – taip pat ir atimta.
 
 ::: info Kodėl kai kurių puslapių nematai
 Skiltys ir mygtukai, kuriems neturi teisių, paslepiami. Tiesiogiai atidarius tokį adresą, rodomas
