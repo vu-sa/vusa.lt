@@ -65,6 +65,7 @@ use Spatie\SchemaOrg\Place;
  * @property-read EventType|null $eventType
  * @property-read array $translatable_columns_from
  * @property-read mixed $main_image_url
+ * @property-read array<string, mixed>|null $main_image_media
  * @property-read MediaCollection<int, Media> $media
  * @property-read Meeting|null $meeting
  * @property-read Collection<int, PublicUrl> $publicUrls

@@ -18,7 +18,6 @@ tests:
   - tests/Feature/Actions/Media/SyncImageMediaTest.php
   - tests/Feature/Console/MediaLegacyFilesCommandTest.php
   - tests/Feature/Services/Media/LegacyImageBackfillTest.php
-  - tests/Feature/Jobs/Media/AlignExistingMediaJobTest.php
   - resources/js/Features/Admin/FileManager/__tests__/FilePropertiesDrawer.component.test.ts
   - resources/js/Features/Admin/FileManager/__tests__/FileManagerUpload.component.test.ts
   - resources/js/Features/Admin/FileManager/__tests__/FileManagerView.component.test.ts

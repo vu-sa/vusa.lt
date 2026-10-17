@@ -51,6 +51,7 @@ it('explains closure before saving and preserves the ended assignment after the 
     }
 
     $page->click('[data-testid=form-page-save]');
+    waitForInertiaRender($page, '[data-testid=form-page-bar] [data-save-state=saved]');
     $page->assertNotPresent('[data-testid=institution-deactivation-warning]');
     expect($institution->fresh()->is_active)->toBe(0)
         ->and($term->fresh()->end_date->toDateString())->toBe(today()->subDay()->toDateString())
