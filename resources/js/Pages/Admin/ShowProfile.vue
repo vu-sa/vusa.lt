@@ -79,17 +79,14 @@
       <FormFieldWrapper
         id="user-picture"
         :label="`${$t('forms.fields.picture')} (${$t('neprivaloma')})`"
-        :error="form.errors.profile_photo_path"
+        :error="form.errors['profile_photo_media.id']"
       >
         <ImageUpload
-          v-model:url="form.profile_photo_path"
-          v-model:focal-point-value="form.profile_photo_focal_point"
-          mode="immediate"
-          folder="contacts"
+          v-model:image="form.profile_photo_media"
+          mode="media"
           cropper
           focal-point
           preview-aspect="4/3"
-          :existing-url="user?.profile_photo_path"
         />
       </FormFieldWrapper>
     </div>
@@ -302,6 +299,7 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { ImageUpload } from '@/Components/ui/upload';
+import type { ImageData } from '@/Types/media';
 import { useApiMutation } from '@/Composables/useApi';
 import { resetInitialization } from '@/Composables/useTutorialProgress';
 import { ModelEnum } from '@/Types/enums';
@@ -340,8 +338,7 @@ const form = useForm({
   name: props.user.name ?? '',
   phone: (props.user.phone ?? null) as string | null,
   facebook_url: (props.user.facebook_url ?? null) as string | null,
-  profile_photo_path: (props.user.profile_photo_path ?? null) as string | null,
-  profile_photo_focal_point: ((props.user as unknown as Record<string, unknown>).profile_photo_focal_point ?? null) as string | null,
+  profile_photo_media: ((props.user as unknown as Record<string, unknown>).profile_photo_media ?? null) as ImageData | null,
   pronouns: (Array.isArray(props.user.pronouns) || !props.user.pronouns
     ? { lt: '', en: '' }
     : { lt: '', en: '', ...(props.user.pronouns as Record<string, string>) }) as Record<'lt' | 'en', string>,
@@ -358,7 +355,7 @@ const fieldIds = {
   name: 'user-name',
   phone: 'user-phone',
   facebook_url: 'user-facebook',
-  profile_photo_path: 'user-picture',
+  profile_photo_media: 'user-picture',
   pronouns: 'user-pronouns',
   show_pronouns: 'user-show-pronouns',
 };

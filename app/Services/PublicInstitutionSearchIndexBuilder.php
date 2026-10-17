@@ -6,6 +6,7 @@ use App\Enums\TenantType;
 use App\Models\Duty;
 use App\Models\PublicInstitution;
 use App\Settings\AtstovavimasSettings;
+use App\Support\Media\ImageData;
 use Illuminate\Support\Str;
 
 class PublicInstitutionSearchIndexBuilder
@@ -18,6 +19,7 @@ class PublicInstitutionSearchIndexBuilder
         $institution->loadMissing([
             'tenant',
             'types',
+            'media',
         ]);
 
         $duties = $institution->duties()
@@ -80,9 +82,10 @@ class PublicInstitutionSearchIndexBuilder
             'description_en' => $this->excerpt($institution->getTranslation('description', 'en')),
 
             // Media
-            'image_url' => $institution->image_url,
-            'logo_url' => $institution->logo_url,
-            'has_logo' => ! empty($institution->logo_url),
+            'image_url' => $institution->imageData('image')['url'] ?? null,
+            ...ImageData::searchFields($institution->imageData('image'), 'image'),
+            'logo_url' => $institution->imageData('logo')['thumb'] ?? null,
+            'has_logo' => $institution->imageData('logo') !== null,
             'facebook_url' => $institution->facebook_url,
             'instagram_url' => $institution->instagram_url,
 

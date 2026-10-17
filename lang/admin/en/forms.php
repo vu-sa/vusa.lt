@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'image_upload' => [
+        'uploading' => 'Uploading…',
+        'optimizing' => 'Optimizing…',
+        'failed' => 'The image could not be uploaded. Try again.',
+        'retry' => 'Try again',
+    ],
     'required_note' => 'Fields marked with an asterisk (*) are required; you can skip the others.',
     'fields' => [
         'name_and_surname' => 'Name and surname',

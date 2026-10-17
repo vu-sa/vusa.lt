@@ -189,4 +189,5 @@ return [
         'success' => 'Image optimized successfully',
         'error' => 'Failed to optimize image',
     ],
+    'pending_upload_limit' => 'You have uploaded too many photos in the last hour. Wait a while and try again.',
 ];

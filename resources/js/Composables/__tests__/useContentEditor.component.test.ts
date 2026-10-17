@@ -2,17 +2,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent, reactive } from 'vue';
 import { flushPromises, mount } from '@vue/test-utils';
 import { router, type InertiaForm } from '@inertiajs/vue3';
+import { toast } from 'vue-sonner';
 
-import { useContentEditor, blankTranslation, cloneTranslation, type ContentEditorData } from '../useContentEditor';
+import { useContentEditor, blankTranslation, cloneTranslation, type ContentEditorData, type ContentKind } from '../useContentEditor';
 
 const http = vi.hoisted(() => ({ get: vi.fn(), put: vi.fn(), delete: vi.fn(), request: vi.fn(), isError: vi.fn(() => false) }));
 const storage = vi.hoisted(() => vi.fn());
 vi.mock('../contentEditorHttp', () => ({ contentEditorHttp: http }));
 vi.mock('../contentEditorStorage', () => ({ recoveryStorage: storage }));
+vi.mock('vue-sonner', () => ({ toast: { success: vi.fn() } }));
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const wrappers: ReturnType<typeof mount>[] = [];
-function session(data: ContentEditorData = { id: 1, title: 'Original', content_version: 'old', content: { parts: [] } }, stay = true) {
+function session(data: ContentEditorData = { id: 1, title: 'Original', content_version: 'old', content: { parts: [] } }, kind: ContentKind = 'pages', stay = true) {
   const state = reactive({ ...data, processing: false, errors: {} });
   const fields = [...new Set([...Object.keys(data), 'id', 'content_version', 'permalink'])];
   const form = Object.assign(state, {
@@ -22,7 +24,7 @@ function session(data: ContentEditorData = { id: 1, title: 'Original', content_v
   let editor!: ReturnType<typeof useContentEditor>;
   wrappers.push(mount(defineComponent({
     setup() {
-      editor = useContentEditor('pages', form, { stay });
+      editor = useContentEditor(kind, form, { stay });
       return () => null;
     },
   })));
@@ -39,6 +41,7 @@ beforeEach(() => {
   http.put.mockResolvedValue({ data: { data: { revision: 1 } } });
   http.delete.mockResolvedValue({ data: { data: null } });
   storage.mockResolvedValue(undefined);
+  http.isError.mockReturnValue(false);
 });
 afterEach(() => {
   wrappers.splice(0).forEach(wrapper => wrapper.unmount());
@@ -46,11 +49,110 @@ afterEach(() => {
 });
 
 describe('content recovery and saves', () => {
+  it.each(['news', 'pages'] as const)('confirms each successful manual %s save once', async (kind) => {
+    const active = session(undefined, kind);
+    await flushPromises();
+    active.form.title = 'Saved';
+    http.request.mockResolvedValue({ data: { data: { ...active.form.data(), content_version: 'new' } } });
+
+    await active.editor.save();
+
+    expect(toast.success).toHaveBeenCalledExactlyOnceWith('Išsaugota');
+    expect(active.form.content_version).toBe('new');
+    await active.editor.save();
+    expect(toast.success).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not confirm private recovery backups as manual saves', async () => {
+    vi.useFakeTimers();
+    try {
+      const active = session();
+      await flushPromises();
+      active.form.title = 'Private edits';
+      await flushPromises();
+
+      await vi.advanceTimersByTimeAsync(2000);
+
+      expect(http.put).toHaveBeenCalled();
+      expect(toast.success).not.toHaveBeenCalled();
+    }
+    finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('confirms the saved record even when recovery cleanup is unavailable', async () => {
+    const active = session();
+    await flushPromises();
+    active.form.title = 'Saved';
+    http.request.mockResolvedValue({ data: { data: { ...active.form.data(), content_version: 'new' } } });
+    http.delete.mockRejectedValue(new Error('Offline'));
+
+    await active.editor.save();
+
+    expect(toast.success).toHaveBeenCalledExactlyOnceWith('Išsaugota');
+    expect(active.editor.status.value).toBe('offline');
+    expect(active.editor.saveError.value).toBe('');
+  });
+
+  it.each([409, 422])('does not confirm a save rejected with HTTP %s', async (status) => {
+    const active = session();
+    await flushPromises();
+    active.form.title = 'Unsaved';
+    http.isError.mockReturnValue(true);
+    http.request.mockRejectedValue({ response: { status, data: { message: 'Save rejected', errors: { title: ['Invalid title'] } } } });
+
+    await active.editor.save();
+
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(active.form.title).toBe('Unsaved');
+    expect(active.form.content_version).toBe('old');
+    expect(active.form.defaults).not.toHaveBeenCalled();
+    expect(active.editor.recordConflict.value).toBe(status === 409);
+    expect(active.editor.saveError.value).toBe('Save rejected');
+    if (status === 422) expect(active.form.setError).toHaveBeenCalledWith({ title: 'Invalid title' });
+  });
+
+  it.each(['image_media', 'featured_image_media'] as const)('uses the saved owned image id for %s on subsequent saves', async (field) => {
+    const original = { id: 10, url: '/source.jpg', thumb: '/source.jpg', srcset: null, width: null, height: null, focal_point: null, alt: null, author: null };
+    const canonical = { ...original, id: 20, url: '/owned.jpg', thumb: '/owned.jpg' };
+    const active = session({ id: 1, title: 'Original', content_version: 'old', [field]: original, content: { parts: [] } });
+    await flushPromises();
+    http.request.mockResolvedValue({ data: { data: { ...active.form.data(), content_version: 'new', [field]: canonical } } });
+    await active.editor.save();
+    expect(active.form[field]).toEqual(canonical);
+    expect(active.form.defaults).toHaveBeenCalledWith(expect.objectContaining({ [field]: canonical }));
+    await active.editor.save();
+    expect(http.request).toHaveBeenLastCalledWith(expect.objectContaining({ data: expect.objectContaining({ [field]: canonical }) }));
+  });
+
+  it.each(['metadata', 'replacement', 'removal'])('preserves concurrent image %s while reconciling saved references', async (change) => {
+    const original = { id: 10, url: '/source.jpg', thumb: '/source.jpg', srcset: null, width: null, height: null, focal_point: null, alt: null, author: null };
+    const canonical = { ...original, id: 20, url: '/owned.jpg', thumb: '/owned.jpg' };
+    let finish!: (value: unknown) => void;
+    http.request.mockImplementation(() => new Promise((resolve) => {
+      finish = resolve;
+    }));
+    const active = session({ id: 1, title: 'Original', content_version: 'old', image_media: original, content: { parts: [] } });
+    await flushPromises();
+    const saving = active.editor.save();
+    await flushPromises();
+    const edited = change === 'metadata'
+      ? { ...original, alt: 'New alt', focal_point: '20% 30%', author: 'New author' }
+      : change === 'replacement' ? { ...original, id: 30, url: '/replacement.jpg' } : null;
+    active.form.image_media = edited;
+    finish({ data: { data: { id: 1, title: 'Original', content_version: 'new', image_media: canonical, content: { parts: [] } } } });
+    await saving;
+    expect(active.form.image_media).toEqual(change === 'metadata' ? { ...canonical, alt: 'New alt', focal_point: '20% 30%', author: 'New author' } : edited);
+    expect(active.form.defaults).toHaveBeenCalledWith(expect.objectContaining({ image_media: canonical }));
+    expect(http.delete).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['server destination', { redirect_url: '/mano/pages' }, '/mano/pages'],
     ['older response', undefined, '/mocked-route/pages.edit'],
   ])('opens the %s after creating a page', async (_label, meta, destination) => {
-    const active = session({ title: 'New page', content: { parts: [] } }, false);
+    const active = session({ title: 'New page', content: { parts: [] } }, 'pages', false);
     await flushPromises();
     http.request.mockResolvedValue({ data: { data: { id: 7, title: 'New page', content: { parts: [] } }, meta } });
 
@@ -72,7 +174,7 @@ describe('content recovery and saves', () => {
 
   it('does not navigate away from changes typed while creation is saving', async () => {
     let finish!: (value: unknown) => void;
-    const active = session({ title: 'New page', content: { parts: [] } }, false);
+    const active = session({ title: 'New page', content: { parts: [] } }, 'pages', false);
     await flushPromises();
     http.request.mockImplementation(() => new Promise((resolve) => {
       finish = resolve;
@@ -134,6 +236,7 @@ describe('content recovery and saves', () => {
     finish({ data: { data: { id: 1, title: 'Sent', content_version: 'new', content: { parts: [] } } } });
     await saving;
     expect(active.form.title).toBe('Newer');
+    expect(toast.success).toHaveBeenCalledExactlyOnceWith('Išsaugota');
     expect(active.form.defaults).toHaveBeenCalledWith(expect.objectContaining({ title: 'Sent' }));
     expect(http.delete).not.toHaveBeenCalled();
     expect(storage).toHaveBeenCalledWith(expect.any(String), 'put', expect.objectContaining({ snapshot: expect.objectContaining({ title: 'Newer' }) }));
@@ -149,6 +252,7 @@ describe('content recovery and saves', () => {
     expect(active.form.title).toBe('Unfinished');
     expect(http.delete).not.toHaveBeenCalled();
     expect(active.editor.saveError.value).toContain('Offline');
+    expect(toast.success).not.toHaveBeenCalled();
   });
 
   it('reconciles new block ids by their client key', async () => {
@@ -169,6 +273,14 @@ describe('content recovery and saves', () => {
     expect(active.form.content_version).toBe('paired');
     expect(active.form.defaults).toHaveBeenCalledWith({ content_version: 'paired', other_lang_id: 2 });
     active.editor.acknowledgePairing({ id: 1, title: 'Someone else changed this', content_version: 'external', other_lang_id: 2, content: { parts: [] } });
+    expect(active.form.content_version).toBe('paired');
+  });
+
+  it('acknowledges a language link after the image conversions finished', async () => {
+    const image = { id: 9, url: '/uploads/media/9/photo.jpg', thumb: '/uploads/media/9/photo.jpg', srcset: null, focal_point: null, alt: null, author: 'Ona' };
+    const active = session({ id: 1, title: 'Original', content_version: 'old', other_lang_id: null, image_media: image, content: { parts: [] } });
+    await flushPromises();
+    active.editor.acknowledgePairing({ id: 1, title: 'Original', content_version: 'paired', other_lang_id: 2, image_media: { ...image, thumb: '/uploads/media/9/conversions/photo-thumb.webp', srcset: '/uploads/media/9/conversions/photo-medium.webp 800w' }, content: { parts: [] } });
     expect(active.form.content_version).toBe('paired');
   });
 
@@ -195,9 +307,10 @@ describe('content recovery and saves', () => {
   });
 
   it('starts a new language version blank while keeping the settings it inherits', () => {
-    const source: ContentEditorData = { id: 9, title: 'Current text', lang: 'lt', draft: false, short: '<p>Intro</p>', highlights: ['One'], tags: [4], image: '/cover.jpg', content: { parts: [{ id: 8, type: 'tiptap', json_content: { text: 'Body' } }] } };
+    const cover = { id: 3, url: '/cover.webp', thumb: '/cover.webp', srcset: null, width: 1600, height: 900, focal_point: null, alt: null, author: null };
+    const source: ContentEditorData = { id: 9, title: 'Current text', lang: 'lt', draft: false, short: '<p>Intro</p>', highlights: ['One'], tags: [4], image_media: cover, content: { parts: [{ id: 8, type: 'tiptap', json_content: { text: 'Body' } }] } };
     const blank = blankTranslation(source);
-    expect(blank).toMatchObject({ title: '', short: '', highlights: [], lang: 'en', other_lang_id: 9, draft: true, tags: [4], image: '/cover.jpg' });
+    expect(blank).toMatchObject({ title: '', short: '', highlights: [], lang: 'en', other_lang_id: 9, draft: true, tags: [4], image_media: cover });
     expect(blank.content?.parts).toHaveLength(1);
     expect(blank.content?.parts[0]).toMatchObject({ type: 'tiptap', json_content: {} });
     expect('meta_description' in blank).toBe(false);

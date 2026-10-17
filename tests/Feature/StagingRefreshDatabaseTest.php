@@ -91,6 +91,30 @@ describe('the environment guard', function (): void {
             ->assertExitCode(1);
     });
 
+    test('it refuses an unsafe media disk before dropping any tables', function (): void {
+        $source = sys_get_temp_dir().'/staging-refresh-source-'.Str::random(8);
+        $outside = sys_get_temp_dir().'/staging-media-outside-'.Str::random(8);
+        File::ensureDirectoryExists($source);
+        File::ensureDirectoryExists($outside);
+        File::put($source.'/backup_2026-10-01.sql.gz', '');
+        config([
+            'app.env' => 'staging',
+            'app.staging_refresh.source_backup_dir' => $source,
+            'filesystems.disks.stagingMedia.root' => $outside,
+        ]);
+
+        $before = DB::table('users')->count();
+
+        $this->artisan('staging:refresh-database', ['--skip-reindex' => true])
+            ->expectsOutputToContain('Refused to empty the staging media disk')
+            ->assertExitCode(1);
+
+        expect(DB::table('users')->count())->toBe($before);
+
+        File::deleteDirectory($source);
+        File::deleteDirectory($outside);
+    });
+
     test('it gets past the guard in staging and fails on the source instead', function (): void {
         config([
             'app.env' => 'staging',

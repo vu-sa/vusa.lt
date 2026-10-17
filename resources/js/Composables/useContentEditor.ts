@@ -1,9 +1,12 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { router, usePage, type InertiaForm } from '@inertiajs/vue3';
+import { trans as $t } from 'laravel-vue-i18n';
+import { toast } from 'vue-sonner';
 
 import { recoveryStorage, type RecoveryCopy } from './contentEditorStorage';
 
 import { contentEditorHttp as http } from '@/Composables/contentEditorHttp';
+import type { ImageData } from '@/Types/media';
 
 export type ContentKind = 'pages' | 'news';
 export interface ContentEditorData extends Record<string, unknown> {
@@ -18,10 +21,9 @@ export interface ContentEditorData extends Record<string, unknown> {
   draft?: boolean;
   publish_time?: string | null;
   short?: string | null;
-  image?: string | null;
-  image_author?: string | null;
+  image_media?: ImageData | null;
   highlights?: string[] | null;
-  featured_image?: string | null;
+  featured_image_media?: ImageData | null;
   meta_description?: string | null;
   tags?: number[];
   pairing_confirmation?: string;
@@ -32,7 +34,7 @@ export interface ContentEditorData extends Record<string, unknown> {
 }
 
 export function editorSnapshot(data: Record<string, unknown>): ContentEditorData {
-  const fields = ['id', 'title', 'permalink', 'lang', 'tenant_id', 'parent_id', 'is_active', 'layout', 'show_table_of_contents', 'show_title', 'show_breadcrumbs', 'highlights', 'featured_image', 'meta_description', 'draft', 'publish_time', 'short', 'image', 'image_author', 'tags', 'other_lang_id', 'pairing_confirmation', 'content_version', 'content'];
+  const fields = ['id', 'title', 'permalink', 'lang', 'tenant_id', 'parent_id', 'is_active', 'layout', 'show_table_of_contents', 'show_title', 'show_breadcrumbs', 'highlights', 'featured_image_media', 'meta_description', 'draft', 'publish_time', 'short', 'image_media', 'tags', 'other_lang_id', 'pairing_confirmation', 'content_version', 'content'];
   return JSON.parse(JSON.stringify(Object.fromEntries(fields.filter(key => key in data).map(key => [key, data[key]]))));
 }
 
@@ -103,8 +105,16 @@ export function useContentEditor<T extends Record<string, unknown>>(kind: Conten
       delete copy.other_lang_id;
       delete copy.content_version;
       delete copy.pairing_confirmation;
-      for (const field of ['featured_image', 'meta_description', 'image_author', 'short', 'image']) {
+      for (const field of ['featured_image_media', 'meta_description', 'short', 'image_media']) {
         if (field in copy) copy[field] ??= '';
+      }
+      // Like content_version on the server: conversions finishing must not read as an edit.
+      for (const field of ['featured_image_media', 'image_media']) {
+        const image = copy[field];
+        if (image && typeof image === 'object') {
+          const { id, focal_point, alt, author } = image as Record<string, unknown>;
+          copy[field] = { id, focal_point, alt, author };
+        }
       }
       if ('highlights' in copy) copy.highlights ??= [];
       if (copy.content) copy.content.parts = copy.content.parts.map(part => ({ id: part.id, type: part.type, json_content: part.json_content, options: part.options }));
@@ -225,6 +235,19 @@ export function useContentEditor<T extends Record<string, unknown>>(kind: Conten
       const saved = data.data as ContentEditorData;
       const unchanged = JSON.stringify(snapshot()) === JSON.stringify(sent);
       const committed = { ...sent, id: saved.id, content_version: saved.content_version, permalink: saved.permalink };
+      for (const field of ['image_media', 'featured_image_media'] as const) {
+        if (!(field in sent) || !(field in saved)) continue;
+        const live = form.data()[field] as ContentEditorData[typeof field];
+        const original = sent[field];
+        const canonical = saved[field];
+        committed[field] = canonical;
+        if (JSON.stringify(live) === JSON.stringify(original)) {
+          Object.assign(form, { [field]: canonical });
+        }
+        else if (live && original && canonical && live.id === original.id && live.url === original.url) {
+          Object.assign(form, { [field]: { ...canonical, focal_point: live.focal_point, alt: live.alt, author: live.author } });
+        }
+      }
       for (const savedPart of saved.content?.parts ?? []) {
         const part = form.data().content as ContentEditorData['content'];
         const live = part?.parts.find(p => savedPart.key ? p.key === savedPart.key : p.id === savedPart.id);
@@ -238,6 +261,7 @@ export function useContentEditor<T extends Record<string, unknown>>(kind: Conten
       baseline = JSON.stringify(editorSnapshot(committed));
       currentId.value = saved.id;
       savedRecord.value = saved;
+      toast.success($t('Išsaugota'));
       await options.onSaved?.(saved);
       if (unchanged) {
         try {

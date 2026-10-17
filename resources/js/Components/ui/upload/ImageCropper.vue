@@ -126,8 +126,8 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   aspectRatio: 0,
-  maxOutputWidth: 2048,
-  maxOutputHeight: 2048,
+  maxOutputWidth: 3840,
+  maxOutputHeight: 3840,
   quality: 0.9,
   outputFormat: 'image/webp',
   class: undefined,

@@ -69,6 +69,7 @@ export interface HomeNewsPreview {
 
 export interface HomeHeroImage {
   url: string;
+  srcset?: string | null;
   focalPoint: string | null;
 }
 

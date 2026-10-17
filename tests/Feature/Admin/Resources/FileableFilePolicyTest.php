@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\DutyType;
 use App\Models\FileableFile;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\User;
@@ -137,5 +139,42 @@ describe('FileableFile with different fileable types', function (): void {
         expect(Gate::forUser($user)->allows('view', $file))->toBeTrue()
             ->and(Gate::forUser($user)->allows('update', $file))->toBeTrue()
             ->and(Gate::forUser($user)->allows('delete', $file))->toBeTrue();
+    });
+});
+
+describe('type files', function (): void {
+    test('a member opens files of a parent duty type but cannot manage them', function (): void {
+        $parent = DutyType::factory()->create();
+        $child = DutyType::factory()->create(['parent_id' => $parent->id]);
+        $file = FileableFile::factory()->for($parent, 'fileable')->create();
+        $member = makeUser($this->tenant);
+        $member->duties()->first()->types()->attach($child);
+
+        expect(Gate::forUser($member)->allows('view', $file))->toBeTrue()
+            ->and(Gate::forUser($member)->allows('update', $file))->toBeFalse()
+            ->and(Gate::forUser(makeUser($this->tenant))->allows('view', $file))->toBeFalse();
+    });
+
+    test('a member opens files of their institution type', function (): void {
+        $type = InstitutionType::factory()->create();
+        $file = FileableFile::factory()->for($type, 'fileable')->create();
+        $member = makeUser($this->tenant);
+        $member->duties()->first()->institution->types()->attach($type);
+
+        expect(Gate::forUser($member)->allows('view', $file))->toBeTrue()
+            ->and(Gate::forUser(makeUser($this->tenant))->allows('view', $file))->toBeFalse();
+    });
+
+    test('a coordinator opens institution type files only through their own padalinys', function (): void {
+        $type = InstitutionType::factory()->create();
+        $file = FileableFile::factory()->for($type, 'fileable')->create();
+        $coordinator = makeTenantUserWithRole('Studentų atstovų koordinatorius', $this->tenant);
+        $otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->first();
+
+        Institution::factory()->for($otherTenant)->create()->types()->attach($type);
+        expect(Gate::forUser($coordinator)->allows('view', $file))->toBeFalse();
+
+        $this->institution->types()->attach($type);
+        expect(Gate::forUser($coordinator)->allows('view', $file))->toBeTrue();
     });
 });

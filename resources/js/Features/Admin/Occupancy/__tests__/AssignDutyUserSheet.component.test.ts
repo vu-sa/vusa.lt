@@ -162,6 +162,15 @@ describe('AssignDutyUserSheet.vue', () => {
       expect(wrapper.find('[data-testid="assign-extras"]').attributes('open')).toBeDefined();
     });
 
+    it('opens them when the term has its own photo', () => {
+      const wrapper = mountSheet({
+        dutiable: { id: 'd-1', duty_id: 'duty-1', start_date: '2026-01-01', additional_photo: '/uploads/media/3/conversions/photo-thumb.webp', duty },
+        duty: null,
+      });
+
+      expect(wrapper.find('[data-testid="assign-extras"]').attributes('open')).toBeDefined();
+    });
+
     it('offers a study programme only on a curator duty', () => {
       const plain = mountSheet({ duty: { ...duty, types: [{ slug: 'koordinatoriai' }] }, studyPrograms: programmes });
       const curator = mountSheet({ duty: { ...duty, types: [{ slug: 'kuratoriai' }] }, studyPrograms: programmes });

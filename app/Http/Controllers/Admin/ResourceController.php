@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
+use App\Actions\Media\AddImageMedia;
 use App\Actions\SerializeReservationCart;
 use App\Actions\SerializeResourceAvailability;
 use App\Http\Controllers\AdminController;
@@ -60,7 +61,7 @@ class ResourceController extends AdminController
         $this->handleAuthorization('create', Resource::class);
 
         if ($request->validated('media') !== []) {
-            StagingProtection::ensureFilesAreWritable();
+            StagingProtection::ensureDiskIsWritable(config('media-library.disk_name'));
         }
 
         $resource = new Resource;
@@ -71,8 +72,10 @@ class ResourceController extends AdminController
         $resource = $resource->fresh();
 
         foreach ($request->validated('media') as $image) {
-            $resource->addMedia($image['file'])->toMediaCollection('images');
+            app(AddImageMedia::class)->execute($resource, $image['file'], 'images');
         }
+
+        $resource->afterImageMediaChanged('images');
 
         return redirect($redirect->url($request->user(), $resource, 'resources.show', 'view', 'resources.index'))
             ->with('success', $this->entityMessage('created', 'resource'));
@@ -106,6 +109,7 @@ class ResourceController extends AdminController
                 'tenant' => $resource->tenant->only(['id', 'shortname']),
                 'category' => $resource->category?->name,
                 'images' => $resource->getMedia('images')->map(fn ($image) => $image->getUrl())->values(),
+                'images_media' => $resource->imageGallery('images'),
             ],
             'availableNow' => max(0, SerializeResourceAvailability::available($resource, $now, $now->copy()->addMinute())),
             'currentLoans' => $active->filter(fn (Reservation $reservation) => $reservation->pivot->start_time?->lte($now))->map($row)->values(),
@@ -198,25 +202,25 @@ class ResourceController extends AdminController
             ->contains(fn (array $image): bool => $image['status'] === 'pending' && ($image['file'] ?? null) !== null);
 
         if ($hasPendingMedia) {
-            StagingProtection::ensureFilesAreWritable();
+            StagingProtection::ensureDiskIsWritable(config('media-library.disk_name'));
         }
 
         $resource->fill($request->safe()->except('media'));
         $resource->save();
 
-        // first, intersect existing media with id from request, delete one's that didn't match
         $resource->getMedia('images')
             ->filter(fn ($image) => ! in_array($image->id, array_column($request->validated('media'), 'id')))
             ->each(fn ($image) => $image->delete());
 
-        // then add new media
         if ($request->validated('media')) {
             foreach ($request->validated('media') as $image) {
                 if ($image['status'] === 'pending' && $image['file']) {
-                    $resource->addMedia($image['file'])->toMediaCollection('images');
+                    app(AddImageMedia::class)->execute($resource, $image['file'], 'images');
                 }
             }
         }
+
+        $resource->afterImageMediaChanged('images');
 
         return back()
             ->with('success', $this->entityMessage('updated', 'resource'));

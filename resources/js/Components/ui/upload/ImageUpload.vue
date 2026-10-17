@@ -5,6 +5,8 @@
     :accept
     :max-size
     deferred
+    :disabled="isBusy"
+    :aria-busy="isBusy"
     list-type="image-card"
     :class="cn('w-full', props.class)"
     @update:files="handleFilesUpdate"
@@ -31,20 +33,24 @@
             :style="focalPoint ? { objectPosition: previewObjectPosition } : undefined"
           >
 
-          <!-- Compression indicator -->
           <div
-            v-if="isCompressing"
-            class="absolute inset-0 flex items-center justify-center bg-black/50"
+            v-if="isBusy"
+            class="absolute inset-0 z-10 flex items-center justify-center bg-background/85 text-foreground"
+            role="status"
+            aria-live="polite"
+            data-slot="image-upload-status"
           >
-            <div class="flex flex-col items-center gap-2 text-white">
-              <Loader2 class="size-6 animate-spin" />
-              <span class="text-sm">{{ $t("Optimizuojama...") }}</span>
+            <div class="flex flex-col items-center gap-2">
+              <Loader2 class="size-6 motion-safe:animate-spin" aria-hidden="true" />
+              <span class="text-sm">
+                {{ $t(isCompressing ? 'forms.image_upload.optimizing' : 'forms.image_upload.uploading') }}
+              </span>
             </div>
           </div>
 
           <!-- New file indicator -->
           <div
-            v-if="isNewFile && !isCompressing"
+            v-if="isNewFile && !isBusy && localFiles[0]?.status === 'success'"
             class="absolute bottom-2 left-2 flex items-center gap-1 border border-border bg-background px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-foreground shadow-xs"
           >
             <UploadIcon class="size-3" />
@@ -63,6 +69,7 @@
             <Button
               v-if="cropper && previewUrl && localFiles[0]"
               type="button"
+              :disabled="isBusy"
               variant="secondary"
               size="sm"
               class="border border-border bg-background/90 text-foreground backdrop-blur"
@@ -75,6 +82,7 @@
             <!-- Replace button -->
             <Button
               type="button"
+              :disabled="isBusy"
               variant="secondary"
               size="sm"
               class="border border-border bg-background/90 text-foreground backdrop-blur"
@@ -88,6 +96,7 @@
             <Button
               v-if="localFiles[0]"
               type="button"
+              :disabled="isBusy"
               variant="destructive"
               size="sm"
               @click="removeFile(localFiles[0] as UploadFile)"
@@ -98,8 +107,9 @@
 
           <!-- Success indicator -->
           <div
-            v-if="isNewFile && !isCompressing"
+            v-if="isNewFile && !isBusy && localFiles[0]?.status === 'success'"
             class="absolute bottom-2 right-2 flex size-6 items-center justify-center border border-border bg-background text-[var(--status-success)] shadow-xs"
+            data-slot="image-upload-success"
           >
             <Check class="size-3.5" />
           </div>
@@ -109,6 +119,7 @@
         <Button
           v-if="focalPoint && hasContent && previewUrl"
           type="button"
+          :disabled="isBusy || localFiles[0]?.status === 'error'"
           variant="outline"
           size="sm"
           class="mt-2"
@@ -116,8 +127,8 @@
         >
           <Crosshair class="mr-1.5 size-4" />
           {{ $t("Nustatyti fokuso tašką") }}
-          <span v-if="focalPointValue" class="ml-1.5 font-mono text-[10px] text-muted-foreground">
-            {{ focalPointValue }}
+          <span v-if="currentFocalPoint" class="ml-1.5 font-mono text-[10px] text-muted-foreground">
+            {{ currentFocalPoint }}
           </span>
         </Button>
 
@@ -168,6 +179,11 @@
           >
             <img v-if="f.url" :src="f.url" :alt="f.name" class="h-full w-full object-cover">
 
+            <div v-if="f.status === 'uploading'" class="absolute inset-0 z-10 flex items-center justify-center bg-background/85 text-foreground" role="status">
+              <Loader2 class="size-5 motion-safe:animate-spin" aria-hidden="true" />
+              <span class="sr-only">{{ $t('forms.image_upload.uploading') }}</span>
+            </div>
+
             <!-- New file indicator -->
             <div
               v-if="f.file"
@@ -180,6 +196,7 @@
             <Button
               v-if="cropper && f.url"
               type="button"
+              :disabled="isBusy"
               variant="secondary"
               size="icon-xs"
               class="absolute left-1 top-1 opacity-0 shadow-xs transition-opacity group-hover:opacity-100"
@@ -191,6 +208,7 @@
             <!-- Remove button -->
             <Button
               type="button"
+              :disabled="isBusy"
               variant="destructive"
               size="icon-xs"
               class="absolute right-1 top-1 opacity-0 shadow-xs transition-opacity group-hover:opacity-100"
@@ -222,6 +240,18 @@
           </UploadDropzone>
         </div>
       </template>
+
+      <div
+        v-for="failed in localFiles.filter(f => f.status === 'error')"
+        :key="failed.id"
+        class="mt-2 flex flex-wrap items-center gap-2 text-sm text-[var(--status-danger)]"
+        role="alert"
+      >
+        <span>{{ failed.error }}</span>
+        <Button v-if="isImmediate && failed.file" type="button" variant="outline" :disabled="isBusy" @click="retryUpload(failed)">
+          {{ $t('forms.image_upload.retry') }}
+        </Button>
+      </div>
     </template>
   </Upload>
 
@@ -243,29 +273,19 @@
       <FocalPointPicker
         v-if="showFocalPointModal && previewUrl"
         :image-url="previewUrl"
-        :model-value="focalPointValue ?? null"
-        @update:model-value="(val: string) => { emit('update:focalPointValue', val); }"
+        :model-value="currentFocalPoint"
+        @update:model-value="setFocalPoint"
       />
     </DialogContent>
   </Dialog>
 </template>
 
 <script setup lang="ts">
-/**
- * ImageUpload - A unified image upload component with cropping, compression, and deferred/immediate modes.
- *
- * Features:
- * - Single or multiple image uploads (controlled by `max` prop)
- * - Browser-side compression before upload/submit
- * - Optional image cropping via integrated cropper modal
- * - Optional focal point picker in a dialog
- * - Deferred mode: Files stored locally for form submission (Spatie Media Library)
- * - Immediate mode: Files uploaded immediately to server and URL returned
- * - Existing image preview for edit forms
- */
-import { computed, defineAsyncComponent, ref, watch, onMounted, nextTick } from 'vue';
-import { router, usePage } from '@inertiajs/vue3';
+import { computed, defineAsyncComponent, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { usePage } from '@inertiajs/vue3';
+import { trans } from 'laravel-vue-i18n';
 import { Check, Crop, Crosshair, ImagePlus, Loader2, Plus, RefreshCw, Trash2, Upload as UploadIcon, X } from '@lucide/vue';
+import { toast } from 'vue-sonner';
 
 const FocalPointPicker = defineAsyncComponent(() => import('./FocalPointPicker.vue'));
 const ImageCropper = defineAsyncComponent(() => import('./ImageCropper.vue'));
@@ -278,16 +298,17 @@ import { useImageCompression, type CompressionOptions, type CompressionResult } 
 import { cn } from '@/Utils/Shadcn/utils';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent } from '@/Components/ui/dialog';
-import { Label } from '@/Components/ui/label';
+import type { ImageData } from '@/Types/media';
 
 export interface ImageUploadProps {
   /** Maximum number of files allowed. Use 1 for single file upload (default: 1) */
   max?: number;
-  /** Upload mode: 'deferred' stores files for form submit, 'immediate' uploads instantly */
-  mode?: 'deferred' | 'immediate';
+  /** 'deferred' stores files for form submit, 'media' stages them as ImageData, 'immediate' (legacy) returns a URL */
+  mode?: 'deferred' | 'media' | 'immediate';
   /** Enable cropping functionality */
   cropper?: boolean;
-  /** Enable browser-side compression (true for defaults, or pass custom options) */
+  /** Browser-side compression (true for defaults, or custom options). Defaults to on, except in
+   *  `media` mode, where the server re-encodes the upload anyway. */
   compress?: boolean | CompressionOptions;
   /** Folder path for immediate mode uploads */
   folder?: string;
@@ -315,7 +336,7 @@ const props = withDefaults(defineProps<ImageUploadProps>(), {
   max: 1,
   mode: 'deferred',
   cropper: false,
-  compress: true,
+  compress: undefined,
   folder: 'uploads',
   existingUrl: null,
   existingUrls: () => [],
@@ -333,6 +354,7 @@ const emit = defineEmits<{
   (e: 'compression', result: CompressionResult): void;
   (e: 'remove:existing', item: { id: string | number; url: string }): void;
   (e: 'update:focalPointValue', value: string | null): void;
+  (e: 'update:image', value: ImageData | null): void;
 }>();
 
 // Models for two-way binding
@@ -340,14 +362,25 @@ const emit = defineEmits<{
 const file = defineModel<File | null>('file', { default: null });
 const url = defineModel<string | null>('url', { default: null });
 const urls = defineModel<string[]>('urls', { default: () => [] });
+const image = defineModel<ImageData | null>('image', { default: null });
 
 // Component refs
 const uploadRef = ref<InstanceType<typeof Upload> | null>(null);
 
+// Media mode: what the server returned for each staged file, keyed by local file id.
+const stagedImages = new Map<string, ImageData>();
+
 // Local state
 const localFiles = ref<UploadFile[]>([]);
 const isCompressing = ref(false);
-const compressionProgress = ref<Map<string, number>>(new Map());
+const isBusy = ref(false);
+let uploadController: AbortController | null = null;
+let disposed = false;
+
+onBeforeUnmount(() => {
+  disposed = true;
+  uploadController?.abort();
+});
 
 // Cropper modal state
 const showCropperModal = ref(false);
@@ -358,21 +391,34 @@ const cropperFileId = ref<string | null>(null);
 const showFocalPointModal = ref(false);
 
 // Compression composable
-const { compressImage, formatFileSize } = useImageCompression();
+const { compressImage } = useImageCompression();
 
 // Computed
 const isSingle = computed(() => props.max === 1);
-const isImmediate = computed(() => props.mode === 'immediate');
-const hasExistingImages = computed(() => {
-  if (isSingle.value) {
-    return !!props.existingUrl || !!url.value;
-  }
-  return props.existingUrls.length > 0 || urls.value.length > 0;
-});
+const isMedia = computed(() => props.mode === 'media');
+// Transitional(legacy-images): 'immediate' goes once no form uploads to the shared folders.
+const isImmediate = computed(() => props.mode === 'immediate' || isMedia.value);
+const currentFocalPoint = computed(() => (isMedia.value ? image.value?.focal_point : props.focalPointValue) ?? null);
 
+function setFocalPoint(value: string | null) {
+  if (isMedia.value) {
+    if (image.value) {
+      image.value = { ...image.value, focal_point: value };
+
+      const currentId = localFiles.value[0]?.id;
+      if (currentId && stagedImages.has(currentId)) {
+        stagedImages.set(currentId, image.value);
+      }
+    }
+
+    return;
+  }
+
+  emit('update:focalPointValue', value);
+}
 const previewObjectPosition = computed(() => {
   if (!props.focalPoint) return undefined;
-  return props.focalPointValue ?? '50% 30%';
+  return currentFocalPoint.value ?? '50% 30%';
 });
 
 // Compression options
@@ -381,17 +427,18 @@ const compressionOptions = computed<CompressionOptions>(() => {
     return props.compress;
   }
   return {
-    maxSizeMB: props.cropper ? 3 : 2,
-    maxWidthOrHeight: props.cropper ? 2048 : 1600,
+    // Under the 10 MB request cap without forcing extra quality loss on a 3840px photo.
+    maxSizeMB: 8,
+    maxWidthOrHeight: 3840,
     fileType: 'image/webp',
-    quality: props.cropper ? 0.9 : 0.8,
+    quality: 0.9,
   };
 });
 
 // Initialize with existing URLs (from props or v-model)
 function initializeFromExistingUrls() {
   // For single mode, check both existingUrl prop and url model
-  const existingUrl = props.existingUrl || url.value;
+  const existingUrl = props.existingUrl || (isMedia.value ? image.value?.url : url.value);
 
   if (isSingle.value && existingUrl) {
     localFiles.value = [
@@ -456,9 +503,9 @@ watch(
   },
 );
 
-// Watch for changes in url model (single mode, v-model:url)
+// Watch for changes in url model (single mode, v-model:url / v-model:image)
 watch(
-  url,
+  () => (isMedia.value ? image.value?.url : url.value),
   (newUrl) => {
     if (isSingle.value && newUrl && localFiles.value.length === 0) {
       initializeFromExistingUrls();
@@ -467,8 +514,10 @@ watch(
 );
 
 // Process file with compression
+const compressionEnabled = computed(() => props.compress ?? props.mode !== 'media');
+
 async function processFile(rawFile: File): Promise<File> {
-  if (!props.compress) {
+  if (!compressionEnabled.value) {
     return rawFile;
   }
 
@@ -485,47 +534,62 @@ async function processFile(rawFile: File): Promise<File> {
 
 // Handle files update from Upload component
 async function handleFilesUpdate(newFiles: UploadFile[]) {
-  // Find newly added files (have file object and aren't processed yet)
-  const filesToProcess = newFiles.filter(
-    f => f.file && !f.id.startsWith('processed-') && !f.id.startsWith('existing-'),
+  if (isBusy.value || disposed) return;
+
+  localFiles.value = [...newFiles];
+  const filesToProcess = localFiles.value.filter(
+    f => f.file && f.status !== 'error' && !f.id.startsWith('processed-') && !f.id.startsWith('existing-'),
   );
 
-  // Process new files with compression
-  for (const uploadFile of filesToProcess) {
-    if (!uploadFile.file) continue;
+  isBusy.value = filesToProcess.length > 0;
+  try {
+    for (const uploadFile of filesToProcess) {
+      if (!uploadFile.file) continue;
+      if (isImmediate.value) uploadFile.status = 'pending';
+      try {
+        const processedFile = await processFile(uploadFile.file);
+        if (disposed) return;
 
-    const originalFile = uploadFile.file;
-    const processedFile = await processFile(originalFile);
-
-    // Update the file reference
-    uploadFile.file = processedFile;
-    uploadFile.id = `processed-${uploadFile.id}`;
-
-    // For immediate mode, upload right away
-    if (isImmediate.value) {
-      await uploadFileToServer(uploadFile);
+        uploadFile.file = processedFile;
+        uploadFile.id = `processed-${uploadFile.id}`;
+        if (isImmediate.value) await uploadFileToServer(uploadFile);
+      }
+      catch {
+        if (disposed) return;
+        uploadFile.status = 'error';
+        uploadFile.error = trans('forms.image_upload.failed');
+      }
     }
+    if (!disposed) updateModels();
   }
-
-  localFiles.value = newFiles;
-  updateModels();
+  finally {
+    isBusy.value = false;
+  }
 }
 
 // Upload file to server (immediate mode)
 async function uploadFileToServer(uploadFile: UploadFile) {
-  if (!uploadFile.file) return;
+  if (!uploadFile.file || disposed) return;
 
+  const controller = new AbortController();
+  uploadController = controller;
   uploadFile.status = 'uploading';
   uploadFile.progress = 0;
+  uploadFile.error = undefined;
+  let failureMessage = trans('forms.image_upload.failed');
 
   const formData = new FormData();
   formData.append('image', uploadFile.file);
-  formData.append('path', props.folder);
-  formData.append('name', uploadFile.name);
+
+  if (!isMedia.value) {
+    formData.append('path', props.folder);
+    formData.append('name', uploadFile.name);
+  }
 
   try {
-    const response = await fetch(route('files.uploadImage'), {
+    const response = await fetch(route(isMedia.value ? 'api.v1.admin.pendingUploads.store' : 'files.uploadImage'), {
       method: 'POST',
+      signal: controller.signal,
       headers: {
         'X-CSRF-TOKEN': usePage().props.csrf_token as string,
         'Accept': 'application/json',
@@ -534,34 +598,70 @@ async function uploadFileToServer(uploadFile: UploadFile) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Upload failed: ${response.status}`);
+      const body = await response.json().catch(() => null) as { message?: string } | null;
+      failureMessage = body?.message ?? failureMessage;
+      throw new Error(failureMessage);
     }
 
     const data = await response.json();
+    if (disposed || controller.signal.aborted) return;
 
-    uploadFile.url = data.url;
+    if (isMedia.value) {
+      const staged = data.data as ImageData;
+      stagedImages.set(uploadFile.id, { ...staged, focal_point: currentFocalPoint.value });
+    }
+
+    uploadFile.url = isMedia.value ? (data.data as ImageData).url : data.url;
     uploadFile.status = 'success';
     uploadFile.progress = 100;
 
     updateModels();
   }
-  catch (error) {
-    console.error('[ImageUpload] Upload error:', error);
+  catch {
+    if (disposed || controller.signal.aborted) return;
     uploadFile.status = 'error';
-    uploadFile.error = error instanceof Error ? error.message : 'Upload failed';
+    uploadFile.error = failureMessage;
+
+    if (isMedia.value) {
+      toast.error(uploadFile.error);
+    }
+  }
+  finally {
+    if (uploadController === controller) uploadController = null;
+  }
+}
+
+async function retryUpload(uploadFile: UploadFile) {
+  if (isBusy.value || disposed) return;
+  isBusy.value = true;
+  try {
+    await uploadFileToServer(uploadFile);
+  }
+  finally {
+    isBusy.value = false;
   }
 }
 
 // Update v-model values
 function updateModels() {
   if (isSingle.value) {
+    if (isImmediate.value && localFiles.value[0] && localFiles.value[0].status !== 'success') return;
     // Single file mode
     const currentFile = localFiles.value.find(f => f.file);
     file.value = currentFile?.file ?? null;
     emit('update:file', file.value);
 
-    if (isImmediate.value) {
+    if (isMedia.value) {
+      const current = localFiles.value[0];
+
+      if (!current) {
+        image.value = null;
+      }
+      else if (stagedImages.has(current.id)) {
+        image.value = stagedImages.get(current.id) ?? null;
+      }
+    }
+    else if (isImmediate.value) {
       const successFile = localFiles.value.find(f => f.status === 'success');
       // Use local variable and emit directly to avoid defineModel reactivity issues
       const newUrl = successFile?.url ?? null;
@@ -583,6 +683,7 @@ function updateModels() {
 
 // Handle file removal
 function handleRemove(removedFile: UploadFile) {
+  if (isBusy.value) return;
   // Check if this is an existing file
   if (removedFile.id.startsWith('existing-')) {
     const existingId = removedFile.id.replace('existing-', '');
@@ -601,7 +702,7 @@ function handleRemove(removedFile: UploadFile) {
 
 // Open cropper modal
 function openCropper(uploadFile: UploadFile) {
-  if (!props.cropper || !uploadFile.url) return;
+  if (isBusy.value || !props.cropper || !uploadFile.url) return;
 
   cropperImageUrl.value = uploadFile.url;
   cropperFileId.value = uploadFile.id;
@@ -610,6 +711,7 @@ function openCropper(uploadFile: UploadFile) {
 
 // Handle crop finish
 async function handleCropFinish(data: { dataUrl: string; blob: Blob }) {
+  if (isBusy.value || disposed) return;
   showCropperModal.value = false;
 
   // Find the file being cropped
@@ -625,31 +727,36 @@ async function handleCropFinish(data: { dataUrl: string; blob: Blob }) {
   const fileName = uploadFile.name.replace(/\.[^.]+$/, extension);
   const croppedFile = new File([data.blob], fileName, { type: fileType });
 
-  // Default crop output has already been encoded at the target quality.
-  const processedFile = typeof props.compress === 'object'
-    ? await processFile(croppedFile)
-    : croppedFile;
+  isBusy.value = true;
+  try {
+    // Default crop output has already been encoded at the target quality.
+    const processedFile = typeof props.compress === 'object' ? await processFile(croppedFile) : croppedFile;
+    if (disposed) return;
 
-  // Update the file
-  uploadFile.file = processedFile;
-  uploadFile.url = processedFile === croppedFile
-    ? data.dataUrl
-    : await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result));
-        reader.onerror = () => reject(reader.error);
-        reader.readAsDataURL(processedFile);
-      });
-  uploadFile.name = processedFile.name;
+    uploadFile.file = processedFile;
+    uploadFile.url = processedFile === croppedFile
+      ? data.dataUrl
+      : await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => reject(reader.error);
+          reader.readAsDataURL(processedFile);
+        });
+    uploadFile.name = processedFile.name;
 
-  // Re-upload in immediate mode
-  if (isImmediate.value) {
-    await uploadFileToServer(uploadFile as UploadFile);
+    if (isImmediate.value) await uploadFileToServer(uploadFile);
+    if (!disposed) updateModels();
   }
-
-  updateModels();
-  cropperImageUrl.value = null;
-  cropperFileId.value = null;
+  catch {
+    if (disposed) return;
+    uploadFile.status = 'error';
+    uploadFile.error = trans('forms.image_upload.failed');
+  }
+  finally {
+    isBusy.value = false;
+    cropperImageUrl.value = null;
+    cropperFileId.value = null;
+  }
 }
 
 function handleCropCancel() {

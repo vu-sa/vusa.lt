@@ -21,6 +21,7 @@
         "laravel/scout": "^11.1.0",
         "laravel/telescope": "^5.0",
         "laravel/tinker": "^3.0",
+        "league/flysystem-read-only": "^3.25",
         "microsoft/microsoft-graph": "^3.0.0",
         "nyholm/psr7": "^1.8",
         "phpoffice/phpspreadsheet": "^5.7",

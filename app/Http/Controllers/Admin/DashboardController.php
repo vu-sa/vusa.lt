@@ -45,14 +45,14 @@ class DashboardController extends AdminController
         $user = fn () => once(fn () => $request->user());
         $loadUserDuties = fn () => once(function () use ($user) {
             $u = $user();
-            $u->loadMissing('current_duties.institution.tenant.primary_institution');
+            $u->loadMissing('current_duties.institution.tenant.primary_institution.media');
 
             return $u;
         });
 
         $heroInstitution = fn () => once(fn () => $loadUserDuties()->current_duties
             ->map(fn ($duty) => $duty->institution?->tenant?->primary_institution)
-            ->first(fn ($institution) => filled($institution?->image_url)));
+            ->first(fn ($institution) => $institution?->imageData('image') !== null));
 
         // Get task statistics for the dashboard in a single query
         $taskStats = fn () => once(function () use ($user) {
@@ -141,10 +141,11 @@ class DashboardController extends AdminController
             'upcomingTasks' => fn () => $upcomingTasks(),
             'upcomingMeetings' => fn () => $upcomingMeetings()['items'],
             'upcomingMeetingsTotal' => fn () => $upcomingMeetings()['total'],
-            'heroImage' => fn () => $heroInstitution() === null ? null : [
-                'url' => $heroInstitution()->image_url,
-                'focalPoint' => $heroInstitution()->image_focal_point,
-            ],
+            'heroImage' => function () use ($heroInstitution): ?array {
+                $image = $heroInstitution()?->imageData('image');
+
+                return $image === null ? null : ['url' => $image['url'], 'srcset' => $image['srcset'], 'focalPoint' => $image['focal_point']];
+            },
             'institutionsNeedingAttention' => $institutionsNeedingAttention,
             'upcomingCalendarEvents' => $upcomingCalendarEvents,
             'latestNews' => $latestNews,
@@ -276,7 +277,7 @@ class DashboardController extends AdminController
             ->whereNotNull('publish_time')
             ->where('publish_time', '<=', now())
             ->where('lang', app()->getLocale())
-            ->with(['tenant:id,shortname,alias'])
+            ->with(['tenant:id,shortname,alias', 'media'])
             ->orderByDesc('publish_time')
             ->take(3)
             ->get()

@@ -166,4 +166,60 @@ describe('ContactWithPhoto', () => {
       expect(wrapper.find('a[href^="tel:"]').exists()).toBe(false);
     });
   });
+
+  describe('photo', () => {
+    const profileMedia = { id: 1, url: '/uploads/media/1/profile.webp', thumb: '/t.webp', srcset: '/uploads/media/1/profile.webp 1200w',
+      width: 1200, height: 900, focal_point: null, alt: null, author: null };
+
+    it('uses assignment media even when its cached URL is missing or stale', () => {
+      const assignmentMedia = { ...profileMedia, id: 2, url: '/assignment.webp', srcset: '/assignment.webp 1200w', focal_point: '15% 25%' };
+      for (const cached of [null, '/stale.jpg']) {
+        const contact = makeContact({
+          profile_photo_path: profileMedia.url,
+          profile_photo_focal_point: '80% 90%',
+          duties: { duty: makeDuty({ pivot: { additional_photo: cached, additional_photo_focal_point: '50% 50%', photo_media: assignmentMedia } }) },
+        });
+        const card = mountCard(contact, []);
+        const img = card.get('img');
+        expect(img.attributes('src')).toBe(assignmentMedia.url);
+        expect(img.attributes('srcset')).toBe(assignmentMedia.srcset);
+        expect(img.attributes('style')).toContain('15% 25%');
+        card.unmount();
+      }
+    });
+
+    it('shows profile media without a cached profile URL and keeps its focal point', () => {
+      const card = mountCard(makeContact({ profile_photo_media: { ...profileMedia, focal_point: '20% 40%' } }), []);
+      expect(card.get('img').attributes('src')).toBe(profileMedia.url);
+      expect(card.get('img').attributes('style')).toContain('20% 40%');
+      card.unmount();
+    });
+
+    it('does not borrow the profile focal point for a legacy assignment photo', () => {
+      const card = mountCard(makeContact({ profile_photo_focal_point: '90% 90%', pivot: { additional_photo: '/legacy.jpg' } }), []);
+      expect(card.get('img').attributes('style')).toContain('50% 30%');
+      card.unmount();
+    });
+
+    it('shows an assignment photo instead of the profile photo, even before it has media', () => {
+      const contact = makeContact({
+        profile_photo_path: '/uploads/media/1/profile.webp',
+        profile_photo_media: profileMedia,
+        duties: [makeDuty({ pivot: { additional_photo: '/uploads/files/assignment.jpg', additional_photo_focal_point: '10% 20%' } })],
+      });
+      const img = mountCard(contact, []).get('img');
+
+      expect(img.attributes('src')).toBe('/uploads/files/assignment.jpg');
+      expect(img.attributes('srcset')).toBeUndefined();
+      expect(img.attributes('style')).toContain('object-position: 10% 20%');
+    });
+
+    it('uses the profile photo with its srcset when the assignment has none', () => {
+      const contact = makeContact({ profile_photo_path: '/uploads/media/1/profile.webp', profile_photo_media: profileMedia, duties: [makeDuty()] });
+      const img = mountCard(contact, []).get('img');
+
+      expect(img.attributes('src')).toBe(profileMedia.url);
+      expect(img.attributes('srcset')).toBe(profileMedia.srcset);
+    });
+  });
 });

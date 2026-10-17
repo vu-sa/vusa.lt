@@ -9,13 +9,13 @@ use App\Http\Requests\Files\ThumbnailFileRequest;
 use App\Http\Requests\StoreFilesRequest;
 use App\Models\File;
 use App\Services\FileStorageService;
+use App\Services\Media\ResizedImageCache;
 use App\Services\ModelAuthorizer as Authorizer;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Laravel\Facades\Image;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -73,7 +73,7 @@ class FileApiController extends ApiController
     }
 
     /** @var list<int> Prevents one cached derivative per user-supplied pixel width. */
-    private const array THUMBNAIL_WIDTHS = [160, 320, 640];
+    private const array THUMBNAIL_WIDTHS = [160, 320, 640, 1600];
 
     /** @var list<string> SVG cannot be rasterised; other formats use the original. */
     private const array THUMBNAILABLE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
@@ -116,21 +116,8 @@ class FileApiController extends ApiController
 
     private function respondWithThumbnail(string $path, int $width): BinaryFileResponse
     {
-        // A replaced original must invalidate its cached thumbnail.
-        $cacheKey = hash('xxh128', $path.'|'.Storage::lastModified($path).'|'.$width);
-        $cachePath = Storage::path('thumbnails/'.$cacheKey.'.webp');
-
-        if (! is_file($cachePath)) {
-            Storage::makeDirectory('thumbnails');
-
-            Image::decodePath(Storage::path($path))
-                ->scaleDown(width: $width)
-                ->encodeUsingFileExtension('webp', quality: 75)
-                ->save($cachePath);
-        }
-
         return response()
-            ->file($cachePath, ['Content-Type' => 'image/webp'])
+            ->file(app(ResizedImageCache::class)->path($path, $width, 75), ['Content-Type' => 'image/webp'])
             ->setMaxAge(31536000)
             ->setPrivate();
     }

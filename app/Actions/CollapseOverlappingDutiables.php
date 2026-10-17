@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -104,12 +105,36 @@ class CollapseOverlappingDutiables
                 : $survivor->end_date;
         }
 
-        foreach (['study_program_id', 'study_program_note', 'additional_email', 'additional_photo', 'additional_photo_focal_point', 'description'] as $field) {
+        foreach (['study_program_id', 'study_program_note', 'additional_email', 'description'] as $field) {
             if (blank($survivor->{$field}) && filled($loser->{$field})) {
                 $survivor->{$field} = $loser->{$field};
             }
         }
 
+        if (blank($survivor->additional_photo) && filled($loser->additional_photo)) {
+            $survivor->additional_photo = $loser->additional_photo;
+            $survivor->additional_photo_focal_point = $loser->additional_photo_focal_point;
+        }
+
         $survivor->save();
+        self::mergePhotoMedia($survivor, $loser);
+    }
+
+    private static function mergePhotoMedia(Dutiable $survivor, Dutiable $loser): void
+    {
+        // The loser is deleted next, and its media with it.
+        $loserPhoto = $loser->getFirstMedia('photo');
+
+        if ($loserPhoto !== null && $survivor->getFirstMedia('photo') === null) {
+            $loserPhoto->model()->associate($survivor);
+            $loserPhoto->save();
+            $loser->unsetRelation('media');
+            $survivor->unsetRelation('media');
+        }
+
+        if ($survivor->getFirstMedia('photo') !== null) {
+            $survivor->refreshImageCache('photo');
+            DB::afterCommit(fn () => $survivor->fresh()?->afterImageMediaChanged('photo'));
+        }
     }
 }

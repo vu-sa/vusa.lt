@@ -85,6 +85,7 @@ final class LinkListResolver implements ResolvesContentPart
                         'news' => $resolvedNews->permalink,
                     ], $resolvedNews->lang),
                     'imageUrl' => $resolvedNews->getImageUrl(),
+                    'image_media' => $resolvedNews->imageData('image'),
                     'publishedAt' => optional($resolvedNews->publish_time)->toIso8601String(),
                 ];
             }

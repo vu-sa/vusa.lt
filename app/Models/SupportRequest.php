@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Contracts\Commentable;
+use App\Contracts\ImageMediaOwner;
 use App\Enums\SupportRequestStatus;
 use App\Enums\SupportRequestVisibility;
 use App\Models\Traits\HasComments;
+use App\Models\Traits\HasImageMedia;
 use App\Models\Traits\LogsModelActivity;
 use Database\Factories\SupportRequestFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -21,8 +23,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection as SupportCollection;
 use Laravel\Scout\Searchable;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
@@ -89,10 +89,10 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
     'locale',
     'resolved_at',
 ])]
-class SupportRequest extends Model implements Commentable, HasMedia
+class SupportRequest extends Model implements Commentable, ImageMediaOwner
 {
     /** @use HasFactory<SupportRequestFactory> */
-    use HasComments, HasFactory, HasUlids, InteractsWithMedia, LogsModelActivity, Searchable, SoftDeletes;
+    use HasComments, HasFactory, HasImageMedia, HasUlids, LogsModelActivity, Searchable, SoftDeletes;
 
     #[\Override]
     protected $attributes = [
@@ -187,22 +187,7 @@ class SupportRequest extends Model implements Commentable, HasMedia
 
     public function registerMediaCollections(): void
     {
-        $this->addMediaCollection('evidence')
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp'])
-            ->useDisk('spatieMediaLibrary');
-    }
-
-    public function registerMediaConversions(?Media $media = null): void
-    {
-        $this->addMediaConversion('thumb')
-            ->nonQueued()
-            ->width(400)
-            ->height(300);
-
-        $this->addMediaConversion('preview')
-            ->nonQueued()
-            ->width(1200)
-            ->height(900);
+        $this->registerImageCollection('evidence', single: false);
     }
 
     public function isResolved(): bool

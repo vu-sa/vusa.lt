@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\LocaleEnum;
 use App\Enums\PageLayoutEnum;
+use App\Http\Requests\Concerns\HasImageValidation;
 use App\Http\Requests\Concerns\ValidatesContentParts;
 use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\Page;
@@ -15,6 +16,7 @@ use Illuminate\Validation\Rules\Enum;
 
 class StorePageRequest extends FormRequest
 {
+    use HasImageValidation;
     use ValidatesContentParts;
     use ValidatesTenantScope;
 
@@ -38,12 +40,12 @@ class StorePageRequest extends FormRequest
     {
         return [
             ...$this->contentPartRules(),
+            ...$this->imageMediaRules('featured_image_media', new Page, 'featured_image'),
             'content_version' => ['nullable', 'string', 'size:64'],
             'pairing_confirmation' => ['nullable', 'string', 'size:64'],
             'content.parts.*.key' => ['nullable', 'string', 'max:100'],
             'highlights' => ['nullable', 'array', 'max:3'],
             'highlights.*' => ['nullable', 'string', 'max:500'],
-            'featured_image' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:500'],
             'title' => 'required|string|max:200',
             'lang' => ['required', new Enum(LocaleEnum::class)],

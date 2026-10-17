@@ -1077,15 +1077,15 @@ describe('Files Controller - Image Upload Path Hardening', function (): void {
         ])->assertStatus(403);
     });
 
-    test('a user without file permissions can upload a contact photo', function (): void {
+    test('a user without file permissions cannot upload to the shared contacts folder', function (): void {
         $image = UploadedFile::fake()->image('photo.jpg', 10, 10);
 
-        $response = asUser($this->regularUser)->postJson(route('files.uploadImage'), [
+        asUser($this->regularUser)->postJson(route('files.uploadImage'), [
             'file' => $image,
             'path' => 'contacts',
-        ])->assertOk();
+        ])->assertForbidden();
 
-        Storage::assertExists('public/contacts/'.$response->json('name'));
+        expect(Storage::allFiles('public/contacts'))->toBeEmpty();
     });
 });
 

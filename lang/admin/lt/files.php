@@ -190,4 +190,5 @@ return [
         'success' => 'Paveikslėlis optimizuotas',
         'error' => 'Nepavyko optimizuoti paveikslėlio',
     ],
+    'pending_upload_limit' => 'Per pastarąją valandą įkėlei per daug nuotraukų. Palauk ir bandyk dar kartą.',
 ];

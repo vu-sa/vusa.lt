@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetUserAccessSummary;
+use App\Actions\Media\SyncImageMedia;
 use App\Enums\NotificationType;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Concerns\ApiResponses;
@@ -16,6 +17,7 @@ use App\Notifications\TestPushNotification;
 use App\Services\NotificationRouter;
 use App\Services\Notifications\NotificationAudience;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
@@ -32,7 +34,7 @@ class ProfileController extends AdminController
         $user->load('roles:id,name', 'current_duties:id,name,institution_id')->makeVisible(['name_was_changed', 'show_pronouns']);
 
         return $this->inertiaResponse('Admin/ShowProfile', [
-            'user' => $user->append('has_password')->toFullArray(),
+            'user' => [...$user->append('has_password')->toFullArray(), 'profile_photo_media' => $user->imageData('profile_photo')],
         ]);
     }
 
@@ -89,7 +91,8 @@ class ProfileController extends AdminController
             unset($validated['name']);
         }
 
-        $user->update($validated);
+        $user->update(Arr::except($validated, ['profile_photo_media']));
+        app(SyncImageMedia::class)->fromValidated($user, 'profile_photo', $validated, 'profile_photo_media', $user);
 
         return $this->redirectBackWithSuccess(__('messages.dashboard.settings_saved'));
     }

@@ -163,15 +163,14 @@
             {{ $t('Matoma vusa.lt') }} · {{ $t('Rodoma vietoj nario profilio nuotraukos.') }}
           </p>
           <ImageUpload
-            v-model:url="form.additional_photo"
-            mode="immediate"
-            folder="contacts"
+            v-model:image="form.photo_media"
+            mode="media"
             cropper
+            focal-point
             preview-aspect="4/3"
-            :existing-url="dutiable?.additional_photo ?? undefined"
           />
-          <p v-if="form.errors.additional_photo" class="text-xs text-destructive">
-            {{ form.errors.additional_photo }}
+          <p v-if="form.errors['photo_media.id']" class="text-xs text-destructive">
+            {{ form.errors['photo_media.id'] }}
           </p>
         </div>
 
@@ -378,6 +377,7 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
 import { ImageUpload } from '@/Components/ui/upload';
+import { imageFromCachedUrl } from '@/Types/media';
 import { Label } from '@/Components/ui/label';
 import { NativeSelect, type NativeSelectOption } from '@/Components/ui/native-select';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
@@ -525,7 +525,7 @@ const initialValues = () => ({
   end_date: props.dutiable?.end_date ? String(props.dutiable.end_date).slice(0, 10) : null as string | null,
   study_program_id: (props.dutiable?.study_program_id ?? null) as string | null,
   additional_email: props.dutiable?.additional_email ?? '',
-  additional_photo: (props.dutiable?.additional_photo ?? null) as string | null,
+  photo_media: imageFromCachedUrl(props.dutiable?.additional_photo, props.dutiable?.additional_photo_focal_point ?? null),
   study_program_note: asNote(props.dutiable?.study_program_note),
   description: asDescription(props.dutiable?.description),
   use_original_duty_name: Boolean(props.dutiable?.use_original_duty_name),
@@ -543,7 +543,7 @@ const descriptionLocale = ref<(typeof LOCALES)[number]>('lt');
 
 const hasExtras = () => hasDescription.value
   || form.additional_email.trim() !== ''
-  || !!form.additional_photo
+  || !!form.photo_media
   || form.use_original_duty_name
   || !!form.study_program_id
   || hasText(form.study_program_note);

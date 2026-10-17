@@ -135,6 +135,8 @@
         >
           <img
             :src="heroImageUrl"
+            :srcset="heroSrcset"
+            sizes="(min-width: 1024px) 50vw, 100vw"
             :alt="eventTitle"
             class="size-full object-cover"
             :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
@@ -156,6 +158,8 @@
       <img
         v-if="heroImageUrl"
         :src="heroImageUrl"
+        :srcset="heroSrcset"
+        sizes="100vw"
         :alt="eventTitle"
         class="absolute inset-0 size-full object-cover"
         :style="{ objectPosition: event.main_image_focal_point ?? '50% 30%' }"
@@ -237,6 +241,7 @@ import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
 import { useEventStatus } from '@/Composables/useEventStatus';
 import { formatMonthAbbr, formatStaticTime } from '@/Utils/IntlTime';
 import { LocaleEnum } from '@/Types/enums';
+import type { ImageData } from '@/Types/media';
 
 interface Props {
   event: App.Entities.Calendar;
@@ -258,6 +263,7 @@ const { isLive, isPast, statusLabel } = useEventStatus(() => props.event, () => 
 type HeroVariant = 'card' | 'split' | 'minimal';
 
 const heroImageUrl = computed(() => props.event.main_image_url || null);
+const heroSrcset = computed(() => (props.event as { main_image_media?: ImageData | null }).main_image_media?.srcset ?? undefined);
 
 const variant = computed<HeroVariant>(() => {
   const style = props.event.hero_style;

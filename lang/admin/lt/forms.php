@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'image_upload' => [
+        'uploading' => 'Įkeliama…',
+        'optimizing' => 'Optimizuojama…',
+        'failed' => 'Nuotraukos įkelti nepavyko. Bandyk dar kartą.',
+        'retry' => 'Bandyk dar kartą',
+    ],
     'required_note' => 'Žvaigždute (*) pažymėti laukai yra privalomi; kitus gali praleisti.',
     'fields' => [
         'name_and_surname' => 'Vardas ir pavardė',

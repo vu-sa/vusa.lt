@@ -13,8 +13,8 @@
          want the fallback so the grid stays visually uniform even if one item lacks a
          photo. -->
     <div v-if="coverImage || showCoverFallback" class="relative aspect-[16/9] overflow-hidden bg-secondary">
-      <img v-if="coverImage" :src="coverImage" :alt="coverAlt ?? title"
-        class="size-full object-cover transition-transform duration-400 group-hover:scale-103" loading="lazy">
+      <MediaImage v-if="coverImage || image" :image :sizes :src="coverImage" :alt="coverAlt ?? title"
+        class="size-full object-cover transition-transform duration-400 group-hover:scale-103" loading="lazy" />
       <div v-else class="flex size-full items-center justify-center bg-brand/10">
         <slot name="cover-fallback">
           <IFluentImage24Regular class="size-10 text-brand/50" />
@@ -42,11 +42,15 @@
 </template>
 
 <script setup lang="ts">
+import MediaImage from '@/Components/Brand/MediaImage.vue';
+import type { ImageData } from '@/Types/media';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import IFluentImage24Regular from '~icons/fluent/image24-regular';
 
 withDefaults(defineProps<{
   title: string;
+  image?: ImageData | null;
+  sizes?: string;
   coverImage?: string | null;
   coverAlt?: string;
   /** Small pill in the cover's top-right corner (e.g. an item count). */
@@ -63,5 +67,6 @@ withDefaults(defineProps<{
   showCoverFallback?: boolean;
 }>(), {
   showCoverFallback: true,
+  sizes: '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw',
 });
 </script>

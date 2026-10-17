@@ -83,12 +83,12 @@
 
         <!-- Embed side -->
         <div :class="['relative overflow-hidden border border-border bg-ink lg:h-full', textLeft ? 'order-last' : 'order-first lg:order-last']">
-          <img
+          <MediaImage
             v-if="content.panelImage"
             :src="content.panelImage"
+            sizes="(min-width: 1024px) 50vw, 100vw"
             alt=""
-            class="absolute inset-0 h-full w-full object-cover opacity-25 grayscale"
-          >
+            class="absolute inset-0 h-full w-full object-cover opacity-25 grayscale" />
           <div v-if="content.panelImage" class="absolute inset-0 bg-gradient-to-br from-ink/85 to-ink" />
 
           <div class="relative flex h-full flex-col justify-center gap-6 p-7 sm:p-9">
@@ -135,6 +135,7 @@
 </template>
 
 <script setup lang="ts">
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 /**
  * `spotify-embed`'s `promo` variant (v0: `podcast-section.tsx`). Unlike the original mockup's
  * fake play button + static waveform, the right-hand panel embeds the real Spotify/Mixcloud

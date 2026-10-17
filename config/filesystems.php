@@ -56,10 +56,28 @@ return [
             'visibility' => 'public',
         ],
 
-        'spatieMediaLibrary' => [
+        // Staging's public/uploads links to production's storage. Reading production media through
+        // it lets restored rows resolve on disk; read-only makes writing there impossible.
+        'spatieMediaLibrary' => env('APP_ENV') === 'staging'
+            ? [
+                'driver' => 'local',
+                'root' => public_path('uploads/media'),
+                'url' => env('APP_URL').'/uploads/media',
+                'visibility' => 'public',
+                'read-only' => true,
+            ]
+            : [
+                'driver' => 'local',
+                'root' => storage_path('app/public/media'),
+                'url' => env('APP_URL').'/uploads/media',
+                'visibility' => 'public',
+            ],
+
+        // Staging's own media, wiped by staging:refresh-database.
+        'stagingMedia' => [
             'driver' => 'local',
-            'root' => storage_path('app/public/media'),
-            'url' => env('APP_URL').'/uploads/media',
+            'root' => public_path('staging-media'),
+            'url' => env('APP_URL').'/staging-media',
             'visibility' => 'public',
         ],
 

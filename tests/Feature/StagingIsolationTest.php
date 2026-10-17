@@ -54,6 +54,8 @@ beforeEach(function (): void {
         'webpush.vapid.public_key',
         'webpush.vapid.private_key',
         'services.umami.website_id',
+        'media-library.disk_name',
+        'filesystems.disks.spatieMediaLibrary.read-only',
     ];
 
     $this->stagingIsolationConfig = collect($keys)
@@ -95,6 +97,8 @@ function configureSafeStagingIsolation(): void
         'webpush.vapid.public_key' => null,
         'webpush.vapid.private_key' => null,
         'services.umami.website_id' => null,
+        'media-library.disk_name' => 'stagingMedia',
+        'filesystems.disks.spatieMediaLibrary.read-only' => true,
     ]);
 }
 
@@ -123,6 +127,20 @@ test('the staging isolation command reports every unsafe boundary', function ():
         ->expectsOutputToContain('SCOUT_PREFIX must be staging_')
         ->expectsOutputToContain('staging mailer must be log')
         ->expectsOutputToContain('UMAMI_WEBSITE_ID must be empty')
+        ->assertExitCode(1);
+});
+
+test('the staging isolation command refuses media written to the shared production disk', function (): void {
+    configureSafeStagingIsolation();
+
+    config([
+        'media-library.disk_name' => 'spatieMediaLibrary',
+        'filesystems.disks.spatieMediaLibrary.read-only' => false,
+    ]);
+
+    $this->artisan('staging:verify-isolation')
+        ->expectsOutputToContain('must be written to the stagingMedia disk')
+        ->expectsOutputToContain('production media disk must be read-only')
         ->assertExitCode(1);
 });
 
@@ -352,4 +370,14 @@ test('Media Library preserves shared files when staging deletes local media reco
     app(StagingAwareFileRemover::class)->removeFile('media/shared.jpg', 'public');
 
     Storage::disk('public')->assertExists('media/shared.jpg');
+});
+
+test('staging may delete files from its own media disk', function (): void {
+    Storage::fake('stagingMedia');
+    Storage::disk('stagingMedia')->put('1/own.webp', 'own');
+    configureSafeStagingIsolation();
+
+    app(StagingAwareFileRemover::class)->removeFile('1/own.webp', 'stagingMedia');
+
+    Storage::disk('stagingMedia')->assertMissing('1/own.webp');
 });

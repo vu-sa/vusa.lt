@@ -41,7 +41,7 @@
               link.featured && 'ring-2 ring-brand/60',
             ]"
             @click="handleCloseMenu">
-            <img
+            <MediaImage
               :class="[
                 'absolute left-0 top-0 size-full object-cover contrast-110 transition-transform duration-400',
                 'group-hover:scale-103',
@@ -49,7 +49,7 @@
                 resolveImageBlur(link),
               ]"
               :style="{ objectPosition: link.image_focal ?? '50% 50%' }"
-              :src="link.image" alt="">
+              :src="link.image" sizes="(min-width: 1280px) 640px, 50vw" alt="" />
             <div class="absolute left-0 top-0 size-full transition-opacity duration-300 group-hover:opacity-90" :class="resolveImageGradient(link)" />
             <div :class="['relative z-10 mt-auto', isCompactCard(links) ? 'p-4' : 'p-6']">
               <p v-if="link.eyebrow" class="mb-1 text-[0.6875rem] font-bold uppercase tracking-[0.2em] text-brand-fill">
@@ -90,10 +90,11 @@
             ]"
             @click="handleCloseMenu">
             <div class="flex w-full items-center justify-between gap-2">
-              <img
+              <MediaImage
                 v-if="link.image && link.image_render === 'thumbnail'"
                 class="mr-3 size-10 shrink-0 object-cover"
-                :style="{ objectPosition: link.image_focal ?? '50% 50%' }" :src="link.image" alt="">
+                sizes="40px"
+                :style="{ objectPosition: link.image_focal ?? '50% 50%' }" :src="link.image" alt="" />
               <div class="h-fit">
                 <div class="inline-flex items-center gap-1.5" :class="textClasses(link)">
                   <Icon v-if="link.icon && !(link.image && link.image_render === 'thumbnail')" :icon="`fluent:${link.icon}`" :class="['shrink-0', link.type === 'category-link' ? 'size-3.5' : 'mr-0.5 size-5 text-brand']" />
@@ -127,6 +128,7 @@
 </template>
 
 <script setup lang="ts">
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { computed, markRaw } from 'vue';
 import { Icon } from '@iconify/vue';
 

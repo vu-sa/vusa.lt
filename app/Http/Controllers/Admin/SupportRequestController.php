@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Media\AddImageMedia;
 use App\Enums\SupportRequestStatus;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\AssignSupportRequestRequest;
@@ -81,8 +82,8 @@ class SupportRequestController extends AdminController
             'mime_type' => $m->mime_type,
             'size' => $m->size,
             'original_url' => $m->getUrl(),
-            'thumb_url' => $m->getUrl('thumb'),
-            'preview_url' => $m->getUrl('preview'),
+            'thumb_url' => $m->hasGeneratedConversion('thumb') ? $m->getUrl('thumb') : $m->getUrl(),
+            'preview_url' => $m->hasGeneratedConversion('large') ? $m->getUrl('large') : $m->getUrl(),
         ]);
 
         $assignees = User::query()
@@ -128,15 +129,14 @@ class SupportRequestController extends AdminController
         }
 
         if ($request->filled('deleted_media_ids')) {
-            Media::query()
-                ->whereIn('id', $request->input('deleted_media_ids'))
-                ->where('model_type', $supportRequest->getMorphClass())
-                ->where('model_id', $supportRequest->id)
-                ->delete();
+            // Through the model, so the files go too; a query delete left them on disk.
+            $supportRequest->getMedia('evidence')
+                ->whereIn('id', $request->validated('deleted_media_ids'))
+                ->each(fn (Media $media) => $media->delete());
         }
 
         foreach ($request->file('images', []) as $image) {
-            $supportRequest->addMedia($image)->toMediaCollection('evidence');
+            app(AddImageMedia::class)->execute($supportRequest, $image, 'evidence');
         }
 
         return redirect()->route('supportRequests.show', $supportRequest)->with('success', $this->entityMessage('updated', 'supportRequest'));

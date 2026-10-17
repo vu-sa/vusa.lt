@@ -27,6 +27,7 @@ use Intervention\Image\Laravel\Facades\Image;
 
 class FilesController extends AdminController
 {
+    // Transitional(legacy-images): remove with ImageUpload's immediate mode; forms upload to media now.
     /** @var list<string> Shared form-image folders use the class-level create ability. */
     private const array SHARED_IMAGE_FOLDERS = [
         'banners',
@@ -221,7 +222,7 @@ class FilesController extends AdminController
      */
     protected function mayUploadToSharedFolder(User $user, string $path): bool
     {
-        return $path === 'contacts' || $user->can('create', File::class);
+        return $user->can('create', File::class);
     }
 
     public function compressImage(FilePathRequest $request): RedirectResponse

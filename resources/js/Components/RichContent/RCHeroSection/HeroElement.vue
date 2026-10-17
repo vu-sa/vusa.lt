@@ -96,14 +96,14 @@
     <div class="relative border border-border bg-secondary/40 p-5 sm:p-6">
       <div class="relative flex flex-col gap-5 sm:flex-row sm:items-center">
         <slot name="image">
-          <img
+          <MediaImage
             v-if="element.json_content.imageSrc"
             :src="element.json_content.imageSrc"
             :alt="element.json_content.imageAlt"
             :style="element.json_content.objectPosition ? { objectPosition: element.json_content.objectPosition } : undefined"
+            sizes="160px"
             class="hidden aspect-square w-32 shrink-0 border border-border object-cover sm:block lg:w-40"
-            loading="lazy"
-          >
+            loading="lazy" />
         </slot>
 
         <div class="min-w-0">
@@ -133,6 +133,7 @@
 </template>
 
 <script setup lang="ts">
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 /**
  * Pure public display for the `hero` block — owns structure, classes, variants and
  * presentation calculations only. Every author-editable spot (eyebrow/title/description/

@@ -37,7 +37,7 @@
  * and grouping parts around `section` markers (`groupedContent`) — both need the
  * *whole* parts array/resolved map, not just one element.
  */
-import { computed } from 'vue';
+import { computed, provide } from 'vue';
 
 import { groupContent } from './groupContent';
 import { getDisplayType } from './Types/display';
@@ -46,6 +46,7 @@ import { endsSectionWrapping, resolveBandRole, resolveBands, type BandResolution
 import RichContentBlock from './RichContentBlock.vue';
 import SectionDisplay from './RCSection/SectionDisplay.vue';
 
+import { cmsImageSrcsetsKey } from '@/Types/media';
 import type { Section } from '@/Types/contentParts';
 
 const props = defineProps<{
@@ -55,6 +56,8 @@ const props = defineProps<{
   /** Server-resolved payloads keyed by content-part id (PublicController::resolveContentParts). */
   resolved?: Record<number, unknown>;
 }>();
+
+provide(cmsImageSrcsetsKey, computed(() => Object.assign({}, ...props.content.map(part => part.image_srcsets ?? {}))));
 
 /**
  * Only types the registry declares `serverResolved` receive the `resolved` payload —
