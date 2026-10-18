@@ -70,19 +70,23 @@ describe('DuplicateDutyWarning.vue', () => {
     expect(manageable.find('a').exists()).toBe(true);
   });
 
-  it('offers a merge shortcut only when editing an existing duty against a manageable variant', () => {
-    const variant = makeMatch({ reason: 'same_institution_variant', can_manage: true });
+  it('offers a merge shortcut only when editing an existing duty against a variant the actor may merge', () => {
+    const variant = makeMatch({ reason: 'same_institution_variant', can_manage: true, can_merge: true });
 
     // Creating (no currentDutyId yet) — nothing to merge.
     const onCreate = mountWarning({ ...EMPTY, same_institution: [variant] }, null);
     expect(onCreate.text()).not.toContain('forms.duty_duplicate.merge_instead');
 
-    // Editing an existing duty against a manageable variant — offer the shortcut.
+    // Editing an existing duty against a mergeable variant — offer the shortcut.
     const onEdit = mountWarning({ ...EMPTY, same_institution: [variant] }, 'duty-self');
     expect(onEdit.text()).toContain('forms.duty_duplicate.merge_instead');
 
+    // Managing the duty is not enough; only super admins merge duties.
+    const managerOnly = mountWarning({ ...EMPTY, same_institution: [{ ...variant, can_merge: false }] }, 'duty-self');
+    expect(managerOnly.text()).not.toContain('forms.duty_duplicate.merge_instead');
+
     // An exact match isn't a "variant to merge", it's just a duplicate to go look at.
-    const exactMatch = makeMatch({ reason: 'same_institution_exact', can_manage: true });
+    const exactMatch = makeMatch({ reason: 'same_institution_exact', can_manage: true, can_merge: true });
     const exactOnEdit = mountWarning({ ...EMPTY, same_institution: [exactMatch] }, 'duty-self');
     expect(exactOnEdit.text()).not.toContain('forms.duty_duplicate.merge_instead');
   });

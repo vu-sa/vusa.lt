@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Http\Requests\IndexDutyRequest;
 use App\Models\Duty;
 use App\Models\User;
+use App\Services\DutyDuplicateFinder;
 use App\Services\ModelAuthorizer;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Builder;
@@ -48,6 +49,7 @@ final class BuildDutyIndexQuery
             // An inactive duty is expected to be empty, so it is never reported as vacant.
             'vacant' => $query->where('is_active', true)->whereDoesntHave('current_users'),
             'inactive' => $query->where('is_active', false),
+            'possible_duplicates' => $query->whereIn('duties.id', app(DutyDuplicateFinder::class)->ids()),
             'missing_en_name' => $query->whereRaw(self::localeMissingClause('en')),
             'missing_lt_name' => $query->whereRaw(self::localeMissingClause('lt')),
             'duplicate_holders' => $query->whereExists(function ($query): void {

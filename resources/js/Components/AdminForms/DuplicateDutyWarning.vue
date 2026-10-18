@@ -28,7 +28,7 @@
 
             <span class="ml-auto flex flex-wrap items-center gap-1">
               <Button
-                v-if="match.can_manage && match.reason === 'same_institution_variant' && currentDutyId"
+                v-if="match.can_merge && match.reason === 'same_institution_variant' && currentDutyId"
                 size="sm" voice="sentence" variant="secondary" as="a"
                 :href="route('duties.index', { merge: 1, source: currentDutyId, target: match.id })"
                 target="_blank" rel="noopener noreferrer"
@@ -108,6 +108,8 @@ export interface DutyMatch {
   is_active?: boolean;
   can_view?: boolean;
   can_manage: boolean;
+  /** Absent from responses cached before duty merging became super-admin only. */
+  can_merge?: boolean;
 }
 
 export interface DutySimilarityMatches {

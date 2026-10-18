@@ -82,6 +82,7 @@ class DutyController extends AdminController
             'sorting' => $request->getSorting(),
             'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
+            'mergePreset' => $request->mergePreset(),
         ]);
     }
 
@@ -448,7 +449,7 @@ class DutyController extends AdminController
         $kept = Duty::findOrFail($request->validated('target_duty_id'));
         $sources = Duty::query()->whereIn('id', $request->validated('source_duty_ids'))->get();
 
-        $summary = MergeDuties::execute($kept, $sources);
+        $summary = MergeDuties::execute($kept, $sources, $request->user());
 
         return redirect()->route('duties.edit', $kept)->with('success', trans('forms.merge_duty_summary', [
             'assignments' => $summary['moved_assignments'],

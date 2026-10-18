@@ -52,7 +52,19 @@ describe('MergeRecordsDialog.vue', () => {
     );
   });
 
-  it('prevents submitting while merge details are loading', async () => {
+  it('preselects the kept record passed in, so a "merge into this one" link opens ready to confirm', async () => {
+    const wrapper = mountDialog({ initialTargetId: 'other' });
+    await flushPromises();
+    await recordButton(wrapper, 'Sujungti').trigger('click');
+
+    expect(router.post).toHaveBeenCalledWith(
+      '/merge',
+      expect.objectContaining({ kept_user_id: 'other', source_user_ids: ['kept'] }),
+      expect.anything(),
+    );
+  });
+
+    it('prevents submitting while merge details are loading', async () => {
     const wrapper = mountDialog({ submitDisabled: true });
     await recordButton(wrapper, 'jonas@gmail.com').trigger('click');
 

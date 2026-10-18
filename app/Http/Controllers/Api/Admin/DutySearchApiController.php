@@ -35,6 +35,8 @@ class DutySearchApiController extends ApiController
             $request->string('exclude_id')->toString() ?: null,
         );
 
+        $canMerge = $actor->can('merge', Duty::class);
+
         $mapMatch = fn (array $match) => [
             'id' => $match['duty']->id,
             'name' => $match['duty']->name,
@@ -48,6 +50,7 @@ class DutySearchApiController extends ApiController
             'is_active' => (bool) $match['duty']->is_active,
             'can_view' => $actor->can('view', $match['duty']),
             'can_manage' => $actor->can('update', $match['duty']),
+            'can_merge' => $canMerge,
         ];
 
         return $this->jsonSuccess([

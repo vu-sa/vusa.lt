@@ -9,24 +9,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Folds overlapping dutiable rows for a single duty into one row per holder.
- *
- * A "holder" is a (dutiable_type, dutiable_id) pair — the same person can carry
- * several rows on one duty after a merge (duties or users) leaves two stints
- * side by side. For each holder, walk its start_date-sorted rows and fold every
- * row that overlaps the running interval into it — keeping the earliest start,
- * the latest (or open-ended) end, and backfilling any nullable field the
- * survivor is missing from the row being dropped.
- *
- * Genuinely separate (non-overlapping) stints are left untouched: a person who
- * held a duty in 2020 and again in 2023 keeps two rows. Rows under different
- * tenant scopes (owning-tenant vs. a cross-tenant rep assignment) are treated
- * as distinct holders — the same person can legitimately carry both, so they
- * are never folded into one another.
- *
- * Extracted from {@see MergeDuties} so both duty- and user-merges collapse
- * consistently, and so the same logic can clean up duplicate active rows
- * created by other paths.
+ * Folds one holder's overlapping rows on a duty into one, keeping the widest dates and backfilling
+ * blank fields. Separate stints and different tenant scopes stay apart. Used by duty and user merges.
  */
 class CollapseOverlappingDutiables
 {
@@ -61,16 +45,20 @@ class CollapseOverlappingDutiables
         return $collapsed;
     }
 
-    /** @param Collection<int, Dutiable> $rows
+    /**
+     * Ex-officio rows stay alone: they mirror their source row, which the collapse folds instead.
+     *
+     * @param  Collection<int, Dutiable>  $rows
      * @return Collection<int, Collection<int, Dutiable>>
      */
     public static function overlappingGroups(Collection $rows): Collection
     {
-        $groups = collect();
+        [$derived, $manual] = $rows->partition(fn (Dutiable $row) => $row->via_dutiable_id !== null);
+        $groups = $derived->map(fn (Dutiable $row) => collect([$row]))->values();
         $running = null;
         $group = collect();
 
-        foreach ($rows->sortBy('start_date') as $row) {
+        foreach ($manual->sortBy('start_date') as $row) {
             if ($running === null || ! self::overlapsRunningInterval($running, $row)) {
                 $group = collect();
                 $groups->push($group);

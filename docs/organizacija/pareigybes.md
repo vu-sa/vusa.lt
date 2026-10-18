@@ -3,8 +3,10 @@ doc_status: reviewed
 title: Pareigybės
 area: duties
 models: [Duty, Role, Tenant, Type, Institution, DutyResponsibility]
-last_reviewed: 2026-10-16
+last_reviewed: 2026-10-18
 tests:
+  - tests/Feature/Admin/DutyMergeTest.php
+  - tests/Feature/Api/Admin/DutyApiControllerTest.php
   - tests/Browser/PostCreateNavigationTest.php
   - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
   - resources/js/Utils/__tests__/String.test.ts
@@ -211,6 +213,11 @@ Pareigybių sąraše (`/mano/duties`) pateikiamos visos pasiekiamos pareigybės:
 - **Paieška**: galima ieškoti pagal pareigybės pavadinimą, el. paštą arba instituciją.
 - **Greitasis filtras „Neužimtos“**: vienu paspaudimu atrenka pareigybes, kurios šiuo metu neturi
   narių.
+- **Greitasis filtras „Galimi dublikatai“**: atrenka pareigybes, kurių pavadinimas toje pačioje
+  institucijoje sutampa su kita pareigybe – tiksliai, kita gimine („Koordinatorius“ ir „Koordinatorė“)
+  arba su kitos pareigybės ankstesniu pavadinimu. Tai tos pačios taisyklės, pagal kurias perspėjama
+  [kuriant ar redaguojant pareigybę](#lytis-ir-dublikatai). Rastus dublikatus gali
+  [sujungti](#sujungimas) Superadministratorius; šiukšliadėžėje šis filtras nerodomas.
 - **Duomenų kokybės filtrai** šoninėje juostoje:
   - *Neužimtos* – pareigybės be aktyvių narių.
   - *Trūksta EN pavadinimo* – pareigybės, neturinčios angliško vertimo.
@@ -218,6 +225,7 @@ Pareigybių sąraše (`/mano/duties`) pateikiamos visos pasiekiamos pareigybės:
   - *Pasikartojantys nariai* – pareigybės, kuriose tas pats žmogus turi kelis persidengiančius
     laikotarpius.
   - *Neaktyvios* – pareigybės, kurių nebeinama, bet istorija išlaikoma.
+  - *Galimi dublikatai* – tas pats kaip greitasis filtras.
 - **Šiukšliadėžė** viršuje leidžia peržiūrėti ištrintas pareigybes ir jas atkurti.
 
 ### Pareigybės puslapis {#puslapis}
@@ -316,20 +324,29 @@ Redaguojant papildomai rodoma:
 
 ### Pareigybių sujungimas {#sujungimas}
 
+<ChangelogNote version="v3.4" date="2026-10-18" title="Sujungia tik Superadministratorius, dublikatai ištrinami visam laikui">
+
+Į paliekamą pareigybę nuo šiol perkeliamos ir atsakomybės, tikslai, komentarai, failai, užduotys
+bei tiesiogiai suteiktos teisės.
+
+</ChangelogNote>
+
 Jei istorijoje buvo sukurtos kelios tos pačios pareigybės versijos (pavyzdžiui, „Atstovas taryboje“
-ir „Atstovė taryboje“, arba dublikatas dėl rašybos klaidos), jas galima **sujungti į vieną**:
+ir „Atstovė taryboje“, arba dublikatas dėl rašybos klaidos), Superadministratorius gali jas **sujungti į vieną**:
 
 1. Pareigybių sąraše viršuje spausk **Sujungti pareigybes** (įsijungia pasirinkimo režimas).
 2. Pažymėk bent dvi pareigybes, kurias norite sujungti.
 3. Apačioje paspausk mygtuką **Sujungti** – atsidarys sujungimo langas.
 4. Pasirink, kurią pareigybę **pasilikti kaip pagrindinę**.
 5. Patvirtink sujungimą:
-   - Visi narių laikotarpiai iš naikinamų pareigybių perkeliami į pagrindinę.
+   - Visi narių laikotarpiai iš sujungiamų pareigybių perkeliami į pagrindinę.
    - Jei tas pats žmogus abiejose pareigybėse turėjo persidengiančius laikotarpius, jie sujungiami
-     į vieną ištisinį laikotarpį.
-   - Visi tipai, rolės, padalinių kvotos, ankstesni pavadinimai ir pirmtakių ryšiai perkeliami į
-     pagrindinę pareigybę (be dubliavimo).
-   - Panaikintos pareigybės pervedamos į šiukšliadėžę (minkštasis trynimas).
+     į vieną ištisinį laikotarpį. Ex officio laikotarpiai lieka atskiri – jie seka pareigybę, iš kurios kyla.
+   - Tipai, rolės, tiesiogiai suteiktos teisės, atsakomybės, padalinių kvotos, ankstesni pavadinimai,
+     pirmtakių ryšiai, tikslai, komentarai, failai ir užduotys perkeliami į pagrindinę pareigybę (be dubliavimo).
+   - Pagrindinės pareigybės nariai iškart gauna perkeltų rolių prieigą.
+   - Sujungtos pareigybės **ištrinamos visam laikui** – į šiukšlinę jos nepatenka, o sujungimas
+     įrašomas pagrindinės pareigybės pakeitimų istorijoje.
 
 ### Šiukšlinė {#trynimas}
 
@@ -350,14 +367,13 @@ ir „Atstovė taryboje“, arba dublikatas dėl rašybos klaidos), jas galima *
 | Priskirti narius pagal savo padalinio kvotą bendrose pareigybėse | – | ✓ | ✓ | ✓ | ✓ |
 | Priskiriant sukurti naują narį | – | ✓ | ✓ | ✓ | ✓ |
 | Pažymėti pareigybę neaktyvia, tvarkyti ankstesnius pavadinimus ir pirmtakes | – | ✓ | ✓ | ✓, visų padalinių | ✓ |
-| Sujungti pareigybes | – | ✓ | ✓ | ✓ | ✓ |
+| Sujungti pareigybes | – | – | – | – | ✓ |
 | Pridėti pareigybės atsakomybes | – | ✓ | ✓ | ✓ | ✓ |
 | Ištrinti pareigybę į šiukšlinę | – | ✓ | ✓ | ✓ | ✓ |
 | Ištrinti pareigybę visam laikui (tik be istorijos) | – | – | – | – | ✓ |
 
 „Centrinio biuro koordinatoriai“ lentelėje – **Centrinio biuro komunikacijos koordinatorius**
-ir **Centrinio biuro studentų atstovų koordinatorius**. Apimtis ribojama administruojamais padaliniais;
-sujungimui reikia galėti redaguoti paliekamą ir ištrinti sujungiamas pareigybes.
+ir **Centrinio biuro studentų atstovų koordinatorius**. Apimtis ribojama administruojamais padaliniais.
 
 ::: warning Savęs užsirakinimo apsauga
 Jei administratorius bando iš savo paties pareigybės pašalinti administracines teises suteikiančią

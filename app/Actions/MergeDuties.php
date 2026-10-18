@@ -2,60 +2,118 @@
 
 namespace App\Actions;
 
+use App\Listeners\HandleDutiableChange;
 use App\Models\Duty;
-use App\Models\DutyName;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
+use App\Models\User;
+use App\Support\MergeRepointer;
 use App\Support\MorphMap;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Merges one or more duplicate duties into a single kept duty.
- *
- * Sibling to MergeUsers and StudyProgramController::mergeStudyPrograms(), but a
- * duty carries far more than either: assignments (dutiables), cross-tenant
- * quotas (duty_tenant), ex-officio links (ex_officio_duties), content types and
- * and admin roles (duty_duty_type / model_has_roles). Every one of them is repointed
- * here, in a single transaction.
- * Sources are soft-deleted, not force-deleted — recoverable, like the other
- * merge actions in this app.
- */
+/** Moves everything a duplicate duty carries onto the kept one, then deletes the duplicate permanently; DutyMergeCoverageTest keeps the maps complete. */
 class MergeDuties
 {
+    /** Columns repointed as they are. */
+    public const array REPOINT = [
+        ['duty_names', 'duty_id'],
+        ['goals', 'responsible_duty_id'],
+    ];
+
+    /** duty_id columns repointed only where the kept duty has no row sharing these columns. */
+    public const array REPOINT_DEDUPED = [
+        'duty_duty_type' => ['duty_type_id'],
+        'duty_responsibilities' => ['responsibility', 'scope_type', 'scope_id'],
+    ];
+
+    /** Polymorphic owners: table => [morph name, columns shared with an existing kept row]. */
+    public const array REPOINT_MORPH = [
+        'comments' => ['commentable', null],
+        'fileable_files' => ['fileable', null],
+        'model_has_permissions' => ['model', ['permission_id']],
+        'model_has_roles' => ['model', ['role_id']],
+        'notifications' => ['notifiable', null],
+        'tasks' => ['taskable', null],
+    ];
+
+    /** Moved by their own rules below: assignments collapse, quotas keep the looser limit, self-links drop. */
+    public const array CUSTOM = ['dutiables', 'duty_successions', 'duty_tenant', 'ex_officio_duties'];
+
     /**
      * @param  Collection<int, Duty>  $sources
      * @return array{moved_assignments: int, collapsed_assignments: int, moved_types: int, moved_roles: int, moved_ex_officio: int, moved_tenant_quotas: int, moved_former_names: int, moved_successions: int}
      */
-    public static function execute(Duty $kept, Collection $sources): array
+    public static function execute(Duty $kept, Collection $sources, ?User $actor = null): array
     {
-        return DB::transaction(function () use ($kept, $sources): array {
+        return DB::transaction(function () use ($kept, $sources, $actor): array {
             $sourceIds = $sources->pluck('id')->all();
             Institution::withTrashed()->whereIn('id', $sources->pluck('institution_id')->push($kept->institution_id))
                 ->orderBy('id')->lockForUpdate()->get();
 
             $movedAssignments = Dutiable::query()->whereIn('duty_id', $sourceIds)->count();
+            // Row by row so DutiableChanged syncs ex-officio seats and caches of the moved holders.
             Dutiable::query()->whereIn('duty_id', $sourceIds)->each(fn (Dutiable $term) => $term->update(['duty_id' => $kept->id]));
 
             $summary = [
                 'moved_assignments' => $movedAssignments,
                 'collapsed_assignments' => CollapseOverlappingDutiables::execute($kept),
-                'moved_types' => self::repointTypes($kept, $sourceIds),
-                'moved_roles' => self::repointMorphPivot('model_has_roles', 'model_id', 'model_type', 'role_id', $kept, $sourceIds),
+                'moved_types' => 0,
+                'moved_roles' => 0,
                 'moved_ex_officio' => self::mergeExOfficioLinks($kept, $sourceIds),
                 'moved_tenant_quotas' => self::mergeDutyTenantQuotas($kept, $sourceIds),
-                'moved_former_names' => DutyName::query()->whereIn('duty_id', $sourceIds)->update(['duty_id' => $kept->id]),
+                'moved_former_names' => 0,
                 'moved_successions' => self::mergeSuccessions($kept, $sourceIds),
             ];
+            $merged = [];
 
             foreach ($sources as $source) {
-                $source->delete();
+                $moved = self::moveRows($kept, $source);
+                $summary['moved_types'] += $moved['duty_duty_type'];
+                $summary['moved_roles'] += $moved['model_has_roles'];
+                $summary['moved_former_names'] += $moved['duty_names'];
+
+                $merged[] = ['id' => $source->id, 'name' => $source->getTranslations('name')];
+                $source->forceDelete();
             }
 
-            $kept->searchable();
+            activity()
+                ->performedOn($kept)
+                ->causedBy($actor)
+                ->event('duties_merged')
+                ->withProperties(['merged' => $merged, 'summary' => $summary])
+                ->log('duties_merged');
+
+            // Holders already on the kept duty gain the moved roles without any dutiable event.
+            $holderIds = $kept->dutiables()->where('dutiable_type', MorphMap::alias(User::class))->pluck('dutiable_id')->unique();
+
+            DB::afterCommit(function () use ($kept, $holderIds): void {
+                $holderIds->each(fn (string $userId) => HandleDutiableChange::forgetUserAuthority($userId));
+                $kept->fresh()?->searchable();
+            });
 
             return $summary;
         });
+    }
+
+    /** @return array<string, int> rows moved per table */
+    private static function moveRows(Duty $kept, Duty $source): array
+    {
+        $moved = [];
+
+        foreach (self::REPOINT as [$table, $column]) {
+            $moved[$table] = MergeRepointer::plain($table, $column, $kept->id, $source->id);
+        }
+
+        foreach (self::REPOINT_DEDUPED as $table => $sharedColumns) {
+            $moved[$table] = MergeRepointer::deduped($table, 'duty_id', $sharedColumns, $kept->id, $source->id);
+        }
+
+        foreach (self::REPOINT_MORPH as $table => [$morph, $sharedColumns]) {
+            $moved[$table] = MergeRepointer::morph($table, $morph, $sharedColumns, MorphMap::alias(Duty::class), $kept->id, $source->id);
+        }
+
+        return $moved;
     }
 
     /**
@@ -166,59 +224,6 @@ class MergeDuties
         }
 
         DB::table('ex_officio_duties')->whereIn('target_duty_id', $sourceIds)->delete();
-
-        return $moved;
-    }
-
-    /** @param list<string> $sourceIds */
-    private static function repointTypes(Duty $kept, array $sourceIds): int
-    {
-        $moved = 0;
-        foreach (DB::table('duty_duty_type')->whereIn('duty_id', $sourceIds)->get() as $row) {
-            $moved += DB::table('duty_duty_type')->insertOrIgnore([
-                'duty_id' => $kept->id,
-                'duty_type_id' => $row->duty_type_id,
-            ]);
-        }
-        DB::table('duty_duty_type')->whereIn('duty_id', $sourceIds)->delete();
-
-        return $moved;
-    }
-
-    private static function repointMorphPivot(
-        string $table,
-        string $modelIdColumn,
-        string $modelTypeColumn,
-        string $otherIdColumn,
-        Duty $kept,
-        array $sourceIds,
-    ): int {
-        $moved = 0;
-
-        $rows = DB::table($table)->where($modelTypeColumn, MorphMap::alias(Duty::class))->whereIn($modelIdColumn, $sourceIds)->get();
-
-        foreach ($rows as $row) {
-            $otherId = $row->{$otherIdColumn};
-
-            $alreadyOnKept = DB::table($table)
-                ->where($modelTypeColumn, MorphMap::alias(Duty::class))
-                ->where($modelIdColumn, $kept->id)
-                ->where($otherIdColumn, $otherId)
-                ->exists();
-
-            if (! $alreadyOnKept) {
-                DB::table($table)
-                    ->where($modelTypeColumn, MorphMap::alias(Duty::class))
-                    ->where($modelIdColumn, $row->{$modelIdColumn})
-                    ->where($otherIdColumn, $otherId)
-                    ->update([$modelIdColumn => $kept->id]);
-                $moved++;
-            }
-        }
-
-        // Whatever still points at a source id at this point is an exact
-        // duplicate of something the kept duty already has — spent.
-        DB::table($table)->where($modelTypeColumn, MorphMap::alias(Duty::class))->whereIn($modelIdColumn, $sourceIds)->delete();
 
         return $moved;
     }

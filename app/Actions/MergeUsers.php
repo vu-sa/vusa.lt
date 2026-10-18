@@ -10,12 +10,12 @@ use App\Models\User;
 use App\Services\ContactSearchIndexSynchronizer;
 use App\Services\Media\LegacyImageImporter;
 use App\Services\UserMergeDutyEmails;
+use App\Support\MergeRepointer;
 use App\Support\MorphMap;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-/** Transfers related data before permanently deleting duplicate accounts. */
+/** Transfers related data before permanently deleting duplicate accounts; UserMergeCoverageTest keeps the maps complete. */
 class MergeUsers
 {
     /** Columns repointed as they are. */
@@ -148,26 +148,15 @@ class MergeUsers
     private static function moveRows(User $keptUser, User $mergedUser): void
     {
         foreach (self::REPOINT as [$table, $column]) {
-            DB::table($table)->where($column, $mergedUser->id)->update([$column => $keptUser->id]);
+            MergeRepointer::plain($table, $column, $keptUser->id, $mergedUser->id);
         }
 
         foreach (self::REPOINT_DEDUPED as $table => $sharedColumns) {
-            self::repointDeduped($table, 'user_id', $sharedColumns, $keptUser, $mergedUser);
+            MergeRepointer::deduped($table, 'user_id', $sharedColumns, $keptUser->id, $mergedUser->id);
         }
 
-        $userAlias = MorphMap::alias(User::class);
-
         foreach (self::REPOINT_MORPH as $table => [$morph, $sharedColumns]) {
-            if ($sharedColumns !== null) {
-                self::repointDeduped($table, "{$morph}_id", $sharedColumns, $keptUser, $mergedUser, ["{$morph}_type" => $userAlias]);
-
-                continue;
-            }
-
-            DB::table($table)
-                ->where("{$morph}_type", $userAlias)
-                ->where("{$morph}_id", $mergedUser->id)
-                ->update(["{$morph}_id" => $keptUser->id]);
+            MergeRepointer::morph($table, $morph, $sharedColumns, MorphMap::alias(User::class), $keptUser->id, $mergedUser->id);
         }
 
         foreach (self::DROP as $table) {
@@ -184,34 +173,6 @@ class MergeUsers
                     ->all();
                 $comment->saveQuietly();
             });
-    }
-
-    /**
-     * Drop the merged user's rows the kept user already has a twin of (same values in
-     * $sharedColumns), then move the rest — a unique index would reject the update.
-     *
-     * @param  list<string>  $sharedColumns
-     * @param  array<string, string>  $scope  Extra equality constraints, e.g. the morph type
-     */
-    private static function repointDeduped(string $table, string $ownerColumn, array $sharedColumns, User $keptUser, User $mergedUser, array $scope = []): void
-    {
-        DB::table($table)->where($scope)->where($ownerColumn, $mergedUser->id)
-            ->whereExists(function (Builder $twin) use ($table, $ownerColumn, $sharedColumns, $scope, $keptUser): void {
-                $twin->select(DB::raw(1))
-                    ->from("{$table} as twin")
-                    ->where("twin.{$ownerColumn}", $keptUser->id);
-
-                foreach ($scope as $column => $value) {
-                    $twin->where("twin.{$column}", $value);
-                }
-
-                foreach ($sharedColumns as $column) {
-                    $twin->whereColumn("twin.{$column}", "{$table}.{$column}");
-                }
-            })
-            ->delete();
-
-        DB::table($table)->where($scope)->where($ownerColumn, $mergedUser->id)->update([$ownerColumn => $keptUser->id]);
     }
 
     private static function fillBlankAttributes(User $keptUser, User $mergedUser): void

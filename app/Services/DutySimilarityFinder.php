@@ -96,7 +96,7 @@ class DutySimilarityFinder
             ->with(['institution:id,name,tenant_id', 'institution.tenant:id,shortname', 'current_users:id,name', 'formerNames'])
             ->get()
             ->map(function (Duty $duty) use ($normalized) {
-                if (DutyNameNormalizer::normalize($this->dutyName($duty)) === $normalized) {
+                if (DutyNameNormalizer::normalize(self::dutyName($duty)) === $normalized) {
                     return ['duty' => $duty, 'reason' => 'same_tenant'];
                 }
 
@@ -137,7 +137,7 @@ class DutySimilarityFinder
             ->with(['institution:id,name', 'institution.tenant:id,shortname', 'current_users:id,name', 'formerNames'])
             ->get()
             ->map(function (Duty $duty) use ($name, $normalized) {
-                $dutyName = $this->dutyName($duty);
+                $dutyName = self::dutyName($duty);
 
                 if ($dutyName !== '' && mb_strtolower($dutyName) === mb_strtolower($name)) {
                     return ['duty' => $duty, 'reason' => 'same_institution_exact'];
@@ -187,7 +187,7 @@ class DutySimilarityFinder
         $this->applyTranslatableLike($query, 'name', $longestWord);
 
         $matches = $query->limit(self::CANDIDATE_SCAN_LIMIT)->get()
-            ->filter(fn (Duty $duty) => DutyNameNormalizer::normalize($this->dutyName($duty)) === $normalized);
+            ->filter(fn (Duty $duty) => DutyNameNormalizer::normalize(self::dutyName($duty)) === $normalized);
 
         $otherInstitution = $matches->take(self::OTHER_INSTITUTION_LIMIT)
             ->map(fn (Duty $duty) => ['duty' => $duty, 'reason' => 'other_institution'])
@@ -217,7 +217,8 @@ class DutySimilarityFinder
         }
     }
 
-    private function dutyName(Duty $duty): string
+    /** The name duplicates are compared by: Lithuanian, else English. */
+    public static function dutyName(Duty $duty): string
     {
         $name = $duty->getTranslation('name', 'lt') ?: $duty->getTranslation('name', 'en');
 

@@ -108,6 +108,8 @@ const props = defineProps<{
   /** Sent along with the ids, e.g. a choice made in the details slot. */
   extraPayload?: Record<string, unknown>;
   submitDisabled?: boolean;
+  /** Preselected kept record, e.g. from a "merge into this one" link. */
+  initialTargetId?: string | number | null;
 }>();
 
 const emit = defineEmits<{
@@ -138,7 +140,8 @@ watch(() => props.open, (open) => {
   candidates.value = [];
   // With a single possible target there is nothing to choose.
   const keepable = props.records.filter(isKeepable);
-  targetId.value = props.keepableIds && keepable.length === 1 ? (keepable[0]?.id ?? null) : null;
+  const initial = keepable.find(record => String(record.id) === String(props.initialTargetId));
+  targetId.value = initial?.id ?? (props.keepableIds && keepable.length === 1 ? (keepable[0]?.id ?? null) : null);
 }, { immediate: true });
 
 const search = () => {

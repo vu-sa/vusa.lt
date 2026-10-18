@@ -293,6 +293,8 @@ return [
         'reason_exact' => 'toks pat pavadinimas',
         'open_duty' => 'Peržiūrėti',
         'merge_instead' => 'Sulieti su šia',
+        'filter' => 'Galimi dublikatai',
+        'filter_spotlight' => 'Atrink pareigybes, kurių pavadinimas toje pačioje institucijoje sutampa su kita pareigybe, pvz., „Koordinatorius“ ir „Koordinatorė“.',
         'contact_admins' => 'Kreipkis į institucijos administratorius',
         'variant_hint' => 'Moteriškosios/vyriškosios giminės ar daugiskaitos forma yra sugeneruojama automatiškai pagal asmens įvardį — atskiros pareigybės kurti nereikia.',
         'other_institutions' => 'Tokia pareigybė yra dar :count institucijoje (-ose) — tai normalu.',
