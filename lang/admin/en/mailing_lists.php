@@ -7,7 +7,7 @@ return [
     'import' => 'Refresh from Mailman',
     'not_configured' => 'The Mailman connection is not configured, so the last saved data is shown.',
     'empty_title' => 'No mailing lists yet',
-    'empty_description' => 'Refresh the list from Mailman or create a new mailing list.',
+    'empty_description' => 'Mailing lists are imported from Mailman.',
 
     'modes' => [
         'unmanaged' => 'Managed by hand',

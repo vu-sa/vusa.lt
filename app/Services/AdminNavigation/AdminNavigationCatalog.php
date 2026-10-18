@@ -279,7 +279,6 @@ class AdminNavigationCatalog
             createActions: [
                 CreateAction::route('duty_update', 'shell.actions.duty_update.title', 'shell.actions.duty_update.description', 'duty', 'duties.updateUsersWizard', Visibility::can('create', Duty::class)),
                 CreateAction::route('duty_periods', 'shell.actions.duty_periods.title', 'shell.actions.duty_periods.description', 'dutiable', 'dutiables.timeline', Visibility::can('viewAny', Duty::class)),
-                CreateAction::route('mailing_list', 'shell.actions.mailing_list.title', 'shell.actions.mailing_list.description', 'mailing_list', 'mailingLists.create', Visibility::can('create', MailingList::class)),
             ],
         );
     }

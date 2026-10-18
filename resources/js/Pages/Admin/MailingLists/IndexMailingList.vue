@@ -23,18 +23,6 @@
         <RefreshCw :class="['size-4', importing && 'animate-spin']" aria-hidden="true" />
         {{ $t('mailing_lists.import') }}
       </Button>
-      <SpotlightPopover
-        v-if="canCreate && mailmanConfigured"
-        :title="$t('mailing_lists.spotlight.title')"
-        :description="$t('mailing_lists.spotlight.body')"
-        :is-dismissed="spotlight.isDismissed.value"
-        @dismiss="spotlight.dismiss()"
-      >
-        <Button variant="brand" size="lg" @click="startCreate">
-          <Plus aria-hidden="true" />
-          {{ $t('mailing_lists.new') }}
-        </Button>
-      </SpotlightPopover>
     </template>
 
     <template #row="{ item }">
@@ -74,8 +62,6 @@
         :icon="MailingListIcon"
         :title="$t('mailing_lists.empty_title')"
         :description="mailmanConfigured ? $t('mailing_lists.empty_description') : $t('mailing_lists.not_configured')"
-        :action-label="canCreate && mailmanConfigured ? $t('mailing_lists.new') : undefined"
-        @action="startCreate"
       />
     </template>
   </CollectionPage>
@@ -86,16 +72,14 @@
 <script setup lang="ts">
 import { Link, router } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Mail as MailingListIcon, Plus, RefreshCw } from '@lucide/vue';
+import { Mail as MailingListIcon, RefreshCw } from '@lucide/vue';
 import { computed, ref, toRef } from 'vue';
 
 import type { CollectionColumn } from '@/Components/Collection/types';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
-import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { EmptyState, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useLocalCollectionSource } from '@/Composables/useCollectionSource';
-import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { mailingListModes, mailingListSyncStatuses } from '@/Constants/statuses';
 import MailingListSheetForm from '@/Features/Admin/MailingLists/MailingListSheetForm.vue';
 import type { MailingListSummary } from '@/Features/Admin/MailingLists/types';
@@ -113,7 +97,6 @@ const props = defineProps<{
   openCreate: boolean;
 }>();
 
-const spotlight = useFeatureSpotlight('mailing-lists-v1');
 const createOpen = ref(props.openCreate && props.canCreate);
 const importing = ref(false);
 
@@ -147,11 +130,6 @@ const columns = computed<CollectionColumn[]>(() => [
   { key: 'posts_last_year', label: $t('mailing_lists.fields.posts_last_year'), class: 'w-28' },
   { key: 'last_post_at', label: $t('mailing_lists.fields.last_post'), class: 'w-32' },
 ]);
-
-function startCreate(): void {
-  spotlight.dismiss();
-  createOpen.value = true;
-}
 
 function importFromMailman(): void {
   importing.value = true;
