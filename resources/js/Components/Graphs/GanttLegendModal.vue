@@ -93,6 +93,38 @@
             </div>
           </div>
 
+          <div class="space-y-3">
+            <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
+              <MailQuestion class="size-4" aria-hidden="true" />
+              {{ $t('activity_requests.gantt.legend_title') }}
+            </h4>
+            <div class="grid gap-2 pl-6">
+              <div class="flex items-center gap-3">
+                <span class="relative flex h-4 w-6 shrink-0 items-center justify-center border-x border-b border-violet-600 dark:border-violet-400">
+                  <MailQuestion class="size-3 bg-background text-violet-600 dark:text-violet-400" aria-hidden="true" />
+                </span>
+                <div>
+                  <span class="text-sm font-medium">{{ $t('activity_requests.campaigns.activity_confirmation') }}</span>
+                  <p class="text-xs text-muted-foreground">
+                    {{ $t('activity_requests.gantt.legend_confirmation') }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="relative shrink-0">
+                  <IFluentPeopleTeam20Filled class="size-4 text-violet-600 dark:text-violet-400" />
+                  <MailQuestion class="absolute -right-1.5 -top-1.5 size-2.5 bg-background text-violet-600 dark:text-violet-400" aria-hidden="true" />
+                </span>
+                <div>
+                  <span class="text-sm font-medium">{{ $t('activity_requests.campaigns.missing_meetings') }}</span>
+                  <p class="text-xs text-muted-foreground">
+                    {{ $t('activity_requests.gantt.legend_records') }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Institution Indicators Section -->
           <div class="space-y-3">
             <h4 class="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -297,7 +329,7 @@
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
-import { Globe, Link2, CalendarOff } from '@lucide/vue';
+import { Globe, Link2, CalendarOff, MailQuestion } from '@lucide/vue';
 
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { Button } from '@/Components/ui/button';

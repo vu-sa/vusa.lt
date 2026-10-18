@@ -5,6 +5,7 @@ use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\FileableFile;
 use App\Models\Institution;
+use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionLink;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
@@ -66,6 +67,23 @@ describe('atstovavimas dashboard', function (): void {
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
                     ->where('followedInstitutions.total', 1)
                     ->where('followedInstitutions.items.0.id', $followed->id)
+                )
+            );
+    });
+
+    test('open activity requests sent to the rep load with the secondary group', function (): void {
+        $institution = $this->user->current_duties()->first()->institution;
+        InstitutionActivityRequest::factory()->for($institution)->create(['recipient_id' => $this->user->id]);
+        InstitutionActivityRequest::factory()->for($institution)->create();
+
+        asUser($this->user)
+            ->get(route('dashboard.atstovavimas'))
+            ->assertInertia(fn (Assert $page) => $page
+                ->missing('activityRequests')
+                ->loadDeferredProps('secondary', fn (Assert $page) => $page
+                    ->has('activityRequests', 1)
+                    ->where('activityRequests.0.institution_id', (string) $institution->id)
+                    ->where('activityRequests.0.recipients_count', 1)
                 )
             );
     });

@@ -13,47 +13,53 @@
       data-tour="tenant-gantt-section"
     >
       <template #actions>
-        <div data-tour="gantt-filters">
-          <GanttFilterDropdown
-            :tenants="showTenantSelector ? availableTenants : undefined"
+        <div class="flex flex-wrap items-center justify-end gap-2" data-tour="gantt-filters">
+          <TenantScopeSelector
+            v-if="availableTenants.length > 1"
+            compact
+            :label="$t('visak.gantt.tenants_label')"
+            :tenants="availableTenants"
             :selected-tenants="filters.selectedTenantForGantt.value"
+            @update:selected-tenants="filters.setSelectedTenants"
+          />
+          <GanttFilterDropdown
             :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
             :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
             :hide-internal-institutions="filters.hideInternalInstitutionsTenant.value"
             :show-duty-members="filters.showDutyMembersTenant.value"
             :show-activity-status="filters.showActivityStatusTenant.value"
             :show-activity-status-option="!!representativeActivity"
-            :show-tenant-headers="ganttSettings.showTenantHeaders.value"
-            :require-tenant-selection="showTenantSelector"
-            @update:selected-tenants="filters.setSelectedTenants"
+            :show-activity-requests="filters.showActivityRequestsTenant.value"
+            :show-activity-requests-option
             @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityTenant.value = val"
             @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsTenant.value = val"
             @update:hide-internal-institutions="(val: boolean) => filters.hideInternalInstitutionsTenant.value = val"
             @update:show-duty-members="(val: boolean) => filters.showDutyMembersTenant.value = val"
             @update:show-activity-status="(val: boolean) => filters.showActivityStatusTenant.value = val"
-            @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
+            @update:show-activity-requests="(val: boolean) => filters.showActivityRequestsTenant.value = val"
             @reset="filters.resetTenantFilters()"
           />
         </div>
       </template>
 
-      <TimelineGanttSkeleton v-if="!isReady || filters.tenantInstitutionsLoading.value" />
-      <p v-else-if="!filters.tenantInstitutionsLoaded.value && !hasData" class="py-12 text-center text-sm text-muted-foreground">
+      <!-- A skeleton only before the first load: a reload keeps the chart, and its scroll position, mounted. -->
+      <TimelineGanttSkeleton v-if="!isReady || (!filters.tenantInstitutionsLoaded.value && filters.tenantInstitutionsLoading.value)" />
+      <p v-else-if="!filters.tenantInstitutionsLoaded.value && tenantInstitutions.length === 0" class="py-12 text-center text-sm text-muted-foreground">
         {{ $t('Pasirink padalinį norėdami matyti institucijų laiko juostą') }}
       </p>
       <div v-else data-tour="gantt-chart" :class="active && 'min-h-0 flex-1'">
         <TimelineGanttChart :class="active && 'h-full'" :height="active ? '100%' : undefined" :fullscreen-active="active"
-          :institutions="formattedInstitutions" :meetings :gaps
-          :tenant-filter="[]"
+          :institutions="tenantInstitutions" :meetings :gaps
           :show-only-with-activity="filters.showOnlyWithActivityTenant.value"
           :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsTenant.value"
           :hide-internal-institutions="filters.hideInternalInstitutionsTenant.value"
-          :institution-names :tenant-names :institution-tenant :institution-has-public-meetings
+          :institution-names :tenant-names :institution-has-public-meetings
           :institution-has-activity
           :institution-periodicity
-          :duty-members="enrichedDutyMembers" :inactive-periods :show-duty-members="filters.showDutyMembersTenant.value"
+          :duty-members :inactive-periods :show-duty-members="filters.showDutyMembersTenant.value"
           :show-activity-status="filters.showActivityStatusTenant.value"
-          :loading-range :meetings-loading
+          :activity-requests :show-activity-requests="filters.showActivityRequestsTenant.value"
+          :loading-range :meetings-loading="meetingsLoading || filters.tenantInstitutionsLoading.value"
           :empty-message="$t('Šiame padalinyje nėra institucijų')" @create-meeting="$emit('create-meeting', $event)"
           @create-check-in="$emit('create-check-in', $event)"
           @fullscreen="toggle"
@@ -64,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { CalendarRange } from '@lucide/vue';
 
@@ -72,51 +78,51 @@ import type {
   GanttMeeting,
   AtstovavimasGap,
   AtstovavimasTenant,
+  GanttActivityRequest,
   GanttInstitution,
   GanttDutyMember,
   InactivePeriod,
   RepresentativeActivityData,
 } from '../types';
-import { useGanttSettings } from '../Composables/useGanttSettings';
 import { useTimelineFilters } from '../Composables/useTimelineFilters';
 
 import TimelineGanttChart from './TimelineGanttChart.vue';
 import TimelineGanttSkeleton from './TimelineGanttSkeleton.vue';
 import GanttFilterDropdown from './GanttFilterDropdown.vue';
+import TenantScopeSelector from './TenantScopeSelector.vue';
 
 import FocusModeFrame from '@/Components/Patterns/FocusModeFrame.vue';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 
-interface Props {
+defineProps<{
   availableTenants: AtstovavimasTenant[];
   tenantInstitutions: GanttInstitution[];
   meetings: GanttMeeting[];
   gaps: AtstovavimasGap[];
   institutionNames: Record<string, string>;
   tenantNames: Record<string, string>;
-  institutionTenant: Record<string, string>;
   institutionHasPublicMeetings?: Record<string, boolean>;
-  // Server-derived "has any activity" flags for the activity filter
+  /** Server-derived "has any activity" flags for the activity filter */
   institutionHasActivity?: Record<string, boolean>;
-  // Duty members display
   dutyMembers?: GanttDutyMember[];
   inactivePeriods?: InactivePeriod[];
-  // Meeting periodicity per institution (days between expected meetings)
   institutionPeriodicity?: Record<string | number, number>;
-  // Date range currently being loaded (rendered as a shimmer band in the Gantt)
   loadingRange?: { from: Date; until: Date } | null;
-  // Whether meetings are currently being fetched (delayed ~300ms by the caller)
+  /** Whether meetings are being fetched (delayed ~300ms by the caller) */
   meetingsLoading?: boolean;
-  // Only decides whether the activity-ring option is offered; the figures live on the page.
+  /** Only decides whether the activity-ring option is offered; the figures live on the page. */
   representativeActivity?: RepresentativeActivityData;
-  showTenantSelector?: boolean;
-}
+  activityRequests?: GanttActivityRequest[];
+  showActivityRequestsOption?: boolean;
+}>();
 
-const props = withDefaults(defineProps<Props>(), {
-  showTenantSelector: true,
-});
+defineEmits<{
+  'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date; institutionName?: string }];
+  'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
+  'range-changed': [min: Date, max: Date];
+}>();
 
-// Deferred rendering - wait for next frame after mount to render heavy Gantt chart
+// The Gantt is heavy; give the rest of the page its first frame.
 const isReady = ref(false);
 onMounted(() => {
   requestAnimationFrame(() => {
@@ -124,28 +130,8 @@ onMounted(() => {
   });
 });
 
-// Get gantt settings for showTenantHeaders toggle
-const ganttSettings = useGanttSettings();
-// Get shared filter state
 const filters = useTimelineFilters();
-
-const hasData = computed(() => props.tenantInstitutions?.length > 0);
-
-const emit = defineEmits<{
-  'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date; institutionName?: string }];
-  'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
-  'range-changed': [min: Date, max: Date];
-}>();
 
 // In place rather than a modal, so dialogs opened from the chart stack above it.
 const fullscreen = ref(false);
-
-// Format institutions for Gantt component
-const formattedInstitutions = computed(() => {
-  return props.tenantInstitutions.map(institution => ({ ...institution }));
-});
-
-const enrichedDutyMembers = computed(() => {
-  return props.dutyMembers ?? [];
-});
 </script>

@@ -8,6 +8,7 @@ import type {
   InactivePeriod,
   GanttMeeting,
   GanttInstitution,
+  GanttInstitutionType,
 } from '../types';
 
 /**
@@ -152,12 +153,20 @@ export function formatInstitutionsForGantt(
   return institutions.map(i => ({
     id: i.id,
     name: getInstitutionDisplayName(i),
-    tenant_id: i.tenant?.id,
+    tenant_id: i.tenant?.id === undefined ? undefined : String(i.tenant.id),
+    types: ganttInstitutionTypes(i),
     is_internal: i.is_internal,
     is_related: isRelated || i.is_related,
     relationship_direction: i.relationship_direction,
     source_institution_id: i.source_institution_id,
     authorized: i.authorized,
+  }));
+}
+
+export function ganttInstitutionTypes(institution: AtstovavimasInstitution): GanttInstitutionType[] {
+  return (institution.types ?? []).map(type => ({
+    id: String(type.id),
+    title: typeof type.title === 'string' ? type.title : getInstitutionDisplayName({ name: type.title }),
   }));
 }
 
@@ -183,19 +192,6 @@ export function buildInstitutionNamesMap(
   const result: Record<string, string> = {};
   for (const inst of institutions) {
     result[String(inst.id)] = getInstitutionDisplayName(inst);
-  }
-  return result;
-}
-
-/**
- * Build institution tenant ID lookup map.
- */
-export function buildInstitutionTenantMap(
-  institutions: AtstovavimasInstitution[],
-): Record<string, string> {
-  const result: Record<string, string> = {};
-  for (const inst of institutions) {
-    result[String(inst.id)] = String(inst.tenant?.id ?? '');
   }
   return result;
 }

@@ -13,15 +13,15 @@
           :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
           :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
           :show-duty-members="filters.showDutyMembersUser.value"
-          :show-tenant-headers="ganttSettings.showTenantHeaders.value"
           :show-related-institutions="filters.showRelatedInstitutionsUser.value"
           :has-related-institutions
-          :trigger-label-override="$t('Rodymo nustatymai')"
+          :show-activity-requests="filters.showActivityRequestsUser.value"
+          :show-activity-requests-option="activityRequests.length > 0"
           @update:show-only-with-activity="(val: boolean) => filters.showOnlyWithActivityUser.value = val"
           @update:show-only-with-public-meetings="(val: boolean) => filters.showOnlyWithPublicMeetingsUser.value = val"
           @update:hide-internal-institutions="(val: boolean) => filters.hideInternalInstitutionsUser.value = val"
           @update:show-duty-members="(val: boolean) => filters.showDutyMembersUser.value = val"
-          @update:show-tenant-headers="(val: boolean) => ganttSettings.showTenantHeaders.value = val"
+          @update:show-activity-requests="(val: boolean) => filters.showActivityRequestsUser.value = val"
           @update:show-related-institutions="(val: boolean) => filters.showRelatedInstitutionsUser.value = val"
           @reset="filters.resetUserFilters()"
         />
@@ -30,17 +30,17 @@
       <TimelineGanttSkeleton v-if="!isReady" />
       <TimelineGanttChart v-else :class="active && 'min-h-0 flex-1'" :height="active ? '100%' : undefined" :fullscreen-active="active"
         :institutions="formattedInstitutions" :meetings="allMeetings" :gaps
-        :tenant-filter="[]"
         :show-only-with-activity="filters.showOnlyWithActivityUser.value"
         :show-only-with-public-meetings="filters.showOnlyWithPublicMeetingsUser.value"
         :hide-internal-institutions="filters.hideInternalInstitutionsUser.value"
-        :institution-names="allInstitutionNames" :tenant-names :institution-tenant="allInstitutionTenant" :institution-has-public-meetings="allInstitutionHasPublicMeetings"
+        :institution-names="allInstitutionNames" :tenant-names :institution-has-public-meetings="allInstitutionHasPublicMeetings"
         :institution-periodicity="allInstitutionPeriodicity"
         :duty-members="mergedDutyMembers" :inactive-periods="mergedInactivePeriods"
-        :show-duty-members="filters.showDutyMembersUser.value" :day-width="dayWidthPx"
+        :show-duty-members="filters.showDutyMembersUser.value"
+        :activity-requests :show-activity-requests="filters.showActivityRequestsUser.value"
         :empty-message="$t('Neturi tiesiogiai priskirtų institucijų')" @create-meeting="$emit('create-meeting', $event)"
         @create-check-in="$emit('create-check-in', $event)"
-        @fullscreen="toggle" @update:day-width="emit('update:dayWidth', $event)" />
+        @fullscreen="toggle" />
     </OverviewSection>
   </FocusModeFrame>
 </template>
@@ -54,10 +54,10 @@ import type {
   AtstovavimasInstitution,
   GanttMeeting,
   AtstovavimasGap,
+  GanttActivityRequest,
   GanttDutyMember,
   InactivePeriod,
 } from '../types';
-import { useGanttSettings } from '../Composables/useGanttSettings';
 import { useTimelineFilters } from '../Composables/useTimelineFilters';
 import { useUserTimelineData } from '../Composables/useUserTimelineData';
 
@@ -74,11 +74,9 @@ interface Props {
   gaps: AtstovavimasGap[];
   institutionNames: Record<string, string>;
   tenantNames: Record<string, string>;
-  institutionTenant: Record<string, string>;
   institutionHasPublicMeetings?: Record<string, boolean>;
   // Duty members display
   dutyMembers?: GanttDutyMember[];
-  dayWidthPx?: number;
   inactivePeriods?: InactivePeriod[];
   // Meeting periodicity per institution (days between expected meetings)
   institutionPeriodicity?: Record<string | number, number>;
@@ -86,12 +84,13 @@ interface Props {
   relatedInstitutions?: AtstovavimasInstitution[];
   // Flag to show related institutions filter even when data is lazy-loaded
   mayHaveRelatedInstitutions?: boolean;
+  activityRequests?: GanttActivityRequest[];
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  activityRequests: () => [],
+});
 
-// Get gantt settings for showTenantHeaders toggle
-const ganttSettings = useGanttSettings();
 // Get shared filter state
 const filters = useTimelineFilters();
 
@@ -110,10 +109,9 @@ onMounted(() => {
   }
 });
 
-const emit = defineEmits<{
+defineEmits<{
   'create-meeting': [payload: { institution_id: string | number; suggestedAt: Date }];
   'create-check-in': [payload: { institution_id: string | number; startDate: Date; endDate: Date }];
-  'update:dayWidth': [value: number];
 }>();
 
 // In place rather than a modal, so dialogs opened from the chart stack above it.
@@ -140,7 +138,6 @@ const meetingsRef = toRef(props, 'meetings');
 const baseDutyMembersRef = computed(() => props.dutyMembers ?? []);
 const baseInactivePeriodsRef = computed(() => props.inactivePeriods ?? []);
 const baseInstitutionNamesRef = toRef(props, 'institutionNames');
-const baseInstitutionTenantRef = toRef(props, 'institutionTenant');
 const baseInstitutionHasPublicMeetingsRef = computed(() => props.institutionHasPublicMeetings ?? {});
 const baseInstitutionPeriodicityRef = computed(() => props.institutionPeriodicity ?? {});
 
@@ -150,7 +147,6 @@ const {
   mergedDutyMembers,
   mergedInactivePeriods,
   mergedInstitutionNames: allInstitutionNames,
-  mergedInstitutionTenant: allInstitutionTenant,
   mergedInstitutionHasPublicMeetings: allInstitutionHasPublicMeetings,
   mergedInstitutionPeriodicity: allInstitutionPeriodicity,
 } = useUserTimelineData({
@@ -161,7 +157,6 @@ const {
   baseDutyMembers: baseDutyMembersRef,
   baseInactivePeriods: baseInactivePeriodsRef,
   baseInstitutionNames: baseInstitutionNamesRef,
-  baseInstitutionTenant: baseInstitutionTenantRef,
   baseInstitutionHasPublicMeetings: baseInstitutionHasPublicMeetingsRef,
   baseInstitutionPeriodicity: baseInstitutionPeriodicityRef,
 });

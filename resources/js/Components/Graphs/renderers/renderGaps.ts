@@ -10,6 +10,8 @@ import type { GanttColors } from '../ganttColors';
 
 interface ParsedGap {
   institution_id: string | number;
+  /** The row it is drawn on; an institution can have several */
+  rowKey: string;
   fromDate: Date;
   untilDate: Date;
   mode?: 'heads_up' | 'no_meetings';
@@ -51,16 +53,8 @@ export function renderGaps(ctx: GapRenderContext): void {
   const gapGroup = g.append('g').attr('class', 'gap-lines');
 
   // Calculate rectangle height (slightly smaller than row height for padding)
-  const getRectHeight = (institutionId: string | number) => {
-    const rowH = rowHeightFor(institutionId);
-    return Math.min(rowH - 6, 18); // Max 18px height, with 3px padding top/bottom
-  };
-
-  const getRectY = (institutionId: string | number) => {
-    const rowH = rowHeightFor(institutionId);
-    const rectH = getRectHeight(institutionId);
-    return rowTop(institutionId) + (rowH - rectH) / 2;
-  };
+  const getRectHeight = (rowKey: string) => Math.min(rowHeightFor(rowKey) - 6, 18);
+  const getRectY = (rowKey: string) => rowTop(rowKey) + (rowHeightFor(rowKey) - getRectHeight(rowKey)) / 2;
 
   // Render striped rectangles for check-in periods
   gapGroup
@@ -70,9 +64,9 @@ export function renderGaps(ctx: GapRenderContext): void {
     .append('rect')
     .attr('class', 'check-in-bar')
     .attr('x', d => x(d.fromDate))
-    .attr('y', d => getRectY(d.institution_id))
+    .attr('y', d => getRectY(d.rowKey))
     .attr('width', d => Math.max(0, x(d.untilDate) - x(d.fromDate)))
-    .attr('height', d => getRectHeight(d.institution_id))
+    .attr('height', d => getRectHeight(d.rowKey))
     .attr('fill', 'url(#checkInStripes)')
     .attr('stroke', colors.checkInStroke)
     .attr('stroke-width', 1)
@@ -100,7 +94,7 @@ export function renderGaps(ctx: GapRenderContext): void {
     .attr('class', 'check-in-start-icon')
     .attr('transform', (d) => {
       const xPos = x(d.fromDate) - ICON_SIZE / 2;
-      const yPos = rowCenter(d.institution_id) - ICON_SIZE / 2;
+      const yPos = rowCenter(d.rowKey) - ICON_SIZE / 2;
       return `translate(${xPos}, ${yPos})`;
     })
     .style('pointer-events', 'none');
@@ -126,7 +120,7 @@ export function renderGaps(ctx: GapRenderContext): void {
     .attr('class', 'check-in-end-icon')
     .attr('transform', (d) => {
       const xPos = x(d.untilDate) - ICON_SIZE / 2;
-      const yPos = rowCenter(d.institution_id) - ICON_SIZE / 2;
+      const yPos = rowCenter(d.rowKey) - ICON_SIZE / 2;
       return `translate(${xPos}, ${yPos})`;
     })
     .style('pointer-events', 'none');

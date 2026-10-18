@@ -1,14 +1,9 @@
 /**
  * useTenantMeetings - Windowed meetings store for the tenant Gantt chart.
  *
- * The tenant Gantt can scroll infinitely through time, so meetings are loaded
- * in date windows (quantized to month boundaries for cache friendliness)
- * instead of all at once. The Gantt emits `range-changed` when its timeline
- * range extends; `ensureRange()` fetches only the missing month segments and
- * dedupes meetings by id.
- *
- * Meetings are fetched silently in the background; `isFetching` is exposed for
- * a subtle loading indicator (consumers should delay it ~300ms to avoid flashes).
+ * The Gantt emits the dates on screen as it scrolls or zooms; `ensureRange()` pads them, rounds
+ * to whole months and fetches what is missing in chunks of at most six months, nearest the
+ * middle of the view first. Meetings are deduped by id.
  */
 import { computed, ref, shallowRef, type ComputedRef } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
@@ -18,16 +13,12 @@ import type { AtstovavimasTenantMeeting, GanttMeeting } from '../types';
 
 import { useToasts } from '@/Composables/useToasts';
 
-/** Extra days fetched beyond the visible range so scrolling feels instant. */
-const BUFFER_DAYS = 30;
+/** Smallest padding fetched beyond the visible range; wide views pad a quarter of their span. */
+const MIN_BUFFER_DAYS = 30;
 const FETCH_DEBOUNCE_MS = 150;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
-/**
- * Defensive cap on a single requested span (the server caps at 24 months).
- * The visible range is normally a few months; this only kicks in if a caller
- * asks for an extreme span (e.g. a timeline extended years via infinite scroll).
- */
-const MAX_SPAN_DAYS = 540;
+/** One request covers at most this many months, well under the server's 24-month cap. */
+const CHUNK_MONTHS = 6;
 
 interface Window {
   from: number;
@@ -44,22 +35,16 @@ function monthEnd(ts: number): number {
   return new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime() - 1;
 }
 
-/**
- * Defensive clamp for extreme spans (e.g. a timeline extended years back, or an
- * accumulated `pendingRange` union of several far-apart requests) — the server
- * caps a single window at 24 months, and a wider request would 422 forever
- * without this, since the failing segment never gets marked as loaded.
- */
-function clampSpan(from: number, until: number): Window {
-  if (until - from <= MAX_SPAN_DAYS * MS_PER_DAY) {
-    return { from, until };
+function chunk(segment: Window): Window[] {
+  const chunks: Window[] = [];
+  let from = segment.from;
+  while (from <= segment.until) {
+    const d = new Date(from);
+    const until = Math.min(segment.until, new Date(d.getFullYear(), d.getMonth() + CHUNK_MONTHS, 1).getTime() - 1);
+    chunks.push({ from, until });
+    from = until + 1;
   }
-
-  const mid = (from + until) / 2;
-  return {
-    from: monthStart(mid - (MAX_SPAN_DAYS / 2) * MS_PER_DAY),
-    until: monthEnd(mid + (MAX_SPAN_DAYS / 2) * MS_PER_DAY),
-  };
+  return chunks;
 }
 
 export function useTenantMeetings(tenantIds: () => Array<string | number>) {
@@ -173,22 +158,23 @@ export function useTenantMeetings(tenantIds: () => Array<string | number>) {
     const range = pendingRange;
     pendingRange = null;
 
-    const segments = missingSegments(range.from, range.until);
-    if (segments.length === 0) return;
+    const center = (range.from + range.until) / 2;
+    const chunks = missingSegments(range.from, range.until)
+      .flatMap(chunk)
+      .sort((a, b) => Math.abs((a.from + a.until) / 2 - center) - Math.abs((b.from + b.until) / 2 - center));
+    if (chunks.length === 0) return;
 
     inFlight = true;
     isFetching.value = true;
-    pendingWindow.value = {
-      from: Math.min(...segments.map(s => s.from)),
-      until: Math.max(...segments.map(s => s.until)),
-    };
-    // Segments are tried independently: one failing window (e.g. a transient network
-    // error) must not stop the others from loading.
+    // Chunks fail independently: a transient error on one must not stop the rest from loading.
     let failures = 0;
     try {
-      for (const segment of segments) {
+      for (const window of chunks) {
+        // The view moved on while fetching; what it shows now matters more than the rest of this range.
+        if (pendingRange) break;
+        pendingWindow.value = window;
         try {
-          await fetchWindow(segment);
+          await fetchWindow(window);
           lastError.value = null;
         }
         catch (error) {
@@ -206,7 +192,6 @@ export function useTenantMeetings(tenantIds: () => Array<string | number>) {
         toasts.error($t('visak.gantt.meetings_load_failed'));
       }
 
-      // A range may have been requested while fetching
       if (pendingRange) {
         void flushPendingRange();
       }
@@ -217,25 +202,18 @@ export function useTenantMeetings(tenantIds: () => Array<string | number>) {
     void flushPendingRange();
   }, FETCH_DEBOUNCE_MS);
 
-  /**
-   * Ensure meetings are loaded for [from, until] (plus a buffer on each side).
-   * Debounced; fetches only the missing month-quantized segments.
-   */
+  /** Ensure meetings are loaded for [from, until] plus padding. Debounced; only missing months are fetched. */
   function ensureRange(from: Date, until: Date): void {
-    const { from: fromTs, until: untilTs } = clampSpan(
-      monthStart(from.getTime() - BUFFER_DAYS * MS_PER_DAY),
-      monthEnd(until.getTime() + BUFFER_DAYS * MS_PER_DAY),
-    );
+    const bufferMs = Math.max(MIN_BUFFER_DAYS * MS_PER_DAY, (until.getTime() - from.getTime()) / 4);
+    const window = {
+      from: monthStart(from.getTime() - bufferMs),
+      until: monthEnd(until.getTime() + bufferMs),
+    };
 
-    if (missingSegments(fromTs, untilTs).length === 0) return;
+    if (missingSegments(window.from, window.until).length === 0) return;
 
-    // Re-clamp after merging with any still-pending range: two individually-clamped
-    // ranges can still union into something wider than the server allows.
-    pendingRange = clampSpan(
-      pendingRange ? Math.min(pendingRange.from, fromTs) : fromTs,
-      pendingRange ? Math.max(pendingRange.until, untilTs) : untilTs,
-    );
-
+    // Only the latest view is kept: a union with an earlier, far-away one would fetch everything in between.
+    pendingRange = window;
     debouncedFlush();
   }
 

@@ -48,4 +48,20 @@ describe('GanttZoomControl', () => {
 
     expect(wrapper.emitted('update:modelValue')).toEqual([[10]]);
   });
+
+  it('moves through uneven stops one at a time, the slider by index', async () => {
+    const wrapper = mount(GanttZoomControl, {
+      props: { modelValue: 1.5, stops: [1, 1.5, 2, 4] },
+      global: { stubs: { Slider: SliderStub } },
+    });
+    const [zoomOut, zoomIn] = wrapper.findAll('button');
+
+    expect(wrapper.get('input[type="range"]').element.value).toBe('1');
+
+    await zoomIn!.trigger('click');
+    await zoomOut!.trigger('click');
+    await wrapper.get('input[type="range"]').setValue('3');
+
+    expect(wrapper.emitted('update:modelValue')).toEqual([[2], [1], [4]]);
+  });
 });

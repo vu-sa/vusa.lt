@@ -167,4 +167,32 @@ describe('useTenantMeetings', () => {
     await vi.advanceTimersByTimeAsync(200);
     expect(fetch).toHaveBeenCalledTimes(2);
   });
+
+  it('loads a zoomed-out range to its edges in chunks, nearest the middle first', async () => {
+    const store = useTenantMeetings(() => ['1']);
+
+    // About three years on screen, as at one pixel per day.
+    store.ensureRange(new Date(2024, 0, 1), new Date(2026, 11, 31));
+    await vi.advanceTimersByTimeAsync(200);
+
+    const windows = fetchedUrls.map((url) => {
+      const params = new URL(url, 'http://localhost').searchParams;
+      return [params.get('from')!, params.get('until')!] as const;
+    });
+    const froms = windows.map(([from]) => from).sort();
+    const untils = windows.map(([, until]) => until).sort();
+
+    // A quarter of the span is padded on each side; nothing in between is skipped.
+    expect(froms[0]! <= '2023-04-30').toBe(true);
+    expect(untils.at(-1)! >= '2027-09-30').toBe(true);
+    expect(windows.every(([from, until]) => new Date(until).getTime() - new Date(from).getTime() < 186 * 24 * 60 * 60 * 1000)).toBe(true);
+    // The first request is the chunk around the middle of the view (mid-2025).
+    expect(windows[0]![0] <= '2025-07-01' && windows[0]![1] >= '2025-06-01').toBe(true);
+
+    // Everything is loaded now, so the same view asks for nothing more.
+    fetchedUrls.splice(0);
+    store.ensureRange(new Date(2024, 0, 1), new Date(2026, 11, 31));
+    await vi.advanceTimersByTimeAsync(200);
+    expect(fetchedUrls).toHaveLength(0);
+  });
 });

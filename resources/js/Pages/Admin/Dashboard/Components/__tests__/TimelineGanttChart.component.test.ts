@@ -1,14 +1,8 @@
-import { describe, expect, it, vi } from 'vitest';
-import { defineComponent, h, ref } from 'vue';
+import { describe, expect, it } from 'vitest';
+import { defineComponent, h } from 'vue';
 import { mount } from '@vue/test-utils';
 
 import TimelineGanttChart from '../TimelineGanttChart.vue';
-
-vi.mock('../../Composables/useGanttSettings', () => ({
-  useGanttSettings: () => ({
-    showTenantHeaders: ref(false),
-  }),
-}));
 
 const MeetingsGanttStub = defineComponent({
   name: 'MeetingsGantt',
@@ -30,12 +24,10 @@ describe('TimelineGanttChart', () => {
         ],
         meetings: [],
         gaps: [],
-        tenantFilter: [],
         showOnlyWithActivity: false,
         hideInternalInstitutions: true,
         institutionNames: {},
         tenantNames: {},
-        institutionTenant: {},
         emptyMessage: '',
       },
       global: {

@@ -27,8 +27,7 @@ export interface DragSelectionState {
 
 export interface LayoutRow {
   key: string | number;
-  type: 'tenant' | 'institution';
-  tenantId?: string | number;
+  type: string;
   institutionId?: string | number;
   top: number;
   height: number;

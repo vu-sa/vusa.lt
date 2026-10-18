@@ -4,10 +4,28 @@ export type AtstovavimasUser = Omit<App.Entities.User, 'authorization_duties'> &
   }>;
 };
 
+export interface GanttInstitutionType {
+  id: string;
+  title: string;
+}
+
+/** An open activity request collapsed per institution and campaign (GetOpenActivityRequestSpans). */
+export interface GanttActivityRequest {
+  institution_id: string;
+  campaign: 'activity_confirmation' | 'missing_meetings';
+  period_start: string;
+  period_end: string;
+  sent_at: string | null;
+  expires_at: string;
+  recipients_count: number;
+}
+
 export interface AtstovavimasInstitution {
   id: string;
   name: string;
   tenant_id?: string | number;
+  /** Full models on the personal page carry more fields; only id and the localized title are read. */
+  types?: Array<{ id: string | number; title?: unknown }>;
   tenant?: {
     id: string | number;
     shortname: string;
@@ -160,6 +178,7 @@ export interface GanttInstitution {
   id: string;
   name: string;
   tenant_id?: string;
+  types?: GanttInstitutionType[];
   has_public_meetings?: boolean;
   /** One of VU SA's own bodies rather than one it delegates representatives into. */
   is_internal?: boolean;

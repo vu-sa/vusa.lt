@@ -62,7 +62,6 @@
           :gaps="ganttData.tenantGaps.value"
           :institution-names="tenantInstitutionNames"
           :tenant-names
-          :institution-tenant="tenantInstitutionTenant"
           :institution-has-public-meetings="tenantInstitutionHasPublicMeetings"
           :institution-has-activity="ganttData.tenantInstitutionHasActivity.value"
           :institution-periodicity="tenantInstitutionPeriodicity"
@@ -71,6 +70,8 @@
           :loading-range="meetingsLoadingRange"
           :meetings-loading="meetingsLoadingVisible"
           :representative-activity
+          :activity-requests="ganttActivityRequests.data.value ?? []"
+          :show-activity-requests-option="canAskAboutActivity || (ganttActivityRequests.data.value?.length ?? 0) > 0"
           @create-meeting="onCreateMeeting"
           @create-check-in="actions.onGapCreateCheckIn"
           @range-changed="onTenantRangeChanged"
@@ -118,7 +119,7 @@ import { provideTimelineFilters } from './Composables/useTimelineFilters';
 import { useTenantMeetings } from './Composables/useTenantMeetings';
 import { useTenantStatusHistory } from './Composables/useTenantStatusHistory';
 import { useTenantTimelineData } from './Composables/useTenantTimelineData';
-import type { AtstovavimasInstitution, AtstovavimasTenant, InstitutionStatusSummaryData } from './types';
+import type { AtstovavimasInstitution, AtstovavimasTenant, GanttActivityRequest, InstitutionStatusSummaryData } from './types';
 
 import OverviewNumbers, { type OverviewNumberItem } from '@/Components/Overview/OverviewNumbers.vue';
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
@@ -150,10 +151,12 @@ const hasStats = computed(() => props.statsTenants.length > 0);
 const timelineFilters = provideTimelineFilters([], props.ganttTenants, {
   statsTenants: props.statsTenants,
   defaultGanttTenantIds: props.defaultGanttTenantIds,
+  ganttFollowsStats: hasStats.value,
 });
 const actions = useAtstovavimasActions([]);
 const tenantTimelineData = useTenantTimelineData();
 const ganttRows = useTenantTimelineData<AtstovavimasInstitution[]>('api.v1.admin.visak.gantt');
+const ganttActivityRequests = useTenantTimelineData<GanttActivityRequest[]>('api.v1.admin.visak.activityRequests');
 const tenantMeetings = useTenantMeetings(() => timelineFilters.selectedTenantForGantt.value);
 const tenantInstitutionsData = computed(() => tenantTimelineData.data.value?.institutions ?? []);
 const ganttInstitutionsData = computed(() => ganttRows.data.value ?? []);
@@ -320,6 +323,7 @@ function onTenantRangeChanged(min: Date, max: Date): void {
 onMounted(() => {
   tenantTimelineData.load(timelineFilters.selectedStatsTenants.value);
   ganttRows.load(timelineFilters.selectedTenantForGantt.value);
+  ganttActivityRequests.load(timelineFilters.selectedTenantForGantt.value);
   loadInitialMeetingWindow();
 });
 
@@ -330,6 +334,7 @@ watch(() => timelineFilters.selectedStatsTenants.value, (tenantIds) => {
 watch(() => timelineFilters.selectedTenantForGantt.value, (newTenants, oldTenants) => {
   if (newTenants.length > 0) {
     ganttRows.load(newTenants);
+    ganttActivityRequests.load(newTenants);
     if (newTenants.join(',') !== (oldTenants ?? []).join(',')) {
       tenantMeetings.reset();
       loadInitialMeetingWindow();
@@ -343,14 +348,6 @@ const tenantInstitutionNames = computed(() => {
   const result: Record<string, string> = {};
   for (const institution of ganttData.tenantInstitutions.value) {
     result[institution.id as string] = String(institution.name ?? '');
-  }
-  return result;
-});
-
-const tenantInstitutionTenant = computed(() => {
-  const result: Record<string, string> = {};
-  for (const institution of ganttData.tenantInstitutions.value) {
-    result[institution.id as string] = String(institution.tenant_id ?? '');
   }
   return result;
 });
@@ -380,6 +377,7 @@ function handleCheckInDialogClose(): void {
   }
   tenantTimelineData.load(timelineFilters.selectedStatsTenants.value, true);
   ganttRows.load(timelineFilters.selectedTenantForGantt.value, true);
+  ganttActivityRequests.load(timelineFilters.selectedTenantForGantt.value, true);
   void tenantMeetings.refresh();
 }
 </script>

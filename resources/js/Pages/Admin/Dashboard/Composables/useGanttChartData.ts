@@ -14,9 +14,9 @@ import {
   calculateInactivePeriods,
   formatInstitutionsForGantt as formatInstitutionsForGanttHelper,
   buildInstitutionNamesMap,
-  buildInstitutionTenantMap,
   buildInstitutionPublicMeetingsMap,
   buildInstitutionPeriodicityMap,
+  ganttInstitutionTypes,
 } from '../utils/ganttHelpers';
 
 export function useGanttChartData(
@@ -75,10 +75,6 @@ export function useGanttChartData(
     return cachedTenantNames.value;
   };
 
-  const getInstitutionTenant = (institutions: AtstovavimasInstitution[]) => {
-    return buildInstitutionTenantMap(institutions);
-  };
-
   // Get public meetings lookup for institutions
   const getInstitutionHasPublicMeetings = (institutions: AtstovavimasInstitution[]) => {
     return buildInstitutionPublicMeetingsMap(institutions);
@@ -100,6 +96,7 @@ export function useGanttChartData(
       id: i.id,
       name: String(i.name ?? ''),
       tenant_id: String(i.tenant_id ?? i.tenant?.id ?? ''),
+      types: ganttInstitutionTypes(i),
       is_internal: i.is_internal,
       authorized: i.authorized,
     }));
@@ -162,7 +159,6 @@ export function useGanttChartData(
     // Helper functions
     getInstitutionNames,
     getTenantNames,
-    getInstitutionTenant,
     getInstitutionHasPublicMeetings,
     getInstitutionPeriodicity,
     formatInstitutionsForGantt,

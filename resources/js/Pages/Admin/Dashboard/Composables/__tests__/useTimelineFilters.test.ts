@@ -121,6 +121,36 @@ describe('provideTimelineFilters', () => {
     wrapper.unmount();
   });
 
+  it('makes the Gantt follow the statistics selector, on load and on change, but never the other way', async () => {
+    const everyTenant: AtstovavimasTenant[] = [...tenants, { id: 9, shortname: 'VU SA MIF', type: 'padalinys' }];
+    localStorage.setItem('atstovavimas-timeline-filters', JSON.stringify({
+      selectedTenantForGantt: ['9'],
+      selectedStatsTenants: ['3'],
+    }));
+    let filters: TimelineFilters | undefined;
+    const Harness = defineComponent({
+      setup() {
+        filters = provideTimelineFilters([], everyTenant, { statsTenants: tenants, defaultGanttTenantIds: ['9'], ganttFollowsStats: true });
+        return () => null;
+      },
+    });
+
+    const wrapper = mount(Harness);
+
+    // On arrival the Gantt shows what the statistics show, not what it showed last time.
+    expect(filters?.selectedTenantForGantt.value).toEqual(['3']);
+
+    filters?.setSelectedStatsTenants(['3', '6']);
+    await nextTick();
+    expect(filters?.selectedTenantForGantt.value).toEqual(['3', '6']);
+
+    filters?.setSelectedTenants(['3', '6', '9']);
+    await nextTick();
+    expect(filters?.selectedStatsTenants.value).toEqual(['3', '6']);
+
+    wrapper.unmount();
+  });
+
   /**
    * The chart used to have internal bodies removed server-side with no way to ask for them.
    * They are drawn by default now, so this flag has to start off and stay off.

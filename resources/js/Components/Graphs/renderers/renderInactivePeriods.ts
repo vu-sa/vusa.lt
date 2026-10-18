@@ -40,15 +40,15 @@ export interface InactivePeriodsRenderContext {
   rowTop: (key: string | number) => number;
   /** Get row height by key */
   rowHeightFor: (key: string | number) => number;
-  /** All visible institution IDs (to detect institutions with no members) */
-  allInstitutionIds?: Array<string | number>;
+  /** Visible institution rows; an institution with no members at all is inactive throughout */
+  rows: Array<{ key: string; institutionId: string | number }>;
 }
 
 /**
  * Render inactive period overlays with diagonal stripes
  */
 export function renderInactivePeriods(ctx: InactivePeriodsRenderContext): void {
-  const { g, x, innerWidth, inactivePeriods, dutyMembers, minTime, maxTime, rowTop, rowHeightFor, allInstitutionIds } = ctx;
+  const { g, x, innerWidth, inactivePeriods, dutyMembers, minTime, maxTime, rowTop, rowHeightFor, rows } = ctx;
 
   // Group duty members by institution
   const membersByInstitution = new Map<string, DutyMember[]>();
@@ -61,19 +61,13 @@ export function renderInactivePeriods(ctx: InactivePeriodsRenderContext): void {
 
   const computedInactivePeriods: InactivePeriod[] = [];
 
-  // For institutions with NO members at all, show inactive for entire timeline
-  if (allInstitutionIds) {
-    for (const instId of allInstitutionIds) {
-      const instIdStr = String(instId);
-      if (!membersByInstitution.has(instIdStr)) {
-        // Institution has no duty members at all - inactive for entire visible period
-        const periodEnd = maxTime ?? new Date(new Date().getTime() + 365 * 24 * 60 * 60 * 1000);
-        computedInactivePeriods.push({
-          institution_id: instIdStr,
-          fromDate: minTime,
-          untilDate: periodEnd,
-        });
-      }
+  for (const instIdStr of new Set(rows.map(row => String(row.institutionId)))) {
+    if (!membersByInstitution.has(instIdStr)) {
+      computedInactivePeriods.push({
+        institution_id: instIdStr,
+        fromDate: minTime,
+        untilDate: maxTime ?? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      });
     }
   }
 
@@ -123,8 +117,15 @@ export function renderInactivePeriods(ctx: InactivePeriodsRenderContext): void {
     }
   }
 
-  // Combine with the prop-based inactive periods
-  const allInactivePeriods = [...inactivePeriods, ...computedInactivePeriods];
+  const rowKeysByInstitution = new Map<string, string[]>();
+  for (const row of rows) {
+    const keys = rowKeysByInstitution.get(String(row.institutionId)) ?? [];
+    keys.push(row.key);
+    rowKeysByInstitution.set(String(row.institutionId), keys);
+  }
+
+  const allInactivePeriods = [...inactivePeriods, ...computedInactivePeriods].flatMap(period =>
+    (rowKeysByInstitution.get(String(period.institution_id)) ?? []).map(rowKey => ({ ...period, rowKey })));
 
   if (allInactivePeriods.length === 0) return;
 
@@ -136,13 +137,13 @@ export function renderInactivePeriods(ctx: InactivePeriodsRenderContext): void {
     .append('rect')
     .attr('class', 'inactive-period')
     .attr('x', d => Math.max(0, x(d.fromDate)))
-    .attr('y', d => rowTop(String(d.institution_id)) + 2)
+    .attr('y', d => rowTop(d.rowKey) + 2)
     .attr('width', (d) => {
       const startX = Math.max(0, x(d.fromDate));
       const endX = Math.min(innerWidth, x(d.untilDate));
       return Math.max(0, endX - startX);
     })
-    .attr('height', d => rowHeightFor(String(d.institution_id)) - 4)
+    .attr('height', d => rowHeightFor(d.rowKey) - 4)
     .attr('fill', 'url(#inactiveStripes)')
     .attr('pointer-events', 'none')
     .append('title')

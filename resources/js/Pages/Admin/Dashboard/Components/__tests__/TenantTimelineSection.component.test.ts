@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { defineComponent, h, ref } from 'vue';
-import { mount } from '@vue/test-utils';
+import { defineComponent, h, nextTick, ref } from 'vue';
+import { flushPromises, mount } from '@vue/test-utils';
 
 import TenantTimelineSection from '../TenantTimelineSection.vue';
 
@@ -11,6 +11,7 @@ const timelineFilters = {
   hideInternalInstitutionsTenant: ref(false),
   showDutyMembersTenant: ref(true),
   showActivityStatusTenant: ref(false),
+  showActivityRequestsTenant: ref(true),
   tenantInstitutionsLoaded: ref(true),
   tenantInstitutionsLoading: ref(false),
   setSelectedTenants: vi.fn(),
@@ -21,20 +22,20 @@ vi.mock('../../Composables/useTimelineFilters', () => ({
   useTimelineFilters: () => timelineFilters,
 }));
 
-vi.mock('../../Composables/useGanttSettings', () => ({
-  useGanttSettings: () => ({
-    showTenantHeaders: ref(true),
-  }),
-}));
-
-const GanttFilterDropdownStub = defineComponent({
-  name: 'GanttFilterDropdown',
-  props: {
-    tenants: Array,
-    selectedTenants: Array,
-  },
+const TenantScopeSelectorStub = defineComponent({
+  name: 'TenantScopeSelector',
+  props: { tenants: Array, selectedTenants: Array },
+  emits: ['update:selectedTenants'],
   setup() {
-    return () => h('div', { 'data-testid': 'gantt-display-settings' });
+    return () => h('div', { 'data-testid': 'gantt-tenants' });
+  },
+});
+
+const TimelineGanttChartStub = defineComponent({
+  name: 'TimelineGanttChart',
+  props: { meetingsLoading: Boolean },
+  setup() {
+    return () => h('div', { 'data-testid': 'gantt-chart' });
   },
 });
 
@@ -48,41 +49,58 @@ describe('TenantTimelineSection', () => {
 
   afterEach(() => {
     wrapper?.unmount();
+    timelineFilters.tenantInstitutionsLoading.value = false;
     vi.clearAllMocks();
   });
 
-  function createWrapper(showTenantSelector: boolean) {
-    return mount(TenantTimelineSection, {
+  async function createWrapper(availableTenants = tenants) {
+    wrapper = mount(TenantTimelineSection, {
       props: {
-        availableTenants: tenants,
-        tenantInstitutions: [],
+        availableTenants,
+        tenantInstitutions: [{ id: 'a', name: 'VU Senatas' }],
         meetings: [],
         gaps: [],
         institutionNames: {},
         tenantNames: {},
-        institutionTenant: {},
-        showTenantSelector,
       },
       global: {
         stubs: {
-          GanttFilterDropdown: GanttFilterDropdownStub,
-          RepresentativeActivitySection: true,
-          TimelineGanttChart: true,
-          TimelineGanttSkeleton: true,
+          TenantScopeSelector: TenantScopeSelectorStub,
+          GanttFilterDropdown: true,
+          TimelineGanttChart: TimelineGanttChartStub,
+          TimelineGanttSkeleton: { template: '<div data-testid="gantt-skeleton" />' },
         },
       },
     });
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    await flushPromises();
   }
 
-  it('keeps the Gantt dropdown limited to display settings for administrators', () => {
-    wrapper = createWrapper(false);
+  it('picks the Gantt\'s padaliniai in their own control, not in the filters', async () => {
+    await createWrapper();
 
-    expect(wrapper.getComponent(GanttFilterDropdownStub).props('tenants')).toBeUndefined();
+    const picker = wrapper.getComponent(TenantScopeSelectorStub);
+    expect(picker.props('tenants')).toEqual(tenants);
+
+    picker.vm.$emit('update:selectedTenants', ['1', '2']);
+    expect(timelineFilters.setSelectedTenants).toHaveBeenCalledWith(['1', '2']);
   });
 
-  it('retains tenant selection in the Gantt dropdown for non-administrators', () => {
-    wrapper = createWrapper(true);
+  it('offers no picker when there is only one padalinys to show', async () => {
+    await createWrapper([tenants[0]!]);
 
-    expect(wrapper.getComponent(GanttFilterDropdownStub).props('tenants')).toEqual(tenants);
+    expect(wrapper.findComponent(TenantScopeSelectorStub).exists()).toBe(false);
+  });
+
+  it('keeps the chart mounted while its rows reload, showing the loading indicator instead', async () => {
+    await createWrapper();
+    const chart = wrapper.getComponent(TimelineGanttChartStub);
+
+    timelineFilters.tenantInstitutionsLoading.value = true;
+    await nextTick();
+
+    expect(wrapper.find('[data-testid="gantt-skeleton"]').exists()).toBe(false);
+    expect(wrapper.getComponent(TimelineGanttChartStub).vm).toBe(chart.vm);
+    expect(chart.props('meetingsLoading')).toBe(true);
   });
 });

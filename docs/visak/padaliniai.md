@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Padaliniai
 area: visak
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-18
 tests:
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php
   - tests/Feature/Admin/Core/AtstovavimasApiTest.php
@@ -15,6 +15,11 @@ tests:
   - resources/js/Pages/Admin/Dashboard/Components/__tests__/InstitutionStatusTrendChart.component.test.ts
   - resources/js/Pages/Admin/Dashboard/Composables/__tests__/useTimelineFilters.test.ts
   - resources/js/Pages/Admin/Dashboard/Composables/__tests__/useTenantMeetings.test.ts
+  - resources/js/Pages/Admin/Dashboard/Composables/__tests__/useGanttSettings.test.ts
+  - resources/js/Pages/Admin/Dashboard/Components/__tests__/TenantTimelineSection.component.test.ts
+  - resources/js/Components/Graphs/__tests__/MeetingsGantt.component.test.ts
+  - resources/js/Components/Graphs/composables/__tests__/useGanttLayout.test.ts
+  - resources/js/Components/Graphs/composables/__tests__/useGanttInteractions.test.ts
   - resources/js/Pages/Admin/Dashboard/Composables/__tests__/statusTrend.test.ts
   - resources/js/Components/Home/__tests__/HomeSections.component.test.ts
   - tests/Browser/VisakOverviewPagesTest.php
@@ -96,12 +101,40 @@ arba neaktyvius (niekada neprisijungusius arba neprisijungusius daugiau nei 30 d
 ### Posėdžių laiko juosta
 
 Laiko juosta rodoma didesniame ekrane, o telefone siūloma nuoroda į posėdžių sąrašą. Posėdžiai
-kraunami dalimis: slenkant įkeliami tolimesni mėnesiai.
+kraunami dalimis: kai slenki ar atitolini vaizdą, įkeliami matomi mėnesiai, artimiausi ekrano viduriui
+pirmiausia.
 
-Filtruose galima pasirinkti **padalinius** (atskirai nuo rodiklių pasirinkimo) ir **rodymo
-nustatymus**: rodyti tik aktyvias ar tik viešas institucijas, slėpti VU SA darinius, rodyti narius,
-padalinių sekcijas. **Atstatyti filtrus** grąžina numatytuosius nustatymus. Laiko juostą galima
-atidaryti per visą ekraną, o **legenda** paaiškina spalvas ir žymėjimus.
+Laiko juostos padaliniai pasirenkami mygtuku **Rodoma** šalia filtrų. Kai puslapio viršuje pakeičiamas
+rodiklių padalinių pasirinkimas, laiko juosta pradeda rodyti tuos pačius padalinius, taip pat ir kitą
+kartą atvėrus puslapį. Laiko juostoje galima laikinai pridėti daugiau padalinių – rodiklių pasirinkimas
+nuo to nesikeičia.
+
+**Filtrai** – tai rodymo nustatymai: rodyti tik aktyvias ar tik viešas institucijas, slėpti VU SA
+darinius, rodyti narius ir užklausas atstovams. **Atstatyti filtrus** grąžina numatytuosius
+nustatymus.
+
+Laiko juostos įrankių juostoje:
+
+- **Mastelis** keičiamas mygtukais, slankikliu arba klavišais **+** ir **−** – nuo maždaug
+  trejų metų iki kelių mėnesių viename ekrane.
+- **Grupuoti** sudeda institucijas **pagal padalinius**, **pagal institucijų tipus** arba palieka
+  vienu sąrašu. Institucija, turinti kelis tipus, rodoma prie kiekvieno, o institucijos be tipo –
+  sąrašo gale, skiltyje **Be tipo**.
+- Laiko juostą galima atidaryti per visą ekraną, o **legenda** paaiškina spalvas ir žymėjimus.
+  Institucijų stulpelio plotį galima keisti tempiant jo kraštą.
+
+**Užklausos atstovams.** Tie, kurie gali [klausti atstovų](/visak/institucijos#paklausti), mato
+visas dar neatsakytas užklausas, o atstovai – tik jiems išsiųstas. Užklausa **Ar vyko posėdis?**
+rodoma kaip laužtinis skliaustas virš klausiamo laikotarpio su laiško ženklu viduryje; užvedus ant
+jo matyti, kada užklausa išsiųsta, iki kada galioja ir kiek gavėjų. Užklausa **Papildyk posėdžių
+įrašus** pažymi pačius neužpildytus to laikotarpio posėdžius violetine spalva ir laiško ženklu.
+
+<ChangelogNote version="v3.8" date="2026-10-18" title="Grupavimas pagal tipus ir užklausos laiko juostoje">
+
+Laiko juostą galima grupuoti pagal institucijų tipus, ji seka rodiklių padalinių pasirinkimą, rodo
+neatsakytas užklausas atstovams ir greičiau kraunasi atitolinus vaizdą. Išsamios eilutės pašalintos.
+
+</ChangelogNote>
 
 ## Kas ką gali {#teises}
 
@@ -115,15 +148,21 @@ Puslapį atidaryti gali **kiekvienas** prisijungęs narys.
 | Komunikacijos koordinatorius | Savo padalinio | Savo padalinys pilnai, kitur – viešos | – |
 | Centrinio biuro studentų atstovų koordinatorius | Visų padalinių | Visi padaliniai pilnai | ✓ |
 
-Laiko juosta pagal nutylėjimą atsidaro su padaliniais, kurių rodikliai rodomi. Jei tokių nėra – su
-naudotojo institucijų padaliniais.
+Laiko juosta atsidaro su tais pačiais padaliniais, kurių rodikliai rodomi. Kas rodiklių nemato, tam
+laiko juosta pirmą kartą atsidaro su jo institucijų padaliniais, o vėliau – su paskutiniu
+pasirinkimu.
 
 ## Techninė informacija {#technine-informacija}
 
 - Puslapis – `AtstovavimasDashboardController::padaliniai` (`statsTenants`, `ganttTenants`,
   `defaultGanttTenantIds`, `canViewTenantTasks`). Duomenys kraunami per
-  `/api/v1/admin/visak/{timeline,timeline/history,representatives,gantt,meetings}`
-  (`AtstovavimasApiController`).
+  `/api/v1/admin/visak/{timeline,timeline/history,representatives,gantt,meetings,activity-requests}`
+  (`AtstovavimasApiController`). Posėdžiai kraunami ne didesnėmis kaip 6 mėn. dalimis
+  (`useTenantMeetings`); serveris priima iki 24 mėn.
+- Užklausos atstovams – `GetOpenActivityRequestSpans`: atviros (`InstitutionActivityRequest::open()`)
+  užklausos, sutrauktos į vieną laikotarpį institucijai ir užklausos rūšiai. Visas mato tas, kas
+  praeina `InstitutionCheckInPolicy::askAboutActivity` (`ResolveAskableInstitutions`), kiti – tik
+  savo. Atsakymas nekešuojamas.
 - Rodiklių padaliniai – `AtstovavimasSettings::getVisibleTenantIds`: super administratorius arba
   `institutions.read.*` – visi, `institutions.read.padalinys` – savo. Rodiklių užklausos kitiems
   padaliniams grąžina 403. Užduočių skaičius – `tasks.read.padalinys`.

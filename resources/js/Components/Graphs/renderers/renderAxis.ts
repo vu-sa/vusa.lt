@@ -24,9 +24,9 @@ export interface AxisRenderContext {
   axisHeight: number;
   /** Current day width in pixels */
   dayWidthPx: number;
-  /** Minimum time */
+  /** Start of the drawn range (the viewport, not the whole timeline) */
   minTime: Date;
-  /** Maximum time */
+  /** End of the drawn range */
   maxTime: Date;
   /** Color palette */
   colors: GanttColors;
@@ -98,8 +98,9 @@ export function renderAxis(ctx: AxisRenderContext): void {
   const shortMonthFmt = getMonthFormatter(locale, true);
 
   // Render week ticks (or month ticks at very low zoom)
+  // Explicit values over the drawn range only: the scale's domain can span years beyond the screen.
   const xAxis = d3.axisTop<Date>(x)
-    .ticks(tickInterval)
+    .tickValues(tickInterval ? tickInterval.range(minTime, maxTime) : [])
     .tickFormat((d) => {
       // At lower zoom levels, only show the day number
       if (dayWidthPx < 10) {

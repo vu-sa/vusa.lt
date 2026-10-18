@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\ActivityRequests\GetOpenActivityRequestSpans;
 use App\Actions\GetFollowedInstitutions;
 use App\Actions\GetTypeFiles;
 use App\Actions\GetUpcomingMeetingsForUser;
@@ -140,6 +141,8 @@ class AtstovavimasDashboardController extends AdminController
                 fn () => GetFollowedInstitutions::execute($user(), DashboardController::FOLLOWED_PREVIEW_COUNT),
                 'secondary',
             ),
+            // Open requests over the user's own bodies, drawn on the timeline.
+            'activityRequests' => Inertia::defer(fn () => $this->ownActivityRequests($user()), 'secondary'),
             // R-g: the human answer to "I'm stuck" belongs on every rep screen, but never on the first paint.
             'coordinators' => Inertia::defer(fn () => GetUserCoordinators::execute($user()), 'secondary'),
             // Reference files kept on the user's duty types ("Studentų atstovai" regulations, templates).
@@ -148,6 +151,21 @@ class AtstovavimasDashboardController extends AdminController
                 self::REFERENCE_DOCUMENTS_LIMIT,
             ), 'secondary'),
         ]);
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private function ownActivityRequests(User $user): array
+    {
+        $institutionIds = $user->authorization_duties->pluck('institution_id')
+            ->merge($user->secretariedInstitutions()->pluck('institutions.id'))
+            ->filter()
+            ->map(fn ($id) => (string) $id)
+            ->unique()
+            ->values();
+
+        return app(GetOpenActivityRequestSpans::class)->execute($user, $institutionIds);
     }
 
     /**

@@ -10,11 +10,7 @@ import type { GanttColors } from '../ganttColors';
 
 interface LayoutRow {
   key: string | number;
-  /**
-   * Widened from the meetings chart's 'tenant' | 'institution' so other charts
-   * (the dutiable timeline) can reuse this renderer with their own row kinds.
-   * Only 'tenant' is special-cased below, as a header row that skips grid lines.
-   */
+  /** 'group' (meetings chart) and 'tenant' (dutiable timeline) are header rows without grid lines. */
   type: string;
   height: number;
   top: number;
@@ -33,9 +29,9 @@ export interface BackgroundRenderContext {
   innerHeight: number;
   /** Color palette */
   colors: GanttColors;
-  /** Minimum time */
+  /** Start of the drawn range (the viewport, not the whole timeline) */
   minTime: Date;
-  /** Maximum time */
+  /** End of the drawn range */
   maxTime: Date;
   /** Get row top position by key */
   rowTop: (key: string | number) => number;
@@ -55,6 +51,8 @@ export interface BackgroundRenderContext {
 /**
  * Render row backgrounds with zebra striping and hover effects
  */
+const isHeader = (row: LayoutRow) => row.type === 'group' || row.type === 'tenant';
+
 export function renderBackground(ctx: BackgroundRenderContext): void {
   const { g, x, layoutRows, innerWidth, innerHeight, colors, minTime, maxTime, rowTop, rowHeightFor, dayWidthPx, rowIndex } = ctx;
 
@@ -70,19 +68,19 @@ export function renderBackground(ctx: BackgroundRenderContext): void {
     .attr('width', innerWidth)
     .attr('height', d => d.r.height)
     .attr('fill', (d) => {
-      if (d.r.type === 'tenant') {
+      if (isHeader(d.r)) {
         return colors.tenantRow;
       }
       return d.i % 2 === 0 ? colors.zebraEven : colors.zebraOdd;
     })
     .attr('class', 'transition-colors duration-150')
     .on('mouseenter', function (event, d: any) {
-      if (d.r.type !== 'tenant') {
+      if (!isHeader(d.r)) {
         d3.select(this).attr('fill', colors.rowHover);
       }
     })
     .on('mouseleave', function (event, d: any) {
-      if (d.r.type !== 'tenant') {
+      if (!isHeader(d.r)) {
         d3.select(this).attr('fill', d.i % 2 === 0 ? colors.zebraEven : colors.zebraOdd);
       }
     });
@@ -91,7 +89,7 @@ export function renderBackground(ctx: BackgroundRenderContext): void {
   // At high zoom (dayWidthPx >= 14): show all Sundays
   // At lower zoom: show only the last Sunday of each month for orientation
   const days = d3.timeDay.range(minTime, maxTime);
-  const institutionRows = layoutRows.filter(r => r.type !== 'tenant');
+  const institutionRows = layoutRows.filter(r => !isHeader(r));
   const showAllSundays = typeof dayWidthPx === 'number' && dayWidthPx >= 14;
 
   const dayBands: Array<{ day: Date; row: LayoutRow }> = [];

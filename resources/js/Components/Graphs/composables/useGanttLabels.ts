@@ -1,13 +1,4 @@
-/**
- * useGanttLabels - Gantt chart label and name utilities
- *
- * Extracted from MeetingsGantt.vue to reduce component complexity.
- * Handles:
- * - Institution name lookups from multiple sources
- * - Tenant name merging (props + global page props)
- * - Date formatting utilities
- * - Relationship tooltip generation
- */
+/** Names, date formats and relationship tooltips for the meetings Gantt's labels. */
 import { computed, type ComputedRef } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -19,15 +10,11 @@ export interface GanttLabelsOptions {
   institutionNames: () => Record<string | number, string> | undefined;
   /** Tenant names from props (getter for reactivity) */
   tenantNames: () => Record<string | number, string> | undefined;
-  /** Institution to tenant mapping (getter for reactivity) */
-  institutionTenant: () => Record<string | number, string | number> | undefined;
 }
 
 export interface GanttLabelsData {
   /** Institutions from props with name (getter for reactivity) */
   institutions: () => Array<{ id: string | number; name?: string }> | undefined;
-  /** Meetings for fallback name lookup (getter for reactivity) */
-  meetings: () => Array<{ institution_id: string | number; institution?: string }>;
   /** Filtered meetings for last meeting calculation */
   filteredMeetings: ComputedRef<Array<{ institution_id: string | number; date: Date }>>;
 }
@@ -38,12 +25,9 @@ export function useGanttLabels(
 ) {
   const page = usePage();
 
-  /**
-   * Institution name lookup map
-   * Priority: props.institutionNames > props.institutions > meeting.institution
-   */
+  /** Explicit names first, then the institutions list. */
   const nameLookup = computed(() => {
-    const map = new Map<string | number, string>();
+    const map = new Map<string, string>();
 
     // Prefer explicitly provided names
     const names = options.institutionNames();
@@ -56,16 +40,8 @@ export function useGanttLabels(
     // From explicit institutions list
     const inst = data.institutions();
     for (const i of (inst ?? [])) {
-      if (!map.has(i.id) && i.name) {
-        map.set(i.id, String(i.name));
-      }
-    }
-
-    // Fallback from meetings payloads
-    const meetings = data.meetings();
-    for (const m of meetings) {
-      if (m.institution_id != null && m.institution && !map.has(m.institution_id)) {
-        map.set(m.institution_id, m.institution);
+      if (!map.has(String(i.id)) && i.name) {
+        map.set(String(i.id), String(i.name));
       }
     }
 
@@ -101,33 +77,20 @@ export function useGanttLabels(
   /**
    * Get institution name by ID
    */
-  const labelFor = (id: string | number) => nameLookup.value.get(id) ?? String(id);
-
-  /**
-   * Get tenant ID for an institution
-   */
-  const tenantFor = (id: string | number) => {
-    const mapping = options.institutionTenant();
-    return mapping?.[id as keyof typeof mapping];
-  };
-
-  /**
-   * Get tenant name for an institution
-   */
-  const tenantLabelFor = (id: string | number) => {
-    const t = tenantFor(id);
-    if (t == null) return undefined;
-    return mergedTenantNames.value[t];
-  };
+  const labelFor = (id: string | number) => nameLookup.value.get(String(id)) ?? String(id);
 
   /**
    * Last meeting date per institution
    */
+  /** Latest past meeting per institution among the loaded ones; planned meetings are not "last". */
   const lastMeetingByInstitution = computed(() => {
-    const m = new Map<string | number, Date>();
+    const now = new Date();
+    const m = new Map<string, Date>();
     for (const it of data.filteredMeetings.value) {
-      const cur = m.get(it.institution_id);
-      if (!cur || it.date > cur) m.set(it.institution_id, it.date);
+      if (it.date > now) continue;
+      const id = String(it.institution_id);
+      const cur = m.get(id);
+      if (!cur || it.date > cur) m.set(id, it.date);
     }
     return m;
   });
@@ -166,8 +129,6 @@ export function useGanttLabels(
     nameLookup,
     mergedTenantNames,
     labelFor,
-    tenantFor,
-    tenantLabelFor,
     lastMeetingByInstitution,
     fmtDate,
     fmtDateWithYear,

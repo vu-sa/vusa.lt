@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Apžvalga
 area: dashboard
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-18
 tests:
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php
   - tests/Feature/Admin/Core/CoordinatorOnRepScreensTest.php
@@ -115,9 +115,11 @@ atmintinės. Naujausi (pagal dokumento datą) pirmiausia. Jei tokių dokumentų 
 ### Posėdžių laiko juosta
 
 Didesniame ekrane rodoma tavo institucijų posėdžių laiko juosta. Telefone vietoj jos siūloma nuoroda
-į posėdžių sąrašą. **Rodymo nustatymuose** galima, pavyzdžiui, parodyti **susijusias institucijas**.
-Susijusios institucijos, kurių duomenų negalima matyti, rodomos be darbotvarkių. Laiko juostą galima
-atidaryti per visą ekraną.
+į posėdžių sąrašą. **Filtruose** galima, pavyzdžiui, parodyti **susijusias institucijas**.
+Susijusios institucijos, kurių duomenų negalima matyti, rodomos be darbotvarkių. Institucijas galima
+grupuoti pagal padalinius arba tipus, o tau išsiųstos neatsakytos užklausos atstovams pažymimos
+laiko juostoje – kaip ir [padalinių laiko juostoje](/visak/padaliniai#posedziu-laiko-juosta). Laiko
+juostą galima atidaryti per visą ekraną.
 
 ### Sekamos institucijos
 

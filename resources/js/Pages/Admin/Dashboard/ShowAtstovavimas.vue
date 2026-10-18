@@ -61,13 +61,13 @@
           :gaps="userScopedGaps"
           :institution-names="userInstitutionNames"
           :tenant-names
-          :institution-tenant="userInstitutionTenant"
           :institution-has-public-meetings="userInstitutionHasPublicMeetings"
           :institution-periodicity="userInstitutionPeriodicity"
           :duty-members="userDutyMembers"
           :inactive-periods="userInactivePeriods"
           :related-institutions
           :may-have-related-institutions="props.mayHaveRelatedInstitutions"
+          :activity-requests="props.activityRequests ?? []"
           @create-meeting="actions.onGapCreateMeeting"
           @create-check-in="actions.onGapCreateCheckIn"
         />
@@ -122,12 +122,11 @@ import { useAtstovavimasActions } from './Composables/useAtstovavimasActions';
 import { useAtstovavimasData } from './Composables/useAtstovavimasData';
 import { provideGanttSettings } from './Composables/useGanttSettings';
 import { provideTimelineFilters } from './Composables/useTimelineFilters';
-import type { AtstovavimasInstitution, AtstovavimasMeeting, AtstovavimasUser } from './types';
+import type { AtstovavimasInstitution, AtstovavimasMeeting, AtstovavimasUser, GanttActivityRequest } from './types';
 import {
   buildInstitutionNamesMap,
   buildInstitutionPeriodicityMap,
   buildInstitutionPublicMeetingsMap,
-  buildInstitutionTenantMap,
   calculateInactivePeriods,
   extractDutyMembers,
 } from './utils/ganttHelpers';
@@ -160,6 +159,8 @@ const props = defineProps<{
   referenceDocuments?: FileableFileItem[];
   upcomingMeetings: { items: HomeMeeting[]; total: number };
   followedInstitutions?: HomeFollowedInstitutions;
+  /** Deferred: open activity requests over the user's own bodies */
+  activityRequests?: GanttActivityRequest[];
 }>();
 
 const actionWindow = useActionWindow();
@@ -282,7 +283,6 @@ useIntersectionObserver(timelineAnchor, ([entry]) => {
 }, { rootMargin: '200px' });
 
 const userInstitutionNames = computed(() => buildInstitutionNamesMap(userScopedInstitutions.value));
-const userInstitutionTenant = computed(() => buildInstitutionTenantMap(userScopedInstitutions.value));
 const userInstitutionHasPublicMeetings = computed(() => buildInstitutionPublicMeetingsMap(userScopedInstitutions.value));
 const userInstitutionPeriodicity = computed(() => buildInstitutionPeriodicityMap(userScopedInstitutions.value));
 const userDutyMembers = computed(() => extractDutyMembers(userScopedInstitutions.value));

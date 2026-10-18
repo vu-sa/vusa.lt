@@ -43,12 +43,10 @@ export interface DutyMemberRenderContext {
   container: HTMLElement;
   /** Time scale */
   x: d3.ScaleTime<number, number>;
-  /** Grouped duty members (by institution + start date) */
-  groupedDutyMembers: Map<string, ParsedDutyMember[]>;
+  /** Members stacked per row and start day, keyed by row key */
+  groupedDutyMembers: Array<{ rowKey: string; startDate: Date; members: ParsedDutyMember[] }>;
   /** Inner width for visibility check */
   innerWidth: number;
-  /** Whether details are expanded (affects avatar size) */
-  detailsExpanded: boolean;
   /** Color palette */
   colors: GanttColors;
   /** Get row top position */
@@ -65,18 +63,16 @@ export interface DutyMemberRenderContext {
  * Render duty member avatar markers
  */
 export function renderDutyMembers(ctx: DutyMemberRenderContext): void {
-  const { g, defs, container, x, groupedDutyMembers, innerWidth, detailsExpanded, colors, rowTop, rowHeightFor, tooltipManager, showActivityStatus } = ctx;
+  const { g, defs, container, x, groupedDutyMembers, innerWidth, rowTop, rowHeightFor, tooltipManager, showActivityStatus } = ctx;
 
-  if (groupedDutyMembers.size === 0) return;
+  if (groupedDutyMembers.length === 0) return;
 
-  const avatarSize = detailsExpanded ? 26 : 20;
+  const avatarSize = 20;
   const avatarOffset = avatarSize / 2;
   const isDark = isDarkModeActive();
 
-  // One shared clipPath for all avatars this render (geometry only depends on
-  // avatarSize, which is constant per render) — avoids creating a fresh def
-  // and re-fetching the image for every avatar on every scroll tick.
-  const avatarClipId = `gantt-avatar-clip-${avatarSize}`;
+  // One shared clipPath, so an avatar's image is not refetched with a fresh def on every scroll tick.
+  const avatarClipId = 'gantt-avatar-clip';
   defs.append('clipPath')
     .attr('id', avatarClipId)
     .append('circle')
@@ -84,25 +80,17 @@ export function renderDutyMembers(ctx: DutyMemberRenderContext): void {
     .attr('cy', avatarSize / 2)
     .attr('r', avatarSize / 2 - 1);
 
-  // Flatten grouped members for rendering
-  const memberGroups = Array.from(groupedDutyMembers.entries()).map(([key, members]) => {
-    const [instId] = key.split(':');
-    const firstMember = members[0];
-    return {
-      key,
-      institution_id: instId ?? '',
-      startDate: firstMember?.startDate ?? new Date(),
-      members: members.slice(0, 3), // Show max 3 avatars
-      overflow: members.length > 3 ? members.length - 3 : 0,
-    };
-  }).filter(g => g.institution_id && g.members.length > 0);
+  const memberGroups = groupedDutyMembers.map(group => ({
+    ...group,
+    members: group.members.slice(0, 3),
+    overflow: Math.max(0, group.members.length - 3),
+  }));
 
   const memberGroup = g.append('g').attr('class', 'duty-member-markers');
 
   for (const group of memberGroups) {
     const xPos = x(group.startDate);
-    const currentRowHeight = rowHeightFor(group.institution_id);
-    const yPos = rowTop(group.institution_id) + (currentRowHeight - avatarSize) / 2;
+    const yPos = rowTop(group.rowKey) + (rowHeightFor(group.rowKey) - avatarSize) / 2;
 
     // Skip if outside visible range
     if (xPos < 0 || xPos > innerWidth) continue;

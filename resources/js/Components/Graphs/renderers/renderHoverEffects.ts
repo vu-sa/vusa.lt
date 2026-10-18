@@ -13,8 +13,7 @@ import { buildDateTooltipContent } from './GanttTooltip';
 
 interface LayoutRow {
   key: string | number;
-  type: 'tenant' | 'institution';
-  tenantId?: string | number;
+  type: string;
   institutionId?: string | number;
   top: number;
   height: number;
@@ -140,10 +139,10 @@ export function renderHoverEffects(ctx: HoverEffectsRenderContext): void {
   // Check if target is within meeting icons or duty member markers (to prevent double tooltips)
   const isOverInteractiveElement = (target: EventTarget | null): boolean => {
     if (!target || !(target instanceof Element)) return false;
-    const meetingIcons = g.select('.meeting-icons').node() as Element | null;
-    const dutyMarkers = g.select('.duty-member-markers').node() as Element | null;
-    return (meetingIcons ? meetingIcons.contains(target) : false)
-      || (dutyMarkers ? dutyMarkers.contains(target) : false);
+    return ['.meeting-icons', '.duty-member-markers', '.activity-requests'].some((selector) => {
+      const node = g.select(selector).node() as Element | null;
+      return node?.contains(target) ?? false;
+    });
   };
 
   // Single mousemove handler: snap to nearest meeting dot in row (within threshold), else center of day
@@ -169,7 +168,7 @@ export function renderHoverEffects(ctx: HoverEffectsRenderContext): void {
     const lr = findRowByY(my);
     if (!lr) return;
 
-    if (lr.type === 'tenant') {
+    if (lr.type !== 'institution') {
       createCircle.attr('opacity', 0);
       if (tooltipManager) tooltipManager.hide();
       hoverLine.attr('opacity', 0);
@@ -247,10 +246,9 @@ export function renderHoverEffects(ctx: HoverEffectsRenderContext): void {
     if (event.shiftKey) return;
 
     const target = event.target as Node;
-    // Select the meeting icons group created by renderMeetings
-    const dotNode = g.select('.meeting-icons').node() as Element | null;
-    const gapNode = g.select('.gap-lines').node() as Element | null;
-    if ((dotNode && dotNode.contains(target)) || (gapNode && gapNode.contains(target))) {
+    const ownedByMark = ['.meeting-icons', '.gap-lines', '.activity-requests']
+      .some(selector => (g.select(selector).node() as Element | null)?.contains(target));
+    if (ownedByMark) {
       return;
     }
 

@@ -22,11 +22,6 @@ const dropdownStubs = {
   },
 };
 
-const tenants = [
-  { id: 1, shortname: 'VU SA IF' },
-  { id: 2, shortname: 'VU SA FF' },
-];
-
 describe('GanttFilterDropdown', () => {
   let wrapper: ReturnType<typeof mount>;
 
@@ -40,9 +35,6 @@ describe('GanttFilterDropdown', () => {
         showOnlyWithActivity: false,
         showOnlyWithPublicMeetings: false,
         showDutyMembers: true,
-        showTenantHeaders: false,
-        tenants,
-        selectedTenants: ['1'],
         ...props,
       },
       global: {
@@ -51,30 +43,11 @@ describe('GanttFilterDropdown', () => {
     });
   }
 
-  // Regression: isFinalSelectedTenant() used to be declared inside toggleTenant's
-  // else-branch, unreachable from the template — rendering with a non-empty
-  // `tenants` list threw a ReferenceError for every non-admin user.
-  it('renders tenant checkboxes without throwing when tenants are provided', () => {
-    expect(() => {
-      wrapper = createWrapper();
-    }).not.toThrow();
+  it('holds display settings only: padaliniai and grouping have their own controls', () => {
+    wrapper = createWrapper();
 
-    expect(wrapper.findAll('[role="menuitemcheckbox"]').length).toBeGreaterThanOrEqual(2);
-  });
-
-  it('disables the last selected tenant only when a selection is required', () => {
-    wrapper = createWrapper({ requireTenantSelection: true, selectedTenants: ['1'] });
-
-    const tenantItems = wrapper.findAll('[role="menuitemcheckbox"]');
-    expect(tenantItems[0].attributes('disabled')).toBeDefined();
-    expect(tenantItems[1].attributes('disabled')).toBeUndefined();
-  });
-
-  it('toggles a tenant on and off', async () => {
-    wrapper = createWrapper({ selectedTenants: ['1'] });
-
-    await wrapper.findAll('[role="menuitemcheckbox"]')[1].trigger('click');
-    expect(wrapper.emitted('update:selectedTenants')?.[0]).toEqual([['1', '2']]);
+    expect(wrapper.text()).not.toContain('Padaliniai');
+    expect(wrapper.text()).not.toContain('Rodyti padalinių sekcijas');
   });
 
   it('offers hiding VU SA\'s own bodies, unticked', async () => {
@@ -90,12 +63,16 @@ describe('GanttFilterDropdown', () => {
     expect(wrapper.emitted('update:hideInternalInstitutions')?.[0]).toEqual([true]);
   });
 
-  it('clears the tenant selection via the "Joks" quick action', async () => {
-    wrapper = createWrapper({ selectedTenants: ['1', '2'] });
+  it('offers the activity-request toggle only to people who may see requests', async () => {
+    wrapper = createWrapper();
+    expect(wrapper.find('[data-slot="gantt-activity-requests-toggle"]').exists()).toBe(false);
+    wrapper.unmount();
 
-    const clearButton = wrapper.findAll('button').find(button => button.text() === 'Joks');
-    await clearButton?.trigger('click');
+    wrapper = createWrapper({ showActivityRequestsOption: true, showActivityRequests: true });
+    const toggle = wrapper.get('[data-slot="gantt-activity-requests-toggle"]');
+    expect(toggle.attributes('data-checked')).toBe('true');
 
-    expect(wrapper.emitted('update:selectedTenants')?.[0]).toEqual([[]]);
+    await toggle.trigger('click');
+    expect(wrapper.emitted('update:showActivityRequests')?.[0]).toEqual([false]);
   });
 });

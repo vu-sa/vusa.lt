@@ -1,61 +1,15 @@
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button size="sm" variant="outline" class="pointer-coarse:h-11" data-tour="gantt-filter-trigger">
+      <Button size="sm" variant="outline" voice="sentence" class="pointer-coarse:h-11" data-tour="gantt-filter-trigger">
         <SlidersHorizontal aria-hidden="true" />
-        {{ triggerLabel }}
+        {{ $t('Filtrai') }}
       </Button>
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" class="w-64">
-      <!-- Tenant selection (optional) -->
-      <template v-if="tenants && tenants.length > 0">
-        <DropdownMenuLabel class="flex items-center justify-between">
-          <span>{{ $t('Padaliniai') }} ({{ selectedTenants.length }}/{{ tenants.length }})</span>
-          <div class="flex gap-1">
-            <Button
-              size="xs"
-              variant="ghost"
-              class="h-5 px-1.5 text-xs"
-              :disabled="selectedTenants.length === tenants.length"
-              @click.stop="selectAllTenants"
-            >
-              {{ $t('Visi') }}
-            </Button>
-            <Button
-              v-if="!requireTenantSelection"
-              size="xs"
-              variant="ghost"
-              class="h-5 px-1.5 text-xs"
-              :disabled="selectedTenants.length === 0"
-              @click.stop="deselectAllTenants"
-            >
-              {{ $t('Joks') }}
-            </Button>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <div class="max-h-48 overflow-y-auto">
-          <DropdownMenuCheckboxItem
-            v-for="t in tenants"
-            :key="t.id"
-            :model-value="selectedTenants.includes(String(t.id))"
-            :disabled="isFinalSelectedTenant(String(t.id))"
-            @update:model-value="(checked: boolean) => toggleTenant(String(t.id), checked)"
-            @select.prevent
-          >
-            {{ t.shortname ?? t.id }}
-          </DropdownMenuCheckboxItem>
-        </div>
-        <DropdownMenuSeparator />
-      </template>
+      <DropdownMenuLabel>{{ $t('Rodymo nustatymai') }}</DropdownMenuLabel>
+      <DropdownMenuSeparator />
 
-      <!-- Display settings label when no tenants -->
-      <template v-else>
-        <DropdownMenuLabel>{{ $t('Rodymo nustatymai') }}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-      </template>
-
-      <!-- Filter options -->
       <DropdownMenuCheckboxItem
         :model-value="showOnlyWithActivity"
         @update:model-value="(val: boolean) => $emit('update:showOnlyWithActivity', val)"
@@ -89,7 +43,6 @@
         {{ $t('Rodyti narius') }}
       </DropdownMenuCheckboxItem>
 
-      <!-- Activity status toggle - only visible when showDutyMembers is enabled -->
       <DropdownMenuCheckboxItem
         v-if="showDutyMembers && showActivityStatusOption"
         :model-value="showActivityStatus"
@@ -100,11 +53,13 @@
       </DropdownMenuCheckboxItem>
 
       <DropdownMenuCheckboxItem
-        :model-value="showTenantHeaders"
-        @update:model-value="(val: boolean) => $emit('update:showTenantHeaders', val)"
+        v-if="showActivityRequestsOption"
+        :model-value="showActivityRequests"
+        data-slot="gantt-activity-requests-toggle"
+        @update:model-value="(val: boolean) => $emit('update:showActivityRequests', val)"
         @select.prevent
       >
-        {{ $t('Rodyti padalinių sekcijas') }}
+        {{ $t('activity_requests.gantt.show') }}
       </DropdownMenuCheckboxItem>
 
       <DropdownMenuCheckboxItem
@@ -114,20 +69,16 @@
         @select.prevent
       >
         <span class="flex items-center gap-1.5">
-          <svg class="h-4 w-4 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-          </svg>
+          <Link2 class="size-4 text-muted-foreground" aria-hidden="true" />
           {{ $t('Rodyti susijusias institucijas') }}
         </span>
       </DropdownMenuCheckboxItem>
 
-      <!-- Reset button -->
       <template v-if="showReset">
         <DropdownMenuSeparator />
         <div class="p-1">
-          <Button size="sm" variant="ghost" class="w-full justify-start text-muted-foreground" @click="$emit('reset')">
-            <RotateCcw class="mr-2 h-4 w-4" />
+          <Button size="sm" variant="ghost" voice="sentence" class="w-full justify-start text-muted-foreground" @click="$emit('reset')">
+            <RotateCcw class="mr-2 size-4" />
             {{ $t('Atstatyti filtrus') }}
           </Button>
         </div>
@@ -137,9 +88,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { RotateCcw, SlidersHorizontal } from '@lucide/vue';
+import { Link2, RotateCcw, SlidersHorizontal } from '@lucide/vue';
 
 import { Button } from '@/Components/ui/button';
 import {
@@ -151,111 +101,39 @@ import {
   DropdownMenuTrigger,
 } from '@/Components/ui/dropdown-menu';
 
-interface Tenant {
-  id: string | number;
-  shortname?: string;
-}
-
-interface Props {
-  // Tenant selection
-  tenants?: Tenant[];
-  selectedTenants?: string[];
-  // Filter states
+/** What the meetings timeline shows. Padaliniai and grouping live in their own controls. */
+withDefaults(defineProps<{
   showOnlyWithActivity: boolean;
   showOnlyWithPublicMeetings: boolean;
   hideInternalInstitutions?: boolean;
   showDutyMembers: boolean;
   showActivityStatus?: boolean;
   showActivityStatusOption?: boolean;
-  showTenantHeaders: boolean;
+  showActivityRequests?: boolean;
+  /** Only for people who may see activity requests */
+  showActivityRequestsOption?: boolean;
   showRelatedInstitutions?: boolean;
   hasRelatedInstitutions?: boolean;
-  // UI options
   showReset?: boolean;
-  triggerLabelOverride?: string;
-  requireTenantSelection?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  tenants: undefined,
-  selectedTenants: () => [],
+}>(), {
   showReset: true,
   showRelatedInstitutions: true,
   hasRelatedInstitutions: false,
   showActivityStatus: false,
   showActivityStatusOption: false,
+  showActivityRequests: true,
+  showActivityRequestsOption: false,
   hideInternalInstitutions: false,
-  requireTenantSelection: false,
 });
 
-const emit = defineEmits<{
-  'update:selectedTenants': [value: string[]];
+defineEmits<{
   'update:showOnlyWithActivity': [value: boolean];
   'update:showOnlyWithPublicMeetings': [value: boolean];
   'update:hideInternalInstitutions': [value: boolean];
   'update:showDutyMembers': [value: boolean];
   'update:showActivityStatus': [value: boolean];
-  'update:showTenantHeaders': [value: boolean];
+  'update:showActivityRequests': [value: boolean];
   'update:showRelatedInstitutions': [value: boolean];
   'reset': [];
 }>();
-
-// Computed trigger label
-const triggerLabel = computed(() => {
-  if (props.triggerLabelOverride) return props.triggerLabelOverride;
-
-  if (!props.tenants || props.tenants.length === 0) {
-    return $t('Filtrai');
-  }
-
-  if (props.selectedTenants.length === 0) {
-    return $t('Visi padaliniai');
-  }
-
-  if (props.selectedTenants.length === 1) {
-    const tenant = props.tenants.find(t => String(t.id) === props.selectedTenants[0]);
-    return tenant?.shortname || $t('Padalinys');
-  }
-
-  return `${props.selectedTenants.length} ${$t('padaliniai')}`;
-});
-
-function isFinalSelectedTenant(tenantId: string): boolean {
-  return props.requireTenantSelection
-    && props.selectedTenants.length === 1
-    && props.selectedTenants.includes(tenantId);
-}
-
-// Toggle tenant selection
-function toggleTenant(tenantId: string, checked: boolean) {
-  const newSelection = [...props.selectedTenants];
-  if (checked) {
-    if (!newSelection.includes(tenantId)) {
-      newSelection.push(tenantId);
-    }
-  }
-  else {
-    if (isFinalSelectedTenant(tenantId)) {
-      return;
-    }
-
-    const index = newSelection.indexOf(tenantId);
-    if (index > -1) {
-      newSelection.splice(index, 1);
-    }
-  }
-  emit('update:selectedTenants', newSelection);
-}
-
-// Select all tenants
-function selectAllTenants() {
-  if (!props.tenants) return;
-  const allIds = props.tenants.map(t => String(t.id));
-  emit('update:selectedTenants', allIds);
-}
-
-// Deselect all tenants
-function deselectAllTenants() {
-  emit('update:selectedTenants', []);
-}
 </script>

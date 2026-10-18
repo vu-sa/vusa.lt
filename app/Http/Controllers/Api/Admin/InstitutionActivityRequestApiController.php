@@ -3,17 +3,15 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Actions\ActivityRequests\ResolveActivityRequestRecipients;
+use App\Actions\ActivityRequests\ResolveAskableInstitutions;
 use App\Actions\ActivityRequests\SendInstitutionActivityRequests;
 use App\Enums\InstitutionActivityCampaign;
-use App\Enums\Responsibility;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\ActivityRequests\PreviewInstitutionActivityRequestsRequest;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
-use App\Services\ModelAuthorizer;
-use App\Services\ResponsibilityResolver;
 use App\Support\ActivityRequests\ActivityRequestPlanEntry;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -30,13 +28,12 @@ class InstitutionActivityRequestApiController extends ApiController
      */
     public function candidates(
         Request $request,
-        ModelAuthorizer $authorizer,
-        ResponsibilityResolver $responsibilities,
+        ResolveAskableInstitutions $askable,
         InstitutionActivityStatusService $statuses,
     ): JsonResponse {
         $this->authorize('viewAny', InstitutionCheckIn::class);
 
-        $institutions = $this->reachable($request, $authorizer, $responsibilities)
+        $institutions = $this->reachable($request, $askable)
             ->with(['types', 'tenant', 'meetings:id,start_time', 'checkIns'])
             ->get();
 
@@ -62,26 +59,20 @@ class InstitutionActivityRequestApiController extends ApiController
     /**
      * @route GET /api/v1/admin/activity-requests/people
      */
-    public function people(Request $request, ModelAuthorizer $authorizer, ResponsibilityResolver $responsibilities, ResolveActivityRequestRecipients $recipients): JsonResponse
+    public function people(Request $request, ResolveAskableInstitutions $askable, ResolveActivityRequestRecipients $recipients): JsonResponse
     {
         $this->authorize('viewAny', InstitutionCheckIn::class);
 
-        return $this->jsonSuccess($recipients->people($this->reachable($request, $authorizer, $responsibilities)->get(['id', 'name'])));
+        return $this->jsonSuccess($recipients->people($this->reachable($request, $askable)->get(['id', 'name'])));
     }
 
     /** @return Builder<Institution> */
-    private function reachable(Request $request, ModelAuthorizer $authorizer, ResponsibilityResolver $responsibilities): Builder
+    private function reachable(Request $request, ResolveAskableInstitutions $askable): Builder
     {
         /** @var User $user */
         $user = $request->user();
-        $scope = $authorizer->scope($user, 'institutions.update.padalinys');
-        $coordinatedIds = $responsibilities->institutionIdsFor($user, Responsibility::StudentRepCoordination);
 
-        return Institution::query()
-            ->where('is_active', true)
-            ->when(! $scope->isAllScope, fn (Builder $query) => $query->where(fn (Builder $inner) => $inner
-                ->whereIn('tenant_id', $scope->tenantIds())
-                ->orWhereIn('id', $coordinatedIds)));
+        return $askable->query($user)->where('is_active', true);
     }
 
     /**

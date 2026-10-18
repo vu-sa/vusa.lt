@@ -60,6 +60,16 @@ return [
     'others_title' => 'We are also asking about',
     'open_mano' => 'Open Mano VU SA',
     'check_in_note' => 'Reported by answering the email “Did the institution meet?”',
+    'gantt' => [
+        'show' => 'Show requests to representatives',
+        'records_requested' => 'Records requested',
+        'recipients' => 'Recipients: :count',
+        'sent' => 'Sent :date',
+        'expires' => 'Open until :date',
+        'legend_title' => 'Requests to representatives',
+        'legend_confirmation' => 'Representatives are asked whether a meeting took place in this period',
+        'legend_records' => 'Representatives are asked to complete the meeting\'s agenda or decisions',
+    ],
     'campaigns' => [
         'activity_confirmation' => 'Did a meeting take place?',
         'missing_meetings' => 'Complete meeting records',

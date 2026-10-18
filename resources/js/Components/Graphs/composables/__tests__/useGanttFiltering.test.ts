@@ -13,13 +13,10 @@ function build(hideInternal: boolean) {
 
   const filtering = useGanttFiltering(
     {
-      tenantFilter: () => undefined,
-      institutionTenant: () => undefined,
       showOnlyWithActivity: () => false,
       showOnlyWithPublicMeetings: () => false,
       hideInternalInstitutions: () => hide.value,
       institutionHasPublicMeetings: () => undefined,
-      institutionsOrder: () => undefined,
       showDutyMembers: () => false,
     },
     {

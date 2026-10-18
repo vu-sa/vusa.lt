@@ -151,6 +151,16 @@ return [
     'gantt' => [
         'loading_meetings' => 'Loading meetings…',
         'meetings_load_failed' => 'Failed to load meetings. Please try again.',
+        'tenants_label' => 'Showing',
+        'group_by' => 'Group',
+        'group_by_current' => 'Group: :option',
+        'group_by_options' => [
+            'tenant' => 'By unit',
+            'type' => 'By institution type',
+            'none' => 'No groups',
+        ],
+        'grouping_spotlight_title' => 'Group by unit or by type',
+        'grouping_spotlight_body' => 'Group the institutions by unit, by institution type, or keep them in one list. This setting moved here from the filters.',
     ],
     'activity_request' => [
         'ask' => 'Ask the representatives',

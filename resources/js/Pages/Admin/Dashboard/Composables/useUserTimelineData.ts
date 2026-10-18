@@ -17,7 +17,6 @@ import {
   extractMeetingsFromInstitutions,
   formatInstitutionsForGantt,
   buildInstitutionNamesMap,
-  buildInstitutionTenantMap,
   buildInstitutionPublicMeetingsMap,
   buildInstitutionPeriodicityMap,
   mergeRecordMaps,
@@ -39,7 +38,6 @@ interface UseUserTimelineDataOptions {
   /** Base institution names map */
   baseInstitutionNames?: Ref<Record<string, string>> | ComputedRef<Record<string, string>>;
   /** Base institution tenant map */
-  baseInstitutionTenant?: Ref<Record<string, string>> | ComputedRef<Record<string, string>>;
   /** Base has public meetings map */
   baseInstitutionHasPublicMeetings?: Ref<Record<string, boolean>> | ComputedRef<Record<string, boolean>>;
   /** Base institution periodicity map */
@@ -55,7 +53,6 @@ export function useUserTimelineData(options: UseUserTimelineDataOptions) {
     baseDutyMembers,
     baseInactivePeriods,
     baseInstitutionNames,
-    baseInstitutionTenant,
     baseInstitutionHasPublicMeetings,
     baseInstitutionPeriodicity,
   } = options;
@@ -133,18 +130,6 @@ export function useUserTimelineData(options: UseUserTimelineDataOptions) {
     return mergeRecordMaps(base, relatedNames);
   });
 
-  // Merged institution tenant map
-  const mergedInstitutionTenant = computed<Record<string, string>>(() => {
-    const base = baseInstitutionTenant?.value ?? buildInstitutionTenantMap(institutions.value);
-
-    if (!showRelatedInstitutions.value || !visibleRelatedInstitutions.value.length) {
-      return base;
-    }
-
-    const relatedTenants = buildInstitutionTenantMap(visibleRelatedInstitutions.value);
-    return mergeRecordMaps(base, relatedTenants);
-  });
-
   // Merged has public meetings map
   const mergedInstitutionHasPublicMeetings = computed<Record<string, boolean>>(() => {
     const base = baseInstitutionHasPublicMeetings?.value ?? buildInstitutionPublicMeetingsMap(institutions.value);
@@ -175,7 +160,6 @@ export function useUserTimelineData(options: UseUserTimelineDataOptions) {
     mergedDutyMembers,
     mergedInactivePeriods,
     mergedInstitutionNames,
-    mergedInstitutionTenant,
     mergedInstitutionHasPublicMeetings,
     mergedInstitutionPeriodicity,
   };

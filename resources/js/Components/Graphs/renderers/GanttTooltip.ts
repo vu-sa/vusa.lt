@@ -11,7 +11,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import type { GanttColors } from '../ganttColors';
 
-export type TooltipContentType = 'meeting' | 'member' | 'gap' | 'date' | 'none';
+export type TooltipContentType = 'meeting' | 'member' | 'gap' | 'date' | 'request' | 'none';
 
 export interface TooltipContent {
   type: TooltipContentType;
@@ -115,6 +115,7 @@ export const TOOLTIP_PRIORITIES = {
   gap: 2, // Check-in info
   member: 3, // Duty member avatar
   meeting: 3, // Meeting icon (same as member)
+  request: 3, // Activity request chip
 } as const;
 
 /**

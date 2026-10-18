@@ -1,69 +1,71 @@
 /**
  * useColumnResize - Resizable column drag handler
  *
- * Generic composable for handling column resize via drag.
- * Can be reused for any resizable panel/column in the UI.
+ * Pointer events with capture: a cancelled `pointerdown` suppresses the compatibility
+ * `mouseup`, which left the column stuck to the cursor after release.
  */
 import { ref, getCurrentScope, onScopeDispose } from 'vue';
 
 export interface ColumnResizeOptions {
-  /** Minimum width in pixels */
   minWidth?: number;
-  /** Maximum width in pixels */
   maxWidth?: number;
 }
 
 export function useColumnResize(
-  /** Callback to set the new width */
   setWidth: (width: number) => void,
-  /** Current width ref or getter */
   getCurrentWidth: () => number,
   options: ColumnResizeOptions = {},
 ) {
   const { minWidth = 120, maxWidth = 400 } = options;
 
   const isResizing = ref(false);
-  const resizeStartX = ref(0);
-  const resizeStartWidth = ref(0);
+  let startX = 0;
+  let startWidth = 0;
+  let captureTarget: Element | null = null;
+  let pointerId: number | null = null;
 
-  /**
-   * Start resize operation
-   */
-  function startResize(event: MouseEvent) {
+  function startResize(event: PointerEvent) {
+    if (event.button !== 0) return;
+    event.preventDefault();
+
     isResizing.value = true;
-    resizeStartX.value = event.clientX;
-    resizeStartWidth.value = getCurrentWidth();
+    startX = event.clientX;
+    startWidth = getCurrentWidth();
+    pointerId = event.pointerId;
+    captureTarget = event.currentTarget instanceof Element ? event.currentTarget : null;
+    captureTarget?.setPointerCapture?.(event.pointerId);
 
-    document.addEventListener('mousemove', handleResize);
-    document.addEventListener('mouseup', stopResize);
+    document.addEventListener('pointermove', handleResize);
+    document.addEventListener('pointerup', stopResize);
+    document.addEventListener('pointercancel', stopResize);
+    window.addEventListener('blur', stopResize);
 
-    // Prevent text selection during resize
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'col-resize';
   }
 
-  /**
-   * Handle resize drag
-   */
-  function handleResize(event: MouseEvent) {
+  function handleResize(event: PointerEvent) {
     if (!isResizing.value) return;
+    // A release outside the window never reaches us; the next move without a pressed button ends the drag.
+    if (event.buttons === 0) {
+      stopResize();
+      return;
+    }
 
-    const delta = event.clientX - resizeStartX.value;
-    let newWidth = resizeStartWidth.value + delta;
-
-    // Clamp to min/max
-    newWidth = Math.max(minWidth, Math.min(maxWidth, newWidth));
-
-    setWidth(newWidth);
+    setWidth(Math.max(minWidth, Math.min(maxWidth, startWidth + event.clientX - startX)));
   }
 
-  /**
-   * Stop resize operation
-   */
   function stopResize() {
     isResizing.value = false;
-    document.removeEventListener('mousemove', handleResize);
-    document.removeEventListener('mouseup', stopResize);
+    if (captureTarget && pointerId !== null && captureTarget.hasPointerCapture?.(pointerId)) {
+      captureTarget.releasePointerCapture(pointerId);
+    }
+    captureTarget = null;
+    pointerId = null;
+    document.removeEventListener('pointermove', handleResize);
+    document.removeEventListener('pointerup', stopResize);
+    document.removeEventListener('pointercancel', stopResize);
+    window.removeEventListener('blur', stopResize);
     document.body.style.userSelect = '';
     document.body.style.cursor = '';
   }

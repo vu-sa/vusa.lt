@@ -11,6 +11,7 @@ const timelineFilters = {
   hideInternalInstitutionsUser: ref(false),
   showDutyMembersUser: ref(true),
   showRelatedInstitutionsUser: ref(false),
+  showActivityRequestsUser: ref(true),
   relatedInstitutionsLoaded: ref(false),
   resetUserFilters: vi.fn(),
   loadRelatedInstitutions: vi.fn(),
@@ -20,17 +21,10 @@ vi.mock('../../Composables/useTimelineFilters', () => ({
   useTimelineFilters: () => timelineFilters,
 }));
 
-vi.mock('../../Composables/useGanttSettings', () => ({
-  useGanttSettings: () => ({
-    showTenantHeaders: ref(true),
-  }),
-}));
-
 const GanttFilterDropdownStub = defineComponent({
   name: 'GanttFilterDropdown',
   props: {
-    tenants: Array,
-    triggerLabelOverride: String,
+    showActivityRequestsOption: Boolean,
   },
   setup() {
     return () => h('div', { 'data-testid': 'gantt-display-settings' });
@@ -40,7 +34,7 @@ const GanttFilterDropdownStub = defineComponent({
 const TimelineGanttChartStub = defineComponent({
   name: 'TimelineGanttChart',
   props: {
-    tenantFilter: Array,
+    activityRequests: Array,
     height: String,
     fullscreenActive: Boolean,
   },
@@ -59,7 +53,7 @@ describe('UserTimelineSection', () => {
     vi.unstubAllGlobals();
   });
 
-  function mountSection() {
+  function mountSection(activityRequests: unknown[] = []) {
     vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
       callback(0);
       return 1;
@@ -72,7 +66,7 @@ describe('UserTimelineSection', () => {
         gaps: [],
         institutionNames: {},
         tenantNames: {},
-        institutionTenant: {},
+        activityRequests,
       },
       global: {
         stubs: {
@@ -84,16 +78,18 @@ describe('UserTimelineSection', () => {
     });
   }
 
-  it('keeps tenant selection outside display settings without hiding cross-tenant relations', async () => {
+  it('offers the activity-request toggle only when requests were sent to the user', async () => {
     wrapper = mountSection();
     await nextTick();
+    expect(wrapper.getComponent(GanttFilterDropdownStub).props('showActivityRequestsOption')).toBe(false);
+    wrapper.unmount();
 
-    const filter = wrapper.getComponent(GanttFilterDropdownStub);
-    const chart = wrapper.getComponent(TimelineGanttChartStub);
+    const request = { institution_id: 'a', campaign: 'activity_confirmation', period_start: '2026-09-01', period_end: '2026-10-01', sent_at: null, expires_at: '2026-10-20T00:00:00Z', recipients_count: 1 };
+    wrapper = mountSection([request]);
+    await nextTick();
 
-    expect(filter.props('tenants')).toBeUndefined();
-    expect(filter.props('triggerLabelOverride')).toBe('Rodymo nustatymai');
-    expect(chart.props('tenantFilter')).toEqual([]);
+    expect(wrapper.getComponent(GanttFilterDropdownStub).props('showActivityRequestsOption')).toBe(true);
+    expect(wrapper.getComponent(TimelineGanttChartStub).props('activityRequests')).toEqual([request]);
   });
 
   /**

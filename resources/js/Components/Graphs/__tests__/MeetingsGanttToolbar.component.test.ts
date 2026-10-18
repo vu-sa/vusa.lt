@@ -4,6 +4,7 @@ import { mount } from '@vue/test-utils';
 
 import MeetingsGanttToolbar from '../MeetingsGanttToolbar.vue';
 import GanttZoomControl from '../GanttZoomControl.vue';
+import { GANTT_ZOOM_STOPS } from '../ganttZoom';
 
 import { commonStubs } from '@/tests/stubs';
 
@@ -14,6 +15,14 @@ const SliderStub = defineComponent({
   props: ['modelValue'],
   emits: ['update:modelValue'],
   template: '<input type="range" :value="modelValue?.[0]" @input="$emit(\'update:modelValue\', [Number($event.target.value)])" />',
+});
+
+// The menu's spotlight persists through the tutorial-progress API; its own behaviour is reka-ui's.
+const GroupByMenuStub = defineComponent({
+  name: 'GanttGroupByMenu',
+  props: ['modelValue'],
+  emits: ['update:modelValue'],
+  template: '<button type="button" data-testid="group-by" @click="$emit(\'update:modelValue\', \'type\')">{{ modelValue }}</button>',
 });
 
 describe('MeetingsGanttToolbar', () => {
@@ -27,12 +36,12 @@ describe('MeetingsGanttToolbar', () => {
     return mount(MeetingsGanttToolbar, {
       props: {
         institutionCount: 5,
-        tenantNames: { vusa: 'VU SA', vuif: 'VU IF' },
-        dayWidth: 24,
+        dayWidth: 3,
+        groupBy: 'tenant',
         ...props,
       },
       global: {
-        stubs: { ...commonStubs, Slider: SliderStub },
+        stubs: { ...commonStubs, Slider: SliderStub, GanttGroupByMenu: GroupByMenuStub },
       },
     });
   }
@@ -43,45 +52,30 @@ describe('MeetingsGanttToolbar', () => {
     expect(wrapper.text()).toContain('7');
   });
 
-  it('caps zoom-in at half its prior width and reaches one pixel per day', async () => {
+  it('zooms through the fine stops, from one pixel per day to nine', async () => {
     wrapper = mountToolbar({ dayWidth: 1 });
 
     const zoom = wrapper.getComponent(GanttZoomControl);
-    expect(zoom.props()).toMatchObject({ min: 1, max: 9, step: 2 });
+    expect(zoom.props('stops')).toEqual(GANTT_ZOOM_STOPS);
 
     const [zoomOut, zoomIn] = zoom.findAll('button');
     expect(zoomOut!.attributes('disabled')).toBeDefined();
 
     await zoomIn!.trigger('click');
-    expect(wrapper.emitted('update:dayWidth')).toEqual([[3]]);
+    expect(wrapper.emitted('update:dayWidth')).toEqual([[1.25]]);
 
     await wrapper.setProps({ dayWidth: 9 });
     expect(zoom.findAll('button')[1]!.attributes('disabled')).toBeDefined();
   });
 
-  it('renders a chip per tenant filter and emits scroll-to-tenant on click', async () => {
-    wrapper = mountToolbar({ tenantFilter: ['vusa', 'vuif'] });
+  it('hands the grouping to its menu and passes a change back up', async () => {
+    wrapper = mountToolbar({ groupBy: 'none' });
 
-    const chips = wrapper.findAll('button').filter(b => b.text() === 'VU SA' || b.text() === 'VU IF');
-    expect(chips).toHaveLength(2);
+    const menu = wrapper.get('[data-testid="group-by"]');
+    expect(menu.text()).toBe('none');
 
-    await chips[0].trigger('click');
-
-    expect(wrapper.emitted('scroll-to-tenant')).toEqual([['vusa']]);
-  });
-
-  it('falls back to the raw tenant id when no name is known', () => {
-    wrapper = mountToolbar({ tenantFilter: ['unknown-tenant'] });
-
-    expect(wrapper.text()).toContain('unknown-tenant');
-  });
-
-  it('emits update:detailsExpanded when the details toggle is clicked', async () => {
-    wrapper = mountToolbar({ detailsExpanded: false });
-
-    await wrapper.get('[data-slot="gantt-details-toggle"]').trigger('click');
-
-    expect(wrapper.emitted('update:detailsExpanded')).toEqual([[true]]);
+    await menu.trigger('click');
+    expect(wrapper.emitted('update:groupBy')).toEqual([['type']]);
   });
 
   it('turns the full-screen button into the way back out while in focus mode', () => {

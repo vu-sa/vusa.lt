@@ -2,6 +2,7 @@ export { renderBackground } from './renderBackground';
 export { renderAxis } from './renderAxis';
 export { renderVacationBackgrounds, renderVacationOverlay } from './renderVacations';
 export { renderMeetings } from './renderMeetings';
+export { renderActivityRequests, type ParsedActivityRequest } from './renderActivityRequests';
 export { renderGaps } from './renderGaps';
 export { renderDutyMembers } from './renderDutyMembers';
 export { renderInactivePeriods } from './renderInactivePeriods';

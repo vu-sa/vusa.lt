@@ -18,6 +18,8 @@ interface ParsedMeeting {
   id: string | number;
   date: Date;
   institution_id: string | number;
+  /** The row it is drawn on; an institution can have several */
+  rowKey: string;
   title?: string;
   institution?: string;
   completion_status?: 'complete' | 'incomplete' | 'no_items';
@@ -55,10 +57,10 @@ export interface MeetingRenderContext {
   interactive: boolean;
   /** Unified tooltip manager */
   tooltipManager?: GanttTooltipManager;
-  /** Callback when create-meeting is triggered */
-  onCreateMeeting?: (payload: { institution_id: string | number; suggestedAt: Date }) => void;
   /** Meeting periodicity per institution (days between expected meetings) */
   institutionPeriodicity?: Record<string | number, number>;
+  /** Meetings whose records an open "Papildyk posėdžių įrašus" request asks for */
+  requestedMeetingIds?: Set<string>;
 }
 
 // =============================================================================
@@ -81,9 +83,8 @@ const ICON_EMAIL_REGULAR = 'M3.5 4A1.5 1.5 0 0 0 2 5.5v9A1.5 1.5 0 0 0 3.5 16h13
 const ICON_CALENDAR_FILLED = 'M7 11a1 1 0 1 0 0-2a1 1 0 0 0 0 2m1 2a1 1 0 1 1-2 0a1 1 0 0 1 2 0m2-2a1 1 0 1 0 0-2a1 1 0 0 0 0 2m4-1a1 1 0 1 1-2 0a1 1 0 0 1 2 0m-1 4a1 1 0 1 0 0-2a1 1 0 0 0 0 2m-2-3a1 1 0 1 1-2 0a1 1 0 0 1 2 0M17 5.5A2.5 2.5 0 0 0 14.5 3h-9A2.5 2.5 0 0 0 3 5.5v9A2.5 2.5 0 0 0 5.5 17h9a2.5 2.5 0 0 0 2.5-2.5zM4 7h12v7.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 4 14.5z';
 const ICON_CALENDAR_REGULAR = 'M17 5.5A2.5 2.5 0 0 0 14.5 3h-9A2.5 2.5 0 0 0 3 5.5v9A2.5 2.5 0 0 0 5.5 17h9a2.5 2.5 0 0 0 2.5-2.5zM14.5 4a1.5 1.5 0 0 1 1.5 1.5V6H4v-.5A1.5 1.5 0 0 1 5.5 4zM4 14.5V7h12v7.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 4 14.5M7 11a1 1 0 1 0 0-2a1 1 0 0 0 0 2m1 2a1 1 0 1 1-2 0a1 1 0 0 1 2 0m2-2a1 1 0 1 0 0-2a1 1 0 0 0 0 2m4-1a1 1 0 1 1-2 0a1 1 0 0 1 2 0m-1 4a1 1 0 1 0 0-2a1 1 0 0 0 0 2m-2-3a1 1 0 1 1-2 0a1 1 0 0 1 2 0';
 
-// Legacy aliases for backward compatibility
-const MEETING_ICON_FILLED = ICON_IN_PERSON_FILLED;
-const MEETING_ICON_REGULAR = ICON_IN_PERSON_REGULAR;
+// Lucide MailQuestion (24x24), the activity-request mark
+export const MAIL_QUESTION_PATH = 'M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h12.5M22 7l-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7M18 15.28c.2-.4.5-.8.9-1a2.1 2.1 0 0 1 2.6.4c.3.4.5.8.5 1.3 0 1.3-2 2-2 2M20 22v.01';
 
 const ICON_SIZE = 14;
 
@@ -119,23 +120,35 @@ function getMeetingIconPath(
 /**
  * Render meeting icons
  */
+function meetingUrl(id: string | number): string {
+  return route('meetings.show', id);
+}
+
+function openMeeting(d: ParsedMeeting, newTab: boolean): void {
+  // A toast instead of a visit: the page would only refuse, after a flicker.
+  if (d.authorized === false) {
+    toast.info($t('Neturi prieigos prie šio posėdžio duomenų'));
+    return;
+  }
+
+  if (newTab) {
+    window.open(meetingUrl(d.id), '_blank');
+  }
+  else {
+    router.visit(meetingUrl(d.id));
+  }
+}
+
 export function renderMeetings(ctx: MeetingRenderContext): void {
-  const { g, container, x, meetings, colors, rowCenter, labelFor, interactive, tooltipManager, institutionPeriodicity } = ctx;
+  const { g, container, x, meetings, colors, rowCenter, labelFor, interactive, tooltipManager, institutionPeriodicity, requestedMeetingIds } = ctx;
+  const isRequested = (d: ParsedMeeting) => requestedMeetingIds?.has(String(d.id)) ?? false;
 
   // Default periodicity in days (half for each side of the meeting)
   const defaultPeriodicity = 30;
 
   // Calculate rectangle dimensions with padding (similar to check-ins)
-  const getRectHeight = (institutionId: string | number) => {
-    const rowH = ctx.rowHeightFor(institutionId);
-    return Math.min(rowH - 6, 18); // Max 18px height, with 3px padding top/bottom
-  };
-
-  const getRectY = (institutionId: string | number) => {
-    const rowH = ctx.rowHeightFor(institutionId);
-    const rectH = getRectHeight(institutionId);
-    return ctx.rowTop(institutionId) + (rowH - rectH) / 2;
-  };
+  const getRectHeight = (rowKey: string) => Math.min(ctx.rowHeightFor(rowKey) - 6, 18);
+  const getRectY = (rowKey: string) => ctx.rowTop(rowKey) + (ctx.rowHeightFor(rowKey) - getRectHeight(rowKey)) / 2;
 
   // Safety bands around meetings - use half of institution's periodicity for each side
   // This creates a "safe zone" where meetings are expected
@@ -151,13 +164,13 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
       const bandDays = Math.floor(periodicity / 2);
       return x(d3.timeDay.offset(d.date, -bandDays));
     })
-    .attr('y', d => getRectY(d.institution_id))
+    .attr('y', d => getRectY(d.rowKey))
     .attr('width', (d) => {
       const periodicity = institutionPeriodicity?.[d.institution_id] ?? defaultPeriodicity;
       const bandDays = Math.floor(periodicity / 2);
       return Math.max(2, x(d3.timeDay.offset(d.date, bandDays)) - x(d3.timeDay.offset(d.date, -bandDays)));
     })
-    .attr('height', d => getRectHeight(d.institution_id))
+    .attr('height', d => getRectHeight(d.rowKey))
     .attr('fill', colors.safetyBandFlat ?? colors.safetyBandMid)
     .attr('stroke', colors.safetyBandStroke ?? 'transparent')
     .attr('stroke-width', 1);
@@ -174,54 +187,20 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
     .enter()
     .append('g')
     .attr('class', 'meeting-icon')
-    .attr('transform', d => `translate(${x(d.date) - HIT_AREA_SIZE / 2}, ${rowCenter(d.institution_id) - HIT_AREA_SIZE / 2})`)
+    .attr('transform', d => `translate(${x(d.date) - HIT_AREA_SIZE / 2}, ${rowCenter(d.rowKey) - HIT_AREA_SIZE / 2})`)
     .attr('tabindex', interactive ? 0 : -1)
     .style('cursor', interactive ? 'pointer' : 'default')
-    .on('click', (event: MouseEvent, d: any) => {
-      if (!interactive) return;
-
-      // For unauthorized meetings, show info toast instead of navigating
-      // This prevents page refresh flicker and provides clear feedback
-      if (d.authorized === false) {
-        toast.info($t('Neturi prieigos prie šio posėdžio duomenų'));
-        return;
-      }
-
-      const routeFn = (window as any)?.route;
-      const url = routeFn ? routeFn('meetings.show', d.id) : `/admin/meetings/${d.id}`;
-      if (event.ctrlKey || event.metaKey || event.button === 1) {
-        window.open(url, '_blank');
-      }
-      else {
-        router.visit(url);
-      }
+    .on('click', (event: MouseEvent, d: ParsedMeeting) => {
+      if (interactive) openMeeting(d, event.ctrlKey || event.metaKey);
     })
-    .on('auxclick', (event: MouseEvent, d: any) => {
+    .on('auxclick', (event: MouseEvent, d: ParsedMeeting) => {
       if (!interactive || event.button !== 1) return;
-
-      // For unauthorized meetings, show info toast instead of navigating
-      if (d.authorized === false) {
-        toast.info($t('Neturi prieigos prie šio posėdžio duomenų'));
-        return;
-      }
-
       event.preventDefault();
-      const routeFn = (window as any)?.route;
-      const url = routeFn ? routeFn('meetings.show', d.id) : `/admin/meetings/${d.id}`;
-      window.open(url, '_blank');
+      openMeeting(d, true);
     })
-    .on('keydown', (event: KeyboardEvent, d: any) => {
-      if (!interactive) return;
-      if (event.key === 'Enter' || event.key === ' ') {
-        // For unauthorized meetings, show info toast instead of navigating
-        if (d.authorized === false) {
-          toast.info($t('Neturi prieigos prie šio posėdžio duomenų'));
-          return;
-        }
-
-        const routeFn = (window as any)?.route;
-        const url = routeFn ? routeFn('meetings.show', d.id) : `/admin/meetings/${d.id}`;
-        router.visit(url);
+    .on('keydown', (event: KeyboardEvent, d: ParsedMeeting) => {
+      if (interactive && (event.key === 'Enter' || event.key === ' ')) {
+        openMeeting(d, false);
       }
     });
 
@@ -245,6 +224,10 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
       // Unauthorized meetings get grey color
       if (d.authorized === false) {
         return colors.meetingUnauthorized;
+      }
+
+      if (isRequested(d)) {
+        return colors.activityRequest;
       }
 
       // No agenda items - neutral grey
@@ -275,6 +258,26 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
       // Default fallback
       return colors.meetingComplete;
     });
+
+  // Records were asked for: a small mail-question badge on the icon's corner.
+  const BADGE_SIZE = 9;
+  dots.filter(d => isRequested(d))
+    .append('g')
+    .attr('class', 'meeting-request-badge')
+    .attr('transform', `translate(${HIT_AREA_SIZE - BADGE_SIZE - 1}, 1)`)
+    .call(badge => badge.append('circle')
+      .attr('cx', BADGE_SIZE / 2)
+      .attr('cy', BADGE_SIZE / 2)
+      .attr('r', BADGE_SIZE / 2 + 1)
+      .attr('fill', colors.activityRequestChipBg))
+    .append('path')
+    .attr('d', MAIL_QUESTION_PATH)
+    .attr('fill', 'none')
+    .attr('stroke', colors.activityRequest)
+    .attr('stroke-width', 2.5)
+    .attr('stroke-linecap', 'round')
+    .attr('stroke-linejoin', 'round')
+    .attr('transform', `scale(${BADGE_SIZE / 24})`);
 
   // Add native tooltip as fallback (when no tooltipManager)
   if (!tooltipManager) {
@@ -320,6 +323,9 @@ export function renderMeetings(ctx: MeetingRenderContext): void {
       .on('mouseenter', (event, d: any) => {
         const rect = container.getBoundingClientRect();
         const content = buildMeetingTooltipContent(d, labelFor, fmt, fmtDateOnly);
+        if (isRequested(d)) {
+          content.html += `<div class="mt-1.5 pt-1.5 border-t border-current/20 text-[11px]" style="color: ${colors.activityRequest}">${$t('activity_requests.gantt.records_requested')}</div>`;
+        }
         tooltipManager.show(content, event.clientX - rect.left, event.clientY - rect.top);
       })
       .on('mousemove', (event) => {

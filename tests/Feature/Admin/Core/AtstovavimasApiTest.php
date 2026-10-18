@@ -1,8 +1,10 @@
 <?php
 
+use App\Enums\InstitutionActivityCampaign;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionLink;
 use App\Models\InstitutionType;
@@ -14,6 +16,8 @@ use App\Models\Vote;
 use App\Services\InstitutionActivityStatusService;
 use App\Settings\MeetingSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 pest()->use(RefreshDatabase::class);
 
@@ -667,5 +671,86 @@ describe('padaliniai gantt', function (): void {
         asUser($this->rep)
             ->getJson(route('api.v1.admin.visak.timeline', ['tenant_ids' => [$this->tenant->id]]))
             ->assertForbidden();
+    });
+});
+
+test('gantt rows carry their institution types for type sections', function (): void {
+    $type = InstitutionType::factory()->create(['title' => ['lt' => 'Studijų kolegija', 'en' => 'Study board']]);
+    $this->institution->types()->attach($type);
+
+    $row = collect(asUser($this->admin)->getJson(route('api.v1.admin.visak.gantt', ['tenant_ids' => [$this->tenant->id]]))
+        ->assertSuccessful()->json('data'))->firstWhere('id', (string) $this->institution->id);
+
+    expect($row['types'])->toBe([['id' => (string) $type->id, 'title' => 'Studijų kolegija']]);
+});
+
+test('gantt meetings cost the same number of queries however many there are', function (): void {
+    $queriesFor = function (int $count): int {
+        Meeting::factory()->count($count)->create(['start_time' => now()->subDays(3)])
+            ->each(fn (Meeting $meeting) => $meeting->institutions()->attach($this->institution->id));
+        Meeting::query()->get()->each(fn (Meeting $meeting) => AgendaItem::factory()->for($meeting)->create());
+        Cache::flush();
+
+        DB::enableQueryLog();
+        asUser($this->admin)->getJson(route('api.v1.admin.visak.meetings', [
+            'tenant_ids' => [$this->tenant->id],
+            'from' => now()->subMonth()->toDateString(),
+            'until' => now()->toDateString(),
+        ]))->assertSuccessful();
+        $count = count(DB::getQueryLog());
+        DB::flushQueryLog();
+        DB::disableQueryLog();
+
+        return $count;
+    };
+
+    $queriesFor(0); // The first request also warms the auth and permission caches.
+
+    expect($queriesFor(4))->toBe($queriesFor(1));
+});
+
+describe('activity requests on the gantt', function (): void {
+    beforeEach(function (): void {
+        $this->rep = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
+        $this->ownInstitution = $this->rep->current_duties->first()->institution;
+        $this->spansFor = fn (User $user, array $tenantIds) => collect(asUser($user)
+            ->getJson(route('api.v1.admin.visak.activityRequests', ['tenant_ids' => $tenantIds]))
+            ->assertSuccessful()->json('data'));
+    });
+
+    test('an asker sees every open request, one span per institution and campaign', function (): void {
+        InstitutionActivityRequest::factory()->for($this->institution)->create(['period_start' => '2026-08-01', 'period_end' => '2026-09-15']);
+        InstitutionActivityRequest::factory()->for($this->institution)->create(['period_start' => '2026-07-15', 'period_end' => '2026-09-01']);
+        InstitutionActivityRequest::factory()->for($this->institution)->create(['campaign_type' => InstitutionActivityCampaign::MissingMeetings, 'period_start' => '2026-02-01', 'period_end' => '2026-09-15']);
+        InstitutionActivityRequest::factory()->for($this->institution)->expired()->create();
+        InstitutionActivityRequest::factory()->for($this->institution)->answered()->create();
+        InstitutionActivityRequest::factory()->for($this->institution)->create(['resolved_at' => now()]);
+
+        $spans = ($this->spansFor)($this->admin, [$this->tenant->id])->keyBy('campaign');
+
+        expect($spans)->toHaveCount(2)
+            ->and($spans['activity_confirmation'])->toMatchArray([
+                'institution_id' => (string) $this->institution->id,
+                'period_start' => '2026-07-15',
+                'period_end' => '2026-09-15',
+                'recipients_count' => 2,
+            ])
+            ->and($spans['missing_meetings']['recipients_count'])->toBe(1);
+    });
+
+    test('anyone else sees only the requests sent to them', function (): void {
+        InstitutionActivityRequest::factory()->for($this->ownInstitution)->create(['recipient_id' => $this->rep->id]);
+        InstitutionActivityRequest::factory()->for($this->ownInstitution)->create();
+        InstitutionActivityRequest::factory()->for($this->institution)->create(['recipient_id' => $this->rep->id]);
+
+        $spans = ($this->spansFor)($this->rep, [$this->ownInstitution->tenant_id, $this->tenant->id]);
+
+        // The other padalinys' institution is not on this rep's Gantt at all, so its request stays out.
+        expect($spans)->toHaveCount(1)
+            ->and($spans[0])->toMatchArray(['institution_id' => (string) $this->ownInstitution->id, 'recipients_count' => 1]);
+    });
+
+    test('requires an authenticated user', function (): void {
+        $this->getJson(route('api.v1.admin.visak.activityRequests', ['tenant_ids' => [$this->tenant->id]]))->assertUnauthorized();
     });
 });

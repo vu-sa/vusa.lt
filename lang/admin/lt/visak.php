@@ -151,6 +151,16 @@ return [
     'gantt' => [
         'loading_meetings' => 'Kraunami posėdžiai…',
         'meetings_load_failed' => 'Nepavyko įkelti posėdžių. Bandyk dar kartą.',
+        'tenants_label' => 'Rodoma',
+        'group_by' => 'Grupuoti',
+        'group_by_current' => 'Grupuoti: :option',
+        'group_by_options' => [
+            'tenant' => 'Pagal padalinius',
+            'type' => 'Pagal institucijų tipus',
+            'none' => 'Negrupuoti',
+        ],
+        'grouping_spotlight_title' => 'Grupuok pagal padalinius arba tipus',
+        'grouping_spotlight_body' => 'Institucijas gali sugrupuoti pagal padalinius, pagal institucijų tipus arba palikti vienu sąrašu. Šis nustatymas persikėlė iš filtrų.',
     ],
     'activity_request' => [
         'ask' => 'Paklausti atstovų',

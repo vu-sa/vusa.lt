@@ -36,6 +36,6 @@ describe('useUserTimelineData', () => {
 
     expect(timeline.mergedInstitutions.value.map(item => item.id))
       .toEqual(['vu-senatas', 'vu-kf-taryba']);
-    expect(timeline.mergedInstitutionTenant.value['vu-kf-taryba']).toBe('8');
+    expect(timeline.mergedInstitutions.value.find(item => item.id === 'vu-kf-taryba')?.tenant_id).toBe('8');
   });
 });

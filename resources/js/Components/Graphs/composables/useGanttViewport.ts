@@ -44,27 +44,6 @@ export interface GanttViewportOptions {
   onViewportChange?: () => void;
 }
 
-interface ParsedMeeting {
-  id: string | number;
-  date: Date;
-  institution_id: string | number;
-  [key: string]: unknown;
-}
-
-interface ParsedGap {
-  institution_id: string | number;
-  fromDate: Date;
-  untilDate: Date;
-  [key: string]: unknown;
-}
-
-interface ParsedDutyMember {
-  institution_id: string | number;
-  startDate: Date;
-  endDate: Date | null;
-  [key: string]: unknown;
-}
-
 const DEFAULT_BUFFER_PX = 200;
 const DEFAULT_VERTICAL_BUFFER_PX = 400;
 const DEFAULT_SCROLL_THRESHOLD = 50;
@@ -173,58 +152,6 @@ export function useGanttViewport(
   }
 
   /**
-   * Create a computed that filters meetings to visible viewport
-   */
-  function createVisibleMeetings(
-    parsedMeetings: ComputedRef<ParsedMeeting[]>,
-  ): ComputedRef<ParsedMeeting[]> {
-    return computed(() => {
-      const bounds = viewportBounds.value;
-      if (!bounds) return parsedMeetings.value;
-
-      return parsedMeetings.value.filter((m) => {
-        return m.date >= bounds.minDate && m.date <= bounds.maxDate;
-      });
-    });
-  }
-
-  /**
-   * Create a computed that filters gaps to visible viewport
-   */
-  function createVisibleGaps(
-    parsedGaps: ComputedRef<ParsedGap[]>,
-  ): ComputedRef<ParsedGap[]> {
-    return computed(() => {
-      const bounds = viewportBounds.value;
-      if (!bounds) return parsedGaps.value;
-
-      return parsedGaps.value.filter((g) => {
-        // Gap is visible if any part of it overlaps with viewport
-        return g.untilDate >= bounds.minDate && g.fromDate <= bounds.maxDate;
-      });
-    });
-  }
-
-  /**
-   * Create a computed that filters duty members to visible viewport
-   */
-  function createVisibleDutyMembers(
-    parsedDutyMembers: ComputedRef<ParsedDutyMember[]>,
-  ): ComputedRef<ParsedDutyMember[]> {
-    return computed(() => {
-      const bounds = viewportBounds.value;
-      if (!bounds) return parsedDutyMembers.value;
-
-      return parsedDutyMembers.value.filter((m) => {
-        // Member is visible if start date is within viewport
-        // (endDate might be null for current members)
-        const endDate = m.endDate ?? new Date(2099, 11, 31);
-        return endDate >= bounds.minDate && m.startDate <= bounds.maxDate;
-      });
-    });
-  }
-
-  /**
    * Create a computed that filters rows (or anything row-shaped) to the
    * vertical viewport. Generic over the row shape so it works for both
    * `LayoutRow` and any placeholder/skeleton row type.
@@ -291,9 +218,6 @@ export function useGanttViewport(
     cleanup,
 
     // Factory methods for filtered computeds
-    createVisibleMeetings,
-    createVisibleGaps,
-    createVisibleDutyMembers,
     createVisibleRows,
   };
 }

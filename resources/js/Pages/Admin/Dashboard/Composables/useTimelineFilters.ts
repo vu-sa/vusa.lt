@@ -40,6 +40,8 @@ export interface TimelineFilters {
   hideInternalInstitutionsTenant: Ref<boolean>;
   showDutyMembersTenant: Ref<boolean>;
   showActivityStatusTenant: Ref<boolean>;
+  showActivityRequestsTenant: Ref<boolean>;
+  showActivityRequestsUser: Ref<boolean>;
   tenantInstitutionsLoaded: Ref<boolean>;
   tenantInstitutionsLoading: Ref<boolean>;
 
@@ -68,6 +70,8 @@ interface StoredFilters {
   hideInternalInstitutionsTenant: boolean;
   showDutyMembersTenant: boolean;
   showActivityStatusTenant: boolean;
+  showActivityRequestsTenant?: boolean;
+  showActivityRequestsUser?: boolean;
   showOnlyWithActivityUser: boolean;
   showOnlyWithPublicMeetingsUser: boolean;
   hideInternalInstitutionsUser: boolean;
@@ -133,9 +137,15 @@ export function getInstitutionTenants(
 export function provideTimelineFilters(
   institutions: AtstovavimasInstitution[],
   availableTenants: AtstovavimasTenant[],
-  options: { statsTenants?: AtstovavimasTenant[]; defaultGanttTenantIds?: string[] } = {},
+  options: {
+    statsTenants?: AtstovavimasTenant[];
+    defaultGanttTenantIds?: string[];
+    /** The Gantt shows whatever the page's statistics selector picks; widening the Gantt never writes back. */
+    ganttFollowsStats?: boolean;
+  } = {},
 ): TimelineFilters {
   const statsTenants = options.statsTenants ?? availableTenants;
+  const ganttFollowsStats = options.ganttFollowsStats ?? false;
   const defaultGanttTenantIds = options.defaultGanttTenantIds ?? [];
   const stored = useStorage<StoredFilters>(
     STORAGE_KEY,
@@ -163,11 +173,12 @@ export function provideTimelineFilters(
   const relatedInstitutionsLoaded = ref(false);
 
   // Tenant section filters
-  const selectedTenantForGantt = ref<string[]>(
-    normalizeTenantSelection(stored.value.selectedTenantForGantt ?? [], availableTenants, defaultGanttTenantIds),
-  );
   const selectedStatsTenants = ref<string[]>(
     normalizeTenantSelection(stored.value.selectedStatsTenants ?? stored.value.selectedTenantForGantt ?? [], statsTenants),
+  );
+  const ganttFallback = normalizeTenantSelection(stored.value.selectedTenantForGantt ?? [], availableTenants, defaultGanttTenantIds);
+  const selectedTenantForGantt = ref<string[]>(
+    ganttFollowsStats ? normalizeTenantSelection(selectedStatsTenants.value, availableTenants, ganttFallback) : ganttFallback,
   );
   const showOnlyWithActivityTenant = ref(stored.value.showOnlyWithActivityTenant ?? false);
   const showOnlyWithPublicMeetingsTenant = ref(stored.value.showOnlyWithPublicMeetingsTenant ?? false);
@@ -175,6 +186,8 @@ export function provideTimelineFilters(
   const showDutyMembersTenant = ref(stored.value.showDutyMembersTenant ?? true);
   // Default to false - activity status rings are off by default to keep Gantt clean
   const showActivityStatusTenant = ref(stored.value.showActivityStatusTenant ?? false);
+  const showActivityRequestsTenant = ref(stored.value.showActivityRequestsTenant ?? true);
+  const showActivityRequestsUser = ref(stored.value.showActivityRequestsUser ?? true);
   // Track if tenant institutions have been loaded via Inertia lazy
   const tenantInstitutionsLoaded = ref(false);
   const tenantInstitutionsLoading = ref(false);
@@ -200,6 +213,8 @@ export function provideTimelineFilters(
       hideInternalInstitutionsTenant: hideInternalInstitutionsTenant.value,
       showDutyMembersTenant: showDutyMembersTenant.value,
       showActivityStatusTenant: showActivityStatusTenant.value,
+      showActivityRequestsTenant: showActivityRequestsTenant.value,
+      showActivityRequestsUser: showActivityRequestsUser.value,
       showOnlyWithActivityUser: showOnlyWithActivityUser.value,
       showOnlyWithPublicMeetingsUser: showOnlyWithPublicMeetingsUser.value,
       hideInternalInstitutionsUser: hideInternalInstitutionsUser.value,
@@ -218,6 +233,8 @@ export function provideTimelineFilters(
     hideInternalInstitutionsTenant,
     showDutyMembersTenant,
     showActivityStatusTenant,
+    showActivityRequestsTenant,
+    showActivityRequestsUser,
     showOnlyWithActivityUser,
     showOnlyWithPublicMeetingsUser,
     hideInternalInstitutionsUser,
@@ -234,6 +251,9 @@ export function provideTimelineFilters(
 
   function setSelectedStatsTenants(tenantIds: string[]) {
     selectedStatsTenants.value = normalizeTenantSelection(tenantIds, statsTenants);
+    if (ganttFollowsStats) {
+      setSelectedTenants(selectedStatsTenants.value);
+    }
   }
 
   function setUserTenantFilter(tenantIds: string[]) {
@@ -250,6 +270,7 @@ export function provideTimelineFilters(
     hideInternalInstitutionsTenant.value = false;
     showDutyMembersTenant.value = true;
     showActivityStatusTenant.value = false;
+    showActivityRequestsTenant.value = true;
     scrollPosition.value = 0;
   }
 
@@ -259,6 +280,7 @@ export function provideTimelineFilters(
     hideInternalInstitutionsUser.value = false;
     showDutyMembersUser.value = true;
     showRelatedInstitutionsUser.value = false;
+    showActivityRequestsUser.value = true;
   }
 
   watch(availableTenantsUser, (tenants) => {
@@ -298,6 +320,8 @@ export function provideTimelineFilters(
     hideInternalInstitutionsTenant,
     showDutyMembersTenant,
     showActivityStatusTenant,
+    showActivityRequestsTenant,
+    showActivityRequestsUser,
     tenantInstitutionsLoaded,
     tenantInstitutionsLoading,
     // Shared state

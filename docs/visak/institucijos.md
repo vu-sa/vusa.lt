@@ -321,6 +321,9 @@ Istorija įkeliama atskirai, po 20 siuntimo grupių; senesnės atveriamos mygtuk
 Būsena rodo, ar dar laukiama atsakymo, jau atsakyta, veikla patvirtinta kitu įrašu (ir kuris
 kolega atsakė), ar nuorodos galiojimas baigėsi. Ankstesnės užklausos be užfiksuotos pabaigos išlaiko laikotarpį iki atsakymo dienos.
 
+Dar neatsakytos užklausos taip pat pažymimos [posėdžių laiko juostoje](/visak/padaliniai#posedziu-laiko-juosta),
+tiems patiems žmonėms kaip ir ši skiltis.
+
 ### Sekretoriai {#sekretoriai}
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Sekretorius ir koordinatorius atlieka skirtingus darbus">

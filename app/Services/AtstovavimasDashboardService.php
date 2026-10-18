@@ -382,6 +382,8 @@ class AtstovavimasDashboardService
                         'fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
                         // Eager: mapMeeting asks every meeting in the window whether it is announced.
                         'calendarEvent:id,meeting_id,is_draft',
+                        // completion_status asks requiresStudentPerspective(), which otherwise loads these per meeting.
+                        'institutions.types',
                     ]),
             ])
             ->get();
@@ -505,6 +507,10 @@ class AtstovavimasDashboardService
                 'shortname' => $institution->tenant->shortname,
                 'type' => $institution->tenant->type,
             ] : null,
+            'types' => $institution->types
+                ->map(fn ($type) => ['id' => (string) $type->id, 'title' => $type->title])
+                ->values()
+                ->all(),
             'meeting_periodicity_days' => $institution->meeting_periodicity_days,
             // One of VU SA's own bodies rather than one it delegates into. Inherited down the
             // type tree, so it covers children the settings' flat exclusion list misses.

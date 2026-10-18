@@ -4,9 +4,9 @@ import type { AtstovavimasTenantTimelineData } from '../types';
 
 import { useApi } from '@/Composables/useApi';
 
-/** Loads a tenant-keyed ViSAK payload: the stats timeline by default, or the Gantt rows. */
+/** Loads a tenant-keyed ViSAK payload: the stats timeline by default, or the Gantt rows or its activity requests. */
 export function useTenantTimelineData<T = AtstovavimasTenantTimelineData>(
-  routeName: 'api.v1.admin.visak.timeline' | 'api.v1.admin.visak.gantt' = 'api.v1.admin.visak.timeline',
+  routeName: 'api.v1.admin.visak.timeline' | 'api.v1.admin.visak.gantt' | 'api.v1.admin.visak.activityRequests' = 'api.v1.admin.visak.timeline',
 ) {
   const requestUrl = ref(route(routeName, {
     tenant_ids: [],

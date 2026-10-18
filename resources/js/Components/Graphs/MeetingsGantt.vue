@@ -1,12 +1,11 @@
 <template>
   <div ref="wrap" class="relative isolate w-full max-w-full outline-none" tabindex="0"
     :class="{ 'h-full flex flex-col': props.height === '100%' }">
-    <MeetingsGanttToolbar :show-legend :institution-count="layoutRows.filter(r => r.type === 'institution').length"
-      :tenant-filter :tenant-names="mergedTenantNames" :show-only-with-activity :show-only-with-public-meetings
-      :details-expanded :day-width="dayWidthPx || dayWidth" :fullscreen-active :meetings-loading
-      @show-legend-modal="emit('show-legend-modal')" @scroll-to-tenant="scrollToTenant"
-      @update:details-expanded="emit('update:detailsExpanded', $event)" @update:day-width="onScaleChange([$event])"
-      @fullscreen="emit('fullscreen', true)" />
+    <MeetingsGanttToolbar :show-legend :institution-count="institutions.length"
+      :show-only-with-activity :show-only-with-public-meetings
+      :day-width="dayWidthPx" :group-by="groupBy" :fullscreen-active :meetings-loading
+      @show-legend-modal="emit('show-legend-modal')" @update:day-width="onScaleChange"
+      @update:group-by="groupBy = $event" @fullscreen="emit('fullscreen', true)" />
 
     <div ref="chartArea" class="relative isolate flex w-full min-w-0 max-w-full border border-border" data-slot="meetings-gantt"
       :style="containerHeight ? { height: containerHeight } : {}"
@@ -14,47 +13,42 @@
       <!-- Left: sticky labels -->
       <div ref="leftLabels" class="relative isolate z-[35] shrink-0 overflow-hidden border-r border-border bg-card"
         :style="{ width: `${labelWidthPx}px` }">
-        <div class="grid" :style="{ gridTemplateRows: `22px ${layoutRows.map(r => r.height + 'px').join(' ')}` }">
+        <div class="grid" :style="{ gridTemplateRows: `${GANTT_AXIS_HEIGHT}px repeat(${layoutRows.length}, ${GANTT_ROW_HEIGHT}px)` }">
           <!-- header spacer (align with axis height) -->
           <div class="sticky top-0 z-20 border-b border-border bg-muted/40" />
-          <template v-for="(row, idx) in layoutRows" :key="`label-${row.key}`">
-            <div v-if="row.type === 'tenant'"
+          <template v-for="(row, idx) in layoutRows" :key="row.key">
+            <div v-if="row.type === 'group'"
               class="sticky top-[22px] z-[30] truncate border-b border-border bg-muted px-3 py-1 text-xs font-semibold text-foreground">
-              {{ mergedTenantNames[row.tenantId!] ?? row.tenantId }}
+              {{ row.label }}
             </div>
-            <div v-else class="flex items-start gap-2 truncate border-b px-3 py-1 text-sm" :class="[
+            <div v-else class="flex items-center gap-2 truncate border-b px-3 text-sm" :class="[
               row.isRelated
                 ? 'border-dashed border-border text-muted-foreground'
                 : 'border-border/60 text-foreground',
             ]" :title="labelFor(row.institutionId!)">
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center justify-between gap-2">
-                  <div class="flex min-w-0 items-center gap-1.5">
-                    <!-- A related institution is marked by what it is; one the rep may not open, by a lock. -->
-                    <span v-if="row.isRelated" class="shrink-0" :title="getRelationshipTooltip(row)">
-                      <Link2 v-if="row.authorized !== false" class="size-3.5" :aria-label="$t('Susijusi institucija')" />
-                      <Lock v-else class="size-3.5" :aria-label="$t('relationships.not_authorized')" />
-                    </span>
-                    <button type="button" :data-tour="idx === 1 ? 'gantt-institution-row' : undefined"
-                      class="cursor-pointer truncate text-left hover:underline focus-visible:underline focus-visible:outline-none"
-                      :aria-label="$t('Atidaryti instituciją') + ': ' + (labelFor(row.institutionId!) || row.institutionId)"
-                      @click="visitInstitution(row.institutionId!, $event)"
-                      @auxclick.middle.prevent="visitInstitution(row.institutionId!, $event)"
-                      @keydown.enter.prevent="visitInstitution(row.institutionId!, $event)">
-                      {{ labelFor(row.institutionId!) }}
-                    </button>
-                    <span v-if="props.institutionHasPublicMeetings?.[row.institutionId!]" class="shrink-0 text-muted-foreground"
-                      :title="$t('Vieši posėdžiai')">
-                      <Globe class="size-3.5" :aria-label="$t('Vieši posėdžiai')" />
-                    </span>
-                  </div>
-                  <span v-if="lastMeetingByInstitution.get(row.institutionId!)"
-                    class="shrink-0 text-xs tabular-nums text-muted-foreground">{{
-                    labelLast(lastMeetingByInstitution.get(row.institutionId!)!) }}</span>
+              <div class="flex min-w-0 flex-1 items-center justify-between gap-2">
+                <div class="flex min-w-0 items-center gap-1.5">
+                  <!-- A related institution is marked by what it is; one the rep may not open, by a lock. -->
+                  <span v-if="row.isRelated" class="shrink-0" :title="getRelationshipTooltip(row)">
+                    <Link2 v-if="row.authorized !== false" class="size-3.5" :aria-label="$t('Susijusi institucija')" />
+                    <Lock v-else class="size-3.5" :aria-label="$t('relationships.not_authorized')" />
+                  </span>
+                  <button type="button" :data-tour="idx === 1 ? 'gantt-institution-row' : undefined"
+                    class="cursor-pointer truncate text-left hover:underline focus-visible:underline focus-visible:outline-none"
+                    :aria-label="$t('Atidaryti instituciją') + ': ' + labelFor(row.institutionId!)"
+                    @click="visitInstitution(row.institutionId!, $event)"
+                    @auxclick.middle.prevent="visitInstitution(row.institutionId!, $event)"
+                    @keydown.enter.prevent="visitInstitution(row.institutionId!, $event)">
+                    {{ labelFor(row.institutionId!) }}
+                  </button>
+                  <span v-if="props.institutionHasPublicMeetings?.[row.institutionId!]" class="shrink-0 text-muted-foreground"
+                    :title="$t('Vieši posėdžiai')">
+                    <Globe class="size-3.5" :aria-label="$t('Vieši posėdžiai')" />
+                  </span>
                 </div>
-                <div v-if="detailsExpanded" class="mt-1 truncate text-xs leading-snug text-muted-foreground">
-                  {{ $t('Posėdžių') }}: {{ meetings.filter(m => m.institution_id === row.institutionId).length }}
-                </div>
+                <span v-if="lastMeetingByInstitution.get(String(row.institutionId))"
+                  class="shrink-0 text-xs tabular-nums text-muted-foreground">{{
+                    labelLast(lastMeetingByInstitution.get(String(row.institutionId))!) }}</span>
               </div>
             </div>
           </template>
@@ -62,15 +56,15 @@
 
         <!-- Drag handle for the label column width, as on the duty timeline. -->
         <div
-          class="absolute right-0 top-0 z-[40] h-full w-1.5 cursor-col-resize hover:bg-border"
+          class="absolute right-0 top-0 z-[40] h-full w-1.5 cursor-col-resize touch-none hover:bg-border"
           :class="{ 'bg-ring/40': isResizing }" role="separator" :aria-label="$t('Keisti stulpelio plotį')"
-          aria-orientation="vertical" @pointerdown.prevent="startLabelResize" />
+          aria-orientation="vertical" @pointerdown="startLabelResize" />
       </div>
 
       <!-- Right: scrollable timeline with sticky header -->
       <div ref="rightScroll" class="h-full w-0 min-w-0 flex-1 overflow-auto bg-background">
-        <div ref="axisScroll" class="sticky top-0 isolate z-30 border-b border-border bg-background">
-          <svg ref="axisEl" role="img" :aria-label="$t('Laiko ašis')" class="block" style="height: 22px;" />
+        <div class="sticky top-0 isolate z-30 border-b border-border bg-background">
+          <svg ref="axisEl" role="img" :aria-label="$t('Laiko ašis')" class="block" :style="{ height: `${GANTT_AXIS_HEIGHT}px` }" />
         </div>
         <svg ref="svgEl" role="img" :aria-label="$t('visak.overview.timeline.title')" class="block" />
       </div>
@@ -85,7 +79,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import * as d3 from 'd3';
 import { Globe, Link2, Lock } from '@lucide/vue';
 
-import { getGanttColors, isDarkModeActive, type GanttColors } from './ganttColors';
+import { getGanttColors, isDarkModeActive } from './ganttColors';
 import MeetingsGanttToolbar from './MeetingsGanttToolbar.vue';
 import {
   useGanttInteractions,
@@ -95,9 +89,9 @@ import {
   useGanttLabels,
   useColumnResize,
   useDragSelection,
-  type LayoutRow,
   type ParsedDutyMember,
 } from './composables';
+import { GANTT_AXIS_HEIGHT, GANTT_ROW_HEIGHT, type GanttInstitutionMeta } from './composables/useGanttLayout';
 import {
   setupDefs,
   renderBackground,
@@ -105,6 +99,7 @@ import {
   renderVacationBackgrounds,
   renderVacationOverlay,
   renderMeetings,
+  renderActivityRequests,
   renderGaps,
   renderDutyMembers,
   renderInactivePeriods,
@@ -114,39 +109,34 @@ import {
   setupDragSelectionPattern,
   createGanttTooltip,
   createCenterLine,
-  type GanttTooltipManager,
   type CenterLineManager,
+  type ParsedActivityRequest,
 } from './renderers';
 
 import { useVacationPeriods } from '@/Composables/useVacationPeriods';
 import { useGanttSettings } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
 
-/**
- * MeetingsGantt (d3)
- * - Rows = institutions; circles = meetings; bars = gaps.
- */
+/** Rows = institutions (grouped by padalinys or type), icons = meetings, striped bars = check-ins. */
+
+export interface GanttActivityRequestInput {
+  institution_id: string | number;
+  campaign: 'activity_confirmation' | 'missing_meetings';
+  period_start: string;
+  period_end: string;
+  sent_at: string | null;
+  expires_at: string;
+  recipients_count: number;
+}
 
 const props = withDefaults(defineProps<{
-  meetings: Array<{ id: string | number; start_time: string | Date; institution_id: string | number; title?: string; institution?: string; has_calendar_event?: boolean; calendar_event_is_draft?: boolean; type_slug?: string }>;
+  meetings: Array<{ id: string | number; start_time: string | Date; institution_id: string | number; title?: string; institution?: string; has_calendar_event?: boolean; calendar_event_is_draft?: boolean; type_slug?: string; completion_status?: 'complete' | 'incomplete' | 'no_items'; authorized?: boolean }>;
   gaps: Array<{ institution_id: string | number; from: string | Date; until: string | Date; mode?: 'heads_up' | 'no_meetings'; note?: string }>;
-  institutions?: Array<{ id: string | number; name?: string; tenant_id?: string | number; is_internal?: boolean; is_related?: boolean; relationship_direction?: 'outgoing' | 'incoming' | 'mutual'; relationship_type?: 'direct' | 'type'; source_institution_id?: string; authorized?: boolean }>;
-  daysBefore?: number;
-  daysAfter?: number;
-  dayWidth?: number;
-  startDate?: string | Date;
-  institutionsOrder?: Array<string | number>;
-  rowHeight?: number;
+  institutions?: Array<GanttInstitutionMeta & { name?: string; is_internal?: boolean }>;
   institutionNames?: Record<string | number, string>;
-  labelWidth?: number;
-  // Optional tenant categorization and filtering
-  tenantFilter?: Array<string | number>;
-  institutionTenant?: Record<string | number, string | number>;
   tenantNames?: Record<string | number, string>;
-  // Public meetings indicator lookup
   institutionHasPublicMeetings?: Record<string | number, boolean>;
-  // "Has any past/planned activity" lookup for the activity filter (independent of loaded windows)
+  /** "Has any past/planned activity", independent of the loaded meeting windows */
   institutionHasActivity?: Record<string | number, boolean>;
-  // UI toggles
   showLegend?: boolean;
   showTodayLine?: boolean;
   interactive?: boolean;
@@ -154,98 +144,72 @@ const props = withDefaults(defineProps<{
   showOnlyWithPublicMeetings?: boolean;
   /** Hide VU SA's own bodies. Off by default — everything is drawn unless asked otherwise. */
   hideInternalInstitutions?: boolean;
-  // Row details/expansion (global multi-expand)
-  detailsExpanded?: boolean;
-  expandedRowHeight?: number;
-  // Infinite scroll controls
-  infiniteScroll?: boolean;
-  extendStepDays?: number;
-  extendThresholdPx?: number;
-  // Container height
+  /** '100%' in focus mode; otherwise the chart fits its rows up to `maxHeight` */
   height?: string;
-  // Duty members display
+  maxHeight?: number;
   dutyMembers?: Array<{ institution_id: string | number; user: { id: string; name: string; profile_photo_path?: string | null; activityCategory?: 'today' | 'week' | 'month' | 'stale' | 'never'; lastAction?: string | null }; start_date: string | Date; end_date?: string | Date | null }>;
   inactivePeriods?: Array<{ institution_id: string | number; from: string | Date; until: string | Date }>;
   showDutyMembers?: boolean;
-  // Activity status rings for duty member avatars (tenant view only)
+  /** Activity rings on member avatars (padaliniai view only) */
   showActivityStatus?: boolean;
-  // Meeting periodicity per institution (days between expected meetings)
+  /** Days between expected meetings, per institution */
   institutionPeriodicity?: Record<string | number, number>;
-  // Date range currently being loaded (rendered as a shimmer band)
+  /** Date range being fetched, drawn as a pulsing band */
   loadingRange?: { from: Date; until: Date } | null;
-  // Whether meetings are currently being fetched (shown as a toolbar indicator)
   meetingsLoading?: boolean;
-  // In focus mode: the toolbar's full-screen button reads as "exit"
+  /** In focus mode the toolbar's full-screen button reads as "exit" */
   fullscreenActive?: boolean;
+  activityRequests?: GanttActivityRequestInput[];
+  showActivityRequests?: boolean;
 }>(), {
-  daysBefore: 60,
-  daysAfter: 60,
-  dayWidth: 3,
-  rowHeight: 28,
-  labelWidth: 220,
   showLegend: true,
   showTodayLine: true,
   interactive: true,
   showOnlyWithActivity: false,
   showOnlyWithPublicMeetings: false,
   hideInternalInstitutions: false,
-  detailsExpanded: false,
-  expandedRowHeight: 56,
-  infiniteScroll: true,
-  extendStepDays: 30,
-  extendThresholdPx: 200,
-  height: '400px',
+  height: undefined,
+  maxHeight: 720,
   showDutyMembers: true,
   showActivityStatus: false,
+  showActivityRequests: true,
 });
-
-const wrap = ref<HTMLElement | null>(null);
-const chartArea = ref<HTMLElement | null>(null);
-const rightScroll = ref<HTMLElement | null>(null);
-const axisScroll = ref<HTMLElement | null>(null);
-const leftLabels = ref<HTMLElement | null>(null);
-const svgEl = ref<SVGSVGElement | null>(null);
-const axisEl = ref<SVGSVGElement | null>(null);
-let ro: ResizeObserver | null = null;
-// curX as ref so it can be passed to composables
-const curXRef = ref<d3.ScaleTime<number, number> | null>(null);
-// Center line manager for scroll updates
-let centerLineManager: CenterLineManager | null = null;
-
-// Use injected Gantt settings (eliminates prop drilling for dayWidth, etc.)
-// Falls back to local settings if no provider is found (standalone usage)
-const ganttSettings = useGanttSettings();
-const { dayWidthPx } = ganttSettings;
-const labelWidthPx = ganttSettings.labelWidth;
-const { setLabelWidth } = ganttSettings;
-const { showTenantHeaders } = ganttSettings;
-const { centerDateTimestamp } = ganttSettings;
-const { setCenterDate } = ganttSettings;
-const { verticalScrollPosition } = ganttSettings;
-const { setVerticalScrollPosition } = ganttSettings;
-
-// Column resize composable for label column
-const { isResizing, startResize: startLabelResize } = useColumnResize(
-  setLabelWidth,
-  () => labelWidthPx.value,
-);
 
 const emit = defineEmits<{
   (e: 'create-meeting', payload: { institution_id: string | number; suggestedAt: Date; institutionName?: string }): void;
   (e: 'create-check-in', payload: { institution_id: string | number; startDate: Date; endDate: Date }): void;
   (e: 'fullscreen', payload: boolean): void;
-  (e: 'update:detailsExpanded', payload: boolean): void;
   (e: 'show-legend-modal'): void;
-  /** Timeline range changed (scroll extension, year navigation) — consumers may lazy-load data for it */
+  /** The dates on screen changed — consumers lazy-load meetings for them */
   (e: 'range-changed', min: Date, max: Date): void;
 }>();
 
-// Navigate to institution details (admin route helper if available)
+const DAYS_AROUND_TODAY = 60;
+// Rendered beyond the viewport so ordinary scrolling rarely reveals a placeholder.
+const HORIZONTAL_BUFFER_PX = 600;
+const VERTICAL_BUFFER_PX = 900;
+const margin = { top: 0, right: 8, bottom: 0, left: 8 };
+
+const wrap = ref<HTMLElement | null>(null);
+const chartArea = ref<HTMLElement | null>(null);
+const rightScroll = ref<HTMLElement | null>(null);
+const leftLabels = ref<HTMLElement | null>(null);
+const svgEl = ref<SVGSVGElement | null>(null);
+const axisEl = ref<SVGSVGElement | null>(null);
+const curXRef = ref<d3.ScaleTime<number, number> | null>(null);
+let centerLineManager: CenterLineManager | null = null;
+
+const page = usePage();
+const locale = () => (page.props.app as { locale?: string } | undefined)?.locale ?? 'lt';
+
+const ganttSettings = useGanttSettings();
+const { dayWidthPx, groupBy, centerDateTimestamp, setCenterDate, verticalScrollPosition, setVerticalScrollPosition } = ganttSettings;
+const labelWidthPx = ganttSettings.labelWidth;
+
+const { isResizing, startResize: startLabelResize } = useColumnResize(ganttSettings.setLabelWidth, () => labelWidthPx.value);
+
 const visitInstitution = (id: string | number, event?: MouseEvent | KeyboardEvent) => {
-  // @ts-ignore route helper might be globally available (ziggy)
-  const routeFn = (window as any)?.route;
-  const url = routeFn ? routeFn('institutions.show', id) : `/admin/institutions/${id}`;
-  // Support Ctrl/Cmd+click to open in new tab
+  const url = route('institutions.show', id);
   if (event && (event.ctrlKey || event.metaKey || (event instanceof MouseEvent && event.button === 1))) {
     window.open(url, '_blank');
   }
@@ -254,7 +218,6 @@ const visitInstitution = (id: string | number, event?: MouseEvent | KeyboardEven
   }
 };
 
-// Parse data props into Date objects
 const parsedMeetings = computed(() => props.meetings.map(m => ({ ...m, date: new Date(m.start_time) })));
 const parsedGaps = computed(() => props.gaps.map(g => ({ ...g, fromDate: new Date(g.from), untilDate: new Date(g.until) })));
 const parsedDutyMembers = computed(() => (props.dutyMembers ?? []).map(m => ({
@@ -268,17 +231,13 @@ const parsedInactivePeriods = computed(() => (props.inactivePeriods ?? []).map(p
   untilDate: new Date(p.until),
 })));
 
-// Filtering composable: institutions, filtered collections, grouping
-const filtering = useGanttFiltering(
+const { institutions, filteredMeetings, filteredGaps, filteredDutyMembers, filteredInactivePeriods } = useGanttFiltering(
   {
-    tenantFilter: () => props.tenantFilter,
-    institutionTenant: () => props.institutionTenant,
     showOnlyWithActivity: () => props.showOnlyWithActivity,
     showOnlyWithPublicMeetings: () => props.showOnlyWithPublicMeetings,
     hideInternalInstitutions: () => props.hideInternalInstitutions,
     institutionHasPublicMeetings: () => props.institutionHasPublicMeetings,
     institutionHasActivity: () => props.institutionHasActivity,
-    institutionsOrder: () => props.institutionsOrder,
     showDutyMembers: () => props.showDutyMembers,
   },
   {
@@ -290,192 +249,74 @@ const filtering = useGanttFiltering(
     institutionNames: () => props.institutionNames,
   },
 );
-const { institutions, filteredMeetings, filteredGaps, filteredDutyMembers, filteredInactivePeriods } = filtering;
 
-// Labels composable: name lookups, formatting, tooltips
-const labels = useGanttLabels(
-  {
-    institutionNames: () => props.institutionNames,
-    tenantNames: () => props.tenantNames,
-    institutionTenant: () => props.institutionTenant,
-  },
-  {
-    institutions: () => props.institutions,
-    meetings: () => props.meetings,
-    filteredMeetings,
-  },
-);
-const { mergedTenantNames, labelFor, tenantFor, lastMeetingByInstitution, fmtDate, fmtDateWithYear, labelLast, getRelationshipTooltip } = labels;
-
-// Layout composable: rows, positions, heights
-const layout = useGanttLayout(
-  {
-    rowHeight: () => props.rowHeight,
-    expandedRowHeight: () => props.expandedRowHeight,
-    detailsExpanded: () => props.detailsExpanded,
-    height: () => props.height,
-    showTenantHeaders,
-  },
-  {
-    institutions,
-    institutionsMeta: () => props.institutions,
-    institutionTenant: () => props.institutionTenant,
-    mergedTenantNames,
-  },
-);
-const { layoutRows, rowTop, rowHeightFor, rowCenter, containerHeight } = layout;
-
-// Page props for locale access
-const page = usePage();
-
-// Initialize interaction composable for scroll, zoom, and navigation
-const interactions = useGanttInteractions(
-  {
-    daysBefore: props.daysBefore,
-    daysAfter: props.daysAfter,
-    infiniteScroll: props.infiniteScroll,
-    extendThresholdPx: props.extendThresholdPx ?? 200,
-    extendStepDays: props.extendStepDays ?? 30,
-    startDate: props.startDate ? new Date(props.startDate) : null,
-    centerDateTimestamp, // Pass ref, not value
-  },
-  {
-    rightScroll,
-    leftLabels,
-    curX: curXRef,
-    layoutRows: computed(() => layoutRows.value.map(r => ({ key: r.key, top: r.top }))),
-    dayWidthPx,
-  },
-  {
-    onDayWidthChange: (width: number) => ganttSettings.setDayWidth(width),
-  },
+const { mergedTenantNames, labelFor, lastMeetingByInstitution, fmtDate, fmtDateWithYear, labelLast, getRelationshipTooltip } = useGanttLabels(
+  { institutionNames: () => props.institutionNames, tenantNames: () => props.tenantNames },
+  { institutions: () => props.institutions, filteredMeetings },
 );
 
-// Destructure commonly used values from interactions composable
+const { layoutRows, rowTop, rowHeightFor, rowCenter, contentHeight, containerHeight } = useGanttLayout(
+  { groupBy, height: () => props.height, maxHeight: props.maxHeight },
+  { institutions, institutionsMeta: () => props.institutions, tenantNames: mergedTenantNames },
+);
+
+const rowIndexByKey = computed(() => new Map(layoutRows.value.map((row, index) => [row.key, index])));
+
+// --- Render scheduling -------------------------------------------------------------------------
+// Every trigger (data, scroll past a threshold, zoom, resize, theme) asks for a render; one runs per frame.
+
+let renderFrame: number | null = null;
+const afterRenderQueue: Array<() => void> = [];
+
+function scheduleRender(): void {
+  if (renderFrame !== null) return;
+  renderFrame = requestAnimationFrame(() => {
+    renderFrame = null;
+    render();
+  });
+}
+
+function afterRender(callback: () => void): void {
+  afterRenderQueue.push(callback);
+  scheduleRender();
+}
+
 const {
   extraBefore,
   extraAfter,
-  extending,
-  currentYear,
-  didInitialAutoScroll,
   minTime,
   maxTime,
   applyInitialExtension,
   applyInitialScrollPosition,
-  onScroll,
   onScaleChange,
-  navigateYears,
   navigateToToday,
-  scrollToTenant,
   setupVerticalScrollSync,
   attachScrollHandler,
   attachKeyboardHandler,
-  updateCurrentYear,
-} = interactions;
-
-// Vacation periods come from the backend, which uses the same calendar when
-// deciding whether an institution has gone too long without a meeting.
-// Winter vacation starts in December and ends on January 1st, so the year before
-// the visible range can still contribute a period.
-const { periods: vacationPeriods, ensureYears: ensureVacationYears } = useVacationPeriods();
-
-watch([minTime, maxTime], ([min, max]) => {
-  ensureVacationYears(min.getFullYear() - 1, max.getFullYear());
-}, { immediate: true });
-
-// Initialize viewport composable for horizontal + vertical culling (performance optimization)
-// Viewport changes re-render through onViewportChange — the culled computeds must not
-// be watched directly, because render() reassigns curXRef and would loop.
-// Buffers are generous on both axes so normal scrolling stays within the
-// pre-rendered/pre-fetched zone and rarely reveals a skeleton.
-// verticalScrollThreshold is much coarser than the horizontal one: each
-// viewport change re-renders the whole SVG, which competes for main-thread
-// time with the labels column's scroll sync (see useGanttInteractions'
-// setupVerticalScrollSync) — triggering that on every ~50px of vertical
-// scroll made the labels visibly stutter/catch up during fast scrolling.
-// The large verticalBufferPx means content stays pre-rendered well past
-// this coarser trigger point regardless.
-const viewport = useGanttViewport(rightScroll, curXRef, {
-  bufferPx: 600,
-  verticalBufferPx: 900,
-  verticalScrollThreshold: 250,
-  onViewportChange: () => {
-    emitVisibleRange();
-    render();
+} = useGanttInteractions(
+  {
+    daysBefore: DAYS_AROUND_TODAY,
+    daysAfter: DAYS_AROUND_TODAY,
+    infiniteScroll: true,
+    extendThresholdPx: 200,
+    extendStepDays: 30,
+    centerDateTimestamp,
   },
-});
+  { rightScroll, leftLabels, curX: curXRef, dayWidthPx },
+  { afterRender },
+);
 
-// Create viewport-culled data for rendering (horizontal / date-based)
-const visibleMeetings = viewport.createVisibleMeetings(filteredMeetings);
-const visibleGaps = viewport.createVisibleGaps(filteredGaps);
-const visibleDutyMembers = viewport.createVisibleDutyMembers(filteredDutyMembers);
+// The backend's vacation calendar; winter vacation starts in December, so the year before the range counts too.
+const { periods: vacationPeriods, ensureYears: ensureVacationYears } = useVacationPeriods();
+watch([minTime, maxTime], ([min, max]) => ensureVacationYears(min.getFullYear() - 1, max.getFullYear()), { immediate: true });
 
-// Vertically-culled rows: only these get drawn. Row count scales with the
-// number of institutions across all selected tenants, so this is what keeps
-// an all-units view cheap to render.
-const visibleLayoutRows = viewport.createVisibleRows(layoutRows);
-
-// Absolute index of each row in the *full* (uncalled) row list, so zebra
-// striping stays anchored to each row's true position instead of resetting
-// from the first row that happens to be in view.
-const rowIndexByKey = computed(() => {
-  const m = new Map<string | number, number>();
-  layoutRows.value.forEach((r, i) => m.set(r.key, i));
-  return m;
-});
-const rowIndex = (key: string | number) => rowIndexByKey.value.get(key) ?? 0;
-
-const visibleInstitutionIds = computed(() => {
-  const ids = new Set<string | number>();
-  for (const row of visibleLayoutRows.value) {
-    if (row.type === 'institution' && row.institutionId !== undefined) {
-      ids.add(String(row.institutionId));
-    }
-  }
-  return ids;
-});
-
-// Rows that exist in the layout but are currently culled (outside the
-// rendered viewport+buffer) — drawn as a plain pulsing placeholder so a fast
-// scroll or a jump-to-tenant reveals a skeleton instead of blank space before
-// the real content renders on the next viewport update.
-const culledLayoutRows = computed(() => {
-  const visibleKeys = new Set(visibleLayoutRows.value.map(r => r.key));
-  return layoutRows.value.filter(r => !visibleKeys.has(r.key));
-});
-
-// Meetings/gaps/duty members culled by BOTH date (viewport) and vertical
-// position (visibleLayoutRows) — an institution scrolled out of view has no
-// need for its meetings/avatars to be computed either.
-const rowCulledMeetings = computed(() =>
-  visibleMeetings.value.filter(m => visibleInstitutionIds.value.has(String(m.institution_id))));
-const rowCulledGaps = computed(() =>
-  visibleGaps.value.filter(g => visibleInstitutionIds.value.has(String(g.institution_id))));
-const rowCulledDutyMembers = computed(() =>
-  visibleDutyMembers.value.filter(m => visibleInstitutionIds.value.has(String(m.institution_id))));
-
-/**
- * Emit the currently visible date range so consumers can lazy-load data for it.
- * The visible range (not the whole timeline span) is what needs meetings —
- * the timeline itself can extend years beyond the viewport via infinite scroll.
- */
-function emitVisibleRange() {
-  const bounds = viewport.viewportBounds.value;
-  if (bounds) {
-    emit('range-changed', bounds.minDate, bounds.maxDate);
-  }
-}
-
-// Group viewport-culled duty members by institution + day for avatar stacking
-const groupedVisibleDutyMembers = computed<Map<string, ParsedDutyMember[]>>(() => {
-  const groups = new Map<string, ParsedDutyMember[]>();
-  for (const member of rowCulledDutyMembers.value) {
-    const dayKey = `${member.institution_id}:${member.startDate.toDateString()}`;
-    const arr = groups.get(dayKey) ?? [];
-    arr.push(member as ParsedDutyMember);
-    groups.set(dayKey, arr);
-  }
-  return groups;
+// Vertical thresholds are coarser than horizontal ones: each change re-renders the SVG, which competes
+// with the labels column's scroll sync and made it stutter at a finer step.
+const viewport = useGanttViewport(rightScroll, curXRef, {
+  bufferPx: HORIZONTAL_BUFFER_PX,
+  verticalBufferPx: VERTICAL_BUFFER_PX,
+  verticalScrollThreshold: 250,
+  onViewportChange: scheduleRender,
 });
 
 // Rows marked `authorized: false` are read-only: someone else's padalinys or an unauthorized relation.
@@ -487,330 +328,278 @@ function canCreateOn(institutionId: string | number): boolean {
   return !readOnlyInstitutionIds.value.has(String(institutionId));
 }
 
-// Initialize drag selection composable for Shift+drag check-in creation
-const dragSelection = useDragSelection(
-  rightScroll,
-  svgEl,
-  curXRef,
-  layoutRows,
-  {
-    onDragComplete: (payload) => {
-      if (canCreateOn(payload.institution_id)) {
-        emit('create-check-in', payload);
-      }
-    },
+function createMeetingOn(payload: { institution_id: string | number; suggestedAt: Date }): void {
+  if (canCreateOn(payload.institution_id)) {
+    emit('create-meeting', { ...payload, institutionName: labelFor(payload.institution_id) });
+  }
+}
+
+const dragSelection = useDragSelection(rightScroll, svgEl, curXRef, layoutRows, {
+  onDragComplete: (payload) => {
+    if (canCreateOn(payload.institution_id)) {
+      emit('create-check-in', payload);
+    }
   },
-);
+});
 
-// Margins: top is 0 since x-axis is now in a separate sticky SVG.
-// Bottom set to 0 so SVG height matches the left grid height exactly.
-const margin = { top: 0, right: 8, bottom: 0, left: 8 };
-const axisHeight = 22; // Height of the sticky x-axis header
+// --- Activity requests ------------------------------------------------------------------------
 
-/**
- * Main render function for the gantt chart
- *
- * Renders the complete gantt chart using D3.js including:
- * - Time axis (top) with weekly ticks and year markers
- * - Institution rows with zebra striping and tenant grouping
- * - Meeting dots (circles) that are clickable
- * - Check-in bars (lines) with visual distinction for expired ones
- * - Green safety bands around meetings (±14 days)
- * - Vacation period overlays (summer, winter, easter)
- * - Interactive hover effects and tooltips
- * - Today line indicator
- *
- * The function is re-run whenever reactive dependencies change (meetings,
- * gaps, date range, filters, etc.)
- */
-const render = () => {
+const openRequests = computed(() => (props.showActivityRequests ? props.activityRequests ?? [] : []).map(request => ({
+  ...request,
+  fromDate: d3.timeDay.floor(new Date(request.period_start)),
+  untilDate: d3.timeDay.offset(d3.timeDay.floor(new Date(request.period_end)), 1),
+})));
+
+/** Meetings whose records an open "Papildyk posėdžių įrašus" request asks for. */
+const requestedMeetingIds = computed(() => {
+  const ids = new Set<string>();
+  const periods = openRequests.value.filter(request => request.campaign === 'missing_meetings');
+  if (periods.length === 0) return ids;
+
+  for (const meeting of parsedMeetings.value) {
+    if (meeting.completion_status === 'complete' || meeting.authorized === false) continue;
+    const asked = periods.some(period => String(period.institution_id) === String(meeting.institution_id)
+      && meeting.date >= period.fromDate && meeting.date < period.untilDate);
+    if (asked) ids.add(String(meeting.id));
+  }
+  return ids;
+});
+
+// --- Render ------------------------------------------------------------------------------------
+
+function render(): void {
   const container = wrap.value;
+  const el = rightScroll.value;
   const svg = d3.select(svgEl.value);
-  const axisSvg = axisEl.value ? d3.select(axisEl.value) : null;
-  if (!container || svg.empty()) return;
+  const axisSvg = d3.select(axisEl.value);
+  if (!container || !el || svg.empty()) return;
 
-  // Get color palette based on current theme
-  const colors = getGanttColors(isDarkModeActive());
+  const isDark = isDarkModeActive();
+  const colors = getGanttColors(isDark);
 
-  // derive width from current date span
   const totalDays = Math.max(1, d3.timeDay.count(minTime.value, maxTime.value));
-  const viewportW = (rightScroll.value?.clientWidth ?? container.clientWidth) || 800;
-  const calculatedW = totalDays * (dayWidthPx.value || props.dayWidth);
-  // Ensure minimum width slightly larger than viewport to guarantee horizontal scrollbar
-  const innerW = Math.max(calculatedW, viewportW + 50);
-  const rowsH = layoutRows.value.reduce((acc, r) => acc + r.height, 0);
-
-  // Calculate the ideal content height (rows only, axis is separate)
-  const idealHeight = rowsH;
-
-  // Use the ideal height directly - the container will handle overflow
-  const height = Math.max(50, idealHeight); // Ensure minimum height
+  // Slightly wider than the viewport, so there is always a horizontal scrollbar to extend with.
+  const innerW = Math.max(totalDays * dayWidthPx.value, el.clientWidth + 50);
+  const height = Math.max(50, contentHeight.value);
+  const innerWidth = innerW - margin.left - margin.right;
 
   svg.attr('width', innerW).attr('height', height);
   svg.selectAll('*').remove();
+  axisSvg.attr('width', innerW).attr('height', GANTT_AXIS_HEIGHT);
+  axisSvg.selectAll('*').remove();
 
-  // Also set axis SVG width to match
-  if (axisSvg && !axisSvg.empty()) {
-    axisSvg.attr('width', innerW).attr('height', axisHeight);
-    axisSvg.selectAll('*').remove();
+  const x = d3.scaleTime().domain([minTime.value, maxTime.value]).range([0, innerWidth]);
+  curXRef.value = x;
+  // Before measuring what is on screen: the first render decides where the view starts.
+  applyInitialScrollPosition(x, margin.left);
+
+  const visibleLeft = el.scrollLeft - margin.left;
+  const visibleRight = visibleLeft + el.clientWidth;
+  const drawMin = x.invert(Math.max(0, visibleLeft - HORIZONTAL_BUFFER_PX));
+  const drawMax = x.invert(Math.min(innerWidth, visibleRight + HORIZONTAL_BUFFER_PX));
+  const top = el.scrollTop - VERTICAL_BUFFER_PX;
+  const bottom = el.scrollTop + el.clientHeight + VERTICAL_BUFFER_PX;
+
+  const visibleRows = layoutRows.value.filter(row => row.top + row.height >= top && row.top <= bottom);
+  const visibleInstitutionRows = visibleRows
+    .filter(row => row.type === 'institution')
+    .map(row => ({ key: row.key, institutionId: row.institutionId! }));
+  const visibleKeys = new Set(visibleRows.map(row => row.key));
+  const rowKeysByInstitution = new Map<string, string[]>();
+  for (const row of visibleInstitutionRows) {
+    const keys = rowKeysByInstitution.get(String(row.institutionId)) ?? [];
+    keys.push(row.key);
+    rowKeysByInstitution.set(String(row.institutionId), keys);
   }
 
-  const innerWidth = innerW - margin.left - margin.right;
-  const innerH = height - margin.top - margin.bottom;
+  /** Each item once per visible row of its institution, inside the drawn date range. */
+  const place = <T extends { institution_id: string | number }>(items: T[], overlaps: (item: T) => boolean): Array<T & { rowKey: string }> =>
+    items.flatMap(item => (overlaps(item) ? (rowKeysByInstitution.get(String(item.institution_id)) ?? []).map(rowKey => ({ ...item, rowKey })) : []));
+
+  const meetings = place(filteredMeetings.value, m => m.date >= drawMin && m.date <= drawMax);
+  const gaps = place(filteredGaps.value, gap => gap.untilDate >= drawMin && gap.fromDate <= drawMax);
+  const members = place(filteredDutyMembers.value, m => (m.endDate ?? drawMax) >= drawMin && m.startDate <= drawMax);
+  const requests: ParsedActivityRequest[] = place(
+    openRequests.value.filter(request => request.campaign === 'activity_confirmation'),
+    request => request.untilDate >= drawMin && request.fromDate <= drawMax,
+  ).map(request => ({
+    institution_id: request.institution_id,
+    rowKey: request.rowKey,
+    fromDate: request.fromDate,
+    untilDate: request.untilDate,
+    sentAt: request.sent_at ? new Date(request.sent_at) : null,
+    expiresAt: new Date(request.expires_at),
+    recipients_count: request.recipients_count,
+  }));
 
   const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
-
-  // gradients and patterns
   const defs = svg.append('defs');
-  setupDefs({
-    defs,
-    colors,
-    isDarkMode: isDarkModeActive(),
-  });
-  // Add drag selection pattern for Shift+drag check-in creation
-  setupDragSelectionPattern(defs, isDarkModeActive());
+  setupDefs({ defs, colors, isDarkMode: isDark });
+  setupDragSelectionPattern(defs, isDark);
 
-  // Create unified tooltip manager for all renderers
-  // Remove old tooltip elements first to prevent duplicates
-  d3.select(container).selectAll('.gantt-tooltip, .gantt-tooltip-create, .gantt-tooltip-member, .gantt-unified-tooltip').remove();
   const tooltipManager = createGanttTooltip(container, colors);
 
-  // Create or update center line indicator
-  if (centerLineManager) {
-    centerLineManager.destroy();
-  }
-  if (rightScroll.value && chartArea.value) {
-    const currentLocale = (page.props.app as any)?.locale ?? 'lt';
+  centerLineManager?.destroy();
+  if (chartArea.value) {
     centerLineManager = createCenterLine({
       container: chartArea.value,
-      rightScroll: rightScroll.value,
-      x: d3.scaleTime().domain([minTime.value, maxTime.value]).range([0, innerWidth]),
+      rightScroll: el,
+      x,
       colors,
       marginLeft: margin.left,
-      axisHeight,
-      locale: currentLocale,
-      isDarkMode: isDarkModeActive(),
+      axisHeight: GANTT_AXIS_HEIGHT,
+      locale: locale(),
+      isDarkMode: isDark,
       onNavigateToToday: () => {
-        // Clear stored center date and navigate to today
         setCenterDate(null);
         navigateToToday();
       },
     });
   }
 
-  const x = d3.scaleTime().domain([minTime.value, maxTime.value]).range([0, innerWidth]);
-  curXRef.value = x;
-  // Variable-row layout handled manually via rowTop/rowHeightFor — no band scale
+  const rowGeometry = { rowTop, rowHeightFor };
 
-  // Render background (zebra rows, Monday grid, year markers, row separators)
-  // — only for vertically-visible rows; rowIndex keeps zebra parity anchored
-  // to each row's true position rather than the culled subset's local index.
   renderBackground({
     g,
     x,
-    layoutRows: visibleLayoutRows.value,
+    layoutRows: visibleRows,
     innerWidth,
-    innerHeight: innerH,
+    innerHeight: height,
     colors,
-    minTime: minTime.value,
-    maxTime: maxTime.value,
-    rowTop,
-    rowHeightFor,
+    minTime: drawMin,
+    maxTime: drawMax,
+    ...rowGeometry,
     dayWidthPx: dayWidthPx.value,
-    rowIndex,
+    rowIndex: key => rowIndexByKey.value.get(String(key)) ?? 0,
   });
 
-  // Placeholder for rows outside the rendered viewport+buffer — a plain
-  // pulsing bar instead of nothing, so a fast scroll or jump-to-tenant reveals
-  // a skeleton rather than blank space until the next viewport update fills it in.
-  if (culledLayoutRows.value.length > 0) {
-    g.append('g')
-      .attr('class', 'gantt-row-skeletons')
-      .selectAll('rect')
-      .data(culledLayoutRows.value)
-      .enter()
-      .append('rect')
-      .attr('class', 'gantt-row-skeleton')
-      .attr('x', 0)
-      .attr('y', d => rowTop(d.key) + 4)
-      .attr('width', innerWidth)
-      .attr('height', d => rowHeightFor(d.key) - 8)
-      .attr('rx', 3)
-      .attr('ry', 3);
-  }
+  // Rows outside the rendered band: a placeholder, so a fast scroll reveals a skeleton, not blank space.
+  g.append('g')
+    .attr('class', 'gantt-row-skeletons')
+    .selectAll('rect')
+    .data(layoutRows.value.filter(row => !visibleKeys.has(row.key)))
+    .enter()
+    .append('rect')
+    .attr('class', 'gantt-row-skeleton')
+    .attr('x', 0)
+    .attr('y', d => d.top + 4)
+    .attr('width', innerWidth)
+    .attr('height', d => d.height - 8);
 
-  // Vacation period bands (Layer 1 only: opaque solid background covering the
-  // Sunday/zebra grid). Must render early so meetings/gaps/avatars, drawn
-  // later, still show through. The colored overlay (Layer 2-3) renders LAST
-  // — see renderVacationOverlay() below — so its tint reads consistently
-  // instead of blending with e.g. a meeting's green safety band.
-  renderVacationBackgrounds({
+  // Opaque layer first so it covers the grid; the tint goes on top of everything (renderVacationOverlay).
+  const vacationContext = {
     g,
     x,
-    layoutRows: visibleLayoutRows.value,
+    layoutRows: visibleRows,
     innerWidth,
-    minTime: minTime.value,
-    maxTime: maxTime.value,
+    minTime: drawMin,
+    maxTime: drawMax,
     vacationPeriods: vacationPeriods.value,
     colors,
-    rowTop,
-    rowHeightFor,
-  });
+    ...rowGeometry,
+  };
+  renderVacationBackgrounds(vacationContext);
 
-  // Loading skeleton: a pulsing pill per visible institution row, clipped to
-  // the pending fetch range intersected with the horizontal viewport — a
-  // full-height wash was too faint to register as "loading" at all.
   if (props.loadingRange) {
-    const bounds = viewport.viewportBounds.value;
-    const rangeX0 = Math.max(0, x(props.loadingRange.from));
-    const rangeX1 = Math.min(innerWidth, x(props.loadingRange.until));
-    const clipX0 = bounds ? Math.max(rangeX0, bounds.left) : rangeX0;
-    const clipX1 = bounds ? Math.min(rangeX1, bounds.right) : rangeX1;
-
-    if (clipX1 > clipX0) {
-      const skeletonRows = visibleLayoutRows.value.filter(r => r.type === 'institution');
-
+    const x0 = Math.max(0, x(props.loadingRange.from), visibleLeft);
+    const x1 = Math.min(innerWidth, x(props.loadingRange.until), visibleRight);
+    if (x1 > x0) {
       g.append('g')
         .attr('class', 'gantt-loading-rows')
         .selectAll('rect')
-        .data(skeletonRows)
+        .data(visibleInstitutionRows)
         .enter()
         .append('rect')
         .attr('class', 'gantt-loading-range')
-        .attr('x', clipX0)
+        .attr('x', x0)
         .attr('y', d => rowTop(d.key) + 5)
-        .attr('width', clipX1 - clipX0)
-        .attr('height', d => rowHeightFor(d.key) - 10)
-        .attr('rx', 4)
-        .attr('ry', 4);
+        .attr('width', x1 - x0)
+        .attr('height', GANTT_ROW_HEIGHT - 10);
     }
   }
 
-  // Inactive periods (no active duty members) - render as diagonal striped rectangles
   if (props.showDutyMembers) {
     renderInactivePeriods({
       g,
       x,
       innerWidth,
       inactivePeriods: filteredInactivePeriods.value,
-      dutyMembers: rowCulledDutyMembers.value,
-      minTime: minTime.value,
-      maxTime: maxTime.value,
-      rowTop,
-      rowHeightFor,
-      allInstitutionIds: Array.from(visibleInstitutionIds.value),
+      dutyMembers: filteredDutyMembers.value.filter(m => rowKeysByInstitution.has(String(m.institution_id))),
+      minTime: drawMin,
+      maxTime: drawMax,
+      ...rowGeometry,
+      rows: visibleInstitutionRows,
     });
   }
 
-  // Render sticky x-axis in separate SVG using extracted renderer
-  const currentLocale = (page.props.app as any)?.locale ?? 'lt';
-  if (axisSvg && !axisSvg.empty()) {
-    renderAxis({
-      axisSvg,
-      x,
-      marginLeft: margin.left,
-      axisHeight,
-      dayWidthPx: dayWidthPx.value || props.dayWidth,
-      minTime: minTime.value,
-      maxTime: maxTime.value,
-      colors,
-      locale: currentLocale,
-    });
-  }
-
-  // gaps (check-ins) as striped rectangles with CalendarOff icons - using extracted renderer
-  renderGaps({
-    g,
+  renderAxis({
+    axisSvg,
     x,
-    gaps: rowCulledGaps.value,
+    marginLeft: margin.left,
+    axisHeight: GANTT_AXIS_HEIGHT,
+    dayWidthPx: dayWidthPx.value,
+    minTime: drawMin,
+    maxTime: drawMax,
     colors,
-    rowCenter,
-    rowTop,
-    rowHeightFor,
-    onCreateMeeting: (payload: { institution_id: string | number; suggestedAt: Date }) => {
-      if (!canCreateOn(payload.institution_id)) {
-        return;
-      }
-      // Include institution name in the payload for external institutions
-      const name = labelFor(payload.institution_id);
-      emit('create-meeting', { ...payload, institutionName: name });
-    },
+    locale: locale(),
   });
 
-  // Render meeting icons with safety bands and tooltips using extracted renderer
+  renderGaps({ g, x, gaps, colors, rowCenter, ...rowGeometry, onCreateMeeting: createMeetingOn });
+
+  renderActivityRequests({ g, container, x, requests, colors, ...rowGeometry, visibleLeft, visibleRight, tooltipManager });
+
   renderMeetings({
     g,
-    container: container as HTMLElement,
+    container,
     x,
-    meetings: rowCulledMeetings.value,
+    meetings,
     colors,
     rowCenter,
-    rowTop,
-    rowHeightFor,
+    ...rowGeometry,
     labelFor,
     interactive: true,
     tooltipManager,
     institutionPeriodicity: props.institutionPeriodicity,
+    requestedMeetingIds: requestedMeetingIds.value,
   });
 
-  // Duty member avatar markers using extracted renderer
   if (props.showDutyMembers) {
+    const groups = new Map<string, { rowKey: string; startDate: Date; members: ParsedDutyMember[] }>();
+    for (const member of members) {
+      const key = `${member.rowKey}|${member.startDate.toDateString()}`;
+      const group = groups.get(key) ?? { rowKey: member.rowKey, startDate: member.startDate, members: [] };
+      group.members.push(member);
+      groups.set(key, group);
+    }
+
     renderDutyMembers({
       g,
       defs,
-      container: container as HTMLElement,
+      container,
       x,
-      groupedDutyMembers: groupedVisibleDutyMembers.value,
+      groupedDutyMembers: Array.from(groups.values()),
       innerWidth,
-      detailsExpanded: props.detailsExpanded,
       colors,
-      rowTop,
-      rowHeightFor,
+      ...rowGeometry,
       tooltipManager,
       showActivityStatus: props.showActivityStatus,
     });
   }
 
-  // Vacation overlay (Layers 2-3: colored tint + borders) — drawn LAST among
-  // content layers so the vacation hue reads consistently on top of meeting
-  // safety bands, gaps, and avatars rather than blending with them (`pointer-
-  // events: none`, so clicks still reach the elements underneath).
-  renderVacationOverlay({
-    g,
-    x,
-    layoutRows: visibleLayoutRows.value,
-    innerWidth,
-    minTime: minTime.value,
-    maxTime: maxTime.value,
-    vacationPeriods: vacationPeriods.value,
-    colors,
-    rowTop,
-    rowHeightFor,
-  });
+  renderVacationOverlay(vacationContext);
 
-  // Today line using extracted renderer
-  renderTodayLine({
-    g,
-    x,
-    innerHeight: innerH,
-    minTime: minTime.value,
-    maxTime: maxTime.value,
-    colors,
-    showTodayLine: props.showTodayLine,
-  });
+  renderTodayLine({ g, x, innerHeight: height, minTime: minTime.value, maxTime: maxTime.value, colors, showTodayLine: props.showTodayLine });
 
-  // Hover effects and click-to-create using extracted renderer
   renderHoverEffects({
     g,
-    container: container as HTMLElement,
+    container,
     x,
-    innerHeight: innerH,
-    layoutRows: visibleLayoutRows.value,
-    meetings: rowCulledMeetings.value,
-    gaps: rowCulledGaps.value,
+    innerHeight: height,
+    layoutRows: visibleRows,
+    meetings,
+    gaps,
     colors,
-    rowTop,
-    rowHeightFor,
+    ...rowGeometry,
     rowCenter,
     labelFor,
     fmtDateWithYear,
@@ -818,108 +607,65 @@ const render = () => {
     interactive: props.interactive,
     canCreateOn,
     tooltipManager,
-    onCreateMeeting: (payload) => {
-      // Include institution name in the payload for external institutions
-      const name = labelFor(payload.institution_id);
-      emit('create-meeting', { ...payload, institutionName: name });
-    },
+    onCreateMeeting: createMeetingOn,
   });
 
-  // Apply initial scroll position using the composable's function
-  // This centers on the stored center date (from localStorage) or today
-  applyInitialScrollPosition(x, margin.left);
+  emit('range-changed', x.invert(Math.max(0, visibleLeft)), x.invert(visibleRight));
 
-  // Update current year badge from center of viewport
-  updateCurrentYear();
-}; // end render
+  afterRenderQueue.splice(0).forEach(callback => callback());
+}
+
+watch(
+  [
+    parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, layoutRows, vacationPeriods,
+    openRequests, extraBefore, extraAfter, dayWidthPx,
+    () => props.showDutyMembers, () => props.showActivityStatus, () => props.loadingRange, () => props.institutionPeriodicity,
+  ],
+  scheduleRender,
+);
+
+watch(() => dragSelection.state.value, (state) => {
+  const g = d3.select(svgEl.value).select<SVGGElement>('g');
+  if (g.empty() || !curXRef.value) return;
+
+  renderDragSelection({ g, x: curXRef.value, dragState: state, colors: getGanttColors(isDarkModeActive()), isDarkMode: isDarkModeActive() });
+}, { deep: true });
 
 onMounted(() => {
-  // Apply initial extension for low zoom levels BEFORE first render
-  // This ensures the timeline has the correct range when we calculate initial scroll position
   applyInitialExtension();
+  scheduleRender();
 
-  // Now render with correct extensions already applied
-  render();
-  ro = new ResizeObserver(() => viewport.forceUpdate());
-  if (wrap.value) ro.observe(wrap.value);
+  const resizeObserver = new ResizeObserver(() => viewport.forceUpdate());
+  if (wrap.value) resizeObserver.observe(wrap.value);
 
-  // Watch for dark mode changes via MutationObserver on document.documentElement
-  const themeObserver = new MutationObserver((mutations) => {
-    for (const mutation of mutations) {
-      if (mutation.attributeName === 'class') {
-        // Re-render when theme class changes
-        render();
-        break;
-      }
-    }
-  });
+  const themeObserver = new MutationObserver(scheduleRender);
   themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
-  // Setup vertical scroll synchronization using composable
-  const cleanupVerticalSync = setupVerticalScrollSync(props.height === '100%');
+  const cleanups = [
+    setupVerticalScrollSync(props.height === '100%'),
+    attachScrollHandler(),
+    viewport.attachViewportTracking(),
+    attachKeyboardHandler(wrap.value),
+    props.interactive ? dragSelection.attachDragHandler() : undefined,
+  ];
 
-  // Attach infinite scroll handler using composable
-  const cleanupScrollHandler = attachScrollHandler();
-
-  // Attach viewport tracking for horizontal culling
-  const cleanupViewport = viewport.attachViewportTracking();
-
-  // Attach keyboard navigation handler
-  const cleanupKeyboard = attachKeyboardHandler(wrap.value);
-
-  // Attach Shift+drag handler for check-in creation (interactive only)
-  const cleanupDragSelection = props.interactive ? dragSelection.attachDragHandler() : () => { };
-
-  // Setup center line scroll handler with debounced center date saving
-  let saveCenterDateTimeout: ReturnType<typeof setTimeout> | null = null;
-  let saveVerticalScrollTimeout: ReturnType<typeof setTimeout> | null = null;
-
-  // Helper function to save current center date immediately
-  const saveCurrentCenterDate = () => {
-    if (rightScroll.value && curXRef.value) {
-      const { scrollLeft } = rightScroll.value;
-      const viewportWidth = rightScroll.value.clientWidth;
-      const xScalePosition = scrollLeft + viewportWidth / 2 - margin.left;
-      const centerDate = curXRef.value.invert(xScalePosition);
-      setCenterDate(centerDate);
-    }
+  // The view's position survives a reload: center date and vertical scroll, saved while scrolling.
+  const savePosition = () => {
+    const el = rightScroll.value;
+    if (!el || !curXRef.value) return;
+    setCenterDate(curXRef.value.invert(el.scrollLeft + el.clientWidth / 2 - margin.left));
+    setVerticalScrollPosition(el.scrollTop);
   };
-
-  // Helper function to save current vertical scroll position immediately
-  const saveCurrentVerticalScroll = () => {
-    if (rightScroll.value) {
-      setVerticalScrollPosition(rightScroll.value.scrollTop);
-    }
-  };
-
-  const handleCenterLineScroll = () => {
+  let saveTimeout: ReturnType<typeof setTimeout> | null = null;
+  const onScroll = () => {
     centerLineManager?.update();
-
-    // Debounced save of center date to localStorage (200ms delay for faster persistence)
-    if (saveCenterDateTimeout) clearTimeout(saveCenterDateTimeout);
-    saveCenterDateTimeout = setTimeout(saveCurrentCenterDate, 200);
-
-    // Debounced save of vertical scroll position to localStorage
-    if (saveVerticalScrollTimeout) clearTimeout(saveVerticalScrollTimeout);
-    saveVerticalScrollTimeout = setTimeout(saveCurrentVerticalScroll, 200);
+    if (saveTimeout) clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(savePosition, 200);
   };
-  rightScroll.value?.addEventListener('scroll', handleCenterLineScroll, { passive: true });
+  rightScroll.value?.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('beforeunload', savePosition);
 
-  // Also save on beforeunload to catch any pending scroll position
-  const handleBeforeUnload = () => {
-    if (saveCenterDateTimeout) {
-      clearTimeout(saveCenterDateTimeout);
-    }
-    if (saveVerticalScrollTimeout) {
-      clearTimeout(saveVerticalScrollTimeout);
-    }
-    saveCurrentCenterDate();
-    saveCurrentVerticalScroll();
-  };
-  window.addEventListener('beforeunload', handleBeforeUnload);
-
-  // Restore vertical scroll position after initial render
-  if (verticalScrollPosition.value != null && rightScroll.value) {
+  if (verticalScrollPosition.value != null) {
     nextTick(() => {
       if (rightScroll.value) {
         rightScroll.value.scrollTop = verticalScrollPosition.value ?? 0;
@@ -927,49 +673,18 @@ onMounted(() => {
     });
   }
 
-  // Store cleanup functions for onUnmounted
   onUnmounted(() => {
-    ro?.disconnect();
+    if (renderFrame !== null) cancelAnimationFrame(renderFrame);
+    if (saveTimeout) clearTimeout(saveTimeout);
+    resizeObserver.disconnect();
     themeObserver.disconnect();
-    cleanupVerticalSync?.();
-    cleanupScrollHandler?.();
-    cleanupViewport?.();
-    cleanupKeyboard?.();
-    cleanupDragSelection?.();
+    cleanups.forEach(cleanup => cleanup?.());
     centerLineManager?.destroy();
-    rightScroll.value?.removeEventListener('scroll', handleCenterLineScroll);
-    window.removeEventListener('beforeunload', handleBeforeUnload);
-    if (saveCenterDateTimeout) clearTimeout(saveCenterDateTimeout);
-    if (saveVerticalScrollTimeout) clearTimeout(saveVerticalScrollTimeout);
-    // Save final position on unmount
-    saveCurrentCenterDate();
-    saveCurrentVerticalScroll();
+    rightScroll.value?.removeEventListener('scroll', onScroll);
+    window.removeEventListener('beforeunload', savePosition);
+    savePosition();
   });
 });
-
-// Watch drag selection state to render selection rectangle in real-time
-watch(() => dragSelection.state.value, (state) => {
-  const svg = d3.select(svgEl.value);
-  if (svg.empty() || !curXRef.value) return;
-
-  const g = svg.select<SVGGElement>('g');
-  if (g.empty()) return;
-
-  const colors = getGanttColors(isDarkModeActive());
-
-  renderDragSelection({
-    g,
-    x: curXRef.value,
-    dragState: state,
-    colors,
-    isDarkMode: isDarkModeActive(),
-  });
-}, { deep: true });
-
-// NOTE: the viewport-culled computeds (visibleMeetings etc.) are intentionally NOT
-// watched here — they depend on curXRef, which render() itself reassigns, so watching
-// them causes recursive updates. Viewport changes re-render via onViewportChange.
-watch([parsedMeetings, parsedGaps, parsedDutyMembers, parsedInactivePeriods, institutions, layoutRows, vacationPeriods, () => props.daysBefore, () => props.daysAfter, () => props.startDate, () => props.tenantFilter, () => props.showOnlyWithActivity, () => props.showOnlyWithPublicMeetings, () => props.hideInternalInstitutions, () => props.showDutyMembers, () => props.showActivityStatus, () => props.detailsExpanded, () => props.loadingRange, extraBefore, extraAfter, dayWidthPx], () => render());
 </script>
 
 <style scoped>
@@ -996,8 +711,7 @@ svg :global(.gantt-loading-range) {
   }
 }
 
-/* Rows outside the rendered viewport: subtler and slower than the loading pulse, since it
-   means "not rendered yet", not "fetching". */
+/* Rows outside the rendered band: subtler and slower than the loading pulse — "not drawn yet", not "fetching". */
 svg :global(.gantt-row-skeleton) {
   fill: var(--muted-foreground);
   animation: gantt-row-skeleton-pulse 2s ease-in-out infinite;

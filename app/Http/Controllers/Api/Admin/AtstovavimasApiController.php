@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\ActivityRequests\GetOpenActivityRequestSpans;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Admin\AtstovavimasMeetingsRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasRepresentativesRequest;
@@ -57,6 +58,17 @@ class AtstovavimasApiController extends ApiController
         return $this->jsonSuccess(
             $this->rememberVisak('gantt', $this->accessScope($access), $request->boolean('refresh'), fn () => $this->dashboardService->ganttInstitutions($access))
         );
+    }
+
+    /**
+     * Open activity requests over the Gantt's rows. Per user (askers see all, others their own), so never cached.
+     */
+    public function activityRequests(AtstovavimasTenantRequest $request, GetOpenActivityRequestSpans $spans): JsonResponse
+    {
+        $user = $this->requireAuth($request);
+        $access = $this->dashboardService->ganttInstitutionAccess($user, $request->tenantIds());
+
+        return $this->jsonSuccess($spans->execute($user, $access->keys()));
     }
 
     public function statusHistory(AtstovavimasStatusHistoryRequest $request): JsonResponse

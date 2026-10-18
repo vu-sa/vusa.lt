@@ -60,6 +60,16 @@ return [
     'others_title' => 'Dar klausiame apie',
     'open_mano' => 'Atverti Mano VU SA',
     'check_in_note' => 'Pranešta atsakant į laišką „Ar vyko posėdis?“',
+    'gantt' => [
+        'show' => 'Rodyti užklausas atstovams',
+        'records_requested' => 'Paprašyta papildyti įrašus',
+        'recipients' => 'Gavėjų: :count',
+        'sent' => 'Išsiųsta :date',
+        'expires' => 'Galioja iki :date',
+        'legend_title' => 'Užklausos atstovams',
+        'legend_confirmation' => 'Atstovų klausiama, ar šiuo laikotarpiu vyko posėdis',
+        'legend_records' => 'Atstovų paprašyta papildyti posėdžio darbotvarkę ar sprendimus',
+    ],
     'campaigns' => [
         'activity_confirmation' => 'Ar vyko posėdis?',
         'missing_meetings' => 'Papildyk posėdžių įrašus',

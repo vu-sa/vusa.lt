@@ -23,7 +23,7 @@ import type { VacationPeriod } from '@/Composables/useVacationPeriods';
 
 interface LayoutRow {
   key: string | number;
-  type: 'tenant' | 'institution';
+  type: string;
   height: number;
 }
 
