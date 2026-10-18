@@ -6,7 +6,7 @@ import NavigationBuilder from '@/Features/Admin/NavigationBuilder/NavigationBuil
 import type { AdminNavigationRoot } from '@/Features/Admin/NavigationBuilder/types';
 
 vi.mock('@vueuse/integrations/useSortable', () => ({
-  useSortable: vi.fn(),
+  useSortable: vi.fn(() => ({ option: vi.fn(), stop: vi.fn(), start: vi.fn() })),
   insertNodeAt: vi.fn(),
   removeNode: vi.fn(),
 }));

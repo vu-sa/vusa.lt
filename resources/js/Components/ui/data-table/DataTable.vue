@@ -78,11 +78,11 @@
                   <button
                     v-if="header.column.getCanSort()"
                     type="button"
-                    tabindex="-1"
                     :class="[
                       '-mx-1 inline-flex w-full items-center justify-between gap-1 px-1',
                       'uppercase tracking-[inherit] hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring',
                     ]"
+                    @click.stop="header.column.getToggleSortingHandler()?.($event)"
                   >
                     <span class="truncate">
                       <FlexRender v-if="!header.isPlaceholder" :header />
@@ -222,6 +222,7 @@ import {
 } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
@@ -326,7 +327,7 @@ onMounted(() => {
 // Scroll table to top when page changes
 const scrollTableToTop = () => {
   nextTick(() => {
-    tableScrollRef.value?.scrollTo({ top: 0, behavior: 'smooth' });
+    tableScrollRef.value?.scrollTo({ top: 0, behavior: preferredScrollBehavior() });
   });
 };
 

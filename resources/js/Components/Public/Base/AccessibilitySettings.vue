@@ -73,8 +73,12 @@
       </p>
     </div>
 
-    <CheckControl v-model="contrast" :label="$t('accessibility.high_contrast')" class="border-b border-border" />
-    <CheckControl v-model="underlineLinks" :label="$t('accessibility.underline_links')" />
+    <CheckControl v-model="contrast" data-preference="contrast" :label="$t('accessibility.high_contrast')" class="border-b border-border" />
+    <CheckControl v-model="underlineLinks" data-preference="underline-links" :label="$t('accessibility.underline_links')" class="border-b border-border" />
+    <CheckControl v-model="reduceMotion" data-preference="reduce-motion" :label="$t('accessibility.reduce_motion')" />
+    <p v-if="isReducedMotion && !reduceMotion" class="px-4 pb-3.5 text-xs text-muted-foreground" data-slot="system-reduced-motion-hint">
+      {{ $t('accessibility.system_reduced_motion') }}
+    </p>
   </div>
 </template>
 
@@ -91,7 +95,7 @@ import IFluentSubtract24Regular from '~icons/fluent/subtract-24-regular';
 import IFluentTextFontSize24Regular from '~icons/fluent/text-font-size-24-regular';
 import { type FontScaleKey, useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
-const { fontScale, contrast, underlineLinks, isDefault, reset } = useAccessibilityPreferences();
+const { fontScale, contrast, underlineLinks, reduceMotion, isReducedMotion, isDefault, reset } = useAccessibilityPreferences();
 
 const fontScaleOptions: { value: FontScaleKey; label: string }[] = [
   { value: 's', label: 'S' },

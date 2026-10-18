@@ -141,3 +141,15 @@ describe('AdminShell staging warning', () => {
     localStorage.clear();
   });
 });
+
+describe('AdminShell accessibility', () => {
+  it('renders a skip-to-content link pointing to main content', () => {
+    const { wrapper } = mountShell();
+    const skipLink = wrapper.find('a[href="#main-content"]');
+    expect(skipLink.exists()).toBe(true);
+    expect(skipLink.classes()).toContain('sr-only');
+
+    const main = wrapper.find('main#main-content');
+    expect(main.exists()).toBe(true);
+  });
+});

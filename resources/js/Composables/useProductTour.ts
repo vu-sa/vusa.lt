@@ -1,9 +1,10 @@
 /** Tours share tutorial progress and fall back to local storage offline. */
-import { ref, computed, onUnmounted } from 'vue';
+import { ref, computed, onUnmounted, watch } from 'vue';
 import type { Driver, DriveStep, Config } from 'driver.js';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { useApiMutation } from './useApi';
+import { useAccessibilityPreferences } from './useAccessibilityPreferences';
 import { globalProgress, updateProgress, removeProgress, initProgress, isInitialized } from './useTutorialProgress';
 
 export interface ProductTourOptions {
@@ -37,6 +38,7 @@ export interface ProductTourOptions {
 }
 
 export function useProductTour(options: ProductTourOptions) {
+  const { isReducedMotion } = useAccessibilityPreferences();
   const { tourId, steps: stepsOrFn, driverConfig = {}, onComplete } = options;
 
   // Resolve steps lazily - allows translations to load before evaluation
@@ -163,10 +165,6 @@ export function useProductTour(options: ProductTourOptions) {
         },
       })),
 
-      // Animation and scrolling
-      animate: true,
-      smoothScroll: true,
-
       // Overlay styling
       overlayColor: 'black',
       overlayOpacity: 0.75,
@@ -200,6 +198,8 @@ export function useProductTour(options: ProductTourOptions) {
 
       // Override with user config (before lifecycle hooks)
       ...driverConfig,
+      animate: !isReducedMotion.value && (driverConfig.animate ?? true),
+      smoothScroll: !isReducedMotion.value && (driverConfig.smoothScroll ?? true),
 
       // Lifecycle hooks (always applied, can't be overridden)
       onHighlightStarted: (element, step, opts) => {
@@ -260,6 +260,15 @@ export function useProductTour(options: ProductTourOptions) {
   function goToStep(index: number): void {
     driverInstance?.moveTo(index);
   }
+
+  watch(isReducedMotion, (reduced) => {
+    if (!driverInstance) return;
+    driverInstance.setConfig({
+      ...driverInstance.getConfig(),
+      animate: !reduced && (driverConfig.animate ?? true),
+      smoothScroll: !reduced && (driverConfig.smoothScroll ?? true),
+    });
+  });
 
   /**
    * Clean up on unmount

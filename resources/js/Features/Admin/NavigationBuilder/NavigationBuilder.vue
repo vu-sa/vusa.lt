@@ -74,13 +74,13 @@ import { computed, ref, watch, toRaw } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link, router } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
-import { useSortable } from '@vueuse/integrations/useSortable';
 import { Eye, Pencil, Plus } from '@lucide/vue';
 
 import NavigationRootItem from './NavigationRootItem.vue';
 import NavigationPreview from './NavigationPreview.vue';
 import type { AdminNavigationLink, AdminNavigationRoot, TranslationSummary } from './types';
 
+import { useMotionAwareSortable } from '@/Composables/useMotionAwareSortable';
 import { Button } from '@/Components/ui/button';
 import { Label } from '@/Components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/Components/ui/toggle-group';
@@ -113,7 +113,7 @@ watch(() => props.lang, () => {
 // is remounted — e.g. toggling `mode` to 'preview' and back unmounts and recreates
 // the `<TransitionGroup>` this is attached to, and without the watcher Sortable
 // stays bound to the discarded element, silently killing root drag afterward.
-useSortable(rootsEl, contents, {
+useMotionAwareSortable(rootsEl, contents, {
   watchElement: true,
   handle: '.nav-root-handle',
   animation: 150,

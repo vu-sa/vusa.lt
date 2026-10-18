@@ -4,9 +4,20 @@ import { defineComponent } from 'vue';
 import { driver, type Config } from 'driver.js';
 
 import { useProductTour } from '../useProductTour';
+import { useAccessibilityPreferences } from '../useAccessibilityPreferences';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
-vi.mock('driver.js', () => ({ driver: vi.fn(() => ({ drive: vi.fn(), destroy: vi.fn() })) }));
+vi.mock('driver.js', () => ({
+  driver: vi.fn((config: Config = {}) => {
+    let current = config;
+    return {
+      drive: vi.fn(),
+      destroy: vi.fn(),
+      getConfig: () => current,
+      setConfig: vi.fn((next: Config) => { current = next; }),
+    };
+  }),
+}));
 vi.mock('../useApi', () => ({
   useApiMutation: vi.fn(() => ({ execute: vi.fn().mockResolvedValue(undefined) })),
 }));
@@ -41,6 +52,23 @@ afterEach(() => {
 });
 
 describe('useProductTour anchors', () => {
+  it('disables JavaScript animation and scrolling on a live preference change', async () => {
+    const preferences = useAccessibilityPreferences();
+    preferences.reset();
+    await startWith([{ popover: { title: 'Welcome' } }]);
+    const instance = vi.mocked(driver).mock.results.at(-1)!.value;
+    try {
+      expect(instance.getConfig()).toMatchObject({ animate: true, smoothScroll: true });
+      preferences.reduceMotion.value = true;
+      await flushPromises();
+      expect(instance.getConfig()).toMatchObject({ animate: false, smoothScroll: false });
+    }
+    finally {
+      preferences.reset();
+      await flushPromises();
+    }
+  });
+
   it('highlights the rendered copy of an anchor that exists in both the phone and desktop chrome', async () => {
     anchor('search', false);
     const shown = anchor('search', true);

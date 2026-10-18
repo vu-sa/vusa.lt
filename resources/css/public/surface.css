@@ -86,16 +86,32 @@ html.a11y-contrast:not(.dark) {
   --brand-fill: oklch(0.4 0.18 25);
 }
 
-/* Honour an OS-level reduced-motion request. */
+/* Honour an OS-level reduced-motion request or user in-app accessibility preference. */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
+    animation-delay: 0ms !important;
+    transition-delay: 0ms !important;
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+html.reduce-motion,
+html.reduce-motion::before,
+html.reduce-motion::after,
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-delay: 0ms !important;
+  transition-delay: 0ms !important;
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
 }
 
 /* Article-scoped reading size (the per-article stepper on news pages) — only the story's own text

@@ -121,6 +121,9 @@ import { ArrowLeftRight, ArrowRight, Maximize, Minus, Plus } from '@lucide/vue';
 import { EDGE_TYPE_STYLES, edgeCategory, edgeTypeColor, type RelationshipType, type RelationshipScope, SCOPE_STYLES, scopeColor } from './relationshipColors';
 
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
+const { isReducedMotion } = useAccessibilityPreferences();
 
 type GraphMode = 'institutions' | 'types';
 
@@ -139,11 +142,27 @@ interface GraphEdge extends SimulationLinkDatum<GraphNode> {
   kindLabel: string | null;
 }
 
+interface GraphNodeData {
+  id: string | number;
+  name: unknown;
+  users_count?: number | null;
+  institutions_count?: number | null;
+}
+
+interface GraphRelationshipData {
+  source: string | number;
+  target: string | number;
+  via?: string | null;
+  cross_tenant?: boolean | null;
+  mutual?: boolean | null;
+  kind_label?: string | null;
+}
+
 const props = defineProps<{
-  institutions: Record<string, any>[];
-  institutionRelationships: Record<string, any>[];
-  types?: Record<string, any>[];
-  typeRelationships?: Record<string, any>[];
+  institutions: GraphNodeData[];
+  institutionRelationships: GraphRelationshipData[];
+  types?: GraphNodeData[];
+  typeRelationships?: GraphRelationshipData[];
 }>();
 
 const wrapper = ref<HTMLDivElement | null>(null);
@@ -235,6 +254,7 @@ const ARROW_GAP = 4;
 
 // ---- d3 state (created in onMounted) -------------------------------------
 let simulation: Simulation<GraphNode, GraphEdge> | null = null;
+let updatePositions = () => {};
 let zoomBehavior: ZoomBehavior<SVGSVGElement, unknown> | null = null;
 let svgSelection: Selection<SVGSVGElement, unknown, null, undefined> | null = null;
 let linkSelection: Selection<SVGGElement, GraphEdge, SVGGElement, unknown> | null = null;
@@ -314,7 +334,7 @@ function hideTooltip() {
 function dragBehavior(sim: Simulation<GraphNode, GraphEdge>) {
   return drag<SVGGElement, GraphNode>()
     .on('start', (event: D3DragEvent<SVGGElement, GraphNode, GraphNode>) => {
-      if (!event.active) {
+      if (!event.active && !isReducedMotion.value) {
         sim.alphaTarget(0.3).restart();
       }
       event.subject.fx = event.subject.x;
@@ -323,6 +343,11 @@ function dragBehavior(sim: Simulation<GraphNode, GraphEdge>) {
     .on('drag', (event: D3DragEvent<SVGGElement, GraphNode, GraphNode>) => {
       event.subject.fx = event.x;
       event.subject.fy = event.y;
+      if (isReducedMotion.value) {
+        event.subject.x = event.x;
+        event.subject.y = event.y;
+        updatePositions();
+      }
     })
     .on('end', (event: D3DragEvent<SVGGElement, GraphNode, GraphNode>) => {
       if (!event.active) {
@@ -489,7 +514,7 @@ function render() {
 
   nodeSelection.call(dragBehavior(simulation));
 
-  simulation.on('tick', () => {
+  updatePositions = () => {
     // Shorten each edge to the node circle edges so arrowheads aren't hidden under nodes.
     linkSelection?.each(function (this: SVGGElement, d: GraphEdge) {
       const source = d.source as GraphNode;
@@ -512,7 +537,12 @@ function render() {
     });
 
     nodeSelection?.attr('transform', d => `translate(${d.x ?? 0},${d.y ?? 0})`);
-  });
+  };
+  simulation.on('tick', updatePositions);
+  if (isReducedMotion.value) {
+    simulation.stop().tick(300);
+    updatePositions();
+  }
 
   // Zoom / pan
   zoomBehavior = zoom<SVGSVGElement, unknown>()
@@ -531,13 +561,17 @@ function render() {
 
 function zoomBy(factor: number) {
   if (svgSelection && zoomBehavior) {
-    svgSelection.transition().duration(200).call(zoomBehavior.scaleBy, factor);
+    svgSelection.interrupt();
+    if (isReducedMotion.value) svgSelection.call(zoomBehavior.scaleBy, factor);
+    else svgSelection.transition().duration(200).call(zoomBehavior.scaleBy, factor);
   }
 }
 
 function resetZoom() {
   if (svgSelection && zoomBehavior) {
-    svgSelection.transition().duration(300).call(zoomBehavior.transform, zoomIdentity);
+    svgSelection.interrupt();
+    if (isReducedMotion.value) svgSelection.call(zoomBehavior.transform, zoomIdentity);
+    else svgSelection.transition().duration(300).call(zoomBehavior.transform, zoomIdentity);
   }
 }
 
@@ -565,6 +599,14 @@ watch(
   },
   { deep: true },
 );
+
+watch(isReducedMotion, (reduced) => {
+  if (reduced) {
+    svgSelection?.interrupt();
+    simulation?.stop().alphaTarget(0).tick(300);
+    updatePositions();
+  }
+});
 
 onBeforeUnmount(() => {
   simulation?.stop();

@@ -159,30 +159,26 @@ html.nprogress-busy .turtle-loader {
   }
 }
 
-/* The walk is the whole point, so there is nothing to keep once motion is off — fall back to a
-   fade, which carries no vestibular risk. */
 @media (prefers-reduced-motion: reduce) {
-  .turtle-loader__leg,
-  .turtle-loader__body,
-  .turtle-loader__head,
-  .turtle-loader__shadow {
-    animation: none;
+  .turtle-loader {
+    transform: none;
+    transition: none;
   }
 
-  .turtle-loader__svg {
-    animation: turtle-rest 1.8s ease-in-out infinite;
+  .turtle-loader svg,
+  .turtle-loader svg * {
+    animation: none;
   }
 }
 
-@keyframes turtle-rest {
-  0%,
-  100% {
-    opacity: 1;
-  }
+html.reduce-motion .turtle-loader {
+  transform: none;
+  transition: none;
+}
 
-  50% {
-    opacity: 0.45;
-  }
+html.reduce-motion .turtle-loader svg,
+html.reduce-motion .turtle-loader svg * {
+  animation: none;
 }
 
 /* NProgress's colour is baked into the stylesheet it injects at boot, so it cannot follow a

@@ -50,6 +50,8 @@ import { trans as $t } from 'laravel-vue-i18n';
 
 import IFluentTextBulletListLtr24Regular from '~icons/fluent/text-bullet-list-ltr-24-regular';
 
+import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
+
 interface AnchorLink {
   title: string;
   href: string;
@@ -84,7 +86,7 @@ const handleClick = (href: string) => {
   const element = document.getElementById(id);
   if (element) {
     const top = element.getBoundingClientRect().top + window.scrollY - props.offset;
-    window.scrollTo({ top, behavior: 'smooth' });
+    window.scrollTo({ top, behavior: preferredScrollBehavior() });
   }
 };
 

@@ -6,7 +6,9 @@
     <section class="relative hidden lg:block h-full overflow-hidden bg-ink">
       <Carousel
         class="h-full w-full"
-        :plugins="[Autoplay({ delay: 5000 }), Fade()]"
+        :plugins="isReducedMotion ? [] : [fadePlugin]"
+        @init-api="carouselApi = $event"
+        v-on="autoplay.events"
       >
         <CarouselContent class="h-full -ml-0">
           <CarouselItem
@@ -259,7 +261,6 @@
 <script setup lang="ts">
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { ref, computed, watch } from 'vue';
-import Autoplay from 'embla-carousel-autoplay';
 import Fade from 'embla-carousel-fade';
 import {
   AlertCircle,
@@ -276,6 +277,9 @@ import {
 
 import MicrosoftButton from '@/Components/Buttons/MicrosoftLoginButton.vue';
 import { Carousel, CarouselContent, CarouselItem } from '@/Components/ui/carousel';
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+import { useMotionAwareAutoplay } from '@/Composables/useMotionAwareAutoplay';
+import type { UnwrapRefCarouselApi } from '@/Components/ui/carousel/interface';
 import { usePWA } from '@/Composables/usePWA';
 import { communityPhotos } from '@/Constants/communityPhotos';
 import { getAppLogoSrc } from '@/Utils/AppLogo';
@@ -285,6 +289,14 @@ defineProps<{
 }>();
 
 const { isPWA } = usePWA();
+const { isReducedMotion } = useAccessibilityPreferences();
+const carouselApi = ref<UnwrapRefCarouselApi>();
+const fadePlugin = Fade();
+const autoplay = useMotionAwareAutoplay(
+  () => carouselApi.value?.scrollNext(),
+  () => !!carouselApi.value && communityPhotos.length > 1,
+  5000,
+);
 const page = usePage();
 
 const showEmailForm = ref(false);

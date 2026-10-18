@@ -4,6 +4,8 @@
   <section
     :id="anchorId ? `rc-${anchorId}` : undefined"
     class="rc-viewport relative isolate scroll-mt-32 overflow-hidden border-b border-border bg-ink"
+    data-slot="hero-carousel"
+    v-on="autoplay.events"
   >
     <!-- Single slide: rendered as a pure static full-bleed hero -->
     <HeroCarouselSlideView
@@ -23,16 +25,9 @@
 
     <!-- Multiple slides: rendered via Carousel -->
     <template v-else-if="slides.length > 1">
-      <!-- Hover/focus pause lands on the Carousel (its root is a role="region"
-           tabindex="0" element, so these interactions have an accessible target);
-           listeners fall through to it from here. -->
       <Carousel
         class="w-full"
         :opts="{ loop: true }"
-        @mouseenter="stopCarouselAutoplay"
-        @mouseleave="restartCarouselAutoplay"
-        @focusin="stopCarouselAutoplay"
-        @focusout="restartCarouselAutoplay"
         @init-api="(val) => carouselApi = val"
       >
         <CarouselContent class="ml-0">
@@ -84,7 +79,7 @@
               ]"
               :aria-label="$t('accessibility.carousel_go_to_slide', { index: String(index + 1) })"
               :aria-current="currentSlide === index ? 'true' : undefined"
-              @click="() => { carouselApi?.scrollTo(index); restartCarouselAutoplay(); }"
+              @click="() => { carouselApi?.scrollTo(index, isReducedMotion); autoplay.restart(); }"
             />
           </div>
           <!-- Placeholder keeps the arrows right-aligned when indicators are switched off. -->
@@ -97,7 +92,8 @@
                 'flex size-10 items-center justify-center border border-white/25 bg-ink/60 text-white/95',
                 'backdrop-blur transition-colors hover:border-brand-fill hover:text-brand-fill',
               ]"
-              @click="() => { carouselApi?.scrollPrev(); restartCarouselAutoplay(); }"
+              data-slot="hero-carousel-previous"
+              @click="() => { carouselApi?.scrollPrev(isReducedMotion); autoplay.restart(); }"
             >
               <IFluentArrowLeft24Regular class="size-4" />
               <span class="sr-only">{{ $t('accessibility.carousel_previous_slide') }}</span>
@@ -108,7 +104,8 @@
                 'flex size-10 items-center justify-center border border-white/25 bg-ink/60 text-white/95',
                 'backdrop-blur transition-colors hover:border-brand-fill hover:text-brand-fill',
               ]"
-              @click="() => { carouselApi?.scrollNext(); restartCarouselAutoplay(); }"
+              data-slot="hero-carousel-next"
+              @click="() => { carouselApi?.scrollNext(isReducedMotion); autoplay.restart(); }"
             >
               <IFluentArrowRight24Regular class="size-4" />
               <span class="sr-only">{{ $t('accessibility.carousel_next_slide') }}</span>
@@ -145,8 +142,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted, ref, watch } from 'vue';
-import { usePreferredReducedMotion } from '@vueuse/core';
+import { computed, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { asBoolean } from '../booleanish';
@@ -154,8 +150,11 @@ import type { BandResolution } from '../bandLayout';
 
 import HeroCarouselSlideView from './HeroCarouselSlideView.vue';
 
+import { useMotionAwareAutoplay } from '@/Composables/useMotionAwareAutoplay';
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 import { Button } from '@/Components/ui/button';
 import { Carousel, CarouselContent, CarouselItem } from '@/Components/ui/carousel';
+import type { UnwrapRefCarouselApi } from '@/Components/ui/carousel/interface';
 import type { HeroCarousel } from '@/Types/contentParts';
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentArrowLeft24Regular from '~icons/fluent/arrow-left24-regular';
@@ -187,7 +186,7 @@ const HEIGHT_CLASS = {
   lg: 'min-h-[40rem] sm:min-h-[44rem] lg:min-h-[48rem]',
 } as const;
 
-const carouselApi = ref();
+const carouselApi = ref<UnwrapRefCarouselApi>();
 const currentSlide = ref(0);
 
 const slides = computed<Slide[]>(() => (Array.isArray(props.element.json_content) ? props.element.json_content : []));
@@ -237,79 +236,26 @@ function addSlide(): void {
   });
 }
 
-// Autoplay: one interval + one pending-restart timeout, both tracked so a quick
-// focusout→focusin hop cannot leave a stray timeout running.
-let autoplayInterval: ReturnType<typeof setInterval> | null = null;
-let restartTimeout: ReturnType<typeof setTimeout> | null = null;
+const { isReducedMotion } = useAccessibilityPreferences();
+const autoplay = useMotionAwareAutoplay(
+  () => carouselApi.value?.scrollNext(),
+  () => !props.editable && asBoolean(props.element.options?.autoplay) && hasMultipleSlides.value && !!carouselApi.value,
+  () => props.element.options?.autoplayDelay || 8000,
+);
 
-const preferredReducedMotion = usePreferredReducedMotion();
-
-const autoplayDelay = () => props.element.options?.autoplayDelay || 8000;
-
-const startCarouselAutoplay = () => {
-  if (props.editable) return;
-  if (!asBoolean(props.element.options?.autoplay) || !hasMultipleSlides.value || !carouselApi.value) return;
-  if (preferredReducedMotion.value === 'reduce') return;
-  if (autoplayInterval) return;
-
-  autoplayInterval = setInterval(() => carouselApi.value?.scrollNext(), autoplayDelay());
-};
-
-const stopCarouselAutoplay = () => {
-  if (autoplayInterval) {
-    clearInterval(autoplayInterval);
-    autoplayInterval = null;
-  }
-  if (restartTimeout) {
-    clearTimeout(restartTimeout);
-    restartTimeout = null;
-  }
-};
-
-const restartCarouselAutoplay = () => {
-  stopCarouselAutoplay();
-  if (props.editable) return;
-  restartTimeout = setTimeout(() => startCarouselAutoplay(), autoplayDelay());
-};
-
-watch(carouselApi, (api) => {
+watch(carouselApi, (api, _previous, onCleanup) => {
   if (!api) return;
-
-  currentSlide.value = api.selectedScrollSnap();
-
-  api.on('select', () => {
+  const select = () => {
     currentSlide.value = api.selectedScrollSnap();
+  };
+  select();
+  api.on('select', select);
+  api.on('pointerDown', autoplay.pause);
+  api.on('pointerUp', autoplay.resume);
+  onCleanup(() => {
+    api.off('select', select);
+    api.off('pointerDown', autoplay.pause);
+    api.off('pointerUp', autoplay.resume);
   });
-
-  startCarouselAutoplay();
-
-  // A drag (pointer) pauses; releasing restarts after a full delay.
-  api.on('pointerDown', stopCarouselAutoplay);
-  api.on('pointerUp', restartCarouselAutoplay);
-});
-
-watch(() => props.editable, (isEditable) => {
-  if (isEditable) {
-    stopCarouselAutoplay();
-  }
-  else {
-    startCarouselAutoplay();
-  }
-});
-
-watch(() => slides.value.length, (length) => {
-  if (length <= 1) {
-    stopCarouselAutoplay();
-  }
-});
-
-watch(preferredReducedMotion, (motion) => {
-  if (motion === 'reduce') {
-    stopCarouselAutoplay();
-  }
-});
-
-onUnmounted(() => {
-  stopCarouselAutoplay();
 });
 </script>

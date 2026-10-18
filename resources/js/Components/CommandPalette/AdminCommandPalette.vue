@@ -5,6 +5,7 @@
     <div class="relative flex h-14 items-center gap-3 border-b border-border px-4 pr-12">
       <Search class="size-4 shrink-0 text-muted-foreground" />
       <input ref="searchInputRef" v-model="query" type="text" :placeholder="$t('shell.chrome.search_field')"
+        :aria-label="$t('shell.chrome.search_field')"
         class="h-14 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground sm:text-sm"
         @keydown.escape="close"
         @keydown.down.prevent="focusFirstResult"

@@ -10,7 +10,7 @@ import { commonStubs } from '@/tests/stubs';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 vi.mock('@vueuse/integrations/useSortable', () => ({
-  useSortable: vi.fn(),
+  useSortable: vi.fn(() => ({ option: vi.fn(), stop: vi.fn(), start: vi.fn() })),
 }));
 
 /** The collection shell is covered by its own suite; here it only hands over its slots and events. */

@@ -44,6 +44,10 @@ return [
     // Reader preferences menu (Components/Public/Base/AccessibilityMenu.vue)
     'menu_title' => 'Prieinamumas',
     'menu_open' => 'Atidaryti prieinamumo nustatymus',
+    'settings_description' => 'Pritaikyk teksto dydį, kontrastą, nuorodų pabraukimą ir animacijas pagal savo poreikius.',
+    'manage_settings' => 'Valdyti prieinamumo nustatymus',
+    'spotlight_title' => 'Prieinamumo nustatymai tavo paskyroje',
+    'spotlight_description' => 'Pritaikyk teksto dydį, kontrastą ir nuorodų pabraukimą arba sumažink judesį. Tavo pasirinkimai galioja ir viešoje svetainėje šioje naršyklėje.',
     'text_size' => 'Teksto dydis',
     'text_size_option' => 'Teksto dydis: :size',
     'text_size_decrease' => 'Sumažinti teksto dydį',
@@ -56,6 +60,8 @@ return [
     'reading_size_increase' => 'Padidinti skaitymo dydį',
     'high_contrast' => 'Didelis kontrastas',
     'underline_links' => 'Pabraukti nuorodas',
+    'reduce_motion' => 'Sumažinti judesį',
+    'system_reduced_motion' => 'Tavo operacinėje sistemoje įjungtas sumažintas judesys. Ši nuostata galios ir išjungus šį pasirinkimą ar atkūrus pradinius nustatymus.',
     'reset' => 'Atstatyti',
     'preferences_active' => 'Pakeisti prieinamumo nustatymai',
 ];

@@ -10,6 +10,7 @@
         v-model="searchText"
         data-admin-collection-search
         :placeholder="$t('tables.search_placeholder')"
+        :aria-label="$t('tables.search_placeholder')"
         class="max-w-sm"
       />
       <slot name="filters" />
