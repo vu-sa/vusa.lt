@@ -1,6 +1,8 @@
 <?php
 
+use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Sleep;
 
@@ -18,6 +20,8 @@ it('checks the dedicated health endpoint by default', function (): void {
 });
 
 it('keeps the health endpoint reachable behind staging basic auth', function (): void {
+    Event::fake([DiagnosingHealth::class]);
+
     config([
         'app.env' => 'staging',
         'app.staging_user' => 'staging-user',
@@ -25,4 +29,6 @@ it('keeps the health endpoint reachable behind staging basic auth', function ():
     ]);
 
     $this->get('/up')->assertOk();
+
+    Event::assertDispatched(DiagnosingHealth::class);
 });
