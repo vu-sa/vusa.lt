@@ -5,6 +5,7 @@ import { ref } from 'vue';
 
 import RelationshipLinkList from '../RelationshipLinkList.vue';
 import type { RelationshipLinkRow } from '../types';
+import { InstitutionTypeLinkScope } from '@/Types/enums';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('@/Composables/useFeatureSpotlight', () => ({
@@ -13,7 +14,7 @@ vi.mock('@/Composables/useFeatureSpotlight', () => ({
 
 const links: RelationshipLinkRow[] = [
   { id: 1, other: { id: '7', name: 'KAP Taryba' }, direction: 'outgoing', kind: 'approves_composition', kind_label: 'Tvirtina sudėtį', mutual: false },
-  { id: 2, other: { id: '3', name: 'Senatas' }, direction: 'outgoing', kind: 'related', kind_label: 'Susijusi', mutual: true, cross_tenant: true },
+  { id: 2, other: { id: '3', name: 'Senatas' }, direction: 'outgoing', kind: 'related', kind_label: 'Susijusi', mutual: true, scope: InstitutionTypeLinkScope.AllTenants, scope_label: 'Tarp visų padalinių' },
 ];
 
 const stubs = {
@@ -34,7 +35,7 @@ describe('RelationshipLinkList', () => {
 
     expect(rows[0].text()).toContain('KAP Taryba');
     expect(rows[1].text()).toContain('To paties tipo institucijos');
-    expect(rows[1].text()).toContain('Centrinis → padaliniai');
+    expect(rows[1].text()).toContain('Tarp visų padalinių');
   });
 
   it('hides every action from someone who cannot manage links', () => {

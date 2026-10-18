@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\InstitutionRelationKind;
+use App\Enums\InstitutionTypeLinkScope;
 use App\Models\InstitutionType;
 use App\Models\InstitutionTypeLink;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -21,7 +22,7 @@ class InstitutionTypeLinkFactory extends Factory
             'target_type_id' => InstitutionType::factory(),
             'kind' => InstitutionRelationKind::Related,
             'mutual' => false,
-            'cross_tenant' => false,
+            'scope' => InstitutionTypeLinkScope::SameTenant,
         ];
     }
 
@@ -32,6 +33,11 @@ class InstitutionTypeLinkFactory extends Factory
 
     public function crossTenant(): static
     {
-        return $this->state(['cross_tenant' => true]);
+        return $this->state(['scope' => InstitutionTypeLinkScope::MainToUnits]);
+    }
+
+    public function allTenants(): static
+    {
+        return $this->state(['scope' => InstitutionTypeLinkScope::AllTenants]);
     }
 }

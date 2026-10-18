@@ -3,6 +3,7 @@
 namespace App\Http\Requests\InstitutionLinks;
 
 use App\Enums\InstitutionRelationKind;
+use App\Enums\InstitutionTypeLinkScope;
 use App\Models\InstitutionType;
 use App\Models\InstitutionTypeLink;
 use Illuminate\Foundation\Http\FormRequest;
@@ -26,7 +27,7 @@ class StoreInstitutionTypeLinkRequest extends FormRequest
             'direction' => ['required', Rule::in(['outgoing', 'incoming'])],
             'kind' => ['required', Rule::enum(InstitutionRelationKind::class)],
             'mutual' => ['boolean'],
-            'cross_tenant' => ['boolean'],
+            'scope' => ['sometimes', Rule::enum(InstitutionTypeLinkScope::class)],
         ];
     }
 
@@ -42,7 +43,7 @@ class StoreInstitutionTypeLinkRequest extends FormRequest
     }
 
     /**
-     * @return array{source_type_id: int, target_type_id: int, kind: string, mutual: bool, cross_tenant: bool}
+     * @return array{source_type_id: int, target_type_id: int, kind: string, mutual: bool, scope: string}
      */
     public function linkAttributes(): array
     {
@@ -56,7 +57,7 @@ class StoreInstitutionTypeLinkRequest extends FormRequest
     /**
      * Read from input: the after() hook runs before validated() is final.
      *
-     * @return array{source_type_id: int, target_type_id: int, cross_tenant: bool}
+     * @return array{source_type_id: int, target_type_id: int, scope: string}
      */
     private function pairKey(): array
     {
@@ -68,7 +69,7 @@ class StoreInstitutionTypeLinkRequest extends FormRequest
         return [
             'source_type_id' => $outgoing ? $type->id : $other,
             'target_type_id' => $outgoing ? $other : $type->id,
-            'cross_tenant' => $this->boolean('cross_tenant'),
+            'scope' => (string) $this->input('scope', InstitutionTypeLinkScope::SameTenant->value),
         ];
     }
 }

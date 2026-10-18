@@ -42,6 +42,6 @@ const props = defineProps<{
 const typeLabel = computed(() => [
   props.item.kind_label,
   props.item.via === 'type' ? $t('Per tipą') : null,
-  props.item.cross_tenant ? $t('Centrinis') : null,
+  props.item.cross_tenant ? $t('Tarp padalinių') : null,
 ].filter(Boolean).join(' · ') || null);
 </script>

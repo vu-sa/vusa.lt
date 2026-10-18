@@ -123,6 +123,22 @@ describe('type links', function (): void {
             ->and(relationOf($this->source, $faculty))->toBeNull();
     });
 
+    test('an all-tenants self-link relates same-type institutions in every tenant', function (): void {
+        $peer = Institution::factory()->for($this->tenant)->create();
+        $peer->types()->attach($this->sourceType);
+        $faculty = Institution::factory()->for($this->otherTenant)->create();
+        $faculty->types()->attach($this->sourceType);
+        $central = Institution::factory()->for($this->mainTenant)->create();
+        $central->types()->attach($this->sourceType);
+
+        InstitutionTypeLink::factory()->allTenants()->mutual()->create(['source_type_id' => $this->sourceType->id, 'target_type_id' => $this->sourceType->id]);
+
+        expect(relationOf($this->source, $faculty))->toMatchArray(['direction' => 'mutual', 'authorized' => true, 'cross_tenant' => true])
+            ->and(relationOf($faculty, $central))->toMatchArray(['direction' => 'mutual', 'authorized' => true, 'cross_tenant' => true])
+            ->and(relationOf($this->source, $peer))->toMatchArray(['authorized' => true, 'cross_tenant' => false])
+            ->and(relationOf($this->source, $this->target))->toBeNull();
+    });
+
     test('the strongest relation wins when several reach the same pair', function (): void {
         // The type link only lists the source to the target; the direct link authorizes it.
         InstitutionTypeLink::factory()->create(['source_type_id' => $this->targetType->id, 'target_type_id' => $this->sourceType->id]);

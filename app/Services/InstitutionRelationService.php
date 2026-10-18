@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\InstitutionRelationKind;
+use App\Enums\InstitutionTypeLinkScope;
 use App\Enums\TenantType;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
@@ -133,7 +134,7 @@ class InstitutionRelationService
     /**
      * The links a type takes part in, from its side. A self-link reads as outgoing.
      *
-     * @return list<array{id: int, other: array{id: string, name: mixed}, direction: 'outgoing'|'incoming', kind: string, kind_label: string, mutual: bool, cross_tenant: bool}>
+     * @return list<array{id: int, other: array{id: string, name: mixed}, direction: 'outgoing'|'incoming', kind: string, kind_label: string, mutual: bool, scope: string, scope_label: string}>
      */
     public function typeLinksOf(InstitutionType $type): array
     {
@@ -154,7 +155,8 @@ class InstitutionRelationService
                     'kind' => $link->kind->value,
                     'kind_label' => $link->kind->label(),
                     'mutual' => $link->mutual,
-                    'cross_tenant' => $link->cross_tenant,
+                    'scope' => $link->scope->value,
+                    'scope_label' => $link->scope->label(),
                 ];
             })
             ->filter()
@@ -248,7 +250,7 @@ class InstitutionRelationService
                     'target' => (string) $link->target_type_id,
                     'kind' => $link->kind->value,
                     'kind_label' => $link->kind->label(),
-                    'cross_tenant' => $link->cross_tenant,
+                    'cross_tenant' => $link->scope->crossesTenants(),
                     'mutual' => $link->mutual,
                 ])->values()->all(),
         ];
@@ -342,15 +344,17 @@ class InstitutionRelationService
             $sources = $byType->get($link->source_type_id, collect());
             $targets = $byType->get($link->target_type_id, collect());
 
-            if ($link->cross_tenant) {
+            if ($link->scope === InstitutionTypeLinkScope::MainToUnits) {
                 $sources = $sources->where('tenant_type', TenantType::Pagrindinis->value);
                 $targets = $targets->where('tenant_type', TenantType::Padalinys->value);
             }
 
             foreach ($sources as $source) {
                 foreach ($targets as $target) {
-                    if ($link->cross_tenant || $source->tenant_id === $target->tenant_id) {
-                        $add((string) $source->id, (string) $target->id, 'type', $link->kind->value, $link->cross_tenant, $link->mutual);
+                    $crossTenant = $source->tenant_id !== $target->tenant_id;
+
+                    if ($link->scope->crossesTenants() || ! $crossTenant) {
+                        $add((string) $source->id, (string) $target->id, 'type', $link->kind->value, $crossTenant, $link->mutual);
                     }
                 }
             }

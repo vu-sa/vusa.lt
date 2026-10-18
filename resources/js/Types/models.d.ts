@@ -1157,7 +1157,7 @@ declare global {
       target_type_id: number
       kind: InstitutionRelationKind
       mutual: boolean
-      cross_tenant: boolean
+      scope: InstitutionTypeLinkScope
       created_at?: string | null
       updated_at?: string | null
       // relations
@@ -2638,6 +2638,14 @@ declare global {
     } as const;
 
     export type InstitutionRelationKind = typeof InstitutionRelationKind[keyof typeof InstitutionRelationKind]
+
+    const InstitutionTypeLinkScope = {
+      SameTenant: 'same_tenant',
+      MainToUnits: 'main_to_units',
+      AllTenants: 'all_tenants',
+    } as const;
+
+    export type InstitutionTypeLinkScope = typeof InstitutionTypeLinkScope[keyof typeof InstitutionTypeLinkScope]
 
     const MeetingType = {
       InPerson: 'in-person',

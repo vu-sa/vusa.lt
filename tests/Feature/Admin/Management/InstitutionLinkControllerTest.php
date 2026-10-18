@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\InstitutionTypeLinkScope;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
 use App\Models\InstitutionType;
@@ -101,16 +102,16 @@ describe('institution links', function (): void {
 });
 
 describe('institution type links', function (): void {
-    test('links a type to itself across tenants', function (): void {
+    test('links a type to itself across all tenants', function (): void {
         asUser($this->manager)
-            ->post(route('institutionTypes.links.store', $this->type), ['other_type_id' => $this->type->id, 'direction' => 'outgoing', 'kind' => 'related', 'cross_tenant' => true])
+            ->post(route('institutionTypes.links.store', $this->type), ['other_type_id' => $this->type->id, 'direction' => 'outgoing', 'kind' => 'related', 'scope' => 'all_tenants'])
             ->assertRedirect()
             ->assertSessionHasNoErrors();
 
         expect(InstitutionTypeLink::query()->sole())
             ->source_type_id->toBe($this->type->id)
             ->target_type_id->toBe($this->type->id)
-            ->cross_tenant->toBeTrue()
+            ->scope->toBe(InstitutionTypeLinkScope::AllTenants)
             ->mutual->toBeFalse();
     });
 

@@ -29,7 +29,7 @@
             {{ otherName(link) }}
           </Link>
           <span class="block text-xs text-muted-foreground">
-            {{ link.kind_label }} · {{ directionLabel(link) }}<template v-if="link.cross_tenant"> · {{ $t('Centrinis → padaliniai') }}</template>
+            {{ link.kind_label }} · {{ directionLabel(link) }}<template v-if="link.scope && link.scope !== InstitutionTypeLinkScope.SameTenant"> · {{ link.scope_label }}</template>
           </span>
         </span>
         <template v-if="canManage">
@@ -82,6 +82,7 @@ import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { ConfirmDialog, OverviewSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import { InstitutionTypeLinkScope } from '@/Types/enums';
 
 const props = defineProps<{
   subject: RelationshipSubject;
@@ -99,7 +100,7 @@ const spotlight = useFeatureSpotlight('relationship-links-v1');
 const title = computed(() => props.subject === 'institution' ? $t('Tiesioginiai ryšiai') : $t('Tipų ryšiai'));
 const description = computed(() => props.subject === 'institution'
   ? $t('Ryšys leidžia vienos institucijos nariams matyti kitos posėdžius ir darbotvarkes.')
-  : $t('Tipų ryšys galioja visoms šių tipų institucijoms tame pačiame padalinyje arba tarp Centrinio biuro ir padalinių.'));
+  : $t('Tipų ryšys galioja visoms šių tipų institucijoms: padalinio viduje, tarp Centrinio biuro ir padalinių arba tarp visų padalinių.'));
 
 const sheetOpen = ref(false);
 const editing = ref<RelationshipLinkRow | null>(null);

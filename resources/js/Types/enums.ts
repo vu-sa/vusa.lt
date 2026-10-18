@@ -138,6 +138,11 @@ export enum InstitutionScope {
     National = 'national',
     International = 'international',
 }
+export enum InstitutionTypeLinkScope {
+    SameTenant = 'same_tenant',
+    MainToUnits = 'main_to_units',
+    AllTenants = 'all_tenants',
+}
 export enum LocaleEnum {
     LT = 'lt',
     EN = 'en',

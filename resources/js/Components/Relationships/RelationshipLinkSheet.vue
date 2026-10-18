@@ -88,15 +88,21 @@
         </div>
       </div>
 
-      <div v-if="subject === 'type' && !link" class="flex items-start gap-3">
-        <Switch id="relationship-cross-tenant" v-model="form.cross_tenant" class="mt-0.5" />
-        <div>
-          <Label for="relationship-cross-tenant" class="cursor-pointer font-medium">{{ $t('Centrinis → padaliniai') }}</Label>
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Šaltinio tipo institucijos Centriniame biure susiejamos su tikslo tipo institucijomis visuose padaliniuose. Išjungus ryšys galioja tik to paties padalinio viduje.') }}
-          </p>
-        </div>
-      </div>
+      <FormFieldWrapper
+        v-if="subject === 'type' && !link"
+        id="relationship-scope"
+        :label="$t('Aprėptis')"
+        :hint="scopeHints[form.scope]"
+        :error="form.errors.scope"
+      >
+        <FormSegmentedControl
+          v-model="form.scope"
+          :options="scopeOptions"
+          :aria-label="$t('Aprėptis')"
+          test-id-prefix="relationship-scope"
+          stack-on-phone
+        />
+      </FormFieldWrapper>
     </template>
   </SheetForm>
 </template>
@@ -117,6 +123,7 @@ import { Label } from '@/Components/ui/label';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { SingleSelect } from '@/Components/ui/single-select';
 import { Switch } from '@/Components/ui/switch';
+import { InstitutionTypeLinkScope } from '@/Types/enums';
 import { InlineCollectionSelect } from '@/Features/Admin/AdminSearch/Components/Select';
 import type { NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 
@@ -139,7 +146,7 @@ const form = useForm({
   direction: 'outgoing' as Direction,
   kind: 'related',
   mutual: false,
-  cross_tenant: false,
+  scope: InstitutionTypeLinkScope.SameTenant as InstitutionTypeLinkScope,
 });
 
 const picking = ref(false);
@@ -149,6 +156,18 @@ const directionOptions = computed<FormSegmentOption<Direction>[]>(() => [
   { value: 'outgoing', label: $t('Ši → kita') },
   { value: 'incoming', label: $t('Kita → ši') },
 ]);
+
+const scopeOptions = computed<FormSegmentOption<InstitutionTypeLinkScope>[]>(() => [
+  { value: InstitutionTypeLinkScope.SameTenant, label: $t('Padalinio viduje') },
+  { value: InstitutionTypeLinkScope.MainToUnits, label: $t('Centrinis → padaliniai') },
+  { value: InstitutionTypeLinkScope.AllTenants, label: $t('Tarp visų padalinių') },
+]);
+
+const scopeHints = computed<Record<InstitutionTypeLinkScope, string>>(() => ({
+  [InstitutionTypeLinkScope.SameTenant]: $t('Susiejamos tik to paties padalinio institucijos.'),
+  [InstitutionTypeLinkScope.MainToUnits]: $t('Šaltinio tipo institucijos Centriniame biure susiejamos su tikslo tipo institucijomis visuose padaliniuose.'),
+  [InstitutionTypeLinkScope.AllTenants]: $t('Susiejamos visų padalinių ir Centrinio biuro institucijos, nepriklausomai nuo padalinio.'),
+}));
 
 // The record's own type stays selectable: a self-link relates same-type institutions.
 const typeChoices = computed<RelationshipTypeOption[]>(() => (props.typeOptions ?? []).map(option => option.id === props.recordId
@@ -170,7 +189,7 @@ watch(open, (isOpen) => {
     direction: props.link?.direction ?? 'outgoing',
     kind: props.link?.kind ?? 'related',
     mutual: props.link?.mutual ?? false,
-    cross_tenant: props.link?.cross_tenant ?? false,
+    scope: props.link?.scope ?? InstitutionTypeLinkScope.SameTenant,
   });
   reset();
 }, { immediate: true });

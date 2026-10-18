@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\InstitutionRelationKind;
+use App\Enums\InstitutionTypeLinkScope;
 use App\Models\Traits\LogsModelActivity;
 use App\Services\InstitutionRelationService;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
@@ -13,8 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 
 /**
- * Links every institution of the source type to every institution of the target type in the
- * same tenant — or, when `cross_tenant`, sources in pagrindinis to targets in every padalinys.
+ * Links every institution of the source type to every institution of the target type, within the
+ * tenants its `scope` allows.
  *
  * Source and target may be the same type: that relates same-type institutions to each other.
  *
@@ -23,7 +24,7 @@ use Illuminate\Support\Carbon;
  * @property int $target_type_id
  * @property InstitutionRelationKind $kind
  * @property bool $mutual
- * @property bool $cross_tenant
+ * @property InstitutionTypeLinkScope $scope
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
@@ -46,7 +47,7 @@ class InstitutionTypeLink extends Model
     protected $attributes = [
         'kind' => 'related',
         'mutual' => false,
-        'cross_tenant' => false,
+        'scope' => 'same_tenant',
     ];
 
     #[\Override]
@@ -55,7 +56,7 @@ class InstitutionTypeLink extends Model
         return [
             'kind' => InstitutionRelationKind::class,
             'mutual' => 'boolean',
-            'cross_tenant' => 'boolean',
+            'scope' => InstitutionTypeLinkScope::class,
         ];
     }
 

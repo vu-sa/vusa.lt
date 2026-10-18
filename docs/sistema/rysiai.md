@@ -3,11 +3,12 @@ doc_status: reviewed
 title: Ryšiai
 area: institutionLinks
 models: [InstitutionLink, InstitutionTypeLink]
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-18
 tests:
   - tests/Feature/Services/InstitutionRelationServiceTest.php
   - tests/Feature/Admin/Management/InstitutionLinkControllerTest.php
   - tests/Feature/Migrations/ReplaceRelationshipsWithInstitutionLinksTest.php
+  - tests/Feature/Migrations/ReplaceCrossTenantWithScopeOnInstitutionTypeLinksTest.php
 ---
 
 # Ryšiai
@@ -50,14 +51,29 @@ Jei dvi institucijos susietos keliais būdais, galioja plačiausia prieiga.
 
 ### Tipų ryšio apimtis {#apimtis}
 
-- Pagal nutylėjimą tipų ryšys galioja tame pačiame padalinyje. Pavyzdžiui, MIF studijų kolegija
-  susiejama tik su MIF studijų programų komitetais.
-- Įjungus **Centrinis → padaliniai**, šaltinio tipo institucijos Centriniame biure susiejamos su
-  tikslo tipo institucijomis visuose padaliniuose.
-- Tipas gali būti susietas ir su savimi („To paties tipo institucijos“). Abipusis ryšys tame pačiame
-  padalinyje susieja, pavyzdžiui, Senato komitetus tarpusavyje. Ryšys **Centrinis → padaliniai** be
-  abipusiškumo leidžia Centrinio biuro komisijai matyti padalinių komisijas, o padaliniai jos posėdžius
-  mato be darbotvarkių.
+Kuriant tipų ryšį, pasirenkama jo aprėptis:
+
+- **Padalinio viduje** (numatyta) – ryšys galioja tame pačiame padalinyje. Pavyzdžiui, MIF studijų
+  kolegija susiejama tik su MIF studijų programų komitetais.
+- **Centrinis → padaliniai** – šaltinio tipo institucijos Centriniame biure susiejamos su tikslo tipo
+  institucijomis visuose padaliniuose.
+- **Tarp visų padalinių** – susiejamos visų padalinių ir Centrinio biuro abiejų tipų institucijos,
+  nepriklausomai nuo padalinio.
+
+Tipas gali būti susietas ir su savimi („To paties tipo institucijos“):
+
+- abipusis ryšys **Padalinio viduje** susieja, pavyzdžiui, Senato komitetus tarpusavyje;
+- ryšys **Centrinis → padaliniai** be abipusiškumo leidžia Centrinio biuro komisijai matyti padalinių
+  komisijas, o padaliniai jos posėdžius mato be darbotvarkių;
+- abipusis ryšys **Tarp visų padalinių** susieja, pavyzdžiui, visų fakultetų dekanatus. Tada kiekvieno
+  dekanato nariai mato visų kitų dekanatų posėdžius ir darbotvarkes.
+
+<ChangelogNote version="v3.5" date="2026-10-18" title="Tipų ryšys tarp visų padalinių">
+
+Aprėptis **Tarp visų padalinių** susieja tų pačių tipų institucijas skirtinguose padaliniuose,
+pvz., visų fakultetų dekanatus.
+
+</ChangelogNote>
 
 ### Ryšio pobūdis {#pobudis}
 
@@ -82,7 +98,7 @@ Ryšys rodomas abiejų institucijų kortelėse ir tvarkomas iš bet kurios jų.
 1. Atverk institucijos tipo kortelę (**Sistema → Tipai ir kategorijos → Institucijų tipai**) ir pereik į
    skirtuką **Ryšiai**.
 2. Spausk **Pridėti ryšį**.
-3. Pasirink kitą tipą (arba tą patį), kryptį, pobūdį, abipusiškumą ir, jei reikia, **Centrinis → padaliniai**.
+3. Pasirink kitą tipą (arba tą patį), kryptį, pobūdį, abipusiškumą ir [aprėptį](#apimtis).
 4. Spausk **Išsaugoti**.
 
 ### Ryšio keitimas ir šalinimas

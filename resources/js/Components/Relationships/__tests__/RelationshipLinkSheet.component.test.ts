@@ -29,22 +29,36 @@ describe('RelationshipLinkSheet', () => {
     wrapper.findComponent({ name: 'SheetForm' }).vm.$emit('submit');
 
     const transform = vi.mocked(form.transform).mock.calls[0][0];
-    expect(transform({ other_id: 'inst-2', direction: 'incoming', kind: 'oversees', mutual: true, cross_tenant: false }))
+    expect(transform({ other_id: 'inst-2', direction: 'incoming', kind: 'oversees', mutual: true, scope: 'same_tenant' }))
       .toEqual({ other_institution_id: 'inst-2', direction: 'incoming', kind: 'oversees', mutual: true });
     expect(form.post).toHaveBeenCalledWith(expect.stringContaining('institutions.links.store'), expect.anything());
   });
 
-  it('edits only the kind and mutuality of an existing link', () => {
-    const link = { id: 5, other: { id: '9', name: 'Senatas' }, direction: 'outgoing', kind: 'related', kind_label: 'Susijusi', mutual: false, cross_tenant: true };
-    const { wrapper, form } = mountSheet({ subject: 'type', recordId: '3', link });
+  it('creates a type link with the chosen scope', async () => {
+    const { wrapper, form } = mountSheet({ subject: 'type', recordId: '3' });
 
-    expect(wrapper.text()).toContain('Senatas');
-    expect(wrapper.find('#relationship-cross-tenant').exists()).toBe(false);
+    await wrapper.find('[data-testid="relationship-scope-all_tenants"]').trigger('click');
+    expect(form.scope).toBe('all_tenants');
 
     wrapper.findComponent({ name: 'SheetForm' }).vm.$emit('submit');
 
     const transform = vi.mocked(form.transform).mock.calls[0][0];
-    expect(transform({ other_id: '9', direction: 'outgoing', kind: 'advisory', mutual: true, cross_tenant: true })).toEqual({ kind: 'advisory', mutual: true });
+    expect(transform({ other_id: '3', direction: 'outgoing', kind: 'related', mutual: true, scope: 'all_tenants' }))
+      .toEqual({ other_type_id: '3', direction: 'outgoing', kind: 'related', mutual: true, scope: 'all_tenants' });
+    expect(form.post).toHaveBeenCalledWith(expect.stringContaining('institutionTypes.links.store'), expect.anything());
+  });
+
+  it('edits only the kind and mutuality of an existing link', () => {
+    const link = { id: 5, other: { id: '9', name: 'Senatas' }, direction: 'outgoing', kind: 'related', kind_label: 'Susijusi', mutual: false, scope: 'main_to_units' };
+    const { wrapper, form } = mountSheet({ subject: 'type', recordId: '3', link });
+
+    expect(wrapper.text()).toContain('Senatas');
+    expect(wrapper.find('[data-testid="relationship-scope-main_to_units"]').exists()).toBe(false);
+
+    wrapper.findComponent({ name: 'SheetForm' }).vm.$emit('submit');
+
+    const transform = vi.mocked(form.transform).mock.calls[0][0];
+    expect(transform({ other_id: '9', direction: 'outgoing', kind: 'advisory', mutual: true, scope: 'main_to_units' })).toEqual({ kind: 'advisory', mutual: true });
     expect(form.patch).toHaveBeenCalledWith(expect.stringContaining('institutionTypeLinks.update'), expect.anything());
   });
 });

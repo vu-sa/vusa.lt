@@ -1,3 +1,5 @@
+import type { InstitutionTypeLinkScope } from '@/Types/enums';
+
 export type RelationshipSubject = 'institution' | 'type';
 
 export interface RelationKindOption {
@@ -13,7 +15,8 @@ export interface RelationshipLinkRow {
   kind: string;
   kind_label: string;
   mutual: boolean;
-  cross_tenant?: boolean;
+  scope?: InstitutionTypeLinkScope;
+  scope_label?: string;
 }
 
 export interface RelationshipTypeOption {
