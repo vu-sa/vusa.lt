@@ -21,7 +21,7 @@ interface Approvable
     /**
      * Get all approvals for this model.
      *
-     * @return MorphMany<Approval, Model>
+     * @return MorphMany<Approval, $this&Model>
      */
     public function approvals(): MorphMany;
 
