@@ -7,7 +7,7 @@ return [
     'import' => 'Atnaujinti iš Mailman',
     'not_configured' => 'Ryšys su Mailman nesukonfigūruotas, todėl rodomi paskutiniai išsaugoti duomenys.',
     'empty_title' => 'Konferencijų dar nėra',
-    'empty_description' => 'Atnaujink sąrašą iš Mailman arba sukurk naują konferenciją.',
+    'empty_description' => 'Konferencijos įkeliamos iš Mailman.',
 
     'modes' => [
         'unmanaged' => 'Rankinis valdymas',

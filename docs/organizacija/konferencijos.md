@@ -131,8 +131,9 @@ gali paprašyti prisijungti prie Mailman.
 
 ### Nauja konferencija {#nauja}
 
-Spausk **Nauja konferencija** (arba **+ Sukurti** → *Konferencija*), įrašyk adresą, pavadinimą ir
-padalinį. Konferencija sukuriama Mailman su privačiu archyvu ir iš karto valdoma automatiškai.
+Naujos konferencijos į platformą įkeliamos iš Mailman. Centrinio biuro studentų atstovų
+koordinatorius paspaudžia **Atnaujinti iš Mailman**. Įkeltos konferencijos iš pradžių valdomos
+rankiniu būdu; automatinis valdymas įjungiamas peržiūrėjus šaltinius ir gavėjų skirtumus.
 
 ### Grąžinti rankinį valdymą {#rankinis}
 
@@ -145,7 +146,7 @@ kartu su pareigybėmis.
 |---|---|---|---|
 | Matyti konferencijų sąrašą | Savo padalinio | Visas | – |
 | Peržiūrėti konferenciją ir archyvą | Savo padalinio | Visas | Tik savo konferencijas |
-| Kurti konferencijas, keisti šaltinius ir valdymą | Savo padalinio | Visas | – |
+| Keisti šaltinius ir valdymą | Savo padalinio | Visas | – |
 | Atnaujinti visas konferencijas iš Mailman | – | Taip | – |
 
 ## Techninė informacija
