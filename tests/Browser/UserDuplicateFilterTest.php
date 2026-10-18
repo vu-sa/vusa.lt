@@ -28,11 +28,14 @@ it('filters duplicate members and keeps trash reachable across desktop and phone
 
     $page->click('[data-collection-open][href$="/users/'.$first->id.'"]');
     $page->assertPathIs('/mano/users/'.$first->id);
+    // Going back mid-visit lets the late record swap overwrite the restored list.
+    waitForInertiaRender($page, '[data-slot=record-title]');
     $page->script('history.back()');
     $page->assertPathIs('/mano/users')->assertVisible('[data-filter-id=duplicates][aria-pressed=true]');
     $page->assertSee('Jonas Jonaitis')->assertSee('Jonaitis Jonas')->assertDontSee('Petras Petraitis');
     $page->script('history.forward()');
     $page->assertPathIs('/mano/users/'.$first->id);
+    waitForInertiaRender($page, '[data-slot=record-title]');
     $page->script('history.back()');
     $page->assertPathIs('/mano/users')->assertVisible('[data-filter-id=duplicates][aria-pressed=true]');
     $page->assertSee('Jonas Jonaitis')->assertSee('Jonaitis Jonas')->assertDontSee('Petras Petraitis');

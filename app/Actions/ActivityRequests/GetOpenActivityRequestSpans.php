@@ -16,7 +16,7 @@ class GetOpenActivityRequestSpans
     public function __construct(private readonly ResolveAskableInstitutions $askable) {}
 
     /**
-     * @param  Collection<int, string>  $institutionIds
+     * @param  Collection<int, covariant string>  $institutionIds
      * @return list<array{institution_id: string, campaign: string, period_start: string, period_end: string, sent_at: string|null, expires_at: string, recipients_count: int}>
      */
     public function execute(User $user, Collection $institutionIds): array
