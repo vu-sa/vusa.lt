@@ -68,11 +68,14 @@ describe('MeetingsGantt', () => {
 
     expect(wrapper.findAll('.meeting-request-badge')).toHaveLength(2);
     expect(wrapper.findAll('.activity-request-chip')).toHaveLength(1);
+    // The label column says which rows have a request: Senatas twice (two type sections), Kolegija once.
+    expect(wrapper.findAll('[data-slot="gantt-row-request"]')).toHaveLength(3);
 
     await wrapper.setProps({ showActivityRequests: false });
     await nextFrame();
 
     expect(wrapper.findAll('.meeting-request-badge')).toHaveLength(0);
     expect(wrapper.findAll('.activity-request-chip')).toHaveLength(0);
+    expect(wrapper.findAll('[data-slot="gantt-row-request"]')).toHaveLength(0);
   });
 });

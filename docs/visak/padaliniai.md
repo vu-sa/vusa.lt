@@ -124,10 +124,11 @@ Laiko juostos įrankių juostoje:
   Institucijų stulpelio plotį galima keisti tempiant jo kraštą.
 
 **Užklausos atstovams.** Tie, kurie gali [klausti atstovų](/visak/institucijos#paklausti), mato
-visas dar neatsakytas užklausas, o atstovai – tik jiems išsiųstas. Užklausa **Ar vyko posėdis?**
-rodoma kaip laužtinis skliaustas virš klausiamo laikotarpio su laiško ženklu viduryje; užvedus ant
-jo matyti, kada užklausa išsiųsta, iki kada galioja ir kiek gavėjų. Užklausa **Papildyk posėdžių
-įrašus** pažymi pačius neužpildytus to laikotarpio posėdžius violetine spalva ir laiško ženklu.
+visas dar neatsakytas užklausas, o atstovai – tik jiems išsiųstas. Tokios institucijos pavadinimas
+pažymėtas mėlynu laiško ženklu. Užklausa **Ar vyko posėdis?** rodoma institucijos eilutėje kaip
+mėlyna punktyrinė juosta per klausiamą laikotarpį su laiško ženklu viduryje; užvedus ant ženklo
+matyti, kada užklausa išsiųsta, iki kada galioja ir kiek gavėjų. Užklausa **Papildyk posėdžių
+įrašus** pažymi pačius neužpildytus to laikotarpio posėdžius mėlyna spalva ir laiško ženklu.
 
 <ChangelogNote version="v3.8" date="2026-10-18" title="Grupavimas pagal tipus ir užklausos laiko juostoje">
 

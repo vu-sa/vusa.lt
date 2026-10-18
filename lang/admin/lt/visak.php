@@ -154,6 +154,11 @@ return [
         'tenants_label' => 'Rodoma',
         'group_by' => 'Grupuoti',
         'group_by_current' => 'Grupuoti: :option',
+        'group_by_short' => [
+            'tenant' => 'Padaliniai',
+            'type' => 'Tipai',
+            'none' => 'Negrupuojama',
+        ],
         'group_by_options' => [
             'tenant' => 'Pagal padalinius',
             'type' => 'Pagal institucijų tipus',

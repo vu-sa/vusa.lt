@@ -41,6 +41,10 @@
                     @keydown.enter.prevent="visitInstitution(row.institutionId!, $event)">
                     {{ labelFor(row.institutionId!) }}
                   </button>
+                  <span v-if="requestLabels.get(String(row.institutionId))" class="shrink-0 text-status-info" data-slot="gantt-row-request"
+                    :title="requestLabels.get(String(row.institutionId))">
+                    <MailQuestion class="size-3.5" :aria-label="requestLabels.get(String(row.institutionId))" />
+                  </span>
                   <span v-if="props.institutionHasPublicMeetings?.[row.institutionId!]" class="shrink-0 text-muted-foreground"
                     :title="$t('Vieši posėdžiai')">
                     <Globe class="size-3.5" :aria-label="$t('Vieši posėdžiai')" />
@@ -77,7 +81,7 @@ import { computed, onMounted, onUnmounted, ref, watch, nextTick } from 'vue';
 import { router, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import * as d3 from 'd3';
-import { Globe, Link2, Lock } from '@lucide/vue';
+import { Globe, Link2, Lock, MailQuestion } from '@lucide/vue';
 
 import { getGanttColors, isDarkModeActive } from './ganttColors';
 import MeetingsGanttToolbar from './MeetingsGanttToolbar.vue';
@@ -350,6 +354,17 @@ const openRequests = computed(() => (props.showActivityRequests ? props.activity
   untilDate: d3.timeDay.offset(d3.timeDay.floor(new Date(request.period_end)), 1),
 })));
 
+/** Which open requests an institution has, named for its label's mark. */
+const requestLabels = computed(() => {
+  const labels = new Map<string, string>();
+  for (const request of openRequests.value) {
+    const id = String(request.institution_id);
+    const label = $t(`activity_requests.campaigns.${request.campaign}`);
+    labels.set(id, labels.has(id) ? `${labels.get(id)} · ${label}` : label);
+  }
+  return labels;
+});
+
 /** Meetings whose records an open "Papildyk posėdžių įrašus" request asks for. */
 const requestedMeetingIds = computed(() => {
   const ids = new Set<string>();
@@ -544,9 +559,9 @@ function render(): void {
     locale: locale(),
   });
 
-  renderGaps({ g, x, gaps, colors, rowCenter, ...rowGeometry, onCreateMeeting: createMeetingOn });
-
   renderActivityRequests({ g, container, x, requests, colors, ...rowGeometry, visibleLeft, visibleRight, tooltipManager });
+
+  renderGaps({ g, x, gaps, colors, rowCenter, ...rowGeometry, onCreateMeeting: createMeetingOn });
 
   renderMeetings({
     g,

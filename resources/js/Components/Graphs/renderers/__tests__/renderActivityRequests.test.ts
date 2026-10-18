@@ -38,15 +38,18 @@ function setup(request: Partial<ParsedActivityRequest> = {}) {
 }
 
 describe('renderActivityRequests', () => {
-  it('brackets the period asked about and puts the request mark in its middle', () => {
+  it('bands the period asked about in the middle of its row, with the request mark at its centre', () => {
     const { container, x } = setup();
 
-    const line = container.querySelector('.activity-request-line')!;
-    expect(line.getAttribute('d')).toContain(`M${x(new Date(2026, 6, 1))}`);
+    const band = container.querySelector('.activity-request-band')!;
+    expect(Number(band.getAttribute('x'))).toBe(x(new Date(2026, 6, 1)));
+    // Row 28–56, an 18px band centred in it.
+    expect(Number(band.getAttribute('y'))).toBe(33);
+    expect(Number(band.getAttribute('height'))).toBe(18);
 
     const chip = container.querySelector<SVGGElement>('.activity-request-chip')!;
     const middle = (x(new Date(2026, 6, 1)) + x(new Date(2026, 9, 1))) / 2;
-    expect(chip.getAttribute('transform')).toContain(`translate(${middle - 8}`);
+    expect(chip.getAttribute('transform')).toBe(`translate(${middle - 7}, ${42 - 7})`);
     expect(chip.getAttribute('aria-label')).toBeTruthy();
   });
 

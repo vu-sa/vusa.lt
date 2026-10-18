@@ -85,6 +85,7 @@ export interface GanttColors {
 
   // Open activity requests: the asked-about span and records-requested meetings
   activityRequest: string;
+  activityRequestFill: string;
   activityRequestChipBg: string;
 }
 
@@ -166,7 +167,9 @@ export const lightModeColors: GanttColors = {
   // Axis background (solid, for sticky header)
   axisBg: 'oklch(0.965 0.006 85)', // --background
 
-  activityRequest: 'oklch(0.541 0.281 293.009)', // violet-600: a status hue, never brand
+  // --status-info: an asked, unanswered request; the one hue the chart's amber, emerald, red and zinc leave free
+  activityRequest: 'oklch(0.5 0.13 245)',
+  activityRequestFill: 'oklch(0.5 0.13 245 / 12%)',
   activityRequestChipBg: 'oklch(0.995 0.003 85)', // --popover
 };
 
@@ -248,7 +251,8 @@ export const darkModeColors: GanttColors = {
   // Axis background (solid, for sticky header)
   axisBg: 'oklch(0.135 0.004 70)', // --background
 
-  activityRequest: 'oklch(0.702 0.183 293.541)', // violet-400
+  activityRequest: 'oklch(0.78 0.1 240)', // --status-info
+  activityRequestFill: 'oklch(0.78 0.1 240 / 16%)',
   activityRequestChipBg: 'oklch(0.135 0.004 70)', // --background
 };
 

@@ -154,6 +154,11 @@ return [
         'tenants_label' => 'Showing',
         'group_by' => 'Group',
         'group_by_current' => 'Group: :option',
+        'group_by_short' => [
+            'tenant' => 'Units',
+            'type' => 'Types',
+            'none' => 'Ungrouped',
+        ],
         'group_by_options' => [
             'tenant' => 'By unit',
             'type' => 'By institution type',

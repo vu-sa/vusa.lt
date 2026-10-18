@@ -1,7 +1,7 @@
 /**
- * renderActivityRequests - open "Ar vyko posėdis?" requests as a bracket over the period asked
- * about, with a mail-question chip in the middle. "Papildyk posėdžių įrašus" requests are drawn
- * on their meetings instead (renderMeetings' `requestedMeetingIds`).
+ * renderActivityRequests - open "Ar vyko posėdis?" requests as a band over the period asked about,
+ * centred in its row like a check-in, with a mail-question chip in the middle. "Papildyk posėdžių
+ * įrašus" requests are drawn on their meetings instead (renderMeetings' `requestedMeetingIds`).
  */
 import type * as d3 from 'd3';
 import { trans as $t } from 'laravel-vue-i18n';
@@ -35,8 +35,7 @@ export interface ActivityRequestRenderContext {
   tooltipManager?: GanttTooltipManager;
 }
 
-const CHIP_SIZE = 16;
-const TICK_HEIGHT = 6;
+const CHIP_SIZE = 14;
 
 export function buildActivityRequestTooltipHtml(request: ParsedActivityRequest, fmtDate: Intl.DateTimeFormat): string {
   const rows = [
@@ -57,7 +56,10 @@ export function renderActivityRequests(ctx: ActivityRequestRenderContext): void 
   if (requests.length === 0) return;
 
   const fmtDate = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' });
-  const lineY = (d: ParsedActivityRequest) => rowTop(d.rowKey) + rowHeightFor(d.rowKey) - 5;
+  // Same geometry as a check-in bar, so it reads as belonging to its row.
+  const bandHeight = (d: ParsedActivityRequest) => Math.min(rowHeightFor(d.rowKey) - 6, 18);
+  const bandY = (d: ParsedActivityRequest) => rowTop(d.rowKey) + (rowHeightFor(d.rowKey) - bandHeight(d)) / 2;
+  const centerY = (d: ParsedActivityRequest) => rowTop(d.rowKey) + rowHeightFor(d.rowKey) / 2;
   const x0 = (d: ParsedActivityRequest) => x(d.fromDate);
   const x1 = (d: ParsedActivityRequest) => Math.max(x0(d) + 2, x(d.untilDate));
   const chipX = (d: ParsedActivityRequest) => {
@@ -69,17 +71,21 @@ export function renderActivityRequests(ctx: ActivityRequestRenderContext): void 
   const group = g.append('g').attr('class', 'activity-requests');
   const spans = group.selectAll('g.activity-request').data(requests).enter().append('g').attr('class', 'activity-request');
 
-  spans.append('path')
-    .attr('class', 'activity-request-line')
-    .attr('d', d => `M${x0(d)},${lineY(d) - TICK_HEIGHT}V${lineY(d)}H${x1(d)}V${lineY(d) - TICK_HEIGHT}`)
-    .attr('fill', 'none')
+  spans.append('rect')
+    .attr('class', 'activity-request-band')
+    .attr('x', x0)
+    .attr('y', bandY)
+    .attr('width', d => x1(d) - x0(d))
+    .attr('height', bandHeight)
+    .attr('fill', colors.activityRequestFill)
     .attr('stroke', colors.activityRequest)
-    .attr('stroke-width', 1.5)
+    .attr('stroke-width', 1)
+    .attr('stroke-dasharray', '4,2')
     .attr('pointer-events', 'none');
 
   const chips = spans.append('g')
     .attr('class', 'activity-request-chip')
-    .attr('transform', d => `translate(${chipX(d) - CHIP_SIZE / 2}, ${lineY(d) - CHIP_SIZE / 2})`)
+    .attr('transform', d => `translate(${chipX(d) - CHIP_SIZE / 2}, ${centerY(d) - CHIP_SIZE / 2})`)
     .attr('tabindex', 0)
     .attr('role', 'img')
     .attr('aria-label', d => `${$t('activity_requests.campaigns.activity_confirmation')}: ${fmtDate.format(d.fromDate)} – ${fmtDate.format(d.untilDate)}`);
@@ -97,7 +103,7 @@ export function renderActivityRequests(ctx: ActivityRequestRenderContext): void 
     .attr('stroke-width', 2)
     .attr('stroke-linecap', 'round')
     .attr('stroke-linejoin', 'round')
-    .attr('transform', `translate(2, 2) scale(${(CHIP_SIZE - 4) / 24})`);
+    .attr('transform', `translate(1.5, 1.5) scale(${(CHIP_SIZE - 3) / 24})`);
 
   if (!tooltipManager) {
     chips.append('title').text(d => `${$t('activity_requests.campaigns.activity_confirmation')}: ${fmtDate.format(d.fromDate)} – ${fmtDate.format(d.untilDate)}`);
