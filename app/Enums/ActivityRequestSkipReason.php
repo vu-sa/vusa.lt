@@ -7,6 +7,7 @@ enum ActivityRequestSkipReason: string
 {
     case NotAllowed = 'not_allowed';
     case NoRecipients = 'no_recipients';
+    case NoRepresentativeDuties = 'no_representative_duties';
     case NoPeriod = 'no_period';
     case MeetingRecorded = 'meeting_recorded';
     case NoRecordedMeetings = 'no_recorded_meetings';

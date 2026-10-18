@@ -83,6 +83,7 @@ class DutyController extends AdminController
             'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
             'mergePreset' => $request->mergePreset(),
+            'dutyTypes' => DutyType::query()->get(['id', 'title'])->map->toFullArray()->values(),
         ]);
     }
 

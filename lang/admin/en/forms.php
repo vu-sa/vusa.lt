@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'duty_type_filter' => [
+        'label' => 'Duty type',
+        'spotlight' => 'Choose a duty type in Filters, or “No type” to find duties without a type.',
+    ],
     'image_upload' => [
         'uploading' => 'Uploading…',
         'optimizing' => 'Optimizing…',

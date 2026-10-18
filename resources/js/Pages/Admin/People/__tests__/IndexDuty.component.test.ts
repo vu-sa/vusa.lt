@@ -11,17 +11,21 @@ vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 const state = vi.hoisted(() => ({
   initialFilters: {} as Record<string, unknown>,
   setFilter: vi.fn(),
+  sourceOptions: {} as Record<string, unknown>,
 }));
 
 vi.mock('@/Composables/useCollectionSource', () => ({
-  useDatabaseCollectionSource: () => ({
-    items: ref([]),
-    filters: ref(state.initialFilters),
-    query: ref(''),
-    activeFilterCount: ref(0),
-    setFilter: state.setFilter,
-    refresh: vi.fn(),
-  }),
+  useDatabaseCollectionSource: (options: Record<string, unknown>) => {
+    state.sourceOptions = options;
+    return {
+      items: ref([]),
+      filters: ref(state.initialFilters),
+      query: ref(''),
+      activeFilterCount: ref(0),
+      setFilter: state.setFilter,
+      refresh: vi.fn(),
+    };
+  },
 }));
 
 vi.mock('@/Composables/useAdminNavigation', () => ({
@@ -43,7 +47,7 @@ const MergeRecordsDialog = {
 const duty = (id: string, lt: string) => ({ id, name: { lt, en: lt }, dutiables_count: 0, institution: { id: 'i1', name: { lt: 'VU SA MIF' } } });
 
 const render = (props: Record<string, unknown> = {}) => mount(IndexDuty, {
-  props: { duties: { data: [], meta: { total: 0, per_page: 20, current_page: 1, last_page: 1 } }, deletedCount: 0, ...props },
+  props: { duties: { data: [], meta: { total: 0, per_page: 20, current_page: 1, last_page: 1 } }, dutyTypes: [], deletedCount: 0, ...props },
   global: { stubs: { ...commonStubs, CollectionPage, MergeRecordsDialog, ConfirmDialog: true } },
 });
 
@@ -60,7 +64,7 @@ describe('IndexDuty', () => {
   it('offers possible duplicates as a data-quality quick filter', () => {
     const wrapper = render();
 
-    expect(quickFilterIds(wrapper)).toEqual(['vacant', 'possible_duplicates']);
+    expect(quickFilterIds(wrapper)).toEqual(['vacant', 'untyped', 'possible_duplicates']);
     wrapper.findComponent(CollectionPage).vm.$emit('quickFilter', 'possible_duplicates');
     expect(state.setFilter).toHaveBeenCalledWith('data_quality', 'possible_duplicates');
   });
@@ -69,8 +73,29 @@ describe('IndexDuty', () => {
     state.initialFilters = { data_quality: 'possible_duplicates' };
     const wrapper = render({ showDeleted: true });
 
-    expect(quickFilterIds(wrapper)).toEqual(['vacant']);
+    expect(quickFilterIds(wrapper)).toEqual(['vacant', 'untyped']);
     expect(state.setFilter).toHaveBeenCalledWith('data_quality', undefined);
+  });
+
+  it('offers the available types and no type through the shared filter panel', () => {
+    const wrapper = render({ dutyTypes: [{ id: 10, title: { lt: 'Studentų atstovas', en: 'Student representative' } }] });
+
+    expect(state.sourceOptions.facets).toEqual(expect.arrayContaining([
+      expect.objectContaining({ field: 'duty_type_id', single: true, values: [
+        { value: 'none', label: expect.any(String) },
+        { value: '10', label: 'Studentų atstovas' },
+      ] }),
+    ]));
+    wrapper.findComponent(CollectionPage).vm.$emit('quickFilter', 'untyped');
+    expect(state.setFilter).toHaveBeenCalledWith('duty_type_id', 'none');
+  });
+
+  it('clears the no-type quick filter when selected again', () => {
+    state.initialFilters = { duty_type_id: 'none' };
+    const wrapper = render();
+
+    wrapper.findComponent(CollectionPage).vm.$emit('quickFilter', 'untyped');
+    expect(state.setFilter).toHaveBeenCalledWith('duty_type_id', undefined);
   });
 
   it('opens the merge dialog from a "merge into this one" link, then drops the link from the URL', async () => {

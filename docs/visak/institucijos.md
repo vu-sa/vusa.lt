@@ -239,6 +239,11 @@ Užklausa skiriama dabartiniams institucijos studentų atstovams. Jei kadencijai
 [sekretorius](#sekretoriai) (dažniausiai VU SA vidinėse institucijose), renkantis pagal institucijas
 klausiama jo, o ne atstovų; atstovo, kuris pasirinktas tiesiogiai, klausiama bet kuriuo atveju. Siuntėjui užklausa nesiunčiama.
 
+Jei nėra nei sekretoriaus, nei gavėjų, priežastis atskiria du atvejus: institucijoje nėra
+pareigybių su tipu **Studentų atstovas**, arba tokių pareigybių yra, bet jos neturi dabartinių
+atstovų. Vien pareigybės pavadinimo neužtenka – tipas turi būti priskirtas pačiai pareigybei.
+Nepriskirtas pareigybes galima rasti [pareigybių sąrašo filtru **Be tipo**](/organizacija/pareigybes#tipai).
+
 **Ar vyko posėdis?** laikotarpis prasideda vėliausią iš šių dienų: kadencijos pradžią, dieną po
 paskutinio posėdžio arba dieną po ankstesnio pranešimo „Posėdžio nebuvo“ – kaip ir
 [pranešimo pradžia](#posedzio-nebuvo). Kadencijos pradžia atstovui negali būti ankstesnė už jo

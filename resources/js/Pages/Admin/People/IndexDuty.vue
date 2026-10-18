@@ -151,6 +151,7 @@ const props = defineProps<{
   duties: { data: Duty[]; meta: { total: number; per_page: number; current_page: number; last_page: number } };
   deletedCount?: number;
   showDeleted?: boolean;
+  dutyTypes: { id: number; title: Translation }[];
   mergePreset?: { target_id: string; duties: Duty[] } | null;
 }>();
 const isDeleted = computed(() => Boolean(props.showDeleted));
@@ -190,7 +191,15 @@ const source = useDatabaseCollectionSource<Duty>({
     { value: 'inactive', label: $t('Neaktyvios') },
     // Only live duties are compared, so the trash has none to show.
     ...(isDeleted.value ? [] : [{ value: 'possible_duplicates', label: $t('forms.duty_duplicate.filter') }]),
-  ] }],
+  ] }, {
+    field: 'duty_type_id',
+    get label() { return $t('forms.duty_type_filter.label'); },
+    single: true,
+    values: [
+      { value: 'none', get label() { return $t('Be tipo'); } },
+      ...props.dutyTypes.map(type => ({ value: String(type.id), get label() { return getTranslatedValue(type.title); } })),
+    ],
+  }],
 });
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Pareigybė'), sortField: 'name' },
@@ -208,6 +217,14 @@ const toMergeRecords = (duties: Duty[]): MergeRecord[] =>
 const isFiltered = computed(() => source.query.value.trim() !== '' || source.activeFilterCount.value > 0);
 const quickFilters = computed<CollectionQuickFilter[]>(() => [
   { id: 'vacant', label: $t('Neužimtos'), active: source.filters.value.data_quality === 'vacant' },
+  {
+    id: 'untyped', label: $t('Be tipo'), active: source.filters.value.duty_type_id === 'none',
+    spotlight: {
+      id: 'duty-type-filter-v1',
+      title: $t('forms.duty_type_filter.label'),
+      description: $t('forms.duty_type_filter.spotlight'),
+    },
+  },
   ...(isDeleted.value
     ? []
     : [{
@@ -222,6 +239,10 @@ const quickFilters = computed<CollectionQuickFilter[]>(() => [
       }]),
 ]);
 function toggleQuickFilter(id: string): void {
+  if (id === 'untyped') {
+    source.setFilter('duty_type_id', source.filters.value.duty_type_id === 'none' ? undefined : 'none');
+    return;
+  }
   source.setFilter('data_quality', source.filters.value.data_quality === id ? undefined : id);
 }
 if (isDeleted.value && source.filters.value.data_quality === 'possible_duplicates') {

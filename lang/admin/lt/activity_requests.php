@@ -130,6 +130,7 @@ return [
     'skip' => [
         'not_allowed' => 'Ne tavo institucija – apie ją klausti negali.',
         'no_recipients' => 'Nėra kam klausti: institucija neturi dabartinių studentų atstovų.',
+        'no_representative_duties' => 'Nėra kam klausti: institucijoje nėra pareigybių su tipu „Studentų atstovas“.',
         'check_in_active' => 'Jau pranešta, kad posėdžio nebus.',
         'recent_activity' => 'Veikla užfiksuota visai neseniai.',
         'already_asked' => 'Jau paklausta – laukiama atsakymo.',

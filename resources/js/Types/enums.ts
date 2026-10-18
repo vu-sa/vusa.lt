@@ -10,6 +10,7 @@ export enum ActionType {
 export enum ActivityRequestSkipReason {
     NotAllowed = 'not_allowed',
     NoRecipients = 'no_recipients',
+    NoRepresentativeDuties = 'no_representative_duties',
     NoPeriod = 'no_period',
     MeetingRecorded = 'meeting_recorded',
     NoRecordedMeetings = 'no_recorded_meetings',

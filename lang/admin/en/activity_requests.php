@@ -130,6 +130,7 @@ return [
     'skip' => [
         'not_allowed' => 'Not your institution – you cannot ask about it.',
         'no_recipients' => 'Nobody to ask: the institution has no current student representatives.',
+        'no_representative_duties' => 'Nobody to ask: the institution has no duties with the “Student representative” type.',
         'check_in_active' => 'Already reported that there will be no meeting.',
         'recent_activity' => 'Activity was recorded very recently.',
         'already_asked' => 'Already asked – waiting for an answer.',

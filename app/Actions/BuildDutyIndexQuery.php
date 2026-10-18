@@ -25,6 +25,13 @@ final class BuildDutyIndexQuery
 
         self::applyDataQualityFilter($query, $request->getFilters()['data_quality'] ?? null);
 
+        $type = $request->getFilters()['duty_type_id'] ?? null;
+        if ($type === 'none') {
+            $query->whereDoesntHave('types');
+        } elseif (is_string($type) && ctype_digit($type)) {
+            $query->whereHas('types', fn (Builder $types) => $types->whereKey($type));
+        }
+
         $actor = $request->user();
         if (! $authorizer->allows($actor, 'duties.read.*') && ! $actor?->isSuperAdmin()) {
             $tenantIds = $authorizer->tenants($actor, 'duties.read.padalinys')->pluck('id')->all();

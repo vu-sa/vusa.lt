@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'duty_type_filter' => [
+        'label' => 'Pareigybės tipas',
+        'spotlight' => 'Filtruose pasirink pareigybės tipą arba „Be tipo“, kad rastum nepriskirtas pareigybes.',
+    ],
     'image_upload' => [
         'uploading' => 'Įkeliama…',
         'optimizing' => 'Optimizuojama…',

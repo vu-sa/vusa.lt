@@ -5,6 +5,7 @@ area: duties
 models: [Duty, Role, Tenant, Type, Institution, DutyResponsibility]
 last_reviewed: 2026-10-18
 tests:
+  - resources/js/Pages/Admin/People/__tests__/IndexDuty.component.test.ts
   - tests/Feature/Admin/DutyMergeTest.php
   - tests/Feature/Api/Admin/DutyApiControllerTest.php
   - tests/Browser/PostCreateNavigationTest.php
@@ -87,6 +88,9 @@ Masiniam narių keitimui skirtas [Pareigybių atnaujinimo vedlys](/organizacija/
 :::
 
 ### Tipai ir automatinis rolių suteikimas {#tipai}
+
+Pareigybių sąrašo **Filtrai → Pareigybės tipas** leidžia pasirinkti konkretų tipą arba **Be tipo**.
+**Be tipo** taip pat pasiekiamas greituoju filtru virš sąrašo. Filtras veikia ir šiukšliadėžėje.
 
 Kiekvienai pareigybei galima priskirti vieną ar kelis **tipus** (pvz., *Pirmininkas*,
 *Koordinatoriai*, *Kuratoriai*, *Studentų atstovai*).

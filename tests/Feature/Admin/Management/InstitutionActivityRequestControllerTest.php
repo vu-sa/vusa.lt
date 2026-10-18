@@ -138,6 +138,24 @@ test('on staging the email reaches only the coordinator who sent it, never the r
 });
 
 describe('who is asked about what', function (): void {
+    test('distinguishes missing representative duty types from missing current holders', function (bool $typed): void {
+        $type = DutyType::query()->where('slug', 'studentu-atstovai')->firstOrFail();
+        $duty = Duty::factory()->for($this->otherInstitution)->create();
+        if ($typed) {
+            $duty->types()->attach($type);
+        } else {
+            $this->rep->duties()->attach($duty, ['start_date' => today()->subMonth(), 'end_date' => null]);
+        }
+
+        asUser($this->coordinator)->postJson(route('api.v1.admin.activityRequests.preview'), [
+            'campaign_type' => 'activity_confirmation', 'institution_ids' => [$this->otherInstitution->id],
+        ])->assertOk()
+            ->assertJsonPath('data.0.recipients', [])
+            ->assertJsonPath('data.0.skip_reason', $typed ? 'no_recipients' : 'no_representative_duties');
+
+        Notification::assertNothingSent();
+    })->with(['typed vacant duty' => true, 'untyped occupied duty' => false]);
+
     test('the preview names the recipients and why an institution is left out', function (): void {
         $covered = Institution::factory()->for($this->tenant)->create();
         DutyResponsibility::factory()->for($this->coordinator->duties()->firstOrFail())->forInstitution($covered)->create();
@@ -152,7 +170,7 @@ describe('who is asked about what', function (): void {
 
         expect($byInstitution[$this->institution->id]['skip_reason'])->toBeNull()
             ->and($byInstitution[$this->institution->id]['recipients'][0]['name'])->toBe($this->rep->name)
-            ->and($byInstitution[$this->otherInstitution->id]['skip_reason'])->toBe(ActivityRequestSkipReason::NoRecipients->value)
+            ->and($byInstitution[$this->otherInstitution->id]['skip_reason'])->toBe(ActivityRequestSkipReason::NoRepresentativeDuties->value)
             ->and($byInstitution[$covered->id]['skip_reason'])->toBe(ActivityRequestSkipReason::CheckInActive->value);
     });
 

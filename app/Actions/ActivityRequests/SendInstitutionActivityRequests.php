@@ -45,10 +45,13 @@ class SendInstitutionActivityRequests
         }
         $ids = $institutions->pluck('id');
         $candidates = $this->recipients->forInstitutions($ids);
+        $typedInstitutionIds = Institution::query()->whereKey($ids)
+            ->whereHas('duties.types', fn ($query) => $query->where('slug', 'studentu-atstovai'))
+            ->pluck('id')->all();
         $existing = InstitutionActivityRequest::query()->whereIn('institution_id', $ids)->get()->groupBy('institution_id');
         $end = CarbonImmutable::today();
 
-        return $institutions->map(function (Institution $institution) use ($requestedBy, $campaign, $pairs, $candidates, $existing, $end): ActivityRequestPlanEntry {
+        return $institutions->map(function (Institution $institution) use ($requestedBy, $campaign, $pairs, $candidates, $typedInstitutionIds, $existing, $end): ActivityRequestPlanEntry {
             if ($requestedBy !== null && ! $requestedBy->can('askAboutActivity', [InstitutionCheckIn::class, $institution])) {
                 return new ActivityRequestPlanEntry($institution, $campaign, $end, $end, skipReason: ActivityRequestSkipReason::NotAllowed);
             }
@@ -88,7 +91,11 @@ class SendInstitutionActivityRequests
                 recipients: $recipients,
                 recipientPeriods: $recipientPeriods,
                 excludedRecipients: $excluded,
-                skipReason: $recipients->isEmpty() ? ($firstSkip ?? ActivityRequestSkipReason::NoRecipients) : null,
+                skipReason: $recipients->isEmpty() ? ($firstSkip ?? (
+                    in_array($institution->id, $typedInstitutionIds, true)
+                        ? ActivityRequestSkipReason::NoRecipients
+                        : ActivityRequestSkipReason::NoRepresentativeDuties
+                )) : null,
             );
         })->values()->all();
     }
