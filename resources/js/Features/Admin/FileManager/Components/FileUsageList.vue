@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-2 border border-border p-3 text-xs" data-testid="file-usage">
     <div class="flex items-center justify-between gap-2">
-      <span class="font-semibold text-foreground">{{ $t('files.ui.usage_title') }}</span>
+      <span class="min-w-0 break-words font-semibold text-foreground">{{ title ?? $t('files.ui.usage_title') }}</span>
       <StatusBadge :status voice="sentence" />
     </div>
 
@@ -47,6 +47,7 @@ import type { StatusPresentation } from '@/Constants/statuses';
 
 const props = defineProps<{
   usage: FileUsageResult;
+  title?: string;
 }>();
 
 const status = computed<StatusPresentation>(() => props.usage.is_safe_to_delete

@@ -52,3 +52,38 @@ export function useFileUsageScan() {
 
   return { scanning, result, scan, reset };
 }
+
+export type ScannedFileUsage = FileUsageResult & { path: string };
+
+/** The usage check that has to run before files can be deleted; `failed` keeps deleting blocked. */
+export function useFilesUsageScan() {
+  const scanning = ref(false);
+  const failed = ref(false);
+  const results = ref<ScannedFileUsage[] | null>(null);
+
+  function scan(paths: string[]) {
+    if (scanning.value) return;
+
+    scanning.value = true;
+    failed.value = false;
+    results.value = null;
+
+    router.post(route('files.scanUsageBulk'), { paths }, {
+      preserveState: true,
+      preserveScroll: true,
+      onSuccess: (page) => {
+        const data = page.props.flash?.data as { files?: ScannedFileUsage[] } | undefined;
+        results.value = data?.files ?? null;
+        failed.value = results.value === null;
+      },
+      onError: () => {
+        failed.value = true;
+      },
+      onFinish: () => {
+        scanning.value = false;
+      },
+    });
+  }
+
+  return { scanning, failed, results, scan };
+}

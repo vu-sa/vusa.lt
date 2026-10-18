@@ -119,7 +119,7 @@ describe('Files Controller - Inertia authorization', function (): void {
             'files.index' => [],
             'files.createDirectory' => ['path' => $directory, 'name' => 'new-folder'],
             'files.deleteDirectory' => ['path' => $directory.'/empty'],
-            'files.bulkDelete' => ['paths' => [$filePath]],
+            'files.bulkDelete', 'files.scanUsageBulk' => ['paths' => [$filePath]],
             'files.rename' => ['path' => $filePath, 'name' => 'renamed'],
             'files.move' => ['paths' => [$filePath], 'destination' => $directory.'/empty'],
             default => ['path' => $filePath],
@@ -153,6 +153,7 @@ describe('Files Controller - Inertia authorization', function (): void {
         'read-only bulk delete' => ['delete', 'files.bulkDelete', 'reader', 'allowed', 'files.errors.bulk_no_delete_permission'],
         'read-only compression' => ['post', 'files.compress', 'reader', 'allowed', 'files.errors.no_modify_permission'],
         'scan outside tenant' => ['post', 'files.scanUsage', 'manager', 'forbidden', 'files.errors.no_scan_permission'],
+        'bulk scan outside tenant' => ['post', 'files.scanUsageBulk', 'manager', 'forbidden', 'files.errors.no_scan_permission'],
         'read-only rename' => ['post', 'files.rename', 'reader', 'allowed', 'files.errors.no_rename_permission'],
         'rename outside tenant' => ['post', 'files.rename', 'manager', 'forbidden', 'files.errors.no_rename_permission'],
         'read-only move' => ['post', 'files.move', 'reader', 'allowed', 'files.errors.no_move_permission'],
@@ -901,6 +902,28 @@ describe('Files Controller - File Usage Scanning', function (): void {
         expect($response->status())->toBe(302);
         $response->assertSessionHas('success');
         expect(session('success'))->toContain('Failas saugus trinti');
+    });
+
+    test('bulk scan reports each file before deletion and leaves out files already gone', function (): void {
+        $existing = $this->allowedPath.'/keep.pdf';
+        Storage::put($existing, 'content');
+
+        asUser($this->fileManager)->post(route('files.scanUsageBulk'), [
+            'paths' => [$existing, $this->allowedPath.'/gone.pdf'],
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        $files = session('data')['files'];
+        expect($files)->toHaveCount(1)
+            ->and($files[0])->toMatchArray(['path' => $existing, 'is_safe_to_delete' => true, 'total_usages' => 0]);
+    });
+
+    test('bulk scan refuses the whole request when one path is outside the tenant', function (): void {
+        Storage::put($this->allowedPath.'/keep.pdf', 'content');
+        Storage::put($this->forbiddenPath.'/other.pdf', 'content');
+
+        asUser($this->fileManager)->post(route('files.scanUsageBulk'), [
+            'paths' => [$this->allowedPath.'/keep.pdf', $this->forbiddenPath.'/other.pdf'],
+        ])->assertForbidden()->assertSessionMissing('data');
     });
 
     test('unauthenticated users cannot scan file usage', function (): void {

@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Failai
 area: files
 models: [File]
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-18
 tests:
   - tests/Browser/ContentEditorImageSaveTest.php
   - resources/js/Components/ui/upload/__tests__/ImageUploadMedia.component.test.ts
@@ -160,8 +160,8 @@ Patikra randa failą visuose turinio blokuose, nuotraukų laukuose ir nuorodose,
 - **Naudojimo patikra:** pasirinkęs failą, informacijos skydelyje spausk **Tikrinti naudojimą**. Sistema patikrina visus puslapių, naujienų ir padalinių pradinių puslapių turinio blokus, nuotraukų laukus (naujienų, puslapių, banerių, institucijų, narių), aprašymus ir nuorodas (renginių, pareigybių, formų, problemų, žymų, navigacijos, greitųjų nuorodų) bei dar neišsaugotus juodraščius. Įrašai šiukšlinėje taip pat skaičiuojami – juos atkūrus, failas vėl būtų reikalingas.
 - **Rezultatas:** jei failas naudojamas, matai sąrašą, kur jis panaudotas, ir gali atsidaryti tą įrašą. Patikra visada atliekama iš naujo, todėl rodo ir ką tik įterptas nuorodas.
 - **Kas nelaikoma naudojimu:** to paties pavadinimo failas kitame aplanke ir nuoroda į kitą svetainę (ne vusa.lt) su tokiu pačiu keliu.
-- **Trynimas:** jei failas nebenaudojamas, pasirink **Ištrinti**.
-- **Kelių failų trynimas:** pažymėk kelis failus ir apačios juostoje spausk **Ištrinti**.
+- **Trynimas:** pasirink **Ištrinti**. Trynimo lange pirmiausia spausk **Tikrinti naudojimą** – mygtukas **Ištrinti** įsijungia tik po patikros. Jei failas kur nors naudojamas, matysi, kur – ištrinti vis tiek galima, bet tos nuorodos nustos veikti.
+- **Kelių failų trynimas:** pažymėk kelis failus ir apačios juostoje spausk **Ištrinti**. Patikra vyksta iš karto visiems pažymėtiems failams; naudojami failai išvardijami su vietomis, kur jie naudojami.
 - **Aplanko trynimas:** aplanko meniu **⋯** pasirink **Ištrinti aplanką**. Ištrinti galima tik tuščią aplanką – jei jame dar yra failų ar poaplankių, meniu parodo, kiek jų liko.
 
 ## Kas ką gali {#teises}

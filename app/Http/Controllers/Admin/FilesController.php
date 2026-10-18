@@ -12,7 +12,6 @@ use App\Http\Requests\Files\UploadImageRequest;
 use App\Models\File;
 use App\Models\User;
 use App\Services\FileStorageService;
-use App\Services\FileUsageScanner;
 use App\Services\ImageUploadService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Support\StoragePath;
@@ -495,53 +494,6 @@ class FilesController extends AdminController
             ]);
 
             return back()->withErrors(['error' => __('files.errors.delete_directory_failed')]);
-        }
-    }
-
-    public function scanFileUsage(FilePathRequest $request, FileUsageScanner $scanner): RedirectResponse
-    {
-        try {
-            $path = $this->fileStorage->normalizeFilePath($request->validated('path'));
-        } catch (\InvalidArgumentException $e) {
-            return back()->withErrors(['error' => __('files.errors.invalid_file_path')]);
-        }
-
-        $directoryPath = dirname($path);
-        if (! $request->user()->can('viewDirectory', [File::class, $directoryPath])) {
-            throw new AuthorizationException(__('files.errors.no_scan_permission'));
-        }
-
-        if (! Storage::exists($path)) {
-            return back()->withErrors(['error' => __('files.errors.file_not_found')]);
-        }
-
-        try {
-            $usageData = $scanner->scanFileUsage($path);
-
-            Log::info('File usage scanned', [
-                'file_path' => $path,
-                'total_usages' => $usageData['total_usages'],
-                'is_safe_to_delete' => $usageData['is_safe_to_delete'],
-                'user_id' => $request->user()->id,
-            ]);
-
-            if ($usageData['is_safe_to_delete']) {
-                $message = __('files.messages.usage_safe', ['count' => count($usageData['scanned_models'])]);
-
-                return back()->with('data', $usageData)->with('success', $message);
-            } else {
-                $message = __('files.messages.usage_found', ['count' => $usageData['total_usages']]);
-
-                return back()->with('data', $usageData)->with('info', $message);
-            }
-        } catch (\Exception $e) {
-            Log::error('File usage scan failed', [
-                'file_path' => $path,
-                'user_id' => $request->user()->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return back()->withErrors(['error' => __('files.errors.scan_failed', ['error' => $e->getMessage()])]);
         }
     }
 }

@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import FileManager from '../FileManager.vue';
 import type { DirectoryEntry, FileEntry } from '../types';
 
+import CollectionSelectionBar from '@/Components/Collection/CollectionSelectionBar.vue';
 import { commonStubs } from '@/tests/stubs';
 
 const directories: DirectoryEntry[] = [
@@ -27,6 +28,7 @@ beforeEach(() => {
 afterEach(() => {
   wrappers.splice(0).forEach(wrapper => wrapper.unmount());
   vi.mocked(router.delete).mockReset();
+  vi.mocked(router.post).mockReset();
 });
 
 function mountManager(props: Record<string, unknown> = {}) {
@@ -41,6 +43,29 @@ function mountManager(props: Record<string, unknown> = {}) {
 
 function openConfirm(wrapper: ReturnType<typeof mount>) {
   return wrapper.findAllComponents({ name: 'ConfirmDialog' }).find(dialog => dialog.props('open'))!;
+}
+
+function respondToUsageScan(files: Record<string, unknown>[]) {
+  vi.mocked(router.post).mockImplementationOnce((_url, _data, options) => {
+    (options as { onSuccess: (page: unknown) => void }).onSuccess({ props: { flash: { data: { files } } } });
+    (options as { onFinish: () => void }).onFinish();
+  });
+}
+
+function usageOf(path: string, used = false) {
+  return {
+    path,
+    is_safe_to_delete: !used,
+    total_usages: used ? 1 : 0,
+    scanned_models: ['news'],
+    usage_details: used ? [{ model_type: 'news', model_class: 'App\\Models\\News', id: 7, title: 'Rudens šventė', url: '/mano/news/7/edit' }] : [],
+  };
+}
+
+async function checkUsageAndDelete(wrapper: ReturnType<typeof mount>) {
+  const dialog = wrapper.find('[data-testid="delete-usage-check"]');
+  await dialog.findAll('button').find(button => button.text().includes('files.ui.check_usage'))!.trigger('click');
+  await wrapper.find('[data-testid="delete-files-confirm"]').trigger('click');
 }
 
 function fileNames(wrapper: ReturnType<typeof mount>) {
@@ -111,15 +136,50 @@ describe('FileManager', () => {
     await wrapper.findAll('[data-slot="file-item"] button[aria-label="report.pdf"]')[0].trigger('click');
     expect(wrapper.findComponent({ name: 'FilePropertiesDrawer' }).props('file')).toMatchObject({ name: 'report.pdf' });
 
+    respondToUsageScan([usageOf('public/files/report.pdf')]);
     wrapper.findComponent({ name: 'FilePropertiesDrawer' }).vm.$emit('delete');
     await wrapper.vm.$nextTick();
-    openConfirm(wrapper).vm.$emit('confirm');
-    await wrapper.vm.$nextTick();
+    await checkUsageAndDelete(wrapper);
 
     expect(router.delete).toHaveBeenCalledWith(expect.stringContaining('files.delete?'), expect.any(Object));
     expect(wrapper.findComponent({ name: 'FilePropertiesDrawer' }).props('file')).toBeNull();
     expect(wrapper.find('[data-testid="file-grid-skeleton"]').exists()).toBe(false);
     expect(wrapper.emitted('update')).toBeUndefined();
+  });
+
+  it('keeps file delete locked until the usage check has run', async () => {
+    const wrapper = mountManager();
+
+    await wrapper.findAll('[data-slot="file-item"] button[aria-label="report.pdf"]')[0].trigger('click');
+    wrapper.findComponent({ name: 'FilePropertiesDrawer' }).vm.$emit('delete');
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find('[data-testid="delete-files-confirm"]').attributes('disabled')).toBeDefined();
+    expect(wrapper.text()).toContain('files.ui.delete_check_first');
+    expect(router.delete).not.toHaveBeenCalled();
+  });
+
+  it('checks every ticked file before a bulk delete and names the ones in use', async () => {
+    const wrapper = mountManager();
+    const items = wrapper.findAll('[data-slot="file-item"] > span');
+    await items[0].trigger('click');
+    await items[2].trigger('click', { shiftKey: true });
+    const ticked = files.map(file => file.path);
+
+    await wrapper.findComponent(CollectionSelectionBar).findAll('button').find(button => button.text().trim() === 'files.ui.delete')!.trigger('click');
+    respondToUsageScan([usageOf(ticked[0], true), usageOf(ticked[1]), usageOf(ticked[2])]);
+    const check = wrapper.find('[data-testid="delete-usage-check"]').findAll('button').find(button => button.text().includes('files.ui.check_usage'));
+    await check!.trigger('click');
+
+    expect(router.post).toHaveBeenCalledWith(expect.stringContaining('files.scanUsageBulk'), { paths: expect.arrayContaining(ticked) }, expect.any(Object));
+    const usage = wrapper.find('[data-testid="delete-usage-check"]');
+    expect(usage.text()).toContain('files.ui.delete_some_used');
+    expect(usage.findAll('[data-testid="file-usage"]')).toHaveLength(1);
+    expect(usage.text()).toContain('photo.jpg');
+
+    await wrapper.find('[data-testid="delete-files-confirm"]').trigger('click');
+
+    expect(router.delete).toHaveBeenCalledWith(expect.stringContaining('files.bulkDelete'), expect.objectContaining({ data: { paths: expect.arrayContaining(ticked) } }));
   });
 
   it('narrows to a kind from the type filter', async () => {
