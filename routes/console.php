@@ -189,3 +189,9 @@ Schedule::command('model:prune', ['--model' => [ContentEditorDraft::class]])
 Schedule::command('model:prune', ['--model' => [PendingUpload::class]])
     ->dailyAt('03:45')
     ->name('prune-pending-uploads');
+
+// Daily rep outcome metrics, so the Sistema page has a real history (incl. active reps, which keep none).
+Schedule::command('metrics:reps:snapshot')
+    ->dailyAt('03:50')
+    ->name('rep-metric-snapshot')
+    ->withoutOverlapping(10);

@@ -2,15 +2,17 @@
 
 return [
     'title' => 'Atstovų rodikliai',
-    'lead' => 'Ar atstovų darbas vyksta greičiau? Skaičiai imami iš jau turimų duomenų, be jokio sekimo, ir lyginami su 2026-09-17 pradine reikšme.',
+    'lead' => 'Ar atstovų darbas vyksta greičiau? Skaičiai imami iš jau turimų duomenų, be jokio sekimo, ir kasdien išsaugomi, kad būtų galima palyginti su pradine reikšme.',
     'table' => [
         'title' => 'Penki rodikliai ir posėdžių fiksavimas',
         'metric' => 'Rodiklis',
-        'now' => 'Dabar',
+        'now' => 'Per :days d.',
         'baseline' => 'Pradžioje',
         'target' => 'Tikslas',
         'status' => 'Būsena',
-        'snapshot' => 'tik dabartinė reikšmė, istorijos nėra',
+        'snapshot' => 'istorija kaupiama kasdien',
+        'baseline_from' => 'Pradinė reikšmė – :date, skaičiuota per :days d.',
+        'no_baseline' => 'Pradinė reikšmė dar nepažymėta.',
     ],
     'metrics' => [
         'recorded_within_week' => 'Posėdis užfiksuotas per 7 d.',
@@ -42,6 +44,7 @@ return [
         'vote_information' => 'Balsavimai',
         'task_completion' => 'Užduotys',
         'periodicity_gap' => 'Priminimai',
+        'active_reps' => 'Aktyvūs atstovai',
         'own_recording' => 'Fiksuoja atstovas',
     ],
     'tasks' => [

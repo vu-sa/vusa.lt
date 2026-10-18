@@ -2,15 +2,17 @@
 
 return [
     'title' => 'Representative metrics',
-    'lead' => 'Is representatives’ work getting faster? The figures come from data the system already keeps, with no tracking, and are compared with the 2026-09-17 baseline.',
+    'lead' => 'Is representatives’ work getting faster? The figures come from data the system already keeps, with no tracking, and are stored daily so they can be compared with the baseline.',
     'table' => [
         'title' => 'Five metrics and who records meetings',
         'metric' => 'Metric',
-        'now' => 'Now',
+        'now' => 'Last :days days',
         'baseline' => 'Baseline',
         'target' => 'Target',
         'status' => 'Status',
-        'snapshot' => 'current value only, no history',
+        'snapshot' => 'history is collected daily',
+        'baseline_from' => 'Baseline taken on :date, measured over :days days.',
+        'no_baseline' => 'No baseline has been marked yet.',
     ],
     'metrics' => [
         'recorded_within_week' => 'Meeting recorded within 7 days',
@@ -42,6 +44,7 @@ return [
         'vote_information' => 'Votes',
         'task_completion' => 'Tasks',
         'periodicity_gap' => 'Reminders',
+        'active_reps' => 'Active reps',
         'own_recording' => 'By a rep',
     ],
     'tasks' => [

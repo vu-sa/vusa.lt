@@ -17,6 +17,8 @@ const trend = (values: (number | null)[]) => values.map((value, index) => ({ mon
 
 const report = {
   months: ['2026-07', '2026-08', '2026-09'],
+  windowDays: 30,
+  baseline: { takenOn: '2026-09-17', windowDays: 365 },
   metrics: [
     { key: 'recorded_within_week', now: 96, baseline: 91.9, target: 95, trend: trend([90, 93, 96]) },
     { key: 'vote_information', now: 40, baseline: 35.1, target: 50, trend: trend([35, 38, 40]) },
@@ -46,6 +48,11 @@ describe('ShowRepMetrics', () => {
     expect(row.text()).toContain('91.9 %');
     expect(row.text()).toContain('95 %');
     expect(wrapper.findAll('[data-testid="metrics-table"] tbody tr')).toHaveLength(6);
+  });
+
+  it('names when the baseline was taken, or that none is marked yet', () => {
+    expect(mountPage().get('[data-slot="metrics-baseline"]').text()).toBe('metrics.table.baseline_from');
+    expect(mountPage({ report: { ...report, baseline: null } }).get('[data-slot="metrics-baseline"]').text()).toBe('metrics.table.no_baseline');
   });
 
   it('gives every status a word, so colour is never the only signal', () => {

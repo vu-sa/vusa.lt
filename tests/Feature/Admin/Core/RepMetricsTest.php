@@ -7,11 +7,13 @@ use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Models\RepMetricSnapshot;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
 use App\Tasks\Enums\ActionType;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -148,7 +150,94 @@ describe('metrics:reps', function (): void {
     });
 });
 
+describe('metrics:reps:snapshot', function (): void {
+    test('stores today\'s numbers over the last 30 days with the counts behind them', function (): void {
+        pastMeeting($this->institution, '2026-09-10 10:00:00', 2);
+        pastMeeting($this->institution, '2026-09-12 10:00:00', 20);
+        pastMeeting($this->institution, '2026-08-01 10:00:00', 1);
+
+        expect(Artisan::call('metrics:reps:snapshot'))->toBe(0);
+
+        $snapshot = RepMetricSnapshot::query()->whereDate('taken_on', '2026-09-20')->sole();
+
+        expect($snapshot->window_days)->toBe(30)
+            ->and($snapshot->is_baseline)->toBeFalse()
+            ->and($snapshot->metrics['recorded_within_week'])->toBe(['value' => 50, 'part' => 1, 'whole' => 2])
+            ->and($snapshot->metrics['active_reps'])->toBe(['value' => 50, 'part' => 1, 'whole' => 2]);
+    });
+
+    test('running it again the same day replaces that day\'s numbers', function (): void {
+        Artisan::call('metrics:reps:snapshot');
+        pastMeeting($this->institution, '2026-09-10 10:00:00', 2);
+        Artisan::call('metrics:reps:snapshot');
+
+        expect(RepMetricSnapshot::query()->whereDate('taken_on', '2026-09-20')->sole()->value('recorded_within_week'))->toBe(100.0);
+    });
+
+    test('marking a baseline moves it, so there is only ever one', function (): void {
+        expect(RepMetricSnapshot::baseline()?->taken_on->toDateString())->toBe('2026-09-17');
+
+        Artisan::call('metrics:reps:snapshot', ['--mark-baseline' => true]);
+
+        expect(RepMetricSnapshot::query()->where('is_baseline', true)->count())->toBe(1)
+            ->and(RepMetricSnapshot::baseline()?->taken_on->toDateString())->toBe('2026-09-20');
+    });
+
+    test('a back-filled day leaves out active reps, which keep no history', function (): void {
+        pastMeeting($this->institution, '2026-08-20 10:00:00', 2);
+
+        Artisan::call('metrics:reps:snapshot', ['--date' => '2026-09-01']);
+
+        $snapshot = RepMetricSnapshot::query()->whereDate('taken_on', '2026-09-01')->sole();
+
+        expect($snapshot->metrics)->not->toHaveKey('active_reps')
+            ->and($snapshot->value('recorded_within_week'))->toBe(100.0);
+    });
+
+    test('a future day is refused', function (): void {
+        expect(Artisan::call('metrics:reps:snapshot', ['--date' => '2026-09-21']))->toBe(1)
+            ->and(RepMetricSnapshot::query()->whereDate('taken_on', '2026-09-21')->exists())->toBeFalse();
+    });
+
+    test('runs every day on the scheduler', function (): void {
+        $event = collect(app(Schedule::class)->events())
+            ->first(fn ($event) => str_contains((string) $event->command, 'metrics:reps:snapshot'));
+
+        expect($event)->not->toBeNull()
+            ->and($event->expression)->toBe('50 3 * * *');
+    });
+});
+
 describe('the Sistema page', function (): void {
+    test('compares the last 30 days with the stored baseline and names its date', function (): void {
+        pastMeeting($this->institution, '2026-09-10 10:00:00', 2);
+        pastMeeting($this->institution, '2026-08-01 10:00:00', 20);
+
+        asUser(makeAdminUser())
+            ->get(route('repMetrics'))
+            ->assertInertia(fn (Assert $page) => $page->loadDeferredProps('secondary', fn (Assert $page) => $page
+                ->where('report.windowDays', 30)
+                ->where('report.baseline', ['takenOn' => '2026-09-17', 'windowDays' => 365])
+                ->where('report.metrics.0.key', 'recorded_within_week')
+                ->where('report.metrics.0.now', 100)
+                ->where('report.metrics.0.baseline', 91.9)
+                ->where('report.metrics.0.target', 95)
+            ));
+    });
+
+    test('active reps trend from each month\'s latest daily snapshot', function (): void {
+        RepMetricSnapshot::factory()->create(['taken_on' => '2026-08-10', 'metrics' => ['active_reps' => ['value' => 30.0, 'part' => 3, 'whole' => 10]]]);
+        RepMetricSnapshot::factory()->create(['taken_on' => '2026-08-31', 'metrics' => ['active_reps' => ['value' => 35.0, 'part' => 7, 'whole' => 20]]]);
+        RepMetricSnapshot::factory()->create(['taken_on' => '2026-09-15', 'metrics' => ['active_reps' => ['value' => 40.0, 'part' => 4, 'whole' => 10]]]);
+
+        asUser(makeAdminUser())
+            ->get(route('repMetrics'))
+            ->assertInertia(fn (Assert $page) => $page->loadDeferredProps('secondary', fn (Assert $page) => $page
+                ->where('report.metrics.4.key', 'active_reps')
+                ->where('report.metrics.4.trend', fn ($trend) => collect($trend)->pluck('value', 'month')->only(['2026-07', '2026-08', '2026-09'])->all() === ['2026-07' => null, '2026-08' => 35, '2026-09' => 40])
+            ));
+    });
+
     test('a super admin opens it and the report arrives deferred', function (): void {
         asUser(makeAdminUser())
             ->get(route('repMetrics'))
@@ -166,7 +255,7 @@ describe('the Sistema page', function (): void {
             );
     });
 
-    test('active reps have no trend because last_action keeps no history', function (): void {
+    test('active reps have no trend until daily snapshots exist, because last_action keeps no history', function (): void {
         asUser(makeAdminUser())
             ->get(route('repMetrics'))
             ->assertInertia(fn (Assert $page) => $page->loadDeferredProps('secondary', fn (Assert $page) => $page
