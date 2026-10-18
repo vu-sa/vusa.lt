@@ -3,12 +3,14 @@
 namespace App\Console\Commands;
 
 use App\Actions\GetRepOutcomeMetrics;
+use App\Models\RepMetricSnapshot;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
 /**
- * Print the rep outcome metrics with their 2026-09-17 baseline and target, then the monthly trend.
+ * Print the rep outcome metrics over the last 30 days against the baseline snapshot and target,
+ * then the monthly trend. `metrics:reps:snapshot` stores the daily numbers and moves the baseline.
  */
 #[Description('Report the student representative outcome metrics with a monthly trend')]
 #[Signature('metrics:reps {--months=12 : How many months the trend covers}')]
@@ -20,16 +22,23 @@ class RepMetricsCommand extends Command
         $rate = GetRepOutcomeMetrics::rate(...);
 
         $tasks = $report['tasks'];
+        $window = GetRepOutcomeMetrics::SNAPSHOT_WINDOW_DAYS;
+        $now = GetRepOutcomeMetrics::forWindow(now()->subDays($window), now());
+        $baseline = RepMetricSnapshot::baseline();
 
         $this->table(
-            ['Metric', 'Now', 'Baseline', 'Target'],
-            collect($report['now'])->map(fn (?float $value, string $metric): array => [
+            ['Metric', "Last {$window} days", 'Baseline', 'Target'],
+            collect(GetRepOutcomeMetrics::METRICS)->map(fn (string $metric): array => [
                 $metric,
-                $this->percent($value),
-                $this->percent($report['targets'][$metric]['baseline']),
-                $this->percent($report['targets'][$metric]['target']),
-            ])->values()->all(),
+                $this->percent($now[$metric]['value'] ?? null),
+                $this->percent($baseline?->value($metric)),
+                $this->percent(GetRepOutcomeMetrics::TARGETS[$metric] ?? null),
+            ])->all(),
         );
+
+        $this->line($baseline
+            ? "Baseline: {$baseline->taken_on->toDateString()}, measured over {$baseline->window_days} days."
+            : 'No baseline yet: run metrics:reps:snapshot --mark-baseline.');
 
         $this->newLine();
         $this->table(

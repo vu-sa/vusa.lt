@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetRepOutcomeMetrics;
 use App\Http\Controllers\AdminController;
+use App\Models\RepMetricSnapshot;
 use App\Models\Role;
 use Inertia\Inertia;
 
@@ -28,7 +29,7 @@ class RepMetricsController extends AdminController
 
     /**
      * @param  array<string, mixed>  $report
-     * @return array{months: list<string>, metrics: list<array<string, mixed>>, tasks: list<array<string, mixed>>}
+     * @return array{months: list<string>, windowDays: int, baseline: array{takenOn: string, windowDays: int}|null, metrics: list<array<string, mixed>>, tasks: list<array<string, mixed>>}
      */
     private function present(array $report): array
     {
@@ -41,7 +42,6 @@ class RepMetricsController extends AdminController
         );
 
         $meetings = $report['meetings'];
-        $sumMeetings = fn (string $key): int => array_sum(array_column($meetings, $key));
         $taskMonth = fn (string $type, string $month): ?float => isset($report['tasks'][$type])
             ? $rate($report['tasks'][$type]['monthly'][$month]['completed'], $report['tasks'][$type]['monthly'][$month]['total'])
             : null;
@@ -67,21 +67,28 @@ class RepMetricsController extends AdminController
                 'key' => 'periodicity_gap',
                 'trend' => $trend(fn (string $month): ?float => $taskMonth('periodicity_gap', $month)),
             ],
-            // A snapshot: users.last_action keeps no history, so there is nothing to trend.
-            ['key' => 'active_reps', 'trend' => null],
+            // users.last_action keeps no history, so only the stored snapshots can trend it.
+            ['key' => 'active_reps', 'trend' => $this->snapshotTrend('active_reps', $months)],
             [
                 'key' => 'own_recording',
-                'now' => $rate($sumMeetings('byRep'), $sumMeetings('known')),
                 'trend' => $trend(fn (string $month): ?float => $rate($meetings[$month]['byRep'], $meetings[$month]['known'])),
             ],
         ];
 
+        $windowDays = GetRepOutcomeMetrics::SNAPSHOT_WINDOW_DAYS;
+        $now = GetRepOutcomeMetrics::forWindow(now()->subDays($windowDays), now());
+        $baseline = RepMetricSnapshot::baseline();
+
         return [
             'months' => $months,
+            'windowDays' => $windowDays,
+            'baseline' => $baseline
+                ? ['takenOn' => $baseline->taken_on->toDateString(), 'windowDays' => $baseline->window_days]
+                : null,
             'metrics' => array_map(fn (array $metric): array => [
-                'now' => $report['now'][$metric['key']] ?? null,
-                'baseline' => $report['targets'][$metric['key']]['baseline'] ?? null,
-                'target' => $report['targets'][$metric['key']]['target'] ?? null,
+                'now' => $now[$metric['key']]['value'] ?? null,
+                'baseline' => $baseline?->value($metric['key']),
+                'target' => GetRepOutcomeMetrics::TARGETS[$metric['key']] ?? null,
                 ...$metric,
             ], $metrics),
             'tasks' => array_map(fn (array $type, string $name): array => [
@@ -92,5 +99,32 @@ class RepMetricsController extends AdminController
                 'medianDays' => $type['medianDays'],
             ], $report['tasks'], array_keys($report['tasks'])),
         ];
+    }
+
+    /**
+     * Each month's latest daily snapshot, or null when none was taken in the range. Only daily
+     * snapshots count: a baseline measured over another window would not be comparable.
+     *
+     * @param  list<string>  $months
+     * @return list<array{month: string, value: float|null}>|null
+     */
+    private function snapshotTrend(string $metric, array $months): ?array
+    {
+        $byMonth = RepMetricSnapshot::query()
+            ->where('window_days', GetRepOutcomeMetrics::SNAPSHOT_WINDOW_DAYS)
+            ->whereDate('taken_on', '>=', $months[0].'-01')
+            ->orderBy('taken_on')
+            ->get()
+            ->filter(fn (RepMetricSnapshot $snapshot): bool => $snapshot->value($metric) !== null)
+            ->keyBy(fn (RepMetricSnapshot $snapshot): string => $snapshot->taken_on->format('Y-m'));
+
+        if ($byMonth->isEmpty()) {
+            return null;
+        }
+
+        return array_map(fn (string $month): array => [
+            'month' => $month,
+            'value' => $byMonth->get($month)?->value($metric),
+        ], $months);
     }
 }

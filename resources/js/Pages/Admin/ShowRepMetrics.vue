@@ -24,7 +24,7 @@
                     {{ $t('metrics.table.metric') }}
                   </th>
                   <th scope="col" class="px-4 py-2 text-right font-semibold">
-                    {{ $t('metrics.table.now') }}
+                    {{ $t('metrics.table.now', { days: String(report.windowDays) }) }}
                   </th>
                   <th scope="col" class="px-4 py-2 text-right font-semibold">
                     {{ $t('metrics.table.baseline') }}
@@ -61,6 +61,11 @@
               </tbody>
             </table>
           </div>
+          <p class="mt-2 text-xs text-muted-foreground" data-slot="metrics-baseline">
+            {{ report.baseline
+              ? $t('metrics.table.baseline_from', { date: report.baseline.takenOn, days: String(report.baseline.windowDays) })
+              : $t('metrics.table.no_baseline') }}
+          </p>
         </OverviewSection>
 
         <OverviewSection :title="$t('metrics.chart.title')">
@@ -144,12 +149,15 @@ interface Metric {
   now: number | null;
   baseline: number | null;
   target: number | null;
-  /** Null for a snapshot: `users.last_action` keeps no history. */
+  /** Null while nothing can trend it: `users.last_action` keeps no history until daily snapshots exist. */
   trend: MetricPoint[] | null;
 }
 
 interface RepMetricsReport {
   months: string[];
+  /** The days before today that "now" measures, the same window as each daily snapshot. */
+  windowDays: number;
+  baseline: { takenOn: string; windowDays: number } | null;
   metrics: Metric[];
   tasks: { actionType: string; total: number; completed: number; rate: number | null; medianDays: number | null }[];
 }

@@ -10,27 +10,34 @@ use App\Models\Pivots\Dutiable;
 use App\Models\Task;
 use App\Models\User;
 use App\Support\MorphMap;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 /**
  * The rep outcome metrics (U25): did the loop get shorter? Computed from data the app already
- * stores — no tracking — as a monthly trend, so the same numbers back `metrics:reps` and the
- * Sistema page, and a later run can be compared with the baseline.
+ * stores — no tracking — as a monthly trend and as one window (the daily `RepMetricSnapshot`),
+ * so the same numbers back `metrics:reps`, `metrics:reps:snapshot` and the Sistema page.
  *
  * Computed in PHP over small sets (a few hundred meetings a year) so it behaves the same on
  * MySQL and on SQLite. Months are by the meeting's date, or by the task's creation date.
  */
 class GetRepOutcomeMetrics
 {
-    /** The pre-redesign snapshot (2026-09-17) and the target for each metric, in percent. */
+    /** The target for each metric, in percent. The baseline is a stored snapshot (`RepMetricSnapshot::baseline()`). */
     public const array TARGETS = [
-        'recorded_within_week' => ['baseline' => 91.9, 'target' => 95.0],
-        'vote_information' => ['baseline' => 35.1, 'target' => 50.0],
-        'active_reps' => ['baseline' => 27.0, 'target' => 50.0],
-        'task_completion' => ['baseline' => 67.2, 'target' => 80.0],
-        'periodicity_gap' => ['baseline' => 44.9, 'target' => 65.0],
+        'recorded_within_week' => 95.0,
+        'vote_information' => 50.0,
+        'active_reps' => 50.0,
+        'task_completion' => 80.0,
+        'periodicity_gap' => 65.0,
     ];
+
+    /** Every metric a window measures, in display order. */
+    public const array METRICS = ['recorded_within_week', 'vote_information', 'task_completion', 'periodicity_gap', 'active_reps', 'own_recording'];
+
+    /** A snapshot measures the days before it, so a daily series moves smoothly and stays comparable. */
+    public const int SNAPSHOT_WINDOW_DAYS = 30;
 
     private const int ACTIVE_DAYS = 30;
 
@@ -43,7 +50,7 @@ class GetRepOutcomeMetrics
      *     tasks: array<string, array{total: int, completed: int, medianDays: float|null, monthly: array<string, array{total: int, completed: int}>}>,
      *     activeReps: array{total: int, active: int},
      *     now: array<string, float|null>,
-     *     targets: array<string, array{baseline: float, target: float}>
+     *     targets: array<string, float>
      * }
      */
     public static function execute(int $months = 12): array
@@ -57,7 +64,7 @@ class GetRepOutcomeMetrics
         }
 
         $meetings = self::meetings($start, $now, $monthKeys);
-        $tasks = self::tasks($start, $monthKeys);
+        $tasks = self::tasks($start, $now, $monthKeys);
         $activeReps = self::activeReps($now);
 
         return [
@@ -68,6 +75,47 @@ class GetRepOutcomeMetrics
             'now' => self::summarize($meetings, $tasks, $activeReps),
             'targets' => self::TARGETS,
         ];
+    }
+
+    /**
+     * Every metric over [$from, $to), with the counts behind each rate. `active_reps` has no
+     * history (users.last_action is a current value), so it is measured only when asked.
+     *
+     * @return array<string, array{value: float|null, part: int, whole: int}>
+     */
+    public static function forWindow(CarbonInterface $from, CarbonInterface $to, bool $withActiveReps = true): array
+    {
+        $from = Carbon::instance($from);
+        $to = Carbon::instance($to);
+
+        $monthKeys = [];
+        for ($month = $from->copy()->startOfMonth(); $month->lessThan($to); $month->addMonth()) {
+            $monthKeys[] = $month->format('Y-m');
+        }
+
+        $meetings = self::meetings($from, $to, $monthKeys);
+        $tasks = self::tasks($from, $to, $monthKeys);
+        $sum = fn (string $key): int => array_sum(array_column($meetings, $key));
+        $gap = $tasks['periodicity_gap'] ?? ['total' => 0, 'completed' => 0];
+
+        $counts = [
+            'recorded_within_week' => [$sum('withinWeek'), $sum('total')],
+            'vote_information' => [$sum('itemsWithVotes'), $sum('items')],
+            'task_completion' => [array_sum(array_column($tasks, 'completed')), array_sum(array_column($tasks, 'total'))],
+            'periodicity_gap' => [$gap['completed'], $gap['total']],
+            'own_recording' => [$sum('byRep'), $sum('known')],
+        ];
+
+        if ($withActiveReps) {
+            $activeReps = self::activeReps($to);
+            $counts['active_reps'] = [$activeReps['active'], $activeReps['total']];
+        }
+
+        return array_map(fn (array $count): array => [
+            'value' => self::rate($count[0], $count[1]),
+            'part' => $count[0],
+            'whole' => $count[1],
+        ], $counts);
     }
 
     /**
@@ -246,12 +294,13 @@ class GetRepOutcomeMetrics
      * @param  list<string>  $monthKeys
      * @return array<string, array{total: int, completed: int, medianDays: float|null, monthly: array<string, array{total: int, completed: int}>}>
      */
-    private static function tasks(Carbon $start, array $monthKeys): array
+    private static function tasks(Carbon $start, Carbon $end, array $monthKeys): array
     {
         $byType = [];
 
         Task::query()
             ->where('created_at', '>=', $start)
+            ->where('created_at', '<', $end)
             ->toBase()
             ->get(['action_type', 'created_at', 'completed_at'])
             ->each(function (object $task) use (&$byType, $monthKeys): void {
