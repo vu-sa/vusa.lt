@@ -23,10 +23,10 @@ test('a missing major release fails instead of silently publishing a minor relea
   assert.throws(() => selectMajorRelease('## v3.1 — Minor (2026-10-16)\nContent', 'v3'), /No v3\.0 release entry/)
 })
 
-test('the current v3 PDF contains v3.0 and excludes the v3.1 mailing list release', () => {
+test('the current v3 PDF contains v3.0 and excludes minor releases', () => {
   const changelog = fs.readFileSync(new URL('../changelog/v3.md', import.meta.url), 'utf8')
   const release = selectMajorRelease(changelog, 'v3')
   assert.equal(release.version, 'v3.0')
   assert.match(release.body, /Atnaujinta Mano VU SA/)
-  assert.doesNotMatch(release.body, /v3\.1|v3-1|v3-mailing-lists/)
+  assert.doesNotMatch(release.body, /v3\.[1-9]|v3-[1-9]|v3-mailing-lists/)
 })

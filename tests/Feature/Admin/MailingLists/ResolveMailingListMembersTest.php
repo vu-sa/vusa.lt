@@ -66,13 +66,14 @@ describe('date window', function (): void {
     test('inactive duties and inactive institutions are left out', function (): void {
         $type = InstitutionType::factory()->create();
         $active = Institution::factory()->for($this->main)->create();
-        $inactive = Institution::factory()->for($this->main)->create(['is_active' => false]);
+        $inactive = Institution::factory()->for($this->main)->create();
         $active->types()->attach($type);
         $inactive->types()->attach($type);
 
         mailingListSeat($active, 'kept@stud.vu.lt');
         mailingListSeat($active, 'retired-duty@stud.vu.lt', duty: ['is_active' => false]);
         mailingListSeat($inactive, 'inactive-body@stud.vu.lt');
+        $inactive->update(['is_active' => false]);
 
         mailingListSource($this->list, MailingListSourceType::InstitutionType, (string) $type->id);
 
@@ -215,8 +216,9 @@ test('a manually managed nested list contributes its imported roster rather than
 });
 
 test('inactive institutions are excluded for direct institution and duty sources', function (string $type): void {
-    $institution = Institution::factory()->for($this->main)->create(['is_active' => false]);
+    $institution = Institution::factory()->for($this->main)->create();
     $user = mailingListSeat($institution, 'inactive@vusa.lt');
+    $institution->update(['is_active' => false]);
     $target = $type === 'duty' ? $user->duties()->first()->id : $institution->id;
     mailingListSource($this->list, MailingListSourceType::from($type), $target);
 
