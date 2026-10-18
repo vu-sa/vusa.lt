@@ -90,7 +90,7 @@ return [
         'secretaries' => 'Secretaries',
         'write' => 'Email',
         'visible_public' => 'Visible on vusa.lt',
-        'internal_only' => 'Internal only',
+        'internal_only' => 'Only shown in ViSAK',
         'edit_meeting' => 'Edit meeting',
         'previous_meeting' => 'Previous meeting',
         'next_meeting' => 'Next meeting',

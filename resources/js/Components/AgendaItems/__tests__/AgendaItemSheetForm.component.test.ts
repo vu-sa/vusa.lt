@@ -69,6 +69,7 @@ describe('AgendaItemSheetForm', () => {
     expect(preview.text()).toContain('3.');
     expect(preview.text()).toContain('meetings.privacy.hidden_title');
     expect(preview.text()).not.toContain('Stipendijos');
+    expect(preview.text()).not.toContain('meetings.privacy.internal_only');
     expect(form.is_private).toBe(false);
     expect(wrapper.text()).toContain('meetings.privacy.audience');
     expect(wrapper.text()).toContain('meetings.privacy.no_personal_data');

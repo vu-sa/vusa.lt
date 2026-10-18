@@ -9,7 +9,7 @@ return [
         'never_heading' => 'Niekada nerodoma',
         'shown' => [
             'basics' => 'Posėdžio data, institucija ir būsena',
-            'agenda' => 'Darbotvarkės klausimai ir balsavimo rezultatai. Punktams „Tik viduje“ – tik vieta darbotvarkėje ir viešas pavadinimas, jei įrašytas.',
+            'agenda' => 'Darbotvarkės klausimai ir balsavimo rezultatai. Punktams „Rodoma tik ViSAK“ – tik vieta darbotvarkėje ir viešas pavadinimas, jei įrašytas.',
             'representatives' => 'Tuo metu pareigas ėję studentų atstovai',
             'documents' => 'Skirtuko „Dokumentai“ dokumentai, turintys viešą nuorodą (VU SA organų nutarimai ir protokolai)',
         ],
@@ -90,7 +90,7 @@ return [
         'secretaries' => 'Sekretoriai',
         'write' => 'Parašyti',
         'visible_public' => 'Matoma vusa.lt',
-        'internal_only' => 'Tik viduje',
+        'internal_only' => 'Rodoma tik ViSAK',
         'edit_meeting' => 'Redaguoti posėdį',
         'previous_meeting' => 'Ankstesnis posėdis',
         'next_meeting' => 'Kitas posėdis',

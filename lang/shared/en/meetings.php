@@ -2,10 +2,10 @@
 
 return [
     'privacy' => [
-        'internal_only' => 'Internal only',
+        'internal_only' => 'Only shown in ViSAK',
         'hidden_title' => 'Not displayed',
         'switch_label' => 'Hide item content from public view',
-        'enabled_lead' => 'When enabled and saved, only the item number, “Internal only” label, and optional public title will appear publicly.',
+        'enabled_lead' => 'When enabled and saved, only the item number and optional public title will appear publicly.',
         'disabled_lead' => 'When disabled and saved, the item title and content will appear wherever the meeting agenda is published.',
         'nonpublic_hint' => 'This meeting’s page is currently private, so access through that page will stay the same. We still recommend enabling this for internal working items: the institution type may allow public meetings later, or the meeting may be linked to a public calendar event.',
         'creation_hint' => 'You can make an item private later. Find more about visibility in the item editor.',

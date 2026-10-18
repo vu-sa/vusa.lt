@@ -37,7 +37,7 @@ test('privacy can be saved from the responsive editor and public pages show only
     $page->assertNoJavaScriptErrors();
 
     $public = visitPublicSubdomain('www', '/lt/posedziai/'.$item->meeting_id);
-    $public->assertSee('Darbo klausimas')->assertSee('Tik viduje')
+    $public->assertSee('Darbo klausimas')->assertDontSee('Rodoma tik ViSAK')->assertDontSee('Tik viduje')
         ->assertDontSee(DocsSeeder::UNFINISHED_AGENDA_ITEM)
         ->assertNoJavaScriptErrors();
 });

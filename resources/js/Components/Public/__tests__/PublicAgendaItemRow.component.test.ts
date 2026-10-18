@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import PublicAgendaItemRow from '../PublicAgendaItemRow.vue';
 
 describe('PublicAgendaItemRow', () => {
-  it('renders only the number, public title and privacy label for a private item', () => {
+  it('renders only the number and public title without a privacy label for a private item', () => {
     const wrapper = mount(PublicAgendaItemRow, {
       props: {
         item: {
@@ -18,7 +18,7 @@ describe('PublicAgendaItemRow', () => {
 
     expect(wrapper.text()).toContain('3');
     expect(wrapper.text()).toContain('Working item');
-    expect(wrapper.text()).toContain('meetings.privacy.internal_only');
+    expect(wrapper.text()).not.toContain('meetings.privacy.internal_only');
     expect(wrapper.text()).not.toContain('Internal content', '14:00', 'Įtraukta studentų');
     expect(wrapper.find('details').exists()).toBe(false);
     expect(wrapper.find('dl').exists()).toBe(false);

@@ -71,7 +71,6 @@
           <span v-if="order" class="mr-2 font-mono text-muted-foreground">{{ order }}.</span>
           {{ draft.public_title[locale]?.trim() || draft.public_title.lt?.trim() || $t('meetings.privacy.hidden_title') }}
         </p>
-        <span class="text-xs text-muted-foreground">{{ $t('meetings.privacy.internal_only') }}</span>
       </div>
       <p v-else-if="form.is_private" class="text-sm text-status-attention">
         {{ $t('meetings.privacy.publish_hint') }}

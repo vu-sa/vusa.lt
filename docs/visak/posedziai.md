@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Posėdžiai
 area: meetings
 models: [Meeting]
-last_reviewed: 2026-10-07
+last_reviewed: 2026-10-18
 tests:
   - tests/Feature/Meetings/AgendaItemPrivacyTest.php
   - tests/Feature/Admin/Calendar/MeetingControllerTest.php
@@ -68,7 +68,7 @@ posėdis“. Sprendimui el. paštu laikas nerodomas. Pakeitus datą ar tipą, pa
 
 ### Matomumas {#matomumas}
 
-Posėdžio puslapyje rodoma **Matoma vusa.lt** (su nuoroda į viešą puslapį) arba **Tik viduje**.
+Posėdžio puslapyje rodoma **Matoma vusa.lt** (su nuoroda į viešą puslapį) arba **Rodoma tik ViSAK**.
 Posėdis viešas, jei viena jo institucijų yra tipo, kurio posėdžiai
 [posėdžių nustatymuose](/sistema/nustatymai) pažymėti viešais (žr.
 [Institucijos](/visak/institucijos#viesumas)). Viešame puslapyje rodomi tik paskelbti posėdžio
@@ -83,7 +83,7 @@ niekada. Skirtuko **Failai** failai viešai nerodomi niekada (žr.
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Kas rodoma vusa.lt?">
 
-Iki v3.0 posėdžio puslapis rodė tik „Matoma vusa.lt“ ar „Tik viduje“, nepaaiškindamas, kas
+Iki v3.0 posėdžio puslapis rodė tik „Matoma vusa.lt“ ar „Rodoma tik ViSAK“, nepaaiškindamas, kas
 konkrečiai skelbiama.
 
 </ChangelogNote>
@@ -186,8 +186,8 @@ Sąraše (`/mano/meetings`) filtruojama pagal metus, būseną, balsavimo atitiki
 ir padalinį. Pirmą kartą rodomi tavo padalinių posėdžiai. Posėdžiai, kuriuos ką tik keitei,
 rodomi viršuje.
 
-Atskiras klausimas gali būti pažymėtas **Tik viduje**, net jei posėdis viešas. Viešai lieka
-jo numeris, matomumo žyma ir nebūtinas viešas pavadinimas. [Klausimo matomumas](/visak/darbotvarkes-klausimai#matomumas).
+Atskiras klausimas gali būti pažymėtas **Rodoma tik ViSAK**, net jei posėdis viešas. Viešai lieka
+jo numeris ir nebūtinas viešas pavadinimas; matomumo žyma nerodoma. [Klausimo matomumas](/visak/darbotvarkes-klausimai#matomumas).
 
 ## Kas ką gali {#teises}
 

@@ -60,6 +60,17 @@ describe('Public/Meetings/ShowMeeting.vue', () => {
     expect(text.split('18:30')).toHaveLength(2);
   });
 
+  it('shows a private item’s public title without a privacy label', () => {
+    const wrapper = mountPage({
+      meeting: makeMeeting({
+        agenda_items: [{ id: 'a1', title: 'Darbo klausimas', order: 1, is_private: true }],
+      }),
+    });
+
+    expect(wrapper.text()).toContain('Darbo klausimas');
+    expect(wrapper.text()).not.toContain('meetings.privacy.internal_only');
+  });
+
   it('never assembles a timetable card of its own', () => {
     const wrapper = mountPage({
       meeting: makeMeeting({ agenda_items: [{ id: 'a1', title: 'Klausimas', order: 1, type: 'informational' }] }),

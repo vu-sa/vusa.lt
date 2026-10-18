@@ -38,7 +38,7 @@
         <a v-if="publicUrl" :href="publicUrl" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-status-success underline underline-offset-4">
           {{ $t('Matoma vusa.lt') }}
         </a>
-        <span v-else>{{ $t('Tik viduje') }}</span>
+        <span v-else>{{ $t('Rodoma tik ViSAK') }}</span>
         <SpotlightPopover
           v-if="!readOnly"
           :title="$t('meetings.visibility.spotlight_title')"
@@ -555,7 +555,7 @@ const recordFacts = computed<RecordFact[]>(() => [
     label: $t('Matomumas'),
     labelIcon: Globe,
     surfaceClass: props.publicUrl ? 'bg-status-success-surface' : 'bg-status-neutral-surface',
-    value: props.publicUrl ? $t('Matoma vusa.lt') : $t('Tik viduje'),
+    value: props.publicUrl ? $t('Matoma vusa.lt') : $t('Rodoma tik ViSAK'),
   },
   {
     key: 'time',

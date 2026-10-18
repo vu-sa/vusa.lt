@@ -2,10 +2,10 @@
 
 return [
     'privacy' => [
-        'internal_only' => 'Tik viduje',
+        'internal_only' => 'Rodoma tik ViSAK',
         'hidden_title' => 'Nerodoma',
         'switch_label' => 'Nerodyti punkto turinio viešai',
-        'enabled_lead' => 'Įjungus ir išsaugojus, viešai liks tik punkto numeris, žyma „Tik viduje“ ir viešas pavadinimas, jei jį įrašysi.',
+        'enabled_lead' => 'Įjungus ir išsaugojus, viešai liks tik punkto numeris ir viešas pavadinimas, jei jį įrašysi.',
         'disabled_lead' => 'Išjungus ir išsaugojus, punkto pavadinimas ir turinys bus matomi ten, kur viešinama posėdžio darbotvarkė.',
         'nonpublic_hint' => 'Šio posėdžio puslapis dabar neviešas, todėl vien čia prieiga nepasikeis. Vis tiek rekomenduojame įjungti šią parinktį vidaus darbui skirtiems klausimams: vėliau institucijos tipas gali leisti viešinti posėdžius arba posėdis gali būti susietas su viešu kalendoriaus renginiu.',
         'creation_hint' => 'Klausimą vėliau galėsi padaryti privatų. Daugiau apie matomumą – klausimo redagavimo lange.',

@@ -239,7 +239,7 @@ describe('ShowMeeting.vue', () => {
     expect(publicFact.find('dt').text()).toBe('');
     expect(publicFact.find('dd a').text()).toBe('Matoma vusa.lt');
     expect(privateFact.classes()).toContain('bg-status-neutral-surface');
-    expect(privateFact.find('dd').text()).toContain('Tik viduje');
+    expect(privateFact.find('dd').text()).toContain('Rodoma tik ViSAK');
   });
 
   it('explains what vusa.lt shows for this meeting', async () => {

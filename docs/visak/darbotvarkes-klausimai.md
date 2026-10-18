@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Darbotvarkės klausimai
 area: agendaItems
 models: [AgendaItem, Vote]
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-18
 tests:
   - tests/Browser/AgendaItemPrivacyTest.php
   - resources/js/Components/Public/__tests__/PublicAgendaItemRow.component.test.ts
@@ -49,7 +49,7 @@ savo puslapį `/mano/agendaItems/{id}`.
 
 ## Susitarimai {#susitarimai}
 
-- **Tik viduje** skirta darbo medžiagos skelbimui valdyti. Rekomenduojama nekelti ir nesaugoti
+- **Rodoma tik ViSAK** skirta darbo medžiagos skelbimui valdyti. Rekomenduojama nekelti ir nesaugoti
   perteklinės asmeninės informacijos ar asmeninių failų — tai galioja ir vidaus klausimams bei pastaboms.
 - Viešas pavadinimas pasirenkamas toks, kurį galima skelbti. Nebūtina jame kartoti originalaus pavadinimo.
 - Atskirai paskelbti dokumentai, failų nuorodos ir į kitą turinį nukopijuotas tekstas turi savo
@@ -65,7 +65,7 @@ Paspaudus atsiveria redagavimo langas su tuo lauku arba susiejimo langas. Kas kl
 negali, tuščių skyrių nemato.
 Susiję tikslai matomi tik bandomojoje tikslų funkcijoje.
 
-### Matomumas: Tik viduje {#matomumas}
+### Matomumas: Rodoma tik ViSAK {#matomumas}
 
 Posėdis gali būti viešas, o atskiras jo klausimas skirtas vidaus darbui. Matomumas pasirenkamas
 jau sukurtame klausime: atvėrus **Redaguoti** arba paspaudus jo matomumo žymą. Įjungiama parinktis
@@ -73,7 +73,7 @@ jau sukurtame klausime: atvėrus **Redaguoti** arba paspaudus jo matomumo žymą
 Peržiūra parodo, kaip atrodys vieša eilutė. Išskleidus **Kas matys klausimą?**, pateikiamas prieigos
 paaiškinimas. Kuriant posėdį ar jo klausimus rodoma tik trumpa nuoroda į šią galimybę.
 
-Viešai lieka klausimo numeris, žyma **Tik viduje** ir įrašytas viešas pavadinimas.
+Viešai lieka klausimo numeris ir įrašytas viešas pavadinimas; matomumo žyma nerodoma.
 Jei jo nėra, pavadinimas yra **Nerodoma**. Originalus pavadinimas, aprašymas, studentų pozicija,
 laikas, tipas, balsavimai, pastabos ir užpildymo duomenys viešai nerodomi. Tai galioja ir
 prisijungusio nario apsilankymui viešoje svetainėje. Vieši posėdžio rodikliai neįtraukia tokių
@@ -97,7 +97,7 @@ klausimui įrašomas atskirai.
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Atskiro klausimo matomumas">
 
-Žyma **Tik viduje** leidžia atskirti vidaus darbo klausimą nuo kitų viešo posėdžio klausimų.
+Žyma **Rodoma tik ViSAK** leidžia atskirti vidaus darbo klausimą nuo kitų viešo posėdžio klausimų.
 Redagavimo lange rodomas prieigos paaiškinimas ir viešos eilutės peržiūra.
 
 </ChangelogNote>
