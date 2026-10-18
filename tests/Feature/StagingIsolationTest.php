@@ -9,10 +9,12 @@ use App\Notifications\WelcomeNotification;
 use App\Services\MediaLibrary\StagingAwareFileRemover;
 use App\Services\NotificationRouter;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Foundation\Events\DiagnosingHealth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\Events\NotificationSending;
 use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use NotificationChannels\WebPush\WebPushChannel;
 
@@ -247,6 +249,8 @@ test('staging SSR refuses production\'s renderer', function (string $url, string
 ]);
 
 test('staging basic auth fails closed when credentials are missing', function (): void {
+    Event::fake([DiagnosingHealth::class]);
+
     config([
         'app.env' => 'staging',
         'app.staging_user' => null,
@@ -256,6 +260,8 @@ test('staging basic auth fails closed when credentials are missing', function ()
     $this->get('/login')->assertServiceUnavailable();
 
     $this->get('/up')->assertOk();
+
+    Event::assertDispatched(DiagnosingHealth::class);
 });
 
 test('staging basic auth requires valid credentials while enabled', function (): void {
