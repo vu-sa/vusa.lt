@@ -210,17 +210,33 @@ test('secretaries replace representatives and use the institution override rathe
         ->and($plan[0]->recipientPeriods[$secretary->id]['period_start'])->toBe($cadence->start_date->toDateString());
 });
 
-test('existing meetings exclude only activity confirmation and within each recipient period', function (): void {
+test('activity confirmation asks from the day after the last meeting, record completion from the term start', function (): void {
+    $this->freezeTime();
     app(RecordMeeting::class)->execute($this->institution, now()->subMonth());
     $late = activityRequestRep($this->institution);
     $late->duties()->updateExistingPivot($late->duties->first()->id, ['start_date' => today()->subWeek()]);
     $sender = app(SendInstitutionActivityRequests::class);
     $activity = $sender->plan([$this->institution], $this->coordinator);
     $missing = $sender->plan([$this->institution], $this->coordinator, InstitutionActivityCampaign::MissingMeetings);
-    expect($activity[0]->recipients->pluck('id')->all())->toBe([$late->id])
-        ->and($activity[0]->excludedRecipients[0]['skip_reason'])->toBe('meeting_recorded')
+    expect($activity[0]->recipientPeriods[$this->rep->id]['period_start'])->toBe(today()->subMonth()->addDay()->toDateString())
+        ->and($activity[0]->recipientPeriods[$late->id]['period_start'])->toBe(today()->subWeek()->toDateString())
         ->and($missing[0]->recipients->pluck('id')->all())->toBe([$this->rep->id])
+        ->and($missing[0]->recipientPeriods[$this->rep->id]['period_start'])->toBe(today()->subYear()->toDateString())
         ->and($missing[0]->excludedRecipients[0]['skip_reason'])->toBe('no_recorded_meetings');
+});
+
+test('activity confirmation asks from the day after the last report, and not at all while one runs', function (): void {
+    $this->freezeTime();
+    InstitutionCheckIn::factory()->for($this->institution)->for($this->rep)->for($this->tenant)
+        ->create(['start_date' => today()->subMonths(3), 'end_date' => today()->subWeek()]);
+    $plan = app(SendInstitutionActivityRequests::class)->plan([$this->institution], $this->coordinator);
+    expect($plan[0]->recipientPeriods[$this->rep->id]['period_start'])->toBe(today()->subWeek()->addDay()->toDateString());
+
+    InstitutionCheckIn::factory()->for($this->institution)->for($this->rep)->for($this->tenant)
+        ->create(['start_date' => today()->subDays(6), 'end_date' => today()->addWeek()]);
+    $plan = app(SendInstitutionActivityRequests::class)->plan([$this->institution->fresh()], $this->coordinator);
+    expect($plan[0]->recipients)->toBeEmpty()
+        ->and($plan[0]->skipReason)->toBe(ActivityRequestSkipReason::CheckInActive);
 });
 
 test('preferences explain delivery and actual immediate queued email count', function (): void {
@@ -246,7 +262,7 @@ test('duplicate suppression is scoped to recipient campaign and covered period',
     expect($result['queued_requests'])->toBe(1)->and(InstitutionActivityRequest::query()->where('recipient_id', $newRep->id)->count())->toBe(1);
 });
 
-test('automatic task retries reuse requests and choose campaigns using in-period meetings', function (): void {
+test('automatic task retries reuse requests and ask one campaign, records first when they are incomplete', function (): void {
     $task = Task::factory()->create();
     app(RecordMeeting::class)->execute($this->institution, now()->subWeek());
     $sender = app(SendInstitutionActivityRequests::class);
@@ -254,6 +270,13 @@ test('automatic task retries reuse requests and choose campaigns using in-period
     $sender->forTask($task, $this->institution, collect([$this->rep]));
     expect(InstitutionActivityRequest::query()->where('task_id', $task->id)->get())->toHaveCount(1)
         ->and(InstitutionActivityRequest::query()->where('task_id', $task->id)->sole()->campaign_type)->toBe(InstitutionActivityCampaign::MissingMeetings);
+    Notification::assertSentToTimes($this->rep, InstitutionActivityNotification::class, 1);
+});
+
+test('an automatic task asks whether a meeting happened when no records are missing', function (): void {
+    $task = Task::factory()->create();
+    app(SendInstitutionActivityRequests::class)->forTask($task, $this->institution, collect([$this->rep]));
+    expect(InstitutionActivityRequest::query()->where('task_id', $task->id)->sole()->campaign_type)->toBe(InstitutionActivityCampaign::ActivityConfirmation);
     Notification::assertSentToTimes($this->rep, InstitutionActivityNotification::class, 1);
 });
 

@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-10-16
+last_reviewed: 2026-10-18
 tests:
   - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
   - tests/Feature/Admin/Management/InstitutionControllerTest.php
@@ -190,7 +190,7 @@ nebuvo**, pradžios mygtuką **Posėdžio nebuvo** arba institucijos meniu **⋯
 - Pradžia gali būti ir praeityje. Pabaiga turi būti vėlesnė už pradžią ir ne vėliau kaip **po 3
   mėnesių** nuo šiandien. Laikotarpis negali apimti jau užregistruoto posėdžio.
 - Pranešimas, apimantis visą atviros veiklos užklausos laikotarpį, ją užbaigia.
-- Kol pranešimas galioja, institucijos būklė yra „Užfiksuotas kontaktas“, o užduotis dėl
+- Kol pranešimas galioja, institucijos būklė yra „Apie veiklą pranešta“, o užduotis dėl
   periodiškumo užbaigiama.
 - Jei vėliau užregistruojamas posėdis, patenkantis į pranešimo laikotarpį, pranešimas
   **sutrumpinamas** iki dienos prieš posėdį. Jei posėdis yra pranešimo pradžios dieną ar anksčiau,
@@ -237,12 +237,24 @@ simbolių. Patvirtinus rodoma, kiek užklausų paruošta, kiek yra gavėjų ir k
 
 Užklausa skiriama dabartiniams institucijos studentų atstovams. Jei kadencijai paskirtas
 [sekretorius](#sekretoriai) (dažniausiai VU SA vidinėse institucijose), renkantis pagal institucijas
-klausiama jo, o ne atstovų; atstovo, kuris pasirinktas tiesiogiai, klausiama bet kuriuo atveju. Siuntėjui užklausa nesiunčiama. Laikotarpis prasideda nuo institucijos dabartinės
-kadencijos pradžios, bet atstovui negali prasidėti anksčiau už jo pareigybės laikotarpį. Jei dabartinės
-kadencijos nėra, naudojama atstovo pareigų pradžia. Paskutinė pareigų diena dar yra galiojanti.
-Laikotarpio pabaiga užfiksuojama siunčiant ir vėliau nesikeičia.
+klausiama jo, o ne atstovų; atstovo, kuris pasirinktas tiesiogiai, klausiama bet kuriuo atveju. Siuntėjui užklausa nesiunčiama.
 
-**Ar vyko posėdis?** nesiunčiama gavėjui, kurio laikotarpiu posėdis jau užfiksuotas.
+**Ar vyko posėdis?** laikotarpis prasideda vėliausią iš šių dienų: kadencijos pradžią, dieną po
+paskutinio posėdžio arba dieną po ankstesnio pranešimo „Posėdžio nebuvo“ – kaip ir
+[pranešimo pradžia](#posedzio-nebuvo). Kadencijos pradžia atstovui negali būti ankstesnė už jo
+pareigybės laikotarpį; jei dabartinės kadencijos nėra, naudojama atstovo pareigų pradžia.
+**Papildyk posėdžių įrašus** laikotarpis prasideda nuo kadencijos pradžios, nes apima posėdžius,
+kuriuos reikia papildyti. Paskutinė pareigų diena dar yra galiojanti. Laikotarpio pabaiga
+užfiksuojama siunčiant ir vėliau nesikeičia.
+
+<ChangelogNote version="v3.2" date="2026-10-18" title="Klausiama tik apie laiką po paskutinės veiklos">
+
+Anksčiau laikotarpis visada prasidėdavo nuo kadencijos pradžios, todėl atstovų būdavo klausiama ir apie
+laiką, apie kurį jie jau pranešė.
+
+</ChangelogNote>
+
+**Ar vyko posėdis?** nesiunčiama, kol galioja pranešimas „Posėdžio nebuvo“.
 **Papildyk posėdžių įrašus** klausia apie jau vykusius posėdžius, kurių darbotvarkės tuščios arba
 neužpildyti sprendimai. Jei laikotarpiu posėdžių nėra, pasirenkama **Ar vyko posėdis?**; jei visos
 darbotvarkės užpildytos, papildymo užklausos nesiunčiamos. Koordinatorius, kuris pats yra
@@ -260,6 +272,9 @@ Nuorodos galioja **14 dienų**. Laiškas pradedamas pasisveikinimu vardu ir paai
 - **Taip, vyko** – įrašomos vieno ar kelių posėdžių datos, formatai ir laikas. Sprendimui el. paštu
   laiko nereikia. Darbotvarkės pildomos prisijungus prie Mano VU SA.
 - **Ne, nevyko** – veiklos užklausoje patvirtinama, kad visą nurodytą laikotarpį posėdžio nebuvo.
+  Kaip ir [pranešime „Posėdžio nebuvo“](#posedzio-nebuvo), galima nurodyti, kad posėdžių nebus ir toliau:
+  **Dar dvi savaites**, **Iki mėnesio pabaigos** arba iki pasirinktos datos, ne vėliau kaip po
+  3 mėnesių ir ne vėliau kaip dieną prieš jau suplanuotą posėdį.
   Jei posėdis tuo metu jau įrašytas, šio atsakymo patvirtinti negalima.
 - **Viskas užfiksuota** – įrašų papildymo užklausoje patvirtinama, kad visi laikotarpio posėdžiai
   įrašyti ir jų darbotvarkės bei sprendimai užpildyti. Kol dar yra neužpildytų įrašų, patvirtinimo
@@ -395,10 +410,11 @@ pranešimus „Posėdžio nebuvo“ tvarko ir atstovų apie posėdžius klausia 
 
 | Kada | Kas gauna | Ką |
 |---|---|---|
-| Kasdien, kai būklė „Artėja terminas“ arba „Vėluoja“ | Dabartiniai studentų atstovai (jei paskirtas – kadencijos sekretorius) | Užduotį **„Pranešti apie veiklą“** ir laišką „Ar vyko posėdis?“, į kurį [atsakoma neprisijungus](#atsakymas) |
+| Kasdien 10.00, kai būklė „Artėja terminas“ arba „Vėluoja“ | Dabartiniai studentų atstovai (jei paskirtas – kadencijos sekretorius) | Užduotį **„Pranešti apie veiklą“** |
+| Kasdien 10.00, kai būklė tampa „Vėluoja“ | Tie patys | Vieną laišką „Ar vyko posėdis?“ (arba „Papildyk posėdžių įrašus“, jei paskutinio posėdžio įrašai nepilni), į kurį [atsakoma neprisijungus](#atsakymas). Neatsakius, po savaitės užduotis patenka į savaitinę vėluojančių užduočių suvestinę |
 | Koordinatorius [paklausia atstovų](#paklausti) | Tie patys | Vieną laišką „Ar vyko posėdis?“ apie visas jų institucijas, su koordinatoriaus žinute |
 | Gavėjas atsako „Nesu šio organo narys (-ė)“ | Klausęs koordinatorius, o automatinio priminimo atveju – institucijos koordinatoriai | Pranešimą patikrinti institucijos atstovus |
-| Užregistruojamas dabartinį veiklos laikotarpį apimantis posėdis arba pranešimas „Posėdžio nebuvo“ | – | Periodiškumo užduotis pažymima atlikta automatiškai |
+| Užregistruojamas dabartinį veiklos laikotarpį apimantis posėdis arba pranešimas „Posėdžio nebuvo“ | – | Periodiškumo užduotis pažymima atlikta automatiškai, o jos laiško klausimai užbaigiami |
 | Seki instituciją ir sukuriamas jos posėdis ar užpildoma darbotvarkė | Sekėjai, galintys matyti posėdį | Pranešimą |
 
 - Užduotis nekuriama per akademines atostogas, jei institucija turi suplanuotą posėdį ar galiojantį
@@ -431,12 +447,14 @@ pranešimus „Posėdžio nebuvo“ tvarko ir atstovų apie posėdžius klausia 
 - Rūšis: `InstitutionScopeResolver` (artimiausias tipas su `governance_scope`; išorinis laimi).
 - Būklė: `InstitutionActivityStatusService`; naktinė komanda `institutions:refresh-activity-status`,
   tarp jų – `SyncInstitutionActivityIndex`.
-- Periodiškumo užduotis: `tasks:repopulate institution` (kasdien 08:00) →
-  `PeriodicityGapTaskHandler`; gavėjai – `ResolveTaskAssignees::forInstitution`.
+- Periodiškumo užduotis: `tasks:repopulate institution` (kasdien 10.00) →
+  `PeriodicityGapTaskHandler`; gavėjai – `ResolveTaskAssignees::forInstitution`. Būklei įkeliami visi
+  pranešimai „Posėdžio nebuvo“, kad pasibaigęs pranešimas būtų skaičiuojamas kaip paskutinė veikla.
 - Pranešimo sutrumpinimas: `CheckInService::adjustForMeeting()` iš `MeetingController`.
 - Klausimai „Ar vyko posėdis?“: `InstitutionActivityRequest` (vienas gavėjui ir institucijai),
-  siunčia `SendInstitutionActivityRequests` (`HandleTaskCreated` automatiniam priminimui,
-  `InstitutionActivityRequestController` koordinatoriui). Atsakymo puslapis
+  siunčia `SendInstitutionActivityRequests` (`tasks:repopulate institution` per `forTask()`, kai
+  būklė „Vėluoja“ – vieną kampaniją užduočiai; `InstitutionActivityRequestController` koordinatoriui).
+  Laikotarpio pradžią skaičiuoja `ResolveCheckInStarts::startFor()`. Atsakymo puslapis
   `InstitutionActivityAnswerController` pasiekiamas per pasirašytą nuorodą (`signed`); GET nieko
   neįrašo, nes pašto skeneriai atveria nuorodas. Atsakymą įrašo `AnswerInstitutionActivityRequest`,
   o laikotarpį atitinkančius veiklos klausimus užbaigia `ResolveInstitutionActivityRequests`.

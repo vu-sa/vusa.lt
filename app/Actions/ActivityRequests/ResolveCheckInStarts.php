@@ -42,7 +42,7 @@ class ResolveCheckInStarts
     }
 
     /** @return array{from: string|null, reason: string|null} */
-    private function startFor(Institution $institution, ?CarbonImmutable $tenure): array
+    public function startFor(Institution $institution, ?CarbonImmutable $tenure): array
     {
         if ($tenure === null) {
             return ['from' => null, 'reason' => null];

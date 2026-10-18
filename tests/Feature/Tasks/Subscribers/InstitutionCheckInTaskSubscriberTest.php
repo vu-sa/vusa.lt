@@ -10,6 +10,7 @@ use App\Actions\GetInstitutionRepresentatives;
 use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
+use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionCheckIn;
 use App\Models\Task;
 use App\Models\Tenant;
@@ -71,6 +72,22 @@ describe('InstitutionCheckInTaskSubscriber', function (): void {
         $task->refresh();
 
         expect($task->completed_at)->not->toBeNull();
+    });
+
+    test('a report covering only the end of a question\'s period still closes the task\'s question', function (): void {
+        $institution = Institution::factory()->for(Tenant::query()->firstOrFail())->create(['is_active' => true]);
+        $user = User::factory()->create();
+        $task = app(PeriodicityGapTaskHandler::class)->findOrCreate(institution: $institution, users: collect([$user]), dueDate: now()->addDays(7));
+        $question = InstitutionActivityRequest::factory()->create([
+            'institution_id' => $institution->id, 'recipient_id' => $user->id, 'task_id' => $task->id,
+            'period_start' => today()->subMonths(3), 'period_end' => today(),
+        ]);
+
+        InstitutionCheckIn::factory()->for($institution)->for($user)
+            ->create(['start_date' => today(), 'end_date' => today()->addWeeks(2)]);
+
+        expect($task->fresh()->completed_at)->not->toBeNull()
+            ->and($question->fresh())->resolved_at->not->toBeNull()->resolution_source->toBe('task_completed');
     });
 
     test('does not fail when no periodicity gap task exists', function (): void {

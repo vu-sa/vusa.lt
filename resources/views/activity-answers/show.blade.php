@@ -116,7 +116,10 @@
                             ->mapWithKeys(fn ($key) => [$key => __('activity_requests.'.$key)])->all(),
                         'errors' => collect($errors->messages())->map(fn ($messages) => $messages[0])->all(),
                         'knownDates' => $missing ? $knownMeetings->map(fn ($meeting) => $meeting->start_time->toDateString())->all() : [],
-                        'oldMeetings' => old('meetings', []), 'translations' => ['Pasirinkti datą' => app()->getLocale() === 'en' ? 'Choose a date' : 'Pasirinkti datą', 'Išvalyti' => app()->getLocale() === 'en' ? 'Clear' : 'Išvalyti'],
+                        'oldMeetings' => old('meetings', []),
+                        'until' => ['options' => $untilOptions, 'max' => $untilMax, 'old' => old('until', $untilOptions[0]['value']), 'oldCustom' => old('until_custom', ''),
+                            'text' => collect(['title', 'custom', 'max_hint'])->mapWithKeys(fn ($key) => [$key => __('activity_requests.until.'.$key)])->all()],
+                        'translations' => ['Pasirinkti datą' => app()->getLocale() === 'en' ? 'Choose a date' : 'Pasirinkti datą', 'Išvalyti' => app()->getLocale() === 'en' ? 'Clear' : 'Išvalyti'],
                     ];
                 @endphp
                 <script type="application/json" id="activity-reply-config">@json($replyProps)</script>
@@ -146,6 +149,23 @@
                                     <p class="text-xs text-muted-foreground">{{ __('activity_requests.meeting_time_hint') }}</p>
                                 @else
                                     <p>{{ $choice['hint'] }}</p>
+                                    @if ($choice['value'] === 'not_met')
+                                        <fieldset class="space-y-2">
+                                            <legend class="text-sm font-semibold">{{ __('activity_requests.until.title') }}</legend>
+                                            @foreach ($untilOptions as $option)
+                                                <label class="flex min-h-11 items-center gap-3 text-sm">
+                                                    <input type="radio" name="until" value="{{ $option['value'] }}" @checked(old('until', $untilOptions[0]['value']) === $option['value'])>
+                                                    {{ $option['label'] }}
+                                                </label>
+                                            @endforeach
+                                            <label class="flex min-h-11 items-center gap-3 text-sm">
+                                                <input type="radio" name="until" value="custom" @checked(old('until') === 'custom')>
+                                                {{ __('activity_requests.until.custom') }}
+                                            </label>
+                                            <input type="date" name="until_custom" value="{{ old('until_custom') }}" min="{{ $untilOptions[0]['value'] }}" max="{{ $untilMax }}" aria-label="{{ __('activity_requests.until.custom') }}" class="{{ $inputClass }}">
+                                            <p class="text-xs text-muted-foreground">{{ __('activity_requests.until.max_hint') }}</p>
+                                        </fieldset>
+                                    @endif
                                 @endif
                                 <button type="submit" class="{{ $buttonClass }} bg-brand-fill text-brand-foreground">{{ $choice['submit'] }}</button>
                             </form>

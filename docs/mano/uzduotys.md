@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Užduotys
 area: tasks
 models: [Task]
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-18
 tests:
   - tests/Browser/VisakOverviewPagesTest.php
   - tests/Feature/Admin/Dashboard/UserTasksTest.php
@@ -55,7 +55,7 @@ būdu negalima.
 |---|---|---|---|---|
 | **Sukurti posėdžio darbotvarkės klausimus** | Užregistravus posėdį be darbotvarkės | Institucijos atstovams | 3 d. po posėdžio | Sukūrus pirmą darbotvarkės klausimą |
 | **Užpildyti darbotvarkės klausimų informaciją** | Užregistravus posėdį su darbotvarke | Institucijos atstovams | Posėdžio diena | Užpildžius visus klausimus. Eiga rodoma, pvz., „2 iš 3“ |
-| **Pranešti apie veiklą: …** | Kasdien 8.00, kai institucijai artėja arba jau praėjo posėdžių [periodiškumo](/visak/apzvalga#busenos) terminas | Institucijos atstovams | Ne anksčiau nei po 7 d., atostogų dienos neskaičiuojamos | Užregistravus posėdį arba pranešus apie veiklą |
+| **Pranešti apie veiklą: …** | Kasdien 10.00, kai institucijai artėja arba jau praėjo posėdžių [periodiškumo](/visak/apzvalga#busenos) terminas | Institucijos atstovams | Savaitė po to, kai institucija pradeda vėluoti; atostogų dienos neskaičiuojamos | Užregistravus posėdį arba pranešus apie veiklą |
 | **Rezervacijos tvirtinimas** | Pateikus rezervaciją | Išteklio padalinio valdytojams | Jei tvirtinimo eigoje nustatytas | Priėmus sprendimą. Plačiau – [Rezervacijos](/rezervacijos/rezervacijos#pranesimai) |
 | **Atsiimti / Grąžinti rezervacijos išteklius** | Patvirtinus / išdavus išteklių | Rezervacijos teikėjams | Atsiėmimo / grąžinimo laikas | Atsiėmus / grąžinus visus išteklius |
 
@@ -122,7 +122,7 @@ institucijai užduoties sukurti negalima.
 
 | Kada | Kas gauna | Ką |
 |---|---|---|
-| Kasdien 8.00, likus 7, 3 ir 1 d. iki termino | Atsakingi | Priminimą. Priminimų pasirinkimas valdomas [pranešimų nustatymuose](/pagrindai/pranesimai) |
+| Kasdien 8.00, likus 7, 3 ir 1 d. iki termino | Atsakingi | Priminimą. Priminimų pasirinkimas valdomas [pranešimų nustatymuose](/pagrindai/pranesimai). Užduočiai „Pranešti apie veiklą“ jų nesiunčiama – vietoj to vieną kartą siunčiamas laiškas [„Ar vyko posėdis?“](/visak/institucijos#pranesimai) |
 | Kiekvieną pirmadienį 9.00 | Žmonės, turintys vėluojančių užduočių | Suvestinę apie vėluojančias užduotis |
 
 Automatinių posėdžio ir institucijos užduočių priminimai siunčiami tik tiems atsakingiems, kurie
@@ -142,6 +142,6 @@ nebėra. Rankinės užduoties priminimus gauna visi, kuriuos priskyrė žmogus.
   (`TaskPolicy::update`). Ištrinti – `tasks.delete.{*|padalinys|own}`, automatines taip pat
   (`Task::isDeletableBy`). `.own` (tavo pareigybių bendradarbių užduotys) nė vienai standartinei
   rolei nepriskiriama.
-- Periodiškumo užduotis kuria `tasks:repopulate institution --force` (kasdien 8.00). Priminimus
-  siunčia `TaskNotifier::notifyDaysLeft` ir `notifications:task-overdue-reminders` gavėjams iš
-  `Task::notifiableUsers()` (`ResolveTaskAudience`).
+- Periodiškumo užduotis kuria `tasks:repopulate institution --force` (kasdien 10.00). Priminimus
+  siunčia `TaskNotifier::notifyDaysLeft` (išskyrus `periodicity_gap`) ir
+  `notifications:task-overdue-reminders` gavėjams iš `Task::notifiableUsers()` (`ResolveTaskAudience`).

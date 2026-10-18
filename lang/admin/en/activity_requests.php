@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'resolution' => ['meeting' => 'Meeting recorded', 'check_in' => 'Activity confirmed', 'confirmed_period' => 'Period confirmed'],
+    'resolution' => ['meeting' => 'Meeting recorded', 'check_in' => 'Activity confirmed', 'confirmed_period' => 'Period confirmed', 'task_completed' => 'Activity recorded'],
     'legacy_period' => 'Until the reply date',
     'valid_until' => 'Valid until',
     'no_meetings' => 'No meetings',
@@ -34,6 +34,15 @@ return [
     'record_meeting' => 'Record the meeting',
     'not_met_hint' => 'Confirm that “:institution” had no meetings from :start to :end.',
     'confirm_not_met' => 'Confirm there were no meetings',
+    'until' => [
+        'title' => 'No meetings until when?',
+        'until_period_end' => 'Until :date',
+        'two_weeks' => 'Two more weeks (until :date)',
+        'month_end' => 'Until the end of the month (:date)',
+        'custom' => 'Choose a date',
+        'max_hint' => 'You can report up to three months ahead.',
+    ],
+    'until_meeting_planned' => 'A meeting is already planned on :date. Choose an earlier date.',
     'not_mine_hint' => 'The coordinator will be asked to check who represents this institution.',
     'confirm_not_mine' => 'Tell the coordinator',
     'done' => [

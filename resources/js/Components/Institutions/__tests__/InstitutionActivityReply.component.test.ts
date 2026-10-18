@@ -78,3 +78,26 @@ it('keeps format names in the POST payload and connects field errors to the inpu
   expect(wrapper.find('input[name="meetings[0][type]"]').attributes('value')).toBe('email');
   expect(wrapper.find('input[name="meetings[0][time]"]').exists()).toBe(false);
 });
+
+it('posts the chosen no-meeting end date, and a custom one only when picked', async () => {
+  const until = {
+    options: [{ value: '2026-10-18', label: 'Until 2026-10-18' }, { value: '2026-11-01', label: 'Two more weeks' }],
+    max: '2027-01-18', old: '2026-10-18', oldCustom: '', text: { title: 'Until when?', custom: 'Choose a date', max_hint: 'Up to three months' },
+  };
+  const wrapper = mount(InstitutionActivityReply, {
+    props: { ...props, chosen: 'not_met', choices: [{ value: 'not_met', label: 'No', hint: 'Confirm', submit: 'Confirm' }], until },
+    global: { stubs: commonStubs },
+  });
+
+  expect(wrapper.find('input[name="until"]').attributes('value')).toBe('2026-10-18');
+  expect(wrapper.find('input[name="until_custom"]').exists()).toBe(false);
+  expect(wrapper.text()).toContain('Two more weeks');
+
+  const custom = mount(InstitutionActivityReply, {
+    props: { ...props, chosen: 'not_met', choices: [{ value: 'not_met', label: 'No', hint: 'Confirm', submit: 'Confirm' }], until: { ...until, old: 'custom', oldCustom: '2026-12-01' } },
+    global: { stubs: commonStubs },
+  });
+  expect(custom.find('input[name="until"]').attributes('value')).toBe('custom');
+  expect(custom.find('input[name="until_custom"]').attributes('value')).toBe('2026-12-01');
+  expect(custom.findComponent(DatePicker).props('maxDate').toString()).toBe('2027-01-18');
+});

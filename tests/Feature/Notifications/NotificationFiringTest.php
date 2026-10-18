@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\ActivityRequests\SendInstitutionActivityRequests;
 use App\Events\CommentPosted;
 use App\Events\TaskCreated;
 use App\Models\Comment;
@@ -84,7 +85,7 @@ describe('task notifications', function (): void {
         Notification::assertNothingSent();
     });
 
-    test('periodicity tasks send one activity question the recipient can answer without signing in', function (): void {
+    test('a periodicity task sends nothing when created, then one activity question the recipient can answer without signing in', function (): void {
         $user = $this->createUserWithPreferences();
         $institution = Institution::factory()->create();
 
@@ -104,6 +105,11 @@ describe('task notifications', function (): void {
         $task->users()->attach($user);
 
         event(new TaskCreated($task));
+
+        Notification::assertNothingSentTo($user);
+
+        // tasks:repopulate asks once the institution is overdue.
+        app(SendInstitutionActivityRequests::class)->forTask($task, $institution, $task->notifiableUsers());
 
         Notification::assertSentToTimes($user, InstitutionActivityNotification::class, 1);
         Notification::assertNotSentTo($user, TaskAssignedNotification::class);

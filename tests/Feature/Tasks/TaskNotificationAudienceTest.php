@@ -161,6 +161,23 @@ describe('task reminders', function (): void {
         Notification::assertSentTo($current, TaskReminderNotification::class);
         Notification::assertNotSentTo($former, TaskReminderNotification::class);
     });
+
+    test('a periodicity task gets no day-count reminder, its activity question already asks', function (): void {
+        $current = User::factory()->create();
+        attachDuty($this->institution, $current, now()->subYears(3)->toDateString(), null);
+
+        $task = Task::factory()->create([
+            'taskable_type' => MorphMap::alias(Institution::class),
+            'taskable_id' => $this->institution->id,
+            'action_type' => ActionType::PeriodicityGap,
+            'due_date' => now()->addDays(3),
+        ]);
+        $task->users()->sync([$current->id]);
+
+        TaskNotifier::notifyDaysLeft(3);
+
+        Notification::assertNotSentTo($current, TaskReminderNotification::class);
+    });
 });
 
 describe('task reminder intervals', function (): void {

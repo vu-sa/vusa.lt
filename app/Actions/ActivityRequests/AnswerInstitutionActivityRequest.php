@@ -23,10 +23,13 @@ class AnswerInstitutionActivityRequest
 {
     public function __construct(private readonly CheckInService $checkIns, private readonly RecordMeeting $recordMeeting) {}
 
-    /** @param list<array{date: string, type: string, time?: string|null}> $meetings */
-    public function execute(InstitutionActivityRequest $request, InstitutionActivityAnswer $answer, array $meetings = []): void
+    /**
+     * @param  list<array{date: string, type: string, time?: string|null}>  $meetings
+     * @param  Carbon|null  $until  "Not met" may also promise no meetings up to this later date.
+     */
+    public function execute(InstitutionActivityRequest $request, InstitutionActivityAnswer $answer, array $meetings = [], ?Carbon $until = null): void
     {
-        DB::transaction(function () use ($request, $answer, $meetings): void {
+        DB::transaction(function () use ($request, $answer, $meetings, $until): void {
             $institution = Institution::query()->lockForUpdate()->find($request->institution_id);
             $request = InstitutionActivityRequest::query()->lockForUpdate()->find($request->id);
             $accepts = $answer === InstitutionActivityAnswer::Met ? $request?->acceptsMeetings() : $request?->isOpen();
@@ -40,7 +43,7 @@ class AnswerInstitutionActivityRequest
 
             match ($answer) {
                 InstitutionActivityAnswer::Met => $this->recordMeetings($request, $institution, $meetings),
-                InstitutionActivityAnswer::NotMet, InstitutionActivityAnswer::Complete => $this->confirmPeriod($request, $institution, $answer, $known),
+                InstitutionActivityAnswer::NotMet, InstitutionActivityAnswer::Complete => $this->confirmPeriod($request, $institution, $answer, $known, $until),
                 InstitutionActivityAnswer::NotMine => null,
             };
 
@@ -109,7 +112,7 @@ class AnswerInstitutionActivityRequest
      *
      * @param  EloquentCollection<int, Meeting>  $known
      */
-    private function confirmPeriod(InstitutionActivityRequest $request, Institution $institution, InstitutionActivityAnswer $answer, EloquentCollection $known): void
+    private function confirmPeriod(InstitutionActivityRequest $request, Institution $institution, InstitutionActivityAnswer $answer, EloquentCollection $known, ?Carbon $until): void
     {
         $start = $request->period_start->copy();
         $end = $request->periodEnd();
@@ -117,7 +120,7 @@ class AnswerInstitutionActivityRequest
         if ($answer === InstitutionActivityAnswer::Complete && $known->isNotEmpty()) {
             $start = $known->first()->start_time->copy()->startOfDay()->addDay()->max($start);
         }
-        $this->recordUncoveredGap($request, $start);
+        $this->recordUncoveredGap($request, $start, $answer === InstitutionActivityAnswer::NotMet ? $until?->max($end) : null);
 
         InstitutionActivityRequest::query()->open()->where('institution_id', $institution->id)
             ->where('campaign_type', $request->campaign_type)->whereKeyNot($request->id)
@@ -133,9 +136,9 @@ class AnswerInstitutionActivityRequest
         Notification::send($coordinators, new InstitutionActivityNotMineNotification($request)->afterCommit());
     }
 
-    private function recordUncoveredGap(InstitutionActivityRequest $request, Carbon $start): void
+    private function recordUncoveredGap(InstitutionActivityRequest $request, Carbon $start, ?Carbon $until = null): void
     {
-        foreach ($request->uncoveredPeriods($start) as [$from, $to]) {
+        foreach ($request->uncoveredPeriods($start, $until) as [$from, $to]) {
             $this->recordGap($request, $from, $to);
         }
     }

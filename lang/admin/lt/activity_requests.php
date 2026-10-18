@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'resolution' => ['meeting' => 'Posėdis užfiksuotas', 'check_in' => 'Veikla patvirtinta', 'confirmed_period' => 'Laikotarpis patvirtintas'],
+    'resolution' => ['meeting' => 'Posėdis užfiksuotas', 'check_in' => 'Veikla patvirtinta', 'confirmed_period' => 'Laikotarpis patvirtintas', 'task_completed' => 'Veikla užfiksuota'],
     'legacy_period' => 'Iki atsakymo dienos',
     'valid_until' => 'Galioja iki',
     'no_meetings' => 'Posėdžių nebuvo',
@@ -34,6 +34,15 @@ return [
     'record_meeting' => 'Užfiksuoti posėdį',
     'not_met_hint' => 'Patvirtink, kad nuo :start iki :end „:institution“ posėdžių nebuvo.',
     'confirm_not_met' => 'Patvirtinti, kad posėdžių nebuvo',
+    'until' => [
+        'title' => 'Iki kada posėdžių nėra?',
+        'until_period_end' => 'Iki :date',
+        'two_weeks' => 'Dar dvi savaites (iki :date)',
+        'month_end' => 'Iki mėnesio pabaigos (:date)',
+        'custom' => 'Pasirinkti datą',
+        'max_hint' => 'Ilgiausiai galima pranešti tris mėnesius į priekį.',
+    ],
+    'until_meeting_planned' => ':date jau suplanuotas posėdis. Pasirink ankstesnę datą.',
     'not_mine_hint' => 'Koordinatorius gaus pranešimą patikrinti, kas atstovauja šiai institucijai.',
     'confirm_not_mine' => 'Pranešti koordinatoriui',
     'done' => [

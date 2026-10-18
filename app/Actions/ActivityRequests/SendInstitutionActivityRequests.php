@@ -25,6 +25,7 @@ class SendInstitutionActivityRequests
     public function __construct(
         private readonly ResolveActivityRequestRecipients $recipients,
         private readonly MeetingCompletionService $completion,
+        private readonly ResolveCheckInStarts $checkInStarts,
     ) {}
 
     /**
@@ -53,6 +54,9 @@ class SendInstitutionActivityRequests
             }
 
             $periods = $this->periodsFor($institution, $candidates[$institution->id], $pairs);
+            if ($campaign === InstitutionActivityCampaign::ActivityConfirmation) {
+                $periods = array_map(fn (array $period): array => [...$period, 'start' => $this->sinceLastActivity($institution, $period['start'])], $periods);
+            }
             $recipients = collect();
             $recipientPeriods = [];
             $excluded = [];
@@ -99,14 +103,22 @@ class SendInstitutionActivityRequests
         return $this->dispatch(collect($institutions), $requestedBy, $note, $campaign, pairs: $pairs);
     }
 
-    /** @param Collection<int, User> $recipients */
+    /**
+     * One question per task: completing the records also confirms the time after the last meeting,
+     * so it goes first and the activity question only when no records are missing.
+     *
+     * @param  Collection<int, User>  $recipients
+     */
     public function forTask(Task $task, Institution $institution, Collection $recipients): void
     {
         if ($recipients->isEmpty()) {
             return;
         }
-        foreach (InstitutionActivityCampaign::cases() as $campaign) {
-            $this->dispatch(collect([$institution]), null, null, $campaign, $task, $recipients);
+        foreach ([InstitutionActivityCampaign::MissingMeetings, InstitutionActivityCampaign::ActivityConfirmation] as $campaign) {
+            if ($this->dispatch(collect([$institution]), null, null, $campaign, $task, $recipients)['queued_requests'] > 0
+                || InstitutionActivityRequest::query()->where('task_id', $task->id)->where('campaign_type', $campaign)->exists()) {
+                return;
+            }
         }
     }
 
@@ -128,6 +140,15 @@ class SendInstitutionActivityRequests
             fn ($userId) => in_array($institution->id.':'.$userId, $pairs, true),
             ARRAY_FILTER_USE_KEY,
         );
+    }
+
+    /**
+     * Ask from the latest of the tenure start, the day after the last meeting and the day after the
+     * last report, as the check-in form does; a question about an already covered time only repeats it.
+     */
+    private function sinceLastActivity(Institution $institution, CarbonImmutable $tenureStart): CarbonImmutable
+    {
+        return CarbonImmutable::parse($this->checkInStarts->startFor($institution, $tenureStart)['from']);
     }
 
     /** @return EloquentCollection<int, Meeting> */
@@ -157,12 +178,16 @@ class SendInstitutionActivityRequests
     ): ?ActivityRequestSkipReason {
         $missingMeetings = $campaign === InstitutionActivityCampaign::MissingMeetings;
 
+        $coveredUntil = fn (CarbonImmutable $from) => $institution->checkIns->contains(fn (InstitutionCheckIn $checkIn) => $checkIn->start_date->lte($from) && $checkIn->end_date->gte($end));
+
         return match (true) {
+            // Asking starts after the last report, so a running one pushes the start past today.
+            $start->gt($end) && $coveredUntil($end) => ActivityRequestSkipReason::CheckInActive,
             $start->gt($end) => ActivityRequestSkipReason::NoPeriod,
             ! $missingMeetings && $knownMeetings->isNotEmpty() => ActivityRequestSkipReason::MeetingRecorded,
             $missingMeetings && $knownMeetings->isEmpty() => ActivityRequestSkipReason::NoRecordedMeetings,
             $missingMeetings && $incompleteMeetings->isEmpty() => ActivityRequestSkipReason::RecordsComplete,
-            $institution->checkIns->contains(fn (InstitutionCheckIn $checkIn) => $checkIn->start_date->lte($start) && $checkIn->end_date->gte($end)) => ActivityRequestSkipReason::CheckInActive,
+            $coveredUntil($start) => ActivityRequestSkipReason::CheckInActive,
             $existing->contains(fn (InstitutionActivityRequest $request) => $request->alreadyAsks($recipientId, $campaign, $start, $end)) => ActivityRequestSkipReason::AlreadyAsked,
             default => null,
         };

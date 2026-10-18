@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Pranešimai
 coverage: ignore
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-18
 tests:
   - tests/Feature/Notifications/NotificationFiringTest.php
   - tests/Feature/Notifications/DigestSystemTest.php
@@ -84,7 +84,8 @@ Kai atstovui paskiriama darbotvarkės rengimo užduotis, jis gauna užduoties pr
 papildomo bendro pranešimo apie tą patį naują posėdį.
 
 Pagal institucijos posėdžių periodiškumą gali gauti **„VU SA · Ar vyko posėdis?“** arba
-**„VU SA · Papildyk posėdžių įrašus“**. Tą patį gali inicijuoti koordinatorius.
+**„VU SA · Papildyk posėdžių įrašus“**. Automatiškai toks laiškas siunčiamas vieną kartą, kai
+institucija pradeda vėluoti. Tą patį gali inicijuoti koordinatorius.
 Užklausa nurodo tavo laikotarpį; jo pabaiga užfiksuota siunčiant.
 
 - Veiklos užklausoje galima pridėti posėdžius arba pasirinkti **Ne, nevyko**.
@@ -125,4 +126,4 @@ Visi laiškai pasirašomi **Mano VU SA** vardu, ne koordinatoriaus.
 - El. pašto suvestines kaupia `NotificationDigestQueue`, o išsiunčia konsolės komanda `notifications:send-digests`.
 - Kanalus ir nutildymą tikrina `BaseNotification::via()`. Ramybės valandos taikomos pranešimams į įrenginį per `BaseNotification::withDelay()` ir suvestinėms per `ProcessNotificationDigests`.
 - El. pašto ir įrenginio numatytosios parinktys nustatomos atskirai: `NotificationType::defaultEmail()` ir `defaultPush()`.
-- Periodiškumo priminimus generuoja `PeriodicityGapTaskHandler`; `HandleTaskCreated` per `SendInstitutionActivityRequests` sukuria `InstitutionActivityRequest` kiekvienam gavėjui ir siunčia `InstitutionActivityNotification` su pasirašytomis atsakymo nuorodomis. Šią elgseną tikrina `InstitutionActivityAnswerTest`.
+- Periodiškumo užduotis kuria `PeriodicityGapTaskHandler`; kai būklė „Vėluoja“, `tasks:repopulate institution` per `SendInstitutionActivityRequests::forTask()` sukuria `InstitutionActivityRequest` kiekvienam gavėjui ir siunčia `InstitutionActivityNotification` su pasirašytomis atsakymo nuorodomis. Šią elgseną tikrina `InstitutionActivityAnswerTest`.

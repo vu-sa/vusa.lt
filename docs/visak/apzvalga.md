@@ -55,7 +55,7 @@ Būsena nustatoma taip (tikrinama iš eilės, galioja pirmoji tinkanti):
 | Būsena | Kada |
 |---|---|
 | **Suplanuotas posėdis** | Institucija turi būsimą posėdį |
-| **Užfiksuotas kontaktas** | Šiandien galioja pranešimas apie veiklą (pvz., kad posėdžių nebus per sesiją) |
+| **Apie veiklą pranešta** | Šiandien galioja pranešimas apie veiklą (pvz., kad posėdžių nebus per sesiją) |
 | **Nėra veiklos** | Institucija neturi nė vieno praėjusio posėdžio ar pranešimo |
 | **Vėluoja** | Nuo paskutinės veiklos praėjo daugiau dienų nei periodiškumas |
 | **Artėja terminas** | Praėjo bent 80 % periodiškumo |

@@ -10,6 +10,7 @@ use App\Http\Requests\StoreInstitutionActivityAnswerRequest;
 use App\Models\InstitutionActivityRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\View\View;
 
 /**
@@ -45,6 +46,7 @@ class InstitutionActivityAnswerController extends Controller
             'knownCheckIns' => $activityRequest->institution->checkIns()->whereDate('end_date', '>=', $activityRequest->period_start)->whereDate('start_date', '<=', $activityRequest->periodEnd())->orderBy('start_date')->get(),
             'uncovered' => $activityRequest->campaign_type === InstitutionActivityCampaign::ActivityConfirmation && $activityRequest->isOpen() ? $activityRequest->uncoveredPeriods() : [],
             'incompleteMeetings' => $activityRequest->campaign_type === InstitutionActivityCampaign::MissingMeetings ? $activityRequest->incompleteMeetings() : collect(),
+            ...$this->untilChoices($activityRequest),
         ]);
     }
 
@@ -58,8 +60,35 @@ class InstitutionActivityAnswerController extends Controller
             return redirect()->to($activityRequest->answerUrl());
         }
 
-        $answer->execute($activityRequest, $chosen, meetings: $request->validated('meetings', []));
+        $until = $request->validated('until');
+        $answer->execute($activityRequest, $chosen, meetings: $request->validated('meetings', []), until: is_string($until) ? Carbon::parse($until) : null);
 
         return redirect()->to($activityRequest->answerUrl());
+    }
+
+    /**
+     * The app's check-in presets for "Ne, nevyko", so one answer can also cover the weeks ahead.
+     * Capped at three months and at the day before a planned meeting, as the check-in form is.
+     *
+     * @return array{untilOptions: list<array{value: string, label: string}>, untilMax: string}
+     */
+    private function untilChoices(InstitutionActivityRequest $activityRequest): array
+    {
+        $periodEnd = $activityRequest->periodEnd()->copy()->startOfDay();
+        $nextMeeting = $activityRequest->institution->meetings()->whereDate('start_time', '>', $periodEnd)->min('start_time');
+        $max = today()->addMonths(3);
+        if ($nextMeeting !== null) {
+            $max = $max->min(Carbon::parse($nextMeeting)->startOfDay()->subDay());
+        }
+
+        $options = [['value' => $periodEnd->toDateString(), 'label' => __('activity_requests.until.until_period_end', ['date' => $periodEnd->toDateString()])]];
+        foreach ([[today()->addDays(14), 'activity_requests.until.two_weeks'], [today()->endOfMonth()->startOfDay(), 'activity_requests.until.month_end']] as [$date, $label]) {
+            $date = $date->min($max);
+            if ($date->gt($periodEnd) && ! in_array($date->toDateString(), array_column($options, 'value'), true)) {
+                $options[] = ['value' => $date->toDateString(), 'label' => __($label, ['date' => $date->toDateString()])];
+            }
+        }
+
+        return ['untilOptions' => $options, 'untilMax' => $max->max($periodEnd)->toDateString()];
     }
 }

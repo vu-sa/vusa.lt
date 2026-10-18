@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\ActivityRequests\SendInstitutionActivityRequests;
 use App\Actions\ResolveTaskAssignees;
 use App\Enums\InstitutionActivityStatus;
 use App\Listeners\QueueNotificationForDigest;
@@ -9,6 +10,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
+use App\Models\Task;
 use App\Services\AcademicCalendarService;
 use App\Services\InstitutionActivityStatusService;
 use App\States\ReservationResource\Lent;
@@ -59,6 +61,7 @@ class RepopulateTasks extends Command
         protected AgendaCompletionTaskHandler $agendaCompletionHandler,
         protected AcademicCalendarService $academicCalendar,
         protected InstitutionActivityStatusService $activityStatusService,
+        protected SendInstitutionActivityRequests $activityRequests,
     ) {
         parent::__construct();
     }
@@ -131,7 +134,8 @@ class RepopulateTasks extends Command
     }
 
     /**
-     * Repopulate periodicity gap tasks for institutions.
+     * Repopulate periodicity gap tasks for institutions. The task appears once the institution
+     * approaches its threshold; its "Ar vyko posėdis?" goes out once, when it turns overdue.
      *
      * @return array{created: int, skipped: int}
      */
@@ -141,13 +145,7 @@ class RepopulateTasks extends Command
         $skipped = 0;
         $institutions = Institution::query()
             ->where('is_active', true)
-            ->with([
-                'types',
-                'meetings:id,start_time',
-                'checkIns' => fn ($query) => $query
-                    ->where('start_date', '<=', today())
-                    ->where('end_date', '>=', today()),
-            ])
+            ->with(['types', 'meetings:id,start_time', 'checkIns'])
             ->get();
 
         foreach ($institutions as $institution) {
@@ -159,17 +157,19 @@ class RepopulateTasks extends Command
                 continue;
             }
 
-            // Check if task already exists
-            if ($this->periodicityGapHandler->hasExistingTask($institution)) {
+            $isOverdue = $activityStatus->status === InstitutionActivityStatus::Overdue;
+            $existingTask = $this->periodicityGapHandler->findExistingTask($institution);
+
+            if ($existingTask) {
                 $skipped++;
+                if ($isOverdue) {
+                    $this->askAboutActivity($existingTask, $institution, $dryRun);
+                }
 
                 continue;
             }
 
-            if (! in_array($activityStatus->status, [
-                InstitutionActivityStatus::Approaching,
-                InstitutionActivityStatus::Overdue,
-            ], true)) {
+            if (! $isOverdue && $activityStatus->status !== InstitutionActivityStatus::Approaching) {
                 continue;
             }
 
@@ -182,32 +182,49 @@ class RepopulateTasks extends Command
                 continue;
             }
 
-            // Calculate due date - at least 7 days from now to give time to act.
-            // Vacation days are skipped, so a deadline never lands inside a break.
-            $minDueDays = 7;
+            // Due a week after the institution turns overdue, so the weekly overdue reminder follows the
+            // question instead of arriving with it. Vacation days are skipped.
             $dueDate = Carbon::instance(
-                $this->academicCalendar->addEffectiveDays(Carbon::today(), max($minDueDays, $daysUntilThreshold))
+                $this->academicCalendar->addEffectiveDays(Carbon::today(), max(0, $daysUntilThreshold + 1) + 7)
             );
 
             if ($dryRun) {
-                $this->line("    → Would create: {$institution->name}");
+                $this->line("    → Would create: {$institution->name}".($isOverdue ? ' (and ask)' : ''));
                 $created++;
 
                 continue;
             }
 
-            $this->periodicityGapHandler->findOrCreate(
+            $task = $this->periodicityGapHandler->findOrCreate(
                 institution: $institution,
                 users: $representatives,
                 dueDate: $dueDate,
                 activityStatus: $activityStatus,
             );
 
+            if ($isOverdue) {
+                $this->askAboutActivity($task, $institution, $dryRun);
+            }
+
             $this->line("    ✓ Created: {$institution->name}");
             $created++;
         }
 
         return ['created' => $created, 'skipped' => $skipped];
+    }
+
+    /**
+     * Idempotent per task and recipient, so the daily run asks each assignee once.
+     */
+    private function askAboutActivity(Task $task, Institution $institution, bool $dryRun): void
+    {
+        if ($dryRun) {
+            $this->line("    → Would ask: {$institution->name}");
+
+            return;
+        }
+
+        $this->activityRequests->forTask($task, $institution, $task->notifiableUsers());
     }
 
     /**

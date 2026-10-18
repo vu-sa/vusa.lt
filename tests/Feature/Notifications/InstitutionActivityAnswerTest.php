@@ -419,3 +419,45 @@ test('the no-meeting confirmation names both fixed reporting dates', function ()
     $this->get($this->activityRequest->answerUrl(InstitutionActivityAnswer::NotMet))
         ->assertOk()->assertSee('from 2026-09-01 to 2026-09-30');
 });
+
+describe('no meetings until a later date', function (): void {
+    test('the answer page offers the check-in presets, capped the day before a planned meeting', function (): void {
+        $this->travelTo('2026-10-18');
+        app(RecordMeeting::class)->execute($this->institution, now()->setDate(2026, 10, 28)->setTime(10, 0));
+
+        $this->get($this->activityRequest->answerUrl(InstitutionActivityAnswer::NotMet))->assertOk()
+            ->assertSee('name="until" value="2026-10-18"', false)
+            ->assertSee('name="until" value="2026-10-27"', false)
+            ->assertDontSee('name="until" value="2026-10-31"', false)
+            ->assertSee('name="until" value="custom"', false);
+    });
+
+    test('a chosen date extends the report past today', function (): void {
+        $until = today()->addWeeks(2)->toDateString();
+
+        $this->post($this->activityRequest->submitUrl(), ['answer' => 'not_met', 'until' => $until])->assertSessionHasNoErrors();
+
+        expect(InstitutionCheckIn::query()->sole())
+            ->and(InstitutionCheckIn::query()->sole()->start_date->toDateString())->toBe(today()->subMonth()->toDateString())
+            ->and(InstitutionCheckIn::query()->sole()->end_date->toDateString())->toBe($until);
+    });
+
+    test('a custom date is used when picked', function (): void {
+        $until = today()->addMonth()->toDateString();
+
+        $this->post($this->activityRequest->submitUrl(), ['answer' => 'not_met', 'until' => 'custom', 'until_custom' => $until])->assertSessionHasNoErrors();
+
+        expect(InstitutionCheckIn::query()->sole()->end_date->toDateString())->toBe($until);
+    });
+
+    test('a date more than three months ahead or past a planned meeting is refused', function (): void {
+        $this->post($this->activityRequest->submitUrl(), ['answer' => 'not_met', 'until' => today()->addMonths(3)->addDay()->toDateString()])
+            ->assertSessionHasErrors('until');
+
+        app(RecordMeeting::class)->execute($this->institution, now()->addWeek());
+        $this->post($this->activityRequest->submitUrl(), ['answer' => 'not_met', 'until' => today()->addWeeks(2)->toDateString()])
+            ->assertSessionHasErrors('until');
+
+        expect(InstitutionCheckIn::query()->count())->toBe(0);
+    });
+});

@@ -80,6 +80,37 @@
         <p v-else class="text-sm text-muted-foreground">
           {{ choice.hint }}
         </p>
+        <fieldset v-if="choice.value === 'not_met' && until" class="space-y-2">
+          <legend class="text-sm font-semibold">
+            {{ until.text.title }}
+          </legend>
+          <RadioGroup v-model="untilChoice" class="gap-0">
+            <label v-for="option in [...until.options, { value: 'custom', label: until.text.custom }]" :key="option.value"
+              class="flex min-h-11 cursor-pointer items-center gap-3 text-sm">
+              <RadioGroupItem :value="option.value" />
+              {{ option.label }}
+            </label>
+          </RadioGroup>
+          <input type="hidden" name="until" :value="untilChoice">
+          <template v-if="untilChoice === 'custom'">
+            <DatePicker
+              id="until-custom"
+              :model-value="untilCustom"
+              :min-date="parseDate(until.options[0]!.value)"
+              :max-date="parseDate(until.max)"
+              :locale
+              :aria-label="until.text.custom"
+              @update:model-value="untilCustom = $event?.toISOString().slice(0, 10) ?? ''"
+            />
+            <input type="hidden" name="until_custom" :value="untilCustom">
+          </template>
+          <p v-if="errors.until" class="text-sm text-destructive">
+            {{ errors.until }}
+          </p>
+          <p class="text-xs text-muted-foreground">
+            {{ until.text.max_hint }}
+          </p>
+        </fieldset>
         <p v-if="errors.answer" class="text-sm text-destructive">
           {{ errors.answer }}
         </p>
@@ -99,14 +130,18 @@ import { Button } from '@/Components/ui/button';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { TimePicker } from '@/Components/ui/time-picker';
 import { NativeSelect } from '@/Components/ui/native-select';
+import { RadioGroup, RadioGroupItem } from '@/Components/ui/radio-group';
 
 const props = defineProps<{
   action: string; csrf: string; start: string; end: string; locale: string; chosen: string | null;
   choices: Array<{ value: string; label: string; hint: string; submit: string }>;
   types: Array<{ value: string; label: string }>; text: Record<string, string>; errors: Record<string, string>;
   knownDates: string[]; oldMeetings: Array<{ date?: string; time?: string; type?: string }>;
+  until?: { options: Array<{ value: string; label: string }>; max: string; old: string; oldCustom: string; text: Record<string, string> };
 }>();
 const selected = ref(props.chosen);
+const untilChoice = ref(props.until?.old ?? '');
+const untilCustom = ref(props.until?.oldCustom ?? '');
 let nextKey = 0;
 const meetings = ref((props.oldMeetings.length ? props.oldMeetings : [{}]).map(row => ({ key: nextKey++, date: row.date ?? '', time: row.time ?? '', type: row.type ?? 'in-person' })));
 const addMeeting = () => meetings.value.push({ key: nextKey++, date: '', time: '', type: 'in-person' });

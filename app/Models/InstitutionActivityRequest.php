@@ -184,10 +184,10 @@ class InstitutionActivityRequest extends Model
      *
      * @return list<array{Carbon, Carbon}>
      */
-    public function uncoveredPeriods(?Carbon $start = null): array
+    public function uncoveredPeriods(?Carbon $start = null, ?Carbon $end = null): array
     {
         $cursor = ($start ?? $this->period_start)->copy();
-        $end = $this->periodEnd();
+        $end ??= $this->periodEnd();
         $covered = $this->institution->checkIns()->whereDate('end_date', '>=', $cursor)->whereDate('start_date', '<=', $end)->orderBy('start_date')->get();
         $gaps = [];
         foreach ($covered as $checkIn) {

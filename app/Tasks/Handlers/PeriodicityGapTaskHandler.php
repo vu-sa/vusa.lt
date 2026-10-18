@@ -3,6 +3,7 @@
 namespace App\Tasks\Handlers;
 
 use App\Models\Institution;
+use App\Models\InstitutionActivityRequest;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
@@ -68,6 +69,10 @@ class PeriodicityGapTaskHandler extends BaseTaskHandler
         }
 
         $this->complete($task, $reason);
+
+        // A report covering only part of a question's period leaves it open; the task's answer closes it.
+        InstitutionActivityRequest::query()->open()->where('task_id', $task->id)
+            ->update(['resolved_at' => now(), 'resolution_source' => 'task_completed']);
 
         return true;
     }

@@ -3,11 +3,13 @@
 use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
+use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\InstitutionActivityNotification;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -146,9 +148,53 @@ describe('tasks:repopulate institution', function (): void {
         expect(periodicityGapTaskFor($institution))->toBeNull();
     });
 
+    test('does not ask again the morning after an activity report ends', function (): void {
+        $this->travelTo('2025-11-15');
+
+        $institution = institutionWithRepresentative();
+        $representative = $institution->duties->flatMap->users->first();
+
+        Meeting::factory()
+            ->hasAttached($institution)
+            ->create(['start_time' => '2025-09-10 10:00:00']);
+        InstitutionCheckIn::factory()
+            ->for($institution)
+            ->for($representative)
+            ->for($institution->tenant)
+            ->create(['start_date' => '2025-09-11', 'end_date' => '2025-11-14']);
+
+        $this->artisan('tasks:repopulate institution --force')->assertExitCode(0);
+
+        expect(periodicityGapTaskFor($institution))->toBeNull();
+        Notification::assertNothingSentTo($representative);
+    });
+
+    test('creates the task when approaching and asks once, when the institution turns overdue', function (): void {
+        $this->travelTo('2025-11-01');
+
+        $institution = institutionWithRepresentative();
+        $representative = $institution->duties->flatMap->users->first();
+
+        Meeting::factory()
+            ->hasAttached($institution)
+            ->create(['start_time' => '2025-10-05 10:00:00']);
+
+        $this->artisan('tasks:repopulate institution --force')->assertExitCode(0);
+
+        expect(periodicityGapTaskFor($institution))->not->toBeNull();
+        Notification::assertNotSentTo($representative, InstitutionActivityNotification::class);
+
+        foreach (['2025-11-05', '2025-11-06'] as $day) {
+            $this->travelTo($day);
+            $this->artisan('tasks:repopulate institution --force')->assertExitCode(0);
+        }
+
+        Notification::assertSentToTimes($representative, InstitutionActivityNotification::class, 1);
+        expect(InstitutionActivityRequest::query()->where('task_id', periodicityGapTaskFor($institution)->id)->count())->toBe(1);
+    });
+
     test('sets a due date that does not fall inside a vacation period', function (): void {
-        // Threshold is reached during summer vacation, so the 7-day deadline
-        // is pushed past August 31 instead of landing in July.
+        // Overdue in 5 effective days, due a week after that: summer vacation pushes it past August 31.
         $this->travelTo('2025-06-28');
 
         $institution = institutionWithRepresentative();
@@ -162,6 +208,6 @@ describe('tasks:repopulate institution', function (): void {
         $task = periodicityGapTaskFor($institution);
 
         expect($task)->not->toBeNull()
-            ->and($task->due_date->toDateString())->toBe('2025-09-05');
+            ->and($task->due_date->toDateString())->toBe('2025-09-10');
     });
 });
