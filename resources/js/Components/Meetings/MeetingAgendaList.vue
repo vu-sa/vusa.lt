@@ -148,7 +148,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
-import { useSortable } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   ArrowUpDown,
@@ -164,6 +163,7 @@ import {
   Users,
 } from '@lucide/vue';
 
+import { useMotionAwareSortable } from '@/Composables/useMotionAwareSortable';
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { agendaItemStatuses, statusRoleParts } from '@/Constants/statuses';
@@ -222,7 +222,7 @@ const timeRange = (item: App.Entities.AgendaItem) => {
 
 const listContainer = ref<HTMLElement | null>(null);
 
-const sortable = useSortable(listContainer, localItems, {
+const sortable = useMotionAwareSortable(listContainer, localItems, {
   handle: '.drag-handle',
   animation: 200,
   disabled: true,

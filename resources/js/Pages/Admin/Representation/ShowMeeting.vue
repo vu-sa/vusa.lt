@@ -308,6 +308,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, CalendarPlus, CalendarX, CircleCheck, CircleDashed, Copy, Edit, Globe, Link2, Plus, Trash2 } from '@lucide/vue';
 import { DialogDescription } from 'reka-ui';
 
+import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
 import { useToasts } from '@/Composables/useToasts';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
@@ -740,7 +741,7 @@ const handleRecordAction = (action: string) => {
       handleMissingAction(props.completion.missingActions[0]);
       return;
     }
-    document.getElementById('meeting-completion')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('meeting-completion')?.scrollIntoView({ behavior: preferredScrollBehavior(), block: 'center' });
     return;
   }
   if (action === 'edit') {

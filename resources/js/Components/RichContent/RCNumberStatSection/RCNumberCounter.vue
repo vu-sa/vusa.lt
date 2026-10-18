@@ -6,6 +6,8 @@
 import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useIntersectionObserver, useTransition, TransitionPresets } from '@vueuse/core';
 
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
 const props = defineProps<{
   endNumber: number;
   showPlus?: boolean;
@@ -14,13 +16,15 @@ const props = defineProps<{
 const target = useTemplateRef('target');
 const targetIsVisible = ref(false);
 const source = ref(0);
+const { isReducedMotion } = useAccessibilityPreferences();
 
 const output = useTransition(source, {
   duration: 2000,
   transition: TransitionPresets.easeOutCubic,
+  disabled: isReducedMotion,
 });
 
-const displayNumber = computed(() => Math.round(output.value));
+const displayNumber = computed(() => Math.round(isReducedMotion.value ? props.endNumber : output.value));
 
 // run the animation only once on intersection
 const { stop } = useIntersectionObserver(target, ([{ isIntersecting }]) => {

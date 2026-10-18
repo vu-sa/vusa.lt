@@ -11,6 +11,8 @@ import { usePage } from '@inertiajs/vue3';
 import { useDark } from '@vueuse/core';
 import type * as Leaflet from 'leaflet';
 
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+
 const props = defineProps<{
   latitude: number;
   longitude: number;
@@ -20,6 +22,9 @@ const props = defineProps<{
 
 const mapContainer = useTemplateRef<HTMLElement>('mapContainer');
 const isDark = useDark();
+const { isReducedMotion } = useAccessibilityPreferences();
+let disposed = false;
+let generation = 0;
 const cartoApiKey = usePage().props.map?.cartoApiKey;
 
 // Held outside of Vue's reactivity: Leaflet instances must not be proxied.
@@ -44,14 +49,22 @@ const createTileLayer = () => {
   });
 };
 
-onMounted(async () => {
+async function initializeMap(): Promise<void> {
+  const currentGeneration = ++generation;
   if (typeof window === 'undefined' || !mapContainer.value) return;
 
   try {
     L = (await import('leaflet')).default;
     await import('leaflet/dist/leaflet.css');
+    if (disposed || generation !== currentGeneration) return;
+    const previousView = map ? { center: map.getCenter(), zoom: map.getZoom() } : null;
+    removeMap();
 
     map = L.map(mapContainer.value, {
+      zoomAnimation: !isReducedMotion.value,
+      fadeAnimation: !isReducedMotion.value,
+      markerZoomAnimation: !isReducedMotion.value,
+      inertia: !isReducedMotion.value,
       zoomControl: false,
       attributionControl: false,
       // The map sits inside an article; grabbing the wheel would trap the reader.
@@ -59,7 +72,7 @@ onMounted(async () => {
       // This is a static, decorative preview — no keyboard panning needed, and it avoids
       // Leaflet focusing the container on click (see PadalinysMap for why that matters there).
       keyboard: false,
-    }).setView([props.latitude, props.longitude], 15);
+    }).setView(previousView?.center ?? [props.latitude, props.longitude], previousView?.zoom ?? 15);
 
     tileLayer = createTileLayer()?.addTo(map) ?? null;
 
@@ -83,7 +96,10 @@ onMounted(async () => {
   catch (error) {
     console.error('Failed to load the location map:', error);
   }
-});
+}
+
+onMounted(initializeMap);
+watch(isReducedMotion, initializeMap);
 
 watch(isDark, () => {
   if (!map || !tileLayer) return;
@@ -92,12 +108,21 @@ watch(isDark, () => {
   tileLayer = createTileLayer()?.addTo(map) ?? null;
 });
 
-onBeforeUnmount(() => {
+function removeMap(): void {
   if (map) {
+    const instance = map as Leaflet.Map & { _animatingZoom?: boolean; _onZoomTransitionEnd?: () => void };
+    if (instance._animatingZoom) instance._onZoomTransitionEnd?.();
+    map.stop();
     map.remove();
     map = null;
   }
   tileLayer = null;
+}
+
+onBeforeUnmount(() => {
+  disposed = true;
+  generation++;
+  removeMap();
   L = null;
 });
 </script>

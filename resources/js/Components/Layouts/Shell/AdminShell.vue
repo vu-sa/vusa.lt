@@ -8,6 +8,17 @@
       !focused && 'max-md:[--shell-bottom-bar:calc(3.5rem_+_env(safe-area-inset-bottom,0px))]',
     ]"
   >
+    <!-- Skip to main content link - positioned first for keyboard navigation -->
+    <a
+      href="#main-content"
+      :class="[
+        'sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999]',
+        'focus:bg-background focus:text-foreground focus:px-4 focus:py-2 focus:border-2 focus:border-brand',
+      ]"
+    >
+      {{ $t('accessibility.skip_to_main_content') }}
+    </a>
+
     <StagingWatermark />
     <StagingBanner v-model:dismissed="stagingDismissed" />
     <ImpersonateBanner />
@@ -47,7 +58,7 @@
         <SystemAnnouncement :message="systemMessage" />
       </div>
 
-      <main class="flex-1">
+      <main id="main-content" tabindex="-1" class="flex-1 outline-none">
         <div class="mx-auto min-h-full w-full max-w-7xl px-4 pt-4 pb-24 sm:px-6 lg:px-8 md:pt-6 md:pb-32" data-slot="admin-page-measure">
           <slot />
         </div>

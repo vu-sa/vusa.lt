@@ -79,12 +79,13 @@
 import { nextTick, shallowRef, unref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Link } from '@inertiajs/vue3';
-import { insertNodeAt, removeNode, useSortable } from '@vueuse/integrations/useSortable';
+import { insertNodeAt, removeNode } from '@vueuse/integrations/useSortable';
 import { GripVertical, Pencil, Plus, Trash2 } from '@lucide/vue';
 
 import NavigationColumn from './NavigationColumn.vue';
 import type { AdminNavigationLink, AdminNavigationRoot } from './types';
 
+import { useMotionAwareSortable } from '@/Composables/useMotionAwareSortable';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
 import { Switch } from '@/Components/ui/switch';
@@ -233,7 +234,7 @@ function handleSortEnd(evt: SortEndEvent) {
 // fix). `watchElement: true` rebinds Sortable if the column's DOM node is ever
 // replaced, so drag keeps working after any parent re-render.
 columnEls.forEach((elRef, index) => {
-  useSortable(elRef, props.root.links[index], {
+  useMotionAwareSortable(elRef, props.root.links[index], {
     watchElement: true,
     group: `nav-links-${props.root.id}`,
     animation: 150,

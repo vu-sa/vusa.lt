@@ -4,6 +4,7 @@ import { mount } from '@vue/test-utils';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { commonStubs } from '@/tests/stubs';
 import { documentWithMatch, type SearchMatchDocument } from '@/Shared/Search/matches';
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
 describe('InflectedDutyName.vue', () => {
   let wrapper: ReturnType<typeof mount>;
@@ -19,6 +20,7 @@ describe('InflectedDutyName.vue', () => {
 
   afterEach(() => {
     wrapper?.unmount();
+    useAccessibilityPreferences().reset();
     vi.useRealTimers();
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -63,6 +65,22 @@ describe('InflectedDutyName.vue', () => {
     expect(vi.getTimerCount()).toBe(0);
     await vi.advanceTimersByTimeAsync(10000);
     expect(wrapper.get('[data-testid="duty-ending-masculine"]').classes()).toContain('opacity-100');
+  });
+
+  it('stops animated endings when the in-app motion setting is enabled', async () => {
+    vi.useFakeTimers();
+    vi.spyOn(Math, 'random').mockReturnValue(0.9);
+    wrapper = mount(InflectedDutyName, { props: { name: 'Koordinatorius' }, global: { stubs: commonStubs } });
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(wrapper.get('[data-testid="duty-ending-feminine"]').classes()).toContain('opacity-100');
+
+    const { reduceMotion } = useAccessibilityPreferences();
+    reduceMotion.value = true;
+    await wrapper.vm.$nextTick();
+    await vi.advanceTimersByTimeAsync(10000);
+
+    expect(wrapper.get('[data-testid="duty-ending-masculine"]').classes()).toContain('opacity-100');
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it('renders plain text for a name with no detectable gendered ending', () => {

@@ -9,7 +9,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 
 import { initPWA } from './Composables/usePWA';
 import { initProgress } from './Composables/useTutorialProgress';
-import { useAccessibilityPreferences } from './Composables/useAccessibilityPreferences';
+import { isReducedMotionActive, useAccessibilityPreferences } from './Composables/useAccessibilityPreferences';
 import { wantsViewTransition } from './Utils/viewTransition';
 
 initPWA();
@@ -24,19 +24,13 @@ const metaTitle
 // get title from appTitle by removing the suffix
 const pageTitle = metaTitle.replace(' - VU SA', '');
 
-// Check if user has disabled view transitions in settings
-const isReduceMotionEnabled = () => {
-  if (typeof window === 'undefined') return false;
-  return localStorage.getItem('vusa-reduce-motion') === 'true';
-};
-
 createInertiaApp({
   title: (title) => {
     return title ? `${title} - VU SA` : pageTitle;
   },
   defaults: {
     visitOptions: (href, options) => {
-      return { viewTransition: !isReduceMotionEnabled() && wantsViewTransition(options) };
+      return { viewTransition: !isReducedMotionActive() && wantsViewTransition(options) };
     },
   },
   resolve: (name) => {

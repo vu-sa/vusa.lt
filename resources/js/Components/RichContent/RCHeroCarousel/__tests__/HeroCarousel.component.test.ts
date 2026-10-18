@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { mount, type VueWrapper } from '@vue/test-utils';
+import { defineComponent, nextTick } from 'vue';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -9,12 +10,10 @@ import { createContentItem } from '../../Types';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/useActiveHotspot';
 
 import type { HeroCarousel } from '@/Types/contentParts';
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
 /**
- * Wiring-level coverage for the hero carousel display. The embla scroll/autoplay
- * behavior is not exercised: the Carousel* family is stubbed (jsdom + embla's
- * layout measurements are unreliable — same precedent as the carousel-slide-deck
- * tests in __tests__/newBlockTypes.component.test.ts).
+ * Embla layout is stubbed because jsdom cannot measure slide geometry.
  */
 
 function makeElement(
@@ -61,6 +60,47 @@ function findButtonByText(wrapper: VueWrapper, key: string) {
 }
 
 describe('HeroCarouselDisplay', () => {
+  it('stops autoplay when reduced motion is enabled and resumes when disabled', async () => {
+    vi.useFakeTimers();
+    const preferences = useAccessibilityPreferences();
+    preferences.reset();
+    const api = { selectedScrollSnap: () => 0, on: vi.fn(), off: vi.fn(), scrollNext: vi.fn() };
+    const wrapper = mount(HeroCarouselDisplay, {
+      props: { element: makeElement([], { autoplay: true }) },
+      global: {
+        stubs: {
+          ...stubs,
+          Carousel: defineComponent({
+            emits: ['init-api'],
+            mounted() { this.$emit('init-api', api); },
+            template: '<div><slot /></div>',
+          }),
+        },
+      },
+    });
+
+    try {
+      await nextTick();
+      await vi.advanceTimersByTimeAsync(8000);
+      expect(api.scrollNext).toHaveBeenCalledOnce();
+
+      preferences.reduceMotion.value = true;
+      await nextTick();
+      await vi.advanceTimersByTimeAsync(16000);
+      expect(api.scrollNext).toHaveBeenCalledOnce();
+
+      preferences.reduceMotion.value = false;
+      await nextTick();
+      await vi.advanceTimersByTimeAsync(8000);
+      expect(api.scrollNext).toHaveBeenCalledTimes(2);
+    }
+    finally {
+      wrapper.unmount();
+      preferences.reset();
+      vi.useRealTimers();
+    }
+  });
+
   it('renders slide eyebrow, title as h2, subtitle, description and buttons', () => {
     const wrapper = mount(HeroCarouselDisplay, { props: { element: makeElement() }, global: { stubs } });
 

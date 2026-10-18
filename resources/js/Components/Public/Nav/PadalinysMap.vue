@@ -11,8 +11,11 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useDark } from '@vueuse/core';
+
 import type * as Leaflet from 'leaflet';
 import type { Layer, Map as LeafletMap, MarkerClusterGroup, TileLayer } from 'leaflet';
+
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
 type LeafletApi = typeof Leaflet;
 type ZoomTransitionMap = LeafletMap & {
@@ -62,6 +65,7 @@ const mapCreationAttempted = ref(false);
 
 // Get theme state for dark mode detection
 const isDark = useDark();
+const { isReducedMotion } = useAccessibilityPreferences();
 
 // CARTO now requires an API key on tile requests, passed as `key` (not `api_key`) per their docs.
 const cartoApiKey = usePage().props.map?.cartoApiKey;
@@ -153,6 +157,13 @@ watch(() => [props.faculties, props.searchQuery], () => {
   }
 }, { deep: true });
 
+watch(isReducedMotion, () => {
+  if (leafletMap) {
+    leafletMap.stop();
+    initializeOrUpdateMap();
+  }
+});
+
 // Watch for theme changes and update map tiles accordingly
 watch(isDark, (newIsDark) => {
   if (L && leafletMap && tileLayer) {
@@ -168,6 +179,7 @@ watch(isDark, (newIsDark) => {
 
 // Hover and focus can request initialization again while the dynamic imports are pending.
 let isInitializingMap = false;
+let disposed = false;
 
 /** Leaflet leaves its zoom timer alive after `remove()`, so finish an active transition first. */
 const removeMapSafely = (instance: ZoomTransitionMap): void => {
@@ -184,6 +196,7 @@ const initializeOrUpdateMap = async () => {
   isInitializingMap = true;
 
   try {
+    const previousView = leafletMap ? { center: leafletMap.getCenter(), zoom: leafletMap.getZoom() } : null;
     // Clean up any existing map
     if (leafletMap) {
       removeMapSafely(leafletMap);
@@ -206,6 +219,8 @@ const initializeOrUpdateMap = async () => {
     await import('leaflet.markercluster/dist/MarkerCluster.css');
     await import('leaflet.markercluster/dist/MarkerCluster.Default.css');
 
+    if (disposed) return;
+
     // Initialize map if container exists
     const container = document.getElementById('padalinys-leaflet-map');
     if (container) {
@@ -217,11 +232,15 @@ const initializeOrUpdateMap = async () => {
 
       // Center on Vilnius
       leafletMap = L.map('padalinys-leaflet-map', {
+        zoomAnimation: !isReducedMotion.value,
+        fadeAnimation: !isReducedMotion.value,
+        markerZoomAnimation: !isReducedMotion.value,
+        inertia: !isReducedMotion.value,
         zoomControl: false, // Disable default zoom control for cleaner look
         attributionControl: false, // We'll add attribution in a more subtle way
         // Replacing a focused cluster icon during zoom can close the hover-driven popover.
         keyboard: false,
-      }).setView([54.683333, 25.286944], 13);
+      }).setView(previousView?.center ?? [54.683333, 25.286944], previousView?.zoom ?? 13);
 
       // Add tile layer based on current theme
       tileLayer = L.tileLayer(isDark.value ? mapTileUrls.dark : mapTileUrls.light, {
@@ -243,6 +262,8 @@ const initializeOrUpdateMap = async () => {
 
       // Create marker cluster group with custom options
       markerClusterGroup = L.markerClusterGroup({
+        animate: !isReducedMotion.value,
+        animateAddingMarkers: !isReducedMotion.value,
         showCoverageOnHover: false,
         maxClusterRadius: 40,
         iconCreateFunction(cluster) {
@@ -264,7 +285,7 @@ const initializeOrUpdateMap = async () => {
       leafletMap.addLayer(markerClusterGroup);
 
       // Add markers for each faculty in Vilnius only
-      updateMapMarkers();
+      updateMapMarkers(!previousView);
 
       isMapInitialized.value = true;
     }
@@ -288,7 +309,7 @@ const forceUpdateMap = () => {
 };
 
 // Update map markers based on filtered Vilnius options
-const updateMapMarkers = () => {
+const updateMapMarkers = (fitView = true) => {
   if (!L || !leafletMap || !markerClusterGroup) return;
 
   // Clear existing markers from cluster group
@@ -353,16 +374,18 @@ const updateMapMarkers = () => {
   });
 
   // If we have markers, fit the map to show all of them
+  if (!fitView) return;
   if (markers.length > 0) {
     const group = L.featureGroup(markers);
     leafletMap.fitBounds(group.getBounds(), {
+      animate: !isReducedMotion.value,
       padding: [30, 30],
       maxZoom: 14, // Prevent excessive zoom on small areas
     });
   }
   else {
     // If no markers (e.g., all filtered out), reset to Vilnius center
-    leafletMap.setView([54.683333, 25.286944], 13);
+    leafletMap.setView([54.683333, 25.286944], 13, { animate: !isReducedMotion.value });
   }
 };
 
@@ -374,6 +397,7 @@ defineExpose({
 
 // Clean up map on component unmount
 onBeforeUnmount(() => {
+  disposed = true;
   if (leafletMap) {
     removeMapSafely(leafletMap);
     leafletMap = null;

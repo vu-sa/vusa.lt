@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { flushPromises, mount } from '@vue/test-utils';
 import { reactive } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 
@@ -8,6 +8,7 @@ import MobileNavigation from '../MobileNavigation.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { ssrRoundTrip } from '@/tests/helpers/ssrRoundTrip';
 import { commonStubs } from '@/tests/stubs';
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
@@ -56,7 +57,16 @@ function mountNav(overrides: Record<string, unknown> = {}) {
   return mount(MobileNavigation, {
     attachTo: document.body,
     global: {
-      stubs: { ...commonStubs, ...iconStubs },
+      stubs: {
+        ...commonStubs,
+        ...iconStubs,
+        DropdownMenu: false,
+        DropdownMenuTrigger: false,
+        DropdownMenuContent: false,
+        DropdownMenuItem: false,
+        DialogContent: false,
+        DialogTitle: false,
+      },
     },
   });
 }
@@ -109,12 +119,49 @@ describe('MobileNavigation.vue', () => {
     wrapper.unmount();
   });
 
-  it('locks the page behind the panel while it is open', async () => {
+  it('opens navigation as a modal dialog', async () => {
     const wrapper = await openNav();
 
+    expect(document.querySelector('[data-slot="mobile-navigation"]')?.getAttribute('aria-modal')).toBe('true');
+    await wrapper.vm.$nextTick();
     expect(document.body.style.overflow).toBe('hidden');
 
     wrapper.unmount();
+    await wrapper.vm.$nextTick();
+    expect(document.body.style.overflow).toBe('');
+  });
+
+  it('closes on the desktop breakpoint except when XL text keeps mobile navigation visible', async () => {
+    const query = Object.assign(new EventTarget(), {
+      matches: false,
+      media: '(min-width: 64rem)',
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+    });
+    const original = window.matchMedia;
+    window.matchMedia = vi.fn(() => query);
+    const preferences = useAccessibilityPreferences();
+    preferences.fontScale.value = 'xl';
+    const wrapper = await openNav();
+
+    try {
+      Object.assign(query, { matches: true });
+      query.dispatchEvent(Object.assign(new Event('change'), { matches: true }));
+      await wrapper.vm.$nextTick();
+      expect(document.querySelector('[data-slot="mobile-navigation"]')).not.toBeNull();
+
+      preferences.fontScale.value = 'm';
+      await wrapper.vm.$nextTick();
+      expect(document.querySelector('[data-slot="mobile-navigation"]')).toBeNull();
+      await flushPromises();
+      expect(document.body.style.pointerEvents).not.toBe('none');
+    }
+    finally {
+      wrapper.unmount();
+      preferences.reset();
+      window.matchMedia = original;
+    }
   });
 
   it('closes when the current path changes', async () => {
@@ -125,7 +172,7 @@ describe('MobileNavigation.vue', () => {
 
     const wrapper = mount(MobileNavigation, {
       attachTo: document.body,
-      global: { stubs: { ...commonStubs, ...iconStubs } },
+      global: { stubs: { ...commonStubs, ...iconStubs, DialogContent: false, DialogTitle: false } },
     });
 
     await wrapper.find('button').trigger('click');
@@ -136,6 +183,38 @@ describe('MobileNavigation.vue', () => {
     await wrapper.vm.$nextTick();
 
     expect(document.querySelector('[role="dialog"]')).toBeNull();
+
+    wrapper.unmount();
+  });
+
+  it('closes when the Escape key is pressed', async () => {
+    const wrapper = await openNav();
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await wrapper.vm.$nextTick();
+
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+
+    wrapper.unmount();
+  });
+
+  it.each([
+    ['[data-slot="accessibility-menu-trigger"]', '[data-slot="accessibility-menu"]'],
+    ['[data-slot="locale-button"]', '[data-slot="locale-menu"]'],
+  ])('keeps navigation open when Escape dismisses %s', async (triggerSelector, popupSelector) => {
+    const wrapper = await openNav();
+    (document.querySelector(triggerSelector) as HTMLElement).click();
+    await wrapper.vm.$nextTick();
+    await wrapper.vm.$nextTick();
+    expect(document.querySelector(popupSelector)).not.toBeNull();
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await wrapper.vm.$nextTick();
+    await wrapper.vm.$nextTick();
+
+    expect(document.querySelector(popupSelector)?.getAttribute('data-state')).toBe('closed');
+    expect(document.querySelector('[data-slot="mobile-navigation"]')?.getAttribute('data-state')).toBe('open');
 
     wrapper.unmount();
   });

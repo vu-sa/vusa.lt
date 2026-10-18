@@ -23,16 +23,17 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { useSortable } from '@vueuse/integrations/useSortable';
 import { GripVertical } from '@lucide/vue';
 import { trans as $t } from 'laravel-vue-i18n';
+
+import { useMotionAwareSortable } from '@/Composables/useMotionAwareSortable';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const contents = defineModel<Record<string, any>[]>();
 
 const el = ref(null);
 
-useSortable(el, contents, {
+useMotionAwareSortable(el, contents, {
   handle: '.handle',
   forceFallback: true,
   animation: 100,

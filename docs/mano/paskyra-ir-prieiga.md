@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Paskyra ir prieiga
 area: profile
-last_reviewed: 2026-10-02
+last_reviewed: 2026-10-18
 tests:
   - tests/Feature/Profile/ProfileControllerTest.php
   - tests/Feature/Profile/PasswordTest.php
@@ -11,6 +11,11 @@ tests:
   - resources/js/Pages/Admin/__tests__/ShowProfile.component.test.ts
   - resources/js/Pages/Admin/__tests__/ShowMyRoles.component.test.ts
   - resources/js/Components/Layouts/Shell/__tests__/ShellAccountMenu.component.test.ts
+  - resources/js/Composables/__tests__/useAccessibilityPreferences.test.ts
+  - tests/Browser/AdminAccessibilityTest.php
+  - resources/js/Composables/__tests__/useMotionAwareAutoplay.test.ts
+  - resources/js/Composables/__tests__/useMotionAwareSortable.test.ts
+  - resources/js/Components/ui/carousel/__tests__/Carousel.component.test.ts
 ---
 
 # Paskyra ir prieiga
@@ -77,6 +82,37 @@ Jei skilties trūksta, verta patikrinti pareigų datas bei roles ir kreiptis į 
 - **Pagalba**: čia galima atverti gidą, **Parodyk, kaip veikia** turą, **Mano užklausos** arba **Pranešti problemą**.
   Problemos pranešimui pridedamas dabartinis puslapio adresas ir naršyklės kontekstas.
   Užklausų matomumas bei sprendimo eiga aprašyti [Pagalbos užklausose](/sistema/pagalbos-uzklausos).
+
+### Prieinamumo nustatymai {#prieinamumas}
+
+<ChangelogNote version="v3.3" date="2026-10-18" title="Bendri prieinamumo ir judesio nustatymai">
+
+Paskyros skiltyje **Prieinamumas** atverk **Valdyti prieinamumo nustatymus**. Tie patys valdikliai
+pasiekiami paskyros meniu per **Išvaizda → Prieinamumas** ir viešos svetainės prieinamumo meniu.
+
+</ChangelogNote>
+
+Galima pakeisti teksto dydį, padidinti kontrastą, pabraukti nuorodas ir pasirinkti **Sumažinti judesį**.
+Pasirinkimai išsaugomi šioje naršyklėje ir galioja Mano VU SA bei viešoje svetainėje tame pačiame
+svetainės domene. Jie neperkeliami į kitą įrenginį. Jei naršyklė neleidžia jų išsaugoti, nustatymai
+veikia iki puslapio įkėlimo iš naujo.
+
+Sumažinus judesį, išjungiami puslapių perėjimai, trumpinamos sąsajos animacijos ir nebekaitaliojamos
+pareigybių pavadinimų galūnės. Karuselių skaidrės, kortelių krūvos ir prisijungimo nuotraukos
+nebesikeičia automatiškai. Mygtukais ir klaviatūra skaidrės pakeičiamos iš karto. Skaičiai rodomi
+be laipsniško skaičiavimo, o turinio nuorodos, formos ir vadovai slenka be animacijos. Grafų,
+žemėlapių ir rikiuojamų sąrašų valdikliai veikia be papildomų judesio efektų.
+
+Operacinės sistemos sumažinto judesio nuostata taip pat taikoma: jos negalima atšaukti
+išjungus svetainės žymimąjį laukelį ar paspaudus **Atstatyti**. Kai ji įjungta, nustatymų lange rodomas paaiškinimas.
+
+**Atstatyti** grąžina svetainės nustatymus į pradines reikšmes. Paspaudus **Escape**, užveriamas
+nustatymų langas ir klaviatūros žymeklis grįžta į jį atvėrusį mygtuką. Viešos svetainės mobiliajame
+meniu pirmas **Escape** užveria atvertą kalbos ar prieinamumo langelį, o kitas – patį meniu.
+Atvertas mobilusis meniu sustabdo puslapio slinkimą; padidinus langą iki kompiuterio rodinio jis
+užveriamas, išskyrus XL teksto dydį, kai paliekama mobilioji navigacija.
+
+<DocScreenshot name="accessibility-settings" alt="Prieinamumo nustatymai: teksto dydis, kontrastas, nuorodų pabraukimas ir sumažintas judesys" caption="Tie patys prieinamumo nustatymai pasiekiami ir paskyroje, ir viešoje svetainėje." />
 
 ### Atsijungti {#atsijungimas}
 

@@ -194,6 +194,14 @@ describe('DataTable.vue', () => {
   });
 
   describe('sorting', () => {
+    it('keeps the sorting button focusable and changes sorting once per activation', async () => {
+      wrapper = createWrapper();
+      const button = wrapper.findAll('th')[1]!.get('button');
+      expect((button.element as HTMLButtonElement).tabIndex).toBe(0);
+      await button.trigger('click');
+      expect(wrapper.emitted('update:sorting')).toHaveLength(1);
+    });
+
     it('emits update:sorting when sortable header is clicked', async () => {
       wrapper = createWrapper();
       const nameHeader = wrapper.findAll('th')[1];

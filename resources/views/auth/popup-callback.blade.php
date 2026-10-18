@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prisijungimas...</title>
+    <script>
+        try {
+            const preferences = JSON.parse(localStorage.getItem('vusa-a11y') || '{}');
+            document.documentElement.classList.toggle('reduce-motion', preferences?.reduceMotion === true);
+        } catch {}
+    </script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -27,6 +33,12 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin: 0 auto 1rem;
+        }
+        html.reduce-motion .spinner {
+            animation: none;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .spinner { animation: none; }
         }
         @keyframes spin {
             to { transform: rotate(360deg); }

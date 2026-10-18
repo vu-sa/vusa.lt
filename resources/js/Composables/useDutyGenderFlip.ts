@@ -1,5 +1,6 @@
 import { computed, onMounted, onScopeDispose, ref, watch, type ComputedRef } from 'vue';
-import { usePreferredReducedMotion } from '@vueuse/core';
+
+import { useAccessibilityPreferences } from './useAccessibilityPreferences';
 
 const FLIP_INTERVAL_MS = 5000;
 
@@ -29,13 +30,13 @@ function stopInterval() {
 
 /** Only animated labels subscribe; reduced motion keeps the masculine form static. */
 export function useDutyGenderFlip(enabled: ComputedRef<boolean> = computed(() => true)): { showFeminine: ComputedRef<boolean> } {
-  const reducedMotion = usePreferredReducedMotion();
+  const { isReducedMotion } = useAccessibilityPreferences();
   let stopWatch: (() => void) | undefined;
   onMounted(() => {
     stopWatch = watch(
-      [enabled, reducedMotion],
-      ([active, preference], _previous, onCleanup) => {
-        if (!active || preference === 'reduce') return;
+      [enabled, isReducedMotion],
+      ([active, reduced], _previous, onCleanup) => {
+        if (!active || reduced) return;
 
         subscriberCount += 1;
         if (subscriberCount === 1) {
@@ -52,5 +53,5 @@ export function useDutyGenderFlip(enabled: ComputedRef<boolean> = computed(() =>
   });
   onScopeDispose(() => stopWatch?.());
 
-  return { showFeminine: computed(() => reducedMotion.value === 'reduce' ? false : showFeminine.value) };
+  return { showFeminine: computed(() => isReducedMotion.value ? false : showFeminine.value) };
 }

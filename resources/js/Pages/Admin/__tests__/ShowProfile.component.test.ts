@@ -5,6 +5,8 @@ import ShowProfile from '../ShowProfile.vue';
 
 import { commonStubs } from '@/tests/stubs';
 import { ModelEnum } from '@/Types/enums';
+import { Dialog } from '@/Components/ui/dialog';
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
 const patchCalls: Array<{ url: string; options?: Record<string, unknown> }> = [];
 
@@ -38,10 +40,17 @@ vi.mock('@/Composables/useTutorialProgress', () => ({
   resetInitialization: () => resetInitializationMock(),
 }));
 
+const dismissSpotlightMock = vi.fn();
+vi.mock('@/Composables/useFeatureSpotlight', () => ({
+  useFeatureSpotlight: () => ({ isDismissed: { value: false }, dismiss: dismissSpotlightMock }),
+}));
+
 vi.stubGlobal('route', (name?: string) => (name === undefined ? { current: () => false } : `/mocked/${name}`));
 
 const stubs = {
   ...commonStubs,
+  Dialog: false,
+  SpotlightPopover: { template: '<div><slot /></div>' },
   FormPage: {
     props: ['title', 'barTitle', 'headTitle', 'mode', 'processing', 'dirty', 'errors', 'backHref', 'entityType'],
     emits: ['submit'],
@@ -49,10 +58,6 @@ const stubs = {
   },
   FormPanel: { props: ['title', 'flush'], template: '<div data-testid="form-panel" :data-panel="title" :data-flush="flush"><slot /></div>' },
   FormSection: { props: ['title', 'description', 'badge', 'publicMarker'], template: '<section :data-section="title"><slot /></section>' },
-  FormToggleRow: {
-    props: ['label', 'hint', 'modelValue'],
-    template: '<div data-testid="form-toggle-row" :data-label="label"><input type="checkbox" :checked="modelValue" @change="$emit(\'update:modelValue\', $event.target.checked)" /></div>',
-  },
   FormFieldWrapper: { props: ['id', 'label', 'error'], template: '<div :data-field="id" :data-error="error"><slot /></div>' },
   Input: {
     props: ['modelValue', 'disabled', 'id', 'type'],
@@ -106,6 +111,7 @@ describe('ShowProfile.vue', () => {
   beforeEach(() => {
     patchCalls.length = 0;
     vi.clearAllMocks();
+    useAccessibilityPreferences().reset();
   });
 
   afterEach(() => {
@@ -187,7 +193,7 @@ describe('ShowProfile.vue', () => {
     expect(wrapper.find('[data-field="new-password"]').exists()).toBe(false);
   });
 
-  it('renders aside panels including FormToggleRow for animations and flush link rows', () => {
+  it('renders accessibility settings and profile link rows in the aside', () => {
     const wrapper = mountProfile();
 
     const panels = wrapper.findAll('[data-testid="form-panel"]');
@@ -195,16 +201,26 @@ describe('ShowProfile.vue', () => {
 
     expect(wrapper.find('[data-field="user-pronouns"]').exists()).toBe(true);
 
-    // FormToggleRow for animations
-    const toggleRow = wrapper.find('[data-testid="form-toggle-row"]');
-    expect(toggleRow.exists()).toBe(true);
-    expect(toggleRow.attributes('data-label')).toContain('Puslapių animacijos');
+    expect(wrapper.get('[data-slot="profile-accessibility-trigger"]').text()).toContain('accessibility.manage_settings');
 
     // Flush link rows for related pages
     const links = wrapper.findAll('[data-testid="inertia-link"]');
     expect(links.length).toBe(2);
     expect(links[0].attributes('href')).toContain('profile.notifications');
     expect(links[1].attributes('href')).toContain('profile.roles');
+  });
+
+  it('opens accessibility settings, dismisses the spotlight and applies reduced motion', async () => {
+    const wrapper = mountProfile();
+    await wrapper.get('[data-slot="profile-accessibility-trigger"]').trigger('click');
+
+    expect(wrapper.findComponent(Dialog).props('open')).toBe(true);
+    expect(dismissSpotlightMock).toHaveBeenCalledOnce();
+    await wrapper.get('[data-preference="reduce-motion"]').trigger('click');
+
+    expect(wrapper.get('[data-preference="reduce-motion"]').attributes('aria-checked')).toBe('true');
+    expect(document.documentElement.classList.contains('reduce-motion')).toBe(true);
+    wrapper.unmount();
   });
 
   it('submits profile form to profile.update on FormPage submit', async () => {

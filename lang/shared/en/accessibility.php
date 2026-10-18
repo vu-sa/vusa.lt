@@ -44,6 +44,10 @@ return [
     // Reader preferences menu (Components/Public/Base/AccessibilityMenu.vue)
     'menu_title' => 'Accessibility',
     'menu_open' => 'Open accessibility settings',
+    'settings_description' => 'Adjust text size, contrast, link underlining and animations to suit your needs.',
+    'manage_settings' => 'Manage accessibility settings',
+    'spotlight_title' => 'Accessibility settings in your profile',
+    'spotlight_description' => 'Adjust text size, contrast and link underlining, or reduce motion. Your choices also apply to the public website in this browser.',
     'text_size' => 'Text size',
     'text_size_option' => 'Text size: :size',
     'text_size_decrease' => 'Decrease text size',
@@ -56,6 +60,8 @@ return [
     'reading_size_increase' => 'Increase reading size',
     'high_contrast' => 'High contrast',
     'underline_links' => 'Underline links',
+    'reduce_motion' => 'Reduce motion',
+    'system_reduced_motion' => 'Your operating system has reduced motion enabled. Turning this off or resetting settings will still respect that preference.',
     'reset' => 'Reset',
     'preferences_active' => 'Accessibility settings changed',
 ];

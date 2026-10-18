@@ -4,7 +4,7 @@
     :eyebrow="element.options?.eyebrow" :band
     :align="element.options?.align ?? 'center'" :heading-level="element.options?.headingLevel"
     :show-separator="element.options?.showSeparator" inner="wide"
-    :editable @update:header="updateOptions"
+    :editable v-on="autoplay.events" @update:header="updateOptions"
   >
     <div class="relative max-w-lg mx-auto">
       <!-- Stack of Cards -->
@@ -121,7 +121,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent, inject, onMounted, onUnmounted, ref } from 'vue';
+import { computed, defineAsyncComponent, inject, onScopeDispose, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RCSection from '../RCSection.vue';
@@ -131,6 +131,8 @@ import { asBoolean } from '../booleanish';
 import type { BandResolution } from '../bandLayout';
 
 import type { CardStack } from '@/Types/contentParts';
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+import { useMotionAwareAutoplay } from '@/Composables/useMotionAwareAutoplay';
 import { Button } from '@/Components/ui/button';
 import IFluentAdd12Regular from '~icons/fluent/add12-regular';
 import IFluentDelete24Regular from '~icons/fluent/delete24-regular';
@@ -206,7 +208,25 @@ function addCard(): void {
 // Card stack state
 const currentCardIndex = ref(0);
 const isRotating = ref(false);
-let autoplayInterval: NodeJS.Timeout | null = null;
+const { isReducedMotion } = useAccessibilityPreferences();
+let rotationTimeout: ReturnType<typeof setTimeout> | undefined;
+
+function finishRotation(): void {
+  clearTimeout(rotationTimeout);
+  isRotating.value = false;
+}
+
+function lockRotation(): void {
+  finishRotation();
+  if (isReducedMotion.value) return;
+  isRotating.value = true;
+  rotationTimeout = setTimeout(finishRotation, 700);
+}
+
+watch(isReducedMotion, (reduced) => {
+  if (reduced) finishRotation();
+});
+onScopeDispose(finishRotation);
 
 const currentCard = computed(() => props.element.json_content[currentCardIndex.value]);
 
@@ -245,61 +265,27 @@ const getCardStyle = (index: number) => {
 const rotateCards = () => {
   if (isRotating.value || props.element.json_content.length === 0) return;
 
-  isRotating.value = true;
+  lockRotation();
   currentCardIndex.value = (currentCardIndex.value + 1) % props.element.json_content.length;
-
-  setTimeout(() => {
-    isRotating.value = false;
-  }, 700); // Match transition duration
 };
 
 // Function to set specific card as current
 const setCurrentCard = (index: number) => {
   if (isRotating.value || index === currentCardIndex.value) return;
 
-  isRotating.value = true;
+  lockRotation();
   currentCardIndex.value = index;
-
-  setTimeout(() => {
-    isRotating.value = false;
-  }, 700);
 };
 
-// Autoplay functionality — never runs while editable: an author mid-edit should not
-// have the stack rotate the card they're typing into out from under them.
-const startAutoplay = () => {
-  if (props.editable || !asBoolean(props.element.options?.autoplay) || autoplayInterval) return;
+const autoplay = useMotionAwareAutoplay(
+  rotateCards,
+  () => !props.editable && asBoolean(props.element.options?.autoplay) && props.element.json_content.length > 1,
+  () => props.element.options?.autoplayDelay || 5000,
+);
 
-  autoplayInterval = setInterval(() => {
-    if (!isRotating.value) {
-      rotateCards();
-    }
-  }, props.element.options?.autoplayDelay || 5000);
-};
-
-const stopAutoplay = () => {
-  if (autoplayInterval) {
-    clearInterval(autoplayInterval);
-    autoplayInterval = null;
-  }
-};
-
-const restartAutoplay = () => {
-  stopAutoplay();
-  if (!props.editable && asBoolean(props.element.options?.autoplay)) {
-    startAutoplay();
-  }
-};
-
-// Handle user interactions - pause autoplay temporarily
 const handleUserInteraction = (callback: () => void) => {
-  stopAutoplay();
   callback();
-
-  // Restart autoplay after user interaction
-  if (!props.editable && asBoolean(props.element.options?.autoplay)) {
-    setTimeout(startAutoplay, props.element.options?.autoplayDelay || 5000);
-  }
+  autoplay.restart();
 };
 
 // Override click handlers to include autoplay management
@@ -335,16 +321,6 @@ function switchCard(direction: 1 | -1): void {
   setCurrentCard((currentCardIndex.value + direction + total) % total);
 }
 
-// Lifecycle
-onMounted(() => {
-  if (!props.editable && asBoolean(props.element.options?.autoplay)) {
-    startAutoplay();
-  }
-});
-
-onUnmounted(() => {
-  stopAutoplay();
-});
 </script>
 
 <style scoped>

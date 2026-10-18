@@ -202,18 +202,46 @@
       </FormPanel>
 
       <!-- Prieinamumas -->
-      <FormPanel
-        :title="$t('Prieinamumas')"
-        :icon="Eye"
-        title-class="text-brand"
-        flush
-      >
-        <FormToggleRow
-          v-model="animationsEnabled"
-          :label="$t('Puslapių animacijos')"
-          :hint="$t('Puslapių perėjimo animacijos naršant sistemoje.')"
-        />
-      </FormPanel>
+      <Dialog v-model:open="accessibilityOpen">
+        <FormPanel
+          :title="$t('accessibility.menu_title')"
+          :icon="Eye"
+          title-class="text-brand"
+        >
+          <p class="text-xs text-muted-foreground leading-relaxed">
+            {{ $t('accessibility.settings_description') }}
+          </p>
+
+          <div class="pt-1">
+            <SpotlightPopover
+              :is-dismissed="accessibilitySpotlight.isDismissed.value"
+              :title="$t('accessibility.spotlight_title')"
+              :description="$t('accessibility.spotlight_description')"
+              @dismiss="accessibilitySpotlight.dismiss"
+            >
+              <DialogTrigger as-child>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  voice="sentence"
+                  data-slot="profile-accessibility-trigger"
+                >
+                  <Eye class="size-3.5 mr-1.5" />
+                  {{ $t('accessibility.manage_settings') }}
+                </Button>
+              </DialogTrigger>
+            </SpotlightPopover>
+          </div>
+        </FormPanel>
+
+        <DialogContent class="w-80 gap-0 p-0" data-slot="admin-accessibility-dialog">
+          <DialogTitle class="sr-only">
+            {{ $t('accessibility.menu_title') }}
+          </DialogTitle>
+          <AccessibilitySettings />
+        </DialogContent>
+      </Dialog>
 
       <!-- Vadovų nustatymai -->
       <FormPanel
@@ -276,7 +304,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { Link, useForm } from '@inertiajs/vue3';
-import { useStorage } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
   Bell,
@@ -293,14 +320,18 @@ import {
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import MultiLocaleInput from '@/Components/FormItems/MultiLocaleInput.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { FormPanel, FormSection, FormToggleRow } from '@/Components/Patterns';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { FormPanel, FormSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { ImageUpload } from '@/Components/ui/upload';
 import type { ImageData } from '@/Types/media';
+import AccessibilitySettings from '@/Components/Public/Base/AccessibilitySettings.vue';
 import { useApiMutation } from '@/Composables/useApi';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { resetInitialization } from '@/Composables/useTutorialProgress';
 import { ModelEnum } from '@/Types/enums';
 
@@ -313,26 +344,12 @@ const userHeadTitle = computed(() => (props.user.name ? `${props.user.name} · $
 
 const tutorialResetLoading = ref(false);
 const tutorialResetSuccess = ref(false);
+const accessibilityOpen = ref(false);
+const accessibilitySpotlight = useFeatureSpotlight('accessibility-settings-v1');
 
-// View transitions / reduced motion preference
-const REDUCE_MOTION_KEY = 'vusa-reduce-motion';
-const reduceMotion = useStorage<boolean>(REDUCE_MOTION_KEY, false);
-
-const animationsEnabled = computed({
-  get: () => !reduceMotion.value,
-  set: (enabled: boolean) => {
-    const shouldReduce = !enabled;
-    reduceMotion.value = shouldReduce;
-    if (typeof document !== 'undefined') {
-      document.documentElement.classList.toggle('reduce-motion', shouldReduce);
-    }
-  },
+watch(accessibilityOpen, (open) => {
+  if (open) void accessibilitySpotlight.dismiss();
 });
-
-// Initialize class on mount
-if (typeof document !== 'undefined' && reduceMotion.value) {
-  document.documentElement.classList.add('reduce-motion');
-}
 
 const form = useForm({
   name: props.user.name ?? '',

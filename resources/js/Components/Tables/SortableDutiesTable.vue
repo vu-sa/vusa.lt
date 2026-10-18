@@ -24,14 +24,15 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useSortable } from '@vueuse/integrations/useSortable';
 import { GripVertical } from '@lucide/vue';
+
+import { useMotionAwareSortable } from '@/Composables/useMotionAwareSortable';
 
 const contents = defineModel<Record<string, any>[]>();
 
 const el = ref(null);
 
-useSortable(el, contents, {
+useMotionAwareSortable(el, contents, {
   handle: '.handle', forceFallback: true, animation: 100,
 });
 </script>

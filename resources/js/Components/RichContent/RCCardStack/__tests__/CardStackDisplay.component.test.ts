@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import CardStackDisplay from '../CardStackDisplay.vue';
@@ -7,6 +7,7 @@ import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from '../../Editor/Fullscreen/us
 import { stubPopover, stubPopoverAnchor, stubPopoverContent } from '@/tests/stubs';
 import { waitForSelector } from '@/tests/helpers/waitForSelector';
 import type { CardStack } from '@/Types/contentParts';
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
 function makeElement(cards: Partial<CardStack['json_content'][number]>[] = []): CardStack {
   return {
@@ -41,6 +42,31 @@ async function mountEditableWithPopover(element: CardStack, blockKey = 'stack-1'
 }
 
 describe('CardStackDisplay — public (non-editable)', () => {
+  it('stops autoplay and allows immediate successive selections with reduced motion', async () => {
+    vi.useFakeTimers();
+    const preferences = useAccessibilityPreferences();
+    preferences.reduceMotion.value = true;
+    const element = makeElement([{ title: 'A' }, { title: 'B' }, { title: 'C' }]);
+    element.options.autoplay = true;
+    const wrapper = mount(CardStackDisplay, { props: { element } });
+    try {
+      const cards = wrapper.findAll('[role="button"]');
+      await vi.advanceTimersByTimeAsync(10000);
+      expect(cards[0]!.attributes('style')).toContain('z-index: 10');
+      await cards[0]!.trigger('click');
+      expect(cards[1]!.attributes('style')).toContain('z-index: 10');
+      await cards[1]!.trigger('click');
+      expect(cards[2]!.attributes('style')).toContain('z-index: 10');
+      await vi.advanceTimersByTimeAsync(10000);
+      expect(cards[2]!.attributes('style')).toContain('z-index: 10');
+    }
+    finally {
+      wrapper.unmount();
+      preferences.reset();
+      vi.useRealTimers();
+    }
+  });
+
   it('renders the front card as plain, non-editable text', () => {
     const wrapper = mount(CardStackDisplay, { props: { element: makeElement([{ title: 'Narystė', description: 'Prisijunk' }]) } });
     expect(wrapper.text()).toContain('Narystė');

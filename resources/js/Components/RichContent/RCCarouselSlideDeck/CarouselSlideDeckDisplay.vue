@@ -10,6 +10,7 @@
     :show-separator="element.options?.showSeparator"
     inner="wide"
     :editable
+    v-on="autoplay.events"
     @update:header="updateOptions"
   >
     <div v-if="slides.length > 0" class="w-full">
@@ -182,12 +183,12 @@
         <CarouselPrevious
           v-if="asBoolean(element.options?.showNavigation)"
           class="hidden sm:flex -left-12 bg-background border-border hover:border-brand hover:text-brand text-foreground"
-          @click="restartCarouselAutoplay"
+          @click="autoplay.restart"
         />
         <CarouselNext
           v-if="asBoolean(element.options?.showNavigation)"
           class="hidden sm:flex -right-12 bg-background border-border hover:border-brand hover:text-brand text-foreground"
-          @click="restartCarouselAutoplay"
+          @click="autoplay.restart"
         />
 
         <!-- Photo Preview Navigation -->
@@ -197,7 +198,7 @@
             :key="index"
             class="relative group transition-all duration-200"
             :class="{ '': currentSlide === index }"
-            @click="() => { carouselApi?.scrollTo(index); restartCarouselAutoplay(); }"
+            @click="() => { carouselApi?.scrollTo(index, isReducedMotion); autoplay.restart(); }"
           >
             <MediaImage
               v-if="slide.imageSrc"
@@ -285,7 +286,7 @@
 
 <script setup lang="ts">
 import MediaImage from '@/Components/Brand/MediaImage.vue';
-import { computed, defineAsyncComponent, inject, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, inject, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import RCIcon from '../RCIcon.vue';
@@ -296,8 +297,11 @@ import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 import { asBoolean } from '../booleanish';
 import type { BandResolution } from '../bandLayout';
 
+import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
+import { useMotionAwareAutoplay } from '@/Composables/useMotionAwareAutoplay';
 import { Button } from '@/Components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/Components/ui/carousel';
+import type { UnwrapRefCarouselApi } from '@/Components/ui/carousel/interface';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import ImageSelector from '@/Components/TipTap/ImageSelector.vue';
 import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
@@ -430,63 +434,29 @@ function hasHtmlContent(description: unknown): boolean {
 
 // Carousel functionality
 const carouselRef = ref();
-const carouselApi = ref();
+const carouselApi = ref<UnwrapRefCarouselApi>();
 const currentSlide = ref(0);
-let carouselAutoplayInterval: NodeJS.Timeout | null = null;
+const { isReducedMotion } = useAccessibilityPreferences();
+const autoplay = useMotionAwareAutoplay(
+  () => carouselApi.value?.scrollNext(),
+  () => !props.editable && asBoolean(props.element.options?.autoplay) && slides.value.length > 1 && !!carouselApi.value,
+  () => props.element.options?.autoplayDelay || 8000,
+);
 
-const startCarouselAutoplay = () => {
-  if (props.editable || !carouselApi.value || carouselAutoplayInterval) return;
-
-  carouselAutoplayInterval = setInterval(() => {
-    carouselApi.value?.scrollNext();
-  }, props.element.options?.autoplayDelay || 8000);
-};
-
-const stopCarouselAutoplay = () => {
-  if (carouselAutoplayInterval) {
-    clearInterval(carouselAutoplayInterval);
-    carouselAutoplayInterval = null;
-  }
-};
-
-const restartCarouselAutoplay = () => {
-  stopCarouselAutoplay();
-  if (props.editable) return;
-  setTimeout(startCarouselAutoplay, props.element.options?.autoplayDelay || 8000);
-};
-
-watch(carouselApi, (api) => {
+watch(carouselApi, (api, _previous, onCleanup) => {
   if (!api) return;
-
-  currentSlide.value = api.selectedScrollSnap();
-
-  api.on('select', () => {
+  const select = () => {
     currentSlide.value = api.selectedScrollSnap();
+  };
+  select();
+  api.on('select', select);
+  api.on('pointerDown', autoplay.pause);
+  api.on('pointerUp', autoplay.resume);
+  onCleanup(() => {
+    api.off('select', select);
+    api.off('pointerDown', autoplay.pause);
+    api.off('pointerUp', autoplay.resume);
   });
-
-  if (!props.editable && asBoolean(props.element.options?.autoplay)) {
-    startCarouselAutoplay();
-  }
-
-  api.on('pointerDown', stopCarouselAutoplay);
-  api.on('pointerUp', restartCarouselAutoplay);
-});
-
-watch(() => props.editable, (isEditable) => {
-  if (isEditable) {
-    stopCarouselAutoplay();
-  }
-  else if (asBoolean(props.element.options?.autoplay)) {
-    startCarouselAutoplay();
-  }
-});
-
-onMounted(() => {
-  // Autoplay will start when carousel API is ready via watcher
-});
-
-onUnmounted(() => {
-  stopCarouselAutoplay();
 });
 </script>
 

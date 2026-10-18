@@ -10,6 +10,7 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 // aria-controls) away from the server-rendered values.
 import PublicLayout from './Layouts/PersistentPublicLayout.vue';
 import { mountTranslatedApp } from './Utils/mountTranslatedApp';
+import { isReducedMotionActive } from './Composables/useAccessibilityPreferences';
 
 createInertiaApp({
   // Title is owned server-side by Laravel Head (see PublicController::applyPageHead()
@@ -35,7 +36,7 @@ createInertiaApp({
   },
   defaults: {
     visitOptions: (href, options) => {
-      return { viewTransition: true };
+      return { viewTransition: !isReducedMotionActive() };
     },
     // Cache prefetched pages for 5 minutes for smoother navigation
     prefetch: {

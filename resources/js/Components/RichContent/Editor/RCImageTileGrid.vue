@@ -131,10 +131,10 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
 /** Shared tile controls keep image grids and galleries in sync. */
 import { computed, ref, watch } from 'vue';
-import { useSortable } from '@vueuse/integrations/useSortable';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowDown, ArrowLeft, ArrowUp, Ellipsis, GripVertical, ImagePlus, Images, Plus, ScanEye, Trash2 } from '@lucide/vue';
 
+import { useMotionAwareSortable } from '@/Composables/useMotionAwareSortable';
 import TiptapImageButton from '@/Components/TipTap/TiptapImageButton.vue';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/Components/ui/dropdown-menu';
@@ -232,7 +232,7 @@ watch(gridEl, (newEl) => {
     stopSortable = null;
   }
   if (newEl) {
-    const { stop } = useSortable(newEl, modelValue, {
+    const { stop } = useMotionAwareSortable(newEl, modelValue, {
       handle: '.rc-image-drag-handle',
       animation: 150,
       ghostClass: 'opacity-50',

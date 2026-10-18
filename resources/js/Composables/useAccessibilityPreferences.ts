@@ -1,13 +1,7 @@
 import { computed, watch } from 'vue';
-import { useStorage } from '@vueuse/core';
+import { usePreferredReducedMotion, useStorage } from '@vueuse/core';
 
-/**
- * Reader preferences: text size, high contrast, forced link underlines. The CSS they drive is
- * the "Accessibility preferences" block in `resources/css/public/surface.css`, applied on every page.
- *
- * State is module-level rather than per-component: the header menu and the mobile drawer both
- * render a control, and two independent copies would disagree about what is currently on.
- */
+// Module state keeps public and admin controls in sync.
 
 const STORAGE_KEY = 'vusa-a11y';
 
@@ -20,12 +14,14 @@ interface AccessibilityPreferences {
   fontScale: FontScaleKey;
   contrast: boolean;
   underlineLinks: boolean;
+  reduceMotion: boolean;
 }
 
 const DEFAULTS: AccessibilityPreferences = Object.freeze({
   fontScale: 'm',
   contrast: false,
   underlineLinks: false,
+  reduceMotion: false,
 });
 
 const preferences = useStorage<AccessibilityPreferences>(
@@ -37,6 +33,10 @@ const preferences = useStorage<AccessibilityPreferences>(
 
 if (typeof preferences.value !== 'object' || preferences.value === null) {
   preferences.value = { ...DEFAULTS };
+}
+
+if (typeof preferences.value.reduceMotion !== 'boolean') {
+  preferences.value.reduceMotion = DEFAULTS.reduceMotion;
 }
 
 const fontScale = computed<FontScaleKey>({
@@ -54,6 +54,11 @@ const underlineLinks = computed<boolean>({
   set: (val) => { preferences.value.underlineLinks = val; },
 });
 
+const reduceMotion = computed<boolean>({
+  get: () => preferences.value.reduceMotion ?? DEFAULTS.reduceMotion,
+  set: (val) => { preferences.value.reduceMotion = val; },
+});
+
 function apply(): void {
   if (typeof document === 'undefined') {
     return;
@@ -65,20 +70,38 @@ function apply(): void {
   root.dataset.a11yFontScale = fontScale.value;
   root.classList.toggle('a11y-contrast', contrast.value);
   root.classList.toggle('a11y-underline', underlineLinks.value);
+  root.classList.toggle('reduce-motion', reduceMotion.value);
 }
 
 apply();
-watch([fontScale, contrast, underlineLinks], apply);
+watch([fontScale, contrast, underlineLinks, reduceMotion], apply);
+
+/** Navigation defaults need the current preference before storage watchers flush. */
+export function isReducedMotionActive(): boolean {
+  if (typeof window === 'undefined') return false;
+
+  return reduceMotion.value || (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false);
+}
+
+export function preferredScrollBehavior(): ScrollBehavior {
+  return isReducedMotionActive() ? 'instant' : 'smooth';
+}
 
 export function useAccessibilityPreferences() {
+  const preferredReducedMotion = usePreferredReducedMotion();
+
+  /** Unified motion preference: true if user enabled it in-app OR if OS requests reduced motion. */
+  const isReducedMotion = computed<boolean>(() => reduceMotion.value || preferredReducedMotion.value === 'reduce');
+
   /** Drives the "preferences are active" cue on the trigger button. */
   const isDefault = computed(() => fontScale.value === DEFAULTS.fontScale
     && contrast.value === DEFAULTS.contrast
-    && underlineLinks.value === DEFAULTS.underlineLinks);
+    && underlineLinks.value === DEFAULTS.underlineLinks
+    && reduceMotion.value === DEFAULTS.reduceMotion);
 
   function reset(): void {
     preferences.value = { ...DEFAULTS };
   }
 
-  return { fontScale, contrast, underlineLinks, isDefault, reset };
+  return { fontScale, contrast, underlineLinks, reduceMotion, isReducedMotion, isDefault, reset };
 }

@@ -258,6 +258,7 @@ import { ArrowLeft, ChevronDown, Eye, Languages, Loader2, Save } from '@lucide/v
 import { useEventListener } from '@vueuse/core';
 import { computed, h, nextTick, onUnmounted, ref, useId, watch, type FunctionalComponent } from 'vue';
 
+import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
 import LocaleFlag from '@/Components/Public/Nav/LocaleFlag.vue';
 import { Button } from '@/Components/ui/button';
@@ -433,7 +434,7 @@ watch(() => Object.keys(props.errors).join('|'), async (keys, previous) => {
   }
 
   await nextTick();
-  summary.value?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  summary.value?.scrollIntoView({ block: 'start', behavior: preferredScrollBehavior() });
   summary.value?.focus({ preventScroll: true });
 });
 

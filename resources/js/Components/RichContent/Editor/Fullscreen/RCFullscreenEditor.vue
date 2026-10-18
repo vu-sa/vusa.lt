@@ -140,6 +140,7 @@ import { resolveBands, type BandResolution } from '../../bandLayout';
 import RCFullscreenCanvasGroup from './RCFullscreenCanvasGroup.vue';
 import { ACTIVE_HOTSPOT_KEY, useActiveHotspot } from './useActiveHotspot';
 
+import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { SMART_TIPTAP_TOOLBAR_PORTAL_KEY } from '@/Components/TipTap/smartToolbarPortal';
@@ -183,7 +184,7 @@ const outlineAnchors = computed(() => extractAnchorLinks(contents.value as Ancho
 const lockedHeadingIds = collectHeadingIds(contents.value);
 watch(contents, value => normalizeHeadingAnchors(value, lockedHeadingIds), { deep: true, immediate: true });
 function scrollToAnchor(href: string) {
-  canvasRef.value?.querySelector(`[id="${href.slice(1)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  canvasRef.value?.querySelector(`[id="${href.slice(1)}"]`)?.scrollIntoView({ behavior: preferredScrollBehavior(), block: 'start' });
   outlineOpen.value = false;
 }
 const canvasRef = ref<HTMLElement | null>(null);
@@ -207,7 +208,7 @@ function scrollToBlock(blockKey: string): void {
   requestAnimationFrame(() => {
     Array.from(canvasRef.value?.querySelectorAll<HTMLElement>('[data-rc-block-key]') ?? [])
       .find(element => element.dataset.rcBlockKey === blockKey)
-      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      ?.scrollIntoView({ behavior: preferredScrollBehavior(), block: 'center' });
   });
 }
 
