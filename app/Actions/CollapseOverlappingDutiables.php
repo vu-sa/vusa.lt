@@ -4,28 +4,13 @@ namespace App\Actions;
 
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Folds overlapping dutiable rows for a single duty into one row per holder.
- *
- * A "holder" is a (dutiable_type, dutiable_id) pair — the same person can carry
- * several rows on one duty after a merge (duties or users) leaves two stints
- * side by side. For each holder, walk its start_date-sorted rows and fold every
- * row that overlaps the running interval into it — keeping the earliest start,
- * the latest (or open-ended) end, and backfilling any nullable field the
- * survivor is missing from the row being dropped.
- *
- * Genuinely separate (non-overlapping) stints are left untouched: a person who
- * held a duty in 2020 and again in 2023 keeps two rows. Rows under different
- * tenant scopes (owning-tenant vs. a cross-tenant rep assignment) are treated
- * as distinct holders — the same person can legitimately carry both, so they
- * are never folded into one another.
- *
- * Extracted from {@see MergeDuties} so both duty- and user-merges collapse
- * consistently, and so the same logic can clean up duplicate active rows
- * created by other paths.
+ * Folds one holder's overlapping rows on a duty into one, keeping the widest dates and backfilling
+ * blank fields. Separate stints and different tenant scopes stay apart. Used by duty and user merges.
  */
 class CollapseOverlappingDutiables
 {
@@ -47,29 +32,45 @@ class CollapseOverlappingDutiables
             ->get();
 
         foreach ($rows->groupBy(fn (Dutiable $row) => $row->dutiable_type.'|'.$row->dutiable_id.'|'.$row->tenant_id) as $group) {
-            /** @var Dutiable|null $survivor */
-            $survivor = null;
-
-            foreach ($group as $row) {
-                if ($survivor === null) {
-                    $survivor = $row;
-
-                    continue;
-                }
-
-                if (self::overlapsRunningInterval($survivor, $row)) {
+            foreach (self::overlappingGroups($group) as $overlap) {
+                $survivor = $overlap->first();
+                foreach ($overlap->skip(1) as $row) {
                     self::foldInto($survivor, $row);
                     $row->delete();
                     $collapsed++;
-
-                    continue;
                 }
-
-                $survivor = $row;
             }
         }
 
         return $collapsed;
+    }
+
+    /**
+     * Ex-officio rows stay alone: they mirror their source row, which the collapse folds instead.
+     *
+     * @param  Collection<int, Dutiable>  $rows
+     * @return Collection<int, Collection<int, Dutiable>>
+     */
+    public static function overlappingGroups(Collection $rows): Collection
+    {
+        [$derived, $manual] = $rows->partition(fn (Dutiable $row) => $row->via_dutiable_id !== null);
+        $groups = $derived->map(fn (Dutiable $row) => collect([$row]))->values();
+        $running = null;
+        $group = collect();
+
+        foreach ($manual->sortBy('start_date') as $row) {
+            if ($running === null || ! self::overlapsRunningInterval($running, $row)) {
+                $group = collect();
+                $groups->push($group);
+                $running = clone $row;
+            } elseif ($running->end_date !== null && ($row->end_date === null || $row->end_date->gt($running->end_date))) {
+                $running->end_date = $row->end_date;
+            }
+
+            $group->push($row);
+        }
+
+        return $groups;
     }
 
     /**

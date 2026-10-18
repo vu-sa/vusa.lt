@@ -1,14 +1,20 @@
 <?php
 
+use App\Models\Comment;
 use App\Models\Duty;
+use App\Models\DutyResponsibility;
 use App\Models\DutyType;
+use App\Models\Goal;
 use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Inertia\Testing\AssertableInertia as Assert;
+use Spatie\Activitylog\Models\Activity;
 
 pest()->use(RefreshDatabase::class);
 
@@ -28,6 +34,7 @@ beforeEach(function (): void {
     $this->dutyManagerDuty->assignRole('Komunikacijos koordinatorius');
 
     $this->institution = $this->dutyManagerDuty->institution;
+    $this->admin = makeAdminUser($this->tenant);
 
     $this->target = Duty::factory()->create([
         'name' => ['lt' => 'Komunikacijos koordinatorius', 'en' => 'Communications Coordinator'],
@@ -49,32 +56,43 @@ describe('unauthorized access', function (): void {
         ]);
 
         expect($response->status())->toBe(403)
-            ->and($this->source->fresh()->trashed())->toBeFalse();
+            ->and($this->source->fresh())->not->toBeNull();
+    });
+
+    test('a coordinator who may edit and delete both duties still cannot merge them', function (): void {
+        asUser($this->dutyManager)->post(route('duties.mergeDuties'), [
+            'target_duty_id' => $this->target->id,
+            'source_duty_ids' => [$this->source->id],
+        ])->assertForbidden();
+
+        expect($this->source->fresh())->not->toBeNull()
+            ->and($this->dutyManager->can('merge', Duty::class))->toBeFalse()
+            ->and($this->admin->can('merge', Duty::class))->toBeTrue();
     });
 });
 
 describe('merging assignments', function (): void {
     test('rejects duplicate source duty ids without deleting the source', function (): void {
-        asUser($this->dutyManager)->post(route('duties.mergeDuties'), [
+        asUser($this->admin)->post(route('duties.mergeDuties'), [
             'target_duty_id' => $this->target->id,
             'source_duty_ids' => [$this->source->id, $this->source->id],
         ])->assertSessionHasErrors('source_duty_ids.1');
 
-        expect($this->source->fresh()->trashed())->toBeFalse();
+        expect($this->source->fresh())->not->toBeNull();
     });
 
-    test('moves dutiables onto the kept duty and soft-deletes the source', function (): void {
+    test('moves dutiables onto the kept duty and permanently deletes the source', function (): void {
         Dutiable::factory()->forDuty($this->source)->ended()->create();
         Dutiable::factory()->forDuty($this->source)->active()->create();
 
-        asUser($this->dutyManager)->post(route('duties.mergeDuties'), [
+        asUser($this->admin)->post(route('duties.mergeDuties'), [
             'target_duty_id' => $this->target->id,
             'source_duty_ids' => [$this->source->id],
         ])->assertRedirect(route('duties.edit', $this->target));
 
         expect(Dutiable::where('duty_id', $this->source->id)->count())->toBe(0)
             ->and(Dutiable::where('duty_id', $this->target->id)->count())->toBe(2)
-            ->and($this->source->fresh()->trashed())->toBeTrue();
+            ->and(Duty::withTrashed()->find($this->source->id))->toBeNull();
     });
 
     test('collapses overlapping assignments for the same person into one, backfilling missing fields', function (): void {
@@ -93,7 +111,7 @@ describe('merging assignments', function (): void {
             'study_program_id' => $studyProgram->id,
         ]);
 
-        asUser($this->dutyManager)->post(route('duties.mergeDuties'), [
+        asUser($this->admin)->post(route('duties.mergeDuties'), [
             'target_duty_id' => $this->target->id,
             'source_duty_ids' => [$this->source->id],
         ]);
@@ -122,7 +140,7 @@ describe('merging assignments', function (): void {
             'end_date' => '2023-12-31',
         ]);
 
-        asUser($this->dutyManager)->post(route('duties.mergeDuties'), [
+        asUser($this->admin)->post(route('duties.mergeDuties'), [
             'target_duty_id' => $this->target->id,
             'source_duty_ids' => [$this->source->id],
         ]);
@@ -142,7 +160,7 @@ describe('merging related pivots', function (): void {
             ['duty_id' => $this->source->id, 'tenant_id' => $otherTenant->id, 'quota' => null, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        asUser($this->dutyManager)->post(route('duties.mergeDuties'), [
+        asUser($this->admin)->post(route('duties.mergeDuties'), [
             'target_duty_id' => $this->target->id,
             'source_duty_ids' => [$this->source->id],
         ]);
@@ -172,7 +190,7 @@ describe('merging related pivots', function (): void {
             'updated_at' => now(),
         ]);
 
-        asUser($this->dutyManager)->post(route('duties.mergeDuties'), [
+        asUser($this->admin)->post(route('duties.mergeDuties'), [
             'target_duty_id' => $this->target->id,
             'source_duty_ids' => [$this->source->id],
         ]);
@@ -188,7 +206,7 @@ describe('merging related pivots', function (): void {
         $this->target->types()->attach($shared->id);
         $this->source->types()->attach([$shared->id, $onlyOnSource->id]);
 
-        asUser($this->dutyManager)->post(route('duties.mergeDuties'), [
+        asUser($this->admin)->post(route('duties.mergeDuties'), [
             'target_duty_id' => $this->target->id,
             'source_duty_ids' => [$this->source->id],
         ]);
@@ -203,7 +221,7 @@ describe('merging related pivots', function (): void {
         $extraRole = Role::firstOrCreate(['name' => 'Išteklių administratorius', 'guard_name' => 'web']);
         $this->source->assignRole($extraRole);
 
-        asUser($this->dutyManager)->post(route('duties.mergeDuties'), [
+        asUser($this->admin)->post(route('duties.mergeDuties'), [
             'target_duty_id' => $this->target->id,
             'source_duty_ids' => [$this->source->id],
         ]);
@@ -212,22 +230,107 @@ describe('merging related pivots', function (): void {
     });
 });
 
+describe('merging what the duty owns', function (): void {
+    test('moves responsibilities, dropping one the kept duty already has', function (): void {
+        $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
+        DutyResponsibility::factory()->for($this->target)->forTenant($this->tenant)->create();
+        DutyResponsibility::factory()->for($this->source)->forTenant($this->tenant)->create();
+        DutyResponsibility::factory()->for($this->source)->forTenant($otherTenant)->create();
+
+        asUser($this->admin)->post(route('duties.mergeDuties'), [
+            'target_duty_id' => $this->target->id,
+            'source_duty_ids' => [$this->source->id],
+        ])->assertSessionHasNoErrors();
+
+        expect($this->target->responsibilities()->pluck('scope_id')->sort()->values()->all())
+            ->toBe(collect([(string) $this->tenant->id, (string) $otherTenant->id])->sort()->values()->all());
+    });
+
+    test('moves goals, comments and direct permissions onto the kept duty', function (): void {
+        $goal = Goal::factory()->create(['responsible_duty_id' => $this->source->id]);
+        $comment = Comment::factory()->create(['commentable_type' => 'duty', 'commentable_id' => $this->source->id]);
+        $this->source->givePermissionTo('duties.read.padalinys');
+
+        asUser($this->admin)->post(route('duties.mergeDuties'), [
+            'target_duty_id' => $this->target->id,
+            'source_duty_ids' => [$this->source->id],
+        ])->assertSessionHasNoErrors();
+
+        expect($goal->fresh()->responsible_duty_id)->toBe($this->target->id)
+            ->and($comment->fresh()->commentable_id)->toBe($this->target->id)
+            ->and($this->target->fresh()->hasDirectPermission('duties.read.padalinys'))->toBeTrue();
+    });
+
+    test('keeps an ex-officio seat apart from the manual seat it overlaps', function (): void {
+        $person = User::factory()->create();
+        $sourceSeat = Dutiable::factory()->forDuty(Duty::factory()->create(['institution_id' => $this->institution->id]))->forUser($person)->create([
+            'start_date' => '2024-01-01',
+            'end_date' => null,
+        ]);
+        Dutiable::factory()->forDuty($this->target)->forUser($person)->create(['start_date' => '2024-01-01', 'end_date' => null]);
+        Dutiable::factory()->forDuty($this->source)->forUser($person)->create([
+            'start_date' => '2024-03-01',
+            'end_date' => null,
+            'via_dutiable_id' => $sourceSeat->id,
+        ]);
+
+        asUser($this->admin)->post(route('duties.mergeDuties'), [
+            'target_duty_id' => $this->target->id,
+            'source_duty_ids' => [$this->source->id],
+        ])->assertSessionHasNoErrors();
+
+        expect(Dutiable::where('duty_id', $this->target->id)->where('dutiable_id', $person->id)->pluck('via_dutiable_id')->all())
+            ->toEqualCanonicalizing([null, $sourceSeat->id]);
+    });
+});
+
 describe('after merging', function (): void {
-    test('the source duty is soft-deleted, not force-deleted, and can be restored', function (): void {
-        asUser($this->dutyManager)->post(route('duties.mergeDuties'), [
+    test('records the merge, with its actor, on the kept duty', function (): void {
+        asUser($this->admin)->post(route('duties.mergeDuties'), [
             'target_duty_id' => $this->target->id,
             'source_duty_ids' => [$this->source->id],
         ]);
 
-        expect(Duty::withTrashed()->find($this->source->id))->not->toBeNull()
-            ->and(Duty::find($this->source->id))->toBeNull();
+        $entry = Activity::forSubject($this->target)->where('event', 'duties_merged')->sole();
+
+        expect($entry->causer_id)->toBe($this->admin->id)
+            ->and($entry->properties['merged'][0]['id'])->toBe($this->source->id);
+    });
+
+    test('clears the cached permissions of people already holding the kept duty', function (): void {
+        $holder = User::factory()->create();
+        Dutiable::factory()->forDuty($this->target)->forUser($holder)->active()->create();
+        Cache::put('index-permissions-'.$holder->id, ['stale'], 3600);
+        $this->source->assignRole(Role::firstOrCreate(['name' => 'Išteklių administratorius', 'guard_name' => 'web']));
+
+        asUser($this->admin)->post(route('duties.mergeDuties'), [
+            'target_duty_id' => $this->target->id,
+            'source_duty_ids' => [$this->source->id],
+        ]);
+
+        expect(Cache::has('index-permissions-'.$holder->id))->toBeFalse();
     });
 
     test('rejects a source id equal to the target', function (): void {
-        asUser($this->dutyManager)->post(route('duties.mergeDuties'), [
+        asUser($this->admin)->post(route('duties.mergeDuties'), [
             'target_duty_id' => $this->target->id,
             'source_duty_ids' => [$this->target->id],
         ])->assertSessionHasErrors('source_duty_ids.0');
+    });
+});
+
+describe('merge link from the duplicate warning', function (): void {
+    test('opens the duties list with both duties, the kept one first', function (): void {
+        asUser($this->admin)->get(route('duties.index', ['merge' => 1, 'source' => $this->source->id, 'target' => $this->target->id]))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('mergePreset.target_id', $this->target->id)
+                ->where('mergePreset.duties.0.id', $this->target->id)
+                ->where('mergePreset.duties.1.id', $this->source->id));
+    });
+
+    test('offers nothing to someone who may not merge', function (): void {
+        asUser($this->dutyManager)->get(route('duties.index', ['merge' => 1, 'source' => $this->source->id, 'target' => $this->target->id]))
+            ->assertInertia(fn (Assert $page) => $page->where('mergePreset', null));
     });
 });
 

@@ -36,17 +36,59 @@ test('a duty-less user is absent from the tenant user index', function (): void 
             ->component('Admin/People/IndexUser')
             ->where('users.data', fn ($users) => ! collect($users)->contains('id', $unclaimed->id))
         );
+
+    asUser($this->coordinator)->getJson(route('api.v1.admin.users.index', ['search' => $unclaimed->email]))
+        ->assertOk()->assertJsonPath('data.total', 0);
 });
 
-test('a duty-less user is absent from the global user index', function (): void {
+test('global user read permission includes duty-less role-less users on both lists', function (string $role): void {
     $unclaimed = makeUnclaimedUser();
+    $actor = $role === 'super admin'
+        ? makeAdminUser($this->tenant)
+        : makeTenantUserWithRole($role, $this->tenant);
 
-    asUser(makeAdminUser($this->tenant))
-        ->get(route('users.index'))
+    asUser($actor)
+        ->get(route('users.index', ['search' => $unclaimed->email]))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('users.data', fn ($users) => ! collect($users)->contains('id', $unclaimed->id))
+            ->has('users.data', 1)
+            ->where('users.data.0.id', $unclaimed->id)
         );
+
+    asUser($actor)->getJson(route('api.v1.admin.users.index', ['search' => $unclaimed->email]))
+        ->assertOk()->assertJsonPath('data.total', 1)->assertJsonPath('data.items.0.id', $unclaimed->id);
+})->with(['super admin', 'Centrinio biuro komunikacijos koordinatorius', 'Centrinio biuro studentų atstovų koordinatorius']);
+
+test('duty-less users remain outside current and former membership filters', function (string $membership): void {
+    $unclaimed = makeUnclaimedUser();
+    $actor = makeTenantUserWithRole('Centrinio biuro komunikacijos koordinatorius', $this->tenant);
+
+    asUser($actor)->getJson(route('api.v1.admin.users.index', [
+        'search' => $unclaimed->email, 'membership' => $membership,
+    ]))->assertOk()->assertJsonPath('data.total', 0);
+})->with(['current', 'former']);
+
+test('global readers can find duplicate accounts that have never held duties', function (): void {
+    $first = User::factory()->create(['name' => 'Jonas Čiurlionis']);
+    $second = User::factory()->create(['name' => 'Ciurlionis Jonas']);
+    $actor = makeTenantUserWithRole('Centrinio biuro komunikacijos koordinatorius', $this->tenant);
+
+    $response = asUser($actor)->getJson(route('api.v1.admin.users.index', ['duplicates' => 'possible']))
+        ->assertOk()->assertJsonPath('data.total', 2);
+
+    expect(collect($response->json('data.items'))->pluck('id')->all())->toContain($first->id, $second->id);
+});
+
+test('global readers can find duty-less accounts in trash and its count', function (): void {
+    $unclaimed = makeUnclaimedUser();
+    $unclaimed->delete();
+    $actor = makeTenantUserWithRole('Centrinio biuro komunikacijos koordinatorius', $this->tenant);
+
+    asUser($actor)->get(route('users.index', ['search' => $unclaimed->email]))
+        ->assertOk()->assertInertia(fn (Assert $page) => $page->where('deletedCount', 1));
+
+    asUser($actor)->getJson(route('api.v1.admin.users.index', ['search' => $unclaimed->email, 'showDeleted' => 'true']))
+        ->assertOk()->assertJsonPath('data.total', 1)->assertJsonPath('data.items.0.id', $unclaimed->id);
 });
 
 test('a claimed user from another tenant stays hidden', function (): void {

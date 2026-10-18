@@ -149,7 +149,7 @@ return [
     ],
 
     'user' => [
-        'merged' => 'Contacts merged successfully!',
+        'merged' => 'Members merged successfully.',
         'password_created' => 'Password created successfully!',
         'password_deleted' => 'Password deleted successfully!',
     ],

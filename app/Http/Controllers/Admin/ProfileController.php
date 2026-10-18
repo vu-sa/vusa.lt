@@ -31,7 +31,7 @@ class ProfileController extends AdminController
         $user = User::query()->find(Auth::id()) ?? abort(404);
 
         // The roles list moved to `profile.roles` (PR 5.9); only the shallow relations stay in the payload.
-        $user->load('roles:id,name', 'current_duties:id,name,institution_id')->makeVisible(['name_was_changed', 'show_pronouns']);
+        $user->load('roles:id,name', 'current_duties:id,name,institution_id')->makeVisible(['show_pronouns']);
 
         return $this->inertiaResponse('Admin/ShowProfile', [
             'user' => [...$user->append('has_password')->toFullArray(), 'profile_photo_media' => $user->imageData('profile_photo')],
@@ -83,13 +83,6 @@ class ProfileController extends AdminController
         $user = User::find(Auth::id());
 
         $validated = $request->validated();
-
-        // The display name may only be changed once.
-        if (array_key_exists('name', $validated) && $user->name !== $validated['name'] && ! $user->name_was_changed) {
-            $user->name_was_changed = true;
-        } else {
-            unset($validated['name']);
-        }
 
         $user->update(Arr::except($validated, ['profile_photo_media']));
         app(SyncImageMedia::class)->fromValidated($user, 'profile_photo', $validated, 'profile_photo_media', $user);

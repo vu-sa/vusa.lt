@@ -9,39 +9,9 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class MergeDutiesRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * Merging changes the kept duty (its assignments grow) and destroys each
-     * source, so both abilities are required — same shape as MergeUsersRequest.
-     */
     public function authorize(): bool
     {
-        $keptDuty = Duty::find($this->target_duty_id);
-
-        if (! $keptDuty) {
-            return true;
-        }
-
-        if (! $this->user()->can('update', $keptDuty)) {
-            return false;
-        }
-
-        $sourceIds = (array) $this->source_duty_ids;
-
-        $sources = Duty::query()->whereIn('id', $sourceIds)->get();
-
-        if ($sources->count() !== count($sourceIds)) {
-            return true;
-        }
-
-        foreach ($sources as $sourceDuty) {
-            if (! $this->user()->can('delete', $sourceDuty)) {
-                return false;
-            }
-        }
-
-        return true;
+        return $this->user()->can('merge', Duty::class);
     }
 
     /**

@@ -28,6 +28,12 @@ class DutyPolicy extends ModelPolicy
         return $duty->users()->whereKey($user->getKey())->exists() || parent::view($user, $duty);
     }
 
+    /** Merging rewrites assignment history and permanently deletes duties, so only super admins may. */
+    public function merge(User $user): bool
+    {
+        return $user->isSuperAdmin();
+    }
+
     /**
      * Whether the user can manage (add/edit/remove) people on this duty.
      *

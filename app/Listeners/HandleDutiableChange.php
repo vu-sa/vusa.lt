@@ -36,10 +36,16 @@ class HandleDutiableChange implements ShouldQueue
             return;
         }
 
-        // resetCache() deliberately leaves these two maps alone, so forget them here.
-        PermissionMapBuilder::forgetCachedMaps($event->modelId);
-        Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($event->modelId));
+        self::forgetUserAuthority($event->modelId);
+    }
 
-        app(UserPermissionObserver::class)->invalidateUserCache($event->modelId);
+    /** Drop every cache derived from a user's duties; also called where dutiables move without model events. */
+    public static function forgetUserAuthority(string $userId): void
+    {
+        // resetCache() deliberately leaves these two maps alone, so forget them here.
+        PermissionMapBuilder::forgetCachedMaps($userId);
+        Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($userId));
+
+        app(UserPermissionObserver::class)->invalidateUserCache($userId);
     }
 }

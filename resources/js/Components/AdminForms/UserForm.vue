@@ -18,6 +18,14 @@
     :updated-at="user?.updated_at"
     @submit="emit('submit:form', form)"
   >
+    <DuplicateUserWarning
+      v-if="!isCreating && existingDuplicates.length"
+      :matches="existingDuplicates"
+      show-merge-action
+      data-testid="existing-duplicates"
+      @merge="emit('merge', $event)"
+    />
+
     <p class="max-w-prose border-l border-border pl-3 text-sm leading-relaxed text-muted-foreground">
       {{ $t('forms.required_note') }}
     </p>
@@ -217,7 +225,7 @@ import { useForm, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Briefcase, Clock, Lock, UserCheck } from '@lucide/vue';
 
-import DuplicateUserWarning from './DuplicateUserWarning.vue';
+import DuplicateUserWarning, { type DuplicateUserMatch } from './DuplicateUserWarning.vue';
 import FormFieldWrapper from './FormFieldWrapper.vue';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
@@ -245,14 +253,20 @@ const props = withDefaults(defineProps<{
   rememberKey?: 'CreateUser';
   /** Name changes remain independently restricted to super administrators. */
   canUpdateIdentity?: boolean;
+  /** Edit only: other records of the same person, loaded deferred. */
+  existingDuplicates?: DuplicateUserMatch[];
 }>(), {
+  existingDuplicates: () => [],
   roles: () => [],
   tenantsWithDuties: () => [],
   permissableTenants: () => [],
   canUpdateIdentity: true,
 });
 
-const emit = defineEmits<(event: 'submit:form', form: unknown) => void>();
+const emit = defineEmits<{
+  'submit:form': [form: unknown];
+  'merge': [match: DuplicateUserMatch];
+}>();
 
 const isCreating = computed(() => !props.user.id);
 const isSuperAdmin = computed(() => usePage().props.auth?.user?.isSuperAdmin ?? false);

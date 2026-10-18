@@ -7,8 +7,8 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Self-service profile fields only — never email/password, which have their own dedicated
- * flows (UpdatePasswordRequest).
+ * Self-service profile fields only — never name (super admins rename people, which keeps
+ * name matching trustworthy for merges) or email/password, which have their own flows.
  */
 class UpdateUserSettingsRequest extends FormRequest
 {
@@ -25,7 +25,6 @@ class UpdateUserSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:255'],
             'facebook_url' => ['nullable', 'string', 'max:255'],
             ...$this->imageMediaRules('profile_photo_media', $this->user(), 'profile_photo'),

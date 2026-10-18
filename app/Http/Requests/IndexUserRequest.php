@@ -4,6 +4,15 @@ namespace App\Http\Requests;
 
 class IndexUserRequest extends BaseIndexRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $filters = $this->getFilters();
+
+        if (array_key_exists('duplicates', $filters)) {
+            $this->merge(['duplicates' => $filters['duplicates']]);
+        }
+    }
+
     /** @var array<int, array{id: string, desc: bool}> */
     #[\Override]
     protected array $defaultSorting = [
@@ -17,6 +26,7 @@ class IndexUserRequest extends BaseIndexRequest
             ...parent::rules(),
             'future_duty' => 'nullable|in:scheduled',
             'membership' => 'nullable|in:current,former',
+            'duplicates' => 'nullable|in:possible',
         ];
     }
 }

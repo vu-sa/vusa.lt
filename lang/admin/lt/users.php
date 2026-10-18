@@ -1,11 +1,15 @@
 <?php
 
 return [
+    'index' => [
+        'lead' => 'Narių paskyros, kontaktai ir pareigų istorija.',
+        'empty_description' => 'Čia rodomos narių paskyros, kurias gali peržiūrėti.',
+    ],
     'form' => [
         'name_hint' => 'Esamų vardų ir pavardžių keisti negalima — kitam asmeniui sukurk naują narį.',
         'contacts_hint' => 'Turinčio pareigybę nario nuotrauka ir kontaktai matomi vusa.lt.',
     ],
-    'name_locked' => 'Vardą ir pavardę gali keisti tik sistemos administratoriai arba naudotojas, vieną kartą.',
+    'name_locked' => 'Vardą ir pavardę gali keisti tik sistemos administratoriai.',
     'identity_locked_tenants' => 'El. pašto keisti negali: šis asmuo priklauso ir kitiems padaliniams (:tenants). Kreipkis į vusa.lt pagalbą.',
     'identity_locked_protected' => 'El. pašto keisti negali: šios paskyros rolė priskirta tiesiogiai. Kreipkis į centrinio biuro administratorius.',
     'identity_locked_hint' => 'El. paštas naudojamas prisijungimui, todėl jį gali keisti tik administratoriai, kuriems priklauso visi šio asmens padaliniai.',
@@ -16,8 +20,31 @@ return [
     'duplicate_use_profile' => 'Naudoti šį profilį',
     'duplicate_open_profile' => 'Peržiūrėti',
     'duplicate_contact_admins' => 'Kreipkis į to padalinio administratorius',
+    'merge' => [
+        'loading_periods' => 'Tikrinami pareigų laikotarpiai…',
+        'periods_failed' => 'Nepavyko patikrinti papildomų el. paštų. Be šios parinkties senieji adresai nebus priskirti laikotarpiams.',
+        'duty_emails' => 'Išsaugoti seną el. paštą prie pareigų',
+        'duty_emails_hint' => 'Pažymėk laikotarpius, kuriems naudoti prijungiamos paskyros el. paštą kaip papildomą kontaktą. Esami adresai nekeičiami; persidengiantiems laikotarpiams galima pasirinkti vieną adresą.',
+        'open_ended' => 'be pabaigos datos',
+        'photos_preserved' => 'Prijungiamų paskyrų nuotraukos automatiškai išsaugomos prie jų pareigų laikotarpių. Esamos laikotarpių nuotraukos išlieka.',
+        'email_selection_changed' => 'Pasirinktam laikotarpiui el. pašto pridėti negalima arba pasirinkti keli adresai persidengiantiems laikotarpiams. Patikrink pasirinkimą.',
+
+        'login_email_locked' => 'Šios paskyros prisijungimo el. pašto keisti negali. Sujungus liks dabartinis adresas.',
+        'name_mismatch' => 'Sujungti galima tik to paties asmens įrašus, o :name vardas ir pavardė nesutampa.',
+        'direct_roles' => ':name rolė priskirta tiesiogiai. Prieš sujungdamas ją pašalink.',
+        'outside_scope' => 'Sujungti gali administratoriai, kuriems priklauso visi abiejų įrašų padaliniai.',
+        'action' => 'Sujungti',
+        'login_email' => 'Prisijungimo el. paštas',
+        'login_email_hint' => 'Kiti el. paštai prisijungti nebeleis.',
+        'permanent' => 'Sujungti įrašai bus ištrinti visam laikui.',
+    ],
     'no_tenant' => 'Be padalinio',
     'filters' => [
+        'duplicates_group' => 'Dublikatai',
+        'possible' => 'Galimi',
+        'duplicates' => 'Galimi dublikatai',
+        'duplicates_spotlight' => 'Atrink narius, kurių vardas ir pavardė sutampa su kitu profiliu. Redagavimo lange gali patikrinti, ar įrašus leidžiama sujungti.',
+
         'duty_timing' => 'Pareigų pradžia',
         'scheduled' => 'Būsimos pareigos',
     ],

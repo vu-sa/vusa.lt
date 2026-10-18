@@ -268,7 +268,7 @@ class AdminNavigationCatalog
             descriptionKey: 'shell.workspaces.organizacija.description',
             sections: [
                 new Section('nariai', 'shell.sections.nariai', 'users.index', [], 'user', Visibility::can('viewAny', User::class), [CollectionAction::merge(Visibility::can('viewAny', User::class))], descriptionKey: 'shell.section_descriptions.nariai'),
-                new Section('pareigybes', 'shell.sections.pareigybes', 'duties.index', [], 'duty', Visibility::can('viewAny', Duty::class), [CollectionAction::merge(Visibility::can('viewAny', Duty::class))], ['duties.*', 'dutiables.edit'], descriptionKey: 'shell.section_descriptions.pareigybes'),
+                new Section('pareigybes', 'shell.sections.pareigybes', 'duties.index', [], 'duty', Visibility::can('viewAny', Duty::class), [CollectionAction::merge(Visibility::can('merge', Duty::class))], ['duties.*', 'dutiables.edit'], descriptionKey: 'shell.section_descriptions.pareigybes'),
                 new Section('pareigybiu_atnaujinimas', 'shell.sections.pareigybiu_atnaujinimas', 'duties.updateUsersWizard', [], 'duty', Visibility::can('create', Duty::class), descriptionKey: 'shell.section_descriptions.pareigybiu_atnaujinimas'),
                 new Section('padaliniai', 'shell.sections.padaliniai', 'tenants.index', [], 'tenant', Visibility::can('viewAny', Tenant::class), descriptionKey: 'shell.section_descriptions.padaliniai'),
                 new Section('studiju_programos', 'shell.sections.studiju_programos', 'studyPrograms.index', [], 'study_program', Visibility::can('viewAny', StudyProgram::class), [CollectionAction::merge(Visibility::can('viewAny', StudyProgram::class))], descriptionKey: 'shell.section_descriptions.studiju_programos'),

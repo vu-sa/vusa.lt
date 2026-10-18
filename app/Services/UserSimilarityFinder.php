@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
  *
  * There should be exactly one record per person, but the only thing enforcing that
  * is the unique email — so the same student is routinely re-created under a second
- * address by a second unit, and cleaning it up afterwards needs `users.update.*`.
+ * address by a second unit; the user merge cleans that up afterwards.
  *
  * Deliberately plain string work rather than trigram or Levenshtein infrastructure:
  * MySQL's SOUNDEX is built for English and is useless for Lithuanian, and this runs
@@ -88,8 +88,24 @@ class UserSimilarityFinder
             return 'email_local_part';
         }
 
-        $candidateTokens = self::nameTokens((string) $user->name);
+        return self::nameMatchReason($tokens, self::nameTokens((string) $user->name));
+    }
 
+    /**
+     * Whether two full names belong to the same person by the rules below; the user
+     * merge only accepts records that pass this.
+     */
+    public static function namesMatch(string $first, string $second): bool
+    {
+        return self::nameMatchReason(self::nameTokens($first), self::nameTokens($second)) !== null;
+    }
+
+    /**
+     * @param  list<string>  $tokens
+     * @param  list<string>  $candidateTokens
+     */
+    private static function nameMatchReason(array $tokens, array $candidateTokens): ?string
+    {
         if ($tokens === [] || $candidateTokens === []) {
             return null;
         }

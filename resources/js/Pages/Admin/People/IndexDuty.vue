@@ -121,7 +121,7 @@
     </template>
   </CollectionPage>
 
-  <MergeRecordsDialog :open="mergeRecords.length > 0" type="duties" :records="mergeRecords" :submit-url="route('duties.mergeDuties')" target-field="target_duty_id" source-field="source_duty_ids" @close="mergeRecords = []" @merged="merged" />
+  <MergeRecordsDialog :open="mergeRecords.length > 0" type="duties" :records="mergeRecords" :initial-target-id="mergeTargetId" :submit-url="route('duties.mergeDuties')" target-field="target_duty_id" source-field="source_duty_ids" @close="closeMerge" @merged="merged" />
   <ConfirmDialog :open="forceDeleteTarget !== null" :title="$t('Ištrinti pareigybę visam laikui?')" :description="$t('Šis veiksmas negrįžtamas. Pareigybė bus visiškai pašalinta.')" :confirm-label="$t('Ištrinti visam laikui')" destructive @update:open="!$event && (forceDeleteTarget = null)" @confirm="forceDelete" />
 </template>
 
@@ -147,7 +147,12 @@ import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 interface Translation { lt?: string; en?: string }
 type Duty = App.Entities.Duty & { name: Translation; email?: string | null; dutiables_count: number; is_active?: boolean; institution?: { id: string | number; name?: Translation; short_name?: Translation | null } | null; types?: { id: string | number; title: Translation }[] };
 
-const props = defineProps<{ duties: { data: Duty[]; meta: { total: number; per_page: number; current_page: number; last_page: number } }; deletedCount?: number; showDeleted?: boolean }>();
+const props = defineProps<{
+  duties: { data: Duty[]; meta: { total: number; per_page: number; current_page: number; last_page: number } };
+  deletedCount?: number;
+  showDeleted?: boolean;
+  mergePreset?: { target_id: string; duties: Duty[] } | null;
+}>();
 const isDeleted = computed(() => Boolean(props.showDeleted));
 const canCreate = computed(() => Boolean(usePage().props.auth?.can?.create?.duty));
 const canUpdate = computed(() => Boolean(usePage().props.auth?.can?.update?.duty));
@@ -156,6 +161,7 @@ const { hasCollectionAction } = useAdminNavigation();
 const canMerge = computed(() => hasCollectionAction('duties.index', 'merge'));
 const mergeMode = ref(false);
 const mergeRecords = ref<MergeRecord[]>([]);
+const mergeTargetId = ref<string | null>(null);
 const forceDeleteTarget = ref<Duty | null>(null);
 
 const rowActions = (item: Duty): CollectionRowAction[] => isDeleted.value
@@ -182,6 +188,8 @@ const source = useDatabaseCollectionSource<Duty>({
     { value: 'vacant', label: $t('Neužimtos') }, { value: 'missing_en_name', label: $t('Trūksta EN pavadinimo') },
     { value: 'missing_lt_name', label: $t('Trūksta LT pavadinimo') }, { value: 'duplicate_holders', label: $t('Pasikartojantys nariai') },
     { value: 'inactive', label: $t('Neaktyvios') },
+    // Only live duties are compared, so the trash has none to show.
+    ...(isDeleted.value ? [] : [{ value: 'possible_duplicates', label: $t('forms.duty_duplicate.filter') }]),
   ] }],
 });
 const columns = computed<CollectionColumn[]>(() => [
@@ -198,12 +206,45 @@ const institutionTitle = (duty: Duty) => titleOf(duty.institution?.short_name ||
 const toMergeRecords = (duties: Duty[]): MergeRecord[] =>
   duties.map(duty => ({ id: duty.id, label: title(duty), context: institutionTitle(duty) }));
 const isFiltered = computed(() => source.query.value.trim() !== '' || source.activeFilterCount.value > 0);
-const quickFilters = computed<CollectionQuickFilter[]>(() => [{ id: 'vacant', label: $t('Neužimtos'), active: source.filters.value.data_quality === 'vacant' }]);
+const quickFilters = computed<CollectionQuickFilter[]>(() => [
+  { id: 'vacant', label: $t('Neužimtos'), active: source.filters.value.data_quality === 'vacant' },
+  ...(isDeleted.value
+    ? []
+    : [{
+        id: 'possible_duplicates',
+        label: $t('forms.duty_duplicate.filter'),
+        active: source.filters.value.data_quality === 'possible_duplicates',
+        spotlight: {
+          id: 'duty-duplicates-v1',
+          title: $t('forms.duty_duplicate.filter'),
+          description: $t('forms.duty_duplicate.filter_spotlight'),
+        },
+      }]),
+]);
 function toggleQuickFilter(id: string): void {
-  if (id === 'vacant') {
-    source.setFilter('data_quality', source.filters.value.data_quality === 'vacant' ? undefined : 'vacant');
-  }
+  source.setFilter('data_quality', source.filters.value.data_quality === id ? undefined : id);
 }
+if (isDeleted.value && source.filters.value.data_quality === 'possible_duplicates') {
+  source.setFilter('data_quality', undefined);
+}
+// Opened from the duplicate warning's "merge into this one" link.
+if (props.mergePreset) {
+  mergeRecords.value = toMergeRecords(props.mergePreset.duties);
+  mergeTargetId.value = props.mergePreset.target_id;
+}
+
+function closeMerge(): void {
+  mergeRecords.value = [];
+  if (mergeTargetId.value === null) {
+    return;
+  }
+  mergeTargetId.value = null;
+  // Drop the link's parameters so a reload does not reopen the dialog.
+  const url = new URL(window.location.href);
+  ['merge', 'source', 'target'].forEach(key => url.searchParams.delete(key));
+  window.history.replaceState(window.history.state, '', url.toString());
+}
+
 function merged(): void {
   mergeRecords.value = [];
   mergeMode.value = false;

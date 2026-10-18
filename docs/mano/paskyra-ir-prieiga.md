@@ -38,9 +38,8 @@ Atverk **Paskyra** (`/mano/profile`), pakeisk telefono numerį, Facebook nuorod�
 profilio nuotrauką ir spausk **Išsaugoti**. Jei rodoma lauko klaida, pataisyk ją ir išsaugok dar kartą.
 Skiltyje **Kreipinys ir įvardžiai** gali įrašyti įvardžius abiem kalbomis ir pasirinkti, ar juos rodyti viešai.
 
-Savo vardą ir pavardę gali pataisyti **tik vieną kartą** – formoje tai primenama prie laukelio.
-Po to laukelis užrakinamas; jei vardą reikia keisti dar kartą, kreipkis į administratorių.
-Prisijungimo el. paštas šioje formoje užrakintas visada. El. pašto adresų pranešimams pasirinkimas
+Vardas, pavardė ir prisijungimo el. paštas šioje formoje užrakinti. Jei vardas ar pavardė
+neteisingi, kreipkis į administratorių. El. pašto adresų pranešimams pasirinkimas
 yra atskiras nustatymas.
 **Slaptažodžio keitimas** rodomas tik paskyrai, kuri jau turi vietinį slaptažodį.
 Įrašyk dabartinį slaptažodį, naująjį ir jo patvirtinimą, tada spausk **Keisti slaptažodį**.
@@ -130,9 +129,7 @@ kontaktinius duomenis. Kitų narių pareigos ir rolės tvarkomos per tam skirtus
 
 - `ProfileController` visada naudoja prisijungusio naudotojo ID; prieigos suvestinę sudaro `GetUserAccessSummary`.
 - Profilio laukai tikrinami `UpdateUserSettingsRequest`, slaptažodis – `UpdatePasswordRequest`.
-- Profilio el. paštas ir slaptažodis nepriimami per bendrą profilio atnaujinimą.
-- Vardą `ProfileController::updateUserSettings` priima tik kol `name_was_changed` netiesa ir tada jį
-  nustato; vėlesni vardo pakeitimai tyliai praleidžiami. `ShowProfile.vue` tada užrakina vardo lauką,
-  el. pašto lauką – visada.
+- Profilio vardas, el. paštas ir slaptažodis nepriimami per bendrą profilio atnaujinimą;
+  `ShowProfile.vue` vardo ir el. pašto laukus rodo užrakintus.
 - `ProfileRolesTest` tikrina pareigų būsenas, paskutinės dienos įskaitymą, roles ir kitų
   narių duomenų neįtraukimą. Sąsajos testai tikrina laukus, prieigos vaizdą ir meniu veiksmus.

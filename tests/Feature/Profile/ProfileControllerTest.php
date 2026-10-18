@@ -115,25 +115,7 @@ describe('user settings', function (): void {
         expect($this->admin->phone)->toBe('+37061111111');
     });
 
-    test('user can change their own name once', function (): void {
-        $this->admin->forceFill(['name_was_changed' => false])->save();
-
-        asUser($this->admin)
-            ->patch(route('profile.update'), ['name' => 'Corrected Name'])
-            ->assertStatus(302)
-            ->assertSessionHas('success');
-
-        $this->admin->refresh();
-
-        expect($this->admin->name)->toBe('Corrected Name')
-            ->and($this->admin->name_was_changed)->toBeTrue();
-    });
-
-    test('user cannot change name after it was previously changed', function (): void {
-        // Set name_was_changed to true
-        $this->admin->name_was_changed = true;
-        $this->admin->save();
-
+    test('user cannot change their own name', function (): void {
         $updateData = [
             'name' => 'New Name',
             'phone' => '+37062222222',

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\BuildUserIndexQuery;
 use App\Actions\DeleteUserPassword;
+use App\Actions\FindMergeableUserDuplicates;
 use App\Actions\GenerateUserPassword;
 use App\Actions\Media\SyncImageMedia;
 use App\Actions\MergeUsers;
@@ -15,6 +16,7 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Requests\UpdateUserRolesRequest;
 use App\Http\Resources\TaskResource;
+use App\Http\Resources\UserRowResource;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
@@ -45,24 +47,22 @@ class UserController extends AdminController
     {
         $this->handleAuthorization('viewAny', User::class);
 
-        $query = BuildUserIndexQuery::execute($request, $this->authorizer);
-
-        $searchableColumns = ['name', 'email', 'phone'];
-
-        $query = $this->applyTanstackFilters(
-            $query,
+        $buildQuery = fn (bool $includeDuplicates = true) => $this->applyTanstackFilters(
+            BuildUserIndexQuery::execute($request, $this->authorizer, $includeDuplicates),
             $request,
             $this->tableService,
-            $searchableColumns,
+            ['name', 'email', 'phone'],
             [
                 'applySortBeforePagination' => true,
                 'tenantRelation' => 'tenants',
                 'permission' => 'users.read.padalinys',
-                'handledFilters' => ['future_duty', 'membership'],
+                'handledFilters' => ['future_duty', 'membership', 'duplicates'],
             ]
         );
 
-        $deletedCount = $this->getTrashedCount($query);
+        // The duplicate filter only applies to live accounts, so it must not hide the trash door.
+        $deletedCount = $this->getTrashedCount($buildQuery(includeDuplicates: false));
+        $query = $buildQuery();
 
         // Trash view only: lets the table say why permanent deletion is refused.
         $query = $this->withForceDeleteBlockers($query, $request);
@@ -78,7 +78,7 @@ class UserController extends AdminController
 
         return $this->inertiaResponse('Admin/People/IndexUser', [
             'users' => [
-                'data' => $collection->values(),
+                'data' => $collection->map(fn (User $user): array => UserRowResource::make($user)->resolve($request))->values(),
                 'meta' => [
                     'total' => $users->total(),
                     'per_page' => $users->perPage(),
@@ -221,6 +221,7 @@ class UserController extends AdminController
                 'profile_photo_media' => $user->imageData('profile_photo'),
             ],
             'canUpdateIdentity' => $actor->can('updateIdentity', $user),
+            'duplicates' => Inertia::defer(fn () => app(FindMergeableUserDuplicates::class)->execute($actor, $user)),
         ]);
     }
 
@@ -320,16 +321,20 @@ class UserController extends AdminController
     }
 
     /**
-     * Merge two user accounts.
+     * Merge duplicate user accounts into one.
      */
-    public function mergeUsers(MergeUsersRequest $request)
+    public function mergeUsers(MergeUsersRequest $request): RedirectResponse
     {
-        $keptUser = User::query()->find($request->kept_user_id);
-        $sources = User::query()->whereIn('id', $request->validated('source_user_ids'))->get();
+        $keptUser = $request->keptUser();
 
-        MergeUsers::execute($keptUser, $sources);
+        MergeUsers::execute($keptUser, $request->sourceUsers(), $request->validated('login_email'), $request->user(), $request->validated('dutiable_email_ids', []));
 
-        return back()->with('success', __('messages.user.merged'));
+        // Merging from a duplicate's own edit page would send "back" to a deleted record.
+        $redirect = $request->validated('redirect_to_kept')
+            ? to_route('users.edit', $keptUser)
+            : back();
+
+        return $redirect->with('success', __('messages.user.merged'));
     }
 
     /**

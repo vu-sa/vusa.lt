@@ -5,26 +5,18 @@ namespace App\Actions;
 use App\Http\Requests\IndexUserRequest;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
+use App\Services\UserDuplicateFinder;
 use Illuminate\Database\Eloquent\Builder;
 
-/**
- * The member list's base query — one definition for the Inertia page and its API twin.
- *
- * Tenant-scoped user administration reaches people with a duty history (or a role); the tenant
- * scope itself is applied by the caller through `applyTanstackFilters(... 'tenantRelation' =>
- * 'tenants')`. Dutyless, roleless accounts are never part of this list (.ai/rules/users.md).
- */
+/** The member list's base query, shared by the Inertia page and its API. */
 final class BuildUserIndexQuery
 {
     /**
      * @return Builder<User>
      */
-    public static function execute(IndexUserRequest $request, ModelAuthorizer $authorizer): Builder
+    public static function execute(IndexUserRequest $request, ModelAuthorizer $authorizer, bool $includeDuplicates = true): Builder
     {
         $query = User::query()
-            ->where(fn (Builder $query) => $query
-                ->whereHas('duties')
-                ->orWhereHas('roles'))
             // Institution names feed the row's quick list of where the person served.
             ->with([
                 'duties:id,institution_id',
@@ -35,7 +27,15 @@ final class BuildUserIndexQuery
             ->withExists(['duties as is_current' => self::inOffice(...)])
             ->withMax('duties as last_term_end', 'dutiables.end_date');
 
-        // "Former" means a duty history with nothing in force; role-only accounts are neither.
+        if (! $authorizer->allows($request->user(), 'users.read.*')) {
+            $query->where(fn (Builder $query) => $query->whereHas('duties')->orWhereHas('roles'));
+        }
+
+        if ($includeDuplicates && ! $request->getShowDeleted() && $request->validated('duplicates') === 'possible') {
+            $query->whereIn('users.id', app(UserDuplicateFinder::class)->ids());
+        }
+
+        // Role-only and duty-less accounts are neither current nor former.
         match ($request->getFilters()['membership'] ?? $request->validated('membership')) {
             'current' => $query->whereHas('duties', fn (Builder $duties) => self::inOffice($duties)),
             'former' => $query->whereHas('duties')->whereDoesntHave('duties', fn (Builder $duties) => self::inOffice($duties)),

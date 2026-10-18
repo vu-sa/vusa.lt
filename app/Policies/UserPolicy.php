@@ -44,16 +44,6 @@ class UserPolicy extends ModelPolicy
     }
 
     /**
-     * Determine whether the user can merge models.
-     *
-     * @return Response|bool
-     */
-    public function merge(User $user)
-    {
-        return $this->authorizer->allows($user, $this->permission(CRUDEnum::UPDATE->label(), PermissionScopeEnum::ALL));
-    }
-
-    /**
      * Determine whether the user may change the target's name.
      */
     public function updateName(User $user, User $target): bool

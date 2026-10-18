@@ -2,6 +2,7 @@ export interface CollectionQuickFilter {
   id: string;
   label: string;
   active: boolean;
+  spotlight?: { id: string; title: string; description: string };
 }
 
 /** A column of the table view. Cells render through `CollectionPage`'s `cell` slot. */

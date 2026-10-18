@@ -290,6 +290,8 @@ return [
         'reason_exact' => 'same name',
         'open_duty' => 'Open',
         'merge_instead' => 'Merge into this one',
+        'filter' => 'Possible duplicates',
+        'filter_spotlight' => 'Show duties whose name matches another duty in the same institution, e.g. "Koordinatorius" and "Koordinatorė".',
         'contact_admins' => 'Contact that institution\'s administrators',
         'variant_hint' => 'The masculine/feminine or plural form is generated automatically from the holder\'s pronouns — there is no need to create a separate duty.',
         'other_institutions' => 'This duty also exists in :count other institution(s) — that is normal.',

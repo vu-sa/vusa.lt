@@ -1,6 +1,6 @@
 <template>
   <Dialog :open @update:open="close">
-    <DialogContent class="max-w-xl">
+    <DialogContent class="max-h-[85dvh] max-w-[calc(100%-2rem)] grid-cols-[minmax(0,1fr)] overflow-y-auto sm:max-w-xl">
       <DialogHeader>
         <DialogTitle>{{ $t('Sujungti įrašus') }}</DialogTitle>
         <DialogDescription>
@@ -17,8 +17,10 @@
             <Button
               v-for="record in records"
               :key="String(record.id)"
+              :data-merge-target="String(record.id)"
               :variant="String(targetId) === String(record.id) ? 'secondary' : 'outline'"
-              class="h-auto justify-start px-3 py-2 text-left"
+              :disabled="!isKeepable(record)"
+              class="h-auto min-w-0 justify-start px-3 py-2 text-left"
               @click="targetId = record.id"
             >
               <span class="min-w-0">
@@ -42,7 +44,7 @@
               v-for="candidate in candidates"
               :key="String(candidate.id)"
               :variant="String(targetId) === String(candidate.id) ? 'secondary' : 'outline'"
-              class="h-auto justify-start px-3 py-2 text-left"
+              class="h-auto min-w-0 justify-start px-3 py-2 text-left"
               @click="targetId = candidate.id"
             >
               <span class="min-w-0">
@@ -56,13 +58,15 @@
         <p v-if="targetId" class="rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
           {{ $t('Bus paliktas pasirinktas įrašas, o :count kiti įrašai bus sujungti į jį.', { count: sourceIds.length }) }}
         </p>
+
+        <slot v-if="targetId" name="details" :target-id />
       </div>
 
       <DialogFooter>
         <Button variant="outline" @click="close">
-          {{ $t('Cancel') }}
+          {{ $t('Atšaukti') }}
         </Button>
-        <Button :disabled="!targetId || isSubmitting" @click="submit">
+        <Button data-slot="merge-submit" :disabled="!targetId || isSubmitting || submitDisabled" @click="submit">
           {{ $t('Sujungti') }}
         </Button>
       </DialogFooter>
@@ -99,6 +103,13 @@ const props = defineProps<{
   submitUrl: string;
   targetField: string;
   sourceField: string;
+  /** Ids that may be kept; every record when omitted. */
+  keepableIds?: (string | number)[];
+  /** Sent along with the ids, e.g. a choice made in the details slot. */
+  extraPayload?: Record<string, unknown>;
+  submitDisabled?: boolean;
+  /** Preselected kept record, e.g. from a "merge into this one" link. */
+  initialTargetId?: string | number | null;
 }>();
 
 const emit = defineEmits<{
@@ -117,6 +128,9 @@ const sourceIds = computed(() => props.records
   .map(record => record.id)
   .filter(id => String(id) !== String(targetId.value)));
 
+const isKeepable = (record: MergeRecord) =>
+  !props.keepableIds || props.keepableIds.some(id => String(id) === String(record.id));
+
 watch(() => props.open, (open) => {
   if (!open) {
     return;
@@ -124,8 +138,11 @@ watch(() => props.open, (open) => {
 
   query.value = '';
   candidates.value = [];
-  targetId.value = null;
-});
+  // With a single possible target there is nothing to choose.
+  const keepable = props.records.filter(isKeepable);
+  const initial = keepable.find(record => String(record.id) === String(props.initialTargetId));
+  targetId.value = initial?.id ?? (props.keepableIds && keepable.length === 1 ? (keepable[0]?.id ?? null) : null);
+}, { immediate: true });
 
 const search = () => {
   clearTimeout(searchTimeout);
@@ -157,12 +174,13 @@ const search = () => {
 const close = () => emit('close');
 
 const submit = () => {
-  if (!targetId.value || sourceIds.value.length === 0) {
+  if (!targetId.value || sourceIds.value.length === 0 || props.submitDisabled) {
     return;
   }
 
   isSubmitting.value = true;
   router.post(props.submitUrl, {
+    ...props.extraPayload,
     [props.targetField]: targetId.value,
     [props.sourceField]: sourceIds.value,
   }, {

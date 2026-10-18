@@ -72,3 +72,26 @@ describe('DuplicateUserWarning.vue', () => {
     expect(nameOnly.text()).not.toContain('users.duplicate_reason_email');
   });
 });
+
+describe('DuplicateUserWarning.vue on the edit form', () => {
+  it('emits merge for a record the admin may merge, with its full email', async () => {
+    const match = makeMatch({ email: 'jonas@stud.vu.lt', keepable_ids: ['me', 'user-1'], can_manage: true });
+    const wrapper = mountWarning({ matches: [match], showMergeAction: true });
+
+    expect(wrapper.text()).toContain('jonas@stud.vu.lt');
+
+    await wrapper.find('button').trigger('click');
+
+    expect(wrapper.emitted('merge')?.[0]).toEqual([match]);
+  });
+
+  it('explains why a record cannot be merged instead of offering the action', () => {
+    const wrapper = mountWarning({
+      matches: [makeMatch({ keepable_ids: [], blocked_reason: 'Vardas pakeistas' })],
+      showMergeAction: true,
+    });
+
+    expect(wrapper.find('button').exists()).toBe(false);
+    expect(wrapper.text()).toContain('Vardas pakeistas');
+  });
+});
