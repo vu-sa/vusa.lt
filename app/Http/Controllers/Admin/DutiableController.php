@@ -106,19 +106,10 @@ class DutiableController extends AdminController
             app(SyncImageMedia::class)->fromValidated($dutiable, 'photo', $data, 'photo_media', $request->user());
         };
 
-        // Email-only edits (JSON) never change the active period, so they can't
-        // affect access; only guard the date-editing (Inertia) path.
-        $couldAffectSelf = ! $request->wantsJson() && $this->affectsActingUser($dutiable, $request);
+        $couldAffectSelf = $this->affectsActingUser($dutiable, $request);
 
         if ($warning = $this->guardSelfLockout($request->user(), $couldAffectSelf, $request, $mutation)) {
             return $warning;
-        }
-
-        if ($request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => __('messages.duty.email_updated'),
-            ]);
         }
 
         return back()->with('success', $this->entityMessage('updated', 'dutiable'));

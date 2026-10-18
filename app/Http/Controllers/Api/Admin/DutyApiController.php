@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Actions\BuildDutyIndexQuery;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\IndexDutyRequest;
+use App\Http\Requests\StoreDutyRequest;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
+use App\Services\DutyAssignmentService;
 use App\Services\ModelAuthorizer;
 use App\Services\TanstackTableService;
 use App\Support\CollectionFacetCounts;
@@ -38,5 +40,27 @@ class DutyApiController extends ApiController
             'last_page' => $duties->lastPage(),
             'facets' => CollectionFacetCounts::forRequest($request, ['data_quality'], $query),
         ]);
+    }
+
+    public function store(StoreDutyRequest $request, DutyAssignmentService $assignments): JsonResponse
+    {
+        $this->authorizeApi('create', Duty::class);
+
+        $duty = new Duty;
+
+        $validatedData = $request->safe();
+        $duty->fill(collect($validatedData)->except('types', 'roles', 'current_users', 'ex_officio_target_duty_ids', 'assignable_tenants')->toArray())->save();
+
+        $duty->types()->sync($request->types);
+        $duty->exOfficioTargetDuties()->sync($request->ex_officio_target_duty_ids ?? []);
+        $duty->assignableTenants()->sync($assignments->buildAssignableTenantsSync($request->validated('assignable_tenants') ?? []));
+
+        $assignments->syncRepresentatives($duty, $request->validated('current_users') ?? []);
+
+        $duty->load('institution', 'types', 'current_users');
+
+        return $this->jsonCreated([
+            'duty' => $duty,
+        ], $this->entityMessage('created', 'duty'));
     }
 }

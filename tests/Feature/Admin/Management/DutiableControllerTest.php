@@ -70,18 +70,13 @@ test('duty manager can update dutiable additional_email', function (): void {
     expect($this->dutiable->additional_email)->toBe('kontaktas@example.com');
 });
 
-test('returns json response for api requests', function (): void {
+test('can update additional_email', function (): void {
     $response = asUser($this->dutyManager)
-        ->withHeader('Accept', 'application/json')
         ->patch(route('dutiables.update', $this->dutiable), [
             'additional_email' => 'api@example.com',
         ]);
 
-    $response->assertStatus(200)
-        ->assertJson([
-            'success' => true,
-            'message' => 'Pareigybės el. paštas sėkmingai atnaujintas!',
-        ]);
+    $response->assertRedirect();
 
     $this->dutiable->refresh();
     expect($this->dutiable->additional_email)->toBe('api@example.com');
@@ -113,13 +108,13 @@ test('cannot update dutiable without additional_email field', function (): void 
 
 test('update request authorizes using dutiable duty relation', function (): void {
     $response = asUser($this->dutyManager)
-        ->withHeader('Accept', 'application/json')
         ->patch(route('dutiables.update', $this->dutiable), [
             'additional_email' => 'authorized@example.com',
         ]);
 
-    $response->assertStatus(200)
-        ->assertJsonPath('success', true);
+    $response->assertRedirect();
+    $this->dutiable->refresh();
+    expect($this->dutiable->additional_email)->toBe('authorized@example.com');
 });
 
 describe('study program', function (): void {

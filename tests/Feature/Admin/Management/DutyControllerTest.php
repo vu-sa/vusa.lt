@@ -63,20 +63,16 @@ describe('unauthorized access', function (): void {
 });
 
 describe('authorized access', function (): void {
-    test('inline duty creation returns the model without navigating away', function (array $headers): void {
-        $response = asUser($this->dutyManager)->withHeaders($headers)->post(route('duties.store'), [
+    test('inline duty creation via API returns the created model', function (): void {
+        $response = asUser($this->dutyManager)->postJson(route('api.v1.admin.duties.store'), [
             'name' => ['lt' => 'Vedlio pareigybė', 'en' => 'Wizard duty'],
             'institution_id' => $this->dutyManagerDuty->institution_id,
             'contacts_grouping' => 'none',
         ]);
 
         $created = Duty::where('name->lt', 'Vedlio pareigybė')->sole();
-        $response->assertOk()->assertJsonPath('success', true)->assertJsonPath('duty.id', $created->id);
-        expect($response->headers->has('Location'))->toBeFalse();
-    })->with([
-        'JSON accept header' => [['Accept' => 'application/json']],
-        'legacy partial-data header' => [['X-Inertia-Partial-Data' => 'created']],
-    ]);
+        $response->assertCreated()->assertJsonPath('success', true)->assertJsonPath('data.duty.id', $created->id);
+    });
 
     test('duty manager can access duties index', function (): void {
         $response = asUser($this->dutyManager)->get(route('duties.index'));
