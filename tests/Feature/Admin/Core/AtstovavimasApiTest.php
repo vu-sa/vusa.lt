@@ -45,6 +45,22 @@ test('timeline rejects tenants outside the visible scope', function (): void {
         ->assertForbidden();
 });
 
+test('recently ended check-ins have their own summary bucket and indexed status', function (): void {
+    $this->travelTo('2026-11-20 12:00:00');
+    $this->institution->update(['meeting_periodicity_days' => 30]);
+    InstitutionCheckIn::factory()->for($this->institution)->create(['start_date' => '2026-09-01', 'end_date' => '2026-11-17']);
+
+    asUser($this->admin)->getJson(route('api.v1.admin.visak.timeline', ['tenant_ids' => [$this->tenant->id]]))
+        ->assertOk()
+        ->assertJsonPath('data.institutions.0.activity_status.status', 'recent_check_in')
+        ->assertJsonPath('data.institution_summary.recent_check_in', 1)
+        ->assertJsonPath('data.institution_summary.needs_attention', 0)
+        ->assertJsonPath('data.institution_summary.current', 0)
+        ->assertJsonPath('data.institution_summary.all', 1);
+
+    expect($this->institution->fresh()->toSearchableArray()['activity_status'])->toBe('recent_check_in');
+});
+
 test('timeline returns direct institutions with summaries but no meetings or relations', function (): void {
     $relatedTenant = Tenant::factory()->create(['type' => 'padalinys']);
     $relatedInstitution = Institution::factory()->for($relatedTenant)->create([
@@ -268,7 +284,7 @@ test('status history sweep matches resolve() day-by-day, including meeting/check
         $date = $today->copy()->subDays($offset)->endOfDay();
         $dayIndex = $days - 1 - $offset;
 
-        $expected = ['overdue' => 0, 'approaching' => 0, 'no_activity' => 0, 'needs_attention' => 0];
+        $expected = ['overdue' => 0, 'approaching' => 0, 'recent_check_in' => 0, 'no_activity' => 0, 'needs_attention' => 0];
         foreach ($institutions as $institution) {
             $status = $activityStatusService->resolve($institution->fresh(), $date)->status;
             if ($status->value === 'overdue') {
@@ -279,6 +295,9 @@ test('status history sweep matches resolve() day-by-day, including meeting/check
             }
             if ($status->value === 'no_activity') {
                 $expected['no_activity']++;
+            }
+            if ($status->value === 'recent_check_in') {
+                $expected['recent_check_in']++;
             }
             if ($status->requiresAction()) {
                 $expected['needs_attention']++;
@@ -292,7 +311,8 @@ test('status history sweep matches resolve() day-by-day, including meeting/check
             'approaching' => $expected['approaching'],
             'no_activity' => $expected['no_activity'],
             'needs_attention' => $expected['needs_attention'],
-            'current' => 3 - $expected['needs_attention'],
+            'recent_check_in' => $expected['recent_check_in'],
+            'current' => 3 - $expected['needs_attention'] - $expected['recent_check_in'],
         ]);
     }
 });

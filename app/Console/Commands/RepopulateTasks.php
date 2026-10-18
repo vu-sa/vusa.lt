@@ -21,6 +21,7 @@ use App\Tasks\Handlers\AgendaCreationTaskHandler;
 use App\Tasks\Handlers\PeriodicityGapTaskHandler;
 use App\Tasks\Handlers\PickupTaskHandler;
 use App\Tasks\Handlers\ReturnTaskHandler;
+use App\ValueObjects\InstitutionActivityStatusData;
 use Carbon\Carbon;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
@@ -162,9 +163,7 @@ class RepopulateTasks extends Command
 
             if ($existingTask) {
                 $skipped++;
-                if ($isOverdue) {
-                    $this->askAboutActivity($existingTask, $institution, $dryRun);
-                }
+                $this->reconcilePeriodicityTask($existingTask, $institution, $activityStatus, $dryRun);
 
                 continue;
             }
@@ -173,7 +172,7 @@ class RepopulateTasks extends Command
                 continue;
             }
 
-            $daysUntilThreshold = $periodicityDays - ($activityStatus->effectiveDaysSinceActivity ?? $periodicityDays);
+            $daysUntilThreshold = $isOverdue ? -1 : $periodicityDays - ($activityStatus->effectiveDaysSinceActivity ?? $periodicityDays);
 
             // Administrators for the current term, else today's representatives.
             $representatives = ResolveTaskAssignees::forInstitution($institution);
@@ -225,6 +224,17 @@ class RepopulateTasks extends Command
         }
 
         $this->activityRequests->forTask($task, $institution, $task->notifiableUsers());
+    }
+
+    private function reconcilePeriodicityTask(Task $task, Institution $institution, InstitutionActivityStatusData $status, bool $dryRun): void
+    {
+        if (! $status->status->requiresAction() && ! $dryRun) {
+            $this->periodicityGapHandler->completeForInstitution($institution);
+        }
+
+        if ($status->status === InstitutionActivityStatus::Overdue) {
+            $this->askAboutActivity($task, $institution, $dryRun);
+        }
     }
 
     /**

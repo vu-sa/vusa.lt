@@ -194,6 +194,7 @@ export const institutionActivityStatuses: Record<InstitutionActivityStatus, Stat
   [InstitutionActivityStatus.Overdue]: status('Vėluoja', 'danger', TriangleAlert),
   [InstitutionActivityStatus.CoveredByUpcomingMeeting]: status('Suplanuotas posėdis', 'info', CalendarClock),
   [InstitutionActivityStatus.CoveredByCheckIn]: status('Apie veiklą pranešta', 'info', CalendarCheck),
+  [InstitutionActivityStatus.RecentCheckIn]: status('activity_requests.recent_check_in', 'info', CalendarClock),
 };
 
 export type ActivityRequestStatus = 'pending' | 'answered' | 'resolved' | 'expired';

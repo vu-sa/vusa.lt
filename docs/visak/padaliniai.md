@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Padaliniai
 area: visak
-last_reviewed: 2026-10-18
+last_reviewed: 2026-10-19
 tests:
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php
   - tests/Feature/Admin/Core/AtstovavimasApiTest.php
@@ -74,6 +74,7 @@ rodomos laiko juostoje, bet neįskaičiuojamos nei į skaičius, nei į sąraš�
 |---|---|
 | **Vėluoja** | Pasirinktų padalinių institucijos, kurios vėluoja |
 | **Artėja terminas** | Institucijos, kurioms artėja terminas |
+| **Pranešimo laikotarpis baigėsi** | Institucijos, kurių pranešimas baigėsi, bet pusė periodiškumo dar nepraėjo |
 | **Nėra duomenų** | Institucijos be jokios užregistruotos veiklos |
 | **Atviros užduotys** | Neatliktos padalinio atstovų užduotys, rodoma tik tiems, kas gali matyti [užduočių suvestinę](/visak/uzduociu-suvestine) |
 
@@ -91,6 +92,10 @@ pasirinkti keli padaliniai, prie kiekvienos institucijos parašytas jos padaliny
 Grafikas rodo, kiek institucijų kiekvieną dieną buvo kiekvienos būsenos per pastarąsias **30, 90
 arba 180 dienų** (numatytoji – 90). Po grafiku parašyta, ar vėluojančių institucijų per tą laiką
 padaugėjo, sumažėjo, ar jų skaičius nesikeitė.
+
+**Pranešimo laikotarpis baigėsi** turi atskirą grafiko dalį: šios institucijos neįtraukiamos nei į
+tvarkingų institucijų skaičių, nei į **Reikia dėmesio**. Laikotarpis skaičiuojamas pagal
+[bendras būklės taisykles](/visak/apzvalga#busenos).
 
 ### Atstovų aktyvumas
 

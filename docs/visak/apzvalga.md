@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Apžvalga
 area: dashboard
-last_reviewed: 2026-10-18
+last_reviewed: 2026-10-19
 tests:
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php
   - tests/Feature/Admin/Core/CoordinatorOnRepScreensTest.php
@@ -10,6 +10,7 @@ tests:
   - tests/Feature/Responsibilities/ResponsibilityResolverTest.php
   - tests/Feature/InstitutionSubscriptionTest.php
   - tests/Unit/InstitutionActivityStatusServiceTest.php
+  - tests/Feature/Admin/Core/AtstovavimasApiTest.php
   - tests/Unit/Enums/InstitutionActivityStatusTest.php
   - tests/Unit/Services/AcademicCalendarServiceTest.php
   - tests/Unit/Services/MeetingCompletionServiceTest.php
@@ -56,13 +57,24 @@ Būsena nustatoma taip (tikrinama iš eilės, galioja pirmoji tinkanti):
 |---|---|
 | **Suplanuotas posėdis** | Institucija turi būsimą posėdį |
 | **Apie veiklą pranešta** | Šiandien galioja pranešimas apie veiklą (pvz., kad posėdžių nebus per sesiją) |
-| **Nėra veiklos** | Institucija neturi nė vieno praėjusio posėdžio ar pranešimo |
-| **Vėluoja** | Nuo paskutinės veiklos praėjo daugiau dienų nei periodiškumas |
-| **Artėja terminas** | Praėjo bent 80 % periodiškumo |
-| **Aktyvi** | Visais kitais atvejais |
+| **Aktyvi** | Nuo paskutinio posėdžio praėjo mažiau nei 80 % periodiškumo |
+| **Artėja terminas** | Nuo paskutinio posėdžio praėjo bent 80 %, bet ne daugiau nei visas periodiškumas |
+| **Pranešimo laikotarpis baigėsi** | Posėdis jau per senas arba jo nėra, o nuo dienos po pranešimo pabaigos praėjo ne daugiau nei pusė periodiškumo |
+| **Vėluoja** | Yra ankstesnių posėdžių ar pasibaigusių pranešimų, bet nei posėdis, nei pranešimas jau nepadengia šiandienos |
+| **Nėra veiklos** | Institucija neturi nė vieno praėjusio posėdžio ar pasibaigusio pranešimo |
 
-**Paskutinė veikla** yra vėliausias praėjęs posėdis arba pasibaigęs pranešimas apie veiklą. Po
-pranešimo dienos skaičiuojamos nuo kitos dienos po jo pabaigos.
+Dar galiojantis posėdžio terminas turi pirmenybę prieš pasibaigusį pranešimą. Pasibaigęs
+pranešimas nesuteikia būklės **Aktyvi**: jo laikotarpis yra pusė periodiškumo, suapvalinta į didesnę
+pusę. Dienos skaičiuojamos nuo kitos dienos po pabaigos. Esant 30 dienų periodiškumui, 15-ą
+skaičiuojamą dieną dar rodoma **Pranešimo laikotarpis baigėsi**, 16-ą – **Vėluoja**.
+
+<ChangelogNote version="v3.9" date="2026-10-19" title="Pasibaigęs pranešimas turi atskirą būklę">
+
+Šios institucijos rodomos atskiru skaičiumi ir grafiko dalimi. Jos nepriskiriamos nei tvarkingoms,
+nei toms, kurioms reikia dėmesio. Koordinatorius jau gali siųsti **Ar vyko posėdis?**, o automatinis
+klausimas laukia, kol institucija vėluos.
+
+</ChangelogNote>
 
 Dienos skaičiuojamos **be akademinių atostogų**: liepos 1 – rugpjūčio 31 d., gruodžio 24 – sausio 1 d.,
 nuo paskutinio sausio pirmadienio iki vasario 4 d. ir Velykų atostogų (savaitė prieš Velykas ir dvi
@@ -75,12 +87,13 @@ terminas**. Jos rikiuojamos būtent tokia tvarka.
 
 ### Skaičiai
 
-Viršuje rodomi keturi skaičiai. Kiekvienas yra nuoroda į atitinkamą sąrašą:
+Viršuje rodomi penki skaičiai. Kiekvienas yra nuoroda į atitinkamą sąrašą:
 
 | Skaičius | Ką skaičiuoja | Kur veda |
 |---|---|---|
 | **Vėluoja** | Tavo institucijos, kurios vėluoja | Institucijų sąrašas |
 | **Artėja terminas** | Tavo institucijos, kurioms artėja terminas | Institucijų sąrašas |
+| **Pranešimo laikotarpis baigėsi** | Institucijos, kurių pranešimas neseniai baigėsi | Institucijų sąrašas |
 | **Neužpildyti posėdžiai** | Tavo institucijų posėdžiai, kurių darbotvarkėje yra neužpildytų klausimų | Posėdžių sąrašas |
 | **Atviros užduotys** | Tavo neatliktos užduotys | [Mano → Užduotys](/mano/uzduotys) |
 

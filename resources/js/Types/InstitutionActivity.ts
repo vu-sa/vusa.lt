@@ -1,6 +1,7 @@
 export type InstitutionActivityStatusName
   = | 'no_activity'
     | 'healthy'
+    | 'recent_check_in'
     | 'approaching'
     | 'overdue'
     | 'covered_by_upcoming_meeting'
@@ -18,6 +19,7 @@ export interface InstitutionActivityStatus {
   last_meeting_at: string | null;
   next_meeting_at: string | null;
   active_check_in_until: string | null;
+  last_completed_check_in_at?: string | null;
 }
 
 export interface InstitutionActivityInsight extends InstitutionActivityStatus {

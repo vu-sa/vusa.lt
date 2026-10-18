@@ -10,12 +10,13 @@ enum InstitutionActivityStatus: string
     case Overdue = 'overdue';
     case CoveredByUpcomingMeeting = 'covered_by_upcoming_meeting';
     case CoveredByCheckIn = 'covered_by_check_in';
+    case RecentCheckIn = 'recent_check_in';
 
     public function requiresAction(): bool
     {
         return match ($this) {
             self::NoActivity, self::Approaching, self::Overdue => true,
-            self::Healthy, self::CoveredByUpcomingMeeting, self::CoveredByCheckIn => false,
+            self::Healthy, self::CoveredByUpcomingMeeting, self::CoveredByCheckIn, self::RecentCheckIn => false,
         };
     }
 
@@ -25,6 +26,7 @@ enum InstitutionActivityStatus: string
             self::Overdue => 50,
             self::NoActivity => 40,
             self::Approaching => 30,
+            self::RecentCheckIn => 25,
             self::CoveredByCheckIn => 20,
             self::CoveredByUpcomingMeeting => 10,
             self::Healthy => 0,

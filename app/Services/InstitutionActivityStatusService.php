@@ -30,15 +30,10 @@ class InstitutionActivityStatusService
         $today = $moment->startOfDay();
         $periodicityDays = $institution->meeting_periodicity_days;
 
-        $nextMeetingAt = $institution->meetings
+        $nextMeeting = $institution->meetings
             ->filter(fn (Meeting $meeting): bool => $meeting->start_time->gt($moment))
-            ->min(fn (Meeting $meeting) => $meeting->start_time->getTimestamp());
-
-        $nextMeeting = $nextMeetingAt !== null
-            ? $institution->meetings->first(
-                fn (Meeting $meeting): bool => $meeting->start_time->getTimestamp() === $nextMeetingAt
-            )
-            : null;
+            ->sortBy(fn (Meeting $meeting): int => $meeting->start_time->getTimestamp())
+            ->first();
 
         $activeCheckIn = $institution->checkIns
             ->first(fn (InstitutionCheckIn $checkIn): bool => $checkIn->start_date->lte($today)
@@ -49,48 +44,31 @@ class InstitutionActivityStatusService
             ->sortByDesc(fn (InstitutionCheckIn $checkIn): int => $checkIn->end_date->getTimestamp())
             ->first();
 
-        $lastMeetingAt = $institution->meetings
+        $lastMeeting = $institution->meetings
             ->filter(fn (Meeting $meeting): bool => $meeting->start_time->lte($moment))
-            ->max(fn (Meeting $meeting) => $meeting->start_time->getTimestamp());
+            ->sortByDesc(fn (Meeting $meeting): int => $meeting->start_time->getTimestamp())
+            ->first();
 
-        $lastMeeting = $lastMeetingAt !== null
-            ? $institution->meetings->first(
-                fn (Meeting $meeting): bool => $meeting->start_time->getTimestamp() === $lastMeetingAt
-            )
+        $lastMeetingDate = $lastMeeting?->start_time->toImmutable();
+        $completedCheckInEnd = $latestCompletedCheckIn?->end_date->toImmutable()->startOfDay();
+        $meetingDays = $lastMeetingDate
+            ? $this->academicCalendar->effectiveDaysBetween($lastMeetingDate, $moment)
             : null;
-
-        $lastMeetingDate = $lastMeeting
-            ? CarbonImmutable::instance($lastMeeting->start_time)
+        $checkInDays = $completedCheckInEnd
+            ? $this->academicCalendar->effectiveDaysBetween($completedCheckInEnd->addDay(), $moment)
             : null;
-
-        $completedCheckInEnd = $latestCompletedCheckIn
-            ? CarbonImmutable::instance($latestCompletedCheckIn->end_date)->startOfDay()
-            : null;
-        $checkInIsLatestActivity = $completedCheckInEnd !== null
-            && ($lastMeetingDate === null || $completedCheckInEnd->endOfDay()->gt($lastMeetingDate));
-        $lastActivityType = match (true) {
-            $checkInIsLatestActivity => 'check_in',
-            $lastMeetingDate !== null => 'meeting',
-            default => null,
-        };
-        $lastActivityAt = $checkInIsLatestActivity
-            ? $completedCheckInEnd
-            : $lastMeetingDate;
-        $activityCalculationStart = $checkInIsLatestActivity
-            ? $completedCheckInEnd->addDay()
-            : $lastMeetingDate;
-        $effectiveDays = $activityCalculationStart
-            ? $this->academicCalendar->effectiveDaysBetween($activityCalculationStart, $moment)
-            : null;
+        [$lastActivityType, $lastActivityAt, $effectiveDays, $thresholdDays] = $this->activityReference(
+            $lastMeetingDate, $completedCheckInEnd, $meetingDays, $checkInDays, $periodicityDays,
+        );
         $progressPercentage = $effectiveDays !== null
-            ? (int) round(($effectiveDays / $periodicityDays) * 100)
+            ? (int) round(($effectiveDays / $thresholdDays) * 100)
             : null;
 
         $status = $this->classify(
             hasUpcomingMeeting: $nextMeeting !== null,
             hasActiveCheckIn: $activeCheckIn !== null,
-            hasActivity: $lastActivityAt !== null,
-            effectiveDays: $effectiveDays ?? 0,
+            effectiveMeetingDays: $meetingDays,
+            effectiveCheckInDays: $checkInDays,
             periodicityDays: $periodicityDays,
         );
 
@@ -102,36 +80,53 @@ class InstitutionActivityStatusService
             lastActivityType: $lastActivityType,
             lastActivityAt: $lastActivityAt,
             lastMeetingAt: $lastMeetingDate,
-            nextMeetingAt: $nextMeeting
-                ? CarbonImmutable::instance($nextMeeting->start_time)
-                : null,
-            activeCheckInUntil: $activeCheckIn
-                ? CarbonImmutable::instance($activeCheckIn->end_date)
-                : null,
+            lastCompletedCheckInAt: $completedCheckInEnd,
+            nextMeetingAt: $nextMeeting?->start_time->toImmutable(),
+            activeCheckInUntil: $activeCheckIn?->end_date->toImmutable(),
         );
     }
 
-    /**
-     * The pure decision rule behind an institution's activity status, shared by
-     * resolve() and AtstovavimasDashboardService's status-history sweep — the
-     * latter recomputes hasUpcomingMeeting/hasActiveCheckIn/hasActivity/effectiveDays
-     * itself (for performance, across many dates) but must classify them identically.
-     * $effectiveDays is ignored when $hasActivity is false.
-     */
+    /** @return array{?string, ?CarbonImmutable, ?int, int} */
+    private function activityReference(
+        ?CarbonImmutable $meetingAt,
+        ?CarbonImmutable $checkInEnd,
+        ?int $meetingDays,
+        ?int $checkInDays,
+        int $periodicityDays,
+    ): array {
+        $meetingCoversToday = $meetingDays !== null && $meetingDays <= $periodicityDays;
+        $graceDays = $this->checkInGraceDays($periodicityDays);
+
+        if ($checkInEnd !== null && ! $meetingCoversToday
+            && ($checkInDays <= $graceDays || $meetingAt === null || $checkInEnd->endOfDay()->gt($meetingAt))) {
+            return ['check_in', $checkInEnd, $checkInDays, $graceDays];
+        }
+
+        return [$meetingAt === null ? null : 'meeting', $meetingAt, $meetingDays, $periodicityDays];
+    }
+
+    public function checkInGraceDays(int $periodicityDays): int
+    {
+        return max(1, (int) ceil($periodicityDays / 2));
+    }
+
+    /** The history sweep must use the same coverage and threshold rules as the live status. */
     public function classify(
         bool $hasUpcomingMeeting,
         bool $hasActiveCheckIn,
-        bool $hasActivity,
-        int $effectiveDays,
+        ?int $effectiveMeetingDays,
+        ?int $effectiveCheckInDays,
         int $periodicityDays,
     ): InstitutionActivityStatus {
         return match (true) {
             $hasUpcomingMeeting => InstitutionActivityStatus::CoveredByUpcomingMeeting,
             $hasActiveCheckIn => InstitutionActivityStatus::CoveredByCheckIn,
-            ! $hasActivity => InstitutionActivityStatus::NoActivity,
-            $effectiveDays > $periodicityDays => InstitutionActivityStatus::Overdue,
-            ($effectiveDays / $periodicityDays) >= self::APPROACHING_RATIO => InstitutionActivityStatus::Approaching,
-            default => InstitutionActivityStatus::Healthy,
+            $effectiveMeetingDays !== null && $effectiveMeetingDays <= $periodicityDays => ($effectiveMeetingDays / $periodicityDays) >= self::APPROACHING_RATIO
+                    ? InstitutionActivityStatus::Approaching
+                    : InstitutionActivityStatus::Healthy,
+            $effectiveCheckInDays !== null && $effectiveCheckInDays <= $this->checkInGraceDays($periodicityDays) => InstitutionActivityStatus::RecentCheckIn,
+            $effectiveMeetingDays === null && $effectiveCheckInDays === null => InstitutionActivityStatus::NoActivity,
+            default => InstitutionActivityStatus::Overdue,
         };
     }
 }

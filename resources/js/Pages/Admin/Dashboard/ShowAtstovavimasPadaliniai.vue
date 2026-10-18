@@ -19,7 +19,7 @@
     <!-- Tenant numbers arrive with the timeline request; until then a placeholder, not a wrong zero. -->
     <template v-if="hasStats">
       <OverviewNumbers v-if="tenantTimelineData.loaded.value" :numbers />
-      <OverviewNumbersSkeleton v-else :count="canViewTenantTasks ? 4 : 3" />
+      <OverviewNumbersSkeleton v-else :count="canViewTenantTasks ? 5 : 4" />
     </template>
 
     <div v-if="hasStats" class="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-16" data-slot="atstovavimas-tenant-primary-section">
@@ -175,6 +175,7 @@ const institutionSummary = computed<InstitutionStatusSummaryData>(() =>
     approaching: 0,
     no_activity: 0,
     current: 0,
+    recent_check_in: 0,
   },
 );
 
@@ -215,6 +216,7 @@ const tenantOpenTasks = useApi<{ total: number }>(
 const numbers = computed<OverviewNumberItem[]>(() => [
   { key: 'overdue', label: $t('visak.overview.numbers.overdue'), value: institutionSummary.value.overdue, href: institutionsWith('overdue'), tone: 'danger' },
   { key: 'approaching', label: $t('visak.overview.numbers.approaching'), value: institutionSummary.value.approaching, href: institutionsWith('approaching'), tone: 'attention' },
+  { key: 'recent_check_in', label: $t('activity_requests.recent_check_in'), value: institutionSummary.value.recent_check_in, href: institutionsWith('recent_check_in'), tone: 'info' },
   { key: 'no_activity', label: $t('visak.institution_summary.no_activity'), value: institutionSummary.value.no_activity, href: institutionsWith('no_activity'), tone: 'neutral' },
   ...(props.canViewTenantTasks
     ? [{

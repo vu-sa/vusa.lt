@@ -97,6 +97,18 @@ describe('InstitutionPickerScreen.vue', () => {
     expect(wrapper.text()).toContain('action_window.institution.last_meeting');
   });
 
+  it.each(['recent_check_in', 'overdue'])('explains %s with the completed check-in instead of the old meeting', (status) => {
+    const wrapper = withStatus({
+      status,
+      last_activity_type: 'check_in',
+      last_completed_check_in_at: '2026-10-16',
+      last_meeting_at: '2026-04-01T10:00:00.000Z',
+    });
+
+    expect(wrapper.text()).toContain('activity_requests.check_in_ended');
+    expect(wrapper.text()).not.toContain('action_window.institution.last_meeting');
+  });
+
   it('says so when the body has never met', () => {
     const wrapper = withStatus({});
 

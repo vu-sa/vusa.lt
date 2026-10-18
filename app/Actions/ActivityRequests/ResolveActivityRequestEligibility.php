@@ -31,14 +31,14 @@ class ResolveActivityRequestEligibility
         $days = $tenureStart->gt($moment) ? 0 : $this->calendar->effectiveDaysBetween($tenureStart, $moment);
 
         return new InstitutionActivityStatusData(
-            status: $this->statuses->classify(false, false, true, $days, $status->periodicityDays),
+            status: $this->statuses->classify(false, false, $days, null, $status->periodicityDays),
             periodicityDays: $status->periodicityDays,
             effectiveDaysSinceActivity: $days,
             progressPercentage: (int) round($days / $status->periodicityDays * 100),
         );
     }
 
-    public function skipReason(Institution $institution, ?CarbonInterface $tenureStart = null, ?CarbonInterface $at = null): ?ActivityRequestSkipReason
+    public function skipReason(Institution $institution, ?CarbonInterface $tenureStart = null, ?CarbonInterface $at = null, bool $manual = false): ?ActivityRequestSkipReason
     {
         if (! $institution->is_active) {
             return ActivityRequestSkipReason::InactiveInstitution;
@@ -46,6 +46,7 @@ class ResolveActivityRequestEligibility
 
         return match ($this->status($institution, $tenureStart, $at)->status) {
             InstitutionActivityStatus::Overdue => null,
+            InstitutionActivityStatus::RecentCheckIn => $manual ? null : ActivityRequestSkipReason::RecentActivity,
             InstitutionActivityStatus::CoveredByUpcomingMeeting => ActivityRequestSkipReason::UpcomingMeeting,
             InstitutionActivityStatus::CoveredByCheckIn => ActivityRequestSkipReason::CheckInActive,
             default => ActivityRequestSkipReason::RecentActivity,
@@ -62,7 +63,7 @@ class ResolveActivityRequestEligibility
             return $request->incompleteMeetings()->isNotEmpty();
         }
 
-        return $this->skipReason($institution, $request->period_start) === null
+        return $this->skipReason($institution, $request->period_start, manual: $request->requested_by_id !== null) === null
             && ! $institution->meetings->contains(fn ($meeting) => $meeting->start_time->toDateString() >= $request->period_start->toDateString()
                 && $meeting->start_time->toDateString() <= $request->periodEnd()->toDateString());
     }

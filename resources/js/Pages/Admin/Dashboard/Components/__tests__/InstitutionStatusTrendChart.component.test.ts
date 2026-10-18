@@ -22,6 +22,7 @@ function point(date: string, overrides: Partial<InstitutionStatusHistoryPoint> =
     overdue: 1,
     approaching: 0,
     no_activity: 0,
+    recent_check_in: 0,
     current: 3,
     ...overrides,
   };
@@ -88,8 +89,8 @@ describe('InstitutionStatusTrendChart', () => {
     });
 
     expect(wrapper.find('[data-testid="trend-chart-svg"]').exists()).toBe(true);
-    // One legend swatch per stacked series: current, approaching, overdue, no_activity
-    expect(wrapper.findAll('.flex-wrap.gap-3 > span').length).toBe(4);
+    expect(wrapper.findAll('.flex-wrap.gap-3 > span').length).toBe(5);
+    expect(wrapper.text()).toContain('activity_requests.recent_check_in');
   });
 
   it('emits update:days when a range option is clicked', async () => {

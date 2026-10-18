@@ -129,9 +129,9 @@ describe('numbers', () => {
     wrapper = createWrapper(false);
 
     const links = wrapper.findAll('[data-slot="overview-numbers"] a');
-    expect(links.map(link => link.attributes('data-number'))).toEqual(['overdue', 'approaching', 'incomplete_meetings', 'open_tasks']);
-    expect(links.map(link => link.find('span').text())).toEqual(['1', '1', '1', '4']);
-    expect(links[2].attributes('href')).toBe('/mano/meetings.index?completion_status=incomplete');
+    expect(links.map(link => link.attributes('data-number'))).toEqual(['overdue', 'approaching', 'recent_check_in', 'incomplete_meetings', 'open_tasks']);
+    expect(links.map(link => link.find('span').text())).toEqual(['1', '1', '0', '1', '4']);
+    expect(links[3].attributes('href')).toBe('/mano/meetings.index?completion_status=incomplete');
   });
 });
 
@@ -149,7 +149,7 @@ describe('layout', () => {
     expect(numbers.classes()).toContain('lg:grid-cols-2');
     expect(numbers.classes()).toContain('max-md:gap-y-6');
     expect(numbers.classes()).toContain('lg:mt-8');
-    expect(numbers.findAll('li')).toHaveLength(4);
+    expect(numbers.findAll('li')).toHaveLength(5);
     expect(wrapper.findAll('[data-slot="overview-numbers"]')).toHaveLength(1);
   });
 
@@ -164,7 +164,7 @@ describe('layout', () => {
     expect(primary.find('[data-slot="overview-numbers"]').exists()).toBe(false);
     expect(wrapper.get('[data-slot="overview-page"]').classes()).toContain('max-md:gap-12');
     expect(numbers.classes()).toContain('lg:grid-cols-4');
-    expect(numbers.findAll('li')).toHaveLength(4);
+    expect(numbers.findAll('li')).toHaveLength(5);
   });
 
   it('keeps the KPI strips full width when the left column has content', () => {

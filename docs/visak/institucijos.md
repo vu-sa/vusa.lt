@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-10-18
+last_reviewed: 2026-10-19
 tests:
   - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
   - tests/Feature/Admin/Management/InstitutionControllerTest.php
@@ -32,6 +32,8 @@ tests:
   - tests/Feature/Api/Admin/ActionWindowApiControllerTest.php
   - resources/js/Components/Institutions/__tests__/InstitutionActivityReply.component.test.ts
   - tests/Browser/InstitutionActivityReplyTest.php
+  - tests/Browser/VisakRecordPagesTest.php
+  - resources/js/Components/ActionWindow/__tests__/InstitutionPickerScreen.component.test.ts
   - tests/Unit/InstitutionActivityStatusServiceTest.php
   - resources/js/Pages/Admin/People/__tests__/ShowInstitution.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/IndexInstitution.component.test.ts
@@ -192,6 +194,9 @@ nebuvo**, pradžios mygtuką **Posėdžio nebuvo** arba institucijos meniu **⋯
 - Pranešimas, apimantis visą atviros veiklos užklausos laikotarpį, ją užbaigia.
 - Kol pranešimas galioja, institucijos būklė yra „Apie veiklą pranešta“, o užduotis dėl
   periodiškumo užbaigiama.
+- Jam pasibaigus, jei nėra dar galiojančio posėdžio termino, rodoma **Pranešimo laikotarpis baigėsi**.
+  Ši būklė galioja pusę institucijos periodiškumo, be akademinių atostogų; paskui institucija vėluoja.
+  Būklę paaiškina pranešimo pabaigos data, net jei institucija dar neturi nė vieno posėdžio.
 - Jei vėliau užregistruojamas posėdis, patenkantis į pranešimo laikotarpį, pranešimas
   **sutrumpinamas** iki dienos prieš posėdį. Jei posėdis yra pranešimo pradžios dieną ar anksčiau,
   pranešimas **ištrinamas**.
@@ -259,13 +264,16 @@ laiką, apie kurį jie jau pranešė.
 
 </ChangelogNote>
 
-<ChangelogNote version="v3.9" date="2026-10-18" title="Vienodos veiklos užklausų siuntimo sąlygos">
+<ChangelogNote version="v3.9" date="2026-10-19" title="Galima paklausti pasibaigus pranešimui">
 
-Koordinatoriaus siunčiamai užklausai **Ar vyko posėdis?** taikomos tos pačios sąlygos kaip automatinei:
-institucija turi būti aktyvi, jos posėdžių periodiškumo terminas turi būti praėjęs, negali būti suplanuoto
-būsimo posėdžio ar šiuo metu galiojančio pranešimo „Posėdžio nebuvo“. Akademinių atostogų dienos
-neskaičiuojamos. Vien artėjančio termino neužtenka; esant 30 dienų periodiškumui klausiama praėjus
-daugiau kaip 30 skaičiuojamų dienų. Priežastis, kodėl klausti dar negalima, rodoma renkantis gavėjus.
+Koordinatorius gali siųsti **Ar vyko posėdis?**, kai institucija vėluoja arba jos būklė yra
+**Pranešimo laikotarpis baigėsi**. Antruoju atveju gavėjų pasirinkime ir siuntimo peržiūroje rodoma
+pranešimo pabaigos data. Automatinis klausimas siunčiamas tik pradėjus vėluoti.
+
+Institucija turi būti aktyvi. Būsimas posėdis, šiuo metu galiojantis pranešimas „Posėdžio nebuvo“
+arba dar nepraėjęs paskutinio posėdžio terminas klausimą sustabdo. Vien artėjančio posėdžio termino
+neužtenka. Akademinių atostogų dienos neskaičiuojamos. Priežastis, kodėl klausti dar negalima,
+rodoma renkantis gavėjus. **Papildyk posėdžių įrašus** sąlygos yra atskiros ir dėl šios būklės nesikeičia.
 
 Jei institucijoje dar neužregistruota nei posėdžių, nei pranešimų apie veiklą, laikas skaičiuojamas
 nuo kiekvieno gavėjo pareigų pradžios dabartinėje kadencijoje. Sekretoriui naudojama kadencijos pradžia.
@@ -479,7 +487,8 @@ pranešimus „Posėdžio nebuvo“ tvarko ir atstovų apie posėdžius klausia 
   tarp jų – `SyncInstitutionActivityIndex`.
 - Periodiškumo užduotis: `tasks:repopulate institution` (kasdien 10.00) →
   `PeriodicityGapTaskHandler`; gavėjai – `ResolveTaskAssignees::forInstitution`. Būklei įkeliami visi
-  pranešimai „Posėdžio nebuvo“, kad pasibaigęs pranešimas būtų skaičiuojamas kaip paskutinė veikla.
+  pranešimai „Posėdžio nebuvo“; pasibaigusiems taikoma pusė periodiškumo. Kasdienis vykdymas taip pat
+  užbaigia likusias atviras periodiškumo užduotis, kai dabartinė būklė dėmesio nebereikalauja.
 - Pranešimo sutrumpinimas: `CheckInService::adjustForMeeting()` iš `MeetingController`.
 - Klausimai „Ar vyko posėdis?“: `InstitutionActivityRequest` (vienas gavėjui ir institucijai),
   siunčia `SendInstitutionActivityRequests` (`tasks:repopulate institution` per `forTask()`, kai

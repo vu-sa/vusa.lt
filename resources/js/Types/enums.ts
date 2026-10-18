@@ -126,6 +126,7 @@ export enum InstitutionActivityStatus {
     Overdue = 'overdue',
     CoveredByUpcomingMeeting = 'covered_by_upcoming_meeting',
     CoveredByCheckIn = 'covered_by_check_in',
+    RecentCheckIn = 'recent_check_in',
 }
 export enum InstitutionRelationKind {
     Advisory = 'advisory',

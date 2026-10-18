@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'recent_check_in' => 'Check-in recently ended',
+    'check_in_ended' => 'No meetings were reported through :date',
+    'recent_check_in_spotlight_title' => 'Ask after a check-in ends',
+    'recent_check_in_spotlight_body' => 'After a no-meeting check-in ends, you can send “Did a meeting take place?” yourself. Automatic questions wait for half the institution’s interval, excluding academic vacations.',
     'resolution' => ['meeting' => 'Meeting recorded', 'check_in' => 'Activity confirmed', 'confirmed_period' => 'Period confirmed', 'task_completed' => 'Activity recorded'],
     'legacy_period' => 'Until the reply date',
     'valid_until' => 'Valid until',

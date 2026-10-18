@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'recent_check_in' => 'Pranešimo laikotarpis baigėsi',
+    'check_in_ended' => 'Pranešta, kad posėdžių nebuvo iki :date',
+    'recent_check_in_spotlight_title' => 'Gali paklausti pasibaigus pranešimui',
+    'recent_check_in_spotlight_body' => 'Pasibaigus pranešimui „Posėdžio nebuvo“, gali pats siųsti „Ar vyko posėdis?“. Automatinis klausimas laukia pusę institucijos periodiškumo, neskaičiuojant atostogų.',
     'resolution' => ['meeting' => 'Posėdis užfiksuotas', 'check_in' => 'Veikla patvirtinta', 'confirmed_period' => 'Laikotarpis patvirtintas', 'task_completed' => 'Veikla užfiksuota'],
     'legacy_period' => 'Iki atsakymo dienos',
     'valid_until' => 'Galioja iki',

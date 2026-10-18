@@ -6,6 +6,7 @@ use App\Enums\ActivityRequestSkipReason;
 use App\Enums\InstitutionActivityCampaign;
 use App\Models\Institution;
 use App\Models\User;
+use App\Services\InstitutionActivityStatusService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -38,6 +39,9 @@ final readonly class ActivityRequestPlanEntry
     {
         return [
             'institution' => ['id' => (string) $this->institution->id, 'name' => is_string($this->institution->name) ? $this->institution->name : ''],
+            'activity_status' => $this->skipReason === ActivityRequestSkipReason::NotAllowed
+                ? null
+                : app(InstitutionActivityStatusService::class)->resolve($this->institution)->toArray(),
             'recipients' => array_values($this->recipientPeriods),
             'excluded_recipients' => $this->excludedRecipients,
             'recipient_count' => $this->recipients->count(),

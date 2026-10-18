@@ -25,6 +25,7 @@ const STATUS_STYLES: Record<string, InstitutionStatusStyle> = {
   approaching: { icon: CalendarClock, tone: 'attention' },
   no_activity: { icon: CircleHelp, tone: 'neutral' },
   covered_by_check_in: { icon: CalendarOff, tone: 'info' },
+  recent_check_in: { icon: CalendarClock, tone: 'info' },
   covered_by_upcoming_meeting: { icon: CalendarCheck, tone: 'info' },
   // The healthy state is the ordinary one and carries no colour (status rule: don't paint every row).
   healthy: { icon: Landmark, tone: 'neutral' },

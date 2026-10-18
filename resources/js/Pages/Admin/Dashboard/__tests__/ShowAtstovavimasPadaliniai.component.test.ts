@@ -69,7 +69,7 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantTimelineData', () => ({
             // A type the settings exclude: drawn in the Gantt, but left out of the numbers and the list.
             { ...tenantInstitution('excluded', 99), in_summary: false },
           ],
-          institution_summary: { all: 5, needs_attention: 3, overdue: 2, approaching: 1, no_activity: 0, current: 2 },
+          institution_summary: { all: 5, needs_attention: 3, overdue: 2, approaching: 1, no_activity: 0, recent_check_in: 0, current: 2 },
         }),
         isFetching: ref(false),
         loaded: tenantLoaded,
@@ -91,8 +91,8 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantMeetings', () => ({
 vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantStatusHistory', () => ({
   useTenantStatusHistory: () => ({
     data: ref([
-      { date: '2026-06-01', all: 5, needs_attention: 4, overdue: 4, approaching: 0, no_activity: 0, current: 1 },
-      { date: '2026-08-30', all: 5, needs_attention: 2, overdue: 2, approaching: 0, no_activity: 0, current: 3 },
+      { date: '2026-06-01', all: 5, needs_attention: 4, overdue: 4, approaching: 0, no_activity: 0, recent_check_in: 0, current: 1 },
+      { date: '2026-08-30', all: 5, needs_attention: 2, overdue: 2, approaching: 0, no_activity: 0, recent_check_in: 0, current: 3 },
     ]),
     isFetching: ref(false),
     loaded: ref(true),
@@ -157,7 +157,7 @@ describe('numbers', () => {
     wrapper = createWrapper();
 
     const links = wrapper.findAll('[data-slot="overview-numbers"] a');
-    expect(links.map(link => link.find('span').text())).toEqual(['2', '1', '0', '4']);
+    expect(links.map(link => link.find('span').text())).toEqual(['2', '1', '0', '0', '4']);
   });
 
   it('counts the open tasks of the selected padaliniai and links to their task list', () => {
@@ -179,7 +179,7 @@ describe('numbers', () => {
     wrapper = createWrapper();
 
     expect(wrapper.find('[data-slot="overview-numbers"]').exists()).toBe(false);
-    expect(wrapper.findAll('[data-slot="overview-numbers-skeleton"] li')).toHaveLength(4);
+    expect(wrapper.findAll('[data-slot="overview-numbers-skeleton"] li')).toHaveLength(5);
     expect(wrapper.findAll('[data-slot="institution-attention-skeleton"] li')).toHaveLength(3);
     expect(wrapper.find('[data-testid="attention"]').exists()).toBe(false);
   });
@@ -188,7 +188,7 @@ describe('numbers', () => {
     tenantLoaded.value = false;
     wrapper = createWrapper(false);
 
-    expect(wrapper.findAll('[data-slot="overview-numbers-skeleton"] li')).toHaveLength(3);
+    expect(wrapper.findAll('[data-slot="overview-numbers-skeleton"] li')).toHaveLength(4);
   });
 });
 

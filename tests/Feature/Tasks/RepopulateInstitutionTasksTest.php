@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Notifications\InstitutionActivityNotification;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
+use App\Tasks\Handlers\PeriodicityGapTaskHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
@@ -62,6 +63,37 @@ function periodicityGapTaskFor(Institution $institution): ?Task
 }
 
 describe('tasks:repopulate institution', function (): void {
+    test('waits through check-in grace then asks once with a seven-day task deadline', function (): void {
+        $this->travelTo('2026-11-20 12:00:00');
+        $institution = institutionWithRepresentative();
+        InstitutionCheckIn::factory()->for($institution)->create(['start_date' => '2026-09-01', 'end_date' => '2026-11-17']);
+
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+        expect(periodicityGapTaskFor($institution))->toBeNull();
+
+        $this->travelTo('2026-12-04 12:00:00');
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+
+        $task = periodicityGapTaskFor($institution);
+        expect($task)->not->toBeNull()
+            ->and($task->due_date->toDateString())->toBe('2026-12-11')
+            ->and(InstitutionActivityRequest::query()->where('task_id', $task->id)->count())->toBe(1);
+    });
+
+    test('reconciles stale open periodicity tasks during check-in grace', function (): void {
+        $this->travelTo('2026-11-20 12:00:00');
+        $institution = institutionWithRepresentative();
+        InstitutionCheckIn::factory()->for($institution)->create(['start_date' => '2026-09-01', 'end_date' => '2026-11-17']);
+        $users = $institution->duties->flatMap->users;
+        $task = app(PeriodicityGapTaskHandler::class)->findOrCreate($institution, $users, today()->subDay());
+
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+
+        expect($task->fresh()->completed_at)->not->toBeNull();
+        Notification::assertNotSentTo($users, InstitutionActivityNotification::class);
+    });
+
     test('no-history institutions create a task when approaching and ask each representative after their own interval', function (): void {
         $this->travelTo('2026-09-01 12:00:00');
         $institution = institutionWithRepresentative();

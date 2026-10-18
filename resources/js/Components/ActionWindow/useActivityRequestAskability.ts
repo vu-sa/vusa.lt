@@ -2,6 +2,7 @@ import { reactive, ref, watch, type Ref } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { useApiMutation } from '@/Composables/useApi';
+import type { InstitutionActivityStatus } from '@/Types/InstitutionActivity';
 
 export interface ActivityPreviewRecipient {
   id: string;
@@ -15,6 +16,7 @@ export interface ActivityPreviewRecipient {
 
 export interface ActivityPreviewEntry {
   institution: { id: string; name: string };
+  activity_status?: InstitutionActivityStatus | null;
   recipients: ActivityPreviewRecipient[];
   excluded_recipients?: ActivityPreviewRecipient[];
   skip_reason: string | null;

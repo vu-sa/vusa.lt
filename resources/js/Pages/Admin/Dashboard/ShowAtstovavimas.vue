@@ -251,13 +251,14 @@ const isPrimarySectionEmpty = computed(() =>
   && !props.referenceDocuments?.length,
 );
 
-function countByStatus(status: 'overdue' | 'approaching'): number {
+function countByStatus(status: 'overdue' | 'approaching' | 'recent_check_in'): number {
   return userScopedInstitutions.value.filter(institution => institution.activity_status?.status === status).length;
 }
 
 const numbers = computed<OverviewNumberItem[]>(() => [
   { key: 'overdue', label: $t('visak.overview.numbers.overdue'), value: countByStatus('overdue'), href: route('institutions.index', { activity_status: 'overdue' }), tone: 'danger' },
   { key: 'approaching', label: $t('visak.overview.numbers.approaching'), value: countByStatus('approaching'), href: route('institutions.index', { activity_status: 'approaching' }), tone: 'attention' },
+  { key: 'recent_check_in', label: $t('activity_requests.recent_check_in'), value: countByStatus('recent_check_in'), href: route('institutions.index', { activity_status: 'recent_check_in' }), tone: 'info' },
   {
     key: 'incomplete_meetings',
     label: $t('visak.overview.numbers.incomplete_meetings'),

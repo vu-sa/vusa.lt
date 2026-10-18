@@ -122,7 +122,7 @@ describe('InstitutionActivityStatusService', function (): void {
 
         expect($active->status)->toBe(InstitutionActivityStatus::CoveredByCheckIn)
             ->and($active->activeCheckInUntil?->toDateString())->toBe('2025-11-30')
-            ->and($expired->status)->toBe(InstitutionActivityStatus::Healthy)
+            ->and($expired->status)->toBe(InstitutionActivityStatus::RecentCheckIn)
             ->and($expired->lastActivityType)->toBe('check_in')
             ->and($expired->lastActivityAt?->toDateString())->toBe('2025-10-31')
             ->and($expired->effectiveDaysSinceActivity)->toBe(14);
@@ -131,13 +131,13 @@ describe('InstitutionActivityStatusService', function (): void {
     test('a check-in ending before summer vacation prevents a false approaching warning', function (): void {
         $status = app(InstitutionActivityStatusService::class)->resolve(
             institutionForActivityStatus(
-                meetingDates: ['2026-06-02 15:00:00'],
+                meetingDates: ['2026-05-02 15:00:00'],
                 checkInRanges: [['2026-06-18', '2026-06-30']],
             ),
             CarbonImmutable::parse('2026-07-26 12:00:00'),
         );
 
-        expect($status->status)->toBe(InstitutionActivityStatus::Healthy)
+        expect($status->status)->toBe(InstitutionActivityStatus::RecentCheckIn)
             ->and($status->lastActivityType)->toBe('check_in')
             ->and($status->lastActivityAt?->toDateString())->toBe('2026-06-30')
             ->and($status->effectiveDaysSinceActivity)->toBe(0)
@@ -156,6 +156,59 @@ describe('InstitutionActivityStatusService', function (): void {
 
         expect($status->periodicityDays)->toBe(14)
             ->and($status->status)->toBe(InstitutionActivityStatus::Approaching);
+    });
+
+    test('completed check-ins have a half-interval grace period', function (int $periodicity, int $days, InstitutionActivityStatus $expected): void {
+        $at = CarbonImmutable::parse('2026-11-20 12:00:00');
+        $end = $at->subDays($days + 1)->toDateString();
+        $status = app(InstitutionActivityStatusService::class)->resolve(
+            institutionForActivityStatus([], [['2026-09-01', $end]], $periodicity),
+            $at,
+        );
+
+        expect($status->status)->toBe($expected)
+            ->and($status->effectiveDaysSinceActivity)->toBe($days)
+            ->and($status->lastActivityType)->toBe('check_in')
+            ->and($status->lastCompletedCheckInAt?->toDateString())->toBe($end)
+            ->and($status->progressPercentage)->toBe((int) round($days / ceil($periodicity / 2) * 100))
+            ->and($status->status->requiresAction())->toBe($expected === InstitutionActivityStatus::Overdue);
+    })->with([
+        'first uncovered day' => [30, 0, InstitutionActivityStatus::RecentCheckIn],
+        'last grace day' => [30, 15, InstitutionActivityStatus::RecentCheckIn],
+        'first overdue day' => [30, 16, InstitutionActivityStatus::Overdue],
+        'odd interval rounds up' => [31, 16, InstitutionActivityStatus::RecentCheckIn],
+        'odd interval overdue' => [31, 17, InstitutionActivityStatus::Overdue],
+        'minimum grace' => [1, 1, InstitutionActivityStatus::RecentCheckIn],
+    ]);
+
+    test('meeting coverage takes precedence over a newer completed check-in', function (int $meetingAge, InstitutionActivityStatus $expected): void {
+        $at = CarbonImmutable::parse('2026-11-20 12:00:00');
+        $status = app(InstitutionActivityStatusService::class)->resolve(
+            institutionForActivityStatus(
+                [$at->subDays($meetingAge)->toDateTimeString()],
+                [['2026-11-18', '2026-11-18']],
+            ),
+            $at,
+        );
+
+        expect($status->status)->toBe($expected)
+            ->and($status->lastActivityType)->toBe($meetingAge <= 30 ? 'meeting' : 'check_in')
+            ->and($status->effectiveDaysSinceActivity)->toBe($meetingAge <= 30 ? $meetingAge : 1);
+    })->with([
+        'healthy meeting' => [10, InstitutionActivityStatus::Healthy],
+        'approaching meeting' => [24, InstitutionActivityStatus::Approaching],
+        'meeting at threshold' => [30, InstitutionActivityStatus::Approaching],
+        'old meeting yields to check-in' => [31, InstitutionActivityStatus::RecentCheckIn],
+    ]);
+
+    test('future check-ins do not cover an overdue meeting', function (): void {
+        $status = app(InstitutionActivityStatusService::class)->resolve(
+            institutionForActivityStatus(['2026-09-01'], [['2026-12-01', '2026-12-10']]),
+            CarbonImmutable::parse('2026-11-20'),
+        );
+
+        expect($status->status)->toBe(InstitutionActivityStatus::Overdue)
+            ->and($status->lastCompletedCheckInAt)->toBeNull();
     });
 
     test('takes the shortest periodicity among several types', function (): void {

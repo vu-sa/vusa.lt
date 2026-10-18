@@ -44,7 +44,7 @@ class AtstovavimasApiController extends ApiController
         $tenantIds = $this->authorizedTenantIds($request->validated('tenant_ids'), $user);
 
         return $this->jsonSuccess(
-            $this->rememberVisak('timeline', $tenantIds->sort()->implode(','), $request->boolean('refresh'), fn () => $this->dashboardService->tenantTimeline($tenantIds->all()))
+            $this->rememberVisak('timeline', $tenantIds->sort()->implode(','), $request->boolean('refresh'), fn () => $this->dashboardService->tenantTimeline($tenantIds->all()), 'activity-status-v2')
         );
     }
 
@@ -83,7 +83,7 @@ class AtstovavimasApiController extends ApiController
                 $tenantIds->sort()->implode(','),
                 $request->boolean('refresh'),
                 fn () => $this->dashboardService->tenantStatusHistory($tenantIds->all(), $days),
-                (string) $days,
+                $days.':activity-status-v2',
                 self::STATUS_HISTORY_CACHE_TTL_SECONDS,
             )
         );

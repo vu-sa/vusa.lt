@@ -455,6 +455,27 @@ test('manual activity preview and creation require the meeting interval to be ex
     }
 })->with(['FF two days after meeting' => [2, 'recent_activity'], 'approaching' => [24, 'recent_activity'], 'exact interval' => [30, 'recent_activity'], 'overdue' => [31, null]]);
 
+test('manual activity questions can be sent during check-in grace while automatic questions wait', function (): void {
+    $this->travelTo('2026-11-20 12:00:00');
+    $this->institution->update(['meeting_periodicity_days' => 30]);
+    InstitutionCheckIn::factory()->for($this->institution)->create(['start_date' => '2026-09-01', 'end_date' => '2026-11-17']);
+    $payload = ['campaign_type' => 'activity_confirmation', 'institution_ids' => [$this->institution->id]];
+
+    asUser($this->coordinator)->postJson(route('api.v1.admin.activityRequests.preview'), $payload)
+        ->assertOk()
+        ->assertJsonPath('data.0.skip_reason', null)
+        ->assertJsonPath('data.0.activity_status.status', 'recent_check_in')
+        ->assertJsonPath('data.0.activity_status.last_completed_check_in_at', '2026-11-17')
+        ->assertJsonPath('data.0.recipients.0.period_start', '2026-11-18');
+
+    $sender = app(SendInstitutionActivityRequests::class);
+    expect($sender->plan([$this->institution], null)[0]->skipReason)->toBe(ActivityRequestSkipReason::RecentActivity);
+    asUser($this->coordinator)->post(route('institutions.activity-requests.store'), $payload)->assertRedirect();
+    Notification::assertSentTo($this->rep, InstitutionActivityNotification::class);
+    expect(InstitutionActivityRequest::query()->sole()->requested_by_id)->toBe($this->coordinator->id);
+    expect($sender->send([$this->institution], $this->coordinator)['queued_requests'])->toBe(0);
+});
+
 test('activity requests exclude upcoming meetings and inactive institutions', function (string $condition, string $reason): void {
     app(RecordMeeting::class)->execute($this->institution, now()->subDays(40));
     if ($condition === 'upcoming') {

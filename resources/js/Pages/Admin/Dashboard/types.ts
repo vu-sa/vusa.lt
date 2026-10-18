@@ -251,6 +251,7 @@ export interface InstitutionStatusSummaryData {
   approaching: number;
   no_activity: number;
   current: number;
+  recent_check_in: number;
 }
 
 export interface RepresentativePagination {

@@ -32,6 +32,10 @@ export function describeInstitutionActivity(status: InstitutionActivityStatus, d
     return parts.join(' · ');
   }
 
+  if (status.last_activity_type === 'check_in' && status.last_completed_check_in_at) {
+    return $t('activity_requests.check_in_ended', { date: dates.fullDay(status.last_completed_check_in_at) });
+  }
+
   // The date, not `effective_days_since_activity`: that counter skips vacation periods,
   // so rendering it as "N days ago" told the reader something no calendar agrees with.
   if (status.last_meeting_at) {

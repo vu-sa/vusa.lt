@@ -74,7 +74,7 @@ class SendInstitutionActivityRequests
                 $incompleteMeetings = $campaign === InstitutionActivityCampaign::MissingMeetings
                     ? $this->completion->incompleteInPeriod($knownMeetings, $start, $end)
                     : collect();
-                $skip = $this->skipReasonFor($institution, (string) $recipientId, $campaign, $start, $end, $knownMeetings, $incompleteMeetings, $existing->get($institution->id, collect()));
+                $skip = $this->skipReasonFor($institution, (string) $recipientId, $campaign, $start, $end, $knownMeetings, $incompleteMeetings, $existing->get($institution->id, collect()), $requestedBy !== null);
                 $row = $this->recipientRow($recipient, $start, $end, $skip, $incompleteMeetings);
 
                 if ($skip !== null) {
@@ -186,10 +186,11 @@ class SendInstitutionActivityRequests
         EloquentCollection $knownMeetings,
         Collection $incompleteMeetings,
         Collection $existing,
+        bool $manual,
     ): ?ActivityRequestSkipReason {
         $missingMeetings = $campaign === InstitutionActivityCampaign::MissingMeetings;
 
-        $eligibilitySkip = $missingMeetings ? null : $this->eligibility->skipReason($institution, $start);
+        $eligibilitySkip = $missingMeetings ? null : $this->eligibility->skipReason($institution, $start, manual: $manual);
 
         return match (true) {
             $eligibilitySkip !== null => $eligibilitySkip,

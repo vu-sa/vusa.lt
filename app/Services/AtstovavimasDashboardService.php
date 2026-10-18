@@ -121,12 +121,13 @@ class AtstovavimasDashboardService
 
         $series = [];
         foreach ($dates as $index => $date) {
-            $tally = ['overdue' => 0, 'approaching' => 0, 'no_activity' => $idleCount, 'needs_attention' => $idleCount];
+            $tally = ['overdue' => 0, 'approaching' => 0, 'recent_check_in' => 0, 'no_activity' => $idleCount, 'needs_attention' => $idleCount];
             foreach ($statusesByDate[$index] as $status) {
                 match ($status) {
                     InstitutionActivityStatus::Overdue => $tally['overdue']++,
                     InstitutionActivityStatus::Approaching => $tally['approaching']++,
                     InstitutionActivityStatus::NoActivity => $tally['no_activity']++,
+                    InstitutionActivityStatus::RecentCheckIn => $tally['recent_check_in']++,
                     default => null,
                 };
                 if ($status->requiresAction()) {
@@ -141,7 +142,8 @@ class AtstovavimasDashboardService
                 'overdue' => $tally['overdue'],
                 'approaching' => $tally['approaching'],
                 'no_activity' => $tally['no_activity'],
-                'current' => $totalCount - $tally['needs_attention'],
+                'recent_check_in' => $tally['recent_check_in'],
+                'current' => $totalCount - $tally['needs_attention'] - $tally['recent_check_in'],
             ];
         }
 
@@ -149,15 +151,6 @@ class AtstovavimasDashboardService
     }
 
     /**
-     * Computes each active institution's InstitutionActivityStatus for every date
-     * in $dates (ascending, end-of-day instants), reusing precomputed sorted
-     * meeting/check-in timelines and cursors instead of calling
-     * InstitutionActivityStatusService::resolve() per (institution, day). Delegates
-     * the actual status decision to InstitutionActivityStatusService::classify() —
-     * the same rule resolve() uses — so the two can never diverge; only the (much
-     * cheaper) bookkeeping of "what's the next/last meeting or check-in as of this
-     * date" is reimplemented here.
-     *
      * @param  Collection<int, Institution>  $institutions
      * @param  list<CarbonInterface>  $dates
      * @return list<list<InstitutionActivityStatus>> outer index matches $dates, inner index matches $institutions
@@ -200,7 +193,6 @@ class AtstovavimasDashboardService
         foreach ($dates as $dateIndex => $moment) {
             $momentTs = $moment->getTimestamp();
             $today = $moment->copy()->startOfDay();
-            $todayTs = $today->getTimestamp();
             $statuses = [];
 
             foreach ($institutions as $i => $institution) {
@@ -213,37 +205,17 @@ class AtstovavimasDashboardService
                 $hasUpcomingMeeting = $meetingCursor[$i] < count($meetingTimestamps[$i]);
                 $lastMeetingInstant = $meetingCursor[$i] > 0 ? $meetingInstants[$i][$meetingCursor[$i] - 1] : null;
 
-                $activeCheckIn = false;
-                $latestCompletedCheckInEnd = null;
-                foreach ($checkInIntervals[$i] as $interval) {
-                    $startTs = $interval['start']->getTimestamp();
-                    $endTs = $interval['end']->getTimestamp();
-
-                    if ($startTs <= $todayTs && $endTs >= $todayTs) {
-                        $activeCheckIn = true;
-                    }
-                    if ($endTs < $todayTs && ($latestCompletedCheckInEnd === null || $endTs > $latestCompletedCheckInEnd->getTimestamp())) {
-                        $latestCompletedCheckInEnd = $interval['end'];
-                    }
-                }
-
-                $checkInIsLatestActivity = $latestCompletedCheckInEnd !== null
-                    && ($lastMeetingInstant === null || $latestCompletedCheckInEnd->endOfDay()->gt($lastMeetingInstant));
-                $hasActivity = $checkInIsLatestActivity || $lastMeetingInstant !== null;
-
-                $effectiveDays = 0;
-                if ($hasActivity) {
-                    $activityCalculationStart = $checkInIsLatestActivity
-                        ? $latestCompletedCheckInEnd->addDay()
-                        : $lastMeetingInstant;
-                    $effectiveDays = $this->academicCalendar->effectiveDaysBetween($activityCalculationStart, $moment);
-                }
+                [$activeCheckIn, $latestCompletedCheckInEnd] = $this->checkInCoverage($checkInIntervals[$i], $today);
 
                 $statuses[] = $this->activityStatusService->classify(
                     hasUpcomingMeeting: $hasUpcomingMeeting,
                     hasActiveCheckIn: $activeCheckIn,
-                    hasActivity: $hasActivity,
-                    effectiveDays: $effectiveDays,
+                    effectiveMeetingDays: $lastMeetingInstant
+                        ? $this->academicCalendar->effectiveDaysBetween($lastMeetingInstant, $moment)
+                        : null,
+                    effectiveCheckInDays: $latestCompletedCheckInEnd
+                        ? $this->academicCalendar->effectiveDaysBetween($latestCompletedCheckInEnd->addDay(), $moment)
+                        : null,
                     periodicityDays: $periodicityDays[$i],
                 );
             }
@@ -252,6 +224,28 @@ class AtstovavimasDashboardService
         }
 
         return $statusesByDate;
+    }
+
+    /**
+     * @param  list<array{start: CarbonImmutable, end: CarbonImmutable}>  $intervals
+     * @return array{bool, ?CarbonImmutable}
+     */
+    private function checkInCoverage(array $intervals, CarbonInterface $today): array
+    {
+        $active = false;
+        $latestCompleted = null;
+
+        // The sweep sorts intervals by end date, so each completed interval supersedes the last.
+        foreach ($intervals as $interval) {
+            if ($interval['start']->lte($today) && $interval['end']->gte($today)) {
+                $active = true;
+            }
+            if ($interval['end']->lt($today)) {
+                $latestCompleted = $interval['end'];
+            }
+        }
+
+        return [$active, $latestCompleted];
     }
 
     /**
@@ -631,7 +625,8 @@ class AtstovavimasDashboardService
             'overdue' => (int) $statuses->get('overdue', 0),
             'approaching' => (int) $statuses->get('approaching', 0),
             'no_activity' => (int) $statuses->get('no_activity', 0),
-            'current' => $institutions->count() - $needsAttention,
+            'recent_check_in' => (int) $statuses->get('recent_check_in', 0),
+            'current' => $institutions->count() - $needsAttention - (int) $statuses->get('recent_check_in', 0),
         ];
     }
 

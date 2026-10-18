@@ -10,6 +10,7 @@ const point = (date: string, overdue: number): InstitutionStatusHistoryPoint => 
   overdue,
   approaching: 0,
   no_activity: 0,
+  recent_check_in: 0,
   current: 10 - overdue,
 });
 

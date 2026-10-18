@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionCheckIn;
 use App\Models\Pivots\AgendaItem;
 use App\Models\User;
 use Database\Seeders\DocsSeeder;
@@ -54,6 +56,27 @@ it('opens a representative\'s institution with its status and meetings', functio
 
     $page->resize(1440, 1000);
     docsScreenshot($page, 'institution-record');
+
+    $page->assertNoJavaScriptErrors();
+});
+
+it('fits an ended check-in status and date at working widths in both themes', function (): void {
+    $institution = Institution::factory()->for($this->council->tenant)->create(['meeting_periodicity_days' => 30]);
+    InstitutionCheckIn::factory()->for($institution)->create(['start_date' => today()->subMonth(), 'end_date' => today()->subDays(3)]);
+    $duty = Duty::factory()->for($institution)->create();
+    $this->representative->duties()->attach($duty, ['start_date' => today()->subMonth()]);
+    $page = loginAsAdmin($this->representative);
+    $page->navigate("/mano/institutions/{$institution->id}");
+    waitForInertiaRender($page, '[data-slot=record-facts]');
+
+    foreach (['light', 'dark'] as $theme) {
+        $page->script('document.documentElement.classList.toggle("dark", '.($theme === 'dark' ? 'true' : 'false').')');
+        foreach ([390, 820, 1180, 1440] as $width) {
+            $page->resize($width, 900);
+            expect($page->script('document.documentElement.scrollWidth <= innerWidth'))->toBeTrue();
+            $page->screenshot(fullPage: false, filename: "recent-check-in-{$theme}-{$width}");
+        }
+    }
 
     $page->assertNoJavaScriptErrors();
 });

@@ -38,6 +38,9 @@
                   <Checkbox :id="`activity-row-${row.key}`" class="mt-0.5" :model-value="isChecked(row.key)" @update:model-value="setChecked(row.key, $event === true)" />
                   <span class="min-w-0">
                     <span class="block text-sm">{{ byPeople ? row.institution.name : row.recipient.name }}</span>
+                    <span v-if="row.activityStatus?.status === 'recent_check_in'" class="mt-0.5 block text-xs text-status-info" data-slot="recent-check-in-context">
+                      {{ $t('activity_requests.recent_check_in') }} · {{ describeInstitutionActivity(row.activityStatus, dates) }}
+                    </span>
                     <span class="mt-0.5 block text-xs text-muted-foreground">
                       {{ dates.fullDay(row.recipient.period_start) }} – {{ dates.fullDay(row.recipient.period_end) }} · {{ $t(`activity_requests.delivery.${row.recipient.delivery_mode}`) }}
                     </span>
@@ -99,13 +102,15 @@ import { useWindowDates } from '../useWindowDates';
 import { useActionWindow } from '@/Composables/useActionWindow';
 import { useApiMutation } from '@/Composables/useApi';
 import StagingNote from '@/Components/StagingNote.vue';
+import { describeInstitutionActivity } from '@/Components/Institutions/institutionActivity';
+import type { InstitutionActivityStatus } from '@/Types/InstitutionActivity';
 import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Label } from '@/Components/ui/label';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { Textarea } from '@/Components/ui/textarea';
 
-interface Row { key: string; institution: { id: string; name: string }; recipient: ActivityPreviewRecipient }
+interface Row { key: string; institution: { id: string; name: string }; recipient: ActivityPreviewRecipient; activityStatus?: InstitutionActivityStatus | null }
 
 const { draft, editFromHere, close, updateActivityRequest } = useActionWindow();
 const dates = useWindowDates();
@@ -140,7 +145,7 @@ watch(key, async (requestedKey) => {
 }, { immediate: true, flush: 'sync' });
 
 const rows = computed<Row[]>(() => (preview.value ?? []).filter(entry => !entry.skip_reason).flatMap(entry => entry.recipients.map(recipient => ({
-  key: `${entry.institution.id}:${recipient.id}`, institution: entry.institution, recipient,
+  key: `${entry.institution.id}:${recipient.id}`, institution: entry.institution, recipient, activityStatus: entry.activity_status,
 }))));
 
 /** Groups follow what was picked: institutions with their recipients, or people with their institutions. */

@@ -89,6 +89,22 @@ describe('ActivityRequestInstitutionsScreen.vue', () => {
 describe('ActivityRequestReviewScreen.vue', () => {
   const institutions = [{ id: 'a', name: 'VU SA MIF' }, { id: 'b', name: 'VU SA FilF' }];
 
+  it.each(['institutions', 'people'] as const)('shows ended check-in context when selecting by %s', async (mode) => {
+    preview.value = [{
+      institution: institutions[0],
+      activity_status: { ...status, status: 'recent_check_in', last_activity_type: 'check_in', last_completed_check_in_at: '2026-10-16' },
+      recipients: [{ id: 'u1', name: 'Ona', period_start: '2026-10-17', period_end: '2026-10-19', delivery_mode: 'immediate' }],
+      skip_reason: null,
+    }];
+    const { wrapper, window } = mountScreen(ActivityRequestReviewScreen, { flow: 'activity.request', institutions: [institutions[0]!] });
+    window.updateActivityRequest({ mode, people: mode === 'people' ? [{ id: 'u1', name: 'Ona', institutions: [institutions[0]!] }] : [] });
+    await flushPromises();
+
+    expect(wrapper.find('[data-slot="recent-check-in-context"]').text()).toContain('activity_requests.recent_check_in');
+    expect(wrapper.text()).toContain('activity_requests.check_in_ended');
+    expect(wrapper.find('[data-slot="action-window-primary"]').attributes('disabled')).toBeUndefined();
+  });
+
   it('names who gets asked, says why an institution is left out, and sends the note', async () => {
     preview.value = [
       { institution: institutions[0], recipients: [{ id: 'u1', name: 'Ona Atstovė', period_start: '2026-09-01', period_end: '2026-10-03', delivery_mode: 'immediate' }], period_start: '2026-09-01', skip_reason: null },

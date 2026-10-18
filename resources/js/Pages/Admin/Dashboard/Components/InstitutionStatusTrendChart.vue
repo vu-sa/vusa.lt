@@ -92,7 +92,7 @@ import type { InstitutionStatusHistoryPoint } from '../types';
 
 import { Skeleton } from '@/Components/ui/skeleton';
 
-type StatusKey = 'current' | 'approaching' | 'overdue' | 'no_activity';
+type StatusKey = 'current' | 'recent_check_in' | 'approaching' | 'overdue' | 'no_activity';
 
 const props = defineProps<{
   data: InstitutionStatusHistoryPoint[];
@@ -111,6 +111,7 @@ const skeletonAreaClipPath = 'polygon(0 55%, 12% 48%, 24% 58%, 36% 35%, 48% 42%,
 // statuses, so they use the status roles, not the categorical `--cat-*` hues (visual.md).
 const seriesConfig: Array<{ key: StatusKey; labelKey: string; fillClass: string; swatchClass: string }> = [
   { key: 'current', labelKey: 'visak.institution_summary.current', fillClass: 'fill-status-success/70', swatchClass: 'bg-status-success' },
+  { key: 'recent_check_in', labelKey: 'activity_requests.recent_check_in', fillClass: 'fill-status-info/70', swatchClass: 'bg-status-info' },
   { key: 'approaching', labelKey: 'visak.institution_summary.approaching', fillClass: 'fill-status-attention/70', swatchClass: 'bg-status-attention' },
   { key: 'overdue', labelKey: 'visak.institution_summary.overdue', fillClass: 'fill-status-danger/70', swatchClass: 'bg-status-danger' },
   { key: 'no_activity', labelKey: 'visak.institution_summary.no_activity', fillClass: 'fill-status-neutral/60', swatchClass: 'bg-status-neutral' },

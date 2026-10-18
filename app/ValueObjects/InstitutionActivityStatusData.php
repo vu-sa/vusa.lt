@@ -17,6 +17,7 @@ readonly class InstitutionActivityStatusData
         public ?CarbonImmutable $lastMeetingAt = null,
         public ?CarbonImmutable $nextMeetingAt = null,
         public ?CarbonImmutable $activeCheckInUntil = null,
+        public ?CarbonImmutable $lastCompletedCheckInAt = null,
     ) {}
 
     /**
@@ -31,7 +32,8 @@ readonly class InstitutionActivityStatusData
      *     last_activity_at: string|null,
      *     last_meeting_at: string|null,
      *     next_meeting_at: string|null,
-     *     active_check_in_until: string|null
+     *     active_check_in_until: string|null,
+     *     last_completed_check_in_at: string|null
      * }
      */
     public function toArray(): array
@@ -48,6 +50,7 @@ readonly class InstitutionActivityStatusData
             'last_meeting_at' => $this->lastMeetingAt?->toISOString(),
             'next_meeting_at' => $this->nextMeetingAt?->toISOString(),
             'active_check_in_until' => $this->activeCheckInUntil?->toDateString(),
+            'last_completed_check_in_at' => $this->lastCompletedCheckInAt?->toDateString(),
         ];
     }
 }

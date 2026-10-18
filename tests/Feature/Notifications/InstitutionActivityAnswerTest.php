@@ -87,6 +87,35 @@ test('delivery of record completion survives an active check-in but stops once r
     expect(activityNotification($this->activityRequest)->shouldSend($this->recipient, 'mail'))->toBeFalse();
 });
 
+test('manual activity questions survive grace in immediate and digest delivery but automatic ones do not', function (bool $manual): void {
+    Notification::fake();
+    Mail::fake();
+    $this->travelTo('2026-11-20 12:00:00');
+    $this->institution->update(['meeting_periodicity_days' => 30]);
+    InstitutionCheckIn::factory()->for($this->institution)->create(['start_date' => '2026-09-01', 'end_date' => '2026-11-17']);
+    $this->activityRequest->update([
+        'requested_by_id' => $manual ? $this->recipient->id : null,
+        'period_start' => '2026-11-18', 'period_end' => '2026-11-20',
+        'expires_at' => now()->addWeek(),
+    ]);
+    expect(activityNotification($this->activityRequest)->shouldSend($this->recipient, 'mail'))->toBe($manual);
+
+    $this->recipient->update(['notification_preferences' => ['types' => ['institution_activity' => ['email' => 'digest']]]]);
+    NotificationDigestQueue::create([
+        'user_id' => $this->recipient->id, 'notification_id' => (string) Str::uuid(),
+        'notification_class' => InstitutionActivityNotification::class, 'category' => 'task',
+        'data' => activityNotification($this->activityRequest)->toDigestItem($this->recipient),
+    ])->forceFill(['created_at' => now()->subDay()])->save();
+    $this->artisan('notifications:send-digests')->assertSuccessful();
+
+    if ($manual) {
+        Mail::assertSent(NotificationDigest::class, 1);
+    } else {
+        Mail::assertNothingSent();
+    }
+    expect(NotificationDigestQueue::query()->count())->toBe(0);
+})->with([true, false]);
+
 describe('the email asks and links to a confirmation page (U21)', function (): void {
     test('one institution gets yes and no buttons that open its answer page with the answer chosen', function (): void {
         $notification = activityNotification($this->activityRequest);
