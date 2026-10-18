@@ -18,6 +18,7 @@ export const MIGRATED_ADMIN_PATHS = [
   'resources/js/Components/Meetings/MeetingCompletionChecklist.vue',
   'resources/js/Features/Admin/ActivityLogViewer/RecordActivity.vue',
   'resources/js/Pages/Admin/ShowAdminHome.vue',
+  'resources/js/Pages/Admin/ShowOnboarding.vue',
   'resources/js/Pages/Admin/Representation/IndexMeeting.vue',
   'resources/js/Pages/Admin/Dashboard/ShowAtstovavimas.vue',
   'resources/js/Pages/Admin/Dashboard/ShowAtstovavimasPadaliniai.vue',

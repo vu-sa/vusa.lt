@@ -56,6 +56,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useStorage } from '@vueuse/core';
+import { usePage } from '@inertiajs/vue3';
+import type { PageProps } from '@/Types/index';
 
 import { Button } from '@/Components/ui/button';
 import { usePWA } from '@/Composables/usePWA';
@@ -67,6 +69,7 @@ const MIN_VISITS = 3;
 const MIN_SESSION_SECONDS = 120; // 2 minutes
 
 const { canInstall, promptInstall, isPWA } = usePWA();
+const page = usePage<PageProps>();
 
 const promptDismissed = useStorage<string | null>(STORAGE_KEY, null);
 const visitCount = useStorage<number>('pwa_visit_count', 0);
@@ -77,6 +80,12 @@ const isDismissed = computed(() => sessionDismissed.value || promptDismissed.val
 
 // Check if we should show the banner
 const shouldShow = computed(() => {
+  const progress = page.props.auth?.user?.onboarding_progress?.['getting-started-v1'];
+  const installation = progress?.items?.installation?.status;
+  if (installation === 'done' || installation === 'skipped') return false;
+  const path = page.url.split('?')[0];
+  if (path === '/mano/onboarding' || ((path === '/mano' || path === '/mano/') && !progress?.hidden)) return false;
+
   // Never show if already installed, can't install, or dismissed
   if (isPWA.value || !canInstall.value || isDismissed.value) {
     return false;

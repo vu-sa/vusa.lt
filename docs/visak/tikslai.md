@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Tikslai (bandomoji funkcija)
 area: goals
 models: [Goal, Step]
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-17
 tests:
   - tests/Feature/Admin/Goals/GoalControllerTest.php
   - tests/Feature/Public/GoalsTest.php

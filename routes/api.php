@@ -30,6 +30,7 @@ use App\Http\Controllers\Api\Admin\MailQueueApiController;
 use App\Http\Controllers\Api\Admin\MeetingApiController;
 use App\Http\Controllers\Api\Admin\MergeCandidateApiController;
 use App\Http\Controllers\Api\Admin\NavigationLinkApiController;
+use App\Http\Controllers\Api\Admin\OnboardingApiController;
 use App\Http\Controllers\Api\Admin\PendingUploadApiController;
 use App\Http\Controllers\Api\Admin\PermalinkPreviewApiController;
 use App\Http\Controllers\Api\Admin\ProblemApiController;
@@ -237,6 +238,10 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
             ->name('pendingUploads.store');
 
         // Tutorials
+        Route::get('onboarding', [OnboardingApiController::class, 'show'])->name('onboarding.show');
+        Route::patch('onboarding/items/{item}', [OnboardingApiController::class, 'updateItem'])->name('onboarding.items.update');
+        Route::patch('onboarding/summary', [OnboardingApiController::class, 'updateSummary'])->name('onboarding.summary.update');
+
         Route::get('tutorials/progress', [TutorialApiController::class, 'progress'])->name('tutorials.progress');
         Route::post('tutorials/complete', [TutorialApiController::class, 'markComplete'])->name('tutorials.complete');
         Route::post('tutorials/reset', [TutorialApiController::class, 'resetTour'])->name('tutorials.reset');

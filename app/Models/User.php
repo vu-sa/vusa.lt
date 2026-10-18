@@ -58,6 +58,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $remember_token
  * @property Carbon|null $last_action
  * @property array<array-key, mixed>|null $tutorial_progress
+ * @property array<array-key, mixed>|null $onboarding_progress
  * @property array $notification_preferences
  * @property array $ui_preferences
  * @property string|null $microsoft_token
@@ -125,6 +126,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
     'remember_token',
     'email_verified_at',
     'tutorial_progress',
+    'onboarding_progress',
     'notification_preferences',
     'ui_preferences',
     'last_action',
@@ -145,20 +147,17 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
             'last_action' => 'datetime',
             'show_pronouns' => 'boolean',
             'tutorial_progress' => 'array',
+            'onboarding_progress' => 'array',
             'notification_preferences' => 'array',
             'ui_preferences' => 'array',
         ];
     }
 
-    /**
-     * notification_preferences and ui_preferences are large JSON blobs that
-     * churn on every settings tweak; password is already covered by the
-     * global default_except_attributes exclusion.
-     */
+    /** Keep frequently changing preferences out of the activity history. */
     public function getActivitylogOptions(): LogOptions
     {
         return $this->defaultActivitylogOptions()
-            ->logExcept(['notification_preferences', 'ui_preferences']);
+            ->logExcept(['notification_preferences', 'ui_preferences', 'onboarding_progress']);
     }
 
     /**

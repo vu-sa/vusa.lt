@@ -13,6 +13,8 @@
           :more-href="route('tasks.index')"
         />
 
+        <ChecklistSummary v-if="onboarding" :checklist="onboarding" />
+
         <Deferred v-if="hasAtstovavimas" :data="deferredProps">
           <template #fallback>
             <CollectionSkeleton :rows="3" />
@@ -69,10 +71,12 @@
 <script setup lang="ts">
 import { Deferred, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import type { DriveStep } from 'driver.js';
 
 import AttentionQueue from '@/Components/Home/AttentionQueue.vue';
+import ChecklistSummary from '@/Components/Onboarding/ChecklistSummary.vue';
+import type { OnboardingChecklistData } from '@/Components/Onboarding/types';
 import CreateShortcuts from '@/Components/Home/CreateShortcuts.vue';
 import QuickAccess from '@/Components/Home/QuickAccess.vue';
 import FollowedInstitutionsList from '@/Components/Home/FollowedInstitutionsList.vue';
@@ -111,6 +115,7 @@ interface TaskStats {
 // The first response carries the queue and upcoming meetings; the rest arrives as one deferred group.
 const props = defineProps<{
   accessChanges: HomeAccessChange[];
+  onboarding?: OnboardingChecklistData;
   /** Set when the URL asked for the ActionWindow (a reminder's answer buttons, U21). */
   actionWindowLaunch: { flow: 'meeting.create' | 'check-in'; institution: ActionWindowInstitutionRef } | null;
   taskStats: TaskStats;
@@ -178,7 +183,7 @@ const tourSteps = computed<DriveStep[]>(() => isMobile.value
       tourStep('account_menu', 'account-menu'),
     ]);
 
-const { startTour, startTourIfNew } = useProductTour({
+const { startTour } = useProductTour({
   tourId: 'admin-welcome-v2',
   steps: () => tourSteps.value,
 });
@@ -187,13 +192,20 @@ provideTour(startTour);
 
 /** Lets the shell and the first cards settle before driver.js measures them. */
 const TOUR_START_DELAY_MS = 1000;
+let tourStartTimer: ReturnType<typeof setTimeout> | undefined;
+onUnmounted(() => clearTimeout(tourStartTimer));
 
 // A reminder's answer buttons open Pradžia with the window already on the right flow (U21).
 onMounted(() => {
   const launch = props.actionWindowLaunch;
 
   if (!launch) {
-    setTimeout(() => startTourIfNew(), TOUR_START_DELAY_MS);
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('tour') === 'welcome') {
+      url.searchParams.delete('tour');
+      window.history.replaceState(window.history.state, '', url);
+      tourStartTimer = setTimeout(() => startTour(true), TOUR_START_DELAY_MS);
+    }
     return;
   }
 

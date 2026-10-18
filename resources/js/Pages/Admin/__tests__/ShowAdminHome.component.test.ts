@@ -25,6 +25,7 @@ vi.mock('@/Composables/useApi', () => ({
 // The bands are tested on their own; here only what the page decides matters.
 const stubs = {
   AttentionQueue: true,
+  ChecklistSummary: true,
   CreateShortcuts: true,
   QuickAccess: true,
   UpcomingMeetingsList: true,
@@ -173,11 +174,27 @@ describe('ShowAdminHome', () => {
     expect(wrapper.find('attention-queue-stub [data-stub="reservation-draft"]').exists()).toBe(false);
   });
 
-  it('starts the welcome tour for someone who has not seen it', () => {
+  it('does not start a welcome tour automatically', () => {
     mountPage();
     vi.advanceTimersByTime(5000);
 
-    expect(startTourIfNew).toHaveBeenCalledOnce();
+    expect(startTourIfNew).not.toHaveBeenCalled();
+    expect(startTour).not.toHaveBeenCalled();
+  });
+
+  it('starts the welcome tour only on an explicit request and cleans its URL', () => {
+    window.history.replaceState({}, '', '/mano?tour=welcome');
+    mountPage();
+    vi.advanceTimersByTime(5000);
+    expect(startTour).toHaveBeenCalledWith(true);
+    expect(window.location.search).toBe('');
+  });
+
+  it('keeps real tasks above the onboarding summary', () => {
+    const wrapper = mountPage({ onboarding: { key: 'getting-started-v1' } });
+    const column = wrapper.find('[data-slot="home-primary-section"]').element.firstElementChild!;
+    expect(column.firstElementChild?.tagName.toLowerCase()).toBe('attention-queue-stub');
+    expect(column.firstElementChild?.nextElementSibling?.tagName.toLowerCase()).toBe('checklist-summary-stub');
   });
 
   it('leaves the tour for later when the page opens straight into the ActionWindow', () => {

@@ -1,6 +1,7 @@
 import type { IconifyIcon } from '@iconify/vue';
 
 import type { LocaleEnum, ModelEnum } from './enums';
+import type { OnboardingProgress } from '@/Components/Onboarding/types';
 
 import type { NavFooterColumn, NavItem } from '@/Components/Public/Nav/types';
 
@@ -13,6 +14,7 @@ interface User extends Omit<App.Entities.User, 'tenants'> {
   tasks_count?: number;
   overdue_tasks_count?: number;
   tutorial_progress?: Record<string, string>;
+  onboarding_progress?: OnboardingProgress;
 }
 
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {

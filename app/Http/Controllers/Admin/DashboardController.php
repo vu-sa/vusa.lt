@@ -20,6 +20,7 @@ use App\Models\User;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionRelationService;
 use App\Services\ModelAuthorizer as Authorizer;
+use App\Services\OnboardingChecklist;
 use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
 use Illuminate\Support\Collection;
@@ -137,6 +138,7 @@ class DashboardController extends AdminController
         return $this->inertiaResponse('Admin/ShowAdminHome', [
             'accessChanges' => fn () => GetRecentAccessChanges::execute($user(), self::ACCESS_BAND_DAYS),
             'actionWindowLaunch' => fn () => $request->actionWindowLaunch($user()),
+            'onboarding' => fn () => app(OnboardingChecklist::class)->present($user()),
             'taskStats' => fn () => $taskStats(),
             'upcomingTasks' => fn () => $upcomingTasks(),
             'upcomingMeetings' => fn () => $upcomingMeetings()['items'],

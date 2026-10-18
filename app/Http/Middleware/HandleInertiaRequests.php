@@ -152,6 +152,7 @@ class HandleInertiaRequests extends Middleware
                     'unreadNotifications' => $onAdmin ? $user->unreadNotifications()->limit(self::NOTIFICATION_PREVIEW_LIMIT)->get() : [],
                     'unreadNotificationsCount' => $onAdmin ? $user->unreadNotifications()->count() : 0,
                     'tutorial_progress' => $user->tutorial_progress ?? [],
+                    'onboarding_progress' => $onAdmin ? ($user->onboarding_progress ?? []) : [],
                     'ui_preferences' => $user->ui_preferences ?? [],
                 ],
                 'impersonating' => fn () => $this->getImpersonationState($request),

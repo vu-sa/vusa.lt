@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Problemos
 area: problems
 models: [Problem, ProblemCategory]
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-17
 tests:
   - tests/Feature/Admin/Problems/ProblemControllerTest.php
   - tests/Feature/Admin/Problems/AgendaItemProblemControllerTest.php
