@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Actions\ActivityRequests\ResolveActivityRequestEligibility;
 use App\Enums\InstitutionActivityAnswer;
 use App\Enums\InstitutionActivityCampaign;
 use App\Enums\NotificationType;
@@ -50,13 +51,11 @@ class InstitutionActivityNotification extends BaseNotification implements SendsM
     public function shouldSend(object $notifiable, string $channel): bool
     {
         $this->requests = InstitutionActivityRequest::query()->open()->whereKey($this->requests->modelKeys())
-            ->whereHas('institution')->whereHas('recipient')->with(['institution.meetings', 'requestedBy', 'task'])->get();
+            ->whereHas('institution')->whereHas('recipient')->with(['institution.meetings', 'institution.checkIns', 'institution.types', 'recipient', 'requestedBy', 'task'])->get();
         $this->requests->where('campaign_type', InstitutionActivityCampaign::MissingMeetings)
             ->loadMissing(['institution.meetings.agendaItems.votes', 'institution.meetings.institutions']);
-        $this->requests = $this->requests->reject(fn (InstitutionActivityRequest $request) => $request->campaign_type === InstitutionActivityCampaign::MissingMeetings
-                ? $request->incompleteMeetings()->isEmpty()
-                : $request->institution->meetings->contains(fn ($meeting) => $meeting->start_time->toDateString() >= $request->period_start->toDateString()
-                    && $meeting->start_time->toDateString() <= $request->periodEnd()->toDateString()));
+        $eligibility = app(ResolveActivityRequestEligibility::class);
+        $this->requests = $this->requests->filter($eligibility->shouldDeliver(...));
 
         return $this->requests->isNotEmpty() && ($channel !== 'mail' || (! $notifiable->isGloballyMuted() && $notifiable->emailDeliveryFor($this->type())->value === 'immediate'));
     }

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\ActivityRequests\ResolveActivityRequestEligibility;
 use App\Enums\EmailDelivery;
 use App\Enums\InstitutionActivityCampaign;
 use App\Enums\NotificationType;
@@ -30,7 +31,7 @@ use Illuminate\Support\Facades\Mail;
 #[Signature('notifications:send-digests')]
 class ProcessNotificationDigests extends Command
 {
-    public function handle(): int
+    public function handle(ResolveActivityRequestEligibility $eligibility): int
     {
         if (QuietHours::isQuiet(now())) {
             $this->info('Quiet hours — digests are held until 07:00.');
@@ -75,30 +76,7 @@ class ProcessNotificationDigests extends Command
                 ->orderBy('created_at', 'asc')
                 ->get();
 
-            $activityItems = $digestItems->where('notification_class', InstitutionActivityNotification::class);
-            $requestIds = $activityItems->flatMap(fn ($item) => $item->data['activity_request_ids'] ?? [])->unique();
-            $activityRequests = InstitutionActivityRequest::query()->open()->whereKey($requestIds)
-                ->where('recipient_id', $user->id)->whereHas('institution')->whereHas('recipient')
-                ->with(['institution.meetings', 'requestedBy', 'task'])->get()->keyBy('id');
-            $activityRequests->where('campaign_type', InstitutionActivityCampaign::MissingMeetings)
-                ->loadMissing(['institution.meetings.agendaItems.votes', 'institution.meetings.institutions']);
-            $digestItems = $digestItems->filter(function ($item) use ($user, $activityRequests): bool {
-                if ($item->notification_class !== InstitutionActivityNotification::class || ! isset($item->data['activity_request_ids'])) {
-                    return true;
-                }
-                $requests = $activityRequests->only($item->data['activity_request_ids'])->values()->reject(fn ($request) => $request->campaign_type === InstitutionActivityCampaign::MissingMeetings
-                    ? $request->incompleteMeetings()->isEmpty()
-                    : $request->institution->meetings->contains(fn ($meeting) => $meeting->start_time->toDateString() >= $request->period_start->toDateString()
-                        && $meeting->start_time->toDateString() <= $request->periodEnd()->toDateString()));
-                if ($requests->isEmpty() || $user->isGloballyMuted() || $user->emailDeliveryFor(NotificationType::InstitutionActivity) !== EmailDelivery::Digest) {
-                    $item->delete();
-
-                    return false;
-                }
-                $item->data = new InstitutionActivityNotification(new Collection($requests->all()))->toDigestItem($user);
-
-                return true;
-            });
+            $digestItems = $this->refreshActivityRequests($digestItems, $user, $eligibility);
 
             if ($digestItems->isEmpty()) {
                 continue;
@@ -143,6 +121,36 @@ class ProcessNotificationDigests extends Command
         $this->info("Processed digests: {$sentCount} sent, {$skippedCount} skipped (not time yet), {$failedCount} failed.");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @param  Collection<int, NotificationDigestQueue>  $digestItems
+     * @return Collection<int, NotificationDigestQueue>
+     */
+    private function refreshActivityRequests(Collection $digestItems, User $user, ResolveActivityRequestEligibility $eligibility): Collection
+    {
+        $activityItems = $digestItems->where('notification_class', InstitutionActivityNotification::class);
+        $requestIds = $activityItems->flatMap(fn ($item) => $item->data['activity_request_ids'] ?? [])->unique();
+        $activityRequests = InstitutionActivityRequest::query()->open()->whereKey($requestIds)
+            ->where('recipient_id', $user->id)->whereHas('institution')->whereHas('recipient')
+            ->with(['institution.meetings', 'institution.checkIns', 'institution.types', 'recipient', 'requestedBy', 'task'])->get()->keyBy('id');
+        $activityRequests->where('campaign_type', InstitutionActivityCampaign::MissingMeetings)
+            ->loadMissing(['institution.meetings.agendaItems.votes', 'institution.meetings.institutions']);
+
+        return $digestItems->filter(function ($item) use ($user, $activityRequests, $eligibility): bool {
+            if ($item->notification_class !== InstitutionActivityNotification::class || ! isset($item->data['activity_request_ids'])) {
+                return true;
+            }
+            $requests = $activityRequests->only($item->data['activity_request_ids'])->values()->filter($eligibility->shouldDeliver(...));
+            if ($requests->isEmpty() || $user->isGloballyMuted() || $user->emailDeliveryFor(NotificationType::InstitutionActivity) !== EmailDelivery::Digest) {
+                $item->delete();
+
+                return false;
+            }
+            $item->data = new InstitutionActivityNotification(new Collection($requests->all()))->toDigestItem($user);
+
+            return true;
+        });
     }
 
     /**

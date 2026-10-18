@@ -26,6 +26,7 @@ class SendInstitutionActivityRequests
         private readonly ResolveActivityRequestRecipients $recipients,
         private readonly MeetingCompletionService $completion,
         private readonly ResolveCheckInStarts $checkInStarts,
+        private readonly ResolveActivityRequestEligibility $eligibility,
     ) {}
 
     /**
@@ -39,7 +40,7 @@ class SendInstitutionActivityRequests
     public function plan(iterable $institutions, ?User $requestedBy, InstitutionActivityCampaign $campaign = InstitutionActivityCampaign::ActivityConfirmation, ?array $pairs = null): array
     {
         $institutions = new EloquentCollection(collect($institutions)->all());
-        $institutions->loadMissing(['meetings', 'checkIns']);
+        $institutions->loadMissing(['meetings', 'checkIns', 'types']);
         if ($campaign === InstitutionActivityCampaign::MissingMeetings) {
             $institutions->loadMissing(['meetings.agendaItems.votes', 'meetings.institutions']);
         }
@@ -54,6 +55,9 @@ class SendInstitutionActivityRequests
         return $institutions->map(function (Institution $institution) use ($requestedBy, $campaign, $pairs, $candidates, $typedInstitutionIds, $existing, $end): ActivityRequestPlanEntry {
             if ($requestedBy !== null && ! $requestedBy->can('askAboutActivity', [InstitutionCheckIn::class, $institution])) {
                 return new ActivityRequestPlanEntry($institution, $campaign, $end, $end, skipReason: ActivityRequestSkipReason::NotAllowed);
+            }
+            if (! $institution->is_active) {
+                return new ActivityRequestPlanEntry($institution, $campaign, $end, $end, skipReason: ActivityRequestSkipReason::InactiveInstitution);
             }
 
             $periods = $this->periodsFor($institution, $candidates[$institution->id], $pairs);
@@ -185,16 +189,13 @@ class SendInstitutionActivityRequests
     ): ?ActivityRequestSkipReason {
         $missingMeetings = $campaign === InstitutionActivityCampaign::MissingMeetings;
 
-        $coveredUntil = fn (CarbonImmutable $from) => $institution->checkIns->contains(fn (InstitutionCheckIn $checkIn) => $checkIn->start_date->lte($from) && $checkIn->end_date->gte($end));
+        $eligibilitySkip = $missingMeetings ? null : $this->eligibility->skipReason($institution, $start);
 
         return match (true) {
-            // Asking starts after the last report, so a running one pushes the start past today.
-            $start->gt($end) && $coveredUntil($end) => ActivityRequestSkipReason::CheckInActive,
+            $eligibilitySkip !== null => $eligibilitySkip,
             $start->gt($end) => ActivityRequestSkipReason::NoPeriod,
-            ! $missingMeetings && $knownMeetings->isNotEmpty() => ActivityRequestSkipReason::MeetingRecorded,
             $missingMeetings && $knownMeetings->isEmpty() => ActivityRequestSkipReason::NoRecordedMeetings,
             $missingMeetings && $incompleteMeetings->isEmpty() => ActivityRequestSkipReason::RecordsComplete,
-            $coveredUntil($start) => ActivityRequestSkipReason::CheckInActive,
             $existing->contains(fn (InstitutionActivityRequest $request) => $request->alreadyAsks($recipientId, $campaign, $start, $end)) => ActivityRequestSkipReason::AlreadyAsked,
             default => null,
         };
@@ -239,6 +240,10 @@ class SendInstitutionActivityRequests
             $byRecipient = [];
 
             foreach ($plan as $entry) {
+                if ($task !== null && $campaign === InstitutionActivityCampaign::MissingMeetings
+                    && $this->eligibility->skipReason($entry->institution, $entry->periodStart) !== null) {
+                    continue;
+                }
                 foreach ($entry->recipients as $recipient) {
                     $period = $entry->recipientPeriods[$recipient->id];
                     // A task asks only its own assignees, and each of them once.

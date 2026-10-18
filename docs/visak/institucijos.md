@@ -237,7 +237,7 @@ simbolių. Patvirtinus rodoma, kiek užklausų paruošta, kiek yra gavėjų ir k
 
 Užklausa skiriama dabartiniams institucijos studentų atstovams. Jei kadencijai paskirtas
 [sekretorius](#sekretoriai) (dažniausiai VU SA vidinėse institucijose), renkantis pagal institucijas
-klausiama jo, o ne atstovų; atstovo, kuris pasirinktas tiesiogiai, klausiama bet kuriuo atveju. Siuntėjui užklausa nesiunčiama.
+klausiama jo, o ne atstovų; atstovas, kuris pasirinktas tiesiogiai, įtraukiamas ir tada, kai yra sekretorius.
 
 Jei nėra nei sekretoriaus, nei gavėjų, priežastis atskiria du atvejus: institucijoje nėra
 pareigybių su tipu **Studentų atstovas**, arba tokių pareigybių yra, bet jos neturi dabartinių
@@ -259,13 +259,35 @@ laiką, apie kurį jie jau pranešė.
 
 </ChangelogNote>
 
-**Ar vyko posėdis?** nesiunčiama, kol galioja pranešimas „Posėdžio nebuvo“.
+<ChangelogNote version="v3.9" date="2026-10-18" title="Vienodos veiklos užklausų siuntimo sąlygos">
+
+Koordinatoriaus siunčiamai užklausai **Ar vyko posėdis?** taikomos tos pačios sąlygos kaip automatinei:
+institucija turi būti aktyvi, jos posėdžių periodiškumo terminas turi būti praėjęs, negali būti suplanuoto
+būsimo posėdžio ar šiuo metu galiojančio pranešimo „Posėdžio nebuvo“. Akademinių atostogų dienos
+neskaičiuojamos. Vien artėjančio termino neužtenka; esant 30 dienų periodiškumui klausiama praėjus
+daugiau kaip 30 skaičiuojamų dienų. Priežastis, kodėl klausti dar negalima, rodoma renkantis gavėjus.
+
+Jei institucijoje dar neužregistruota nei posėdžių, nei pranešimų apie veiklą, laikas skaičiuojamas
+nuo kiekvieno gavėjo pareigų pradžios dabartinėje kadencijoje. Sekretoriui naudojama kadencijos pradžia.
+Pavyzdžiui, jei laikotarpis prasideda **rugsėjo 1 d.**, periodiškumas yra **30 dienų** ir nėra
+atostogų, klausti galima nuo **spalio 2 d.** Vėliau pareigas pradėjęs atstovas laukia savo termino.
+Apžvalgoje tokia institucija ir toliau žymima **Nėra duomenų**, kol užregistruojama veikla.
+
+</ChangelogNote>
+
+Pranešimas, kuris prasidės tik ateityje, dabartinio neapimto laikotarpio neuždengia.
+Sąlygos tikrinamos ir patvirtinant siuntimą, ir prieš pristatant laukiančius laiškus ar santraukas.
 **Papildyk posėdžių įrašus** klausia apie jau vykusius posėdžius, kurių darbotvarkės tuščios arba
 neužpildyti sprendimai. Jei laikotarpiu posėdžių nėra, pasirenkama **Ar vyko posėdis?**; jei visos
-darbotvarkės užpildytos, papildymo užklausos nesiunčiamos. Koordinatorius, kuris pats yra
-institucijos atstovas, gali įtraukti ir save. Pakartotinės užklausos
-tam pačiam gavėjui, apie tą pačią instituciją ir tą patį jau apimtą laikotarpį nesiunčiamos;
-skirtingos užklausų rūšys vertinamos atskirai.
+darbotvarkės užpildytos, papildymo užklausos nesiunčiamos. Papildyti įrašus galima prašyti ir po
+neseniai vykusio posėdžio ar kol galioja pranešimas „Posėdžio nebuvo“.
+Koordinatorius, kuris pats yra institucijos atstovas, gali įtraukti ir save.
+
+Kol tam pačiam gavėjui apie tą pačią instituciją galioja neatsakyta ir neužbaigta užklausa,
+tos pačios rūšies užklausa pakartotinai nesiunčiama, net jei laikotarpio pabaiga jau kita.
+Nuoroda galioja 14 dienų. Atsakytos ar užbaigtos užklausos saugo nuo pakartotinio klausimo
+apie visą jų jau apimtą laikotarpį; atsakymas „Ne mano institucija“ naujo klausimo neblokuoja.
+Skirtingos užklausų rūšys vertinamos atskirai.
 
 ### Atsakymas iš laiško {#atsakymas}
 

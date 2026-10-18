@@ -253,7 +253,7 @@ describe('left-out rows are disabled before they are picked', () => {
     ];
     preview.value = [
       { institution: { id: 'a', name: 'Asked' }, recipients: [], excluded_recipients: [{ ...rep, skip_reason: 'already_asked' }], skip_reason: 'already_asked' },
-      { institution: { id: 'b', name: 'Partly' }, recipients: [rep], excluded_recipients: [{ ...rep, id: 'v', skip_reason: 'meeting_recorded' }], skip_reason: null },
+      { institution: { id: 'b', name: 'Partly' }, recipients: [rep], excluded_recipients: [{ ...rep, id: 'v', skip_reason: 'recent_activity' }], skip_reason: null },
     ];
     const { wrapper, window } = mountScreen(ActivityRequestInstitutionsScreen, { flow: 'activity.request' });
     await flushPromises();

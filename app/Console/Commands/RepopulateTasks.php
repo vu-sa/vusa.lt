@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\ActivityRequests\ResolveActivityRequestEligibility;
+use App\Actions\ActivityRequests\ResolveActivityRequestRecipients;
 use App\Actions\ActivityRequests\SendInstitutionActivityRequests;
 use App\Actions\ResolveTaskAssignees;
 use App\Enums\InstitutionActivityStatus;
@@ -12,7 +14,6 @@ use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
 use App\Models\Task;
 use App\Services\AcademicCalendarService;
-use App\Services\InstitutionActivityStatusService;
 use App\States\ReservationResource\Lent;
 use App\States\ReservationResource\Reserved;
 use App\Tasks\Handlers\AgendaCompletionTaskHandler;
@@ -60,7 +61,8 @@ class RepopulateTasks extends Command
         protected AgendaCreationTaskHandler $agendaCreationHandler,
         protected AgendaCompletionTaskHandler $agendaCompletionHandler,
         protected AcademicCalendarService $academicCalendar,
-        protected InstitutionActivityStatusService $activityStatusService,
+        protected ResolveActivityRequestEligibility $activityEligibility,
+        protected ResolveActivityRequestRecipients $activityRecipients,
         protected SendInstitutionActivityRequests $activityRequests,
     ) {
         parent::__construct();
@@ -148,14 +150,12 @@ class RepopulateTasks extends Command
             ->with(['types', 'meetings:id,start_time', 'checkIns'])
             ->get();
 
+        $candidates = $this->activityRecipients->forInstitutions($institutions->pluck('id'));
         foreach ($institutions as $institution) {
-            $activityStatus = $this->activityStatusService->resolve($institution, Carbon::today());
+            $roles = $candidates[$institution->id];
+            $tenureStart = collect($roles['secretaries'] ?: $roles['representatives'])->min('start');
+            $activityStatus = $this->activityEligibility->status($institution, $tenureStart);
             $periodicityDays = $activityStatus->periodicityDays;
-
-            // Skip if no periodicity is set
-            if (! $periodicityDays) {
-                continue;
-            }
 
             $isOverdue = $activityStatus->status === InstitutionActivityStatus::Overdue;
             $existingTask = $this->periodicityGapHandler->findExistingTask($institution);

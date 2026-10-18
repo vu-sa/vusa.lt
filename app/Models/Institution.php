@@ -118,6 +118,9 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
 
     public $translatable = ['name', 'short_name', 'description', 'address', 'working_hours'];
 
+    #[\Override]
+    protected $attributes = ['is_active' => true];
+
     /**
      * `description` is Tiptap `full` preset HTML, rendered with `v-html` on the
      * public institution page and contact cards (ShowInstitution.vue,

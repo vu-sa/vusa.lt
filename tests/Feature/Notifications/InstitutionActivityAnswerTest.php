@@ -42,6 +42,51 @@ function activityNotification(InstitutionActivityRequest ...$requests): Institut
     return new InstitutionActivityNotification(new Collection($requests));
 }
 
+test('queued mail and digests recheck activity eligibility without changing the requested period', function (string $change): void {
+    Notification::fake();
+    Mail::fake();
+    $this->travelTo(now()->setTime(12, 0));
+    $this->activityRequest->update(['period_start' => today()->subDays(60), 'period_end' => today()->subDays(3)]);
+    $period = $this->activityRequest->only(['period_start', 'period_end']);
+    $notification = activityNotification($this->activityRequest);
+    expect($notification->shouldSend($this->recipient, 'mail'))->toBeTrue();
+    $this->recipient->update(['notification_preferences' => ['types' => ['institution_activity' => ['email' => 'digest']]]]);
+    NotificationDigestQueue::create([
+        'user_id' => $this->recipient->id, 'notification_id' => (string) Str::uuid(),
+        'notification_class' => InstitutionActivityNotification::class, 'category' => 'task',
+        'data' => $notification->toDigestItem($this->recipient),
+    ])->forceFill(['created_at' => now()->subDay()])->save();
+
+    match ($change) {
+        'recent_meeting' => app(RecordMeeting::class)->execute($this->institution, now()->subDay()),
+        'upcoming_meeting' => app(RecordMeeting::class)->execute($this->institution, now()->addWeek()),
+        'check_in' => InstitutionCheckIn::factory()->for($this->institution)->create(['start_date' => today()->subDay(), 'end_date' => today()->addWeek()]),
+        'inactive' => $this->institution->update(['is_active' => false]),
+        default => null,
+    };
+
+    expect(activityNotification($this->activityRequest)->shouldSend($this->recipient, 'database'))->toBe($change === 'unchanged');
+    $this->artisan('notifications:send-digests')->assertSuccessful();
+    if ($change === 'unchanged') {
+        Mail::assertSent(NotificationDigest::class, 1);
+    } else {
+        Mail::assertNothingSent();
+    }
+    expect(NotificationDigestQueue::query()->count())->toBe(0)
+        ->and($this->activityRequest->fresh()->only(['period_start', 'period_end']))->toEqual($period)
+        ->and($this->activityRequest->fresh()->isOpen())->toBeTrue();
+})->with(['recent_meeting', 'upcoming_meeting', 'check_in', 'inactive', 'unchanged']);
+
+test('delivery of record completion survives an active check-in but stops once records are complete', function (): void {
+    Notification::fake();
+    $this->activityRequest->update(['campaign_type' => 'missing_meetings']);
+    $meeting = app(RecordMeeting::class)->execute($this->institution, now()->subDays(2));
+    InstitutionCheckIn::factory()->for($this->institution)->create(['start_date' => today()->subDay(), 'end_date' => today()->addWeek()]);
+    expect(activityNotification($this->activityRequest)->shouldSend($this->recipient, 'mail'))->toBeTrue();
+    AgendaItem::factory()->create(['meeting_id' => $meeting->id, 'type' => 'informational']);
+    expect(activityNotification($this->activityRequest)->shouldSend($this->recipient, 'mail'))->toBeFalse();
+});
+
 describe('the email asks and links to a confirmation page (U21)', function (): void {
     test('one institution gets yes and no buttons that open its answer page with the answer chosen', function (): void {
         $notification = activityNotification($this->activityRequest);
@@ -351,6 +396,7 @@ test('digest delivery removes answered requests before sending', function (): vo
 });
 
 test('queued immediate mail rechecks current notification preferences', function (): void {
+    $this->activityRequest->update(['period_start' => today()->subDays(40)]);
     $notification = activityNotification($this->activityRequest);
     $this->recipient->update(['notification_preferences' => ['types' => ['institution_activity' => ['email' => 'off']]]]);
     expect($notification->shouldSend($this->recipient, 'mail'))->toBeFalse()

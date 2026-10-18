@@ -62,6 +62,11 @@ būdu negalima.
 Jei institucijos kadencijai paskirti sekretoriai, posėdžio ir periodiškumo užduotys skiriamos
 jiems. Kitu atveju – atstovams, kurie ėjo pareigas posėdžio dieną.
 
+Institucijai be užregistruotos veiklos periodiškumo užduotis kuriama artėjant pirmojo dabartinio
+gavėjo terminui, skaičiuojamam nuo jo pareigų pradžios dabartinėje kadencijoje. Laiškas siunčiamas
+tik praėjus kiekvieno gavėjo terminui, ne vos sukūrus užduotį. Atostogų dienos neskaičiuojamos.
+Pavyzdys ir bendros rankinių bei automatinių užklausų sąlygos – [Institucijų gide](/visak/institucijos#paklausti).
+
 ### Kada užduotis vėluoja {#veluoja}
 
 Užduotis **vėluoja**, jei jos terminas jau praėjo, o ji dar neatlikta. Užduotis be termino niekada

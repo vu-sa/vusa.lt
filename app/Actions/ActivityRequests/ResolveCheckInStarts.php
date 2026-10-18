@@ -51,7 +51,9 @@ class ResolveCheckInStarts
         $lastMeeting = $institution->meetings
             ->filter(fn (Meeting $meeting): bool => $meeting->start_time->isPast())
             ->max(fn (Meeting $meeting) => $meeting->start_time->toDateString());
-        $lastCheckIn = $institution->checkIns->max(fn (InstitutionCheckIn $checkIn) => $checkIn->end_date->toDateString());
+        $lastCheckIn = $institution->checkIns
+            ->filter(fn (InstitutionCheckIn $checkIn): bool => $checkIn->start_date->lte(today()))
+            ->max(fn (InstitutionCheckIn $checkIn) => $checkIn->end_date->toDateString());
 
         $starts = collect([
             'tenure_start' => $tenure->startOfDay(),

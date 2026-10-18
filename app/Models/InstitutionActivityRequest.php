@@ -166,17 +166,15 @@ class InstitutionActivityRequest extends Model
     }
 
     /**
-     * Whether this question already asks $recipientId about the whole of $start…$end. An expired
-     * unanswered question, or one passed on as "not mine", does not.
+     * Open questions block another send; answered or resolved ones only block periods they cover.
      */
     public function alreadyAsks(string $recipientId, InstitutionActivityCampaign $campaign, CarbonInterface $start, CarbonInterface $end): bool
     {
         return $this->recipient_id === $recipientId
             && $this->campaign_type === $campaign
             && $this->answer !== InstitutionActivityAnswer::NotMine
-            && ($this->isOpen() || $this->answered_at !== null || $this->resolved_at !== null)
-            && $this->period_start->lte($start)
-            && $this->periodEnd()->gte($end);
+            && ($this->isOpen() || (($this->answered_at !== null || $this->resolved_at !== null)
+                && $this->period_start->lte($start) && $this->periodEnd()->gte($end)));
     }
 
     /**

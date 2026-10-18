@@ -62,6 +62,33 @@ function periodicityGapTaskFor(Institution $institution): ?Task
 }
 
 describe('tasks:repopulate institution', function (): void {
+    test('no-history institutions create a task when approaching and ask each representative after their own interval', function (): void {
+        $this->travelTo('2026-09-01 12:00:00');
+        $institution = institutionWithRepresentative();
+        $rep = $institution->duties->flatMap->users->sole();
+        $rep->duties()->updateExistingPivot($institution->duties->sole()->id, ['start_date' => '2026-09-01']);
+        $newRep = User::factory()->create();
+        $newRep->duties()->attach($institution->duties->sole(), ['start_date' => '2026-09-15']);
+
+        $this->travelTo('2026-09-25 12:00:00');
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+        expect(periodicityGapTaskFor($institution))->not->toBeNull();
+        Notification::assertNotSentTo([$rep, $newRep], InstitutionActivityNotification::class);
+
+        $this->travelTo('2026-10-01 12:00:00');
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+        expect(InstitutionActivityRequest::query()->where('institution_id', $institution->id)->count())->toBe(0);
+        $this->travelTo('2026-10-02 12:00:00');
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+        Notification::assertSentToTimes($rep, InstitutionActivityNotification::class, 1);
+        Notification::assertNotSentTo($newRep, InstitutionActivityNotification::class);
+
+        $this->travelTo('2026-10-16 12:00:00');
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+        Notification::assertSentToTimes($rep, InstitutionActivityNotification::class, 1);
+        Notification::assertSentToTimes($newRep, InstitutionActivityNotification::class, 1);
+    });
+
     test('creates a periodicity gap task when the institution is approaching its threshold', function (): void {
         // No vacation between the meeting and today: 26 calendar days of a 30-day periodicity.
         $this->travelTo('2025-11-15');
