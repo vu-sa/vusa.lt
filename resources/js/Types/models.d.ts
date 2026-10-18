@@ -2454,7 +2454,6 @@ declare global {
       profile_photo_path?: string | null
       profile_photo_focal_point?: string | null
       deleted_at?: string | null
-      name_was_changed?: boolean
       // mutators
       has_password: unknown
       force_delete_blocked_reason: string

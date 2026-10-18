@@ -16,12 +16,19 @@
       :submit-url="route('users.mergeUsers')"
       target-field="kept_user_id"
       source-field="source_user_ids"
-      :extra-payload="{ login_email: loginEmail, redirect_to_kept: true }"
+      :extra-payload="{ login_email: loginEmail, redirect_to_kept: true, dutiable_email_ids: dutiableEmailIds }"
+      :submit-disabled="mergeDetailsLoading"
       @close="mergeMatch = null"
       @merged="mergeMatch = null"
     >
       <template #details="{ targetId }">
-        <UserMergeDetails v-model="loginEmail" :records="mergeRecords" :target-id />
+        <UserMergeDetails
+          v-model="loginEmail"
+          v-model:dutiable-email-ids="dutiableEmailIds"
+          :records="mergeRecords"
+          :target-id
+          @loading="mergeDetailsLoading = $event"
+        />
       </template>
     </MergeRecordsDialog>
   </div>
@@ -58,11 +65,16 @@ const onSubmit = (form: unknown) =>
 
 const mergeMatch = ref<DuplicateUserMatch | null>(null);
 const loginEmail = ref<string | null>(null);
+const dutiableEmailIds = ref<string[]>([]);
+const mergeDetailsLoading = ref(false);
 
 const mergeRecords = computed(() => mergeMatch.value
   ? [
-      { id: props.user.id, label: props.user.name, context: props.user.email, email: props.user.email },
-      { id: mergeMatch.value.id, label: mergeMatch.value.name, context: mergeMatch.value.email, email: mergeMatch.value.email },
+      { id: props.user.id, label: props.user.name, context: props.user.email, email: props.user.email, can_update_identity: props.canUpdateIdentity },
+      {
+        id: mergeMatch.value.id, label: mergeMatch.value.name, context: mergeMatch.value.email,
+        email: mergeMatch.value.email, can_update_identity: mergeMatch.value.can_update_identity === true,
+      },
     ]
   : []);
 

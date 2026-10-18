@@ -2,10 +2,14 @@
 
 use App\Actions\CollapseOverlappingDutiables;
 use App\Actions\Media\AddImageMedia;
+use App\Actions\Media\SyncImageMedia;
+use App\Actions\MergeUsers;
 use App\Models\Approval;
 use App\Models\Comment;
 use App\Models\CommentReaction;
 use App\Models\Duty;
+use App\Models\Institution;
+use App\Models\PendingUpload;
 use App\Models\Pivots\Dutiable;
 use App\Models\Problem;
 use App\Models\Reservation;
@@ -89,28 +93,14 @@ describe('merge guard', function (): void {
         expect(User::withTrashed()->find($merged->id))->toBeNull();
     })->with(['Ciurlionis Jonas', 'Jonas Petras Čiurlionis']);
 
-    test('refuses when either record has been renamed by its owner', function (string $renamed): void {
-        $kept = makeNamedUser($this->tenant);
-        $merged = makeNamedUser($this->tenant);
-        ${$renamed}->forceFill(['name_was_changed' => true])->save();
-
-        mergeUsers($this->admin, $kept, $merged)->assertSessionHasErrors('source_user_ids.0');
-
-        expect(User::find($merged->id))->not->toBeNull();
-    })->with(['kept', 'merged']);
-
-    test('a super admin may merge records whose names differ or were changed', function (string $case): void {
+    test('a super admin may merge records whose names differ', function (): void {
         $kept = makeNamedUser($this->tenant, 'Jonas Jonaitis');
-        $merged = makeNamedUser($this->tenant, $case === 'different' ? 'Petras Petraitis' : 'Jonas Jonaitis');
-
-        if ($case === 'renamed') {
-            $merged->forceFill(['name_was_changed' => true])->save();
-        }
+        $merged = makeNamedUser($this->tenant, 'Petras Petraitis');
 
         mergeUsers(makeAdminUser($this->tenant), $kept, $merged)->assertSessionHasNoErrors();
 
         expect(User::withTrashed()->find($merged->id))->toBeNull();
-    })->with(['different', 'renamed']);
+    });
 
     test('refuses a source with a directly assigned role, even for a super admin', function (string $actorRole): void {
         $kept = makeNamedUser($this->tenant);
@@ -144,6 +134,48 @@ describe('merge guard', function (): void {
 });
 
 describe('login email', function (): void {
+    test('cannot change a protected kept account login through a merge', function (string $protection): void {
+        $kept = makeNamedUser($this->tenant);
+        $source = makeNamedUser($this->tenant);
+
+        if ($protection === 'shared') {
+            $other = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
+            $kept->duties()->attach(Duty::factory()->for(Institution::factory()->for($other))->create(), ['start_date' => now()->subDay()]);
+        } else {
+            $kept->assignRole(config('permission.super_admin_role_name'));
+        }
+
+        expect($this->admin->can('update', $kept))->toBeTrue()
+            ->and($this->admin->can('updateIdentity', $kept))->toBeFalse();
+        $email = $kept->email;
+
+        mergeUsers($this->admin, $kept, $source, $source->email)->assertForbidden();
+
+        expect($kept->fresh()->email)->toBe($email);
+        $this->assertModelExists($source);
+    })->with(['shared', 'super admin']);
+
+    test('can merge into a protected account when keeping its login unchanged', function (): void {
+        $kept = makeNamedUser($this->tenant);
+        $kept->assignRole(config('permission.super_admin_role_name'));
+        $source = makeNamedUser($this->tenant);
+
+        mergeUsers($this->admin, $kept, $source)->assertSessionHasNoErrors();
+
+        expect($kept->fresh()->email)->toBe($kept->email);
+        $this->assertModelMissing($source);
+    });
+
+    test('a super admin can choose a source login for another super admin', function (): void {
+        $kept = makeNamedUser($this->tenant);
+        $kept->assignRole(config('permission.super_admin_role_name'));
+        $source = makeNamedUser($this->tenant);
+
+        mergeUsers(makeAdminUser($this->tenant), $kept, $source, $source->email)->assertSessionHasNoErrors();
+
+        expect($kept->fresh()->email)->toBe($source->email);
+    });
+
     test('the kept record signs in with the chosen address of a merged record', function (): void {
         $kept = makeNamedUser($this->tenant);
         $merged = makeNamedUser($this->tenant);
@@ -380,6 +412,87 @@ describe('merging dutiables', function (): void {
 });
 
 describe('transferring related records', function (): void {
+    test('adopts profile media without changing its files or focal point', function (): void {
+        Storage::fake('spatieMediaLibrary');
+        $kept = makeNamedUser($this->tenant);
+        $source = makeNamedUser($this->tenant);
+        $kept->forceFill(['profile_photo_path' => null, 'profile_photo_focal_point' => '90% 90%'])->save();
+        $photo = app(AddImageMedia::class)->execute($source, UploadedFile::fake()->image('profile.jpg'), 'profile_photo', properties: ['focal_point' => '20% 30%']);
+        $path = $photo->getPathRelativeToRoot();
+
+        mergeUsers($this->admin, $kept, $source)->assertSessionHasNoErrors();
+
+        expect($photo->fresh()->model_id)->toBe($kept->id)
+            ->and($kept->fresh()->getFirstMedia('profile_photo')?->id)->toBe($photo->id)
+            ->and($kept->fresh()->profile_photo_focal_point)->toBe('20% 30%');
+        Storage::disk('spatieMediaLibrary')->assertExists($path);
+    });
+
+    test('keeps an existing profile photo instead of the source photo', function (): void {
+        Storage::fake('spatieMediaLibrary');
+        $kept = makeNamedUser($this->tenant);
+        $source = makeNamedUser($this->tenant);
+        $photo = app(AddImageMedia::class)->execute($kept, UploadedFile::fake()->image('kept.jpg'), 'profile_photo', properties: ['focal_point' => '10% 20%']);
+        app(AddImageMedia::class)->execute($source, UploadedFile::fake()->image('source.jpg'), 'profile_photo', properties: ['focal_point' => '70% 80%']);
+
+        mergeUsers($this->admin, $kept, $source)->assertSessionHasNoErrors();
+
+        expect($kept->fresh()->getFirstMedia('profile_photo')?->id)->toBe($photo->id)
+            ->and($kept->fresh()->profile_photo_focal_point)->toBe('10% 20%');
+    });
+
+    test('legacy profile photos and their focal points remain paired', function (bool $hasPhoto): void {
+        $kept = makeNamedUser($this->tenant);
+        $source = makeNamedUser($this->tenant);
+        $kept->forceFill(['profile_photo_path' => $hasPhoto ? '/kept.jpg' : null, 'profile_photo_focal_point' => null])->save();
+        $source->forceFill(['profile_photo_path' => '/source.jpg', 'profile_photo_focal_point' => '70% 80%'])->save();
+
+        mergeUsers($this->admin, $kept, $source)->assertSessionHasNoErrors();
+
+        expect($kept->fresh()->profile_photo_path)->toBe($hasPhoto ? '/kept.jpg' : '/source.jpg')
+            ->and($kept->fresh()->profile_photo_focal_point)->toBe($hasPhoto ? null : '70% 80%');
+    })->with([false, true]);
+
+    test('rolling back a merge restores profile media ownership and its files', function (): void {
+        Storage::fake('spatieMediaLibrary');
+        $kept = makeNamedUser($this->tenant);
+        $source = makeNamedUser($this->tenant);
+        $kept->forceFill(['profile_photo_path' => null])->save();
+        $photo = app(AddImageMedia::class)->execute($source, UploadedFile::fake()->image('profile.jpg'), 'profile_photo');
+        $path = $photo->getPathRelativeToRoot();
+
+        DB::beginTransaction();
+        MergeUsers::execute($kept, collect([$source]), $kept->email);
+        DB::rollBack();
+
+        $this->assertModelExists($source);
+        expect($photo->fresh()->model_id)->toBe($source->id)
+            ->and($kept->fresh()->profile_photo_path)->toBeNull();
+        Storage::disk('spatieMediaLibrary')->assertExists($path);
+    });
+
+    test('transfers pending uploads so draft images can still be attached', function (): void {
+        Storage::fake('spatieMediaLibrary');
+        $kept = makeNamedUser($this->tenant);
+        $source = makeNamedUser($this->tenant);
+        $upload = PendingUpload::create(['user_id' => $source->id]);
+        $photo = app(AddImageMedia::class)->execute($upload, UploadedFile::fake()->image('draft.jpg'), PendingUpload::COLLECTION);
+        $updated = $upload->updated_at->toDateTimeString();
+        DB::table('content_editor_drafts')->insert([
+            'user_id' => $source->id, 'kind' => 'news', 'identity' => 'new',
+            'snapshot' => json_encode(['image_media' => ['id' => $photo->id]]),
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        mergeUsers($this->admin, $kept, $source)->assertSessionHasNoErrors();
+
+        expect($upload->fresh()->user_id)->toBe($kept->id)
+            ->and($upload->fresh()->updated_at->toDateTimeString())->toBe($updated)
+            ->and(DB::table('content_editor_drafts')->where('user_id', $kept->id)->value('snapshot'))->toContain((string) $photo->id);
+        app(SyncImageMedia::class)->execute($kept->fresh(), 'profile_photo', ['id' => $photo->id], $kept->fresh());
+        expect($kept->fresh()->getFirstMedia('profile_photo')?->id)->toBe($photo->id);
+    });
+
     test('repoints reservations onto the kept user, dropping a duplicate the kept user already holds', function (): void {
         $kept = makeNamedUser($this->tenant);
         $merged = makeNamedUser($this->tenant);
@@ -488,15 +601,9 @@ describe('duplicates on the edit form', function (): void {
                     ->where('duplicates.0.blocked_reason', null)));
     });
 
-    test('explains why a renamed or out-of-scope duplicate cannot be merged', function (bool $renamed): void {
+    test('explains why an out-of-scope duplicate cannot be merged', function (): void {
         $user = makeNamedUser($this->tenant);
-        $duplicate = $renamed
-            ? makeNamedUser($this->tenant)
-            : makeNamedUser(Tenant::query()->whereKeyNot($this->tenant->id)->first());
-
-        if ($renamed) {
-            $duplicate->forceFill(['name_was_changed' => true])->save();
-        }
+        $duplicate = makeNamedUser(Tenant::query()->whereKeyNot($this->tenant->id)->first());
 
         asUser($this->admin)->get(route('users.edit', $user))
             ->assertInertia(fn ($page) => $page
@@ -504,17 +611,5 @@ describe('duplicates on the edit form', function (): void {
                     ->where('duplicates.0.keepable_ids', [])
                     ->where('duplicates.0.email', null)
                     ->where('duplicates.0.blocked_reason', fn (?string $reason) => filled($reason))));
-    })->with(['renamed' => true, 'other unit' => false]);
-
-    test('offers a super admin to merge a renamed duplicate', function (): void {
-        $user = makeNamedUser($this->tenant);
-        $duplicate = makeNamedUser($this->tenant);
-        $duplicate->forceFill(['name_was_changed' => true])->save();
-
-        asUser(makeAdminUser($this->tenant))->get(route('users.edit', $user))
-            ->assertInertia(fn ($page) => $page
-                ->loadDeferredProps(fn ($page) => $page
-                    ->where('duplicates.0.keepable_ids', [$user->id, $duplicate->id])
-                    ->where('duplicates.0.blocked_reason', null)));
     });
 });

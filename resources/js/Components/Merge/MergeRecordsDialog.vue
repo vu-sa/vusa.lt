@@ -1,6 +1,6 @@
 <template>
   <Dialog :open @update:open="close">
-    <DialogContent class="max-w-xl">
+    <DialogContent class="max-h-[85dvh] max-w-[calc(100%-2rem)] grid-cols-[minmax(0,1fr)] overflow-y-auto sm:max-w-xl">
       <DialogHeader>
         <DialogTitle>{{ $t('Sujungti įrašus') }}</DialogTitle>
         <DialogDescription>
@@ -17,9 +17,10 @@
             <Button
               v-for="record in records"
               :key="String(record.id)"
+              :data-merge-target="String(record.id)"
               :variant="String(targetId) === String(record.id) ? 'secondary' : 'outline'"
               :disabled="!isKeepable(record)"
-              class="h-auto justify-start px-3 py-2 text-left"
+              class="h-auto min-w-0 justify-start px-3 py-2 text-left"
               @click="targetId = record.id"
             >
               <span class="min-w-0">
@@ -43,7 +44,7 @@
               v-for="candidate in candidates"
               :key="String(candidate.id)"
               :variant="String(targetId) === String(candidate.id) ? 'secondary' : 'outline'"
-              class="h-auto justify-start px-3 py-2 text-left"
+              class="h-auto min-w-0 justify-start px-3 py-2 text-left"
               @click="targetId = candidate.id"
             >
               <span class="min-w-0">
@@ -63,9 +64,9 @@
 
       <DialogFooter>
         <Button variant="outline" @click="close">
-          {{ $t('Cancel') }}
+          {{ $t('Atšaukti') }}
         </Button>
-        <Button :disabled="!targetId || isSubmitting" @click="submit">
+        <Button data-slot="merge-submit" :disabled="!targetId || isSubmitting || submitDisabled" @click="submit">
           {{ $t('Sujungti') }}
         </Button>
       </DialogFooter>
@@ -106,6 +107,7 @@ const props = defineProps<{
   keepableIds?: (string | number)[];
   /** Sent along with the ids, e.g. a choice made in the details slot. */
   extraPayload?: Record<string, unknown>;
+  submitDisabled?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -169,7 +171,7 @@ const search = () => {
 const close = () => emit('close');
 
 const submit = () => {
-  if (!targetId.value || sourceIds.value.length === 0) {
+  if (!targetId.value || sourceIds.value.length === 0 || props.submitDisabled) {
     return;
   }
 

@@ -7,7 +7,7 @@
     :title="$t('Nariai')"
     :lead="isTrash
       ? $t('Ištrinti nariai. Atkurk paskyrą, jei jos dar reikia.')
-      : $t('Dabartiniai ir buvę nariai, turintys pareigybių ar roles VU SA sistemoje.')"
+      : $t('users.index.lead')"
     default-view="table"
     :item-key="userKey"
     :columns
@@ -87,7 +87,7 @@
         mode="empty"
         :icon="UserIcon"
         :title="isTrash ? $t('Ištrintų narių nėra') : $t('Narių dar nėra')"
-        :description="isTrash ? undefined : $t('Čia atsiras žmonės, turintys pareigybių ar roles.')"
+        :description="isTrash ? undefined : $t('users.index.empty_description')"
         :action-label="canCreate && !isTrash ? $t('Naujas narys (-ė)') : undefined"
         :action-href="canCreate && !isTrash ? route('users.create') : undefined"
       />
@@ -101,12 +101,19 @@
     :submit-url="route('users.mergeUsers')"
     target-field="kept_user_id"
     source-field="source_user_ids"
-    :extra-payload="{ login_email: loginEmail }"
+    :extra-payload="{ login_email: loginEmail, dutiable_email_ids: dutiableEmailIds }"
+    :submit-disabled="mergeDetailsLoading"
     @close="mergeRecords = []"
     @merged="merged"
   >
     <template #details="{ targetId }">
-      <UserMergeDetails v-model="loginEmail" :records="mergeRecords" :target-id />
+      <UserMergeDetails
+        v-model="loginEmail"
+        v-model:dutiable-email-ids="dutiableEmailIds"
+        :records="mergeRecords"
+        :target-id
+        @loading="mergeDetailsLoading = $event"
+      />
     </template>
   </MergeRecordsDialog>
   <CollectionConfirmAction :dialog="actions.dialog.value" @confirm="actions.confirm" @cancel="actions.pending.value = null" />
@@ -141,6 +148,7 @@ type UserRow = App.Entities.User & {
   is_current?: boolean;
   last_term_end?: string | null;
   force_delete_blocked_reason?: string | null;
+  can_update_identity: boolean;
 };
 
 const props = defineProps<{
@@ -156,8 +164,10 @@ const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?
 const canMerge = computed(() => hasCollectionAction('users.index', 'merge'));
 
 const mergeMode = ref(false);
-const mergeRecords = ref<(MergeRecord & { email: string })[]>([]);
+const mergeRecords = ref<(MergeRecord & { email: string | null; can_update_identity: boolean })[]>([]);
 const loginEmail = ref<string | null>(null);
+const dutiableEmailIds = ref<string[]>([]);
+const mergeDetailsLoading = ref(false);
 
 const source = useDatabaseCollectionSource<UserRow>({
   endpoint: route('api.v1.admin.users.index'),
@@ -171,17 +181,24 @@ const source = useDatabaseCollectionSource<UserRow>({
   defaultSort: 'name:asc',
   facets: [{
     field: 'membership',
-    label: $t('Narystė'),
+    get label() { return $t('Narystė'); },
     single: true,
     values: [
-      { value: 'current', label: $t('Dabartiniai') },
-      { value: 'former', label: $t('Buvę') },
+      { value: 'current', get label() { return $t('Dabartiniai'); } },
+      { value: 'former', get label() { return $t('Buvę'); } },
     ],
-  }, {
+  }, ...(!isTrash
+    ? [{
+        field: 'duplicates',
+        get label() { return $t('users.filters.duplicates_group'); },
+        single: true,
+        values: [{ value: 'possible', get label() { return $t('users.filters.possible'); } }],
+      }]
+    : []), {
     field: 'future_duty',
-    label: $t('users.filters.duty_timing'),
+    get label() { return $t('users.filters.duty_timing'); },
     single: true,
-    values: [{ value: 'scheduled', label: $t('users.filters.scheduled') }],
+    values: [{ value: 'scheduled', get label() { return $t('users.filters.scheduled'); } }],
   }],
   sortOptions: () => [
     { value: 'name:asc', label: $t('Pagal vardą (A–Z)') },
@@ -214,9 +231,32 @@ const yearSpan = (user: UserRow) => termYearSpan(
 const quickFilters = computed<CollectionQuickFilter[]>(() => [
   { id: 'current', label: $t('Dabartiniai'), active: source.filters.value.membership === 'current' },
   { id: 'former', label: $t('Buvę'), active: source.filters.value.membership === 'former' },
+  ...(!isTrash
+    ? [{
+        id: 'duplicates',
+        label: $t('users.filters.duplicates'),
+        active: duplicatesActive.value,
+        spotlight: {
+          id: 'user-duplicates-v1',
+          title: $t('users.filters.duplicates'),
+          description: $t('users.filters.duplicates_spotlight'),
+        },
+      }]
+    : []),
 ]);
 
+const duplicatesActive = computed(() => !isTrash && source.filters.value.duplicates === 'possible');
+
+// Trash navigation remounts the page; remove the live-only filter restored from its URL.
+if (isTrash && new URLSearchParams(window.location.search).has('duplicates')) {
+  source.setFilter('duplicates', undefined);
+}
+
 function toggleQuickFilter(id: string): void {
+  if (id === 'duplicates') {
+    source.setFilter('duplicates', duplicatesActive.value ? undefined : 'possible');
+    return;
+  }
   source.setFilter('membership', source.filters.value.membership === id ? undefined : id);
 }
 
@@ -231,7 +271,7 @@ const columns = computed<CollectionColumn[]>(() => [
 const userKey = (user: UserRow) => String(user.id);
 
 const toMergeRecords = (users: UserRow[]) =>
-  users.map(user => ({ id: user.id, label: user.name, context: user.email, email: user.email }));
+  users.map(user => ({ id: user.id, label: user.name, context: user.email, email: user.email, can_update_identity: user.can_update_identity }));
 
 function merged(): void {
   mergeRecords.value = [];

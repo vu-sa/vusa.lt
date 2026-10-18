@@ -4,6 +4,7 @@ namespace App\Actions;
 
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -47,29 +48,41 @@ class CollapseOverlappingDutiables
             ->get();
 
         foreach ($rows->groupBy(fn (Dutiable $row) => $row->dutiable_type.'|'.$row->dutiable_id.'|'.$row->tenant_id) as $group) {
-            /** @var Dutiable|null $survivor */
-            $survivor = null;
-
-            foreach ($group as $row) {
-                if ($survivor === null) {
-                    $survivor = $row;
-
-                    continue;
-                }
-
-                if (self::overlapsRunningInterval($survivor, $row)) {
+            foreach (self::overlappingGroups($group) as $overlap) {
+                $survivor = $overlap->first();
+                foreach ($overlap->skip(1) as $row) {
                     self::foldInto($survivor, $row);
                     $row->delete();
                     $collapsed++;
-
-                    continue;
                 }
-
-                $survivor = $row;
             }
         }
 
         return $collapsed;
+    }
+
+    /** @param Collection<int, Dutiable> $rows
+     * @return Collection<int, Collection<int, Dutiable>>
+     */
+    public static function overlappingGroups(Collection $rows): Collection
+    {
+        $groups = collect();
+        $running = null;
+        $group = collect();
+
+        foreach ($rows->sortBy('start_date') as $row) {
+            if ($running === null || ! self::overlapsRunningInterval($running, $row)) {
+                $group = collect();
+                $groups->push($group);
+                $running = clone $row;
+            } elseif ($running->end_date !== null && ($row->end_date === null || $row->end_date->gt($running->end_date))) {
+                $running->end_date = $row->end_date;
+            }
+
+            $group->push($row);
+        }
+
+        return $groups;
     }
 
     /**

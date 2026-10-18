@@ -66,6 +66,7 @@ export interface DuplicateUserMatch {
   duties_count: number;
   email_masked: string;
   can_manage: boolean;
+  can_update_identity?: boolean;
   /** Edit form only: the full address, sent only when the admin may merge. */
   email?: string | null;
   /** Edit form only: which of the two records the admin may keep; empty when they cannot merge. */

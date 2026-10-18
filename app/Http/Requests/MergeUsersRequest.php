@@ -33,6 +33,12 @@ class MergeUsersRequest extends FormRequest
             return false;
         }
 
+        if ($this->filled('login_email')
+            && $this->input('login_email') !== $keptUser->email
+            && ! $this->user()->can('updateIdentity', $keptUser)) {
+            return false;
+        }
+
         $sources = $this->sourceUsers();
 
         return $sources->count() !== count((array) $this->input('source_user_ids', []))
@@ -61,6 +67,8 @@ class MergeUsersRequest extends FormRequest
             // Only one address can stay the login, so the admin picks it among the merged records' own.
             'login_email' => ['required', 'email', Rule::in($this->involvedEmails())],
             'redirect_to_kept' => ['sometimes', 'boolean'],
+            'dutiable_email_ids' => ['sometimes', 'array'],
+            'dutiable_email_ids.*' => ['required', 'ulid', 'distinct'],
         ];
     }
 

@@ -1,5 +1,6 @@
-import { computed, isRef, ref, shallowReactive, toValue, watch, type ComputedRef, type MaybeRefOrGetter, type Ref } from 'vue';
+import { computed, getCurrentScope, isRef, onScopeDispose, ref, shallowReactive, toValue, watch, type ComputedRef, type MaybeRefOrGetter, type Ref } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
+import { router } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { useCollectionFilterMemory } from '@/Composables/collectionFilterMemory';
@@ -337,7 +338,6 @@ function readFiltersFromUrl(facets: DatabaseFacetDefinition[], params: URLSearch
  */
 export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSourceOptions<T>): CollectionSource<T> {
   const filterMemory = useCollectionFilterMemory([...(options.facets ?? []).map(facet => facet.field), 'sort']);
-  // The server rendered the first page for the URL as it arrived; remembered filters make it stale.
   const fetchOnMount = options.fetchOnMount || filterMemory.restore().restored;
   const initialParams = new URLSearchParams(window.location.search);
   const items = ref<T[]>([...options.initial.items]);
@@ -558,10 +558,10 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
     }
   }
 
-  async function restorePages(): Promise<void> {
+  async function restorePages(refetch = fetchOnMount): Promise<void> {
     const wanted = Math.min(Number(initialParams.get('pages')) || 1, MAX_RESTORED_PAGES);
 
-    if (fetchOnMount) {
+    if (refetch) {
       await fetchPage(1, false);
     }
     while (currentPage.value < wanted && currentPage.value < lastPage.value && !error.value) {
@@ -572,6 +572,12 @@ export function useDatabaseCollectionSource<T>(options: DatabaseCollectionSource
   const debouncedRefresh = useDebounceFn(() => fetchPage(1, false), 250);
 
   void restorePages();
+  if (getCurrentScope()) {
+    onScopeDispose(router.on('navigate', (event) => {
+      // History restores the original Inertia rows, while API filters only changed the URL.
+      if (event.detail.type === 'history') void restorePages(true);
+    }));
+  }
 
   const overlay = useOptimisticOverlay<T>();
 

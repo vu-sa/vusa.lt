@@ -46,6 +46,7 @@ use App\Http\Controllers\Api\Admin\TrashApiController;
 use App\Http\Controllers\Api\Admin\TutorialApiController;
 use App\Http\Controllers\Api\Admin\UserApiController;
 use App\Http\Controllers\Api\Admin\UserAttributionApiController;
+use App\Http\Controllers\Api\Admin\UserMergePreviewApiController;
 use App\Http\Controllers\Api\Admin\UserPreferencesApiController;
 use App\Http\Controllers\Api\Admin\UserSearchApiController;
 use App\Http\Controllers\Api\CalendarController;
@@ -263,6 +264,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
 
         // The member list's database twin (page 2+ and every filter change of the collection page).
         Route::get('users', [UserApiController::class, 'index'])->name('users.index');
+        Route::post('users/merge-preview', UserMergePreviewApiController::class)->name('users.mergePreview');
 
         // User search for forms (e.g. responsible user in problems)
         Route::get('users/search', [UserSearchApiController::class, 'search'])->name('users.search');

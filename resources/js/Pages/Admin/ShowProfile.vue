@@ -24,21 +24,15 @@
         id="user-name"
         :label="$t('forms.fields.name_and_surname')"
         required
-        :error="form.errors.name"
       >
         <Input
           id="user-name"
-          v-model="form.name"
-          :disabled="user.name_was_changed"
-          type="text"
-          placeholder="Vardas Pavardė"
+          :model-value="user.name"
+          disabled
         />
-        <p v-if="user.name_was_changed" class="flex items-start gap-1.5 text-xs text-muted-foreground">
+        <p class="flex items-start gap-1.5 text-xs text-muted-foreground">
           <Lock class="mt-0.5 size-3 shrink-0" aria-hidden="true" />
-          {{ $t('Paskyros vardas jau buvo pakeistas. Jei reikia jį keisti, kreipkis į administratorių.') }}
-        </p>
-        <p v-else class="text-xs text-status-attention">
-          {{ $t('Paskyros vardą galima pakeisti tik VIENĄ kartą!') }}
+          {{ $t('Jei vardas ar pavardė neteisingi, kreipkis į administratorių.') }}
         </p>
       </FormFieldWrapper>
 
@@ -352,7 +346,6 @@ watch(accessibilityOpen, (open) => {
 });
 
 const form = useForm({
-  name: props.user.name ?? '',
   phone: (props.user.phone ?? null) as string | null,
   facebook_url: (props.user.facebook_url ?? null) as string | null,
   profile_photo_media: ((props.user as unknown as Record<string, unknown>).profile_photo_media ?? null) as ImageData | null,
@@ -369,7 +362,6 @@ const passwordForm = useForm({
 });
 
 const fieldIds = {
-  name: 'user-name',
   phone: 'user-phone',
   facebook_url: 'user-facebook',
   profile_photo_media: 'user-picture',

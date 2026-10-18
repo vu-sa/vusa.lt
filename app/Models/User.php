@@ -64,7 +64,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $profile_photo_path
  * @property string|null $profile_photo_focal_point
  * @property Carbon|null $deleted_at
- * @property bool $name_was_changed
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read InstitutionSecretary|InstitutionFollow|Dutiable|null $pivot
  * @property-read Collection<int, Duty> $authorization_duties
@@ -126,7 +125,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
     'ui_preferences',
     'last_action',
     'microsoft_token',
-    'name_was_changed',
 ])]
 class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
 {
@@ -142,7 +140,6 @@ class User extends Authenticatable implements GuardsForceDelete, ImageMediaOwner
         return [
             'last_action' => 'datetime',
             'show_pronouns' => 'boolean',
-            'name_was_changed' => 'boolean',
             'tutorial_progress' => 'array',
             'notification_preferences' => 'array',
             'ui_preferences' => 'array',

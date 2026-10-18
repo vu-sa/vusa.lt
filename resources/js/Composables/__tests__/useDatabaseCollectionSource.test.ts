@@ -1,7 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ref } from 'vue';
+import { effectScope, ref } from 'vue';
 
 import { useDatabaseCollectionSource, type DatabaseFacetDefinition } from '../useCollectionSource';
+
+import { router as mockRouter } from '@/mocks/inertia.mock';
+
+vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const facets: DatabaseFacetDefinition[] = [
   { field: 'scope', label: 'Rodyti', single: true, values: [{ value: 'mine', label: 'Mano' }, { value: 'administered', label: 'Administruoju' }] },
@@ -79,6 +83,37 @@ describe('useDatabaseCollectionSource filters', () => {
     expect(source.filters.value).toEqual({ state: ['lent'] });
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     expect(lastUrl(fetchMock).searchParams.getAll('state[]')).toEqual(['lent']);
+  });
+
+  it.each(['state=lent', 'search=Jonas', 'sort=name:asc', ''])('refreshes cached rows for %s on history navigation and removes its listener on disposal', async (query) => {
+    const fetchMock = respond(['matching']);
+    vi.stubGlobal('fetch', fetchMock);
+    window.history.replaceState({}, '', `/mano/reservations?${query}`);
+    const scope = effectScope();
+    const source = scope.run(makeSource)!;
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    mockRouter.__trigger('navigate', { detail: { type: 'history' } });
+
+    expect(source.isLoading.value).toBe(true);
+    await vi.waitFor(() => expect(source.items.value).toEqual(['matching']));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(lastUrl(fetchMock).searchParams.get('search') ?? '').toBe(new URLSearchParams(query).get('search') ?? '');
+    scope.stop();
+    mockRouter.__trigger('navigate', { detail: { type: 'history' } });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses the server rows for ordinary visits', () => {
+    const fetchMock = respond();
+    vi.stubGlobal('fetch', fetchMock);
+    const scope = effectScope();
+    scope.run(makeSource);
+
+    mockRouter.__trigger('navigate', { detail: { type: 'visit' } });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    scope.stop();
   });
 
   it('carries the filters in the URL after a fetch', async () => {
@@ -196,23 +231,29 @@ describe('useDatabaseCollectionSource facet counts', () => {
 
   it('restores the pages the URL says were loaded', async () => {
     window.history.replaceState({}, '', '/mano/reservations?pages=3');
+    let generation = 0;
     const fetchMock = vi.fn().mockImplementation(async (url: URL) => ({
       ok: true,
       json: async () => ({
         success: true,
-        data: { items: [{ id: url.searchParams.get('page') }], total: 3, per_page: 1, current_page: Number(url.searchParams.get('page')), last_page: 3 },
+        data: { items: [{ id: `${generation}:${url.searchParams.get('page')}` }], total: 3, per_page: 1, current_page: Number(url.searchParams.get('page')), last_page: 3 },
       }),
     }));
     vi.stubGlobal('fetch', fetchMock);
 
-    const source = useDatabaseCollectionSource<{ id: string }>({
+    const scope = effectScope();
+    const source = scope.run(() => useDatabaseCollectionSource<{ id: string }>({
       endpoint: '/api/v1/admin/reservations',
-      initial: { items: [{ id: '1' }], total: 3, perPage: 1, currentPage: 1, lastPage: 3 },
+      initial: { items: [{ id: '0:1' }], total: 3, perPage: 1, currentPage: 1, lastPage: 3 },
       sortOptions: [],
       defaultSort: 'start_time:desc',
-    });
+    }))!;
 
-    await vi.waitFor(() => expect(source.items.value.map(item => item.id)).toEqual(['1', '2', '3']));
+    await vi.waitFor(() => expect(source.items.value.map(item => item.id)).toEqual(['0:1', '0:2', '0:3']));
+    generation = 1;
+    mockRouter.__trigger('navigate', { detail: { type: 'history' } });
+    await vi.waitFor(() => expect(source.items.value.map(item => item.id)).toEqual(['1:1', '1:2', '1:3']));
+    scope.stop();
   });
 });
 

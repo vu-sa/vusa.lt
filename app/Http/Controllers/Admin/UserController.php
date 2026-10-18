@@ -16,6 +16,7 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Requests\UpdateUserRolesRequest;
 use App\Http\Resources\TaskResource;
+use App\Http\Resources\UserRowResource;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
@@ -46,24 +47,22 @@ class UserController extends AdminController
     {
         $this->handleAuthorization('viewAny', User::class);
 
-        $query = BuildUserIndexQuery::execute($request, $this->authorizer);
-
-        $searchableColumns = ['name', 'email', 'phone'];
-
-        $query = $this->applyTanstackFilters(
-            $query,
+        $buildQuery = fn (bool $includeDuplicates = true) => $this->applyTanstackFilters(
+            BuildUserIndexQuery::execute($request, $this->authorizer, $includeDuplicates),
             $request,
             $this->tableService,
-            $searchableColumns,
+            ['name', 'email', 'phone'],
             [
                 'applySortBeforePagination' => true,
                 'tenantRelation' => 'tenants',
                 'permission' => 'users.read.padalinys',
-                'handledFilters' => ['future_duty', 'membership'],
+                'handledFilters' => ['future_duty', 'membership', 'duplicates'],
             ]
         );
 
-        $deletedCount = $this->getTrashedCount($query);
+        // The duplicate filter only applies to live accounts, so it must not hide the trash door.
+        $deletedCount = $this->getTrashedCount($buildQuery(includeDuplicates: false));
+        $query = $buildQuery();
 
         // Trash view only: lets the table say why permanent deletion is refused.
         $query = $this->withForceDeleteBlockers($query, $request);
@@ -79,7 +78,7 @@ class UserController extends AdminController
 
         return $this->inertiaResponse('Admin/People/IndexUser', [
             'users' => [
-                'data' => $collection->values(),
+                'data' => $collection->map(fn (User $user): array => UserRowResource::make($user)->resolve($request))->values(),
                 'meta' => [
                     'total' => $users->total(),
                     'per_page' => $users->perPage(),
@@ -328,7 +327,7 @@ class UserController extends AdminController
     {
         $keptUser = $request->keptUser();
 
-        MergeUsers::execute($keptUser, $request->sourceUsers(), $request->validated('login_email'), $request->user());
+        MergeUsers::execute($keptUser, $request->sourceUsers(), $request->validated('login_email'), $request->user(), $request->validated('dutiable_email_ids', []));
 
         // Merging from a duplicate's own edit page would send "back" to a deleted record.
         $redirect = $request->validated('redirect_to_kept')

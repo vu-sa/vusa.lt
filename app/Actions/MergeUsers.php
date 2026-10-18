@@ -7,19 +7,15 @@ use App\Models\Comment;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
+use App\Services\ContactSearchIndexSynchronizer;
+use App\Services\Media\LegacyImageImporter;
+use App\Services\UserMergeDutyEmails;
 use App\Support\MorphMap;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Merges user accounts into one, repointing every row that references a merged
- * account onto the kept one and then deleting the merged accounts permanently.
- *
- * Every column referencing users belongs to exactly one of the maps below;
- * UserMergeCoverageTest fails when a new one is added without a decision.
- * Eligibility (matching names, no direct roles) is checked by MergeUsersRequest.
- */
+/** Transfers related data before permanently deleting duplicate accounts. */
 class MergeUsers
 {
     /** Columns repointed as they are. */
@@ -35,6 +31,7 @@ class MergeUsers
         ['institution_activity_requests', 'requested_by_id'],
         ['institution_check_ins', 'user_id'],
         ['notification_digest_queue', 'user_id'],
+        ['pending_uploads', 'user_id'],
         ['problems', 'created_by'],
         ['problems', 'responsible_user_id'],
         ['registrations', 'user_id'],
@@ -72,23 +69,28 @@ class MergeUsers
     public const array DROP = ['sessions'];
 
     /** Profile fields the kept user takes over from a merged account when it has none. */
-    private const array FILLABLE_WHEN_BLANK = ['phone', 'facebook_url', 'profile_photo_path', 'profile_photo_focal_point', 'pronouns'];
+    private const array FILLABLE_WHEN_BLANK = ['phone', 'facebook_url', 'pronouns'];
 
-    /**
-     * @param  User  $keptUser  The user account to keep
-     * @param  Collection<int, User>  $sources  User accounts to merge and delete
-     * @param  string  $loginEmail  The address the kept account signs in with from now on
-     */
-    public static function execute(User $keptUser, Collection $sources, string $loginEmail, ?User $actor = null): void
+    /** @param Collection<int, User> $sources */
+    public static function execute(User $keptUser, Collection $sources, string $loginEmail, ?User $actor = null, array $dutiableEmailIds = []): void
     {
-        DB::transaction(function () use ($keptUser, $sources, $loginEmail, $actor): void {
+        DB::transaction(function () use ($keptUser, $sources, $loginEmail, $actor, $dutiableEmailIds): void {
             $affectedDutyIds = collect();
             $merged = [];
+            $preservedEmails = [];
+
+            if ($dutiableEmailIds !== []) {
+                abort_unless($actor instanceof User, 403);
+                $preservedEmails = app(UserMergeDutyEmails::class)->preserve($keptUser, $sources, $loginEmail, $actor, $dutiableEmailIds);
+            }
+
+            self::copyDutyPhotos($keptUser, $sources);
 
             foreach ($sources as $source) {
                 $affectedDutyIds = $affectedDutyIds->merge(self::moveDutiables($keptUser, $source));
                 self::moveRows($keptUser, $source);
                 self::fillBlankAttributes($keptUser, $source);
+                self::mergeProfilePhoto($keptUser, $source);
 
                 $merged[] = ['id' => $source->id, 'name' => $source->name, 'email' => $source->email];
                 $source->forceDelete();
@@ -110,13 +112,17 @@ class MergeUsers
                 ->performedOn($keptUser)
                 ->causedBy($actor)
                 ->event('users_merged')
-                ->withProperties(['merged' => $merged])
+                ->withProperties(['merged' => $merged, 'preserved_dutiable_emails' => $preservedEmails])
                 ->log('users_merged');
 
             // Dutiables move by query, so no DutiableChanged fires for the kept user.
             DB::afterCommit(function () use ($keptUser): void {
                 HandleDutiableChange::forgetUserAuthority((string) $keptUser->id);
-                $keptUser->fresh()?->searchable();
+                $fresh = $keptUser->fresh();
+                $fresh?->searchable();
+                if ($fresh !== null) {
+                    app(ContactSearchIndexSynchronizer::class)->userChanged($fresh);
+                }
             });
         });
     }
@@ -221,6 +227,72 @@ class MergeUsers
 
             if (blank($keptUser->getAttribute($attribute)) && filled($mergedUser->getAttribute($attribute))) {
                 $keptUser->setAttribute($attribute, $mergedUser->getAttribute($attribute));
+            }
+        }
+    }
+
+    private static function mergeProfilePhoto(User $keptUser, User $source): void
+    {
+        if ($keptUser->getFirstMedia('profile_photo') !== null || filled($keptUser->profile_photo_path)) {
+            return;
+        }
+
+        $photo = $source->getFirstMedia('profile_photo');
+
+        if ($photo === null) {
+            $keptUser->profile_photo_path = $source->profile_photo_path;
+            $keptUser->profile_photo_focal_point = $source->profile_photo_focal_point;
+
+            return;
+        }
+
+        // Files are keyed by media id; reassigning ownership keeps their URLs and conversions.
+        $photo->model()->associate($keptUser);
+        $photo->save();
+        $source->unsetRelation('media');
+        $keptUser->refreshImageCache('profile_photo');
+        DB::afterCommit(fn () => $keptUser->fresh()?->afterImageMediaChanged('profile_photo'));
+    }
+
+    /** @param Collection<int, User> $sources */
+    private static function copyDutyPhotos(User $kept, Collection $sources): void
+    {
+        $rows = Dutiable::query()->where('dutiable_type', MorphMap::alias(User::class))
+            ->whereIn('dutiable_id', [$kept->id, ...$sources->pluck('id')->all()])->with('media')->get();
+        $eligible = collect();
+        foreach ($rows->groupBy(fn (Dutiable $row) => $row->duty_id.'|'.$row->tenant_id) as $group) {
+            foreach (CollapseOverlappingDutiables::overlappingGroups($group) as $overlap) {
+                if (! $overlap->contains(fn (Dutiable $row) => filled($row->additional_photo) || $row->getFirstMedia('photo') !== null)) {
+                    $eligible = $eligible->merge($overlap);
+                }
+            }
+        }
+
+        foreach ($sources as $source) {
+            self::copyPhotoToPeriods($source, $eligible->where('dutiable_id', $source->id));
+        }
+    }
+
+    /** @param Collection<int, Dutiable> $periods */
+    private static function copyPhotoToPeriods(User $source, Collection $periods): void
+    {
+        if ($periods->isEmpty()) {
+            return;
+        }
+
+        $photo = $source->getFirstMedia('profile_photo')
+            ?? app(LegacyImageImporter::class)->importCollection($source, 'profile_photo');
+
+        foreach ($periods as $period) {
+            if ($photo !== null) {
+                $photo->copy($period, 'photo');
+                $period->refreshImageCache('photo');
+                DB::afterCommit(fn () => $period->fresh()?->afterImageMediaChanged('photo'));
+            } elseif (filled($source->profile_photo_path)) {
+                $period->update([
+                    'additional_photo' => $source->profile_photo_path,
+                    'additional_photo_focal_point' => $source->profile_photo_focal_point,
+                ]);
             }
         }
     }

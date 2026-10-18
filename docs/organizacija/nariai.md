@@ -3,12 +3,16 @@ doc_status: reviewed
 title: Nariai
 area: users
 models: [User]
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-18
 tests:
   - resources/js/Components/Public/__tests__/ContactWithPhoto.component.test.ts
   - resources/js/Utils/__tests__/String.test.ts
   - tests/Feature/Search/ContactSearchIndexSyncTest.php
   - tests/Feature/Admin/Management/UserControllerTest.php
+  - tests/Browser/UserDuplicateFilterTest.php
+  - tests/Browser/UserMergeContactDetailsTest.php
+  - tests/Feature/Admin/Management/UserDuplicateFilterTest.php
+  - tests/Feature/Admin/Management/UserMergeContactDetailsTest.php
   - tests/Feature/Admin/UserMergeTest.php
   - tests/Feature/System/UserMergeCoverageTest.php
   - tests/Feature/Auth/UserUpdateAuthorizationTest.php
@@ -23,6 +27,10 @@ tests:
   - resources/js/Components/AdminForms/__tests__/UserForm.component.test.ts
   - resources/js/Components/AdminForms/__tests__/DuplicateUserWarning.component.test.ts
   - resources/js/Components/Merge/__tests__/MergeRecordsDialog.component.test.ts
+  - resources/js/Components/Merge/__tests__/UserMergeDetails.component.test.ts
+  - resources/js/Components/Merge/__tests__/UserMergeDutyEmails.component.test.ts
+  - resources/js/Pages/Admin/People/__tests__/IndexUser.component.test.ts
+  - resources/js/Composables/__tests__/useDatabaseCollectionSource.test.ts
   - resources/js/Composables/__tests__/useDuplicateUserCheck.test.ts
 ---
 
@@ -75,16 +83,17 @@ išsaugomo laikotarpio nuotrauka, o jei jos nebuvo – prijungiamo laikotarpio n
    superadministratorius gali priskirti rolę tiesiogiai paskyrai.
 2. **Padalinys nustatomas iš pareigybių.** Platformoje narys nepriklauso padaliniui tiesioginiu lauku – nario padaliniai
    nustatomi pagal jo einamas pareigybes (`User::tenants()`).
-3. **Nariai be padalinio.** Jei asmuo šiuo metu neturi jokios aktyvios pareigybės, sąraše prie jo rodoma
-   būsena **Be padalinio**. Tokį narį sąraše mato tik administratoriai, turintys visuotinę prieigą arba sukūrę šį narį, kol jam nepriskirta konkretaus padalinio pareigybė.
+3. **Nariai be pareigų istorijos.** Nariai, kurie niekada neturėjo pareigybės laikotarpio, sąraše žymimi
+   **Be padalinio**. Juos mato Centrinio biuro komunikacijos koordinatorius, Centrinio biuro studentų
+   atstovų koordinatorius ir Superadministratorius. Padalinio koordinatoriai mato savo padalinyje
+   esamas, buvusias ar suplanuotas pareigas turinčius narius.
 
 ### Tapatybės ir prieigos apsauga {#apsauga}
 
 Siekiant apsaugoti narių paskyras nuo netyčinio ar piktavališko perėmimo, sistemoje galioja griežtos taisyklės:
 
-- **Vardo keitimas**: kito nario vardą ir pavardę narių administravime gali pakeisti tik
-  Superadministratorius. Pats narys savo vardą gali pataisyti **vieną kartą** savo paskyros formoje;
-  vėliau laukelis užrakinamas ir keisti reikia kreiptis į administratorių
+- **Vardo keitimas**: nario vardą ir pavardę gali pakeisti tik Superadministratorius. Pats narys
+  savo vardo pakeisti negali – reikia kreiptis į administratorių
   ([Paskyra ir prieiga](/mano/paskyra-ir-prieiga#profilis)).
 - **El. pašto keitimas**: prisijungimo el. paštas savo paskyros formoje užrakintas. Jį keičia
   Superadministratorius arba atitinkamą nario administravimo prieigą turintis koordinatorius. Padalinio koordinatorius kito nario el. paštą gali pakeisti tik tuo atveju,
@@ -107,6 +116,11 @@ Narių sąraše (`/mano/users`) pateikiama visų pasiekiamų narių suvestinė:
 - **Rikiavimas**: galima rikiuoti pagal vardą (A–Z arba Z–A), paskutinį prisijungimą arba sukūrimo datą.
 - **Greitieji filtrai „Dabartiniai“ ir „Buvę“**: dabartiniai šiandien eina bent vienas pareigas, buvę –
   turi pareigų istoriją, bet visi jų laikotarpiai pasibaigę. Paskyros, turinčios tik roles, nėra nei viena, nei kita.
+- **Greitasis filtras „Galimi dublikatai“** – atrenka matomus narius, kurių vardas ir pavardė sutampa
+  su kitu neištrintu profiliu, atsižvelgiant į žodžių tvarką, lietuviškas raides ir papildomus vardus.
+  Kitas profilis gali priklausyti kitam padaliniui: filtras neišplečia tavo prieigos ir neatskleidžia jo duomenų.
+  Sutapimas nėra patvirtinimas, kad tai tas pats žmogus ar kad įrašus leidžiama sujungti. Filtrą galima
+  derinti su paieška ir narystės filtrais; šiukšlinėje jis netaikomas.
 - **Stulpelis „Metai“** rodo, kuriais metais narys ėjo pareigas: nuo pirmųjų pareigų pradžios iki
   dabar (pvz., „2023–dabar“) arba iki paskutinių pareigų pabaigos (pvz., „2019–2021“).
 - **Stulpelis „Pareigos“** rodo, kiek pareigų narys eina dabar ir kiek jų turėjo iš viso (jei skaičiai
@@ -125,6 +139,9 @@ Narių sąraše atsirado filtrai „Dabartiniai“ ir „Buvę“, o buvę naria
 
 </ChangelogNote>
 - **Šiukšlinė**: viršuje rodo ištrintų narių skaičių ir leidžia peržiūrėti bei atkurti pašalintas paskyras.
+
+Atvėrus narį ir grįžus naršyklės mygtuku **Atgal** arba **Pirmyn**, sąrašas atitinka išlikusius filtrus,
+įskaitant „Galimi dublikatai“. Filtro išjungti ir įjungti iš naujo nereikia.
 
 ### Nario profilio kortelė {#kortele}
 
@@ -189,6 +206,16 @@ Atidarius formą per **Redaguoti narį** (`/mano/users/{id}/edit`):
 
 ### Narių sujungimas {#sujungimas}
 
+<ChangelogNote version="v3.4" date="2026-10-18" title="Kelių įrašų sujungimas ir prisijungimo adreso pasirinkimas">
+
+Filtras „Galimi dublikatai“ padeda rasti pasikartojančius profilius. Galima sujungti kelis to paties asmens
+įrašus iš karto ir pasirinkti prisijungimo el. paštą, jei leidžiama keisti paliekamos paskyros tapatybę.
+Sujungiant perkeliama susijusi veiklos istorija ir tikrinama, ar įrašus leidžiama sujungti.
+Galima išsaugoti seną el. paštą pasirinktuose pareigybių laikotarpiuose, o prijungiamų profilių
+nuotraukos automatiškai išsaugomos prie jų pareigybių laikotarpių.
+
+</ChangelogNote>
+
 Kiekvienam asmeniui turėtų būti tik viena paskyra. Kartais tas pats žmogus sukuriamas dar kartą su kitu
 el. paštu (pavyzdžiui, vieną kartą su `@stud.vu.lt`, kitą – su asmeniniu adresu), tada abu įrašus galima sujungti.
 
@@ -196,12 +223,10 @@ Sujungti galima tik to paties asmens įrašus:
 
 - **vardai ir pavardės turi sutapti** – žodžių tvarka, lietuviškos raidės ir antrasis vardas nesvarbūs
   („Jonas Čiurlionis“ ir „Ciurlionis Jonas“ sutampa, „Jonas Jonaitis“ ir „Jonas Petraitis“ – ne);
-- **nė vienas įrašas negali turėti pakeisto vardo** – jei narys pats yra pasikeitęs vardą ar pavardę, sutapimu
-  nebegalima pasitikėti, todėl tokių įrašų sujungti negalima;
-- prijungiamas įrašas negali turėti tiesiogiai priskirtos rolės.
+- prijungiamas įrašas negali turėti tiesiogiai priskirtų rolių ar teisių.
 
-Superadministratorius gali sujungti ir įrašus, kurių vardai nesutampa ar buvo pakeisti – tai daroma iš narių
-sąrašo, nes redagavimo formoje rodomi tik to paties vardo įrašai. Tiesiogiai priskirtos rolės draudimas galioja visiems.
+Superadministratorius gali sujungti ir įrašus, kurių vardai nesutampa – tai daroma iš narių
+sąrašo, nes redagavimo formoje rodomi tik to paties vardo įrašai. Tiesiogiai priskirtų rolių ar teisių draudimas galioja visiems.
 
 **Nario redagavimo formoje** viršuje rodoma, jei sistemoje yra kitas to paties vardo įrašas. Jei turi teisę
 juos sujungti, prie įrašo matomas mygtukas **Sujungti**; jei ne – paaiškinama, kodėl.
@@ -211,13 +236,24 @@ Sujungti galima ir iš narių sąrašo:
 1. Narių sąraše viršuje spausk **Sujungti narius** (įsijungia kelių įrašų žymėjimo režimas).
 2. Pažymėk bent du narius ir apačioje spausk **Sujungti**.
 3. Pasirink, kurį įrašą palikti, ir **prisijungimo el. paštą** – vieną iš sujungiamų įrašų adresų.
-4. Patvirtink sujungimą.
+   Jei paliekamo nario el. pašto keisti negali, rodoma tik jo dabartinio adreso parinktis.
+4. Jei siūlomi pareigybių laikotarpiai, pažymėk tuos, kuriuose nori išsaugoti prijungiamo nario
+   seną el. paštą kaip kontaktinį. Iš pradžių nepažymėtas nė vienas laikotarpis.
+5. Patvirtink sujungimą.
+
+El. pašto parinktys rodomos tik tuštiems laikotarpių kontaktams, kuriuos leidžiama redaguoti.
+Esami adresai neperrašomi. Persidengiantiems laikotarpiams, kurie bus sujungti, galima pasirinkti
+vieną adresą. Kontaktinis adresas nesuteikia papildomo prisijungimo būdo.
 
 Sujungus:
 
 - pareigybių laikotarpiai, užduotys, komentarai, rezervacijos, patvirtinimai, problemos, sekami organai ir kiti
   įrašai perkeliami į paliktą profilį; jei abu įrašai turėjo tą patį (pvz., abu sekė tą patį organą), lieka vienas;
 - paliktas profilis perima prijungto įrašo telefoną, nuotrauką ar įvardžius, jei pats jų neturėjo;
+- prijungiamo profilio nuotrauka automatiškai nukopijuojama į jo pareigybių laikotarpius, kartu su
+  fokuso tašku; jei laikotarpis ar su juo sujungiamas persidengiantis laikotarpis jau turi savo
+  nuotrauką, ji išlieka ir profilio nuotrauka jos nepakeičia;
+- išsaugomi perkeliamuose turinio juodraščiuose naudojami, dar nepriskirti nuotraukų įkėlimai;
 - prijungti įrašai **ištrinami visam laikui** – į šiukšlinę jie nepatenka ir atkurti jų negalima;
 - prisijungti galima tik pasirinktu el. paštu, kiti sujungtų įrašų adresai prisijungti nebeleidžia.
 
@@ -235,6 +271,7 @@ Sujungus:
 |---|---|---|---|---|---|
 | Matyti savo profilį | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Matyti padalinio narius | – | ✓ | ✓ | ✓, visų padalinių | ✓ |
+| Matyti paskyras be pareigų istorijos | – | – | – | ✓ | ✓ |
 | Sukurti naują narį | – | ✓ | ✓ | ✓ | ✓ |
 | Redaguoti nario kontaktus ir nuotrauką | tik savo | ✓, savo padalinio | ✓, savo padalinio | ✓ | ✓ |
 | Keisti nario el. paštą | – | ✓, tik jei narys priklauso tik šiam padaliniui | ✓, tik jei narys priklauso tik šiam padaliniui | ✓ | ✓ |
@@ -273,14 +310,16 @@ nario padalinių prieiga arba kreipimasis į Centrinio biuro koordinatorių / Su
 
 - Narių administravimą reglamentuoja `UserPolicy`.
 - `users.read.*` leidžia matyti visus sistemos narius; `users.read.padalinys` riboja sąrašą iki
-  naudotojo atstovaujamo padalinio narių (nariai, turintys bent vieną pareigybę tame padalinyje,
-  arba nariai be padalinių, kuriuos sukūrė tas pats padalinys).
+  naudotojo administruojamame padalinyje esamas, buvusias ar suplanuotas pareigas turinčių narių.
+  Visuotinė skaitymo prieiga apima ir paskyras be pareigų ar tiesioginių rolių;
+  filtrai „Dabartiniai“ ir „Buvę“ vis tiek atrenka tik narius su atitinkama pareigų istorija.
 - Vardo keitimas tikrinamas per `UserPolicy::updateName`, leidžiamas tik turintiems `isSuperAdmin()`.
 - Tapatybės (el. pašto) keitimas tikrinamas per `UserPolicy::updateIdentity`: reikalauja `users.update.*`
   arba visiško padalinių apėmimo (`tenantsContained`) be tiesioginių rolių (`!isProtected`).
-- Sujungimą (`users.mergeUsers`, `MergeUsersRequest`) leidžia `update` paliekamam nariui ir `delete` kiekvienam
-  prijungiamam (`UserPolicy::canActDestructively`, t. y. visiškas padalinių apėmimas). Vardų sutapimą ir pakeisto
-  vardo draudimą tikrina `UserMergeGuard` (`UserSimilarityFinder::namesMatch`); `isSuperAdmin()` šią patikrą praleidžia,
+- Sujungimą (`users.mergeUsers`, `MergeUsersRequest`) leidžia `update` paliekamam nariui,
+  `updateIdentity`, jei keičiamas jo prisijungimo el. paštas, ir `delete` kiekvienam
+  prijungiamam (`UserPolicy::canActDestructively`, t. y. visiškas padalinių apėmimas). Vardų sutapimą
+  tikrina `UserMergeGuard` (`UserSimilarityFinder::namesMatch`); `isSuperAdmin()` šią patikrą praleidžia,
   o tiesioginių rolių patikra (`MergeUsersRequest::after()`) taikoma visiems.
 - Slaptažodžių generavimas ir šalinimas galimas tik Superadministratoriui (`GenerateUserPasswordRequest`).
 

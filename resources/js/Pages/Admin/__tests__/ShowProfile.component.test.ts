@@ -91,7 +91,6 @@ const createMockUser = (overrides: Record<string, unknown> = {}) => ({
   profile_photo_focal_point: null,
   pronouns: { lt: 'jis/jo', en: 'he/him' },
   show_pronouns: true,
-  name_was_changed: false,
   has_password: true,
   created_at: '2025-01-01T10:00:00Z',
   updated_at: '2025-01-02T10:00:00Z',
@@ -138,24 +137,12 @@ describe('ShowProfile.vue', () => {
     expect(wrapper.text()).not.toContain('Nuotrauka ir kontaktai rodomi viešame vusa.lt puslapyje, kai turi pareigybę.');
   });
 
-  it('renders identity fields with editable name when name was not previously changed', () => {
-    const wrapper = mountProfile({ name_was_changed: false });
+  it('renders the name as locked, pointing to an administrator', () => {
+    const wrapper = mountProfile();
 
     const nameField = wrapper.find('[data-field="user-name"]');
-    expect(nameField.exists()).toBe(true);
-
-    const nameInput = nameField.find('input');
-    expect(nameInput.attributes('disabled')).toBeUndefined();
-    expect(nameField.text()).toContain('Paskyros vardą galima pakeisti tik VIENĄ kartą!');
-  });
-
-  it('disables name input and shows explanatory note when name was already changed', () => {
-    const wrapper = mountProfile({ name_was_changed: true });
-
-    const nameField = wrapper.find('[data-field="user-name"]');
-    const nameInput = nameField.find('input');
-    expect(nameInput.attributes('disabled')).toBeDefined();
-    expect(nameField.text()).toContain('Paskyros vardas jau buvo pakeistas');
+    expect(nameField.find('input').attributes('disabled')).toBeDefined();
+    expect(nameField.text()).toContain('kreipkis į administratorių');
   });
 
   it('renders email input as disabled with identity lock hint', () => {

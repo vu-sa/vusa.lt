@@ -9,8 +9,8 @@ import { commonStubs } from '@/tests/stubs';
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 const records = [
-  { id: 'kept', label: 'Jonas Jonaitis', context: 'jonas@stud.vu.lt', email: 'jonas@stud.vu.lt' },
-  { id: 'other', label: 'Jonas Jonaitis', context: 'jonas@gmail.com', email: 'jonas@gmail.com' },
+  { id: 'kept', label: 'Jonas Jonaitis', context: 'jonas@stud.vu.lt', email: 'jonas@stud.vu.lt', can_update_identity: true },
+  { id: 'other', label: 'Jonas Jonaitis', context: 'jonas@gmail.com', email: 'jonas@gmail.com', can_update_identity: true },
 ];
 
 const mountDialog = (props: Record<string, unknown> = {}) => mount({
@@ -31,7 +31,7 @@ const mountDialog = (props: Record<string, unknown> = {}) => mount({
         <UserMergeDetails v-model="loginEmail" :records="records" :target-id="targetId" />
       </template>
     </MergeRecordsDialog>`,
-}, { global: { stubs: { ...commonStubs } } });
+}, { global: { stubs: { ...commonStubs, UserMergeDutyEmails: true } } });
 
 const recordButton = (wrapper: ReturnType<typeof mount>, label: string) =>
   wrapper.findAll('button').find(button => button.text().includes(label))!;
@@ -50,6 +50,15 @@ describe('MergeRecordsDialog.vue', () => {
       { login_email: 'jonas@gmail.com', kept_user_id: 'other', source_user_ids: ['kept'] },
       expect.any(Object),
     );
+  });
+
+  it('prevents submitting while merge details are loading', async () => {
+    const wrapper = mountDialog({ submitDisabled: true });
+    await recordButton(wrapper, 'jonas@gmail.com').trigger('click');
+
+    expect(recordButton(wrapper, 'Sujungti').attributes('disabled')).toBeDefined();
+    await recordButton(wrapper, 'Sujungti').trigger('click');
+    expect(router.post).not.toHaveBeenCalled();
   });
 
   it('only lets a keepable record be the target, and preselects it when it is the only one', async () => {

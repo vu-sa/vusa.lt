@@ -17,7 +17,7 @@ class FindMergeableUserDuplicates
     /**
      * Shaped like UserSearchApiController::similar() so DuplicateUserWarning renders both.
      *
-     * @return list<array{id: string, name: string, reason: string, tenants: list<string>, duties_count: int, email_masked: string, can_manage: bool, email: string|null, keepable_ids: list<string>, blocked_reason: string|null}>
+     * @return list<array{id: string, name: string, reason: string, tenants: list<string>, duties_count: int, email_masked: string, can_manage: bool, can_update_identity: bool, email: string|null, keepable_ids: list<string>, blocked_reason: string|null}>
      */
     public function execute(User $actor, User $user): array
     {
@@ -41,6 +41,7 @@ class FindMergeableUserDuplicates
                     'duties_count' => (int) $other->duties_count,
                     'email_masked' => UserSimilarityFinder::maskEmail($other->email),
                     'can_manage' => $actor->can('update', $other),
+                    'can_update_identity' => $actor->can('updateIdentity', $other),
                     // The full address only for someone who may merge — they pick the login among them.
                     'email' => $keepableIds === [] ? null : (string) $other->email,
                     'keepable_ids' => $keepableIds,

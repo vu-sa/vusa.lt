@@ -157,7 +157,7 @@ class UserSimilarityFinder
         }
 
         return User::query()
-            ->select(['id', 'name', 'email', 'name_was_changed'])
+            ->select(['id', 'name', 'email'])
             ->withCount('duties')
             // Columns must be table-qualified: tenants is a hasManyDeep whose joins
             // give several tables an `id`, so a bare `id` is ambiguous.

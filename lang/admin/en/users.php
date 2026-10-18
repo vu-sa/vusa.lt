@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'index' => [
+        'lead' => 'Member accounts, contacts and duty history.',
+        'empty_description' => 'Member accounts you can view appear here.',
+    ],
     'form' => [
         'name_hint' => 'Existing names cannot be changed — create a new member for a different person.',
         'contacts_hint' => 'Members with a duty have their photo and contact details shown on vusa.lt.',
@@ -17,8 +21,16 @@ return [
     'duplicate_open_profile' => 'Open',
     'duplicate_contact_admins' => 'Contact that unit\'s administrators',
     'merge' => [
+        'loading_periods' => 'Checking duty periods…',
+        'periods_failed' => 'Could not check additional emails. Without this option, old addresses will not be assigned to duty periods.',
+        'duty_emails' => 'Keep the old email with duties',
+        'duty_emails_hint' => 'Select periods that should use the source account’s email as an additional contact. Existing addresses stay unchanged; overlapping periods can keep one selected address.',
+        'open_ended' => 'no end date',
+        'photos_preserved' => 'Source account photos are automatically kept with their duty periods. Existing duty-period photos stay unchanged.',
+        'email_selection_changed' => 'The selected period cannot receive this email, or multiple addresses were selected for overlapping periods. Check the selection.',
+
+        'login_email_locked' => 'You cannot change this account’s login email. The current address will be kept after merging.',
         'name_mismatch' => 'Only records of the same person can be merged, and the name of :name does not match.',
-        'name_changed' => 'The name of :name has already been changed, so these records cannot be merged.',
         'direct_roles' => ':name has a directly assigned role. Remove it before merging.',
         'outside_scope' => 'Only administrators covering every unit of both records can merge them.',
         'action' => 'Merge',
@@ -28,6 +40,11 @@ return [
     ],
     'no_tenant' => 'No unit',
     'filters' => [
+        'duplicates_group' => 'Duplicates',
+        'possible' => 'Possible',
+        'duplicates' => 'Possible duplicates',
+        'duplicates_spotlight' => 'Find members whose name matches another profile. Open the editing form to check whether the records can be merged.',
+
         'duty_timing' => 'Duty timing',
         'scheduled' => 'Upcoming duties',
     ],

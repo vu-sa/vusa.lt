@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Actions\BuildUserIndexQuery;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\IndexUserRequest;
+use App\Http\Resources\UserRowResource;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
@@ -38,7 +39,7 @@ class UserApiController extends ApiController
                 'applySortBeforePagination' => true,
                 'tenantRelation' => 'tenants',
                 'permission' => 'users.read.padalinys',
-                'handledFilters' => ['future_duty', 'membership'],
+                'handledFilters' => ['future_duty', 'membership', 'duplicates'],
             ],
         );
 
@@ -47,14 +48,13 @@ class UserApiController extends ApiController
 
         return $this->jsonSuccess([
             'items' => $users->getCollection()
-                ->each->makeVisible(['last_action'])
-                ->map(fn (User $user): array => $user->toArray())
+                ->map(fn (User $user): array => UserRowResource::make($user)->resolve($request))
                 ->values(),
             'total' => $users->total(),
             'per_page' => $users->perPage(),
             'current_page' => $users->currentPage(),
             'last_page' => $users->lastPage(),
-            'facets' => CollectionFacetCounts::forRequest($request, ['future_duty', 'membership'], $query),
+            'facets' => CollectionFacetCounts::forRequest($request, ['future_duty', 'membership', 'duplicates'], $query),
         ]);
     }
 }
