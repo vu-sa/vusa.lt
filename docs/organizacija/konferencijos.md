@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Konferencijos
 area: mailingLists
 models: [MailingList]
-last_reviewed: 2026-10-16
+last_reviewed: 2026-10-18
 tests:
   - tests/Feature/Admin/MailingLists/ResolveMailingListMembersTest.php
   - tests/Feature/Admin/MailingLists/SyncMailingListTest.php
@@ -12,6 +12,7 @@ tests:
   - tests/Feature/Admin/MailingLists/FetchMailingListArchiveTest.php
   - tests/Feature/Admin/MailingLists/ImportMailingListsTest.php
   - tests/Feature/Admin/MailingLists/MailingListQueueTest.php
+  - tests/Feature/Admin/MailingLists/MailingListUserMergeTest.php
   - tests/Browser/MailingListPagesTest.php
   - resources/js/Features/Admin/MailingLists/__tests__/ShowMailingList.component.test.ts
   - resources/js/Features/Admin/MailingLists/__tests__/MailingListArchive.component.test.ts
@@ -30,7 +31,7 @@ pašalinamas, o naujai paskirtas – pridedamas.
 
 Skiltis pasiekiama adresu `/mano/mailingLists` (Organizacija → Konferencijos).
 
-<ChangelogNote version="v3.1" date="2026-10-16" title="El. pašto konferencijos">
+<ChangelogNote version="v3.7" date="2026-10-18" title="El. pašto konferencijos">
 
 Konferencijos, jų gavėjų šaltiniai ir laiškų archyvai pasiekiami Organizacijos srityje.
 
@@ -90,13 +91,20 @@ gali rinktis tik jam prieinamų padalinių šaltinius; tipų šaltiniai taip pat
 Jei tas pats žmogus į konferenciją patenka per kelias pareigybes, jis įtraukiamas vieną kartą, o
 pareigų laikotarpyje nurodytas el. paštas turi pirmenybę prieš nario el. paštą.
 
+Sujungus narių profilius, gavėjo ryšys su nariu ir šaltinių bei išimčių autorystė perkeliami į
+paliekamą profilį. Automatiškai valdomoje konferencijoje el. pašto adresai perskaičiuojami per kitą
+sinchronizaciją.
+
 ### Sinchronizacija {#sinchronizacija}
 
-Automatiškai valdomos konferencijos atnaujinamos praėjus kelioms minutėms po pareigybių pakeitimų ir
-kiekvieną naktį (kadencijos baigiasi be jokio pakeitimo platformoje). Gavėjai pridedami ir šalinami
-be pasisveikinimo ar atsisveikinimo laiškų.
+Automatiškai valdomų konferencijų atnaujinimas pradedamas praėjus penkioms minutėms po pareigybės
+laikotarpio sukūrimo, datų ar el. pašto pakeitimo arba ištrynimo. Gavėjai taip pat perskaičiuojami
+pakeitus pareigybės paštą, aktyvumą, instituciją ar tipus, nario el. paštą ir institucijos aktyvumą
+ar tipus. Keli greta atlikti pakeitimai sujungiami į vieną atnaujinimą; eilėje jis gali užtrukti ilgiau.
+Kiekvieną naktį gavėjai perskaičiuojami ir be pakeitimų platformoje, kad įsigaliotų pareigų datos.
+Gavėjai pridedami ir šalinami be pasisveikinimo ar atsisveikinimo laiškų.
 
-Jei sinchronizacija pašalintų daugiau nei pusę konferencijos gavėjų, ji sustoja su būsena
+Jei sinchronizacija pašalintų daugiau nei pusę konferencijos gavėjų arba nepaliktų nė vieno, ji sustoja su būsena
 **Laukia peržiūros**. Paspaudus **Sinchronizuoti**, reikia atskirai patvirtinti peržiūrėtus skirtumus.
 Peržiūra galioja 15 minučių; jei gavėjai pasikeičia, prieš tvirtinant ją reikia įkelti iš naujo.
 Nepavykus įjungti automatinio valdymo konferencija lieka valdoma rankiniu būdu.

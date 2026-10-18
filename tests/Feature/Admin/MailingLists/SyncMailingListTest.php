@@ -1,16 +1,23 @@
 <?php
 
 use App\Actions\SyncMailingList;
+use App\Enums\MailingListAddressMode;
 use App\Enums\MailingListSourceType;
 use App\Enums\MailingListSyncStatus;
 use App\Exceptions\StagingResourceReadOnlyException;
+use App\Jobs\SyncManagedMailingLists;
+use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\MailingList;
+use App\Models\Pivots\Dutiable;
 use App\Models\Tenant;
+use App\Models\User;
 use App\Services\Mailman\MailmanException;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
 
 pest()->use(RefreshDatabase::class);
@@ -58,6 +65,70 @@ function mailingListEmailSource(MailingList $list, string $email): void
 {
     $list->sources()->create(['type' => MailingListSourceType::Email, 'email' => $email]);
 }
+
+test('an assignment edit reaches Mailman through the queued sync', function (string $change): void {
+    $duty = Duty::factory()->for(Institution::factory()->for(Tenant::main()))->create();
+    $user = User::factory()->create(['email' => 'old@vusa.lt']);
+    $assignment = Dutiable::factory()->create([
+        'duty_id' => $duty->id,
+        'dutiable_id' => $user->id,
+        'start_date' => today()->subMonth(),
+        'end_date' => null,
+        'additional_email' => null,
+    ]);
+    $this->list->sources()->create(['type' => MailingListSourceType::Duty, 'source_id' => $duty->id]);
+    mailingListEmailSource($this->list, 'stays@vusa.lt');
+    fakeMailman(['stays@vusa.lt', 'old@vusa.lt']);
+    Queue::fake([SyncManagedMailingLists::class]);
+
+    match ($change) {
+        'email' => $assignment->update(['additional_email' => 'new@vusa.lt']),
+        'ended' => $assignment->update(['end_date' => today()->subDay()]),
+        'deleted' => $assignment->delete(),
+    };
+
+    Queue::assertPushed(SyncManagedMailingLists::class, fn ($job) => $job->mailingListId === null && $job->afterCommit);
+    $fanout = Queue::pushed(SyncManagedMailingLists::class)->first();
+    app()->call([$fanout, 'handle']);
+    Queue::assertPushed(SyncManagedMailingLists::class, fn ($job) => $job->mailingListId === $this->list->id);
+    $sync = Queue::pushed(SyncManagedMailingLists::class)->first(fn ($job) => $job->mailingListId === $this->list->id);
+    app()->call([$sync, 'handle']);
+
+    Http::assertSent(fn (Request $request) => $request->method() === 'DELETE'
+        && $request->url() === MAILMAN.'/members/'.md5('old@vusa.lt'));
+    if ($change === 'email') {
+        Http::assertSent(fn (Request $request) => $request->method() === 'POST' && $request['subscriber'] === 'new@vusa.lt');
+    } else {
+        Http::assertNotSent(fn (Request $request) => $request->method() === 'POST');
+    }
+    expect($this->list->fresh()->last_sync_status)->toBe(MailingListSyncStatus::Synced);
+    expect($this->list->members()->orderBy('email')->pluck('email')->all())
+        ->toBe($change === 'email' ? ['new@vusa.lt', 'stays@vusa.lt'] : ['stays@vusa.lt']);
+})->with(['email', 'ended', 'deleted']);
+
+test('a duty mailbox edit reaches Mailman through the queued sync', function (): void {
+    $duty = Duty::factory()->for(Institution::factory()->for(Tenant::main()))->create(['email' => 'old@vusa.lt']);
+    $this->list->sources()->create([
+        'type' => MailingListSourceType::Duty,
+        'source_id' => $duty->id,
+        'address_mode' => MailingListAddressMode::DutyMailbox,
+    ]);
+    mailingListEmailSource($this->list, 'stays@vusa.lt');
+    fakeMailman(['stays@vusa.lt', 'old@vusa.lt']);
+    Queue::fake([SyncManagedMailingLists::class]);
+
+    $duty->update(['email' => 'new@vusa.lt']);
+
+    Queue::assertPushed(SyncManagedMailingLists::class, fn ($job) => $job->mailingListId === null && $job->afterCommit);
+    app()->call([Queue::pushed(SyncManagedMailingLists::class)->first(), 'handle']);
+    $sync = Queue::pushed(SyncManagedMailingLists::class)->first(fn ($job) => $job->mailingListId === $this->list->id);
+    app()->call([$sync, 'handle']);
+
+    Http::assertSent(fn (Request $request) => $request->method() === 'DELETE'
+        && $request->url() === MAILMAN.'/members/'.md5('old@vusa.lt'));
+    Http::assertSent(fn (Request $request) => $request->method() === 'POST' && $request['subscriber'] === 'new@vusa.lt');
+    expect($this->list->members()->orderBy('email')->pluck('email')->all())->toBe(['new@vusa.lt', 'stays@vusa.lt']);
+});
 
 test('adds the missing, removes the extra and keeps welcome and goodbye mail off while doing it', function (): void {
     fakeMailman(['stays@vusa.lt', 'old@vusa.lt']);
