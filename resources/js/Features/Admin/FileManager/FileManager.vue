@@ -208,12 +208,19 @@
     </Dialog>
 
     <ConfirmDialog
-      :open="pendingDelete !== null"
-      :title="deleteTitle"
-      :description="deleteDescription"
+      :open="pendingDelete?.kind === 'folder'"
+      :title="$t('files.ui.confirm_delete_folder_title')"
+      :description="$t('files.ui.confirm_delete_folder_body', { name: deleteFolderName })"
       :confirm-label="$t('files.ui.delete')"
       destructive
       @update:open="(open) => !open && (pendingDelete = null)"
+      @confirm="confirmDelete"
+    />
+
+    <DeleteFilesDialog
+      v-if="pendingDelete && pendingDelete.kind !== 'folder'"
+      :paths="pendingDelete.paths"
+      @close="pendingDelete = null"
       @confirm="confirmDelete"
     />
 
@@ -254,6 +261,7 @@ import {
   Trash2,
 } from '@lucide/vue';
 
+import DeleteFilesDialog from './Components/DeleteFilesDialog.vue';
 import FileGrid from './Components/FileGrid.vue';
 import FileManagerHeader from './Components/FileManagerHeader.vue';
 import FileManagerSidebar from './Components/FileManagerSidebar.vue';
@@ -761,25 +769,7 @@ function handleMoved(destination: string) {
   afterMutation();
 }
 
-const deleteTitle = computed(() => {
-  const pending = pendingDelete.value;
-  if (!pending) return '';
-  if (pending.kind === 'folder') return $t('files.ui.confirm_delete_folder_title');
-  if (pending.kind === 'files') return $t('files.ui.confirm_delete_files_title', { count: String(pending.paths.length) });
-  return $t('files.ui.confirm_delete_file_title');
-});
-
-const deleteDescription = computed(() => {
-  const pending = pendingDelete.value;
-  if (!pending) return '';
-  const names = pending.paths.map(path => path.split('/').pop() ?? path);
-  if (pending.kind === 'folder') return $t('files.ui.confirm_delete_folder_body', { name: names[0] });
-  if (pending.kind === 'files') {
-    const listed = names.slice(0, 5).join(', ') + (names.length > 5 ? '…' : '');
-    return `${$t('files.ui.confirm_delete_files_body', { count: String(names.length) })} ${listed}`;
-  }
-  return `${$t('files.ui.confirm_delete_file_body', { name: names[0] })} ${$t('files.ui.confirm_delete_file_note')}`;
-});
+const deleteFolderName = computed(() => pendingDelete.value?.paths[0]?.split('/').pop() ?? '');
 
 function confirmDelete() {
   const pending = pendingDelete.value;
