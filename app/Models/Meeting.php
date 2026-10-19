@@ -440,6 +440,9 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
 
         static::deleted(function (Meeting $meeting): void {
             $meeting->publicSearchModel()->unsearchable();
+
+            // A soft delete keeps the items (see `deleting`), so only their index entries go.
+            $meeting->agendaItems()->get()->unsearchable();
         });
 
         static::forceDeleted(function (Meeting $meeting): void {
@@ -452,6 +455,8 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             if ($publicMeeting?->shouldBeSearchable()) {
                 $publicMeeting->searchable();
             }
+
+            $meeting->agendaItems()->get()->searchable();
         });
 
         static::deleting(function (Meeting $meeting): void {

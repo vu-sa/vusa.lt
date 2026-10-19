@@ -78,6 +78,9 @@ class AgendaItemController extends AdminController
      */
     public function show(Request $request, AgendaItem $agendaItem, MeetingCompletionService $meetingCompletionService)
     {
+        // Items of a trashed meeting are kept for its restore, but have no page of their own.
+        abort_if($agendaItem->meeting === null, 404);
+
         $this->handleAuthorization('viewSummary', $agendaItem);
 
         // A public meeting's item outside the user's reach: the item itself, without notes or discussion.
@@ -209,6 +212,8 @@ class AgendaItemController extends AdminController
      */
     public function edit(Request $request, AgendaItem $agendaItem): RedirectResponse
     {
+        abort_if($agendaItem->meeting === null, 404);
+
         $this->handleAuthorization('viewSummary', $agendaItem);
 
         return redirect()->route('agendaItems.show', [

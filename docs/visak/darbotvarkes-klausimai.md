@@ -3,13 +3,14 @@ doc_status: reviewed
 title: Darbotvarkės klausimai
 area: agendaItems
 models: [AgendaItem, Vote]
-last_reviewed: 2026-10-18
+last_reviewed: 2026-10-19
 tests:
   - tests/Browser/AgendaItemPrivacyTest.php
   - resources/js/Components/Public/__tests__/PublicAgendaItemRow.component.test.ts
   - tests/Feature/Meetings/AgendaItemPrivacyTest.php
   - tests/Feature/Admin/Problems/AgendaItemProblemControllerTest.php
   - tests/Feature/Admin/Calendar/AgendaItemControllerTest.php
+  - tests/Feature/AgendaItemSearchableTest.php
   - tests/Feature/Admin/Calendar/AgendaItemNoteTest.php
   - tests/Feature/Admin/Discussions/AgendaItemPageAccessTest.php
   - tests/Feature/Admin/Calendar/MeetingControllerTest.php
@@ -198,10 +199,11 @@ Rodyklėmis viršuje pereinama prie kito posėdžio klausimo.
 Klausimai pridedami posėdžio puslapyje (žr. [Posėdžiai](/visak/posedziai)); nauji atsiranda
 darbotvarkės gale. Tvarką keisk posėdžio darbotvarkėje (**Keisti tvarką**).
 
-### Ištrynimas
+### Ištrynimas {#istrynimas}
 
 Klausimas ištrinamas **negrįžtamai** – jis nepatenka į šiukšlinę. Ištrynus posėdį, jo klausimai
-išsaugomi kartu su juo šiukšlinėje.
+išsaugomi kartu su juo šiukšlinėje: kol posėdis ten, jie nerodomi paieškoje, o jų puslapiai
+neatsidaro. Atkūrus posėdį, klausimai vėl pasiekiami.
 
 ### Susijusios problemos {#problemos}
 

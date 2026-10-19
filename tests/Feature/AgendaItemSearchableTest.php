@@ -9,6 +9,8 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
 use App\Models\Vote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Typesense\Client;
+use Typesense\Exceptions\ObjectNotFound;
 
 pest()->use(RefreshDatabase::class);
 
@@ -32,6 +34,36 @@ test('agenda item whose meeting is soft-deleted still emits the required tenant 
         ->and($array['tenant_shortnames'])->toBe([])
         ->and($array)->toHaveKey('institution_ids')
         ->and($array['institution_ids'])->toBe([]);
+});
+
+test('a trashed meeting takes its agenda items out of search until it is restored', function (): void {
+    usesTypesense();
+    config(['scout.queue' => false]);
+
+    $meeting = Meeting::factory()->create();
+    $item = AgendaItem::factory()->for($meeting)->create();
+    $isIndexed = function () use ($item): bool {
+        try {
+            (new Client(config('scout.typesense.client-settings')))->collections[$item->searchableAs()]->documents[$item->id]->retrieve();
+
+            return true;
+        } catch (ObjectNotFound) {
+            return false;
+        }
+    };
+
+    expect($isIndexed())->toBeTrue();
+
+    $meeting->delete();
+    expect($isIndexed())->toBeFalse()
+        ->and(AgendaItem::query()->whereKey($item->id)->exists())->toBeTrue();
+
+    // A reindex must not bring it back either.
+    AgendaItem::query()->whereKey($item->id)->searchable();
+    expect($isIndexed())->toBeFalse();
+
+    $meeting->restore();
+    expect($isIndexed())->toBeTrue();
 });
 
 test('the list filter counts an item complete by the same rule as the meeting and its task', function (): void {

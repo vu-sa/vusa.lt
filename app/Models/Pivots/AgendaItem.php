@@ -133,20 +133,15 @@ class AgendaItem extends Pivot implements Commentable
 
             if ($visibilityChanged && $this->is_private && $this->exists) {
                 // Evict before writing: a failed search connection must not leave old public content.
-                $this->searchableUsing()->delete(new Collection([$this]));
-                if ($meeting) {
-                    $meeting->searchableUsing()->delete(new Collection([$meeting]));
-                }
-                if ($publicMeeting) {
-                    $publicMeeting->searchableUsing()->delete(new Collection([$publicMeeting]));
-                }
+                $this->evictFromSearch($meeting, $publicMeeting);
             }
 
             $saved = parent::save($options);
 
             if ($saved && ($visibilityChanged || $this->is_private)) {
-                $this->searchableUsing()->update(new Collection([$this]));
+                // No meeting means a trashed one, whose items stay out of search (shouldBeSearchable()).
                 if ($meeting) {
+                    $this->searchableUsing()->update(new Collection([$this]));
                     $meeting->searchableUsing()->update(new Collection([$meeting]));
                 }
                 if ($publicMeeting?->shouldBeSearchable()) {
@@ -160,6 +155,17 @@ class AgendaItem extends Pivot implements Commentable
 
             return $saved;
         });
+    }
+
+    private function evictFromSearch(?Meeting $meeting, ?PublicMeeting $publicMeeting): void
+    {
+        $this->searchableUsing()->delete(new Collection([$this]));
+        if ($meeting) {
+            $meeting->searchableUsing()->delete(new Collection([$meeting]));
+        }
+        if ($publicMeeting) {
+            $publicMeeting->searchableUsing()->delete(new Collection([$publicMeeting]));
+        }
     }
 
     /**
@@ -248,6 +254,15 @@ class AgendaItem extends Pivot implements Commentable
     public function searchableAs(): string
     {
         return config('scout.prefix').'agenda_items';
+    }
+
+    /**
+     * A trashed meeting keeps its items so a restore is lossless (`Meeting::booted()`), but
+     * they must not stay findable: the record page cannot open without its meeting.
+     */
+    public function shouldBeSearchable(): bool
+    {
+        return $this->meeting !== null;
     }
 
     /**

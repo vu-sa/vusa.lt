@@ -488,4 +488,12 @@ describe('adding and editing as a representative', function (): void {
 
         expect($first->fresh()->order)->toBe(2);
     });
+
+    test('an item of a trashed meeting has no page', function (): void {
+        $item = AgendaItem::factory()->for($this->meeting)->create();
+        $this->meeting->delete();
+
+        asUser($this->admin)->get(route('agendaItems.show', $item))->assertNotFound();
+        asUser($this->admin)->get(route('agendaItems.edit', $item))->assertNotFound();
+    });
 });
