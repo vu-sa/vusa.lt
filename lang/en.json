@@ -1420,5 +1420,8 @@
   "Netrukus": "Upcoming",
   "Anksčiau": "Earlier",
   "Dabartinis narys": "Current member",
-  "Jei vardas ar pavardė neteisingi, kreipkis į administratorių.": "If your name is wrong, contact an administrator."
+  "Jei vardas ar pavardė neteisingi, kreipkis į administratorių.": "If your name is wrong, contact an administrator.",
+  "Padalinio ir centrinio biuro nuorodos nekeičiamos.": "Unit and central office links can't be changed.",
+  "Mažosios raidės, skaičiai ir brūkšneliai. Palik tuščią – sukursime iš pavadinimo.": "Lowercase letters, numbers and hyphens. Leave empty to build it from the name.",
+  "Ankstesni vieši adresai": "Previous public addresses"
 }

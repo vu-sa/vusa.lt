@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\GenerateInstitutionAlias;
 use App\Actions\GenerateUniqueSlug;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\InstitutionAliasPreviewRequest;
 use App\Http\Requests\Api\Admin\PermalinkPreviewRequest;
+use App\Models\Institution;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\Tenant;
@@ -69,6 +72,27 @@ class PermalinkPreviewApiController extends ApiController
         ], true);
 
         return $this->jsonSuccess(['permalink' => $permalink, 'url' => $preview->publicUrl()]);
+    }
+
+    /**
+     * The alias an institution form would save for the name as typed — on create, or on a
+     * rename that leaves the alias untouched (UpdateInstitutionRequest).
+     */
+    public function institution(InstitutionAliasPreviewRequest $request): JsonResponse
+    {
+        $actor = $this->requireAuth($request);
+        $institution = $request->filled('institution_id') ? Institution::query()->find($request->string('institution_id')->toString()) : null;
+
+        if (! $actor->can($institution === null ? 'create' : 'update', $institution ?? Institution::class)) {
+            return $this->jsonForbidden();
+        }
+
+        $tenant = $request->filled('tenant_id') ? Tenant::query()->find($request->integer('tenant_id')) : $institution?->tenant;
+        $alias = GenerateInstitutionAlias::execute($request->string('title')->toString(), $tenant, $institution?->getKey());
+
+        $preview = (new Institution)->setRawAttributes(['alias' => $alias, 'tenant_id' => $tenant?->id], true);
+
+        return $this->jsonSuccess(['permalink' => $alias, 'url' => $preview->publicUrl(app()->getLocale())]);
     }
 
     /**

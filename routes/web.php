@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PublicUrlService;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
 
 /*
@@ -138,11 +140,21 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
 
         Route::get('{contactsString}/{institution:alias}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.alias')
             ->whereIn('contactsString', LocalizedRouteSlugs::accepted('contactsString'))
-            ->missing(fn (Request $request) => Redirect::route('contacts.institution', [
-                'institution' => $request->institution,
-                'lang' => $request->lang,
-                'subdomain' => $request->subdomain,
-            ]));
+            ->missing(function (Request $request) {
+                if (Str::isUlid((string) $request->institution)) {
+                    return Redirect::route('contacts.institution', [
+                        'institution' => $request->institution,
+                        'lang' => $request->lang,
+                        'subdomain' => $request->subdomain,
+                    ]);
+                }
+
+                $destination = app(PublicUrlService::class)->institutionAliasDestination((string) $request->institution, (string) $request->lang);
+
+                abort_if($destination === null, 404);
+
+                return Redirect::to($destination, 301);
+            });
 
         Route::get('{contactsString}', [Public\ContactController::class, 'contacts'])->name('contacts')
             ->whereIn('contactsString', LocalizedRouteSlugs::accepted('contactsString'));

@@ -908,3 +908,99 @@ describe('padalinys, deletion and trash', function (): void {
         }
     });
 });
+
+describe('alias', function (): void {
+    beforeEach(function (): void {
+        $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
+    });
+
+    $update = fn (Institution $institution, string $name, string $alias): array => [
+        'name' => ['lt' => $name, 'en' => $name],
+        'tenant_id' => $institution->tenant_id,
+        'alias' => $alias,
+    ];
+
+    test('renaming moves an untouched alias along and keeps the old address on record', function () use ($update): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id, 'name' => ['lt' => 'Senas pavadinimas'], 'alias' => 'senas-pavadinimas']);
+
+        asUser($this->admin)->put(route('institutions.update', $institution), $update($institution, 'Naujas pavadinimas', 'senas-pavadinimas'))
+            ->assertSessionHasNoErrors();
+
+        expect($institution->refresh()->alias)->toBe('naujas-pavadinimas')
+            ->and($institution->publicUrls()->pluck('url')->all())->each->toEndWith('/senas-pavadinimas');
+
+        asUser($this->admin)->get(route('institutions.edit', $institution))
+            ->assertInertia(fn ($page) => $page->has('institution.public_urls', 2)->where('institution.alias_pinned', false));
+    });
+
+    test('a hand-edited alias wins over the name', function () use ($update): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id, 'name' => ['lt' => 'Senas pavadinimas']]);
+
+        asUser($this->admin)->put(route('institutions.update', $institution), $update($institution, 'Naujas pavadinimas', 'mano-adresas'))
+            ->assertSessionHasNoErrors();
+
+        expect($institution->refresh()->alias)->toBe('mano-adresas');
+    });
+
+    test('a tenant’s own institution keeps the tenant alias through a rename', function () use ($update): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id, 'alias' => $this->tenant->alias]);
+
+        asUser($this->admin)->put(route('institutions.update', $institution), $update($institution, 'Kitas pavadinimas', 'kitas'))
+            ->assertSessionHasNoErrors();
+
+        expect($institution->refresh()->alias)->toBe($this->tenant->alias);
+    });
+
+    test('a taken slug on create gets the tenant prefix', function (): void {
+        Institution::factory()->create(['alias' => 'studiju-kolegija']);
+
+        asUser($this->admin)->post(route('institutions.store'), ['name' => ['lt' => 'Studijų kolegija'], 'tenant_id' => $this->tenant->id])
+            ->assertSessionHasNoErrors();
+
+        expect(Institution::query()->where('tenant_id', $this->tenant->id)->where('name->lt', 'Studijų kolegija')->value('alias'))
+            ->toBe("{$this->tenant->alias}-studiju-kolegija");
+    });
+
+    test('rejects an alias that is not lowercase, hyphenated ascii', function (string $alias) use ($update): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        asUser($this->admin)->put(route('institutions.update', $institution), $update($institution, 'Pavadinimas', $alias))
+            ->assertSessionHasErrors('alias');
+    })->with(['Programų sistemos (BA)', 'Didžiosios', 'ginčų-komisija', 'studentu-atstovai']);
+
+    test('rejects an alias held by a trashed institution or still redirecting for another', function () use ($update): void {
+        Institution::factory()->create(['alias' => 'ismestas'])->delete();
+        $renamed = Institution::factory()->create(['alias' => 'buves-adresas']);
+        $renamed->update(['alias' => 'dabartinis-adresas']);
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        asUser($this->admin)->put(route('institutions.update', $institution), $update($institution, 'Pavadinimas', 'ismestas'))
+            ->assertSessionHasErrors(['alias' => __('validation.unique_trashed', ['attribute' => __('validation.attributes.alias')])]);
+        asUser($this->admin)->put(route('institutions.update', $institution), $update($institution, 'Pavadinimas', 'buves-adresas'))
+            ->assertSessionHasErrors('alias');
+    });
+
+    test('deletes an old address of its own institution only', function (): void {
+        $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id, 'alias' => 'pirmas']);
+        $institution->update(['alias' => 'antras']);
+        $other = Institution::factory()->create(['alias' => 'kito-pirmas']);
+        $other->update(['alias' => 'kito-antras']);
+
+        asUser($this->admin)->delete(route('institutions.publicUrls.destroy', [$institution, $other->publicUrls()->first()]))
+            ->assertForbidden();
+
+        asUser($this->admin)->delete(route('institutions.publicUrls.destroy', [$institution, $institution->publicUrls()->first()]))
+            ->assertRedirect();
+
+        expect($institution->publicUrls()->count())->toBe(1)
+            ->and($other->publicUrls()->count())->toBe(2);
+    });
+
+    test('a user who cannot update the institution cannot delete its old addresses', function (): void {
+        $institution = Institution::factory()->create(['alias' => 'pirmas']);
+        $institution->update(['alias' => 'antras']);
+
+        asUser(makeUser($this->tenant))->delete(route('institutions.publicUrls.destroy', [$institution, $institution->publicUrls()->first()]))
+            ->assertForbidden();
+    });
+});

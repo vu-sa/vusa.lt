@@ -286,6 +286,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // as typed, including the `-2` collision suffix — nothing is written.
         Route::get('news/permalink-preview', [PermalinkPreviewApiController::class, 'news'])->name('news.permalinkPreview');
         Route::get('pages/permalink-preview', [PermalinkPreviewApiController::class, 'page'])->name('pages.permalinkPreview');
+        Route::get('institutions/alias-preview', [PermalinkPreviewApiController::class, 'institution'])->name('institutions.aliasPreview');
 
         // Warns about an existing duty before a duplicate is created (typically a
         // gendered twin — see DutyNameNormalizer).

@@ -168,7 +168,16 @@ class PublicPageController extends PublicController
                 return redirect($destination, 301);
             }
 
-            abort(404);
+            // An old PKP page whose institution has since been renamed.
+            $renamedPkp = $publicUrls->resolveInstitutionAlias((string) request()->permalink)?->urlable;
+
+            if ($renamedPkp instanceof Institution && $renamedPkp->types()->where('slug', 'pkp')->exists()) {
+                $destination = $publicUrls->institutionAliasDestination((string) request()->permalink, app()->getLocale());
+            }
+
+            abort_if($destination === null, 404);
+
+            return redirect($destination, 301);
         }
 
         $page = $pageData['page'];

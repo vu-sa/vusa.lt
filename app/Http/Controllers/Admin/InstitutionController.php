@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\ActivityRequests\GetInstitutionActivityRequestHistory;
+use App\Actions\GenerateInstitutionAlias;
 use App\Actions\GetInstitutionSecretaries;
 use App\Actions\GetTenantsForUpserts;
 use App\Actions\GetTypeFiles;
@@ -28,6 +29,7 @@ use App\Models\InstitutionLink;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Problem;
+use App\Models\PublicUrl;
 use App\Models\StudyProgram;
 use App\Models\Task;
 use App\Services\InstitutionActivityStatusService;
@@ -320,6 +322,9 @@ class InstitutionController extends AdminController
                 'image_media' => $institution->imageData('image'),
                 'logo_media' => $institution->imageData('logo'),
                 'types' => $institution->types->pluck('id'),
+                'public_url' => $institution->publicUrl('lt'),
+                'alias_pinned' => GenerateInstitutionAlias::isPinned($institution),
+                'public_urls' => $institution->publicUrls()->get(['id', 'url', 'locale', 'created_at']),
             ],
             'institutionTypes' => InstitutionType::query()->get(),
             'assignableTenants' => GetTenantsForUpserts::execute('institutions.update.padalinys', $this->authorizer),
@@ -368,6 +373,23 @@ class InstitutionController extends AdminController
     public function restore(Institution $institution): RedirectResponse
     {
         return $this->restoreModel($institution, $this->entityMessage('restored', 'institution'));
+    }
+
+    /**
+     * Remove a legacy public URL (an old alias that still 301-redirects here).
+     */
+    public function destroyPublicUrl(Institution $institution, PublicUrl $publicUrl): RedirectResponse
+    {
+        $this->handleAuthorization('update', $institution);
+
+        // Resolve through the relation so a crafted payload cannot reach another institution's URLs.
+        $publicUrlFromDb = $institution->publicUrls()->find($publicUrl->id);
+
+        abort_if($publicUrlFromDb === null, 403, 'Public URL does not belong to this institution.');
+
+        $publicUrlFromDb->delete();
+
+        return back()->with('info', $this->entityMessage('deleted', 'publicUrl'));
     }
 
     /**

@@ -7,6 +7,7 @@ use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\ImageMediaOwner;
 use App\Contracts\SharepointFileableContract;
+use App\Enums\TenantType;
 use App\Events\FileableNameUpdated;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Pivots\InstitutionInstitutionType;
@@ -22,8 +23,10 @@ use App\Services\ContentResolution\ContentPartResolver;
 use App\Services\InstitutionActivityStatusService;
 use App\Services\InstitutionRelationService;
 use App\Services\InstitutionScopeResolver;
+use App\Services\PublicUrlService;
 use App\Services\Typesense\SearchText;
 use App\Settings\MeetingSettings;
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Collection;
@@ -32,6 +35,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -83,6 +87,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, Meeting> $meetings
  * @property-read Collection<int, InstitutionLink> $outgoingLinks
  * @property-read Collection<int, Problem> $problems
+ * @property-read Collection<int, PublicUrl> $publicUrls
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, User> $secretaries
  * @property-read Collection<int, InstitutionSecretary> $secretaryAssignments
@@ -120,6 +125,9 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
 
     #[\Override]
     protected $attributes = ['is_active' => true];
+
+    /** Off when the old alias was shared by several institutions: it cannot redirect to one of them. */
+    public bool $recordsLegacyUrl = true;
 
     /**
      * `description` is Tiptap `full` preset HTML, rendered with `v-html` on the
@@ -166,6 +174,31 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    /** @return MorphMany<PublicUrl, $this> */
+    public function publicUrls(): MorphMany
+    {
+        return $this->morphMany(PublicUrl::class, 'urlable')->latest();
+    }
+
+    /**
+     * PKP tenants have no site of their own, so their institutions live on www
+     * (mirrors useInstitutionCard.ts).
+     */
+    public function publicUrl(string $locale): ?string
+    {
+        if (blank($this->alias)) {
+            return null;
+        }
+
+        $tenant = $this->tenant;
+        $subdomain = $tenant === null || $tenant->isMain() || $tenant->type === TenantType::Pkp ? 'www' : $tenant->subdomain();
+
+        return LocalizedRouteSlugs::route('contacts.alias', [
+            'subdomain' => $subdomain,
+            'institution' => $this->alias,
+        ], $locale);
     }
 
     /**
@@ -416,6 +449,29 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         static::saved($forgetPublicCaches);
         static::deleted($forgetPublicCaches);
         static::restored($forgetPublicCaches);
+
+        static::saved(function (Institution $institution): void {
+            $oldAlias = $institution->getRawOriginal('alias');
+
+            if (! $institution->wasChanged('alias') || blank($oldAlias) || ! $institution->recordsLegacyUrl) {
+                return;
+            }
+
+            // Still shared with another institution: the old address cannot pick one of them.
+            if (self::withTrashed()->where('alias', $oldAlias)->whereKeyNot($institution->getKey())->exists()) {
+                return;
+            }
+
+            $original = (new self)->setRawAttributes($institution->getRawOriginal(), true);
+
+            foreach (['lt', 'en'] as $locale) {
+                $oldUrl = $original->publicUrl($locale);
+
+                if ($oldUrl !== null && $oldUrl !== $institution->publicUrl($locale)) {
+                    app(PublicUrlService::class)->recordLegacyUrl($institution, $locale, $oldUrl);
+                }
+            }
+        });
 
         static::saved(function (Institution $institution): void {
             $publicInstitution = PublicInstitution::query()->find($institution->getKey());

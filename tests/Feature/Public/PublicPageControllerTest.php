@@ -484,6 +484,15 @@ test('a page permalink matching a PKP institution alias redirects to its contact
         ->assertRedirect(route('contacts.alias', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => 'senas-pkp']));
 });
 
+test('a page permalink matching a renamed PKP institution’s old alias redirects to its current contacts page', function (): void {
+    $pkpType = InstitutionType::query()->where('slug', 'pkp')->firstOrFail();
+    $institution = Institution::factory()->create(['tenant_id' => Tenant::main()->id, 'alias' => 'senas-pkp', 'is_active' => true]);
+    $institution->types()->attach($pkpType);
+    $institution->update(['alias' => 'naujas-pkp']);
+
+    $this->get('/lt/senas-pkp')->assertMovedPermanently()->assertRedirect($institution->publicUrl('lt'));
+});
+
 test('a permalink that 404ed serves the page once it is created', function (): void {
     $this->get('/lt/greitai-bus')->assertNotFound();
 

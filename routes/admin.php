@@ -74,6 +74,7 @@ Route::patch('forms/{form}/restore', [FormController::class, 'restore'])->name('
 Route::delete('forms/{form}/force-delete', [FormController::class, 'forceDelete'])->name('forms.forceDelete')->withTrashed();
 Route::patch('institutions/{institution}/restore', [InstitutionController::class, 'restore'])->name('institutions.restore')->withTrashed();
 Route::delete('institutions/{institution}/force-delete', [InstitutionController::class, 'forceDelete'])->name('institutions.forceDelete')->withTrashed();
+Route::delete('institutions/{institution}/public-urls/{publicUrl}', [InstitutionController::class, 'destroyPublicUrl'])->name('institutions.publicUrls.destroy');
 Route::patch('meetings/{meeting}/restore', [MeetingController::class, 'restore'])->name('meetings.restore')->withTrashed();
 Route::delete('meetings/{meeting}/force-delete', [MeetingController::class, 'forceDelete'])->name('meetings.forceDelete')->withTrashed();
 Route::patch('navigation/{navigation}/restore', [NavigationController::class, 'restore'])->name('navigation.restore')->withTrashed();

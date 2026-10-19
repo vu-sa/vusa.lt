@@ -103,3 +103,27 @@ test('an institution without media keeps its legacy image in public props', func
             ->where('tenants', fn ($tenants) => collect($tenants)->firstWhere('id', $tenant->id)['primary_institution']['image_url'] === '/uploads/institutions/sabas.jpg')
         );
 });
+
+test('an institution’s old alias redirects to its current address in the visitor’s language', function (string $locale): void {
+    $tenant = Tenant::query()->where('alias', 'mif')->firstOrFail();
+    $institution = Institution::factory()->for($tenant)->create(['alias' => 'senas-adresas', 'is_active' => true]);
+    $institution->update(['alias' => 'naujas-adresas']);
+
+    $oldUrl = LocalizedRouteSlugs::route('contacts.alias', ['subdomain' => 'www', 'institution' => 'senas-adresas'], $locale);
+
+    $this->get($oldUrl)->assertMovedPermanently()->assertRedirect($institution->publicUrl($locale));
+    $this->get($institution->publicUrl($locale))->assertOk();
+})->with(['lt', 'en']);
+
+test('an alias no institution ever held alone is not found', function (): void {
+    $url = LocalizedRouteSlugs::route('contacts.alias', ['subdomain' => 'www', 'institution' => 'padalinio-studentu-atstovai-8'], 'lt');
+
+    $this->get($url)->assertNotFound();
+});
+
+test('an institution id in the alias position still opens the institution', function (): void {
+    $institution = Institution::factory()->create(['tenant_id' => Tenant::main()->id, 'is_active' => true]);
+    $url = LocalizedRouteSlugs::route('contacts.alias', ['subdomain' => 'www', 'institution' => $institution->id], 'lt');
+
+    $this->get($url)->assertRedirect(LocalizedRouteSlugs::route('contacts.institution', ['subdomain' => 'www', 'institution' => $institution->id], 'lt'));
+});

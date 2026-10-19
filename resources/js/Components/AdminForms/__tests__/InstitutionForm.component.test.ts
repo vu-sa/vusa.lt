@@ -4,6 +4,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 
 import InstitutionForm from '@/Components/AdminForms/InstitutionForm.vue';
+import PermalinkField from '@/Components/AdminForms/PermalinkField.vue';
+import PermalinkPreviewHint from '@/Components/AdminForms/PermalinkPreviewHint.vue';
+import PublicUrlHistoryCard from '@/Components/AdminForms/PublicUrlHistoryCard.vue';
 import FormToggleRow from '@/Components/Patterns/FormToggleRow.vue';
 import { commonStubs } from '@/tests/stubs';
 
@@ -171,5 +174,46 @@ describe('InstitutionForm.vue', () => {
 
     wrapper = mountForm({ enableDelete: true });
     expect(wrapper.text()).toContain('Ištrinti instituciją');
+  });
+
+  describe('address', () => {
+    const withAddress = {
+      ...institution,
+      alias: 'ff-taryba',
+      public_url: 'https://ff.vusa.lt/lt/kontaktai/ff-taryba',
+      public_urls: [{ id: 7, url: 'https://ff.vusa.lt/lt/kontaktai/senas', locale: 'lt' }],
+      alias_pinned: false,
+    };
+
+    it('edits the alias against its address and lists the old addresses', () => {
+      wrapper = mountForm({ institution: withAddress });
+
+      const field = wrapper.getComponent(PermalinkField);
+      expect(field.props('baseUrl')).toBe('https://ff.vusa.lt/lt/kontaktai');
+      expect(field.props('permalink')).toBe('ff-taryba');
+      expect(field.props('disabled')).toBe(false);
+      expect(wrapper.getComponent(PublicUrlHistoryCard).props('urls')).toEqual(withAddress.public_urls);
+    });
+
+    it('locks a pinned alias', () => {
+      wrapper = mountForm({ institution: { ...withAddress, alias_pinned: true } });
+
+      expect(wrapper.getComponent(PermalinkField).props('disabled')).toBe(true);
+    });
+
+    it('warns that a rename moves an untouched alias, but not once the alias is hand-edited', async () => {
+      const actual = await vi.importActual<typeof Inertia>('@inertiajs/vue3');
+      vi.mocked(useForm).mockImplementationOnce(actual.useForm);
+      wrapper = mountForm({ institution: withAddress });
+      expect(wrapper.findComponent(PermalinkPreviewHint).exists()).toBe(false);
+
+      await wrapper.get('input#institution-name').setValue('VU FF Taryba');
+      expect(wrapper.findComponent(PermalinkPreviewHint).exists()).toBe(true);
+      expect(wrapper.getComponent(PermalinkField).props('warning')).toBeTruthy();
+
+      wrapper.getComponent(PermalinkField).vm.$emit('update:permalink', 'mano-adresas');
+      await wrapper.vm.$nextTick();
+      expect(wrapper.findComponent(PermalinkPreviewHint).exists()).toBe(false);
+    });
   });
 });

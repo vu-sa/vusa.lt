@@ -2,12 +2,17 @@
 
 namespace App\Http\Requests;
 
+use App\Actions\GenerateInstitutionAlias;
 use App\Http\Requests\Concerns\HasImageValidation;
 use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\Institution;
 use App\Rules\SoftDeleteRules;
+use App\Rules\UniqueAmongTrashed;
+use App\Services\PublicUrlService;
+use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class InstitutionRequest extends FormRequest
 {
@@ -53,7 +58,34 @@ class InstitutionRequest extends FormRequest
         ];
     }
 
-    private function institution(): ?Institution
+    /**
+     * An alias still redirecting for another institution is taken too, or that old address
+     * would start opening this one.
+     *
+     * @return array<int, mixed>
+     */
+    protected function aliasRules(): array
+    {
+        $ignoreId = $this->institution()?->getKey();
+
+        return [
+            'required',
+            'string',
+            'max:255',
+            'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
+            Rule::notIn(GenerateInstitutionAlias::reserved()),
+            UniqueAmongTrashed::of('institutions', 'alias')->ignore($ignoreId),
+            function (string $attribute, mixed $value, Closure $fail) use ($ignoreId): void {
+                $owner = app(PublicUrlService::class)->resolveInstitutionAlias((string) $value)?->urlable_id;
+
+                if ($owner !== null && $owner !== $ignoreId) {
+                    $fail('validation.unique')->translate(['attribute' => 'alias']);
+                }
+            },
+        ];
+    }
+
+    protected function institution(): ?Institution
     {
         $institution = $this->route('institution');
 

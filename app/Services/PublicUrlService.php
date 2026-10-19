@@ -3,9 +3,11 @@
 namespace App\Services;
 
 use App\Models\Calendar;
+use App\Models\Institution;
 use App\Models\News;
 use App\Models\Page;
 use App\Models\PublicUrl;
+use App\Support\LocalizedRouteSlugs;
 use Illuminate\Database\Eloquent\Model;
 
 class PublicUrlService
@@ -39,6 +41,22 @@ class PublicUrlService
     }
 
     /**
+     * An alias resolves on every subdomain and in both locales, so an old institution address
+     * is matched on its last segment rather than the exact URL it was recorded under.
+     */
+    public function resolveInstitutionAlias(string $alias): ?PublicUrl
+    {
+        $url = LocalizedRouteSlugs::route('contacts.alias', ['subdomain' => 'www', 'institution' => $alias], 'lt');
+        $segment = str_replace(['|', '%', '_'], ['||', '|%', '|_'], substr($url, strrpos($url, '/') + 1));
+
+        return PublicUrl::query()
+            ->with('urlable')
+            ->where('urlable_type', (new Institution)->getMorphClass())
+            ->whereRaw("url LIKE ? ESCAPE '|'", ['%/'.$segment])
+            ->first();
+    }
+
+    /**
      * Whether $url is already on record as a retired permalink belonging to a *different* record
      * than ($exceptType, $exceptId) — reusing it would either silently steal that record's old
      * redirect right away, or break unrecoverably the next time this new owner itself moves on
@@ -46,7 +64,7 @@ class PublicUrlService
      * record and skip writing anything). Passing both null checks against every existing owner —
      * the correct check when assigning a permalink to a brand-new record.
      */
-    public function isRetiredByAnother(string $url, ?string $exceptType = null, ?int $exceptId = null): bool
+    public function isRetiredByAnother(string $url, ?string $exceptType = null, int|string|null $exceptId = null): bool
     {
         $query = PublicUrl::query()->where('url', $url);
 
@@ -59,6 +77,20 @@ class PublicUrlService
         return $query->exists();
     }
 
+    /**
+     * Where an alias no institution holds any more should send the visitor, in their language.
+     */
+    public function institutionAliasDestination(string $alias, string $locale): ?string
+    {
+        $institution = $this->resolveInstitutionAlias($alias)?->urlable;
+
+        if (! $institution instanceof Institution || ! $this->isPubliclyReachable($institution)) {
+            return null;
+        }
+
+        return $institution->publicUrl($locale);
+    }
+
     public function destinationFor(PublicUrl $publicUrl): ?string
     {
         $target = $publicUrl->urlable;
@@ -68,7 +100,7 @@ class PublicUrlService
         }
 
         return match (true) {
-            $target instanceof Calendar => $target->publicUrl($publicUrl->locale),
+            $target instanceof Calendar, $target instanceof Institution => $target->publicUrl($publicUrl->locale),
             $target instanceof News, $target instanceof Page => $target->publicUrl(),
             default => null,
         };
@@ -80,6 +112,7 @@ class PublicUrlService
             $model instanceof Calendar => ! $model->is_draft,
             $model instanceof News => ! $model->draft && ($model->publish_time === null || $model->publish_time->isPast()),
             $model instanceof Page => $model->is_active,
+            $model instanceof Institution => (bool) $model->is_active && ! $model->trashed(),
             default => false,
         };
     }

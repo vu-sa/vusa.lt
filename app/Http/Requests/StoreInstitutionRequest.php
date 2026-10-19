@@ -2,8 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Actions\GenerateInstitutionAlias;
 use App\Models\Institution;
-use Illuminate\Support\Str;
+use App\Models\Tenant;
 use Illuminate\Validation\Rule;
 
 class StoreInstitutionRequest extends InstitutionRequest
@@ -22,9 +23,11 @@ class StoreInstitutionRequest extends InstitutionRequest
     #[\Override]
     public function prepareForValidation(): void
     {
-        $this->merge([
-            'alias' => $this->alias ?? Str::slug($this->name['lt']),
-        ]);
+        if (blank($this->input('alias'))) {
+            $this->merge([
+                'alias' => GenerateInstitutionAlias::execute((string) $this->input('name.lt'), Tenant::query()->find($this->input('tenant_id'))),
+            ]);
+        }
     }
 
     /**
@@ -38,7 +41,7 @@ class StoreInstitutionRequest extends InstitutionRequest
             // No database unique index backs this, so a soft-deleted record must not reserve the value.
             'name.lt' => ['required', Rule::unique('institutions', 'name->lt')->withoutTrashed()],
             'short_name.lt' => ['nullable', Rule::unique('institutions', 'short_name->lt')->withoutTrashed()],
-            'alias' => ['nullable', Rule::unique('institutions', 'alias')->withoutTrashed()],
+            'alias' => $this->aliasRules(),
         ]);
     }
 }

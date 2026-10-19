@@ -14,6 +14,7 @@ tests:
   - tests/Feature/Institutions/InstitutionScopeTest.php
   - tests/Feature/Public/PublicMeetingVisibilityTest.php
   - tests/Feature/Public/ContactControllerTest.php
+  - tests/Feature/Migrations/NormalizeInstitutionAliasesTest.php
   - tests/Feature/Institutions/InstitutionDeactivationTest.php
   - tests/Browser/InstitutionDeactivationTest.php
   - tests/Feature/Search/ContactSearchIndexSyncTest.php
@@ -438,13 +439,31 @@ visų pranešimų nutildymas ir siuntimo kanalų pasirinkimai.
 ### Sukurti, redaguoti, ištrinti
 
 - **Sukurti** instituciją galima tik savo padalinyje. Būtinas lietuviškas pavadinimas. Lietuviškas
-  pavadinimas, lietuviškas trumpinys ir techninė žymė (naudojama viešame adrese) turi būti
-  **unikalūs visoje platformoje** – ištrintos institucijos neskaičiuojamos. Todėl trumpinys turėtų
-  nurodyti ir padalinį (pvz., „VU TF SPK“, ne „SPK“). Techninė žymė, jei ji nenurodoma, sudaroma iš
-  pavadinimo.
+  pavadinimas ir lietuviškas trumpinys turi būti **unikalūs visoje platformoje** – ištrintos
+  institucijos neskaičiuojamos. Todėl trumpinys turėtų nurodyti ir padalinį (pvz., „VU TF SPK“, ne „SPK“).
 - Jei redaguojama institucija, kurios pavadinimas ar trumpinys sutampa su kitos, išsaugoti pavyks tik
   juos pakeitus.
 - **Padalinio** vėliau pakeisti negalima (išskyrus super administratorių).
+
+#### Viešas adresas {#adresas}
+
+Kiekviena institucija turi savo viešą adresą, pvz., `mif.vusa.lt/lt/kontaktai/programu-sistemos-ba`.
+Jis sudaromas iš lietuviško pavadinimo ir yra unikalus visoje platformoje, įskaitant ištrintas
+institucijas. Jei toks adresas jau užimtas, priekyje pridedamas padalinio trumpinys
+(pvz., `fsf-ma-sociologija`).
+
+- Pakeitus pavadinimą, adresas pasikeičia kartu su juo, nebent jis buvo pakeistas ranka
+  (formos skiltis **Nuoroda**). Adrese gali būti tik mažosios raidės be lietuviškų ženklų, skaičiai ir brūkšneliai.
+- Senas adresas toliau nukreipia į instituciją. Ankstesni adresai rodomi po nuoroda, skiltyje
+  **Ankstesni vieši adresai**; nebereikalingą galima ištrinti – tada jis nebeveiks.
+- Padalinio pagrindinės institucijos ir centrinio biuro adresas nekeičiamas.
+
+<ChangelogNote version="v3.9" date="2026-10-19" title="Kiekviena institucija turi savo adresą">
+
+Anksčiau kelios institucijos galėjo turėti tą patį adresą, todėl viešose kortelėse visos vesdavo į
+vieną instituciją. Dabar adresai sudaryti iš pavadinimų, o seni adresai nukreipia į naujus.
+
+</ChangelogNote>
 - **Ištrinta** institucija patenka į [šiukšlinę](/pagrindai/platforma#siuksline), o jos
   pareigybės ir posėdžiai lieka. Institucijos, kurioje einamos pareigos, ištrinti negalima.
 - Iš šiukšlinės instituciją galima **atkurti**. **Galutinai ištrinti** negalima, kol ji turi

@@ -64,6 +64,17 @@ describe('usePermalinkPreview', () => {
     expect(capturedUrl?.value).toContain('lang=en');
   });
 
+  it('queries the institution alias route with its extra params, dropping empty ones', async () => {
+    const title = ref('');
+    usePermalinkPreview('institution', () => title.value, () => 'lt', () => ({ tenant_id: 3, institution_id: null }));
+
+    title.value = 'Medicinos SPK';
+    await vi.advanceTimersByTimeAsync(600);
+    expect(capturedUrl?.value).toContain('api.v1.admin.institutions.aliasPreview');
+    expect(capturedUrl?.value).toContain('tenant_id=3');
+    expect(capturedUrl?.value).not.toContain('institution_id');
+  });
+
   it('clears preview when title is cleared', async () => {
     const title = ref('');
     const lang = ref('lt');

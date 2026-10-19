@@ -176,8 +176,44 @@
     </template>
 
     <template #advanced>
-      <FormFieldWrapper id="institution-alias" :label="$t('Techninė žymė')" :hint="$t('Unikali žymė naudojama URL adresuose.')" :error="form.errors.alias">
-        <Input id="institution-alias" v-model="form.alias" type="text" placeholder="vu-sa-mif" :class="fieldSurfaceClass" />
+      <div v-if="isEditing && aliasBaseUrl" class="flex flex-col gap-2">
+        <PermalinkField
+          id="institution-alias"
+          :permalink="form.alias"
+          :base-url="aliasBaseUrl"
+          :view-url="publicUrl"
+          :disabled="aliasPinned"
+          :explanation="$t('Padalinio ir centrinio biuro nuorodos nekeičiamos.')"
+          :warning="aliasWarning"
+          :invalid="Boolean(form.errors.alias)"
+          @update:permalink="form.alias = $event"
+        />
+        <p v-if="form.errors.alias" class="text-xs text-destructive">
+          {{ form.errors.alias }}
+        </p>
+        <PermalinkPreviewHint
+          v-if="renamedWithUntouchedAlias"
+          :preview="aliasPreview.preview.value"
+          :is-checking="aliasPreview.isChecking.value"
+        />
+        <PublicUrlHistoryCard
+          :urls="publicUrls"
+          :destroy-route="(id) => route('institutions.publicUrls.destroy', [institution.id, id])"
+        />
+      </div>
+      <FormFieldWrapper
+        v-else
+        id="institution-alias"
+        :label="`${$t('Nuoroda')} (${$t('neprivaloma')})`"
+        :hint="$t('Mažosios raidės, skaičiai ir brūkšneliai. Palik tuščią – sukursime iš pavadinimo.')"
+        :error="form.errors.alias"
+      >
+        <Input id="institution-alias" v-model="form.alias" type="text" :class="fieldSurfaceClass" />
+        <PermalinkPreviewHint
+          v-if="!form.alias"
+          :preview="aliasPreview.preview.value"
+          :is-checking="aliasPreview.isChecking.value"
+        />
       </FormFieldWrapper>
 
       <FormFieldWrapper
@@ -230,6 +266,9 @@ import { Building2, CircleCheck, CircleSlash, Layers, Trash2 } from '@lucide/vue
 import { computed, ref } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import PermalinkField from '@/Components/AdminForms/PermalinkField.vue';
+import PermalinkPreviewHint from '@/Components/AdminForms/PermalinkPreviewHint.vue';
+import PublicUrlHistoryCard from '@/Components/AdminForms/PublicUrlHistoryCard.vue';
 import TenantSelectField from '@/Components/AdminForms/TenantSelectField.vue';
 import InstitutionScopeBadge from '@/Components/Institutions/InstitutionScopeBadge.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
@@ -249,6 +288,7 @@ import { ImageUpload } from '@/Components/ui/upload';
 import type { ImageData } from '@/Types/media';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
+import { usePermalinkPreview } from '@/Composables/usePermalinkPreview';
 import type { StatusPresentation } from '@/Constants/statuses';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
 
@@ -314,6 +354,29 @@ const initial = () => ({
 });
 
 const form = props.rememberKey ? useForm(props.rememberKey, initial()) : useForm(initial());
+
+const savedAlias = (source.alias ?? '') as string;
+const savedName = asTranslated(source.name).lt;
+const publicUrl = (source.public_url ?? undefined) as string | undefined;
+const publicUrls = (source.public_urls ?? []) as Array<{ id: number; url: string; locale: string }>;
+const aliasPinned = Boolean(source.alias_pinned);
+const aliasBaseUrl = publicUrl && savedAlias ? publicUrl.slice(0, publicUrl.lastIndexOf('/')) : '';
+
+// Mirrors UpdateInstitutionRequest: a rename carries an untouched alias along with it.
+const renamedWithUntouchedAlias = computed(() =>
+  isEditing.value && !aliasPinned && form.alias === savedAlias && form.name.lt.trim() !== '' && form.name.lt !== savedName,
+);
+
+const aliasPreview = usePermalinkPreview(
+  'institution',
+  () => (!isEditing.value && !form.alias) || renamedWithUntouchedAlias.value ? form.name.lt : '',
+  () => 'lt',
+  () => ({ tenant_id: form.tenant_id, institution_id: isEditing.value ? props.institution.id : null }),
+);
+
+const aliasWarning = computed(() => (form.alias !== savedAlias || renamedWithUntouchedAlias.value
+  ? $t('Pakeitus nuorodą, sena nuoroda ir toliau nukreips į šį puslapį — nebereikalingas senas nuorodas galėsi ištrinti.')
+  : undefined));
 
 const institutionTitle = computed(() => form.name.lt || form.name.en || '');
 const barTitle = computed(() => (isEditing.value ? (getTranslatedValue(props.institution.name) || $t('Institucija')) : $t('Nauja institucija')));
