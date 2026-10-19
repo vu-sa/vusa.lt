@@ -32,7 +32,7 @@ class BannerController extends AdminController
     {
         $this->handleAuthorization('viewAny', Banner::class);
 
-        $query = Banner::query()->with('tenant:id,shortname');
+        $query = Banner::query()->with(['tenant:id,shortname', 'media']);
 
         $searchableColumns = ['title'];
 
@@ -55,7 +55,11 @@ class BannerController extends AdminController
 
         return $this->inertiaResponse('Admin/Content/IndexBanner', [
             'banners' => [
-                'data' => $banners->items(),
+                'data' => $banners->getCollection()->map(fn (Banner $banner): array => [
+                    ...$banner->withoutRelations()->toArray(),
+                    'tenant' => $banner->tenant,
+                    'image_url' => $banner->imageData('image')['thumb'] ?? null,
+                ])->values(),
                 'meta' => [
                     'total' => $banners->total(),
                     'per_page' => $banners->perPage(),

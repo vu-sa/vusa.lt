@@ -13,7 +13,7 @@ it('mounts duty headings and personalized contact names without overflow or Java
     $tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
     $institution = Institution::factory()->for($tenant)->create([
         'name' => ['lt' => 'VU SA kontaktai', 'en' => 'VU SR contacts'],
-        'description' => ['lt' => '', 'en' => ''], 'image_url' => null,
+        'description' => ['lt' => '', 'en' => ''],
     ]);
     $duty = Duty::factory()->for($institution)->create([
         'name' => ['lt' => 'Komunikacijos koordinatorius', 'en' => 'Communication coordinator'],

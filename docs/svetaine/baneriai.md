@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Baneriai
 area: banners
 models: [Banner]
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-19
 tests:
   - tests/Feature/Admin/Content/BannerControllerTest.php
   - tests/Feature/Api/Admin/BannerApiControllerTest.php
@@ -53,7 +53,7 @@ Kiekvienas baneris turi vieną iš dviejų būsenų:
 
 Banerių sąraše (`/mano/banners`) pateikiami visi pasiekiami baneriai:
 
-- **Peržiūra užvedus:** užvedus pelės žymeklį ant banerio miniatiūros sąraše, iššokančiame lange parodomas didesnis paveikslėlis.
+- **Peržiūra užvedus:** miniatiūros rodomos iškart atvėrus sąrašą. Užvedus pelės žymeklį ant miniatiūros, iššokančiame lange parodomas didesnis paveikslėlis.
 - **Tiesioginis būsenos perjungimas:** sąrašo stulpelyje „Būsena“ gali tiesiogiai pakeisti būseną (iš „Aktyvus“ į „Neaktyvus“ ir atvirkščiai) neatverdamas redagavimo formos. Pakeitimas iškart atnaujina viešą karuselę.
 - **Filtrai ir paieška:** gali ieškoti banerių pagal pavadinimą arba filtruoti pagal aktyvumo būseną.
 - **Išorinė nuoroda:** sąrašo eilutėje rodoma nuoroda; paspaudęs piktogramą šalia gali tiesiogiai patikrinti, ar nuoroda veikia.
