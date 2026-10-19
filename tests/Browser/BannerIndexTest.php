@@ -1,19 +1,29 @@
 <?php
 
+use App\Actions\Media\AddImageMedia;
 use App\Models\Banner;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Uri;
+use Spatie\MediaLibrary\Conversions\Jobs\PerformConversionsJob;
 
 pest()->use(RefreshDatabase::class);
 
 it('previews the banner image and changes its status in the collection', function (): void {
+    Storage::fake('spatieMediaLibrary', ['url' => '/__banner-image']);
+    Queue::fake([PerformConversionsJob::class]);
     $tenant = Tenant::query()->first();
     $user = makeAdminUser($tenant);
     $banner = Banner::factory()->for($tenant)->create([
         'title' => 'Banerio vizualas',
-        'image_url' => '/images/placeholders/foto1.jpg',
         'is_active' => 1,
     ]);
+    $media = app(AddImageMedia::class)->execute($banner, UploadedFile::fake()->image('banner.webp', 800, 400), 'image');
+    Route::get('/'.Uri::of($media->getUrl())->path(), fn () => response()->file($media->getPath()));
     Banner::factory()->for($tenant)->create(['title' => 'Paslėptas baneris', 'is_active' => 0]);
 
     $page = loginAsAdmin($user);

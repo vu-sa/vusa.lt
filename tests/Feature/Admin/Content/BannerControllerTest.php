@@ -1,8 +1,10 @@
 <?php
 
+use App\Actions\Media\AddImageMedia;
 use App\Models\Banner;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -66,12 +68,17 @@ describe('unauthorized access', function (): void {
 
 describe('authorized access', function (): void {
     test('can access index page', function (): void {
+        app(AddImageMedia::class)->execute($this->banner, UploadedFile::fake()->image('banner.webp', 800, 400), 'image');
+        $image = $this->banner->fresh()->imageData('image');
+
         asUser($this->admin)
             ->get(route('banners.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Content/IndexBanner')
                 ->has('banners')
+                ->where('banners.data.0.id', $this->banner->id)
+                ->where('banners.data.0.image_url', $image['thumb'])
             );
     });
 

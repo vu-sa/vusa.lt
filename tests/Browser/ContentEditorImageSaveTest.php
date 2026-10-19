@@ -48,7 +48,7 @@ it('renders pending upload feedback in the built editor on phone and desktop in 
     Queue::fake([PerformConversionsJob::class]);
     $tenant = Tenant::first();
     $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
-    $record = News::factory()->for($tenant)->create(['lang' => 'lt', 'image' => null]);
+    $record = News::factory()->for($tenant)->create(['lang' => 'lt']);
     $uploadPath = UploadedFile::fake()->image('upload-feedback.webp', 800, 400)
         ->storeAs('browser-fixtures', 'upload-feedback.webp', 'local');
     $page = loginAsAdmin($user);

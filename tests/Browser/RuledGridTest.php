@@ -18,7 +18,7 @@ it('renders partner banners in a ruled grid across viewports and themes without 
         ]
     );
 
-    Banner::factory()->for($tenant)->withoutLogo()->count(7)->create([
+    Banner::factory()->for($tenant)->count(7)->create([
         'is_active' => 1,
         'lang' => 'lt',
     ]);
@@ -68,7 +68,6 @@ it('renders institution contact details in a grid without horizontal overflow', 
         'website' => 'https://example.com',
         'facebook_url' => 'https://facebook.com/example',
         'instagram_url' => 'https://instagram.com/example',
-        'image_url' => null,
     ]);
 
     $page = visitPublicSubdomain('www', '/lt/kontaktai/id/'.$institution->id);
