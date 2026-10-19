@@ -15,3 +15,6 @@ When a change needs a transition (backfill + read fallback, old and new keys sid
 ## Migration tests are temporary; prune them with their migration
 A test in tests/Feature/Migrations proves a data migration on prod-shaped data before it deploys. Once the migration has run on production it has no further value. Delete the test together with the data-only migration it `require`s; never leave one without the other.
 The migration set itself should be pruned over time. Squash schema migrations with `schema:dump --prune`, but only as a planned change: tests run every migration on SQLite `:memory:`, and `database/schema/mysql-schema.sql` is a stale March 2024 dump. A squash must regenerate the MySQL dump and give tests an SQLite schema in the same change. Until then, keep schema migrations.
+
+## Many timestamp columns carry ON UPDATE current_timestamp()
+Dozens of columns (e.g. `institutions.updated_at`) are defined `ON UPDATE current_timestamp()`, so MariaDB rewrites them on any row update — even `DB::table()` / `toBase()`, which skip Eloquent. A data fix that must keep timestamps sets the column to itself in the same statement: `->update([..., 'updated_at' => DB::raw('updated_at')])`. Check `SHOW CREATE TABLE` before claiming a write leaves timestamps alone, and test the write inside a rolled-back transaction.

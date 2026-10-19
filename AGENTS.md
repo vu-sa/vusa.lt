@@ -426,6 +426,7 @@ the guide page it changed.
 - Inspect schema: `vendor/bin/sail artisan db:table {table_name}`.
 - Read-only queries: prefer Boost's `database-query` tool over `tinker`.
 - Migration columns: when modifying, restate **all** existing attributes — anything omitted is dropped.
+- Many timestamp columns are `ON UPDATE current_timestamp()`, so even `DB::table()->update()` rewrites them. To keep them, add `'updated_at' => DB::raw('updated_at')` to the update; test data fixes in a rolled-back transaction first. See `.ai/rules/migrations.md`.
 
 ---
 
