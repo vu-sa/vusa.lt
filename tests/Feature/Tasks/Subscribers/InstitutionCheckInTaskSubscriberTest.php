@@ -74,7 +74,7 @@ describe('InstitutionCheckInTaskSubscriber', function (): void {
         expect($task->completed_at)->not->toBeNull();
     });
 
-    test('a report covering only the end of a question\'s period still closes the task\'s question', function (): void {
+    test('completing the task closes its questions only once their whole period is reported', function (string $from, bool $closed): void {
         $institution = Institution::factory()->for(Tenant::query()->firstOrFail())->create(['is_active' => true]);
         $user = User::factory()->create();
         $task = app(PeriodicityGapTaskHandler::class)->findOrCreate(institution: $institution, users: collect([$user]), dueDate: now()->addDays(7));
@@ -84,11 +84,14 @@ describe('InstitutionCheckInTaskSubscriber', function (): void {
         ]);
 
         InstitutionCheckIn::factory()->for($institution)->for($user)
-            ->create(['start_date' => today(), 'end_date' => today()->addWeeks(2)]);
+            ->create(['start_date' => $from === 'period start' ? today()->subMonths(3) : today(), 'end_date' => today()->addWeeks(2)]);
 
         expect($task->fresh()->completed_at)->not->toBeNull()
-            ->and($question->fresh())->resolved_at->not->toBeNull()->resolution_source->toBe('task_completed');
-    });
+            ->and($question->fresh()->isOpen())->toBe(! $closed);
+    })->with([
+        'the report covers only the end of the period' => ['today', false],
+        'the report covers the whole period' => ['period start', true],
+    ]);
 
     test('does not fail when no periodicity gap task exists', function (): void {
         $tenant = Tenant::query()->first()

@@ -354,6 +354,19 @@ Patvirtinti, kad posėdžio nebuvo, kai kolega jau įrašė posėdį, negalima. 
 prasidėjo anksčiau nei kolegos, puslapis rodo, kurią laikotarpio dalį dar liko patvirtinti.
 Kolegos atsakymai laiškais nesiunčiami.
 
+Kadencijos viduryje pareigas pradėjęs atstovas automatinę užklausą gauna tą pačią dieną kaip ir kiti,
+bet klausiamas tik nuo savo pareigų pradžios. Jei institucijoje dar neužregistruota jokios veiklos,
+jo klausiama, kai suėjus jo paties terminui praėjo ir [mėnuo nuo paskutinės užklausos](#paklausti).
+
+- **Ne, nevyko** įrašo tik dienas, kurių dar nepatvirtino joks pranešimas. Kolegų pranešimai
+  nekeičiami, o atšaukti atstovas gali tik savo pranešimą.
+- Kai institucija nebevėluoja, užduotis **Pranešti apie veiklą** užsibaigia, bet **Ar vyko posėdis?**
+  užklausa lieka atvira, kol dalis jos laikotarpio nepatvirtinta. Pavyzdžiui, jei vėliau pareigas
+  pradėjęs atstovas patvirtina tik savo laikotarpį, kolegos vis dar gali atsakyti apie ankstesnę dalį –
+  įrašoma tik ji. Visą laikotarpį apėmusios užklausos užsibaigia kartu su užduotimi.
+- Užfiksuotas posėdis sutrumpina kolegos pranešimą „Posėdžio nebuvo“ arba jį ištrina
+  ([kaip ir visada](#posedzio-nebuvo)). Iš laiško posėdį galima įrašyti tik savo klausiamame laikotarpyje.
+
 ### Užklausos atstovams {#uzklausos}
 
 Institucijos skiltyje **Užklausos atstovams** koordinatorius mato visas institucijos

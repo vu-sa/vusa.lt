@@ -20,6 +20,7 @@ use App\Tasks\Enums\ActionType;
 use App\Tasks\Handlers\PeriodicityGapTaskHandler;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Validation\ValidationException;
 
 pest()->use(RefreshDatabase::class);
 
@@ -366,5 +367,91 @@ describe('tasks:repopulate institution', function (): void {
 
         expect($task)->not->toBeNull()
             ->and($task->due_date->toDateString())->toBe('2025-09-10');
+    });
+});
+
+/**
+ * Two representatives from the start of the term, one from its middle; A last reported no meetings until 20 September.
+ *
+ * @return array{institution: Institution, a: User, b: User, c: User}
+ */
+function institutionWithMidTermRepresentative(): array
+{
+    $institution = Institution::factory()->for(Tenant::query()->firstOrFail())->create(['is_active' => true, 'meeting_periodicity_days' => 30]);
+    $type = DutyType::query()->where('slug', 'studentu-atstovai')->first() ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
+    $duty = Duty::factory()->for($institution)->hasAttached($type, [], 'types')->create();
+    [$a, $b, $c] = User::factory()->count(3)->create()->all();
+    $a->duties()->attach($duty, ['start_date' => '2025-09-01']);
+    $b->duties()->attach($duty, ['start_date' => '2025-09-01']);
+    $c->duties()->attach($duty, ['start_date' => '2025-10-15']);
+    InstitutionCheckIn::factory()->for($institution)->create(['user_id' => $a->id, 'start_date' => '2025-09-01', 'end_date' => '2025-09-20']);
+
+    return ['institution' => $institution, 'a' => $a, 'b' => $b, 'c' => $c];
+}
+
+describe('a representative who joins mid-term', function (): void {
+    beforeEach(function (): void {
+        $this->travelTo('2025-11-06 12:00:00');
+        ['institution' => $this->institution, 'a' => $this->a, 'b' => $this->b, 'c' => $this->c] = institutionWithMidTermRepresentative();
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+        $this->requestOf = fn (User $user) => InstitutionActivityRequest::query()->where('recipient_id', $user->id)->sole();
+        $this->answer = fn (User $user, InstitutionActivityAnswer $answer, array $meetings = []) => app(AnswerInstitutionActivityRequest::class)
+            ->execute(($this->requestOf)($user), $answer, meetings: $meetings);
+    });
+
+    test('is asked the same day as the others, but only from their own start', function (): void {
+        expect(($this->requestOf)($this->a)->period_start->toDateString())->toBe('2025-09-21')
+            ->and(($this->requestOf)($this->b)->period_start->toDateString())->toBe('2025-09-21')
+            ->and(($this->requestOf)($this->c)->period_start->toDateString())->toBe('2025-10-15')
+            ->and(InstitutionActivityRequest::query()->distinct()->count('send_id'))->toBe(1);
+        foreach ([$this->a, $this->b, $this->c] as $rep) {
+            Notification::assertSentToTimes($rep, InstitutionActivityNotification::class, 1);
+        }
+    });
+
+    test('an earlier colleague\'s "no meeting" also closes their question; they can still add a meeting', function (): void {
+        ($this->answer)($this->a, InstitutionActivityAnswer::NotMet);
+
+        expect(($this->requestOf)($this->c)->isOpen())->toBeFalse()
+            ->and(($this->requestOf)($this->c)->acceptsMeetings())->toBeTrue()
+            ->and(($this->requestOf)($this->b)->isOpen())->toBeFalse()
+            ->and($this->institution->checkIns()->where('user_id', $this->a->id)->count())->toBe(2);
+    });
+
+    test('their "no meeting" covers only their own period; the colleagues can still report the rest', function (): void {
+        ($this->answer)($this->c, InstitutionActivityAnswer::NotMet);
+
+        expect(($this->requestOf)($this->a)->isOpen())->toBeTrue()
+            ->and(($this->requestOf)($this->b)->isOpen())->toBeTrue();
+
+        ($this->answer)($this->a, InstitutionActivityAnswer::NotMet);
+
+        $periods = $this->institution->checkIns()->orderBy('start_date')->get()
+            ->map(fn (InstitutionCheckIn $checkIn) => [$checkIn->user_id, $checkIn->start_date->toDateString(), $checkIn->end_date->toDateString()])->all();
+        expect($periods)->toBe([
+            [$this->a->id, '2025-09-01', '2025-09-20'],
+            [$this->a->id, '2025-09-21', '2025-10-14'],
+            [$this->c->id, '2025-10-15', '2025-11-06'],
+        ])->and(($this->requestOf)($this->b)->isOpen())->toBeFalse();
+    });
+
+    test('they can cancel only their own report', function (): void {
+        ($this->answer)($this->a, InstitutionActivityAnswer::NotMet);
+        $colleagues = $this->institution->checkIns()->where('user_id', $this->a->id)->latest('start_date')->first();
+        $own = InstitutionCheckIn::factory()->for($this->institution)->create(['user_id' => $this->c->id]);
+
+        expect($this->c->can('delete', $colleagues))->toBeFalse()
+            ->and($this->c->can('delete', $own))->toBeTrue();
+    });
+
+    test('a meeting they record shortens a colleague\'s report, but only within their own period', function (): void {
+        ($this->answer)($this->a, InstitutionActivityAnswer::NotMet);
+
+        expect(fn () => ($this->answer)($this->c, InstitutionActivityAnswer::Met, [['date' => '2025-10-01', 'type' => 'in-person', 'time' => '10:00']]))
+            ->toThrow(ValidationException::class);
+
+        ($this->answer)($this->c, InstitutionActivityAnswer::Met, [['date' => '2025-10-20', 'type' => 'in-person', 'time' => '10:00']]);
+
+        expect($this->institution->checkIns()->whereDate('start_date', '2025-09-21')->sole()->end_date->toDateString())->toBe('2025-10-19');
     });
 });

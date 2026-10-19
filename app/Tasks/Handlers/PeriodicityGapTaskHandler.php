@@ -2,6 +2,7 @@
 
 namespace App\Tasks\Handlers;
 
+use App\Enums\InstitutionActivityCampaign;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\Task;
@@ -70,8 +71,12 @@ class PeriodicityGapTaskHandler extends BaseTaskHandler
 
         $this->complete($task, $reason);
 
-        // A report covering only part of a question's period leaves it open; the task's answer closes it.
-        InstitutionActivityRequest::query()->open()->where('task_id', $task->id)
+        // An activity question stays open while part of its period is unreported, e.g. after a colleague
+        // who started later confirmed only their own stretch; its recipient can still confirm the rest.
+        $closable = InstitutionActivityRequest::query()->open()->where('task_id', $task->id)->with('institution')->get()
+            ->filter(fn (InstitutionActivityRequest $request) => $request->campaign_type !== InstitutionActivityCampaign::ActivityConfirmation
+                || $request->uncoveredPeriods() === []);
+        InstitutionActivityRequest::query()->whereKey($closable->modelKeys())
             ->update(['resolved_at' => now(), 'resolution_source' => 'task_completed']);
 
         return true;
