@@ -56,7 +56,7 @@ class AtstovavimasApiController extends ApiController
         $access = $this->dashboardService->ganttInstitutionAccess($this->requireAuth($request), $request->tenantIds());
 
         return $this->jsonSuccess(
-            $this->rememberVisak('gantt', $this->accessScope($access), $request->boolean('refresh'), fn () => $this->dashboardService->ganttInstitutions($access), 'activity-dates-v2')
+            $this->rememberVisak('gantt', $this->accessScope($access), $request->boolean('refresh'), fn () => $this->dashboardService->ganttInstitutions($access), 'activity-dates-v3')
         );
     }
 

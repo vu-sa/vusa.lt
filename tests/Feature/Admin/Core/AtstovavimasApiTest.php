@@ -673,6 +673,23 @@ describe('padaliniai gantt', function (): void {
             ->and(Carbon\Carbon::parse($row['last_activity_at'])->toDateString())->toBe(now()->subDays(2)->toDateString());
     });
 
+    test('a new check-in counts as activity', function (): void {
+        $this->travelTo(now()->subDays(20));
+        $meeting = Meeting::factory()->create(['start_time' => now()->addDays(10)]);
+        $meeting->institutions()->attach($this->ownInstitution->id);
+        $this->travelBack();
+
+        $this->travelTo(now()->subDays(3));
+        InstitutionCheckIn::factory()->create(['institution_id' => $this->ownInstitution->id, 'user_id' => $this->rep->id]);
+        $this->travelBack();
+
+        $row = collect(asUser($this->rep)->getJson(route('api.v1.admin.visak.gantt', [
+            'tenant_ids' => [$this->tenant->id, $this->ownInstitution->tenant_id],
+        ]))->json('data'))->firstWhere('id', (string) $this->ownInstitution->id);
+
+        expect(Carbon\Carbon::parse($row['last_activity_at'])->toDateString())->toBe(now()->subDays(3)->toDateString());
+    });
+
     test('a body the rep\'s own links to appears in full', function (): void {
         $related = Institution::factory()->for($this->tenant)->create();
         InstitutionLink::factory()->create(['source_institution_id' => $this->ownInstitution->id, 'target_institution_id' => $related->id]);

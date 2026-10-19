@@ -6,6 +6,7 @@ use App\Enums\TenantType;
 use App\Models\Activity;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
@@ -342,8 +343,9 @@ class DutyService
 
     /**
      * Adds `last_meeting_date` (last held), `next_meeting_date` and `last_activity_at`: the latest
-     * logged change by a person to a meeting (agenda items and votes roll up to it) or a check-in.
-     * Not `updated_at`, which MariaDB's ON UPDATE also bumps on migrations and bulk scripts.
+     * logged change by a person to a meeting (agenda items and votes roll up to it), or a new
+     * check-in. Not `meetings.updated_at`, which MariaDB's ON UPDATE bumps on migrations too;
+     * check-ins are no longer activity-logged, but each one is created by a person.
      *
      * @param  Builder<Institution>  $query
      */
@@ -368,12 +370,9 @@ class DutyService
                 ->whereNotNull('activity_log.causer_id')
                 ->orderByDesc('activity_log.created_at')
                 ->limit(1),
-            'check_in_activity_at' => Activity::query()->select('activity_log.created_at')
-                ->join('institution_check_ins', 'institution_check_ins.id', '=', 'activity_log.subject_id')
-                ->where('activity_log.subject_type', 'institution_check_in')
+            'check_in_activity_at' => InstitutionCheckIn::select('created_at')
                 ->whereColumn('institution_check_ins.institution_id', 'institutions.id')
-                ->whereNotNull('activity_log.causer_id')
-                ->orderByDesc('activity_log.created_at')
+                ->orderByDesc('created_at')
                 ->limit(1),
         ])->afterQuery(function (EloquentCollection $institutions): void {
             $parts = ['meeting_activity_at', 'check_in_activity_at'];
