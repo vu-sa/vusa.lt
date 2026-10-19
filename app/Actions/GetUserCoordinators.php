@@ -19,11 +19,10 @@ class GetUserCoordinators
      */
     public static function execute(User $user): array
     {
-        $institutions = $user->authorization_duties
-            ->loadMissing('institution')
-            ->pluck('institution')
-            ->filter(fn ($institution) => $institution instanceof Institution)
-            ->unique('id');
+        // Queried afresh: ModelAuthorizer caches these duties with a name-less `institution:id,tenant_id`.
+        $institutions = Institution::query()
+            ->whereIn('id', $user->authorization_duties->pluck('institution_id')->filter()->unique())
+            ->get();
 
         $coordinators = [];
 
@@ -36,11 +35,11 @@ class GetUserCoordinators
             }
 
             if (isset($coordinators[$coordinator['id']])) {
-                $coordinators[$coordinator['id']]['institutions'][] = (string) $institution->name;
+                $coordinators[$coordinator['id']]['institutions'][] = (string) $institution->getTranslation('name', app()->getLocale());
             } else {
                 $coordinators[$coordinator['id']] = [
                     ...$coordinator,
-                    'institutions' => [(string) $institution->name],
+                    'institutions' => [(string) $institution->getTranslation('name', app()->getLocale())],
                 ];
             }
         }

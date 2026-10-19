@@ -10,6 +10,7 @@ use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\ModelAuthorizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -118,6 +119,15 @@ describe('GetUserCoordinators', function (): void {
 
         expect($coordinators)->toHaveCount(1)
             ->and($coordinators[0]['institutions'])->toHaveCount(2);
+    });
+
+    test('names the institutions even after the authorizer has cached the duties', function (): void {
+        ($this->seatIn)($this->institution);
+        $rep = $this->rep->fresh();
+
+        app(ModelAuthorizer::class)->allows($rep, 'meetings.read.padalinys');
+
+        expect(GetUserCoordinators::execute($rep)[0]['institutions'])->toBe([$this->institution->name]);
     });
 
     test('leaves a VU SA body out of what the coordinator covers', function (): void {
