@@ -122,7 +122,7 @@ jobs:
           node-version: '24'
 
       - name: Setup Typst
-        uses: typst-community/setup-typst@v4
+        uses: typst-community/setup-typst@v5
 
       # The runner ships Liberation but not Noto, so without this the PDF silently falls back.
       - name: Install PDF fonts
