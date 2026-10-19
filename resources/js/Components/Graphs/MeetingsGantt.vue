@@ -492,6 +492,8 @@ function render(): void {
     ...rowGeometry,
     dayWidthPx: dayWidthPx.value,
     rowIndex: key => rowIndexByKey.value.get(String(key)) ?? 0,
+    markMonthStarts: true,
+    vacationPeriods: vacationPeriods.value,
   });
 
   // Rows outside the rendered band: a placeholder, so a fast scroll reveals a skeleton, not blank space.

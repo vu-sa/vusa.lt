@@ -1,12 +1,14 @@
 /**
  * renderBackground - Render row backgrounds and grid lines
  *
- * Renders zebra-striped row backgrounds, Monday grid lines,
- * and row separator lines.
+ * Renders zebra-striped row backgrounds, Sunday and month-start day marks,
+ * year markers and row separator lines.
  */
 import * as d3 from 'd3';
 
 import type { GanttColors } from '../ganttColors';
+
+import type { VacationPeriod } from '@/Composables/useVacationPeriods';
 
 interface LayoutRow {
   key: string | number;
@@ -46,6 +48,10 @@ export interface BackgroundRenderContext {
    * anchored to each row's true position, flipping on every scroll.
    */
   rowIndex?: (key: string | number) => number;
+  /** Mark the 1st of each month; off for charts that draw their own month grid. */
+  markMonthStarts?: boolean;
+  /** Month starts inside these periods are skipped — the vacation shading marks them already. */
+  vacationPeriods?: VacationPeriod[];
 }
 
 /**
@@ -85,35 +91,35 @@ export function renderBackground(ctx: BackgroundRenderContext): void {
       }
     });
 
-  // Sunday grid lines (only for institution rows) - visual week separators
-  // At high zoom (dayWidthPx >= 14): show all Sundays
-  // At lower zoom: show only the last Sunday of each month for orientation
+  // Day marks (institution rows only): every Sunday when zoomed in enough to read weeks,
+  // and the 1st of each month, except Jan 1 (year marker) and days inside a vacation period.
   const days = d3.timeDay.range(minTime, maxTime);
   const institutionRows = layoutRows.filter(r => !isHeader(r));
   const showAllSundays = typeof dayWidthPx === 'number' && dayWidthPx >= 14;
+  const vacationPeriods = ctx.vacationPeriods ?? [];
+  const isMonthStartMark = (day: Date) => ctx.markMonthStarts === true
+    && day.getDate() === 1
+    && day.getMonth() !== 0
+    && !vacationPeriods.some(period => period.start <= day && day <= period.end);
 
-  const dayBands: Array<{ day: Date; row: LayoutRow }> = [];
+  const dayBands: Array<{ day: Date; row: LayoutRow; kind: 'sunday' | 'month-start' }> = [];
   for (const day of days) {
-    if (day.getDay() === 0) { // Sunday
-      if (!showAllSundays) {
-        // At lower zoom, only include the last Sunday of the month
-        const nextSunday = d3.timeDay.offset(day, 7);
-        if (nextSunday.getMonth() === day.getMonth()) {
-          continue; // Not the last Sunday of the month
-        }
-      }
-      for (const row of institutionRows) {
-        dayBands.push({ day, row });
-      }
+    const kind = isMonthStartMark(day) ? 'month-start' : (showAllSundays && day.getDay() === 0 ? 'sunday' : null);
+    if (!kind) {
+      continue;
+    }
+    for (const row of institutionRows) {
+      dayBands.push({ day, row, kind });
     }
   }
 
   g.append('g')
-    .attr('class', 'sunday-grid')
+    .attr('class', 'day-marks')
     .selectAll('rect')
     .data(dayBands)
     .enter()
     .append('rect')
+    .attr('class', d => `${d.kind}-mark`)
     .attr('x', d => x(d.day))
     .attr('y', d => rowTop(d.row.key))
     .attr('width', d => x(d3.timeDay.offset(d.day, 1)) - x(d.day))
