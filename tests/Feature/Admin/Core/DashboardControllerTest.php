@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Media\AddImageMedia;
 use App\Models\Calendar;
 use App\Models\Duty;
 use App\Models\DutyResponsibility;
@@ -20,11 +21,14 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Settings\FormSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    Storage::fake('spatieMediaLibrary');
     $this->tenant = Tenant::query()->first();
     $this->user = makeUser($this->tenant);
     $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
@@ -416,7 +420,6 @@ describe('dashboard calendar and news', function (): void {
         $news = News::factory()->for($this->tenant)->create([
             'title' => 'News Without Image',
             'lang' => 'lt',
-            'image' => null,
             'publish_time' => now()->subHours(1),
             'draft' => false,
         ]);
@@ -434,18 +437,18 @@ describe('dashboard calendar and news', function (): void {
             );
     });
 
-    test('news with external image returns actual image URL', function (): void {
+    test('news with image returns actual image URL', function (): void {
         // Delete any existing news first
         News::query()->delete();
 
-        // Create news with an external image URL
-        News::factory()->for($this->tenant)->create([
-            'title' => 'News With External Image',
+        // Create news with an image
+        $news = News::factory()->for($this->tenant)->create([
+            'title' => 'News With Image',
             'lang' => 'lt',
-            'image' => 'https://example.com/news-image.jpg',
             'publish_time' => now()->subHours(1),
             'draft' => false,
         ]);
+        app(AddImageMedia::class)->execute($news, UploadedFile::fake()->image('news.jpg'), 'image');
 
         asUser($this->admin)
             ->get(route('dashboard'))
@@ -454,7 +457,7 @@ describe('dashboard calendar and news', function (): void {
                 ->component('Admin/ShowAdminHome')
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
                     ->has('latestNews', 1)
-                    ->where('latestNews.0.image', 'https://example.com/news-image.jpg')
+                    ->where('latestNews.0.image', $news->fresh()->getImageUrl())
                 )
             );
     });
@@ -462,16 +465,16 @@ describe('dashboard calendar and news', function (): void {
 
 describe('hero image', function (): void {
     test('uses the primary institution image of a tenant from the user\'s current duties', function (): void {
-        $institution = Institution::factory()->for($this->tenant)->create([
-            'image_url' => 'https://example.com/institution.jpg',
-            'image_focal_point' => '40% 30%',
-        ]);
+        $institution = Institution::factory()->for($this->tenant)->create();
+        app(AddImageMedia::class)->execute($institution, UploadedFile::fake()->image('institution.jpg'), 'image');
+        $media = $institution->getFirstMedia('image');
+        $media->setCustomProperty('focal_point', '40% 30%')->save();
         $this->tenant->update(['primary_institution_id' => $institution->id]);
 
         asUser($this->user)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
-                ->where('heroImage.url', 'https://example.com/institution.jpg')
+                ->where('heroImage.url', $institution->fresh()->imageData('image')['url'])
                 ->where('heroImage.focalPoint', '40% 30%')
                 ->missing('heroNews')
             );

@@ -1,17 +1,20 @@
 <?php
 
+use App\Actions\Media\AddImageMedia;
 use App\Feed\FeedHtml;
 use App\Models\ContentPart;
 use App\Models\News;
 use App\Models\Tag;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tiptap\Editor;
 
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    Storage::fake('spatieMediaLibrary');
     $this->tenant = Tenant::firstOrCreate(
         ['alias' => 'vusa'],
         [
@@ -70,18 +73,15 @@ describe('feed rendering', function (): void {
     });
 
     it('emits enclosure, media and guid for items with a cover image', function (): void {
-        Storage::fake('public');
-        Storage::disk('public')->put('images/placeholders/foto1.jpg', 'fake-image-content');
-
-        News::factory()->create([
+        $news = News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'permalink' => 'enclosure-test',
             'title' => 'Enclosure Test',
-            'image' => '/images/placeholders/foto1.jpg',
             'draft' => false,
             'lang' => 'lt',
             'publish_time' => now()->subDay(),
         ]);
+        app(AddImageMedia::class)->execute($news, UploadedFile::fake()->image('foto1.jpg'), 'image');
 
         $content = $this->get('/feed')->getContent();
 
@@ -95,18 +95,15 @@ describe('feed rendering', function (): void {
     });
 
     it('uses the cover image as an absolute URL', function (): void {
-        Storage::fake('public');
-        Storage::disk('public')->put('images/placeholders/foto2.jpg', 'fake-image-content');
-
-        News::factory()->create([
+        $news = News::factory()->create([
             'tenant_id' => $this->tenant->id,
             'permalink' => 'absolute-url-test',
             'title' => 'Absolute URL Test',
-            'image' => '/images/placeholders/foto2.jpg',
             'draft' => false,
             'lang' => 'lt',
             'publish_time' => now()->subDay(),
         ]);
+        app(AddImageMedia::class)->execute($news, UploadedFile::fake()->image('foto2.jpg'), 'image');
 
         $content = $this->get('/feed')->getContent();
 

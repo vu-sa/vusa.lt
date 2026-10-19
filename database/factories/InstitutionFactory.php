@@ -27,8 +27,6 @@ class InstitutionFactory extends Factory
             'alias' => Str::slug($this->faker->words(2, true)).'-'.$this->faker->numberBetween(1000, 999999),
             // html descriptioj
             'description' => '<p>'.$this->faker->paragraph(2).'</p><p>'.$this->faker->paragraph(2).'</p><p>'.$this->faker->paragraph(2).'</p>',
-            // sometimes image is not available
-            'image_url' => $this->faker->boolean(50) ? $this->faker->imageUrl() : null,
             'tenant_id' => Tenant::factory(),
         ];
     }

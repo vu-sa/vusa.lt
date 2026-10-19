@@ -122,6 +122,9 @@ class LegacyImageBackfill
      */
     public function targets(?string $onlyTarget): array
     {
-        return $onlyTarget === null ? array_keys(LegacyImageTargets::TARGETS) : [$onlyTarget];
+        return array_values(array_filter(
+            $onlyTarget === null ? array_keys(LegacyImageTargets::TARGETS) : [$onlyTarget],
+            LegacyImageTargets::isAvailable(...),
+        ));
     }
 }

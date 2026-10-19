@@ -697,7 +697,6 @@ function getControllerTestData(string $controller): array
         'Banner' => [
             'valid' => [
                 'title' => 'Test baneris',
-                'image_url' => 'https://example.com/image.jpg',
                 'link_url' => 'https://example.com',
                 'is_active' => true,
             ],

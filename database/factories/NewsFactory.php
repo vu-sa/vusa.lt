@@ -65,7 +65,6 @@ class NewsFactory extends Factory
             'permalink' => fn () => 'news-'.Str::uuid()->toString(),
             'short' => $this->faker->paragraph(1),
             'content_id' => Content::factory(),
-            'image' => '/images/placeholders/foto'.rand(1, 5).'.jpg',
             'important' => rand(0, 1),
             'draft' => false,
             'publish_time' => $this->faker->dateTimeBetween('-10 weeks'),

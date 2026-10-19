@@ -216,7 +216,7 @@ test('summary limits count visible unicode characters and preserve unchanged leg
 test('a news image saves through the editor and a finished conversion does not read as a conflict', function (): void {
     Storage::fake('spatieMediaLibrary');
     $this->freezeSecond();
-    $news = News::factory()->for($this->tenant)->create(['lang' => 'lt', 'image' => null]);
+    $news = News::factory()->for($this->tenant)->create(['lang' => 'lt']);
     $staged = stageImage($this->admin);
     $snapshot = app(ContentEditorService::class)->snapshot($news->fresh());
     $snapshot['image_media'] = ['id' => $staged->id, 'author' => 'Jonas Fotografas'];
@@ -235,15 +235,15 @@ test('a news image saves through the editor and a finished conversion does not r
 
     $this->patchJson($url, $saved)->assertOk();
     expect($news->fresh()->title)->toBe('Pakeista po konversijos')
-        ->and($news->fresh()->image_author)->toBe('Jonas Fotografas');
+        ->and($media->fresh()->getCustomProperty('author'))->toBe('Jonas Fotografas');
 });
 
 test('image-only saves return the current version for subsequent saves', function (string $kind, string $change): void {
     Storage::fake('spatieMediaLibrary');
     $this->freezeSecond();
     $record = $kind === 'news'
-        ? News::factory()->for($this->tenant)->create(['lang' => 'lt', 'image' => null, 'show_breadcrumbs' => true])
-        : Page::factory()->for($this->tenant)->create(['lang' => 'lt', 'featured_image' => null, 'show_breadcrumbs' => true, 'show_title' => true, 'show_table_of_contents' => true]);
+        ? News::factory()->for($this->tenant)->create(['lang' => 'lt', 'show_breadcrumbs' => true])
+        : Page::factory()->for($this->tenant)->create(['lang' => 'lt', 'show_breadcrumbs' => true, 'show_title' => true, 'show_table_of_contents' => true]);
     $collection = $kind === 'news' ? 'image' : 'featured_image';
     $field = $collection.'_media';
 

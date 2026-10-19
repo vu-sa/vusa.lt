@@ -1,12 +1,16 @@
 <?php
 
+use App\Actions\Media\AddImageMedia;
 use App\Models\News;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    Storage::fake('spatieMediaLibrary');
     $this->tenant = Tenant::query()->first();
 });
 
@@ -18,7 +22,6 @@ describe('news API image fallback', function (): void {
         News::factory()->for($this->tenant)->create([
             'title' => 'Test News Without Image',
             'lang' => 'lt',
-            'image' => null,
             'publish_time' => now()->subHours(1),
             'draft' => false,
         ]);
@@ -32,19 +35,19 @@ describe('news API image fallback', function (): void {
     test('returns actual image when news has valid image', function (): void {
         News::query()->where('tenant_id', $this->tenant->id)->delete();
 
-        // Create news with an external image URL
-        News::factory()->for($this->tenant)->create([
+        // Create news with an image
+        $news = News::factory()->for($this->tenant)->create([
             'title' => 'Test News With Image',
             'lang' => 'lt',
-            'image' => 'https://example.com/image.jpg',
             'publish_time' => now()->subHours(1),
             'draft' => false,
         ]);
+        app(AddImageMedia::class)->execute($news, UploadedFile::fake()->image('cover.jpg'), 'image');
 
         $response = $this->getJson("/api/v1/tenants/{$this->tenant->alias}/news?lang=lt");
 
         $response->assertSuccessful()
-            ->assertJsonPath('data.0.image', 'https://example.com/image.jpg');
+            ->assertJsonPath('data.0.image', $news->fresh()->getImageUrl());
     });
 
     test('returns correct news fields', function (): void {

@@ -44,6 +44,12 @@ class MigrateImages extends Command
             return self::FAILURE;
         }
 
+        if ($target !== null && ! LegacyImageTargets::isAvailable($target)) {
+            $this->info("Legacy target {$target} has been retired; its column is already dropped.");
+
+            return self::SUCCESS;
+        }
+
         $limit = $limit === null ? null : (int) $limit;
 
         return match (true) {

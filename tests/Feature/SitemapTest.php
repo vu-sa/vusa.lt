@@ -361,7 +361,6 @@ describe('Model Sitemap Integration', function (): void {
             'title' => 'Test News',
             'draft' => false,
             'lang' => 'lt',
-            'image' => 'test-image.jpg',
             'publish_time' => now()->subDays(1),
         ]);
 

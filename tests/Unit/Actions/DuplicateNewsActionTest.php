@@ -195,7 +195,6 @@ describe('DuplicateNewsAction', function (): void {
             'title' => 'Test naujienos',
             'short' => 'Test aprašymas',
             'permalink' => 'test-news',
-            'image' => 'test-image.jpg',
             'important' => 1,
             'draft' => 0,
             'publish_time' => now()->addDays(1),
@@ -205,7 +204,6 @@ describe('DuplicateNewsAction', function (): void {
         $duplicatedNews = DuplicateNewsAction::execute($originalNews);
 
         expect($duplicatedNews->short)->toBe($originalNews->short)
-            ->and($duplicatedNews->image)->toBe($originalNews->image)
             ->and($duplicatedNews->important)->toBe($originalNews->important)
             ->and($duplicatedNews->draft)->toBe(1) // Should always be draft
             ->and($duplicatedNews->publish_time)->toBeNull(); // Should always be null
@@ -322,7 +320,6 @@ describe('DuplicateNewsAction', function (): void {
         $copy = $duplicatedNews->getFirstMedia('image');
 
         expect($copy)->not->toBeNull()
-            ->and($copy->id)->not->toBe($original->id)
-            ->and($duplicatedNews->image)->toContain("/{$copy->id}/");
+            ->and($copy->id)->not->toBe($original->id);
     });
 });

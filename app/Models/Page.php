@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Sitemap\Contracts\Sitemapable;
@@ -228,20 +229,18 @@ class Page extends Model implements ImageMediaOwner, Sitemapable
         $this->touch();
     }
 
-    /**
-     * Transitional(legacy-images): remove once nothing reads featured_image, then drop the column.
-     */
     public function imageCacheColumns(): array
     {
-        return ['featured_image' => ['url' => 'featured_image', 'conversion' => 'large']];
+        return Schema::hasColumn('pages', 'featured_image')
+            ? ['featured_image' => ['url' => 'featured_image', 'conversion' => 'large']]
+            : [];
     }
 
-    /**
-     * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
-     */
     public function legacyImageColumns(): array
     {
-        return ['featured_image' => ['url' => 'featured_image']];
+        return [
+            'featured_image' => ['url' => 'featured_image'],
+        ];
     }
 
     public function getFeaturedImageUrl(): ?string

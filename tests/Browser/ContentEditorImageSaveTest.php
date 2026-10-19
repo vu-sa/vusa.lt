@@ -18,8 +18,8 @@ it('confirms an uploaded image save and permits saving again', function (string 
     $tenant = Tenant::first();
     $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
     $record = $kind === 'news'
-        ? News::factory()->for($tenant)->create(['lang' => 'lt', 'image' => null, 'show_breadcrumbs' => true])
-        : Page::factory()->for($tenant)->create(['lang' => 'lt', 'featured_image' => null, 'show_breadcrumbs' => true, 'show_title' => true, 'show_table_of_contents' => true]);
+        ? News::factory()->for($tenant)->create(['lang' => 'lt', 'show_breadcrumbs' => true])
+        : Page::factory()->for($tenant)->create(['lang' => 'lt', 'show_breadcrumbs' => true, 'show_title' => true, 'show_table_of_contents' => true]);
     $record->update(['updated_at' => now()->subMinute()]);
     // A small WebP skips the compressor's external worker, keeping this save test offline.
     $upload = UploadedFile::fake()->image('editor-cover.webp', 800, 400);

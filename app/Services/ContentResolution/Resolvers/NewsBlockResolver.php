@@ -62,7 +62,7 @@ final class NewsBlockResolver implements ResolvesContentPart
         }
 
         $news = $query->take($limit)
-            ->get(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image', 'other_lang_id', 'tenant_id'])
+            ->get(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'other_lang_id', 'tenant_id'])
             ->all();
         $items = new NewsCollection($news)->toPublicArray();
 

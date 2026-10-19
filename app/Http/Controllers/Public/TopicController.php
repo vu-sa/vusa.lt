@@ -36,7 +36,7 @@ class TopicController extends PublicController
             ->with('tenant:id,alias,shortname', 'media')
             ->orderByDesc('publish_time')
             ->limit(6)
-            ->get(['id', 'title', 'short', 'image', 'permalink', 'lang', 'tenant_id', 'publish_time']);
+            ->get(['id', 'title', 'short', 'permalink', 'lang', 'tenant_id', 'publish_time']);
 
         $pages = Page::query()
             ->whereHas('tags', fn ($query) => $query->whereKey($tag->id))

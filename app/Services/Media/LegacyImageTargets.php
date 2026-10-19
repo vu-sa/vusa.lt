@@ -39,6 +39,13 @@ final class LegacyImageTargets
         return $model->legacyImageColumns()[$definition['collection']]['url'];
     }
 
+    public static function isAvailable(string $target): bool
+    {
+        $model = new (self::TARGETS[$target]['model']);
+
+        return $model->getConnection()->getSchemaBuilder()->hasColumn($model->getTable(), self::urlColumn($target));
+    }
+
     /**
      * Rows that still hold a legacy value, trashed ones included so a restore keeps its image.
      *
@@ -52,7 +59,9 @@ final class LegacyImageTargets
             : $model::query();
         $column = self::urlColumn($target);
 
-        return $query->whereNotNull($column)->where($column, '!=', '');
+        return self::isAvailable($target)
+            ? $query->whereNotNull($column)->where($column, '!=', '')
+            : $query->whereRaw('1 = 0');
     }
 
     /**
