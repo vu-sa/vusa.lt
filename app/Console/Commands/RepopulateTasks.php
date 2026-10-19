@@ -235,10 +235,22 @@ class RepopulateTasks extends Command
         $this->pendingAsks[] = ['task' => $task, 'institution' => $institution, 'recipients' => $task->notifiableUsers()];
     }
 
+    /**
+     * An open task keeps the people from the day it was made; a new term or a backdated duty end
+     * would otherwise leave it, and its question, with nobody to reach.
+     */
     private function reconcilePeriodicityTask(Task $task, Institution $institution, InstitutionActivityStatusData $status, bool $dryRun): void
     {
         if (! $status->status->requiresAction() && ! $dryRun) {
             $this->periodicityGapHandler->completeForInstitution($institution);
+        }
+
+        if ($status->status->requiresAction() && ! $dryRun) {
+            $current = ResolveTaskAssignees::forInstitution($institution)->pluck('id');
+            if ($current->isNotEmpty() && $current->sort()->values()->all() !== $task->users->pluck('id')->sort()->values()->all()) {
+                $task->users()->sync($current);
+                $task->load('users');
+            }
         }
 
         if ($status->status === InstitutionActivityStatus::Overdue) {

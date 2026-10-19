@@ -1,6 +1,10 @@
 <?php
 
+use App\Actions\ActivityRequests\AnswerInstitutionActivityRequest;
+use App\Actions\ActivityRequests\ResolveActivityRequestEligibility;
+use App\Enums\InstitutionActivityAnswer;
 use App\Enums\InstitutionActivityCampaign;
+use App\Enums\InstitutionActivityStatus;
 use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
@@ -95,7 +99,7 @@ describe('tasks:repopulate institution', function (): void {
         Notification::assertNotSentTo($users, InstitutionActivityNotification::class);
     });
 
-    test('no-history institutions create a task when approaching and ask each representative after their own interval', function (): void {
+    test('no-history institutions create a task when approaching and ask each representative after their own interval, a month apart', function (): void {
         $this->travelTo('2026-09-01 12:00:00');
         $institution = institutionWithRepresentative();
         $rep = $institution->duties->flatMap->users->sole();
@@ -116,7 +120,12 @@ describe('tasks:repopulate institution', function (): void {
         Notification::assertSentToTimes($rep, InstitutionActivityNotification::class, 1);
         Notification::assertNotSentTo($newRep, InstitutionActivityNotification::class);
 
+        // Their own interval has passed, but the institution was asked about less than a month ago.
         $this->travelTo('2026-10-16 12:00:00');
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+        Notification::assertNotSentTo($newRep, InstitutionActivityNotification::class);
+
+        $this->travelTo('2026-11-03 12:00:00');
         $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
         Notification::assertSentToTimes($rep, InstitutionActivityNotification::class, 1);
         Notification::assertSentToTimes($newRep, InstitutionActivityNotification::class, 1);
@@ -271,6 +280,74 @@ describe('tasks:repopulate institution', function (): void {
             ->and($requests->firstWhere('institution_id', $withRecords->id)->campaign_type)->toBe(InstitutionActivityCampaign::MissingMeetings)
             ->and(InstitutionActivityRequest::query()->distinct()->count('send_id'))->toBe(1);
         Notification::assertSentToTimes($representative, InstitutionActivityNotification::class, 1);
+    });
+
+    test('an open task follows the current representatives, so they are the ones asked', function (): void {
+        $this->travelTo('2025-11-06 12:00:00');
+        $institution = institutionWithRepresentative();
+        $duty = $institution->duties->sole();
+        $formerRep = $duty->users->sole();
+        Meeting::factory()->hasAttached($institution)->create(['start_time' => '2025-09-01 10:00:00']);
+        $task = app(PeriodicityGapTaskHandler::class)->findOrCreate($institution, collect([$formerRep]), today()->addWeek());
+        $formerRep->duties()->updateExistingPivot($duty->id, ['end_date' => today()->subDays(10)]);
+        $currentRep = User::factory()->create();
+        $currentRep->duties()->attach($duty, ['start_date' => today()->subDays(9)]);
+
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+
+        expect($task->users()->pluck('users.id')->all())->toBe([$currentRep->id]);
+        Notification::assertSentToTimes($currentRep, InstitutionActivityNotification::class, 1);
+        Notification::assertNotSentTo($formerRep, InstitutionActivityNotification::class);
+    });
+
+    test('asks automatically only a month after any earlier question about the institution', function (?string $answer): void {
+        $this->travelTo('2025-11-06 12:00:00');
+        $institution = institutionWithRepresentative();
+        $rep = $institution->duties->flatMap->users->sole();
+        Meeting::factory()->hasAttached($institution)->create(['start_time' => '2025-09-01 10:00:00']);
+        $earlier = InstitutionActivityRequest::factory()->create([
+            'institution_id' => $institution->id, 'recipient_id' => $rep->id, 'requested_by_id' => User::factory()->create()->id,
+            'period_start' => '2025-09-02', 'period_end' => '2025-10-17', 'expires_at' => today()->subDay(),
+            'answer' => $answer, 'answered_at' => $answer === null ? null : now()->subDays(19),
+        ]);
+        $earlier->forceFill(['created_at' => now()->subDays(20)])->save();
+
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+        expect(InstitutionActivityRequest::query()->count())->toBe(1);
+        Notification::assertNothingSentTo($rep);
+
+        $this->travelTo('2025-11-18 12:00:00');
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+        Notification::assertSentToTimes($rep, InstitutionActivityNotification::class, 1);
+    })->with(['expired unanswered' => [null], 'answered not mine' => ['not_mine']]);
+
+    test('after "no meeting until today" a coordinator may ask from tomorrow, the automatic question waits a month', function (): void {
+        $this->travelTo('2025-11-06 12:00:00');
+        $institution = institutionWithRepresentative();
+        $rep = $institution->duties->flatMap->users->sole();
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+        app(AnswerInstitutionActivityRequest::class)->execute(InstitutionActivityRequest::query()->sole(), InstitutionActivityAnswer::NotMet, until: today());
+
+        $eligibility = app(ResolveActivityRequestEligibility::class);
+        $statusOn = function (string $day) use ($institution, $eligibility): InstitutionActivityStatus {
+            $this->travelTo($day.' 12:00:00');
+
+            return $eligibility->status($institution->fresh(['meetings', 'checkIns', 'types']))->status;
+        };
+
+        expect($statusOn('2025-11-07'))->toBe(InstitutionActivityStatus::RecentCheckIn)
+            ->and($eligibility->skipReason($institution->fresh(['meetings', 'checkIns', 'types']), manual: true))->toBeNull();
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+
+        // Half the interval later the institution is overdue again, but it was asked less than a month ago.
+        expect($statusOn('2025-11-28'))->toBe(InstitutionActivityStatus::Overdue);
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+        Notification::assertSentToTimes($rep, InstitutionActivityNotification::class, 1);
+
+        $this->travelTo('2025-12-07 12:00:00');
+        $this->artisan('tasks:repopulate institution --force')->assertSuccessful();
+        Notification::assertSentToTimes($rep, InstitutionActivityNotification::class, 2);
+        expect(InstitutionActivityRequest::query()->latest('created_at')->first()->period_start->toDateString())->toBe('2025-11-07');
     });
 
     test('sets a due date that does not fall inside a vacation period', function (): void {

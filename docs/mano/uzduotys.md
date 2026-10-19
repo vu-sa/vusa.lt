@@ -64,7 +64,9 @@ jiems. Kitu atveju – atstovams, kurie ėjo pareigas posėdžio dieną.
 
 Institucijai be užregistruotos veiklos periodiškumo užduotis kuriama artėjant pirmojo dabartinio
 gavėjo terminui, skaičiuojamam nuo jo pareigų pradžios dabartinėje kadencijoje. Laiškas siunčiamas
-tik praėjus kiekvieno gavėjo terminui, ne vos sukūrus užduotį. Atostogų dienos neskaičiuojamos.
+tik praėjus kiekvieno gavėjo terminui, ne vos sukūrus užduotį, ir ne dažniau kaip kartą per mėnesį
+apie tą pačią instituciją. Atostogų dienos neskaičiuojamos. Kol periodiškumo užduotis atvira, jos
+atsakingieji kasdien atnaujinami pagal dabartinius institucijos atstovus ar sekretorius.
 Pavyzdys ir bendros rankinių bei automatinių užklausų sąlygos – [Institucijų gide](/visak/institucijos#paklausti).
 
 ### Kada užduotis vėluoja {#veluoja}

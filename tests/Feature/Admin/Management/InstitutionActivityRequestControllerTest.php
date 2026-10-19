@@ -294,6 +294,20 @@ test('automatic task retries reuse requests and ask one campaign, records first 
     Notification::assertSentToTimes($this->rep, InstitutionActivityNotification::class, 1);
 });
 
+test('a coordinator may ask again within a month, while an automatic task waits', function (): void {
+    $earlier = InstitutionActivityRequest::factory()->create([
+        'institution_id' => $this->institution->id, 'recipient_id' => $this->rep->id, 'requested_by_id' => $this->coordinator->id,
+        'period_start' => today()->subDays(60), 'period_end' => today()->subDays(20), 'expires_at' => today()->subDay(),
+    ]);
+    $earlier->forceFill(['created_at' => now()->subDays(20)])->save();
+    $sender = app(SendInstitutionActivityRequests::class);
+
+    $sender->forTasks([['task' => Task::factory()->create(), 'institution' => $this->institution, 'recipients' => collect([$this->rep])]]);
+    expect(InstitutionActivityRequest::query()->count())->toBe(1);
+
+    expect($sender->send([$this->institution], $this->coordinator)['queued_requests'])->toBe(1);
+});
+
 test('an automatic task asks whether a meeting happened when no records are missing', function (): void {
     $task = Task::factory()->create();
     app(SendInstitutionActivityRequests::class)->forTasks([['task' => $task, 'institution' => $this->institution, 'recipients' => collect([$this->rep])]]);

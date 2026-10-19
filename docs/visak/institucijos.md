@@ -301,6 +301,13 @@ Automatinės užklausos siunčiamos kartą per dieną. Kaip ir koordinatoriaus s
 gauna vieną laišką apie visas tą dieną klausiamas institucijas; jame gali būti ir **Ar vyko posėdis?**,
 ir **Papildyk posėdžių įrašus**.
 
+Automatinė užklausa apie instituciją siunčiama ne dažniau kaip kartą per mėnesį. Mėnuo skaičiuojamas
+nuo paskutinės bet kurios užklausos apie ją – koordinatoriaus ar automatinės, bet kurios rūšies,
+net jei jos nuoroda jau nebegalioja ar atsakyta „Ne mano institucija“: koordinatoriui gali prireikti
+laiko atnaujinti atstovus. Koordinatorius pats paklausti gali bet kada, taikant aukščiau aprašytas sąlygas.
+Automatinė užklausa siunčiama dabartiniams užduoties **Pranešti apie veiklą** atsakingiesiems – jie
+kasdien atnaujinami pagal dabartinius institucijos atstovus ar sekretorius.
+
 ### Atsakymas iš laiško {#atsakymas}
 
 Atsakyti galima **neprisijungus**. Nuoroda atveria puslapį, o atsakymas įrašomas tik patvirtinus.

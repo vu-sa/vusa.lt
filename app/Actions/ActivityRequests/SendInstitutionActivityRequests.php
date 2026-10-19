@@ -217,6 +217,9 @@ class SendInstitutionActivityRequests
             $start->gt($end) => ActivityRequestSkipReason::NoPeriod,
             $missingMeetings && $knownMeetings->isEmpty() => ActivityRequestSkipReason::NoRecordedMeetings,
             $missingMeetings && $incompleteMeetings->isEmpty() => ActivityRequestSkipReason::RecordsComplete,
+            // Automatic questions wait a month after any question about the institution, even an expired one or
+            // "not mine": coordinators may take longer than a day to update the representatives.
+            ! $manual && $existing->contains(fn (InstitutionActivityRequest $request) => $request->created_at?->gt(now()->subMonth())) => ActivityRequestSkipReason::AlreadyAsked,
             $existing->contains(fn (InstitutionActivityRequest $request) => $request->alreadyAsks($recipientId, $campaign, $start, $end)) => ActivityRequestSkipReason::AlreadyAsked,
             default => null,
         };
