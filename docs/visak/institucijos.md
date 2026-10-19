@@ -297,6 +297,10 @@ Nuoroda galioja 14 dienų. Atsakytos ar užbaigtos užklausos saugo nuo pakartot
 apie visą jų jau apimtą laikotarpį; atsakymas „Ne mano institucija“ naujo klausimo neblokuoja.
 Skirtingos užklausų rūšys vertinamos atskirai.
 
+Automatinės užklausos siunčiamos kartą per dieną. Kaip ir koordinatoriaus siuntime, kiekvienas gavėjas
+gauna vieną laišką apie visas tą dieną klausiamas institucijas; jame gali būti ir **Ar vyko posėdis?**,
+ir **Papildyk posėdžių įrašus**.
+
 ### Atsakymas iš laiško {#atsakymas}
 
 Atsakyti galima **neprisijungus**. Nuoroda atveria puslapį, o atsakymas įrašomas tik patvirtinus.

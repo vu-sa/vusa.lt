@@ -36,7 +36,7 @@ class InstitutionActivityNotification extends BaseNotification implements SendsM
 
     public function title(object $notifiable): string
     {
-        return __($this->first()->campaign_type->labelKey());
+        return __(($this->campaign() ?? InstitutionActivityCampaign::ActivityConfirmation)->labelKey());
     }
 
     public function body(object $notifiable): string
@@ -45,7 +45,7 @@ class InstitutionActivityNotification extends BaseNotification implements SendsM
         $note = $request->note !== null && $request->requestedBy !== null
             ? ' '.__('notifications.activity_request_note', ['name' => $request->requestedBy->name, 'note' => $request->note]) : '';
 
-        return __($request->campaign_type->bodyKey()).$note;
+        return $this->campaignBody().$note;
     }
 
     public function shouldSend(object $notifiable, string $channel): bool
@@ -114,7 +114,7 @@ class InstitutionActivityNotification extends BaseNotification implements SendsM
     #[\Override]
     public function primaryAction(): ?array
     {
-        if ($this->first()->campaign_type === InstitutionActivityCampaign::MissingMeetings) {
+        if ($this->campaign() === InstitutionActivityCampaign::MissingMeetings) {
             return ['label' => __('activity_requests.edit_records'), 'url' => $this->url()];
         }
         if (! $this->isSingle()) {
@@ -151,7 +151,7 @@ class InstitutionActivityNotification extends BaseNotification implements SendsM
             ->markdown('emails.institution-activity', [
                 'title' => $this->title($notifiable),
                 'recipientName' => $notifiable->name ?? null,
-                'body' => __($this->first()->campaign_type->bodyKey()),
+                'body' => $this->campaignBody(),
                 'context' => $this->contextRows(['asked_by' => $this->first()->requestedBy?->name]),
                 'note' => $this->first()->requestedBy !== null ? $this->first()->note : null,
                 'questions' => $this->questions(),
@@ -188,6 +188,19 @@ class InstitutionActivityNotification extends BaseNotification implements SendsM
                 ])->values()->all() : [],
             ];
         })->all();
+    }
+
+    /** Null when an automatic send mixes questions about activity and missing records. */
+    private function campaign(): ?InstitutionActivityCampaign
+    {
+        $campaigns = $this->requests->pluck('campaign_type')->unique(fn (InstitutionActivityCampaign $campaign) => $campaign->value);
+
+        return $campaigns->count() === 1 ? $campaigns->first() : null;
+    }
+
+    private function campaignBody(): string
+    {
+        return __($this->campaign()?->bodyKey() ?? 'activity_requests.email.mixed');
     }
 
     private function isSingle(): bool

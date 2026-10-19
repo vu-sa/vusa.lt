@@ -109,7 +109,7 @@ describe('task notifications', function (): void {
         Notification::assertNothingSentTo($user);
 
         // tasks:repopulate asks once the institution is overdue.
-        app(SendInstitutionActivityRequests::class)->forTask($task, $institution, $task->notifiableUsers());
+        app(SendInstitutionActivityRequests::class)->forTasks([['task' => $task, 'institution' => $institution, 'recipients' => $task->notifiableUsers()]]);
 
         Notification::assertSentToTimes($user, InstitutionActivityNotification::class, 1);
         Notification::assertNotSentTo($user, TaskAssignedNotification::class);

@@ -111,26 +111,46 @@ class SendInstitutionActivityRequests
      */
     public function send(iterable $institutions, User $requestedBy, ?string $note = null, InstitutionActivityCampaign $campaign = InstitutionActivityCampaign::ActivityConfirmation, ?array $pairs = null): array
     {
-        return $this->dispatch(collect($institutions), $requestedBy, $note, $campaign, pairs: $pairs);
+        return DB::transaction(function () use ($institutions, $requestedBy, $note, $campaign, $pairs): array {
+            ['plan' => $plan, 'byRecipient' => $byRecipient] = $this->queue($this->lock(collect($institutions)), $requestedBy, $note, $campaign, (string) Str::ulid(), pairs: $pairs);
+            $this->notify($byRecipient);
+
+            return ['plan' => $plan, ...$this->queuedSummary($byRecipient)];
+        });
     }
 
     /**
-     * One question per task: completing the records also confirms the time after the last meeting,
-     * so it goes first and the activity question only when no records are missing.
+     * One send and one email per recipient for the whole run, as a manual send. Completing the records
+     * also confirms the time after the last meeting, so a task asks for them first and about activity
+     * only when no records are missing.
      *
-     * @param  Collection<int, User>  $recipients
+     * @param  iterable<array{task: Task, institution: Institution, recipients: Collection<int, User>}>  $asks
      */
-    public function forTask(Task $task, Institution $institution, Collection $recipients): void
+    public function forTasks(iterable $asks): void
     {
-        if ($recipients->isEmpty()) {
+        $asks = collect($asks)->filter(fn (array $ask) => $ask['recipients']->isNotEmpty())->keyBy(fn (array $ask) => $ask['institution']->id);
+        if ($asks->isEmpty()) {
             return;
         }
-        foreach ([InstitutionActivityCampaign::MissingMeetings, InstitutionActivityCampaign::ActivityConfirmation] as $campaign) {
-            if ($this->dispatch(collect([$institution]), null, null, $campaign, $task, $recipients)['queued_requests'] > 0
-                || InstitutionActivityRequest::query()->where('task_id', $task->id)->where('campaign_type', $campaign)->exists()) {
-                return;
+
+        DB::transaction(function () use ($asks): void {
+            $locked = $this->lock($asks->pluck('institution'));
+            $sendId = (string) Str::ulid();
+            $records = $this->queue($locked, null, null, InstitutionActivityCampaign::MissingMeetings, $sendId, $asks)['byRecipient'];
+
+            $askedForRecords = InstitutionActivityRequest::query()->whereIn('task_id', $asks->pluck('task.id'))
+                ->where('campaign_type', InstitutionActivityCampaign::MissingMeetings)->pluck('task_id');
+            $remaining = $asks->reject(fn (array $ask) => $askedForRecords->contains($ask['task']->id));
+            $activity = $remaining->isEmpty() ? [] : $this->queue(
+                $locked->whereIn('id', $remaining->keys()), null, null, InstitutionActivityCampaign::ActivityConfirmation, $sendId, $remaining,
+            )['byRecipient'];
+
+            foreach ($activity as $recipientId => ['user' => $recipient, 'requests' => $requests]) {
+                $records[$recipientId]['user'] = $recipient;
+                $records[$recipientId]['requests'] = [...$records[$recipientId]['requests'] ?? [], ...$requests];
             }
-        }
+            $this->notify($records);
+        });
     }
 
     /**
@@ -225,48 +245,61 @@ class SendInstitutionActivityRequests
 
     /**
      * @param  Collection<int, Institution>  $institutions
-     * @param  Collection<int, User>|null  $taskRecipients
-     * @param  list<string>|null  $pairs
-     * @return array{plan: list<ActivityRequestPlanEntry>, queued_recipients: int, queued_requests: int, queued_emails: int}
+     * @return EloquentCollection<int, Institution>
      */
-    private function dispatch(Collection $institutions, ?User $requestedBy, ?string $note, InstitutionActivityCampaign $campaign, ?Task $task = null, ?Collection $taskRecipients = null, ?array $pairs = null): array
+    private function lock(Collection $institutions): EloquentCollection
     {
-        return DB::transaction(function () use ($institutions, $requestedBy, $note, $campaign, $task, $taskRecipients, $pairs): array {
-            $locked = Institution::query()->whereIn('id', $institutions->pluck('id'))->orderBy('id')->lockForUpdate()->get();
-            $plan = $this->plan($locked, $requestedBy, $campaign, $pairs);
-            $alreadyAskedForTask = $task === null ? collect() : InstitutionActivityRequest::query()
-                ->where('task_id', $task->id)->whereIn('institution_id', $locked->modelKeys())
-                ->where('campaign_type', $campaign)->pluck('recipient_id');
-            $sendId = (string) Str::ulid();
-            $byRecipient = [];
+        return Institution::query()->whereIn('id', $institutions->pluck('id'))->orderBy('id')->lockForUpdate()->get();
+    }
 
-            foreach ($plan as $entry) {
-                if ($task !== null && $campaign === InstitutionActivityCampaign::MissingMeetings
-                    && $this->eligibility->skipReason($entry->institution, $entry->periodStart) !== null) {
+    /**
+     * A task asks only its own assignees, and each of them once.
+     *
+     * @param  EloquentCollection<int, Institution>  $institutions
+     * @param  Collection<string, array{task: Task, institution: Institution, recipients: Collection<int, User>}>|null  $asks  keyed by institution id
+     * @param  list<string>|null  $pairs
+     * @return array{plan: list<ActivityRequestPlanEntry>, byRecipient: array<string, array{user: User, requests: list<InstitutionActivityRequest>}>}
+     */
+    private function queue(EloquentCollection $institutions, ?User $requestedBy, ?string $note, InstitutionActivityCampaign $campaign, string $sendId, ?Collection $asks = null, ?array $pairs = null): array
+    {
+        $plan = $this->plan($institutions, $requestedBy, $campaign, $pairs);
+        $alreadyAskedForTask = $asks === null ? collect() : InstitutionActivityRequest::query()
+            ->whereIn('task_id', $asks->pluck('task.id'))->where('campaign_type', $campaign)
+            ->get(['task_id', 'recipient_id'])->map(fn (InstitutionActivityRequest $request) => $request->task_id.':'.$request->recipient_id);
+        $byRecipient = [];
+
+        foreach ($plan as $entry) {
+            $ask = $asks?->get($entry->institution->id);
+            if ($ask !== null && $campaign === InstitutionActivityCampaign::MissingMeetings
+                && $this->eligibility->skipReason($entry->institution, $entry->periodStart) !== null) {
+                continue;
+            }
+            foreach ($entry->recipients as $recipient) {
+                if ($ask !== null && (! $ask['recipients']->contains('id', $recipient->id) || $alreadyAskedForTask->contains($ask['task']->id.':'.$recipient->id))) {
                     continue;
                 }
-                foreach ($entry->recipients as $recipient) {
-                    $period = $entry->recipientPeriods[$recipient->id];
-                    // A task asks only its own assignees, and each of them once.
-                    if ($task !== null && (! $taskRecipients->contains('id', $recipient->id) || $alreadyAskedForTask->contains($recipient->id))) {
-                        continue;
-                    }
-                    $byRecipient[$recipient->id]['user'] = $recipient;
-                    $byRecipient[$recipient->id]['requests'][] = InstitutionActivityRequest::create([
-                        'send_id' => $sendId, 'institution_id' => $entry->institution->id, 'recipient_id' => $recipient->id,
-                        'requested_by_id' => $requestedBy?->id, 'task_id' => $task?->id, 'campaign_type' => $campaign,
-                        'period_start' => $period['period_start'], 'period_end' => $period['period_end'], 'locale' => app()->getLocale(),
-                        'note' => $note, 'expires_at' => now()->addDays(InstitutionActivityRequest::LINK_LIFETIME_DAYS),
-                    ]);
-                }
+                $period = $entry->recipientPeriods[$recipient->id];
+                $byRecipient[$recipient->id]['user'] = $recipient;
+                $byRecipient[$recipient->id]['requests'][] = InstitutionActivityRequest::create([
+                    'send_id' => $sendId, 'institution_id' => $entry->institution->id, 'recipient_id' => $recipient->id,
+                    'requested_by_id' => $requestedBy?->id, 'task_id' => $ask === null ? null : $ask['task']->id, 'campaign_type' => $campaign,
+                    'period_start' => $period['period_start'], 'period_end' => $period['period_end'], 'locale' => app()->getLocale(),
+                    'note' => $note, 'expires_at' => now()->addDays(InstitutionActivityRequest::LINK_LIFETIME_DAYS),
+                ]);
             }
+        }
 
-            foreach ($byRecipient as ['user' => $recipient, 'requests' => $requests]) {
-                $recipient->notify(new InstitutionActivityNotification(new EloquentCollection($requests))->afterCommit());
-            }
+        return ['plan' => $plan, 'byRecipient' => $byRecipient];
+    }
 
-            return ['plan' => $plan, ...$this->queuedSummary($byRecipient)];
-        });
+    /**
+     * @param  array<string, array{user: User, requests: list<InstitutionActivityRequest>}>  $byRecipient
+     */
+    private function notify(array $byRecipient): void
+    {
+        foreach ($byRecipient as ['user' => $recipient, 'requests' => $requests]) {
+            $recipient->notify(new InstitutionActivityNotification(new EloquentCollection($requests))->afterCommit());
+        }
     }
 
     /**

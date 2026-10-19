@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\InstitutionActivityCampaign;
 use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
@@ -250,6 +251,26 @@ describe('tasks:repopulate institution', function (): void {
 
         Notification::assertSentToTimes($representative, InstitutionActivityNotification::class, 1);
         expect(InstitutionActivityRequest::query()->where('task_id', periodicityGapTaskFor($institution)->id)->count())->toBe(1);
+    });
+
+    test('asks a representative about all their overdue institutions in one send and one email', function (): void {
+        $this->travelTo('2025-11-06');
+
+        $quiet = institutionWithRepresentative();
+        $representative = $quiet->duties->flatMap->users->first();
+        $withRecords = institutionWithRepresentative();
+        $representative->duties()->attach($withRecords->duties->first(), ['start_date' => now()->subYear(), 'end_date' => null]);
+        Meeting::factory()->hasAttached($withRecords)->create(['start_time' => '2025-10-01 10:00:00']);
+
+        $this->artisan('tasks:repopulate institution --force')->assertExitCode(0);
+
+        $requests = InstitutionActivityRequest::query()->where('recipient_id', $representative->id)->get();
+        expect($requests->pluck('institution_id')->sort()->values()->all())->toBe(collect([$quiet->id, $withRecords->id])->sort()->values()->all())
+            ->and($requests->pluck('send_id')->unique())->toHaveCount(1)
+            ->and($requests->firstWhere('institution_id', $quiet->id)->campaign_type)->toBe(InstitutionActivityCampaign::ActivityConfirmation)
+            ->and($requests->firstWhere('institution_id', $withRecords->id)->campaign_type)->toBe(InstitutionActivityCampaign::MissingMeetings)
+            ->and(InstitutionActivityRequest::query()->distinct()->count('send_id'))->toBe(1);
+        Notification::assertSentToTimes($representative, InstitutionActivityNotification::class, 1);
     });
 
     test('sets a due date that does not fall inside a vacation period', function (): void {

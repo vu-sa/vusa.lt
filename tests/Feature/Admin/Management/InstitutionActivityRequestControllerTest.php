@@ -287,8 +287,8 @@ test('automatic task retries reuse requests and ask one campaign, records first 
     $task = Task::factory()->create();
     app(RecordMeeting::class)->execute($this->institution, now()->subDays(40));
     $sender = app(SendInstitutionActivityRequests::class);
-    $sender->forTask($task, $this->institution, collect([$this->rep]));
-    $sender->forTask($task, $this->institution, collect([$this->rep]));
+    $sender->forTasks([['task' => $task, 'institution' => $this->institution, 'recipients' => collect([$this->rep])]]);
+    $sender->forTasks([['task' => $task, 'institution' => $this->institution, 'recipients' => collect([$this->rep])]]);
     expect(InstitutionActivityRequest::query()->where('task_id', $task->id)->get())->toHaveCount(1)
         ->and(InstitutionActivityRequest::query()->where('task_id', $task->id)->sole()->campaign_type)->toBe(InstitutionActivityCampaign::MissingMeetings);
     Notification::assertSentToTimes($this->rep, InstitutionActivityNotification::class, 1);
@@ -296,7 +296,7 @@ test('automatic task retries reuse requests and ask one campaign, records first 
 
 test('an automatic task asks whether a meeting happened when no records are missing', function (): void {
     $task = Task::factory()->create();
-    app(SendInstitutionActivityRequests::class)->forTask($task, $this->institution, collect([$this->rep]));
+    app(SendInstitutionActivityRequests::class)->forTasks([['task' => $task, 'institution' => $this->institution, 'recipients' => collect([$this->rep])]]);
     expect(InstitutionActivityRequest::query()->where('task_id', $task->id)->sole()->campaign_type)->toBe(InstitutionActivityCampaign::ActivityConfirmation);
     Notification::assertSentToTimes($this->rep, InstitutionActivityNotification::class, 1);
 });
@@ -488,7 +488,7 @@ test('activity requests exclude upcoming meetings and inactive institutions', fu
     expect($result['plan'][0]->skipReason->value)->toBe($reason)
         ->and($result['queued_requests'])->toBe(0)
         ->and(InstitutionActivityRequest::query()->count())->toBe(0);
-    $sender->forTask(Task::factory()->create(), $this->institution->fresh(), collect([$this->rep]));
+    $sender->forTasks([['task' => Task::factory()->create(), 'institution' => $this->institution->fresh(), 'recipients' => collect([$this->rep])]]);
     Notification::assertNotSentTo($this->rep, InstitutionActivityNotification::class);
 })->with(['scheduled' => ['upcoming', 'upcoming_meeting'], 'inactive' => ['inactive', 'inactive_institution']]);
 

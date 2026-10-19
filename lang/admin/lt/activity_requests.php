@@ -85,6 +85,7 @@ return [
     'email' => [
         'activity_confirmation' => 'Prašome tavęs, kaip studentų atstovo (-ės), pranešti, ar nurodytu laikotarpiu vyko posėdis. Atsakyti gali neprisijungęs. Ačiū už pagalbą!',
         'missing_meetings' => 'Prašome tavęs, kaip studentų atstovo (-ės), papildyti šio laikotarpio posėdžių darbotvarkes ir sprendimus. Tam reikės prisijungti prie Mano VU SA. Ačiū už pagalbą!',
+        'mixed' => 'Prašome tavęs, kaip studentų atstovo (-ės), pranešti, ar nurodytais laikotarpiais vyko posėdžiai, ir papildyti trūkstamus posėdžių įrašus. Įrašams papildyti reikės prisijungti prie Mano VU SA. Ačiū už pagalbą!',
     ],
     'queued' => 'Paruošta užklausų: :count. Gavėjų: :recipients. Laiškų iš karto: :emails.',
     'complete' => 'Viskas užfiksuota',

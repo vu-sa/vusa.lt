@@ -13,6 +13,7 @@ use App\Models\Meeting;
 use App\Models\Pivots\ReservationResource;
 use App\Models\Reservation;
 use App\Models\Task;
+use App\Models\User;
 use App\Services\AcademicCalendarService;
 use App\States\ReservationResource\Lent;
 use App\States\ReservationResource\Reserved;
@@ -26,6 +27,7 @@ use Carbon\Carbon;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 
 /**
  * Repopulate autotasks for specified model type or all model types.
@@ -46,6 +48,9 @@ use Illuminate\Console\Command;
                             {--include-past : Include past meetings (useful for historical data entry)}')]
 class RepopulateTasks extends Command
 {
+    /** @var list<array{task: Task, institution: Institution, recipients: Collection<int, User>}> */
+    private array $pendingAsks = [];
+
     /**
      * Model alias mapping to handler methods.
      */
@@ -209,10 +214,14 @@ class RepopulateTasks extends Command
             $created++;
         }
 
+        $this->activityRequests->forTasks($this->pendingAsks);
+        $this->pendingAsks = [];
+
         return ['created' => $created, 'skipped' => $skipped];
     }
 
     /**
+     * Collected and sent together after the loop, so each assignee gets one email for the whole run.
      * Idempotent per task and recipient, so the daily run asks each assignee once.
      */
     private function askAboutActivity(Task $task, Institution $institution, bool $dryRun): void
@@ -223,7 +232,7 @@ class RepopulateTasks extends Command
             return;
         }
 
-        $this->activityRequests->forTask($task, $institution, $task->notifiableUsers());
+        $this->pendingAsks[] = ['task' => $task, 'institution' => $institution, 'recipients' => $task->notifiableUsers()];
     }
 
     private function reconcilePeriodicityTask(Task $task, Institution $institution, InstitutionActivityStatusData $status, bool $dryRun): void

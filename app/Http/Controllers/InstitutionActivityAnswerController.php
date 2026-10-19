@@ -31,7 +31,6 @@ class InstitutionActivityAnswerController extends Controller
             ->open()
             ->with('institution')
             ->whereHas('institution')->whereHas('recipient')
-            ->where('campaign_type', $activityRequest->campaign_type)
             ->where('send_id', $activityRequest->send_id)
             ->where('recipient_id', $activityRequest->recipient_id)
             ->whereKeyNot($activityRequest->id)

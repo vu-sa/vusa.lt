@@ -85,6 +85,7 @@ return [
     'email' => [
         'activity_confirmation' => 'As a student representative, please let us know whether a meeting took place during this period. You can reply without signing in. Thank you for your help!',
         'missing_meetings' => 'As a student representative, please add the missing agendas and decisions for meetings in this period. You will need to sign in to Mano VU SA. Thank you for your help!',
+        'mixed' => 'As a student representative, please let us know whether meetings took place during these periods and add the missing meeting records. You will need to sign in to Mano VU SA to add records. Thank you for your help!',
     ],
     'queued' => 'Requests prepared: :count. Recipients: :recipients. Immediate emails: :emails.',
     'complete' => 'Everything is recorded',
