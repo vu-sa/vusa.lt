@@ -61,9 +61,10 @@ class MeetingTaskSubscriber
         // Nominated secretaries when the term has any, else the representatives who
         // were actually active at the meeting date. See ResolveTaskAssignees.
         $representatives = ResolveTaskAssignees::forMeeting($meeting);
+        $agendaTask = null;
 
         if ($representatives->isNotEmpty() && $meeting->agendaItems->isEmpty()) {
-            $this->creationHandler->findOrCreate(
+            $agendaTask = $this->creationHandler->findOrCreate(
                 name: __('Sukurti posėdžio darbotvarkės klausimus'),
                 meeting: $meeting,
                 users: $representatives,
@@ -72,7 +73,7 @@ class MeetingTaskSubscriber
         }
 
         if ($representatives->isNotEmpty() && $meeting->agendaItems->isNotEmpty()) {
-            $this->completionHandler->findOrCreate(
+            $agendaTask = $this->completionHandler->findOrCreate(
                 name: __('Užpildyti darbotvarkės klausimų informaciją'),
                 meeting: $meeting,
                 users: $representatives,
@@ -89,13 +90,18 @@ class MeetingTaskSubscriber
 
         ['overseers' => $overseers, 'followers' => $followers] = ResolveMeetingNotificationAudience::split($meeting);
 
-        $privateItems = $meeting->agendaItems()->where('is_private', true)->get();
-        $canReadAll = fn (User $user): bool => $privateItems->every(fn (AgendaItem $item): bool => AgendaItemPresenter::canRead($item, $user));
-        $overseers = $overseers->filter($canReadAll);
-        $followers = $followers->filter($canReadAll);
+        // The agenda task itself sends no notice (HandleTaskCreated), so its carriers hear about the meeting here.
+        $taskCarriers = $agendaTask?->notifiableUsers() ?? collect();
+        $overseers = $overseers->merge($taskCarriers)->unique('id')->values();
+        $followers = $followers->reject(fn (User $user): bool => $taskCarriers->contains('id', $user->id));
 
-        // Whoever carries the agenda task hears about the meeting from that task.
-        $overseers = $overseers->reject(fn (User $user): bool => $representatives->contains('id', $user->id));
+        /** @var User|null $creator */
+        $creator = Auth::user();
+        $privateItems = $meeting->agendaItems()->where('is_private', true)->get();
+        $shouldHear = fn (User $user): bool => ! $user->is($creator)
+            && $privateItems->every(fn (AgendaItem $item): bool => AgendaItemPresenter::canRead($item, $user));
+        $overseers = $overseers->filter($shouldHear);
+        $followers = $followers->filter($shouldHear);
 
         if ($overseers->isNotEmpty()) {
             Notification::send($overseers, new MeetingCreatedNotification($meeting));

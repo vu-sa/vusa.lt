@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Užduotys
 area: tasks
 models: [Task]
-last_reviewed: 2026-10-18
+last_reviewed: 2026-10-19
 tests:
   - tests/Browser/VisakOverviewPagesTest.php
   - tests/Feature/Admin/Dashboard/UserTasksTest.php
@@ -127,6 +127,7 @@ institucijai užduoties sukurti negalima.
 
 | Kada | Kas gauna | Ką |
 |---|---|---|
+| Kai užduotį priskiria žmogus | Atsakingi | Pranešimą „Nauja užduotis“. Automatinės užduotys (posėdžio darbotvarkė, išteklių atsiėmimas ir grąžinimas, patvirtinimai, veiklos klausimai) sukuriamos be šio pranešimo – apie jas praneša tai, kas jas sukūrė (pvz., [naujas posėdis](/pagrindai/pranesimai#auditorija) ar rezervacijos būsena) |
 | Kasdien 8.00, likus 7, 3 ir 1 d. iki termino | Atsakingi | Priminimą. Priminimų pasirinkimas valdomas [pranešimų nustatymuose](/pagrindai/pranesimai). Užduočiai „Pranešti apie veiklą“ jų nesiunčiama – vietoj to vieną kartą siunčiamas laiškas [„Ar vyko posėdis?“](/visak/institucijos#pranesimai) |
 | Kiekvieną pirmadienį 9.00 | Žmonės, turintys vėluojančių užduočių | Suvestinę apie vėluojančias užduotis |
 

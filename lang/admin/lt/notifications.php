@@ -202,7 +202,7 @@ return [
     'types' => [
         'task_assigned' => [
             'label' => 'Tau priskirta užduotis',
-            'description' => 'Kai tau priskiriama nauja užduotis — rankiniu būdu ar automatiškai, pvz., užpildyti posėdžio darbotvarkę.',
+            'description' => 'Kai kas nors tau priskiria užduotį. Automatinės užduotys, pvz., užpildyti posėdžio darbotvarkę, atsiranda Užduotyse be atskiro pranešimo – apie jas primenama prieš terminą.',
         ],
         'task_reminder' => [
             'label' => 'Artėja užduoties terminas',
@@ -230,7 +230,7 @@ return [
         ],
         'meeting_created' => [
             'label' => 'Sukurtas naujas posėdis',
-            'description' => 'Kai posėdis sukuriamas institucijoje, kurią koordinuoji ar kuruoji.',
+            'description' => 'Kai posėdis sukuriamas institucijoje, kurioje atstovauji, kurią koordinuoji ar kuruoji.',
         ],
         'meeting_agenda_completed' => [
             'label' => 'Užpildyta posėdžio darbotvarkė',
@@ -359,8 +359,8 @@ return [
         'how_email' => '„Laiškas iškart“ siunčia atskirą laišką tuoj pat, „Suvestinėje“ – kartu su kitais pasirinktu dažnumu.',
         'how_quiet' => 'Nuo 22:00 iki 07:00 push pranešimai ir suvestinės laukia ryto; skubūs laiškai siunčiami iškart.',
         'how_mute' => 'Nutildžius nesiunčiami laiškai, push ir suvestinės, išskyrus registracijų laiškus pareigybės el. paštu.',
-        'how_tasks' => 'Užduočių pranešimus gauna tie, kam užduotis priskirta ir kas vis dar turi pareigas toje institucijoje. Jei kadencijai paskirti sekretoriai, posėdžių užduotys tenka jiems, o ne visiems atstovams.',
-        'how_meetings' => 'Posėdžių priminimai siunčiami visiems, kurie posėdžio dieną turi pareigas institucijoje, ir tos kadencijos sekretoriams. Apie naują posėdį ar užpildytą darbotvarkę sužino koordinatoriai; kam tenka darbotvarkės užduotis, gauna tik užduoties pranešimą.',
+        'how_tasks' => 'Užduočių pranešimus gauna tie, kam užduotis priskirta ir kas vis dar turi pareigas toje institucijoje. Jei kadencijai paskirti sekretoriai, posėdžių užduotys tenka jiems, o ne visiems atstovams. Automatinės užduotys sukuriamos be atskiro pranešimo, o priminimai siunčiami artėjant terminui.',
+        'how_meetings' => 'Posėdžių priminimai siunčiami visiems, kurie posėdžio dieną turi pareigas institucijoje, ir tos kadencijos sekretoriams. Apie naują posėdį sužino koordinatoriai ir tie, kam tenka darbotvarkės užduotis (išskyrus posėdį sukūrusįjį), apie užpildytą darbotvarkę – tik koordinatoriai.',
         'how_followed' => 'Sekamų institucijų pranešimus gauni tik tada, kai tų pačių žinių negauni dėl pareigų. Nebenori jų gauti – nebesek institucijos.',
         'how_reservations' => 'Išteklių administratoriai gauna tik prašymą patvirtinti. Rezervavęs apie sprendimą sužino vieną kartą – kai pasikeičia rezervacijos būsena.',
         'how_self' => 'Apie savo paties veiksmą (patvirtinimą, užduoties uždarymą, būsenos pakeitimą) pranešimo negauni.',

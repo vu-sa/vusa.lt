@@ -85,6 +85,17 @@ describe('task notifications', function (): void {
         Notification::assertNothingSent();
     });
 
+    test('a task the system creates sends no notice when created', function (): void {
+        $user = $this->createUserWithPreferences();
+
+        $task = Task::factory()->create(['due_date' => now()->addDays(7), 'action_type' => ActionType::AgendaCompletion]);
+        $task->users()->attach($user);
+
+        event(new TaskCreated($task));
+
+        Notification::assertNothingSentTo($user);
+    });
+
     test('a periodicity task sends nothing when created, then one activity question the recipient can answer without signing in', function (): void {
         $user = $this->createUserWithPreferences();
         $institution = Institution::factory()->create();

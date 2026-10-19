@@ -1,6 +1,14 @@
 ---
 paths:
   - 'app/Notifications/**'
+  - 'app/Enums/NotificationType.php'
+  - 'app/Services/Notifications/**'
+  - 'app/Listeners/HandleTaskCreated.php'
+  - 'app/Listeners/QueueNotificationForDigest.php'
+  - 'app/Tasks/Subscribers/**'
+  - 'app/Actions/Schedulable/TaskNotifier.php'
+  - 'app/Console/Commands/Send*.php'
+  - 'resources/js/Pages/Admin/ShowNotificationSettings.vue'
 ---
 
 # Notifications
@@ -17,3 +25,6 @@ paths:
 - For a new configurable case: set `section()`, `urgency()`, `defaultPush()` (and `lockedEmail()` only for role-inbox mail), add `notifications.types.<value>.label` + `.description` ("when you get it") in lt and en, and a branch in `NotificationAudience::canReceive()` naming who can get it — the settings page lists only those. Record-only messages default to email Off (bell only).
 - Build recipients with the date-scoped resolvers (ResolveTaskAudience, ResolveMeetingNotificationAudience, GetResourceManagers…), never all-time relations, and exclude the actor whose action caused it.
 - One event → one notice per person: if a task, approval request or status change already reaches someone for the same event, do not send them a second notification; say so in the `how_*` copy on Pranešimų nustatymai.
+
+## Touching notification logic means reviewing Pranešimų nustatymai
+Any change to who gets a notification, when, or whether it is sent at all (notification classes, `NotificationType`, the listeners, subscribers and commands that send them) also reviews the settings page: `NotificationAudience::canReceive()` (who sees the type), `notifications.types.<value>.label`/`.description` and the `preferences.how_*` copy in `lang/admin/{lt,en}/notifications.php`, and `ShowNotificationSettings.vue`. Whoever can receive a type must be able to configure it, and the copy must describe what is actually sent.

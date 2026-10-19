@@ -2,9 +2,10 @@
 doc_status: reviewed
 title: Pranešimai
 coverage: ignore
-last_reviewed: 2026-10-18
+last_reviewed: 2026-10-19
 tests:
   - tests/Feature/Notifications/NotificationFiringTest.php
+  - tests/Feature/Tasks/Subscribers/MeetingTaskSubscriberTest.php
   - tests/Feature/Notifications/DigestSystemTest.php
   - tests/Feature/Notifications/NotificationSettingsTest.php
   - tests/Feature/Notifications/PushDeliveryTest.php
@@ -80,8 +81,17 @@ teikėjas ar tvirtintojas, paminėjimą – komentare pasirinktas narys. Institu
 parenkami pagal jų pareigas ar institucijos sekimą. Todėl galiojančios pareigos nėra būtina sąlyga
 visų rūšių pranešimams gauti.
 
-Kai atstovui paskiriama darbotvarkės rengimo užduotis, jis gauna užduoties pranešimą ir negauna
-papildomo bendro pranešimo apie tą patį naują posėdį.
+Užduoties pranešimas siunčiamas tik tada, kai užduotį priskiria žmogus. Automatinės užduotys,
+pvz., sukurti ar užpildyti posėdžio darbotvarkę, atsiranda [Užduotyse](/mano/uzduotys) be atskiro
+pranešimo – apie jas primenama artėjant terminui. Apie naują posėdį atstovas, kuriam tenka
+darbotvarkės užduotis, sužino vienu pranešimu **„Sukurtas naujas posėdis“**, kaip ir koordinatoriai.
+Posėdį sukūręs narys šio pranešimo negauna.
+
+<ChangelogNote version="v3.9" date="2026-10-19" title="Automatinės užduotys be atskiro pranešimo">
+
+Anksčiau kiekvienas naujas posėdis atstovo suvestinėje palikdavo dvi „Nauja užduotis“ eilutes, iš kurių viena jau būdavo atlikta.
+
+</ChangelogNote>
 
 Pagal institucijos posėdžių periodiškumą gali gauti **„VU SA · Ar vyko posėdis?“** arba
 **„VU SA · Papildyk posėdžių įrašus“**. Automatiškai toks laiškas siunčiamas vieną kartą, kai

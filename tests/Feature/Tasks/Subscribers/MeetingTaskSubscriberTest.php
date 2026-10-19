@@ -417,7 +417,7 @@ describe('MeetingTaskSubscriber', function (): void {
             Notification::assertSentToTimes($admin, MeetingCreatedNotification::class, 1);
         });
 
-        test('a secretary who carries the agenda task is not also sent the overseer notice', function (): void {
+        test('a secretary who carries the agenda task hears about the meeting once, not from the task', function (): void {
             $institution = Institution::factory()->for(Tenant::query()->first())->create();
             $cadence = Cadence::factory()->create([
                 'institution_id' => $institution->id,
@@ -430,8 +430,35 @@ describe('MeetingTaskSubscriber', function (): void {
             $meeting = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()]);
             event(new MeetingFullyCreated($meeting));
 
-            Notification::assertSentTo($secretary, TaskAssignedNotification::class);
-            Notification::assertNotSentTo($secretary, MeetingCreatedNotification::class);
+            Notification::assertSentToTimes($secretary, MeetingCreatedNotification::class, 1);
+            Notification::assertNotSentTo($secretary, TaskAssignedNotification::class);
+        });
+
+        test('a rep carrying the agenda tasks gets one meeting notice and no task notices', function (): void {
+            [$meeting, $creationTask] = $this->createMeetingWithCreationTask();
+            $rep = $creationTask->users->first();
+
+            AgendaItem::factory()->create(['meeting_id' => $meeting->id, 'order' => 1]);
+
+            Notification::assertSentToTimes($rep, MeetingCreatedNotification::class, 1);
+            Notification::assertNotSentTo($rep, TaskAssignedNotification::class);
+        });
+
+        test('whoever created the meeting is not told about it', function (): void {
+            $institution = Institution::factory()->for(Tenant::query()->first())->create();
+            $studentRepType = DutyType::query()->firstOrCreate(['slug' => 'studentu-atstovai'], ['name' => ['lt' => 'Studentų atstovai', 'en' => 'Student representatives']]);
+            $duty = Duty::factory()->for($institution)->hasAttached($studentRepType, [], 'types')->create();
+            $creator = User::factory()->create();
+            $colleague = User::factory()->create();
+            $creator->duties()->attach($duty, ['start_date' => now()->subMonth(), 'end_date' => null]);
+            $colleague->duties()->attach($duty, ['start_date' => now()->subMonth(), 'end_date' => null]);
+
+            $this->actingAs($creator);
+            $meeting = Meeting::factory()->hasAttached($institution)->create(['start_time' => now()]);
+            event(new MeetingFullyCreated($meeting));
+
+            Notification::assertNotSentTo($creator, MeetingCreatedNotification::class);
+            Notification::assertSentTo($colleague, MeetingCreatedNotification::class);
         });
 
         test('notifies followers when meeting is created', function (): void {

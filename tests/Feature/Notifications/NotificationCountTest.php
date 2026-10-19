@@ -131,8 +131,8 @@ describe('notification deduplication edge cases', function (): void {
     });
 });
 
-describe('reservation state change triggers both status and task notifications', function (): void {
-    test('reservation state change to Reserved sends exactly 2 notifications: status + task', function (): void {
+describe('reservation state change sends the status notice, not a task notice too', function (): void {
+    test('reservation state change to Reserved sends exactly one notification: the status', function (): void {
         $user = $this->createUserWithPreferences();
         $admin = $this->createUserWithPreferences();
 
@@ -140,18 +140,11 @@ describe('reservation state change triggers both status and task notifications',
 
         $this->actingAs($admin);
 
-        // State change to Reserved triggers:
-        // 1. HandleReservationResourceStateChanged -> ReservationStatusChangedNotification
-        // 2. HandleReservationResourceReserved -> creates Task -> TaskCreated event -> TaskAssignedNotification
+        // The pickup task is created too, but a system task sends no notice of its own.
         $reservationResource->state->transitionTo(Reserved::class);
 
-        // User should receive exactly 2 notifications
-        Notification::assertSentTo($user, ReservationStatusChangedNotification::class);
-        Notification::assertSentTo($user, TaskAssignedNotification::class);
-
-        // Verify each notification is sent exactly once
         Notification::assertSentToTimes($user, ReservationStatusChangedNotification::class, 1);
-        Notification::assertSentToTimes($user, TaskAssignedNotification::class, 1);
+        Notification::assertNotSentTo($user, TaskAssignedNotification::class);
     });
 
     test('reservation state change creates task for picking up resource', function (): void {
@@ -164,17 +157,13 @@ describe('reservation state change triggers both status and task notifications',
 
         $reservationResource->state->transitionTo(Reserved::class);
 
-        // Verify the task was created with correct name
-        Notification::assertSentTo($user, TaskAssignedNotification::class);
-
-        // Verify task exists in database
         $this->assertDatabaseHas('tasks', [
             'taskable_type' => MorphMap::alias(Reservation::class),
             'taskable_id' => $reservationResource->reservation_id,
         ]);
     });
 
-    test('multiple users on reservation all receive both notifications', function (): void {
+    test('multiple users on reservation each receive the status notice once', function (): void {
         $user1 = $this->createUserWithPreferences();
         $user2 = $this->createUserWithPreferences();
         $admin = $this->createUserWithPreferences();
@@ -186,10 +175,9 @@ describe('reservation state change triggers both status and task notifications',
 
         $reservationResource->state->transitionTo(Reserved::class);
 
-        // Both users should receive both notifications
         foreach ([$user1, $user2] as $user) {
             Notification::assertSentToTimes($user, ReservationStatusChangedNotification::class, 1);
-            Notification::assertSentToTimes($user, TaskAssignedNotification::class, 1);
+            Notification::assertNotSentTo($user, TaskAssignedNotification::class);
         }
     });
 

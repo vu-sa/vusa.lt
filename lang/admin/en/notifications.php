@@ -202,7 +202,7 @@ return [
     'types' => [
         'task_assigned' => [
             'label' => 'A task is assigned to you',
-            'description' => 'When a new task is assigned to you, by hand or automatically, e.g. filling in a meeting agenda.',
+            'description' => 'When someone assigns you a task. Automatic tasks, e.g. filling in a meeting agenda, appear in Tasks without a separate notice; you are reminded of them before the deadline.',
         ],
         'task_reminder' => [
             'label' => 'Task deadline is near',
@@ -230,7 +230,7 @@ return [
         ],
         'meeting_created' => [
             'label' => 'New meeting created',
-            'description' => 'When a meeting is created in an institution you coordinate or oversee.',
+            'description' => 'When a meeting is created in an institution you represent, coordinate or oversee.',
         ],
         'meeting_agenda_completed' => [
             'label' => 'Meeting agenda filled in',
@@ -359,8 +359,8 @@ return [
         'how_email' => '“Email at once” sends its own email right away; “In digest” bundles it with others at your chosen frequency.',
         'how_quiet' => 'From 22:00 to 07:00, push notifications and digests wait until morning; urgent emails still go at once.',
         'how_mute' => 'While muted, no emails, push or digests are sent, except registration emails to a duty inbox.',
-        'how_tasks' => 'Task notifications go to the people the task is assigned to who still hold a duty in that institution. When secretaries are appointed for the term, meeting tasks go to them rather than to every representative.',
-        'how_meetings' => 'Meeting reminders go to everyone holding a duty in the institution on the meeting day, and to that term\'s secretaries. Coordinators hear about a new meeting or a filled-in agenda; whoever carries the agenda task gets only the task notice.',
+        'how_tasks' => 'Task notifications go to the people the task is assigned to who still hold a duty in that institution. When secretaries are appointed for the term, meeting tasks go to them rather than to every representative. Automatic tasks are created without a separate notice; reminders follow as the deadline approaches.',
+        'how_meetings' => 'Meeting reminders go to everyone holding a duty in the institution on the meeting day, and to that term\'s secretaries. Coordinators and whoever carries the agenda task hear about a new meeting (except the person who created it); only coordinators hear about a filled-in agenda.',
         'how_followed' => 'Followed-institution notices reach you only when your duties do not already bring you the same news. Unfollow the institution to stop receiving these notices.',
         'how_reservations' => 'Resource managers get only the approval request. The requester hears about the decision once — when the reservation\'s status changes.',
         'how_self' => 'You are never notified about your own action (an approval, closing a task, a status change).',

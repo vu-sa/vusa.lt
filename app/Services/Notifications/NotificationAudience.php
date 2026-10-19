@@ -47,7 +47,9 @@ class NotificationAudience
             NotificationType::TaskAutoCompleted, NotificationType::MeetingReminder,
             NotificationType::InstitutionActivity, NotificationType::DutyExpiring,
             NotificationType::AccessChanged => $this->hasCurrentDuty($user),
-            NotificationType::MeetingCreated, NotificationType::MeetingAgendaCompleted => $this->isMeetingOverseer($user),
+            // Reps carrying the agenda task hear about a new meeting; the filled-in agenda is their own work.
+            NotificationType::MeetingCreated => $this->hasCurrentDuty($user) || $this->isMeetingOverseer($user),
+            NotificationType::MeetingAgendaCompleted => $this->isMeetingOverseer($user),
             NotificationType::ApprovalRequested => $this->isResourceManager($user),
             NotificationType::MemberRegistration => $this->holdsRole($user, app(FormSettings::class)->member_registration_notification_recipient_role_id),
             NotificationType::StudentRepRegistration => $this->coordinates($user),

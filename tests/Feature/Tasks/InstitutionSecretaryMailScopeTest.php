@@ -13,6 +13,7 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\MeetingCreatedNotification;
 use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskAutoCompletedNotification;
 use App\Support\MorphMap;
@@ -128,10 +129,11 @@ test('the secretary carries the task alone and is the only one mailed about it',
 
     expect(agendaCompletionTaskFor($meeting)->users()->pluck('users.id')->all())
         ->toBe([$this->secretary->id])
-        ->and(receivedBy($this->secretary))->toContain(TaskAssignedNotification::class);
+        ->and(receivedBy($this->secretary))->toContain(MeetingCreatedNotification::class)
+        ->not->toContain(TaskAssignedNotification::class);
 
     $this->members->each(fn (User $member) => expect(receivedBy($member))
-        ->not->toContain(TaskAssignedNotification::class));
+        ->not->toContain(MeetingCreatedNotification::class));
 });
 
 test('auto-completing the agenda tells the secretary, not the members', function (): void {

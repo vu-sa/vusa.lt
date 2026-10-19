@@ -25,8 +25,8 @@ describe('which notifications a user sees', function (): void {
     test('a rep sees their own tasks and meetings, but not approvals or registrations', function (): void {
         $types = settingsTypesFor($this->user);
 
-        expect($types)->toContain('task_reminder', 'meeting_reminder', 'comment_mention', 'followed_institution_activity')
-            ->not->toContain('approval_requested', 'member_registration', 'institution_activity_not_mine', 'support_request_created', 'welcome', 'test_push');
+        expect($types)->toContain('task_reminder', 'meeting_reminder', 'meeting_created', 'comment_mention', 'followed_institution_activity')
+            ->not->toContain('meeting_agenda_completed', 'approval_requested', 'member_registration', 'institution_activity_not_mine', 'support_request_created', 'welcome', 'test_push');
     });
 
     test('a resource manager also sees approval requests', function (): void {

@@ -29,3 +29,6 @@ Regression coverage: `tests/Feature/Tasks/InstitutionSecretaryMailScopeTest.php`
 
 ## Notify a task's audience, not its assignee list
 Never send a task notification to $task->users — use $task->notifiableUsers() (App\Actions\ResolveTaskAudience). Assignment is snapshotted at the meeting's date by ResolveTaskAssignees, so backfilling an old sitting files the task on that term's roster; mailing it is wrong in both directions. The audience is the assignees who belong to the body (duty holder or nominated administrator) BOTH on the task's date and today. Deliberately unfiltered: manual tasks (a person picked those assignees) and tasks with no institution behind them (reservations — the person responsible stays responsible after their term).
+
+## Only a person-assigned task sends "Nauja užduotis"
+`HandleTaskCreated` skips every auto-completable `ActionType`. A system task is announced by whatever created it (the meeting notice, reservation status, approval request, "Ar vyko posėdis?"), and `TaskNotifier` reminds before the deadline. The meeting agenda task's carriers therefore get `MeetingCreatedNotification` (not the creator), so `NotificationAudience` lists `meeting_created` for duty holders. A meeting saved without an agenda used to put two "Nauja užduotis" digest lines per meeting, one already done.

@@ -4,7 +4,6 @@ namespace App\Listeners;
 
 use App\Events\TaskCreated;
 use App\Notifications\TaskAssignedNotification;
-use App\Tasks\Enums\ActionType;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Notification;
 
@@ -14,13 +13,9 @@ class HandleTaskCreated implements ShouldQueue
     {
         $task = $event->task;
 
-        // ApprovalRequestedNotification already asks the approvers; a task notice would repeat it.
-        if ($task->action_type === ActionType::Approval) {
-            return;
-        }
-
-        // Its "Ar vyko posėdis?" is the notice, sent by tasks:repopulate once the institution is overdue.
-        if ($task->action_type === ActionType::PeriodicityGap) {
+        // A system task is announced by whatever created it (the meeting, the reservation status,
+        // the approval request, "Ar vyko posėdis?"); its reminders follow the deadline.
+        if ($task->action_type?->isAutoCompletable()) {
             return;
         }
 
