@@ -1,8 +1,10 @@
 <?php
 
 use App\Exceptions\StagingResourceReadOnlyException;
+use App\Models\ContentEditorDraft;
 use App\Models\News;
 use App\Models\Tenant;
+use App\Models\User;
 use App\Services\FileUsageScanner;
 use App\Services\Media\LegacyFileReport;
 use Illuminate\Database\Schema\Blueprint;
@@ -77,11 +79,17 @@ test('file progress is reported incrementally without changing the report', func
 });
 
 test('nothing is deleted while the legacy columns could still hide a reference', function (): void {
-    $this->artisan('media:legacy-files', ['--delete' => true, '--force' => true])
-        ->expectsOutputToContain('news.image still exists')
-        ->assertFailed();
+    Schema::table('news', fn (Blueprint $table) => $table->string('image')->nullable());
 
-    expect(File::exists($this->uploads.'/contacts/forgotten.webp'))->toBeTrue();
+    try {
+        $this->artisan('media:legacy-files', ['--delete' => true, '--force' => true])
+            ->expectsOutputToContain('news.image still exists')
+            ->assertFailed();
+
+        expect(File::exists($this->uploads.'/contacts/forgotten.webp'))->toBeTrue();
+    } finally {
+        Schema::table('news', fn (Blueprint $table) => $table->dropColumn('image'));
+    }
 });
 
 test('nothing is deleted on staging, whose uploads are production\'s', function (): void {
@@ -94,12 +102,44 @@ test('nothing is deleted on staging, whose uploads are production\'s', function 
 });
 
 test('once the columns are gone only unreferenced files are deleted', function (): void {
-    foreach (LegacyFileReport::LEGACY_COLUMNS as $table => $column) {
-        Schema::table($table, fn (Blueprint $blueprint) => $blueprint->dropColumn($column));
-    }
-
     $this->artisan('media:legacy-files', ['--group' => 'contacts', '--delete' => true, '--force' => true])->assertSuccessful();
 
     expect(File::exists($this->uploads.'/contacts/forgotten.webp'))->toBeFalse()
         ->and(File::exists($this->uploads.'/contacts/still-linked.webp'))->toBeTrue();
+});
+
+test('deletion preserves a file referenced only by a trashed record', function (): void {
+    $news = News::factory()->for(Tenant::query()->first())->create([
+        'short' => '<p><img src="/uploads/contacts/forgotten.webp"></p>',
+    ]);
+    $news->delete();
+
+    $this->artisan('media:legacy-files', ['--group' => 'contacts', '--delete' => true, '--force' => true])->assertSuccessful();
+
+    expect(File::exists($this->uploads.'/contacts/forgotten.webp'))->toBeTrue();
+});
+
+test('deletion preserves files referenced only in an editor draft', function (): void {
+    $news = News::query()->first();
+    ContentEditorDraft::create([
+        'kind' => 'news',
+        'identity' => (string) $news->id,
+        'user_id' => User::query()->first()->id,
+        'snapshot' => ['image' => '/uploads/contacts/forgotten.webp'],
+    ]);
+
+    $this->artisan('media:legacy-files', ['--group' => 'contacts', '--delete' => true, '--force' => true])->assertSuccessful();
+
+    expect(File::exists($this->uploads.'/contacts/forgotten.webp'))->toBeTrue();
+});
+
+test('a reference added after reporting is checked again before deletion', function (): void {
+    $report = app(LegacyFileReport::class);
+    expect($report->build('contacts')['contacts']['unreferenced'])->toContain('contacts/forgotten.webp');
+    News::factory()->for(Tenant::query()->first())->create([
+        'short' => '<p><img src="/uploads/contacts/forgotten.webp"></p>',
+    ]);
+
+    expect($report->delete('contacts/forgotten.webp'))->toBeFalse();
+    expect(File::exists($this->uploads.'/contacts/forgotten.webp'))->toBeTrue();
 });

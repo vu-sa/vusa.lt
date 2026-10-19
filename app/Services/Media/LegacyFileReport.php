@@ -97,7 +97,8 @@ class LegacyFileReport
     {
         $path = $this->uploadsRoot.'/'.ltrim($pathBelowUploads, '/');
 
-        return ! str_contains($pathBelowUploads, '..') && File::isFile($path) && File::delete($path);
+        return ! str_contains($pathBelowUploads, '..') && File::isFile($path)
+            && ! $this->isReferenced($pathBelowUploads) && File::delete($path);
     }
 
     /**

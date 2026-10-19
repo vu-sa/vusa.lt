@@ -75,7 +75,7 @@ class NewsController extends PublicController
             ->orderByDesc('publish_time')
             ->take(3)
             ->with('media')
-            ->get(['id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang'])
+            ->get(['id', 'title', 'short', 'permalink', 'publish_time', 'lang'])
             ->map(fn ($article) => [
                 'id' => $article->id,
                 'title' => $article->title,
@@ -163,7 +163,7 @@ class NewsController extends PublicController
         }
 
         $news = $query
-            ->select('id', 'title', 'short', 'image', 'permalink', 'publish_time', 'lang', 'created_at')
+            ->select('id', 'title', 'short', 'permalink', 'publish_time', 'lang', 'created_at')
             ->with('media')
             ->orderBy('publish_time', 'desc')
             ->paginate(15)

@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Scout\Searchable;
 
 /**
@@ -91,17 +92,13 @@ class Banner extends Model implements ImageMediaOwner
         Cache::tags(['banners'])->flush();
     }
 
-    /**
-     * Transitional(legacy-images): remove once nothing reads image_url, then drop the column.
-     */
     public function imageCacheColumns(): array
     {
-        return ['image' => ['url' => 'image_url', 'conversion' => 'large']];
+        return Schema::hasColumn('banners', 'image_url')
+            ? ['image' => ['url' => 'image_url', 'conversion' => 'large']]
+            : [];
     }
 
-    /**
-     * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
-     */
     public function legacyImageColumns(): array
     {
         return ['image' => ['url' => 'image_url']];

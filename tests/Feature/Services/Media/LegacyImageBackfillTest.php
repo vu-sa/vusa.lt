@@ -26,6 +26,7 @@ use Illuminate\Support\Str;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    (require base_path('database/migrations/2026_10_19_192000_drop_legacy_image_columns.php'))->down();
     Storage::fake('spatieMediaLibrary');
     $this->tenant = Tenant::query()->first();
     $this->uploads = sys_get_temp_dir().'/legacy-backfill-'.Str::random(8);

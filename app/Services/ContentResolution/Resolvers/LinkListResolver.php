@@ -179,7 +179,8 @@ final class LinkListResolver implements ResolvesContentPart
             ->whereIn('id', array_slice($ids, 0, self::MAX_PINNED_IDS * 4))
             ->where('draft', false)
             ->where('publish_time', '<=', now())
-            ->get(['id', 'title', 'permalink', 'lang', 'other_lang_id', 'tenant_id', 'publish_time', 'image'])
+            ->with('media')
+            ->get(['id', 'title', 'permalink', 'lang', 'other_lang_id', 'tenant_id', 'publish_time'])
             ->keyBy('id');
     }
 

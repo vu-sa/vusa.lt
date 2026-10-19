@@ -34,6 +34,7 @@ use Spatie\MediaLibrary\Support\PathGenerator\PathGeneratorFactory;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    (require base_path('database/migrations/2026_10_19_192000_drop_legacy_image_columns.php'))->down();
     Storage::fake();
     Storage::fake('spatieMediaLibrary');
     Queue::fake([PerformConversionsJob::class]);
@@ -334,13 +335,13 @@ test('cancelled media batches leave uploads and legacy images untouched', functi
 
 test('image references and cached conversion URLs need no version query string', function (): void {
     $owner = Institution::factory()->create();
-    $media = app(AddImageMedia::class)->execute($owner, UploadedFile::fake()->image(str_repeat('long-name-', 12).'.jpg'), 'image');
+    $media = app(AddImageMedia::class)->execute($owner, UploadedFile::fake()->image(str_repeat('long-name-', 12).'.jpg'), 'logo');
     upgradeMedia([$media->id]);
-    $owner->refreshImageCache('image');
-    $data = $owner->fresh()->imageData('image');
+    $owner->refreshImageCache('logo');
+    $data = $owner->fresh()->imageData('logo');
 
     expect($data['url'])->not->toContain('?')
         ->and($data['thumb'])->not->toContain('?')
         ->and($data['srcset'])->not->toContain('?')
-        ->and(strlen($owner->fresh()->image_url))->toBeLessThanOrEqual(125);
+        ->and(strlen($owner->fresh()->logo_url))->toBeLessThanOrEqual(125);
 });

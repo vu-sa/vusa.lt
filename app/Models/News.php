@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Feed\Feedable;
@@ -139,12 +139,11 @@ class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
      */
     public function imageCacheColumns(): array
     {
-        return ['image' => ['url' => 'image', 'author' => 'image_author', 'conversion' => 'large']];
+        return Schema::hasColumn('news', 'image')
+            ? ['image' => ['url' => 'image', 'author' => 'image_author', 'conversion' => 'large']]
+            : [];
     }
 
-    /**
-     * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
-     */
     public function legacyImageColumns(): array
     {
         return ['image' => ['url' => 'image', 'author' => 'image_author']];
@@ -469,20 +468,7 @@ class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
     {
         $media = $this->getFirstMedia('image');
 
-        if ($media !== null) {
-            return (int) $media->size;
-        }
-
-        // Transitional(legacy-images): drop this legacy branch with the image column.
-        if (! $this->image || str_starts_with($this->image, 'http')) {
-            return 0;
-        }
-
-        try {
-            return Storage::disk('public')->size(str_replace('uploads/', '', $this->image));
-        } catch (\Throwable) {
-            return 0;
-        }
+        return $media !== null ? (int) $media->size : 0;
     }
 
     /**
@@ -492,18 +478,7 @@ class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
     {
         $media = $this->getFirstMedia('image');
 
-        if ($media !== null) {
-            return (string) $media->mime_type;
-        }
-
-        // Transitional(legacy-images): drop this legacy branch with the image column.
-        return match (strtolower(pathinfo($this->image ?? '', PATHINFO_EXTENSION))) {
-            'png' => 'image/png',
-            'gif' => 'image/gif',
-            'webp' => 'image/webp',
-            'svg' => 'image/svg+xml',
-            default => 'image/jpeg',
-        };
+        return $media !== null ? (string) $media->mime_type : 'image/jpeg';
     }
 
     /**
@@ -515,26 +490,7 @@ class News extends Model implements Feedable, ImageMediaOwner, Sitemapable
      */
     public function getImageUrl(): ?string
     {
-        $media = $this->getFirstMedia('image');
-
-        if ($media !== null) {
-            return $media->getUrl();
-        }
-
-        // Transitional(legacy-images): drop this legacy branch with the image column.
-        $image = $this->image;
-
-        // External URLs pass through
-        if ($image && str_starts_with($image, 'http')) {
-            return $image;
-        }
-
-        // Check if local file exists
-        if ($image && Storage::disk('public')->exists(str_replace('uploads/', '', $image))) {
-            return $image;
-        }
-
-        return null;
+        return $this->getFirstMedia('image')?->getUrl();
     }
 
     public function toNewsArticleSchema()

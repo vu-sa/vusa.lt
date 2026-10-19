@@ -73,14 +73,11 @@ class FileUsageScanner
      */
     public static function targets(): array
     {
-        // Transitional(legacy-images): drop news.image, pages.featured_image, banners.image_url and
-        // institutions.image_url/logo_url here in the same change that drops the columns.
         return [
             'contentParts' => [ContentPart::class, ['json_content', 'options']],
-            'news' => [News::class, ['short', 'image']],
-            'pages' => [Page::class, ['featured_image']],
-            'banners' => [Banner::class, ['image_url', 'link_url']],
-            'institutions' => [Institution::class, ['description', 'image_url', 'logo_url']],
+            'news' => [News::class, ['short']],
+            'banners' => [Banner::class, ['link_url']],
+            'institutions' => [Institution::class, ['description', 'logo_url']],
             'calendar' => [Calendar::class, ['description', 'cto_url']],
             'duties' => [Duty::class, ['description']],
             'dutiables' => [Dutiable::class, ['description', 'additional_photo']],

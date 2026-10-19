@@ -20,22 +20,11 @@ class BannerFactory extends Factory
     {
         return [
             'title' => fake()->sentence(3),
-            'image_url' => fake()->imageUrl(),
             'link_url' => fake()->url(),
             'lang' => fake()->randomElement(['lt', 'en']),
             'order' => fake()->unique()->numberBetween(1, 10000),
             'is_active' => fake()->boolean(),
             'tenant_id' => Tenant::factory(),
         ];
-    }
-
-    /**
-     * A banner with no logo — renders as a text mark on the public site.
-     */
-    public function withoutLogo(): static
-    {
-        return $this->state(fn (array $attributes): array => [
-            'image_url' => null,
-        ]);
     }
 }

@@ -192,7 +192,8 @@ class SyncImageMedia
         $values = [];
 
         foreach (['focal' => 'focal_point', 'author' => 'author'] as $column => $property) {
-            if (isset($columns[$column]) && array_key_exists($property, $ref)) {
+            if (isset($columns[$column]) && array_key_exists($property, $ref)
+                && $owner->getConnection()->getSchemaBuilder()->hasColumn($owner->getTable(), $columns[$column])) {
                 $values[$columns[$column]] = is_string($ref[$property]) && $ref[$property] !== '' ? $ref[$property] : null;
             }
         }

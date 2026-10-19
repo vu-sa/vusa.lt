@@ -16,7 +16,6 @@ beforeEach(function (): void {
 
     $this->banner = Banner::factory()->for($this->tenant)->create([
         'title' => 'Test baneris',
-        'image_url' => 'https://example.com/test.jpg',
         'link_url' => 'https://example.com',
         'is_active' => true,
         'order' => 100, // Use a high order to avoid conflicts
@@ -115,7 +114,7 @@ describe('authorized access', function (): void {
         $validData = getControllerTestData('Banner')['valid'];
         $uniqueSuffix = time();
         $validData['title'] = 'Baneris be logotipo '.$uniqueSuffix;
-        unset($validData['image_url'], $validData['image_media']);
+        unset($validData['image_media']);
 
         asUser($this->admin)
             ->post(route('banners.store'), $validData)
@@ -125,7 +124,6 @@ describe('authorized access', function (): void {
 
         $this->assertDatabaseHas('banners', [
             'title' => $validData['title'],
-            'image_url' => null,
         ]);
     });
 
@@ -168,7 +166,7 @@ describe('authorized access', function (): void {
     });
 
     test('cannot update banner with invalid data - missing title', function (): void {
-        $invalidData = ['title' => '', 'image_url' => 'https://example.com/test.jpg'];
+        $invalidData = ['title' => ''];
 
         asUser($this->admin)
             ->patch(route('banners.update', $this->banner), $invalidData)
@@ -206,7 +204,6 @@ describe('authorized access', function (): void {
         $this->assertDatabaseHas('banners', [
             'id' => $this->banner->id,
             'title' => 'Valid title',
-            'image_url' => null,
         ]);
     });
 
@@ -294,7 +291,6 @@ describe('filtering and search', function (): void {
         // Create additional banners for testing
         Banner::factory()->for($this->tenant)->create([
             'title' => 'Another banner',
-            'image_url' => 'https://example.com/another.jpg',
             'is_active' => false,
         ]);
     });

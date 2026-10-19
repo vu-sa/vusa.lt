@@ -20,7 +20,7 @@ beforeEach(function (): void {
 });
 
 test('a file used only by a trashed record is not reported safe to delete', function (): void {
-    $banner = Banner::factory()->create(['image_url' => $this->imagePath]);
+    $banner = Banner::factory()->create(['link_url' => $this->imagePath]);
     $banner->delete();
 
     $result = $this->scanner->scanFileUsage($this->imagePath);
@@ -30,7 +30,7 @@ test('a file used only by a trashed record is not reported safe to delete', func
 });
 
 test('a file used by a live record is still reported as in use', function (): void {
-    Banner::factory()->create(['image_url' => $this->imagePath]);
+    Banner::factory()->create(['link_url' => $this->imagePath]);
 
     $result = $this->scanner->scanFileUsage($this->imagePath);
 

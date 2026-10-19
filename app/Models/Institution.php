@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
@@ -407,20 +408,19 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         $this->touch();
     }
 
-    /**
-     * Transitional(legacy-images): remove once nothing reads the columns, then drop them.
-     */
     public function imageCacheColumns(): array
     {
-        return [
-            'image' => ['url' => 'image_url', 'focal' => 'image_focal_point', 'conversion' => 'large'],
+        $columns = [
             'logo' => ['url' => 'logo_url', 'conversion' => 'thumb'],
         ];
+
+        if (Schema::hasColumn('institutions', 'image_url')) {
+            $columns['image'] = ['url' => 'image_url', 'focal' => 'image_focal_point', 'conversion' => 'thumb'];
+        }
+
+        return $columns;
     }
 
-    /**
-     * Transitional(legacy-images): remove when media:migrate-images --status shows 0 pending.
-     */
     public function legacyImageColumns(): array
     {
         return [

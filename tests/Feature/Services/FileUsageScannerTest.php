@@ -160,7 +160,7 @@ describe('encodings production writes', function (): void {
     });
 
     test('an absolute www.vusa.lt URL in a plain column is found', function (): void {
-        Banner::factory()->create(['image_url' => 'https://www.vusa.lt'.$this->url]);
+        Banner::factory()->create(['link_url' => 'https://www.vusa.lt'.$this->url]);
 
         expect(scanUsage($this->relativePath)['total_usages'])->toBe(1);
     });
@@ -174,19 +174,19 @@ describe('references to other files', function (): void {
     });
 
     test('a file with the same name in another folder is not a usage', function (): void {
-        Banner::factory()->create(['image_url' => '/uploads/files/kitas aplankas/Ąžuolų šventė 2024 (1).jpg']);
+        Banner::factory()->create(['link_url' => '/uploads/files/kitas aplankas/Ąžuolų šventė 2024 (1).jpg']);
 
         expect(scanUsage($this->relativePath)['is_safe_to_delete'])->toBeTrue();
     });
 
     test('LIKE wildcards in a filename stay literal', function (): void {
-        Banner::factory()->create(['image_url' => '/uploads/files/50 nuolaidaxstudentams.pdf']);
+        Banner::factory()->create(['link_url' => '/uploads/files/50 nuolaidaxstudentams.pdf']);
 
         expect(scanUsage('50% nuolaida_studentams.pdf')['is_safe_to_delete'])->toBeTrue();
     });
 
     test('the legacy path counts only while no other file lives there', function (): void {
-        Banner::factory()->create(['image_url' => '/uploads/news/foto.webp']);
+        Banner::factory()->create(['link_url' => '/uploads/news/foto.webp']);
 
         expect(scanUsage('news/foto.webp')['is_safe_to_delete'])->toBeFalse();
 
@@ -229,7 +229,7 @@ describe('owners and freshness', function (): void {
     test('a reference added after a scan is found by the next scan', function (): void {
         expect(scanUsage($this->relativePath)['is_safe_to_delete'])->toBeTrue();
 
-        Banner::factory()->create(['image_url' => $this->url]);
+        Banner::factory()->create(['link_url' => $this->url]);
 
         expect(scanUsage($this->relativePath)['is_safe_to_delete'])->toBeFalse();
     });

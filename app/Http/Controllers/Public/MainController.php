@@ -22,10 +22,18 @@ class MainController extends PublicController
     {
         // get last 4 news by publishing date
         $tenant = Tenant::where('shortname', '=', 'VU SA')->first();
-        $mainNews = News::select('title', 'short', 'image')->where([['tenant_id', '=', $tenant->id], ['draft', '=', 0]])->orderBy('publish_time', 'desc')->take(4)->get();
+        $mainNews = News::select('id', 'title', 'short')
+            ->with('media')
+            ->where([['tenant_id', '=', $tenant->id], ['draft', '=', 0]])
+            ->orderBy('publish_time', 'desc')
+            ->take(4)
+            ->get()
+            ->each(function (News $news): void {
+                $news->setAttribute('image', $news->getImageUrl());
+                $news->unsetRelation('media');
+            });
 
         return response()->json($mainNews, 200, ['Content-type' => 'application/json; charset=utf-8'], JSON_UNESCAPED_UNICODE);
-        //
     }
 
     public function sendFeedback(SendFeedbackRequest $request)

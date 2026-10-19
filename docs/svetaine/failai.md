@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Failai
 area: files
 models: [File]
-last_reviewed: 2026-10-18
+last_reviewed: 2026-10-19
 tests:
   - tests/Browser/ContentEditorImageSaveTest.php
   - resources/js/Components/ui/upload/__tests__/ImageUploadMedia.component.test.ts
@@ -19,6 +19,8 @@ tests:
   - tests/Feature/Api/Admin/PendingUploadApiControllerTest.php
   - tests/Feature/Actions/Media/SyncImageMediaTest.php
   - tests/Feature/Console/MediaLegacyFilesCommandTest.php
+  - tests/Feature/Console/MigrateImagesCommandTest.php
+  - tests/Feature/Migrations/DropLegacyImageColumnsTest.php
   - tests/Feature/Services/Media/LegacyImageBackfillTest.php
   - resources/js/Features/Admin/FileManager/__tests__/FilePropertiesDrawer.component.test.ts
   - resources/js/Features/Admin/FileManager/__tests__/FileManagerUpload.component.test.ts
@@ -219,6 +221,8 @@ Sąsajoje parodoma prieigos klaida; pasirinkimą galima pakeisti ir bandyti dar 
 - Parinktys: `--status` rodo, kas liko; `--limit=N` apdoroja daugiausia N naujausių kiekviename žingsnyje (pvz., bandymui staging aplinkoje); `--target=news.image` – tik vieną seną stulpelį; `--sync` vykdo iškart, be eilės; `--cleanup` ištrina failus, kuriuos pakeitė baigti atnaujinimai. Be parinkčių apdorojama viskas. Paleisti iš naujo saugu – kas jau atlikta, praleidžiama.
 - Eiga: be parinkčių rodoma eigos juosta kiekvienam žingsniui; `-v` vietoj jos rodo kiekvieną tikrinamą įrašą, šaltinį ir rezultatą; `--quiet` paslepia išvestį.
 - Senųjų failų patikra: `media:legacy-files -v` rodo tikrinamus aplankus, failus, jų naudojimą ir eigą. Galima pridėti `--group=contacts` vienam aplankui. `--verbose` yra `-v` atitikmuo; `--quiet` paslepia įprastą išvestį ir eigą.
+- Senųjų stulpelių pašalinimas: migracija atsisako juos išmesti, kol liko perkeltinų nuotraukų, neatnaujintos medijos ar neišvalytų pakeistų failų. Pašalinus stulpelius, `media:migrate-images` tikrina tik likusias paskirtis; nurodžius pašalintą paskirtį su `--target`, nieko nekeičiama.
+- Senųjų failų trynimas: `media:legacy-files --delete` leidžiama tik pašalinus senuosius stulpelius ir ne staging aplinkoje, kurios failai bendri su produkcija. Prieš kiekvieno failo pašalinimą naudojimas patikrinamas iš naujo; skaičiuojamos ir šiukšlinėje esančių įrašų bei redaktoriaus juodraščių nuorodos. Prieš produkcijos valymą išsaugomos duomenų bazės ir failų atkūrimo kopijos. Migracijos atšaukimas atkuria stulpelius, bet ne pašalintas jų reikšmes.
 - Rašymas: `FileUploadWriter` vienodai tvarko paprastus ir optimizuotus failus, tikrina rašymo rezultatą ir naudoja aplanko užraktą pavadinimui parinkti bei failui išsaugoti.
 - Naudojimo paieška: `App\Services\FileUsageScanner` turi tikrinamų stulpelių sąrašą (`targets()`). SQL užklausa atrenka eilutes pagal kelio dalis, kurios nesikeičia jokioje koduotėje, o `App\Services\FileUsage\FileReferenceMatcher` kiekvieną reikšmę iškoduoja (JSON, HTML entities, `%20`, NFC/NFD) ir lygina visą kelią `/uploads/files/…`. Senasis kelias `/uploads/…` (be `files/`) skaičiuojamas tik tada, kai tokiu adresu nėra kito failo.
 - Paveikslėlių glaudinimas: atliekamas per `Intervention\Image` biblioteką valdiklio metode `compressImage()`.

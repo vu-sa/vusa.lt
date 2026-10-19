@@ -3,11 +3,14 @@
 use App\Actions\Media\AddImageMedia;
 use App\Actions\Media\SyncImageMedia;
 use App\Models\Banner;
+use App\Models\Institution;
 use App\Models\News;
+use App\Models\Page;
 use App\Models\PendingUpload;
 use App\Models\Pivots\Dutiable;
 use App\Models\Role;
 use App\Models\Tenant;
+use App\Models\User;
 use App\Services\Media\LegacyImageResolver;
 use App\Support\Media\ImageData;
 use App\Support\Media\LegacyImageUrl;
@@ -23,6 +26,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    (require base_path('database/migrations/2026_10_19_192000_drop_legacy_image_columns.php'))->down();
     Storage::fake('spatieMediaLibrary');
     $this->tenant = Tenant::query()->first();
     $this->admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
@@ -206,4 +210,61 @@ test('a non-super-admin can copy an assignment photo only within their granted t
     $foreignImage = app(AddImageMedia::class)->execute($foreign, UploadedFile::fake()->image('foreign.png'), 'photo');
     expect(fn () => app(SyncImageMedia::class)->execute($destination, 'photo', ['id' => $foreignImage->id], $this->admin))
         ->toThrow(ValidationException::class);
+});
+
+describe('after legacy image columns are dropped', function (): void {
+    beforeEach(function (): void {
+        (require base_path('database/migrations/2026_10_19_192000_drop_legacy_image_columns.php'))->up();
+    });
+
+    test('image upload, metadata edits, replacement and removal still work', function (string $model, string $collection): void {
+        $owner = $model::factory()->for($this->tenant)->create();
+        $first = stageImage($this->admin);
+        $sync = app(SyncImageMedia::class);
+
+        $sync->execute($owner, $collection, ['id' => $first->id, 'author' => 'Jonas'], $this->admin);
+
+        expect($owner->fresh()->imageData($collection)['id'])->toBe($first->id);
+        expect($owner->fresh()->imageData($collection)['author'])->toBe('Jonas');
+        Storage::disk('spatieMediaLibrary')->assertExists($first->fresh()->getPathRelativeToRoot());
+
+        $sync->execute($owner, $collection, ['id' => null, 'author' => 'Ona', 'focal_point' => '40% 60%'], $this->admin);
+
+        expect($owner->fresh()->imageData($collection)['author'])->toBe('Ona');
+        expect($owner->fresh()->imageData($collection)['focal_point'])->toBe('40% 60%');
+
+        $second = stageImage($this->admin, 'replacement.png');
+        $sync->execute($owner, $collection, ['id' => $second->id], $this->admin);
+
+        expect($owner->fresh()->getMedia($collection)->modelKeys())->toBe([$second->id]);
+        $this->assertModelMissing($first);
+
+        $sync->execute($owner, $collection, null, $this->admin);
+
+        expect($owner->fresh()->imageData($collection))->toBeNull();
+        $this->assertModelMissing($second);
+    })->with([
+        'news' => [News::class, 'image'],
+        'banner' => [Banner::class, 'image'],
+        'institution' => [Institution::class, 'image'],
+        'page' => [Page::class, 'featured_image'],
+    ]);
+
+    test('metadata without media does not write retired columns', function (string $model): void {
+        $owner = $model::factory()->for($this->tenant)->create();
+
+        app(SyncImageMedia::class)->execute($owner, 'image', ['id' => null, 'author' => 'Ona', 'focal_point' => '40% 60%'], $this->admin);
+
+        expect($owner->fresh()->imageData('image'))->toBeNull();
+        $this->assertModelExists($owner);
+    })->with([News::class, Institution::class]);
+
+    test('legacy metadata still saves in retained avatar columns', function (): void {
+        $user = User::factory()->create(['profile_photo_path' => 'https://example.com/photo.jpg']);
+
+        app(SyncImageMedia::class)->execute($user, 'profile_photo', ['id' => null, 'focal_point' => '40% 60%'], $this->admin);
+
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'profile_photo_focal_point' => '40% 60%']);
+        expect($user->fresh()->getMedia('profile_photo'))->toBeEmpty();
+    });
 });

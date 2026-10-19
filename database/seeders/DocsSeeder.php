@@ -150,7 +150,6 @@ class DocsSeeder extends Seeder
             'content_id' => $this->richContent(
                 '<p>Kviečiame visus pirmakursius į tradicinę stovyklą prie Asvejos ežero. Laukia pažintiniai žaidimai, susitikimas su dėstytojais ir vakaras prie laužo.</p><p>Vietų skaičius ribotas, todėl registruokis kuo greičiau.</p>'
             ),
-            'image' => '/images/placeholders/foto2.jpg',
             'important' => false,
             'draft' => false,
             'publish_time' => now()->subDays(2)->setTime(10, 0),
@@ -519,7 +518,6 @@ class DocsSeeder extends Seeder
             'name' => ['lt' => $nameLt, 'en' => $nameEn],
             'short_name' => ['lt' => $shortName, 'en' => $shortName],
             'description' => ['lt' => '', 'en' => ''],
-            'image_url' => null,
         ]);
     }
 

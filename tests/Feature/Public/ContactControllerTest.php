@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Media\AddImageMedia;
 use App\Enums\TenantType;
 use App\Models\DutyType;
 use App\Models\Institution;
@@ -7,6 +8,8 @@ use App\Models\InstitutionType;
 use App\Models\Tenant;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -85,22 +88,26 @@ test('padaliniai category lists only active institutions and reflects reactivati
     );
 });
 
-test('an institution without media keeps its legacy image in public props', function (): void {
+test('an institution provides its image in public props', function (): void {
+    Storage::fake('spatieMediaLibrary');
     $tenant = Tenant::main();
     $institution = Institution::factory()->create([
         'tenant_id' => $tenant->id,
         'is_active' => true,
-        'image_url' => '/uploads/institutions/sabas.jpg',
-        'image_focal_point' => '40% 60%',
     ]);
+    app(AddImageMedia::class)->execute($institution, UploadedFile::fake()->image('sabas.jpg'), 'image');
+    $institution->getFirstMedia('image')->setCustomProperty('focal_point', '40% 60%')->save();
     $tenant->update(['primary_institution_id' => $institution->id]);
+
+    $fullUrl = $institution->fresh()->imageData('image')['url'];
+    $thumbUrl = $institution->fresh()->imageData('image')['thumb'];
 
     $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('institution.image_url', '/uploads/institutions/sabas.jpg')
+            ->where('institution.image_url', $fullUrl)
             ->missing('institution.media')
-            ->where('tenants', fn ($tenants) => collect($tenants)->firstWhere('id', $tenant->id)['primary_institution']['image_url'] === '/uploads/institutions/sabas.jpg')
+            ->where('tenants', fn ($tenants) => collect($tenants)->firstWhere('id', $tenant->id)['primary_institution']['image_url'] === $thumbUrl)
         );
 });
 
