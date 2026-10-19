@@ -17,6 +17,7 @@ import {
   buildInstitutionPublicMeetingsMap,
   buildInstitutionPeriodicityMap,
   ganttInstitutionTypes,
+  ganttActivityDates,
 } from '../utils/ganttHelpers';
 
 export function useGanttChartData(
@@ -99,6 +100,7 @@ export function useGanttChartData(
       types: ganttInstitutionTypes(i),
       is_internal: i.is_internal,
       authorized: i.authorized,
+      ...ganttActivityDates(i),
     }));
   });
 

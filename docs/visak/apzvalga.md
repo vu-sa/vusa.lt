@@ -130,7 +130,7 @@ atmintinės. Naujausi (pagal dokumento datą) pirmiausia. Jei tokių dokumentų 
 Didesniame ekrane rodoma tavo institucijų posėdžių laiko juosta. Telefone vietoj jos siūloma nuoroda
 į posėdžių sąrašą. **Filtruose** galima, pavyzdžiui, parodyti **susijusias institucijas**.
 Susijusios institucijos, kurių duomenų negalima matyti, rodomos be darbotvarkių. Institucijas galima
-grupuoti pagal padalinius arba tipus, o tau išsiųstos neatsakytos užklausos atstovams pažymimos
+rikiuoti (pvz., pagal paskutinę veiklą) ir grupuoti pagal padalinius, tipus ar artimiausią posėdį, o tau išsiųstos neatsakytos užklausos atstovams pažymimos
 laiko juostoje – kaip ir [padalinių laiko juostoje](/visak/padaliniai#posedziu-laiko-juosta). Laiko
 juostą galima atidaryti per visą ekraną.
 

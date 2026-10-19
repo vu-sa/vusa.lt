@@ -9,14 +9,19 @@ import { DEFAULT_DAY_WIDTH, snapToZoomStop } from '@/Components/Graphs/ganttZoom
 
 const STORAGE_KEY = 'gantt-settings';
 
-export type GanttGroupBy = 'tenant' | 'type' | 'none';
+export type GanttGroupBy = 'tenant' | 'type' | 'upcoming' | 'none';
 
-export const GANTT_GROUP_BY_OPTIONS: GanttGroupBy[] = ['tenant', 'type', 'none'];
+export const GANTT_GROUP_BY_OPTIONS: GanttGroupBy[] = ['tenant', 'type', 'upcoming', 'none'];
+
+export type GanttSortBy = 'name' | 'last_activity' | 'next_meeting' | 'last_meeting';
+
+export const GANTT_SORT_OPTIONS: GanttSortBy[] = ['name', 'last_activity', 'next_meeting', 'last_meeting'];
 
 export interface GanttSettings {
   dayWidthPx: Ref<number>;
   labelWidth: Ref<number>;
   groupBy: Ref<GanttGroupBy>;
+  sortBy: Ref<GanttSortBy>;
   /** Center date to restore on page load (null = today) */
   centerDateTimestamp: Ref<number | null>;
   /** Vertical scroll position to restore on page load (null = top) */
@@ -32,6 +37,7 @@ interface StoredSettings {
   dayWidthPx?: number;
   labelWidth?: number;
   groupBy?: GanttGroupBy;
+  sortBy?: GanttSortBy;
   /** Before grouping by type existed; `false` meant no sections. */
   showTenantHeaders?: boolean;
   centerDateTimestamp?: number | null;
@@ -84,6 +90,14 @@ function createGanttSettingsInstance(defaultGroupBy: GanttGroupBy): GanttSetting
     },
   });
 
+  const sortBy = computed<GanttSortBy>({
+    get: () => {
+      const value = stored.value.sortBy;
+      return value && GANTT_SORT_OPTIONS.includes(value) ? value : 'name';
+    },
+    set: (value) => { stored.value.sortBy = value; },
+  });
+
   const centerDateTimestamp = computed<number | null>({
     get: () => stored.value.centerDateTimestamp ?? null,
     set: (v) => { stored.value.centerDateTimestamp = v; },
@@ -98,6 +112,7 @@ function createGanttSettingsInstance(defaultGroupBy: GanttGroupBy): GanttSetting
     dayWidthPx,
     labelWidth,
     groupBy,
+    sortBy,
     centerDateTimestamp,
     verticalScrollPosition,
     setDayWidth: (w: number) => { dayWidthPx.value = w; },

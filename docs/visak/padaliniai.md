@@ -19,6 +19,9 @@ tests:
   - resources/js/Pages/Admin/Dashboard/Components/__tests__/TenantTimelineSection.component.test.ts
   - resources/js/Components/Graphs/__tests__/MeetingsGantt.component.test.ts
   - resources/js/Components/Graphs/composables/__tests__/useGanttLayout.test.ts
+  - resources/js/Components/Graphs/composables/__tests__/useGanttFiltering.test.ts
+  - resources/js/Components/Graphs/composables/__tests__/useGanttLabels.test.ts
+  - resources/js/Components/Graphs/__tests__/MeetingsGanttToolbar.component.test.ts
   - resources/js/Components/Graphs/composables/__tests__/useGanttInteractions.test.ts
   - resources/js/Pages/Admin/Dashboard/Composables/__tests__/statusTrend.test.ts
   - resources/js/Components/Home/__tests__/HomeSections.component.test.ts
@@ -122,11 +125,20 @@ Laiko juostos įrankių juostoje:
 
 - **Mastelis** keičiamas mygtukais, slankikliu arba klavišais **+** ir **−** – nuo maždaug
   trejų metų iki kelių mėnesių viename ekrane.
-- **Grupuoti** sudeda institucijas **pagal padalinius**, **pagal institucijų tipus** arba palieka
-  vienu sąrašu. Institucija, turinti kelis tipus, rodoma prie kiekvieno, o institucijos be tipo –
-  sąrašo gale, skiltyje **Be tipo**.
-- Laiko juostą galima atidaryti per visą ekraną, o **legenda** paaiškina spalvas ir žymėjimus.
-  Institucijų stulpelio plotį galima keisti tempiant jo kraštą.
+- **Rikiuoti** keičia institucijų tvarką: pagal pavadinimą, **paskutinę veiklą**, **artimiausią
+  posėdį** arba **paskutinį įvykusį posėdį**. Paskutinė veikla – vėliausias posėdžio, jo darbotvarkės
+  klausimo ar balsavimo pakeitimas arba pranešimas apie veiklą. Institucijos be tokios datos rodomos
+  gale. Tvarka galioja kiekvienoje grupėje. Data šalia institucijos pavadinimo rodo tai, pagal ką
+  rikiuojama; rikiuojant pagal pavadinimą – vėliausią iš artimiausio ar paskutinio posėdžio ir
+  pranešimo „Posėdžio nebuvo“ pabaigos. Užvedus ant datos matyti, kas tai per data.
+- **Grupuoti** sudeda institucijas **pagal padalinius**, **pagal institucijų tipus**, **pagal
+  artimiausią posėdį** arba palieka vienu sąrašu. Institucija, turinti kelis tipus, rodoma prie
+  kiekvieno, o institucijos be tipo – sąrašo gale, skiltyje **Be tipo**. Grupuojant pagal artimiausią
+  posėdį skiltys eina laiko tvarka: **Šią savaitę**, **Kitą savaitę**, **Šį mėnesį**, **Vėliau**,
+  tada **Praėjusi veikla** (suplanuoto posėdžio nėra, bet yra ankstesnių posėdžių ar pranešimų) ir
+  **Nėra informacijos**.
+- **Legenda** (ⓘ šalia institucijų skaičiaus) paaiškina spalvas ir žymėjimus. Laiko juostą galima
+  atidaryti per visą ekraną, o institucijų stulpelio plotį keisti tempiant jo kraštą.
 
 **Užklausos atstovams.** Tie, kurie gali [klausti atstovų](/visak/institucijos#paklausti), mato
 visas dar neatsakytas užklausas, o atstovai – tik jiems išsiųstas. Tokios institucijos pavadinimas

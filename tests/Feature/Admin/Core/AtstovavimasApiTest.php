@@ -646,6 +646,33 @@ describe('padaliniai gantt', function (): void {
             ->and($meetings['Susijęs']['agenda_items_count'])->toBe(0);
     });
 
+    test('rows carry the last held and next meeting, and a vote added later counts as activity', function (): void {
+        // Activity counts what a person did, so the writes need a causer.
+        $this->actingAs($this->rep);
+        $this->travelTo(now()->subDays(20));
+        $held = Meeting::factory()->create(['start_time' => now()->addDays(10)]);
+        $held->institutions()->attach($this->ownInstitution->id);
+        $upcoming = Meeting::factory()->create(['start_time' => now()->addDays(25)]);
+        $upcoming->institutions()->attach($this->ownInstitution->id);
+        $agendaItem = AgendaItem::factory()->for($held)->create();
+        $this->travelBack();
+
+        $this->travelTo(now()->subDays(2));
+        Vote::factory()->for($agendaItem)->create();
+        $this->travelBack();
+
+        // A migration or bulk script rewriting rows is not activity.
+        DB::table('meetings')->update(['updated_at' => now()]);
+
+        $row = collect(asUser($this->rep)->getJson(route('api.v1.admin.visak.gantt', [
+            'tenant_ids' => [$this->tenant->id, $this->ownInstitution->tenant_id],
+        ]))->json('data'))->firstWhere('id', (string) $this->ownInstitution->id);
+
+        expect($row['last_meeting_date'])->toBe($held->start_time->toISOString())
+            ->and($row['next_meeting_date'])->toBe($upcoming->start_time->toISOString())
+            ->and(Carbon\Carbon::parse($row['last_activity_at'])->toDateString())->toBe(now()->subDays(2)->toDateString());
+    });
+
     test('a body the rep\'s own links to appears in full', function (): void {
         $related = Institution::factory()->for($this->tenant)->create();
         InstitutionLink::factory()->create(['source_institution_id' => $this->ownInstitution->id, 'target_institution_id' => $related->id]);

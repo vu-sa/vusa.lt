@@ -72,3 +72,6 @@ A model with an image implements `App\Contracts\ImageMediaOwner` and uses `HasIm
 - Forms post `ImageData` (`{collection}_media`) and controllers apply it with `SyncImageMedia`; serialize with `imageData()`.
 - A column that must stay for readers that cannot eager-load media (avatar lists: `users.profile_photo_path`, `dutiables.additional_photo` + their focal columns) is a server-written cache declared in `imageCacheColumns()` and refreshed by `refreshImageCache()`; never write it from a request.
 - Media writes fire no owner events: reindexing and cache flushes go in `afterImageMediaChanged()` / `afterImageCacheRefreshed()`.
+
+## Eloquent config is declared as PHP attributes — search for both forms
+Models declare Eloquent behaviour with attributes (`#[Touches(['meeting'])]`, `#[Table(name: …)]`, `#[Unguarded]`), not properties like `protected $touches`. Before claiming a model lacks some behaviour, grep case-insensitively for both forms (`grep -rniE 'touches' app/Models`) and open the model itself. A case-sensitive `grep "touches"` misses `#[Touches]`, which is how the existing Vote → AgendaItem → Meeting touch chain was once reported as absent.

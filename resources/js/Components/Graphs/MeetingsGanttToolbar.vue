@@ -4,6 +4,19 @@
       <Badge variant="outline" class="shrink-0 text-xs">
         {{ $t('Institucijų') }}: {{ institutionCount }}
       </Badge>
+      <!-- The legend is too long for a popover, so it keeps its dialog behind the same button. -->
+      <Button
+        v-if="showLegend"
+        type="button"
+        size="icon-xs"
+        variant="ghost"
+        class="pointer-coarse:size-11"
+        data-tour="gantt-legend"
+        :aria-label="$t('Legenda')"
+        @click="emit('show-legend-modal')"
+      >
+        <Info class="size-3.5" />
+      </Button>
       <Badge v-if="showOnlyWithActivity" variant="secondary" class="text-xs">
         {{ $t('Tik su veikla') }}
       </Badge>
@@ -24,20 +37,8 @@
         :stops="GANTT_ZOOM_STOPS"
         @update:model-value="emit('update:dayWidth', $event)"
       />
+      <GanttSortMenu :model-value="sortBy" @update:model-value="emit('update:sortBy', $event)" />
       <GanttGroupByMenu :model-value="groupBy" @update:model-value="emit('update:groupBy', $event)" />
-      <!-- The legend is too long for a popover, so it keeps its dialog behind the same button. -->
-      <Button
-        v-if="showLegend"
-        type="button"
-        size="icon-xs"
-        variant="ghost"
-        class="pointer-coarse:size-11"
-        data-tour="gantt-legend"
-        :aria-label="$t('Legenda')"
-        @click="emit('show-legend-modal')"
-      >
-        <Info class="size-3.5" />
-      </Button>
       <Tooltip>
         <TooltipTrigger as-child>
           <Button
@@ -65,13 +66,14 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Globe, Info, LoaderCircle, Maximize2, Minimize2 } from '@lucide/vue';
 
 import GanttGroupByMenu from './GanttGroupByMenu.vue';
+import GanttSortMenu from './GanttSortMenu.vue';
 import GanttZoomControl from './GanttZoomControl.vue';
 import { GANTT_ZOOM_STOPS } from './ganttZoom';
 
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/Components/ui/tooltip';
-import type { GanttGroupBy } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
+import type { GanttGroupBy, GanttSortBy } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
 
 withDefaults(defineProps<{
   showLegend?: boolean;
@@ -80,6 +82,7 @@ withDefaults(defineProps<{
   showOnlyWithPublicMeetings?: boolean;
   dayWidth: number;
   groupBy: GanttGroupBy;
+  sortBy: GanttSortBy;
   /** The chart is in focus mode, so the same button leads back out. */
   fullscreenActive?: boolean;
   meetingsLoading?: boolean;
@@ -93,6 +96,7 @@ const emit = defineEmits<{
   (e: 'show-legend-modal'): void;
   (e: 'update:dayWidth', payload: number): void;
   (e: 'update:groupBy', payload: GanttGroupBy): void;
+  (e: 'update:sortBy', payload: GanttSortBy): void;
   (e: 'fullscreen'): void;
 }>();
 </script>

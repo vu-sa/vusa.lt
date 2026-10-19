@@ -490,7 +490,6 @@ class AtstovavimasDashboardService
     private function mapInstitution(Institution $institution): array
     {
         $activeCheckIn = $institution->getAttribute('active_check_in');
-        $lastMeetingDate = $institution->getAttribute('last_meeting_date');
 
         return [
             'id' => (string) $institution->id,
@@ -511,9 +510,10 @@ class AtstovavimasDashboardService
             'is_internal' => $this->scopeResolver->forInstitution($institution)->isInternal(),
             'has_public_meetings' => $institution->has_public_meetings,
             'upcoming_meetings_count' => (int) ($institution->upcoming_meetings_count ?? 0),
-            'last_meeting_date' => is_string($lastMeetingDate)
-                ? Carbon::parse($lastMeetingDate)->toISOString()
-                : null,
+            // ISO strings from DutyService::withActivityDates(); the Gantt sorts and sections by them.
+            'last_meeting_date' => $institution->getAttribute('last_meeting_date'),
+            'next_meeting_date' => $institution->getAttribute('next_meeting_date'),
+            'last_activity_at' => $institution->getAttribute('last_activity_at'),
             'activity_status' => $institution->getAttribute('activity_status'),
             'active_check_in' => $activeCheckIn ? [
                 'id' => (string) $activeCheckIn->id,

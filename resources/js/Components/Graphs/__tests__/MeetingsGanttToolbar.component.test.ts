@@ -25,6 +25,13 @@ const GroupByMenuStub = defineComponent({
   template: '<button type="button" data-testid="group-by" @click="$emit(\'update:modelValue\', \'type\')">{{ modelValue }}</button>',
 });
 
+const SortMenuStub = defineComponent({
+  name: 'GanttSortMenu',
+  props: ['modelValue'],
+  emits: ['update:modelValue'],
+  template: '<button type="button" data-testid="sort-by" @click="$emit(\'update:modelValue\', \'last_activity\')">{{ modelValue }}</button>',
+});
+
 describe('MeetingsGanttToolbar', () => {
   let wrapper: ReturnType<typeof mount>;
 
@@ -38,10 +45,11 @@ describe('MeetingsGanttToolbar', () => {
         institutionCount: 5,
         dayWidth: 3,
         groupBy: 'tenant',
+        sortBy: 'name',
         ...props,
       },
       global: {
-        stubs: { ...commonStubs, Slider: SliderStub, GanttGroupByMenu: GroupByMenuStub },
+        stubs: { ...commonStubs, Slider: SliderStub, GanttGroupByMenu: GroupByMenuStub, GanttSortMenu: SortMenuStub },
       },
     });
   }
@@ -76,6 +84,24 @@ describe('MeetingsGanttToolbar', () => {
 
     await menu.trigger('click');
     expect(wrapper.emitted('update:groupBy')).toEqual([['type']]);
+  });
+
+  it('hands the sort order to its menu and passes a change back up', async () => {
+    wrapper = mountToolbar({ sortBy: 'next_meeting' });
+
+    const menu = wrapper.get('[data-testid="sort-by"]');
+    expect(menu.text()).toBe('next_meeting');
+
+    await menu.trigger('click');
+    expect(wrapper.emitted('update:sortBy')).toEqual([['last_activity']]);
+  });
+
+  it('keeps the legend next to the institution count, away from the view controls', () => {
+    wrapper = mountToolbar();
+
+    const legend = wrapper.get('[data-tour="gantt-legend"]').element;
+    expect(legend.parentElement!.textContent).toContain('Institucijų');
+    expect(legend.parentElement!.contains(wrapper.get('[data-testid="group-by"]').element)).toBe(false);
   });
 
   it('turns the full-screen button into the way back out while in focus mode', () => {

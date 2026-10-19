@@ -156,11 +156,22 @@ export function formatInstitutionsForGantt(
     tenant_id: i.tenant?.id === undefined ? undefined : String(i.tenant.id),
     types: ganttInstitutionTypes(i),
     is_internal: i.is_internal,
+    ...ganttActivityDates(i),
     is_related: isRelated || i.is_related,
     relationship_direction: i.relationship_direction,
     source_institution_id: i.source_institution_id,
     authorized: i.authorized,
   }));
+}
+
+/** What the Gantt sorts and sections rows by; server-derived, so independent of the loaded meeting windows. */
+export function ganttActivityDates(institution: AtstovavimasInstitution): Pick<GanttInstitution, 'last_meeting_date' | 'next_meeting_date' | 'last_activity_at' | 'has_check_ins'> {
+  return {
+    last_meeting_date: institution.last_meeting_date ?? null,
+    next_meeting_date: institution.next_meeting_date ?? null,
+    last_activity_at: institution.last_activity_at ?? null,
+    has_check_ins: (institution.check_ins?.length ?? 0) > 0,
+  };
 }
 
 export function ganttInstitutionTypes(institution: AtstovavimasInstitution): GanttInstitutionType[] {

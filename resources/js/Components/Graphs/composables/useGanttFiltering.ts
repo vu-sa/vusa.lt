@@ -3,6 +3,8 @@
  */
 import { computed, type ComputedRef } from 'vue';
 
+import type { GanttSortBy } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
+
 export interface ParsedMeeting {
   id: string | number;
   start_time: string | Date;
@@ -54,14 +56,31 @@ export interface GanttFilteringOptions {
    */
   institutionHasActivity?: () => Record<string | number, boolean> | undefined;
   showDutyMembers: () => boolean;
+  sortBy?: () => GanttSortBy;
 }
+
+interface FilterableInstitution {
+  id: string | number;
+  name?: string;
+  is_internal?: boolean;
+  last_meeting_date?: string | null;
+  next_meeting_date?: string | null;
+  last_activity_at?: string | null;
+}
+
+/** Date sorts: which field, and whether the soonest (next meeting) or the latest comes first. */
+const DATE_SORTS: Record<Exclude<GanttSortBy, 'name'>, { field: 'last_activity_at' | 'next_meeting_date' | 'last_meeting_date'; ascending: boolean }> = {
+  last_activity: { field: 'last_activity_at', ascending: false },
+  next_meeting: { field: 'next_meeting_date', ascending: true },
+  last_meeting: { field: 'last_meeting_date', ascending: false },
+};
 
 export interface GanttFilteringData {
   parsedMeetings: ComputedRef<ParsedMeeting[]>;
   parsedGaps: ComputedRef<ParsedGap[]>;
   parsedDutyMembers: ComputedRef<ParsedDutyMember[]>;
   parsedInactivePeriods: ComputedRef<ParsedInactivePeriod[]>;
-  institutions: () => Array<{ id: string | number; name?: string; is_internal?: boolean }> | undefined;
+  institutions: () => FilterableInstitution[] | undefined;
   institutionNames: () => Record<string | number, string> | undefined;
 }
 
@@ -80,7 +99,29 @@ export function useGanttFiltering(options: GanttFilteringOptions, data: GanttFil
     return String(fromList ?? id);
   };
 
-  /** Institution ids after filters, sorted by name */
+  const byId = computed(() => new Map((data.institutions() ?? []).map(i => [String(i.id), i])));
+
+  const compareInstitutions = (a: string | number, b: string | number): number => {
+    const byName = getInstitutionName(a).localeCompare(getInstitutionName(b));
+    const sortBy = options.sortBy?.() ?? 'name';
+    if (sortBy === 'name') return byName;
+
+    const { field, ascending } = DATE_SORTS[sortBy];
+    const timeOf = (id: string | number) => {
+      const value = byId.value.get(String(id))?.[field];
+      return value ? new Date(value).getTime() : null;
+    };
+    const [timeA, timeB] = [timeOf(a), timeOf(b)];
+
+    // Rows without the date go last, whichever the direction.
+    if (timeA === null || timeB === null) {
+      return timeA === timeB ? byName : (timeA === null ? 1 : -1);
+    }
+
+    return (ascending ? timeA - timeB : timeB - timeA) || byName;
+  };
+
+  /** Institution ids after filters, in the chosen sort order */
   const institutions = computed(() => {
     let ids = (data.institutions() ?? []).map(i => i.id);
 
@@ -99,7 +140,7 @@ export function useGanttFiltering(options: GanttFilteringOptions, data: GanttFil
       ids = ids.filter(id => !internal.has(String(id)));
     }
 
-    return ids.sort((a, b) => getInstitutionName(a).localeCompare(getInstitutionName(b)));
+    return ids.sort(compareInstitutions);
   });
 
   const visibleIds = computed(() => new Set(institutions.value.map(String)));

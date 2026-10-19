@@ -64,7 +64,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: GanttGroupBy];
 }>();
 
-const spotlight = useFeatureSpotlight('gantt-grouping-v1');
+const spotlight = useFeatureSpotlight('gantt-grouping-v2');
 
 const label = computed(() => $t(`visak.gantt.group_by_short.${props.modelValue}`));
 </script>

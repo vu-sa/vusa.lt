@@ -37,7 +37,11 @@ export interface AtstovavimasInstitution {
   activity_status: InstitutionActivityStatus;
   hasUpcomingMeetings?: boolean;
   upcoming_meetings_count?: number;
+  /** Last meeting already held (ISO) */
   last_meeting_date?: string | null;
+  next_meeting_date?: string | null;
+  /** Latest edit to a meeting, agenda item, vote or check-in (ISO) */
+  last_activity_at?: string | null;
   has_public_meetings?: boolean;
   /** One of VU SA's own bodies rather than one it delegates representatives into. */
   is_internal?: boolean;
@@ -182,6 +186,10 @@ export interface GanttInstitution {
   has_public_meetings?: boolean;
   /** One of VU SA's own bodies rather than one it delegates representatives into. */
   is_internal?: boolean;
+  last_meeting_date?: string | null;
+  next_meeting_date?: string | null;
+  last_activity_at?: string | null;
+  has_check_ins?: boolean;
   // Related institution metadata
   is_related?: boolean;
   relationship_direction?: 'outgoing' | 'incoming' | 'mutual';

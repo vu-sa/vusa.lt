@@ -1,6 +1,6 @@
 /**
- * Row layout for the meetings Gantt: optional group header rows (padalinys or institution type)
- * and institution rows with their positions. Grouped by type, an institution with several types
+ * Row layout for the meetings Gantt: optional group header rows (padalinys, institution type or
+ * when the next meeting is) and institution rows with their positions. Grouped by type, an institution with several types
  * gets a row in each, so row keys are `<group>::<institution>`, never the bare institution id.
  */
 import { computed, type ComputedRef, type Ref } from 'vue';
@@ -15,6 +15,25 @@ export const GANTT_AXIS_HEIGHT = 22;
 
 const UNTYPED_GROUP = '__untyped__';
 
+const UPCOMING_GROUPS = ['this_week', 'next_week', 'this_month', 'later', 'past', 'no_info'] as const;
+type UpcomingGroup = typeof UPCOMING_GROUPS[number];
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function upcomingGroupOf(meta: GanttInstitutionMeta | undefined, now: Date): UpcomingGroup {
+  if (!meta?.next_meeting_date) {
+    return meta?.last_meeting_date || meta?.last_activity_at || meta?.has_check_ins ? 'past' : 'no_info';
+  }
+
+  const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7));
+  const next = new Date(meta.next_meeting_date).getTime();
+
+  if (next < startOfWeek.getTime() + 7 * DAY_MS) return 'this_week';
+  if (next < startOfWeek.getTime() + 14 * DAY_MS) return 'next_week';
+  if (next < new Date(now.getFullYear(), now.getMonth() + 1, 1).getTime()) return 'this_month';
+  return 'later';
+}
+
 export interface GanttInstitutionMeta {
   id: string | number;
   tenant_id?: string | number;
@@ -23,6 +42,10 @@ export interface GanttInstitutionMeta {
   relationship_direction?: 'outgoing' | 'incoming' | 'mutual';
   authorized?: boolean;
   source_institution_id?: string;
+  last_meeting_date?: string | null;
+  next_meeting_date?: string | null;
+  last_activity_at?: string | null;
+  has_check_ins?: boolean;
 }
 
 export interface LayoutRow {
@@ -44,6 +67,8 @@ export interface GanttLayoutOptions {
   /** Container height prop: '100%' in focus mode, otherwise sized to the rows up to `maxHeight` */
   height: () => string | undefined;
   maxHeight?: number;
+  /** Reference date for the upcoming sections; injectable for tests */
+  now?: () => Date;
 }
 
 export interface GanttLayoutData {
@@ -96,6 +121,15 @@ export function useGanttLayout(options: GanttLayoutOptions, data: GanttLayoutDat
           }
         }
         break;
+      case 'upcoming': {
+        const now = options.now?.() ?? new Date();
+        for (const id of ids) {
+          const group = upcomingGroupOf(metaById.value.get(String(id)), now);
+          add(group, $t(`visak.gantt.upcoming_groups.${group}`), id);
+        }
+        // Time order, not alphabetical.
+        return UPCOMING_GROUPS.flatMap(group => byGroup.get(group) ?? []);
+      }
       default:
         return null;
     }

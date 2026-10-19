@@ -34,6 +34,18 @@ describe('useGanttSettings', () => {
     expect(JSON.parse(localStorage.getItem('gantt-settings')!)).toMatchObject({ groupBy: 'type' });
   });
 
+  it('sorts by name by default, remembers a new order and ignores an unknown stored one', async () => {
+    const first = settings();
+    expect(first.sortBy.value).toBe('name');
+
+    first.sortBy.value = 'last_activity';
+    await nextTick();
+    expect(JSON.parse(localStorage.getItem('gantt-settings')!)).toMatchObject({ sortBy: 'last_activity' });
+
+    localStorage.setItem('gantt-settings', JSON.stringify({ sortBy: 'popularity' }));
+    expect(settings().sortBy.value).toBe('name');
+  });
+
   it('snaps a stored zoom to the nearest stop the slider can show', () => {
     localStorage.setItem('gantt-settings', JSON.stringify({ dayWidthPx: 12 }));
 

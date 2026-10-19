@@ -3,6 +3,7 @@
 namespace App\Services\ResourceServices;
 
 use App\Enums\TenantType;
+use App\Models\Activity;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Meeting;
@@ -11,6 +12,7 @@ use App\Services\ModelAuthorizer;
 use App\Settings\AtstovavimasSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class DutyService
@@ -141,13 +143,7 @@ class DutyService
                     $query->where('start_time', '>', now());
                 },
             ])
-            ->addSelect([
-                'last_meeting_date' => Meeting::select('start_time')
-                    ->join('institution_meeting', 'meetings.id', '=', 'institution_meeting.meeting_id')
-                    ->whereColumn('institution_meeting.institution_id', 'institutions.id')
-                    ->orderBy('start_time', 'desc')
-                    ->limit(1),
-            ])
+            ->tap(self::withActivityDates(...))
             ->get();
     }
 
@@ -307,13 +303,7 @@ class DutyService
                     $query->where('start_time', '>', now());
                 },
             ])
-            ->addSelect([
-                'last_meeting_date' => Meeting::select('start_time')
-                    ->join('institution_meeting', 'meetings.id', '=', 'institution_meeting.meeting_id')
-                    ->whereColumn('institution_meeting.institution_id', 'institutions.id')
-                    ->orderBy('start_time', 'desc')
-                    ->limit(1),
-            ]);
+            ->tap(self::withActivityDates(...));
     }
 
     /**
@@ -347,12 +337,60 @@ class DutyService
                     $query->where('start_time', '>', now());
                 },
             ])
-            ->addSelect([
-                'last_meeting_date' => Meeting::select('start_time')
-                    ->join('institution_meeting', 'meetings.id', '=', 'institution_meeting.meeting_id')
-                    ->whereColumn('institution_meeting.institution_id', 'institutions.id')
-                    ->orderBy('start_time', 'desc')
-                    ->limit(1),
-            ]);
+            ->tap(self::withActivityDates(...));
+    }
+
+    /**
+     * Adds `last_meeting_date` (last held), `next_meeting_date` and `last_activity_at`: the latest
+     * logged change by a person to a meeting (agenda items and votes roll up to it) or a check-in.
+     * Not `updated_at`, which MariaDB's ON UPDATE also bumps on migrations and bulk scripts.
+     *
+     * @param  Builder<Institution>  $query
+     */
+    private static function withActivityDates(Builder $query): void
+    {
+        $meetingsOfInstitution = fn () => Meeting::query()
+            ->join('institution_meeting', 'meetings.id', '=', 'institution_meeting.meeting_id')
+            ->whereColumn('institution_meeting.institution_id', 'institutions.id')
+            ->limit(1);
+
+        $query->addSelect([
+            'last_meeting_date' => $meetingsOfInstitution()->select('start_time')
+                ->where('start_time', '<=', now())
+                ->orderByDesc('start_time'),
+            'next_meeting_date' => $meetingsOfInstitution()->select('start_time')
+                ->where('start_time', '>', now())
+                ->orderBy('start_time'),
+            'meeting_activity_at' => Activity::query()->select('activity_log.created_at')
+                ->join('institution_meeting', 'institution_meeting.meeting_id', '=', 'activity_log.root_subject_id')
+                ->where('activity_log.root_subject_type', 'meeting')
+                ->whereColumn('institution_meeting.institution_id', 'institutions.id')
+                ->whereNotNull('activity_log.causer_id')
+                ->orderByDesc('activity_log.created_at')
+                ->limit(1),
+            'check_in_activity_at' => Activity::query()->select('activity_log.created_at')
+                ->join('institution_check_ins', 'institution_check_ins.id', '=', 'activity_log.subject_id')
+                ->where('activity_log.subject_type', 'institution_check_in')
+                ->whereColumn('institution_check_ins.institution_id', 'institutions.id')
+                ->whereNotNull('activity_log.causer_id')
+                ->orderByDesc('activity_log.created_at')
+                ->limit(1),
+        ])->afterQuery(function (EloquentCollection $institutions): void {
+            $parts = ['meeting_activity_at', 'check_in_activity_at'];
+
+            $toIso = fn (mixed $value): ?string => is_string($value) ? Carbon::parse($value)->toISOString() : null;
+
+            /** @var EloquentCollection<int, Institution> $institutions */
+            $institutions->each(function (Institution $institution) use ($parts, $toIso): void {
+                $latest = collect($parts)->map(fn (string $part) => $institution->getAttribute($part))->filter()->max();
+                $institution->setAttribute('last_activity_at', $toIso($latest));
+                $institution->setAttribute('last_meeting_date', $toIso($institution->getAttribute('last_meeting_date')));
+                $institution->setAttribute('next_meeting_date', $toIso($institution->getAttribute('next_meeting_date')));
+
+                foreach ($parts as $part) {
+                    $institution->offsetUnset($part);
+                }
+            });
+        });
     }
 }

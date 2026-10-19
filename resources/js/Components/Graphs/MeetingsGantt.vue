@@ -3,9 +3,9 @@
     :class="{ 'h-full flex flex-col': props.height === '100%' }">
     <MeetingsGanttToolbar :show-legend :institution-count="institutions.length"
       :show-only-with-activity :show-only-with-public-meetings
-      :day-width="dayWidthPx" :group-by="groupBy" :fullscreen-active :meetings-loading
+      :day-width="dayWidthPx" :group-by="groupBy" :sort-by="sortBy" :fullscreen-active :meetings-loading
       @show-legend-modal="emit('show-legend-modal')" @update:day-width="onScaleChange"
-      @update:group-by="groupBy = $event" @fullscreen="emit('fullscreen', true)" />
+      @update:group-by="groupBy = $event" @update:sort-by="sortBy = $event" @fullscreen="emit('fullscreen', true)" />
 
     <div ref="chartArea" class="relative isolate flex w-full min-w-0 max-w-full border border-border" data-slot="meetings-gantt"
       :style="containerHeight ? { height: containerHeight } : {}"
@@ -50,9 +50,10 @@
                     <Globe class="size-3.5" :aria-label="$t('Vieši posėdžiai')" />
                   </span>
                 </div>
-                <span v-if="lastMeetingByInstitution.get(String(row.institutionId))"
-                  class="shrink-0 text-xs tabular-nums text-muted-foreground">{{
-                    labelLast(lastMeetingByInstitution.get(String(row.institutionId))!) }}</span>
+                <span v-if="rowDates.get(String(row.institutionId))" data-slot="gantt-row-date"
+                  class="shrink-0 text-xs tabular-nums text-muted-foreground"
+                  :title="rowDateTitle(rowDates.get(String(row.institutionId))!)">{{
+                    labelLast(rowDates.get(String(row.institutionId))!.date) }}</span>
               </div>
             </div>
           </template>
@@ -96,6 +97,7 @@ import {
   type ParsedDutyMember,
 } from './composables';
 import { GANTT_AXIS_HEIGHT, GANTT_ROW_HEIGHT, type GanttInstitutionMeta } from './composables/useGanttLayout';
+import type { GanttRowDate } from './composables/useGanttLabels';
 import {
   setupDefs,
   renderBackground,
@@ -207,7 +209,7 @@ const page = usePage();
 const locale = () => (page.props.app as { locale?: string } | undefined)?.locale ?? 'lt';
 
 const ganttSettings = useGanttSettings();
-const { dayWidthPx, groupBy, centerDateTimestamp, setCenterDate, verticalScrollPosition, setVerticalScrollPosition } = ganttSettings;
+const { dayWidthPx, groupBy, sortBy, centerDateTimestamp, setCenterDate, verticalScrollPosition, setVerticalScrollPosition } = ganttSettings;
 const labelWidthPx = ganttSettings.labelWidth;
 
 const { isResizing, startResize: startLabelResize } = useColumnResize(ganttSettings.setLabelWidth, () => labelWidthPx.value);
@@ -243,6 +245,7 @@ const { institutions, filteredMeetings, filteredGaps, filteredDutyMembers, filte
     institutionHasPublicMeetings: () => props.institutionHasPublicMeetings,
     institutionHasActivity: () => props.institutionHasActivity,
     showDutyMembers: () => props.showDutyMembers,
+    sortBy: () => sortBy.value,
   },
   {
     parsedMeetings,
@@ -254,10 +257,13 @@ const { institutions, filteredMeetings, filteredGaps, filteredDutyMembers, filte
   },
 );
 
-const { mergedTenantNames, labelFor, lastMeetingByInstitution, fmtDate, fmtDateWithYear, labelLast, getRelationshipTooltip } = useGanttLabels(
-  { institutionNames: () => props.institutionNames, tenantNames: () => props.tenantNames },
-  { institutions: () => props.institutions, filteredMeetings },
+const { mergedTenantNames, labelFor, rowDateFor, fmtDate, fmtDateWithYear, labelLast, getRelationshipTooltip } = useGanttLabels(
+  { institutionNames: () => props.institutionNames, tenantNames: () => props.tenantNames, sortBy: () => sortBy.value },
+  { institutions: () => props.institutions, filteredMeetings, filteredGaps },
 );
+
+const rowDates = computed(() => new Map(institutions.value.map(id => [String(id), rowDateFor(id)])));
+const rowDateTitle = ({ date, kind }: GanttRowDate) => `${$t(`visak.gantt.row_date.${kind}`)}: ${fmtDateWithYear.format(date)}`;
 
 const { layoutRows, rowTop, rowHeightFor, rowCenter, contentHeight, containerHeight } = useGanttLayout(
   { groupBy, height: () => props.height, maxHeight: props.maxHeight },
