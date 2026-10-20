@@ -74,11 +74,14 @@ class TypesenseCollectionConfig
      * records where their duties have a direct relationship to the model via institution.
      * This requires the searchable array to include 'institution_ids' field.
      *
+     * baseline_own: every member gets their own and related institutions without a permission
+     * (InstitutionPolicy::view).
+     *
      * public_rows: every admin gets a key whose filter also admits the rows anyone may read —
      * `meeting_types` (a public institution type, per current MeetingSettings) or `active`.
      * Built from indexed facts when the key is made, so a settings change needs no reindex.
      *
-     * @var array<string, array{model: class-string, permission: string|null, description: string, skip_tenant_filter?: bool, own_permission?: string, public_rows?: 'meeting_types'|'active'}>
+     * @var array<string, array{model: class-string, permission: string|null, description: string, skip_tenant_filter?: bool, own_permission?: string, baseline_own?: true, public_rows?: 'meeting_types'|'active'}>
      */
     protected const ADMIN_COLLECTIONS = [
         'meetings' => [
@@ -116,7 +119,7 @@ class TypesenseCollectionConfig
         'institutions' => [
             'model' => Institution::class,
             'permission' => 'institutions.read.padalinys',
-            'own_permission' => 'institutions.read.own',
+            'baseline_own' => true,
             'public_rows' => 'active',
             'description' => 'Institutions: active ones for everyone, plus tenant-based or self-referential access',
         ],
@@ -222,7 +225,7 @@ class TypesenseCollectionConfig
     /**
      * Get full admin collection config
      *
-     * @return array<string, array{model: class-string, permission: string|null, description: string, skip_tenant_filter?: bool, own_permission?: string, public_rows?: 'meeting_types'|'active'}>
+     * @return array<string, array{model: class-string, permission: string|null, description: string, skip_tenant_filter?: bool, own_permission?: string, baseline_own?: true, public_rows?: 'meeting_types'|'active'}>
      */
     public static function getAdminCollections(): array
     {

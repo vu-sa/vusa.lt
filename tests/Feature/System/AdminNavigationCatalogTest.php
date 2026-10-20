@@ -217,12 +217,11 @@ describe('per-persona visibility', function (): void {
         ]);
     });
 
-    test('institutions.read.own does not open the organisation-wide graph', function (): void {
+    test('a plain member sees institutions but not the organisation-wide graph', function (): void {
         $user = makeUser($this->tenant);
         $duty = $user->duties()->first();
         $duty->pivot->end_date = null;
         $duty->pivot->save();
-        $duty->givePermissionTo('institutions.read.own');
 
         $sections = collect($this->catalog->for($user)['workspaces'])->firstWhere('key', 'atstovavimas')['sections'];
 

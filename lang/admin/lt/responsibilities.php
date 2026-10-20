@@ -99,8 +99,10 @@ return [
             'read' => 'Matyti',
             'create' => 'Kurti',
             'update' => 'Redaguoti',
-            'delete' => 'Trinti',
-            'forceDelete' => 'Ištrinti negrįžtamai',
+            'delete' => 'Perkelti į šiukšlinę',
+            'forceDelete' => 'Trinti negrįžtamai',
+            'delete_permanent' => 'Trinti negrįžtamai',
+            'delete_permanent_hint' => 'be šiukšlinės – iškart negrįžtamai',
         ],
         'scopes' => [
             'own' => 'Savo',

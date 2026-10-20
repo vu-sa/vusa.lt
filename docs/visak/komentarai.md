@@ -59,7 +59,7 @@ atsakyti į kitų komentarus, paminėti kolegas, rengti greitas apklausas ir pa�
 ### Redagavimas ir trynimas
 
 - **Redaguoti**: savo komentaro meniu pasirink **Redaguoti**. Pataisyk tekstą ir išsaugok.
-  Redaguoti galima **tik savo paties** komentarą.
+  Redaguoti galima **tik savo paties** komentarą ir tik **per 15 minučių** nuo jo parašymo; ištrinti galima bet kada.
 - **Ištrinti komentarą**:
   - Savo komentarą gali ištrinti pats autorius.
   - Kito asmens komentarą gali ištrinti pagrindinio įrašo redaktorius arba moderatorius, turintis komentarų trynimo teisę.
@@ -78,7 +78,7 @@ Jei rodai tik neišspręstas temas, ji bus paslėpta. Norėdamas vėl atverti kl
 | Veiksmas | Bet kuris narys | Galintis redaguoti įrašą | Narys su komentarų trynimo teise |
 |---|---|---|---|
 | Skaityti ir rašyti komentarus, reaguoti, spręsti temas | ✓, jei mato įrašą | ✓ | ✓, jei mato įrašą |
-| Redaguoti savo komentarą | ✓ | ✓ | ✓ |
+| Redaguoti savo komentarą (per 15 min.) | ✓ | ✓ | ✓ |
 | Trinti savo komentarą | ✓ | ✓ | ✓ |
 | Trinti kito asmens komentarą | – | ✓ | ✓, savo padalinyje arba visur |
 

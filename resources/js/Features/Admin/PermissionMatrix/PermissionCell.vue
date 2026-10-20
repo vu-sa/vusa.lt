@@ -9,16 +9,20 @@
   <span v-else-if="readonly" :class="['inline-flex min-h-8 items-center text-sm', value ? 'font-medium text-foreground' : 'text-muted-foreground/60']">
     {{ value ? scopeLabel(value) : '–' }}
   </span>
-  <NativeSelect
-    v-else
-    :model-value="value ?? ''"
-    :options
-    size="sm"
-    :aria-label="`${resourceLabel(resource.key, resource.model)} · ${abilityLabel(ability)}`"
-    :select-class="[value ? 'font-medium text-foreground' : 'text-muted-foreground', changed && 'border-brand']"
-    :data-cell="`${resource.key}.${ability}`"
-    @update:model-value="emit('update', ($event || null) as PermissionScope | null)"
-  />
+  <div v-else>
+    <NativeSelect
+      :model-value="value ?? ''"
+      :options
+      size="sm"
+      :aria-label="`${resourceLabel(resource.key, resource.model)} · ${abilityLabel(ability, resource.softDeletes)}`"
+      :select-class="[value ? 'font-medium text-foreground' : 'text-muted-foreground', changed && 'border-brand']"
+      :data-cell="`${resource.key}.${ability}`"
+      @update:model-value="emit('update', ($event || null) as PermissionScope | null)"
+    />
+    <p v-if="ability === 'delete' && !resource.softDeletes" class="mt-0.5 text-[11px] text-muted-foreground" data-testid="cell-permanent">
+      {{ $t('responsibilities.matrix.abilities.delete_permanent_hint') }}
+    </p>
+  </div>
 </template>
 
 <script setup lang="ts">

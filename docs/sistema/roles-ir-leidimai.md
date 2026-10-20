@@ -12,6 +12,8 @@ tests:
   - tests/Feature/Responsibilities/ProjectDutyResponsibilitiesTest.php
   - tests/Feature/System/PermissionCatalogTest.php
   - tests/Feature/System/ModelPermissionSeederTest.php
+  - tests/Feature/Console/SyncPermissionsTest.php
+  - tests/Feature/Permissions/BaselineAccessTest.php
   - resources/js/Features/Admin/PermissionMatrix/__tests__/PermissionMatrix.component.test.ts
   - resources/js/Features/Admin/PermissionMatrix/__tests__/usePermissionDraft.test.ts
 ---
@@ -75,10 +77,18 @@ turinčių žmonių skaičius. Pagal nutylėjimą pirmiau rodomos atsakomybės s
 
 ### Teisių nustatymas (skirtukas „Teisės“)
 
-Tinklelyje sritys sugrupuotos pagal darbo sritis (ViSAK, Rezervacijos, Svetainė, Organizacija,
-Sistema). Kiekvienam veiksmui – matyti, kurti, redaguoti, trinti, ištrinti negrįžtamai – pasirink
-apimtį. Užraktu **Visi nariai** pažymėtus veiksmus pagal
-[bazinę prieigą](/pagrindai/teises#bazine-prieiga) jau turi kiekvienas narys.
+Tinklelyje sritys sugrupuotos pagal darbo sritis (Pradžia, ViSAK, Rezervacijos, Svetainė,
+Organizacija, Sistema) ir išdėstytos tokia pat tvarka kaip meniu. Kiekvienam veiksmui – matyti,
+kurti, redaguoti, perkelti į šiukšlinę, trinti negrįžtamai – pasirink apimtį. Ištekliams be
+šiukšlinės veiksmas „Trinti negrįžtamai“ pažymėtas pastaba, kad ištrynimas iškart galutinis.
+Plačiame ekrane slenkant lentelę stulpelių antraštės lieka matomos po pagrindiniu meniu.
+Užraktu **Visi nariai** pažymėtus veiksmus pagal
+[bazinę prieigą](/pagrindai/teises#bazine-prieiga) jau turi kiekvienas narys; prie išteklių
+parašyta, ką kiekvienas narys gali be jokios atsakomybės.
+
+Apimtis **Savo** siūloma tik ten, kur ji ką nors reiškia: pavyzdžiui, posėdžiams (savo institucijų
+posėdžiai) ir pareigybėms. Užduotims, dokumentams, naudotojams ir kitiems ištekliams jos nėra –
+savo užduotis ir save matai be jokios atsakomybės.
 
 Pakeitimai kaupiami ir apačioje rodoma, kiek teisių pridėsi ir atimsi. Visi pakeitimai įrašomi
 vienu **Išsaugoti** paspaudimu; **Atšaukti** grąžina išsaugotą būseną.
@@ -154,8 +164,10 @@ prieigą nepriklausomai nuo teisių tinklelio.
   perskaičiuoja `ProjectDutyResponsibilities`; `responsibilities:project --check` praneša apie
   neatitikimus. `Duty::assignRole()` / `removeRole()` / `syncRoles()` rašo tiesioginius suteikimus.
 - Leidimų katalogas – `App\Support\Permissions\PermissionCatalog` (`ModelEnum` × `CRUDEnum` ×
-  leidžiamos apimtys, be bazinės prieigos, plius `settings.update.*`). `permissions:audit` praneša
-  apie trūkstamus ir nebenaudojamus leidimus.
+  leidžiamos apimtys, be bazinės prieigos ir be nieko neduodančių derinių, plius `settings.read.*` ir
+  `settings.update.*`). `permissions:audit` praneša apie trūkstamus ir nebenaudojamus leidimus,
+  o `permissions:sync` (leidžiamas kiekvieno diegimo metu) sukuria trūkstamus ir pašalina nebenaudojamus,
+  išsaugodamas esamų leidimų ID ir turėtojus. Taisyklės: `.ai/rules/permissions.md`.
 - Maršrutai: `responsibilities.*`, `responsibilities.permissions.update`,
   `responsibilities.grants.store|destroy`, `responsibilities.attachableTypes.update`,
   `duties.responsibilities.store|destroy`. Seni `/mano/roles…` adresai nukreipiami.

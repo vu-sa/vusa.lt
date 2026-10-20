@@ -7,6 +7,7 @@ use App\Enums\ModelEnum;
 use App\Models\Reservation;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
+use App\States\ReservationResource\Created;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -69,7 +70,7 @@ class ReservationPolicy extends ModelPolicy
     #[\Override]
     public function delete(User $user, Model $reservation): bool
     {
-        if ($reservation->users->contains($user)) {
+        if ($reservation->users->contains($user) && $this->isUnapproved($reservation)) {
             return true;
         }
 
@@ -107,5 +108,13 @@ class ReservationPolicy extends ModelPolicy
         }
 
         return $this->commonChecker($user, $reservation, CRUDEnum::UPDATE->label(), $this->pluralModelName);
+    }
+
+    /**
+     * Participants withdraw a reservation only while no resource in it has been approved yet.
+     */
+    private function isUnapproved(Model $reservation): bool
+    {
+        return $reservation->resources->every(fn ($resource): bool => $resource->pivot->state instanceof Created);
     }
 }

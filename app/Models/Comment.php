@@ -65,6 +65,8 @@ class Comment extends Model
     /**
      * The emoji a user may react to a comment with.
      */
+    public const int EDIT_WINDOW_MINUTES = 15;
+
     public const ALLOWED_REACTIONS = ['👍', '❤️', '✅', '🎉', '👀', '🙏'];
 
     /**
@@ -288,6 +290,14 @@ class Comment extends Model
     public function isAuthor(User $user): bool
     {
         return $this->user_id === $user->id;
+    }
+
+    /**
+     * Authors fix typos for a short while; after that the thread has moved on and only deleting remains.
+     */
+    public function isEditableBy(User $user): bool
+    {
+        return $this->isAuthor($user) && $this->created_at?->gt(now()->subMinutes(self::EDIT_WINDOW_MINUTES)) === true;
     }
 
     /**

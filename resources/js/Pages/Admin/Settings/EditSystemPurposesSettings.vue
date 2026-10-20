@@ -1,5 +1,6 @@
 <template>
   <FormPage
+    :mode="canEdit ? 'edit' : 'view'"
     :title="$t('settings.pages.purposes.title')"
     :lead="$t('settings.purposes.intro')"
     :back-href="route('settings.index')"
@@ -64,6 +65,7 @@ interface Purpose { key: string; label: string; drives: string; responsibility_i
 interface DutyTypePart { key: string; label: string; drives: string; type_id: number | null; effective_type_id: number | null; fallback_slug: string }
 
 const props = defineProps<{
+  canEdit: boolean;
   purposes: Purpose[];
   responsibilities: { id: string; title: string }[];
   dutyTypes: DutyTypePart[];

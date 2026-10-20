@@ -197,7 +197,7 @@ ir netrukdomas atlikti sprendimus.
   daiktui nustatyti kitą skolinimosi laiką nei visai rezervacijai, pridėk jį jau sukūręs rezervaciją.
 - **Pridėti kitus teikėjus.** Pridėti naudotojai gauna pranešimą ir tampa lygiaverčiais teikėjais:
   mato rezervaciją, gali ją keisti ir atšaukti.
-- **Ištrinti** rezervaciją – ją ištrinti gali tik jos teikėjas. Rezervacija ištrinama **iškart ir negrįžtamai**
+- **Ištrinti** rezervaciją – ją ištrinti gali jos teikėjas, kol nė vienas jos daiktas dar nepatvirtintas (vėliau ją ištrinti gali tik rezervacijų administratorius). Rezervacija ištrinama **iškart ir negrįžtamai**
   (ji nepatenka į šiukšlinę). Kartu atlaisvinami visi joje buvę ištekliai ir pašalinami su ja susiję komentarai bei užduotys.
 
 Pačios rezervacijos (pavadinimo, laikotarpio) po pateikimo tiesiogiai redaguoti negalima. Keičiami

@@ -4,9 +4,7 @@ namespace App\Policies\Traits;
 
 use App\Enums\CRUDEnum;
 use App\Enums\PermissionScopeEnum;
-use App\Models\Institution;
 use App\Models\User;
-use App\Services\InstitutionRelationService;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -73,18 +71,7 @@ trait HasCommonChecks
 
         $permissableDuties = $ownScope->duties;
 
-        if ($this->authorizer->ownModelIds($user, $ownPermission, $permissableDuties, $resource)->contains($model->getKey())) {
-            return true;
-        }
-
-        // An institution is also "own" when one of the user's institutions is authorized to see it.
-        if ($resource !== 'institutions' || ! $model instanceof Institution) {
-            return false;
-        }
-
-        $userInstitutionIds = $permissableDuties->pluck('institution_id')->filter()->map(fn ($id) => (string) $id);
-
-        return app(InstitutionRelationService::class)->authorizedIdsFor($userInstitutionIds)->contains((string) $model->getKey());
+        return $this->authorizer->ownModelIds($user, $ownPermission, $permissableDuties, $resource)->contains($model->getKey());
     }
 
     /**

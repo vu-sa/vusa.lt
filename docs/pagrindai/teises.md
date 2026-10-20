@@ -32,13 +32,15 @@ teisės pažymėtos užraktu **Visi nariai**: jų priskirti negalima, nes jos ni
 
 | Įrašai | Ką gali kiekvienas narys |
 |---|---|
-| Institucijos | Matyti sąrašą ir aktyvių institucijų viešą informaciją; savo institucijas – pilnai |
-| Posėdžiai ir klausimai | Matyti viešus posėdžius; savo institucijų posėdžius, vykusius tavo pareigų metu, matyti ir keisti – ir pasibaigus pareigoms |
+| Institucijos | Matyti sąrašą ir aktyvių institucijų viešą informaciją; savo ir su jomis susietas institucijas – pilnai |
+| Posėdžiai ir klausimai | Matyti viešus posėdžius; savo institucijų posėdžius, vykusius tavo pareigų metu, matyti ir keisti – ir pasibaigus pareigoms. Posėdžio klausimus kuria, redaguoja ir trina ir turintys posėdžių redagavimo teisę (pvz., studentų atstovai savo institucijos posėdžiuose) |
 | Problemos | Matyti visų padalinių problemas |
 | Ištekliai | Matyti visus išteklius |
-| Pareigybės | Matyti savo dabartines ir buvusias pareigybes |
+| Pareigybės | Matyti savo dabartines ir buvusias pareigybes bei kadencijas |
 | Užduotys | Matyti ir atlikti tau priskirtas užduotis (bet ne jas ištrinti; savų užduočių trynimo teisė nė vienai atsakomybei nepriskiriama) |
-| Komentarai | Komentuoti visur, kur matai įrašą; redaguoti ir trinti savo komentarus. Kitų komentarus trina redaguojantys įrašą arba atsakomybė su komentarų trynimo teise |
+| Komentarai | Komentuoti visur, kur matai įrašą; savo komentarą redaguoti 15 min. po parašymo, o ištrinti – bet kada. Kitų komentarus trina redaguojantys įrašą arba atsakomybė su komentarų trynimo teise |
+| Rezervacijos | Kurti rezervacijas; matyti ir keisti tas, kuriose dalyvauji. Savo rezervaciją ištrinti, kol nė vienas jos daiktas dar nepatvirtintas |
+| Nariai | Matyti ir redaguoti save (**Profilis**); savęs ištrinti negalima |
 
 ## Atsakomybės {#roles}
 

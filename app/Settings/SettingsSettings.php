@@ -7,8 +7,8 @@ use App\Services\ModelAuthorizer;
 use Spatie\LaravelSettings\Settings;
 
 /**
- * Who may change the app's settings: super admins and holders of `settings.update.*`, which a
- * responsibility carries like any other permission.
+ * Who may open the app's settings (`settings.read.*`) and who may change them (`settings.update.*`):
+ * super admins and holders of those permissions, which a responsibility carries like any other.
  */
 class SettingsSettings extends Settings
 {
@@ -20,5 +20,10 @@ class SettingsSettings extends Settings
     public function canUserManageSettings(User $user): bool
     {
         return $user->isSuperAdmin() || app(ModelAuthorizer::class)->allows($user, 'settings.update.*');
+    }
+
+    public function canUserViewSettings(User $user): bool
+    {
+        return $this->canUserManageSettings($user) || app(ModelAuthorizer::class)->allows($user, 'settings.read.*');
     }
 }

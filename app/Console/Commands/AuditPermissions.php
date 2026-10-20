@@ -2,16 +2,16 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\Permissions\SyncPermissionCatalog;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Support\Permissions\PermissionCatalog;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 
 /**
- * Reports only: a permission a role still holds is real access, so removing one is a human's call.
+ * Reports only; `permissions:sync` applies the changes.
  */
 #[Description('Compare stored permissions and responsibilities with the permission catalog')]
 #[Signature('permissions:audit {--json : Print the report as JSON}')]
@@ -61,7 +61,7 @@ class AuditPermissions extends Command
         return [
             'missing' => PermissionCatalog::missingIn($stored),
             'orphans' => array_map(
-                fn (string $name): array => ['name' => $name, 'held_by' => $this->holdersOf($name)],
+                fn (string $name): array => ['name' => $name, 'held_by' => SyncPermissionCatalog::holdersOf($name)],
                 PermissionCatalog::orphansIn($stored),
             ),
             'empty_responsibilities' => Role::query()
@@ -72,26 +72,6 @@ class AuditPermissions extends Command
                 ->values()
                 ->all(),
         ];
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function holdersOf(string $permission): array
-    {
-        $viaRoles = DB::table('role_has_permissions')
-            ->join('permissions', 'permissions.id', '=', 'role_has_permissions.permission_id')
-            ->join('roles', 'roles.id', '=', 'role_has_permissions.role_id')
-            ->where('permissions.name', $permission)
-            ->pluck('roles.name');
-
-        $direct = DB::table('model_has_permissions')
-            ->join('permissions', 'permissions.id', '=', 'model_has_permissions.permission_id')
-            ->where('permissions.name', $permission)
-            ->get(['model_has_permissions.model_type', 'model_has_permissions.model_id'])
-            ->map(fn (object $row): string => "{$row->model_type}:{$row->model_id}");
-
-        return $viaRoles->merge($direct)->values()->all();
     }
 
     /**

@@ -165,6 +165,20 @@ describe('update & delete', function (): void {
         expect($comment->fresh()->edited_at)->not->toBeNull();
     });
 
+    test('the author can edit within 15 minutes but not after, and can still delete', function (): void {
+        $this->actingAs($this->viewer);
+        $comment = $this->agendaItem->comment('<p>Original</p>');
+
+        $this->travel(14)->minutes();
+        asUser($this->viewer)->patchJson(route('api.v1.admin.comments.update', $comment), ['body' => '<p>Typo fixed</p>'])->assertOk();
+
+        $this->travel(2)->minutes();
+        asUser($this->viewer)->patchJson(route('api.v1.admin.comments.update', $comment), ['body' => '<p>Too late</p>'])->assertForbidden();
+        asUser($this->viewer)->getJson($this->indexUrl)->assertJsonPath('data.0.can.update', false)->assertJsonPath('data.0.can.delete', true);
+
+        asUser($this->viewer)->deleteJson(route('api.v1.admin.comments.destroy', $comment))->assertSuccessful();
+    });
+
     test('a non-author cannot edit (403)', function (): void {
         $this->actingAs($this->viewer);
         $comment = $this->agendaItem->comment('<p>Mine</p>');

@@ -2,10 +2,12 @@
 
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionLink;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
 use App\Models\Resource;
+use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Support\Permissions\BaselineAccess;
@@ -57,6 +59,36 @@ test('sees and edits their institution\'s meetings of their term, and those meet
 
     asUser($this->member)->get(route('meetings.show', $meeting))->assertOk();
     asUser($this->member)->get(route('agendaItems.show', $item))->assertOk();
+});
+
+test('reads an institution that their own institution links to, and not one that links to theirs', function (): void {
+    $target = Institution::factory()->for($this->otherTenant)->create(['is_active' => true]);
+    $source = Institution::factory()->for($this->otherTenant)->create(['is_active' => true]);
+    InstitutionLink::factory()->create(['source_institution_id' => $this->institution->id, 'target_institution_id' => $target->id]);
+    InstitutionLink::factory()->create(['source_institution_id' => $source->id, 'target_institution_id' => $this->institution->id]);
+
+    expect($this->member->can('view', $target))->toBeTrue()
+        ->and($this->member->can('view', $source))->toBeFalse();
+});
+
+test('agenda items follow a meeting-edit permission, not mere membership', function (): void {
+    $meeting = Meeting::factory()->hasAttached($this->institution)->create(['start_time' => now()]);
+    $item = AgendaItem::factory()->for($meeting)->create();
+    $strangersItem = AgendaItem::factory()->for(Meeting::factory()->create(['start_time' => now()]))->create();
+
+    expect($this->member->can('update', $item))->toBeFalse()
+        ->and($this->member->can('delete', $item))->toBeFalse();
+
+    $editor = Role::factory()->create();
+    $editor->givePermissionTo('meetings.update.own');
+    $this->duty->assignRole($editor);
+    $member = $this->member->fresh();
+
+    expect($member->can('create', AgendaItem::class))->toBeTrue()
+        ->and($member->can('update', $item))->toBeTrue()
+        ->and($member->can('delete', $item))->toBeTrue()
+        ->and($member->can('update', $strangersItem))->toBeFalse()
+        ->and($member->can('delete', $strangersItem))->toBeFalse();
 });
 
 test('browses every padalinys\' problems and every resource', function (): void {

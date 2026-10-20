@@ -31,7 +31,7 @@ class CommentPolicy
 
     public function update(User $user, Comment $comment): bool
     {
-        return ! $comment->isErased() && $comment->isAuthor($user);
+        return ! $comment->isErased() && $comment->isEditableBy($user);
     }
 
     public function delete(User $user, Comment $comment): bool

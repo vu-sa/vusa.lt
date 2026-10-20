@@ -97,3 +97,27 @@ test('curators and mentors need different types', function (): void {
         ->post(route('settings.purposes.update'), purposesPayload([], ['curator' => $type->id, 'mentor' => $type->id]))
         ->assertSessionHasErrors('duty_types.mentor');
 });
+
+test('viewing settings is its own permission: the pages open without the save controls and nothing can be written', function (): void {
+    $member = makeUser($this->tenant);
+    $viewer = Role::factory()->create();
+    $viewer->givePermissionTo('settings.read.*');
+    $member->duties()->first()->assignRole($viewer);
+    $member = $member->fresh();
+
+    asUser($member)->get(route('settings.index'))
+        ->assertOk()->assertInertia(fn (Assert $page) => $page->where('canEdit', false));
+    asUser($member)->get(route('settings.meetings.edit'))
+        ->assertOk()->assertInertia(fn (Assert $page) => $page->where('canEdit', false));
+    asUser($member)->get(route('settings.cadences.index'))
+        ->assertOk()->assertInertia(fn (Assert $page) => $page->where('canEdit', false));
+
+    asUser($member)->post(route('settings.meetings.update'), ['type_ids' => []])->assertForbidden();
+    asUser($member)->post(route('settings.purposes.update'), purposesPayload())->assertForbidden();
+    asUser($member)->post(route('settings.cadences.defaults'), ['default_start_month_day' => '07-01', 'default_end_month_day' => '06-30'])->assertForbidden();
+});
+
+test('whoever may update settings is told they can edit', function (): void {
+    asUser($this->admin)->get(route('settings.index'))
+        ->assertOk()->assertInertia(fn (Assert $page) => $page->where('canEdit', true));
+});

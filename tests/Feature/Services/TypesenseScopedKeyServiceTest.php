@@ -478,13 +478,15 @@ describe('public records in every scoped key', function (): void {
         app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => [$this->publicType->id]])->save();
     });
 
-    test('a member without permissions gets public meetings, agenda items and active institutions only', function (): void {
-        $collections = keysFor(makeUser(Tenant::query()->first()));
+    test('a member without permissions gets public meetings, agenda items, active institutions and their own', function (): void {
+        $user = makeUser(Tenant::query()->first());
+        $institutionId = $user->duties()->first()->institution_id;
+        $collections = keysFor($user);
         $publicTypes = "institution_type_ids:=[{$this->publicType->id}]";
 
         expect(scopedKeyFilter($collections['meetings']['key']))->toBe($publicTypes)
             ->and(scopedKeyFilter($collections['agenda_items']['key']))->toBe('(('.$publicTypes.') && is_private:=false)')
-            ->and(scopedKeyFilter($collections['institutions']['key']))->toBe('is_active:=true');
+            ->and(scopedKeyFilter($collections['institutions']['key']))->toBe('(is_active:=true || institution_ids:=[`'.$institutionId.'`])');
     });
 
     test('a rep holding meetings.read.own also gets their own institutions', function (): void {

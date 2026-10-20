@@ -7,8 +7,8 @@ import type { PermissionCatalog } from '../types';
 const catalog: PermissionCatalog = {
   areas: ['atstovavimas', 'organizacija'],
   resources: [
-    { key: 'meetings', model: 'meeting', area: 'atstovavimas', abilities: { read: ['padalinys', '*'], update: ['own', 'padalinys', '*'] }, baseline: 'Mato viešus posėdžius.' },
-    { key: 'mailingLists', model: 'mailing_list', area: 'organizacija', abilities: { read: ['padalinys', '*'] }, baseline: null },
+    { key: 'meetings', model: 'meeting', area: 'atstovavimas', abilities: { read: ['padalinys', '*'], update: ['own', 'padalinys', '*'], delete: ['own', 'padalinys', '*'] }, baseline: 'Mato viešus posėdžius.', softDeletes: true },
+    { key: 'mailingLists', model: 'mailing_list', area: 'organizacija', abilities: { read: ['padalinys', '*'], delete: ['padalinys', '*'] }, baseline: null, softDeletes: false },
   ],
   retired: ['meetings.read.own'],
 };
@@ -18,6 +18,15 @@ function mountMatrix(granted: string[] = [], readonly = false) {
 }
 
 describe('PermissionMatrix', () => {
+  it('keeps column headings below the sticky shell with an opaque background', () => {
+    const header = mountMatrix().get('[data-testid="matrix-table"] thead');
+
+    expect(header.classes()).toEqual(expect.arrayContaining([
+      'sticky', 'top-[var(--shell-chrome-height,0px)]', 'z-20', 'bg-background',
+    ]));
+    expect(header.findAll('th[scope="col"]')).toHaveLength(6);
+  });
+
   it('lists every catalog resource, including konferencijos', () => {
     const table = mountMatrix().get('[data-testid="matrix-table"]');
 
@@ -40,6 +49,14 @@ describe('PermissionMatrix', () => {
     await wrapper.get('[data-testid="matrix-save"]').trigger('click');
 
     expect(wrapper.emitted('save')?.[0]).toEqual([['mailingLists.read.padalinys', 'meetings.read.padalinys']]);
+  });
+
+  it('says plainly when deleting has no trash', () => {
+    const wrapper = mountMatrix();
+
+    expect(wrapper.find('[data-resource="meetings"] [data-testid="cell-permanent"]').exists()).toBe(false);
+    expect(wrapper.find('[data-resource="mailingLists"] [data-testid="cell-permanent"]').exists()).toBe(true);
+    expect(wrapper.get('[data-cell="mailingLists.delete"]').attributes('aria-label')).toMatch(/negrįžtamai|permanently|delete_permanent/);
   });
 
   it('opens read-only on the granted resources, without anything to save', () => {

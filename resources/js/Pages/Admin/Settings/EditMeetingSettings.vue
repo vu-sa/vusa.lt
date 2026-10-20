@@ -1,5 +1,6 @@
 <template>
   <FormPage
+    :mode="canEdit ? 'edit' : 'view'"
     :title="$t('settings.pages.meetings.title')"
     :back-href="route('settings.index')"
     :back-label="$t('settings.title')"
@@ -63,6 +64,7 @@ interface InstitutionType {
 }
 
 const props = defineProps<{
+  canEdit: boolean;
   selected_type_ids: number[];
   excluded_type_ids: number[];
   available_types: InstitutionType[];

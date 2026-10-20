@@ -382,7 +382,7 @@ class AdminNavigationCatalog
                 new Section('tipai', 'shell.sections.tipai', 'types.index', [], null, Visibility::callback(fn (User $user): bool => $this->taxonomyDestinations($user) !== []), matches: ['types.index'], descriptionKey: 'shell.section_descriptions.tipai'),
                 new Section('instituciju_tipai', 'shell.sections.instituciju_tipai', 'institutionTypes.index', [], 'institution_type', Visibility::can('viewAny', InstitutionType::class), descriptionKey: 'shell.section_descriptions.instituciju_tipai', taxonomy: true),
                 new Section('pareigybiu_tipai', 'shell.sections.pareigybiu_tipai', 'dutyTypes.index', [], 'duty_type', Visibility::can('viewAny', DutyType::class), descriptionKey: 'shell.section_descriptions.pareigybiu_tipai', taxonomy: true),
-                new Section('nustatymai', 'shell.sections.nustatymai', 'settings.index', [], null, Visibility::gate('manage-settings'), descriptionKey: 'shell.section_descriptions.nustatymai'),
+                new Section('nustatymai', 'shell.sections.nustatymai', 'settings.index', [], null, Visibility::gate('view-settings'), descriptionKey: 'shell.section_descriptions.nustatymai'),
                 // Both gate on `viewAny(Role)` in the controller (SystemStatusController,
                 // MailQueueController) — not a distinct "super-admin" gate as the phase-0
                 // inventory's shorthand suggested.

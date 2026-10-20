@@ -34,17 +34,30 @@ use App\Settings\SettingsSettings;
 use App\Settings\SiteSettings;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Inertia\Response as InertiaResponse;
 
 class SettingsController extends AdminController
 {
     /**
-     * Check if the current user can manage settings.
+     * Writing needs `settings.update.*`.
      */
     private function authorizeSettingsAccess(SettingsSettings $settings): void
     {
+        abort_if(! $settings->canUserManageSettings(request()->user()), 403, __('settings.messages.unauthorized'));
+    }
+
+    /**
+     * Opening a page needs only `settings.read.*`; `canEdit` tells it to hide its save controls.
+     *
+     * @param  array<string, mixed>  $props
+     */
+    private function settingsPage(SettingsSettings $settings, string $component, array $props = []): InertiaResponse
+    {
         $user = request()->user();
 
-        abort_if(! $settings->canUserManageSettings($user), 403, __('settings.messages.unauthorized'));
+        abort_if(! $settings->canUserViewSettings($user), 403, __('settings.messages.unauthorized'));
+
+        return $this->inertiaResponse($component, [...$props, 'canEdit' => $settings->canUserManageSettings($user)]);
     }
 
     /**
@@ -52,9 +65,7 @@ class SettingsController extends AdminController
      */
     public function index(SettingsSettings $settings)
     {
-        $this->authorizeSettingsAccess($settings);
-
-        return $this->inertiaResponse('Admin/Settings/IndexSettings');
+        return $this->settingsPage($settings, 'Admin/Settings/IndexSettings');
     }
 
     /**
@@ -62,9 +73,7 @@ class SettingsController extends AdminController
      */
     public function editFormSettings(FormSettings $formSettings, SettingsSettings $settingsSettings)
     {
-        $this->authorizeSettingsAccess($settingsSettings);
-
-        return $this->inertiaResponse('Admin/Settings/EditFormSettings', [
+        return $this->settingsPage($settingsSettings, 'Admin/Settings/EditFormSettings', [
             'member_registration_form_id' => $formSettings->member_registration_form_id,
             'student_rep_registration_form_id' => $formSettings->student_rep_registration_form_id,
             'student_rep_institution_type_ids' => $formSettings->getStudentRepInstitutionTypeIds()->toArray(),
@@ -103,9 +112,7 @@ class SettingsController extends AdminController
      */
     public function editMeetingSettings(MeetingSettings $meetingSettings, SettingsSettings $settingsSettings)
     {
-        $this->authorizeSettingsAccess($settingsSettings);
-
-        return $this->inertiaResponse('Admin/Settings/EditMeetingSettings', [
+        return $this->settingsPage($settingsSettings, 'Admin/Settings/EditMeetingSettings', [
             'selected_type_ids' => $meetingSettings->getPublicMeetingInstitutionTypeIds()->toArray(),
             'excluded_type_ids' => $meetingSettings->getExcludedInstitutionTypeIds()->toArray(),
             'available_types' => InstitutionType::query()
@@ -141,9 +148,7 @@ class SettingsController extends AdminController
 
     public function editSystemPurposes(SettingsSettings $settingsSettings, DutyTypeSettings $dutyTypeSettings, SystemDutyTypes $systemDutyTypes)
     {
-        $this->authorizeSettingsAccess($settingsSettings);
-
-        return $this->inertiaResponse('Admin/Settings/EditSystemPurposesSettings', [
+        return $this->settingsPage($settingsSettings, 'Admin/Settings/EditSystemPurposesSettings', [
             'purposes' => collect(ResponsibilityPurpose::cases())->map(fn (ResponsibilityPurpose $purpose): array => [
                 'key' => $purpose->value,
                 'label' => (string) __($purpose->labelKey()),
@@ -215,9 +220,7 @@ class SettingsController extends AdminController
      */
     public function editAtstovavimasSettings(AtstovavimasSettings $atstovavimasSettings, SettingsSettings $settingsSettings)
     {
-        $this->authorizeSettingsAccess($settingsSettings);
-
-        return $this->inertiaResponse('Admin/Settings/EditAtstovavimasSettings', [
+        return $this->settingsPage($settingsSettings, 'Admin/Settings/EditAtstovavimasSettings', [
             'student_rep_root_type_id' => $atstovavimasSettings->student_rep_root_type_id,
             'institution_types' => InstitutionType::query()
 
@@ -251,9 +254,7 @@ class SettingsController extends AdminController
      */
     public function editDocumentSettings(DocumentSettings $documentSettings, SettingsSettings $settingsSettings)
     {
-        $this->authorizeSettingsAccess($settingsSettings);
-
-        return $this->inertiaResponse('Admin/Settings/EditDocumentSettings', [
+        return $this->settingsPage($settingsSettings, 'Admin/Settings/EditDocumentSettings', [
             'selected_content_types' => $documentSettings->getImportantContentTypes()->toArray(),
             'recommendations' => $documentSettings->recommendations,
             'selected_documents' => Document::query()->whereIn('id', array_column($documentSettings->recommendations, 'document_id'))
@@ -295,8 +296,6 @@ class SettingsController extends AdminController
      */
     public function editSiteSettings(SiteSettings $siteSettings, SettingsSettings $settingsSettings)
     {
-        $this->authorizeSettingsAccess($settingsSettings);
-
         $ids = array_filter([$siteSettings->privacy_page_id_lt, $siteSettings->privacy_page_id_en]);
 
         // Only live pages — the picker searches Typesense, which also excludes them.
@@ -322,7 +321,7 @@ class SettingsController extends AdminController
             ];
         };
 
-        return $this->inertiaResponse('Admin/Settings/EditSiteSettings', [
+        return $this->settingsPage($settingsSettings, 'Admin/Settings/EditSiteSettings', [
             'selectedPages' => [
                 'lt' => $summary($siteSettings->privacy_page_id_lt),
                 'en' => $summary($siteSettings->privacy_page_id_en),

@@ -41,7 +41,7 @@
 
     <!-- Desktop: one grid, abilities as columns. -->
     <table v-if="visibleAreas.length" class="hidden w-full border-collapse text-sm md:table" data-testid="matrix-table">
-      <thead>
+      <thead class="sticky top-[var(--shell-chrome-height,0px)] z-20 bg-background">
         <tr class="border-b border-border">
           <th scope="col" class="w-[34%] py-2 pr-4 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
             {{ $t('responsibilities.matrix.resource') }}
@@ -104,7 +104,7 @@
           <dl class="mt-2 divide-y divide-border/60">
             <div v-for="ability in ABILITIES" :key="ability" class="flex min-h-11 items-center justify-between gap-3 py-1">
               <dt class="text-sm text-muted-foreground">
-                {{ abilityLabel(ability) }}
+                {{ abilityLabel(ability, resource.softDeletes) }}
               </dt>
               <dd class="w-40 shrink-0">
                 <PermissionCell

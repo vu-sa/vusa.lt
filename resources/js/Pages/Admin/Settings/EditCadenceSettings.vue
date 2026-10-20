@@ -14,14 +14,14 @@
           <span class="font-mono tabular-nums text-foreground">{{ preview(settings) }}</span>
         </p>
       </div>
-      <Button type="button" variant="outline" class="pointer-coarse:min-h-11" @click="defaultsOpen = true">
+      <Button v-if="canEdit" type="button" variant="outline" class="pointer-coarse:min-h-11" @click="defaultsOpen = true">
         <Pencil class="size-4" aria-hidden="true" />
         {{ $t('cadences.actions.edit') }}
       </Button>
     </section>
 
     <SectionCard :title="$t('cadences.global.title')" :count="globalCadences.length">
-      <template #action>
+      <template v-if="canEdit" #action>
         <Button type="button" size="xs" variant="outline" :disabled="crud.processing.value" @click="startAdding">
           <Plus class="size-3.5" />
           {{ $t('cadences.actions.add') }}
@@ -38,6 +38,7 @@
         :editing-id="crud.editingId.value"
         :adding="crud.adding.value"
         :processing="crud.processing.value"
+        :readonly="!canEdit"
         :prefill
         @edit="crud.editingId.value = $event"
         @cancel-edit="crud.editingId.value = null"
@@ -135,6 +136,7 @@ interface CadenceDefaults {
 }
 
 const props = defineProps<{
+  canEdit: boolean;
   cadences: CadenceRow[];
   settings: CadenceDefaults;
 }>();

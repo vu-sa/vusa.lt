@@ -141,7 +141,11 @@ class TypesenseScopedKeyService
                 // Public rows for everyone; a permission the user lacks resolves to no ids and
                 // simply drops its clause.
                 $tenantIds = $permission ? $this->getTenantIdsForPermission($user, $permission) : collect();
-                $institutionIds = $ownPermission ? $this->getInstitutionIdsForOwnPermission($ownPermission, $user) : collect();
+                $institutionIds = match (true) {
+                    ($config['baseline_own'] ?? false) => $this->institutionAccessService->getAccessibleInstitutionIds($user, includeRelated: true),
+                    $ownPermission !== null => $this->getInstitutionIdsForOwnPermission($ownPermission, $user),
+                    default => collect(),
+                };
 
                 $filter = $this->buildCombinedFilterByClause($tenantIds, $institutionIds, $this->publicRowsClause($publicRows));
                 if ($collection === 'agenda_items') {

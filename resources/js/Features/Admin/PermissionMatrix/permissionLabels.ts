@@ -28,7 +28,10 @@ export function resourceIcon(resource: string, model?: string | null): Component
   return getEntityTypeDefinition(model ?? modelForResource(resource) ?? '')?.icon ?? Settings2;
 }
 
-export const abilityLabel = (ability: string) => $t(`responsibilities.matrix.abilities.${ability}`);
+/** Deleting a record without a trash is permanent, so it reads like permanent deletion. */
+export const abilityLabel = (ability: string, softDeletes = true) => $t(
+  `responsibilities.matrix.abilities.${ability === 'delete' && !softDeletes ? 'delete_permanent' : ability}`,
+);
 
 export const scopeLabel = (scope: string) => $t(`responsibilities.matrix.scopes.${scope === '*' ? 'all' : scope}`);
 

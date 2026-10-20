@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Nustatymai
 area: settings
 models: [Cadence]
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-20
 tests:
   - tests/Feature/Admin/Settings/SystemPurposesSettingsTest.php
   - tests/Feature/Admin/Settings/CadenceControllerTest.php
@@ -55,8 +55,9 @@ siūlo atskirą liepos 1 d. reikšmę; ji nėra imama iš šių kadencijų.
 ### Kas gali keisti nustatymus {#autorizacija}
 
 Nustatymus keičia superadministratorius ir nariai, kurių atsakomybė turi teisę **Nustatymai ·
-redaguoti · visur** (skiltyje [Atsakomybės](/sistema/roles-ir-leidimai)). Atskiro autorizacijos
-puslapio nebėra.
+redaguoti · visur** (skiltyje [Atsakomybės](/sistema/roles-ir-leidimai)). Teisė **Nustatymai ·
+matyti · visur** leidžia tik peržiūrėti: puslapiai atsiveria be mygtuko „Išsaugoti“, o keisti
+nieko negalima. Atskiro autorizacijos puslapio nebėra.
 
 ### Sistemos paskirtys {#sistemos-paskirtys}
 
@@ -175,7 +176,7 @@ teisės redaguoti instituciją. Vien teisės keisti nustatymus tam nepakanka.
 
 - Nustatymų valdiklis yra `SettingsController`, kadencijų – `CadenceController`.
 - Nustatymai saugomi `spatie/laravel-settings` klasėse: `CadenceSettings`, `FormSettings`, `MeetingSettings`, `AtstovavimasSettings`, `DocumentSettings`, `SiteSettings`, `DutyTypeSettings`.
-- Bendrą prieigą prie nustatymų tikrina `SettingsSettings::canUserManageSettings()` (super administratorius arba `settings.update.*`).
+- Prieigą prie nustatymų tikrina `SettingsSettings`: `canUserViewSettings()` (`settings.read.*`) atveria puslapius, `canUserManageSettings()` (super administratorius arba `settings.update.*`) leidžia rašyti; puslapiai gauna `canEdit`.
 - Institucijos kadencijos prieigą tikrina `CadencePolicy` per `InstitutionPolicy::update` (`institutions.update` su atitinkama apimtimi).
 - Atstovavimo hierarchijos pradžią saugo `student_rep_root_type_id`, dokumentų filtrus – `important_content_types`, kontaktų tipus – `duty_types.*_type_id` (skaito `SystemDutyTypes`); paskirtys saugomos `roles.purpose`.
 - Viešumą tikrina `Meeting::isPubliclyVisible()`; viešų tipų pakeitimai atnaujina `PublicMeeting` ir `PublicInstitution` indeksus. Su posėdžiu susietas kadencijų datas atnaujina `syncAnchoredCadences`.

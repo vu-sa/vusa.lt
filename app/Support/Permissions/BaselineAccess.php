@@ -22,14 +22,18 @@ final class BaselineAccess
         'problems',
         'resources',
         'duties',
+        'dutiables',
         'tasks',
         'comments',
+        'reservations',
+        'users',
     ];
 
     /**
      * Permissions that would grant nothing beyond the baseline, so they are never seeded and
      * cannot be put on a role. Commenting follows `view` on the record and your own comments are
      * yours, so only deleting other people's comments (`delete.padalinys`, `delete.*`) is a grant.
+     * Everyone may start a reservation.
      */
     public const array RETIRED_PERMISSIONS = [
         'comments.create.*',
@@ -39,6 +43,7 @@ final class BaselineAccess
         'resources.read.*',
         'problems.read.*',
         'duties.read.own',
+        'reservations.create.*',
     ];
 
     public static function isRetired(string $permission): bool

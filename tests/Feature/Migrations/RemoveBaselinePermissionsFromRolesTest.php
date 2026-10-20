@@ -13,7 +13,7 @@ function removeBaselinePermissionsMigration(): object
 
 beforeEach(function (): void {
     // ModelPermissionSeeder no longer creates these; production still has them before the migration.
-    foreach (['comments.create.padalinys', 'comments.read.own', 'comments.delete.padalinys', 'duties.read.own', 'problems.read.*', 'resources.read.padalinys'] as $name) {
+    foreach (['comments.create.padalinys', 'comments.read.own', 'comments.delete.padalinys', 'duties.read.own', 'problems.read.*', 'resources.read.padalinys', 'tasks.delete.own'] as $name) {
         Permission::findOrCreate($name, 'web');
     }
 

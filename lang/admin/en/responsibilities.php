@@ -99,8 +99,10 @@ return [
             'read' => 'View',
             'create' => 'Create',
             'update' => 'Edit',
-            'delete' => 'Delete',
+            'delete' => 'Move to trash',
             'forceDelete' => 'Delete permanently',
+            'delete_permanent' => 'Delete permanently',
+            'delete_permanent_hint' => 'no trash – gone immediately',
         ],
         'scopes' => [
             'own' => 'Own',

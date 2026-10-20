@@ -1,5 +1,6 @@
 <template>
   <FormPage
+    :mode="canEdit ? 'edit' : 'view'"
     :title="$t('settings.pages.atstovavimas.title')"
     :back-href="route('settings.index')"
     :back-label="$t('settings.title')"
@@ -53,6 +54,7 @@ interface InstitutionType {
 }
 
 const props = withDefaults(defineProps<{
+  canEdit: boolean;
   student_rep_root_type_id?: number | null;
   institution_types?: InstitutionType[];
 }>(), {

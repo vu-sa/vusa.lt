@@ -15,6 +15,7 @@ final class PermissionCatalog
     /** Admin workspaces (AdminNavigationCatalog keys), in the order the editor lists them. */
     public const array AREAS = ['pradzia', 'atstovavimas', 'rezervacijos', 'svetaine', 'organizacija', 'sistema'];
 
+    /** Resource => workspace. Listed in the order the admin navigation shows them; the editor sorts by it. */
     private const array RESOURCE_AREAS = [
         'tasks' => 'pradzia',
         'comments' => 'pradzia',
@@ -35,12 +36,11 @@ final class PermissionCatalog
         'eventTypes' => 'svetaine',
         'tags' => 'svetaine',
         'files' => 'svetaine',
+        'studySets' => 'svetaine',
         'users' => 'organizacija',
         'duties' => 'organizacija',
         'dutiables' => 'organizacija',
-        'tenants' => 'organizacija',
         'studyPrograms' => 'organizacija',
-        'studySets' => 'organizacija',
         'mailingLists' => 'organizacija',
         'forms' => 'organizacija',
         'roles' => 'sistema',
@@ -53,13 +53,43 @@ final class PermissionCatalog
 
     /** Capabilities that guard a part of the app rather than one model's records. */
     private const array STANDALONE = [
-        'settings' => ['update' => ['*']],
+        'settings' => ['read' => ['*'], 'update' => ['*']],
     ];
 
-    /** Model resources whose access is decided elsewhere (ReservationResource follows its reservation). */
-    private const array SKIPPED = ['reservationResources'];
+    /**
+     * Model resources whose access is decided elsewhere: ReservationResource follows its reservation
+     * and tenants are super-admin only (`TenantPolicy`).
+     */
+    private const array SKIPPED = ['reservationResources', 'tenants'];
 
-    private const array ALL_SCOPES = ['own', 'padalinys', '*'];
+    /** Checked by a policy that only super admins pass; the name may exist but is never seeded or swept. */
+    private const array RESERVED = ['supportRequests'];
+
+    /**
+     * Combinations that would grant nothing, matched with `Str::is` against `resource.ability.scope`.
+     * `own` resolves through a same-named relation on Duty; a model without one has no `own` rows,
+     * and `create` only reads `.padalinys`, so `create.own` exists for meetings alone.
+     * Anything every member already has belongs in the policy and BaselineAccess instead.
+     */
+    private const array UNGRANTABLE = [
+        // No Duty relation, so `own` matches no record.
+        'banners.*.own', 'calendars.*.own', 'documents.*.own', 'files.*.own', 'forms.*.own', 'news.*.own', 'pages.*.own',
+        // Same records as `padalinys`.
+        'resources.*.own',
+        // Agenda items follow their meeting; tasks are the assignee's (Duty::tasks reaches a colleague's).
+        'agendaItems.*.own', 'tasks.*.own',
+        // Everyone sees the reservations they take part in (BaselineAccess retires `create`).
+        'reservations.read.own',
+        // You edit yourself in Profilis and cannot delete yourself; `own` would mean colleagues.
+        'users.*.own',
+        // Permissions are seeded from the catalog and only listed.
+        'permissions.create.*', 'permissions.update.*', 'permissions.delete.*',
+        // Deleting the duty you hold makes no sense.
+        'duties.delete.own',
+    ];
+
+    /** Resources whose `create` is also granted at `own`. */
+    private const array OWN_CREATE = ['meetings'];
 
     /**
      * @return array<string, array<string, list<string>>> resource => ability => grantable scopes
@@ -110,30 +140,6 @@ final class PermissionCatalog
     }
 
     /**
-     * Names the seeder must remove: every combination of a model resource that is not grantable.
-     *
-     * @return list<string>
-     */
-    public static function disallowedNames(): array
-    {
-        $names = [];
-
-        foreach (self::modelResources() as $resource) {
-            foreach (CRUDEnum::labels() as $ability) {
-                foreach (self::ALL_SCOPES as $scope) {
-                    $name = "{$resource}.{$ability}.{$scope}";
-
-                    if (! self::isGrantable($name)) {
-                        $names[] = $name;
-                    }
-                }
-            }
-        }
-
-        return $names;
-    }
-
-    /**
      * @param  iterable<string>  $existing
      * @return list<string>
      */
@@ -148,7 +154,10 @@ final class PermissionCatalog
      */
     public static function orphansIn(iterable $existing): array
     {
-        return array_values(array_filter([...$existing], fn (string $name): bool => ! self::isGrantable($name)));
+        return array_values(array_filter(
+            [...$existing],
+            fn (string $name): bool => ! self::isGrantable($name) && ! in_array(Str::before($name, '.'), self::RESERVED, true),
+        ));
     }
 
     public static function areaOf(string $resource): string
@@ -161,7 +170,7 @@ final class PermissionCatalog
      *
      * @return array{
      *     areas: list<string>,
-     *     resources: list<array{key: string, model: string|null, area: string, abilities: array<string, list<string>>, baseline: string|null}>,
+     *     resources: list<array{key: string, model: string|null, area: string, abilities: array<string, list<string>>, baseline: string|null, softDeletes: bool}>,
      *     retired: list<string>,
      * }
      */
@@ -169,6 +178,7 @@ final class PermissionCatalog
     {
         $baseline = BaselineAccess::descriptions();
         $areaOrder = array_flip(self::AREAS);
+        $resourceOrder = array_flip(array_keys(self::RESOURCE_AREAS));
 
         $resources = collect(self::abilities())
             ->map(fn (array $abilities, string $resource): array => [
@@ -177,8 +187,12 @@ final class PermissionCatalog
                 'area' => self::areaOf($resource),
                 'abilities' => $abilities,
                 'baseline' => $baseline[$resource] ?? null,
+                'softDeletes' => ModelEnum::isSoftDeletable($resource),
             ])
-            ->sortBy(fn (array $resource): int => $areaOrder[$resource['area']] ?? PHP_INT_MAX)
+            ->sortBy(fn (array $resource): array => [
+                $areaOrder[$resource['area']] ?? PHP_INT_MAX,
+                $resourceOrder[$resource['key']] ?? PHP_INT_MAX,
+            ])
             ->values()
             ->all();
 
@@ -208,10 +222,11 @@ final class PermissionCatalog
     {
         $scopes = ModelEnum::getAllowedScopes($resource);
 
-        // Institutions are listed to their own members (`own`), but never edited at that scope.
-        if ($resource === 'institutions' && $ability !== CRUDEnum::READ->label()) {
+        if ($ability === CRUDEnum::CREATE->label() && ! in_array($resource, self::OWN_CREATE, true)) {
             $scopes = array_diff($scopes, ['own']);
         }
+
+        $scopes = array_filter($scopes, fn (string $scope): bool => ! Str::is(self::UNGRANTABLE, "{$resource}.{$ability}.{$scope}"));
 
         if ($ability === CRUDEnum::FORCE_DELETE->label()) {
             // Permanent deletion is a tenant or global action, and only soft-deleted rows have it.
