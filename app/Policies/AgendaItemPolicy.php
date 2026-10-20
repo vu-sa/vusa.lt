@@ -64,6 +64,8 @@ class AgendaItemPolicy extends ModelPolicy
 
     /**
      * Whoever holds a meeting-edit permission for the meeting edits its agenda items.
+     *
+     * @param  AgendaItem  $agendaItem
      */
     #[\Override]
     public function update(User $user, Model $agendaItem): bool
@@ -71,17 +73,20 @@ class AgendaItemPolicy extends ModelPolicy
         return $this->editsMeeting($user, $agendaItem) || parent::update($user, $agendaItem);
     }
 
+    /** @param AgendaItem $agendaItem */
     #[\Override]
     public function delete(User $user, Model $agendaItem): Response|bool
     {
         return $this->editsMeeting($user, $agendaItem) || parent::delete($user, $agendaItem);
     }
 
+    /** @param AgendaItem $agendaItem */
     public function viewSummary(User $user, Model $agendaItem): bool
     {
         return (bool) $agendaItem->meeting?->is_public || $this->view($user, $agendaItem);
     }
 
+    /** @param AgendaItem $agendaItem */
     private function editsMeeting(User $user, Model $agendaItem): bool
     {
         $meeting = $agendaItem->meeting;

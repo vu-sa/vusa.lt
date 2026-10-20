@@ -112,6 +112,8 @@ class ReservationPolicy extends ModelPolicy
 
     /**
      * Participants withdraw a reservation only while no resource in it has been approved yet.
+     *
+     * @param  Reservation  $reservation
      */
     private function isUnapproved(Model $reservation): bool
     {
