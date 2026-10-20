@@ -278,7 +278,7 @@ class ResponsibilityResolver
 
     /**
      * @param  list<string>  $dutyIds
-     * @return SupportCollection<string, list<string>>
+     * @return SupportCollection<int|string, list<string>>
      */
     private function dutyIdsByTenant(array $dutyIds): SupportCollection
     {
@@ -288,7 +288,7 @@ class ResponsibilityResolver
             ->whereNotNull('institutions.tenant_id')
             ->get(['duties.id', 'institutions.tenant_id'])
             ->groupBy(fn (object $row): string => (string) $row->tenant_id)
-            ->map(fn (SupportCollection $rows): array => $rows->pluck('id')->map(strval(...))->all());
+            ->map(fn (SupportCollection $rows): array => array_values($rows->pluck('id')->map(strval(...))->all()));
     }
 
     /**
