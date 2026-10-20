@@ -316,7 +316,7 @@ return [
             'description_string' => 'Darbotvarkės klausimo aprašymas turi būti tekstas.',
             'order_integer' => 'Darbotvarkės klausimo tvarka turi būti skaičius.',
             'order_min' => 'Darbotvarkės klausimo tvarka turi būti bent 1.',
-            'type_in' => 'Punkto tipas turi būti vienas iš: voting, informational, deferred.',
+            'type_enum' => 'Pasirink vieną iš siūlomų punkto tipų.',
             'student_position_max' => 'Studentų pozicija negali būti ilgesnė nei 5000 simbolių.',
         ],
         'merge' => [

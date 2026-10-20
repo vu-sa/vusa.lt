@@ -105,7 +105,7 @@ class UpdateAgendaItemRequest extends FormRequest
             'description.en.string' => trans('forms.validation.agenda_item.description_string'),
             'order.integer' => trans('forms.validation.agenda_item.order_integer'),
             'order.min' => trans('forms.validation.agenda_item.order_min'),
-            'type.in' => trans('forms.validation.agenda_item.type_in'),
+            'type.enum' => trans('forms.validation.agenda_item.type_enum'),
             'student_position.lt.max' => trans('forms.validation.agenda_item.student_position_max'),
             'student_position.en.max' => trans('forms.validation.agenda_item.student_position_max'),
             'end_time.after' => trans('forms.validation.agenda_item.end_time_after'),

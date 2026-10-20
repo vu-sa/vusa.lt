@@ -101,10 +101,15 @@
 
     <template #fact-institution>
       <span v-if="!institutions.length">—</span>
-      <span v-else class="flex flex-col gap-1">
+      <span v-else class="flex min-w-0 flex-col gap-1">
         <template v-for="institution in institutions" :key="institution.id">
-          <span v-if="readOnly">{{ institution.name }}</span>
-          <Link v-else :href="route('institutions.show', institution.id)" :class="LINK_CLASS">
+          <span v-if="readOnly" class="line-clamp-2 break-words" :title="institution.name">{{ institution.name }}</span>
+          <Link
+            v-else
+            :href="route('institutions.show', institution.id)"
+            :class="[LINK_CLASS, 'line-clamp-2 break-words']"
+            :title="institution.name"
+          >
             {{ institution.name }}
           </Link>
         </template>
@@ -253,7 +258,7 @@
       :except="['goalLinks']"
     />
 
-    <AgendaItemTypeDialog v-if="canUpdate" v-model:open="typeDialogOpen" :form />
+    <AgendaItemTypeDialog v-if="canUpdate" v-model:open="typeDialogOpen" :form :meeting />
 
     <AgendaItemVotesSheetForm
       v-if="canUpdate"

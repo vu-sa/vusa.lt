@@ -25,14 +25,15 @@ return [
     'status_neutral_admin_help' => 'Students abstained or the decision had no clear benefit or harm to students.',
     'status_mixed_admin_help' => 'The item has several votes and no main one, and their results differ. If one vote decides the item, mark it as the main vote.',
     'status_no_vote_admin_help' => 'A voting item, but voting data has not been entered yet. Do not forget to fill it in!',
-    'status_deferred_admin_help' => 'The discussion of this item was postponed to another meeting. Select type "Deferred".',
-    'status_informational_admin_help' => 'An informational item with no voting involved. Select type "Informational".',
+    'status_deferred_admin_help' => 'The item was moved to a later meeting. Select type "Deferred".',
+    'status_informational_admin_help' => 'The item was presented or discussed, with no vote. Select type "Discussion".',
+    'status_withdrawn_admin_help' => 'The item was removed from the agenda or withdrawn and not considered. Select type "Withdrawn".',
     'status_unset_admin_help' => 'The item type has not been specified yet. Make sure to select the appropriate type!',
 
     // Agenda item type tooltips
     'type_voting_tooltip' => 'An item that was voted on. You need to fill in the voting results (decision, student vote, and student benefit).',
     'type_deferred_tooltip' => 'The discussion of this item was postponed to another meeting. No voting data required.',
-    'type_informational_tooltip' => 'An informational item with no voting. No voting data required.',
+    'type_informational_tooltip' => 'An item presented or discussed without a vote. No voting data required.',
     'main_vote_required_tooltip' => 'The main vote is required for voting type items and cannot be removed.',
     'validation' => [
         'agenda_item_required' => 'The agenda item is required.',

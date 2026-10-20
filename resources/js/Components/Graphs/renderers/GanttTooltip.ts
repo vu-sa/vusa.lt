@@ -256,6 +256,7 @@ const agendaItemStatusIcons: Record<AgendaItemStatus, string> = {
   deferred: CLOCK_ICON,
   break: CLOCK_ICON,
   informational: INFO_ICON,
+  withdrawn: MINUS_ICON,
   unset: QUESTION_ICON,
 };
 

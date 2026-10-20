@@ -55,7 +55,7 @@ describe('AgendaItemBody', () => {
   it('reads the type as text for someone who cannot edit', () => {
     const { wrapper } = factory({ editable: false }, { type: 'informational' });
 
-    expect(wrapper.get('#agenda-item-type').text()).toContain('Informacinis');
+    expect(wrapper.get('#agenda-item-type').text()).toContain('Aptarimas');
   });
 
   /** Time is a fact of the record, edited in the sheet — not a live control among the taps. */

@@ -159,6 +159,19 @@ describe('break agenda items', () => {
   });
 });
 
+describe('withdrawn agenda items', () => {
+  const withdrawnItem = () => ({ id: 'w1', type: 'withdrawn' as const, votes: [] });
+
+  it('has its own status and counts as filled in', () => {
+    const summary = getMeetingStatusSummary([withdrawnItem()] as never);
+
+    expect(getAgendaItemStatus(withdrawnItem() as never)).toBe('withdrawn');
+    expect(summary.withdrawn).toBe(1);
+    expect(summary.noVote).toBe(0);
+    expect(summary.overallStatus).toBe('complete');
+  });
+});
+
 describe('vote value labels', () => {
   // The same words on the vote buttons, badges and the agenda list filters (VoteValue on the server).
   it('names each value the same way the list filters do', () => {

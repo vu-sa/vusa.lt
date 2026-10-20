@@ -117,9 +117,10 @@ return [
     'meeting_agenda_completed_body' => 'All :count agenda items for :institution meeting have been completed',
     'meeting_agenda_completed_body_with_user' => ':user completed all :count agenda items for :institution meeting',
     'meeting_agenda_type_voting' => ':count voting',
-    'meeting_agenda_type_informational' => ':count informational',
+    'meeting_agenda_type_informational' => ':count discussion',
     'meeting_agenda_type_deferred' => ':count deferred',
     'meeting_agenda_type_break' => ':count break',
+    'meeting_agenda_type_withdrawn' => ':count withdrawn',
     'meeting_agenda_additional_votes_note' => 'If there were additional votes, don\'t forget to add them.',
 
     // Duty notifications

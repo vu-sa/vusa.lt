@@ -2531,6 +2531,7 @@ declare global {
       Informational: 'informational',
       Deferred: 'deferred',
       Break: 'break',
+      Withdrawn: 'withdrawn',
     } as const;
 
     export type AgendaItemType = typeof AgendaItemType[keyof typeof AgendaItemType]

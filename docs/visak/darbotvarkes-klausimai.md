@@ -17,6 +17,8 @@ tests:
   - tests/Feature/VoteControllerTest.php
   - tests/Feature/Meetings/AgendaItemVotesTest.php
   - tests/Feature/Meetings/AgendaItemBreakTest.php
+  - tests/Feature/Meetings/AgendaItemWithdrawnTest.php
+  - resources/js/Components/AgendaItems/__tests__/AgendaItemTypeDialog.component.test.ts
   - tests/Feature/Meetings/AgendaItemTimetableTest.php
   - tests/Feature/Meetings/MeetingStudentPerspectiveTest.php
   - tests/Feature/Meetings/MeetingTranslationsTest.php
@@ -107,16 +109,27 @@ Redagavimo lange rodomas prieigos paaiškinimas ir viešos eilutės peržiūra.
 
 Kiekvienam klausimui pažymimas tipas. Kol jis nepažymėtas, klausimas laikomas nepilnu. Tipas
 matomas klausimo būsenoje; pasirenkamas ar keičiamas mygtuku **Pasirinkti tipą** / **Keisti tipą**,
-kuris atveria atskirą langą su keturiais variantais. Jį galima pakeisti ir lange **Redaguoti punktą**.
+kuris atveria atskirą langą su penkiais variantais. Jį galima pakeisti ir lange **Redaguoti punktą**.
+Lango klausimas prisitaiko prie posėdžio: įvykusiam klausiama, kaip klausimas *buvo* svarstomas,
+būsimam – kaip *bus*, o sprendimui el. paštu – kaip jis sprendžiamas el. paštu.
 
 | Tipas | Kada | Reikia balsavimo? |
 |---|---|---|
-| **Balsavimas** | Dėl klausimo priimamas sprendimas | Taip |
-| **Informacinis** | Klausimas tik pristatomas | Ne |
-| **Atidėtas** | Klausimas perkeltas į kitą posėdį | Ne |
+| **Balsavimas** | Dėl klausimo sprendžiama balsuojant ar bendru sutarimu | Taip |
+| **Aptarimas** | Klausimas pristatomas ar aptariamas, bet dėl jo nebalsuojama | Ne |
+| **Atidėtas** | Svarstymas perkeliamas į vėlesnį posėdį | Ne |
+| **Išbrauktas** | Klausimas išbrauktas iš darbotvarkės ar atsiimtas ir nesvarstomas | Ne |
 | **Pertrauka** | Pertrauka tarp klausimų | Ne |
 
 Pasirinkus **Balsavimas**, automatiškai pridedamas pirmas balsavimas.
+
+<ChangelogNote version="v3.11" date="2026-10-20" title="Aptarimas ir Išbrauktas">
+
+Tipas **Informacinis** pervadintas į **Aptarimas** – jis tinka ir pristatymui, ir aptarimui be
+balsavimo. Naujas tipas **Išbrauktas** skirtas klausimams, kurie išbraukti iš darbotvarkės ar
+atsiimti, o ne atidėti.
+
+</ChangelogNote>
 
 ### Balsavimai {#balsavimai}
 
@@ -157,7 +170,7 @@ organizacija, todėl žymimas **tik sprendimas**. Jei posėdis bendras VU SA dar
 Klausimas **užpildytas**, kai:
 
 - pažymėtas jo tipas **ir**
-- tipas nereikalauja balsavimo (Informacinis, Atidėtas, Pertrauka) **arba** pagrindiniame
+- tipas nereikalauja balsavimo (Aptarimas, Atidėtas, Išbrauktas, Pertrauka) **arba** pagrindiniame
   balsavime užpildyti visi reikiami laukai (VU SA dariniuose – tik sprendimas). Jei pagrindinio
   nėra, laukai turi būti užpildyti visuose balsavimuose.
 
@@ -175,8 +188,8 @@ vien sprendimu laikė nepilnais, o posėdžio būsena klausimą be tipo galėjo 
 
 Klausimo būsena rodo **rezultatą**, pvz., **Studentų pozicija priimta** (studentų balsas sutampa
 su sprendimu), **Studentų pozicija nesutampa**, **Pritarta bendru sutarimu**, **Neaptartas** (dar
-nėra sprendimo, o išoriniame organe – ir studentų balso), **Informacinis**, **Atidėtas**,
-**Pertrauka**, **Skirtingi rezultatai** (keli balsavimai be pagrindinio, jų rezultatai skiriasi) ar
+nėra sprendimo, o išoriniame organe – ir studentų balso), **Aptarimas**, **Atidėtas**,
+**Išbrauktas**, **Pertrauka**, **Skirtingi rezultatai** (keli balsavimai be pagrindinio, jų rezultatai skiriasi) ar
 **Nepažymėtas** (nėra tipo). VU SA darinyje rodomas pats sprendimas: **Priimtas**,
 **Atmestas** arba **Neutralus sprendimas**.
 

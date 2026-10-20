@@ -151,7 +151,7 @@ export interface InstitutionInsights {
 export interface GanttAgendaItem {
   id: string;
   title: string;
-  type?: 'voting' | 'informational' | 'deferred' | 'break' | null;
+  type?: 'voting' | 'informational' | 'deferred' | 'break' | 'withdrawn' | null;
   /** The outcome votes (see getOutcomeVotes()); the tooltip derives the item's status from them. */
   votes?: AtstovavimasVote[];
 }

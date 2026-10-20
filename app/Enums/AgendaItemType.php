@@ -8,6 +8,7 @@ enum AgendaItemType: string
     case Informational = 'informational';
     case Deferred = 'deferred';
     case Break = 'break';
+    case Withdrawn = 'withdrawn';
 
     /**
      * Get the localized label for the agenda item type.
@@ -16,9 +17,10 @@ enum AgendaItemType: string
     {
         return match ($this) {
             self::Voting => $locale === 'en' ? 'Voting' : 'Balsavimas',
-            self::Informational => $locale === 'en' ? 'Informational' : 'Informacinis',
+            self::Informational => $locale === 'en' ? 'Discussion' : 'Aptarimas',
             self::Deferred => $locale === 'en' ? 'Deferred' : 'Atidėtas',
             self::Break => $locale === 'en' ? 'Break' : 'Pertrauka',
+            self::Withdrawn => $locale === 'en' ? 'Withdrawn' : 'Išbrauktas',
         };
     }
 
@@ -32,6 +34,7 @@ enum AgendaItemType: string
             self::Informational => 'blue',
             self::Deferred => 'gray',
             self::Break => 'amber',
+            self::Withdrawn => 'slate',
         };
     }
 
@@ -48,7 +51,7 @@ enum AgendaItemType: string
     }
 
     /**
-     * The types that need no vote to count as complete — an agenda, a pause, a postponement.
+     * The types that need no vote to count as complete — a discussion, a pause, a postponement, a withdrawal.
      *
      * @return list<string>
      */

@@ -18,8 +18,9 @@ import {
   Hand,
   Handshake,
   Inbox,
-  Info,
+  ListX,
   LoaderCircle,
+  MessagesSquare,
   PackageOpen,
   RefreshCw,
   RotateCcw,
@@ -70,6 +71,7 @@ export type AgendaItemStatus
     | 'deferred'
     | 'informational'
     | 'break'
+    | 'withdrawn'
     | 'unset';
 export type UnknownBenefitStatus = 'unknown';
 
@@ -114,8 +116,9 @@ export const agendaItemStatuses: Record<AgendaItemStatus, StatusPresentation> = 
   mixed: status('Skirtingi rezultatai', 'info', Split),
   no_vote: status('Neaptartas', 'attention', CircleDashed),
   deferred: status('Atidėtas', 'neutral', Clock3),
-  informational: status('Informacinis', 'info', Info),
+  informational: status('Aptarimas', 'info', MessagesSquare),
   break: status('Pertrauka', 'neutral', Coffee),
+  withdrawn: status('Išbrauktas', 'neutral', ListX),
   unset: status('Nepažymėtas', 'attention', CircleHelp),
 };
 

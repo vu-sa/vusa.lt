@@ -313,7 +313,7 @@ return [
             'description_string' => 'The agenda item description must be text.',
             'order_integer' => 'The agenda item order must be a number.',
             'order_min' => 'The agenda item order must be at least 1.',
-            'type_in' => 'The item type must be one of: voting, informational, deferred.',
+            'type_enum' => 'Choose one of the offered item types.',
             'student_position_max' => 'The student position cannot be longer than 5000 characters.',
         ],
         'merge' => [

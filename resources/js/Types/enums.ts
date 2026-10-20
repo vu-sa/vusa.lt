@@ -25,6 +25,7 @@ export enum AgendaItemType {
     Informational = 'informational',
     Deferred = 'deferred',
     Break = 'break',
+    Withdrawn = 'withdrawn',
 }
 export enum AllowedFileablesEnum {
     DUTY = 'Duty',

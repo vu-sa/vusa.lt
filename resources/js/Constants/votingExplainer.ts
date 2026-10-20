@@ -13,6 +13,7 @@ export const agendaStatusExplanations: Array<{ status: AgendaItemStatus; admin: 
   { status: 'no_vote', admin: 'voting.status_no_vote_admin_help', public: 'voting.explainer.status_no_vote' },
   { status: 'deferred', admin: 'voting.status_deferred_admin_help', public: 'voting.explainer.status_deferred' },
   { status: 'informational', admin: 'voting.status_informational_admin_help', public: 'voting.explainer.status_informational' },
+  { status: 'withdrawn', admin: 'voting.status_withdrawn_admin_help', public: 'voting.explainer.status_withdrawn' },
   { status: 'unset', admin: 'voting.status_unset_admin_help', public: 'voting.explainer.status_unset' },
 ];
 

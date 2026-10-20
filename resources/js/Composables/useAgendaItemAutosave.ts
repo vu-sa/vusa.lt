@@ -57,7 +57,7 @@ export function createVote(): EditableVote {
 
 export interface AgendaItemFormData {
   title: TranslatedField;
-  type: 'voting' | 'informational' | 'deferred' | 'break' | null;
+  type: 'voting' | 'informational' | 'deferred' | 'break' | 'withdrawn' | null;
   is_private: boolean;
   public_title: TranslatedField;
   brought_by_students: boolean;

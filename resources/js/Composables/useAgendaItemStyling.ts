@@ -10,7 +10,7 @@ export type { AgendaItemStatus };
 // ============================================================================
 
 export type VoteValue = 'positive' | 'negative' | 'neutral' | string | null | undefined;
-export type AgendaItemType = 'voting' | 'informational' | 'deferred' | string | null | undefined;
+export type AgendaItemType = 'voting' | 'informational' | 'deferred' | 'break' | 'withdrawn' | string | null | undefined;
 
 export interface Vote {
   id?: string | number;
@@ -70,6 +70,10 @@ export function getAgendaItemStatus(item: AgendaItem, requiresStudentPerspective
 
   if (item.type === 'break') {
     return 'break';
+  }
+
+  if (item.type === 'withdrawn') {
+    return 'withdrawn';
   }
 
   const outcomeVotes = getOutcomeVotes(item);
@@ -169,6 +173,7 @@ export interface MeetingStatusSummary {
   deferred: number;
   informational: number;
   break: number;
+  withdrawn: number;
   unset: number;
   /** Overall status for coloring: 'complete' | 'incomplete' | 'empty' */
   overallStatus: 'complete' | 'incomplete' | 'empty';
@@ -199,6 +204,7 @@ export function getMeetingStatusSummary(items: AgendaItem[], requiresStudentPers
     deferred: 0,
     informational: 0,
     break: 0,
+    withdrawn: 0,
     unset: 0,
     overallStatus: 'empty',
     voteAlignmentStatus: 'unknown',
@@ -245,6 +251,9 @@ export function getMeetingStatusSummary(items: AgendaItem[], requiresStudentPers
         break;
       case 'break':
         summary.break++;
+        break;
+      case 'withdrawn':
+        summary.withdrawn++;
         break;
       case 'unset':
         summary.unset++;

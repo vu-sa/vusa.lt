@@ -82,6 +82,16 @@ class AgendaItemFactory extends Factory
     }
 
     /**
+     * Struck from the agenda or withdrawn; never considered, so it needs no vote.
+     */
+    public function withdrawn(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'type' => AgendaItemType::Withdrawn,
+        ]);
+    }
+
+    /**
      * Add a student position to the agenda item.
      */
     public function withStudentPosition(): static
