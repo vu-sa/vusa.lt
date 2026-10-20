@@ -353,7 +353,7 @@ class MailingListController extends AdminController
         $responsibilities = Role::query()->whereIn('id', $ids(MailingListSourceType::Responsibility))->get()->keyBy('id');
         $tenants = Tenant::query()->whereIn('id', $filterIds('tenant_ids'))->pluck('shortname', 'id');
 
-        return $sources->map(function (MailingListSource $source) use ($duties, $institutions, $lists, $institutionTypes, $dutyTypes, $tenants): array {
+        return $sources->map(function (MailingListSource $source) use ($duties, $institutions, $lists, $institutionTypes, $dutyTypes, $responsibilities, $tenants): array {
             $label = match ($source->type) {
                 MailingListSourceType::Duty => ($duty = $duties->get($source->source_id))
                     ? trim(($duty->institution?->name ? $duty->institution->name.' · ' : '').$duty->name)

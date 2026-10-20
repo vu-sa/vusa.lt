@@ -1,9 +1,9 @@
 <?php
 
 use App\Actions\GetRepOutcomeMetrics;
+use App\Enums\ResponsibilityPurpose;
 use App\Enums\VoteValue;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -24,9 +24,8 @@ beforeEach(function (): void {
     $tenant = Tenant::query()->first();
     $this->institution = Institution::factory()->for($tenant)->create();
 
-    $repType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-        ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-    $duty = Duty::factory()->for($this->institution)->hasAttached($repType, [], 'types')->create();
+    $duty = Duty::factory()->for($this->institution)->create();
+    grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
     $this->rep = User::factory()->create(['last_action' => now()->subDay()]);
     $this->rep->duties()->attach($duty, ['start_date' => '2026-01-01', 'end_date' => null]);

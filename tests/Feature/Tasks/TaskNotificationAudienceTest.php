@@ -2,9 +2,9 @@
 
 use App\Actions\ResolveTaskAssignees;
 use App\Actions\Schedulable\TaskNotifier;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Cadence;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Task;
@@ -61,7 +61,7 @@ describe('ResolveTaskAudience', function (): void {
     test('a future holder carries a future meeting task but receives no notification before the term starts', function (): void {
         $futureHolder = User::factory()->create();
         $duty = attachDuty($this->institution, $futureHolder, now()->addMonth()->toDateString(), null);
-        $duty->types()->attach(DutyType::query()->where('slug', 'studentu-atstovai')->firstOrFail());
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
         $meetingDate = now()->addMonths(2)->toDateTimeString();
         $task = meetingTaskFor($this->institution, [$futureHolder], $meetingDate);

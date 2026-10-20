@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\ForgetUserAccess;
 use App\Enums\ResponsibilityPurpose;
 use App\Enums\SystemDutyType;
 use App\Http\Controllers\AdminController;
@@ -162,7 +163,7 @@ class SettingsController extends AdminController
                 'fallback_slug' => $part->fallbackSlug(),
             ])->all(),
             'dutyTypeOptions' => DutyType::query()->get(['id', 'title'])
-                ->map(fn (DutyType $type): array => ['id' => $type->id, 'title' => (string) $type->title])
+                ->map(fn (DutyType $type): array => ['id' => (int) $type->id, 'title' => (string) $type->getTranslation('title', app()->getLocale())])
                 ->sortBy('title')
                 ->values(),
         ]);
@@ -170,18 +171,33 @@ class SettingsController extends AdminController
 
     public function updateSystemPurposes(UpdateSystemPurposesSettingsRequest $request, DutyTypeSettings $dutyTypeSettings, SystemDutyTypes $systemDutyTypes)
     {
-        DB::transaction(function () use ($request): void {
+        $affectedRoles = collect();
+
+        DB::transaction(function () use ($request, &$affectedRoles): void {
             foreach (ResponsibilityPurpose::cases() as $purpose) {
                 $roleId = $request->validated("purposes.{$purpose->value}");
 
                 Role::query()->where('purpose', $purpose)->whereKeyNot($roleId)->get()
-                    ->each(fn (Role $role) => $role->update(['purpose' => null]));
+                    ->each(function (Role $role) use (&$affectedRoles): void {
+                        $affectedRoles->push($role);
+                        $role->update(['purpose' => null]);
+                    });
 
                 if ($roleId !== null) {
-                    Role::query()->whereKey($roleId)->firstOrFail()->update(['purpose' => $purpose]);
+                    $role = Role::query()->whereKey($roleId)->firstOrFail();
+                    $affectedRoles->push($role);
+                    $role->update(['purpose' => $purpose]);
                 }
             }
         });
+
+        ForgetUserAccess::execute(
+            $affectedRoles->unique('id')
+                ->flatMap(fn (Role $role) => $role->usersThroughDuties()->pluck('users.id')->merge($role->users()->pluck('users.id')))
+                ->map(strval(...))
+                ->unique()
+                ->values(),
+        );
 
         foreach (SystemDutyType::cases() as $part) {
             $typeId = $request->validated("duty_types.{$part->value}");

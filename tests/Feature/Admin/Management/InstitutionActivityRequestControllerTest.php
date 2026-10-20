@@ -5,9 +5,9 @@ use App\Actions\ActivityRequests\SendInstitutionActivityRequests;
 use App\Actions\RecordMeeting;
 use App\Enums\ActivityRequestSkipReason;
 use App\Enums\InstitutionActivityCampaign;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Cadence;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionCheckIn;
@@ -31,9 +31,8 @@ pest()->use(RefreshDatabase::class);
 /** A current student representative of $institution. */
 function activityRequestRep(Institution $institution, ?User $user = null): User
 {
-    $repType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-        ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-    $duty = Duty::factory()->for($institution)->hasAttached($repType, [], 'types')->create();
+    $duty = Duty::factory()->for($institution)->create();
+    grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
     $user ??= User::factory()->create();
     $user->duties()->attach($duty, ['start_date' => now()->subYear(), 'end_date' => null]);
@@ -139,11 +138,10 @@ test('on staging the email reaches only the coordinator who sent it, never the r
 });
 
 describe('who is asked about what', function (): void {
-    test('distinguishes missing representative duty types from missing current holders', function (bool $typed): void {
-        $type = DutyType::query()->where('slug', 'studentu-atstovai')->firstOrFail();
+    test('distinguishes missing representative duties from missing current holders', function (bool $typed): void {
         $duty = Duty::factory()->for($this->otherInstitution)->create();
         if ($typed) {
-            $duty->types()->attach($type);
+            grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
         } else {
             $this->rep->duties()->attach($duty, ['start_date' => today()->subMonth(), 'end_date' => null]);
         }
@@ -452,7 +450,7 @@ describe('picking people', function (): void {
 });
 
 test('manual activity preview and creation require the meeting interval to be exceeded', function (int $days, ?string $reason): void {
-    $this->travelTo('2026-10-18 12:00:00');
+    $this->travelTo('2026-11-18 12:00:00');
     $this->institution->update(['meeting_periodicity_days' => 30]);
     app(RecordMeeting::class)->execute($this->institution, now()->subDays($days));
     $payload = ['campaign_type' => 'activity_confirmation', 'institution_ids' => [$this->institution->id]];

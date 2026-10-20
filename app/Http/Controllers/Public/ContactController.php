@@ -140,7 +140,7 @@ class ContactController extends PublicController
         return $this->renderInstitutionPage(
             $institution,
             $this->presentationService->contactsFor($institution, $duties),
-            $institution->name.' | '.ucfirst($part->publicSegment()),
+            $institution->name.' | '.($part === SystemDutyType::Coordinator ? __('Koordinatoriai') : __('Kuratoriai')),
             activeDutyTypeTab: $part->publicSegment(),
         );
     }
@@ -204,7 +204,7 @@ class ContactController extends PublicController
         if ($isPadalinys) {
             $systemTypes = app(SystemDutyTypes::class);
             $parts = collect([SystemDutyType::Coordinator, SystemDutyType::Curator->forLocale(app()->getLocale())])
-                ->filter(fn (SystemDutyType $part): bool => DutyType::query()->whereKey($systemTypes->id($part))
+                ->filter(fn (SystemDutyType $part): bool => DutyType::query()->whereIn('id', $systemTypes->idsWithDescendants($part))
                     ->whereHas('duties', fn ($q) => $q->where('institution_id', $institution->id))
                     ->exists())
                 ->values();

@@ -507,7 +507,6 @@ declare global {
       users?: User[]
       current_users?: User[]
       previous_users?: User[]
-      responsibilities?: DutyResponsibility[]
       types?: DutyType[]
       institution?: Institution
       institutions?: Institution
@@ -537,7 +536,6 @@ declare global {
       users_count: number
       current_users_count: number
       previous_users_count: number
-      responsibilities_count: number
       types_count: number
       ex_officio_target_duties_count: number
       ex_officio_source_duties_count: number
@@ -559,7 +557,6 @@ declare global {
       users_exists: boolean
       current_users_exists: boolean
       previous_users_exists: boolean
-      responsibilities_exists: boolean
       types_exists: boolean
       institution_exists: boolean
       institutions_exists: boolean
@@ -609,26 +606,6 @@ declare global {
       // counts
       // exists
       duty_exists: boolean
-    }
-
-    export interface DutyResponsibility {
-      // columns
-      id: string
-      duty_id: string
-      responsibility: Responsibility
-      scope_type: string
-      scope_id: string
-      created_at?: string | null
-      updated_at?: string | null
-      // relations
-      duty?: Duty
-      scope?: DutyResponsibility
-      activities_as_subject?: Activity[]
-      // counts
-      activities_as_subject_count: number
-      // exists
-      duty_exists: boolean
-      activities_as_subject_exists: boolean
     }
 
     export interface DutyType {

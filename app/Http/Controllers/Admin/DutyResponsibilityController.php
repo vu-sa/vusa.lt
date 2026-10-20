@@ -115,15 +115,11 @@ class DutyResponsibilityController extends AdminController
     public function store(StoreDutyResponsibilityRequest $request, Duty $duty): RedirectResponse
     {
         $scopeType = $request->scopeType();
-        $grant = fn () => $duty->responsibilityGrants()->firstOrCreate([
+        $duty->responsibilityGrants()->firstOrCreate([
             'role_id' => $request->validated('role_id'),
             'scope_type' => $scopeType?->value,
             'scope_id' => $scopeType ? (string) $request->validated('scope_id') : null,
         ]);
-
-        if ($warning = $this->guardSelfLockout($request->user(), $this->holds($request->user(), $duty), $request, $grant)) {
-            return $warning;
-        }
 
         return back()->with('success', __('responsibilities.messages.added'));
     }

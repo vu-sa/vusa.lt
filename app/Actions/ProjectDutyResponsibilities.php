@@ -122,7 +122,7 @@ class ProjectDutyResponsibilities
     }
 
     /**
-     * @param  Collection<int, object{duty_id: string, role_id: string}>  $rows
+     * @param  Collection<int, \stdClass>  $rows
      * @return array<string, list<string>>
      */
     private static function group(Collection $rows): array
@@ -187,6 +187,7 @@ class ProjectDutyResponsibilities
      */
     private static function normalize(iterable $dutyIds): Collection
     {
+        /** @var Collection<int, string> */
         return collect($dutyIds)->map(strval(...))->filter()->unique()->values();
     }
 }

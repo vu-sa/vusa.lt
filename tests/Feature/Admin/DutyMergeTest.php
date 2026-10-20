@@ -217,16 +217,19 @@ describe('merging related pivots', function (): void {
             ->and(DB::table('duty_duty_type')->where('duty_id', $this->source->id)->count())->toBe(0);
     });
 
-    test('moves admin roles onto the kept duty', function (): void {
+    test('moves admin roles onto the kept duty without duplicating a shared unscoped grant', function (): void {
+        $sharedRole = Role::firstOrCreate(['name' => 'Studentų atstovas', 'guard_name' => 'web']);
         $extraRole = Role::firstOrCreate(['name' => 'Išteklių administratorius', 'guard_name' => 'web']);
-        $this->source->assignRole($extraRole);
+        $this->target->assignRole($sharedRole);
+        $this->source->assignRole([$sharedRole, $extraRole]);
 
         asUser($this->admin)->post(route('duties.mergeDuties'), [
             'target_duty_id' => $this->target->id,
             'source_duty_ids' => [$this->source->id],
         ]);
 
-        expect($this->target->fresh()->hasRole($extraRole))->toBeTrue();
+        expect($this->target->fresh()->hasRole($extraRole))->toBeTrue()
+            ->and($this->target->responsibilityGrants()->where('role_id', $sharedRole->id)->count())->toBe(1);
     });
 });
 

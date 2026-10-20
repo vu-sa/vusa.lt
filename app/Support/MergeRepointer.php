@@ -33,7 +33,9 @@ final class MergeRepointer
                 }
 
                 foreach ($sharedColumns as $column) {
-                    $twin->whereColumn("twin.{$column}", "{$table}.{$column}");
+                    $twin->where(fn (Builder $match) => $match
+                        ->whereColumn("twin.{$column}", "{$table}.{$column}")
+                        ->orWhere(fn (Builder $null) => $null->whereNull("twin.{$column}")->whereNull("{$table}.{$column}")));
                 }
             })
             ->delete();

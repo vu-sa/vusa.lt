@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\DutyType;
@@ -415,14 +416,8 @@ describe('atstovavimas dashboard periodicity', function (): void {
             'alias' => 'periodicity-test-'.uniqid(),
         ]);
 
-        // Create a duty and assign it to the user
-        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-        $duty = Duty::factory()
-            ->for($institution)
-            ->hasAttached($studentRepType, [], 'types')
-            ->create();
+        $duty = Duty::factory()->for($institution)->create();
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
         // Create a fresh user for this test to avoid interference
         $testUser = User::factory()->create();
@@ -468,14 +463,8 @@ describe('atstovavimas dashboard periodicity', function (): void {
         ]);
         $institution->types()->attach($institutionType);
 
-        // Create a duty and assign it to the user
-        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-        $duty = Duty::factory()
-            ->for($institution)
-            ->hasAttached($studentRepType, [], 'types')
-            ->create();
+        $duty = Duty::factory()->for($institution)->create();
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
         // Create a fresh user for this test to avoid interference
         $testUser = User::factory()->create();

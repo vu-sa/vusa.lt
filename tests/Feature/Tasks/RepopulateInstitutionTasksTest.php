@@ -5,8 +5,8 @@ use App\Actions\ActivityRequests\ResolveActivityRequestEligibility;
 use App\Enums\InstitutionActivityAnswer;
 use App\Enums\InstitutionActivityCampaign;
 use App\Enums\InstitutionActivityStatus;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionCheckIn;
@@ -43,13 +43,8 @@ function institutionWithRepresentative(): Institution
             'meeting_periodicity_days' => 30,
         ]);
 
-    $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-        ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-    $duty = Duty::factory()
-        ->for($institution)
-        ->hasAttached($studentRepType, [], 'types')
-        ->create();
+    $duty = Duty::factory()->for($institution)->create();
+    grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
     User::factory()->create()->duties()->attach($duty, [
         'start_date' => now()->subYear(),
@@ -378,8 +373,8 @@ describe('tasks:repopulate institution', function (): void {
 function institutionWithMidTermRepresentative(): array
 {
     $institution = Institution::factory()->for(Tenant::query()->firstOrFail())->create(['is_active' => true, 'meeting_periodicity_days' => 30]);
-    $type = DutyType::query()->where('slug', 'studentu-atstovai')->first() ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-    $duty = Duty::factory()->for($institution)->hasAttached($type, [], 'types')->create();
+    $duty = Duty::factory()->for($institution)->create();
+    grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
     [$a, $b, $c] = User::factory()->count(3)->create()->all();
     $a->duties()->attach($duty, ['start_date' => '2025-09-01']);
     $b->duties()->attach($duty, ['start_date' => '2025-09-01']);

@@ -203,17 +203,12 @@ class ResponsibilityController extends AdminController
     public function storeGrant(StoreRoleGrantRequest $request, Role $role): RedirectResponse
     {
         $scopeType = $request->scopeType();
-        $attributes = [
+        $role->grants()->firstOrCreate([
             'grantee_type' => $request->validated('grantee_type'),
             'grantee_id' => (string) $request->validated('grantee_id'),
             'scope_type' => $scopeType?->value,
             'scope_id' => $scopeType ? (string) $request->validated('scope_id') : null,
-        ];
-        $grant = fn () => $role->grants()->firstOrCreate($attributes);
-
-        if ($warning = $this->guardSelfLockout($request->user(), $this->reachesActor($request->user(), new ResponsibilityGrant($attributes)), $request, $grant)) {
-            return $warning;
-        }
+        ]);
 
         return back()->with('success', __('responsibilities.messages.added'));
     }

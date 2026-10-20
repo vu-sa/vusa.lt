@@ -28,6 +28,7 @@ it('keeps the duty responsibilities readable across admin widths and themes', fu
     $page = loginAsAdmin(makeAdminUser($tenant));
     $page->navigate('/mano/duties/'.$duty->id);
     waitForInertiaRender($page);
+    $page->click('button[role="tab"]:has-text("Atsakomybės")');
     $page->assertPresent('[data-slot="duty-responsibilities"]');
 
     foreach ([false, true] as $dark) {
@@ -35,10 +36,6 @@ it('keeps the duty responsibilities readable across admin widths and themes', fu
 
         foreach ([390, 820, 1180, 1440] as $width) {
             $page->resize($width, 844);
-
-            if ($width === 820) {
-                $page->click('button[role="tab"]:has-text("Atsakomybės")');
-            }
 
             $bounds = $page->script(<<<'JS'
                 (() => {

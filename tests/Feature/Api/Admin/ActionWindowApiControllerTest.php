@@ -2,8 +2,8 @@
 
 use App\Enums\InstitutionScope;
 use App\Enums\MeetingType;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionType;
@@ -204,9 +204,8 @@ describe('check-in start', function (): void {
     });
 
     test('a student representative starts at the term activity requests ask about', function () use ($startOf): void {
-        $repType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-        $duty = Duty::factory()->for($this->institution)->hasAttached($repType, [], 'types')->create();
+        $duty = Duty::factory()->for($this->institution)->create();
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
         $rep = User::factory()->create();
         $rep->duties()->attach($duty, ['start_date' => now()->subMonths(2), 'end_date' => null]);
 

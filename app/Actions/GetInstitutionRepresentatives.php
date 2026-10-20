@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Collection;
 /**
  * Get student representatives who are currently active for an institution.
  *
- * Finds users who have duties with the 'studentu-atstovai' type
+ * Finds users who have duties holding the student representation responsibility
  * for the given institution and are currently active based on dutiables dates.
  */
 class GetInstitutionRepresentatives

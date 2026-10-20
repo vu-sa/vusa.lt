@@ -142,6 +142,14 @@
       @update:open="!$event && (removeTarget = null)"
       @confirm="remove"
     />
+
+    <AccessChangeWarningDialog
+      :open="accessWarningOpen"
+      :report="accessWarningReport"
+      @update:open="accessWarningOpen = $event"
+      @confirm="accessWarningConfirm"
+      @cancel="accessWarningCancel"
+    />
   </div>
 </template>
 
@@ -154,12 +162,14 @@ import { Compass, Plus, TriangleAlert } from '@lucide/vue';
 import PurposeChip from './PurposeChip.vue';
 import type { DutyResponsibilityItem, DutyResponsibilityOptions, ResponsibilityScopeValue } from './types';
 
+import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { ConfirmDialog, FormSegmentedControl, OverviewSection, SheetForm, type FormSegmentOption } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { SingleSelect } from '@/Components/ui/single-select';
+import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { permissionLabel } from '@/Features/Admin/PermissionMatrix/permissionLabels';
 
@@ -175,6 +185,7 @@ const props = defineProps<{
 
 // v2: responsibilities now carry permissions; returning users learn roles moved here.
 const spotlight = useFeatureSpotlight('duty-responsibilities-v2');
+const { report: accessWarningReport, open: accessWarningOpen, guardedSubmit, confirm: accessWarningConfirm, cancel: accessWarningCancel } = useAccessChangeGuard();
 const sheetOpen = ref(false);
 const removeTarget = ref<DutyResponsibilityItem | null>(null);
 
@@ -238,7 +249,12 @@ function remove(): void {
   removeTarget.value = null;
 
   if (target) {
-    router.delete(route('duties.responsibilities.destroy', { duty: props.dutyId, grant: target.id }), { preserveScroll: true });
+    guardedSubmit((acknowledge) => {
+      router.delete(route('duties.responsibilities.destroy', { duty: props.dutyId, grant: target.id }), {
+        data: { acknowledge_access_change: acknowledge },
+        preserveScroll: true,
+      });
+    });
   }
 }
 </script>

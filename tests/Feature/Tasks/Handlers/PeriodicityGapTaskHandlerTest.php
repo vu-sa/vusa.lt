@@ -1,9 +1,9 @@
 <?php
 
 use App\Actions\GetInstitutionRepresentatives;
+use App\Enums\ResponsibilityPurpose;
 use App\Events\MeetingFullyCreated;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
@@ -32,14 +32,8 @@ describe('PeriodicityGapTaskHandler', function (): void {
             ->for($tenant)
             ->create(['is_active' => true]);
 
-        // Create student rep type and duty
-        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-        $duty = Duty::factory()
-            ->for($institution)
-            ->hasAttached($studentRepType, [], 'types')
-            ->create();
+        $duty = Duty::factory()->for($institution)->create();
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
         // Create user assigned to duty (active now)
         $user = User::factory()->create();
@@ -75,14 +69,8 @@ describe('PeriodicityGapTaskHandler', function (): void {
             ->for($tenant)
             ->create(['is_active' => true]);
 
-        // Create student rep type and duty
-        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-        $duty = Duty::factory()
-            ->for($institution)
-            ->hasAttached($studentRepType, [], 'types')
-            ->create();
+        $duty = Duty::factory()->for($institution)->create();
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
         $user = User::factory()->create();
         $user->duties()->attach($duty, [
@@ -128,14 +116,8 @@ describe('PeriodicityGapTaskHandler', function (): void {
             ->for($tenant)
             ->create(['is_active' => true]);
 
-        // Create student rep type and duty
-        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-        $duty = Duty::factory()
-            ->for($institution)
-            ->hasAttached($studentRepType, [], 'types')
-            ->create();
+        $duty = Duty::factory()->for($institution)->create();
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
         $user = User::factory()->create();
         $user->duties()->attach($duty, [
@@ -176,14 +158,8 @@ describe('PeriodicityGapTaskHandler', function (): void {
             ->for($tenant)
             ->create(['is_active' => true]);
 
-        // Create student rep type and duty
-        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-        $duty = Duty::factory()
-            ->for($institution)
-            ->hasAttached($studentRepType, [], 'types')
-            ->create();
+        $duty = Duty::factory()->for($institution)->create();
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
         $user = User::factory()->create();
         $user->duties()->attach($duty, [
@@ -228,14 +204,8 @@ describe('GetInstitutionRepresentatives', function (): void {
             ->for($tenant)
             ->create(['is_active' => true]);
 
-        // Create student rep type
-        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-        $duty = Duty::factory()
-            ->for($institution)
-            ->hasAttached($studentRepType, [], 'types')
-            ->create();
+        $duty = Duty::factory()->for($institution)->create();
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
         // Create active user
         $activeUser = User::factory()->create();

@@ -670,7 +670,7 @@ describe('padaliniai gantt', function (): void {
 
         expect($row['last_meeting_date'])->toBe($held->start_time->toISOString())
             ->and($row['next_meeting_date'])->toBe($upcoming->start_time->toISOString())
-            ->and(Carbon\Carbon::parse($row['last_activity_at'])->toDateString())->toBe(now()->subDays(2)->toDateString());
+            ->and(Carbon\Carbon::parse($row['last_activity_at'])->tz(config('app.timezone'))->toDateString())->toBe(now()->subDays(2)->toDateString());
     });
 
     test('a new check-in counts as activity', function (): void {
@@ -687,7 +687,7 @@ describe('padaliniai gantt', function (): void {
             'tenant_ids' => [$this->tenant->id, $this->ownInstitution->tenant_id],
         ]))->json('data'))->firstWhere('id', (string) $this->ownInstitution->id);
 
-        expect(Carbon\Carbon::parse($row['last_activity_at'])->toDateString())->toBe(now()->subDays(3)->toDateString());
+        expect(Carbon\Carbon::parse($row['last_activity_at'])->tz(config('app.timezone'))->toDateString())->toBe(now()->subDays(3)->toDateString());
     });
 
     test('a body the rep\'s own links to appears in full', function (): void {

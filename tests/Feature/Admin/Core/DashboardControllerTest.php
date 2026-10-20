@@ -4,7 +4,6 @@ use App\Actions\Media\AddImageMedia;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Calendar;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
@@ -502,13 +501,8 @@ describe('institutions needing attention', function (): void {
             'alias' => 'attention-test-'.uniqid(),
         ]);
 
-        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-        $duty = Duty::factory()
-            ->for($institution)
-            ->hasAttached($studentRepType, [], 'types')
-            ->create();
+        $duty = Duty::factory()->for($institution)->create();
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
         $user = User::factory()->create();
         $user->duties()->attach($duty, [

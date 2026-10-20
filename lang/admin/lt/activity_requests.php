@@ -135,7 +135,7 @@ return [
     'skip' => [
         'not_allowed' => 'Ne tavo institucija – apie ją klausti negali.',
         'no_recipients' => 'Nėra kam klausti: institucija neturi dabartinių studentų atstovų.',
-        'no_representative_duties' => 'Nėra kam klausti: institucijoje nėra pareigybių su tipu „Studentų atstovas“.',
+        'no_representative_duties' => 'Nėra kam klausti: institucijoje nėra pareigybių su studentų atstovavimo atsakomybe.',
         'check_in_active' => 'Jau pranešta, kad posėdžio nebus.',
         'recent_activity' => 'Posėdžių periodiškumo terminas dar nepraėjo.',
         'inactive_institution' => 'Institucija neaktyvi.',

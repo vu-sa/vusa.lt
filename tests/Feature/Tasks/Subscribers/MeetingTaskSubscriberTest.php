@@ -4,10 +4,10 @@ use App\Actions\GetInstitutionFollowersToNotify;
 use App\Actions\GetMeetingOverseers;
 use App\Enums\AgendaItemType;
 use App\Enums\InstitutionScope;
+use App\Enums\ResponsibilityPurpose;
 use App\Events\MeetingFullyCreated;
 use App\Models\Cadence;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionSecretary;
 use App\Models\InstitutionType;
@@ -49,15 +49,8 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->for($tenant)
                 ->create();
 
-            // Create student rep type
-            $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-                ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-            // Create a duty with student rep type
-            $duty = Duty::factory()
-                ->for($institution)
-                ->hasAttached($studentRepType, [], 'types')
-                ->create();
+            $duty = Duty::factory()->for($institution)->create();
+            grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
             // Create user assigned to duty (active now)
             $user = User::factory()->create();
@@ -340,14 +333,8 @@ describe('MeetingTaskSubscriber', function (): void {
                 'end_date' => null,
             ]);
 
-            // Create student rep type and duty
-            $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-                ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-            $repDuty = Duty::factory()
-                ->for($institution)
-                ->hasAttached($studentRepType, [], 'types')
-                ->create();
+            $repDuty = Duty::factory()->for($institution)->create();
+            grantPurpose($repDuty, ResponsibilityPurpose::StudentRepresentation);
 
             $rep = User::factory()->create();
             $rep->duties()->attach($repDuty, [
@@ -446,8 +433,8 @@ describe('MeetingTaskSubscriber', function (): void {
 
         test('whoever created the meeting is not told about it', function (): void {
             $institution = Institution::factory()->for(Tenant::query()->first())->create();
-            $studentRepType = DutyType::query()->firstOrCreate(['slug' => 'studentu-atstovai'], ['name' => ['lt' => 'Studentų atstovai', 'en' => 'Student representatives']]);
-            $duty = Duty::factory()->for($institution)->hasAttached($studentRepType, [], 'types')->create();
+            $duty = Duty::factory()->for($institution)->create();
+            grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
             $creator = User::factory()->create();
             $colleague = User::factory()->create();
             $creator->duties()->attach($duty, ['start_date' => now()->subMonth(), 'end_date' => null]);

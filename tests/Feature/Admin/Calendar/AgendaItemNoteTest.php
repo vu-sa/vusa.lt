@@ -1,9 +1,9 @@
 <?php
 
 use App\Enums\MeetingType;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\AgendaItemNote;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -93,13 +93,8 @@ describe('agenda item notes API', function (): void {
     });
 
     test('show returns the meeting active student representatives for @mentions', function (): void {
-        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-        $duty = Duty::factory()
-            ->for($this->institution)
-            ->hasAttached($studentRepType, [], 'types')
-            ->create();
+        $duty = Duty::factory()->for($this->institution)->create();
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
         $representative = User::factory()->create(['name' => 'Atstovė Ona']);
         $representative->duties()->attach($duty, [
