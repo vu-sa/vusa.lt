@@ -32,7 +32,7 @@ const SECTION_LANDING_ROUTES = [
     'dashboard', 'dashboard.atstovavimas', 'dashboard.atstovavimas.padaliniai', 'dashboard.reservations', 'dashboard.svetaine',
     'dashboard.organizacija', 'dashboard.sistema',
     'institutionGraph', 'dutiables.timeline', 'tasks.summary', 'systemStatus',
-    'mailQueue', 'repMetrics', 'administration', 'duties.updateUsersWizard', 'profile',
+    'mailQueue', 'administration', 'duties.updateUsersWizard', 'profile',
 ];
 
 /**
@@ -247,7 +247,7 @@ describe('per-persona visibility', function (): void {
             'sistema' => ['apzvalga', 'tipai'],
             'svetaine' => ['apzvalga', 'puslapiai', 'naujienos', 'kalendorius', 'baneriai', 'navigacija', 'greitosios_nuorodos', 'renginiu_tipai', 'zymos', 'failai', 'dokumentai', 'studiju_rinkiniai'],
             'organizacija' => ['apzvalga', 'nariai', 'pareigybes', 'pareigybiu_atnaujinimas', 'padaliniai', 'studiju_programos', 'konferencijos', 'formos'],
-            'sistema' => ['apzvalga', 'roles', 'leidimai', 'tipai', 'instituciju_tipai', 'pareigybiu_tipai', 'nustatymai', 'sistemos_busena', 'laisku_eile', 'rep_metrics', 'pagalbos_uzklausos'],
+            'sistema' => ['apzvalga', 'roles', 'leidimai', 'tipai', 'instituciju_tipai', 'pareigybiu_tipai', 'nustatymai', 'sistemos_busena', 'laisku_eile', 'pagalbos_uzklausos'],
         ]);
     });
 

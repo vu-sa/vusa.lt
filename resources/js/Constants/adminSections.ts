@@ -14,7 +14,6 @@ const sectionIcons: Record<string, Component> = {
   nustatymai: Settings2,
   sistemos_busena: ChartNoAxesCombined,
   laisku_eile: Mail,
-  rep_metrics: ChartNoAxesCombined,
   pagalbos_uzklausos: ListTree,
 };
 

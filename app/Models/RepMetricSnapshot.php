@@ -12,6 +12,13 @@ use Illuminate\Support\Carbon;
  * @property int $window_days
  * @property array<string, array{value: float|null, part: int|null, whole: int|null}> $metrics
  * @property bool $is_baseline
+ * @property string $scope_key
+ * @property int|null $tenant_id
+ * @property int $definition_version
+ * @property bool $is_reconstructed
+ * @property Carbon|null $measured_at
+ * @property array<string, array{part: list<string>, whole: list<string>}>|null $contributors
+ * @property array|null $supplementary
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
@@ -27,6 +34,7 @@ use Illuminate\Support\Carbon;
     'window_days',
     'metrics',
     'is_baseline',
+    'scope_key', 'tenant_id', 'definition_version', 'is_reconstructed', 'measured_at', 'contributors', 'supplementary',
 ])]
 class RepMetricSnapshot extends Model
 {
@@ -34,7 +42,7 @@ class RepMetricSnapshot extends Model
 
     public static function baseline(): ?self
     {
-        return self::query()->where('is_baseline', true)->first();
+        return self::query()->where('scope_key', 'global')->where('is_baseline', true)->first();
     }
 
     public function value(string $metric): ?float
@@ -51,6 +59,10 @@ class RepMetricSnapshot extends Model
             'window_days' => 'integer',
             'metrics' => 'array',
             'is_baseline' => 'boolean',
+            'is_reconstructed' => 'boolean',
+            'measured_at' => 'datetime',
+            'contributors' => 'array',
+            'supplementary' => 'array',
         ];
     }
 }

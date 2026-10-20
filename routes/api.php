@@ -125,7 +125,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
     | - Data is loaded on initial page render
     |
     */
-    Route::prefix('admin')->name('admin.')->middleware(['web', 'auth'])->group(function (): void {
+    Route::prefix('admin')->name('admin.')->middleware(['web', 'auth', 'throttle:admin'])->withoutMiddleware('throttle:api')->group(function (): void {
         // Database-backed collection pages refresh these records without an Inertia visit.
         Route::get('reservations', [ReservationApiController::class, 'index'])->name('reservations.index');
         Route::get('tags', [TagApiController::class, 'index'])->name('tags.index');
@@ -161,6 +161,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         // ViSAK tenant timeline, Gantt rows and windowed meetings, and paginated representative activity
         Route::get('visak/timeline', [AtstovavimasApiController::class, 'timeline'])->name('visak.timeline');
         Route::get('visak/timeline/history', [AtstovavimasApiController::class, 'statusHistory'])->name('visak.timeline.history');
+        Route::get('visak/rep-metrics', [AtstovavimasApiController::class, 'repMetrics'])->name('visak.repMetrics');
         Route::get('visak/gantt', [AtstovavimasApiController::class, 'gantt'])->name('visak.gantt');
         Route::get('visak/meetings', [AtstovavimasApiController::class, 'meetings'])->name('visak.meetings');
         Route::get('visak/activity-requests', [AtstovavimasApiController::class, 'activityRequests'])->name('visak.activityRequests');
@@ -221,8 +222,8 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
             ->name('contentParts.preview');
 
         // Files. A listing fires one thumbnail request per visible image, so these routes
-        // carry their own generous limiter instead of the shared `api` cap.
-        Route::middleware('throttle:fileManager')->withoutMiddleware('throttle:api')->group(function (): void {
+        // carry their own generous limiter instead of the shared `admin` cap.
+        Route::middleware('throttle:fileManager')->withoutMiddleware('throttle:admin')->group(function (): void {
             Route::get('files', [FileApiController::class, 'index'])->name('files.index');
             Route::post('files', [FileApiController::class, 'store'])->name('files.store');
             Route::get('files/search', [FileApiController::class, 'search'])->name('files.search');

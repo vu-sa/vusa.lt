@@ -55,7 +55,7 @@ class InstitutionActivityStatusService
             ? $this->academicCalendar->effectiveDaysBetween($lastMeetingDate, $moment)
             : null;
         $checkInDays = $completedCheckInEnd
-            ? $this->academicCalendar->effectiveDaysBetween($completedCheckInEnd->addDay(), $moment)
+            ? $this->checkInDaysSince($completedCheckInEnd, $moment)
             : null;
         [$lastActivityType, $lastActivityAt, $effectiveDays, $thresholdDays] = $this->activityReference(
             $lastMeetingDate, $completedCheckInEnd, $meetingDays, $checkInDays, $periodicityDays,
@@ -108,6 +108,14 @@ class InstitutionActivityStatusService
     public function checkInGraceDays(int $periodicityDays): int
     {
         return max(1, (int) ceil($periodicityDays / 2));
+    }
+
+    public function checkInDaysSince(CarbonInterface $end, CarbonInterface $at): int
+    {
+        // Coverage includes its end date; grace counts the days after it through today.
+        return $this->academicCalendar->effectiveDaysBetween(
+            CarbonImmutable::instance($end)->addDay(), CarbonImmutable::instance($at)->addDay(),
+        );
     }
 
     /** The history sweep must use the same coverage and threshold rules as the live status. */

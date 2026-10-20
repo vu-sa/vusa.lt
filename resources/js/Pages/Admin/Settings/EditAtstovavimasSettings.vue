@@ -10,6 +10,24 @@
     :available-locales="[]"
     @submit="handleFormSubmit"
   >
+    <FormSection :title="$t('settings.atstovavimas_settings.baseline_title')">
+      <FormFieldWrapper
+        id="baseline_cadence_id"
+        :label="$t('settings.atstovavimas_settings.baseline_label')"
+        :hint="$t('settings.atstovavimas_settings.baseline_hint')"
+        :error="form.errors.baseline_cadence_id"
+      >
+        <NativeSelect
+          id="baseline_cadence_id"
+          v-model="form.baseline_cadence_id"
+          :disabled="!canEdit"
+          :options="cadenceOptions"
+          :placeholder="$t('settings.atstovavimas_settings.baseline_automatic')"
+          :placeholder-value="null"
+          placeholder-selectable
+        />
+      </FormFieldWrapper>
+    </FormSection>
     <FormSection
       :title="$t('settings.atstovavimas_settings.student_rep_type_title')"
       :description="$t('settings.atstovavimas_settings.student_rep_type_description')"
@@ -45,6 +63,8 @@ import { computed } from 'vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
+import { NativeSelect } from '@/Components/ui/native-select';
+import { formatDate } from '@/Utils/dateTime';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 
 interface InstitutionType {
@@ -55,12 +75,20 @@ interface InstitutionType {
 
 const props = withDefaults(defineProps<{
   canEdit: boolean;
+  baseline_cadence_id?: string | null;
+  baseline_cadences?: { id: string; label: string; start_date: string; end_date: string }[];
   student_rep_root_type_id?: number | null;
   institution_types?: InstitutionType[];
 }>(), {
+  baseline_cadence_id: null,
+  baseline_cadences: () => [],
   student_rep_root_type_id: null,
   institution_types: () => [],
 });
+
+const cadenceOptions = computed(() => props.baseline_cadences.map(cadence => ({
+  value: cadence.id, label: `${cadence.label} · ${formatDate(cadence.start_date)} – ${formatDate(cadence.end_date)}`,
+})));
 
 const typeOptions = computed(() =>
   props.institution_types.map(type => ({
@@ -70,6 +98,7 @@ const typeOptions = computed(() =>
 );
 
 const form = useForm({
+  baseline_cadence_id: props.baseline_cadence_id,
   student_rep_root_type_id: props.student_rep_root_type_id,
 });
 

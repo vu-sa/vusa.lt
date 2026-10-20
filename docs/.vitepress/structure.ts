@@ -122,7 +122,6 @@ export const guide: GuideChapter[] = [
       { text: 'Nustatymai', link: '/sistema/nustatymai' },
       { text: 'Sistemos būsena', link: '/sistema/sistemos-busena' },
       { text: 'Laiškų eilė', link: '/sistema/laisku-eile' },
-      { text: 'Atstovų rodikliai', link: '/sistema/atstovu-rodikliai' },
       { text: 'Pagalbos užklausos', link: '/sistema/pagalbos-uzklausos' },
       { text: 'SharePoint integracija', link: '/sistema/sharepoint' },
     ],

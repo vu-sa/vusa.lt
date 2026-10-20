@@ -53,7 +53,6 @@ Route::post('system-status/maintenance', [SystemStatusController::class, 'runMai
     ->name('systemStatus.maintenance');
 
 // Rep outcome metrics (U25)
-Route::get('rep-metrics', [RepMetricsController::class, 'index'])->name('repMetrics');
 
 // Mail queue — the pending notification digests behind the system status card
 Route::get('mail-queue', [MailQueueController::class, 'index'])->name('mailQueue');

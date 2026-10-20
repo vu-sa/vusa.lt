@@ -283,6 +283,49 @@ export interface AtstovavimasTenantTimelineData {
 // One day's institution_summary breakdown, for the status trend chart
 export interface InstitutionStatusHistoryPoint extends InstitutionStatusSummaryData {
   date: string;
+  /** That day's activity, as opposed to the standing counts above. Absent on older cached payloads. */
+  meetings_held?: number;
+  meetings_registered?: number;
+  check_ins_registered?: number;
+  entered_attention?: number;
+  left_attention?: number;
+  /** Replayed after the fact from the records instead of closed on the day itself. */
+  reconstructed?: boolean;
+}
+
+export interface RepMetricRow {
+  key: string;
+  now: number | null;
+  part: number;
+  whole: number;
+  baseline: number | null;
+  baselinePart: number;
+  baselineWhole: number;
+  /** The current cadence's figure on `trendSince`; null when the cadence is younger than that. */
+  previous?: number | null;
+  previousPart?: number;
+  previousWhole?: number;
+}
+
+export interface RepMetricPeriod {
+  cadenceId: string;
+  label: string;
+  from: string;
+  until: string;
+}
+
+export interface TenantRepMetrics {
+  currentPeriod: RepMetricPeriod | null;
+  baselinePeriod: RepMetricPeriod | null;
+  trendSince?: string | null;
+  metrics: RepMetricRow[];
+}
+
+export interface InstitutionStatusHistory {
+  points: InstitutionStatusHistoryPoint[];
+  missingDates: string[];
+  pending: boolean;
+  baselineDate: string | null;
 }
 
 // Slim meeting DTO from the windowed meetings endpoint (start_time as ISO string)

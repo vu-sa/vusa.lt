@@ -83,4 +83,21 @@ describe('useTenantTimelineData', () => {
     pendingRequests.shift()?.();
     await secondLoad;
   });
+
+  it('keeps a forced reload forced when it queues behind a request in flight', async () => {
+    const timeline = useTenantTimelineData();
+
+    const firstLoad = timeline.load(['3']);
+    await timeline.load(['3'], true);
+
+    pendingRequests.shift()?.();
+    await vi.waitFor(() => {
+      expect(execute).toHaveBeenCalledTimes(2);
+    });
+
+    expect(requestUrl.value).toContain('refresh=1');
+
+    pendingRequests.shift()?.();
+    await firstLoad;
+  });
 });

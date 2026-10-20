@@ -78,6 +78,10 @@ return [
 
     // Atstovavimas settings page
     'atstovavimas_settings' => [
+        'baseline_title' => 'Representative metrics comparison',
+        'baseline_label' => 'Comparison term',
+        'baseline_hint' => 'Metrics use the shared organisation-wide term dates. The selected term is measured in full and the current term through today. Institution-specific term overrides do not change this comparison.',
+        'baseline_automatic' => 'Automatic – previous completed term',
         'student_rep_type_title' => 'Student representative body root type',
         'student_rep_type_description' => 'Select the root institution type that (along with all its descendant types) is recognized as a student representative body. Institutions of this type will be displayed using the student rep card instead of the standard institution card in public contacts.',
         'student_rep_type_label' => 'Root type',

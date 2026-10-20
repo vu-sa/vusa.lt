@@ -1,28 +1,21 @@
 <template>
-  <!-- Sits in the padalinys overview's aside tabs, which carry its title. -->
   <div class="flex flex-col gap-3" data-slot="representative-activity">
     <RepresentativeActivitySkeleton v-if="loading" />
 
     <template v-else>
-      <p class="flex items-baseline gap-2">
-        <span class="text-3xl font-semibold tabular-nums text-foreground">{{ stats.activeLast30Days }}</span>
-        <span class="text-sm text-muted-foreground">/ {{ stats.total }} · {{ $t('Prisijungė per pastarąsias 30 dienų') }}</span>
-      </p>
-
-      <dl class="divide-y divide-border/60 border-y border-border/60 text-sm">
-        <div v-for="row in breakdown" :key="row.key" class="flex items-center justify-between gap-4 py-2">
-          <dt class="text-muted-foreground">
+      <dl class="grid grid-cols-2 gap-x-6 gap-y-4" data-slot="representative-activity-numbers">
+        <div v-for="row in breakdown" :key="row.key" :data-number="row.key" class="flex min-h-11 flex-col gap-1">
+          <dd :class="['text-3xl font-semibold tabular-nums leading-none', row.danger && row.value > 0 ? 'text-status-danger' : 'text-foreground']">
+            {{ row.key === 'month' ? `${row.value} / ${stats.total}` : row.value }}
+          </dd>
+          <dt class="text-sm text-muted-foreground">
             {{ row.label }}
           </dt>
-          <dd :class="['font-semibold tabular-nums', row.danger && row.value > 0 ? 'text-status-danger' : 'text-foreground']">
-            {{ row.value }}
-          </dd>
         </div>
       </dl>
 
-      <!-- The people to nudge first; the dialog holds everyone else. -->
-      <ul v-if="leastActive.length > 0" class="divide-y divide-border/60">
-        <li v-for="user in leastActive" :key="user.id" class="flex items-center gap-3 py-2">
+      <ul v-if="recentlyActive.length > 0" class="divide-y divide-border/60">
+        <li v-for="user in recentlyActive" :key="user.id" class="flex items-center gap-3 py-2">
           <UserAvatar :user="{ name: user.name, profile_photo_path: user.profile_photo_path ?? null }" :size="28" />
           <span class="min-w-0 flex-1">
             <span class="block truncate text-sm font-medium">{{ user.name }}</span>
@@ -30,13 +23,13 @@
               {{ user.duties[0].institution_name }}
             </span>
           </span>
-          <span :class="['shrink-0 text-xs', user.category === 'never' ? 'text-status-danger' : 'text-muted-foreground']">
-            {{ user.category === 'never' || !user.last_action ? $t('Niekada') : formatRelativeTime(new Date(user.last_action)) }}
+          <span class="shrink-0 text-xs text-muted-foreground">
+            {{ formatNearDate(user.last_action) }}
           </span>
         </li>
       </ul>
 
-      <Button variant="outline" size="sm" class="self-start pointer-coarse:h-11" @click="openTable('inactive')">
+      <Button variant="outline" size="sm" class="self-start pointer-coarse:h-11" @click="openTable('active')">
         <Users aria-hidden="true" />
         {{ $t('Visi atstovai') }}
       </Button>
@@ -64,7 +57,7 @@ import RepresentativeActivitySkeleton from './RepresentativeActivitySkeleton.vue
 
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import { Button } from '@/Components/ui/button';
-import { formatRelativeTime } from '@/Utils/IntlTime';
+import { useDateFormatter } from '@/Composables/useDateFormatter';
 
 const props = defineProps<{
   stats: RepresentativeActivityStats;
@@ -73,31 +66,26 @@ const props = defineProps<{
   loading?: boolean;
 }>();
 
-const PREVIEW_COUNT = 5;
+const { formatNearDate } = useDateFormatter();
 
-const CATEGORY_ORDER: Record<RepresentativeUser['category'], number> = {
-  never: 0,
-  stale: 1,
-  month: 2,
-  week: 3,
-  today: 4,
-};
+const PREVIEW_COUNT = 3;
 
 const breakdown = computed(() => [
-  { key: 'today', label: $t('Prisijungė šiandien'), value: props.stats.activeToday, danger: false },
-  { key: 'week', label: $t('Prisijungė per pastarąsias 7 dienas'), value: props.stats.activeLast7Days, danger: false },
-  { key: 'never', label: $t('Niekada neprisijungė prie sistemos'), value: props.stats.neverLoggedIn, danger: true },
+  { key: 'month', label: $t('metrics.activity.month'), value: props.stats.activeLast30Days, danger: false },
+  { key: 'today', label: $t('metrics.activity.today'), value: props.stats.activeToday, danger: false },
+  { key: 'week', label: $t('metrics.activity.week'), value: props.stats.activeLast7Days, danger: false },
+  { key: 'never', label: $t('metrics.activity.never'), value: props.stats.neverLoggedIn, danger: true },
 ]);
 
-const leastActive = computed(() =>
+const recentlyActive = computed(() =>
   props.users
-    .filter(user => user.category === 'never' || user.category === 'stale')
-    .sort((a, b) => CATEGORY_ORDER[a.category] - CATEGORY_ORDER[b.category])
+    .filter(user => user.last_action && ['today', 'week', 'month'].includes(user.category))
+    .sort((a, b) => new Date(b.last_action!).getTime() - new Date(a.last_action!).getTime())
     .slice(0, PREVIEW_COUNT),
 );
 
 const showDataTable = ref(false);
-const dataTableInitialTab = ref<'active' | 'inactive'>('inactive');
+const dataTableInitialTab = ref<'active' | 'inactive'>('active');
 
 function openTable(tab: 'active' | 'inactive'): void {
   dataTableInitialTab.value = tab;

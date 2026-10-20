@@ -3,16 +3,17 @@
 namespace App\Services;
 
 use App\Enums\InstitutionActivityStatus;
+use App\Enums\ResponsibilityPurpose;
 use App\Enums\TenantType;
+use App\Jobs\ReconstructInstitutionStatusHistory;
 use App\Models\Institution;
-use App\Models\InstitutionCheckIn;
+use App\Models\InstitutionStatusSnapshot;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\User;
 use App\Services\ResourceServices\DutyService;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\MeetingSettings;
-use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,7 +23,7 @@ use Illuminate\Support\Collection as SupportCollection;
 
 class AtstovavimasDashboardService
 {
-    private const int REPRESENTATIVE_PREVIEW_LIMIT = 4;
+    private const int REPRESENTATIVE_PREVIEW_LIMIT = 3;
 
     public const string PROJECTION_FULL = 'full';
 
@@ -34,7 +35,8 @@ class AtstovavimasDashboardService
 
     public function __construct(
         private readonly InstitutionActivityStatusService $activityStatusService,
-        private readonly AcademicCalendarService $academicCalendar,
+        private readonly InstitutionStatusReplayService $replay,
+        private readonly InstitutionStatusSnapshotService $snapshots,
         private readonly ModelAuthorizer $authorizer,
         private readonly MeetingSettings $meetingSettings,
         private readonly AtstovavimasSettings $atstovavimasSettings,
@@ -77,175 +79,119 @@ class AtstovavimasDashboardService
     }
 
     /**
-     * Daily institution status breakdown for the trailing $days days, so the
-     * tenant dashboard can chart how health has changed over time.
-     *
-     * Institutions with no meetings and no check-ins at all are excluded from the
-     * sweep below: InstitutionActivityStatusService::resolve() always puts them in
-     * the NoActivity branch (nextMeeting/activeCheckIn/lastActivityAt are all
-     * necessarily null) for every possible date — so their contribution to every
-     * day's bucket is a fixed count, added back in once. In practice this covers
-     * ~45% of institutions (routinely-idle ones are common).
-     *
-     * For the rest, statuses are computed by sweepActiveStatuses() rather than by
-     * calling resolve() once per (institution, day): profiling showed resolve()'s
-     * per-call overhead (repeated Carbon object construction, Collection closures)
-     * dominates over its algorithmic complexity, since institutions typically carry
-     * few meetings — 16 tenants × 180 days took ~20s even after the idle-institution
-     * skip. The sweep amortizes that by building each institution's sorted
-     * meeting/check-in timeline once, then walking the requested dates in
-     * chronological order with cursors instead of re-scanning from scratch.
-     *
      * @param  list<int>  $tenantIds
-     * @return list<array{date: string, all: int, needs_attention: int, overdue: int, approaching: int, no_activity: int, current: int}>
+     * @return array{points: list<array>, missingDates: list<string>, pending: bool, baselineDate: string|null}
      */
-    public function tenantStatusHistory(array $tenantIds, int $days): array
+    public function tenantStatusHistory(array $tenantIds, int $days, bool $refresh = false): array
     {
-        $institutions = DutyService::getTimelineInstitutionsForTenants($tenantIds, $this->authorizer);
-        $institutions = $this->withoutExcludedInstitutionTypes($institutions);
-        $institutions->each(fn (Institution $institution) => $institution->loadMissing(['meetings', 'checkIns', 'types']));
-
-        [$idle, $active] = $institutions->partition(
-            fn (Institution $institution) => $institution->meetings->isEmpty() && $institution->checkIns->isEmpty()
-        );
-        $idleCount = $idle->count();
-        $totalCount = $institutions->count();
-
-        $today = Carbon::today();
+        $today = CarbonImmutable::today();
         $dates = [];
         for ($offset = $days - 1; $offset >= 0; $offset--) {
-            $dates[] = $today->copy()->subDays($offset)->endOfDay();
+            $dates[] = $today->subDays($offset);
         }
 
-        $statusesByDate = $this->sweepActiveStatuses($active, $dates);
+        // Closed days never change, so the cache holds the finished points, not the snapshot models.
+        $closed = RepStatisticsCache::remember('closed-statuses:'.implode(',', $tenantIds).':'.$days, function () use ($tenantIds, $dates, $today): array {
+            $stored = InstitutionStatusSnapshot::query()
+                ->whereIn('tenant_id', $tenantIds)
+                ->whereBetween('taken_on', [$dates[0]->toDateString(), $today->subDay()->toDateString()])
+                ->get()
+                ->groupBy(fn (InstitutionStatusSnapshot $snapshot): string => $snapshot->taken_on->toDateString());
 
-        $series = [];
-        foreach ($dates as $index => $date) {
-            $tally = ['overdue' => 0, 'approaching' => 0, 'recent_check_in' => 0, 'no_activity' => $idleCount, 'needs_attention' => $idleCount];
-            foreach ($statusesByDate[$index] as $status) {
-                match ($status) {
-                    InstitutionActivityStatus::Overdue => $tally['overdue']++,
-                    InstitutionActivityStatus::Approaching => $tally['approaching']++,
-                    InstitutionActivityStatus::NoActivity => $tally['no_activity']++,
-                    InstitutionActivityStatus::RecentCheckIn => $tally['recent_check_in']++,
-                    default => null,
-                };
-                if ($status->requiresAction()) {
-                    $tally['needs_attention']++;
+            $points = [];
+            $missing = [];
+            foreach ($dates as $date) {
+                $key = $date->toDateString();
+                $snapshots = $stored->get($key, collect());
+                if ($date->isToday()) {
+                    continue;
                 }
+                if ($snapshots->count() !== count($tenantIds)) {
+                    $missing[] = $key;
+
+                    continue;
+                }
+                $counts = collect(InstitutionStatusSnapshot::SUMMED_COLUMNS)->mapWithKeys(fn (string $column): array => [$column => (int) $snapshots->sum($column)])->all();
+                foreach (['held', 'registered'] as $kind) {
+                    if ($snapshots->every(fn ($row) => $row->meeting_ids !== null)) {
+                        $counts['meetings_'.$kind] = $snapshots->flatMap(fn ($row) => $row->meeting_ids[$kind] ?? [])->unique()->count();
+                    }
+                }
+                $points[$key] = ['date' => $key, ...$counts, 'reconstructed' => $snapshots->contains('is_reconstructed', true)];
             }
 
-            $series[] = [
-                'date' => $date->toDateString(),
-                'all' => $totalCount,
-                'needs_attention' => $tally['needs_attention'],
-                'overdue' => $tally['overdue'],
-                'approaching' => $tally['approaching'],
-                'no_activity' => $tally['no_activity'],
-                'recent_check_in' => $tally['recent_check_in'],
-                'current' => $totalCount - $tally['needs_attention'] - $tally['recent_check_in'],
-            ];
+            $previous = $stored->get($today->subDay()->toDateString(), collect());
+            $previousStatuses = $previous->count() === count($tenantIds) && $previous->every(fn ($row) => $row->institution_statuses !== null)
+                ? $previous->flatMap(fn ($row) => $row->institution_statuses)->all()
+                : null;
+
+            return ['points' => $points, 'missing' => $missing, 'previousStatuses' => $previousStatuses];
+        }, history: true, refresh: $refresh, tenantIds: $tenantIds);
+
+        if ($closed['missing'] !== []) {
+            ReconstructInstitutionStatusHistory::dispatch($closed['missing'][0], end($closed['missing']))->afterCommit();
         }
 
-        return $series;
+        $live = RepStatisticsCache::remember('status-today:'.implode(',', $tenantIds), function () use ($tenantIds, $today, $closed): array {
+            $result = $this->replayDays($tenantIds, [$today]);
+            if ($closed['previousStatuses'] !== null) {
+                $after = $result[$today->toDateString()]['institution_statuses'];
+                $result[$today->toDateString()] = [
+                    ...$result[$today->toDateString()],
+                    ...$this->snapshots->transitions(array_map(InstitutionActivityStatus::from(...), $closed['previousStatuses']), array_map(InstitutionActivityStatus::from(...), $after)),
+                ];
+            }
+
+            return $result;
+        }, refresh: $refresh, tenantIds: $tenantIds);
+
+        $points = [];
+        foreach ($dates as $date) {
+            $key = $date->toDateString();
+
+            if ($date->isToday()) {
+                $points[] = ['date' => $key, ...Arr::except($live[$key], ['institution_statuses', 'meeting_ids']), 'reconstructed' => false];
+            } elseif (isset($closed['points'][$key])) {
+                $points[] = $closed['points'][$key];
+            }
+        }
+
+        return [
+            'points' => $points,
+            'missingDates' => $closed['missing'],
+            'pending' => $closed['missing'] !== [],
+            'baselineDate' => app(RepMetricReportService::class)->baselineCadence()?->end_date->toDateString(),
+        ];
     }
 
     /**
-     * @param  Collection<int, Institution>  $institutions
-     * @param  list<CarbonInterface>  $dates
-     * @return list<list<InstitutionActivityStatus>> outer index matches $dates, inner index matches $institutions
+     * @param  list<int>  $tenantIds
+     * @param  list<CarbonImmutable>  $dates  ascending, not necessarily consecutive
+     * @return array<string, array<string, int|array>>
      */
-    private function sweepActiveStatuses(Collection $institutions, array $dates): array
+    private function replayDays(array $tenantIds, array $dates): array
     {
-        $institutions = $institutions->values();
-
-        // Precompute meeting instants and intervals to avoid redundant date reconstructions.
-        $meetingTimestamps = [];
-        $meetingInstants = [];
-        $checkInIntervals = [];
-        $periodicityDays = [];
-        $meetingCursor = [];
-
-        foreach ($institutions as $i => $institution) {
-            $sortedMeetings = $institution->meetings
-                ->map(fn (Meeting $meeting) => CarbonImmutable::instance($meeting->start_time))
-                ->sort(fn (CarbonImmutable $a, CarbonImmutable $b) => $a->getTimestamp() <=> $b->getTimestamp())
-                ->values();
-
-            $meetingInstants[$i] = $sortedMeetings->all();
-            $meetingTimestamps[$i] = $sortedMeetings->map(fn (CarbonImmutable $instant) => $instant->getTimestamp())->all();
-            $meetingCursor[$i] = 0;
-
-            $checkInIntervals[$i] = $institution->checkIns
-                ->map(fn (InstitutionCheckIn $checkIn) => [
-                    'start' => CarbonImmutable::instance($checkIn->start_date)->startOfDay(),
-                    'end' => CarbonImmutable::instance($checkIn->end_date)->startOfDay(),
-                ])
-                ->sortBy(fn (array $interval) => $interval['end']->getTimestamp())
-                ->values()
-                ->all();
-
-            $periodicityDays[$i] = $institution->meeting_periodicity_days;
+        if ($dates === []) {
+            return [];
         }
 
-        $statusesByDate = [];
+        $institutions = $this->replay->institutionsForTenants($tenantIds);
+        $summaries = [];
 
-        foreach ($dates as $dateIndex => $moment) {
-            $momentTs = $moment->getTimestamp();
-            $today = $moment->copy()->startOfDay();
-            $statuses = [];
-
-            foreach ($institutions as $i => $institution) {
-                // Meetings with start_time <= moment have "happened"; advance the
-                // cursor past them (dates are processed in ascending order, so this
-                // pointer only ever moves forward across the whole sweep).
-                while ($meetingCursor[$i] < count($meetingTimestamps[$i]) && $meetingTimestamps[$i][$meetingCursor[$i]] <= $momentTs) {
-                    $meetingCursor[$i]++;
-                }
-                $hasUpcomingMeeting = $meetingCursor[$i] < count($meetingTimestamps[$i]);
-                $lastMeetingInstant = $meetingCursor[$i] > 0 ? $meetingInstants[$i][$meetingCursor[$i] - 1] : null;
-
-                [$activeCheckIn, $latestCompletedCheckInEnd] = $this->checkInCoverage($checkInIntervals[$i], $today);
-
-                $statuses[] = $this->activityStatusService->classify(
-                    hasUpcomingMeeting: $hasUpcomingMeeting,
-                    hasActiveCheckIn: $activeCheckIn,
-                    effectiveMeetingDays: $lastMeetingInstant
-                        ? $this->academicCalendar->effectiveDaysBetween($lastMeetingInstant, $moment)
-                        : null,
-                    effectiveCheckInDays: $latestCompletedCheckInEnd
-                        ? $this->academicCalendar->effectiveDaysBetween($latestCompletedCheckInEnd->addDay(), $moment)
-                        : null,
-                    periodicityDays: $periodicityDays[$i],
-                );
+        // Entering and leaving compare a day with the one before it, so each run of days replays together.
+        $run = [];
+        foreach ([...$dates, null] as $date) {
+            if ($run !== [] && ($date === null || ! $date->subDay()->isSameDay(end($run)))) {
+                $summaries += $this->snapshots->summarizeDays($institutions, $run);
+                $run = [];
             }
 
-            $statusesByDate[$dateIndex] = $statuses;
-        }
-
-        return $statusesByDate;
-    }
-
-    /**
-     * @param  list<array{start: CarbonImmutable, end: CarbonImmutable}>  $intervals
-     * @return array{bool, ?CarbonImmutable}
-     */
-    private function checkInCoverage(array $intervals, CarbonInterface $today): array
-    {
-        $active = false;
-        $latestCompleted = null;
-
-        // The sweep sorts intervals by end date, so each completed interval supersedes the last.
-        foreach ($intervals as $interval) {
-            if ($interval['start']->lte($today) && $interval['end']->gte($today)) {
-                $active = true;
-            }
-            if ($interval['end']->lt($today)) {
-                $latestCompleted = $interval['end'];
+            if ($date !== null) {
+                $run[] = $date;
             }
         }
 
-        return [$active, $latestCompleted];
+        return $summaries;
     }
 
     /**
@@ -654,21 +600,11 @@ class AtstovavimasDashboardService
 
         $relations = $this->representativeDutyRelations($tenantIds);
 
-        $inactiveUsers = (clone $query)
-            ->select('id', 'name', 'email', 'profile_photo_path', 'last_action')
-            ->where(fn (Builder $query) => $query
-                ->whereNull('last_action')
-                ->orWhere('last_action', '<', $thirtyDaysAgo))
-            ->orderByRaw('CASE WHEN last_action IS NULL THEN 0 ELSE 1 END')
-            ->orderBy('last_action')
-            ->limit(self::REPRESENTATIVE_PREVIEW_LIMIT)
-            ->with($relations)
-            ->get();
-
         $activeUsers = (clone $query)
             ->select('id', 'name', 'email', 'profile_photo_path', 'last_action')
             ->where('last_action', '>=', $thirtyDaysAgo)
             ->orderByDesc('last_action')
+            ->orderBy('name')
             ->limit(self::REPRESENTATIVE_PREVIEW_LIMIT)
             ->with($relations)
             ->get();
@@ -681,9 +617,7 @@ class AtstovavimasDashboardService
                 'activeLast30Days' => (int) data_get($aggregate, 'active_last_30_days', 0),
                 'neverLoggedIn' => (int) data_get($aggregate, 'never_logged_in', 0),
             ],
-            'preview_users' => $inactiveUsers
-                ->merge($activeUsers)
-                ->unique('id')
+            'preview_users' => $activeUsers
                 ->map(fn (User $representative) => $this->mapRepresentative($representative))
                 ->values()
                 ->all(),
@@ -700,6 +634,7 @@ class AtstovavimasDashboardService
 
         return User::query()
             ->whereHas('current_duties', function (Builder $query) use ($tenantIds, $excludedTypeIds): void {
+                $query->holdingPurpose(ResponsibilityPurpose::StudentRepresentation);
                 $query->whereHas('institution', function (Builder $institutionQuery) use ($tenantIds, $excludedTypeIds): void {
                     $institutionQuery->whereIn('tenant_id', $tenantIds);
 
@@ -724,6 +659,7 @@ class AtstovavimasDashboardService
         return [
             'current_duties' => function ($query) use ($tenantIds, $excludedTypeIds): void {
                 $query->select('duties.id', 'duties.name', 'duties.institution_id')
+                    ->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)
                     ->whereHas('institution', function (Builder $institutionQuery) use ($tenantIds, $excludedTypeIds): void {
                         $institutionQuery->whereIn('tenant_id', $tenantIds);
 

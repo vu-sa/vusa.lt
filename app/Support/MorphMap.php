@@ -74,6 +74,7 @@ final class MorphMap
         'quick_link' => Models\QuickLink::class,
         'registration' => Models\Registration::class,
         'rep_metric_snapshot' => Models\RepMetricSnapshot::class,
+        'institution_status_snapshot' => Models\InstitutionStatusSnapshot::class,
         'reservation' => Models\Reservation::class,
         'reservation_draft' => Models\ReservationDraft::class,
         'reservation_draft_item' => Models\ReservationDraftItem::class,

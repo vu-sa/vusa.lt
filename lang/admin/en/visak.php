@@ -45,9 +45,15 @@ return [
         'last_meeting' => 'Last meeting: :date',
         'overview_tab' => 'Overview',
         'trend_tab' => 'Trend',
-        'trend_description' => 'How institution status has changed day to day',
+        'trend_description' => 'How institution status looked each day, based on what had been entered by then',
         'trend_empty' => 'No data for this range yet',
         'trend_range_days' => ':days d.',
+        'trend_flow_meetings' => 'Meetings entered',
+        'trend_flow_check_ins' => 'Activity notices entered',
+        'trend_flow_left' => 'Left the attention list',
+        'trend_flow_entered' => 'Entered the attention list',
+        'trend_baseline' => 'Baseline',
+        'trend_reconstructed' => 'Rebuilt from records, not recorded on the day',
     ],
 
     // Representative activity tracking
@@ -145,6 +151,9 @@ return [
         'lead_public' => 'Meetings of institutions that meet publicly, and of your own institutions, across every unit.',
         'representatives' => 'Representative activity',
         'insights' => 'Unit indicators',
+        'rep_metrics' => 'Representative metrics',
+        'rep_metrics_scope' => 'Last 30 days for the selected units, compared with the same units at the reference date. Platform use does not measure representative performance.',
+        'rep_metrics_empty' => 'The indicators could not be loaded.',
     ],
 
     // Gantt chart loading state

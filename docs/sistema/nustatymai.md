@@ -10,6 +10,7 @@ tests:
   - tests/Feature/Admin/People/CadenceResolutionTest.php
   - tests/Feature/Admin/People/ResolveCadenceForInstitutionTest.php
   - tests/Feature/Admin/Core/AtstovavimasSettingsTest.php
+  - tests/Feature/Api/Admin/RepMetricCadenceTest.php
   - tests/Feature/Admin/Core/SiteSettingsTest.php
   - tests/Feature/Admin/Core/DocumentSettingsTest.php
   - tests/Feature/Search/SearchExperienceTest.php
@@ -101,6 +102,8 @@ Adresas: `/mano/settings/meetings`. Čia nustatomas posėdžių atvaizdavimas ir
 
 ### Atstovavimo nustatymai {#atstovavimas}
 
+**Palyginimo kadencija** nustato, su kuria visa baigta bendra kadencija lyginami [padalinių rodikliai](/visak/padaliniai#atstovavimo-rodikliai). Automatinė parinktis naudoja ankstesnę kadenciją. Nustatymą keičia tik sistemos nustatymus tvarkantys nariai; vien peržiūros teisės neužtenka. Parinktyje matyti kadencijos datos. Institucijų kadencijų išimtys šio palyginimo nekeičia.
+
 Adresas: `/mano/settings/atstovavimas`. Čia nurodomas **pagrindinis studentų atstovavimo institucijų tipas**,
 nuo kurio pradedama atstovavimo institucijų hierarchija.
 
@@ -175,7 +178,7 @@ teisės redaguoti instituciją. Vien teisės keisti nustatymus tam nepakanka.
 ## Techninė informacija {#technine-informacija}
 
 - Nustatymų valdiklis yra `SettingsController`, kadencijų – `CadenceController`.
-- Nustatymai saugomi `spatie/laravel-settings` klasėse: `CadenceSettings`, `FormSettings`, `MeetingSettings`, `AtstovavimasSettings`, `DocumentSettings`, `SiteSettings`, `DutyTypeSettings`.
+- Nustatymai saugomi `spatie/laravel-settings` klasėse: `CadenceSettings`, `FormSettings`, `MeetingSettings`, `AtstovavimasSettings`, `RepMetricSettings`, `DocumentSettings`, `SiteSettings`, `DutyTypeSettings`.
 - Prieigą prie nustatymų tikrina `SettingsSettings`: `canUserViewSettings()` (`settings.read.*`) atveria puslapius, `canUserManageSettings()` (super administratorius arba `settings.update.*`) leidžia rašyti; puslapiai gauna `canEdit`.
 - Institucijos kadencijos prieigą tikrina `CadencePolicy` per `InstitutionPolicy::update` (`institutions.update` su atitinkama apimtimi).
 - Atstovavimo hierarchijos pradžią saugo `student_rep_root_type_id`, dokumentų filtrus – `important_content_types`, kontaktų tipus – `duty_types.*_type_id` (skaito `SystemDutyTypes`); paskirtys saugomos `roles.purpose`.

@@ -78,6 +78,10 @@ return [
 
     // Atstovavimas settings page
     'atstovavimas_settings' => [
+        'baseline_title' => 'Atstovų rodiklių palyginimas',
+        'baseline_label' => 'Palyginimo kadencija',
+        'baseline_hint' => 'Rodikliai lyginami bendrų organizacijos kadencijų datomis. Pasirinkta kadencija skaičiuojama visa; dabartinė – iki šiandien. Institucijų kadencijų išimtys šio palyginimo nekeičia.',
+        'baseline_automatic' => 'Automatiškai – ankstesnė baigta kadencija',
         'student_rep_type_title' => 'Studentų atstovų organų šakninis tipas',
         'student_rep_type_description' => 'Pasirink šakninį institucijos tipą, kuris (ir visi jo potipiai) laikomas studentų atstovų organu. Šio tipo institucijoms viešame kontaktų puslapyje bus rodoma studentų atstovų kortelė vietoje standartinės institucijos kortelės.',
         'student_rep_type_label' => 'Šakninis tipas',

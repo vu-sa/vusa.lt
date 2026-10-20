@@ -22,6 +22,7 @@ use App\Models\PublicInstitution;
 use App\Models\PublicMeeting;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\RepMetricReportService;
 use App\Services\ResponsibilityResolver;
 use App\Services\SystemDutyTypes;
 use App\Services\Typesense\DocumentRecommendations;
@@ -30,6 +31,7 @@ use App\Settings\DocumentSettings;
 use App\Settings\DutyTypeSettings;
 use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
+use App\Settings\RepMetricSettings;
 use App\Settings\SettingsSettings;
 use App\Settings\SiteSettings;
 use Illuminate\Support\Facades\Cache;
@@ -221,6 +223,8 @@ class SettingsController extends AdminController
     public function editAtstovavimasSettings(AtstovavimasSettings $atstovavimasSettings, SettingsSettings $settingsSettings)
     {
         return $this->settingsPage($settingsSettings, 'Admin/Settings/EditAtstovavimasSettings', [
+            'baseline_cadence_id' => app(RepMetricSettings::class)->baseline_cadence_id,
+            'baseline_cadences' => app(RepMetricReportService::class)->baselineOptions()->get(['id', 'start_date', 'end_date'])->toArray(),
             'student_rep_root_type_id' => $atstovavimasSettings->student_rep_root_type_id,
             'institution_types' => InstitutionType::query()
 
@@ -236,8 +240,14 @@ class SettingsController extends AdminController
     {
         $this->authorizeSettingsAccess($settingsSettings);
 
+        if (array_key_exists('baseline_cadence_id', $request->validated())) {
+            $metrics = app(RepMetricSettings::class);
+            $metrics->baseline_cadence_id = $request->validated('baseline_cadence_id');
+            $metrics->save();
+        }
+
         $oldRootTypeId = $atstovavimasSettings->student_rep_root_type_id;
-        $newRootTypeId = $request->validated('student_rep_root_type_id') ? (int) $request->validated('student_rep_root_type_id') : null;
+        $newRootTypeId = $request->validated('student_rep_root_type_id', $oldRootTypeId) ? (int) $request->validated('student_rep_root_type_id', $oldRootTypeId) : null;
 
         $atstovavimasSettings->student_rep_root_type_id = $newRootTypeId;
         $atstovavimasSettings->save();

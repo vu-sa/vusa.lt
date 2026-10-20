@@ -6,15 +6,18 @@
     :empty="institutions.length === 0"
     :empty-text="$t('visos institucijos posėdžius fiksuoja laiku')"
   >
-    <template v-if="askable" #actions>
+    <InstitutionAttentionList :institutions="visibleInstitutions" @record="emit('record', $event)" />
+
+    <div v-if="askable || hiddenCount > 0" class="-ml-3 flex flex-wrap items-center gap-x-1 gap-y-1" data-slot="institutions-needing-attention-actions">
       <SpotlightPopover
+        v-if="askable"
         :title="$t('visak.activity_request.spotlight_title')"
         :description="$t('visak.activity_request.spotlight_body')"
         :is-dismissed="askSpotlight.isDismissed.value"
         @dismiss="askSpotlight.dismiss()"
       >
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           class="pointer-coarse:h-11"
           data-slot="institutions-needing-attention-ask"
@@ -24,23 +27,22 @@
           {{ $t('visak.activity_request.ask') }}
         </Button>
       </SpotlightPopover>
-    </template>
 
-    <InstitutionAttentionList :institutions="visibleInstitutions" @record="emit('record', $event)" />
-
-    <!-- A padalinys can have hundreds: the rest open in a searchable dialog, not inline. -->
-    <template v-if="hiddenCount > 0">
+      <!-- A padalinys can have hundreds: the rest open in a searchable dialog, not inline. -->
       <Button
-        variant="outline"
+        v-if="hiddenCount > 0"
+        variant="ghost"
         size="sm"
-        class="self-start pointer-coarse:h-11"
+        class="pointer-coarse:h-11"
         data-slot="institutions-needing-attention-more"
         @click="dialogOpen = true"
       >
         <List aria-hidden="true" />
         {{ $t('Rodyti visas (:count)', { count: String(institutions.length) }) }}
       </Button>
+    </div>
 
+    <template v-if="hiddenCount > 0">
       <Dialog v-model:open="dialogOpen">
         <DialogContent class="flex max-h-[85vh] flex-col gap-4 sm:max-w-2xl">
           <DialogHeader>

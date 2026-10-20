@@ -1,12 +1,14 @@
 <?php
 
 use App\Enums\InstitutionActivityCampaign;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionLink;
+use App\Models\InstitutionStatusSnapshot;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -14,6 +16,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
 use App\Services\InstitutionActivityStatusService;
+use App\Services\InstitutionStatusSnapshotService;
 use App\Settings\MeetingSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -129,19 +132,23 @@ test('status history validates the days parameter', function (): void {
 });
 
 test('status history defaults to 90 days when none is given', function (): void {
+    app(InstitutionStatusSnapshotService::class)->capture(now()->subDays(89), now()->subDay(), reconstructed: true);
+
     asUser($this->admin)
         ->getJson(route('api.v1.admin.visak.timeline.history', [
             'tenant_ids' => [$this->tenant->id],
         ]))
         ->assertSuccessful()
-        ->assertJsonCount(90, 'data');
+        ->assertJsonCount(90, 'data.points');
 });
 
 test('status history reflects day-to-day changes in institution status', function (): void {
     $this->institution->update(['meeting_periodicity_days' => 10]);
 
-    $meeting = Meeting::factory()->create(['start_time' => now()->subDays(90)]);
+    $meeting = Meeting::factory()->create(['start_time' => now()->subDays(90), 'created_at' => now()->subDays(90)]);
     $meeting->institutions()->attach($this->institution->id);
+
+    app(InstitutionStatusSnapshotService::class)->capture(now()->subDays(89), now()->subDay(), reconstructed: true);
 
     $response = asUser($this->admin)
         ->getJson(route('api.v1.admin.visak.timeline.history', [
@@ -150,9 +157,9 @@ test('status history reflects day-to-day changes in institution status', functio
         ]))
         ->assertSuccessful()
         ->assertJsonPath('success', true)
-        ->assertJsonCount(90, 'data');
+        ->assertJsonCount(90, 'data.points');
 
-    $series = $response->json('data');
+    $series = $response->json('data.points');
 
     // Chronologically ascending, from 89 days ago through today
     expect($series[0]['date'])->toBe(now()->subDays(89)->toDateString())
@@ -176,7 +183,7 @@ test('status history reflects day-to-day changes in institution status', functio
 
 test('status history counts institutions without meetings or check-ins as no_activity on every day, without resolving them per day', function (): void {
     $this->institution->update(['meeting_periodicity_days' => 10]);
-    $meeting = Meeting::factory()->create(['start_time' => now()->subDays(90)]);
+    $meeting = Meeting::factory()->create(['start_time' => now()->subDays(90), 'created_at' => now()->subDays(90)]);
     $meeting->institutions()->attach($this->institution->id);
 
     // Never met, no check-ins: the perf shortcut should still count it correctly
@@ -185,15 +192,17 @@ test('status history counts institutions without meetings or check-ins as no_act
         'name' => ['lt' => 'Neaktyvi institucija', 'en' => 'Idle institution'],
     ]);
 
+    app(InstitutionStatusSnapshotService::class)->capture(now()->subDays(89), now()->subDay(), reconstructed: true);
+
     $response = asUser($this->admin)
         ->getJson(route('api.v1.admin.visak.timeline.history', [
             'tenant_ids' => [$this->tenant->id],
             'days' => 90,
         ]))
         ->assertSuccessful()
-        ->assertJsonCount(90, 'data');
+        ->assertJsonCount(90, 'data.points');
 
-    $series = $response->json('data');
+    $series = $response->json('data.points');
 
     foreach ($series as $day) {
         expect($day['all'])->toBe(2)
@@ -209,36 +218,39 @@ test('status history counts institutions without meetings or check-ins as no_act
         ->and($today['needs_attention'])->toBe(2);
 });
 
-test('status history caches for longer than the live timeline, and refresh bypasses it', function (): void {
+test('status history keeps closed days and invalidates live counts after a mutation', function (): void {
     $params = [
         'tenant_ids' => [$this->tenant->id],
         'days' => 30,
     ];
 
+    app(InstitutionStatusSnapshotService::class)->capture(now()->subDays(29), now()->subDay(), reconstructed: true);
+
     asUser($this->admin)->getJson(route('api.v1.admin.visak.timeline.history', $params))
         ->assertSuccessful()
-        ->assertJsonPath('data.29.all', 1);
+        ->assertJsonPath('data.points.29.all', 1);
 
     // A newly created institution is not reflected without a refresh...
     Institution::factory()->for($this->tenant)->create();
 
     asUser($this->admin)->getJson(route('api.v1.admin.visak.timeline.history', $params))
         ->assertSuccessful()
-        ->assertJsonPath('data.29.all', 1);
+        ->assertJsonPath('data.points.29.all', 2);
 
     // ...but is picked up once the cache is bypassed
     asUser($this->admin)->getJson(route('api.v1.admin.visak.timeline.history', [...$params, 'refresh' => 1]))
         ->assertSuccessful()
-        ->assertJsonPath('data.29.all', 2);
+        ->assertJsonPath('data.points.29.all', 2);
 });
 
 test('status history sweep matches resolve() day-by-day, including meeting/check-in overtaking and upcoming-meeting transitions', function (): void {
+    // Everything is registered long before the window, so what was known equals what exists now.
     // A: only a meeting, initially in the future relative to older days in the
     // range, then in the past — exercises the meeting cursor crossing its
     // "upcoming" boundary partway through the sweep.
     $institutionA = $this->institution;
     $institutionA->update(['meeting_periodicity_days' => 15]);
-    $meetingA = Meeting::factory()->create(['start_time' => now()->subDays(40)]);
+    $meetingA = Meeting::factory()->create(['start_time' => now()->subDays(40), 'created_at' => now()->subDays(100)]);
     $meetingA->institutions()->attach($institutionA->id);
 
     // B: only a check-in — not yet started, then covering, then completed and aging.
@@ -247,6 +259,7 @@ test('status history sweep matches resolve() day-by-day, including meeting/check
     ]);
     InstitutionCheckIn::factory()->for($institutionB)->create([
         'start_date' => now()->subDays(55)->toDateString(),
+        'created_at' => now()->subDays(100),
         'end_date' => now()->subDays(40)->toDateString(),
     ]);
 
@@ -255,15 +268,18 @@ test('status history sweep matches resolve() day-by-day, including meeting/check
     $institutionC = Institution::factory()->for($this->tenant)->create([
         'meeting_periodicity_days' => 10,
     ]);
-    $meetingC = Meeting::factory()->create(['start_time' => now()->subDays(50)]);
+    $meetingC = Meeting::factory()->create(['start_time' => now()->subDays(50), 'created_at' => now()->subDays(100)]);
     $meetingC->institutions()->attach($institutionC->id);
     InstitutionCheckIn::factory()->for($institutionC)->create([
         'start_date' => now()->subDays(20)->toDateString(),
+        'created_at' => now()->subDays(20),
         'end_date' => now()->subDays(10)->toDateString(),
     ]);
 
     $institutions = collect([$institutionA, $institutionB, $institutionC]);
     $days = 60;
+
+    app(InstitutionStatusSnapshotService::class)->capture(now()->subDays(89), now()->subDay(), reconstructed: true);
 
     $response = asUser($this->admin)
         ->getJson(route('api.v1.admin.visak.timeline.history', [
@@ -271,9 +287,9 @@ test('status history sweep matches resolve() day-by-day, including meeting/check
             'days' => $days,
         ]))
         ->assertSuccessful()
-        ->assertJsonCount($days, 'data');
+        ->assertJsonCount($days, 'data.points');
 
-    $series = $response->json('data');
+    $series = $response->json('data.points');
 
     // Ground truth: call resolve() directly for every institution and every date,
     // completely independent of the sweep implementation being tested.
@@ -315,6 +331,88 @@ test('status history sweep matches resolve() day-by-day, including meeting/check
             'current' => 3 - $expected['needs_attention'] - $expected['recent_check_in'],
         ]);
     }
+});
+
+test('status history only counts a meeting from the day it was registered', function (): void {
+    $this->institution->update(['meeting_periodicity_days' => 10]);
+
+    // Held 20 days ago but only entered 5 days ago: the gap before that was real.
+    $meeting = Meeting::factory()->create(['start_time' => now()->subDays(20), 'created_at' => now()->subDays(5)]);
+    $meeting->institutions()->attach($this->institution->id);
+
+    app(InstitutionStatusSnapshotService::class)->capture(now()->subDays(89), now()->subDay(), reconstructed: true);
+
+    $series = collect(asUser($this->admin)
+        ->getJson(route('api.v1.admin.visak.timeline.history', ['tenant_ids' => [$this->tenant->id], 'days' => 30]))
+        ->assertSuccessful()
+        ->json('data.points'))->keyBy('date');
+
+    expect($series[now()->subDays(10)->toDateString()]['no_activity'])->toBe(1)
+        ->and($series[now()->subDays(4)->toDateString()]['no_activity'])->toBe(0)
+        ->and($series[now()->subDays(4)->toDateString()]['overdue'])->toBe(1);
+});
+
+test('status history keeps a later-deleted meeting for the days before it was deleted', function (): void {
+    $this->institution->update(['meeting_periodicity_days' => 10]);
+
+    $meeting = Meeting::factory()->create(['start_time' => now()->subDays(20), 'created_at' => now()->subDays(20)]);
+    $meeting->institutions()->attach($this->institution->id);
+    $meeting->forceFill(['deleted_at' => now()->subDays(3)])->saveQuietly();
+
+    app(InstitutionStatusSnapshotService::class)->capture(now()->subDays(89), now()->subDay(), reconstructed: true);
+
+    $series = collect(asUser($this->admin)
+        ->getJson(route('api.v1.admin.visak.timeline.history', ['tenant_ids' => [$this->tenant->id], 'days' => 30]))
+        ->assertSuccessful()
+        ->json('data.points'))->keyBy('date');
+
+    expect($series[now()->subDays(7)->toDateString()]['overdue'])->toBe(1)
+        ->and($series[now()->subDays(18)->toDateString()]['current'])->toBe(1)
+        ->and($series[now()->toDateString()]['no_activity'])->toBe(1);
+});
+
+test('status history serves stored days summed over padaliniai and replays only today', function (): void {
+    $other = Tenant::factory()->create(['type' => 'padalinys']);
+    $yesterday = now()->subDay()->toDateString();
+
+    InstitutionStatusSnapshot::factory()->for($this->tenant)->create(['taken_on' => $yesterday, 'all' => 4, 'overdue' => 2, 'meetings_registered' => 3]);
+    InstitutionStatusSnapshot::factory()->for($other)->create(['taken_on' => $yesterday, 'all' => 6, 'overdue' => 1, 'meetings_registered' => 1, 'is_reconstructed' => true]);
+
+    $series = collect(asUser($this->admin)
+        ->getJson(route('api.v1.admin.visak.timeline.history', ['tenant_ids' => [$this->tenant->id, $other->id], 'days' => 30]))
+        ->assertSuccessful()
+        ->json('data.points'))->keyBy('date');
+
+    expect($series[$yesterday])->toMatchArray(['all' => 10, 'overdue' => 3, 'meetings_registered' => 4, 'reconstructed' => true])
+        ->and($series[now()->toDateString()]['all'])->toBe(1);
+});
+
+test('rep metrics are measured per padalinys across global cadencies', function (): void {
+    Cadence::query()->globalLadder()->delete();
+    Cadence::factory()->create(['start_date' => now()->subYear()->toDateString(), 'end_date' => now()->addYear()->toDateString()]);
+    $other = Tenant::factory()->create(['type' => 'padalinys']);
+    $otherInstitution = Institution::factory()->for($other)->create();
+
+    $recorded = Meeting::factory()->create(['start_time' => now()->subDays(10), 'created_at' => now()->subDays(9)]);
+    $recorded->institutions()->attach($this->institution->id);
+    $late = Meeting::factory()->create(['start_time' => now()->subDays(20), 'created_at' => now()->subDays(2)]);
+    $late->institutions()->attach($otherInstitution->id);
+
+    $metrics = fn (Tenant $tenant) => collect(asUser($this->admin)
+        ->getJson(route('api.v1.admin.visak.repMetrics', ['tenant_ids' => [$tenant->id]]))
+        ->assertSuccessful()
+        ->json('data.metrics'))->keyBy('key')->get('recorded_within_week');
+
+    expect($metrics($this->tenant))->toMatchArray(['now' => 100.0, 'part' => 1, 'whole' => 1])
+        ->and($metrics($other))->toMatchArray(['now' => 0.0, 'part' => 0, 'whole' => 1]);
+});
+
+test('rep metrics follow the same access rules as the other padaliniai statistics', function (): void {
+    $this->getJson(route('api.v1.admin.visak.repMetrics', ['tenant_ids' => [$this->tenant->id]]))->assertUnauthorized();
+
+    asUser(makeUser(Tenant::factory()->create(['type' => 'padalinys'])))
+        ->getJson(route('api.v1.admin.visak.repMetrics', ['tenant_ids' => [$this->tenant->id]]))
+        ->assertForbidden();
 });
 
 test('meetings requires an authenticated user', function (): void {
@@ -415,13 +513,13 @@ test('meetings are cached per window and refresh bypasses the cache', function (
         ->assertSuccessful()
         ->assertJsonCount(1, 'data');
 
-    // A meeting created after the cached response is not visible without a refresh
+    // A new meeting invalidates the cached window.
     $second = Meeting::factory()->create(['title' => 'Second', 'start_time' => now()->subDays(4)]);
     $second->institutions()->attach($this->institution->id);
 
     asUser($this->admin)->getJson(route('api.v1.admin.visak.meetings', $params))
         ->assertSuccessful()
-        ->assertJsonCount(1, 'data');
+        ->assertJsonCount(2, 'data');
 
     asUser($this->admin)->getJson(route('api.v1.admin.visak.meetings', [...$params, 'refresh' => 1]))
         ->assertSuccessful()
@@ -430,6 +528,7 @@ test('meetings are cached per window and refresh bypasses the cache', function (
 
 test('representatives are searched and paginated without loading the full list', function (): void {
     $duty = Duty::factory()->for($this->institution)->create();
+    grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
     collect([
         ['name' => 'First Representative', 'email' => 'first-representative@example.test'],
@@ -465,6 +564,7 @@ test('representatives are searched and paginated without loading the full list',
 
 test('representative activity counts who acted today, this week, this month and never', function (): void {
     $duty = Duty::factory()->for($this->institution)->create();
+    grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
     collect([now(), now()->subDays(3), now()->subDays(20), now()->subDays(60), null])
         ->each(function ($lastAction) use ($duty): void {
             $representative = User::factory()->create();
@@ -474,6 +574,10 @@ test('representative activity counts who acted today, this week, this month and 
 
     asUser($this->admin)
         ->getJson(route('api.v1.admin.visak.timeline', ['tenant_ids' => [$this->tenant->id]]))
+        ->assertJsonCount(3, 'data.representative_activity.preview_users')
+        ->assertJsonPath('data.representative_activity.preview_users.0.category', 'today')
+        ->assertJsonPath('data.representative_activity.preview_users.1.category', 'week')
+        ->assertJsonPath('data.representative_activity.preview_users.2.category', 'month')
         ->assertJsonPath('data.representative_activity.stats', [
             'total' => 5,
             'activeToday' => 1,
@@ -624,6 +728,33 @@ describe('padaliniai gantt', function (): void {
             ->and($meetings['Viešas']['has_report'])->toBeFalse()
             ->and($meetings['Viešas']['agenda_items_count'])->toBe(1)
             ->and($meetings['Savas']['completion_status'])->not->toBeNull();
+    });
+
+    test('a private agenda item is redacted per reader, even when readers share a cached window', function (): void {
+        $pastMember = makeUser(Tenant::factory()->create(['type' => 'padalinys']));
+        $this->publicInstitution->duties->first()->users()->attach($pastMember->id, ['start_date' => now()->subYear(), 'end_date' => now()->subDays(2)]);
+
+        $meeting = Meeting::factory()->create(['title' => 'Su slaptu klausimu', 'start_time' => now()->subDays(5)]);
+        $meeting->institutions()->attach($this->publicInstitution->id);
+        AgendaItem::factory()->for($meeting)->create(['is_private' => true, 'title' => ['lt' => 'Slaptas klausimas', 'en' => 'Secret item'], 'public_title' => null]);
+
+        $itemFor = function (User $user) use ($meeting): array {
+            $meetings = asUser($user)->getJson(route('api.v1.admin.visak.meetings', [
+                'tenant_ids' => [$this->tenant->id],
+                'from' => now()->subMonth()->toDateString(),
+                'until' => now()->addMonth()->toDateString(),
+            ]))->assertSuccessful()->json('data');
+
+            return collect($meetings)->firstWhere('id', (string) $meeting->id)['agenda_items'][0];
+        };
+
+        $viewerFirst = $itemFor($this->rep);
+        $memberAfter = $itemFor($pastMember);
+        $viewerAgain = $itemFor($this->rep);
+
+        expect($viewerFirst)->toMatchArray(['is_redacted' => true])->and($viewerFirst['title'])->not->toBe('Slaptas klausimas')
+            ->and($memberAfter['title'])->toBe('Slaptas klausimas')
+            ->and($viewerAgain)->toMatchArray(['is_redacted' => true]);
     });
 
     test('a body that only links to the rep\'s own appears read-only, its meetings without agendas', function (): void {

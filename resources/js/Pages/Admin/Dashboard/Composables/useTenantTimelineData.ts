@@ -12,6 +12,7 @@ export function useTenantTimelineData<T = AtstovavimasTenantTimelineData>(
     tenant_ids: [],
   }));
   const pendingTenantIds = ref<string[] | null>(null);
+  let pendingForce = false;
   const loadedTenantKey = ref('');
 
   const {
@@ -43,6 +44,8 @@ export function useTenantTimelineData<T = AtstovavimasTenantTimelineData>(
     }
 
     pendingTenantIds.value = normalizedIds;
+    // A forced reload that queues behind an in-flight one must still bypass the server cache.
+    pendingForce = pendingForce || force;
 
     if (isFetching.value) {
       return;
@@ -51,12 +54,14 @@ export function useTenantTimelineData<T = AtstovavimasTenantTimelineData>(
     while (pendingTenantIds.value !== null) {
       const idsToLoad = pendingTenantIds.value;
       pendingTenantIds.value = null;
+      const forceThis = pendingForce;
+      pendingForce = false;
       const requestKey = idsToLoad.join(',');
 
       requestUrl.value = route(routeName, {
         tenant_ids: idsToLoad,
         // Forced reloads (e.g. after creating a meeting) bypass the server cache
-        ...(force ? { refresh: 1 } : {}),
+        ...(forceThis ? { refresh: 1 } : {}),
       });
 
       await execute();

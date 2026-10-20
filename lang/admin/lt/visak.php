@@ -45,9 +45,15 @@ return [
         'last_meeting' => 'Paskutinis susitikimas: :date',
         'overview_tab' => 'Apžvalga',
         'trend_tab' => 'Pokyčiai',
-        'trend_description' => 'Kaip institucijų būklė keitėsi diena iš dienos',
+        'trend_description' => 'Kaip institucijų būklė atrodė kiekvieną dieną, pagal tuo metu jau įvestus duomenis',
         'trend_empty' => 'Šiam laikotarpiui duomenų nėra',
         'trend_range_days' => ':days d.',
+        'trend_flow_meetings' => 'Įvesti posėdžiai',
+        'trend_flow_check_ins' => 'Įvesti pranešimai apie veiklą',
+        'trend_flow_left' => 'Išėjo iš dėmesio sąrašo',
+        'trend_flow_entered' => 'Pateko į dėmesio sąrašą',
+        'trend_baseline' => 'Pradinė reikšmė',
+        'trend_reconstructed' => 'Atkurta iš įrašų, ne užfiksuota tą dieną',
     ],
 
     // Representative activity tracking
@@ -145,6 +151,9 @@ return [
         'lead_public' => 'Viešai posėdžiaujančių institucijų ir tavo institucijų posėdžiai visuose padaliniuose.',
         'representatives' => 'Atstovų aktyvumas',
         'insights' => 'Padalinio rodikliai',
+        'rep_metrics' => 'Atstovų rodikliai',
+        'rep_metrics_scope' => 'Pasirinktų padalinių pastarosios 30 dienų, palygintos su tų pačių padalinių pradine reikšme. Naudojimasis sistema nėra atstovavimo kokybės matas.',
+        'rep_metrics_empty' => 'Rodiklių nepavyko įkelti.',
     ],
 
     // Gantt chart loading state
