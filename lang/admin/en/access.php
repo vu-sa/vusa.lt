@@ -43,13 +43,29 @@ return [
         'represents' => 'Representing: :tenant',
         'roles' => 'Responsibilities: :roles',
     ],
+    'duty_period' => 'your time in office',
+    'own_institutions' => 'Own institutions, all terms',
+    'permission_scopes' => [
+        'meetings' => [
+            'read' => [
+                'padalinys' => 'Private agenda items also need agenda reading access.',
+                '*' => 'Private agenda items also need agenda reading access.',
+            ],
+        ],
+        'agendaItems' => [
+            'create' => [
+                'padalinys' => 'Items can be added to visible meetings without meeting editing access.',
+                '*' => 'Items can be added to visible meetings without meeting editing access.',
+            ],
+        ],
+    ],
     'baseline' => [
         'title' => 'Every member, even without a responsibility',
         'locked' => 'Every member',
         'locked_own' => 'Own – every member',
-        'institutions' => 'Sees the institution list and active institutions\' public information, and their own current and related institutions in full.',
-        'meetings' => 'Sees public meetings; sees and can edit their institutions\' meetings held while they served, even after the duty ends.',
-        'agendaItems' => 'Sees the agenda items of public meetings. Sees, creates, edits and deletes the agenda items and votes of their institutions\' meetings held while they served, even after the duty ends. The right to edit meetings also covers their agenda items.',
+        'institutions' => 'Sees the institution list and active institutions\' public information, and their own current, related and secretaried institutions in full.',
+        'meetings' => 'You see public meetings and meetings of institutions reached through non-ended duties, authorized relationships or secretary nominations. You can see and edit your institutions’ meetings whose date falls within :period, even after your duties end.',
+        'agendaItems' => 'You see public agenda items of public meetings. You can see, create, edit and delete items and votes of your institutions’ meetings dated within :period, even after your duties end. You also see items through non-ended duties, authorized relationships and secretary nominations. Meeting editing access includes managing its agenda.',
         'problems' => 'Sees every unit\'s problems.',
         'resources' => 'Sees all resources.',
         'duties' => 'Sees their current and past duties and terms.',

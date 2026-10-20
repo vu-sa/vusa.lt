@@ -43,13 +43,29 @@ return [
         'represents' => 'Atstovauji: :tenant',
         'roles' => 'Atsakomybės: :roles',
     ],
+    'duty_period' => 'tavo pareigų laikotarpį',
+    'own_institutions' => 'Savo institucijų, visų kadencijų',
+    'permission_scopes' => [
+        'meetings' => [
+            'read' => [
+                'padalinys' => 'Neviešiems klausimams matyti reikia ir klausimų peržiūros teisės.',
+                '*' => 'Neviešiems klausimams matyti reikia ir klausimų peržiūros teisės.',
+            ],
+        ],
+        'agendaItems' => [
+            'create' => [
+                'padalinys' => 'Klausimus galima pridėti į matomus posėdžius be teisės redaguoti posėdį.',
+                '*' => 'Klausimus galima pridėti į matomus posėdžius be teisės redaguoti posėdį.',
+            ],
+        ],
+    ],
     'baseline' => [
         'title' => 'Visi nariai – ir be atsakomybės',
         'locked' => 'Visi nariai',
         'locked_own' => 'Savo – visi nariai',
-        'institutions' => 'Mato institucijų sąrašą ir aktyvių institucijų viešą informaciją, o savo dabartines ir su jomis susietas institucijas – pilnai.',
-        'meetings' => 'Mato viešus posėdžius; savo institucijų posėdžius, vykusius jų pareigų metu, mato ir gali keisti – ir pasibaigus pareigoms.',
-        'agendaItems' => 'Mato viešų posėdžių klausimus. Savo institucijų posėdžių, vykusių jų pareigų metu, klausimus ir balsavimus mato, kuria, redaguoja ir trina – ir pasibaigus pareigoms. Teisė redaguoti posėdžius leidžia tvarkyti ir jų klausimus.',
+        'institutions' => 'Mato institucijų sąrašą ir aktyvių institucijų viešą informaciją, o savo dabartines, su jomis susietas ir sekretoriumi prižiūrimas institucijas – pilnai.',
+        'meetings' => 'Matai viešus posėdžius, nepasibaigusių pareigybių institucijų posėdžius, ryšiais pasiekiamų institucijų ir institucijų, kurioms esi paskirtas sekretoriumi, posėdžius. Savo institucijų posėdžius, kurių data patenka į :period, gali matyti ir redaguoti ir pareigoms pasibaigus.',
+        'agendaItems' => 'Matai viešų posėdžių viešus klausimus. Savo institucijų posėdžių, kurių data patenka į :period, klausimus ir balsavimus matai, kuri, redaguoji ir trini ir pareigoms pasibaigus. Nepasibaigusių pareigybių, ryšiais pasiekiamų ir sekretoriumi prižiūrimų institucijų klausimus matai. Posėdžio redagavimo teisė leidžia tvarkyti jo klausimus.',
         'problems' => 'Mato visų padalinių problemas.',
         'resources' => 'Mato visus išteklius.',
         'duties' => 'Mato savo dabartines ir buvusias pareigybes bei kadencijas.',

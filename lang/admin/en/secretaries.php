@@ -5,7 +5,7 @@ return [
 
     'institution' => [
         'title' => 'Secretaries',
-        'effect_warning' => 'When a cadence has secretaries, its meeting tasks go to them alone. Otherwise they go to the representatives active at the time.',
+        'effect_warning' => 'When a cadence has secretaries, its meeting tasks go to them alone (otherwise to the representatives active at the time). Secretaries also see this institution in full along with all of its meetings and their agenda items, without becoming members or editors.',
         'current_term' => 'Current',
         'next_term' => 'Next',
         'previous' => 'Previous secretaries',

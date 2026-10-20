@@ -26,6 +26,7 @@ use App\Services\AgendaItemPresenter;
 use App\Services\CheckInService;
 use App\Services\InstitutionRelationService;
 use App\Services\InstitutionScopeResolver;
+use App\Services\MeetingAccessService;
 use App\Services\MeetingCompletionService;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\SharepointFileService;
@@ -58,7 +59,7 @@ class MeetingController extends AdminController
         // Live rows come from Typesense (the scoped key carries the authorization) and the trash
         // from api.v1.admin.trash.index, so the page itself needs no rows.
         return $this->inertiaResponse('Admin/Representation/IndexMeeting', [
-            'deletedCount' => $this->scopedTrashedCount(Meeting::query(), 'tenants', 'meetings.read.padalinys'),
+            'deletedCount' => app(MeetingAccessService::class)->trashedMeetings(Meeting::onlyTrashed(), $request->user())->count(),
             'recentlyChanged' => $request->getShowDeleted() ? [] : GetRecentlyChangedMeetings::execute($request->user())->all(),
             'defaultTenantShortnames' => GetUserTenantShortnames::execute($request->user()),
         ]);
@@ -199,7 +200,7 @@ class MeetingController extends AdminController
         $primaryInstitution = fn () => once(fn () => $loadMeeting()->institutions->first());
 
         $canUpdate = fn () => once(fn () => ! $readOnly() && Gate::allows('update', $meeting));
-        $canCreateAgendaItems = fn () => once(fn () => ! $readOnly() && Gate::allows('createFor', [AgendaItem::class, $meeting]));
+        $canCreateAgendaItems = fn () => once(fn () => Gate::allows('createFor', [AgendaItem::class, $meeting]));
 
         $agendaItemAbilities = fn () => once(function () use ($loadMeeting, $readOnly) {
             $m = $loadMeeting();
@@ -317,7 +318,7 @@ class MeetingController extends AdminController
      */
     private function institutionMeetingNavigation(Meeting $meeting, Institution $institution): ?array
     {
-        $meetings = $institution->meetings()
+        $meetings = app(MeetingAccessService::class)->visibleMeetings($institution->meetings()->getQuery(), request()->user())
             ->orderBy('start_time')
             ->orderBy('meetings.id')
             ->get(['meetings.id', 'meetings.start_time'])
@@ -362,7 +363,7 @@ class MeetingController extends AdminController
     {
         $institutionIds = $meeting->institutions->pluck('id');
 
-        return Meeting::query()
+        return app(MeetingAccessService::class)->visibleMeetings(Meeting::query(), request()->user())
             ->whereKeyNot($meeting->getKey())
             ->whereHas('institutions', fn ($query) => $query->whereIn('institutions.id', $institutionIds))
             ->whereHas('agendaItems')

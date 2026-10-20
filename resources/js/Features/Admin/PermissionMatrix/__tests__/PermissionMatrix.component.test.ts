@@ -7,7 +7,15 @@ import type { PermissionCatalog } from '../types';
 const catalog: PermissionCatalog = {
   areas: ['atstovavimas', 'organizacija'],
   resources: [
-    { key: 'meetings', model: 'meeting', area: 'atstovavimas', abilities: { read: ['padalinys', '*'], update: ['own', 'padalinys', '*'], delete: ['own', 'padalinys', '*'] }, baseline: 'Mato viešus posėdžius.', softDeletes: true },
+    {
+      key: 'meetings', model: 'meeting', area: 'atstovavimas',
+      abilities: { read: ['padalinys', '*'], update: ['own', 'padalinys', '*'], delete: ['own', 'padalinys', '*'] },
+      baseline: 'Posėdžius tavo pareigų laikotarpiu gali redaguoti.',
+      baselineSegments: [{ text: 'Posėdžius ', strong: false }, { text: 'tavo pareigų laikotarpiu', strong: true }, { text: ' gali redaguoti.', strong: false }],
+      scopeLabels: { own: 'Savo institucijų, visų kadencijų' },
+      scopeDescriptions: { update: { own: 'Visi teisę suteikiančių pareigybių institucijų posėdžiai, ir už tavo pareigų laikotarpio ribų.', padalinys: 'Visi padalinio posėdžiai.' } },
+      softDeletes: true,
+    },
     { key: 'mailingLists', model: 'mailing_list', area: 'organizacija', abilities: { read: ['padalinys', '*'], delete: ['padalinys', '*'] }, baseline: null, softDeletes: false },
   ],
   retired: ['meetings.read.own'],
@@ -18,6 +26,33 @@ function mountMatrix(granted: string[] = [], readonly = false) {
 }
 
 describe('PermissionMatrix', () => {
+  it('emphasizes the automatic editing period on desktop and phone', () => {
+    const wrapper = mountMatrix();
+
+    expect(wrapper.findAll('strong').map(element => element.text())).toEqual([
+      'tavo pareigų laikotarpiu', 'tavo pareigų laikotarpiu',
+    ]);
+  });
+
+  it('explains the selected scope and updates its explanation when changed', async () => {
+    const wrapper = mountMatrix(['meetings.update.own']);
+    const row = wrapper.get('[data-resource="meetings"]');
+
+    expect(row.get('option[value="own"]').text()).toBe('Savo institucijų, visų kadencijų');
+    expect(row.get('[data-testid="cell-scope-description"]').text()).toContain('už tavo pareigų laikotarpio ribų');
+
+    await row.get('[data-cell="meetings.update"]').setValue('padalinys');
+
+    expect(row.get('[data-testid="cell-scope-description"]').text()).toBe('Visi padalinio posėdžiai.');
+  });
+
+  it('keeps scope explanations visible in read-only mode', () => {
+    const row = mountMatrix(['meetings.update.own'], true).get('[data-resource="meetings"]');
+
+    expect(row.text()).toContain('Savo institucijų, visų kadencijų');
+    expect(row.get('[data-testid="cell-scope-description"]').text()).toContain('už tavo pareigų laikotarpio ribų');
+  });
+
   it('keeps column headings below the sticky shell with an opaque background', () => {
     const header = mountMatrix().get('[data-testid="matrix-table"] thead');
 

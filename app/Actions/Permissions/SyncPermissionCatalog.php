@@ -2,8 +2,12 @@
 
 namespace App\Actions\Permissions;
 
+use App\Actions\ForgetUserAccess;
 use App\Models\Permission;
+use App\Models\User;
 use App\Support\Permissions\PermissionCatalog;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Spatie\Permission\PermissionRegistrar;
@@ -28,6 +32,7 @@ class SyncPermissionCatalog
         );
 
         if (! $dryRun) {
+            $affectedUsers = self::affectedUsers(array_column($removed, 'name'));
             DB::transaction(function () use ($created, $removed): void {
                 $now = now();
 
@@ -48,9 +53,29 @@ class SyncPermissionCatalog
             });
 
             app(PermissionRegistrar::class)->forgetCachedPermissions();
+            ForgetUserAccess::execute($affectedUsers);
         }
 
         return ['created' => $created, 'removed' => $removed];
+    }
+
+    /**
+     * @param  list<string>  $names
+     * @return Collection<int, string>
+     */
+    private static function affectedUsers(array $names): Collection
+    {
+        if ($names === []) {
+            return collect();
+        }
+
+        $removed = fn (Builder $permissions) => $permissions->whereIn('permissions.name', $names);
+
+        return User::query()->where(fn (Builder $users) => $users
+            ->whereHas('permissions', $removed)
+            ->orWhereHas('roles.permissions', $removed)
+            ->orWhereHas('duties.permissions', $removed)
+            ->orWhereHas('duties.roles.permissions', $removed))->pluck('id');
     }
 
     /**

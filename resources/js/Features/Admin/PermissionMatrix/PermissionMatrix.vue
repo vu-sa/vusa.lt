@@ -40,7 +40,7 @@
     </p>
 
     <!-- Desktop: one grid, abilities as columns. -->
-    <table v-if="visibleAreas.length" class="hidden w-full border-collapse text-sm md:table" data-testid="matrix-table">
+    <table v-if="visibleAreas.length" class="hidden w-full border-collapse text-sm xl:table" data-testid="matrix-table">
       <thead class="sticky top-[var(--shell-chrome-height,0px)] z-20 bg-background">
         <tr class="border-b border-border">
           <th scope="col" class="w-[34%] py-2 pr-4 text-left text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
@@ -69,7 +69,13 @@
               {{ resourceLabel(resource.key, resource.model) }}
             </span>
             <span v-if="resource.baseline" class="mt-0.5 block text-xs text-muted-foreground">
-              <Lock class="mr-1 inline size-3 align-[-1px]" aria-hidden="true" />{{ resource.baseline }}
+              <Lock class="mr-1 inline size-3 align-[-1px]" aria-hidden="true" />
+              <template v-if="resource.baselineSegments?.length">
+                <template v-for="(segment, index) in resource.baselineSegments" :key="index">
+                  <strong v-if="segment.strong" class="font-semibold text-foreground">{{ segment.text }}</strong><template v-else>{{ segment.text }}</template>
+                </template>
+              </template>
+              <template v-else>{{ resource.baseline }}</template>
             </span>
           </th>
           <td v-for="ability in ABILITIES" :key="ability" class="px-1 py-2">
@@ -88,7 +94,7 @@
     </table>
 
     <!-- Phone and narrow tablet: one block per resource, abilities as rows. -->
-    <div v-if="visibleAreas.length" class="space-y-8 md:hidden">
+    <div v-if="visibleAreas.length" class="space-y-8 xl:hidden">
       <section v-for="area in visibleAreas" :key="area.key" class="space-y-4">
         <h3 class="text-[11px] font-bold tracking-wide text-brand uppercase">
           {{ $t(`shell.workspaces.${area.key}.title`) }}
@@ -99,14 +105,24 @@
             {{ resourceLabel(resource.key, resource.model) }}
           </p>
           <p v-if="resource.baseline" class="mt-0.5 text-xs text-muted-foreground">
-            {{ resource.baseline }}
+            <template v-if="resource.baselineSegments?.length">
+              <template v-for="(segment, index) in resource.baselineSegments" :key="index">
+                <strong v-if="segment.strong" class="font-semibold text-foreground">{{ segment.text }}</strong>
+                <template v-else>
+                  {{ segment.text }}
+                </template>
+              </template>
+            </template>
+            <template v-else>
+              {{ resource.baseline }}
+            </template>
           </p>
           <dl class="mt-2 divide-y divide-border/60">
-            <div v-for="ability in ABILITIES" :key="ability" class="flex min-h-11 items-center justify-between gap-3 py-1">
-              <dt class="text-sm text-muted-foreground">
+            <div v-for="ability in ABILITIES" :key="ability" class="grid min-h-11 gap-2 py-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+              <dt class="text-sm text-muted-foreground sm:pt-2">
                 {{ abilityLabel(ability, resource.softDeletes) }}
               </dt>
-              <dd class="w-40 shrink-0">
+              <dd class="min-w-0">
                 <PermissionCell
                   :resource
                   :ability

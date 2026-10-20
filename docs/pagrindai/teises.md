@@ -1,8 +1,10 @@
 ---
 doc_status: reviewed
 title: Teisės ir atsakomybės
-last_reviewed: 2026-10-19
+last_reviewed: 2026-10-21
 tests:
+  - tests/Feature/Permissions/MeetingPermissionsTest.php
+  - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
   - tests/Feature/Permissions/BaselineAccessTest.php
   - resources/js/Features/Admin/PermissionMatrix/__tests__/PermissionMatrix.component.test.ts
   - tests/Feature/Admin/Permissions/ResponsibilityControllerTest.php
@@ -41,6 +43,12 @@ teisės pažymėtos užraktu **Visi nariai**: jų priskirti negalima, nes jos ni
 | Komentarai | Komentuoti visur, kur matai įrašą; savo komentarą redaguoti 15 min. po parašymo, o ištrinti – bet kada. Kitų komentarus trina redaguojantys įrašą arba atsakomybė su komentarų trynimo teise |
 | Rezervacijos | Kurti rezervacijas; matyti ir keisti tas, kuriose dalyvauji. Savo rezervaciją ištrinti, kol nė vienas jos daiktas dar nepatvirtintas |
 | Nariai | Matyti ir redaguoti save (**Profilis**); savęs ištrinti negalima |
+
+Posėdžiams svarbu atskirti peržiūrą nuo redagavimo: nepasibaigusių pareigybių institucijų,
+ryšiais pasiekiamų ir sekretoriumi prižiūrimų institucijų posėdžius galima matyti be atskiros
+atsakomybės. Automatiškai redaguojami tik posėdžiai, kurių data patenka į **tavo pareigų laikotarpį**.
+Papildoma apimtis **Savo institucijų, visų kadencijų** leidžia redaguoti ir kitų laikotarpių posėdžius, bet tik
+teisę suteikiančių pareigybių institucijose. Plačiau – [Posėdžių teisės](/visak/posedziai#teises).
 
 ## Atsakomybės {#roles}
 

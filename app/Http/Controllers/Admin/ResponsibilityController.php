@@ -421,7 +421,7 @@ class ResponsibilityController extends AdminController
 
         return match ($grant->grantee_type) {
             MorphMap::alias(Duty::class) => $duties->contains('id', $grant->grantee_id),
-            MorphMap::alias(DutyType::class) => in_array((int) $grant->grantee_id, DutyType::withAncestorIds($duties->flatMap->types->modelKeys()), true),
+            MorphMap::alias(DutyType::class) => in_array((int) $grant->grantee_id, DutyType::withAncestorIds($duties->flatMap(fn (Duty $duty): array => $duty->types->modelKeys())->values()->all()), true),
             MorphMap::alias(Institution::class) => $duties->contains('institution_id', $grant->grantee_id),
             default => false,
         };

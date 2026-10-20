@@ -187,6 +187,9 @@ final class PermissionCatalog
                 'area' => self::areaOf($resource),
                 'abilities' => $abilities,
                 'baseline' => $baseline[$resource] ?? null,
+                'baselineSegments' => BaselineAccess::segments($resource),
+                'scopeLabels' => $resource === 'meetings' ? ['own' => __('access.own_institutions')] : [],
+                'scopeDescriptions' => in_array($resource, ['meetings', 'agendaItems'], true) ? __("access.permission_scopes.{$resource}") : [],
                 'softDeletes' => ModelEnum::isSoftDeletable($resource),
             ])
             ->sortBy(fn (array $resource): array => [

@@ -66,6 +66,7 @@ test('combinations that grant nothing are not offered', function (string $name):
     'no create at own outside meetings' => 'news.create.own',
     'no duty relation behind own' => 'documents.read.own',
     'members read their institutions' => 'institutions.read.own',
+    'members already read their meetings' => 'meetings.read.own',
     'permissions are only listed' => 'permissions.update.*',
     'tenants are super-admin only' => 'tenants.read.*',
 ]);
@@ -86,6 +87,17 @@ test('every own scope has a same-named relation on Duty, or is reserved on purpo
     $withOwn->each(fn (string $resource) => expect(method_exists(Duty::class, $resource))
         ->toBeTrue("{$resource} offers an own scope but Duty has no {$resource}() relation to resolve it through"));
 });
+
+test('meeting scope explanations and highlighted duty dates are translated without HTML', function (string $locale): void {
+    app()->setLocale($locale);
+    $meeting = collect(PermissionCatalog::toFrontend()['resources'])->firstWhere('key', 'meetings');
+
+    expect(implode('', array_column($meeting['baselineSegments'], 'text')))->toBe($meeting['baseline']);
+    expect($meeting['baselineSegments'][1]['strong'])->toBeTrue()
+        ->and($meeting['scopeLabels']['own'])->not->toStartWith('access.')
+        ->and($meeting['scopeDescriptions']['read']['padalinys'])->not->toStartWith('access.')
+        ->and($meeting['abilities']['read'])->not->toContain('own');
+})->with(['lt', 'en']);
 
 test('rows follow the order of the admin navigation within their workspace', function (): void {
     $keys = collect(PermissionCatalog::toFrontend()['resources'])->pluck('key');

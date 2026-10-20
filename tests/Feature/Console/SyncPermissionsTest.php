@@ -1,9 +1,14 @@
 <?php
 
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Permission;
 use App\Models\Role;
+use App\Models\Tenant;
+use App\Services\Permissions\PermissionMapBuilder;
+use App\Services\Typesense\TypesenseScopedKeyService;
 use App\Support\Permissions\PermissionCatalog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 
 pest()->use(RefreshDatabase::class);
 
@@ -64,4 +69,31 @@ test('leaves permissions checked by a super-admin-only policy alone', function (
 
 test('after a sync the table holds exactly the catalog', function (): void {
     expect(Permission::query()->pluck('name')->diff(PermissionCatalog::names())->all())->toBeEmpty();
+});
+
+test('retiring own meeting reading clears the holders authority and search caches', function (): void {
+    $member = makeUser(Tenant::query()->firstOrFail());
+    $role = Role::factory()->create();
+    $role->givePermissionTo(Permission::findOrCreate('meetings.read.own', 'web'));
+    $member->duties()->first()->assignRole($role);
+    $keys = [
+        PermissionMapBuilder::INDEX_CACHE_PREFIX.$member->id,
+        HandleInertiaRequests::adminNavigationCacheKey($member->id),
+        TypesenseScopedKeyService::getCacheKey($member->id),
+        'auth:duties:'.$member->id,
+    ];
+    foreach ($keys as $key) {
+        Cache::put($key, ['stale' => true], 3600);
+    }
+
+    $this->artisan('permissions:sync', ['--dry-run' => true])->assertSuccessful();
+    foreach ($keys as $key) {
+        expect(Cache::has($key))->toBeTrue();
+    }
+
+    $this->artisan('permissions:sync')->assertSuccessful();
+    foreach ($keys as $key) {
+        expect(Cache::has($key))->toBeFalse();
+    }
+    expect($role->fresh()->permissions->pluck('name'))->not->toContain('meetings.read.own');
 });

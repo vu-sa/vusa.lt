@@ -26,7 +26,6 @@ class RoleStudentRepresentativeSeeder extends Seeder
 
         $role->syncPermissions([
             'meetings.create.own',
-            'meetings.read.own',
             'meetings.update.own',
             'meetings.delete.own',
             'tasks.create.padalinys',

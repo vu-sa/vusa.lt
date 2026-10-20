@@ -3,8 +3,10 @@ doc_status: reviewed
 title: Darbotvarkės klausimai
 area: agendaItems
 models: [AgendaItem, Vote]
-last_reviewed: 2026-10-20
+last_reviewed: 2026-10-21
 tests:
+  - tests/Feature/Permissions/MeetingPermissionsTest.php
+  - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
   - tests/Browser/AgendaItemPrivacyTest.php
   - resources/js/Components/Public/__tests__/PublicAgendaItemRow.component.test.ts
   - tests/Feature/Meetings/AgendaItemPrivacyTest.php
@@ -244,6 +246,13 @@ metai**, **Užpildymo būsena**, **Studentų balsas**, **Sprendimas**, **Palanku
 
 ## Kas ką gali {#teises}
 
+Posėdį redaguojantis narys gali tvarkyti ir jo darbotvarkę. Atsakomybė su atskira klausimų
+kūrimo teise taip pat leidžia pridėti klausimų prie matomų posėdžių jos padaliniuose, nors
+paties posėdžio redaguoti negalima. Ši teisė neleidžia perrikiuoti, redaguoti ar trinti esamų
+klausimų ir nesuteikia prieigos prie neviešo jų turinio. Vien posėdžio peržiūros teisės
+neviešiems klausimams neužtenka – jų peržiūra tikrinama atskirai.
+
+
 | Veiksmas | Bet kuris narys | Institucijos narys posėdžio metu | Studentų atstovas | Studentų atstovų / Komunikacijos koordinatorius | Centrinio biuro studentų atstovų koordinatorius |
 |---|---|---|---|---|---|
 | Matyti viešo posėdžio klausimus (be pastabų) | ✓ | ✓ | ✓ | ✓ | ✓ |
@@ -282,15 +291,17 @@ Plačiau – [Posėdžiai](/visak/posedziai#pranesimai) ir [Užduotys](/mano/uzd
 
 ### Teisės
 
-- Klausimų teises sprendžia `AgendaItemPolicy`. `view` – narys posėdžio metu, ryšiu susijusios
-  institucijos arba `agendaItems.read.{*|own|padalinys}`; `viewSummary` – posėdis viešas arba
-  `view`. `update` ir `delete` – tik `agendaItems.{update|delete}.{*|own|padalinys}`.
-- Kurti: `agendaItems.create.padalinys` **ir** posėdžio `update`. Perrikiuoti: posėdžio `update`.
+- Klausimų teises sprendžia `AgendaItemPolicy`. Bazinė peržiūra remiasi `MeetingAccessService`,
+  papildoma peržiūra – `agendaItems.read.{*|padalinys}`. Viešas posėdis suteikia `viewSummary`,
+  bet neviešas klausimas be `view` pateikiamas uždengtas.
+- Kurti: posėdžio `update` **arba** `agendaItems.create.{padalinys|*}` pagal konkretaus posėdžio
+  padalinius kartu su posėdžio `viewSummary`. Perrikiuoti: posėdžio `update`.
+- Redaguoti ir trinti: posėdžio `update` arba atitinkama `agendaItems.{update|delete}.{padalinys|*}`.
 - Balsavimai autorizuojami per klausimo `update` (`StoreVoteRequest`).
-- Rolės: Studentų atstovas – `agendaItems.create.padalinys`, `read|update|delete.own`; Studentų
-  atstovų ir Komunikacijos koordinatoriai – visos `.padalinys`; Centrinio biuro studentų atstovų
-  koordinatorius – visos `*`.
-- Sąrašo eilutes riboja Typesense raktas pagal `meetings.read.*` teises (ne `agendaItems.*`).
+- Studentų atstovams darbotvarkės tvarkymą suteikia `meetings.update.own`; atskiros klausimų
+  `.own` teisės nesiūlomos. Koordinatorių atsakomybės turi ir atskiras klausimų teises.
+- Paieška remiasi bazine prieiga ir `agendaItems.read.{padalinys|*}`, neviešiems klausimams
+  papildomai taiko gyvą `view` patikrą. `meetings.read` nesuteikia neviešų klausimų peržiūros.
 
 ### Kaip tai įgyvendinta
 

@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionLink;
+use App\Models\InstitutionSecretary;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
@@ -68,6 +70,23 @@ test('reads an institution that their own institution links to, and not one that
 
     expect($this->member->can('view', $target))->toBeTrue()
         ->and($this->member->can('view', $source))->toBeFalse();
+});
+
+test('a secretary sees the nominated institution in full and all its meetings and agenda items without editing rights', function (): void {
+    $secretaried = Institution::factory()->for($this->otherTenant)->create(['is_active' => false]);
+    $cadence = Cadence::factory()->forYear(2025)->create(['institution_id' => $secretaried->id]);
+    InstitutionSecretary::create(['institution_id' => $secretaried->id, 'cadence_id' => $cadence->id, 'user_id' => $this->member->id]);
+    $meeting = Meeting::factory()->hasAttached($secretaried)->create(['start_time' => '2021-03-01 10:00:00']);
+    $item = AgendaItem::factory()->for($meeting)->create(['is_private' => true]);
+
+    asUser($this->member)->get(route('institutions.show', $secretaried))
+        ->assertInertia(fn (Assert $page) => $page->where('readOnly', false)->where('can.update', false));
+    asUser($this->member)->get(route('meetings.show', $meeting))
+        ->assertInertia(fn (Assert $page) => $page->where('readOnly', false)->where('abilities.update', false));
+    asUser($this->member)->get(route('agendaItems.show', $item))->assertOk();
+
+    expect($this->member->can('view', $item))->toBeTrue()
+        ->and($this->member->can('update', $item))->toBeFalse();
 });
 
 test('agenda items follow the meeting: its members at the time edit them', function (): void {

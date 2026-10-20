@@ -67,7 +67,7 @@ describe('TypesenseCollectionConfig', function (): void {
     test('returns correct permission for admin collections', function (): void {
         expect(TypesenseCollectionConfig::getPermissionForCollection('meetings'))
             ->toBe('meetings.read.padalinys')
-            ->and(TypesenseCollectionConfig::getPermissionForCollection('agenda_items'))->toBe('meetings.read.padalinys');
+            ->and(TypesenseCollectionConfig::getPermissionForCollection('agenda_items'))->toBe('agendaItems.read.padalinys');
 
         // News is now also an admin collection with its own permission
         expect(TypesenseCollectionConfig::getPermissionForCollection('news'))
@@ -484,12 +484,12 @@ describe('public records in every scoped key', function (): void {
         $collections = keysFor($user);
         $publicTypes = "institution_type_ids:=[{$this->publicType->id}]";
 
-        expect(scopedKeyFilter($collections['meetings']['key']))->toBe($publicTypes)
-            ->and(scopedKeyFilter($collections['agenda_items']['key']))->toBe('(('.$publicTypes.') && is_private:=false)')
+        expect(scopedKeyFilter($collections['meetings']['key']))->toBe('('.$publicTypes.' || institution_ids:=[`'.$institutionId.'`])')
+            ->and(scopedKeyFilter($collections['agenda_items']['key']))->toBe('((('.$publicTypes.' || institution_ids:=[`'.$institutionId.'`])) && is_private:=false)')
             ->and(scopedKeyFilter($collections['institutions']['key']))->toBe('(is_active:=true || institution_ids:=[`'.$institutionId.'`])');
     });
 
-    test('a rep holding meetings.read.own also gets their own institutions', function (): void {
+    test('a representative finds their institutions without a separate own read grant', function (): void {
         $user = makeTenantUserWithRole('Studentų atstovas', Tenant::query()->first());
         $institutionId = $user->duties()->first()->institution_id;
 
@@ -512,10 +512,13 @@ describe('public records in every scoped key', function (): void {
             ->toContain("tenant_ids:=[{$tenant->id}]");
     });
 
-    test('with no public meeting types a member still gets the collection, empty', function (): void {
+    test('with no public meeting types a member still gets their own institutions', function (): void {
         app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => []])->save();
 
-        expect(scopedKeyFilter(keysFor(makeUser(Tenant::query()->first()))['meetings']['key']))->toBe('tenant_ids:=-1');
+        $user = makeUser(Tenant::query()->first());
+        $institutionId = $user->duties()->first()->institution_id;
+
+        expect(scopedKeyFilter(keysFor($user)['meetings']['key']))->toBe('institution_ids:=[`'.$institutionId.'`]');
     });
 
     test('a settings change retires every cached key, with no reindex', function (): void {
@@ -525,7 +528,7 @@ describe('public records in every scoped key', function (): void {
         $otherType = InstitutionType::factory()->create();
         app(MeetingSettings::class)->fill(['public_meeting_institution_type_ids' => [$otherType->id]])->save();
 
-        expect(scopedKeyFilter(keysFor($user)['meetings']['key']))->toBe("institution_type_ids:=[{$otherType->id}]");
+        expect(scopedKeyFilter(keysFor($user)['meetings']['key']))->toContain("institution_type_ids:=[{$otherType->id}]");
     });
 
     test('a key expires when one of the user\'s duties ends, not an hour later', function (): void {

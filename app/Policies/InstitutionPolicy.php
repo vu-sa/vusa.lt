@@ -6,7 +6,7 @@ use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Institution;
 use App\Models\User;
-use App\Services\InstitutionRelationService;
+use App\Services\InstitutionAccessService;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -19,7 +19,7 @@ class InstitutionPolicy extends ModelPolicy
     #[\Override]
     protected bool $hasManyTenants = false;
 
-    public function __construct(ModelAuthorizer $authorizer)
+    public function __construct(ModelAuthorizer $authorizer, private InstitutionAccessService $institutions)
     {
         parent::__construct($authorizer);
         $this->pluralModelName = Str::plural(ModelEnum::INSTITUTION->label());
@@ -63,9 +63,9 @@ class InstitutionPolicy extends ModelPolicy
     #[\Override]
     public function view(User $user, Model $institution): bool
     {
-        // Baseline: a member reads their own institutions and the ones related to them in full, role or
-        // not — from election on, matching the non-ended duties ModelAuthorizer grants through.
-        return $this->isOwnOrRelated($user, $institution)
+        // Baseline: a member reads their own, related and secretaried institutions in full, role
+        // or not — from election on, matching the non-ended duties ModelAuthorizer grants through.
+        return $this->institutions->canAccessInstitution($user, $institution)
             || $this->commonChecker($user, $institution, CRUDEnum::READ->label(), $this->pluralModelName, false);
     }
 
@@ -91,13 +91,5 @@ class InstitutionPolicy extends ModelPolicy
         // Since institutions.delete.own permission doesn't exist, commonChecker will only
         // check padalinys and * scopes automatically
         return $this->commonChecker($user, $institution, CRUDEnum::DELETE->label(), $this->pluralModelName, false);
-    }
-
-    private function isOwnOrRelated(User $user, Model $institution): bool
-    {
-        $ownIds = $user->authorization_duties()->pluck('duties.institution_id')->filter()->map(fn ($id): string => (string) $id)->unique();
-
-        return $ownIds->contains((string) $institution->getKey())
-            || app(InstitutionRelationService::class)->authorizedIdsFor($ownIds)->contains((string) $institution->getKey());
     }
 }

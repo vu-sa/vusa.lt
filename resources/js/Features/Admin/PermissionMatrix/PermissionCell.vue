@@ -7,7 +7,7 @@
     –
   </span>
   <span v-else-if="readonly" :class="['inline-flex min-h-8 items-center text-sm', value ? 'font-medium text-foreground' : 'text-muted-foreground/60']">
-    {{ value ? scopeLabel(value) : '–' }}
+    {{ value ? labelForScope(value) : '–' }}
   </span>
   <div v-else>
     <NativeSelect
@@ -23,6 +23,9 @@
       {{ $t('responsibilities.matrix.abilities.delete_permanent_hint') }}
     </p>
   </div>
+  <p v-if="description" class="mt-1 text-xs leading-relaxed text-muted-foreground" data-testid="cell-scope-description">
+    {{ description }}
+  </p>
 </template>
 
 <script setup lang="ts">
@@ -48,9 +51,11 @@ const props = defineProps<{
 const emit = defineEmits<{ update: [scope: PermissionScope | null] }>();
 
 const scopes = computed(() => props.resource.abilities[props.ability] ?? []);
+const labelForScope = (scope: PermissionScope) => props.resource.scopeLabels?.[scope] ?? scopeLabel(scope);
+const description = computed(() => props.value ? props.resource.scopeDescriptions?.[props.ability]?.[props.value] : undefined);
 
 const options = computed(() => [
   { value: '', label: '–' },
-  ...scopes.value.map(scope => ({ value: scope, label: scopeLabel(scope) })),
+  ...scopes.value.map(scope => ({ value: scope, label: labelForScope(scope) })),
 ]);
 </script>

@@ -36,6 +36,7 @@ final class BaselineAccess
      * Everyone may start a reservation.
      */
     public const array RETIRED_PERMISSIONS = [
+        'meetings.read.own',
         'comments.create.*',
         'comments.read.*',
         'comments.update.*',
@@ -81,7 +82,23 @@ final class BaselineAccess
     public static function descriptions(): array
     {
         return collect(self::RESOURCES)
-            ->mapWithKeys(fn (string $resource): array => [$resource => __("access.baseline.{$resource}")])
+            ->mapWithKeys(fn (string $resource): array => [$resource => __("access.baseline.{$resource}", ['period' => __('access.duty_period')])])
             ->all();
+    }
+
+    /** @return list<array{text: string, strong: bool}> */
+    public static function segments(string $resource): array
+    {
+        if (! in_array($resource, ['meetings', 'agendaItems'], true)) {
+            return [];
+        }
+
+        [$before, $after] = explode(':period', __("access.baseline.{$resource}"), 2);
+
+        return [
+            ['text' => $before, 'strong' => false],
+            ['text' => __('access.duty_period'), 'strong' => true],
+            ['text' => $after, 'strong' => false],
+        ];
     }
 }

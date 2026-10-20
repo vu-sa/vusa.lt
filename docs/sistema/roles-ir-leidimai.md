@@ -5,6 +5,9 @@ area: roles
 models: [Role, Permission, ResponsibilityGrant]
 last_reviewed: 2026-10-21
 tests:
+  - tests/Feature/Permissions/MeetingPermissionsTest.php
+  - tests/Feature/Console/SyncPermissionsTest.php
+  - tests/Browser/PermissionMatrixTest.php
   - tests/Feature/Permissions/DutyTypeAssignmentTest.php
   - tests/Feature/Admin/Permissions/ResponsibilityControllerTest.php
   - tests/Feature/Admin/Permissions/PermissionControllerTest.php
@@ -12,7 +15,6 @@ tests:
   - tests/Feature/Responsibilities/ProjectDutyResponsibilitiesTest.php
   - tests/Feature/System/PermissionCatalogTest.php
   - tests/Feature/System/ModelPermissionSeederTest.php
-  - tests/Feature/Console/SyncPermissionsTest.php
   - tests/Feature/Permissions/BaselineAccessTest.php
   - resources/js/Features/Admin/PermissionMatrix/__tests__/PermissionMatrix.component.test.ts
   - resources/js/Features/Admin/PermissionMatrix/__tests__/usePermissionDraft.test.ts
@@ -90,6 +92,19 @@ parašyta, ką kiekvienas narys gali be jokios atsakomybės.
 Apimtis **Savo** siūloma tik ten, kur ji ką nors reiškia: pavyzdžiui, posėdžiams (savo institucijų
 posėdžiai) ir pareigybėms. Užduotims, dokumentams, naudotojams ir kitiems ištekliams jos nėra –
 savo užduotis ir save matai be jokios atsakomybės.
+
+Posėdžių apimtis **Savo institucijų, visų kadencijų** reiškia institucijas tų pareigybių, kurios suteikia
+šią teisę, o ne paties nario sukurtus posėdžius. Pasirinkus šią redagavimo apimtį, galima keisti
+**visus tų institucijų posėdžius**, įskaitant vykusius prieš pradedant eiti pareigas.
+Be papildomos teisės galima redaguoti tik posėdžius, kurių data patenka į **nario pareigų
+laikotarpį**; ši galimybė išlieka ir pareigoms pasibaigus. Posėdžių peržiūros apimties „Savo“ atskirai rinktis nebereikia.
+
+<ChangelogNote version="v3.12" date="2026-10-21" title="Ką posėdžiams reiškia „Savo institucijų, visų kadencijų“">
+
+Tinklelis atskiria automatinę prieigą savo pareigų laikotarpio posėdžiams nuo papildomos teisės
+redaguoti ir kitų laikotarpių posėdžius. Posėdžių kūrimas ir perkėlimas į šiukšlinę lieka atskiros teisės.
+
+</ChangelogNote>
 
 Pakeitimai kaupiami ir apačioje rodoma, kiek teisių pridėsi ir atimsi. Visi pakeitimai įrašomi
 vienu **Išsaugoti** paspaudimu; **Atšaukti** grąžina išsaugotą būseną.

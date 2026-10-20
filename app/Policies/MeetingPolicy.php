@@ -7,29 +7,20 @@ use App\Enums\ModelEnum;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\User;
-use App\Services\InstitutionAccessService;
+use App\Services\MeetingAccessService;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-/**
- * Policy for Meeting model authorization
- */
 class MeetingPolicy extends ModelPolicy
 {
-    /**
-     * Initialize policy with model name
-     */
-    public function __construct(ModelAuthorizer $authorizer, protected InstitutionAccessService $institutionAccessService)
+    public function __construct(ModelAuthorizer $authorizer, private MeetingAccessService $meetingAccess)
     {
         parent::__construct($authorizer);
         $this->pluralModelName = Str::plural(ModelEnum::MEETING->label());
     }
 
-    /**
-     * Every admin may open the collection: the scoped search key always carries public meetings,
-     * and adds their padalinys and own institutions when their permissions allow.
-     */
+    /** The scoped search key filters public meetings and every additional viewing path. */
     #[\Override]
     public function viewAny(User $user): bool
     {
@@ -79,36 +70,18 @@ class MeetingPolicy extends ModelPolicy
         return $this->hadMemberMemo[$key] ??= $meeting->hadMemberAtTheTime($user);
     }
 
-    /**
-     * Determine whether the user can view the model.
-     *
-     * @param  Meeting  $meeting
-     */
+    /** @param Meeting $meeting */
     #[\Override]
     public function view(User $user, Model $meeting): bool
     {
-        if ($this->hadMemberAtTheTime($meeting, $user)) {
-            return true;
-        }
-
-        // Check if user has access via institution relationships or coordinator access
-        $meetingInstitutionIds = $meeting->institutions->pluck('id');
-        if ($this->institutionAccessService->canAccessMeetingViaRelationships($user, $meetingInstitutionIds)) {
-            return true;
-        }
-
-        return $this->commonChecker($user, $meeting, CRUDEnum::READ->label());
+        return $this->meetingAccess->hasBaselineAccess($user, $meeting)
+            || $this->meetingAccess->allows($user, $meeting, 'meetings', 'read');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     *
-     * @param  Meeting  $meeting
-     */
+    /** @param Meeting $meeting */
     #[\Override]
     public function update(User $user, Model $meeting): bool
     {
-        // Note: Meeting model doesn't have organizer_id field
         if ($this->hadMemberAtTheTime($meeting, $user)) {
             return true;
         }
@@ -116,11 +89,15 @@ class MeetingPolicy extends ModelPolicy
         return $this->commonChecker($user, $meeting, CRUDEnum::UPDATE->label());
     }
 
-    /**
-     * Determine whether the user can add participants to the meeting.
-     *
-     * @param  Meeting  $meeting
-     */
+    /** @param Meeting $meeting */
+    #[\Override]
+    public function restore(User $user, Model $meeting): bool
+    {
+        // Duty::meetings excludes trashed rows; restoration checks the institution instead.
+        return $this->meetingAccess->allows($user, $meeting, 'meetings', 'delete');
+    }
+
+    /** @param Meeting $meeting */
     public function addParticipants(User $user, Model $meeting): bool
     {
         if ($this->hadMemberAtTheTime($meeting, $user)) {

@@ -461,6 +461,7 @@ describe('read-only public meeting record', function (): void {
 
     test('a member with meeting access gets the full record', function (): void {
         asUser(makeAdminUser($this->tenant))->get(route('meetings.show', $this->publicMeeting))
+            ->assertOk()
             ->assertInertia(fn ($page) => $page->where('readOnly', false));
     });
 
@@ -849,7 +850,7 @@ describe('Posėdžiai collection', function (): void {
             );
     });
 
-    test('a student representative holding only meetings.read.own can open it', function (): void {
+    test('a student representative can open the collection without an own read grant', function (): void {
         $rep = makeTenantUserWithRole('Studentų atstovas', $this->tenant);
 
         asUser($rep)

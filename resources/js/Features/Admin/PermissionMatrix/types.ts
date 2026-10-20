@@ -10,6 +10,9 @@ export interface CatalogResource {
   abilities: Partial<Record<PermissionAbility, PermissionScope[]>>;
   /** What every member may already do here without any responsibility. */
   baseline: string | null;
+  baselineSegments?: { text: string; strong: boolean }[];
+  scopeLabels?: Partial<Record<PermissionScope, string>>;
+  scopeDescriptions?: Partial<Record<PermissionAbility, Partial<Record<PermissionScope, string>>>>;
   /** Whether deleting moves to a trash; without one it is permanent at once. */
   softDeletes: boolean;
 }
