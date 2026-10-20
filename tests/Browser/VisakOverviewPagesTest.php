@@ -95,8 +95,8 @@ it('shows a padalinys coordinator the statistics of their padalinys', function (
     waitForInertiaRender($page, '[data-slot=trend-tooltip]');
     expect($page->script("(() => { const box = document.querySelector('[data-slot=trend-tooltip]').getBoundingClientRect(); return box.left >= 0 && box.top >= 0 && box.right <= innerWidth && box.bottom <= innerHeight; })()"))->toBeTrue();
     $page->script("document.querySelector('[data-testid=trend-inspector]').blur()");
+    waitForInertiaRender($page, '[data-slot=institutions-needing-attention-ask]');
     docsScreenshot($page, 'visak-padaliniai');
-    $page->click('[role=tab][id$=trigger-attention]');
     docsScreenshot($page, 'v3-ask-representatives', highlights: ['[data-slot=institutions-needing-attention-ask]']);
 
     $page->script("document.querySelector('[data-slot=atstovavimas-rep-metrics]').scrollIntoView()");
