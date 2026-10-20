@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Meeting;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -12,7 +12,7 @@ class MeetingRepresentativeResolver
 {
     /**
      * Get student representatives who were active at the time of a meeting.
-     * Filters duties by 'studentu-atstovai' type and checks dutiables pivot dates.
+     * Duties holding the student representation responsibility, by dutiables pivot dates.
      *
      * @return Collection<int, User>
      */
@@ -27,17 +27,9 @@ class MeetingRepresentativeResolver
             return new Collection;
         }
 
-        // Get the student representative type
-        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first();
-
-        if (! $studentRepType) {
-            return new Collection;
-        }
-
-        // Get duties that belong to these institutions and have the student rep type
         $dutyIds = Duty::query()
             ->whereIn('institution_id', $institutionIds)
-            ->whereHas('types', fn ($q) => $q->where('duty_types.id', $studentRepType->id))
+            ->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)
             ->pluck('id');
 
         if ($dutyIds->isEmpty()) {

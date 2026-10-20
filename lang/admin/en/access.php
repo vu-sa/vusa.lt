@@ -2,16 +2,16 @@
 
 return [
     'eyebrow' => 'Account',
-    'title' => 'My roles and duties',
-    'lead' => 'Here you can see which duties and roles you hold and where they let you go. If something is missing, ask your coordinator.',
-    'link' => 'My roles and duties',
+    'title' => 'My responsibilities and duties',
+    'lead' => 'Here you can see which duties and responsibilities you hold and where they let you go. If something is missing, ask your coordinator.',
+    'link' => 'My responsibilities and duties',
     'current' => [
         'title' => 'Current duties',
         'empty' => 'you have no duties right now',
     ],
     'direct' => [
-        'title' => 'Roles assigned directly',
-        'empty' => 'no roles are assigned to you directly',
+        'title' => 'Responsibilities assigned directly',
+        'empty' => 'no responsibilities are assigned to you directly',
     ],
     'capabilities' => [
         'title' => 'What you can do',
@@ -41,10 +41,10 @@ return [
         'until_now' => 'now',
         'ex_officio' => 'Ex officio',
         'represents' => 'Representing: :tenant',
-        'roles' => 'Roles: :roles',
+        'roles' => 'Responsibilities: :roles',
     ],
     'baseline' => [
-        'title' => 'Every member, even without a role',
+        'title' => 'Every member, even without a responsibility',
         'locked' => 'Every member',
         'locked_own' => 'Own – every member',
         'institutions' => 'Sees the institution list and active institutions\' public information, and their own current institutions in full.',

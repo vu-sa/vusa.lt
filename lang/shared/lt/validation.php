@@ -167,7 +167,7 @@ return [
 
     'outside_tenant_scope' => 'Neturite teisių veikti pasirinktame padalinyje.',
     'permission_not_available' => 'Tokios teisės nėra – šiems įrašams šis veiksmas netaikomas.',
-    'permission_is_baseline' => 'Tai visi nariai jau gali be rolės, todėl šios teisės rolei priskirti negalima.',
+    'permission_is_baseline' => 'Tai visi nariai jau gali be jokios atsakomybės, todėl šios teisės atsakomybei priskirti negalima.',
     'meeting_institution_not_own' => 'Posėdį gali užregistruoti tik institucijai, kurioje eini pareigas.',
 
     'page_parent_self' => 'Puslapis negali būti pats sau tėvinis.',

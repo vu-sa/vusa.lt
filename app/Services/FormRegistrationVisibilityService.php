@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Enums\Responsibility;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Institution;
@@ -60,7 +60,7 @@ class FormRegistrationVisibilityService
     private function scopeMemberRegistrations(Builder $query, Form $form, User $user): Builder
     {
         $tenantIds = $this->formAccess->visibleTenantIds($user)
-            ->merge($this->formSettings->getMemberRegistrationTenantIds($user))
+            ->merge($this->responsibilities->tenantIdsFor($user, ResponsibilityPurpose::MemberRegistration, includeScheduled: true))
             ->unique()
             ->values();
 
@@ -81,7 +81,7 @@ class FormRegistrationVisibilityService
             ->whereIn('tenant_id', $this->formAccess->visibleTenantIds($user))
             ->pluck('id')
             ->map(fn ($id) => (string) $id)
-            ->merge($this->responsibilities->institutionIdsFor($user, Responsibility::StudentRepCoordination))
+            ->merge($this->responsibilities->institutionIdsFor($user, ResponsibilityPurpose::StudentRepCoordination))
             ->unique()
             ->values();
 

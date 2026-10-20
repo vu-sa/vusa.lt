@@ -500,7 +500,7 @@ const saveLabel = computed(() => (isEditing.value ? $t('Išsaugoti') : $t('Prisk
 // A programme only means something on a curator's term; one already set is never hidden.
 const showStudyProgram = computed(() => availableStudyPrograms.value.length > 0 && (
   dutyTypeSlugs.value === null
-  || isCuratorDuty(dutyTypeSlugs.value)
+  || isCuratorDuty(dutyTypeSlugs.value, page.props.curatorDutyTypeSlugs ?? [])
   || !!props.dutiable?.study_program_id
   || hasText(asNote(props.dutiable?.study_program_note))
 ));

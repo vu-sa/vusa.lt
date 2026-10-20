@@ -2,8 +2,8 @@
 
 namespace App\Actions;
 
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Activity;
-use App\Models\DutyType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
@@ -31,8 +31,6 @@ class GetRepOutcomeMetrics
         'task_completion' => ['baseline' => 67.2, 'target' => 80.0],
         'periodicity_gap' => ['baseline' => 44.9, 'target' => 65.0],
     ];
-
-    private const string REP_TYPE_SLUG = 'studentu-atstovai';
 
     private const int ACTIVE_DAYS = 30;
 
@@ -211,15 +209,9 @@ class GetRepOutcomeMetrics
      */
     private static function representativeTerms(): array
     {
-        $typeId = DutyType::query()->where('slug', self::REP_TYPE_SLUG)->value('id');
-
-        if ($typeId === null) {
-            return [];
-        }
-
         return Dutiable::query()
             ->where('dutiable_type', MorphMap::alias(User::class))
-            ->whereHas('duty.types', fn ($types) => $types->where('duty_types.id', $typeId))
+            ->whereHas('duty', fn ($duty) => $duty->holdingPurpose(ResponsibilityPurpose::StudentRepresentation))
             ->with('duty:id,institution_id')
             ->get(['id', 'duty_id', 'dutiable_id', 'start_date', 'end_date'])
             ->groupBy(fn (Dutiable $term): string => (string) $term->duty->institution_id)
@@ -294,15 +286,9 @@ class GetRepOutcomeMetrics
      */
     private static function activeReps(Carbon $now): array
     {
-        $typeId = DutyType::query()->where('slug', self::REP_TYPE_SLUG)->value('id');
-
-        if ($typeId === null) {
-            return ['total' => 0, 'active' => 0];
-        }
-
         $reps = fn () => User::query()->whereHas('dutiables', fn ($terms) => $terms
             ->activeOn()
-            ->whereHas('duty.types', fn ($types) => $types->where('duty_types.id', $typeId)));
+            ->whereHas('duty', fn ($duty) => $duty->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)));
 
         return [
             'total' => $reps()->count(),

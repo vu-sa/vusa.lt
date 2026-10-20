@@ -54,6 +54,30 @@
       </FormFieldWrapper>
 
       <FormFieldWrapper
+        v-else-if="form.type === 'responsibility'"
+        id="source_responsibility"
+        :label="$t('mailing_lists.sheet.target')"
+        :hint="$t('mailing_lists.sheet.responsibility_hint')"
+        :error="form.errors.source_id"
+        required
+      >
+        <SingleSelect
+          v-if="options.responsibilities.length > 16"
+          v-model="selectedResponsibility"
+          :options="options.responsibilities"
+          label-field="title"
+          value-field="id"
+          :placeholder="$t('mailing_lists.sheet.pick')"
+          data-testid="source-responsibility"
+        />
+        <NativeSelect
+          v-else id="source_responsibility" v-model="form.source_id"
+          :options="options.responsibilities.map(responsibility => ({ value: responsibility.id, label: responsibility.title }))"
+          :placeholder="$t('mailing_lists.sheet.pick')"
+        />
+      </FormFieldWrapper>
+
+      <FormFieldWrapper
         v-else-if="form.type === 'institution'"
         id="source_institution"
         :label="$t('mailing_lists.sheet.target')"
@@ -227,7 +251,7 @@ const tenantScopeOptions = computed<FormSegmentOption<MailingListTenantScope>[]>
     : $t(`mailing_lists.sources.tenant_scopes.${scope}`) })));
 
 const usesAddressMode = computed(() => ![MailingListSourceType.Email, MailingListSourceType.MailingList].includes(form.type));
-const usesTenantScope = computed(() => [MailingListSourceType.DutyType, MailingListSourceType.InstitutionType].includes(form.type));
+const usesTenantScope = computed(() => [MailingListSourceType.DutyType, MailingListSourceType.InstitutionType, MailingListSourceType.Responsibility].includes(form.type));
 const usesTypeFilters = computed(() => [MailingListSourceType.DutyType, MailingListSourceType.Institution, MailingListSourceType.InstitutionType].includes(form.type));
 
 const isComplete = computed(() => (form.type === MailingListSourceType.Email ? form.email.trim() !== '' : Boolean(form.source_id)));
@@ -253,6 +277,10 @@ const selectedType = computed({
 const selectedInstitution = computed({
   get: () => props.options?.institutions.find(institution => institution.id === form.source_id) ?? null,
   set: (institution: { id: string } | null) => { form.source_id = institution?.id ?? ''; },
+});
+const selectedResponsibility = computed({
+  get: () => props.options?.responsibilities.find(responsibility => responsibility.id === form.source_id) ?? null,
+  set: (responsibility: { id: string } | null) => { form.source_id = responsibility?.id ?? ''; },
 });
 const selectedList = computed({
   get: () => props.options?.mailingLists.find(list => list.id === form.source_id) ?? null,

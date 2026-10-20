@@ -9,6 +9,7 @@ use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\MailingList;
 use App\Models\MailingListSource;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\ValueObjects\MailingListRecipient;
@@ -259,4 +260,23 @@ test('a deleted root duty type does not continue including its live descendants'
     $root->delete();
 
     expect(mailingListEmails($this->list))->toBe([]);
+});
+
+test('a responsibility source reaches its holders however it was granted, within the tenant scope', function (): void {
+    $responsibility = Role::factory()->create();
+    $type = DutyType::factory()->create();
+    $direct = mailingListSeat(Institution::factory()->for($this->main)->create(), 'direct@stud.vu.lt');
+    $viaType = mailingListSeat(Institution::factory()->for($this->main)->create(), 'via-type@stud.vu.lt');
+    $elsewhere = mailingListSeat(Institution::factory()->for($this->padalinys)->create(), 'elsewhere@stud.vu.lt');
+    mailingListSeat(Institution::factory()->for($this->main)->create(), 'ended@stud.vu.lt', ['end_date' => today()->subDay()])
+        ->duties()->first()->assignRole($responsibility);
+
+    $direct->duties()->first()->assignRole($responsibility);
+    $viaType->duties()->first()->types()->attach($type);
+    $type->responsibilityGrants()->create(['role_id' => $responsibility->id]);
+    $elsewhere->duties()->first()->assignRole($responsibility);
+
+    mailingListSource($this->list, MailingListSourceType::Responsibility, $responsibility->id, ['filters' => ['tenant_scope' => 'main']]);
+
+    expect(mailingListEmails($this->list))->toBe(['direct@stud.vu.lt', 'via-type@stud.vu.lt']);
 });

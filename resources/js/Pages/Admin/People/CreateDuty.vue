@@ -3,7 +3,6 @@
     :duty
     :duty-types
     :assignable-institutions
-    :roles
     :assignable-tenants
     :assignable-duties
     @submit:form="handleSubmit"
@@ -19,7 +18,6 @@ const props = defineProps<{
   dutyTypes: App.Entities.DutyType[];
   assignableInstitutions: App.Entities.Institution[];
   assignableUsers?: App.Entities.User[];
-  roles: App.Entities.Role[];
   assignableTenants: { id: number; shortname: string; type?: string }[];
   assignableDuties: Array<{ id: string; name: string; institution?: App.Entities.Institution | Record<string, unknown> }>;
   prefillInstitutionId?: string | null;
@@ -33,7 +31,6 @@ const duty = {
   places_to_occupy: 1,
   contacts_grouping: 'none',
   types: [],
-  roles: [],
   ex_officio_target_duties: [],
   assignable_tenants: [],
 };

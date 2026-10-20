@@ -166,7 +166,7 @@ return [
 
     'outside_tenant_scope' => 'You are not allowed to act in the selected tenant.',
     'permission_not_available' => 'There is no such permission – this action does not apply to these records.',
-    'permission_is_baseline' => 'Every member can already do this without a role, so it cannot be put on a role.',
+    'permission_is_baseline' => 'Every member can already do this without any responsibility, so it cannot be put on one.',
     'meeting_institution_not_own' => 'You can only record a meeting for an institution you hold a duty in.',
 
     'page_parent_self' => 'A page cannot be its own parent.',

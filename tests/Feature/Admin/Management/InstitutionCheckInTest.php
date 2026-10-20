@@ -1,10 +1,10 @@
 <?php
 
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\Meeting;
+use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -80,7 +80,7 @@ test('a coordinator can clear active reports for the institution they coordinate
     $institution = Institution::factory()->for($tenant)->create();
     $coordinator = makeUser($tenant);
     $duty = $coordinator->duties()->firstOrFail();
-    DutyResponsibility::factory()->for($duty)->forInstitution($institution)->create();
+    ResponsibilityGrant::factory()->forDuty($duty)->forInstitution($institution)->create();
     $report = InstitutionCheckIn::factory()->for($institution)->create([
         'start_date' => now()->subDay()->toDateString(),
         'end_date' => now()->addMonth()->toDateString(),

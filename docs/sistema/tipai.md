@@ -3,8 +3,9 @@ doc_status: reviewed
 title: Tipai ir kategorijos
 area: types
 models: [InstitutionType, DutyType, EventType, ResourceCategory, ProblemCategory]
-last_reviewed: 2026-10-16
+last_reviewed: 2026-10-20
 tests:
+  - tests/Feature/Permissions/DutyTypeAssignmentTest.php
   - tests/Feature/Admin/ModelMeta/TypeControllerTest.php
   - tests/Feature/Migrations/SplitTypesTest.php
   - resources/js/Pages/Admin/ModelMeta/__tests__/IndexDomainTypes.test.ts
@@ -19,20 +20,20 @@ Tipai ir kategorijos skirti institucijoms, pareigybėms, renginiams, ištekliams
 ## Susitarimai {#susitarimai}
 
 - Institucijų ir pareigybių tipai yra atskiri sąrašai. Tipo rūšies redaguojant rekomenduojama nekeisti; sukuriamas tinkamos rūšies tipas ir su juo susiejami reikalingi įrašai.
-- Ištrintą tipą galima atkurti iš šiukšlinės. Visam laikui ištrinti nepavyksta, kol su juo susieti įrašai, vaikiniai tipai arba pareigybės tipo rolės; tai galioja ir ištrintiems susietiems įrašams.
+- Ištrintą tipą galima atkurti iš šiukšlinės. Visam laikui ištrinti nepavyksta, kol su juo susieti įrašai, vaikiniai tipai arba tipui suteiktos atsakomybės; tai galioja ir ištrintiems susietiems įrašams.
 
 ## Kaip tai veikia
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Atskiri institucijų ir pareigybių tipų sąrašai">
 
-Institucijų ir pareigybių tipai tvarkomi atskirai. Renkantis sąrašą išlieka bendras katalogas, o susiejimai ir rolės tvarkomi konkretaus tipo įraše.
+Institucijų ir pareigybių tipai tvarkomi atskirai. Renkantis sąrašą išlieka bendras katalogas, o susiejimai tvarkomi konkretaus tipo įraše.
 
 </ChangelogNote>
 
 Skiltyje **Sistema → Tipai ir kategorijos** pasirenkamas vienas iš penkių sąrašų:
 
 - **Institucijų tipai** grupuoja institucijas, nustato valdymo sritį ir institucijų ryšius.
-- **Pareigybių tipai** grupuoja pareigybes; jų rolės suteikiamos susietoms pareigybėms.
+- **Pareigybių tipai** grupuoja pareigybes; tipui suteiktas atsakomybes gauna visos to tipo pareigybės. Kurie tipai rodomi kaip *Koordinatoriai*, *Kuratoriai* ir *Mentoriai* viešuose kontaktuose, nustatoma [Sistemos paskirtyse](/sistema/nustatymai#sistemos-paskirtys); tokio tipo ištrinti negalima.
 - **Renginių tipai** apibūdina kalendoriaus įvykius. [Plačiau](/svetaine/renginiu-tipai)
 - **Išteklių kategorijos** grupuoja rezervuojamus išteklius. [Plačiau](/rezervacijos/kategorijos)
 - **Problemų kategorijos** grupuoja registruojamas problemas. [Plačiau](/visak/problemos)
@@ -51,8 +52,24 @@ Pasirinktame sąraše taip pat gali spausti **Naujas institucijos tipas** arba
 šiukšlinėje jo nėra.
 
 Atidaręs tipo įrašą, skiltyje **Susieti įrašai** tvarkyk institucijas arba pareigybes.
-Viena institucija ar pareigybė gali turėti kelis tipus. Pareigybės tipo įraše atskirai tvarkyk
-roles, o institucijos tipo įraše, skirtuke **Ryšiai**, – [tipų ryšius](/sistema/rysiai#tipu-rysio-kurimas). Failus rask tipo įrašo failų skiltyje; susieti įrašai gali paveldėti savo tipų ir jų tėvų failus.
+Viena institucija ar pareigybė gali turėti kelis tipus. Institucijos tipo skirtuke **Ryšiai** tvarkyk
+[tipų ryšius](/sistema/rysiai#tipu-rysio-kurimas). Failus rask tipo įrašo failų skiltyje; susieti įrašai gali paveldėti savo tipų ir jų tėvų failus.
+
+### Pareigybės tipo atsakomybės {#pareigybes-tipo-atsakomybes}
+
+<ChangelogNote version="v3.10" date="2026-10-19" title="Atsakomybių suteikimas vienoje vietoje">
+
+Tipo įraše suteikimai rodomi su aprėptimi ir nuorodomis; jie tvarkomi atsakomybės puslapyje.
+
+</ChangelogNote>
+
+Tipo skirtuke **Atsakomybės** matyti visi jam galiojantys suteikimai ir jų aprėptis. Atverk
+atsakomybę arba spausk **Atverti atsakomybes**, tada jos skirtuke **Kam suteikta** spausk
+**Pridėti tipą**. Pasirink tipą ir, jei paskirtis to reikalauja, padalinį, institucijų tipą ar
+instituciją. Suteikimai ir jų pašalinimas tvarkomi šiame viename puslapyje.
+
+Jei prie esamo suteikimo rodoma, kad aprėptis nenurodyta arba netinkama, atsakomybės puslapyje
+pašalink tą suteikimą ir suteik iš naujo su teisinga aprėptimi. Sistema jos nenuspėja ir pati nekeičia.
 
 ## Kas ką gali {#teises}
 
@@ -60,11 +77,17 @@ Rolė **Super Admin** leidžia tvarkyti visus penkis sąrašus. Kitiems naudotoj
 rodomi pagal suteiktas teises; teisė tvarkyti institucijas ar pareigybes savaime nesuteikia teisės
 keisti bendro tipų sąrašo.
 
+Pareigybės tipą priskirti ar pašalinti galima tik turint jo delegavimą ir teisę redaguoti
+kiekvieną keičiamą pareigybę. Atsakomybes valdantys administratoriai gali priskirti visus tinkamus
+tipus, bet jiems taip pat reikia prieigos prie pareigybės. Vien teisės redaguoti tipą neužtenka.
+Kitų padalinių esami priskyrimai išlieka, tačiau jų keisti negalima. Pasibaigusios pareigos
+delegavimo nebesuteikia; paskutinę pareigų dieną jis dar galioja.
+
 ## Pranešimai ir automatizavimas {#pranesimai}
 
-- **Rolių suteikimas**: priskyrus pareigybės tipą pareigybei, jai automatiškai suteikiamos su tuo tipu susietos rolės. Pašalinus tipo priskyrimą pareigybei, su tuo tipu susietos rolės nuo pareigybės atjungiamos.
-- **Teisių atnaujinimas**: atnaujinus tipo roles ar susiejimus, išvaloma susijusių naudotojų prieigos ir navigacijos talpykla.
-- **Vientisumo apsauga**: visam laikui ištrinti tipą, turintį vaikinių tipų, susietų įrašų ar rolių, neleidžiama. Perkėlimui į šiukšlinę šis apribojimas netaikomas.
+- **Atsakomybių suteikimas**: priskyrus pareigybės tipą pareigybei, ji gauna tipui suteiktas atsakomybes. Pašalinus tipą, jos atimamos, nebent suteiktos pareigybei ir tiesiogiai.
+- **Teisių atnaujinimas**: atnaujinus tipo atsakomybes ar susiejimus, išvaloma susijusių naudotojų prieigos ir navigacijos talpykla.
+- **Vientisumo apsauga**: visam laikui ištrinti tipą, turintį vaikinių tipų, susietų įrašų ar atsakomybių, neleidžiama. Perkėlimui į šiukšlinę šis apribojimas netaikomas.
 
 ## Techninė informacija {#technine-informacija}
 

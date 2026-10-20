@@ -39,7 +39,7 @@ class GetUserAccessSummary
 
         /** @var Collection<int, Dutiable> $terms */
         $terms = $user->dutiables()
-            ->with(['duty.institution.tenant', 'duty.roles:id,name', 'tenant:id,shortname'])
+            ->with(['duty.institution.tenant', 'duty.roles:id,name,title', 'tenant:id,shortname'])
             ->orderByDesc('start_date')
             ->get()
             ->filter(fn (Dutiable $term): bool => $term->duty !== null);
@@ -49,7 +49,7 @@ class GetUserAccessSummary
 
         return [
             'isSuperAdmin' => $user->isSuperAdmin(),
-            'directRoles' => $user->roles->pluck('name')->values()->all(),
+            'directRoles' => $user->roles->map(fn ($role) => $role->displayTitle())->values()->all(),
             'current' => self::present($user, $terms->filter(fn (Dutiable $term): bool => $started($term) && $notEnded($term))),
             'upcoming' => self::present($user, $terms->reject($started)),
             'ended' => self::present($user, $terms->reject($notEnded)->take(self::ENDED_LIMIT)),
@@ -84,7 +84,7 @@ class GetUserAccessSummary
                 'startDate' => $term->start_date->toDateString(),
                 'endDate' => $term->end_date?->toDateString(),
                 'isExOfficio' => $term->via_dutiable_id !== null,
-                'roles' => $duty->roles->pluck('name')->values()->all(),
+                'roles' => $duty->roles->map(fn ($role) => $role->displayTitle())->values()->all(),
             ];
         })->values()->all();
     }

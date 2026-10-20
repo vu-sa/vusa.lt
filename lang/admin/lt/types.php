@@ -1,6 +1,14 @@
 <?php
 
 return [
+    'assignment_forbidden' => 'Šio pareigybės tipo priskirti ar pašalinti negali. Reikia delegavimo ir teisės redaguoti pareigybę.',
+    'assignment_readonly' => 'Šį priskyrimą gali pakeisti tipą priskirti įgaliotas pareigybės redaktorius.',
+    'open_responsibilities' => 'Atverti atsakomybes',
+    'grants_hint' => 'Atsakomybės ir jų aprėptis tvarkomos atsakomybės puslapio skirtuke „Kam suteikta“.',
+    'grant_needs_scope' => 'Nenurodyta arba netinkama aprėptis. Atsakomybės puslapyje pašalink šį suteikimą ir suteik iš naujo, nurodęs aprėptį.',
+    'grants_spotlight_title' => 'Atsakomybės tvarkomos jų puslapyje',
+    'grants_spotlight' => 'Atverk atsakomybę ir skirtuke „Kam suteikta“ pasirink tipą bei aprėptį. Čia matysi visus šiam tipui galiojančius suteikimus.',
+    'no_responsibilities' => 'Šiam tipui atsakomybių nesuteikta.',
     'directory_title' => 'Tipai ir kategorijos',
     'directory_lead' => 'Pasirink, kuriuos tipus ar kategorijas nori tvarkyti.',
     'spotlight' => 'Institucijų ir pareigybių tipai turi atskirus sąrašus. Čia taip pat rasi renginių tipus, išteklių ir problemų kategorijas.',
@@ -16,6 +24,6 @@ return [
         'title' => 'Pareigybių tipai',
         'create' => 'Naujas pareigybės tipas',
         'example' => 'Studentų atstovas',
-        'lead' => 'Tipai grupuoja pareigybes. Priskirtos rolės suteikia jų turėtojams prieigą.',
+        'lead' => 'Tipai grupuoja pareigybes. Tipui suteiktą atsakomybę gauna visos to tipo pareigybės.',
     ],
 ];

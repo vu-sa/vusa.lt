@@ -7,24 +7,16 @@
     <OverviewSection :title="$t('settings.categories.general')">
       <NavigationTiles :items="generalItems" :columns="3" data-category="general" />
     </OverviewSection>
-
-    <OverviewSection v-if="isSuperAdmin" :title="$t('settings.categories.authorization')">
-      <NavigationTiles :items="authorizationItems" :columns="3" data-category="authorization" />
-    </OverviewSection>
   </OverviewPage>
 </template>
 
 <script setup lang="ts">
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
-import { Building2, CalendarRange, FileText, Globe, KeyRound, ListChecks, Users } from '@lucide/vue';
+import { Building2, CalendarRange, Compass, FileText, Globe, ListChecks, Users } from '@lucide/vue';
 
 import OverviewPage from '@/Components/Layouts/OverviewPage.vue';
 import { NavigationTiles, OverviewSection, type NavigationTileItem } from '@/Components/Patterns';
-
-defineProps<{
-  isSuperAdmin: boolean;
-}>();
 
 const generalItems = computed<NavigationTileItem[]>(() => [
   {
@@ -63,21 +55,18 @@ const generalItems = computed<NavigationTileItem[]>(() => [
     href: route('settings.cadences.index'),
   },
   {
+    key: 'purposes',
+    label: $t('settings.pages.purposes.title'),
+    description: $t('settings.pages.purposes.description'),
+    icon: Compass,
+    href: route('settings.purposes.edit'),
+  },
+  {
     key: 'site',
     label: $t('settings.pages.site.title'),
     description: $t('settings.pages.site.description'),
     icon: Globe,
     href: route('settings.site.edit'),
-  },
-]);
-
-const authorizationItems = computed<NavigationTileItem[]>(() => [
-  {
-    key: 'authorization',
-    label: $t('settings.pages.authorization.title'),
-    description: $t('settings.pages.authorization.description'),
-    icon: KeyRound,
-    href: route('settings.authorization.edit'),
   },
 ]);
 </script>

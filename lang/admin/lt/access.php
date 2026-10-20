@@ -2,16 +2,16 @@
 
 return [
     'eyebrow' => 'Paskyra',
-    'title' => 'Mano rolės ir pareigybės',
-    'lead' => 'Čia matai, kokias pareigybes ir roles turi ir kur jos tau leidžia patekti. Jei ko trūksta, kreipkis į savo koordinatorių.',
-    'link' => 'Mano rolės ir pareigybės',
+    'title' => 'Mano atsakomybės ir pareigybės',
+    'lead' => 'Čia matai, kokias pareigybes ir atsakomybes turi ir kur jos tau leidžia patekti. Jei ko trūksta, kreipkis į savo koordinatorių.',
+    'link' => 'Mano atsakomybės ir pareigybės',
     'current' => [
         'title' => 'Dabartinės pareigybės',
         'empty' => 'šiuo metu pareigybių neturi',
     ],
     'direct' => [
-        'title' => 'Tiesiogiai priskirtos rolės',
-        'empty' => 'tiesiogiai priskirtų rolių nėra',
+        'title' => 'Tiesiogiai priskirtos atsakomybės',
+        'empty' => 'tiesiogiai priskirtų atsakomybių nėra',
     ],
     'capabilities' => [
         'title' => 'Ką gali daryti',
@@ -41,10 +41,10 @@ return [
         'until_now' => 'dabar',
         'ex_officio' => 'Ex officio',
         'represents' => 'Atstovauji: :tenant',
-        'roles' => 'Rolės: :roles',
+        'roles' => 'Atsakomybės: :roles',
     ],
     'baseline' => [
-        'title' => 'Visi nariai – ir be rolės',
+        'title' => 'Visi nariai – ir be atsakomybės',
         'locked' => 'Visi nariai',
         'locked_own' => 'Savo – visi nariai',
         'institutions' => 'Mato institucijų sąrašą ir aktyvių institucijų viešą informaciją, o savo dabartines institucijas – pilnai.',

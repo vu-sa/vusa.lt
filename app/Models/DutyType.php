@@ -6,17 +6,19 @@ use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\DutyDutyType;
-use App\Models\Pivots\DutyTypeRole;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasTypeHierarchy;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\SystemDutyTypes;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +36,7 @@ use Illuminate\Support\Facades\DB;
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, DutyType> $descendants
- * @property-read DutyTypeRole|DutyDutyType|null $pivot
+ * @property-read DutyDutyType|null $pivot
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read string|null $force_delete_blocked_reason
@@ -85,6 +87,11 @@ class DutyType extends Model implements GuardsForceDelete, SharepointFileableCon
                 FileableNameUpdated::dispatch($type);
             }
         });
+
+        // The contact pages fall back to slugs and skip trashed types, so any of these can move them.
+        static::saved(fn () => app(SystemDutyTypes::class)->flush());
+        static::deleted(fn () => app(SystemDutyTypes::class)->flush());
+        static::restored(fn () => app(SystemDutyTypes::class)->flush());
     }
 
     /** @return BelongsToMany<Duty, $this, DutyDutyType> */
@@ -93,14 +100,35 @@ class DutyType extends Model implements GuardsForceDelete, SharepointFileableCon
         return $this->belongsToMany(Duty::class)->using(DutyDutyType::class);
     }
 
-    public function roles(): BelongsToMany
+    /**
+     * Responsibilities every duty of this type receives.
+     */
+    public function roles(): MorphToMany
     {
-        return $this->belongsToMany(Role::class)->using(DutyTypeRole::class);
+        return $this->morphToMany(Role::class, 'grantee', 'responsibility_grants', 'grantee_id', 'role_id');
+    }
+
+    /** @return MorphMany<ResponsibilityGrant, $this> */
+    public function responsibilityGrants(): MorphMany
+    {
+        return $this->morphMany(ResponsibilityGrant::class, 'grantee');
+    }
+
+    /**
+     * Why the type must stay: a public contact page groups by it.
+     */
+    public function deleteBlockedReason(): ?string
+    {
+        $parts = app(SystemDutyTypes::class)->partsOf($this);
+
+        return $parts === [] ? null : (string) __('settings.purposes.duty_types.delete_blocked', [
+            'parts' => implode(', ', array_map(fn ($part): string => (string) __($part->labelKey()), $parts)),
+        ]);
     }
 
     public function forceDeleteBlockedReason(): ?string
     {
-        return $this->forceDeleteReasonFor([
+        return $this->deleteBlockedReason() ?? $this->forceDeleteReasonFor([
             'trash.blockers.type_assignments' => $this->duties()->withTrashed()->count(),
             'entities.role.model' => $this->roles()->count() + DB::table('role_can_attach_duty_types')->where('duty_type_id', $this->id)->count(),
             'entities.dutyType.model' => $this->descendants()->withTrashed()->count(),

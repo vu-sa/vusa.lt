@@ -1,21 +1,21 @@
 ---
 doc_status: reviewed
-title: Teisės ir rolės
-last_reviewed: 2026-10-17
+title: Teisės ir atsakomybės
+last_reviewed: 2026-10-19
 tests:
   - tests/Feature/Permissions/BaselineAccessTest.php
-  - resources/js/Components/AdminForms/__tests__/RolePermissionForms.component.test.ts
-  - resources/js/Features/Admin/PermissionTable/__tests__/PermissionTable.component.test.ts
-  - tests/Feature/Admin/Permissions/RoleControllerTest.php
+  - resources/js/Features/Admin/PermissionMatrix/__tests__/PermissionMatrix.component.test.ts
+  - tests/Feature/Admin/Permissions/ResponsibilityControllerTest.php
+  - tests/Feature/System/PermissionCatalogTest.php
   - tests/Feature/Permissions/RoleChangeRevokesAccessTest.php
   - tests/Feature/System/ModelPermissionSeederTest.php
 ---
 
-# Teisės ir rolės
+# Teisės ir atsakomybės
 
 Teisės suteikia galimybę matyti ir tvarkyti tam tikrus įrašus. Jos niekada neskiriamos žmogui
-tiesiogiai kasdieniame darbe: teisės sudedamos į **roles**, rolės priskiriamos **pareigybėms**, o
-naudotojas teises gauna eidamas pareigybę.
+tiesiogiai kasdieniame darbe: teisės sudedamos į [atsakomybes](/pagrindai/atsakomybes),
+atsakomybės suteikiamos **pareigybėms**, o narys teises gauna eidamas pareigybę.
 
 ## Ką gali kiekvienas narys {#bazine-prieiga}
 
@@ -25,10 +25,10 @@ Vieša institucijų ir posėdžių informacija, problemos ir ištekliai pasiekia
 
 </ChangelogNote>
 
-Kai kas nepriklauso nuo rolių: tai gali kiekvienas prisijungęs narys, net neturėdamas nė vienos
-rolės. Rolės prideda tik tai, kas viršija šį pagrindą. Rolės puslapyje (**Sistema → Rolės**) prie
-kiekvienos įrašų rūšies parašyta, ką visi nariai jau gali, o tokios teisės pažymėtos užraktu
-**Visi nariai**: jų rolei priskirti negalima, nes jos nieko nepridėtų.
+Kai kas nepriklauso nuo atsakomybių: tai gali kiekvienas prisijungęs narys, net neturėdamas nė
+vienos. Atsakomybės prideda tik tai, kas viršija šį pagrindą. Atsakomybės puslapyje
+(**Sistema → Atsakomybės**) prie kiekvienos srities parašyta, ką visi nariai jau gali, o tokios
+teisės pažymėtos užraktu **Visi nariai**: jų priskirti negalima, nes jos nieko nepridėtų.
 
 | Įrašai | Ką gali kiekvienas narys |
 |---|---|
@@ -37,31 +37,32 @@ kiekvienos įrašų rūšies parašyta, ką visi nariai jau gali, o tokios teis�
 | Problemos | Matyti visų padalinių problemas |
 | Ištekliai | Matyti visus išteklius |
 | Pareigybės | Matyti savo dabartines ir buvusias pareigybes |
-| Užduotys | Matyti ir atlikti tau priskirtas užduotis (bet ne jas ištrinti; savų užduočių trynimo teisė nė vienai rolei nepriskiriama) |
-| Komentarai | Komentuoti visur, kur matai įrašą; redaguoti ir trinti savo komentarus. Kitų komentarus trina redaguojantys įrašą arba rolė su komentarų trynimo teise |
+| Užduotys | Matyti ir atlikti tau priskirtas užduotis (bet ne jas ištrinti; savų užduočių trynimo teisė nė vienai atsakomybei nepriskiriama) |
+| Komentarai | Komentuoti visur, kur matai įrašą; redaguoti ir trinti savo komentarus. Kitų komentarus trina redaguojantys įrašą arba atsakomybė su komentarų trynimo teise |
 
-## Rolės {#roles}
+## Atsakomybės {#roles}
 
-Kasdieniame darbe užtenka žinoti roles. Kiekviena rolė – tai vienos atsakomybės teisių rinkinys:
+Kasdieniame darbe užtenka žinoti atsakomybes. Dažniausios (pavadinimai kol kas tokie, kokie buvo
+rolių):
 
-| Rolė | Kam skiriama | Ką leidžia | Aprašyta |
+| Atsakomybė | Kam skiriama | Ką leidžia | Aprašyta |
 |---|---|---|---|
 | **Studentų atstovas** | Automatiškai – pareigybėms su tipu „Studentų atstovas“ | Fiksuoti savo institucijų posėdžius, kelti problemas | [ViSAK](/visak/) |
 | **Problemų redaktorius** | Automatiškai – pareigybėms su tipu „Koordinatorius (-ė)“ | Kelti ir tvarkyti padalinio problemas | [Problemos](/visak/problemos) |
 | **Išteklių administratorius** | Padalinio pirmininkui ir administratoriui | Tvarkyti padalinio daiktus ir jų rezervacijas | [Rezervacijos](/rezervacijos/#istekliu-administratorius) |
 | **Padalinio puslapių redaktorius** | Tiems, kas atnaujina padalinio svetainės tekstus | Redaguoti esamus padalinio puslapius | [Puslapiai](/svetaine/puslapiai) |
 
-Rolės, kurių pavadinime yra **„Centrinio biuro“**, leidžia tą patį visuose padaliniuose.
+Atsakomybės, kurių pavadinime yra **„Centrinio biuro“**, leidžia tą patį visuose padaliniuose.
 
-### Rolės pagal pareigybės tipą {#roles-pagal-pareigybes-tipa}
+### Atsakomybės pagal pareigybės tipą {#roles-pagal-pareigybes-tipa}
 
-Rolė gali būti susieta su **pareigybės tipu**. Tada ją automatiškai gauna kiekviena to tipo
-pareigybė: susiejant rolę su tipu – visos esamos, vėliau – kiekviena, kuriai tipas priskiriamas.
-Nuėmus tipą, rolė nuimama. Taip koordinatoriams ir studentų atstovams nereikia roles skirti ranka.
+Atsakomybė gali būti suteikta **pareigybės tipui**. Tada ją automatiškai gauna kiekviena to tipo
+pareigybė: visos esamos ir kiekviena, kuriai tipas priskiriamas vėliau. Nuėmus tipą, atsakomybė
+nuimama, nebent ji suteikta pareigybei ir tiesiogiai.
 
 ::: warning Kas gali priskirti tipą
-Nauja pareigybė rolę gauna tik tada, kai tipą jai priskiria žmogus, kurio rolė leidžia tą tipą
-priskirti (pvz., koordinatorius – studentų atstovų tipą), arba super administratorius. Tai
+Pareigybė atsakomybę per tipą gauna tik tada, kai tipą jai priskiria žmogus, kurio atsakomybė leidžia
+tą tipą priskirti (pvz., koordinatorius – studentų atstovų tipą), arba super administratorius. Tai
 apsaugo nuo teisių išsidalijimo per tipus.
 :::
 
@@ -70,26 +71,26 @@ apsaugo nuo teisių išsidalijimo per tipus.
 1. **Super administratorius** gali viską.
    Kiekvienam nariui galioja ir [bazinė prieiga](#bazine-prieiga).
 2. Tikrinamos tiesiogiai naudotojui priskirtos teisės.
-3. Tikrinamos teisės, gautos per pareigybių roles.
+3. Tikrinamos teisės, gautos per pareigybių atsakomybes.
 4. Pagal apimtį nustatoma, kuriems padaliniams ar įrašams teisė galioja.
 
 Jei teisės neturi, ji **neišplečiama**: sistema nerodo nieko, o ne „bent jau savo padalinio“.
 
-Pakeitus rolės teises, rolės pareigybes ar pareigybės roles, nauja prieiga galioja nuo kito puslapio
-atvėrimo – taip pat ir atimta.
+Pakeitus atsakomybės teises, jos suteikimus ar pareigybės tipus, nauja prieiga galioja nuo kito
+puslapio atvėrimo – taip pat ir atimta.
 
 ::: info Kodėl kai kurių puslapių nematai
 Skiltys ir mygtukai, kuriems neturi teisių, paslepiami. Tiesiogiai atidarius tokį adresą, rodomas
 puslapis „Prieiga uždrausta“.
 :::
 
-Kiekviename puslapyje skyrius **Kas ką gali** aprašo, kurios rolės ką leidžia.
+Kiekviename puslapyje skyrius **Kas ką gali** aprašo, kurios atsakomybės ką leidžia.
 
 ## Techninė informacija {#technine-informacija}
 
 ### Teisės formatas {#teises-formatas}
 
-Rolės sudarytos iš **teisių**. Tikslios kiekvieno puslapio teisės pateikiamos jo pabaigoje, skyriuje **Techninė informacija**. Kiekviena teisė užrašoma `{išteklius}.{veiksmas}.{apimtis}`, pavyzdžiui, `news.update.padalinys`.
+Atsakomybės sudarytos iš **teisių**. Tikslios kiekvieno puslapio teisės pateikiamos jo pabaigoje, skyriuje **Techninė informacija**. Kiekviena teisė užrašoma `{išteklius}.{veiksmas}.{apimtis}`, pavyzdžiui, `news.update.padalinys`.
 
 | Dalis | Reikšmės |
 |---|---|
@@ -98,7 +99,7 @@ Rolės sudarytos iš **teisių**. Tikslios kiekvieno puslapio teisės pateikiamo
 | Apimtis | `own` – tik su tavo pareigybe tiesiogiai susiję įrašai; `padalinys` – tavo padalinio įrašai; `*` – visi įrašai |
 
 
-- Bazinę prieigą be rolių užtikrina `BaselineAccess` taisyklės ir `ModelPolicy` patikros, testuojamos `BaselineAccessTest`.
-- Rolių ir leidimų matricą, jų priskyrimą pareigybėms ir tipams valdo `RoleController`, tikrina `RoleControllerTest` ir `RolePermissionForms.component.test.ts`.
-- Leidimų lentelės atvaizdavimą ir būsenas tikrina `PermissionTable.component.test.ts`.
-- Standartinius modelių leidimus ir jų formatus generuoja `ModelPermissionSeeder`, testuojamas `ModelPermissionSeederTest`.
+- Bazinę prieigą be atsakomybių užtikrina `BaselineAccess` taisyklės ir `ModelPolicy` patikros, testuojamos `BaselineAccessTest`.
+- Visus galimus leidimus aprašo `PermissionCatalog`; jį naudoja `ModelPermissionSeeder`, teisių tinklelis ir `permissions:audit`.
+- Atsakomybių teises ir suteikimus valdo `ResponsibilityController`, tikrina `ResponsibilityControllerTest` ir `PermissionMatrix.component.test.ts`.
+- Be modelių leidimų, `settings.update.*` leidžia keisti nustatymus.

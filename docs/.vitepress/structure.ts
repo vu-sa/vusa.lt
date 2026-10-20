@@ -35,7 +35,7 @@ export const guide: GuideChapter[] = [
     pages: [
       { text: 'Platforma', link: '/pagrindai/platforma' },
       { text: 'Padaliniai ir pareigybės', link: '/pagrindai/padaliniai-ir-pareigybes' },
-      { text: 'Teisės ir rolės', link: '/pagrindai/teises' },
+      { text: 'Teisės ir atsakomybės', link: '/pagrindai/teises' },
       { text: 'Atsakomybės', link: '/pagrindai/atsakomybes' },
       { text: 'Pranešimai', link: '/pagrindai/pranesimai' },
     ],
@@ -116,7 +116,7 @@ export const guide: GuideChapter[] = [
     description: 'Rolės, leidimai, nustatymai',
     index: '/sistema/',
     pages: [
-      { text: 'Rolės ir leidimai', link: '/sistema/roles-ir-leidimai' },
+      { text: 'Atsakomybės ir leidimai', link: '/sistema/roles-ir-leidimai' },
       { text: 'Tipai ir kategorijos', link: '/sistema/tipai' },
       { text: 'Ryšiai', link: '/sistema/rysiai' },
       { text: 'Nustatymai', link: '/sistema/nustatymai' },

@@ -22,7 +22,6 @@ use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Pivots\Dutiable;
-use App\Models\Role;
 use App\Models\StudyProgram;
 use App\Models\User;
 use App\Services\DutyAssignmentService;
@@ -95,8 +94,7 @@ class DutyController extends AdminController
         $this->handleAuthorization('create', Duty::class);
 
         return $this->inertiaResponse('Admin/People/CreateDuty', [
-            'dutyTypes' => DutyType::query()->get(),
-            'roles' => Role::all(),
+            'dutyTypes' => GetAttachableTypesForDuty::execute()->values(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
             'assignableUsers' => $this->assignableUsersForDutyForm(),
             'prefillInstitutionId' => $request->query('institution_id'),
@@ -113,7 +111,7 @@ class DutyController extends AdminController
         $duty = new Duty;
 
         $validatedData = $request->safe();
-        $duty->fill(collect($validatedData)->except('types', 'roles', 'current_users', 'ex_officio_target_duty_ids', 'assignable_tenants')->toArray())->save();
+        $duty->fill(collect($validatedData)->except('types', 'current_users', 'ex_officio_target_duty_ids', 'assignable_tenants')->toArray())->save();
 
         $duty->syncAudited('types', $request->validated('types') ?? []);
         $duty->exOfficioTargetDuties()->sync($request->ex_officio_target_duty_ids ?? []);
@@ -256,7 +254,7 @@ class DutyController extends AdminController
             ? collect()
             : $this->authorizer->tenants($user, 'duties.update.padalinys')->pluck('id');
 
-        $baseRelations = ['institution', 'types', 'roles', 'exOfficioTargetDuties', 'assignableTenants'];
+        $baseRelations = ['institution', 'types', 'exOfficioTargetDuties', 'assignableTenants'];
 
         // Owning admin sees all current_users (with pivot tenant_id for display split).
         // Cross-tenant admin sees only reps with their tenant_id on the dutiable row.
@@ -307,7 +305,6 @@ class DutyController extends AdminController
             'actingAssignableTenantIds' => $actingAssignableTenantIds->values()->all(),
             'assignableTenantUsers' => $assignableTenantUsers,
             'exOfficioMembers' => $this->exOfficioMembersForDutyForm($duty, $canEditDuty ? null : $actingAssignableTenantIds),
-            'roles' => Role::all(),
             'dutyTypes' => GetAttachableTypesForDuty::execute()->values(),
             'assignableInstitutions' => DutyService::getInstitutionsForUpserts($this->authorizer),
             'assignableUsers' => $this->assignableUsersForDutyForm(),

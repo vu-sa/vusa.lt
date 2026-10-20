@@ -5,9 +5,7 @@ namespace App\Actions;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
-use App\Models\Role;
 use App\Models\User;
-use App\Observers\UserPermissionObserver;
 use App\Services\DutyAssignmentService;
 use App\Support\MorphMap;
 use Illuminate\Support\Arr;
@@ -19,7 +17,7 @@ class UpdateDuty
 
     /**
      * @param array{name: array<string, string|null>|string, institution_id: string, places_to_occupy: int|float|string, contacts_grouping: string,
-     *     description?: array<string, string|null>|string|null, email?: string|null, current_users?: list<string>|null, roles?: list<string>|null,
+     *     description?: array<string, string|null>|string|null, email?: string|null, current_users?: list<string>|null,
      *     types?: list<int>|null, ex_officio_target_duty_ids?: list<string>|null, assignable_tenants?: list<array{tenant_id: int, quota?: int|null, user_ids?: list<string>|null}>|null,
      *     is_active?: bool, former_names?: list<array{name: array<string, string|null>, used_until: string}>|null} $data
      */
@@ -42,22 +40,10 @@ class UpdateDuty
             $duty->institution()->associate($data['institution_id']);
             $duty->save();
 
-            $roles = Role::find($data['roles'] ?? []);
-            foreach ($roles as $role) {
-                if ($role->name === config('permission.super_admin_role_name')) {
-                    abort(403, __('messages.role.not_assignable_to_duty'));
-                }
-            }
-
-            $roleIdsBefore = $duty->roles()->pluck('roles.id')->sort()->values()->all();
-            $duty->syncRoles($roles);
-
-            // syncRoles() fires no model event, so holders would keep the old roles in their cached duties.
-            if ($duty->roles()->pluck('roles.id')->sort()->values()->all() !== $roleIdsBefore) {
-                DB::afterCommit(fn () => app(UserPermissionObserver::class)->updatedDuty($duty));
-            }
-
-            $duty->syncAudited('types', $data['types'] ?? []);
+            $duty->syncAudited('types', [
+                ...($data['types'] ?? []),
+                ...$duty->types()->onlyTrashed()->pluck('duty_types.id')->all(),
+            ]);
 
             $previousTargetIds = $duty->exOfficioTargetDuties()->pluck('duties.id')->all();
             $newTargetIds = array_filter($data['ex_officio_target_duty_ids'] ?? []);

@@ -2,26 +2,23 @@
 
 namespace App\Models;
 
-use App\Enums\Responsibility;
-use App\Enums\ResponsibilityScope;
 use App\Models\Traits\LogsModelActivity;
-use App\Services\ResponsibilityResolver;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 
 /**
- * A duty's responsibility for a padalinys, an institution type or one institution.
+ * Transitional(responsibility-grants): the pre-grants table, kept for old activity log subjects;
+ * remove with `duty_responsibilities` once ResponsibilityGrant has run on production.
  *
  * @property string $id
  * @property string $duty_id
- * @property Responsibility $responsibility
+ * @property string $responsibility
  * @property string $scope_type
  * @property string $scope_id
  * @property Carbon|null $created_at
@@ -30,7 +27,6 @@ use Illuminate\Support\Carbon;
  * @property-read Duty|null $duty
  * @property-read Model $scope
  *
- * @method static \Database\Factories\DutyResponsibilityFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyResponsibility newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyResponsibility newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyResponsibility query()
@@ -41,34 +37,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['duty_id', 'responsibility', 'scope_type', 'scope_id'])]
 class DutyResponsibility extends Model
 {
-    use HasFactory, HasUlids, LogsModelActivity;
-
-    #[\Override]
-    protected static function booted(): void
-    {
-        static::saved(fn () => app(ResponsibilityResolver::class)->flush());
-        static::deleted(fn () => app(ResponsibilityResolver::class)->flush());
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    #[\Override]
-    protected function casts(): array
-    {
-        return [
-            'responsibility' => Responsibility::class,
-        ];
-    }
-
-    /**
-     * What the assignment covers. `scope_type` stays an uncast morph alias like every other
-     * polymorphic column; the enum's backing values are those aliases.
-     */
-    public function coverage(): ResponsibilityScope
-    {
-        return ResponsibilityScope::from($this->scope_type);
-    }
+    use HasUlids, LogsModelActivity;
 
     /**
      * @return BelongsTo<Duty, $this>

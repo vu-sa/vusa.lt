@@ -19,7 +19,7 @@ Each action answers one checkable question; do not reuse a name for a union of t
 
 - `GetInstitutionSecretaries` — nominated for a term (`institution_secretaries` rows). "Secretary" means this and only this, in code and in the UI.
 - `GetInstitutionMembers` — every duty holder there on a date (reminders, comment/mention pools). Not type-filtered: the chair must still be reminded of their own sitting.
-- `GetInstitutionRepresentatives` / `MeetingRepresentativeResolver` — only `studentu-atstovai`-typed duties, on a date (display, and the task fallback).
+- `GetInstitutionRepresentatives` / `MeetingRepresentativeResolver` — only duties holding the `StudentRepresentation` purpose (`Duty::holdingPurpose()`), on a date (display, and the task fallback). Never find a group of people by duty type slug or by a role id in settings: "who does or is told" is a responsibility purpose (`ResponsibilityResolver`), "who may" is a permission, "what it is called" is a duty type.
 - `GetInstitutionFollowersToNotify` — opted in via `institution_follows`, filtered by meeting visibility.
 - `GetMeetingOverseers` — the by-position audience: institution managers ∪ tenant-visibility roles ∪ global-visibility roles ∪ the nominated secretaries.
 - `ResolveMeetingNotificationAudience` — overseers ∪ followers. The only one meeting notifications should call.

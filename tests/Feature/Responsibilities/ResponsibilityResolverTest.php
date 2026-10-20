@@ -1,12 +1,12 @@
 <?php
 
 use App\Enums\InstitutionScope;
-use App\Enums\Responsibility;
+use App\Enums\ResponsibilityPurpose;
 use App\Enums\ResponsibilityScope;
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\InstitutionType;
+use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ResponsibilityResolver;
@@ -29,7 +29,7 @@ function resolver(): ResponsibilityResolver
 function coordinatorDuty(string $factoryState, mixed $scope, ?string $holderName = null): Duty
 {
     $duty = Duty::factory()->for(Institution::factory()->for(Tenant::query()->first()))->create();
-    DutyResponsibility::factory()->for($duty)->{$factoryState}($scope)->create();
+    ResponsibilityGrant::factory()->forDuty($duty)->{$factoryState}($scope)->create();
     User::factory()->create(['name' => $holderName ?? fake()->name()])
         ->duties()->attach($duty, ['start_date' => now()->subMonth()]);
 
@@ -40,8 +40,8 @@ describe('dutiesFor', function (): void {
     test('finds the padalinys coordinator for an institution with no closer assignment', function (): void {
         $duty = coordinatorDuty('forTenant', $this->tenant);
 
-        expect(resolver()->dutiesFor(Responsibility::StudentRepCoordination, $this->institution)->pluck('id')->all())->toBe([$duty->id])
-            ->and(resolver()->sourceFor(Responsibility::StudentRepCoordination, $this->institution))->toBe(ResponsibilityScope::Tenant);
+        expect(resolver()->dutiesFor(ResponsibilityPurpose::StudentRepCoordination, $this->institution)->pluck('id')->all())->toBe([$duty->id])
+            ->and(resolver()->sourceFor(ResponsibilityPurpose::StudentRepCoordination, $this->institution))->toBe(ResponsibilityScope::Tenant);
     });
 
     test('lets a type assignment override the padalinys, and an institution assignment override both', function (): void {
@@ -50,13 +50,13 @@ describe('dutiesFor', function (): void {
         coordinatorDuty('forTenant', $this->tenant);
         $typeDuty = coordinatorDuty('forType', $type);
 
-        expect(resolver()->dutiesFor(Responsibility::StudentRepCoordination, $this->institution->fresh())->pluck('id')->all())->toBe([$typeDuty->id]);
+        expect(resolver()->dutiesFor(ResponsibilityPurpose::StudentRepCoordination, $this->institution->fresh())->pluck('id')->all())->toBe([$typeDuty->id]);
 
         $institutionDuty = coordinatorDuty('forInstitution', $this->institution);
         resolver()->flush();
 
-        expect(resolver()->dutiesFor(Responsibility::StudentRepCoordination, $this->institution->fresh())->pluck('id')->all())->toBe([$institutionDuty->id])
-            ->and(resolver()->sourceFor(Responsibility::StudentRepCoordination, $this->institution->fresh()))->toBe(ResponsibilityScope::Institution);
+        expect(resolver()->dutiesFor(ResponsibilityPurpose::StudentRepCoordination, $this->institution->fresh())->pluck('id')->all())->toBe([$institutionDuty->id])
+            ->and(resolver()->sourceFor(ResponsibilityPurpose::StudentRepCoordination, $this->institution->fresh()))->toBe(ResponsibilityScope::Institution);
     });
 
     test('reaches an institution through an ancestor of its type, but a closer type wins', function (): void {
@@ -65,19 +65,19 @@ describe('dutiesFor', function (): void {
         $this->institution->types()->attach($child);
         $parentDuty = coordinatorDuty('forType', $parent);
 
-        expect(resolver()->dutiesFor(Responsibility::StudentRepCoordination, $this->institution->fresh())->pluck('id')->all())->toBe([$parentDuty->id]);
+        expect(resolver()->dutiesFor(ResponsibilityPurpose::StudentRepCoordination, $this->institution->fresh())->pluck('id')->all())->toBe([$parentDuty->id]);
 
         $childDuty = coordinatorDuty('forType', $child);
         resolver()->flush();
 
-        expect(resolver()->dutiesFor(Responsibility::StudentRepCoordination, $this->institution->fresh())->pluck('id')->all())->toBe([$childDuty->id]);
+        expect(resolver()->dutiesFor(ResponsibilityPurpose::StudentRepCoordination, $this->institution->fresh())->pluck('id')->all())->toBe([$childDuty->id]);
     });
 
     test('names nobody for a body that is not a VU body', function (): void {
         $this->institution->types()->attach(InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create());
         coordinatorDuty('forTenant', $this->tenant);
 
-        expect(resolver()->dutiesFor(Responsibility::StudentRepCoordination, $this->institution->fresh()))->toBeEmpty();
+        expect(resolver()->dutiesFor(ResponsibilityPurpose::StudentRepCoordination, $this->institution->fresh()))->toBeEmpty();
     });
 });
 
@@ -87,7 +87,7 @@ describe('usersFor', function (): void {
         User::factory()->create(['name' => 'Buvusi'])
             ->duties()->attach($duty, ['start_date' => now()->subYear(), 'end_date' => now()->subDay()]);
 
-        expect(resolver()->usersFor(Responsibility::StudentRepCoordination, $this->institution)->pluck('name')->all())->toBe(['Dabartinė']);
+        expect(resolver()->usersFor(ResponsibilityPurpose::StudentRepCoordination, $this->institution)->pluck('name')->all())->toBe(['Dabartinė']);
     });
 });
 
@@ -98,7 +98,7 @@ describe('institutionIdsFor', function (): void {
         coordinatorDuty('forInstitution', $senate);
         $holder = $duty->current_users()->first();
 
-        $ids = resolver()->institutionIdsFor($holder, Responsibility::StudentRepCoordination);
+        $ids = resolver()->institutionIdsFor($holder, ResponsibilityPurpose::StudentRepCoordination);
 
         expect($ids)->toContain((string) $this->institution->id)
             ->and($ids)->not->toContain((string) $senate->id);
@@ -116,7 +116,7 @@ describe('institutionIdsFor', function (): void {
         DB::enableQueryLog();
         DB::flushQueryLog();
 
-        $ids = resolver()->institutionIdsFor($holder, Responsibility::StudentRepCoordination);
+        $ids = resolver()->institutionIdsFor($holder, ResponsibilityPurpose::StudentRepCoordination);
         $queryCount = count(DB::getQueryLog());
 
         DB::disableQueryLog();
@@ -133,7 +133,7 @@ describe('gaps', function (): void {
         coordinatorDuty('forTenant', $covered);
         $uncovered = Tenant::query()->representational()->whereKeyNot($covered->id)->firstOrFail();
 
-        $gaps = resolver()->gaps(Responsibility::StudentRepCoordination)->pluck('id');
+        $gaps = resolver()->gaps(ResponsibilityPurpose::StudentRepCoordination)->pluck('id');
 
         expect($gaps)->not->toContain($covered->id)
             ->and($gaps)->toContain($uncovered->id);

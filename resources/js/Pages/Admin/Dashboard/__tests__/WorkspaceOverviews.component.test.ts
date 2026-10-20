@@ -80,7 +80,7 @@ describe('ShowSistema overview', () => {
     expect(numbers(mountPage(ShowSistema, { counts, newRequests: [], problems: [] }))).toEqual({
       open_requests: '/mocked/mySupportRequests.index?tab=all',
       queued_mail: '/mocked/mailQueue',
-      roles: '/mocked/roles.index',
+      roles: '/mocked/responsibilities.index',
       users: '/mocked/users.index',
       future_duty_holders: '/mocked/users.index?future_duty=scheduled',
     });

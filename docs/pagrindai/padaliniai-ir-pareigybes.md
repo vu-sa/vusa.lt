@@ -27,14 +27,14 @@ Platformos struktūra sudaryta iš keturių grandžių:
    arba pati VU SA struktūrinė dalis.
 3. **Pareigybė** – konkreti vieta institucijoje (pvz., padalinio pirmininkas, komunikacijos
    koordinatorius, kuratorius, studentų atstovas taryboje ar studijų programos komitete). Pareigybė turi
-   numatytą vietų skaičių, tipus ir jai suteiktas roles.
+   numatytą vietų skaičių, tipus ir jai suteiktas atsakomybes.
 4. **Pareigybės laikotarpis** – kas ir kada eina šias pareigas: konkretus žmogus su
    pradžios ir pabaigos datomis.
 
-Kasdieniame administravimo darbe teisės sujungiamos į **roles**, o rolės priskiriamos
+Kasdieniame administravimo darbe teisės sujungiamos į **atsakomybes**, o atsakomybės suteikiamos
 **pareigybėms**. Narys šias teises gauna per savo **pareigybės laikotarpius**. Be šio kelio,
 yra bazinė nario prieiga ir tiesiogiai paskyrai suteiktos teisės; jas paaiškina
-[Teisės ir rolės](/pagrindai/teises).
+[Teisės ir atsakomybės](/pagrindai/teises).
 
 ## Pareigybė ir pareigybės laikotarpis {#pareigybe-ir-laikotarpis}
 
@@ -59,25 +59,26 @@ pavyzdžius rasi [pareigybių laikotarpių datų aprašyme](/organizacija/pareig
 **Dabartinis narys** – žmogus, kurio pareigų pradžios diena jau atėjo, o paskutinė pareigų diena dar
 nepasibaigė. Pagal dabartinę narystę sudaromi pareigas einančių narių sąrašai.
 
-Jei pareigos prasidės ateityje, žmogus pareigybės rolių prieigą gauna **jau dabar**, kad spėtų
+Jei pareigos prasidės ateityje, žmogus pareigybės atsakomybių prieigą gauna **jau dabar**, kad spėtų
 pasiruošti. Tačiau iki pradžios dienos jis nerodomas tarp pareigas einančių narių.
 
 ## Dažnai painiojamos sąvokos {#savoku-skirtumai}
 
-Kad administravimas būtų tikslus, svarbu atskirti šias sąvokas:
+Kad administravimas būtų tikslus, svarbu atskirti šias sąvokas. Trumpai: **pareigybė turi
+atsakomybes; atsakomybė lemia, ką darai, ką matai platformoje ir kas tave randa.**
 
-| Sąvoka | Kas tai yra | Kur naudojama |
+| Sąvoka | Atsako į klausimą | Kur naudojama |
 |---|---|---|
+| **Pareigybės tipas** | Kaip pareigybė vadinama ir grupuojama (pvz., *Pirmininkas*, *Kuratorius*) | Viešuose kontaktuose; tipui galima suteikti atsakomybę |
+| **Atsakomybė** | Ką pareigybė daro (pvz., *Komunikacija*, *Studentų atstovų koordinavimas*) | Suteikia teises platformoje; kelios turi sistemos paskirtį |
 | **Pareigybės laikotarpis** | Kas eina pareigas ir nuo kada iki kada | Nustato, ar žmogus dabar eina pareigas ir kokias teises turi |
-| **Institucijos kadencija** | Visos institucijos veiklos ciklas (dažniausiai liepos 1 d. – birželio 30 d.) | Naudojama posėdžiams ir protokolams priskirti veiklos laikotarpiui bei pareigybių datoms derinti |
-| **Rolė** | Teisių rinkinys (pvz., *Komunikacijos koordinatorius*), priskiriamas pareigybei | Nurodo, kokius veiksmus asmuo gali atlikti platformoje |
-| **Koordinavimo atsakomybė** | Atsakomybė už organą, tipą ar padalinį (pvz., studentų atstovų koordinavimas) | Nurodo, kam atstovai siunčia klausimus ir kas gauna atstovavimo registracijas |
-| **Sekretorius** | Asmuo, paskirtas konkrečios institucijos kadencijai tvarkyti posėdžius | Gauna posėdžių protokolavimo ir darbotvarkės užduotis |
+| **Institucijos kadencija** | Visos institucijos veiklos ciklas (dažniausiai liepos 1 d. – birželio 30 d.) | Posėdžiams ir protokolams priskirti veiklos laikotarpiui bei pareigybių datoms derinti |
+| **Sekretorius** | Kas tvarko konkrečios institucijos kadencijos posėdžius | Gauna posėdžių protokolavimo ir darbotvarkės užduotis |
 | **Koordinatorius** | Žmogus, einantis pareigas su koordinavimo atsakomybe | Padeda atstovams; koordinatorius savaime nėra sekretorius |
 
-::: warning Koordinavimo atsakomybė nėra leidimų rolė
-Atsakomybės priskyrimas nurodo atstovavimo pagalbą, bet **nesuteikia** padalinio puslapių, naujienų ar
-pareigybių valdymo teisių. Šią prieigą kasdieniame darbe suteikia pareigybei priskirtos atitinkamos rolės.
+::: info Paskirtis ir prieiga – skirtingi dalykai
+Plati prieiga (pvz., *Organizacijos valdymas*) nepadaro nario koordinatoriumi ar registracijų
+gavėju. Tai nustato tik [sistemos paskirtį](/pagrindai/atsakomybes#paskirtys) turinti atsakomybė.
 :::
 
 ## Kur tai tvarkoma {#nuorodos}
@@ -97,5 +98,5 @@ pareigybių valdymo teisių. Šią prieigą kasdieniame darbe suteikia pareigybe
 - Pareigybės laikotarpis saugomas ryšio lentelėje `dutiables` (`Dutiable` modelis) su `start_date`, `end_date`, `study_program_id`, `additional_email`, `additional_photo`.
 - `User::current_duties()` tikrina, kad `start_date <= today` ir `(end_date is null or end_date >= today)`.
 - `User::authorization_duties()` tikrina `(end_date is null or end_date >= today)` – tai apima ir būsimus laikotarpius (`upcoming_duties()`). Šią atskirtį tikrina `ScheduledDutyAuthorizationTest`.
-- Bazinę prisijungusio nario prieigą be rolių užtikrina `BaselineAccessTest`.
+- Bazinę prisijungusio nario prieigą be atsakomybių užtikrina `BaselineAccessTest`.
 - Koordinatorių parinkimą pagal organo hierarchiją atlieka `ResponsibilityResolver`, tikrinamas `ResponsibilityResolverTest`.

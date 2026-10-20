@@ -12,7 +12,7 @@ use Illuminate\Support\Collection;
 
 /**
  * Everyone holding a duty in the institution on a given date — every duty, not only
- * the ones typed `studentu-atstovai`.
+ * the student representatives.
  *
  * This is the audience question ("who is in this body right now"), distinct from
  * {@see GetInstitutionRepresentatives} / {@see MeetingRepresentativeResolver},

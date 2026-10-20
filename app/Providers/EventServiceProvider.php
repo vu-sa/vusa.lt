@@ -35,6 +35,7 @@ use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
+use App\Models\ResponsibilityGrant;
 use App\Models\Role;
 use App\Models\RoleType;
 use App\Models\User;
@@ -146,7 +147,7 @@ class EventServiceProvider extends ServiceProvider
     #[\Override]
     public function boot()
     {
-        foreach ([Duty::class, User::class, Institution::class, DutyType::class, InstitutionType::class] as $model) {
+        foreach ([Duty::class, User::class, Institution::class, DutyType::class, InstitutionType::class, ResponsibilityGrant::class] as $model) {
             $model::observe(QueueMailingListSync::class);
         }
         Document::observe(DocumentObserver::class);

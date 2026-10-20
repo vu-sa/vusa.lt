@@ -188,11 +188,7 @@ describe('cache invalidation', function (): void {
         expect($this->authorizer->scope($other, 'news.update.padalinys'))->toBe($otherScope);
     });
 
-    /**
-     * assignRole()/removeRole() on a duty fire Spatie events, not Eloquent model events,
-     * so nothing invalidates the duty cache on its own — callers must reset explicitly.
-     */
-    test('a role change on a duty requires an explicit reset to take effect', function (): void {
+    test('a responsibility granted to a duty takes effect on the next check', function (): void {
         $user = makeUser($this->tenant);
         expect($this->authorizer->allows($user, 'news.update.padalinys'))->toBeFalse();
 
@@ -200,10 +196,6 @@ describe('cache invalidation', function (): void {
         $role->syncPermissions([Permission::firstOrCreate(['name' => 'news.update.padalinys', 'guard_name' => 'web'])]);
         $user->duties()->first()->assignRole($role);
 
-        expect($this->authorizer->allows($user, 'news.update.padalinys'))->toBeFalse();
-
-        $this->authorizer->resetCache($user);
-
-        expect($this->authorizer->allows($user->refresh(), 'news.update.padalinys'))->toBeTrue();
+        expect(app(ModelAuthorizer::class)->allows($user->refresh(), 'news.update.padalinys'))->toBeTrue();
     });
 });

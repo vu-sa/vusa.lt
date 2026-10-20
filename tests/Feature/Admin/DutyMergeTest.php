@@ -2,10 +2,10 @@
 
 use App\Models\Comment;
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
 use App\Models\DutyType;
 use App\Models\Goal;
 use App\Models\Pivots\Dutiable;
+use App\Models\ResponsibilityGrant;
 use App\Models\Role;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
@@ -233,16 +233,16 @@ describe('merging related pivots', function (): void {
 describe('merging what the duty owns', function (): void {
     test('moves responsibilities, dropping one the kept duty already has', function (): void {
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
-        DutyResponsibility::factory()->for($this->target)->forTenant($this->tenant)->create();
-        DutyResponsibility::factory()->for($this->source)->forTenant($this->tenant)->create();
-        DutyResponsibility::factory()->for($this->source)->forTenant($otherTenant)->create();
+        ResponsibilityGrant::factory()->forDuty($this->target)->forTenant($this->tenant)->create();
+        ResponsibilityGrant::factory()->forDuty($this->source)->forTenant($this->tenant)->create();
+        ResponsibilityGrant::factory()->forDuty($this->source)->forTenant($otherTenant)->create();
 
         asUser($this->admin)->post(route('duties.mergeDuties'), [
             'target_duty_id' => $this->target->id,
             'source_duty_ids' => [$this->source->id],
         ])->assertSessionHasNoErrors();
 
-        expect($this->target->responsibilities()->pluck('scope_id')->sort()->values()->all())
+        expect($this->target->responsibilityGrants()->pluck('scope_id')->sort()->values()->all())
             ->toBe(collect([(string) $this->tenant->id, (string) $otherTenant->id])->sort()->values()->all());
     });
 

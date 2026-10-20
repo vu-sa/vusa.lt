@@ -2,7 +2,7 @@
 
 namespace App\Actions;
 
-use App\Enums\Responsibility;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Institution;
 use App\Models\User;
 use App\Services\ResponsibilityResolver;
@@ -18,6 +18,6 @@ class GetInstitutionManagers
      */
     public static function execute(Institution $institution): Collection
     {
-        return app(ResponsibilityResolver::class)->usersFor(Responsibility::StudentRepCoordination, $institution);
+        return app(ResponsibilityResolver::class)->usersFor(ResponsibilityPurpose::StudentRepCoordination, $institution);
     }
 }

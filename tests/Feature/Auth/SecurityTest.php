@@ -41,7 +41,7 @@ describe('Authentication Security', function (): void {
 describe('Authorization Security', function (): void {
     test('handles role access appropriately', function (): void {
         // Normal users may have access depending on permissions
-        $response = asUser($this->normalUser)->get(route('roles.index'));
+        $response = asUser($this->normalUser)->get(route('responsibilities.index'));
 
         expect($response->status())->toBeIn([200, 302, 403]);
     });

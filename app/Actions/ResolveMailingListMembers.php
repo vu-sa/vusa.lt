@@ -267,6 +267,10 @@ class ResolveMailingListMembers
                 $query->where('institution_id', $source->source_id),
                 $source,
             ),
+            MailingListSourceType::Responsibility => $this->scopeToTenants(
+                $query->whereHas('roles', fn (Builder $roles) => $roles->whereKey($source->source_id)),
+                $source,
+            ),
             MailingListSourceType::InstitutionType => $this->filterDutyTypes(
                 $query->whereIn('institution_id', $this->institutionIdsForType($source)),
                 $source,

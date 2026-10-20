@@ -7,13 +7,13 @@ use App\Enums\ActivityRequestSkipReason;
 use App\Enums\InstitutionActivityCampaign;
 use App\Models\Cadence;
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
 use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionSecretary;
 use App\Models\Pivots\AgendaItem;
+use App\Models\ResponsibilityGrant;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -50,8 +50,8 @@ beforeEach(function (): void {
 
     $this->coordinator = makeUser($this->tenant);
     $duty = $this->coordinator->duties()->firstOrFail();
-    DutyResponsibility::factory()->for($duty)->forInstitution($this->institution)->create();
-    DutyResponsibility::factory()->for($duty)->forInstitution($this->otherInstitution)->create();
+    ResponsibilityGrant::factory()->forDuty($duty)->forInstitution($this->institution)->create();
+    ResponsibilityGrant::factory()->forDuty($duty)->forInstitution($this->otherInstitution)->create();
 
     $this->rep = activityRequestRep($this->institution);
 });
@@ -159,7 +159,7 @@ describe('who is asked about what', function (): void {
 
     test('the preview names the recipients and why an institution is left out', function (): void {
         $covered = Institution::factory()->for($this->tenant)->create();
-        DutyResponsibility::factory()->for($this->coordinator->duties()->firstOrFail())->forInstitution($covered)->create();
+        ResponsibilityGrant::factory()->forDuty($this->coordinator->duties()->firstOrFail())->forInstitution($covered)->create();
         activityRequestRep($covered);
         InstitutionCheckIn::factory()->for($covered)->create(['start_date' => today()->subYears(2), 'end_date' => today()->addWeek()]);
 

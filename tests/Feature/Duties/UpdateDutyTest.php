@@ -5,13 +5,13 @@ use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
+use App\Models\ResponsibilityGrant;
 use App\Models\Role;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Queue\CallQueuedClosure;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 pest()->use(RefreshDatabase::class);
 
@@ -29,13 +29,13 @@ function updateDutyActionData(Duty $duty, array $overrides = []): array
     ], $overrides);
 }
 
-test('duty update persists attributes institution and explicit and type-derived roles', function (): void {
+test('duty update persists attributes institution and types, leaving responsibilities to the record', function (): void {
     $duty = Duty::factory()->create();
     $institution = Institution::factory()->create();
     $role = Role::factory()->create();
     $typeRole = Role::factory()->create();
     $type = DutyType::factory()->create();
-    $type->roles()->attach($typeRole);
+    ResponsibilityGrant::factory()->forDutyType($type)->of($typeRole)->create();
 
     app(UpdateDuty::class)->execute($duty, updateDutyActionData($duty, [
         'institution_id' => $institution->id,
@@ -53,7 +53,7 @@ test('duty update persists attributes institution and explicit and type-derived 
         ->and($updated->email)->toBe('duty@example.com')
         ->and($updated->places_to_occupy)->toBe(2)
         ->and($updated->contacts_grouping)->toBe('tenant')
-        ->and($updated->roles()->pluck('roles.id')->all())->toEqualCanonicalizing([$role->id, $typeRole->id])
+        ->and($updated->roles()->pluck('roles.id')->all())->toBe([$typeRole->id])
         ->and($updated->types()->pluck('duty_types.id')->all())->toBe([$type->id]);
 });
 
@@ -71,7 +71,7 @@ test('duty update leaves omitted or null member lists alone and removes an empty
     'empty' => [['current_users' => []], '2026-10-02'],
 ]);
 
-test('duty update clears omitted roles types targets and assignable tenants', function (): void {
+test('duty update clears omitted types targets and assignable tenants but keeps responsibilities', function (): void {
     $duty = Duty::factory()->create();
     $duty->assignRole(Role::factory()->create());
     $duty->types()->attach(DutyType::factory()->create());
@@ -80,26 +80,20 @@ test('duty update clears omitted roles types targets and assignable tenants', fu
 
     app(UpdateDuty::class)->execute($duty, updateDutyActionData($duty));
 
-    expect($duty->roles()->count())->toBe(0)
+    expect($duty->roles()->count())->toBe(1)
         ->and($duty->types()->count())->toBe(0)
         ->and($duty->exOfficioTargetDuties()->count())->toBe(0)
         ->and($duty->assignableTenants()->count())->toBe(0);
 });
 
-test('super admin role rejection rolls back attributes and membership writes', function (): void {
-    $this->travelTo('2026-10-03 12:00:00');
+test('the duty form cannot grant responsibilities, not even super admin', function (): void {
     $duty = Duty::factory()->create();
-    $originalName = $duty->getTranslations('name');
-    $row = Dutiable::factory()->forDuty($duty)->active()->create();
     $superRole = Role::findByName(config('permission.super_admin_role_name'));
 
-    expect(fn () => app(UpdateDuty::class)->execute($duty, updateDutyActionData($duty, [
-        'roles' => [$superRole->id],
-        'current_users' => [],
-    ])))->toThrow(HttpException::class, __('messages.role.not_assignable_to_duty'))
-        ->and($duty->fresh()->getTranslations('name'))->toBe($originalName)
-        ->and($row->fresh()->end_date)->toBeNull()
-        ->and($duty->roles()->count())->toBe(0);
+    app(UpdateDuty::class)->execute($duty, updateDutyActionData($duty, ['roles' => [$superRole->id]]));
+
+    expect($duty->roles()->count())->toBe(0)
+        ->and($duty->responsibilityGrants()->count())->toBe(0);
 });
 
 test('assignable tenant removal ends all allocated seats while retained tenants sync manual representatives', function (): void {

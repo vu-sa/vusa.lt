@@ -1,8 +1,8 @@
 <?php
 
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
 use App\Models\Institution;
+use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -21,7 +21,7 @@ it('keeps the duty responsibilities readable across admin widths and themes', fu
 
     $tenant = Tenant::query()->firstOrFail();
     $duty = Duty::factory()->for(Institution::factory()->for($tenant))->create();
-    DutyResponsibility::factory()->for($duty)->forTenant($tenant)->create();
+    ResponsibilityGrant::factory()->forDuty($duty)->forTenant($tenant)->create();
     // The docs frame contrasts responsibilities with roles; an empty roles column hides that.
     $duty->assignRole('Studentų atstovų koordinatorius');
 

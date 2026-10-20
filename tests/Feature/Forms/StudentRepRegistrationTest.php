@@ -3,11 +3,11 @@
 use App\Events\StudentRepRegistrationCreated;
 use App\Mail\ConfirmStudentRepRegistration;
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Institution;
 use App\Models\Registration;
+use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Notifications\StudentRepRegistrationNotification;
@@ -248,7 +248,7 @@ function createInstitutionManager(Tenant $tenant, Institution $institution): Use
         ->hasAttached($user, ['start_date' => now()->subDay(), 'end_date' => now()->addDay()])
         ->create();
 
-    DutyResponsibility::factory()->for($duty)->forTenant($tenant)->create();
+    ResponsibilityGrant::factory()->forDuty($duty)->forTenant($tenant)->create();
 
     return $user;
 }

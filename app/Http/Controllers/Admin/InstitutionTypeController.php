@@ -10,12 +10,14 @@ use App\Http\Requests\InstitutionTypeRequest;
 use App\Http\Requests\SyncTypeModelsRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
-use App\Models\DutyResponsibility;
+use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\InstitutionTypeLink;
+use App\Models\ResponsibilityGrant;
 use App\Services\InstitutionRelationService;
 use App\Services\ResourceServices\SharepointFileService;
+use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -67,22 +69,23 @@ class InstitutionTypeController extends AdminController
 
         $responsibleDuties = [];
 
-        foreach (DutyResponsibility::query()
+        foreach (ResponsibilityGrant::query()
             ->where('scope_type', ResponsibilityScope::InstitutionType)
             ->where('scope_id', (string) $type->id)
-            ->with('duty:id,name')
-            ->get() as $assignment) {
-            $duty = $assignment->duty;
+            ->where('grantee_type', MorphMap::alias(Duty::class))
+            ->with(['grantee:id,name', 'role'])
+            ->get() as $grant) {
+            $duty = $grant->grantee;
 
-            if ($duty === null) {
+            if (! $duty instanceof Duty) {
                 continue;
             }
 
             $responsibleDuties[] = [
-                'id' => $assignment->id,
-                'duty_id' => $assignment->duty_id,
+                'id' => $grant->id,
+                'duty_id' => $grant->grantee_id,
                 'duty' => (string) $duty->name,
-                'label' => (string) __($assignment->responsibility->labelKey()),
+                'label' => $grant->role->displayTitle(),
             ];
         }
 

@@ -2,20 +2,20 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\Responsibility;
+use App\Actions\Responsibilities\GrantableResponsibilities;
 use App\Enums\ResponsibilityScope;
 use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\InstitutionType;
+use App\Models\Role;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Assigning a responsibility changes who is notified and who reps are pointed to, so the target
- * must be something the actor may already manage: a padalinys or institution within their duty
- * scope, or a type they may edit.
+ * Granting a responsibility grants its permissions, so the actor must be able to edit the duty and
+ * hand out that responsibility. A purpose's scope must be something the actor already manages.
  */
 class StoreDutyResponsibilityRequest extends FormRequest
 {
@@ -34,38 +34,50 @@ class StoreDutyResponsibilityRequest extends FormRequest
      */
     public function rules(): array
     {
+        $scoped = $this->role()?->purpose?->isScoped() ?? false;
+
         return [
-            'responsibility' => ['required', Rule::enum(Responsibility::class)],
-            'scope_type' => ['required', Rule::enum(ResponsibilityScope::class), $this->scopeAllowedForResponsibility(...)],
-            'scope_id' => ['required', 'string', 'max:26', $this->targetWithinReach(...)],
+            'role_id' => ['required', 'string', Rule::exists('roles', 'id'), $this->grantable(...)],
+            'scope_type' => $scoped
+                ? ['required', Rule::enum(ResponsibilityScope::class), $this->scopeAllowed(...)]
+                : ['prohibited'],
+            'scope_id' => $scoped
+                ? ['required', 'string', 'max:26', $this->targetWithinReach(...)]
+                : ['prohibited'],
         ];
     }
 
-    public function responsibility(): Responsibility
+    public function scopeType(): ?ResponsibilityScope
     {
-        return Responsibility::from($this->validated('responsibility'));
+        return ResponsibilityScope::tryFrom((string) $this->validated('scope_type'));
     }
 
-    public function scopeType(): ResponsibilityScope
+    private function role(): ?Role
     {
-        return ResponsibilityScope::from($this->validated('scope_type'));
+        return Role::query()->find($this->input('role_id'));
     }
 
-    private function scopeAllowedForResponsibility(string $attribute, mixed $value, Closure $fail): void
+    private function grantable(string $attribute, mixed $value, Closure $fail): void
     {
-        $responsibility = Responsibility::tryFrom((string) $this->input('responsibility'));
+        $role = $this->role();
+
+        if ($role === null || $role->isSuperAdmin() || ! GrantableResponsibilities::allows($this->user(), $role)) {
+            $fail(__('responsibilities.validation.not_grantable'));
+        }
+    }
+
+    private function scopeAllowed(string $attribute, mixed $value, Closure $fail): void
+    {
         $scope = ResponsibilityScope::tryFrom((string) $value);
 
-        if ($responsibility !== null && $scope !== null && ! in_array($scope, $responsibility->allowedScopes(), true)) {
+        if ($scope !== null && ! in_array($scope, $this->role()?->purpose?->allowedScopes() ?? [], true)) {
             $fail(__('responsibilities.validation.scope_not_allowed'));
         }
     }
 
     private function targetWithinReach(string $attribute, mixed $value, Closure $fail): void
     {
-        $scope = ResponsibilityScope::tryFrom((string) $this->input('scope_type'));
-
-        $allowed = match ($scope) {
+        $allowed = match (ResponsibilityScope::tryFrom((string) $this->input('scope_type'))) {
             ResponsibilityScope::Tenant => in_array((string) $value, array_map(strval(...), $this->authorizedTenantIds('duties.update.padalinys')), true),
             ResponsibilityScope::Institution => ($institution = Institution::query()->find($value)) !== null
                 && in_array((int) $institution->tenant_id, $this->authorizedTenantIds('duties.update.padalinys'), true),

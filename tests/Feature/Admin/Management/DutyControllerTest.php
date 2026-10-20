@@ -4,6 +4,7 @@ use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\News;
+use App\Models\ResponsibilityGrant;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
@@ -330,20 +331,6 @@ describe('authorized access', function (): void {
 });
 
 describe('validation', function (): void {
-    test('update rejects a role list that is not an array', function (): void {
-        $originalName = $this->dutyManagerDuty->getTranslations('name');
-
-        asUser($this->dutyManager)->patch(route('duties.update', $this->dutyManagerDuty), [
-            'name' => ['lt' => 'Pakeista', 'en' => 'Changed'],
-            'institution_id' => $this->dutyManagerDuty->institution_id,
-            'places_to_occupy' => 1,
-            'contacts_grouping' => 'none',
-            'roles' => 'invalid',
-        ])->assertSessionHasErrors(['roles' => __('validation.array', ['attribute' => 'roles'])]);
-
-        expect($this->dutyManagerDuty->fresh()->getTranslations('name'))->toBe($originalName);
-    });
-
     test('requires name for store', function (): void {
         $admin = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
@@ -437,9 +424,8 @@ describe('validation', function (): void {
 });
 
 describe('duty role management', function (): void {
-    test('super admin role assignment to a duty returns 403 without persisting changes', function (): void {
+    test('the duty form ignores roles, so it cannot grant even super admin', function (): void {
         $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
-        $originalName = $duty->getTranslations('name');
         $role = Role::findByName(config('permission.super_admin_role_name'));
 
         asUser($this->dutyManager)->patch(route('duties.update', $duty), [
@@ -448,9 +434,9 @@ describe('duty role management', function (): void {
             'places_to_occupy' => 1,
             'contacts_grouping' => 'none',
             'roles' => [$role->id],
-        ])->assertForbidden();
+        ])->assertSessionHasNoErrors();
 
-        expect($duty->fresh()->getTranslations('name'))->toBe($originalName)
+        expect($duty->fresh()->getTranslation('name', 'lt'))->toBe('Pakeista')
             ->and($duty->roles()->count())->toBe(0);
     });
 
@@ -486,7 +472,7 @@ describe('duty role management', function (): void {
             'slug' => 'test-duty-type',
         ]);
         $grantedRole = Role::firstOrCreate(['name' => 'Automated Granted Role', 'guard_name' => 'web']);
-        $type->roles()->attach($grantedRole->id);
+        ResponsibilityGrant::factory()->forDutyType($type)->of($grantedRole)->create();
 
         // Allow duty manager to attach this type
         $managerRole = Role::findByName('Komunikacijos koordinatorius');

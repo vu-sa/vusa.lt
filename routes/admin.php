@@ -250,7 +250,7 @@ Route::resource('duties', DutyController::class);
 Route::get('duties-update-users', [DutyController::class, 'updateUsersWizard'])->name('duties.updateUsersWizard');
 Route::post('duties/{duty}/batch-update-users', [DutyController::class, 'batchUpdateUsers'])->name('duties.batchUpdateUsers');
 Route::post('duties/{duty}/responsibilities', [DutyResponsibilityController::class, 'store'])->name('duties.responsibilities.store');
-Route::delete('duties/{duty}/responsibilities/{responsibility}', [DutyResponsibilityController::class, 'destroy'])->name('duties.responsibilities.destroy');
+Route::delete('duties/{duty}/responsibilities/{grant}', [DutyResponsibilityController::class, 'destroy'])->name('duties.responsibilities.destroy');
 Route::post('duties/{duty}/predecessors', [DutySuccessionController::class, 'store'])->name('duties.predecessors.store');
 Route::delete('duties/{duty}/predecessors/{predecessor}', [DutySuccessionController::class, 'destroy'])->name('duties.predecessors.destroy');
 // Dutiables (occupancies) created and managed through the unified Priskirti flow (Decision O21).
@@ -313,10 +313,14 @@ Route::post('institutions/{institution}/links', [InstitutionLinkController::clas
 Route::resource('institutionLinks', InstitutionLinkController::class)->only(['update', 'destroy']);
 Route::post('institutionTypes/{type}/links', [InstitutionTypeLinkController::class, 'store'])->name('institutionTypes.links.store');
 Route::resource('institutionTypeLinks', InstitutionTypeLinkController::class)->only(['update', 'destroy']);
-Route::resource('roles', RoleController::class);
-Route::patch('roles/{role}/attach/{model}/permissions', [RoleController::class, 'syncPermissionGroup'])->name('roles.syncPermissionGroup');
-Route::put('roles/{role}/sync/duties', [RoleController::class, 'syncDuties'])->name('roles.syncDuties');
-Route::put('roles/{role}/sync/attachableTypes', [RoleController::class, 'syncAttachableTypes'])->name('roles.syncAttachableTypes');
+// Atsakomybės are Spatie roles; `/mano/roles` links from before the rename keep working.
+Route::resource('responsibilities', ResponsibilityController::class)->parameters(['responsibilities' => 'role']);
+Route::put('responsibilities/{role}/permissions', [ResponsibilityController::class, 'updatePermissions'])->name('responsibilities.permissions.update');
+Route::post('responsibilities/{role}/grants', [ResponsibilityController::class, 'storeGrant'])->name('responsibilities.grants.store');
+Route::delete('responsibilities/{role}/grants/{grant}', [ResponsibilityController::class, 'destroyGrant'])->name('responsibilities.grants.destroy');
+Route::put('responsibilities/{role}/attachableTypes', [ResponsibilityController::class, 'syncAttachableTypes'])->name('responsibilities.attachableTypes.update');
+Route::redirect('roles', '/mano/responsibilities', 301);
+Route::get('roles/{path}', fn (string $path) => redirect("/mano/responsibilities/{$path}", 301))->where('path', '.*');
 Route::resource('permissions', PermissionController::class)->only(['index']);
 Route::resource('tasks', TaskController::class)->only(['store', 'destroy']);
 Route::get('tasks/summary', [TaskController::class, 'summary'])->name('tasks.summary');
@@ -339,6 +343,8 @@ Route::get('settings/documents', [SettingsController::class, 'editDocumentSettin
 Route::post('settings/documents', [SettingsController::class, 'updateDocumentSettings'])->name('settings.documents.update');
 Route::get('settings/atstovavimas', [SettingsController::class, 'editAtstovavimasSettings'])->name('settings.atstovavimas.edit');
 Route::post('settings/atstovavimas', [SettingsController::class, 'updateAtstovavimasSettings'])->name('settings.atstovavimas.update');
+Route::get('settings/purposes', [SettingsController::class, 'editSystemPurposes'])->name('settings.purposes.edit');
+Route::post('settings/purposes', [SettingsController::class, 'updateSystemPurposes'])->name('settings.purposes.update');
 Route::get('settings/site', [SettingsController::class, 'editSiteSettings'])->name('settings.site.edit');
 Route::post('settings/site', [SettingsController::class, 'updateSiteSettings'])->name('settings.site.update');
 Route::get('settings/cadences', [CadenceController::class, 'index'])->name('settings.cadences.index');
@@ -346,8 +352,6 @@ Route::post('settings/cadences/defaults', [CadenceController::class, 'updateDefa
 Route::post('settings/cadences', [CadenceController::class, 'store'])->name('settings.cadences.store');
 Route::patch('settings/cadences/{cadence}', [CadenceController::class, 'update'])->name('settings.cadences.update');
 Route::delete('settings/cadences/{cadence}', [CadenceController::class, 'destroy'])->name('settings.cadences.destroy');
-Route::get('settings/authorization', [SettingsController::class, 'editAuthorization'])->name('settings.authorization.edit');
-Route::post('settings/authorization', [SettingsController::class, 'updateAuthorization'])->name('settings.authorization.update');
 
 Route::post('/logout/microsoft', [AuthController::class, 'logoutFromMicrosoft'])->name('logout.microsoft');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -357,7 +361,6 @@ Route::resource('institutionTypes', InstitutionTypeController::class)->parameter
 Route::resource('dutyTypes', DutyTypeController::class)->parameters(['dutyTypes' => 'type']);
 Route::put('institutionTypes/{type}/models', [InstitutionTypeController::class, 'syncModels'])->name('institutionTypes.models.sync');
 Route::put('dutyTypes/{type}/models', [DutyTypeController::class, 'syncModels'])->name('dutyTypes.models.sync');
-Route::put('dutyTypes/{type}/roles', [DutyTypeController::class, 'syncRoles'])->name('dutyTypes.roles.sync');
 Route::patch('institutionTypes/{type}/restore', [InstitutionTypeController::class, 'restore'])->name('institutionTypes.restore')->withTrashed();
 Route::delete('institutionTypes/{type}/force-delete', [InstitutionTypeController::class, 'forceDelete'])->name('institutionTypes.forceDelete')->withTrashed();
 Route::patch('dutyTypes/{type}/restore', [DutyTypeController::class, 'restore'])->name('dutyTypes.restore')->withTrashed();

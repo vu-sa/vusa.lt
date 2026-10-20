@@ -2,17 +2,15 @@
 
 namespace App\Models\Pivots;
 
-use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\DutyType;
 use App\Models\Role;
-use App\Services\ModelAuthorizer;
-use App\Services\Permissions\PermissionMapBuilder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 
 /**
+ * Transitional(responsibility-grants): read by the grants backfill only; remove with the legacy table.
+ *
  * @property string $role_id
  * @property int $duty_type_id
  * @property Carbon|null $created_at
@@ -28,31 +26,6 @@ use Illuminate\Support\Facades\Cache;
  */
 class DutyTypeRole extends Pivot
 {
-    protected static function booted(): void
-    {
-        static::created(function (self $grant): void {
-            foreach ($grant->type->duties as $duty) {
-                $duty->roles()->syncWithoutDetaching([$grant->role_id]);
-                $duty->current_users->each(function ($user): void {
-                    app(ModelAuthorizer::class)->resetCache($user);
-                    PermissionMapBuilder::forgetCachedMaps($user->id);
-                    Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($user->id));
-                });
-            }
-        });
-
-        static::deleted(function (self $grant): void {
-            foreach ($grant->type->duties as $duty) {
-                $duty->roles()->detach([$grant->role_id]);
-                $duty->current_users->each(function ($user): void {
-                    app(ModelAuthorizer::class)->resetCache($user);
-                    PermissionMapBuilder::forgetCachedMaps($user->id);
-                    Cache::forget(HandleInertiaRequests::adminNavigationCacheKey($user->id));
-                });
-            }
-        });
-    }
-
     public function type(): BelongsTo
     {
         return $this->belongsTo(DutyType::class, 'duty_type_id')->withTrashed();

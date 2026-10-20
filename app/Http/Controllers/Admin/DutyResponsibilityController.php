@@ -3,57 +3,72 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetTenantsForUpserts;
-use App\Enums\Responsibility;
+use App\Actions\Responsibilities\GrantableResponsibilities;
 use App\Enums\ResponsibilityScope;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreDutyResponsibilityRequest;
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
+use App\Models\ResponsibilityGrant;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
+use App\Services\Permissions\ResponsibilityPermissionGaps;
+use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 /**
- * Atsakomybės on the duty record: what the duty must handle, next to the roles that say what it
- * may do.
+ * Atsakomybės on the duty record: what the duty does, whether given to it directly, through one of
+ * its types or through its institution.
  */
 class DutyResponsibilityController extends AdminController
 {
     /**
-     * The duty's responsibilities and roles, side by side on its record.
-     *
-     * @return array{items: list<array{id: string, responsibility: string, label: string, scope_type: string, scope_id: string, scope_name: string|null}>, roles: list<array{id: string, name: string}>}
+     * @return array{items: list<array<string, mixed>>}
      */
     public static function payload(Duty $duty): array
     {
+        $duty->loadMissing(['types', 'institution', 'roles.permissions', 'permissions']);
+        $gaps = app(ResponsibilityPermissionGaps::class);
+
+        $grants = ResponsibilityGrant::query()
+            ->where(fn ($query) => $query
+                ->where(fn ($direct) => $direct->where('grantee_type', MorphMap::alias(Duty::class))->where('grantee_id', $duty->id))
+                ->orWhere(fn ($viaType) => $viaType->where('grantee_type', MorphMap::alias(DutyType::class))
+                    ->whereIn('grantee_id', $duty->types->modelKeys()))
+                ->orWhere(fn ($viaInstitution) => $viaInstitution->where('grantee_type', MorphMap::alias(Institution::class))
+                    ->where('grantee_id', $duty->institution_id)))
+            ->with(['role', 'grantee', 'scope'])
+            ->get();
+
         return [
-            'items' => $duty->responsibilities()
-                ->with('scope')
-                ->get()
-                ->map(fn (DutyResponsibility $assignment) => [
-                    'id' => $assignment->id,
-                    'responsibility' => $assignment->responsibility->value,
-                    'label' => (string) __($assignment->responsibility->labelKey()),
-                    'scope_type' => $assignment->scope_type,
-                    'scope_id' => $assignment->scope_id,
-                    'scope_name' => self::scopeName($assignment),
+            'items' => $grants
+                ->sortBy(fn (ResponsibilityGrant $grant): string => ($grant->role->purpose === null ? '1' : '0').$grant->role->displayTitle())
+                ->map(fn (ResponsibilityGrant $grant): array => [
+                    'id' => $grant->id,
+                    'role_id' => $grant->role_id,
+                    'title' => $grant->role->displayTitle(),
+                    'purpose' => $grant->role->purpose?->value,
+                    'purpose_label' => $grant->role->purpose ? (string) __($grant->role->purpose->labelKey()) : null,
+                    'source' => $grant->grantee_type,
+                    'source_name' => $grant->grantee_type === MorphMap::alias(Duty::class) ? null : self::name($grant->grantee),
+                    'scope_type' => $grant->scope_type,
+                    'scope_name' => self::name($grant->scope),
+                    'missing_permissions' => $grant->role->purpose ? $gaps->missingFor($duty, $grant->role->purpose) : [],
                 ])
-                ->values()
-                ->all(),
-            'roles' => $duty->roles()->orderBy('name')->get(['id', 'name'])
-                ->map(fn ($role) => ['id' => (string) $role->getKey(), 'name' => (string) $role->getAttribute('name')])
                 ->values()
                 ->all(),
         ];
     }
 
     /**
-     * What the add sheet may offer this user: only targets they could assign.
+     * What the add sheet may offer this user: only responsibilities and targets they could grant.
      *
-     * @return array{responsibilities: list<array{value: string, label: string, description: string, scopes: list<string>}>, tenants: list<array{id: int, shortname: string}>, types: list<array{id: string, title: string}>, institutions: list<array{id: string, name: string}>}
+     * @return array<string, mixed>
      */
     public static function options(User $user): array
     {
@@ -70,12 +85,17 @@ class DutyResponsibilityController extends AdminController
         }
 
         return [
-            'responsibilities' => collect(Responsibility::cases())->map(fn (Responsibility $responsibility) => [
-                'value' => $responsibility->value,
-                'label' => (string) __($responsibility->labelKey()),
-                'description' => (string) __("responsibilities.types.{$responsibility->value}.description"),
-                'scopes' => array_map(fn (ResponsibilityScope $scope) => $scope->value, $responsibility->allowedScopes()),
-            ])->values()->all(),
+            'responsibilities' => GrantableResponsibilities::for($user)
+                ->map(fn (Role $role): array => [
+                    'id' => $role->id,
+                    'title' => $role->displayTitle(),
+                    'description' => $role->getTranslation('description', app()->getLocale()) ?: null,
+                    'purpose_label' => $role->purpose ? (string) __($role->purpose->labelKey()) : null,
+                    'scopes' => array_map(fn (ResponsibilityScope $scope) => $scope->value, $role->purpose?->allowedScopes() ?? []),
+                ])
+                ->sortBy('title')
+                ->values()
+                ->all(),
             'tenants' => $tenants->all(),
             'types' => $types,
             'institutions' => Institution::query()
@@ -94,37 +114,48 @@ class DutyResponsibilityController extends AdminController
 
     public function store(StoreDutyResponsibilityRequest $request, Duty $duty): RedirectResponse
     {
-        $duty->responsibilities()->firstOrCreate([
-            'responsibility' => $request->responsibility(),
-            'scope_type' => $request->scopeType()->value,
-            'scope_id' => (string) $request->validated('scope_id'),
+        $scopeType = $request->scopeType();
+        $grant = fn () => $duty->responsibilityGrants()->firstOrCreate([
+            'role_id' => $request->validated('role_id'),
+            'scope_type' => $scopeType?->value,
+            'scope_id' => $scopeType ? (string) $request->validated('scope_id') : null,
         ]);
+
+        if ($warning = $this->guardSelfLockout($request->user(), $this->holds($request->user(), $duty), $request, $grant)) {
+            return $warning;
+        }
 
         return back()->with('success', __('responsibilities.messages.added'));
     }
 
-    public function destroy(Duty $duty, string $responsibility): RedirectResponse
+    public function destroy(Duty $duty, string $grant, Request $request): RedirectResponse
     {
         $this->handleAuthorization('update', $duty);
 
-        // Resolved through the duty so a crafted id cannot reach another duty's assignment.
-        $assignment = $duty->responsibilities()->find($responsibility);
+        // Resolved through the duty so a crafted id cannot reach another duty's grant.
+        $responsibilityGrant = $duty->responsibilityGrants()->with('role')->find($grant);
 
-        abort_if(! $assignment instanceof DutyResponsibility, 404);
+        abort_if(! $responsibilityGrant instanceof ResponsibilityGrant, 404);
+        abort_unless(GrantableResponsibilities::allows($request->user(), $responsibilityGrant->role), 403);
 
-        $assignment->delete();
+        if ($warning = $this->guardSelfLockout($request->user(), $this->holds($request->user(), $duty), $request, fn () => $responsibilityGrant->delete())) {
+            return $warning;
+        }
 
         return back()->with('success', __('responsibilities.messages.removed'));
     }
 
-    private static function scopeName(DutyResponsibility $assignment): ?string
+    private function holds(User $user, Duty $duty): bool
     {
-        $scope = $assignment->scope;
+        return ! $user->isSuperAdmin() && $user->current_duties()->whereKey($duty->getKey())->exists();
+    }
 
+    private static function name(mixed $model): ?string
+    {
         return match (true) {
-            $scope instanceof Tenant => (string) __($scope->shortname),
-            $scope instanceof InstitutionType => (string) $scope->title,
-            $scope instanceof Institution => (string) $scope->name,
+            $model instanceof Tenant => (string) __($model->shortname),
+            $model instanceof InstitutionType, $model instanceof DutyType => (string) $model->title,
+            $model instanceof Institution => (string) $model->name,
             default => null,
         };
     }

@@ -164,6 +164,7 @@ export enum MailingListSourceType {
     DutyType = 'duty_type',
     Institution = 'institution',
     InstitutionType = 'institution_type',
+    Responsibility = 'responsibility',
     MailingList = 'mailing_list',
     Email = 'email',
 }
@@ -272,8 +273,10 @@ export enum PermissionScopeEnum {
     PADALINYS = 'PADALINYS',
     ALL = 'ALL',
 }
-export enum Responsibility {
+export enum ResponsibilityPurpose {
+    StudentRepresentation = 'student_representation',
     StudentRepCoordination = 'student_rep_coordination',
+    MemberRegistration = 'member_registration',
 }
 export enum ResponsibilityScope {
     Institution = 'institution',
@@ -342,6 +345,11 @@ export enum SupportRequestVisibility {
     Private = 'private',
     Roles = 'roles',
     Public = 'public',
+}
+export enum SystemDutyType {
+    Coordinator = 'coordinator',
+    Curator = 'curator',
+    Mentor = 'mentor',
 }
 export enum SystemMaintenanceAction {
     RefreshPublicContent = 'refresh-public-content',

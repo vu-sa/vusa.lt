@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\AdminNavigation\AdminNavigationCatalog;
 use App\Services\DeviceMetricService;
 use App\Services\Permissions\PermissionMapBuilder;
+use App\Services\SystemDutyTypes;
 use App\Services\Typesense\TypesenseManager;
 use App\Settings\SiteSettings;
 use App\Support\AuthorityCacheExpiry;
@@ -180,6 +181,7 @@ class HandleInertiaRequests extends Middleware
             // identical "not worth a search endpoint" rationale for topics.
             'eventTypes' => fn () => $onAdmin ? $this->getEventTypesForInertia() : [],
             'tags' => fn () => $onAdmin ? $this->getTagsForInertia() : [],
+            'curatorDutyTypeSlugs' => fn () => $onAdmin ? app(SystemDutyTypes::class)->curatorSlugs() : [],
             'institutionTypes' => $this->getInstitutionTypesForInertia(...),
             'typesenseConfig' => TypesenseManager::getFrontendConfig(...),
             // CARTO now requires an API key on basemap tile requests (PadalinysMap, EventLocationMap).

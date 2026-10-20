@@ -8,6 +8,7 @@ use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer;
 use App\Services\PermissionService;
 use App\Services\ResponsibilityResolver;
+use App\Services\SystemDutyTypes;
 use App\Services\Typesense\MeetingSearchLock;
 use App\Support\LocalizedRouteSlugs;
 use App\Support\MorphMap;
@@ -44,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
         // Singleton so the institution-type scope map is built at most once per request.
         $this->app->singleton(InstitutionScopeResolver::class);
         $this->app->scoped(ResponsibilityResolver::class);
+        $this->app->scoped(SystemDutyTypes::class);
         $this->app->scoped(MeetingSearchLock::class);
         $this->app->scoped(InstitutionRelationService::class);
 

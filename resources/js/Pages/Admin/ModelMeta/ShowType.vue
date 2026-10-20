@@ -56,7 +56,7 @@
     </template>
     <template #models>
       <OverviewSection variant="home" :title="$t('Susieti įrašai')" :icon="Link2" :count="attachedModels.length" class="max-w-3xl">
-        <template v-if="can.update" #actions>
+        <template v-if="canManageAssignments" #actions>
           <Button variant="outline" size="sm" @click="openModels">
             {{ $t('Tvarkyti susietus įrašus') }}
           </Button>
@@ -72,18 +72,46 @@
       </OverviewSection>
     </template>
     <template #roles>
-      <OverviewSection variant="home" :title="$t('Rolės')" :icon="Shield" :count="contentType.roles?.length ?? 0" class="max-w-3xl">
-        <template v-if="can.update && typeKind === 'dutyType'" #actions>
-          <Button variant="outline" size="sm" @click="openRoles">
-            {{ $t('Tvarkyti roles') }}
-          </Button>
+      <OverviewSection
+        variant="home"
+        :title="$t('responsibilities.label')"
+        :icon="Shield"
+        :count="responsibilityGrants.length"
+        class="max-w-3xl"
+        data-testid="type-responsibility-grants"
+      >
+        <template v-if="can.manageResponsibilities" #actions>
+          <SpotlightPopover
+            :title="$t('types.grants_spotlight_title')"
+            :description="$t('types.grants_spotlight')"
+            :is-dismissed="grantSpotlight.isDismissed.value"
+            @dismiss="grantSpotlight.dismiss"
+          >
+            <Button variant="outline" size="sm" voice="sentence" as-child>
+              <Link :href="route('responsibilities.index')" @click="grantSpotlight.dismiss">
+                {{ $t('types.open_responsibilities') }}
+              </Link>
+            </Button>
+          </SpotlightPopover>
         </template>
+        <p class="text-xs text-muted-foreground">
+          {{ $t('types.grants_hint') }}
+        </p>
         <div class="divide-y divide-border">
-          <div v-for="role in contentType.roles ?? []" :key="role.id" class="py-3 text-sm font-medium">
-            {{ role.name }}
+          <div v-for="grant in responsibilityGrants" :key="grant.id" class="space-y-1 py-3 text-sm" data-testid="type-grant-row">
+            <Link v-if="grant.href" :href="grant.href" class="font-medium hover:underline" @click="grantSpotlight.dismiss">
+              {{ grant.title }}
+            </Link>
+            <span v-else class="font-medium">{{ grant.title }}</span>
+            <p v-if="grant.scope_name" class="text-xs text-muted-foreground">
+              {{ grant.scope_type ? `${$t(`responsibilities.scopes.${grant.scope_type}`)} · ` : '' }}{{ grant.scope_name }}
+            </p>
+            <p v-if="grant.needs_scope" class="text-xs text-status-attention" data-testid="type-grant-needs-scope">
+              {{ $t('types.grant_needs_scope') }}
+            </p>
           </div>
-          <p v-if="!contentType.roles?.length" class="text-sm text-muted-foreground">
-            {{ $t('Rolių nepriskirta.') }}
+          <p v-if="!responsibilityGrants.length" class="text-sm text-muted-foreground">
+            {{ $t('types.no_responsibilities') }}
           </p>
         </div>
       </OverviewSection>
@@ -127,23 +155,15 @@
     <template v-else>
       <Input v-model="modelSearch" :placeholder="$t('Ieškoti')" />
       <div class="space-y-1">
-        <label v-for="model in filteredModelOptions" :key="model.id" class="flex min-h-11 items-center gap-3 border-b border-border py-2 text-sm">
+        <label v-for="model in filteredModelOptions.filter(option => option.can_change !== false)" :key="model.id" class="flex min-h-11 items-center gap-3 border-b border-border py-2 text-sm">
           <Checkbox :model-value="modelIds.includes(model.id)" @update:model-value="checked => toggleModel(model.id, Boolean(checked))" />
           {{ localized(model.name ?? model.title) }}
         </label>
+        <p v-for="model in filteredModelOptions.filter(option => option.can_change === false)" :key="model.id" class="py-2 text-sm text-muted-foreground">
+          {{ localized(model.name ?? model.title) }} · {{ $t('types.assignment_readonly') }}
+        </p>
       </div>
     </template>
-  </SheetForm>
-  <SheetForm v-model:open="rolesOpen" :title="$t('Rolės')" :processing="rolesProcessing" :disabled="!roleOptions" @submit="saveRoles">
-    <p v-if="!roleOptions" class="text-sm text-muted-foreground">
-      {{ $t('Įkeliama…') }}
-    </p>
-    <div v-else class="space-y-1">
-      <label v-for="role in roleOptions" :key="role.id" class="flex min-h-11 items-center gap-3 border-b border-border py-2 text-sm">
-        <Checkbox :model-value="roleIds.includes(role.id)" @update:model-value="checked => toggleRole(role.id, Boolean(checked))" />
-        {{ role.name }}
-      </label>
-    </div>
   </SheetForm>
   <ConfirmDialog v-model:open="deleteOpen" :title="$t('Šalinti tipą?')" :description="$t('Tipas bus perkeltas į šiukšlinę.')" :confirm-label="$t('Šalinti')" destructive @confirm="router.delete(route(`${resource}.destroy`, contentType.id))" />
 </template>
@@ -155,6 +175,7 @@ import { getActiveLanguage, trans as $t } from 'laravel-vue-i18n';
 import { Compass, Edit, FileText, Link2, Shield, Trash2 } from '@lucide/vue';
 
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
 import { ConfirmDialog, OverviewSection, SheetForm } from '@/Components/Patterns';
@@ -163,14 +184,15 @@ import { Button } from '@/Components/ui/button';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { Input } from '@/Components/ui/input';
 import { ModelEnum } from '@/Types/enums';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 type Translation = string | { lt?: string; en?: string } | null | undefined;
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   typeKind: 'institutionType' | 'dutyType';
-  contentType: (App.Entities.InstitutionType | App.Entities.DutyType) & { parent?: { title?: Translation }; roles?: Array<{ id: string; name: string }> };
+  contentType: (App.Entities.InstitutionType | App.Entities.DutyType) & { parent?: { title?: Translation } };
   attachedModels: Array<{ id: string; name: string }>;
-  modelOptions?: Array<{ id: string; name?: string; title?: Translation }>;
-  roleOptions?: Array<{ id: string; name: string }>;
+  modelOptions?: Array<{ id: string; name?: string; title?: Translation; can_change?: boolean }>;
+  responsibilityGrants?: Array<{ id: string; title: string; href: string | null; scope_type?: string | null; scope_name: string | null; needs_scope: boolean }>;
   responsibleDuties?: Array<{ id: string; duty_id: string; duty: string; label: string }>;
   sharepointPath?: string | null;
   sharepointFolderUrl?: string | null;
@@ -180,20 +202,29 @@ const props = defineProps<{
   typeLinks?: RelationshipLinkRow[];
   relationKinds?: RelationKindOption[];
   typeOptions?: RelationshipTypeOption[];
-  can: { update: boolean; delete: boolean; manageLinks?: boolean };
-}>();
+  can: { update: boolean; delete: boolean; manageLinks?: boolean; manageAssignments?: boolean; manageResponsibilities?: boolean };
+}>(), {
+  responsibilityGrants: () => [],
+  modelOptions: undefined,
+  responsibleDuties: () => [],
+  sharepointPath: null,
+  sharepointFolderUrl: null,
+  files: undefined,
+  typeLinks: undefined,
+  relationKinds: undefined,
+  typeOptions: undefined,
+});
+const grantSpotlight = useFeatureSpotlight('type-responsibility-grants-v1');
+const canManageAssignments = computed(() => props.typeKind === 'dutyType' ? props.can.manageAssignments === true : props.can.update);
 const resource = props.typeKind === 'institutionType' ? 'institutionTypes' : 'dutyTypes';
 const entityType = props.typeKind === 'institutionType' ? ModelEnum.INSTITUTION_TYPE : ModelEnum.DUTY_TYPE;
 const fileableType = props.typeKind === 'institutionType' ? 'InstitutionType' : 'DutyType';
 const section = ref('overview');
 const deleteOpen = ref(false);
 const modelsOpen = ref(false);
-const rolesOpen = ref(false);
 const modelsProcessing = ref(false);
-const rolesProcessing = ref(false);
 const modelSearch = ref('');
 const modelIds = ref(props.attachedModels.map(model => model.id));
-const roleIds = ref(props.contentType.roles?.map(role => role.id) ?? []);
 const localized = (value: Translation): string => typeof value === 'string' ? value : value?.[getActiveLanguage() as 'lt' | 'en'] ?? value?.lt ?? value?.en ?? '';
 const title = computed(() => localized(props.contentType.title));
 const description = computed(() => localized(props.contentType.description));
@@ -203,43 +234,28 @@ const filteredModelOptions = computed(() => (props.modelOptions ?? []).filter(mo
 function toggleModel(id: string, checked: boolean): void {
   modelIds.value = checked ? [...new Set([...modelIds.value, id])] : modelIds.value.filter(value => value !== id);
 }
-function toggleRole(id: string, checked: boolean): void {
-  roleIds.value = checked ? [...new Set([...roleIds.value, id])] : roleIds.value.filter(value => value !== id);
-}
 function openModels(): void {
   modelIds.value = props.attachedModels.map(model => model.id);
   modelsOpen.value = true;
   router.reload({ only: ['modelOptions'] });
 }
-function openRoles(): void {
-  roleIds.value = props.contentType.roles?.map(role => role.id) ?? [];
-  rolesOpen.value = true;
-  router.reload({ only: ['roleOptions'] });
-}
 function saveModels(): void {
   modelsProcessing.value = true;
   router.put(route(`${resource}.models.sync`, props.contentType.id), { models: modelIds.value }, {
     preserveScroll: true,
+    except: ['files'],
     onSuccess: () => { modelsOpen.value = false; },
     onFinish: () => { modelsProcessing.value = false; },
   });
 }
-function saveRoles(): void {
-  rolesProcessing.value = true;
-  router.put(route('dutyTypes.roles.sync', props.contentType.id), { roles: roleIds.value }, {
-    preserveScroll: true,
-    onSuccess: () => { rolesOpen.value = false; },
-    onFinish: () => { rolesProcessing.value = false; },
-  });
-}
 const facts = computed<RecordFact[]>(() => [
   { key: 'models', label: $t('Susieti įrašai'), value: String(props.attachedModels.length) },
-  ...(props.typeKind === 'dutyType' ? [{ key: 'roles', label: $t('Rolės'), value: String(props.contentType.roles?.length ?? 0) }] : []),
+  ...(props.typeKind === 'dutyType' ? [{ key: 'roles', label: $t('responsibilities.label'), value: String(props.responsibilityGrants.length) }] : []),
 ]);
 const sections = computed<RecordPageSection[]>(() => [
   { value: 'overview', label: $t('Apžvalga') },
   { value: 'models', label: $t('Susieti įrašai'), count: props.attachedModels.length },
-  ...(props.typeKind === 'dutyType' ? [{ value: 'roles', label: $t('Rolės'), count: props.contentType.roles?.length }] : []),
+  ...(props.typeKind === 'dutyType' ? [{ value: 'roles', label: $t('responsibilities.label'), count: props.responsibilityGrants.length }] : []),
   ...(props.typeKind === 'institutionType' && (props.typeLinks?.length || props.can.manageLinks)
     ? [{ value: 'relationships', label: $t('Ryšiai'), count: props.typeLinks?.length ?? 0 }]
     : []),

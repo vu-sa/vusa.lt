@@ -126,6 +126,8 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
    * the raw translation array `App.Entities.EventType['name']` would suggest.
    */
   eventTypes: Array<{ id: number; slug: string; name: string }>;
+  /** Configured in Settings → Sistemos paskirtys; empty outside the admin. */
+  curatorDutyTypeSlugs: string[];
   /** Global tag lookup for rich-content news/link-list filters. `is_topic` tags drive
    *  the topic picker; the rest stay descriptive-only. */
   tags: Array<{ id: number; alias: string | null; name: string; is_topic: boolean }>;

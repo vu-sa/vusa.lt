@@ -75,3 +75,6 @@ A model with an image implements `App\Contracts\ImageMediaOwner` and uses `HasIm
 
 ## Eloquent config is declared as PHP attributes — search for both forms
 Models declare Eloquent behaviour with attributes (`#[Touches(['meeting'])]`, `#[Table(name: …)]`, `#[Unguarded]`), not properties like `protected $touches`. Before claiming a model lacks some behaviour, grep case-insensitively for both forms (`grep -rniE 'touches' app/Models`) and open the model itself. A case-sensitive `grep "touches"` misses `#[Touches]`, which is how the existing Vote → AgendaItem → Meeting touch chain was once reported as absent.
+
+## Duty roles are a projection of responsibility grants
+`responsibility_grants` (direct, by duty type, by institution) is the source of truth; `model_has_roles` rows for duties are rebuilt by `ProjectDutyResponsibilities`. Never write duty roles through `roles()->attach/sync/detach` or raw `model_has_roles` inserts — the next re-projection undoes them. Use `ResponsibilityGrant`, or `$duty->assignRole()/removeRole()/syncRoles()`, which write direct grants. Type and institution grants skip trashed duties. `responsibilities:project --check` reports drift.

@@ -12,6 +12,8 @@ enum MailingListSourceType: string
     case DutyType = 'duty_type';
     case Institution = 'institution';
     case InstitutionType = 'institution_type';
+    /** Every duty holding the responsibility (`source_id` is the role id), however it was granted. */
+    case Responsibility = 'responsibility';
     case MailingList = 'mailing_list';
     case Email = 'email';
 

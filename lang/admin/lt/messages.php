@@ -120,12 +120,12 @@ return [
     ],
 
     'role' => [
-        'not_editable' => 'Negalima redaguoti šios rolės.',
-        'not_deletable' => 'Negalima ištrinti šios rolės.',
-        'permissions_updated' => 'Rolės leidimai atnaujinti.',
-        'attachables_updated' => 'Rolės galimos priklausomybės atnaujintos.',
-        'duties_updated' => 'Rolės pareigos atnaujintos.',
-        'not_assignable_to_duty' => 'Negalima priskirti šios rolės pareigybėms! Bandyk iš naujo.',
+        'not_editable' => 'Šios atsakomybės redaguoti negalima.',
+        'not_deletable' => 'Šios atsakomybės ištrinti negalima.',
+        'permissions_updated' => 'Atsakomybės teisės atnaujintos.',
+        'attachables_updated' => 'Atnaujinta, kokius tipus gali priskirti šios atsakomybės nariai.',
+        'duties_updated' => 'Atsakomybės pareigybės atnaujintos.',
+        'not_assignable_to_duty' => 'Šios atsakomybės pareigybėms suteikti negalima.',
     ],
 
     'study_program' => [

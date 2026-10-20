@@ -1,10 +1,10 @@
 <?php
 
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Duty;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Institution;
-use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Settings\FormSettings;
@@ -20,13 +20,10 @@ beforeEach(function (): void {
     $this->tenant->primary_institution_id = $this->institution->id;
     $this->tenant->save();
 
-    $this->role = Role::firstOrCreate(['name' => 'Member Registration Coordinator', 'guard_name' => 'web']);
-
     $this->form = createMemberRegistrationForm($this->tenant);
 
     $settings = app(FormSettings::class);
     $settings->member_registration_form_id = $this->form->id;
-    $settings->member_registration_notification_recipient_role_id = $this->role->id;
     $settings->save();
     app()->forgetInstance(FormSettings::class);
 });
@@ -57,7 +54,7 @@ describe('coordinator mail recipient', function (): void {
             ->for($this->institution)
             ->hasAttached($user, ['start_date' => now()->subDay(), 'end_date' => now()->addYear(), 'additional_email' => null])
             ->create(['name' => 'Naujų narių koordinatorius', 'email' => 'koordinatorius@mif.vusa.lt']);
-        $duty->assignRole($this->role);
+        grantPurpose($duty, ResponsibilityPurpose::MemberRegistration, $this->tenant);
 
         submitMemberRegistration($this->form, $this->tenant);
 
@@ -72,7 +69,7 @@ describe('coordinator mail recipient', function (): void {
         expect(sentMail())->toHaveCount(2);
     });
 
-    test('user holding more duties without additional emails still gets mail only to the role duty email', function (): void {
+    test('user holding more duties without additional emails still gets mail only to the intake duty email', function (): void {
         $user = User::factory()->create(['email' => 'personal@gmail.com']);
         $pivot = ['start_date' => now()->subDay(), 'end_date' => now()->addYear(), 'additional_email' => null];
 
@@ -80,7 +77,7 @@ describe('coordinator mail recipient', function (): void {
             ->for($this->institution)
             ->hasAttached($user, $pivot)
             ->create(['name' => 'Naujų narių koordinatorius', 'email' => 'koordinatorius@mif.vusa.lt']);
-        $coordinatorDuty->assignRole($this->role);
+        grantPurpose($coordinatorDuty, ResponsibilityPurpose::MemberRegistration, $this->tenant);
 
         // Attached first on purpose: User::routeNotificationForMail() (via
         // NotificationRouter) returns the first current duty with a @vusa.lt

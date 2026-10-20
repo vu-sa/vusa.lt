@@ -1,8 +1,8 @@
 <?php
 
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
 use App\Models\Institution;
+use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -51,7 +51,7 @@ describe('access', function (): void {
         $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
         $holder = makeUser($this->tenant);
         $holder->duties()->attach($duty, ['start_date' => now()->subMonth()->toDateString()]);
-        DutyResponsibility::factory()->for($duty)->forTenant($this->tenant)->create();
+        ResponsibilityGrant::factory()->forDuty($duty)->forTenant($this->tenant)->create();
 
         asUser($this->coordinator)->get(route('dashboard.organizacija'))
             ->assertInertia(fn (Assert $page) => $page

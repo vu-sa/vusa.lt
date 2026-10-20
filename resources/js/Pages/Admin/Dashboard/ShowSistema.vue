@@ -112,7 +112,7 @@ const numbers = computed<OverviewNumberItem[]>(() => {
           key: 'roles',
           label: $t('sistema.overview.numbers.roles'),
           value: props.counts.roles,
-          href: route('roles.index'),
+          href: route('responsibilities.index'),
         },
     props.counts.users === null
       ? null

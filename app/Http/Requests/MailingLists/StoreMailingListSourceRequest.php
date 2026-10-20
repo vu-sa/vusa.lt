@@ -99,7 +99,7 @@ class StoreMailingListSourceRequest extends FormRequest
                 'padaliniai' => TenantType::Padalinys,
                 default => null,
             };
-            if ($tenantType !== null && in_array($type, [MailingListSourceType::DutyType, MailingListSourceType::InstitutionType], true)
+            if ($tenantType !== null && in_array($type, [MailingListSourceType::DutyType, MailingListSourceType::InstitutionType, MailingListSourceType::Responsibility], true)
                 && ! Tenant::query()->whereIn('id', $tenants)->where('type', $tenantType)->exists()) {
                 $validator->errors()->add('filters.tenant_scope', __('mailing_lists.messages.source_forbidden'));
             }
@@ -120,6 +120,7 @@ class StoreMailingListSourceRequest extends FormRequest
             MailingListSourceType::Institution => ['required', 'string', SoftDeleteRules::existsLive('institutions')],
             MailingListSourceType::DutyType => ['required', 'integer', SoftDeleteRules::existsLive('duty_types')],
             MailingListSourceType::InstitutionType => ['required', 'integer', SoftDeleteRules::existsLive('institution_types')],
+            MailingListSourceType::Responsibility => ['required', 'string', Rule::exists('roles', 'id')->whereNot('name', config('permission.super_admin_role_name'))],
             MailingListSourceType::MailingList => [
                 'required', 'string',
                 Rule::exists('mailing_lists', 'id'),

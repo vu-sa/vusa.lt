@@ -3,6 +3,7 @@
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
+use App\Models\ResponsibilityGrant;
 use App\Models\Role;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -33,25 +34,25 @@ function dutyUpdatePayload(Duty $duty, array $overrides = []): array
     ], $overrides);
 }
 
-test('removing the role from your own duty is warned and rolled back', function (): void {
+function grantOf(Duty $duty): ResponsibilityGrant
+{
+    return $duty->responsibilityGrants()->firstOrFail();
+}
+
+test('removing a responsibility from your own duty is warned and rolled back', function (): void {
     asUserWithInertia($this->admin)
-        ->patch(route('duties.update', $this->adminDuty), dutyUpdatePayload($this->adminDuty, [
-            'roles' => [],
-            'current_users' => [$this->admin->id],
-        ]))
+        ->delete(route('duties.responsibilities.destroy', [$this->adminDuty, grantOf($this->adminDuty)]))
         ->assertSessionHas('access_change_warning');
 
     expect($this->adminDuty->fresh()->roles()->count())->toBeGreaterThan(0);
 });
 
-test('editing a duty you do not hold is not guarded', function (): void {
+test('removing a responsibility from a duty you do not hold is not guarded', function (): void {
     $otherDuty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
     $otherDuty->assignRole('Komunikacijos koordinatorius');
 
     asUserWithInertia($this->admin)
-        ->patch(route('duties.update', $otherDuty), dutyUpdatePayload($otherDuty, [
-            'roles' => [],
-        ]))
+        ->delete(route('duties.responsibilities.destroy', [$otherDuty, grantOf($otherDuty)]))
         ->assertSessionMissing('access_change_warning');
 
     expect($otherDuty->fresh()->roles()->count())->toBe(0);
@@ -78,17 +79,12 @@ test('self lockout rolls back duty attributes memberships and queued target back
         ->and(Dutiable::where('duty_id', $target->id)->count())->toBe(0);
 });
 
-test('acknowledged duty role loss persists and redirects to the dashboard', function (): void {
+test('an acknowledged loss of your own responsibility persists and redirects to the dashboard', function (): void {
     asUserWithInertia($this->admin)
-        ->patch(route('duties.update', $this->adminDuty), dutyUpdatePayload($this->adminDuty, [
-            'roles' => [],
-            'current_users' => [$this->admin->id],
-            'acknowledge_access_change' => true,
-        ]))
+        ->delete(route('duties.responsibilities.destroy', [$this->adminDuty, grantOf($this->adminDuty)]), ['acknowledge_access_change' => true])
         ->assertRedirect(route('dashboard'))
         ->assertSessionHas('success', __('access_change.applied'))
         ->assertSessionMissing('access_change_warning');
 
-    expect($this->adminDuty->fresh()->roles()->count())->toBe(0)
-        ->and($this->adminDuty->fresh()->getTranslation('name', 'lt'))->toBe('Test Duty');
+    expect($this->adminDuty->fresh()->roles()->count())->toBe(0);
 });

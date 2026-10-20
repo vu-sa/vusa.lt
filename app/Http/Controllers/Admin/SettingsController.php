@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\ResponsibilityPurpose;
+use App\Enums\SystemDutyType;
 use App\Http\Controllers\AdminController;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Requests\UpdateAtstovavimasSettingsRequest;
 use App\Http\Requests\UpdateDocumentSettingsRequest;
 use App\Http\Requests\UpdateFormSettingsRequest;
 use App\Http\Requests\UpdateMeetingSettingsRequest;
-use App\Http\Requests\UpdateSettingsAuthorizationRequest;
 use App\Http\Requests\UpdateSiteSettingsRequest;
+use App\Http\Requests\UpdateSystemPurposesSettingsRequest;
 use App\Models\Document;
+use App\Models\DutyType;
 use App\Models\Form;
 use App\Models\InstitutionType;
 use App\Models\Page;
@@ -18,14 +21,18 @@ use App\Models\PublicInstitution;
 use App\Models\PublicMeeting;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\ResponsibilityResolver;
+use App\Services\SystemDutyTypes;
 use App\Services\Typesense\DocumentRecommendations;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\DocumentSettings;
+use App\Settings\DutyTypeSettings;
 use App\Settings\FormSettings;
 use App\Settings\MeetingSettings;
 use App\Settings\SettingsSettings;
 use App\Settings\SiteSettings;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class SettingsController extends AdminController
 {
@@ -46,11 +53,7 @@ class SettingsController extends AdminController
     {
         $this->authorizeSettingsAccess($settings);
 
-        $user = request()->user();
-
-        return $this->inertiaResponse('Admin/Settings/IndexSettings', [
-            'isSuperAdmin' => $user->isSuperAdmin(),
-        ]);
+        return $this->inertiaResponse('Admin/Settings/IndexSettings');
     }
 
     /**
@@ -62,11 +65,10 @@ class SettingsController extends AdminController
 
         return $this->inertiaResponse('Admin/Settings/EditFormSettings', [
             'member_registration_form_id' => $formSettings->member_registration_form_id,
-            'member_registration_notification_recipient_role_id' => $formSettings->member_registration_notification_recipient_role_id,
             'student_rep_registration_form_id' => $formSettings->student_rep_registration_form_id,
             'student_rep_institution_type_ids' => $formSettings->getStudentRepInstitutionTypeIds()->toArray(),
             'forms' => Form::all(['id', 'name']),
-            'roles' => Role::all(['id', 'name']),
+            'memberRegistration' => $this->memberRegistrationCoverage(),
             'institution_types' => InstitutionType::query()
 
                 ->get(['id', 'title', 'slug'])
@@ -82,7 +84,6 @@ class SettingsController extends AdminController
         $this->authorizeSettingsAccess($settingsSettings);
 
         $formSettings->member_registration_form_id = $request->member_registration_form_id;
-        $formSettings->member_registration_notification_recipient_role_id = $request->member_registration_notification_recipient_role_id;
         $formSettings->student_rep_registration_form_id = $request->student_rep_registration_form_id;
         $formSettings->setStudentRepInstitutionTypeIds($request->input('student_rep_institution_type_ids', []));
 
@@ -137,38 +138,60 @@ class SettingsController extends AdminController
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));
     }
 
-    /**
-     * Show settings authorization page (Super Admin only).
-     */
-    public function editAuthorization(SettingsSettings $settings)
+    public function editSystemPurposes(SettingsSettings $settingsSettings, DutyTypeSettings $dutyTypeSettings, SystemDutyTypes $systemDutyTypes)
     {
-        $user = request()->user();
+        $this->authorizeSettingsAccess($settingsSettings);
 
-        abort_if(! $user->isSuperAdmin(), 403);
-
-        // Filter out Super Admin role - they can always manage settings anyway
-        $roles = Role::where('name', '!=', config('permission.super_admin_role_name'))
-            ->get(['id', 'name']);
-
-        return $this->inertiaResponse('Admin/Settings/EditSettingsAuthorization', [
-            'settings_manager_role_id' => $settings->settings_manager_role_id,
-            'roles' => $roles,
+        return $this->inertiaResponse('Admin/Settings/EditSystemPurposesSettings', [
+            'purposes' => collect(ResponsibilityPurpose::cases())->map(fn (ResponsibilityPurpose $purpose): array => [
+                'key' => $purpose->value,
+                'label' => (string) __($purpose->labelKey()),
+                'drives' => (string) __($purpose->drivesKey()),
+                'responsibility_id' => Role::forPurpose($purpose)?->id,
+            ])->all(),
+            'responsibilities' => Role::query()->exceptSuperAdmin()->get()
+                ->map(fn (Role $role): array => ['id' => $role->id, 'title' => $role->displayTitle()])
+                ->sortBy('title')
+                ->values(),
+            'dutyTypes' => collect(SystemDutyType::cases())->map(fn (SystemDutyType $part): array => [
+                'key' => $part->value,
+                'label' => (string) __($part->labelKey()),
+                'drives' => (string) __($part->drivesKey()),
+                'type_id' => $dutyTypeSettings->{$part->settingKey()},
+                'effective_type_id' => $systemDutyTypes->id($part),
+                'fallback_slug' => $part->fallbackSlug(),
+            ])->all(),
+            'dutyTypeOptions' => DutyType::query()->get(['id', 'title'])
+                ->map(fn (DutyType $type): array => ['id' => $type->id, 'title' => (string) $type->title])
+                ->sortBy('title')
+                ->values(),
         ]);
     }
 
-    /**
-     * Update settings authorization (Super Admin only).
-     */
-    public function updateAuthorization(UpdateSettingsAuthorizationRequest $request, SettingsSettings $settings)
+    public function updateSystemPurposes(UpdateSystemPurposesSettingsRequest $request, DutyTypeSettings $dutyTypeSettings, SystemDutyTypes $systemDutyTypes)
     {
-        $user = request()->user();
+        DB::transaction(function () use ($request): void {
+            foreach (ResponsibilityPurpose::cases() as $purpose) {
+                $roleId = $request->validated("purposes.{$purpose->value}");
 
-        abort_if(! $user->isSuperAdmin(), 403);
+                Role::query()->where('purpose', $purpose)->whereKeyNot($roleId)->get()
+                    ->each(fn (Role $role) => $role->update(['purpose' => null]));
 
-        $settings->settings_manager_role_id = $request->input('settings_manager_role_id');
-        $settings->save();
+                if ($roleId !== null) {
+                    Role::query()->whereKey($roleId)->firstOrFail()->update(['purpose' => $purpose]);
+                }
+            }
+        });
 
-        return $this->redirectBackWithSuccess(__('settings.messages.authorization_updated'));
+        foreach (SystemDutyType::cases() as $part) {
+            $typeId = $request->validated("duty_types.{$part->value}");
+            $dutyTypeSettings->{$part->settingKey()} = $typeId === null ? null : (int) $typeId;
+        }
+
+        $dutyTypeSettings->save();
+        $systemDutyTypes->flush();
+
+        return $this->redirectBackWithSuccess(__('settings.messages.updated'));
     }
 
     /**
@@ -305,5 +328,23 @@ class SettingsController extends AdminController
         $siteSettings->save();
 
         return $this->redirectBackWithSuccess(__('settings.messages.updated'));
+    }
+
+    /**
+     * Who receives member registrations now that it is a responsibility, and which padaliniai nobody covers.
+     *
+     * @return array{responsibility: array{id: string, title: string}|null, gaps: list<string>}
+     */
+    private function memberRegistrationCoverage(): array
+    {
+        $role = Role::forPurpose(ResponsibilityPurpose::MemberRegistration);
+
+        return [
+            'responsibility' => $role ? ['id' => $role->id, 'title' => $role->displayTitle()] : null,
+            'gaps' => app(ResponsibilityResolver::class)->gaps(ResponsibilityPurpose::MemberRegistration)
+                ->map(fn ($tenant): string => (string) __($tenant->shortname))
+                ->values()
+                ->all(),
+        ];
     }
 }

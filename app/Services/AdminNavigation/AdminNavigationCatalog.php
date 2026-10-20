@@ -377,7 +377,7 @@ class AdminNavigationCatalog
             labelKey: 'shell.workspaces.sistema.title',
             descriptionKey: 'shell.workspaces.sistema.description',
             sections: [
-                new Section('roles', 'shell.sections.roles', 'roles.index', [], 'role', Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.roles'),
+                new Section('roles', 'shell.sections.roles', 'responsibilities.index', [], 'role', Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.roles'),
                 new Section('leidimai', 'shell.sections.leidimai', 'permissions.index', [], 'permission', Visibility::can('viewAny', Permission::class), descriptionKey: 'shell.section_descriptions.leidimai'),
                 new Section('tipai', 'shell.sections.tipai', 'types.index', [], null, Visibility::callback(fn (User $user): bool => $this->taxonomyDestinations($user) !== []), matches: ['types.index'], descriptionKey: 'shell.section_descriptions.tipai'),
                 new Section('instituciju_tipai', 'shell.sections.instituciju_tipai', 'institutionTypes.index', [], 'institution_type', Visibility::can('viewAny', InstitutionType::class), descriptionKey: 'shell.section_descriptions.instituciju_tipai', taxonomy: true),

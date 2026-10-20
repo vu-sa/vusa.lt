@@ -5,6 +5,7 @@ namespace App\Actions\ActivityRequests;
 use App\Enums\ActivityRequestSkipReason;
 use App\Enums\InstitutionActivityCampaign;
 use App\Enums\NotificationType;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionCheckIn;
@@ -47,7 +48,7 @@ class SendInstitutionActivityRequests
         $ids = $institutions->pluck('id');
         $candidates = $this->recipients->forInstitutions($ids);
         $typedInstitutionIds = Institution::query()->whereKey($ids)
-            ->whereHas('duties.types', fn ($query) => $query->where('slug', 'studentu-atstovai'))
+            ->whereHas('duties', fn ($query) => $query->holdingPurpose(ResponsibilityPurpose::StudentRepresentation))
             ->pluck('id')->all();
         $existing = InstitutionActivityRequest::query()->whereIn('institution_id', $ids)->get()->groupBy('institution_id');
         $end = CarbonImmutable::today();

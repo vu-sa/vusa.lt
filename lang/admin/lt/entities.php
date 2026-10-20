@@ -89,7 +89,7 @@ return [
         'gender' => 'f',
     ],
     'role' => [
-        'model' => '{1} rolė|[2,9] rolės|[10,*] rolių',
+        'model' => '{1} atsakomybė|[2,9] atsakomybės|[10,*] atsakomybių',
         'gender' => 'f',
     ],
     'permission' => [

@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Enums\ResponsibilityPurpose;
 use App\Events\MemberRegistrationCreated;
 use App\Helpers\AddressivizeHelper;
 use App\Mail\ConfirmMemberRegistration;
@@ -10,7 +11,7 @@ use App\Models\FieldResponse;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Notifications\MemberRegistrationNotification;
-use App\Settings\FormSettings;
+use App\Services\ResponsibilityResolver;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -68,26 +69,17 @@ class SendMemberRegistrationNotification implements ShouldQueue
             return;
         }
 
-        // Find duty for tenant which has a role set in FormSettings::class
-        $mailableDuties = $institution->duties()->whereHas('roles', function ($query): void {
-            $query->where('id', app(FormSettings::class)->member_registration_notification_recipient_role_id);
-        })->get();
+        $mailableDuties = app(ResponsibilityResolver::class)->dutiesForTenant(ResponsibilityPurpose::MemberRegistration, $tenant);
 
         /** @var Duty|null $dutyContact */
         $dutyContact = $mailableDuties->first();
 
         if ($dutyContact === null) {
-            // Log warning that will appear in Telescope
-            Log::warning('No duty found with configured role for member registration notification', [
+            Log::warning('No duty holds the member registration responsibility for this padalinys', [
                 'event' => 'member_registration_notification_failed',
+                'tenant_id' => $tenant->id,
                 'institution_id' => $institution->id,
-                'institution_name' => $institution->name,
-                'configured_role_id' => app(FormSettings::class)->member_registration_notification_recipient_role_id,
                 'registration_id' => $event->registration->id,
-                'registration_email' => $emailResponse->getValue(),
-                'registration_name' => $nameResponse->getValue(),
-                'available_duties_count' => $institution->duties()->count(),
-                'total_roles_in_institution' => $institution->duties()->with('roles')->get()->pluck('roles')->flatten()->unique('id')->count(),
             ]);
 
             // Skip sending the email completely when no appropriate duty is found

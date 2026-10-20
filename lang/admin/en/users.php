@@ -11,7 +11,7 @@ return [
     ],
     'name_locked' => 'Only super administrators can change a person\'s name.',
     'identity_locked_tenants' => 'You cannot change the email: this person also belongs to other units (:tenants). Contact those units\' or the central office administrators.',
-    'identity_locked_protected' => 'You cannot change the email: this account has a directly assigned role. Contact the central office administrators.',
+    'identity_locked_protected' => 'You cannot change the email: this account has a directly assigned responsibility. Contact the central office administrators.',
     'identity_locked_hint' => 'The email address is used to sign in, so only administrators who cover all of this person\'s units can change it.',
     'duty_outside_tenant' => 'You cannot assign or remove duties belonging to other units: :duties.',
     'cannot_delete_self' => 'You cannot delete your own account.',
@@ -31,7 +31,7 @@ return [
 
         'login_email_locked' => 'You cannot change this account’s login email. The current address will be kept after merging.',
         'name_mismatch' => 'Only records of the same person can be merged, and the name of :name does not match.',
-        'direct_roles' => ':name has a directly assigned role. Remove it before merging.',
+        'direct_roles' => ':name has a directly assigned responsibility. Remove it before merging.',
         'outside_scope' => 'Only administrators covering every unit of both records can merge them.',
         'action' => 'Merge',
         'login_email' => 'Sign-in email',

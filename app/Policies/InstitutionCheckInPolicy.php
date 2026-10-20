@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Enums\Responsibility;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
 use App\Models\User;
@@ -19,7 +19,7 @@ class InstitutionCheckInPolicy
     public function viewAny(User $user): bool
     {
         return $this->authorizer->allows($user, 'institutions.update.padalinys')
-            || $this->responsibilities->holdsAnywhere($user, Responsibility::StudentRepCoordination);
+            || $this->responsibilities->holdsAnywhere($user, ResponsibilityPurpose::StudentRepCoordination);
     }
 
     public function view(User $user, InstitutionCheckIn $checkIn): bool
@@ -66,6 +66,6 @@ class InstitutionCheckInPolicy
             return true;
         }
 
-        return $this->responsibilities->isResponsibleFor($user, Responsibility::StudentRepCoordination, $institution);
+        return $this->responsibilities->isResponsibleFor($user, ResponsibilityPurpose::StudentRepCoordination, $institution);
     }
 }

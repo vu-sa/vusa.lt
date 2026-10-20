@@ -3,9 +3,9 @@
 use App\Enums\NotificationType;
 use App\Mail\NotificationDigest;
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
+use App\Models\ResponsibilityGrant;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -41,7 +41,7 @@ function renderNotificationMail(BaseNotification $notification, User $user): arr
 function coordinatorFor(Institution $institution, string $email): User
 {
     $duty = Duty::factory()->for($institution)->create(['email' => $email]);
-    DutyResponsibility::factory()->for($duty)->forTenant($institution->tenant)->create();
+    ResponsibilityGrant::factory()->forDuty($duty)->forTenant($institution->tenant)->create();
 
     $coordinator = User::factory()->create(['name' => 'Ona Koordinatorė']);
     $coordinator->duties()->attach($duty, ['start_date' => now()->subMonth(), 'end_date' => null]);

@@ -172,6 +172,16 @@ class Institution extends Model implements Commentable, GuardsForceDelete, Image
         return $this->belongsToMany(InstitutionType::class)->using(InstitutionInstitutionType::class);
     }
 
+    /**
+     * Responsibilities every duty in this institution receives; rare, for membership-wide access.
+     *
+     * @return MorphMany<ResponsibilityGrant, $this>
+     */
+    public function responsibilityGrants(): MorphMany
+    {
+        return $this->morphMany(ResponsibilityGrant::class, 'grantee');
+    }
+
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);

@@ -79,6 +79,7 @@ final class MorphMap
         'reservation_resource' => Models\Pivots\ReservationResource::class,
         'resource' => Models\Resource::class,
         'resource_category' => Models\ResourceCategory::class,
+        'responsibility_grant' => Models\ResponsibilityGrant::class,
         'role' => Models\Role::class,
         'role_type' => Models\RoleType::class,
         'sharepoint_folder' => Models\SharepointFolder::class,

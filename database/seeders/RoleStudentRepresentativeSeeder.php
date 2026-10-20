@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\ResponsibilityPurpose;
 use App\Models\DutyType;
 use App\Models\Role;
 use Illuminate\Database\Seeder;
@@ -18,6 +19,9 @@ class RoleStudentRepresentativeSeeder extends Seeder
         $role = Role::firstOrCreate([
             'name' => 'Studentų atstovas',
             'guard_name' => 'web',
+        ], [
+            'title' => ['lt' => 'Studentų atstovavimas', 'en' => 'Student representation'],
+            'purpose' => ResponsibilityPurpose::StudentRepresentation,
         ]);
 
         $role->syncPermissions([
@@ -42,7 +46,7 @@ class RoleStudentRepresentativeSeeder extends Seeder
         // Coordinators can attach this type to duties
         $role->attachable_types()->syncWithoutDetaching([$type->id]);
 
-        // Through DutyType::roles() so RoleTypeObserver also hands the role to the existing duties of this type.
-        $type->roles()->syncWithoutDetaching([$role->id]);
+        // A type grant reaches the existing duties of this type through the projection.
+        $type->responsibilityGrants()->firstOrCreate(['role_id' => $role->id, 'scope_type' => null, 'scope_id' => null]);
     }
 }

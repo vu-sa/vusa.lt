@@ -1,0 +1,131 @@
+<?php
+
+namespace App\Models;
+
+use App\Actions\ProjectDutyResponsibilities;
+use App\Enums\ResponsibilityScope;
+use App\Models\Traits\LogsModelActivity;
+use App\Services\ResponsibilityResolver;
+use App\Support\MorphMap;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Concerns\HasUlids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Spatie\Activitylog\Support\LogOptions;
+
+/**
+ * A responsibility given to a duty, to every duty of a type, or to every duty in an institution.
+ * The source of truth for duty roles: `model_has_roles` rows for duties are its projection.
+ *
+ * @property string $id
+ * @property string $role_id
+ * @property string $grantee_type
+ * @property string $grantee_id
+ * @property string|null $scope_type
+ * @property string|null $scope_id
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Role $role
+ * @property-read Duty|DutyType|Institution|null $grantee
+ * @property-read Tenant|InstitutionType|Institution|null $scope
+ *
+ * @method static \Database\Factories\ResponsibilityGrantFactory factory($count = null, $state = [])
+ * @method static Builder<static>|ResponsibilityGrant newModelQuery()
+ * @method static Builder<static>|ResponsibilityGrant newQuery()
+ * @method static Builder<static>|ResponsibilityGrant query()
+ *
+ * @mixin \Eloquent
+ */
+#[Fillable(['role_id', 'grantee_type', 'grantee_id', 'scope_type', 'scope_id'])]
+class ResponsibilityGrant extends Model
+{
+    use HasFactory, HasUlids, LogsModelActivity;
+
+    /** @var list<class-string<\Illuminate\Database\Eloquent\Model>> */
+    public const array GRANTEES = [Duty::class, DutyType::class, Institution::class];
+
+    #[\Override]
+    protected static function booted(): void
+    {
+        static::saved(fn (self $grant) => $grant->reproject());
+        static::deleted(fn (self $grant) => $grant->reproject());
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()->logFillable()->logOnlyDirty()->dontLogEmptyChanges();
+    }
+
+    /** @return BelongsTo<Role, $this> */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    /** @return MorphTo<\Illuminate\Database\Eloquent\Model, $this> */
+    public function grantee(): MorphTo
+    {
+        return $this->morphTo('grantee', 'grantee_type', 'grantee_id');
+    }
+
+    /** @return MorphTo<\Illuminate\Database\Eloquent\Model, $this> */
+    public function scope(): MorphTo
+    {
+        return $this->morphTo('scope', 'scope_type', 'scope_id');
+    }
+
+    public function coverage(): ?ResponsibilityScope
+    {
+        return $this->scope_type === null ? null : ResponsibilityScope::from($this->scope_type);
+    }
+
+    public function needsScope(): bool
+    {
+        return $this->role->purpose?->isScoped() === true
+            && ($this->scope === null || ! in_array(ResponsibilityScope::tryFrom($this->scope_type ?? ''), $this->role->purpose->allowedScopes(), true));
+    }
+
+    /**
+     * Ids of the duties these grants reach: direct ones, every duty of a granted type, every duty
+     * in a granted institution.
+     *
+     * @param  Builder<self>  $grants
+     */
+    public static function dutyIdsQuery(Builder $grants): QueryBuilder
+    {
+        $duty = MorphMap::alias(Duty::class);
+        $dutyType = MorphMap::alias(DutyType::class);
+        $institution = MorphMap::alias(Institution::class);
+
+        $direct = (clone $grants)->toBase()->where('grantee_type', $duty)->select('grantee_id as duty_id');
+
+        $viaType = DB::table('duty_duty_type')
+            ->whereIn('duty_type_id', (clone $grants)->toBase()->where('grantee_type', $dutyType)->select('grantee_id'))
+            ->select('duty_id');
+
+        $viaInstitution = DB::table('duties')
+            ->whereIn('institution_id', (clone $grants)->toBase()->where('grantee_type', $institution)->select('grantee_id'))
+            ->select('id as duty_id');
+
+        return $direct->union($viaType)->union($viaInstitution);
+    }
+
+    private function reproject(): void
+    {
+        app(ResponsibilityResolver::class)->flush();
+
+        $dutyIds = match ($this->grantee_type) {
+            MorphMap::alias(Duty::class) => [$this->grantee_id],
+            MorphMap::alias(DutyType::class) => DB::table('duty_duty_type')->where('duty_type_id', $this->grantee_id)->pluck('duty_id')->all(),
+            MorphMap::alias(Institution::class) => DB::table('duties')->where('institution_id', $this->grantee_id)->pluck('id')->all(),
+            default => [],
+        };
+
+        ProjectDutyResponsibilities::forDuties($dutyIds);
+    }
+}

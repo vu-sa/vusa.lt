@@ -5,6 +5,7 @@ area: settings
 models: [Cadence]
 last_reviewed: 2026-10-04
 tests:
+  - tests/Feature/Admin/Settings/SystemPurposesSettingsTest.php
   - tests/Feature/Admin/Settings/CadenceControllerTest.php
   - tests/Feature/Admin/People/CadenceResolutionTest.php
   - tests/Feature/Admin/People/ResolveCadenceForInstitutionTest.php
@@ -35,8 +36,8 @@ kadencijos leidžia aprašyti konkrečios institucijos rinkimų ciklą.
 birželio 30 d. Kadencijos tvarkomos adresu `/mano/settings/cadences`.
 
 - **Bendros VU SA kadencijos** galioja visoms institucijoms. Jas kurti, keisti ir trinti gali
-  superadministratorius ir narys su nustatymų valdymui pasirinkta role (**Nustatymai → Autorizacijos
-  nustatymai**). Dvi bendros kadencijos negali prasidėti tą pačią dieną.
+  superadministratorius ir narys, kurio atsakomybė turi teisę keisti nustatymus. Dvi bendros
+  kadencijos negali prasidėti tą pačią dieną.
 - **Institucijos kadencijos** – kai institucija renkama kitu ritmu. Jas savo padalinio institucijoms
   kuria **Komunikacijos koordinatorius** ir **Studentų atstovų koordinatorius** (Centrinio biuro
   koordinatoriai – visoms). Kitų padalinių institucijų ir bendrų kadencijų jie keisti negali. Jei
@@ -51,20 +52,40 @@ Kadencijos rodomos [Laikotarpių tvarkyklėje](/visak/pareigybiu-laikotarpiai#ka
 derinti pareigybių laikotarpių datas. [Pareigybių atnaujinimo vedlys](/organizacija/pareigybiu-atnaujinimas#zingsnis-3)
 siūlo atskirą liepos 1 d. reikšmę; ji nėra imama iš šių kadencijų.
 
-### Autorizacijos nustatymai {#autorizacija}
+### Kas gali keisti nustatymus {#autorizacija}
 
-Adresas: `/mano/settings/authorization`. Šį puslapį gali atverti ir keisti **tik superadministratorius**.
+Nustatymus keičia superadministratorius ir nariai, kurių atsakomybė turi teisę **Nustatymai ·
+redaguoti · visur** (skiltyje [Atsakomybės](/sistema/roles-ir-leidimai)). Atskiro autorizacijos
+puslapio nebėra.
 
-Čia pasirenkama, kuri rolė įgyja teisę valdyti sistemos nustatymus.
-Pati superadministratoriaus rolė į sąrašą neįtraukiama, nes jai nustatymų prieiga priklauso visada.
+### Sistemos paskirtys {#sistemos-paskirtys}
+
+<ChangelogNote version="v3.10" date="2026-10-19" title="Sistemos paskirtys nustatymuose">
+
+Nauja sritis nurodo, kuri atsakomybė ir kurie pareigybių tipai atlieka sistemos numatytas paskirtis.
+
+</ChangelogNote>
+
+Adresas: `/mano/settings/purposes`. Puslapis turi dvi dalis:
+
+- **Atsakomybių paskirtys**: kuri atsakomybė laikoma *studentų atstovavimu*, *studentų atstovų
+  koordinavimu* ir *narių registracija*. Pagal jas sistema randa žmones – kam siųsti užduotis,
+  registracijas ir pranešimus. Viena atsakomybė gali atlikti tik vieną paskirtį. Kaip tai veikia,
+  aprašyta [Atsakomybėse](/pagrindai/atsakomybes#paskirtys).
+- **Viešieji kontaktai**: kurie pareigybių tipai rodomi kaip *Koordinatoriai*, *Kuratoriai* ir
+  *Mentoriai* padalinių kontaktų puslapiuose. Nuorodos (`/kontaktai/koordinatoriai` ir kt.)
+  nesikeičia. Kol tipas nepasirinktas, naudojamas tipas su ta pačia nuoroda.
+
+Paskirtį atliekančios atsakomybės ar kontaktuose naudojamo tipo ištrinti negalima.
 
 ### Formų nustatymai {#formos}
 
 Adresas: `/mano/settings/forms`. Čia nurodomos pagrindinės platformos registracijos anketos:
 
 - **Narių registracijos forma**: forma, kuria viešai registruojasi nauji VU SA nariai.
-- **Narių registracijos gavėjo rolė**: rolė, kurios pareigybių pašto dėžutėms siunčiami pranešimai apie
-  naujas narių registracijas atitinkamame padalinyje.
+- **Kas gauna registracijas**: registracijas gauna ir mato *narių registracijos* paskirtį turinčios
+  atsakomybės pareigybės savo padalinyje. Puslapyje matyti, kuriuose padaliniuose registracijų
+  niekas negauna.
 - **Studentų atstovų registracijos forma**: forma, kuria studentai registruojasi tapti atstovais VU organuose.
 - **Institucijų tipai atstovų registracijai**: institucijų tipai, kuriems leidžiama registruotis kaip
   studentų atstovui.
@@ -129,18 +150,17 @@ Puslapių pasirinkimo laukas ne superadministratoriams rodo tik jų pačių pada
 
 ## Kas ką gali {#teises}
 
-| Veiksmas | Komunikacijos ar studentų atstovų koordinatorius | Narys su nustatymų valdymo role | Superadministratorius |
+| Veiksmas | Komunikacijos ar studentų atstovų koordinatorius | Narys, galintis keisti nustatymus | Superadministratorius |
 |---|---|---|---|
-| Keisti autorizacijos nustatymus | – | – | ✓ |
-| Keisti formų, posėdžių, dokumentų, atstovavimo ir svetainės nustatymus | – | ✓ | ✓ |
+| Keisti formų, posėdžių, dokumentų, atstovavimo, svetainės nustatymus ir sistemos paskirtis | – | ✓ | ✓ |
 | Kurti ir keisti bendras VU SA kadencijas | – | ✓ | ✓ |
 | Kurti ir keisti savo padalinio institucijų kadencijas | ✓ Savo padalinyje | Tik jei gali redaguoti instituciją | ✓ |
 
-Lentelė rodo įprastą koordinatoriaus prieigą. Jei jo rolė pasirenkama nustatymams valdyti, jis įgyja
-ir atitinkamą nustatymų prieigą.
+Lentelė rodo įprastą koordinatoriaus prieigą. Jei jo atsakomybė turi teisę keisti nustatymus, jis
+įgyja ir atitinkamą nustatymų prieigą.
 
 Superadministratorius gali tvarkyti visus nustatymus. Institucijų kadencijoms kurti pakanka
-teisės redaguoti instituciją. Vien nustatymų valdymo rolės tam nepakanka.
+teisės redaguoti instituciją. Vien teisės keisti nustatymus tam nepakanka.
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 
@@ -154,10 +174,10 @@ teisės redaguoti instituciją. Vien nustatymų valdymo rolės tam nepakanka.
 ## Techninė informacija {#technine-informacija}
 
 - Nustatymų valdiklis yra `SettingsController`, kadencijų – `CadenceController`.
-- Nustatymai saugomi `spatie/laravel-settings` klasėse: `SettingsSettings`, `CadenceSettings`, `FormSettings`, `MeetingSettings`, `AtstovavimasSettings`, `DocumentSettings`, `SiteSettings`.
-- Bendrą prieigą prie nustatymų tikrina `SettingsSettings::canUserManageSettings()`.
+- Nustatymai saugomi `spatie/laravel-settings` klasėse: `CadenceSettings`, `FormSettings`, `MeetingSettings`, `AtstovavimasSettings`, `DocumentSettings`, `SiteSettings`, `DutyTypeSettings`.
+- Bendrą prieigą prie nustatymų tikrina `SettingsSettings::canUserManageSettings()` (super administratorius arba `settings.update.*`).
 - Institucijos kadencijos prieigą tikrina `CadencePolicy` per `InstitutionPolicy::update` (`institutions.update` su atitinkama apimtimi).
-- Nustatymų valdymo rolę saugo `settings_manager_role_id`, atstovavimo hierarchijos pradžią – `student_rep_root_type_id`, dokumentų filtrus – `important_content_types`.
+- Atstovavimo hierarchijos pradžią saugo `student_rep_root_type_id`, dokumentų filtrus – `important_content_types`, kontaktų tipus – `duty_types.*_type_id` (skaito `SystemDutyTypes`); paskirtys saugomos `roles.purpose`.
 - Viešumą tikrina `Meeting::isPubliclyVisible()`; viešų tipų pakeitimai atnaujina `PublicMeeting` ir `PublicInstitution` indeksus. Su posėdžiu susietas kadencijų datas atnaujina `syncAnchoredCadences`.
 - Kuri kadencija taikoma institucijai, sprendžia `ResolveCadenceForInstitution` (sava kadencija atjungia bendrąsias), o pareigybėms – `ResolveCadenceForDuty`.
-- Testai: `CadenceControllerTest`, `CadenceResolutionTest`, `ResolveCadenceForInstitutionTest`, `AtstovavimasSettingsTest`, `SiteSettingsTest`, `PublicMeetingVisibilityTest`.
+- Testai: `SystemPurposesSettingsTest`, `CadenceControllerTest`, `CadenceResolutionTest`, `ResolveCadenceForInstitutionTest`, `AtstovavimasSettingsTest`, `SiteSettingsTest`, `PublicMeetingVisibilityTest`.

@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Enums\Responsibility;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Form;
 use App\Models\User;
 use App\Settings\FormSettings;
@@ -27,8 +27,7 @@ class FormAccessService
     public function canViewSpecialForm(User $user, Form $form): bool
     {
         if ($this->formSettings->member_registration_form_id === $form->id) {
-            if ($this->formSettings->userIsMemberRegistrationRecipient($user)
-                && $this->formSettings->getMemberRegistrationTenantIds($user)->isNotEmpty()) {
+            if ($this->responsibilities->tenantIdsFor($user, ResponsibilityPurpose::MemberRegistration, includeScheduled: true)->isNotEmpty()) {
                 return true;
             }
 
@@ -38,7 +37,7 @@ class FormAccessService
 
         if ($this->formSettings->student_rep_registration_form_id === $form->id) {
             // Coordinators open it through their responsibility; anyone else needs the form read.
-            return $this->responsibilities->holdsAnywhere($user, Responsibility::StudentRepCoordination)
+            return $this->responsibilities->holdsAnywhere($user, ResponsibilityPurpose::StudentRepCoordination)
                 || ($this->hasTenantRead($user) && $this->visibleTenantIds($user)->isNotEmpty());
         }
 

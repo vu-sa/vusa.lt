@@ -234,11 +234,9 @@
     <template #responsibilities>
       <Deferred data="responsibilities">
         <template #fallback>
-          <div class="grid gap-10 xl:grid-cols-2 xl:gap-16" data-testid="responsibilities-skeleton">
-            <div v-for="n in 2" :key="n" class="space-y-2">
-              <div class="h-5 w-40 animate-pulse bg-secondary" />
-              <div class="h-11 animate-pulse bg-secondary/60" />
-            </div>
+          <div class="max-w-4xl space-y-2" data-testid="responsibilities-skeleton">
+            <div class="h-5 w-40 animate-pulse bg-secondary" />
+            <div v-for="n in 3" :key="n" class="h-12 animate-pulse bg-secondary/60" />
           </div>
         </template>
 
@@ -246,7 +244,6 @@
           :duty-id="duty.id"
           :tenant-id="duty.institution?.tenant_id ?? null"
           :items="responsibilities?.items ?? []"
-          :roles="responsibilities?.roles ?? []"
           :can-update="canManageDuty"
           :options="responsibilityOptions"
         />

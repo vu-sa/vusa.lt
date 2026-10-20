@@ -153,7 +153,7 @@ return [
     'action_review_reservation_draft' => 'Review reservation',
     'action_view_meeting' => 'View Meeting',
     'action_view_duty' => 'View Duty',
-    'action_view_access' => 'View my roles',
+    'action_view_access' => 'View my responsibilities',
     'action_explore_dashboard' => 'Explore Dashboard',
     'action_view' => 'View',
     'action_review' => 'Review',
@@ -364,7 +364,7 @@ return [
         'how_followed' => 'Followed-institution notices reach you only when your duties do not already bring you the same news. Unfollow the institution to stop receiving these notices.',
         'how_reservations' => 'Resource managers get only the approval request. The requester hears about the decision once — when the reservation\'s status changes.',
         'how_self' => 'You are never notified about your own action (an approval, closing a task, a status change).',
-        'how_list' => 'You only see the notifications your duties and roles can bring you.',
+        'how_list' => 'You only see the notifications your duties and responsibilities can bring you.',
     ],
 
     // Legacy compatibility

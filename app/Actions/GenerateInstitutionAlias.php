@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Enums\SystemDutyType;
 use App\Models\Institution;
 use App\Models\Tenant;
 use App\Services\PublicUrlService;
@@ -88,9 +89,7 @@ class GenerateInstitutionAlias
     {
         return [
             ...LocalizedRouteSlugs::accepted('studentRepsString'),
-            'koordinatoriai',
-            'kuratoriai',
-            'mentors',
+            ...SystemDutyType::publicSegments(),
         ];
     }
 

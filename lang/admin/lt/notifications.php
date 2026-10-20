@@ -153,7 +153,7 @@ return [
     'action_review_reservation_draft' => 'Peržiūrėti rezervaciją',
     'action_view_meeting' => 'Peržiūrėti posėdį',
     'action_view_duty' => 'Peržiūrėti pareigas',
-    'action_view_access' => 'Peržiūrėti mano roles',
+    'action_view_access' => 'Peržiūrėti mano atsakomybes',
     'action_explore_dashboard' => 'Atidaryti Mano VU SA',
     'action_view' => 'Peržiūrėti',
     'action_review' => 'Peržiūrėti',
@@ -364,7 +364,7 @@ return [
         'how_followed' => 'Sekamų institucijų pranešimus gauni tik tada, kai tų pačių žinių negauni dėl pareigų. Nebenori jų gauti – nebesek institucijos.',
         'how_reservations' => 'Išteklių administratoriai gauna tik prašymą patvirtinti. Rezervavęs apie sprendimą sužino vieną kartą – kai pasikeičia rezervacijos būsena.',
         'how_self' => 'Apie savo paties veiksmą (patvirtinimą, užduoties uždarymą, būsenos pakeitimą) pranešimo negauni.',
-        'how_list' => 'Čia matai tik tuos pranešimus, kuriuos gali gauti pagal savo pareigas ir roles.',
+        'how_list' => 'Čia matai tik tuos pranešimus, kuriuos gali gauti pagal savo pareigas ir atsakomybes.',
     ],
 
     // Legacy compatibility
