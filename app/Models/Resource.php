@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use AjCastro\EagerLoadPivotRelations\EagerLoadPivotTrait;
 use App\Actions\GetResourceManagers;
 use App\Collections\ReservationCollection;
 use App\Contracts\GuardsForceDelete;
@@ -52,16 +51,16 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property-read mixed $translations
  *
  * @method static \Database\Factories\ResourceFactory factory($count = null, $state = [])
- * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource newModelQuery()
- * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource onlyTrashed()
- * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource query()
- * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource reservable()
- * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource whereLocale(string $column, string $locale)
- * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource whereLocales(string $column, array $locales)
- * @method static \AjCastro\EagerLoadPivotRelations\EagerLoadPivotBuilder<static>|Resource whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource reservable()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource whereLocale(string $column, string $locale)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Resource withoutTrashed()
  *
@@ -73,7 +72,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 ])]
 class Resource extends Model implements GuardsForceDelete, ImageMediaOwner
 {
-    use EagerLoadPivotTrait, GuardsForceDeleteWhenReferenced, HasFactory, HasImageMedia, HasTranslations, HasUlids, Searchable, SoftDeletes;
+    use GuardsForceDeleteWhenReferenced, HasFactory, HasImageMedia, HasTranslations, HasUlids, Searchable, SoftDeletes;
 
     #[\Override]
     protected function casts(): array
