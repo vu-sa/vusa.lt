@@ -7,7 +7,6 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Problem;
 use App\Models\Resource;
-use App\Models\Role;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Support\Permissions\BaselineAccess;
@@ -71,24 +70,16 @@ test('reads an institution that their own institution links to, and not one that
         ->and($this->member->can('view', $source))->toBeFalse();
 });
 
-test('agenda items follow a meeting-edit permission, not mere membership', function (): void {
+test('agenda items follow the meeting: its members at the time edit them', function (): void {
     $meeting = Meeting::factory()->hasAttached($this->institution)->create(['start_time' => now()]);
     $item = AgendaItem::factory()->for($meeting)->create();
     $strangersItem = AgendaItem::factory()->for(Meeting::factory()->create(['start_time' => now()]))->create();
 
-    expect($this->member->can('update', $item))->toBeFalse()
-        ->and($this->member->can('delete', $item))->toBeFalse();
-
-    $editor = Role::factory()->create();
-    $editor->givePermissionTo('meetings.update.own');
-    $this->duty->assignRole($editor);
-    $member = $this->member->fresh();
-
-    expect($member->can('create', AgendaItem::class))->toBeTrue()
-        ->and($member->can('update', $item))->toBeTrue()
-        ->and($member->can('delete', $item))->toBeTrue()
-        ->and($member->can('update', $strangersItem))->toBeFalse()
-        ->and($member->can('delete', $strangersItem))->toBeFalse();
+    expect($this->member->can('update', $item))->toBeTrue()
+        ->and($this->member->can('delete', $item))->toBeTrue()
+        ->and($this->member->can('createFor', [AgendaItem::class, $meeting]))->toBeTrue()
+        ->and($this->member->can('update', $strangersItem))->toBeFalse()
+        ->and($this->member->can('delete', $strangersItem))->toBeFalse();
 });
 
 test('browses every padalinys\' problems and every resource', function (): void {

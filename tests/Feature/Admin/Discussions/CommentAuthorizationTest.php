@@ -3,6 +3,7 @@
 use App\Enums\MeetingType;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionLink;
 use App\Models\Meeting;
 use App\Models\Permission;
 use App\Models\Pivots\AgendaItem;
@@ -35,9 +36,11 @@ beforeEach(function (): void {
         'meeting_id' => $this->meeting->id,
     ]);
 
-    // A meeting participant (duty in the meeting's institution) whose duty has
-    // NO role/permission — view-only: can see the item but cannot update it.
-    $duty = Duty::factory()->for($this->institution)->create();
+    // Sees the meeting through a linked institution, so view-only: members of the
+    // meeting's own institution edit it.
+    $linkedInstitution = Institution::factory()->for($this->tenant)->create();
+    InstitutionLink::factory()->create(['source_institution_id' => $linkedInstitution->id, 'target_institution_id' => $this->institution->id]);
+    $duty = Duty::factory()->for($linkedInstitution)->create();
     $this->viewer = User::factory()->create();
     $this->viewer->duties()->attach($duty, ['start_date' => now()->subDay(), 'end_date' => null]);
 

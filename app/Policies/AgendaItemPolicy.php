@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
+use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\User;
 use App\Services\InstitutionAccessService;
@@ -52,8 +53,7 @@ class AgendaItemPolicy extends ModelPolicy
     }
 
     /**
-     * The meeting's `update` is the real gate; callers pair this with it. Holding that permission, not
-     * merely having sat on the meeting, is what opens agenda editing.
+     * Whether the user may add items anywhere, for menus; a store request asks {@see createFor()}.
      */
     #[\Override]
     public function create(User $user): bool
@@ -63,7 +63,15 @@ class AgendaItemPolicy extends ModelPolicy
     }
 
     /**
-     * Whoever holds a meeting-edit permission for the meeting edits its agenda items.
+     * Whether the user may add items to this meeting's agenda: whoever edits the meeting.
+     */
+    public function createFor(User $user, Meeting $meeting): bool
+    {
+        return $user->can('update', $meeting);
+    }
+
+    /**
+     * Whoever edits the meeting — including a member at the time whose duty has since ended — edits its agenda items.
      *
      * @param  AgendaItem  $agendaItem
      */
@@ -91,6 +99,6 @@ class AgendaItemPolicy extends ModelPolicy
     {
         $meeting = $agendaItem->meeting;
 
-        return $meeting !== null && $this->commonChecker($user, $meeting, CRUDEnum::UPDATE->label(), 'meetings');
+        return $meeting !== null && $user->can('update', $meeting);
     }
 }

@@ -287,8 +287,9 @@ class AgendaItemController extends AdminController
 
         // Delete votes that were removed
         $votesToDelete = array_diff($existingVoteIds, $updatedVoteIds);
+        // One model at a time, so each removal is logged in the meeting's history.
         if (! empty($votesToDelete)) {
-            Vote::whereIn('id', $votesToDelete)->delete();
+            $agendaItem->votes()->whereKey($votesToDelete)->get()->each->delete();
         }
 
         $this->ensureSingleMainVote($agendaItem);

@@ -962,7 +962,7 @@ describe('editing a meeting', function (): void {
         expect($this->meeting->fresh()->title)->toBe('2026 kovo 05 d. posėdis');
     });
 
-    test('a member at the time of the meeting edits it without a role, but not its agenda items', function (): void {
+    test('a member at the time of the meeting edits it and its agenda items without a role', function (): void {
         $member = makeUser($this->tenant);
         $duty = $member->duties()->first();
         $meeting = Meeting::factory()->hasAttached($duty->institution)->create(['start_time' => now()->setTime(10, 0)]);
@@ -977,7 +977,9 @@ describe('editing a meeting', function (): void {
 
         asUser($member)
             ->patch(route('agendaItems.update', $item), ['title' => ['lt' => 'Pakeista']])
-            ->assertForbidden();
+            ->assertSessionHasNoErrors();
+
+        expect($item->fresh()->title)->toBe('Pakeista');
     });
 
     test('deleting moves the meeting to the trash and restoring brings it back', function (): void {

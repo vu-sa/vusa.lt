@@ -12,24 +12,19 @@ class StoreAgendaItemsRequest extends FormRequest
     /**
      * Determine if the user is authorized to make this request.
      *
-     * The class-level create check is tenant-agnostic (see HasCommonChecks::create), and the
-     * meeting these items are filed under comes from request input — so the meeting itself has
-     * to be authorized as an object, exactly as AgendaItemController::reorder() does.
+     * The meeting comes from request input, so it is authorized as an object, as
+     * AgendaItemController::reorder() does.
      */
     public function authorize(): bool
     {
-        if (! $this->user()->can('create', AgendaItem::class)) {
-            return false;
-        }
-
         $meeting = Meeting::query()->find($this->input('meeting_id'));
 
         // Leave a missing meeting to the exists rule so it reads as a validation error.
         if ($meeting === null) {
-            return true;
+            return $this->user()->can('create', AgendaItem::class);
         }
 
-        return $this->user()->can('update', $meeting);
+        return $this->user()->can('createFor', [AgendaItem::class, $meeting]);
     }
 
     /**

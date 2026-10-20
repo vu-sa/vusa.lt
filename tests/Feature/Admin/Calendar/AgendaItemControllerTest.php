@@ -8,8 +8,10 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
+use App\Support\MorphMap;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Activitylog\Models\Activity;
 
 pest()->use(RefreshDatabase::class);
 
@@ -495,5 +497,81 @@ describe('adding and editing as a representative', function (): void {
 
         asUser($this->admin)->get(route('agendaItems.show', $item))->assertNotFound();
         asUser($this->admin)->get(route('agendaItems.edit', $item))->assertNotFound();
+    });
+});
+
+describe('a former member', function (): void {
+    beforeEach(function (): void {
+        $this->formerMember = makeUser($this->tenant);
+        $duty = $this->formerMember->duties()->first();
+        $duty->pivot->start_date = now()->subYear();
+        $duty->pivot->end_date = now()->subMonth();
+        $duty->pivot->save();
+
+        $this->termMeeting = Meeting::factory()->hasAttached($duty->institution)->create(['start_time' => now()->subMonths(6)]);
+        $this->laterMeeting = Meeting::factory()->hasAttached($duty->institution)->create(['start_time' => now()->subWeek()]);
+    });
+
+    test('fills in the agenda of a meeting from their term', function (): void {
+        asUser($this->formerMember)
+            ->post(route('agendaItems.store'), ['meeting_id' => $this->termMeeting->id, 'agendaItemTitles' => ['Stipendijų nuostatai']])
+            ->assertSessionHasNoErrors();
+
+        $item = $this->termMeeting->agendaItems()->firstOrFail();
+
+        asUser($this->formerMember)
+            ->patch(route('agendaItems.update', $item), [
+                'type' => 'voting',
+                'votes' => [['decision' => 'positive', 'student_vote' => 'positive', 'student_benefit' => 'positive']],
+            ])
+            ->assertSessionHasNoErrors();
+
+        $vote = $item->votes()->firstOrFail();
+
+        asUser($this->formerMember)
+            ->patch(route('votes.update', $vote), ['decision' => 'negative'])
+            ->assertSessionHasNoErrors();
+
+        expect($vote->fresh()->decision)->toBe('negative');
+
+        asUser($this->formerMember)
+            ->delete(route('agendaItems.destroy', $item))
+            ->assertRedirect(route('meetings.show', $this->termMeeting));
+
+        expect(AgendaItem::find($item->id))->toBeNull();
+    });
+
+    test('cannot touch the agenda of a meeting after their term', function (): void {
+        $item = AgendaItem::factory()->for($this->laterMeeting)->create();
+
+        asUser($this->formerMember)
+            ->post(route('agendaItems.store'), ['meeting_id' => $this->laterMeeting->id, 'agendaItemTitles' => ['Pakeista']])
+            ->assertForbidden();
+
+        asUser($this->formerMember)
+            ->patch(route('agendaItems.update', $item), ['title' => ['lt' => 'Pakeista']])
+            ->assertForbidden();
+
+        asUser($this->formerMember)
+            ->post(route('votes.store'), ['agenda_item_id' => $item->id, 'decision' => 'positive'])
+            ->assertForbidden();
+    });
+
+    test('their edits show in the meeting history under their name', function (): void {
+        $item = AgendaItem::factory()->for($this->termMeeting)->create();
+
+        asUser($this->formerMember)
+            ->patch(route('agendaItems.update', $item), ['votes' => [['decision' => 'positive']]])
+            ->assertSessionHasNoErrors();
+
+        $voteActivity = Activity::query()
+            ->where('subject_type', MorphMap::alias(Vote::class))
+            ->where('event', 'created')
+            ->latest('id')
+            ->firstOrFail();
+
+        expect($voteActivity->causer_id)->toBe($this->formerMember->id)
+            ->and($voteActivity->root_subject_type)->toBe(MorphMap::alias(Meeting::class))
+            ->and($voteActivity->root_subject_id)->toBe($this->termMeeting->id);
     });
 });

@@ -6,6 +6,7 @@ use App\Http\Resources\CommentResource;
 use App\Models\Duty;
 use App\Models\Form;
 use App\Models\Institution;
+use App\Models\InstitutionLink;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Reservation;
@@ -36,7 +37,10 @@ beforeEach(function (): void {
     $this->agendaItem = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id]);
 
     // View-only meeting participant (duty in the institution, no role).
-    $duty = Duty::factory()->for($this->institution)->create();
+    // Sees the meeting through a linked institution; members of the meeting's own institution edit it.
+    $linkedInstitution = Institution::factory()->for($this->tenant)->create();
+    InstitutionLink::factory()->create(['source_institution_id' => $linkedInstitution->id, 'target_institution_id' => $this->institution->id]);
+    $duty = Duty::factory()->for($linkedInstitution)->create();
     $this->viewer = User::factory()->create();
     $this->viewer->duties()->attach($duty, ['start_date' => now()->subDay(), 'end_date' => null]);
 

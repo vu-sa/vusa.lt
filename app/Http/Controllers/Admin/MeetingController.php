@@ -199,7 +199,7 @@ class MeetingController extends AdminController
         $primaryInstitution = fn () => once(fn () => $loadMeeting()->institutions->first());
 
         $canUpdate = fn () => once(fn () => ! $readOnly() && Gate::allows('update', $meeting));
-        $canCreateAgendaItems = fn () => once(fn () => $canUpdate() && Gate::allows('create', AgendaItem::class));
+        $canCreateAgendaItems = fn () => once(fn () => ! $readOnly() && Gate::allows('createFor', [AgendaItem::class, $meeting]));
 
         $agendaItemAbilities = fn () => once(function () use ($loadMeeting, $readOnly) {
             $m = $loadMeeting();

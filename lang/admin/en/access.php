@@ -49,7 +49,7 @@ return [
         'locked_own' => 'Own – every member',
         'institutions' => 'Sees the institution list and active institutions\' public information, and their own current and related institutions in full.',
         'meetings' => 'Sees public meetings; sees and can edit their institutions\' meetings held while they served.',
-        'agendaItems' => 'Sees the agenda items of public meetings and of meetings they took part in through a duty. Whoever is granted the right to edit meetings also creates, edits and deletes their agenda items.',
+        'agendaItems' => 'Sees the agenda items of public meetings and of meetings they took part in through a duty. Their agenda items and votes are created, edited and deleted by whoever served on the institution at the time of the meeting, and by whoever is granted the right to edit meetings.',
         'problems' => 'Sees every unit\'s problems.',
         'resources' => 'Sees all resources.',
         'duties' => 'Sees their current and past duties and terms.',

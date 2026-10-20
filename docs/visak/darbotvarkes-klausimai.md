@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Darbotvarkės klausimai
 area: agendaItems
 models: [AgendaItem, Vote]
-last_reviewed: 2026-10-19
+last_reviewed: 2026-10-20
 tests:
   - tests/Browser/AgendaItemPrivacyTest.php
   - resources/js/Components/Public/__tests__/PublicAgendaItemRow.component.test.ts
@@ -224,13 +224,22 @@ metai**, **Užpildymo būsena**, **Studentų balsas**, **Sprendimas**, **Palanku
 | Veiksmas | Bet kuris narys | Institucijos narys posėdžio metu | Studentų atstovas | Studentų atstovų / Komunikacijos koordinatorius | Centrinio biuro studentų atstovų koordinatorius |
 |---|---|---|---|---|---|
 | Matyti viešo posėdžio klausimus (be pastabų) | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Matyti klausimą su pastabomis | – | ✓, tik skaityti | ✓, savo institucijų | ✓, savo padalinio | ✓ |
-| Pridėti klausimų | – | – | ✓, savo institucijų | ✓, savo padalinio | ✓ |
+| Matyti klausimą su pastabomis | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓ |
+| Pridėti klausimų | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓ |
 | Keisti tvarką | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓ |
-| Žymėti rezultatą, redaguoti, ištrinti | – | – | ✓, savo institucijų | ✓, savo padalinio | ✓ |
-| Susieti ir atsieti problemas | – | – | ✓, savo institucijų | ✓, savo padalinio | ✓ |
+| Žymėti rezultatą, redaguoti, ištrinti | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓ |
+| Susieti ir atsieti problemas | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓ |
 
-Institucijos narys be rolės klausimo redaguoti negali, nors gali keisti patį posėdį.
+Institucijos narys posėdžio metu – žmogus, kuris posėdžio dieną ėjo pareigas jo institucijoje, net
+jei jo pareigos jau baigėsi. Jis klausimus pildo taip pat, kaip ir patį posėdį; jo pakeitimai matomi
+posėdžio istorijoje.
+
+<ChangelogNote version="v3.11" date="2026-10-20" title="Darbotvarkę pildo ir buvę nariai">
+
+Anksčiau institucijos narys be atsakomybės klausimų redaguoti negalėjo, nors galėjo keisti patį
+posėdį.
+
+</ChangelogNote>
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 

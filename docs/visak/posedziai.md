@@ -3,10 +3,11 @@ doc_status: reviewed
 title: Posėdžiai
 area: meetings
 models: [Meeting]
-last_reviewed: 2026-10-18
+last_reviewed: 2026-10-20
 tests:
   - tests/Feature/Meetings/AgendaItemPrivacyTest.php
   - tests/Feature/Admin/Calendar/MeetingControllerTest.php
+  - tests/Feature/Admin/Calendar/AgendaItemControllerTest.php
   - tests/Feature/Admin/Management/InstitutionCheckInTest.php
   - tests/Feature/Meetings/MeetingCalendarEventTest.php
   - tests/Feature/Meetings/MeetingDocumentTest.php
@@ -192,7 +193,8 @@ jo numeris ir nebūtinas viešas pavadinimas; matomumo žyma nerodoma. [Klausimo
 ## Kas ką gali {#teises}
 
 **Institucijos narys posėdžio metu** – žmogus, kuris posėdžio dieną ėjo pareigas bent vienoje jo
-institucijoje. Buvęs narys mato savo kadencijos posėdžius, bet ne vėlesnius.
+institucijoje. Buvęs narys mato ir gali pildyti savo kadencijos posėdžius, bet ne vėlesnius. Jo
+pakeitimai matomi posėdžio istorijoje.
 
 | Veiksmas | Bet kuris narys | Institucijos narys posėdžio metu | Studentų atstovas | Studentų atstovų koordinatorius | Komunikacijos koordinatorius | Centrinio biuro studentų atstovų koordinatorius |
 |---|---|---|---|---|---|---|
@@ -200,12 +202,19 @@ institucijoje. Buvęs narys mato savo kadencijos posėdžius, bet ne vėlesnius.
 | Matyti visą posėdžio puslapį | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓, savo padalinio | ✓ |
 | Fiksuoti posėdį | – | – | ✓, savo institucijų | ✓, savo padalinio | ✓, savo padalinio | ✓ |
 | Keisti posėdį, perrikiuoti punktus | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓, savo padalinio | ✓ |
-| Pildyti darbotvarkės punktus | – | – | ✓, savo institucijų | ✓, savo padalinio | ✓, savo padalinio | ✓ |
+| Pildyti darbotvarkės punktus ir balsavimus | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓, savo padalinio | ✓ |
 | Ištrinti ir atkurti | – | – | ✓, savo institucijų | ✓, savo institucijų | ✓, savo padalinio | ✓ |
 
 Institucija, susieta su tavo institucija [ryšiu](/sistema/rysiai), leidžia matyti ir jos
 posėdžius (vienpusis ryšys – tik kryptimi nuo tavo institucijos). Galutinai ištrinti posėdį gali
 tik super administratorius.
+
+<ChangelogNote version="v3.11" date="2026-10-20" title="Darbotvarkę pildo ir buvę nariai">
+
+Anksčiau darbotvarkės punktus ir balsavimus galėjo pildyti tik tie, kurie pareigas ėjo pildymo
+dieną. Dabar juos pildo ir posėdžio metu buvę institucijos nariai.
+
+</ChangelogNote>
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 

@@ -49,7 +49,7 @@ return [
         'locked_own' => 'Savo – visi nariai',
         'institutions' => 'Mato institucijų sąrašą ir aktyvių institucijų viešą informaciją, o savo dabartines ir su jomis susietas institucijas – pilnai.',
         'meetings' => 'Mato viešus posėdžius; savo institucijų posėdžius, vykusius jų pareigų metu, mato ir gali keisti.',
-        'agendaItems' => 'Mato viešų posėdžių klausimus ir posėdžių, kuriuose dalyvavo pagal pareigas, klausimus. Klausimus kuria, redaguoja ir trina ir tie, kam suteikta teisė redaguoti posėdžius.',
+        'agendaItems' => 'Mato viešų posėdžių klausimus ir posėdžių, kuriuose dalyvavo pagal pareigas, klausimus. Klausimus ir balsavimus kuria, redaguoja ir trina tie, kurie posėdžio metu ėjo pareigas jo institucijoje, ir tie, kam suteikta teisė redaguoti posėdžius.',
         'problems' => 'Mato visų padalinių problemas.',
         'resources' => 'Mato visus išteklius.',
         'duties' => 'Mato savo dabartines ir buvusias pareigybes bei kadencijas.',

@@ -6,8 +6,10 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
 use App\Models\Vote;
+use App\Support\MorphMap;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Activitylog\Models\Activity;
 
 pest()->use(RefreshDatabase::class);
 
@@ -229,6 +231,22 @@ describe('vote controller', function (): void {
 
         $existingVote->refresh();
         expect($existingVote->title)->toBe('Updated Vote Title');
+    });
+
+    test('a vote removed through the agenda item is logged', function (): void {
+        $kept = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create();
+        $removed = Vote::factory()->for($this->agendaItem, 'agendaItem')->create();
+
+        asUser($this->admin)
+            ->patch(route('agendaItems.update', $this->agendaItem), ['votes' => [['id' => $kept->id, 'is_main' => true]]])
+            ->assertSessionHasNoErrors();
+
+        expect(Vote::find($removed->id))->toBeNull()
+            ->and(Activity::query()
+                ->where('subject_type', MorphMap::alias(Vote::class))
+                ->where('subject_id', $removed->id)
+                ->where('event', 'deleted')
+                ->exists())->toBeTrue();
     });
 
     test('vote alignment is tracked correctly on agenda items with multiple votes', function (): void {
