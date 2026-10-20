@@ -3,13 +3,16 @@ doc_status: reviewed
 title: Atsakomybės
 area: duties
 models: [Duty, Role, ResponsibilityGrant]
-last_reviewed: 2026-10-19
+last_reviewed: 2026-10-21
 tests:
   - tests/Feature/Responsibilities/ResponsibilityResolverTest.php
   - tests/Feature/Responsibilities/ProjectDutyResponsibilitiesTest.php
   - tests/Feature/Admin/People/DutyResponsibilityControllerTest.php
   - tests/Feature/Admin/Management/InstitutionCheckInTest.php
+  - tests/Feature/Admin/Permissions/ResponsibilityControllerTest.php
+  - tests/Feature/Forms/MemberRegistrationNotificationMailTest.php
   - resources/js/Features/Admin/Responsibilities/__tests__/DutyResponsibilitiesSection.component.test.ts
+  - resources/js/Features/Admin/Responsibilities/__tests__/ResponsibilityGrants.component.test.ts
 ---
 
 # Atsakomybės
@@ -36,6 +39,22 @@ instituciją.
 1. **Tiesiogiai** – suteikta pačiai pareigybei.
 2. **Per pareigybės tipą** – pvz., tipas „Studentų atstovai“ suteikia studentų atstovavimą.
 3. **Per instituciją** – retai, kai ją turi gauti kiekviena institucijos pareigybė.
+
+### Savo padalinys {#savo-padalinys}
+
+Kai paskirčiai reikia nurodyti padalinį, tipui suteiktą atsakomybę galima susieti su apimtimi
+**Savo padalinys**: kiekviena pareigybė atsakinga už savo institucijos padalinį. Pvz.,
+tipui „Žmogiškųjų išteklių koordinatorius“ suteikta narių registracija su šia apimtimi kiekvieno
+padalinio registracijas siunčia tik to padalinio koordinatoriui. Pasirinkus konkretų padalinį, jo
+registracijas gautų visų padalinių to tipo pareigybės.
+
+Institucijai suteikta atsakomybė visada apima tos institucijos padalinį, todėl jo rinktis nereikia.
+
+<ChangelogNote version="v3.12" date="2026-10-21" title="Apimtis „Savo padalinys“">
+
+Tipui suteikiant atsakomybę su paskirtimi, galima rinktis apimtį „Savo padalinys“.
+
+</ChangelogNote>
 
 ### Sistemos paskirtys {#paskirtys}
 

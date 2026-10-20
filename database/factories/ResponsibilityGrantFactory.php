@@ -68,6 +68,11 @@ class ResponsibilityGrantFactory extends Factory
         return $this->state(['scope_type' => ResponsibilityScope::Tenant->value, 'scope_id' => (string) $tenant->id]);
     }
 
+    public function forOwnTenant(): static
+    {
+        return $this->state(['scope_type' => ResponsibilityScope::Tenant->value, 'scope_id' => null]);
+    }
+
     public function forType(InstitutionType $type): static
     {
         return $this->state(['scope_type' => ResponsibilityScope::InstitutionType->value, 'scope_id' => (string) $type->id]);

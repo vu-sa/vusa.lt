@@ -56,8 +56,7 @@ class DutyResponsibilityController extends AdminController
                     'purpose_label' => $grant->role->purpose ? (string) __($grant->role->purpose->labelKey()) : null,
                     'source' => $grant->grantee_type,
                     'source_name' => $grant->grantee_type === MorphMap::alias(Duty::class) ? null : self::name($grant->grantee),
-                    'scope_type' => $grant->scope_type,
-                    'scope_name' => self::name($grant->scope),
+                    ...$grant->scopePayload(),
                     'missing_permissions' => $grant->role->purpose ? $gaps->missingFor($duty, $grant->role->purpose) : [],
                 ])
                 ->values()

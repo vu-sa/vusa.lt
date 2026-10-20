@@ -205,12 +205,10 @@ class ResponsibilityController extends AdminController
 
     public function storeGrant(StoreRoleGrantRequest $request, Role $role): RedirectResponse
     {
-        $scopeType = $request->scopeType();
         $role->grants()->firstOrCreate([
             'grantee_type' => $request->validated('grantee_type'),
             'grantee_id' => (string) $request->validated('grantee_id'),
-            'scope_type' => $scopeType?->value,
-            'scope_id' => $scopeType ? (string) $request->validated('scope_id') : null,
+            ...$request->scopeColumns(),
         ]);
 
         return back()->with('success', __('responsibilities.messages.added'));
@@ -287,8 +285,7 @@ class ResponsibilityController extends AdminController
                         'duty' => ['id' => $duty->id, 'name' => (string) $duty->getTranslation('name', app()->getLocale())],
                         'institution' => $duty->institution ? ['id' => $duty->institution->id, 'name' => (string) $duty->institution->getTranslation('name', app()->getLocale())] : null,
                         'tenant' => $duty->institution?->tenant ? (string) __($duty->institution->tenant->shortname) : null,
-                        'scope_type' => $grant->scope_type,
-                        'scope_name' => $this->scopeName($grant->scope),
+                        ...$grant->scopePayload(),
                         'holders_count' => (int) ($currentHolders[$grant->grantee_id] ?? 0),
                         'missing_permissions' => $gaps->get($grant->grantee_id)['missing'] ?? [],
                     ]];
@@ -307,8 +304,7 @@ class ResponsibilityController extends AdminController
                     return [[
                         'id' => $grant->id,
                         'type' => ['id' => (int) $type->id, 'title' => (string) $type->getTranslation('title', app()->getLocale())],
-                        'scope_type' => $grant->scope_type,
-                        'scope_name' => $this->scopeName($grant->scope),
+                        ...$grant->scopePayload(),
                         'duties_count' => DB::table('duty_duty_type')->whereIn('duty_type_id', DutyType::withDescendantIds([$type->id]))->distinct()->count('duty_id'),
                         'needs_scope' => $grant->needsScope(),
                     ]];
@@ -326,8 +322,7 @@ class ResponsibilityController extends AdminController
                     return [[
                         'id' => $grant->id,
                         'institution' => ['id' => $institution->id, 'name' => (string) $institution->getTranslation('name', app()->getLocale())],
-                        'scope_type' => $grant->scope_type,
-                        'scope_name' => $this->scopeName($grant->scope),
+                        ...$grant->scopePayload(),
                         'duties_count' => (int) $institution->duties_count,
                     ]];
                 })
@@ -437,15 +432,5 @@ class ResponsibilityController extends AdminController
             ->map(strval(...))
             ->unique()
             ->values();
-    }
-
-    private function scopeName(mixed $scope): ?string
-    {
-        return match (true) {
-            $scope instanceof Tenant => (string) __($scope->shortname),
-            $scope instanceof InstitutionType => (string) $scope->getTranslation('title', app()->getLocale()),
-            $scope instanceof Institution => (string) $scope->getTranslation('name', app()->getLocale()),
-            default => null,
-        };
     }
 }

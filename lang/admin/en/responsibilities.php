@@ -25,6 +25,7 @@ return [
 
     'scopes' => [
         'tenant' => 'Whole padalinys',
+        'own_tenant' => 'Own padalinys',
         'institution_type' => 'Institution type',
         'institution' => 'Institution',
     ],
@@ -141,6 +142,8 @@ return [
         'duty_type' => 'Duty type',
         'institution' => 'Institution',
         'scope_hint' => 'What the duty is responsible for: a more specific grant overrides a broader one.',
+        'own_tenant_hint' => "Each duty is responsible for its own institution's padalinys.",
+        'institution_tenant_hint' => "The institution's duties are responsible for its padalinys.",
         'submit' => 'Give',
     ],
 

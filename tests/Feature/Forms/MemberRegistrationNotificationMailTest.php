@@ -2,12 +2,15 @@
 
 use App\Enums\ResponsibilityPurpose;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Institution;
+use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Settings\FormSettings;
+use Database\Factories\RoleFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
 use Symfony\Component\Mailer\SentMessage;
@@ -99,6 +102,23 @@ describe('coordinator mail recipient', function (): void {
             ->and($mail['recipients'])->toBe(['koordinatorius@mif.vusa.lt'])
             ->and($mail['recipients'])->not->toContain('pirmininkas@vusa.lt')
             ->and($mail['recipients'])->not->toContain('personal@gmail.com');
+    });
+});
+
+describe('duty type grant for the own padalinys', function (): void {
+    test('mails only the coordinator of the padalinys the member registered in', function (): void {
+        $type = DutyType::factory()->create();
+        $pivot = ['start_date' => now()->subDay(), 'end_date' => now()->addYear(), 'additional_email' => null];
+        $here = Duty::factory()->for($this->institution)->hasAttached(User::factory(), $pivot)->create(['email' => 'zi@mif.vusa.lt']);
+        $there = Duty::factory()->for(Institution::factory()->for(Tenant::factory()))->hasAttached(User::factory(), $pivot)->create(['email' => 'zi@chgf.vusa.lt']);
+        $type->duties()->attach([$here->id, $there->id]);
+
+        ResponsibilityGrant::factory()->forDutyType($type)->of(RoleFactory::forPurpose(ResponsibilityPurpose::MemberRegistration))->forOwnTenant()->create();
+
+        submitMemberRegistration($this->form, $this->tenant);
+
+        expect(informChairMail()['recipients'])->toBe(['zi@mif.vusa.lt'])
+            ->and(sentMail()->flatMap(fn (array $mail) => $mail['recipients']))->not->toContain('zi@chgf.vusa.lt');
     });
 });
 

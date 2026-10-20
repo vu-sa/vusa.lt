@@ -54,7 +54,7 @@
           <span class="min-w-0">
             <Link :href="route('dutyTypes.show', grant.type.id)" class="block text-sm font-medium text-foreground hover:underline">{{ grant.type.title }}</Link>
             <span class="block text-xs text-muted-foreground">
-              {{ $tChoice('responsibilities.grants.reaches', grant.duties_count, { count: grant.duties_count }) }}<template v-if="grant.scope_name"> · {{ grant.scope_name }}</template>
+              {{ $tChoice('responsibilities.grants.reaches', grant.duties_count, { count: grant.duties_count }) }}<template v-if="scopeLabel(grant)"> · {{ scopeLabel(grant) }}</template>
             </span>
             <span v-if="grant.needs_scope" class="mt-1 block text-xs text-status-attention" data-testid="grant-needs-scope">
               {{ $t('types.grant_needs_scope') }}
@@ -91,7 +91,7 @@
           <span class="min-w-0">
             <Link :href="route('institutions.show', grant.institution.id)" class="block text-sm font-medium text-foreground hover:underline">{{ grant.institution.name }}</Link>
             <span class="block text-xs text-muted-foreground">
-              {{ $tChoice('responsibilities.grants.reaches', grant.duties_count, { count: grant.duties_count }) }}
+              {{ $tChoice('responsibilities.grants.reaches', grant.duties_count, { count: grant.duties_count }) }}<template v-if="scopeLabel(grant)"> · {{ scopeLabel(grant) }}</template>
             </span>
           </span>
           <Button v-if="canUpdate" variant="ghost" size="sm" voice="sentence" class="shrink-0 pointer-coarse:h-11" @click="removeTarget = { id: grant.id, label: grant.institution.name }">
@@ -107,7 +107,7 @@
       :description="$t('responsibilities.grants.sheet_description')"
       :save-label="$t('responsibilities.grants.submit')"
       :processing="form.processing"
-      :disabled="!form.grantee_id || (scopes.length > 0 && !form.scope_id) || (form.grantee_type === DUTY_TYPE && typeGrantBlockedBy.length > 0)"
+      :disabled="!form.grantee_id || (scopes.length > 0 && form.scope_type !== OWN_TENANT && !form.scope_id) || (form.grantee_type === DUTY_TYPE && typeGrantBlockedBy.length > 0)"
       :dirty="form.isDirty"
       @submit="submit"
     >
@@ -162,15 +162,18 @@
         </FormFieldWrapper>
 
         <template v-if="scopes.length">
-          <FormFieldWrapper id="grant_scope_type" :label="$t('responsibilities.sheet.scope')" :hint="$t('responsibilities.grants.scope_hint')" :error="form.errors.scope_type">
+          <FormFieldWrapper v-if="scopeOptions.length > 1" id="grant_scope_type" :label="$t('responsibilities.sheet.scope')" :hint="$t('responsibilities.grants.scope_hint')" :error="form.errors.scope_type">
             <FormSegmentedControl
               v-model="form.scope_type"
-              :options="scopes.map(scope => ({ value: scope, label: $t(`responsibilities.scopes.${scope}`) }))"
+              :options="scopeOptions"
               :aria-label="$t('responsibilities.sheet.scope')"
               test-id-prefix="grant-scope"
             />
           </FormFieldWrapper>
-          <FormFieldWrapper id="grant_scope_id" :label="$t(`responsibilities.sheet.${form.scope_type}`)" :error="form.errors.scope_id" required>
+          <p v-if="form.scope_type === OWN_TENANT" class="text-sm text-muted-foreground" data-testid="grant-own-tenant-hint">
+            {{ $t(form.grantee_type === INSTITUTION ? 'responsibilities.grants.institution_tenant_hint' : 'responsibilities.grants.own_tenant_hint') }}
+          </p>
+          <FormFieldWrapper v-else id="grant_scope_id" :label="$t(`responsibilities.sheet.${form.scope_type}`)" :error="form.errors.scope_id" required>
             <p v-if="!options" class="text-sm text-muted-foreground">
               {{ $t('Įkeliama…') }}
             </p>
@@ -221,7 +224,7 @@ import { Link, router, useForm } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { Briefcase, Landmark, Plus, Tags, TriangleAlert } from '@lucide/vue';
 
-import type { ResponsibilityGrantOptions, ResponsibilityGrantsPayload, ResponsibilityScopeValue } from './types';
+import type { GrantScopeValue, ResponsibilityGrantOptions, ResponsibilityGrantsPayload, ResponsibilityScopeValue } from './types';
 
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
@@ -237,6 +240,7 @@ import { permissionLabel } from '@/Features/Admin/PermissionMatrix/permissionLab
 const DUTY = 'duty';
 const DUTY_TYPE = 'duty_type';
 const INSTITUTION = 'institution';
+const OWN_TENANT = 'own_tenant';
 type Grantee = typeof DUTY | typeof DUTY_TYPE | typeof INSTITUTION;
 
 const props = withDefaults(defineProps<{
@@ -263,7 +267,7 @@ let dutyHit: DutyHit | null = null;
 const form = useForm({
   grantee_type: DUTY as Grantee,
   grantee_id: '',
-  scope_type: (props.scopes[0] ?? null) as ResponsibilityScopeValue | null,
+  scope_type: (props.scopes[0] ?? null) as GrantScopeValue | null,
   scope_id: '',
 });
 
@@ -272,6 +276,23 @@ const granteeOptions: FormSegmentOption<Grantee>[] = [
   { value: DUTY_TYPE, label: $t('responsibilities.grants.to_duty_type') },
   { value: INSTITUTION, label: $t('responsibilities.grants.to_institution') },
 ];
+
+// A type reaches duties in every padalinys, so it may cover each duty's own one; an institution's
+// duties all share its padalinys, so that is the only padalinys it can cover.
+const scopeOptions = computed<FormSegmentOption<GrantScopeValue>[]>(() => {
+  const hasTenant = props.scopes.includes('tenant');
+  const values: GrantScopeValue[] = {
+    [DUTY]: [...props.scopes],
+    [DUTY_TYPE]: hasTenant ? [OWN_TENANT, ...props.scopes] : [...props.scopes],
+    [INSTITUTION]: props.scopes.map((scope): GrantScopeValue => (scope === 'tenant' ? OWN_TENANT : scope)),
+  }[form.grantee_type];
+
+  return values.map(scope => ({ value: scope, label: $t(`responsibilities.scopes.${scope}`) }));
+});
+
+function scopeLabel(grant: { scope_type: GrantScopeValue | null; scope_name: string | null }): string | null {
+  return grant.scope_type === OWN_TENANT ? $t('responsibilities.scopes.own_tenant') : grant.scope_name;
+}
 
 // Pickers work on whole objects; the form stores ids.
 const selectedDuty = computed<DutyHit | null>({
@@ -295,7 +316,7 @@ const scopeTargets = computed(() => {
     tenant: props.options.tenants.map(tenant => ({ id: tenant.id, label: tenant.shortname })),
     institution_type: props.options.institutionTypes.map(type => ({ id: type.id, label: type.title })),
     institution: props.options.institutions.map(institution => ({ id: institution.id, label: institution.name })),
-  }[form.scope_type ?? 'tenant'];
+  }[form.scope_type === OWN_TENANT || !form.scope_type ? 'tenant' : form.scope_type];
 });
 const selectedScope = computed({
   get: () => scopeTargets.value.find(target => target.id === form.scope_id) ?? null,
@@ -305,6 +326,7 @@ const selectedScope = computed({
 watch(() => form.grantee_type, () => {
   form.grantee_id = '';
   dutyHit = null;
+  form.scope_type = scopeOptions.value[0]?.value ?? null;
 });
 watch(() => form.scope_type, () => {
   form.scope_id = '';
@@ -314,13 +336,20 @@ function openSheet(grantee: Grantee): void {
   form.reset();
   form.clearErrors();
   form.grantee_type = grantee;
+  form.scope_type = scopeOptions.value[0]?.value ?? null;
   sheetOpen.value = true;
   router.reload({ only: ['grantOptions'] });
 }
 
 function submit(): void {
   form
-    .transform(data => (props.scopes.length ? data : { grantee_type: data.grantee_type, grantee_id: data.grantee_id }))
+    .transform((data) => {
+      if (!props.scopes.length) {
+        return { grantee_type: data.grantee_type, grantee_id: data.grantee_id };
+      }
+
+      return data.scope_type === OWN_TENANT ? { grantee_type: data.grantee_type, grantee_id: data.grantee_id, scope_type: data.scope_type } : data;
+    })
     .post(route('responsibilities.grants.store', props.roleId), {
       preserveScroll: true,
       onSuccess: () => {

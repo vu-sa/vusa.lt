@@ -11,11 +11,8 @@ use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\DutyType;
-use App\Models\Institution;
-use App\Models\InstitutionType;
 use App\Models\ResponsibilityGrant;
 use App\Models\Role;
-use App\Models\Tenant;
 use App\Services\ModelAuthorizer;
 use App\Services\ResourceServices\SharepointFileService;
 use App\Support\MorphMap;
@@ -101,13 +98,7 @@ class DutyTypeController extends AdminController
                 ],
                 'title' => $grant->role->displayTitle(),
                 'href' => $actor->can('view', $grant->role) ? route('responsibilities.show', $grant->role) : null,
-                'scope_type' => $grant->scope_type,
-                'scope_name' => match (true) {
-                    $grant->scope instanceof Tenant => (string) __($grant->scope->shortname),
-                    $grant->scope instanceof InstitutionType => (string) $grant->scope->getTranslation('title', app()->getLocale()),
-                    $grant->scope instanceof Institution => (string) $grant->scope->getTranslation('name', app()->getLocale()),
-                    default => null,
-                },
+                ...$grant->scopePayload(),
                 'needs_scope' => $grant->needsScope(),
             ])->values(),
             'attachedModels' => $type->duties->map(fn ($model): array => [

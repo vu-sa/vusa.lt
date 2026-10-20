@@ -107,7 +107,10 @@
               {{ $t('types.grant_inherited_from') }}
               <Link :href="grant.inherited_from.href" class="hover:underline">{{ grant.inherited_from.title }}</Link>
             </p>
-            <p v-if="grant.scope_name" class="text-xs text-muted-foreground">
+            <p v-if="grant.scope_type === 'own_tenant'" class="text-xs text-muted-foreground">
+              {{ $t('responsibilities.scopes.own_tenant') }}
+            </p>
+            <p v-else-if="grant.scope_name" class="text-xs text-muted-foreground">
               {{ grant.scope_type ? `${$t(`responsibilities.scopes.${grant.scope_type}`)} · ` : '' }}{{ grant.scope_name }}
             </p>
             <p v-if="grant.needs_scope" class="text-xs text-status-attention" data-testid="type-grant-needs-scope">

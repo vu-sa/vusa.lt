@@ -142,6 +142,22 @@ describe('gaps', function (): void {
     });
 });
 
+describe('own padalinys', function (): void {
+    test('a duty type grant covers each duty\'s own padalinys only', function (): void {
+        $type = DutyType::factory()->create();
+        $other = Tenant::query()->representational()->whereKeyNot($this->tenant->id)->firstOrFail();
+        $here = Duty::factory()->for($this->institution)->create();
+        $there = Duty::factory()->for(Institution::factory()->for($other))->create();
+        $type->duties()->attach([$here->id, $there->id]);
+
+        $grant = ResponsibilityGrant::factory()->forDutyType($type)->purpose(ResponsibilityPurpose::MemberRegistration)->forOwnTenant()->create();
+
+        expect(resolver()->dutiesForTenant(ResponsibilityPurpose::MemberRegistration, $this->tenant)->pluck('id')->all())->toBe([$here->id])
+            ->and(resolver()->dutiesForTenant(ResponsibilityPurpose::MemberRegistration, $other)->pluck('id')->all())->toBe([$there->id])
+            ->and($grant->needsScope())->toBeFalse();
+    });
+});
+
 test('a purpose granted to a parent duty type reaches the duties of its subtypes', function (): void {
     $parent = DutyType::factory()->create();
     $child = DutyType::factory()->create(['parent_id' => $parent->id]);

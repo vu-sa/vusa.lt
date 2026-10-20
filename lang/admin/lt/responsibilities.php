@@ -25,6 +25,7 @@ return [
 
     'scopes' => [
         'tenant' => 'Visas padalinys',
+        'own_tenant' => 'Savo padalinys',
         'institution_type' => 'Institucijų tipas',
         'institution' => 'Institucija',
     ],
@@ -141,6 +142,8 @@ return [
         'duty_type' => 'Pareigybės tipas',
         'institution' => 'Institucija',
         'scope_hint' => 'Kam ši pareigybė atsakinga: konkretesnis suteikimas nusveria bendresnį.',
+        'own_tenant_hint' => 'Kiekviena pareigybė atsakinga už savo institucijos padalinį.',
+        'institution_tenant_hint' => 'Institucijos pareigybės atsakingos už jos padalinį.',
         'submit' => 'Suteikti',
     ],
 

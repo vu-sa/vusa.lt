@@ -14,6 +14,7 @@ use App\Support\TypeTree;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Support\Facades\DB;
 
 /**
  * The one answer to "who is responsible for this institution?" for a purpose.
@@ -257,14 +258,37 @@ class ResponsibilityResolver
         return $this->assignments[$purpose->value] ??= ResponsibilityGrant::query()
             ->whereHas('role', fn (Builder $role) => $role->where('purpose', $purpose))
             ->get()
-            ->map(fn (ResponsibilityGrant $grant): array => [
-                'scope_type' => $grant->scope_type,
-                'scope_id' => $grant->scope_id,
-                'duty_ids' => ResponsibilityGrant::dutyIdsQuery(ResponsibilityGrant::query()->whereKey($grant->id))
+            ->flatMap(function (ResponsibilityGrant $grant): array {
+                $dutyIds = ResponsibilityGrant::dutyIdsQuery(ResponsibilityGrant::query()->whereKey($grant->id))
                     ->pluck('duty_id')
                     ->map(strval(...))
-                    ->all(),
-            ]);
+                    ->all();
+
+                if (! $grant->coversOwnTenant()) {
+                    return [['scope_type' => $grant->scope_type, 'scope_id' => $grant->scope_id, 'duty_ids' => $dutyIds]];
+                }
+
+                return $this->dutyIdsByTenant($dutyIds)
+                    ->map(fn (array $ids, string $tenantId): array => ['scope_type' => ResponsibilityScope::Tenant->value, 'scope_id' => $tenantId, 'duty_ids' => $ids])
+                    ->values()
+                    ->all();
+            })
+            ->values();
+    }
+
+    /**
+     * @param  list<string>  $dutyIds
+     * @return SupportCollection<string, list<string>>
+     */
+    private function dutyIdsByTenant(array $dutyIds): SupportCollection
+    {
+        return DB::table('duties')
+            ->join('institutions', 'institutions.id', '=', 'duties.institution_id')
+            ->whereIn('duties.id', $dutyIds)
+            ->whereNotNull('institutions.tenant_id')
+            ->get(['duties.id', 'institutions.tenant_id'])
+            ->groupBy(fn (object $row): string => (string) $row->tenant_id)
+            ->map(fn (SupportCollection $rows): array => $rows->pluck('id')->map(strval(...))->all());
     }
 
     /**

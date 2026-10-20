@@ -1,4 +1,6 @@
 export type ResponsibilityScopeValue = 'tenant' | 'institution_type' | 'institution';
+/** A stored scope, or `own_tenant` for a type or institution grant covering each duty's own padalinys. */
+export type GrantScopeValue = ResponsibilityScopeValue | 'own_tenant';
 export type GranteeType = 'duty' | 'duty_type' | 'institution';
 
 /** One responsibility a duty holds, given to it directly or through its type or institution. */
@@ -11,7 +13,7 @@ export interface DutyResponsibilityItem {
   source: GranteeType;
   /** The type or institution it comes through; null when given to the duty itself. */
   source_name: string | null;
-  scope_type: ResponsibilityScopeValue | null;
+  scope_type: GrantScopeValue | null;
   scope_name: string | null;
   missing_permissions: string[];
 }
@@ -41,12 +43,12 @@ export interface ResponsibilityGrantsPayload {
   dutyTypes: {
     id: string;
     type: { id: number; title: string };
-    scope_type: ResponsibilityScopeValue | null;
+    scope_type: GrantScopeValue | null;
     scope_name: string | null;
     duties_count: number;
     needs_scope?: boolean;
   }[];
-  institutions: { id: string; institution: { id: string; name: string }; scope_type: ResponsibilityScopeValue | null; scope_name: string | null; duties_count: number }[];
+  institutions: { id: string; institution: { id: string; name: string }; scope_type: GrantScopeValue | null; scope_name: string | null; duties_count: number }[];
 }
 
 export interface ResponsibilityGrantOptions {

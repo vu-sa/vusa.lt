@@ -23,6 +23,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * A responsibility given to a duty, to every duty of a type, or to every duty in an institution.
  *
  * The source of truth for duty roles: `model_has_roles` rows for duties are its projection.
+ * A tenant scope without a `scope_id` covers each reached duty's own padalinys.
  *
  * @property string $id
  * @property string $role_id
@@ -51,6 +52,9 @@ class ResponsibilityGrant extends Model
 
     /** @var list<class-string<\Illuminate\Database\Eloquent\Model>> */
     public const array GRANTEES = [Duty::class, DutyType::class, Institution::class];
+
+    /** The scope token forms and payloads use for a tenant scope without a fixed padalinys. */
+    public const string OWN_TENANT = 'own_tenant';
 
     #[\Override]
     protected static function booted(): void
@@ -87,10 +91,35 @@ class ResponsibilityGrant extends Model
         return $this->scope_type === null ? null : ResponsibilityScope::from($this->scope_type);
     }
 
+    public function coversOwnTenant(): bool
+    {
+        return $this->scope_type === ResponsibilityScope::Tenant->value && $this->scope_id === null;
+    }
+
     public function needsScope(): bool
     {
         return $this->role->purpose?->isScoped() === true
-            && ($this->scope === null || ! in_array(ResponsibilityScope::tryFrom($this->scope_type ?? ''), $this->role->purpose->allowedScopes(), true));
+            && (($this->scope === null && ! $this->coversOwnTenant()) || ! in_array(ResponsibilityScope::tryFrom($this->scope_type ?? ''), $this->role->purpose->allowedScopes(), true));
+    }
+
+    /**
+     * @return array{scope_type: string|null, scope_name: string|null}
+     */
+    public function scopePayload(): array
+    {
+        if ($this->coversOwnTenant()) {
+            return ['scope_type' => self::OWN_TENANT, 'scope_name' => null];
+        }
+
+        return [
+            'scope_type' => $this->scope_type,
+            'scope_name' => match (true) {
+                $this->scope instanceof Tenant => (string) __($this->scope->shortname),
+                $this->scope instanceof InstitutionType => (string) $this->scope->getTranslation('title', app()->getLocale()),
+                $this->scope instanceof Institution => (string) $this->scope->getTranslation('name', app()->getLocale()),
+                default => null,
+            },
+        ];
     }
 
     /**

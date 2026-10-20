@@ -199,6 +199,30 @@ describe('grants', function (): void {
         ])->assertSessionHasErrors(['scope_type', 'scope_id']);
     });
 
+    test('a duty type may cover each duty\'s own padalinys, a single duty may not', function (): void {
+        $registration = RoleFactory::forPurpose(ResponsibilityPurpose::MemberRegistration);
+        $type = DutyType::factory()->create();
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+
+        asUser($this->admin)->post(route('responsibilities.grants.store', $registration), ['grantee_type' => 'duty', 'grantee_id' => $duty->id, 'scope_type' => 'own_tenant'])
+            ->assertSessionHasErrors('scope_type');
+        asUser($this->admin)->post(route('responsibilities.grants.store', $registration), ['grantee_type' => 'duty_type', 'grantee_id' => (string) $type->id, 'scope_type' => 'own_tenant'])
+            ->assertSessionHasNoErrors();
+
+        expect($type->responsibilityGrants()->firstOrFail()->only('scope_type', 'scope_id'))->toBe(['scope_type' => 'tenant', 'scope_id' => null]);
+    });
+
+    test('an institution covers only its own padalinys', function (): void {
+        $registration = RoleFactory::forPurpose(ResponsibilityPurpose::MemberRegistration);
+        $institution = Institution::factory()->for($this->tenant)->create();
+
+        asUser($this->admin)->post(route('responsibilities.grants.store', $registration), [
+            'grantee_type' => 'institution', 'grantee_id' => $institution->id, 'scope_type' => 'tenant', 'scope_id' => (string) $this->tenant->id,
+        ])->assertSessionHasErrors('scope_type');
+        asUser($this->admin)->post(route('responsibilities.grants.store', $registration), ['grantee_type' => 'institution', 'grantee_id' => $institution->id, 'scope_type' => 'own_tenant'])
+            ->assertSessionHasNoErrors();
+    });
+
     test('a grant id from another responsibility returns 404', function (): void {
         $grant = ResponsibilityGrant::factory()->forDuty($this->user->duties()->first())->of(Role::factory()->create())->create();
 
