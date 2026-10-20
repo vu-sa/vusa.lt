@@ -49,9 +49,9 @@ test('never enlarges a source smaller than the requested width', function (): vo
 
     $response = $this->get('/img/2400/files/small.jpg')->assertOk()->assertHeader('Content-Type', 'image/jpeg');
 
-    expect(getimagesizefromstring(file_get_contents($response->baseResponse->getFile()->getPathname()))[0])->toBe(600);
-    expect(file_get_contents($response->baseResponse->getFile()->getPathname()))->toBe(Storage::get('public/files/small.jpg'));
-    expect(Storage::allFiles('thumbnails'))->toBe([]);
+    expect(getimagesizefromstring(file_get_contents($response->baseResponse->getFile()->getPathname()))[0])->toBe(600)
+        ->and(file_get_contents($response->baseResponse->getFile()->getPathname()))->toBe(Storage::get('public/files/small.jpg'))
+        ->and(Storage::allFiles('thumbnails'))->toBeEmpty();
 });
 
 test('resolves legacy uploads urls the way RewriteUploadsUrl does', function (): void {
@@ -79,7 +79,7 @@ test('an unlisted width generates nothing', function (): void {
     $response = $this->get('/img/1337/files/photo.jpg');
 
     expect($response->headers->get('Content-Type'))->not->toBe('image/webp')
-        ->and(Storage::allFiles('thumbnails'))->toBe([]);
+        ->and(Storage::allFiles('thumbnails'))->toBeEmpty();
 });
 
 test('a replaced source gets a fresh copy', function (): void {
@@ -104,8 +104,8 @@ test('rich text gets srcset for same-site uploads only, keeping authored markup'
     expect($rendered)->toContain('<p>A &amp; B</p>', 'alt="Autorius"', 'data-align="left"', 'sizes="min(240px, 100vw)"',
         'srcset="/img/400/files/My%20photo.png 400w', '<img src="https://example.com/uploads/files/a.png">', '<img src="/uploads/media/1/a.webp">')
         ->and(substr_count($rendered, 'srcset='))->toBe(1)
-        ->and(ResizableImage::withSrcset('<p>No images</p>'))->toBe('<p>No images</p>');
-    expect($rendered)->toContain('/uploads/files/My%20photo.png 1600w')->not->toContain('2400w', '3840w', '/img/1600/');
+        ->and(ResizableImage::withSrcset('<p>No images</p>'))->toBe('<p>No images</p>')
+        ->and($rendered)->toContain('/uploads/files/My%20photo.png 1600w')->not->toContain('2400w', '3840w', '/img/1600/');
 });
 
 test('CMS blocks serialize source-checked candidates including a nonstandard native width', function (): void {
@@ -116,7 +116,7 @@ test('CMS blocks serialize source-checked candidates including a nonstandard nat
 
     expect($part->toArray()['image_srcsets'])->toBe([
         '/uploads/files/hero.jpg' => '/img/400/files/hero.jpg 400w, /img/900/files/hero.jpg 900w, /uploads/files/hero.jpg 1200w',
-    ]);
-    expect(ImageData::fromLegacy('/uploads/files/hero.jpg')['srcset'])->toBe($part->toArray()['image_srcsets']['/uploads/files/hero.jpg']);
-    expect(ResizableImage::withSrcset('<img src="/uploads/files/missing.jpg">'))->toBe('<img src="/uploads/files/missing.jpg">');
+    ])
+        ->and(ImageData::fromLegacy('/uploads/files/hero.jpg')['srcset'])->toBe($part->toArray()['image_srcsets']['/uploads/files/hero.jpg'])
+        ->and(ResizableImage::withSrcset('<img src="/uploads/files/missing.jpg">'))->toBe('<img src="/uploads/files/missing.jpg">');
 });

@@ -25,7 +25,9 @@
     <template #meta>
       <!-- A search excerpt stands in for the subtitle, so the row never grows a line. -->
       <template v-if="subtitle">
-        <SearchMatch :match="subtitleMatch" :title="subtitle" /><template v-if="formattedDate"> · </template>
+        <SearchMatch :match="subtitleMatch" :title="subtitle" /><template v-if="formattedDate">
+          ·
+        </template>
       </template>{{ formattedDate }}
     </template>
 

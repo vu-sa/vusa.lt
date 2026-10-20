@@ -196,7 +196,6 @@ usePageBreadcrumbs(() => {
   ]);
 }, { placement: showTitle.value ? 'band' : 'layout' });
 
-
 // Tiptap h2/h3(/h4) headings + titled section blocks (hero, accordion, card-stack, …) —
 // see tocAnchors.ts. A page built entirely from section blocks used to get an empty
 // ToC because only tiptap headings were ever indexed.

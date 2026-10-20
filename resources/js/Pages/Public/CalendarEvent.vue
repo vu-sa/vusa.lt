@@ -173,9 +173,9 @@
           >
             <div class="relative aspect-[16/9] overflow-hidden border border-border bg-secondary">
               <MediaImage
+                v-if="otherEventImage(otherEvent)"
                 :image="(otherEvent as { main_image_media?: ImageData | null }).main_image_media"
                 sizes="(min-width: 1280px) 384px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                v-if="otherEventImage(otherEvent)"
                 :src="otherEventImage(otherEvent)"
                 :alt="otherEventTitle(otherEvent)"
                 class="h-full w-full object-cover transition-transform duration-400 group-hover:scale-103"
@@ -207,12 +207,12 @@
 </template>
 
 <script setup lang="ts">
-import MediaImage from '@/Components/Brand/MediaImage.vue';
-import type { ImageData } from '@/Types/media';
 import { trans as $t } from 'laravel-vue-i18n';
 import { computed } from 'vue';
 import { usePage, Link } from '@inertiajs/vue3';
 
+import type { ImageData } from '@/Types/media';
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import Button from '@/Components/ui/button/Button.vue';
 import EventActions from '@/Components/Calendar/EventActions.vue';
 import EventDetailsCard from '@/Components/Calendar/EventDetailsCard.vue';

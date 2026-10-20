@@ -63,5 +63,5 @@ test('leaves permissions checked by a super-admin-only policy alone', function (
 });
 
 test('after a sync the table holds exactly the catalog', function (): void {
-    expect(Permission::query()->pluck('name')->diff(PermissionCatalog::names())->all())->toBe([]);
+    expect(Permission::query()->pluck('name')->diff(PermissionCatalog::names())->all())->toBeEmpty();
 });

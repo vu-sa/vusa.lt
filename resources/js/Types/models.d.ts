@@ -148,7 +148,6 @@ declare global {
       // columns
       id: number
       title: string
-      image_url?: string | null
       link_url: string
       lang: string
       order: number
@@ -159,11 +158,14 @@ declare global {
       deleted_at?: string | null
       // relations
       tenant?: Tenant
+      media?: Media[]
       activities_as_subject?: Activity[]
       // counts
+      media_count: number
       activities_as_subject_count: number
       // exists
       tenant_exists: boolean
+      media_exists: boolean
       activities_as_subject_exists: boolean
     }
 
@@ -220,6 +222,7 @@ declare global {
       deleted_at?: string | null
       // mutators
       main_image_url: unknown
+      main_image_media?: Array<unknown> | null
       translatable_columns_from: Array<unknown>
       translations: unknown
       // relations
@@ -352,7 +355,6 @@ declare global {
     }
 
     export interface ContentPart {
-      image_srcsets?: Record<string, string>
       // columns
       id: number
       content_id: number
@@ -363,6 +365,7 @@ declare global {
       created_at: string
       updated_at: string
       // mutators
+      image_srcsets: Array<unknown>
       content_summary: unknown
       html: unknown
       // relations
@@ -460,6 +463,7 @@ declare global {
       use_original_duty_name: boolean
       created_at: string
       updated_at: string
+      ended_by_institution_deactivation?: boolean
       // mutators
       translatable_columns_from: Array<unknown>
       translations: unknown
@@ -471,8 +475,10 @@ declare global {
       tenant?: Tenant
       via_dutiable?: Dutiable
       derived_dutiables?: Dutiable[]
+      media?: Media[]
       // counts
       derived_dutiables_count: number
+      media_count: number
       // exists
       duty_exists: boolean
       study_program_exists: boolean
@@ -480,6 +486,7 @@ declare global {
       tenant_exists: boolean
       via_dutiable_exists: boolean
       derived_dutiables_exists: boolean
+      media_exists: boolean
     }
 
     export interface Duty {
@@ -507,6 +514,7 @@ declare global {
       users?: User[]
       current_users?: User[]
       previous_users?: User[]
+      responsibility_grants?: ResponsibilityGrant[]
       types?: DutyType[]
       institution?: Institution
       institutions?: Institution
@@ -536,6 +544,7 @@ declare global {
       users_count: number
       current_users_count: number
       previous_users_count: number
+      responsibility_grants_count: number
       types_count: number
       ex_officio_target_duties_count: number
       ex_officio_source_duties_count: number
@@ -557,6 +566,7 @@ declare global {
       users_exists: boolean
       current_users_exists: boolean
       previous_users_exists: boolean
+      responsibility_grants_exists: boolean
       types_exists: boolean
       institution_exists: boolean
       institutions_exists: boolean
@@ -608,6 +618,26 @@ declare global {
       duty_exists: boolean
     }
 
+    export interface DutyResponsibility {
+      // columns
+      id: string
+      duty_id: string
+      responsibility: string
+      scope_type: string
+      scope_id: string
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      duty?: Duty
+      scope?: DutyResponsibility
+      activities_as_subject?: Activity[]
+      // counts
+      activities_as_subject_count: number
+      // exists
+      duty_exists: boolean
+      activities_as_subject_exists: boolean
+    }
+
     export interface DutyType {
       // columns
       id: number
@@ -628,6 +658,7 @@ declare global {
       // relations
       duties?: Duty[]
       roles?: Role[]
+      responsibility_grants?: ResponsibilityGrant[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       parent?: DutyType
@@ -638,6 +669,7 @@ declare global {
       // counts
       duties_count: number
       roles_count: number
+      responsibility_grants_count: number
       fileable_files_count: number
       available_files_count: number
       descendants_count: number
@@ -646,6 +678,7 @@ declare global {
       // exists
       duties_exists: boolean
       roles_exists: boolean
+      responsibility_grants_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
       parent_exists: boolean
@@ -860,8 +893,6 @@ declare global {
       email?: string | null
       working_hours?: Array<unknown> | null
       website?: string | null
-      image_url?: string | null
-      image_focal_point?: string | null
       logo_url?: string | null
       facebook_url?: string | null
       instagram_url?: string | null
@@ -884,7 +915,9 @@ declare global {
       duties?: Duty[]
       cadences?: Cadence[]
       types?: InstitutionType[]
+      responsibility_grants?: ResponsibilityGrant[]
       tenant?: Tenant
+      public_urls?: PublicUrl[]
       tenants?: Tenant
       documents?: Document[]
       check_ins?: InstitutionCheckIn[]
@@ -899,6 +932,7 @@ declare global {
       incoming_links?: InstitutionLink[]
       comments?: Comment[]
       root_comments?: Comment[]
+      media?: Media[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       tasks?: Task[]
@@ -907,6 +941,8 @@ declare global {
       duties_count: number
       cadences_count: number
       types_count: number
+      responsibility_grants_count: number
+      public_urls_count: number
       documents_count: number
       check_ins_count: number
       meetings_count: number
@@ -918,6 +954,7 @@ declare global {
       incoming_links_count: number
       comments_count: number
       root_comments_count: number
+      media_count: number
       fileable_files_count: number
       available_files_count: number
       tasks_count: number
@@ -926,7 +963,9 @@ declare global {
       duties_exists: boolean
       cadences_exists: boolean
       types_exists: boolean
+      responsibility_grants_exists: boolean
       tenant_exists: boolean
+      public_urls_exists: boolean
       tenants_exists: boolean
       documents_exists: boolean
       check_ins_exists: boolean
@@ -939,6 +978,7 @@ declare global {
       incoming_links_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
+      media_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
       tasks_exists: boolean
@@ -1077,6 +1117,37 @@ declare global {
       user_exists: boolean
     }
 
+    export interface InstitutionStatusSnapshot {
+      // columns
+      id: number
+      taken_on: string
+      tenant_id: number
+      all: number
+      needs_attention: number
+      overdue: number
+      approaching: number
+      no_activity: number
+      recent_check_in: number
+      current: number
+      meetings_held: number
+      meetings_registered: number
+      check_ins_registered: number
+      entered_attention: number
+      left_attention: number
+      is_reconstructed: boolean
+      created_at?: string | null
+      updated_at?: string | null
+      institution_statuses?: Array<unknown> | null
+      meeting_ids?: Array<unknown> | null
+      population_added: number
+      population_removed: number
+      // relations
+      tenant?: Tenant
+      // counts
+      // exists
+      tenant_exists: boolean
+    }
+
     export interface InstitutionType {
       // columns
       id: number
@@ -1166,6 +1237,136 @@ declare global {
       // counts
       // exists
       course_exists: boolean
+    }
+
+    export interface MailingList {
+      // columns
+      id: string
+      tenant_id: number
+      address: string
+      mailman_list_id?: string | null
+      display_name: string
+      description?: string | null
+      mode: MailingListMode
+      archive_policy?: string | null
+      member_count: number
+      posts_last_year: number
+      last_post_at?: string | null
+      last_synced_at?: string | null
+      last_sync_status?: MailingListSyncStatus | null
+      last_sync_error?: string | null
+      archive_fetched_at?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      archive_head_hash?: string | null
+      archive_backfill_offset: number
+      archive_backfill_total: number
+      archive_backfilled_at?: string | null
+      // relations
+      tenant?: Tenant
+      sources?: MailingListSource[]
+      exclusions?: MailingListExclusion[]
+      members?: MailingListMember[]
+      messages?: MailingListMessage[]
+      activities_as_subject?: Activity[]
+      // counts
+      sources_count: number
+      exclusions_count: number
+      members_count: number
+      messages_count: number
+      activities_as_subject_count: number
+      // exists
+      tenant_exists: boolean
+      sources_exists: boolean
+      exclusions_exists: boolean
+      members_exists: boolean
+      messages_exists: boolean
+      activities_as_subject_exists: boolean
+    }
+
+    export interface MailingListExclusion {
+      // columns
+      id: string
+      mailing_list_id: string
+      email: string
+      note?: string | null
+      created_by?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      mailing_list?: MailingList
+      activities_as_subject?: Activity[]
+      // counts
+      activities_as_subject_count: number
+      // exists
+      mailing_list_exists: boolean
+      activities_as_subject_exists: boolean
+    }
+
+    export interface MailingListMember {
+      // columns
+      id: number
+      mailing_list_id: string
+      email: string
+      display_name?: string | null
+      user_id?: string | null
+      reasons?: Array<unknown> | null
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      mailing_list?: MailingList
+      user?: User
+      // counts
+      // exists
+      mailing_list_exists: boolean
+      user_exists: boolean
+    }
+
+    export interface MailingListMessage {
+      // columns
+      id: number
+      mailing_list_id: string
+      message_id_hash: string
+      thread_id?: string | null
+      subject?: string | null
+      sender_name?: string | null
+      sender_email?: string | null
+      sent_at?: string | null
+      body_text?: string | null
+      attachments?: Array<unknown> | null
+      url?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      mailing_list?: MailingList
+      // counts
+      // exists
+      mailing_list_exists: boolean
+    }
+
+    export interface MailingListSource {
+      // columns
+      id: string
+      mailing_list_id: string
+      type: MailingListSourceType
+      source_id?: string | null
+      filters?: Array<unknown> | null
+      address_mode: MailingListAddressMode
+      email?: string | null
+      display_name?: string | null
+      note?: string | null
+      expires_on?: string | null
+      created_by?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      mailing_list?: MailingList
+      activities_as_subject?: Activity[]
+      // counts
+      activities_as_subject_count: number
+      // exists
+      mailing_list_exists: boolean
+      activities_as_subject_exists: boolean
     }
 
     export interface Meeting {
@@ -1263,8 +1464,6 @@ declare global {
       lang: string
       other_lang_id?: number | null
       content_id: number
-      image?: string | null
-      image_author?: string | null
       important: boolean
       tenant_id: number
       publish_time?: string | null
@@ -1284,10 +1483,12 @@ declare global {
       tags?: Tag[]
       content?: Content
       public_urls?: PublicUrl[]
+      media?: Media[]
       activities_as_subject?: Activity[]
       // counts
       tags_count: number
       public_urls_count: number
+      media_count: number
       activities_as_subject_count: number
       // exists
       user_exists: boolean
@@ -1296,6 +1497,7 @@ declare global {
       tags_exists: boolean
       content_exists: boolean
       public_urls_exists: boolean
+      media_exists: boolean
       activities_as_subject_exists: boolean
     }
 
@@ -1332,7 +1534,6 @@ declare global {
       show_table_of_contents: boolean
       show_title: boolean
       show_breadcrumbs: boolean
-      featured_image?: string | null
       meta_description?: string | null
       tenant_id: number
       created_at: string
@@ -1347,11 +1548,13 @@ declare global {
       tags?: Tag[]
       content?: Content
       public_urls?: PublicUrl[]
+      media?: Media[]
       activities_as_subject?: Activity[]
       // counts
       children_count: number
       tags_count: number
       public_urls_count: number
+      media_count: number
       activities_as_subject_count: number
       // exists
       tenant_exists: boolean
@@ -1361,7 +1564,24 @@ declare global {
       tags_exists: boolean
       content_exists: boolean
       public_urls_exists: boolean
+      media_exists: boolean
       activities_as_subject_exists: boolean
+    }
+
+    export interface PendingUpload {
+      // columns
+      id: string
+      user_id: string
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      user?: User
+      media?: Media[]
+      // counts
+      media_count: number
+      // exists
+      user_exists: boolean
+      media_exists: boolean
     }
 
     export interface Permission {
@@ -1473,8 +1693,6 @@ declare global {
       email?: string | null
       working_hours?: Array<unknown> | null
       website?: string | null
-      image_url?: string | null
-      image_focal_point?: string | null
       logo_url?: string | null
       facebook_url?: string | null
       instagram_url?: string | null
@@ -1498,7 +1716,9 @@ declare global {
       duties?: Duty[]
       meetings?: Meeting[]
       cadences?: Cadence[]
+      responsibility_grants?: ResponsibilityGrant[]
       tenant?: Tenant
+      public_urls?: PublicUrl[]
       tenants?: Tenant
       documents?: Document[]
       check_ins?: InstitutionCheckIn[]
@@ -1512,6 +1732,7 @@ declare global {
       incoming_links?: InstitutionLink[]
       comments?: Comment[]
       root_comments?: Comment[]
+      media?: Media[]
       fileable_files?: FileableFile[]
       available_files?: FileableFile[]
       tasks?: Task[]
@@ -1521,6 +1742,8 @@ declare global {
       duties_count: number
       meetings_count: number
       cadences_count: number
+      responsibility_grants_count: number
+      public_urls_count: number
       documents_count: number
       check_ins_count: number
       problems_count: number
@@ -1531,6 +1754,7 @@ declare global {
       incoming_links_count: number
       comments_count: number
       root_comments_count: number
+      media_count: number
       fileable_files_count: number
       available_files_count: number
       tasks_count: number
@@ -1540,7 +1764,9 @@ declare global {
       duties_exists: boolean
       meetings_exists: boolean
       cadences_exists: boolean
+      responsibility_grants_exists: boolean
       tenant_exists: boolean
+      public_urls_exists: boolean
       tenants_exists: boolean
       documents_exists: boolean
       check_ins_exists: boolean
@@ -1552,6 +1778,7 @@ declare global {
       incoming_links_exists: boolean
       comments_exists: boolean
       root_comments_exists: boolean
+      media_exists: boolean
       fileable_files_exists: boolean
       available_files_exists: boolean
       tasks_exists: boolean
@@ -1626,8 +1853,6 @@ declare global {
       lang: string
       other_lang_id?: number | null
       content_id: number
-      image?: string | null
-      image_author?: string | null
       important: boolean
       tenant_id: number
       publish_time?: string | null
@@ -1647,10 +1872,12 @@ declare global {
       tags?: Tag[]
       content?: Content
       public_urls?: PublicUrl[]
+      media?: Media[]
       activities_as_subject?: Activity[]
       // counts
       tags_count: number
       public_urls_count: number
+      media_count: number
       activities_as_subject_count: number
       // exists
       user_exists: boolean
@@ -1659,6 +1886,7 @@ declare global {
       tags_exists: boolean
       content_exists: boolean
       public_urls_exists: boolean
+      media_exists: boolean
       activities_as_subject_exists: boolean
     }
 
@@ -1678,7 +1906,6 @@ declare global {
       show_table_of_contents: boolean
       show_title: boolean
       show_breadcrumbs: boolean
-      featured_image?: string | null
       meta_description?: string | null
       tenant_id: number
       created_at: string
@@ -1693,11 +1920,13 @@ declare global {
       tags?: Tag[]
       content?: Content
       public_urls?: PublicUrl[]
+      media?: Media[]
       activities_as_subject?: Activity[]
       // counts
       children_count: number
       tags_count: number
       public_urls_count: number
+      media_count: number
       activities_as_subject_count: number
       // exists
       tenant_exists: boolean
@@ -1707,6 +1936,7 @@ declare global {
       tags_exists: boolean
       content_exists: boolean
       public_urls_exists: boolean
+      media_exists: boolean
       activities_as_subject_exists: boolean
     }
 
@@ -1714,7 +1944,7 @@ declare global {
       // columns
       id: number
       urlable_type: string
-      urlable_id: number
+      urlable_id: string
       locale: string
       url: string
       created_at?: string | null
@@ -1761,6 +1991,24 @@ declare global {
       // exists
       form_exists: boolean
       field_responses_exists: boolean
+    }
+
+    export interface RepMetricSnapshot {
+      // columns
+      id: number
+      taken_on: string
+      window_days: number
+      metrics: Array<unknown>
+      is_baseline: boolean
+      created_at?: string | null
+      updated_at?: string | null
+      tenant_id?: number | null
+      scope_key: string
+      definition_version: number
+      is_reconstructed: boolean
+      measured_at?: string | null
+      contributors?: Array<unknown> | null
+      supplementary?: Array<unknown> | null
     }
 
     export interface Reservation {
@@ -1924,14 +2172,43 @@ declare global {
       resources_exists: boolean
     }
 
+    export interface ResponsibilityGrant {
+      // columns
+      id: string
+      role_id: string
+      grantee_type: string
+      grantee_id: string
+      scope_type?: string | null
+      scope_id?: string | null
+      created_at?: string | null
+      updated_at?: string | null
+      // relations
+      role?: Role
+      grantee?: ResponsibilityGrant
+      scope?: ResponsibilityGrant
+      activities_as_subject?: Activity[]
+      // counts
+      activities_as_subject_count: number
+      // exists
+      role_exists: boolean
+      activities_as_subject_exists: boolean
+    }
+
     export interface Role {
       // columns
       id: string
       name: string
+      title?: Array<unknown> | null
+      description?: Array<unknown> | null
+      purpose?: ResponsibilityPurpose | null
       guard_name: string
       created_at?: string | null
       updated_at?: string | null
+      // mutators
+      translatable_columns_from: Array<unknown>
+      translations: unknown
       // relations
+      grants?: ResponsibilityGrant[]
       duties?: Duty[]
       users_through_duties?: User
       current_users_through_duties?: User
@@ -1940,12 +2217,14 @@ declare global {
       permissions?: Permission[]
       users?: User[]
       // counts
+      grants_count: number
       duties_count: number
       attachable_types_count: number
       types_count: number
       permissions_count: number
       users_count: number
       // exists
+      grants_exists: boolean
       duties_exists: boolean
       attachable_types_exists: boolean
       types_exists: boolean
@@ -2450,6 +2729,7 @@ declare global {
       followed_institutions?: Institution[]
       reservations?: Reservation[]
       reservation_draft?: ReservationDraft
+      media?: Media[]
       push_subscriptions?: PushSubscription[]
       roles?: Role[]
       teams?: Permission[]
@@ -2467,6 +2747,7 @@ declare global {
       secretaried_institutions_count: number
       followed_institutions_count: number
       reservations_count: number
+      media_count: number
       push_subscriptions_count: number
       roles_count: number
       teams_count: number
@@ -2485,6 +2766,7 @@ declare global {
       followed_institutions_exists: boolean
       reservations_exists: boolean
       reservation_draft_exists: boolean
+      media_exists: boolean
       push_subscriptions_exists: boolean
       roles_exists: boolean
       teams_exists: boolean
@@ -2567,12 +2849,6 @@ declare global {
 
     export type DocumentStatus = typeof DocumentStatus[keyof typeof DocumentStatus]
 
-    const Responsibility = {
-      StudentRepCoordination: 'student_rep_coordination',
-    } as const;
-
-    export type Responsibility = typeof Responsibility[keyof typeof Responsibility]
-
     const FormOptionSource = {
       Tenant: 'tenant',
       Institution: 'institution',
@@ -2625,6 +2901,40 @@ declare global {
 
     export type InstitutionTypeLinkScope = typeof InstitutionTypeLinkScope[keyof typeof InstitutionTypeLinkScope]
 
+    const MailingListMode = {
+      Unmanaged: 'unmanaged',
+      Managed: 'managed',
+    } as const;
+
+    export type MailingListMode = typeof MailingListMode[keyof typeof MailingListMode]
+
+    const MailingListSyncStatus = {
+      Synced: 'synced',
+      NeedsReview: 'needs_review',
+      Failed: 'failed',
+    } as const;
+
+    export type MailingListSyncStatus = typeof MailingListSyncStatus[keyof typeof MailingListSyncStatus]
+
+    const MailingListSourceType = {
+      Duty: 'duty',
+      DutyType: 'duty_type',
+      Institution: 'institution',
+      InstitutionType: 'institution_type',
+      Responsibility: 'responsibility',
+      MailingList: 'mailing_list',
+      Email: 'email',
+    } as const;
+
+    export type MailingListSourceType = typeof MailingListSourceType[keyof typeof MailingListSourceType]
+
+    const MailingListAddressMode = {
+      Holder: 'holder',
+      DutyMailbox: 'duty_mailbox',
+    } as const;
+
+    export type MailingListAddressMode = typeof MailingListAddressMode[keyof typeof MailingListAddressMode]
+
     const MeetingType = {
       InPerson: 'in-person',
       Remote: 'remote',
@@ -2632,6 +2942,14 @@ declare global {
     } as const;
 
     export type MeetingType = typeof MeetingType[keyof typeof MeetingType]
+
+    const ResponsibilityPurpose = {
+      StudentRepresentation: 'student_representation',
+      StudentRepCoordination: 'student_rep_coordination',
+      MemberRegistration: 'member_registration',
+    } as const;
+
+    export type ResponsibilityPurpose = typeof ResponsibilityPurpose[keyof typeof ResponsibilityPurpose]
 
     const SupportRequestVisibility = {
       Private: 'private',

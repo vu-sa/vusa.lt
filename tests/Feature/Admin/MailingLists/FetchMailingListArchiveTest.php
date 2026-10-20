@@ -129,8 +129,8 @@ test('a failed message fetch does not advance the head past missing posts', func
     $emails = [archivedEmail('NEWEST', '2026-10-16'), archivedEmail('FAILED', '2026-10-15'), archivedEmail('OLD', '2026-10-01')];
     fakeArchivePages($emails, 'FAILED');
     $fetch = app(FetchMailingListArchive::class);
-    expect(fn () => $fetch->execute($this->list))->toThrow(MailmanException::class);
-    expect($this->list->fresh()->archive_head_hash)->toBe('OLD');
+    expect(fn () => $fetch->execute($this->list))->toThrow(MailmanException::class)
+        ->and($this->list->fresh()->archive_head_hash)->toBe('OLD');
 
     fakeArchivePages($emails);
     expect($fetch->execute($this->list))->toBe(1)
@@ -143,8 +143,8 @@ test('malformed archive pages do not mark the history complete', function (): vo
         ARCHIVES.'/api/list/akad.etika@konf.vusa.lt/' => Http::response(['name' => 'akad.etika@konf.vusa.lt']),
         ARCHIVES.'/api/list/akad.etika@konf.vusa.lt/emails/*' => Http::response(['results' => []]),
     ]);
-    expect(fn () => app(FetchMailingListArchive::class)->execute($this->list))->toThrow(MailmanException::class);
-    expect($this->list->fresh()->archive_backfilled_at)->toBeNull()
+    expect(fn () => app(FetchMailingListArchive::class)->execute($this->list))->toThrow(MailmanException::class)
+        ->and($this->list->fresh()->archive_backfilled_at)->toBeNull()
         ->and($this->list->fresh()->archive_fetched_at)->toBeNull();
 });
 

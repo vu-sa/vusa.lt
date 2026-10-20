@@ -126,10 +126,10 @@ import { Link, usePage } from '@inertiajs/vue3';
 import { Mail, Phone } from '@lucide/vue';
 
 import UserAvatar from './UserAvatar.vue';
+
 import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { useApi } from '@/Composables/useApi';
 import type { ImageData } from '@/Types/media';
-
 import { useIsAdminContext } from '@/Composables/useIsAdminContext';
 import ISimpleIconsFacebook from '~icons/simple-icons/facebook';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/Components/ui/hover-card';

@@ -53,12 +53,12 @@
 </template>
 
 <script setup lang="ts">
-import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { defineAsyncComponent, inject, nextTick } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import type { ImageGrid } from '@/Types/contentParts';
 
 // Lazy-loaded: only ever mounted while `editable` — a static import would bundle the

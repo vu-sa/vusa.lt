@@ -131,160 +131,160 @@
           <ChevronDown class="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
         </summary>
         <div v-if="extrasOpen" class="mt-4 space-y-4">
-        <div class="space-y-1.5">
-          <div class="flex items-center justify-between">
-            <Label for="additional_email" class="text-sm font-medium">
-              {{ $t('Papildomas el. paštas') }}
-            </Label>
-            <span class="text-xs text-muted-foreground">{{ $t('(neprivaloma)') }}</span>
-          </div>
-          <Input
-            id="additional_email"
-            v-model="form.additional_email"
-            type="email"
-            placeholder="vardas.pavarde@vusa.lt"
-          />
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Rodomas prie šio nario kontaktų.') }}
-          </p>
-          <p v-if="form.errors.additional_email" class="text-xs text-destructive">
-            {{ form.errors.additional_email }}
-          </p>
-        </div>
-
-        <div class="space-y-1.5">
-          <div class="flex items-center justify-between">
-            <Label class="text-sm font-medium">
-              {{ $t('Papildoma nuotrauka') }}
-            </Label>
-            <span class="text-xs text-muted-foreground">{{ $t('(neprivaloma)') }}</span>
-          </div>
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Matoma vusa.lt') }} · {{ $t('Rodoma vietoj nario profilio nuotraukos.') }}
-          </p>
-          <ImageUpload
-            v-model:image="form.photo_media"
-            mode="media"
-            cropper
-            focal-point
-            preview-aspect="4/3"
-          />
-          <p v-if="form.errors['photo_media.id']" class="text-xs text-destructive">
-            {{ form.errors['photo_media.id'] }}
-          </p>
-        </div>
-
-        <div v-if="showStudyProgram" class="space-y-1.5" data-testid="assign-study-program">
-          <div class="flex items-center justify-between">
-            <Label for="study_program_id" class="text-sm font-medium">
-              {{ $t('Studijų programa') }}
-            </Label>
-            <span class="text-xs text-muted-foreground">{{ $t('(neprivaloma)') }}</span>
-          </div>
-          <Select v-model="studyProgramValue">
-            <SelectTrigger id="study_program_id">
-              <SelectValue :placeholder="$t('Pasirink studijų programą…')" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem :value="NO_STUDY_PROGRAM">
-                {{ $t('Nenurodyta') }}
-              </SelectItem>
-              <SelectItem v-for="program in availableStudyPrograms" :key="program.id" :value="String(program.id)">
-                {{ program.name }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <p v-if="form.errors.study_program_id" class="text-xs text-destructive">
-            {{ form.errors.study_program_id }}
-          </p>
-        </div>
-
-        <div v-if="showStudyProgram" class="space-y-1.5">
-          <div class="flex items-center justify-between gap-2">
-            <Label for="study_program_note" class="text-sm font-medium">
-              {{ $t('Studijų programos pastaba') }}
-            </Label>
-            <div class="inline-flex border border-border bg-secondary p-0.5" role="group" :aria-label="$t('Kalba')">
-              <button
-                v-for="loc in LOCALES"
-                :key="loc"
-                type="button"
-                :class="[
-                  'u-touch px-2 py-0.5 text-xs font-semibold uppercase tracking-wider transition-colors',
-                  descriptionLocale === loc ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground',
-                ]"
-                :aria-pressed="descriptionLocale === loc"
-                @click="descriptionLocale = loc"
-              >
-                {{ loc }}
-              </button>
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <Label for="additional_email" class="text-sm font-medium">
+                {{ $t('Papildomas el. paštas') }}
+              </Label>
+              <span class="text-xs text-muted-foreground">{{ $t('(neprivaloma)') }}</span>
             </div>
-          </div>
-          <Input
-            id="study_program_note"
-            v-model="form.study_program_note[descriptionLocale]"
-            maxlength="100"
-            :placeholder="$t('Pvz., 1 kursas')"
-          />
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Matoma vusa.lt') }} · {{ $t('Rodoma skliaustuose po pareigybės pavadinimo.') }}
-          </p>
-          <p v-if="form.errors['study_program_note.lt'] || form.errors['study_program_note.en']" class="text-xs text-destructive">
-            {{ form.errors['study_program_note.lt'] || form.errors['study_program_note.en'] }}
-          </p>
-        </div>
-
-        <div class="flex items-start gap-2.5">
-          <Checkbox
-            id="use_original_duty_name"
-            class="mt-0.5"
-            :model-value="form.use_original_duty_name"
-            @update:model-value="form.use_original_duty_name = $event === true"
-          />
-          <div class="space-y-0.5">
-            <Label for="use_original_duty_name" class="cursor-pointer text-sm font-normal">
-              {{ $t('Viešame puslapyje naudoti originalų pareigybės pavadinimą') }}
-            </Label>
-            <p class="text-xs text-muted-foreground">
-              {{ $t('Matoma vusa.lt') }}
-            </p>
-          </div>
-        </div>
-
-        <div class="space-y-3 border-t border-border pt-4">
-          <p class="text-sm font-medium text-foreground">
-            {{ $t('Papildomas aprašymas') }}
-          </p>
-          <div class="space-y-3">
-            <p class="text-xs text-muted-foreground">
-              {{ $t('Matoma vusa.lt') }} · {{ $t('Rodomas viešame kontaktų sąraše vietoj pareigybės aprašymo.') }}
-            </p>
-            <div class="inline-flex border border-border bg-secondary p-0.5" role="group" :aria-label="$t('Kalba')">
-              <button
-                v-for="loc in LOCALES"
-                :key="loc"
-                type="button"
-                :class="[
-                  'u-touch px-2.5 py-1 text-xs font-semibold uppercase tracking-wider transition-colors',
-                  descriptionLocale === loc ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground',
-                ]"
-                :aria-pressed="descriptionLocale === loc"
-                @click="descriptionLocale = loc"
-              >
-                {{ loc }}
-              </button>
-            </div>
-            <TiptapEditor
-              :key="descriptionLocale"
-              v-model="form.description[descriptionLocale]"
-              tools="description"
-              html
+            <Input
+              id="additional_email"
+              v-model="form.additional_email"
+              type="email"
+              placeholder="vardas.pavarde@vusa.lt"
             />
-            <p v-if="form.errors.description" class="text-xs text-destructive">
-              {{ form.errors.description }}
+            <p class="text-xs text-muted-foreground">
+              {{ $t('Rodomas prie šio nario kontaktų.') }}
+            </p>
+            <p v-if="form.errors.additional_email" class="text-xs text-destructive">
+              {{ form.errors.additional_email }}
             </p>
           </div>
-        </div>
+
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <Label class="text-sm font-medium">
+                {{ $t('Papildoma nuotrauka') }}
+              </Label>
+              <span class="text-xs text-muted-foreground">{{ $t('(neprivaloma)') }}</span>
+            </div>
+            <p class="text-xs text-muted-foreground">
+              {{ $t('Matoma vusa.lt') }} · {{ $t('Rodoma vietoj nario profilio nuotraukos.') }}
+            </p>
+            <ImageUpload
+              v-model:image="form.photo_media"
+              mode="media"
+              cropper
+              focal-point
+              preview-aspect="4/3"
+            />
+            <p v-if="form.errors['photo_media.id']" class="text-xs text-destructive">
+              {{ form.errors['photo_media.id'] }}
+            </p>
+          </div>
+
+          <div v-if="showStudyProgram" class="space-y-1.5" data-testid="assign-study-program">
+            <div class="flex items-center justify-between">
+              <Label for="study_program_id" class="text-sm font-medium">
+                {{ $t('Studijų programa') }}
+              </Label>
+              <span class="text-xs text-muted-foreground">{{ $t('(neprivaloma)') }}</span>
+            </div>
+            <Select v-model="studyProgramValue">
+              <SelectTrigger id="study_program_id">
+                <SelectValue :placeholder="$t('Pasirink studijų programą…')" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem :value="NO_STUDY_PROGRAM">
+                  {{ $t('Nenurodyta') }}
+                </SelectItem>
+                <SelectItem v-for="program in availableStudyPrograms" :key="program.id" :value="String(program.id)">
+                  {{ program.name }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <p v-if="form.errors.study_program_id" class="text-xs text-destructive">
+              {{ form.errors.study_program_id }}
+            </p>
+          </div>
+
+          <div v-if="showStudyProgram" class="space-y-1.5">
+            <div class="flex items-center justify-between gap-2">
+              <Label for="study_program_note" class="text-sm font-medium">
+                {{ $t('Studijų programos pastaba') }}
+              </Label>
+              <div class="inline-flex border border-border bg-secondary p-0.5" role="group" :aria-label="$t('Kalba')">
+                <button
+                  v-for="loc in LOCALES"
+                  :key="loc"
+                  type="button"
+                  :class="[
+                    'u-touch px-2 py-0.5 text-xs font-semibold uppercase tracking-wider transition-colors',
+                    descriptionLocale === loc ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground',
+                  ]"
+                  :aria-pressed="descriptionLocale === loc"
+                  @click="descriptionLocale = loc"
+                >
+                  {{ loc }}
+                </button>
+              </div>
+            </div>
+            <Input
+              id="study_program_note"
+              v-model="form.study_program_note[descriptionLocale]"
+              maxlength="100"
+              :placeholder="$t('Pvz., 1 kursas')"
+            />
+            <p class="text-xs text-muted-foreground">
+              {{ $t('Matoma vusa.lt') }} · {{ $t('Rodoma skliaustuose po pareigybės pavadinimo.') }}
+            </p>
+            <p v-if="form.errors['study_program_note.lt'] || form.errors['study_program_note.en']" class="text-xs text-destructive">
+              {{ form.errors['study_program_note.lt'] || form.errors['study_program_note.en'] }}
+            </p>
+          </div>
+
+          <div class="flex items-start gap-2.5">
+            <Checkbox
+              id="use_original_duty_name"
+              class="mt-0.5"
+              :model-value="form.use_original_duty_name"
+              @update:model-value="form.use_original_duty_name = $event === true"
+            />
+            <div class="space-y-0.5">
+              <Label for="use_original_duty_name" class="cursor-pointer text-sm font-normal">
+                {{ $t('Viešame puslapyje naudoti originalų pareigybės pavadinimą') }}
+              </Label>
+              <p class="text-xs text-muted-foreground">
+                {{ $t('Matoma vusa.lt') }}
+              </p>
+            </div>
+          </div>
+
+          <div class="space-y-3 border-t border-border pt-4">
+            <p class="text-sm font-medium text-foreground">
+              {{ $t('Papildomas aprašymas') }}
+            </p>
+            <div class="space-y-3">
+              <p class="text-xs text-muted-foreground">
+                {{ $t('Matoma vusa.lt') }} · {{ $t('Rodomas viešame kontaktų sąraše vietoj pareigybės aprašymo.') }}
+              </p>
+              <div class="inline-flex border border-border bg-secondary p-0.5" role="group" :aria-label="$t('Kalba')">
+                <button
+                  v-for="loc in LOCALES"
+                  :key="loc"
+                  type="button"
+                  :class="[
+                    'u-touch px-2.5 py-1 text-xs font-semibold uppercase tracking-wider transition-colors',
+                    descriptionLocale === loc ? 'bg-card text-foreground' : 'text-muted-foreground hover:text-foreground',
+                  ]"
+                  :aria-pressed="descriptionLocale === loc"
+                  @click="descriptionLocale = loc"
+                >
+                  {{ loc }}
+                </button>
+              </div>
+              <TiptapEditor
+                :key="descriptionLocale"
+                v-model="form.description[descriptionLocale]"
+                tools="description"
+                html
+              />
+              <p v-if="form.errors.description" class="text-xs text-destructive">
+                {{ form.errors.description }}
+              </p>
+            </div>
+          </div>
         </div>
       </details>
 
@@ -566,7 +566,6 @@ watch(chosenDuty, (hit) => {
   // A programme belongs to one tenant, so a previous choice may no longer be on offer.
   form.study_program_id = null;
 });
-
 
 const cadenceDutyId = computed(() => (pickDuty.value ? chosenDuty.value?.id : dutyContext.value?.id) ?? null);
 const cadencesUrl = ref('');

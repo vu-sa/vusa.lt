@@ -22,7 +22,7 @@ test('merging users preserves mailing list identities and authorship', function 
     MergeUsers::execute($kept, collect([$sourceUser]), $kept->email);
 
     $this->assertModelMissing($sourceUser);
-    expect($member->fresh()->user_id)->toBe($kept->id);
-    expect($source->fresh()->created_by)->toBe($kept->id);
-    expect($exclusion->fresh()->created_by)->toBe($kept->id);
+    expect($member->fresh()->user_id)->toBe($kept->id)
+        ->and($source->fresh()->created_by)->toBe($kept->id)
+        ->and($exclusion->fresh()->created_by)->toBe($kept->id);
 });

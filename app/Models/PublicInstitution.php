@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * PublicInstitution - Extends Institution for public display and search indexing
@@ -31,8 +33,6 @@ use Laravel\Scout\Searchable;
  * @property string|null $email
  * @property array|string|null $working_hours
  * @property string|null $website
- * @property string|null $image_url
- * @property string|null $image_focal_point
  * @property string|null $logo_url
  * @property string|null $facebook_url
  * @property string|null $instagram_url
@@ -60,9 +60,12 @@ use Laravel\Scout\Searchable;
  * @property-read mixed $has_public_meetings
  * @property-read Collection<int, InstitutionLink> $incomingLinks
  * @property-read mixed $maybe_short_name
+ * @property-read MediaCollection<int, Media> $media
  * @property-read Collection<int, Meeting> $meetings
  * @property-read Collection<int, InstitutionLink> $outgoingLinks
  * @property-read Collection<int, Problem> $problems
+ * @property-read Collection<int, PublicUrl> $publicUrls
+ * @property-read Collection<int, ResponsibilityGrant> $responsibilityGrants
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, User> $secretaries
  * @property-read Collection<int, InstitutionSecretary> $secretaryAssignments
@@ -85,6 +88,7 @@ use Laravel\Scout\Searchable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicInstitution withoutTrashed()
  *

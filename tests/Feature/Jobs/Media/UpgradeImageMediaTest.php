@@ -42,7 +42,7 @@ beforeEach(function (): void {
 
 function upgradeMedia(array $ids, ?FileManipulator $files = null): void
 {
-    (new UpgradeImageMedia($ids))->handle(app(ImageUploadService::class), $files ?? app(FileManipulator::class), app(LegacyImageResolver::class));
+    new UpgradeImageMedia($ids)->handle(app(ImageUploadService::class), $files ?? app(FileManipulator::class), app(LegacyImageResolver::class));
 }
 
 test('large photographic masters retain enough pixels for high density layouts', function (int $width, int $height, int $expectedWidth, int $expectedHeight): void {
@@ -280,7 +280,7 @@ test('older media gets its focal point, dimensions and only the shared conversio
 
     expect($media->getCustomProperty('focal_point'))->toBe('30% 70%')
         ->and($media->getCustomProperty('width'))->toBe(1000)
-        ->and($media->responsive_images)->toBe([])
+        ->and($media->responsive_images)->toBeEmpty()
         ->and(array_keys(array_filter($media->generated_conversions)))->toEqualCanonicalizing(array_keys(ImageConversions::WIDTHS));
     $disk->assertExists($paths->getPathForConversions($media).'event-webp.webp');
 

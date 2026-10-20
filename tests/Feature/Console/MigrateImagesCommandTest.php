@@ -53,7 +53,7 @@ test('rerunning the migration queues only remaining legacy targets', function ()
 test('a delayed backfill job for a retired target leaves the owner alone', function (): void {
     $news = News::factory()->for(Tenant::query()->first())->create();
 
-    (new BackfillLegacyImagesJob('news.image', [$news->id]))->handle(app(LegacyImageImporter::class));
+    new BackfillLegacyImagesJob('news.image', [$news->id])->handle(app(LegacyImageImporter::class));
 
     expect($news->fresh()->getMedia('image'))->toBeEmpty();
     $this->assertModelExists($news);

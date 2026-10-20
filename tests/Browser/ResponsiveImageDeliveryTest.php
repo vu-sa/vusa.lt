@@ -39,8 +39,8 @@ test('the browser loads a generated image in the public page at phone and deskto
         $page->page()->waitForFunction('(() => { const image = document.querySelector("main [data-slot=media-image][srcset]"); return image?.complete && image.naturalWidth > 0; })()');
         $page->script('document.querySelector("main [data-slot=media-image][srcset]").decode()');
         $selected = $page->script('document.querySelector("main [data-slot=media-image][srcset]").currentSrc');
-        expect($page->script('document.querySelector("main [data-slot=media-image][srcset]").naturalWidth'))->toBeGreaterThan(0);
-        expect($selected)->toContain('/conversions/')->not->toContain('undefined');
+        expect($page->script('document.querySelector("main [data-slot=media-image][srcset]").naturalWidth'))->toBeGreaterThan(0)
+            ->and($selected)->toContain('/conversions/')->not->toContain('undefined');
     }
     $page->assertNoJavaScriptErrors()->screenshot(fullPage: false, filename: 'responsive-image-delivery');
 });
@@ -63,7 +63,7 @@ test('a CMS hero advertises its real source width and selects the original on a 
         ->assertPresent('[data-slot=media-image][srcset]');
     $page->page()->waitForFunction('(() => { const image = document.querySelector("main [data-slot=media-image]"); return image?.complete && image.naturalWidth > 0; })()');
     expect($page->script('document.querySelector("main [data-slot=media-image]").srcset'))
-        ->toBe('/img/400/files/hero.jpg 400w, /img/900/files/hero.jpg 900w, /uploads/files/hero.jpg 1600w');
-    expect($page->script('document.querySelector("main [data-slot=media-image]").currentSrc'))->toContain('/uploads/files/hero.jpg');
+        ->toBe('/img/400/files/hero.jpg 400w, /img/900/files/hero.jpg 900w, /uploads/files/hero.jpg 1600w')
+        ->and($page->script('document.querySelector("main [data-slot=media-image]").currentSrc'))->toContain('/uploads/files/hero.jpg');
     $page->assertNoJavaScriptErrors()->screenshot(fullPage: false, filename: 'cms-hero-image-delivery');
 });

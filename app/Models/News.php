@@ -32,6 +32,8 @@ use Illuminate\Support\Facades\Schema;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
 use Spatie\Feed\Feedable;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\SchemaOrg\NewsArticle;
 use Spatie\SchemaOrg\Organization;
 use Spatie\Sitemap\Contracts\Sitemapable;
@@ -45,8 +47,6 @@ use Spatie\Sitemap\Tags\Url;
  * @property string $lang
  * @property int|null $other_lang_id
  * @property int $content_id
- * @property string|null $image
- * @property string|null $image_author
  * @property int $important
  * @property int $tenant_id
  * @property Carbon|null $publish_time
@@ -61,6 +61,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Content $content
+ * @property-read MediaCollection<int, Media> $media
  * @property-read News|null $other_language_news
  * @property-read Collection<int, PublicUrl> $publicUrls
  * @property-read Taggable|null $pivot

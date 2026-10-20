@@ -37,12 +37,12 @@
 </template>
 
 <script setup lang="ts">
-import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { Icon } from '@iconify/vue';
 
 import SmartLink from '../../SmartLink.vue';
 import type { NavLink } from '../types';
 
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { Badge } from '@/Components/ui/badge';
 import IFluentOpen16Regular from '~icons/fluent/open-16-regular';
 

@@ -27,12 +27,12 @@ use Illuminate\Support\Carbon;
  * @property int $entered_attention
  * @property int $left_attention
  * @property bool $is_reconstructed
- * @property array<string, string>|null $institution_statuses
- * @property array{held: list<string>, registered: list<string>}|null $meeting_ids
- * @property int $population_added
- * @property int $population_removed
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property array<array-key, mixed>|null $institution_statuses
+ * @property array<array-key, mixed>|null $meeting_ids
+ * @property int $population_added
+ * @property int $population_removed
  * @property-read Tenant $tenant
  *
  * @method static \Database\Factories\InstitutionStatusSnapshotFactory factory($count = null, $state = [])

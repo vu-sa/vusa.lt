@@ -272,41 +272,62 @@ class ResponsibilityController extends AdminController
 
         return [
             'duties' => $grants->where('grantee_type', MorphMap::alias(Duty::class))
-                ->filter(fn (ResponsibilityGrant $grant) => $grant->grantee instanceof Duty)
-                ->map(fn (ResponsibilityGrant $grant): array => [
-                    'id' => $grant->id,
-                    'duty' => ['id' => $grant->grantee->id, 'name' => (string) $grant->grantee->getTranslation('name', app()->getLocale())],
-                    'institution' => $grant->grantee->institution ? ['id' => $grant->grantee->institution->id, 'name' => (string) $grant->grantee->institution->getTranslation('name', app()->getLocale())] : null,
-                    'tenant' => $grant->grantee->institution?->tenant ? (string) __($grant->grantee->institution->tenant->shortname) : null,
-                    'scope_type' => $grant->scope_type,
-                    'scope_name' => $this->scopeName($grant->scope),
-                    'holders_count' => (int) ($currentHolders[$grant->grantee_id] ?? 0),
-                    'missing_permissions' => $gaps->get($grant->grantee_id)['missing'] ?? [],
-                ])
+                ->flatMap(function (ResponsibilityGrant $grant) use ($currentHolders, $gaps): array {
+                    $duty = $grant->grantee;
+
+                    if (! $duty instanceof Duty) {
+                        return [];
+                    }
+
+                    return [[
+                        'id' => $grant->id,
+                        'duty' => ['id' => $duty->id, 'name' => (string) $duty->getTranslation('name', app()->getLocale())],
+                        'institution' => $duty->institution ? ['id' => $duty->institution->id, 'name' => (string) $duty->institution->getTranslation('name', app()->getLocale())] : null,
+                        'tenant' => $duty->institution?->tenant ? (string) __($duty->institution->tenant->shortname) : null,
+                        'scope_type' => $grant->scope_type,
+                        'scope_name' => $this->scopeName($grant->scope),
+                        'holders_count' => (int) ($currentHolders[$grant->grantee_id] ?? 0),
+                        'missing_permissions' => $gaps->get($grant->grantee_id)['missing'] ?? [],
+                    ]];
+                })
                 ->sortBy(fn (array $row): string => ($row['tenant'] ?? '').($row['institution']['name'] ?? '').$row['duty']['name'])
                 ->values()
                 ->all(),
             'dutyTypes' => $grants->where('grantee_type', MorphMap::alias(DutyType::class))
-                ->filter(fn (ResponsibilityGrant $grant) => $grant->grantee instanceof DutyType)
-                ->map(fn (ResponsibilityGrant $grant): array => [
-                    'id' => $grant->id,
-                    'type' => ['id' => (int) $grant->grantee->id, 'title' => (string) $grant->grantee->getTranslation('title', app()->getLocale())],
-                    'scope_type' => $grant->scope_type,
-                    'scope_name' => $this->scopeName($grant->scope),
-                    'duties_count' => (int) $grant->grantee->duties_count,
-                    'needs_scope' => $grant->needsScope(),
-                ])
+                ->flatMap(function (ResponsibilityGrant $grant): array {
+                    $type = $grant->grantee;
+
+                    if (! $type instanceof DutyType) {
+                        return [];
+                    }
+
+                    return [[
+                        'id' => $grant->id,
+                        'type' => ['id' => (int) $type->id, 'title' => (string) $type->getTranslation('title', app()->getLocale())],
+                        'scope_type' => $grant->scope_type,
+                        'scope_name' => $this->scopeName($grant->scope),
+                        'duties_count' => (int) $type->duties_count,
+                        'needs_scope' => $grant->needsScope(),
+                    ]];
+                })
                 ->values()
                 ->all(),
             'institutions' => $grants->where('grantee_type', MorphMap::alias(Institution::class))
-                ->filter(fn (ResponsibilityGrant $grant) => $grant->grantee instanceof Institution)
-                ->map(fn (ResponsibilityGrant $grant): array => [
-                    'id' => $grant->id,
-                    'institution' => ['id' => $grant->grantee->id, 'name' => (string) $grant->grantee->getTranslation('name', app()->getLocale())],
-                    'scope_type' => $grant->scope_type,
-                    'scope_name' => $this->scopeName($grant->scope),
-                    'duties_count' => (int) $grant->grantee->duties_count,
-                ])
+                ->flatMap(function (ResponsibilityGrant $grant): array {
+                    $institution = $grant->grantee;
+
+                    if (! $institution instanceof Institution) {
+                        return [];
+                    }
+
+                    return [[
+                        'id' => $grant->id,
+                        'institution' => ['id' => $institution->id, 'name' => (string) $institution->getTranslation('name', app()->getLocale())],
+                        'scope_type' => $grant->scope_type,
+                        'scope_name' => $this->scopeName($grant->scope),
+                        'duties_count' => (int) $institution->duties_count,
+                    ]];
+                })
                 ->values()
                 ->all(),
         ];

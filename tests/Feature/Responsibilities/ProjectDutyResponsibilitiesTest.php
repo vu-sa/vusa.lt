@@ -50,7 +50,7 @@ test('unlinking a type keeps the same responsibility granted directly', function
 
     $this->duty->responsibilityGrants()->get()->each->delete();
 
-    expect(roleIdsOf($this->duty))->toBe([]);
+    expect(roleIdsOf($this->duty))->toBeEmpty();
 });
 
 test('an institution grant follows a duty that moves to another institution', function (): void {
@@ -58,7 +58,7 @@ test('an institution grant follows a duty that moves to another institution', fu
 
     $this->duty->update(['institution_id' => Institution::factory()->for($this->tenant)->create()->id]);
 
-    expect(roleIdsOf($this->duty))->toBe([]);
+    expect(roleIdsOf($this->duty))->toBeEmpty();
 
     $newcomer = Duty::factory()->for($this->institution)->create();
 
@@ -74,7 +74,7 @@ test('the role api on a duty writes direct grants that survive re-projection', f
 
     $this->duty->removeRole($this->role);
 
-    expect(roleIdsOf($this->duty))->toBe([]);
+    expect(roleIdsOf($this->duty))->toBeEmpty();
 });
 
 test('merging duties moves their grants to the kept duty', function (): void {
@@ -91,11 +91,10 @@ test('the command reports a drifted duty and rebuilds it', function (): void {
     DB::table('model_has_roles')->where('model_id', $this->duty->id)->delete();
 
     expect(Artisan::call('responsibilities:project', ['--check' => true]))->toBe(1)
-        ->and(roleIdsOf($this->duty))->toBe([]);
-
-    expect(Artisan::call('responsibilities:project'))->toBe(0)
+        ->and(roleIdsOf($this->duty))->toBeEmpty()
+        ->and(Artisan::call('responsibilities:project'))->toBe(0)
         ->and(roleIdsOf($this->duty))->toBe([$this->role->id])
-        ->and(ProjectDutyResponsibilities::drift())->toBe([]);
+        ->and(ProjectDutyResponsibilities::drift())->toBeEmpty();
 });
 
 test('a trashed duty stops inheriting from its type and gets it back when restored', function (): void {
@@ -105,7 +104,7 @@ test('a trashed duty stops inheriting from its type and gets it back when restor
 
     $this->duty->delete();
 
-    expect(roleIdsOf($this->duty))->toBe([]);
+    expect(roleIdsOf($this->duty))->toBeEmpty();
 
     $this->duty->restore();
 

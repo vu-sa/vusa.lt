@@ -36,7 +36,7 @@ describe('representation baseline settings', () => {
     expect(select.text()).toContain('2025');
     await select.setValue('older');
     await wrapper.get('form').trigger('submit');
-    const form = (wrapper.vm as unknown as { form: { baseline_cadence_id: string | null; post: ReturnType<typeof vi.fn> } }).form;
+    const { form } = wrapper.vm as unknown as { form: { baseline_cadence_id: string | null; post: ReturnType<typeof vi.fn> } };
     expect(form.baseline_cadence_id).toBe('older');
     expect(form.post).toHaveBeenCalledWith(expect.stringContaining('settings.atstovavimas.update'));
     await select.setValue(select.find('option').element.value);

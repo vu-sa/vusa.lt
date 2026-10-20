@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Services\ContactSearchIndexSynchronizer;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -26,6 +27,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
 /**
@@ -37,7 +40,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string $dutiable_type
  * @property Carbon $start_date
  * @property Carbon|null $end_date
- * @property bool $ended_by_institution_deactivation
  * @property string|null $study_program_id
  * @property array|string|null $study_program_note
  * @property string|null $additional_email
@@ -47,10 +49,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property bool $use_original_duty_name
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property bool $ended_by_institution_deactivation
  * @property-read Collection<int, Dutiable> $derivedDutiables
  * @property-read Model $dutiable
  * @property-read Duty|null $duty
  * @property-read array $translatable_columns_from
+ * @property-read MediaCollection<int, Media> $media
  * @property-read StudyProgram|null $study_program
  * @property-read Tenant|null $tenant
  * @property-read Collection<int, Tenant> $tenants
@@ -68,6 +72,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Dutiable whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
  *
  * @mixin \Eloquent
  */
@@ -89,13 +94,13 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
     'description',
     'use_original_duty_name',
 ])]
+#[Hidden(['ended_by_institution_deactivation'])]
 class Dutiable extends MorphPivot implements ImageMediaOwner
 {
     use HasFactory, HasImageMedia, HasRelationships, HasTranslations, HasUlids;
 
+    #[\Override]
     protected $attributes = ['ended_by_institution_deactivation' => false];
-
-    protected $hidden = ['ended_by_institution_deactivation'];
 
     #[\Override]
     public function save(array $options = []): bool

@@ -176,7 +176,6 @@
 </template>
 
 <script setup lang="ts">
-import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { computed, defineAsyncComponent, inject } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -189,6 +188,7 @@ import HeroButtons from '../RCHeroSection/HeroButtons.vue';
 import RCInlineText from '../Editor/Fullscreen/RCInlineText.vue';
 import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { Button } from '@/Components/ui/button';
 import { EyebrowLabel } from '@/Components/Public/Base';
 import type { HeroCarousel } from '@/Types/contentParts';

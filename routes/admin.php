@@ -318,7 +318,7 @@ Route::put('responsibilities/{role}/permissions', [ResponsibilityController::cla
 Route::post('responsibilities/{role}/grants', [ResponsibilityController::class, 'storeGrant'])->name('responsibilities.grants.store');
 Route::delete('responsibilities/{role}/grants/{grant}', [ResponsibilityController::class, 'destroyGrant'])->name('responsibilities.grants.destroy');
 Route::put('responsibilities/{role}/attachableTypes', [ResponsibilityController::class, 'syncAttachableTypes'])->name('responsibilities.attachableTypes.update');
-Route::redirect('roles', '/mano/responsibilities', 301);
+Route::permanentRedirect('roles', '/mano/responsibilities');
 Route::get('roles/{path}', fn (string $path) => redirect("/mano/responsibilities/{$path}", 301))->where('path', '.*');
 Route::resource('permissions', PermissionController::class)->only(['index']);
 Route::resource('tasks', TaskController::class)->only(['store', 'destroy']);

@@ -65,7 +65,7 @@ test('the import copies the file, records where it came from and leaves the arti
     $updatedAt = $news->fresh()->updated_at;
     $this->travel(1)->hour();
 
-    (new BackfillLegacyImagesJob('news.image', [$news->id]))->handle(app(LegacyImageImporter::class));
+    new BackfillLegacyImagesJob('news.image', [$news->id])->handle(app(LegacyImageImporter::class));
 
     $news->refresh();
     $media = $news->getFirstMedia('image');
@@ -81,8 +81,8 @@ test('the import copies the file, records where it came from and leaves the arti
 test('running the import again does not duplicate images', function (): void {
     $news = News::factory()->for($this->tenant)->create(['image' => '/uploads/news/rudens-sventė.jpg']);
 
-    (new BackfillLegacyImagesJob('news.image', [$news->id]))->handle(app(LegacyImageImporter::class));
-    (new BackfillLegacyImagesJob('news.image', [$news->id]))->handle(app(LegacyImageImporter::class));
+    new BackfillLegacyImagesJob('news.image', [$news->id])->handle(app(LegacyImageImporter::class));
+    new BackfillLegacyImagesJob('news.image', [$news->id])->handle(app(LegacyImageImporter::class));
 
     expect($news->refresh()->getMedia('image'))->toHaveCount(1);
 });
@@ -90,7 +90,7 @@ test('running the import again does not duplicate images', function (): void {
 test('records sharing one legacy file each get their own copy', function (): void {
     $banners = Banner::factory()->for($this->tenant)->count(2)->create(['image_url' => 'https://vusa.lt/uploads/news/rudens-sventė.jpg']);
 
-    (new BackfillLegacyImagesJob('banners.image', $banners->modelKeys()))->handle(app(LegacyImageImporter::class));
+    new BackfillLegacyImagesJob('banners.image', $banners->modelKeys())->handle(app(LegacyImageImporter::class));
 
     $ids = $banners->map(fn (Banner $banner) => $banner->refresh()->getFirstMedia('image')->id);
 
@@ -144,10 +144,10 @@ test('import restores worker settings even when progress reporting fails', funct
     config(['media-library.queue_conversions_by_default' => true]);
     RefreshImageCacheAfterConversion::$muted = true;
     try {
-        expect(fn () => (new BackfillLegacyImagesJob('news.image', [$news->id]))->handle(app(LegacyImageImporter::class), function (): void {
+        expect(fn () => new BackfillLegacyImagesJob('news.image', [$news->id])->handle(app(LegacyImageImporter::class), function (): void {
             throw new RuntimeException('progress failed');
-        }))->toThrow(RuntimeException::class, 'progress failed');
-        expect(config('media-library.queue_conversions_by_default'))->toBeTrue()
+        }))->toThrow(RuntimeException::class, 'progress failed')
+            ->and(config('media-library.queue_conversions_by_default'))->toBeTrue()
             ->and(RefreshImageCacheAfterConversion::$muted)->toBeTrue();
     } finally {
         RefreshImageCacheAfterConversion::$muted = false;

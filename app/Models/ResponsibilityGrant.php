@@ -9,6 +9,7 @@ use App\Services\ResponsibilityResolver;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +21,7 @@ use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * A responsibility given to a duty, to every duty of a type, or to every duty in an institution.
+ *
  * The source of truth for duty roles: `model_has_roles` rows for duties are its projection.
  *
  * @property string $id
@@ -30,9 +32,10 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property string|null $scope_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read Collection<int, Activity> $activitiesAsSubject
+ * @property-read \Illuminate\Database\Eloquent\Model $grantee
  * @property-read Role $role
- * @property-read Duty|DutyType|Institution|null $grantee
- * @property-read Tenant|InstitutionType|Institution|null $scope
+ * @property-read \Illuminate\Database\Eloquent\Model|null $scope
  *
  * @method static \Database\Factories\ResponsibilityGrantFactory factory($count = null, $state = [])
  * @method static Builder<static>|ResponsibilityGrant newModelQuery()

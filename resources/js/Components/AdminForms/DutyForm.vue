@@ -354,7 +354,6 @@
             </template>
           </CollectionSelectDialog>
         </FormFieldWrapper>
-
       </FormPanel>
     </template>
 

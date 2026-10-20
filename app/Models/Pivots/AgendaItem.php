@@ -82,6 +82,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AgendaItem whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
  *
  * @mixin \Eloquent
  */

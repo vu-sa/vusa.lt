@@ -161,8 +161,6 @@
 </template>
 
 <script setup lang="ts">
-import MediaImage from '@/Components/Brand/MediaImage.vue';
-import type { ImageData } from '@/Types/media';
 import { Deferred, router } from '@inertiajs/vue3';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
@@ -170,6 +168,8 @@ import { Ban, CalendarClock, CalendarPlus, Check, Clock, Edit3, FileText, Image 
 import { toast } from 'vue-sonner';
 import { capitalize, computed, ref, watch } from 'vue';
 
+import type { ImageData } from '@/Types/media';
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { ConfirmDialog, OverviewSection, OverviewStatusList } from '@/Components/Patterns';
 import ReservationCartBar from '@/Components/Reservations/ReservationCartBar.vue';

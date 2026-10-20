@@ -14,8 +14,8 @@
     <FormSection :title="$t('settings.purposes.responsibilities_title')" :description="$t('settings.purposes.responsibilities_description')">
       <FormFieldWrapper
         v-for="purpose in purposes"
-        :key="purpose.key"
         :id="`purpose_${purpose.key}`"
+        :key="purpose.key"
         :label="purpose.label"
         :hint="purpose.drives"
         :error="form.errors[`purposes.${purpose.key}`]"
@@ -33,8 +33,8 @@
     <FormSection :title="$t('settings.purposes.duty_types_title')" :description="$t('settings.purposes.duty_types_description')">
       <FormFieldWrapper
         v-for="part in dutyTypes"
-        :key="part.key"
         :id="`duty_type_${part.key}`"
+        :key="part.key"
         :label="part.label"
         :hint="fallbackHint(part) ?? part.drives"
         :error="form.errors[`duty_types.${part.key}`]"

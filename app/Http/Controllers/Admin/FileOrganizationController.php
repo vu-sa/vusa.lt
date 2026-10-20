@@ -53,7 +53,7 @@ class FileOrganizationController extends AdminController
     {
         try {
             $destination = $this->fileStorage->normalizeFilePath($request->validated('destination'));
-            $sources = array_map(fn (string $path) => $this->fileStorage->normalizeFilePath($path), $request->validated('paths'));
+            $sources = array_map($this->fileStorage->normalizeFilePath(...), $request->validated('paths'));
         } catch (\InvalidArgumentException) {
             return back()->withErrors(['error' => __('files.errors.invalid_file_path')]);
         }

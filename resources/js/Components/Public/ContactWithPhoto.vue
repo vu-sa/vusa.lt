@@ -126,14 +126,14 @@
 </template>
 
 <script setup lang="ts">
-import MediaImage from '@/Components/Brand/MediaImage.vue';
-import type { ImageData } from '@/Types/media';
 
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
 import InfoPopover from '../Buttons/InfoPopover.vue';
 
+import type { ImageData } from '@/Types/media';
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { Popover, PopoverContent, PopoverTrigger } from '@/Components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';

@@ -16,6 +16,7 @@ vi.mock('@vueuse/core', async importOriginal => ({
 }));
 
 import RCNumberCounter from '../RCNumberCounter.vue';
+
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 
 describe('RCNumberCounter', () => {

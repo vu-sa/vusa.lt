@@ -9,9 +9,9 @@
 import * as d3 from 'd3';
 import { trans as $t } from 'laravel-vue-i18n';
 
-import { getAgendaItemStatus, type AgendaItemStatus, type AgendaItemType, type Vote } from '@/Composables/useAgendaItemStyling';
-
 import type { GanttColors } from '../ganttColors';
+
+import { getAgendaItemStatus, type AgendaItemStatus, type AgendaItemType, type Vote } from '@/Composables/useAgendaItemStyling';
 
 export type TooltipContentType = 'meeting' | 'member' | 'gap' | 'date' | 'request' | 'none';
 

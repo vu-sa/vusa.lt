@@ -167,7 +167,7 @@ import type {
 } from '@/Features/Admin/Responsibilities/types';
 import { ModelEnum } from '@/Types/enums';
 
-type Translations = { lt?: string | null; en?: string | null };
+interface Translations { lt?: string | null; en?: string | null }
 
 const props = defineProps<{
   responsibility: {

@@ -5,6 +5,7 @@ import { ref } from 'vue';
 
 import RelationshipLinkList from '../RelationshipLinkList.vue';
 import type { RelationshipLinkRow } from '../types';
+
 import { InstitutionTypeLinkScope } from '@/Types/enums';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));

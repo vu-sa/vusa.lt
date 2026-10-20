@@ -285,7 +285,6 @@
 </template>
 
 <script setup lang="ts">
-import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { computed, defineAsyncComponent, inject, ref, watch } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -297,6 +296,7 @@ import { ACTIVE_HOTSPOT_KEY } from '../Editor/Fullscreen/useActiveHotspot';
 import { asBoolean } from '../booleanish';
 import type { BandResolution } from '../bandLayout';
 
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { useAccessibilityPreferences } from '@/Composables/useAccessibilityPreferences';
 import { useMotionAwareAutoplay } from '@/Composables/useMotionAwareAutoplay';
 import { Button } from '@/Components/ui/button';

@@ -23,8 +23,8 @@ use Illuminate\Support\Carbon;
  * @property string $id
  * @property string $mailing_list_id
  * @property MailingListSourceType $type
- * @property string|null $source_id
- * @property array<string, mixed>|null $filters
+ * @property string|int|null|null $source_id
+ * @property array<array-key, mixed>|null $filters
  * @property MailingListAddressMode $address_mode
  * @property string|null $email
  * @property string|null $display_name

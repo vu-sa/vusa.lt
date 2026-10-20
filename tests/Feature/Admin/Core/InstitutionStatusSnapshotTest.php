@@ -38,9 +38,8 @@ test('a late-registered meeting is activity on the day it was entered, not a rew
     $entryDay = snapshotFor($this->tenant, '2026-10-15');
     expect($entryDay->meetings_registered)->toBe(1)
         ->and($entryDay->left_attention)->toBe(1)
-        ->and($entryDay->entered_attention)->toBe(0);
-
-    expect(snapshotFor($this->tenant, '2026-10-12')->meetings_held)->toBe(0)
+        ->and($entryDay->entered_attention)->toBe(0)
+        ->and(snapshotFor($this->tenant, '2026-10-12')->meetings_held)->toBe(0)
         ->and(snapshotFor($this->tenant, '2026-10-15')->meetings_held)->toBe(0);
 });
 

@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property string $urlable_type
- * @property int|string $urlable_id
+ * @property string $urlable_id
  * @property string $locale
  * @property string $url
  * @property Carbon|null $created_at

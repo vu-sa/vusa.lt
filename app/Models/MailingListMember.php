@@ -16,7 +16,7 @@ use Illuminate\Support\Carbon;
  * @property string $email
  * @property string|null $display_name
  * @property string|null $user_id
- * @property list<string>|null $reasons
+ * @property array<array-key, mixed>|null $reasons
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read MailingList $mailingList

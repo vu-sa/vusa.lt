@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { computed, ref } from 'vue';
 
 import { useGanttFiltering } from '../useGanttFiltering';
+
 import type { GanttSortBy } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
 
 const institutions = [

@@ -10,17 +10,17 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property Carbon $taken_on
  * @property int $window_days
- * @property array<string, array{value: float|null, part: int|null, whole: int|null}> $metrics
+ * @property array<array-key, mixed> $metrics
  * @property bool $is_baseline
- * @property string $scope_key
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property int|null $tenant_id
+ * @property string $scope_key
  * @property int $definition_version
  * @property bool $is_reconstructed
  * @property Carbon|null $measured_at
- * @property array<string, array{part: list<string>, whole: list<string>}>|null $contributors
- * @property array|null $supplementary
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * @property array<array-key, mixed>|null $contributors
+ * @property array<array-key, mixed>|null $supplementary
  *
  * @method static \Database\Factories\RepMetricSnapshotFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|RepMetricSnapshot newModelQuery()

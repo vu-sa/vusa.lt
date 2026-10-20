@@ -46,6 +46,7 @@ use Illuminate\Support\Facades\DB;
  * @property-read DutyType|null $parent
  * @property-read Collection<int, DutyType> $recursiveDescendants
  * @property-read DutyType|null $recursiveParent
+ * @property-read Collection<int, ResponsibilityGrant> $responsibilityGrants
  * @property-read Collection<int, Role> $roles
  * @property-read mixed $translations
  *
@@ -58,6 +59,7 @@ use Illuminate\Support\Facades\DB;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyType whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyType whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyType whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyType whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyType withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyType withoutTrashed()
  *

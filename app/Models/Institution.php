@@ -42,6 +42,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
 
@@ -56,8 +58,6 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property string|null $email
  * @property array|string|null $working_hours
  * @property string|null $website
- * @property string|null $image_url
- * @property string|null $image_focal_point
  * @property string|null $logo_url
  * @property string|null $facebook_url
  * @property string|null $instagram_url
@@ -85,10 +85,12 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read mixed $has_public_meetings
  * @property-read Collection<int, InstitutionLink> $incomingLinks
  * @property-read mixed $maybe_short_name
+ * @property-read MediaCollection<int, Media> $media
  * @property-read Collection<int, Meeting> $meetings
  * @property-read Collection<int, InstitutionLink> $outgoingLinks
  * @property-read Collection<int, Problem> $problems
  * @property-read Collection<int, PublicUrl> $publicUrls
+ * @property-read Collection<int, ResponsibilityGrant> $responsibilityGrants
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, User> $secretaries
  * @property-read Collection<int, InstitutionSecretary> $secretaryAssignments
@@ -112,6 +114,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Institution withoutTrashed()
  *

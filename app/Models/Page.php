@@ -27,6 +27,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Sitemap\Contracts\Sitemapable;
 use Spatie\Sitemap\Tags\Url;
 
@@ -45,7 +47,6 @@ use Spatie\Sitemap\Tags\Url;
  * @property bool $show_table_of_contents
  * @property bool $show_title
  * @property bool $show_breadcrumbs
- * @property string|null $featured_image
  * @property string|null $meta_description
  * @property int $tenant_id
  * @property Carbon $created_at
@@ -55,6 +56,7 @@ use Spatie\Sitemap\Tags\Url;
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, Page> $children
  * @property-read Content $content
+ * @property-read MediaCollection<int, Media> $media
  * @property-read Page|null $otherLanguagePage
  * @property-read Page|null $parent
  * @property-read Collection<int, PublicUrl> $publicUrls

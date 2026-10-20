@@ -2,8 +2,6 @@
  * Shared helper functions for Gantt chart data transformations.
  * Used by UserTimelineSection and TenantTimelineSection.
  */
-import { getOutcomeVotes } from '@/Composables/useAgendaItemStyling';
-
 import type {
   AtstovavimasInstitution,
   GanttDutyMember,
@@ -12,6 +10,8 @@ import type {
   GanttInstitution,
   GanttInstitutionType,
 } from '../types';
+
+import { getOutcomeVotes } from '@/Composables/useAgendaItemStyling';
 
 /**
  * Extract duty members from institutions for Gantt display.

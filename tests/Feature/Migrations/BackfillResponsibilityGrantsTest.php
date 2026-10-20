@@ -96,7 +96,7 @@ test('it keeps every duty\'s permissions and gives purposes only to the people a
         ->and($coordination->permissions)->toBeEmpty()
         ->and($this->coordination->roles()->pluck('roles.id')->all())->toEqualCanonicalizing([$this->coordinator->id, $coordination->id])
         ->and($this->representative->fresh()->getTranslation('title', 'lt'))->toBe('Studentų atstovas')
-        ->and(ProjectDutyResponsibilities::drift())->toBe([]);
+        ->and(ProjectDutyResponsibilities::drift())->toBeEmpty();
 });
 
 test('down returns the hand-picked representatives to the representative role', function (): void {

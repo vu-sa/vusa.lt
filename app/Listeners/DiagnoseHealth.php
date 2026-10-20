@@ -43,7 +43,7 @@ class DiagnoseHealth
         $checks = [
             'database' => fn (): bool => $this->monitor->getDatabaseStatus()['status'] !== 'error',
             'redis' => fn (): bool => $this->monitor->getRedisStatus()['status'] !== 'error',
-            'typesense' => fn (): bool => $this->probes->typesenseIsUp(),
+            'typesense' => $this->probes->typesenseIsUp(...),
             'reverb' => fn (): bool => $this->probes->reverbStatus()['status'] !== 'error',
             'scheduler' => fn (): bool => $this->monitor->getSchedulerStatus()['status'] === 'healthy',
             'queue' => fn (): bool => $this->monitor->getQueueStatus()['status'] === 'healthy',

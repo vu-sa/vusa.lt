@@ -35,7 +35,7 @@ test('every column referencing duties is handled by MergeDuties', function (): v
         ->values();
 
     expect($referencing)->toContain('duty_responsibilities.duty_id')
-        ->and($referencing->diff(mergeDutiesHandledColumns())->values()->all())->toBe([]);
+        ->and($referencing->diff(mergeDutiesHandledColumns())->values()->all())->toBeEmpty();
 });
 
 test('MergeDuties names only columns that exist', function (): void {
@@ -49,5 +49,5 @@ test('MergeDuties names only columns that exist', function (): void {
         ->values()
         ->all();
 
-    expect($missing)->toBe([]);
+    expect($missing)->toBeEmpty();
 });

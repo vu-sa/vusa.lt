@@ -133,7 +133,6 @@
 </template>
 
 <script setup lang="ts">
-import MediaImage from '@/Components/Brand/MediaImage.vue';
 /**
  * Pure public display for the `hero` block — owns structure, classes, variants and
  * presentation calculations only. Every author-editable spot (eyebrow/title/description/
@@ -149,6 +148,7 @@ import { withCompactPadding, type BandResolution } from '../bandLayout';
 import HeroButtons from './HeroButtons.vue';
 import { heroButtonsClass, heroDescriptionClass, heroTitleAlignmentClass, heroTitleClass } from './heroLayout';
 
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
 import { EyebrowLabel } from '@/Components/Public/Base';
 import type { Hero } from '@/Types/contentParts';

@@ -20,6 +20,7 @@ use App\Services\ContactSearchIndexSynchronizer;
 use App\Services\Typesense\SearchText;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -99,22 +100,24 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $resources_count
  *
  * @method static \Database\Factories\DutyFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty permission($permissions, bool $without = false)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty role($roles, ?string $guard = null, bool $without = false)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty team($teams, bool $without = false)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereLocale(string $column, string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereLocales(string $column, array $locales)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutPermission($permissions)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutRole($roles, ?string $guard = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutTeam($teams)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutTrashed()
+ * @method static Builder<static>|Duty holdingPurpose(\App\Enums\ResponsibilityPurpose $purpose)
+ * @method static Builder<static>|Duty newModelQuery()
+ * @method static Builder<static>|Duty newQuery()
+ * @method static Builder<static>|Duty onlyTrashed()
+ * @method static Builder<static>|Duty permission($permissions, bool $without = false)
+ * @method static Builder<static>|Duty query()
+ * @method static Builder<static>|Duty role($roles, ?string $guard = null, bool $without = false)
+ * @method static Builder<static>|Duty team($teams, bool $without = false)
+ * @method static Builder<static>|Duty whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Duty whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Duty whereLocale(string $column, string $locale)
+ * @method static Builder<static>|Duty whereLocales(string $column, array $locales)
+ * @method static Builder<static>|Duty whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|Duty withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Duty withoutPermission($permissions)
+ * @method static Builder<static>|Duty withoutRole($roles, ?string $guard = null)
+ * @method static Builder<static>|Duty withoutTeam($teams)
+ * @method static Builder<static>|Duty withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -341,7 +344,8 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
      *
      * @param  Builder<self>  $query
      */
-    public function scopeHoldingPurpose(Builder $query, ResponsibilityPurpose $purpose): void
+    #[Scope]
+    protected function holdingPurpose(Builder $query, ResponsibilityPurpose $purpose): void
     {
         $query->whereHas('roles', fn (Builder $roles) => $roles->where('purpose', $purpose));
     }

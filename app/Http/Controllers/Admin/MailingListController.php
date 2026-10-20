@@ -256,7 +256,7 @@ class MailingListController extends AdminController
 
         try {
             $diff = $sync->verify($mailingList, $previewToken, $user, $activate);
-        } catch (ValidationException $exception) {
+        } catch (ValidationException) {
             return back()->with('error', __('mailing_lists.messages.stale_preview'));
         } catch (Throwable $exception) {
             report($exception);

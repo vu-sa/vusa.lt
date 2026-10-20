@@ -65,7 +65,7 @@ class RepStatisticsObserver
             default => [],
         };
 
-        $ids = array_values(array_unique(array_map('intval', array_filter($ids))));
+        $ids = array_values(array_unique(array_map(intval(...), array_filter($ids))));
 
         return $ids === [] ? null : $ids;
     }

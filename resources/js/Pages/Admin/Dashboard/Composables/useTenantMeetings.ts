@@ -37,7 +37,7 @@ function monthEnd(ts: number): number {
 
 function chunk(segment: Window): Window[] {
   const chunks: Window[] = [];
-  let from = segment.from;
+  let { from } = segment;
   while (from <= segment.until) {
     const d = new Date(from);
     const until = Math.min(segment.until, new Date(d.getFullYear(), d.getMonth() + CHUNK_MONTHS, 1).getTime() - 1);

@@ -101,9 +101,8 @@ test('an assignment edit reaches Mailman through the queued sync', function (str
     } else {
         Http::assertNotSent(fn (Request $request) => $request->method() === 'POST');
     }
-    expect($this->list->fresh()->last_sync_status)->toBe(MailingListSyncStatus::Synced);
-    expect($this->list->members()->orderBy('email')->pluck('email')->all())
-        ->toBe($change === 'email' ? ['new@vusa.lt', 'stays@vusa.lt'] : ['stays@vusa.lt']);
+    expect($this->list->fresh()->last_sync_status)->toBe(MailingListSyncStatus::Synced)
+        ->and($this->list->members()->orderBy('email')->pluck('email')->all())->toBe($change === 'email' ? ['new@vusa.lt', 'stays@vusa.lt'] : ['stays@vusa.lt']);
 })->with(['email', 'ended', 'deleted']);
 
 test('a duty mailbox edit reaches Mailman through the queued sync', function (): void {
@@ -228,8 +227,8 @@ test('activation requires a valid preview and keeps manual mode on failure', fun
     $sync = app(SyncMailingList::class);
 
     expect(fn () => $sync->apply($this->list, causer: $user, activate: true))
-        ->toThrow(ValidationException::class);
-    expect($this->list->fresh()->isManaged())->toBeFalse();
+        ->toThrow(ValidationException::class)
+        ->and($this->list->fresh()->isManaged())->toBeFalse();
     Http::assertNotSent(fn (Request $request) => $request->method() !== 'GET');
 });
 
@@ -264,8 +263,8 @@ test('a failed activation preserves manual mode and the actual roster', function
     $sync = app(SyncMailingList::class);
     $token = $sync->reviewToken($this->list, $sync->preview($this->list), $user);
 
-    expect(fn () => $sync->apply($this->list, $token, $user, activate: true))->toThrow(MailmanException::class);
-    expect($this->list->fresh()->isManaged())->toBeFalse()
+    expect(fn () => $sync->apply($this->list, $token, $user, activate: true))->toThrow(MailmanException::class)
+        ->and($this->list->fresh()->isManaged())->toBeFalse()
         ->and($this->list->fresh()->last_sync_status)->toBeNull()
         ->and($this->list->members()->pluck('email')->all())->toBe(['existing@vusa.lt']);
 });

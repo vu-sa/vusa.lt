@@ -1,7 +1,5 @@
 import { computed, type MaybeRefOrGetter, toValue } from 'vue';
 
-import { getOutcomeVotes } from '@/Composables/useAgendaItemStyling';
-
 import type {
   AtstovavimasUser,
   AtstovavimasInstitution,
@@ -12,6 +10,8 @@ import type {
   GanttAgendaItem,
   AtstovavimasGap,
 } from '../types';
+
+import { getOutcomeVotes } from '@/Composables/useAgendaItemStyling';
 
 export function useAtstovavimasData(
   userGetter: MaybeRefOrGetter<AtstovavimasUser>,

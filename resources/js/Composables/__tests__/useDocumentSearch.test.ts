@@ -36,7 +36,7 @@ vi.mock('../useSearchClient', () => ({
 }));
 
 vi.mock('../../Services/DocumentSearchService', () => ({
-  // A `function` implementation, because the composable constructs the service with `new`.
+  // The composable constructs the service with `new`.
   DocumentSearchService: vi.fn().mockImplementation(function () {
     return {
       performSearch: vi.fn(() => Promise.resolve({
@@ -71,6 +71,7 @@ describe('useDocumentSearch (refactored)', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -169,7 +170,7 @@ describe('useDocumentSearch (refactored)', () => {
       vi.useFakeTimers();
       const { useDocumentSearch } = await import('../useDocumentSearch');
       const controller = useDocumentSearch();
-      await controller.initializeSearchClient();
+      expect(await controller.initializeSearchClient()).not.toBeNull();
 
       controller.search('*', true);
       await vi.advanceTimersByTimeAsync(2500);
@@ -184,7 +185,6 @@ describe('useDocumentSearch (refactored)', () => {
         results: 0,
         source: 'documents',
       });
-      vi.useRealTimers();
     });
   });
 

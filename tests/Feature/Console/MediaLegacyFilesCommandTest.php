@@ -96,9 +96,8 @@ test('nothing is deleted on staging, whose uploads are production\'s', function 
     config(['app.env' => 'staging', 'app.files_read_only' => true]);
 
     expect(fn () => $this->artisan('media:legacy-files', ['--delete' => true, '--force' => true])->run())
-        ->toThrow(StagingResourceReadOnlyException::class);
-
-    expect(File::exists($this->uploads.'/contacts/forgotten.webp'))->toBeTrue();
+        ->toThrow(StagingResourceReadOnlyException::class)
+        ->and(File::exists($this->uploads.'/contacts/forgotten.webp'))->toBeTrue();
 });
 
 test('once the columns are gone only unreferenced files are deleted', function (): void {
@@ -140,6 +139,6 @@ test('a reference added after reporting is checked again before deletion', funct
         'short' => '<p><img src="/uploads/contacts/forgotten.webp"></p>',
     ]);
 
-    expect($report->delete('contacts/forgotten.webp'))->toBeFalse();
-    expect(File::exists($this->uploads.'/contacts/forgotten.webp'))->toBeTrue();
+    expect($report->delete('contacts/forgotten.webp'))->toBeFalse()
+        ->and(File::exists($this->uploads.'/contacts/forgotten.webp'))->toBeTrue();
 });

@@ -61,7 +61,7 @@ import { Input } from '@/Components/ui/input';
 import { Textarea } from '@/Components/ui/textarea';
 import { ModelEnum } from '@/Types/enums';
 
-type Translations = { lt: string; en: string };
+interface Translations { lt: string; en: string }
 
 export interface ResponsibilityFormData {
   title: Translations;

@@ -3,7 +3,7 @@
     :class="{ 'h-full flex flex-col': props.height === '100%' }">
     <MeetingsGanttToolbar :show-legend :institution-count="institutions.length"
       :show-only-with-activity :show-only-with-public-meetings
-      :day-width="dayWidthPx" :group-by="groupBy" :sort-by="sortBy" :fullscreen-active :meetings-loading
+      :day-width="dayWidthPx" :group-by :sort-by :fullscreen-active :meetings-loading
       @show-legend-modal="emit('show-legend-modal')" @update:day-width="onScaleChange"
       @update:group-by="groupBy = $event" @update:sort-by="sortBy = $event" @fullscreen="emit('fullscreen', true)" />
 
@@ -53,7 +53,7 @@
                 <span v-if="rowDates.get(String(row.institutionId))" data-slot="gantt-row-date"
                   class="shrink-0 text-xs tabular-nums text-muted-foreground"
                   :title="rowDateTitle(rowDates.get(String(row.institutionId))!)">{{
-                    labelLast(rowDates.get(String(row.institutionId))!.date) }}</span>
+                  labelLast(rowDates.get(String(row.institutionId))!.date) }}</span>
               </div>
             </div>
           </template>

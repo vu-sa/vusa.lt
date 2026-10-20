@@ -223,7 +223,7 @@ test('inactive institutions are excluded for direct institution and duty sources
     $target = $type === 'duty' ? $user->duties()->first()->id : $institution->id;
     mailingListSource($this->list, MailingListSourceType::from($type), $target);
 
-    expect(mailingListEmails($this->list))->toBe([]);
+    expect(mailingListEmails($this->list))->toBeEmpty();
 })->with(['duty', 'institution']);
 
 test('source expiry uses the requested date inclusively', function (): void {
@@ -232,7 +232,7 @@ test('source expiry uses the requested date inclusively', function (): void {
 
     expect(ResolveMailingListMembers::execute($this->list, Carbon::parse('2026-10-10'))->pluck('email')->all())
         ->toBe(['dated@vusa.lt'])
-        ->and(ResolveMailingListMembers::execute($this->list, Carbon::parse('2026-10-11'))->all())->toBe([]);
+        ->and(ResolveMailingListMembers::execute($this->list, Carbon::parse('2026-10-11'))->all())->toBeEmpty();
 });
 
 test('a stored source boundary still applies when its duty moves to another tenant', function (): void {
@@ -245,7 +245,7 @@ test('a stored source boundary still applies when its duty moves to another tena
 
     $institution->update(['tenant_id' => $this->padalinys->id]);
 
-    expect(mailingListEmails($this->list))->toBe([]);
+    expect(mailingListEmails($this->list))->toBeEmpty();
 });
 
 test('a deleted root duty type does not continue including its live descendants', function (): void {
@@ -259,7 +259,7 @@ test('a deleted root duty type does not continue including its live descendants'
 
     $root->delete();
 
-    expect(mailingListEmails($this->list))->toBe([]);
+    expect(mailingListEmails($this->list))->toBeEmpty();
 });
 
 test('a responsibility source reaches its holders however it was granted, within the tenant scope', function (): void {

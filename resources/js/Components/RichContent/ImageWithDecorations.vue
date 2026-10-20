@@ -47,10 +47,10 @@
 </template>
 
 <script setup lang="ts">
-import MediaImage from '@/Components/Brand/MediaImage.vue';
-import type { ImageData } from '@/Types/media';
 import { computed, type Component } from 'vue';
 
+import MediaImage from '@/Components/Brand/MediaImage.vue';
+import type { ImageData } from '@/Types/media';
 import DecorativeElement from '@/Components/RichContent/DecorativeElement.vue';
 
 interface DecorationConfig {

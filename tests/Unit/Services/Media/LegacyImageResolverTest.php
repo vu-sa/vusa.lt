@@ -27,7 +27,7 @@ function resolverRoot(): string
 
 function resolveLegacy(?string $value): LegacyImageSource
 {
-    return (new LegacyImageResolver(resolverRoot().'/uploads', resolverRoot()))->resolve($value);
+    return new LegacyImageResolver(resolverRoot().'/uploads', resolverRoot())->resolve($value);
 }
 
 test('a stored value resolves to the file behind it', function (string $value, string $expected): void {

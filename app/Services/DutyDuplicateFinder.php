@@ -57,6 +57,6 @@ class DutyDuplicateFinder
             }
         }
 
-        return array_map('strval', array_keys($duplicates));
+        return array_map(strval(...), array_keys($duplicates));
     }
 }

@@ -42,8 +42,8 @@ function dutyTypeAssignmentPayload(Duty $duty, array $types): array
 test('editing a type alone cannot grant its responsibilities to the actor', function (): void {
     asUser($this->actor)->put(route('dutyTypes.models.sync', $this->type), ['models' => [$this->actorDuty->id]])->assertForbidden();
 
-    expect($this->actorDuty->fresh()->hasRole($this->privileged))->toBeFalse();
-    expect($this->type->duties()->exists())->toBeFalse();
+    expect($this->actorDuty->fresh()->hasRole($this->privileged))->toBeFalse()
+        ->and($this->type->duties()->exists())->toBeFalse();
 });
 
 test('duty creation and editing refuse undelegated types before changing data', function (): void {
@@ -53,8 +53,8 @@ test('duty creation and editing refuse undelegated types before changing data', 
 
     $name = $this->actorDuty->getTranslations('name');
     asUser($this->actor)->put(route('duties.update', $this->actorDuty), dutyTypeAssignmentPayload($this->actorDuty, [$this->type->id]))->assertForbidden();
-    expect($this->actorDuty->fresh()->getTranslations('name'))->toBe($name);
-    expect($this->actorDuty->hasRole($this->privileged))->toBeFalse();
+    expect($this->actorDuty->fresh()->getTranslations('name'))->toBe($name)
+        ->and($this->actorDuty->hasRole($this->privileged))->toBeFalse();
 });
 
 test('delegation allows assigning an unheld responsibility through both editors', function (): void {
@@ -82,8 +82,8 @@ test('delegated types are available when creating duties', function (): void {
 
     asUser($this->actor)->post(route('duties.store'), dutyTypeAssignmentPayload($this->actorDuty, [$this->type->id]))->assertSessionHasNoErrors();
     $created = Duty::query()->latest('id')->firstOrFail();
-    expect($created->hasRole($this->privileged))->toBeTrue();
-    expect(GetAttachableTypesForDuty::execute()->pluck('id')->all())->not->toContain($blocked->id);
+    expect($created->hasRole($this->privileged))->toBeTrue()
+        ->and(GetAttachableTypesForDuty::execute()->pluck('id')->all())->not->toContain($blocked->id);
 });
 
 test('an ended delegation cannot be used but an assignment ending today still can', function (): void {
