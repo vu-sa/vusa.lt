@@ -71,7 +71,7 @@ return [
         'types_placeholder' => 'Select institution types',
         'no_types_found' => 'No institution types found.',
         'excluded_types_title' => 'Institution Types Without Meetings',
-        'excluded_types_description' => 'Select institution types that should be hidden from the representation dashboard. Institutions of these types (e.g., unit, PKP) do not have formal meetings and should not be tracked.',
+        'excluded_types_description' => 'Select institution types whose institutions the representation metrics leave out. Institutions of these types (e.g., unit, PKP) have no formal meetings, but the meetings chart still shows them.',
         'excluded_types_label' => 'Excluded Institution Types',
         'excluded_types_placeholder' => 'Select institution types to exclude',
     ],
@@ -88,6 +88,15 @@ return [
         'student_rep_type_placeholder' => 'Default: Student representative body',
         'student_rep_type_default' => 'Default (studentu-atstovu-organas)',
         'student_rep_type_note' => 'By default, the type with slug "studentu-atstovu-organas" is used.',
+        'counted_scopes_title' => 'Which bodies the metrics count',
+        'counted_scopes_description' => 'Unit statistics (representatives, meeting registration, institution status) only count institutions of the ticked bodies. The meetings chart still shows every institution.',
+        'counted_scopes_label' => 'Counted bodies',
+        'counted_scopes' => [
+            'vusa' => 'The Parliament, the Board, unit boards and other VU SA bodies.',
+            'vu' => 'The VU Senate, Council, faculty councils, committees and other VU bodies student representatives are delegated to.',
+            'national' => 'Lithuanian bodies, e.g. LSS or ministry working groups.',
+            'international' => 'International bodies, e.g. ESU.',
+        ],
     ],
 
     // Document settings page

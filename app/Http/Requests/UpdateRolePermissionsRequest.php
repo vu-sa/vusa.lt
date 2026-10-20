@@ -6,6 +6,7 @@ use App\Models\Permission;
 use App\Models\Role;
 use App\Support\Permissions\BaselineAccess;
 use App\Support\Permissions\PermissionCatalog;
+use App\Support\Permissions\TypeGrantablePermissions;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
@@ -45,7 +46,7 @@ class UpdateRolePermissionsRequest extends FormRequest
      */
     public function after(): array
     {
-        return [function (Validator $validator): void {
+        return [$this->keepsTypeGrantsSafe(...), function (Validator $validator): void {
             $user = $this->user();
             $requested = (array) $this->input('permissions', []);
             $dropped = array_diff(self::SELF_MANAGEMENT, $requested);
@@ -69,6 +70,15 @@ class UpdateRolePermissionsRequest extends FormRequest
                 }
             }
         }];
+    }
+
+    private function keepsTypeGrantsSafe(Validator $validator): void
+    {
+        $violations = TypeGrantablePermissions::violations(array_map(strval(...), (array) $this->input('permissions', [])));
+
+        if ($violations !== [] && TypeGrantablePermissions::isGrantedToTypes($this->role())) {
+            $validator->errors()->add('permissions', __('responsibilities.validation.type_granted_role', ['permissions' => implode(', ', $violations)]));
+        }
     }
 
     public function role(): Role

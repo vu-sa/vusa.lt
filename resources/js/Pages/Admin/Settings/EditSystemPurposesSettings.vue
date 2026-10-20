@@ -39,10 +39,10 @@
         :hint="fallbackHint(part) ?? part.drives"
         :error="form.errors[`duty_types.${part.key}`]"
       >
-        <NativeSelect
+        <TypeTreeSelect
           :id="`duty_type_${part.key}`"
           v-model="form.duty_types[part.key]"
-          :options="dutyTypeSelectOptions"
+          :types="dutyTypeOptions"
           :placeholder="$t('settings.purposes.responsibility_none')"
           placeholder-selectable
         />
@@ -60,6 +60,7 @@ import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
 import { NativeSelect } from '@/Components/ui/native-select';
+import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 
 interface Purpose { key: string; label: string; drives: string; responsibility_id: string | null }
 interface DutyTypePart { key: string; label: string; drives: string; type_id: number | null; effective_type_id: number | null; fallback_slug: string }
@@ -69,11 +70,10 @@ const props = defineProps<{
   purposes: Purpose[];
   responsibilities: { id: string; title: string }[];
   dutyTypes: DutyTypePart[];
-  dutyTypeOptions: { id: number; title: string }[];
+  dutyTypeOptions: { id: number; title: string; parent_id: number | null }[];
 }>();
 
 const responsibilityOptions = computed(() => props.responsibilities.map(item => ({ value: item.id, label: item.title })));
-const dutyTypeSelectOptions = computed(() => props.dutyTypeOptions.map(type => ({ value: type.id, label: type.title })));
 
 const form = useForm({
   purposes: Object.fromEntries(props.purposes.map(purpose => [purpose.key, purpose.responsibility_id])) as Record<string, string | null>,

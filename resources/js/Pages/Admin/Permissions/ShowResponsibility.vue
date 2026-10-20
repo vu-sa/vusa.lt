@@ -95,6 +95,7 @@
           :scopes="purposeScopes"
           :can-update="can.update"
           :duty-type-options
+          :type-grant-blocked-by
           :options="grantOptions"
         />
       </Deferred>
@@ -116,12 +117,7 @@
         <p class="text-xs text-muted-foreground">
           {{ $t('responsibilities.delegation.description') }}
         </p>
-        <fieldset :disabled="!can.update" class="divide-y divide-border">
-          <label v-for="type in dutyTypeOptions" :key="type.id" class="flex min-h-11 cursor-pointer items-center gap-3 py-2 text-sm">
-            <Checkbox :model-value="delegated.includes(type.id)" @update:model-value="toggleDelegated(type.id, $event === true)" />
-            {{ type.title }}
-          </label>
-        </fieldset>
+        <TypeTreeChecklist v-model="delegated" :types="dutyTypeOptions" :disabled="!can.update" />
         <div v-if="can.update && delegationDirty" class="flex justify-end gap-2 pt-2">
           <Button variant="outline" voice="sentence" @click="delegated = [...attachableTypes]">
             {{ $t('responsibilities.matrix.discard') }}
@@ -153,7 +149,7 @@ import { Compass, Edit, Tags, Trash2, TriangleAlert } from '@lucide/vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { ConfirmDialog, OverviewSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { Checkbox } from '@/Components/ui/checkbox';
+import { TypeTreeChecklist } from '@/Components/AdminForms/TypeTree';
 import type { StatusPresentation } from '@/Constants/statuses';
 import PermissionMatrix from '@/Features/Admin/PermissionMatrix/PermissionMatrix.vue';
 import type { PermissionCatalog } from '@/Features/Admin/PermissionMatrix/types';
@@ -188,7 +184,8 @@ const props = defineProps<{
   grantedPermissions: string[];
   legacyPermissions: string[];
   attachableTypes: number[];
-  dutyTypeOptions: { id: number; title: string }[];
+  dutyTypeOptions: { id: number; title: string; parent_id: number | null }[];
+  typeGrantBlockedBy?: string[];
   grants?: ResponsibilityGrantsPayload;
   people?: ResponsibilityPerson[];
   grantOptions?: ResponsibilityGrantOptions;
@@ -198,7 +195,7 @@ const props = defineProps<{
 const section = ref('permissions');
 const deleteOpen = ref(false);
 const savingPermissions = ref(false);
-const delegated = ref<number[]>([...props.attachableTypes]);
+const delegated = ref<Array<number | string>>([...props.attachableTypes]);
 
 const locale = computed(() => getActiveLanguage() as 'lt' | 'en');
 const description = computed(() => props.responsibility.description?.[locale.value] || props.responsibility.description?.lt || null);
@@ -234,10 +231,6 @@ const primaryAction = computed<RecordAction | undefined>(() => (props.can.update
 const overflowActions = computed<RecordAction[]>(() => (props.can.delete ? [{ key: 'delete', label: $t('Šalinti'), icon: Trash2, destructive: true }] : []));
 
 const delegationDirty = computed(() => [...delegated.value].sort().join() !== [...props.attachableTypes].sort().join());
-
-function toggleDelegated(typeId: number, checked: boolean): void {
-  delegated.value = checked ? [...delegated.value, typeId] : delegated.value.filter(id => id !== typeId);
-}
 
 function savePermissions(permissions: string[]): void {
   savingPermissions.value = true;

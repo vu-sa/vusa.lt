@@ -25,10 +25,12 @@ use App\Services\Permissions\ResponsibilityPermissionGaps;
 use App\Services\PostCreateRedirect;
 use App\Support\MorphMap;
 use App\Support\Permissions\PermissionCatalog;
+use App\Support\Permissions\TypeGrantablePermissions;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -108,10 +110,11 @@ class ResponsibilityController extends AdminController
             'grantedPermissions' => $held->filter(PermissionCatalog::isGrantable(...))->values(),
             'legacyPermissions' => $held->reject(PermissionCatalog::isGrantable(...))->values(),
             'attachableTypes' => $role->attachable_types->modelKeys(),
-            'dutyTypeOptions' => DutyType::query()->get(['id', 'title'])
-                ->map(fn (DutyType $type): array => ['id' => (int) $type->id, 'title' => (string) $type->getTranslation('title', app()->getLocale())])
+            'dutyTypeOptions' => DutyType::query()->get(['id', 'title', 'parent_id'])
+                ->map(fn (DutyType $type): array => ['id' => (int) $type->id, 'title' => (string) $type->getTranslation('title', app()->getLocale()), 'parent_id' => $type->parent_id])
                 ->sortBy('title')
                 ->values(),
+            'typeGrantBlockedBy' => TypeGrantablePermissions::violations($held),
             'grants' => Inertia::defer(fn () => $this->grants($role), 'grants'),
             'people' => Inertia::defer(fn () => $this->people($role), 'people'),
             'grantOptions' => Inertia::optional(fn () => $this->grantOptions()),
@@ -262,7 +265,7 @@ class ResponsibilityController extends AdminController
         $grants = $role->grants()
             ->with(['scope', 'grantee' => fn (MorphTo $grantee) => $grantee
                 ->morphWith([Duty::class => ['institution:id,name,tenant_id', 'institution.tenant:id,shortname']])
-                ->morphWithCount([DutyType::class => ['duties'], Institution::class => ['duties']])])
+                ->morphWithCount([Institution::class => ['duties']])])
             ->get();
         $currentHolders = Duty::query()
             ->whereIn('id', $grants->where('grantee_type', MorphMap::alias(Duty::class))->pluck('grantee_id'))
@@ -306,7 +309,7 @@ class ResponsibilityController extends AdminController
                         'type' => ['id' => (int) $type->id, 'title' => (string) $type->getTranslation('title', app()->getLocale())],
                         'scope_type' => $grant->scope_type,
                         'scope_name' => $this->scopeName($grant->scope),
-                        'duties_count' => (int) $type->duties_count,
+                        'duties_count' => DB::table('duty_duty_type')->whereIn('duty_type_id', DutyType::withDescendantIds([$type->id]))->distinct()->count('duty_id'),
                         'needs_scope' => $grant->needsScope(),
                     ]];
                 })
@@ -372,8 +375,12 @@ class ResponsibilityController extends AdminController
                 ->values(),
             'tenants' => Tenant::query()->orderBy('shortname')->get(['id', 'shortname'])
                 ->map(fn (Tenant $tenant): array => ['id' => (string) $tenant->id, 'shortname' => (string) __($tenant->shortname)]),
-            'institutionTypes' => InstitutionType::query()->get(['id', 'title'])
-                ->map(fn (InstitutionType $type): array => ['id' => (string) $type->id, 'title' => (string) $type->getTranslation('title', app()->getLocale())])
+            'institutionTypes' => InstitutionType::query()->get(['id', 'title', 'parent_id'])
+                ->map(fn (InstitutionType $type): array => [
+                    'id' => (string) $type->id,
+                    'title' => (string) $type->getTranslation('title', app()->getLocale()),
+                    'parent_id' => $type->parent_id === null ? null : (string) $type->parent_id,
+                ])
                 ->sortBy('title')
                 ->values(),
         ];
@@ -414,7 +421,7 @@ class ResponsibilityController extends AdminController
 
         return match ($grant->grantee_type) {
             MorphMap::alias(Duty::class) => $duties->contains('id', $grant->grantee_id),
-            MorphMap::alias(DutyType::class) => $duties->contains(fn (Duty $duty) => $duty->types->contains('id', (int) $grant->grantee_id)),
+            MorphMap::alias(DutyType::class) => in_array((int) $grant->grantee_id, DutyType::withAncestorIds($duties->flatMap->types->modelKeys()), true),
             MorphMap::alias(Institution::class) => $duties->contains('institution_id', $grant->grantee_id),
             default => false,
         };

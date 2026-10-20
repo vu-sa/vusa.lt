@@ -23,7 +23,7 @@ use Illuminate\Http\Request;
 
 /**
  * Atsakomybės on the duty record: what the duty does, whether given to it directly, through one of
- * its types or through its institution.
+ * its types (or their ancestors) or through its institution.
  */
 class DutyResponsibilityController extends AdminController
 {
@@ -39,7 +39,7 @@ class DutyResponsibilityController extends AdminController
             ->where(fn ($query) => $query
                 ->where(fn ($direct) => $direct->where('grantee_type', MorphMap::alias(Duty::class))->where('grantee_id', $duty->id))
                 ->orWhere(fn ($viaType) => $viaType->where('grantee_type', MorphMap::alias(DutyType::class))
-                    ->whereIn('grantee_id', $duty->types->modelKeys()))
+                    ->whereIn('grantee_id', array_map(strval(...), DutyType::withAncestorIds($duty->types->modelKeys()))))
                 ->orWhere(fn ($viaInstitution) => $viaInstitution->where('grantee_type', MorphMap::alias(Institution::class))
                     ->where('grantee_id', $duty->institution_id)))
             ->with(['role', 'grantee', 'scope'])
@@ -80,7 +80,7 @@ class DutyResponsibilityController extends AdminController
 
         foreach (InstitutionType::query()->get()->sortBy('title') as $type) {
             if ($user->can('update', $type)) {
-                $types[] = ['id' => (string) $type->id, 'title' => (string) $type->title];
+                $types[] = ['id' => (string) $type->id, 'title' => (string) $type->title, 'parent_id' => $type->parent_id === null ? null : (string) $type->parent_id];
             }
         }
 

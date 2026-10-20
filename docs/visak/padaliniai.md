@@ -2,13 +2,14 @@
 doc_status: reviewed
 title: Padaliniai
 area: visak
-last_reviewed: 2026-10-20
+last_reviewed: 2026-10-21
 tests:
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php
   - tests/Feature/Admin/Core/AtstovavimasApiTest.php
   - tests/Feature/Api/Admin/RepStatisticsTest.php
   - tests/Feature/Api/Admin/RepMetricCadenceTest.php
   - tests/Feature/Admin/Core/AtstovavimasSettingsTest.php
+  - tests/Feature/Institutions/InstitutionScopeTest.php
   - tests/Feature/Admin/Core/InstitutionStatusSnapshotTest.php
   - tests/Feature/Admin/Core/RepMetricsTest.php
   - tests/Unit/InstitutionActivityStatusServiceTest.php
@@ -60,8 +61,25 @@ pasirenkamas vienas naudotojo padalinys. Bent vienas visada lieka pasirinktas, o
 įsimenamas.
 
 Institucijų būsenos skaičiuojamos taip pat kaip [Apžvalgoje](/visak/apzvalga#busenos).
-Institucijos, kurių tipas [posėdžių nustatymuose](/sistema/nustatymai) neįtraukiamas į rodiklius,
-rodomos laiko juostoje, bet neįskaičiuojamos nei į skaičius, nei į sąrašą **Reikia dėmesio**.
+
+### Kurios institucijos skaičiuojamos {#skaiciuojamos-institucijos}
+
+<ChangelogNote version="v3.11" date="2026-10-20" title="Rodikliai skaičiuojami VU organams">
+
+Rodikliai pagal nutylėjimą skaičiuojami tik VU organų institucijoms ir jų atstovams; VU SA organai rodomi posėdžių laiko juostoje.
+
+</ChangelogNote>
+
+Skaičiai, sąrašas **Reikia dėmesio**, būklės pokyčiai, atstovavimo rodikliai ir atstovų aktyvumas
+skaičiuojami tik tų organų institucijoms, kurie pažymėti
+[atstovavimo nustatymuose](/sistema/nustatymai#atstovavimas) – pagal nutylėjimą tik **VU organams**
+(Senatui, Tarybai, fakultetų taryboms ir pan.). Ar institucija yra VU, VU SA, nacionalinis ar
+tarptautinis organas, nustato jos [tipas](/sistema/tipai). Atstovas skaičiuojamas, jei eina
+studento atstovo pareigas tokioje institucijoje. Po skaičiais rodoma, kurie organai skaičiuojami.
+
+Posėdžių laiko juostoje rodomos visos institucijos, ir VU SA organai. Institucijos, kurių tipas
+[posėdžių nustatymuose](/sistema/nustatymai#posedziai) neįtraukiamas į rodiklius, taip pat rodomos
+laiko juostoje, bet neskaičiuojamos.
 
 ### Kurias institucijas matai laiko juostoje {#laiko-juosta}
 
@@ -216,6 +234,7 @@ pasirinkimu.
   `metrics:reps:snapshot`; `--from=YYYY-MM-DD` užpildo trūkstamas dienas ir pažymi jas kaip
   atkurtas; `--repair-reconstructed` taiso tik atkurtas eilutes. Istorijos užklausa skaito pilnas išsaugotas dienas, trūkstamas perduoda foninei užduočiai, o šiandieną skaičiuoja gyvai.
 - Atstovavimo rodikliai – `/api/v1/admin/visak/rep-metrics` (`RepMetricReportService` su padalinių filtru), ta pati prieiga kaip kitų rodiklių.
+- Skaičiuojamas institucijas parenka `RepStatisticsScope::institutions()` (tipų išimtys ir `RepMetricSettings::counted_institution_scopes`, SQL filtras `InstitutionScopeResolver::constrainToScopes()`); laiko juosta šio filtro netaiko, eilutės pažymimos `in_summary`.
 - Puslapis – `AtstovavimasDashboardController::padaliniai` (`statsTenants`, `ganttTenants`,
   `defaultGanttTenantIds`, `canViewTenantTasks`). Duomenys kraunami per
   `/api/v1/admin/visak/{timeline,timeline/history,representatives,gantt,meetings,activity-requests}`

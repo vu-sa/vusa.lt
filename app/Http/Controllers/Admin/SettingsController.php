@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\ForgetUserAccess;
+use App\Enums\InstitutionScope;
 use App\Enums\ResponsibilityPurpose;
 use App\Enums\SystemDutyType;
 use App\Http\Controllers\AdminController;
@@ -23,6 +24,7 @@ use App\Models\PublicMeeting;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\RepMetricReportService;
+use App\Services\RepStatisticsCache;
 use App\Services\ResponsibilityResolver;
 use App\Services\SystemDutyTypes;
 use App\Services\Typesense\DocumentRecommendations;
@@ -82,8 +84,7 @@ class SettingsController extends AdminController
             'forms' => Form::all(['id', 'name']),
             'memberRegistration' => $this->memberRegistrationCoverage(),
             'institution_types' => InstitutionType::query()
-
-                ->get(['id', 'title', 'slug'])
+                ->get(['id', 'title', 'slug', 'parent_id'])
                 ->map->toArray(),
         ]);
     }
@@ -118,8 +119,7 @@ class SettingsController extends AdminController
             'selected_type_ids' => $meetingSettings->getPublicMeetingInstitutionTypeIds()->toArray(),
             'excluded_type_ids' => $meetingSettings->getExcludedInstitutionTypeIds()->toArray(),
             'available_types' => InstitutionType::query()
-
-                ->get(['id', 'title', 'slug'])
+                ->get(['id', 'title', 'slug', 'parent_id'])
                 ->map->toArray(),
         ]);
     }
@@ -169,8 +169,8 @@ class SettingsController extends AdminController
                 'effective_type_id' => $systemDutyTypes->id($part),
                 'fallback_slug' => $part->fallbackSlug(),
             ])->all(),
-            'dutyTypeOptions' => DutyType::query()->get(['id', 'title'])
-                ->map(fn (DutyType $type): array => ['id' => (int) $type->id, 'title' => (string) $type->getTranslation('title', app()->getLocale())])
+            'dutyTypeOptions' => DutyType::query()->get(['id', 'title', 'parent_id'])
+                ->map(fn (DutyType $type): array => ['id' => (int) $type->id, 'title' => (string) $type->getTranslation('title', app()->getLocale()), 'parent_id' => $type->parent_id])
                 ->sortBy('title')
                 ->values(),
         ]);
@@ -224,11 +224,12 @@ class SettingsController extends AdminController
     {
         return $this->settingsPage($settingsSettings, 'Admin/Settings/EditAtstovavimasSettings', [
             'baseline_cadence_id' => app(RepMetricSettings::class)->baseline_cadence_id,
+            'counted_institution_scopes' => app(RepMetricSettings::class)->counted_institution_scopes,
+            'institution_scopes' => InstitutionScope::toArray(app()->getLocale()),
             'baseline_cadences' => app(RepMetricReportService::class)->baselineOptions()->get(['id', 'start_date', 'end_date'])->toArray(),
             'student_rep_root_type_id' => $atstovavimasSettings->student_rep_root_type_id,
             'institution_types' => InstitutionType::query()
-
-                ->get(['id', 'title', 'slug'])
+                ->get(['id', 'title', 'slug', 'parent_id'])
                 ->map->toArray(),
         ]);
     }
@@ -244,6 +245,13 @@ class SettingsController extends AdminController
             $metrics = app(RepMetricSettings::class);
             $metrics->baseline_cadence_id = $request->validated('baseline_cadence_id');
             $metrics->save();
+        }
+
+        if ($request->has('counted_institution_scopes')) {
+            $metrics = app(RepMetricSettings::class);
+            $metrics->counted_institution_scopes = array_values($request->validated('counted_institution_scopes'));
+            $metrics->save();
+            RepStatisticsCache::invalidate();
         }
 
         $oldRootTypeId = $atstovavimasSettings->student_rep_root_type_id;

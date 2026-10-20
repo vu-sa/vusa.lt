@@ -6,6 +6,7 @@ use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Enums\InstitutionScope;
 use App\Events\FileableNameUpdated;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Pivots\InstitutionInstitutionType;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasSharepointFiles;
@@ -93,7 +94,7 @@ class InstitutionType extends Model implements GuardsForceDelete, SharepointFile
 
         $flush = function (): void {
             app(InstitutionScopeResolver::class)->flush();
-            Cache::forget('all-institution-types-for-inertia');
+            Cache::forget(HandleInertiaRequests::INSTITUTION_TYPES_CACHE_KEY);
         };
 
         static::saved($flush);

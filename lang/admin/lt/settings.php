@@ -71,7 +71,7 @@ return [
         'types_placeholder' => 'Pasirinkti institucijų tipus',
         'no_types_found' => 'Institucijų tipų nerasta.',
         'excluded_types_title' => 'Institucijų tipai be posėdžių',
-        'excluded_types_description' => 'Pasirink institucijų tipus, kurie neturėtų būti rodomi atstovavimo skydelyje. Šių tipų institucijos (pvz., padalinys, PKP) neturi formalių posėdžių ir neturėtų būti stebimos.',
+        'excluded_types_description' => 'Pasirink institucijų tipus, kurių institucijos neskaičiuojamos atstovavimo rodikliuose. Šių tipų institucijos (pvz., padalinys, PKP) neturi formalių posėdžių, bet posėdžių grafike vis tiek rodomos.',
         'excluded_types_label' => 'Išskirti institucijų tipai',
         'excluded_types_placeholder' => 'Pasirinkti institucijų tipus išskyrimui',
     ],
@@ -88,6 +88,15 @@ return [
         'student_rep_type_placeholder' => 'Pagal nutylėjimą: Studentų atstovų organas',
         'student_rep_type_default' => 'Pagal nutylėjimą (studentu-atstovu-organas)',
         'student_rep_type_note' => 'Pagal nutylėjimą naudojamas tipas su unikaliu kodu "studentu-atstovu-organas".',
+        'counted_scopes_title' => 'Kurie organai skaičiuojami rodikliuose',
+        'counted_scopes_description' => 'Padalinių statistika (atstovai, posėdžių registravimas, institucijų būklė) skaičiuojama tik pažymėtų organų institucijoms. Posėdžių grafike vis tiek matysi visas institucijas.',
+        'counted_scopes_label' => 'Skaičiuojami organai',
+        'counted_scopes' => [
+            'vusa' => 'Parlamentas, Taryba, padalinių valdybos ir kiti VU SA organai.',
+            'vu' => 'VU Senatas, Taryba, fakultetų tarybos, komitetai ir kiti VU organai, į kuriuos deleguojami studentų atstovai.',
+            'national' => 'Lietuvos organai, pvz., LSS ar ministerijų darbo grupės.',
+            'international' => 'Tarptautiniai organai, pvz., ESU.',
+        ],
     ],
 
     // Document settings page

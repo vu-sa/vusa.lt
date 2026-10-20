@@ -4,12 +4,14 @@ use App\Enums\InstitutionScope;
 use App\Enums\ResponsibilityPurpose;
 use App\Enums\ResponsibilityScope;
 use App\Models\Duty;
+use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ResponsibilityResolver;
+use Database\Factories\RoleFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
@@ -138,4 +140,17 @@ describe('gaps', function (): void {
         expect($gaps)->not->toContain($covered->id)
             ->and($gaps)->toContain($uncovered->id);
     });
+});
+
+test('a purpose granted to a parent duty type reaches the duties of its subtypes', function (): void {
+    $parent = DutyType::factory()->create();
+    $child = DutyType::factory()->create(['parent_id' => $parent->id]);
+    $duty = Duty::factory()->for($this->institution)->create();
+    $duty->types()->attach($child);
+    $holder = User::factory()->create();
+    $holder->duties()->attach($duty, ['start_date' => now()->subMonth()]);
+
+    ResponsibilityGrant::factory()->forDutyType($parent)->of(RoleFactory::forPurpose(ResponsibilityPurpose::StudentRepresentation))->create();
+
+    expect(resolver()->holdsAnywhere($holder, ResponsibilityPurpose::StudentRepresentation))->toBeTrue();
 });

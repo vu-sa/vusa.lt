@@ -47,14 +47,14 @@
           </span>
           <ChevronsUpDown class="size-4 opacity-50" aria-hidden="true" />
         </Button>
-        <SingleSelect
+        <TypeTreeSelect
           v-else
           id="relationship-other"
-          v-model="selectedType"
-          :options="typeChoices"
+          v-model="form.other_id"
+          :types="typeChoices"
           label-field="name"
+          as-string
           :placeholder="$t('Pasirinkti tipą…')"
-          :empty-text="$t('Nieko nerasta')"
         />
       </FormFieldWrapper>
 
@@ -121,7 +121,7 @@ import FormSegmentedControl, { type FormSegmentOption } from '@/Components/Patte
 import { Button } from '@/Components/ui/button';
 import { Label } from '@/Components/ui/label';
 import { NativeSelect } from '@/Components/ui/native-select';
-import { SingleSelect } from '@/Components/ui/single-select';
+import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 import { Switch } from '@/Components/ui/switch';
 import { InstitutionTypeLinkScope } from '@/Types/enums';
 import { InlineCollectionSelect } from '@/Features/Admin/AdminSearch/Components/Select';
@@ -173,11 +173,6 @@ const scopeHints = computed<Record<InstitutionTypeLinkScope, string>>(() => ({
 const typeChoices = computed<RelationshipTypeOption[]>(() => (props.typeOptions ?? []).map(option => option.id === props.recordId
   ? { ...option, name: `${option.name} (${$t('to paties tipo institucijos')})` }
   : option));
-
-const selectedType = computed({
-  get: () => typeChoices.value.find(option => option.id === form.other_id) ?? null,
-  set: (option: RelationshipTypeOption | null) => { form.other_id = option?.id ?? ''; },
-});
 
 watch(open, (isOpen) => {
   if (!isOpen) {

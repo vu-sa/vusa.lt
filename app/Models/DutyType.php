@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Actions\ProjectDutyResponsibilities;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
@@ -11,7 +12,9 @@ use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasTypeHierarchy;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\ResponsibilityResolver;
 use App\Services\SystemDutyTypes;
+use App\Support\TypeTree;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -94,6 +97,74 @@ class DutyType extends Model implements GuardsForceDelete, SharepointFileableCon
         static::saved(fn () => app(SystemDutyTypes::class)->flush());
         static::deleted(fn () => app(SystemDutyTypes::class)->flush());
         static::restored(fn () => app(SystemDutyTypes::class)->flush());
+
+        // Subtypes inherit their ancestors' responsibility grants, so a move or trash changes theirs.
+        static::saved(function (self $type): void {
+            if ($type->wasChanged('parent_id')) {
+                $type->reprojectSubtree();
+            }
+        });
+        static::deleted(fn (self $type) => $type->reprojectSubtree());
+        static::restored(fn (self $type) => $type->reprojectSubtree());
+    }
+
+    /**
+     * The given types plus every live descendant: the types a grant on them reaches.
+     *
+     * @param  list<int|string>  $typeIds
+     * @param  array<int, int|null>|null  $parents  reuse one liveParentMap() across many calls
+     * @return list<int>
+     */
+    public static function withDescendantIds(array $typeIds, ?array $parents = null): array
+    {
+        if ($typeIds === []) {
+            return [];
+        }
+
+        $parents ??= self::liveParentMap();
+        $live = array_values(array_filter(array_map(intval(...), $typeIds), fn (int $id): bool => array_key_exists($id, $parents)));
+
+        return TypeTree::withDescendants($parents, $live);
+    }
+
+    /**
+     * The given types plus every live ancestor: the types whose grants reach a duty of them.
+     *
+     * @param  list<int|string>  $typeIds
+     * @return list<int>
+     */
+    public static function withAncestorIds(array $typeIds): array
+    {
+        $parents = self::liveParentMap();
+        $result = [];
+
+        foreach (array_map(intval(...), $typeIds) as $id) {
+            while ($id !== null && array_key_exists($id, $parents) && ! in_array($id, $result, true)) {
+                $result[] = $id;
+                $id = $parents[$id];
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return array<int, int|null>
+     */
+    public static function liveParentMap(): array
+    {
+        return DB::table('duty_types')->whereNull('deleted_at')->pluck('parent_id', 'id')
+            ->mapWithKeys(fn ($parent, $id): array => [(int) $id => $parent === null ? null : (int) $parent])
+            ->all();
+    }
+
+    private function reprojectSubtree(): void
+    {
+        app(ResponsibilityResolver::class)->flush();
+
+        ProjectDutyResponsibilities::forDuties(DB::table('duty_duty_type')
+            ->whereIn('duty_type_id', $this->getDescendantsAndSelf(withTrashed: true)->pluck('id'))
+            ->pluck('duty_id'));
     }
 
     /** @return BelongsToMany<Duty, $this, DutyDutyType> */
@@ -103,7 +174,7 @@ class DutyType extends Model implements GuardsForceDelete, SharepointFileableCon
     }
 
     /**
-     * Responsibilities every duty of this type receives.
+     * Responsibilities every duty of this type and of its subtypes receives.
      */
     public function roles(): MorphToMany
     {

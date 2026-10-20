@@ -146,6 +146,7 @@ return [
     ],
 
     'tenant_overview' => [
+        'counted_scopes' => 'Metrics count institutions of these bodies: :scopes. The meetings chart shows every institution.',
         'title' => 'Units',
         'lead' => 'Which of the unit\'s institutions need attention, how their status is changing and how active the representatives are.',
         'lead_public' => 'Meetings of institutions that meet publicly, and of your own institutions, across every unit.',

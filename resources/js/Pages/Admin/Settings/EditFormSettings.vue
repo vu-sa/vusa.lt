@@ -82,11 +82,9 @@
         :hint="$t('settings.form_settings.student_rep_types_description')"
         :error="form.errors.student_rep_institution_type_ids"
       >
-        <MultiSelect
-          v-model="selectedTypes"
-          :options="props.institution_types"
-          label-field="title"
-          value-field="id"
+        <TypeTreeMultiSelect
+          v-model="form.student_rep_institution_type_ids"
+          :types="props.institution_types"
           :placeholder="$t('settings.form_settings.student_rep_types_placeholder')"
           :empty-text="$t('settings.form_settings.no_types_found')"
         />
@@ -97,12 +95,11 @@
 
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
-import { MultiSelect } from '@/Components/ui/multi-select';
+import { TypeTreeMultiSelect } from '@/Components/AdminForms/TypeTree';
 import {
   Select,
   SelectContent,
@@ -115,6 +112,7 @@ interface InstitutionType {
   id: number;
   title: string;
   slug: string;
+  parent_id: number | null;
 }
 
 const props = defineProps<{
@@ -127,21 +125,11 @@ const props = defineProps<{
   institution_types: InstitutionType[];
 }>();
 
-// Initialize selected types from props
-const selectedTypes = ref<InstitutionType[]>(
-  props.institution_types.filter(type => props.student_rep_institution_type_ids.includes(type.id)),
-);
-
 const form = useForm({
   member_registration_form_id: props.member_registration_form_id,
   student_rep_registration_form_id: props.student_rep_registration_form_id,
   student_rep_institution_type_ids: props.student_rep_institution_type_ids ?? [],
 });
-
-// Sync selected types to form
-watch(selectedTypes, (newTypes) => {
-  form.student_rep_institution_type_ids = newTypes.map(type => type.id);
-}, { deep: false });
 
 const handleFormSubmit = () => {
   form.post(route('settings.forms.update'));

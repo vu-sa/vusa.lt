@@ -136,9 +136,39 @@ describe('permissions', function (): void {
 
         expect($managing->fresh()->hasPermissionTo('roles.update.*'))->toBeTrue();
     });
+    test('a responsibility given to a duty type refuses Everywhere and permanent-deletion permissions', function (): void {
+        ResponsibilityGrant::factory()->forDutyType(DutyType::factory()->create())->of($this->role)->create();
+
+        foreach (['news.update.*', 'news.forceDelete.padalinys'] as $wide) {
+            asUser($this->admin)
+                ->put(route('responsibilities.permissions.update', $this->role), ['permissions' => [$wide]])
+                ->assertSessionHasErrors('permissions')
+                ->assertSessionDoesntHaveErrors('permissions.0');
+        }
+
+        expect($this->role->fresh()->permissions)->toBeEmpty();
+
+        asUser($this->admin)
+            ->put(route('responsibilities.permissions.update', $this->role), ['permissions' => ['news.update.padalinys', 'news.delete.padalinys']])
+            ->assertSessionHasNoErrors();
+    });
 });
 
 describe('grants', function (): void {
+    test('a duty type is refused a responsibility with Everywhere or permanent-deletion permissions; a duty is not', function (): void {
+        $this->role->givePermissionTo('news.update.*');
+        $type = DutyType::factory()->create();
+        $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
+
+        asUser($this->admin)->post(route('responsibilities.grants.store', $this->role), ['grantee_type' => 'duty_type', 'grantee_id' => (string) $type->id])
+            ->assertSessionHasErrors('grantee_id');
+        asUser($this->admin)->post(route('responsibilities.grants.store', $this->role), ['grantee_type' => 'duty', 'grantee_id' => $duty->id])
+            ->assertSessionHasNoErrors();
+
+        expect($type->responsibilityGrants()->exists())->toBeFalse()
+            ->and($duty->roles()->pluck('roles.id')->all())->toBe([$this->role->id]);
+    });
+
     test('gives the responsibility to a duty and to a duty type, and takes it away', function (): void {
         $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
         $type = DutyType::factory()->create();

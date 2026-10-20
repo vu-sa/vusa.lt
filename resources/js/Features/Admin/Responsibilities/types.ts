@@ -23,7 +23,7 @@ export interface DutyResponsibilitiesPayload {
 export interface DutyResponsibilityOptions {
   responsibilities: { id: string; title: string; description: string | null; purpose_label: string | null; scopes: ResponsibilityScopeValue[] }[];
   tenants: { id: number; shortname: string }[];
-  types: { id: string; title: string }[];
+  types: { id: string; title: string; parent_id: string | null }[];
   institutions: { id: string; name: string }[];
 }
 
@@ -52,7 +52,7 @@ export interface ResponsibilityGrantsPayload {
 export interface ResponsibilityGrantOptions {
   institutions: { id: string; name: string }[];
   tenants: { id: string; shortname: string }[];
-  institutionTypes: { id: string; title: string }[];
+  institutionTypes: { id: string; title: string; parent_id: string | null }[];
 }
 
 export interface ResponsibilityPerson {

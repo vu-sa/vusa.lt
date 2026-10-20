@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Nustatymai
 area: settings
 models: [Cadence]
-last_reviewed: 2026-10-20
+last_reviewed: 2026-10-21
 tests:
   - tests/Feature/Admin/Settings/SystemPurposesSettingsTest.php
   - tests/Feature/Admin/Settings/CadenceControllerTest.php
@@ -98,11 +98,17 @@ Adresas: `/mano/settings/meetings`. Čia nustatomas posėdžių atvaizdavimas ir
 
 - **Viešų posėdžių institucijų tipai**: institucijų tipai, kurių posėdžių puslapiai yra viešai
   prieinami ir indeksuojami viešojoje paieškoje.
-- **Neįtraukiami institucijų tipai**: tipai, kurių institucijos neįtraukiamos į atstovavimo suvestinių rodiklius.
+- **Neįtraukiami institucijų tipai**: tipai, kurių institucijos neįtraukiamos į atstovavimo suvestinių rodiklius. Posėdžių laiko juostoje jos vis tiek rodomos.
 
 ### Atstovavimo nustatymai {#atstovavimas}
 
 **Palyginimo kadencija** nustato, su kuria visa baigta bendra kadencija lyginami [padalinių rodikliai](/visak/padaliniai#atstovavimo-rodikliai). Automatinė parinktis naudoja ankstesnę kadenciją. Nustatymą keičia tik sistemos nustatymus tvarkantys nariai; vien peržiūros teisės neužtenka. Parinktyje matyti kadencijos datos. Institucijų kadencijų išimtys šio palyginimo nekeičia.
+
+**Kurie organai skaičiuojami rodikliuose** nustato, kurių organų institucijos ir atstovai
+įtraukiami į [padalinių rodiklius](/visak/padaliniai#skaiciuojamos-institucijos): VU organai,
+VU SA organai, nacionaliniai ar tarptautiniai. Pagal nutylėjimą pažymėti tik VU organai; bent vienas
+turi likti pažymėtas. Posėdžių laiko juostoje visos institucijos rodomos nepriklausomai nuo šio
+pasirinkimo. Pakeitimas taikomas iš karto; jau išsaugotos praėjusių dienų būklės istorijos jis nekeičia.
 
 Adresas: `/mano/settings/atstovavimas`. Čia nurodomas **pagrindinis studentų atstovavimo institucijų tipas**,
 nuo kurio pradedama atstovavimo institucijų hierarchija.

@@ -648,6 +648,33 @@ describe('internal bodies', function (): void {
     });
 });
 
+describe('counted institution scopes', function (): void {
+    beforeEach(function (): void {
+        $this->vusaBody = Institution::factory()->for($this->tenant)->create();
+        $this->vusaBody->types()->attach(InstitutionType::factory()->create(['extra_attributes' => ['governance_scope' => 'vusa']]));
+        $duty = Duty::factory()->for($this->vusaBody)->create();
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
+        User::factory()->create()->duties()->attach($duty, ['start_date' => now()->subMonth()]);
+    });
+
+    test('by default a VU SA body is drawn but its institution and representatives are not counted', function (): void {
+        $response = asUser($this->admin)->getJson(route('api.v1.admin.visak.timeline', ['tenant_ids' => [$this->tenant->id]]))->assertSuccessful();
+
+        expect(collect($response->json('data.institutions'))->keyBy('id')->get((string) $this->vusaBody->id)['in_summary'])->toBeFalse()
+            ->and($response->json('data.institution_summary.all'))->toBe(1)
+            ->and($response->json('data.representative_activity.stats.total'))->toBe(0);
+    });
+
+    test('counting VU SA bodies in the settings brings them into the statistics', function (): void {
+        asUser($this->admin)->post(route('settings.atstovavimas.update'), ['counted_institution_scopes' => ['vu', 'vusa']])->assertSessionHasNoErrors();
+
+        $response = asUser($this->admin)->getJson(route('api.v1.admin.visak.timeline', ['tenant_ids' => [$this->tenant->id]]))->assertSuccessful();
+
+        expect($response->json('data.institution_summary.all'))->toBe(2)
+            ->and($response->json('data.representative_activity.stats.total'))->toBe(1);
+    });
+});
+
 /**
  * The padaliniai Gantt is open to every admin: public meetings anywhere, the user's own bodies,
  * and whole padaliniai only where they manage them.

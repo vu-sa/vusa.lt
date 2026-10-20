@@ -38,6 +38,56 @@ test('a duty receives responsibilities granted to it, to its types and to its in
     expect(roleIdsOf($this->duty))->toEqualCanonicalizing([$this->role->id, $viaType->id, $viaInstitution->id]);
 });
 
+describe('duty type tree', function (): void {
+    beforeEach(function (): void {
+        $this->parent = DutyType::factory()->create();
+        $this->child = DutyType::factory()->create(['parent_id' => $this->parent->id]);
+        $this->duty->types()->attach($this->child);
+    });
+
+    test('a duty receives what its type\'s ancestors are given, but a parent does not receive its subtype\'s grants', function (): void {
+        $parentDuty = Duty::factory()->for($this->institution)->create();
+        $parentDuty->types()->attach($this->parent);
+        $childOnly = Role::factory()->create();
+
+        ResponsibilityGrant::factory()->forDutyType($this->parent)->of($this->role)->create();
+        ResponsibilityGrant::factory()->forDutyType($this->child)->of($childOnly)->create();
+
+        expect(roleIdsOf($this->duty))->toEqualCanonicalizing([$this->role->id, $childOnly->id])
+            ->and(roleIdsOf($parentDuty))->toBe([$this->role->id]);
+    });
+
+    test('moving a subtype out from under its parent takes the inherited responsibilities away', function (): void {
+        ResponsibilityGrant::factory()->forDutyType($this->parent)->of($this->role)->create();
+
+        $this->child->update(['parent_id' => null]);
+
+        expect(roleIdsOf($this->duty))->toBeEmpty();
+
+        $this->child->update(['parent_id' => $this->parent->id]);
+
+        expect(roleIdsOf($this->duty))->toBe([$this->role->id]);
+    });
+
+    test('a trashed parent stops passing its grants on until restored', function (): void {
+        ResponsibilityGrant::factory()->forDutyType($this->parent)->of($this->role)->create();
+
+        $this->parent->delete();
+
+        expect(roleIdsOf($this->duty))->toBeEmpty();
+
+        $this->parent->restore();
+
+        expect(roleIdsOf($this->duty))->toBe([$this->role->id]);
+    });
+
+    test('the drift check agrees with the inherited projection', function (): void {
+        ResponsibilityGrant::factory()->forDutyType($this->parent)->of($this->role)->create();
+
+        expect(ProjectDutyResponsibilities::drift())->toBe([]);
+    });
+});
+
 test('unlinking a type keeps the same responsibility granted directly', function (): void {
     $type = DutyType::factory()->create();
     $this->duty->types()->attach($type);

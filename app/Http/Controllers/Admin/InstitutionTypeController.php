@@ -49,7 +49,7 @@ class InstitutionTypeController extends AdminController
 
         return $this->inertiaResponse('Admin/ModelMeta/CreateType', [
             'typeKind' => 'institutionType',
-            'contentTypes' => InstitutionType::select('id', 'title')->get(),
+            'contentTypes' => InstitutionType::select('id', 'title', 'parent_id')->get(),
         ]);
     }
 
@@ -112,7 +112,9 @@ class InstitutionTypeController extends AdminController
             'typeLinks' => app(InstitutionRelationService::class)->typeLinksOf($type),
             'relationKinds' => fn () => $canManageLinks ? InstitutionRelationKind::options() : [],
             'typeOptions' => fn () => $canManageLinks
-                ? InstitutionType::query()->orderBy('id')->get(['id', 'title'])->map(fn (InstitutionType $option) => ['id' => (string) $option->id, 'name' => $option->title])->values()
+                ? InstitutionType::query()->orderBy('id')->get(['id', 'title', 'parent_id'])
+                    ->map(fn (InstitutionType $option) => ['id' => (string) $option->id, 'name' => $option->title, 'parent_id' => $option->parent_id === null ? null : (string) $option->parent_id])
+                    ->values()
                 : [],
             'can' => [
                 'update' => auth()->user()?->can('update', $type) ?? false,
@@ -129,7 +131,7 @@ class InstitutionTypeController extends AdminController
         return $this->inertiaResponse('Admin/ModelMeta/EditType', [
             'typeKind' => 'institutionType',
             'contentType' => $type->toFullArray(),
-            'contentTypes' => InstitutionType::select('id', 'title')->get(),
+            'contentTypes' => InstitutionType::select('id', 'title', 'parent_id')->get(),
         ]);
     }
 

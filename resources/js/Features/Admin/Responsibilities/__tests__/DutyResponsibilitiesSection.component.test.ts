@@ -17,7 +17,7 @@ const options: DutyResponsibilityOptions = {
     { id: 'role-communication', title: 'Komunikacija', description: null, purpose_label: null, scopes: [] },
   ],
   tenants: [{ id: 1, shortname: 'MIF' }],
-  types: [{ id: '2', title: 'VU Senatas' }],
+  types: [{ id: '2', title: 'VU Senatas', parent_id: null }],
   institutions: [{ id: 'inst-1', name: 'Taryba' }],
 };
 

@@ -113,11 +113,11 @@
             />
           </FormFieldWrapper>
           <FormFieldWrapper v-else-if="form.scope_type === 'institution_type'" id="scope_type_target" :label="$t('responsibilities.sheet.type')" :error="form.errors.scope_id">
-            <SingleSelect
-              v-model="selectedType"
-              :options="options.types"
-              label-field="title"
-              value-field="id"
+            <TypeTreeSelect
+              id="scope_type_target"
+              v-model="form.scope_id"
+              :types="options.types"
+              as-string
               :placeholder="$t('responsibilities.sheet.type_placeholder')"
             />
           </FormFieldWrapper>
@@ -169,6 +169,7 @@ import { ConfirmDialog, FormSegmentedControl, OverviewSection, SheetForm, type F
 import { Button } from '@/Components/ui/button';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { SingleSelect } from '@/Components/ui/single-select';
+import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 import { permissionLabel } from '@/Features/Admin/PermissionMatrix/permissionLabels';
@@ -205,10 +206,6 @@ const scopeOptions = computed<FormSegmentOption<ResponsibilityScopeValue>[]>(() 
 const selectedOption = computed({
   get: () => selected.value ?? null,
   set: (option: { id: string } | null) => { form.role_id = option?.id ?? ''; },
-});
-const selectedType = computed({
-  get: () => props.options?.types.find(type => type.id === form.scope_id) ?? null,
-  set: (type: { id: string } | null) => { form.scope_id = type?.id ?? ''; },
 });
 const selectedInstitution = computed({
   get: () => props.options?.institutions.find(institution => institution.id === form.scope_id) ?? null,

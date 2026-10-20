@@ -37,19 +37,13 @@
         :error="form.errors.source_id"
         required
       >
-        <SingleSelect
-          v-if="targetTypes.length > 16"
-          v-model="selectedType"
-          :options="targetTypes"
-          label-field="title"
-          value-field="id"
+        <TypeTreeSelect
+          id="source_type_target"
+          v-model="form.source_id"
+          :types="targetTypes"
+          as-string
           :placeholder="$t('mailing_lists.sheet.pick')"
           data-testid="source-type-target"
-        />
-        <NativeSelect
-          v-else id="source_type_target" v-model="form.source_id"
-          :options="targetTypes.map(type => ({ value: String(type.id), label: type.title }))"
-          :placeholder="$t('mailing_lists.sheet.pick')"
         />
       </FormFieldWrapper>
 
@@ -177,10 +171,10 @@
           {{ $t('mailing_lists.sources.include_subtypes') }}
         </label>
         <FormFieldWrapper v-if="form.type === 'institution_type'" id="source_excluded_types" :label="$t('mailing_lists.sources.excluded_types')">
-          <MultiSelect v-model="selectedExcludedTypes" :options="options.institutionTypes" label-field="title" value-field="id" />
+          <TypeTreeMultiSelect id="source_excluded_types" v-model="form.filters.exclude_institution_type_ids" :types="options.institutionTypes" />
         </FormFieldWrapper>
         <FormFieldWrapper v-if="form.type !== 'duty_type'" id="source_duty_types" :label="$t('mailing_lists.sources.duty_types')">
-          <MultiSelect v-model="selectedDutyTypes" :options="options.dutyTypes" label-field="title" value-field="id" />
+          <TypeTreeMultiSelect id="source_duty_types" v-model="form.filters.duty_type_ids" :types="options.dutyTypes" />
         </FormFieldWrapper>
       </div>
 
@@ -205,6 +199,7 @@ import { Checkbox } from '@/Components/ui/checkbox';
 import { DatePicker } from '@/Components/ui/date-picker';
 import { Input } from '@/Components/ui/input';
 import { MultiSelect } from '@/Components/ui/multi-select';
+import { TypeTreeMultiSelect, TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 import { NativeSelect } from '@/Components/ui/native-select';
 import { SingleSelect } from '@/Components/ui/single-select';
 import DutySearchField, { type DutyHit } from '@/Features/Admin/Occupancy/DutySearchField.vue';
@@ -268,12 +263,6 @@ let dutyHit: DutyHit | null = null;
 
 const targetTypes = computed(() => (form.type === MailingListSourceType.DutyType ? props.options?.dutyTypes : props.options?.institutionTypes) ?? []);
 
-const selectedType = computed({
-  get: () => (form.type === MailingListSourceType.DutyType ? props.options?.dutyTypes : props.options?.institutionTypes)
-    ?.find(type => String(type.id) === form.source_id) ?? null,
-  set: (type: { id: number } | null) => { form.source_id = type ? String(type.id) : ''; },
-});
-
 const selectedInstitution = computed({
   get: () => props.options?.institutions.find(institution => institution.id === form.source_id) ?? null,
   set: (institution: { id: string } | null) => { form.source_id = institution?.id ?? ''; },
@@ -289,14 +278,6 @@ const selectedList = computed({
 const selectedTenants = computed({
   get: () => props.options?.tenants.filter(tenant => form.filters.tenant_ids.includes(tenant.id)) ?? [],
   set: (tenants: { id: number }[]) => { form.filters.tenant_ids = tenants.map(tenant => tenant.id); },
-});
-const selectedExcludedTypes = computed({
-  get: () => props.options?.institutionTypes.filter(type => form.filters.exclude_institution_type_ids.includes(type.id)) ?? [],
-  set: (types: { id: number }[]) => { form.filters.exclude_institution_type_ids = types.map(type => type.id); },
-});
-const selectedDutyTypes = computed({
-  get: () => props.options?.dutyTypes.filter(type => form.filters.duty_type_ids.includes(type.id)) ?? [],
-  set: (types: { id: number }[]) => { form.filters.duty_type_ids = types.map(type => type.id); },
 });
 
 watch(() => form.type, () => {

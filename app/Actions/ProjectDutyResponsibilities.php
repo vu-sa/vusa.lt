@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\DB;
 use Spatie\Permission\PermissionRegistrar;
 
 /**
- * Rebuilds duties' `model_has_roles` rows from their responsibility grants (direct, by duty type,
- * by institution), so everything that reads Spatie roles sees the effective set.
+ * Rebuilds duties' `model_has_roles` rows from their responsibility grants (direct, by duty type
+ * or an ancestor type, by institution), so everything that reads Spatie roles sees the effective set.
  */
 class ProjectDutyResponsibilities
 {
@@ -91,13 +91,17 @@ class ProjectDutyResponsibilities
             ->get(['grantee_id as duty_id', 'role_id']);
 
         // A trashed duty keeps what was given to it by hand, but no longer inherits.
-        $viaType = DB::table('responsibility_grants as grants')
-            ->join('duty_duty_type', 'duty_duty_type.duty_type_id', '=', 'grants.grantee_id')
+        $rolesByType = self::rolesByReachedType();
+        $viaType = DB::table('duty_duty_type')
             ->join('duties', 'duties.id', '=', 'duty_duty_type.duty_id')
             ->whereNull('duties.deleted_at')
-            ->where('grants.grantee_type', MorphMap::alias(DutyType::class))
             ->whereIn('duty_duty_type.duty_id', $dutyIds)
-            ->get(['duty_duty_type.duty_id', 'grants.role_id']);
+            ->whereIn('duty_duty_type.duty_type_id', array_keys($rolesByType))
+            ->get(['duty_duty_type.duty_id', 'duty_duty_type.duty_type_id'])
+            ->flatMap(fn (object $row): array => array_map(
+                fn (string $roleId): object => (object) ['duty_id' => $row->duty_id, 'role_id' => $roleId],
+                $rolesByType[(int) $row->duty_type_id],
+            ));
 
         $viaInstitution = DB::table('responsibility_grants as grants')
             ->join('duties', 'duties.institution_id', '=', 'grants.grantee_id')
@@ -107,6 +111,25 @@ class ProjectDutyResponsibilities
             ->get(['duties.id as duty_id', 'grants.role_id']);
 
         return self::group($direct->concat($viaType)->concat($viaInstitution));
+    }
+
+    /**
+     * Role ids each duty type receives, its own grants plus its ancestors'.
+     *
+     * @return array<int, list<string>>
+     */
+    private static function rolesByReachedType(): array
+    {
+        $rolesByType = [];
+        $parents = DutyType::liveParentMap();
+
+        foreach (DB::table('responsibility_grants')->where('grantee_type', MorphMap::alias(DutyType::class))->get(['grantee_id', 'role_id']) as $grant) {
+            foreach (DutyType::withDescendantIds([$grant->grantee_id], $parents) as $typeId) {
+                $rolesByType[$typeId][] = (string) $grant->role_id;
+            }
+        }
+
+        return $rolesByType;
     }
 
     /**

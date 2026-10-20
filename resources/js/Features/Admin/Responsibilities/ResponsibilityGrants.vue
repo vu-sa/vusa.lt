@@ -107,7 +107,7 @@
       :description="$t('responsibilities.grants.sheet_description')"
       :save-label="$t('responsibilities.grants.submit')"
       :processing="form.processing"
-      :disabled="!form.grantee_id || (scopes.length > 0 && !form.scope_id)"
+      :disabled="!form.grantee_id || (scopes.length > 0 && !form.scope_id) || (form.grantee_type === DUTY_TYPE && typeGrantBlockedBy.length > 0)"
       :dirty="form.isDirty"
       @submit="submit"
     >
@@ -118,14 +118,27 @@
 
         <DutySearchField v-if="form.grantee_type === DUTY" v-model="selectedDuty" include-inactive :error="form.errors.grantee_id" />
 
-        <FormFieldWrapper v-else-if="form.grantee_type === DUTY_TYPE" id="grant_type" :label="$t('responsibilities.grants.duty_type')" :error="form.errors.grantee_id" required>
-          <NativeSelect
+        <template v-else-if="form.grantee_type === DUTY_TYPE">
+          <p v-if="typeGrantBlockedBy.length" class="text-sm text-status-attention" data-testid="type-grant-blocked">
+            {{ $t('responsibilities.validation.not_type_grantable', { permissions: typeGrantBlockedBy.join(', ') }) }}
+          </p>
+          <FormFieldWrapper
+            v-else
             id="grant_type"
-            v-model="form.grantee_id"
-            :options="dutyTypeOptions.map(type => ({ value: String(type.id), label: type.title }))"
-            :placeholder="$t('mailing_lists.sheet.pick')"
-          />
-        </FormFieldWrapper>
+            :label="$t('responsibilities.grants.duty_type')"
+            :hint="$t('responsibilities.grants.duty_type_hint')"
+            :error="form.errors.grantee_id"
+            required
+          >
+            <TypeTreeSelect
+              id="grant_type"
+              v-model="form.grantee_id"
+              :types="dutyTypeOptions"
+              as-string
+              :placeholder="$t('mailing_lists.sheet.pick')"
+            />
+          </FormFieldWrapper>
+        </template>
 
         <FormFieldWrapper
           v-else
@@ -161,6 +174,14 @@
             <p v-if="!options" class="text-sm text-muted-foreground">
               {{ $t('Įkeliama…') }}
             </p>
+            <TypeTreeSelect
+              v-else-if="form.scope_type === 'institution_type'"
+              id="grant_scope_id"
+              v-model="form.scope_id"
+              :types="options.institutionTypes"
+              as-string
+              :placeholder="$t('mailing_lists.sheet.pick')"
+            />
             <SingleSelect
               v-else
               v-model="selectedScope"
@@ -207,7 +228,7 @@ import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { ConfirmDialog, FormSegmentedControl, OverviewSection, SheetForm, type FormSegmentOption } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { NativeSelect } from '@/Components/ui/native-select';
+import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 import { SingleSelect } from '@/Components/ui/single-select';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import DutySearchField, { type DutyHit } from '@/Features/Admin/Occupancy/DutySearchField.vue';
@@ -218,16 +239,21 @@ const DUTY_TYPE = 'duty_type';
 const INSTITUTION = 'institution';
 type Grantee = typeof DUTY | typeof DUTY_TYPE | typeof INSTITUTION;
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   roleId: string;
   grants: ResponsibilityGrantsPayload;
   /** Levels the responsibility's purpose may cover; empty for most responsibilities. */
   scopes: ResponsibilityScopeValue[];
   canUpdate: boolean;
-  dutyTypeOptions: { id: number; title: string }[];
+  dutyTypeOptions: { id: number; title: string; parent_id: number | null }[];
+  /** Permissions that keep this responsibility from being given to a duty type. */
+  typeGrantBlockedBy?: string[];
   /** Optional prop: loaded when the sheet opens. */
   options?: ResponsibilityGrantOptions;
-}>();
+}>(), {
+  typeGrantBlockedBy: () => [],
+  options: undefined,
+});
 
 const { report: accessWarningReport, open: accessWarningOpen, guardedSubmit, confirm: accessWarningConfirm, cancel: accessWarningCancel } = useAccessChangeGuard();
 const sheetOpen = ref(false);

@@ -281,12 +281,10 @@
           :label="$t('forms.fields.duty_type')"
           :error="form.errors.types"
         >
-          <MultiSelect
+          <TypeTreeMultiSelect
             id="duty-types"
-            v-model="selectedTypes"
-            :options="dutyTypes"
-            label-field="title"
-            value-field="id"
+            v-model="selectedTypeIds"
+            :types="dutyTypes"
             :placeholder="$t('forms.placeholders.select_category')"
           />
         </FormFieldWrapper>
@@ -398,6 +396,7 @@ import { Button } from '@/Components/ui/button';
 import { NumberField } from '@/Components/ui/number-field';
 import FormSegmentedControl, { type FormSegmentOption } from '@/Components/Patterns/FormSegmentedControl.vue';
 import { MultiSelect } from '@/Components/ui/multi-select';
+import { TypeTreeMultiSelect } from '@/Components/AdminForms/TypeTree';
 import InstitutionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/InstitutionSelectDialog.vue';
 import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
@@ -616,15 +615,12 @@ const readonlyTypes = computed(() => (props.duty?.types ?? []).filter(type =>
   !(props.dutyTypes ?? []).some(option => Number(option.id) === Number(type.id)),
 ));
 
-const selectedTypes = computed({
-  get: () => {
-    const ids = new Set((form.types ?? []).map(Number));
-    return (props.dutyTypes ?? []).filter(type => ids.has(Number(type.id)));
-  },
-  set: (items: Array<App.Entities.DutyType | number>) => {
+const selectedTypeIds = computed({
+  get: () => (form.types ?? []).map(Number),
+  set: (ids: Array<number | string>) => {
     form.types = [...new Set([
       ...readonlyTypes.value.map(type => Number(type.id)),
-      ...(items ?? []).map(type => typeof type === 'number' ? type : Number(type.id)),
+      ...ids.map(Number),
     ])];
   },
 });

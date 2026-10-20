@@ -94,8 +94,8 @@ class ResponsibilityGrant extends Model
     }
 
     /**
-     * Ids of the duties these grants reach: direct ones, every duty of a granted type, every duty
-     * in a granted institution.
+     * Ids of the duties these grants reach: direct ones, every duty of a granted type or its
+     * subtypes, every duty in a granted institution.
      *
      * @param  Builder<self>  $grants
      */
@@ -108,7 +108,7 @@ class ResponsibilityGrant extends Model
         $direct = (clone $grants)->toBase()->where('grantee_type', $duty)->select('grantee_id as duty_id');
 
         $viaType = DB::table('duty_duty_type')
-            ->whereIn('duty_type_id', (clone $grants)->toBase()->where('grantee_type', $dutyType)->select('grantee_id'))
+            ->whereIn('duty_type_id', DutyType::withDescendantIds((clone $grants)->toBase()->where('grantee_type', $dutyType)->pluck('grantee_id')->all()))
             ->select('duty_id');
 
         $viaInstitution = DB::table('duties')
@@ -124,7 +124,9 @@ class ResponsibilityGrant extends Model
 
         $dutyIds = match ($this->grantee_type) {
             MorphMap::alias(Duty::class) => [$this->grantee_id],
-            MorphMap::alias(DutyType::class) => DB::table('duty_duty_type')->where('duty_type_id', $this->grantee_id)->pluck('duty_id')->all(),
+            MorphMap::alias(DutyType::class) => DB::table('duty_duty_type')
+                ->whereIn('duty_type_id', [(int) $this->grantee_id, ...DutyType::withDescendantIds([$this->grantee_id])])
+                ->pluck('duty_id')->all(),
             MorphMap::alias(Institution::class) => DB::table('duties')->where('institution_id', $this->grantee_id)->pluck('id')->all(),
             default => [],
         };

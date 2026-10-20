@@ -84,3 +84,31 @@ test('national and international bodies count as external, vusa does not', funct
         ->and(InstitutionScope::Vusa->isExternal())->toBeFalse()
         ->and(InstitutionScope::Vusa->isInternal())->toBeTrue();
 });
+
+test('the SQL scope filter keeps exactly the institutions forInstitution() puts in the asked scopes', function (): void {
+    $vu = InstitutionType::factory()->withGovernanceScope(InstitutionScope::University)->create();
+    $vusa = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create();
+    $national = InstitutionType::factory()->withGovernanceScope(InstitutionScope::National)->create();
+    $institutions = [
+        'vu' => Institution::factory()->create(),
+        'vusa' => Institution::factory()->create(),
+        'mixed' => Institution::factory()->create(),
+        'national' => Institution::factory()->create(),
+        'untyped' => Institution::factory()->create(),
+    ];
+    $institutions['vu']->types()->attach($vu);
+    $institutions['vusa']->types()->attach($vusa);
+    $institutions['mixed']->types()->attach([$vusa->id, $vu->id]);
+    $institutions['national']->types()->attach($national);
+    scopeResolver()->flush();
+
+    foreach ([[InstitutionScope::University], [InstitutionScope::Vusa], [InstitutionScope::National, InstitutionScope::Vusa]] as $scopes) {
+        $expected = collect($institutions)
+            ->filter(fn (Institution $institution) => in_array(scopeResolver()->forInstitution($institution->fresh()), $scopes, true))
+            ->map->id->sort()->values()->all();
+
+        $query = Institution::query()->whereKey(collect($institutions)->map->id->all());
+
+        expect(scopeResolver()->constrainToScopes($query, $scopes)->pluck('id')->sort()->values()->all())->toBe($expected);
+    }
+});

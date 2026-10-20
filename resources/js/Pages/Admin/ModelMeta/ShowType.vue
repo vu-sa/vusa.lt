@@ -103,6 +103,10 @@
               {{ grant.title }}
             </Link>
             <span v-else class="font-medium">{{ grant.title }}</span>
+            <p v-if="grant.inherited_from" class="text-xs text-muted-foreground" data-testid="type-grant-inherited">
+              {{ $t('types.grant_inherited_from') }}
+              <Link :href="grant.inherited_from.href" class="hover:underline">{{ grant.inherited_from.title }}</Link>
+            </p>
             <p v-if="grant.scope_name" class="text-xs text-muted-foreground">
               {{ grant.scope_type ? `${$t(`responsibilities.scopes.${grant.scope_type}`)} · ` : '' }}{{ grant.scope_name }}
             </p>
@@ -192,7 +196,15 @@ const props = withDefaults(defineProps<{
   contentType: (App.Entities.InstitutionType | App.Entities.DutyType) & { parent?: { title?: Translation } };
   attachedModels: Array<{ id: string; name: string }>;
   modelOptions?: Array<{ id: string; name?: string; title?: Translation; can_change?: boolean }>;
-  responsibilityGrants?: Array<{ id: string; title: string; href: string | null; scope_type?: string | null; scope_name: string | null; needs_scope: boolean }>;
+  responsibilityGrants?: Array<{
+    id: string;
+    title: string;
+    href: string | null;
+    inherited_from?: { title: string; href: string } | null;
+    scope_type?: string | null;
+    scope_name: string | null;
+    needs_scope: boolean;
+  }>;
   responsibleDuties?: Array<{ id: string; duty_id: string; duty: string; label: string }>;
   sharepointPath?: string | null;
   sharepointFolderUrl?: string | null;

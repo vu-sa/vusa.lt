@@ -22,4 +22,5 @@ export interface RelationshipLinkRow {
 export interface RelationshipTypeOption {
   id: string;
   name: string;
+  parent_id?: string | null;
 }

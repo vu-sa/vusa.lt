@@ -196,3 +196,23 @@ test('the type record lists grants with scope warnings and hides unauthorised ma
             ->where('can.manageResponsibilities', false)->missing('roleOptions')
             ->where('responsibilityGrants', fn ($grants) => collect($grants)->contains(fn ($grant) => $grant['needs_scope'] && $grant['href'] === null)));
 });
+
+test('moving a type under a parent is refused when its duties would gain a responsibility the actor cannot grant', function (): void {
+    $child = DutyType::factory()->create();
+    $payload = ['title' => ['lt' => 'Potipis', 'en' => 'Subtype'], 'parent_id' => $this->type->id];
+
+    asUser($this->actor)->put(route('dutyTypes.update', $child), $payload)->assertSessionHasErrors('parent_id');
+
+    expect($child->fresh()->parent_id)->toBeNull();
+
+    asUser(makeAdminUser($this->tenant))->put(route('dutyTypes.update', $child), $payload)->assertSessionHasNoErrors();
+
+    expect($child->fresh()->parent_id)->toBe($this->type->id);
+});
+
+test('the type record lists what a subtype inherits from its parent', function (): void {
+    $child = DutyType::factory()->create(['parent_id' => $this->type->id]);
+
+    asUser($this->actor)->get(route('dutyTypes.show', $child))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('responsibilityGrants.0.inherited_from.title', $this->type->getTranslation('title', 'lt')));
+});

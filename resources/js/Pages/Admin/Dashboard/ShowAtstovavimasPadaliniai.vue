@@ -22,6 +22,9 @@
     <template v-if="hasStats">
       <OverviewNumbers v-if="tenantTimelineData.loaded.value" :numbers />
       <OverviewNumbersSkeleton v-else :count="4" />
+      <p class="-mt-2 text-xs text-muted-foreground" data-testid="counted-scopes-note">
+        {{ $t('visak.tenant_overview.counted_scopes', { scopes: countedScopes.join(', ') }) }}
+      </p>
     </template>
 
     <div v-if="hasStats" class="grid gap-8 lg:grid-cols-2 lg:gap-10" data-slot="atstovavimas-tenant-primary-section">
@@ -169,7 +172,11 @@ const props = defineProps<{
   /** May read ViSAK → Užduotys; the open-task number counts the selected padaliniai's tasks. */
   canViewTenantTasks: boolean;
   canAskAboutActivity?: boolean;
+  /** Institution scopes the statistics count (RepMetricSettings); the Gantt shows every scope. */
+  countedScopes?: string[];
 }>();
+
+const countedScopes = computed(() => props.countedScopes ?? []);
 
 const ATTENTION_LIMIT = 4;
 

@@ -18,6 +18,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer;
 use App\Services\ResourceServices\SharepointFileService;
+use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -49,7 +50,7 @@ class DutyTypeController extends AdminController
 
         return $this->inertiaResponse('Admin/ModelMeta/CreateType', [
             'typeKind' => 'dutyType',
-            'contentTypes' => DutyType::select('id', 'title')->get(),
+            'contentTypes' => DutyType::select('id', 'title', 'parent_id')->get(),
         ]);
     }
 
@@ -69,10 +70,16 @@ class DutyTypeController extends AdminController
 
         $type->load([
             'parent:id,title',
-            'responsibilityGrants.role',
-            'responsibilityGrants.scope',
             'duties' => fn ($query) => $query->select('id', 'name'),
         ]);
+
+        // A type's duties also receive what its ancestors are given.
+        $grants = ResponsibilityGrant::query()
+            ->where('grantee_type', MorphMap::alias(DutyType::class))
+            ->whereIn('grantee_id', array_map(strval(...), DutyType::withAncestorIds([$type->id]) ?: [$type->id]))
+            ->with(['role', 'scope', 'grantee'])
+            ->get()
+            ->sortBy(fn (ResponsibilityGrant $grant): string => ((string) $grant->grantee_id === (string) $type->id ? '0' : '1').$grant->role->displayTitle());
 
         $actor = request()->user();
         $canManageAssignments = $actor->can('update', $type)
@@ -86,8 +93,12 @@ class DutyTypeController extends AdminController
                 ...$type->withoutRelations()->toFullArray(),
                 'parent' => $type->parent?->toFullArray(),
             ],
-            'responsibilityGrants' => $type->responsibilityGrants->map(fn (ResponsibilityGrant $grant): array => [
+            'responsibilityGrants' => $grants->map(fn (ResponsibilityGrant $grant): array => [
                 'id' => $grant->id,
+                'inherited_from' => (string) $grant->grantee_id === (string) $type->id || ! $grant->grantee instanceof DutyType ? null : [
+                    'title' => (string) $grant->grantee->getTranslation('title', app()->getLocale()),
+                    'href' => route('dutyTypes.show', $grant->grantee),
+                ],
                 'title' => $grant->role->displayTitle(),
                 'href' => $actor->can('view', $grant->role) ? route('responsibilities.show', $grant->role) : null,
                 'scope_type' => $grant->scope_type,
@@ -132,7 +143,7 @@ class DutyTypeController extends AdminController
         return $this->inertiaResponse('Admin/ModelMeta/EditType', [
             'typeKind' => 'dutyType',
             'contentType' => $type->toFullArray(),
-            'contentTypes' => DutyType::select('id', 'title')->get(),
+            'contentTypes' => DutyType::select('id', 'title', 'parent_id')->get(),
         ]);
     }
 

@@ -146,6 +146,7 @@ return [
     ],
 
     'tenant_overview' => [
+        'counted_scopes' => 'Rodikliai skaičiuojami šių organų institucijoms: :scopes. Posėdžių grafike rodomos visos institucijos.',
         'title' => 'Padaliniai',
         'lead' => 'Kurioms padalinio institucijoms reikia dėmesio, kaip keičiasi jų būklė ir kaip aktyvūs atstovai.',
         'lead_public' => 'Viešai posėdžiaujančių institucijų ir tavo institucijų posėdžiai visuose padaliniuose.',

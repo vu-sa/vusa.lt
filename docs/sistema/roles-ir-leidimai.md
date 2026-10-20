@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Atsakomybės ir leidimai
 area: roles
 models: [Role, Permission, ResponsibilityGrant]
-last_reviewed: 2026-10-20
+last_reviewed: 2026-10-21
 tests:
   - tests/Feature/Permissions/DutyTypeAssignmentTest.php
   - tests/Feature/Admin/Permissions/ResponsibilityControllerTest.php
@@ -50,7 +50,8 @@ Atsakomybę pavadink pagal darbą, o ne pagal žmogų: „Komunikacija“, „Or
   neturi ir sąraše žymimos **Prieiga**.
 - **Kam suteikiama**: atsakomybė suteikiama
   1. pareigybei – dažniausias atvejis;
-  2. [pareigybės tipui](/sistema/tipai) – ją gauna kiekviena to tipo pareigybė;
+  2. [pareigybės tipui](/sistema/tipai#pareigybes-tipo-atsakomybes) – ją gauna kiekviena to tipo
+     ir jo potipių pareigybė; tokia atsakomybė negali turėti leidimų „Visur“ ir „Trinti negrįžtamai“;
   3. institucijai – retas atvejis, kai ją turi gauti kiekviena institucijos pareigybė (pvz., visi
      Centrinio biuro nariai).
 
@@ -93,12 +94,16 @@ savo užduotis ir save matai be jokios atsakomybės.
 Pakeitimai kaupiami ir apačioje rodoma, kiek teisių pridėsi ir atimsi. Visi pakeitimai įrašomi
 vienu **Išsaugoti** paspaudimu; **Atšaukti** grąžina išsaugotą būseną.
 
-### Atsakomybės suteikimas (skirtukas „Kam suteikta“)
+### Atsakomybės suteikimas (skirtukas „Kam suteikta“) {#atsakomybes-suteikimas}
 
 Skirtuke matyti pareigybės, pareigybių tipai ir institucijos, kurioms atsakomybė suteikta, su narių
 skaičiumi. Paspausk **Suteikti**, pasirink, kam, ir surask pareigybę, tipą ar instituciją.
 Atsakomybei su paskirtimi dar nurodoma, už ką pareigybė atsakinga – padalinį, institucijų tipą ar
 instituciją.
+
+Pareigybės tipui atsakomybės su leidimais „Visur“ ar „Trinti negrįžtamai“ suteikti negalima –
+lange rodomas paaiškinimas, kurie leidimai tam trukdo. Tokia atsakomybė suteikiama pareigybėms
+atskirai. Atsakomybei, kurią jau gauna tipai, šių leidimų pridėti taip pat negalima.
 
 Atsakomybę galima suteikti ir pareigybės puslapio skirtuke **Atsakomybės**. Ten matyti ir tos,
 kurias pareigybė gauna per tipą ar instituciją.
@@ -149,8 +154,8 @@ prieigą nepriklausomai nuo teisių tinklelio.
 
 - **Prieiga atnaujinama iš karto**: suteikus ar atėmus atsakomybę, pakeitus jos teises ar pareigybės
   tipą, atnaujinama nariams prieiga ir meniu.
-- **Pagal tipą ir instituciją**: pareigybei gavus tipą ar perėjus į instituciją, kuriai atsakomybė
-  suteikta, ji gauna atsakomybę; netekus – jos netenka. Ištrinta pareigybė per tipą ar instituciją
+- **Pagal tipą ir instituciją**: pareigybei gavus tipą (ar jo potipį) ar perėjus į instituciją,
+  kuriai atsakomybė suteikta, ji gauna atsakomybę; netekus – jos netenka. Ištrinta pareigybė per tipą ar instituciją
   atsakomybių nebegauna.
 - **Teisių trūkumai**: jei atsakomybę su paskirtimi turinčiai pareigybei trūksta tam darbui
   reikalingų teisių, atsakomybės ir pareigybės puslapiuose rodomas įspėjimas.
@@ -172,4 +177,5 @@ prieigą nepriklausomai nuo teisių tinklelio.
   `responsibilities.grants.store|destroy`, `responsibilities.attachableTypes.update`,
   `duties.responsibilities.store|destroy`. Seni `/mano/roles…` adresai nukreipiami.
 - Suteikti gali `GrantableResponsibilities` (turintys `roles.update.*` – bet kurią, kiti – tik
-  turimas). Teisių trūkumus skaičiuoja `ResponsibilityPermissionGaps`.
+  turimas). Tipui leidžiamas teises tikrina `TypeGrantablePermissions` (jokių `*` ir `forceDelete`);
+  `permissions:audit` praneša apie esamus jos neatitinkančius tipų suteikimus. Teisių trūkumus skaičiuoja `ResponsibilityPermissionGaps`.

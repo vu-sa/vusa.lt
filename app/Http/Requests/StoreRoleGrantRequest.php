@@ -9,12 +9,14 @@ use App\Models\Institution;
 use App\Models\Role;
 use App\Rules\SoftDeleteRules;
 use App\Support\MorphMap;
+use App\Support\Permissions\TypeGrantablePermissions;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
  * Granting from the responsibility's own page: whoever may edit the responsibility may give it to any
- * duty, duty type or institution. A purpose's scope is required where the purpose has scopes.
+ * duty, duty type or institution. A purpose's scope is required where the purpose has scopes, and a
+ * duty type only gets responsibilities TypeGrantablePermissions allows.
  */
 class StoreRoleGrantRequest extends FormRequest
 {
@@ -43,7 +45,7 @@ class StoreRoleGrantRequest extends FormRequest
 
         return [
             'grantee_type' => ['required', Rule::in(array_map(MorphMap::alias(...), [Duty::class, DutyType::class, Institution::class]))],
-            'grantee_id' => ['required', 'string', 'max:26', ...($granteeTable ? [SoftDeleteRules::existsLive($granteeTable)] : [])],
+            'grantee_id' => ['required', 'string', 'max:26', ...($granteeTable ? [SoftDeleteRules::existsLive($granteeTable)] : []), $this->grantableToType(...)],
             'scope_type' => $scopes === []
                 ? ['prohibited']
                 : ['required', Rule::in(array_map(fn (ResponsibilityScope $scope) => $scope->value, $scopes))],
@@ -61,6 +63,19 @@ class StoreRoleGrantRequest extends FormRequest
     public function role(): Role
     {
         return $this->route('role');
+    }
+
+    private function grantableToType(string $attribute, mixed $value, \Closure $fail): void
+    {
+        if ($this->input('grantee_type') !== MorphMap::alias(DutyType::class)) {
+            return;
+        }
+
+        $violations = TypeGrantablePermissions::violationsOf($this->role());
+
+        if ($violations !== []) {
+            $fail(__('responsibilities.validation.not_type_grantable', ['permissions' => implode(', ', $violations)]));
+        }
     }
 
     private function scopeExists(string $attribute, mixed $value, \Closure $fail): void

@@ -210,6 +210,8 @@ return [
         'not_grantable' => 'You cannot grant this responsibility: only its holders or members who manage responsibilities can.',
         'scope_not_allowed' => 'This responsibility cannot be assigned that way.',
         'target_out_of_reach' => 'You cannot manage this padalinys, institution or type.',
+        'not_type_grantable' => 'This responsibility can’t be given to a duty type: a responsibility given to a type can’t hold “Everywhere” or “Delete permanently” permissions (:permissions). Give it to the duties one by one instead.',
+        'type_granted_role' => 'Duty types receive this responsibility, so it can’t hold “Everywhere” or “Delete permanently” permissions (:permissions). Remove the type grants first, or leave these permissions out.',
         'self_lockout' => 'This would take away your own ability to manage responsibilities. Ask another administrator.',
     ],
 ];

@@ -422,24 +422,25 @@ describe('DutyForm.vue — picking which tenants may assign representatives', ()
     expect(programOption.attributes('aria-pressed')).toBe('true');
   });
 
-  it('passes mapped type objects to the duty types MultiSelect, not raw IDs', async () => {
-    const dutyType1 = { id: 1, title: 'Valdyba' };
-    const dutyType2 = { id: 2, title: 'Kuratorius' };
+  it('binds the duty types picker to type ids and offers the types as a tree', async () => {
+    const parent = { id: 1, title: 'Koordinatorius', parent_id: null };
+    const child = { id: 2, title: 'Administratorius', parent_id: 1 };
     wrapper = mountForm(
       emptyDuty({
         id: 'duty-1',
-        types: [dutyType1],
+        types: [parent],
       }),
       {
-        dutyTypes: [dutyType1, dutyType2],
+        dutyTypes: [child, parent],
       },
     );
 
-    const typePicker = wrapper.findAllComponents({ name: 'MultiSelect' }).find(c => c.props('id') === 'duty-types');
-    expect(typePicker).toBeDefined();
-    expect(typePicker!.props('modelValue')).toEqual([dutyType1]);
+    const typePicker = wrapper.findComponent({ name: 'TypeTreeMultiSelect' });
+    expect(typePicker.props('modelValue')).toEqual([1]);
+    expect(typePicker.findComponent({ name: 'MultiSelect' }).props('options').map((node: { path: string }) => node.path))
+      .toEqual(['Koordinatorius', 'Koordinatorius › Administratorius']);
 
-    typePicker!.vm.$emit('update:modelValue', [dutyType1, dutyType2]);
+    typePicker.vm.$emit('update:modelValue', [1, 2]);
     await nextTick();
 
     const { form } = wrapper.vm as unknown as { form: { types: number[] } };
@@ -507,11 +508,10 @@ describe('DutyForm.vue — delegated types', () => {
     const editable = { id: 8, title: 'Deleguotas tipas' };
     const wrapper = mountForm(emptyDuty({ id: 'duty-1', types: [fixed] }), { dutyTypes: [editable] });
     expect(wrapper.get('[data-testid="duty-readonly-types"]').text()).toContain('Esamas tipas');
-    const picker = wrapper.findAllComponents({ name: 'MultiSelect' }).find(component => component.props('id') === 'duty-types')!;
-    expect(picker.props('modelValue')).toEqual([]);
-    expect(picker.props('options')).toEqual([editable]);
+    const picker = wrapper.findComponent({ name: 'TypeTreeMultiSelect' });
+    expect(picker.props('types')).toEqual([editable]);
 
-    picker.vm.$emit('update:modelValue', [editable]);
+    picker.vm.$emit('update:modelValue', [8]);
     wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
     await nextTick();
     expect((wrapper.emitted('submit:form')!.at(-1)![0] as Record<string, unknown>).types).toEqual([7, 8]);

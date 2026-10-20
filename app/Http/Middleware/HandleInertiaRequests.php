@@ -33,7 +33,7 @@ class HandleInertiaRequests extends Middleware
 
     public const TAGS_CACHE_KEY = 'all-tags-for-inertia';
 
-    public const INSTITUTION_TYPES_CACHE_KEY = 'all-institution-types-for-inertia';
+    public const INSTITUTION_TYPES_CACHE_KEY = 'all-institution-types-for-inertia:v2';
 
     public const NOTIFICATION_PREVIEW_LIMIT = 20;
 
@@ -269,7 +269,7 @@ class HandleInertiaRequests extends Middleware
     private function getInstitutionTypesForInertia(): Collection
     {
         return Cache::rememberForever(self::INSTITUTION_TYPES_CACHE_KEY,
-            fn () => InstitutionType::query()->get(['id', 'title', 'slug'])
+            fn () => InstitutionType::query()->get(['id', 'title', 'slug', 'parent_id'])
         );
     }
 

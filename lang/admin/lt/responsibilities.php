@@ -210,6 +210,8 @@ return [
         'not_grantable' => 'Šios atsakomybės suteikti negali: ją gali suteikti tik ją turintys arba atsakomybes valdantys nariai.',
         'scope_not_allowed' => 'Šiai atsakomybei toks priskyrimas negalimas.',
         'target_out_of_reach' => 'Šio padalinio, institucijos ar tipo tvarkyti negali.',
+        'not_type_grantable' => 'Šios atsakomybės pareigybių tipui suteikti negali: tipui suteikiamos atsakomybės negali turėti leidimų „Visur“ ar „Trinti negrįžtamai“ (:permissions). Suteik ją pareigybėms atskirai.',
+        'type_granted_role' => 'Šią atsakomybę gauna pareigybių tipai, todėl ji negali turėti leidimų „Visur“ ar „Trinti negrįžtamai“ (:permissions). Pirma pašalink tipų suteikimus arba atsisakyk šių leidimų.',
         'self_lockout' => 'Taip atimtum iš savęs galimybę tvarkyti atsakomybes. Paprašyk kito administratoriaus.',
     ],
 ];

@@ -61,7 +61,7 @@ class AtstovavimasDashboardService
     {
         $institutions = DutyService::getTimelineInstitutionsForTenants($tenantIds, $this->authorizer);
         $this->decorateInstitutions($institutions);
-        $counted = $this->withoutExcludedInstitutionTypes($institutions);
+        $counted = $this->countedInstitutions($institutions);
         $countedIds = $counted->pluck('id')->map(fn ($id) => (string) $id)->flip();
 
         return [
@@ -632,22 +632,10 @@ class AtstovavimasDashboardService
      */
     private function representativeQuery(array $tenantIds): Builder
     {
-        $excludedTypeIds = $this->meetingSettings->getExcludedInstitutionTypeIds();
-
         return User::query()
-            ->whereHas('current_duties', function (Builder $query) use ($tenantIds, $excludedTypeIds): void {
-                $query->holdingPurpose(ResponsibilityPurpose::StudentRepresentation);
-                $query->whereHas('institution', function (Builder $institutionQuery) use ($tenantIds, $excludedTypeIds): void {
-                    $institutionQuery->whereIn('tenant_id', $tenantIds);
-
-                    if ($excludedTypeIds->isNotEmpty()) {
-                        $institutionQuery->whereDoesntHave(
-                            'types',
-                            fn (Builder $typeQuery) => $typeQuery->whereIn('institution_types.id', $excludedTypeIds)
-                        );
-                    }
-                });
-            });
+            ->whereHas('current_duties', fn (Builder $query) => $query
+                ->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)
+                ->whereIn('institution_id', RepStatisticsScope::institutions($tenantIds)->select('institutions.id')));
     }
 
     /**
@@ -656,24 +644,11 @@ class AtstovavimasDashboardService
      */
     private function representativeDutyRelations(array $tenantIds): array
     {
-        $excludedTypeIds = $this->meetingSettings->getExcludedInstitutionTypeIds();
-
         return [
-            'current_duties' => function ($query) use ($tenantIds, $excludedTypeIds): void {
-                $query->select('duties.id', 'duties.name', 'duties.institution_id')
-                    ->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)
-                    ->whereHas('institution', function (Builder $institutionQuery) use ($tenantIds, $excludedTypeIds): void {
-                        $institutionQuery->whereIn('tenant_id', $tenantIds);
-
-                        if ($excludedTypeIds->isNotEmpty()) {
-                            $institutionQuery->whereDoesntHave(
-                                'types',
-                                fn (Builder $typeQuery) => $typeQuery->whereIn('institution_types.id', $excludedTypeIds)
-                            );
-                        }
-                    })
-                    ->with('institution:id,name,tenant_id');
-            },
+            'current_duties' => fn ($query) => $query->select('duties.id', 'duties.name', 'duties.institution_id')
+                ->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)
+                ->whereIn('institution_id', RepStatisticsScope::institutions($tenantIds)->select('institutions.id'))
+                ->with('institution:id,name,tenant_id'),
         ];
     }
 
@@ -727,19 +702,8 @@ class AtstovavimasDashboardService
      * @param  Collection<int, Institution>  $institutions
      * @return Collection<int, Institution>
      */
-    private function withoutExcludedInstitutionTypes(Collection $institutions): Collection
+    private function countedInstitutions(Collection $institutions): Collection
     {
-        $excludedTypeIds = $this->meetingSettings->getExcludedInstitutionTypeIds();
-
-        if ($excludedTypeIds->isEmpty()) {
-            return $institutions;
-        }
-
-        return $institutions
-            ->filter(fn (Institution $institution) => $institution->types
-                ->pluck('id')
-                ->intersect($excludedTypeIds)
-                ->isEmpty())
-            ->values();
+        return $institutions->filter(RepStatisticsScope::counts(...))->values();
     }
 }
