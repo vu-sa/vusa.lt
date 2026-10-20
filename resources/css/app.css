@@ -20,3 +20,4 @@
 @source not '../js/**/*.{test,spec}.{ts,js}';
 @source not '../js/mocks/**';
 @source not '../js/tests/**';
+@source not '../../.worktrees';
