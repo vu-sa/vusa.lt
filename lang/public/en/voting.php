@@ -16,6 +16,7 @@ return [
         'status_aligned' => 'Final decision aligns with the student representative vote',
         'status_misaligned' => 'Final decision differs from the student representative vote',
         'status_neutral' => 'Students abstained or the decision had no clear benefit/harm',
+        'status_mixed' => 'The item was voted on several times with differing results',
         'status_no_vote' => 'Voting item, but no vote took place or was recorded',
         'status_deferred' => 'Discussion deferred to a later meeting',
         'status_informational' => 'Informational item requiring no vote',

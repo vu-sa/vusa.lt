@@ -11,6 +11,7 @@ use App\Models\InstitutionStatusSnapshot;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\User;
+use App\Models\Vote;
 use App\Services\ResourceServices\DutyService;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\MeetingSettings;
@@ -318,7 +319,7 @@ class AtstovavimasDashboardService
                     ->whereBetween('meetings.start_time', [$from, $until])
                     ->with([
                         'agendaItems:id,meeting_id,title,type,brought_by_students,order,is_private,public_title',
-                        'agendaItems.votes:id,agenda_item_id,decision,student_vote,student_benefit,is_main',
+                        'agendaItems.votes:id,agenda_item_id,decision,student_vote,student_benefit,is_main,is_consensus',
                         'fileableFiles:id,fileable_id,fileable_type,file_type,deleted_externally_at',
                         // Eager: mapMeeting asks every meeting in the window whether it is announced.
                         'calendarEvent:id,meeting_id,is_draft',
@@ -543,14 +544,15 @@ class AtstovavimasDashboardService
             return AgendaItemPresenter::redacted($item);
         }
 
-        $mainVote = $item->votes->firstWhere('is_main', true) ?? $item->votes->first();
-
         return [
             'id' => (string) $item->id,
             'title' => (string) ($item->title ?? ''),
             'type' => $item->type?->value,
-            'student_vote' => $mainVote?->student_vote,
-            'decision' => $mainVote?->decision,
+            // The tooltip derives the item's status from these, as getAgendaItemStatus() does.
+            'votes' => $item->outcomeVotes()
+                ->map(fn (Vote $vote): array => $vote->only(['student_vote', 'decision', 'is_consensus']))
+                ->values()
+                ->all(),
         ];
     }
 

@@ -49,7 +49,7 @@ class MeetingApiController extends ApiController
 
         $meeting->load([
             'institutions',
-            'agendaItems' => fn ($query) => $query->orderBy('order')->with('mainVote'),
+            'agendaItems' => fn ($query) => $query->orderBy('order')->with('votes'),
         ]);
 
         return $this->jsonSuccess([
@@ -63,7 +63,7 @@ class MeetingApiController extends ApiController
                     'id' => (string) $item->id,
                     ...($item->is_private && ! AgendaItemPresenter::canRead($item, request()->user())
                         ? AgendaItemPresenter::redacted($item)
-                        : ['title' => $item->title, 'decision' => $item->mainVote?->decision, 'student_benefit' => $item->mainVote?->student_benefit]),
+                        : ['title' => $item->title, 'decision' => $item->outcomeVote()?->decision, 'student_benefit' => $item->outcomeVote()?->student_benefit]),
                 ])->values(),
             // Student representatives whose duty was active at the meeting date
             // (same calculation the meeting show page uses), not all-time members.

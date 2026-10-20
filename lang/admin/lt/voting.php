@@ -23,6 +23,7 @@ return [
     'status_aligned_admin_help' => 'Galutinis sprendimas atitinka studentų atstovų balsą. Pažymėk, kai organas pritarė tam, už ką balsavo studentai.',
     'status_misaligned_admin_help' => 'Galutinis sprendimas skiriasi nuo studentų atstovų balso. Pažymėk, kai organas nusprendė kitaip nei balsavo studentai.',
     'status_neutral_admin_help' => 'Studentai susilaikė arba sprendimas neturėjo aiškios naudos ar žalos studentams.',
+    'status_mixed_admin_help' => 'Klausimas turi kelis balsavimus be pagrindinio, ir jų rezultatai skiriasi. Jei vienas balsavimas lemia klausimo rezultatą, pažymėk jį pagrindiniu.',
     'status_no_vote_admin_help' => 'Balsavimo klausimas, tačiau balsavimo duomenys dar neįvesti. Nepamiršk užpildyti!',
     'status_deferred_admin_help' => 'Klausimo svarstymas atidėtas kitam posėdžiui. Pasirink tipą "Atidėtas".',
     'status_informational_admin_help' => 'Informacinio pobūdžio klausimas, kuriame nėra balsavimo. Pasirink tipą "Informacinis".',

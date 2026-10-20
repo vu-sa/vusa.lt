@@ -120,7 +120,7 @@ tvarkingų institucijų skaičių, nei į **Reikia dėmesio**. Laikotarpis skai�
 | Rodiklis | Kas skaičiuojama |
 |---|---|
 | Posėdis užfiksuotas per 7 d. | Jau įvykusių, sistemoje užregistruotų posėdžių dalis, kurių įrašas sukurtas iki posėdžio arba per 7 dienas po jo pradžios. Darbotvarkės užpildymas šiuo rodikliu nematuojamas. Neužregistruotų posėdžių sistema nežino. |
-| Užpildyti darbotvarkės klausimai | Nurodytas klausimo tipas; balsavimo klausimui užpildytas pagrindinis balsavimas. VU valdymo organuose taip pat būtinas studentų atstovo balsas ir naudos studentams įvertinimas. Nebalsuojamiems klausimams balsų nereikia. |
+| Užpildyti darbotvarkės klausimai | Nurodytas klausimo tipas; balsavimo klausimui užpildytas pagrindinis balsavimas, o jei jo nėra – visi balsavimai. VU valdymo organuose taip pat būtinas studentų atstovo balsas ir naudos studentams įvertinimas. Nebalsuojamiems klausimams balsų nereikia. |
 | Įvykdytos užduotys | Laikotarpiu sukurtų institucijos ar posėdžio užduočių dalis, kurios dabar įvykdytos. Asmeninės ir rezervacijų užduotys neįtraukiamos. |
 
 **Dabartinė kadencija** matuojama nuo bendros organizacijos kadencijos pradžios iki šiandien. **Palyginimo kadencija** matuojama visa, nuo pradžios iki pabaigos imtinai. Lentelės antraštėse pateikiami trumpi kadencijų metai (pvz., „2026–27“), o tikslios datos ir skaičiavimo taisyklės – išskleidus **Kaip skaičiuojama**. Prie procentų pateikiami skaitiklis ir vardiklis. Bendri kelių padalinių procentai skaičiuojami iš unikalių įrašų, ne vidurkinant padalinių procentus.

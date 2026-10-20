@@ -28,6 +28,6 @@ export function applyAgendaItemType(form: InertiaForm<AgendaItemFormData>, value
   form.type = value;
 
   if (value === 'voting' && form.votes.length === 0) {
-    form.votes.push(createVote(true));
+    form.votes.push(createVote());
   }
 }

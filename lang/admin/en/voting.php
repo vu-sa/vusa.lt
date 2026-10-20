@@ -23,6 +23,7 @@ return [
     'status_aligned_admin_help' => 'The final decision matches how student representatives voted. Mark when the body agreed with what students voted for.',
     'status_misaligned_admin_help' => 'The final decision differs from how student representatives voted. Mark when the body decided differently than students.',
     'status_neutral_admin_help' => 'Students abstained or the decision had no clear benefit or harm to students.',
+    'status_mixed_admin_help' => 'The item has several votes and no main one, and their results differ. If one vote decides the item, mark it as the main vote.',
     'status_no_vote_admin_help' => 'A voting item, but voting data has not been entered yet. Do not forget to fill it in!',
     'status_deferred_admin_help' => 'The discussion of this item was postponed to another meeting. Select type "Deferred".',
     'status_informational_admin_help' => 'An informational item with no voting involved. Select type "Informational".',

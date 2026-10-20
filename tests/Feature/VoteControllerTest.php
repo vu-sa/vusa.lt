@@ -131,21 +131,21 @@ describe('vote controller', function (): void {
         expect(Vote::find($vote->id))->toBeNull();
     });
 
-    test('the first vote becomes the main one without asking', function (): void {
+    test('a new vote is not main unless asked', function (): void {
         asUser($this->admin)
             ->post(route('votes.store'), ['agenda_item_id' => $this->agendaItem->id, 'decision' => 'positive'])
             ->assertSessionHasNoErrors();
 
-        expect($this->agendaItem->votes()->sole()->is_main)->toBeTrue();
+        expect($this->agendaItem->votes()->sole()->is_main)->toBeFalse();
     });
 
-    test('deleting the main vote promotes the next one', function (): void {
+    test('deleting the main vote promotes no other', function (): void {
         $main = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create();
         $additional = Vote::factory()->additional()->for($this->agendaItem, 'agendaItem')->create();
 
         asUser($this->admin)->delete(route('votes.destroy', $main))->assertRedirect();
 
-        expect($additional->fresh()->is_main)->toBeTrue();
+        expect($additional->fresh()->is_main)->toBeFalse();
     });
 
     test('a vote note is limited to 2000 characters', function (): void {

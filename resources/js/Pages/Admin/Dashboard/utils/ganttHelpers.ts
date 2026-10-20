@@ -2,6 +2,8 @@
  * Shared helper functions for Gantt chart data transformations.
  * Used by UserTimelineSection and TenantTimelineSection.
  */
+import { getOutcomeVotes } from '@/Composables/useAgendaItemStyling';
+
 import type {
   AtstovavimasInstitution,
   GanttDutyMember,
@@ -110,14 +112,11 @@ export function extractMeetingsFromInstitutions(
       const isAuthorized = (inst as any).authorized !== false;
       const agendaItems = isAuthorized
         ? (m.agenda_items ?? []).slice(0, 4).map((item: any) => {
-            // Get main vote from either main_vote property or votes array
-            const mainVote = item.main_vote ?? item.votes?.find((v: any) => v.is_main);
             return {
               id: String(item.id),
               title: String(item.title ?? ''),
               type: item.type ?? null,
-              student_vote: mainVote?.student_vote ?? null,
-              decision: mainVote?.decision ?? null,
+              votes: getOutcomeVotes(item),
             };
           })
         : [];

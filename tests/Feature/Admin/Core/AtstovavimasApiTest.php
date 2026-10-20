@@ -493,10 +493,11 @@ test('meetings returns only in-window meetings of the requested tenants, trimmed
         ->and($meeting['agenda_items_count'])->toBe(5)
         ->and($meeting['agenda_items'])->toHaveCount(4);
 
-    // Agenda items carry only the main-vote fields the Gantt tooltip renders
+    // Agenda items carry only the outcome-vote fields the Gantt tooltip renders
     $item = $meeting['agenda_items'][0];
-    expect($item)->toHaveKeys(['id', 'title', 'type', 'student_vote', 'decision'])->not->toHaveKey('student_benefit')->not->toHaveKey('votes')
-        ->toMatchArray(['student_vote' => 'positive', 'decision' => 'positive']);
+    expect($item)->toHaveKeys(['id', 'title', 'type', 'votes'])
+        ->and($item['votes'])->toHaveCount(1)
+        ->and($item['votes'][0])->toBe(['student_vote' => 'positive', 'decision' => 'positive', 'is_consensus' => false]);
 });
 
 test('meetings are cached per window and refresh bypasses the cache', function (): void {

@@ -42,6 +42,6 @@ describe('AgendaItemTypeDialog', () => {
     await choice(wrapper, 'voting').trigger('click');
 
     expect(form.votes).toHaveLength(1);
-    expect(form.votes[0].is_main).toBe(true);
+    expect(form.votes[0].is_main).toBe(false);
   });
 });

@@ -39,24 +39,7 @@ test('the main vote can be removed, leaving the item with none', function (): vo
     expect($this->agendaItem->fresh()->votes)->toBeEmpty();
 });
 
-test('removing the main vote leaves a remaining one as main', function (): void {
-    $main = Vote::factory()->for($this->agendaItem, 'agendaItem')->create(['is_main' => true, 'order' => 0]);
-    $other = Vote::factory()->for($this->agendaItem, 'agendaItem')->create(['is_main' => false, 'order' => 1]);
-
-    // The editor drops the main row and promotes the survivor, exactly as the form does.
-    submitVotes($this->agendaItem, [
-        ['id' => $other->id, 'is_main' => true, 'decision' => 'positive', 'order' => 0],
-    ])->assertSessionHasNoErrors();
-
-    $votes = $this->agendaItem->fresh()->votes;
-
-    expect($votes)->toHaveCount(1)
-        ->and($votes->first()->id)->toBe($other->id)
-        ->and($votes->first()->is_main)->toBeTrue()
-        ->and(Vote::find($main->id))->toBeNull();
-});
-
-test('a payload that forgets to promote still leaves exactly one main vote', function (): void {
+test('removing the main vote leaves the others without one', function (): void {
     $main = Vote::factory()->for($this->agendaItem, 'agendaItem')->create(['is_main' => true, 'order' => 0]);
     $other = Vote::factory()->for($this->agendaItem, 'agendaItem')->create(['is_main' => false, 'order' => 1]);
 
@@ -67,6 +50,18 @@ test('a payload that forgets to promote still leaves exactly one main vote', fun
     $votes = $this->agendaItem->fresh()->votes;
 
     expect($votes)->toHaveCount(1)
-        ->and($votes->first()->is_main)->toBeTrue()
+        ->and($votes->first()->id)->toBe($other->id)
+        ->and($votes->first()->is_main)->toBeFalse()
         ->and(Vote::find($main->id))->toBeNull();
+});
+
+test('a payload marking two main votes keeps only the first', function (): void {
+    submitVotes($this->agendaItem, [
+        ['is_main' => true, 'decision' => 'positive', 'order' => 0],
+        ['is_main' => true, 'decision' => 'negative', 'order' => 1],
+    ])->assertSessionHasNoErrors();
+
+    $votes = $this->agendaItem->fresh()->votes;
+
+    expect($votes->pluck('is_main')->all())->toBe([true, false]);
 });

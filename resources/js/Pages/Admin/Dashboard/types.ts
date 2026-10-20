@@ -124,6 +124,7 @@ export interface AtstovavimasAgendaItem {
 
 export interface AtstovavimasVote {
   is_main?: boolean;
+  is_consensus?: boolean;
   student_vote?: 'positive' | 'negative' | 'neutral' | null;
   decision?: 'positive' | 'negative' | 'neutral' | null;
 }
@@ -150,9 +151,9 @@ export interface InstitutionInsights {
 export interface GanttAgendaItem {
   id: string;
   title: string;
-  type?: 'voting' | 'informational' | 'deferred' | null;
-  student_vote?: 'positive' | 'negative' | 'neutral' | null;
-  decision?: 'positive' | 'negative' | 'neutral' | null;
+  type?: 'voting' | 'informational' | 'deferred' | 'break' | null;
+  /** The outcome votes (see getOutcomeVotes()); the tooltip derives the item's status from them. */
+  votes?: AtstovavimasVote[];
 }
 
 export interface GanttMeeting {

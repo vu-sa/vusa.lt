@@ -215,6 +215,29 @@ class AgendaItem extends Pivot implements Commentable
     }
 
     /**
+     * The votes that decide the item's outcome: the main vote when one is marked, otherwise all
+     * of them. Mirrored by getOutcomeVotes() in useAgendaItemStyling.ts.
+     *
+     * @return Collection<int, Vote>
+     */
+    public function outcomeVotes(): Collection
+    {
+        $mainVote = $this->votes->firstWhere('is_main', true);
+
+        return $mainVote instanceof Vote ? new Collection([$mainVote]) : $this->votes;
+    }
+
+    /**
+     * The one vote whose fields stand for the item, or null when several votes share the outcome.
+     */
+    public function outcomeVote(): ?Vote
+    {
+        $outcomeVotes = $this->outcomeVotes();
+
+        return $outcomeVotes->count() === 1 ? $outcomeVotes->first() : null;
+    }
+
+    /**
      * Get additional (non-main) votes for this agenda item.
      */
     public function additionalVotes(): HasMany
@@ -280,9 +303,11 @@ class AgendaItem extends Pivot implements Commentable
 
         $meeting = $this->getRelation('meeting');
 
-        // Get main vote for backward-compatible fields
         /** @var Vote|null $mainVote */
         $mainVote = $this->votes->firstWhere('is_main', true);
+        $outcomeVotes = $this->outcomeVotes();
+        // A field the outcome votes disagree on has no single value to filter by.
+        $sharedValue = fn (string $field): mixed => $outcomeVotes->pluck($field)->unique()->count() === 1 ? $outcomeVotes->first()->{$field} : null;
 
         // An item without a meeting has no institutions to exempt it, so it keeps the full rule.
         $requiresStudentPerspective = $meeting instanceof Meeting ? $meeting->requiresStudentPerspective() : true;
@@ -306,11 +331,10 @@ class AgendaItem extends Pivot implements Commentable
             'student_position' => $this->getTranslation('student_position', 'lt'),
             'brought_by_students' => (bool) $this->brought_by_students,
 
-            // Main vote fields (for backward compatibility in search)
-            'student_vote' => $mainVote?->student_vote,
-            'decision' => $mainVote?->decision,
-            'student_benefit' => $mainVote?->student_benefit,
-            'is_consensus' => (bool) $mainVote?->is_consensus,
+            'student_vote' => $sharedValue('student_vote'),
+            'decision' => $sharedValue('decision'),
+            'student_benefit' => $sharedValue('student_benefit'),
+            'is_consensus' => (bool) $sharedValue('is_consensus'),
 
             // Vote counts
             'votes_count' => $this->votes->count(),

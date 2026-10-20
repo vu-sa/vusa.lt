@@ -58,10 +58,11 @@
 
         <template v-if="showsOutcome">
           <span
+            v-if="outcomeVote"
             class="inline-flex items-center gap-1 border border-border px-2 py-0.5 font-mono text-xs font-medium"
             :class="[status.bgClass, decisionColorClass]"
           >
-            {{ getDecisionLabel(mainVote?.decision) }}
+            {{ getDecisionLabel(outcomeVote.decision) }}
           </span>
           <span
             v-if="requiresStudentPerspective && canCompareVotes(item)"
@@ -85,32 +86,44 @@
         {{ item.description }}
       </p>
 
-      <dl v-if="showsOutcome" class="flex flex-wrap gap-x-6 gap-y-1.5 text-xs">
-        <div v-if="requiresStudentPerspective" class="flex items-center gap-1.5">
-          <dt class="text-muted-foreground">
-            {{ $t('Studentų balsas') }}
-          </dt>
-          <dd :class="getVoteTextColorClass(mainVote?.student_vote)">
-            {{ getStudentVoteLabel(mainVote?.student_vote) || '—' }}
-          </dd>
+      <template v-if="showsOutcome">
+        <div
+          v-for="(vote, index) in outcomeVotes"
+          :key="vote.id ?? index"
+          class="space-y-1"
+          data-testid="public-agenda-vote"
+        >
+          <p v-if="outcomeVotes.length > 1" class="text-xs font-medium text-foreground">
+            {{ vote.title || `${$t('Balsavimas')} ${index + 1}` }}
+          </p>
+          <dl class="flex flex-wrap gap-x-6 gap-y-1.5 text-xs">
+            <div v-if="requiresStudentPerspective" class="flex items-center gap-1.5">
+              <dt class="text-muted-foreground">
+                {{ $t('Studentų balsas') }}
+              </dt>
+              <dd :class="getVoteTextColorClass(vote.student_vote)">
+                {{ getStudentVoteLabel(vote.student_vote) || '—' }}
+              </dd>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <dt class="text-muted-foreground">
+                {{ $t('Sprendimas') }}
+              </dt>
+              <dd :class="getDecisionTextColorClass(vote.decision)">
+                {{ getDecisionLabel(vote.decision) }}
+              </dd>
+            </div>
+            <div v-if="requiresStudentPerspective" class="flex items-center gap-1.5">
+              <dt class="text-muted-foreground">
+                {{ $t('Nauda studentams') }}
+              </dt>
+              <dd :class="getVoteTextColorClass(vote.student_benefit)">
+                {{ getStudentBenefitLabel(vote.student_benefit) }}
+              </dd>
+            </div>
+          </dl>
         </div>
-        <div class="flex items-center gap-1.5">
-          <dt class="text-muted-foreground">
-            {{ $t('Sprendimas') }}
-          </dt>
-          <dd :class="decisionColorClass">
-            {{ getDecisionLabel(mainVote?.decision) }}
-          </dd>
-        </div>
-        <div v-if="requiresStudentPerspective" class="flex items-center gap-1.5">
-          <dt class="text-muted-foreground">
-            {{ $t('Nauda studentams') }}
-          </dt>
-          <dd :class="getVoteTextColorClass(mainVote?.student_benefit)">
-            {{ getStudentBenefitLabel(mainVote?.student_benefit) }}
-          </dd>
-        </div>
-      </dl>
+      </template>
     </div>
   </component>
 </template>
@@ -124,7 +137,8 @@ import {
   getAgendaItemStatusMeta,
   getDecisionLabel,
   getDecisionTextColorClass,
-  getMainVote,
+  getOutcomeVote,
+  getOutcomeVotes,
   getStudentBenefitLabel,
   getStudentVoteLabel,
   getVoteComparisonColorClass,
@@ -157,7 +171,9 @@ const props = withDefaults(defineProps<{
 });
 
 const status = computed(() => getAgendaItemStatusMeta(props.item, props.requiresStudentPerspective));
-const mainVote = computed(() => getMainVote(props.item));
+const outcomeVotes = computed(() => getOutcomeVotes(props.item));
+/** Several outcome votes have no single decision to put in the pill; the status says "mixed" or what they share. */
+const outcomeVote = computed(() => getOutcomeVote(props.item));
 
 /**
  * Some statuses are prompts to the editor, not information for a reader:
@@ -173,7 +189,7 @@ const showStatus = computed(() => {
 });
 
 const showsOutcome = computed(() => !props.item.is_private && props.item.type === 'voting' && hasDecisionData(props.item));
-const decisionColorClass = computed(() => getDecisionTextColorClass(mainVote.value?.decision));
+const decisionColorClass = computed(() => getDecisionTextColorClass(outcomeVote.value?.decision));
 
 /** Only rows with something more to say are worth making clickable. */
 const isExpandable = computed(() => !props.item.is_private && (Boolean(props.item.description) || showsOutcome.value));

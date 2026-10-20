@@ -173,10 +173,11 @@ watch(() => props.open, (open) => {
 
 const dirty = computed(() => JSON.stringify(draft.value) !== baseline.value);
 
-/** Exactly one vote is the item's outcome — the backend enforces the same invariant. */
+/** At most one main vote; toggling it off again leaves the outcome to all the votes. */
 const setMain = (index: number) => {
+  const makeMain = !draft.value[index]!.is_main;
   draft.value.forEach((vote, position) => {
-    vote.is_main = position === index;
+    vote.is_main = makeMain && position === index;
   });
 };
 
@@ -190,10 +191,7 @@ const move = (index: number, direction: -1 | 1) => {
 };
 
 const remove = (index: number) => {
-  const [removed] = draft.value.splice(index, 1);
-  if (removed?.is_main && draft.value.length > 0) {
-    draft.value[0]!.is_main = true;
-  }
+  draft.value.splice(index, 1);
 };
 
 const save = () => {

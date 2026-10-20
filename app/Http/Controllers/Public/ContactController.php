@@ -274,7 +274,7 @@ class ContactController extends PublicController
             'agendaItems' => function ($query): void {
                 $query->orderBy('order')->orderBy('start_time');
             },
-            'agendaItems.mainVote',
+            'agendaItems.votes',
             'institutions.types',
             'calendarEvent',
         ]);
@@ -434,7 +434,7 @@ class ContactController extends PublicController
                 'agendaItems' => function ($query): void {
                     $query->orderBy('order');
                 },
-                'agendaItems.mainVote',
+                'agendaItems.votes',
                 // Keeps requires_student_perspective appendable without a query per meeting
                 'institutions.types',
             ])

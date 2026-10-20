@@ -116,14 +116,22 @@ kuris atveria atskirą langą su keturiais variantais. Jį galima pakeisti ir la
 | **Atidėtas** | Klausimas perkeltas į kitą posėdį | Ne |
 | **Pertrauka** | Pertrauka tarp klausimų | Ne |
 
-Pasirinkus **Balsavimas**, automatiškai pridedamas pagrindinis balsavimas.
+Pasirinkus **Balsavimas**, automatiškai pridedamas pirmas balsavimas.
 
 ### Balsavimai {#balsavimai}
 
-Klausimas gali turėti kelis balsavimus (pvz., dėl atskirų pataisų). Vienas jų yra **pagrindinis** –
-pagal jį nustatoma klausimo būsena. Pirmas balsavimas tampa pagrindiniu automatiškai; ištrynus
-pagrindinį, pagrindiniu tampa kitas. Balsavimų tvarka, pavadinimai ir pagrindinis keičiami lange
-**Tvarkyti balsavimus**.
+Klausimas gali turėti kelis balsavimus (pvz., dėl atskirų pataisų). Vieną jų galima pažymėti
+**pagrindiniu** – tada klausimo būsena nustatoma tik pagal jį. Jei pagrindinio nėra, būsena
+nustatoma pagal visus balsavimus: kai jų rezultatas vienodas, rodomas tas rezultatas, o kai
+skiriasi – **Skirtingi rezultatai**. Pagrindinis nebūtinas ir pats neparenkamas. Balsavimų tvarka,
+pavadinimai ir pagrindinis (paspaudus dar kartą – atžymimas) keičiami lange **Tvarkyti balsavimus**.
+
+<ChangelogNote version="v3.11" date="2026-10-20" title="Pagrindinis balsavimas nebūtinas">
+
+Anksčiau vienas balsavimas visada buvo pagrindinis: pirmas pažymimas automatiškai, o ištrynus
+pagrindinį juo tapdavo kitas.
+
+</ChangelogNote>
 
 Kiekviename balsavime žymimi trys laukai:
 
@@ -150,9 +158,10 @@ Klausimas **užpildytas**, kai:
 
 - pažymėtas jo tipas **ir**
 - tipas nereikalauja balsavimo (Informacinis, Atidėtas, Pertrauka) **arba** pagrindiniame
-  balsavime užpildyti visi reikiami laukai (VU SA dariniuose – tik sprendimas).
+  balsavime užpildyti visi reikiami laukai (VU SA dariniuose – tik sprendimas). Jei pagrindinio
+  nėra, laukai turi būti užpildyti visuose balsavimuose.
 
-Papildomi balsavimai užpildymui įtakos neturi. Ta pati taisyklė taikoma posėdžio
+Kai pagrindinis pažymėtas, kiti balsavimai užpildymui įtakos neturi. Ta pati taisyklė taikoma posėdžio
 [būsenai](/visak/posedziai#busena), užpildymo užduočiai ir sąrašo filtrui **Užpildymo būsena**.
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Viena užpildymo taisyklė">
@@ -167,7 +176,8 @@ vien sprendimu laikė nepilnais, o posėdžio būsena klausimą be tipo galėjo 
 Klausimo būsena rodo **rezultatą**, pvz., **Studentų pozicija priimta** (studentų balsas sutampa
 su sprendimu), **Studentų pozicija nesutampa**, **Pritarta bendru sutarimu**, **Neaptartas** (dar
 nėra sprendimo, o išoriniame organe – ir studentų balso), **Informacinis**, **Atidėtas**,
-**Pertrauka** ar **Nepažymėtas** (nėra tipo). VU SA darinyje rodomas pats sprendimas: **Priimtas**,
+**Pertrauka**, **Skirtingi rezultatai** (keli balsavimai be pagrindinio, jų rezultatai skiriasi) ar
+**Nepažymėtas** (nėra tipo). VU SA darinyje rodomas pats sprendimas: **Priimtas**,
 **Atmestas** arba **Neutralus sprendimas**.
 
 Būsena gali būti „Studentų pozicija priimta“, nors dar nepažymėta nauda studentams. Ar klausimui
@@ -276,8 +286,9 @@ Plačiau – [Posėdžiai](/visak/posedziai#pranesimai) ir [Užduotys](/mano/uzd
 - Užpildymas: `MeetingCompletionService::itemIsComplete()`; jį naudoja posėdžio būsena,
   `AgendaCompletionTaskHandler` ir paieškos indekso `is_complete`.
 - VU SA išimtis: `Meeting::requiresStudentPerspective()`.
-- Vienas pagrindinis balsavimas: `AgendaItemController::ensureSingleMainVote()`,
-  `VoteController::destroy()`.
+- Rezultatą lemiantys balsavimai: `AgendaItem::outcomeVotes()` (serveris) ir `getOutcomeVotes()` /
+  `getAgendaItemStatus()` (`useAgendaItemStyling.ts`) – pagrindinis, jei pažymėtas, kitaip visi.
+- Daugiausia vienas pagrindinis: `AgendaItemController::ensureSingleMainVote()`.
 - Reikšmių pavadinimai: `VoteValue` (serveris), `useAgendaItemStyling.ts` ir sąrašo filtrų
   `FACET_VALUE_LABELS` – visur tie patys.
 - Senas redagavimo adresas `/mano/agendaItems/{id}/edit` nukreipia į klausimo puslapį.

@@ -115,7 +115,7 @@ describe('public agenda', function (): void {
         $this->get(translatedCalendarEventUrl($event, 'en'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('meeting.agenda_items.0.main_vote.title', 'Main vote'));
+                ->where('meeting.agenda_items.0.votes.0.title', 'Main vote'));
     });
 });
 

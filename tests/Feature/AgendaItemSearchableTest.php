@@ -98,3 +98,15 @@ test('the list filter counts an item complete by the same rule as the meeting an
         ->and($isComplete($decisionOnlyVusa))->toBeTrue()
         ->and($decisionOnlyVusa->fresh()->toSearchableArray()['vote_alignment_status'])->toBe('neutral');
 });
+
+test('without a main vote, the outcome fields hold what every vote shares', function (): void {
+    $item = AgendaItem::factory()->for(Meeting::factory())->create(['type' => AgendaItemType::Voting]);
+    Vote::factory()->for($item, 'agendaItem')->create(['is_main' => false, 'decision' => 'positive', 'student_vote' => 'positive', 'order' => 0]);
+    Vote::factory()->for($item, 'agendaItem')->create(['is_main' => false, 'decision' => 'positive', 'student_vote' => 'negative', 'order' => 1]);
+
+    $document = $item->fresh()->toSearchableArray();
+
+    expect($document['decision'])->toBe('positive')
+        ->and($document['student_vote'])->toBeNull()
+        ->and($document['main_vote_exists'])->toBeFalse();
+});

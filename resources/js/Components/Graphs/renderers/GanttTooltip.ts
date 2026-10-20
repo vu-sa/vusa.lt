@@ -9,6 +9,8 @@
 import * as d3 from 'd3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import { getAgendaItemStatus, type AgendaItemStatus, type AgendaItemType, type Vote } from '@/Composables/useAgendaItemStyling';
+
 import type { GanttColors } from '../ganttColors';
 
 export type TooltipContentType = 'meeting' | 'member' | 'gap' | 'date' | 'request' | 'none';
@@ -138,9 +140,8 @@ export function buildMeetingTooltipContent(
     agenda_items?: Array<{
       id: string;
       title: string;
-      type?: 'voting' | 'informational' | 'deferred' | null;
-      student_vote?: 'positive' | 'negative' | 'neutral' | null;
-      decision?: 'positive' | 'negative' | 'neutral' | null;
+      type?: AgendaItemType;
+      votes?: Vote[];
     }>;
     agenda_items_count?: number;
   },
@@ -189,7 +190,7 @@ export function buildMeetingTooltipContent(
         <div class="text-[10px] uppercase tracking-wide opacity-60 mb-1">Darbotvarkė (${totalCount})</div>
         <div class="space-y-0.5">
           ${itemsToShow.map((item) => {
-            const statusIcon = getAgendaItemStatusIcon(item.type, item.student_vote, item.decision);
+            const statusIcon = getAgendaItemStatusIcon(getAgendaItemStatus(item));
             return `<div class="flex items-start gap-1.5 leading-tight">
               ${statusIcon}
               <span class="line-clamp-2 text-[11px]">${escapeHtml(item.title)}</span>
@@ -233,58 +234,33 @@ export function buildMeetingTooltipContent(
   };
 }
 
-/**
- * Get agenda item status icon HTML based on type and vote data
- * Matches the 7 statuses from useAgendaItemStyling composable:
- * - student_aligned: green checkmark (voting, student_vote === decision)
- * - student_misaligned: red X (voting, student_vote !== decision)
- * - neutral_decided: gray minus (voting, decision is neutral)
- * - no_vote: amber dashed circle (voting but no vote data)
- * - deferred: gray clock (type = deferred)
- * - informational: gray info (type = informational)
- * - unset: amber question mark (type is null)
- */
-function getAgendaItemStatusIcon(
-  type?: 'voting' | 'informational' | 'deferred' | null,
-  studentVote?: 'positive' | 'negative' | 'neutral' | null,
-  decision?: 'positive' | 'negative' | 'neutral' | null,
-): string {
-  // Type-based statuses first
-  if (type === 'deferred') {
-    // Deferred - gray clock
-    return '<svg class="w-3 h-3 shrink-0 text-muted-foreground" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>';
-  }
+const CHECK_ICON = '<svg class="w-3 h-3 shrink-0 text-emerald-600 dark:text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>';
+const CROSS_ICON = '<svg class="w-3 h-3 shrink-0 text-red-600 dark:text-red-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>';
+const MINUS_ICON = '<svg class="w-3 h-3 shrink-0 text-muted-foreground" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>';
+const SPLIT_ICON = '<svg class="w-3 h-3 shrink-0 text-status-info" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3a7 7 0 100 14V3z" /><circle cx="10" cy="10" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>';
+const DASHED_ICON = '<svg class="w-3 h-3 shrink-0 text-amber-500 dark:text-amber-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2"><circle cx="10" cy="10" r="6" /></svg>';
+const CLOCK_ICON = '<svg class="w-3 h-3 shrink-0 text-muted-foreground" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>';
+const INFO_ICON = '<svg class="w-3 h-3 shrink-0 text-muted-foreground" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>';
+const QUESTION_ICON = '<svg class="w-3 h-3 shrink-0 text-amber-500 dark:text-amber-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>';
 
-  if (type === 'informational') {
-    // Informational - gray info
-    return '<svg class="w-3 h-3 shrink-0 text-muted-foreground" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>';
-  }
+/** Agenda item status icons, keyed by getAgendaItemStatus() so the tooltip agrees with the agenda. */
+const agendaItemStatusIcons: Record<AgendaItemStatus, string> = {
+  consensus: CHECK_ICON,
+  student_aligned: CHECK_ICON,
+  decision_positive: CHECK_ICON,
+  student_misaligned: CROSS_ICON,
+  decision_negative: CROSS_ICON,
+  neutral_decided: MINUS_ICON,
+  mixed: SPLIT_ICON,
+  no_vote: DASHED_ICON,
+  deferred: CLOCK_ICON,
+  break: CLOCK_ICON,
+  informational: INFO_ICON,
+  unset: QUESTION_ICON,
+};
 
-  if (type === null || type === undefined) {
-    // Unset type - amber question mark
-    return '<svg class="w-3 h-3 shrink-0 text-amber-500 dark:text-amber-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>';
-  }
-
-  // Type is 'voting' - check vote data
-  if (!studentVote || !decision) {
-    // No vote data - amber dashed circle
-    return '<svg class="w-3 h-3 shrink-0 text-amber-500 dark:text-amber-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2"><circle cx="10" cy="10" r="6" /></svg>';
-  }
-
-  // Decision is neutral
-  if (decision === 'neutral') {
-    // Neutral decided - gray minus
-    return '<svg class="w-3 h-3 shrink-0 text-muted-foreground" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" /></svg>';
-  }
-
-  // Check alignment
-  if (studentVote === decision) {
-    // Aligned - green checkmark
-    return '<svg class="w-3 h-3 shrink-0 text-emerald-600 dark:text-emerald-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>';
-  }
-
-  // Misaligned - red X
-  return '<svg class="w-3 h-3 shrink-0 text-red-600 dark:text-red-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>';
+function getAgendaItemStatusIcon(status: AgendaItemStatus): string {
+  return agendaItemStatusIcons[status];
 }
 
 /**

@@ -53,15 +53,15 @@
         <div v-if="hasDecisionData(item)" class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
           <span class="flex items-center gap-1">
             {{ $t('Studentų balsas') }}:
-            <VoteStatusIndicator :vote="getMainVote(item)?.student_vote" type="vote" compact />
+            <VoteStatusIndicator :vote="getOutcomeVote(item)?.student_vote" type="vote" compact />
           </span>
           <span class="flex items-center gap-1">
             {{ $t('Sprendimas') }}:
-            <VoteStatusIndicator :vote="getMainVote(item)?.decision" type="vote" compact />
+            <VoteStatusIndicator :vote="getOutcomeVote(item)?.decision" type="vote" compact />
           </span>
           <span class="flex items-center gap-1">
             {{ $t('Nauda') }}:
-            <VoteStatusIndicator :vote="getMainVote(item)?.student_benefit" type="benefit" compact />
+            <VoteStatusIndicator :vote="getOutcomeVote(item)?.student_benefit" type="benefit" compact />
           </span>
         </div>
       </li>
@@ -86,7 +86,7 @@ import IFluentDismiss24Regular from '~icons/fluent/dismiss-24-regular';
 import IFluentPeople24Regular from '~icons/fluent/people-24-regular';
 import IFluentSubtract24Regular from '~icons/fluent/subtract-24-regular';
 import IFluentWarning24Regular from '~icons/fluent/warning-24-regular';
-import { getMainVote, getMeetingStatusSummary, hasDecisionData } from '@/Composables/useAgendaItemStyling';
+import { getMeetingStatusSummary, getOutcomeVote, hasDecisionData } from '@/Composables/useAgendaItemStyling';
 
 const $page = usePage();
 

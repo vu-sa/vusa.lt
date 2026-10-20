@@ -50,6 +50,41 @@ describe('getAgendaItemStatus - governance scope', () => {
   });
 });
 
+describe('getAgendaItemStatus - several votes', () => {
+  const aligned = { decision: 'positive', student_vote: 'positive' };
+  const misaligned = { decision: 'positive', student_vote: 'negative' };
+  const itemWith = (...votes: Array<Record<string, unknown>>) => ({
+    id: 'item-1',
+    type: 'voting',
+    votes: votes.map((overrides, index) => vote({ id: `v${index}`, is_main: false, ...overrides })),
+  });
+
+  it('shows the status the votes share when none is main', () => {
+    expect(getAgendaItemStatus(itemWith(aligned, aligned))).toBe('student_aligned');
+  });
+
+  it('is mixed when the votes disagree', () => {
+    expect(getAgendaItemStatus(itemWith(aligned, misaligned))).toBe('mixed');
+    expect(getAgendaItemStatus(itemWith({ decision: 'positive' }, { decision: 'negative' }), false)).toBe('mixed');
+  });
+
+  it('waits for every vote before deciding', () => {
+    expect(getAgendaItemStatus(itemWith(aligned, {}))).toBe('no_vote');
+  });
+
+  it('lets a main vote decide on its own', () => {
+    expect(getAgendaItemStatus(itemWith({ ...misaligned, is_main: true }, aligned))).toBe('student_misaligned');
+  });
+
+  it('counts a mixed item as discussed in the meeting summary', () => {
+    const summary = getMeetingStatusSummary([itemWith(aligned, misaligned)]);
+
+    expect(summary.mixed).toBe(1);
+    expect(summary.completionRate).toBe(100);
+    expect(summary.overallStatus).toBe('complete');
+  });
+});
+
 describe('getAgendaItemStatusMeta - governance scope', () => {
   it('labels an internal body decision as decided instead of "Neaptartas"', () => {
     const meta = getAgendaItemStatusMeta(votingItem({ decision: 'positive' }), false);

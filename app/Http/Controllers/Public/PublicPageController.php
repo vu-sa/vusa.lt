@@ -542,7 +542,7 @@ class PublicPageController extends PublicController
 
         $meeting->load([
             'agendaItems' => fn ($query) => $query->orderBy('order')->orderBy('start_time'),
-            'agendaItems.mainVote',
+            'agendaItems.votes',
             'institutions.types',
         ]);
 

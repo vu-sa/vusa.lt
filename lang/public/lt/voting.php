@@ -16,6 +16,7 @@ return [
         'status_aligned' => 'Galutinis sprendimas atitinka studentų atstovų balsą',
         'status_misaligned' => 'Galutinis sprendimas skiriasi nuo studentų atstovų balso',
         'status_neutral' => 'Studentai susilaikė arba sprendimas neturėjo aiškios naudos/žalos',
+        'status_mixed' => 'Dėl klausimo balsuota kelis kartus, rezultatai skiriasi',
         'status_no_vote' => 'Balsavimo klausimas, bet balsas neįvyko arba nepažymėtas',
         'status_deferred' => 'Klausimo svarstymas atidėtas kitam posėdžiui',
         'status_informational' => 'Informacinio pobūdžio klausimas, balsavimo nereikalaujantis',

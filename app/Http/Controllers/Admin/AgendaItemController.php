@@ -296,31 +296,15 @@ class AgendaItemController extends AdminController
     }
 
     /**
-     * Keep "exactly one main vote, or none at all" true whatever the payload said.
-     *
-     * The editor may delete the main vote — an item is allowed to end up with no votes — but a
-     * payload that removes it without promoting a survivor would otherwise leave the remaining
-     * votes with no main one, and every reader (mainVote(), completion, the public page) treats
-     * that as missing data.
+     * Keep at most one main vote whatever the payload said. None is fine: the item's outcome then
+     * combines all its votes ({@see AgendaItem::outcomeVotes()}).
      */
     protected function ensureSingleMainVote(AgendaItem $agendaItem): void
     {
-        /** @var Collection<int, Vote> $votes */
-        $votes = $agendaItem->votes()->orderBy('order')->get();
+        /** @var Collection<int, Vote> $mainVotes */
+        $mainVotes = $agendaItem->votes()->where('is_main', true)->orderBy('order')->get();
 
-        if ($votes->isEmpty() || $votes->where('is_main', true)->count() === 1) {
-            return;
-        }
-
-        $main = $votes->firstWhere('is_main', true) ?? $votes->first();
-
-        foreach ($votes as $vote) {
-            $shouldBeMain = $vote->getKey() === $main->getKey();
-
-            if ((bool) $vote->is_main !== $shouldBeMain) {
-                $vote->update(['is_main' => $shouldBeMain]);
-            }
-        }
+        $mainVotes->skip(1)->each(fn (Vote $vote) => $vote->update(['is_main' => false]));
     }
 
     /**

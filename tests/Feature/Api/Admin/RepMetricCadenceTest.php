@@ -155,7 +155,7 @@ test('agenda completion includes non-voting items and requires the main vote for
     AgendaItem::factory()->break()->create(['meeting_id' => $meeting->id]);
     AgendaItem::factory()->create(['meeting_id' => $meeting->id]);
     $voting = AgendaItem::factory()->voting()->create(['meeting_id' => $meeting->id]);
-    Vote::factory()->create(['agenda_item_id' => $voting->id, 'is_main' => false, 'decision' => 'positive', 'student_vote' => 'positive', 'student_benefit' => 'positive']);
+    Vote::factory()->create(['agenda_item_id' => $voting->id, 'is_main' => false, 'decision' => 'positive', 'student_vote' => null, 'student_benefit' => null]);
     $metrics = collect($this->reports->report([$this->tenant->id])['metrics'])->keyBy('key');
     expect($metrics['agenda_completion'])->toMatchArray(['now' => 60.0, 'part' => 3, 'whole' => 5]);
     Vote::factory()->create(['agenda_item_id' => $voting->id, 'is_main' => true, 'decision' => 'positive', 'student_vote' => 'positive', 'student_benefit' => 'positive']);

@@ -23,4 +23,23 @@ describe('PublicAgendaItemRow', () => {
     expect(wrapper.find('details').exists()).toBe(false);
     expect(wrapper.find('dl').exists()).toBe(false);
   });
+
+  it('lists every vote when none is main, with the combined status', () => {
+    const wrapper = mount(PublicAgendaItemRow, {
+      props: {
+        item: {
+          id: 'item', order: 1, title: 'Studijų programos', is_private: false, type: 'voting',
+          votes: [
+            { id: 'a', is_main: false, title: 'Pirmas balsavimas', decision: 'positive', student_vote: 'positive', student_benefit: 'positive' },
+            { id: 'b', is_main: false, title: 'Antras balsavimas', decision: 'negative', student_vote: 'positive', student_benefit: 'negative' },
+          ],
+        } as unknown as App.Entities.AgendaItem,
+      },
+    });
+
+    expect(wrapper.text()).toContain('Skirtingi rezultatai');
+    expect(wrapper.findAll('[data-testid="public-agenda-vote"]')).toHaveLength(2);
+    expect(wrapper.text()).toContain('Pirmas balsavimas');
+    expect(wrapper.text()).toContain('Antras balsavimas');
+  });
 });
