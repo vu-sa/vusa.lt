@@ -20,5 +20,4 @@ t. y. faktiškai tik platformos administratoriams.
 | Nustatymai | `/mano/settings` | Turintys teisę valdyti nustatymus |
 | Sistemos būsena | `/mano/system-status` | Turintys teisę matyti roles |
 | Laiškų eilė | `/mano/mail-queue` | Turintys teisę matyti roles |
-| Atstovų rodikliai | `/mano/rep-metrics` | Turintys teisę matyti roles |
 | Pagalbos užklausos | `/mano/support-requests` | Turintys teisę matyti pagalbos užklausas |

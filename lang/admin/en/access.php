@@ -2,16 +2,16 @@
 
 return [
     'eyebrow' => 'Account',
-    'title' => 'My roles and duties',
-    'lead' => 'Here you can see which duties and roles you hold and where they let you go. If something is missing, ask your coordinator.',
-    'link' => 'My roles and duties',
+    'title' => 'My responsibilities and duties',
+    'lead' => 'Here you can see which duties and responsibilities you hold and where they let you go. If something is missing, ask your coordinator.',
+    'link' => 'My responsibilities and duties',
     'current' => [
         'title' => 'Current duties',
         'empty' => 'you have no duties right now',
     ],
     'direct' => [
-        'title' => 'Roles assigned directly',
-        'empty' => 'no roles are assigned to you directly',
+        'title' => 'Responsibilities assigned directly',
+        'empty' => 'no responsibilities are assigned to you directly',
     ],
     'capabilities' => [
         'title' => 'What you can do',
@@ -41,19 +41,38 @@ return [
         'until_now' => 'now',
         'ex_officio' => 'Ex officio',
         'represents' => 'Representing: :tenant',
-        'roles' => 'Roles: :roles',
+        'roles' => 'Responsibilities: :roles',
+    ],
+    'duty_period' => 'your time in office',
+    'own_institutions' => 'Own institutions, all terms',
+    'permission_scopes' => [
+        'meetings' => [
+            'read' => [
+                'padalinys' => 'Private agenda items also need agenda reading access.',
+                '*' => 'Private agenda items also need agenda reading access.',
+            ],
+        ],
+        'agendaItems' => [
+            'create' => [
+                'padalinys' => 'Items can be added to visible meetings without meeting editing access.',
+                '*' => 'Items can be added to visible meetings without meeting editing access.',
+            ],
+        ],
     ],
     'baseline' => [
-        'title' => 'Every member, even without a role',
+        'title' => 'Every member, even without a responsibility',
         'locked' => 'Every member',
         'locked_own' => 'Own – every member',
-        'institutions' => 'Sees the institution list and active institutions\' public information, and their own current institutions in full.',
-        'meetings' => 'Sees public meetings; sees and can edit their institutions\' meetings held while they served.',
-        'agendaItems' => 'Sees the agenda items of public meetings and of meetings they took part in through a duty.',
+        'institutions' => 'Sees the institution list and active institutions\' public information, and their own current, related and secretaried institutions in full.',
+        'meetings' => 'You see public meetings and meetings of institutions reached through non-ended duties, authorized relationships or secretary nominations. You can see and edit your institutions’ meetings whose date falls within :period, even after your duties end.',
+        'agendaItems' => 'You see public agenda items of public meetings. You can see, create, edit and delete items and votes of your institutions’ meetings dated within :period, even after your duties end. You also see items through non-ended duties, authorized relationships and secretary nominations. Meeting editing access includes managing its agenda.',
         'problems' => 'Sees every unit\'s problems.',
         'resources' => 'Sees all resources.',
-        'duties' => 'Sees their current and past duties.',
+        'duties' => 'Sees their current and past duties and terms.',
+        'dutiables' => 'Everyone sees their own duties and terms; managing other people\'s terms goes through the duty.',
         'tasks' => 'Sees and completes tasks assigned to them.',
-        'comments' => 'Comments wherever they can see the record, and edits and deletes their own comments. Whoever can edit the record deletes other people\'s.',
+        'comments' => 'Comments wherever they can see the record; edits their own comment within 15 minutes of writing it and deletes it any time. Whoever can edit the record deletes other people\'s.',
+        'reservations' => 'Anyone can start a reservation, sees and changes the ones they take part in, and deletes their own until it is approved.',
+        'users' => 'Everyone sees and edits themselves (Profile) but cannot delete themselves.',
     ],
 ];

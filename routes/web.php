@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\SystemDutyType;
 use App\Services\PublicUrlService;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Http\Request;
@@ -134,9 +135,9 @@ Route::group(['prefix' => '{lang?}', 'where' => ['lang' => 'lt|en'], 'middleware
         Route::get('{contactsString}/{studentRepsString}', [Public\ContactController::class, 'studentRepresentatives'])->name('contacts.studentRepresentatives')
             ->whereIn('contactsString', LocalizedRouteSlugs::accepted('contactsString'))
             ->whereIn('studentRepsString', LocalizedRouteSlugs::accepted('studentRepsString'));
-        Route::get('{contactsString}/{type:slug}', [Public\ContactController::class, 'institutionDutyTypeContacts'])
+        Route::get('{contactsString}/{type}', [Public\ContactController::class, 'institutionDutyTypeContacts'])
             ->whereIn('contactsString', LocalizedRouteSlugs::accepted('contactsString'))
-            ->whereIn('type', ['koordinatoriai', 'kuratoriai', 'mentors'])->name('contacts.dutyType');
+            ->whereIn('type', SystemDutyType::publicSegments())->name('contacts.dutyType');
 
         Route::get('{contactsString}/{institution:alias}', [Public\ContactController::class, 'institutionContacts'])->name('contacts.alias')
             ->whereIn('contactsString', LocalizedRouteSlugs::accepted('contactsString'))

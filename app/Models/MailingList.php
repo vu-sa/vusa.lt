@@ -33,13 +33,13 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property Carbon|null $last_synced_at
  * @property MailingListSyncStatus|null $last_sync_status
  * @property string|null $last_sync_error
+ * @property Carbon|null $archive_fetched_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property string|null $archive_head_hash
  * @property int $archive_backfill_offset
  * @property int $archive_backfill_total
  * @property Carbon|null $archive_backfilled_at
- * @property Carbon|null $archive_fetched_at
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, MailingListExclusion> $exclusions
  * @property-read Collection<int, MailingListMember> $members

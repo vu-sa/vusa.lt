@@ -1,138 +1,196 @@
 ---
 doc_status: reviewed
-title: Rolės ir leidimai
+title: Atsakomybės ir leidimai
 area: roles
-models: [Role, Permission]
-last_reviewed: 2026-10-15
+models: [Role, Permission, ResponsibilityGrant]
+last_reviewed: 2026-10-21
 tests:
-  - tests/Feature/Admin/Permissions/RoleControllerTest.php
+  - tests/Feature/Permissions/MeetingPermissionsTest.php
+  - tests/Feature/Console/SyncPermissionsTest.php
+  - tests/Browser/PermissionMatrixTest.php
+  - tests/Feature/Permissions/DutyTypeAssignmentTest.php
+  - tests/Feature/Admin/Permissions/ResponsibilityControllerTest.php
   - tests/Feature/Admin/Permissions/PermissionControllerTest.php
+  - tests/Feature/Admin/People/DutyResponsibilityControllerTest.php
+  - tests/Feature/Responsibilities/ProjectDutyResponsibilitiesTest.php
+  - tests/Feature/System/PermissionCatalogTest.php
   - tests/Feature/System/ModelPermissionSeederTest.php
-  - resources/js/Components/AdminForms/__tests__/RolePermissionForms.component.test.ts
-  - resources/js/Features/Admin/PermissionTable/__tests__/PermissionTable.component.test.ts
+  - tests/Feature/Permissions/BaselineAccessTest.php
+  - resources/js/Features/Admin/PermissionMatrix/__tests__/PermissionMatrix.component.test.ts
+  - resources/js/Features/Admin/PermissionMatrix/__tests__/usePermissionDraft.test.ts
 ---
 
-# Rolės ir leidimai
+# Atsakomybės ir leidimai
 
-Darbo srities **Sistema** skiltys **Rolės** (`/mano/roles`) ir **Leidimai** (`/mano/permissions`) skirtos
-platformos prieigos teisėms tvarkyti.
+Darbo srities **Sistema** skiltys **Atsakomybės** (`/mano/responsibilities`) ir **Leidimai**
+(`/mano/permissions`) nusako, ką pareigybės daro ir ką dėl to gali platformoje. Kaip veikia
+teisės ir bazinė nario prieiga, aprašyta [Teisėse](/pagrindai/teises).
 
-Čia apibrėžiama, ką naudotojai gali matyti ir daryti sistemoje. Šios skiltys skirtos platformos
-administratoriams. Kaip veikia teisės ir bazinė nario prieiga, aprašyta
-[Teisėse ir rolėse](/pagrindai/teises).
+<ChangelogNote version="v3.10" date="2026-10-19" title="Rolės tapo atsakomybėmis">
+
+Buvusios rolės dabar vadinamos **atsakomybėmis**: jos turi lietuvišką ir anglišką pavadinimą bei
+aprašymą, o teisės nustatomos viename tinklelyje.
+
+</ChangelogNote>
 
 ## Rekomendacijos {#rekomendacijos}
 
 ::: tip
-Prieš kuriant naują rolę verta patikrinti, ar darbui pakanka esamos. Rekomenduojama suteikti tik
-reikalingus veiksmus ir pasirinkti siauriausią tinkamą apimtį. Prieš trinant rolę pravartu patikrinti,
-kurios pareigybės ją naudoja.
+Atsakomybę pavadink pagal darbą, o ne pagal žmogų: „Komunikacija“, „Organizacijos valdymas“, o ne
+„Komunikacijos koordinatorius“. Suteik tik reikalingus veiksmus ir siauriausią tinkamą apimtį.
 :::
 
 ## Kaip tai veikia
 
-Sukūrus rolę, atveriamas jos puslapis, kuriame galima nustatyti teises.
+- **Atsakomybė** nusako, ką pareigybė daro, ir kartu suteikia tam darbui reikalingas teises.
+  Visi pareigybę einantys nariai gauna jos atsakomybių teises.
+- **Leidimas** yra viena teisė, pvz., redaguoti padalinio naujienas. Leidimų sąrašą sudaro sistema.
+- **Sistemos paskirtis**: kelios atsakomybės (studentų atstovavimas, studentų atstovų koordinavimas,
+  narių registracija) dar ir nurodo sistemai, ką rasti – kam siųsti užduotis, registracijas ar
+  pranešimus. Kuri atsakomybė atlieka kurią paskirtį, nustatoma
+  [Sistemos paskirtyse](/sistema/nustatymai#sistemos-paskirtys). Dauguma atsakomybių paskirties
+  neturi ir sąraše žymimos **Prieiga**.
+- **Kam suteikiama**: atsakomybė suteikiama
+  1. pareigybei – dažniausias atvejis;
+  2. [pareigybės tipui](/sistema/tipai#pareigybes-tipo-atsakomybes) – ją gauna kiekviena to tipo
+     ir jo potipių pareigybė; tokia atsakomybė negali turėti leidimų „Visur“ ir „Trinti negrįžtamai“;
+  3. institucijai – retas atvejis, kai ją turi gauti kiekviena institucijos pareigybė (pvz., visi
+     Centrinio biuro nariai).
 
-Prieigą aprašo leidimai ir rolės:
+<span id="roles-tipu-leidimai"></span>
 
-1. **Leidimai** – teisės atlikti konkrečius veiksmus (pvz., kurti naujienas, trinti posėdžius).
-2. **Rolės** – leidimų rinkiniai, skirti tam tikram darbui
-   (pvz., *Komunikacijos koordinatorius*, *Išteklių administratorius*, *Studentų atstovas*).
-3. **Priskyrimas pareigybėms**: kasdieniame darbe rolės priskiriamos ne asmenims, o **pareigybėms**.
-   Visi pareigybę einantys asmenys automatiškai naudojasi jos rolėmis.
-4. **Automatinis priskyrimas per tipus**: rolė gali būti susieta su [pareigybės tipu](/sistema/tipai).
-   Tada kiekviena to tipo pareigybė rolę gauna automatiškai (pvz., tipas *Studentų atstovai* suteikia
-   rolę *Studentų atstovas*).
-
-::: info Rolės yra bendros, teisės – su apimtimis
-Rolės yra bendros visai platformai. Tačiau rolės viduje kiekvienai teisei nustatoma
-galiojimo apimtis: **tavo padalinyje**, **tik su tavimi susijusiuose įrašuose** arba
-**visoje platformoje**. Pavyzdžiui, fakulteto komunikacijos koordinatorius gali redaguoti tik savo
-padalinio naujienas, o Centrinio biuro koordinatorius – visų padalinių naujienas.
+::: info Atsakomybės bendros, teisės – su apimtimis
+Atsakomybės bendros visai platformai, bet kiekvienai teisei nustatoma apimtis: **Savo** (tik su
+tavimi susiję įrašai), **Padalinyje** arba **Visur**. Fakulteto komunikacijos pareigybė gali
+redaguoti tik savo padalinio naujienas, o Centrinio biuro – visų padalinių.
 :::
 
 ## Veiksmai
 
-### Rolių sąrašas (`/mano/roles`)
+### Atsakomybių sąrašas (`/mano/responsibilities`)
 
-Sąraše pateikiamos visos sistemoje sukurtos rolės, paskutinio atnaujinimo data ir priskirtų teisių skaičius.
-Naudok paiešką pagal rolės pavadinimą.
+Sąraše matyti kiekvienos atsakomybės aprašymas, sistemos paskirtis, teisių, pareigybių ir dabar ją
+turinčių žmonių skaičius. Pagal nutylėjimą pirmiau rodomos atsakomybės su paskirtimi.
 
-### Naujos rolės kūrimas
+### Naujos atsakomybės kūrimas
 
-Naujos rolės kuriamos centralizuotai, kai atsiranda nauja darbo sritis:
+1. Sąrašo viršuje paspausk **Nauja atsakomybė**.
+2. Įrašyk pavadinimą lietuviškai (angliškas nebūtinas) ir trumpą aprašymą.
+3. Išsaugok. Atsivėrusiame atsakomybės puslapyje nustatyk teises ir kam ji suteikiama.
 
-1. Rolių sąrašo viršuje paspausk **Nauja rolė**.
-2. Įvesk unikalų rolės pavadinimą lietuvių kalba (pvz., *Projektų koordinatorius*).
-3. Išsaugok. Atsivėrusiame naujos rolės puslapyje nustatyk jos teises.
+### Teisių nustatymas (skirtukas „Teisės“)
 
-### Rolės teisių nustatymas (`/mano/roles/{id}`)
+Tinklelyje sritys sugrupuotos pagal darbo sritis (Pradžia, ViSAK, Rezervacijos, Svetainė,
+Organizacija, Sistema) ir išdėstytos tokia pat tvarka kaip meniu. Kiekvienam veiksmui – matyti,
+kurti, redaguoti, perkelti į šiukšlinę, trinti negrįžtamai – pasirink apimtį. Ištekliams be
+šiukšlinės veiksmas „Trinti negrįžtamai“ pažymėtas pastaba, kad ištrynimas iškart galutinis.
+Plačiame ekrane slenkant lentelę stulpelių antraštės lieka matomos po pagrindiniu meniu.
+Užraktu **Visi nariai** pažymėtus veiksmus pagal
+[bazinę prieigą](/pagrindai/teises#bazine-prieiga) jau turi kiekvienas narys; prie išteklių
+parašyta, ką kiekvienas narys gali be jokios atsakomybės.
 
-Rolės puslapyje rodomas teisių tinklelis, sugrupuotas pagal įrašų rūšis (naujienos, posėdžiai,
-rezervacijos, pareigybės ir kt.):
+Apimtis **Savo** siūloma tik ten, kur ji ką nors reiškia: pavyzdžiui, posėdžiams (savo institucijų
+posėdžiai) ir pareigybėms. Užduotims, dokumentams, naudotojams ir kitiems ištekliams jos nėra –
+savo užduotis ir save matai be jokios atsakomybės.
 
-<span id="roles-tipu-leidimai"></span>
+Posėdžių apimtis **Savo institucijų, visų kadencijų** reiškia institucijas tų pareigybių, kurios suteikia
+šią teisę, o ne paties nario sukurtus posėdžius. Pasirinkus šią redagavimo apimtį, galima keisti
+**visus tų institucijų posėdžius**, įskaitant vykusius prieš pradedant eiti pareigas.
+Be papildomos teisės galima redaguoti tik posėdžius, kurių data patenka į **nario pareigų
+laikotarpį**; ši galimybė išlieka ir pareigoms pasibaigus. Posėdžių peržiūros apimties „Savo“ atskirai rinktis nebereikia.
 
-Institucijų ir pareigybių tipų leidimai rodomi atskirose grupėse **Institucijų tipai** ir
-**Pareigybių tipai**. Pasirink tos grupės veiksmus, kurios tipus nori leisti tvarkyti.
+<ChangelogNote version="v3.12" date="2026-10-21" title="Ką posėdžiams reiškia „Savo institucijų, visų kadencijų“">
 
-1. Kiekvienai įrašų rūšiai pasirink leidžiamą veiksmą (skaityti, kurti, redaguoti, trinti) ir jo apimtį.
-2. **Užrakintos teisės**: teisės, kurias pagal [bazinę prieigą](/pagrindai/teises#bazine-prieiga) turi
-   kiekvienas prisijungęs narys (pvz., matyti savo pareigybes, savo institucijos posėdžius ar rašyti
-   komentarus), pažymėtos užraktu **Visi nariai**. Jų pasirinkti nereikia ir negalima.
-3. Pasirinkti pakeitimai įrašomi paspaudus skilties išsaugojimo mygtuką.
+Tinklelis atskiria automatinę prieigą savo pareigų laikotarpio posėdžiams nuo papildomos teisės
+redaguoti ir kitų laikotarpių posėdžius. Posėdžių kūrimas ir perkėlimas į šiukšlinę lieka atskiros teisės.
 
-### Rolės susiejimas su pareigybėmis ir tipais
+</ChangelogNote>
 
-- **Skirtuke „Pareigybės“**: pažymėk konkrečias pareigybes, kurioms ši rolė turi galioti nuolat.
-- **Skirtuke „Tipai“**: pažymėk tipus, kuriuos šią rolę turintis narys gali priskirti pareigybėms.
-  Šis skirtukas nenustato, kokias roles automatiškai suteikia tipas – tai atskiras
-  [tipų ir rolių ryšys](/sistema/tipai).
+Pakeitimai kaupiami ir apačioje rodoma, kiek teisių pridėsi ir atimsi. Visi pakeitimai įrašomi
+vienu **Išsaugoti** paspaudimu; **Atšaukti** grąžina išsaugotą būseną.
 
-### Rolės trynimas
+### Atsakomybės suteikimas (skirtukas „Kam suteikta“) {#atsakomybes-suteikimas}
 
-Jei rolė nebenaudojama, rolės puslapio veiksmų meniu pasirink **Šalinti**. Prieš trinant
-rekomenduojama įsitikinti, kad rolė nebėra priskirta aktyvioms pareigybėms.
+Skirtuke matyti pareigybės, pareigybių tipai ir institucijos, kurioms atsakomybė suteikta, su narių
+skaičiumi. Paspausk **Suteikti**, pasirink, kam, ir surask pareigybę, tipą ar instituciją.
+Atsakomybei su paskirtimi dar nurodoma, už ką pareigybė atsakinga – padalinį, institucijų tipą ar
+instituciją.
+
+Pareigybės tipui atsakomybės su leidimais „Visur“ ar „Trinti negrįžtamai“ suteikti negalima –
+lange rodomas paaiškinimas, kurie leidimai tam trukdo. Tokia atsakomybė suteikiama pareigybėms
+atskirai. Atsakomybei, kurią jau gauna tipai, šių leidimų pridėti taip pat negalima.
+
+Atsakomybę galima suteikti ir pareigybės puslapio skirtuke **Atsakomybės**. Ten matyti ir tos,
+kurias pareigybė gauna per tipą ar instituciją.
+
+### Žmonės ir delegavimas
+
+- **Žmonės** rodo, kas dabar eina pareigybes su šia atsakomybe.
+- **Delegavimas** nustato, kokius pareigybių tipus šios atsakomybės nariai gali priskirti
+  ar pašalinti pareigybės formoje ir tipo puslapyje. Reikia ir teisės redaguoti konkrečią
+  pareigybę; vien tipo redagavimo teisės neužtenka. Delegavimas galioja per šiuo metu einamas
+  pareigas. Koordinatorius neprivalo pats turėti tipui suteikiamų atsakomybių – pavyzdžiui,
+  studentų atstovų koordinatorius gali priskirti studentų atstovo tipą.
+
+Tipo puslapyje suteikimai tik rodomi, su nuorodomis į jų atsakomybes. Tipui suteikti atsakomybę
+ar ją pašalinti galima atsakomybės puslapio skirtuke **Kam suteikta**, nurodant paskirčiai
+reikalingą aprėptį. Esami suteikimai be tinkamos aprėpties pažymimi; jų duomenys automatiškai nekeičiami.
+
+### Atsakomybės trynimas
+
+Veiksmų meniu pasirink **Šalinti**. Atsakomybė atimama iš visų pareigybių. Ištrinti negalima
+atsakomybės, kuri atlieka sistemos paskirtį arba pagal kurią sudaroma
+[konferencija](/organizacija/konferencijos).
 
 ### Leidimų sąrašas (`/mano/permissions`)
 
-Skiltis rodo sistemos leidimų sąrašą: jų pavadinimus, įrašų rūšis, veiksmus ir apimtis.
-Šis sąrašas yra informacinis: leidimai generuojami sistemos kode pagal platformos modelius ir
-šioje skiltyje rankiniu būdu nekuriami.
+Skiltis informacinė: leidimai generuojami sistemos kode ir rankiniu būdu nekuriami.
 
 ## Kas ką gali {#teises}
 
-| Veiksmas | Komunikacijos ar studentų atstovų koordinatorius | Superadministratorius |
-|---|---|---|
-| Matyti rolių ir leidimų skiltis | – | ✓ |
-| Kurti, redaguoti ir trinti roles | – | ✓ |
-| Keisti rolės teisių tinklelį | – | ✓ |
-| Susieti rolę su pareigybėmis ir tipais | – | ✓ |
-| Priskirti esamą rolę savo padalinio pareigybei | ✓ Pareigybės formoje | ✓ Visur |
+| Veiksmas | Pareigybę redaguojantis koordinatorius | Atsakomybes valdantis administratorius | Superadministratorius |
+|---|---|---|---|
+| Matyti atsakomybių ir leidimų skiltis | – | ✓ | ✓ |
+| Kurti, redaguoti ir trinti atsakomybes | – | ✓ | ✓ |
+| Keisti atsakomybės teises | – | ✓ | ✓ |
+| Suteikti atsakomybę pareigybei, tipui ar institucijai | Tik turimas pats, savo padalinio pareigybei | ✓ | ✓ |
+| Nustatyti sistemos paskirtis | – | Jei gali keisti nustatymus | ✓ |
 
-Rolių kūrimas ir jų teisių keitimas yra centralizuotas ir prieinamas **superadministratoriui**
-arba nariui, kurio rolė suteikia reikiamą visos platformos rolių administravimo teisę. Lentelė rodo
-įprastą koordinatoriaus prieigą; papildomai suteiktos teisės gali ją išplėsti.
+Pareigybę redaguojantis koordinatorius (pvz., „Komunikacijos koordinatorius“) pareigybės puslapyje
+gali suteikti tik tas atsakomybes, kurias turi pats. Taip niekas negali suteikti daugiau teisių,
+nei turi.
 
-::: warning superadministratoriaus apsauga
-Rolės **Super Admin** pavadinimo keisti ir jos ištrinti negalima. Superadministratorius turi
-visos platformos prieigą, kuri nepriklauso nuo rolės teisių lentelėje pasirinktų leidimų.
+::: warning Superadministratoriaus apsauga
+**Super Admin** keisti, trinti ar suteikti pareigybei negalima. Superadministratorius turi visą
+prieigą nepriklausomai nuo teisių tinklelio.
 :::
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 
-- **Prieigos atnaujinimas**: keičiant roles, atnaujinama susijusių paskyrų prieigos ir navigacijos
-  talpykla. Pakeitus teises verta patikrinti, ar jos atitinka numatytą darbą.
-- **Rolės pagal tipą**: priskyrus pareigybei leidžiamą tipą, jai suteikiamos su tuo tipu susietos rolės.
-  Pašalinus tipą, su juo susietos rolės taip pat pašalinamos.
+- **Prieiga atnaujinama iš karto**: suteikus ar atėmus atsakomybę, pakeitus jos teises ar pareigybės
+  tipą, atnaujinama nariams prieiga ir meniu.
+- **Pagal tipą ir instituciją**: pareigybei gavus tipą (ar jo potipį) ar perėjus į instituciją,
+  kuriai atsakomybė suteikta, ji gauna atsakomybę; netekus – jos netenka. Ištrinta pareigybė per tipą ar instituciją
+  atsakomybių nebegauna.
+- **Teisių trūkumai**: jei atsakomybę su paskirtimi turinčiai pareigybei trūksta tam darbui
+  reikalingų teisių, atsakomybės ir pareigybės puslapiuose rodomas įspėjimas.
 
 ## Techninė informacija {#technine-informacija}
 
-- Rolių administravimą reglamentuoja `RoleController` ir `RolePolicy`.
-- Leidimų peržiūrą valdo `PermissionController` ir `PermissionPolicy`.
-- Teisių grupių sinchronizavimą atlieka `RoleController::syncPermissionGroup()`, naudojant `SyncRolePermissionGroupRequest`.
-- `syncDuties()` priskiria rolę pareigybėms; `syncAttachableTypes()` nustato, kokius tipus rolės turėtojas gali priskirti (`role_can_attach_types`). Automatinį rolės suteikimą pagal tipą aprašo atskiras `role_type` ryšys.
-- Leidimų apimtys: `own`, `padalinys`, `*`. Rolių ir leidimų skiltis galima deleguoti per atitinkamus `roles.*.*` ir `permissions.*.*` leidimus; lentelė rodo įprastų koordinatoriaus rolių prieigą.
-- Pakeitimų metu vykdomas `clearCacheforRoleUsers()`, išvalantis `PermissionMapBuilder` ir `HandleInertiaRequests::adminNavigationCacheKey()`.
-- Automatinį rolių priskyrimą per tipus užtikrina `TypeableObserver::saved()` kartu su `GetAttachableTypesForDuty`.
-- Testai: `RoleControllerTest`, `PermissionControllerTest`, `ModelPermissionSeederTest`, `RolePermissionForms.component.test.ts`, `PermissionTable.component.test.ts`.
+- Atsakomybės saugomos Spatie `roles` lentelėje (`App\Models\Role`): `name` – nekintantis raktas,
+  `title` ir `description` – verčiami laukai, `purpose` – `App\Enums\ResponsibilityPurpose`.
+- Suteikimai – `responsibility_grants` (`ResponsibilityGrant`: `grantee` = `duty` | `duty_type` |
+  `institution`, nebūtinas `scope`). `model_has_roles` eilutės pareigybėms yra jų projekcija, kurią
+  perskaičiuoja `ProjectDutyResponsibilities`; `responsibilities:project --check` praneša apie
+  neatitikimus. `Duty::assignRole()` / `removeRole()` / `syncRoles()` rašo tiesioginius suteikimus.
+- Leidimų katalogas – `App\Support\Permissions\PermissionCatalog` (`ModelEnum` × `CRUDEnum` ×
+  leidžiamos apimtys, be bazinės prieigos ir be nieko neduodančių derinių, plius `settings.read.*` ir
+  `settings.update.*`). `permissions:audit` praneša apie trūkstamus ir nebenaudojamus leidimus,
+  o `permissions:sync` (leidžiamas kiekvieno diegimo metu) sukuria trūkstamus ir pašalina nebenaudojamus,
+  išsaugodamas esamų leidimų ID ir turėtojus. Taisyklės: `.ai/rules/permissions.md`.
+- Maršrutai: `responsibilities.*`, `responsibilities.permissions.update`,
+  `responsibilities.grants.store|destroy`, `responsibilities.attachableTypes.update`,
+  `duties.responsibilities.store|destroy`. Seni `/mano/roles…` adresai nukreipiami.
+- Suteikti gali `GrantableResponsibilities` (turintys `roles.update.*` – bet kurią, kiti – tik
+  turimas). Tipui leidžiamas teises tikrina `TypeGrantablePermissions` (jokių `*` ir `forceDelete`);
+  `permissions:audit` praneša apie esamus jos neatitinkančius tipų suteikimus. Teisių trūkumus skaičiuoja `ResponsibilityPermissionGaps`.

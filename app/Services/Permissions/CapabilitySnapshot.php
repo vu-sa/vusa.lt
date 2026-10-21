@@ -26,17 +26,17 @@ final readonly class CapabilitySnapshot
      */
     public static function capture(User $user): self
     {
-        $user->loadMissing('roles:id,name', 'authorization_duties:id', 'authorization_duties.roles:id,name');
+        $user->loadMissing('roles:id,name,title', 'authorization_duties:id', 'authorization_duties.roles:id,name,title');
 
         $roles = [];
 
         foreach ($user->roles as $role) {
-            $roles[$role->id] = $role->name;
+            $roles[$role->id] = $role->displayTitle();
         }
 
         foreach ($user->authorization_duties as $duty) {
             foreach ($duty->roles as $role) {
-                $roles[$role->id] = $role->name;
+                $roles[$role->id] = $role->displayTitle();
             }
         }
 

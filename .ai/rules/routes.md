@@ -8,7 +8,10 @@ paths:
 # Routes
 
 ## File manager routes carry their own rate limiter
-The files routes group uses `->middleware('throttle:fileManager')->withoutMiddleware('throttle:api')`. Without the `withoutMiddleware` call the shared 60/min api limiter still applies underneath and the file manager 429s again (one thumbnail request per visible image). New file-manager endpoints must go inside this group; the limiter itself is defined in AppServiceProvider::configureRateLimiting().
+The files routes group uses `->middleware('throttle:fileManager')->withoutMiddleware('throttle:admin')`. Without the `withoutMiddleware` call the shared admin limiter still applies underneath and the file manager 429s again (one thumbnail request per visible image). New file-manager endpoints must go inside this group; the limiter itself is defined in AppServiceProvider::configureRateLimiting().
+
+## Admin API throttles after `auth`
+The `/api/v1/admin` group uses `throttle:admin` after `web`/`auth` and drops `throttle:api`. `bootstrap/app.php` replaces the middleware priority list, so the `api` group's throttle runs before the session starts and only ever sees an anonymous request keyed by IP — every admin behind one NAT then shares 60/min and dashboards 429.
 
 ## Admin resource route names must not collide with public route names
 Route name collisions (e.g. two routes both named `calendar.show`) only surface as an error during `route:cache` — which normally runs at deploy time (`artisan optimize`), not in local dev or `artisan test`. A collision can sit unnoticed until it breaks a staging/production deployment.

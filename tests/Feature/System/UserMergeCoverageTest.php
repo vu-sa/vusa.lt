@@ -39,7 +39,7 @@ test('every column referencing users is handled by MergeUsers', function (): voi
         ->values();
 
     expect($referencing)->toContain('comments.user_id')
-        ->and($referencing->diff(mergeUsersHandledColumns())->values()->all())->toBe([]);
+        ->and($referencing->diff(mergeUsersHandledColumns())->values()->all())->toBeEmpty();
 });
 
 test('MergeUsers names only columns that exist', function (): void {
@@ -52,5 +52,5 @@ test('MergeUsers names only columns that exist', function (): void {
         ->values()
         ->all();
 
-    expect($missing)->toBe([]);
+    expect($missing)->toBeEmpty();
 });

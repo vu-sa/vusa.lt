@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 pest()->use(RefreshDatabase::class);
 
@@ -21,7 +22,13 @@ test('backfills each legacy role duty once and grants padalinys institution admi
     $duties = $tenants->map(fn (Tenant $tenant) => Duty::factory()->for(Institution::factory()->for($tenant))->create());
     $duties->each(fn (Duty $duty) => $duty->assignRole($role));
     $unrelated = Duty::factory()->for(Institution::factory()->for($tenants->first()))->create();
-    DutyResponsibility::factory()->for($duties->first())->forTenant($tenants->first())->create();
+    DB::table('duty_responsibilities')->insert([
+        'id' => strtolower((string) Str::ulid()),
+        'duty_id' => $duties->first()->id,
+        'responsibility' => 'student_rep_coordination',
+        'scope_type' => 'tenant',
+        'scope_id' => (string) $tenants->first()->id,
+    ]);
 
     DB::table('settings')->updateOrInsert(
         ['group' => 'atstovavimas', 'name' => 'institution_manager_role_id'],
@@ -33,7 +40,7 @@ test('backfills each legacy role duty once and grants padalinys institution admi
     $migration->up();
 
     expect(DutyResponsibility::query()->whereIn('duty_id', $duties->pluck('id'))->count())->toBe(2)
-        ->and($unrelated->responsibilities()->exists())->toBeFalse()
+        ->and(DutyResponsibility::query()->where('duty_id', $unrelated->id)->exists())->toBeFalse()
         ->and($role->fresh()->hasPermissionTo('institutions.update.padalinys'))->toBeTrue();
 
     $migration->down();

@@ -12,7 +12,7 @@
         <RCFeatureCard
           v-for="item in items" :key="item.id ?? item.href"
           :title="item.title" :cover-image="item.imageUrl"
-        :image="item.image_media" :cover-alt="item.title"
+          :image="item.image_media" :cover-alt="item.title"
           :meta="publishedLabel(item.publishedAt)" :href="item.href"
         >
           <template #cover-fallback>

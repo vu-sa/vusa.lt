@@ -26,7 +26,7 @@ return [
         'numbers' => [
             'open_requests' => 'Neišspręstos užklausos',
             'queued_mail' => 'Laiškų eilėje',
-            'roles' => 'Rolės',
+            'roles' => 'Atsakomybės',
             'users' => 'Naudotojai',
             'future_duty_holders' => 'Nariai su būsimomis pareigomis',
         ],

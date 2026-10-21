@@ -105,7 +105,7 @@ export const entityTypeRegistry: Record<ModelEnum, EntityTypeDefinition> = {
   [ModelEnum.RESERVATION]: entry(ModelEnum.RESERVATION, 'Rezervacija', 'Rezervacijos', ReservationIcon, ReservationIconFilled, 2),
   [ModelEnum.RESERVATION_RESOURCE]: entry(ModelEnum.RESERVATION_RESOURCE, 'Rezervuojamas išteklius', 'Rezervuojami ištekliai', ReservationResourceIcon, ReservationResourceIconFilled, 2),
   [ModelEnum.RESOURCE]: entry(ModelEnum.RESOURCE, 'Išteklius', 'Ištekliai', ResourceIcon, ResourceIconFilled, 2),
-  [ModelEnum.ROLE]: entry(ModelEnum.ROLE, 'Rolė', 'Rolės', RoleIcon, RoleIconFilled, 4),
+  [ModelEnum.ROLE]: entry(ModelEnum.ROLE, 'responsibilities.entity.singular', 'responsibilities.entity.plural', RoleIcon, RoleIconFilled, 4),
   [ModelEnum.STUDY_PROGRAM]: entry(ModelEnum.STUDY_PROGRAM, 'Studijų programa', 'Studijų programos', StudyProgramIcon, StudyProgramIconFilled, 8),
   [ModelEnum.STUDY_SET]: entry(ModelEnum.STUDY_SET, 'Studijų komplektas', 'Studijų komplektai', StudySetIcon, StudySetIconFilled, 8),
   [ModelEnum.TAG]: entry(ModelEnum.TAG, 'Žyma', 'Žymos', TagIcon, TagIconFilled, 5),

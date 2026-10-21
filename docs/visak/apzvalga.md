@@ -166,6 +166,12 @@ pareigas eini:
 Viso padalinio duomenys (visų institucijų būsenos, atstovų aktyvumas) yra
 [Padalinių apžvalgoje](/visak/padaliniai).
 
+### Periodiškumo ir pranešimo pavyzdys {#periodiskumo-ir-pranesimo-pavyzdys}
+
+Periodiškumo laiką stabdo tik akademinės atostogos. Pranešimas apie tai, kad posėdžio nebus, dengia jo nurodytą laikotarpį, o jam pasibaigus suteikiamas atskiras pusės periodiškumo laikotarpis. Posėdžio laikas dėl pranešimo nesustabdomas ir nepradedamas iš naujo.
+
+Pavyzdžiui, po spalio 1 d. posėdžio, kai periodiškumas 30 dienų, veiklos tikimasi lapkričio 1 d. Jei pranešta, kad iki spalio 30 d. posėdžio nebus, pusės periodiškumo laikotarpis galioja iki lapkričio 14 d. imtinai; nuo lapkričio 15 d. institucija vėluoja. Pavyzdyje nėra atostogų. Šio papildomo laikotarpio dienomis automatinis priminimas nesiunčiamas.
+
 ## Techninė informacija {#technine-informacija}
 
 - Puslapis – `AtstovavimasDashboardController::atstovavimas`, komponentas `Admin/Dashboard/ShowAtstovavimas`.

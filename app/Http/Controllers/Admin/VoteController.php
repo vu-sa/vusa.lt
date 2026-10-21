@@ -19,12 +19,9 @@ class VoteController extends AdminController
 
         $this->handleAuthorization('update', $agendaItem);
 
-        // Check if this is the first vote (make it main)
-        $isFirstVote = ! $agendaItem->votes()->exists();
-
         $vote = Vote::create([
             'agenda_item_id' => $request->agenda_item_id,
-            'is_main' => $request->has('is_main') ? $request->is_main : $isFirstVote,
+            'is_main' => $request->boolean('is_main'),
             'title' => $request->title,
             'student_vote' => $request->student_vote,
             'decision' => $request->decision,
@@ -73,17 +70,7 @@ class VoteController extends AdminController
 
         $this->handleAuthorization('update', $agendaItem);
 
-        $wasMain = $vote->is_main;
-
         $vote->delete();
-
-        // If we deleted the main vote, make the first remaining vote the main one
-        if ($wasMain) {
-            $firstVote = $agendaItem->votes()->orderBy('order')->first();
-            if ($firstVote) {
-                $firstVote->update(['is_main' => true]);
-            }
-        }
 
         return back()->with('success', $this->entityMessage('deleted', 'vote'));
     }

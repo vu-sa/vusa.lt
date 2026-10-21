@@ -70,18 +70,27 @@ describe('MeetingCompletionService', function (): void {
             expect($this->service->calculate($meeting))->toBe('incomplete');
         });
 
-        test('only the main vote completes a voting item', function (): void {
+        test('without a main vote, every vote has to be complete', function (): void {
             $meeting = Meeting::factory()->create();
             $item = AgendaItem::factory()->create(['meeting_id' => $meeting->id, 'type' => AgendaItemType::Voting]);
-            Vote::factory()->create([
-                'agenda_item_id' => $item->id,
-                'is_main' => false,
-                'student_vote' => 'positive',
-                'decision' => 'positive',
-                'student_benefit' => 'positive',
-            ]);
+            $complete = ['is_main' => false, 'student_vote' => 'positive', 'decision' => 'positive', 'student_benefit' => 'positive'];
+            Vote::factory()->create(['agenda_item_id' => $item->id, ...$complete]);
+            $partial = Vote::factory()->create(['agenda_item_id' => $item->id, ...$complete, 'student_benefit' => null]);
 
             expect($this->service->calculate($meeting))->toBe('incomplete');
+
+            $partial->update(['student_benefit' => 'negative']);
+
+            expect($this->service->calculate($meeting->fresh()))->toBe('complete');
+        });
+
+        test('a complete main vote decides the item whatever the other votes hold', function (): void {
+            $meeting = Meeting::factory()->create();
+            $item = AgendaItem::factory()->create(['meeting_id' => $meeting->id, 'type' => AgendaItemType::Voting]);
+            Vote::factory()->create(['agenda_item_id' => $item->id, 'is_main' => true, 'student_vote' => 'positive', 'decision' => 'positive', 'student_benefit' => 'positive']);
+            Vote::factory()->create(['agenda_item_id' => $item->id, 'is_main' => false, 'decision' => null]);
+
+            expect($this->service->calculate($meeting))->toBe('complete');
         });
 
         test('ignores informational items for completion', function (): void {

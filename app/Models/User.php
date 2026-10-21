@@ -38,6 +38,8 @@ use Laravel\Scout\Searchable;
 use NotificationChannels\WebPush\HasPushSubscriptions;
 use NotificationChannels\WebPush\PushSubscription;
 use Spatie\Activitylog\Support\LogOptions;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Traits\HasRoles;
 use Staudenmeir\EloquentHasManyDeep\HasManyDeep;
 use Staudenmeir\EloquentHasManyDeep\HasRelationships;
@@ -75,6 +77,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read array $translatable_columns_from
  * @property-read mixed $has_password
  * @property-read Collection<int, Institution> $institutions
+ * @property-read MediaCollection<int, Media> $media
  * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read Collection<int, Permission> $permissions
  * @property-read Collection<int, Duty> $previous_duties
@@ -103,6 +106,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutPermission($permissions)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutRole($roles, ?string $guard = null)

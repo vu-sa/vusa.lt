@@ -2,9 +2,10 @@
 doc_status: reviewed
 title: Pareigybės
 area: duties
-models: [Duty, Role, Tenant, Type, Institution, DutyResponsibility]
-last_reviewed: 2026-10-18
+models: [Duty, Role, Tenant, Type, Institution, ResponsibilityGrant]
+last_reviewed: 2026-10-20
 tests:
+  - tests/Feature/Permissions/DutyTypeAssignmentTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexDuty.component.test.ts
   - tests/Feature/Admin/DutyMergeTest.php
   - tests/Feature/Api/Admin/DutyApiControllerTest.php
@@ -58,8 +59,8 @@ tests:
 pirmininkas, komunikacijos koordinatorius, kuratorius, studentų atstovas taryboje ar komisijoje).
 
 Pareigybės yra visos platformos teisių ir atsakomybių ašis: **naudotojai patys savaime dažniausiai neturi
-jokių administratoriaus teisių** (tik išskirtiniais atvejais). Kasdieniame darbe administravimo prieiga suteikiama per pareigybės roles. Bazinė nario prieiga,
-tiesiogiai paskirtos teisės ir super administratoriaus prieiga aprašytos [Teisėse ir rolėse](/pagrindai/teises).
+jokių administratoriaus teisių** (tik išskirtiniais atvejais). Kasdieniame darbe administravimo prieiga suteikiama per pareigybės atsakomybes. Bazinė nario prieiga,
+tiesiogiai paskirtos teisės ir super administratoriaus prieiga aprašytos [Teisėse ir atsakomybėse](/pagrindai/teises).
 
 Pareigybių sąrašas pasiekiamas adresu `/mano/duties`, o kiekviena pareigybė turi savo puslapį
 `/mano/duties/{id}`.
@@ -68,13 +69,13 @@ Pareigybių sąrašas pasiekiamas adresu `/mano/duties`, o kiekviena pareigybė 
 
 Atskiroje formoje sukūrus pareigybę, atveriamas jos puslapis, kuriame galima tvarkyti narius ir ryšius.
 
-### Teisės ir rolės per pareigybes {#teises-ir-roles}
+### Teisės ir atsakomybės per pareigybes {#teises-ir-roles}
 
-Kasdieniame administravimo darbe roles priskirk **pareigybei**, kad keičiantis nariams nereikėtų
+Kasdieniame administravimo darbe atsakomybes suteik **pareigybei**, kad keičiantis nariams nereikėtų
 iš naujo sudėlioti prieigos.
 
 1. Kai naudotojas paskiriamas į pareigybę (sukuriant [pareigybės laikotarpį](/visak/pareigybiu-laikotarpiai#laikotarpis)),
-   jis automatiškai įgyja visas pareigybei suteiktas roles ir teises.
+   jis automatiškai įgyja visas pareigybės atsakomybes ir jų teises.
 2. Jei pareigybę eina keli žmonės (pvz., keli kuratoriai ar kolegialaus organo nariai), visi jie
    naudojasi tomis pačiomis pareigybės teisėmis.
 3. Pasibaigus paskutinei pareigų dienai, prieiga iš šio laikotarpio nustoja galioti.
@@ -87,7 +88,7 @@ naująjį narį. Taip išsaugoma visa pareigybės istorija, instituciniai ryšia
 Masiniam narių keitimui skirtas [Pareigybių atnaujinimo vedlys](/organizacija/pareigybiu-atnaujinimas).
 :::
 
-### Tipai ir automatinis rolių suteikimas {#tipai}
+### Tipai ir automatinis atsakomybių suteikimas {#tipai}
 
 Pareigybių sąrašo **Filtrai → Pareigybės tipas** leidžia pasirinkti konkretų tipą arba **Be tipo**.
 **Be tipo** taip pat pasiekiamas greituoju filtru virš sąrašo. Filtras veikia ir šiukšliadėžėje.
@@ -98,14 +99,14 @@ Kiekvienai pareigybei galima priskirti vieną ar kelis **tipus** (pvz., *Pirmini
 Tipai atlieka dvi svarbias funkcijas:
 - **Viešas grupavimas ir atvaizdavimas**: pagal tipą viešoje svetainėje kontaktai atvaizduojami
   tinkamose skiltyse (pvz., padalinio kontaktų bloke ar studentų atstovų sąrašuose).
-- **Automatinis tam tikrų rolių susiejimas**: sistemoje kai kurie tipai yra susieti su bazinėmis rolėmis:
-  - Priskyrus tipą **Studentų atstovai**, pareigybė automatiškai gauna rolę **Studentų atstovas** (leidžiančią institucijoje fiksuoti posėdžius ir darbotvarkės klausimus).
-  - Priskyrus tipą **Koordinatoriai**, pareigybė automatiškai gauna rolę **Problemų redaktorius** (leidžiančią kelti ir tvarkyti padalinio problemas).
-  - **Svarbu:** tipas *Koordinatoriai* **nesuteikia** padalinio valdymo teisių (pvz., naujienų, puslapių, pareigybių ar išteklių). Šios srities rolės (pvz., *Komunikacijos koordinatorius*, *Išteklių administratorius*) pareigybei turi būti **priskirtos rankiniu būdu** pareigybės formos skiltyje *Rolės ir teisės*.
-  - Nuėmus tipą, su juo susieta automatinė rolė iš pareigybės pašalinama.
+- **Automatinis atsakomybių suteikimas**: kai kuriems tipams suteiktos atsakomybės:
+  - Priskyrus tipą **Studentų atstovai**, pareigybė automatiškai gauna atsakomybę **Studentų atstovas** (studentų atstovavimas: leidžia institucijoje fiksuoti posėdžius ir darbotvarkės klausimus, o pareigybė laikoma studentų atstovu).
+  - Priskyrus tipą **Koordinatoriai**, pareigybė automatiškai gauna atsakomybę **Problemų redaktorius** (leidžiančią kelti ir tvarkyti padalinio problemas).
+  - **Svarbu:** tipas *Koordinatoriai* **nesuteikia** padalinio valdymo teisių (pvz., naujienų, puslapių, pareigybių ar išteklių). Šios srities atsakomybės (pvz., *Komunikacijos koordinatorius*, *Išteklių administratorius*) pareigybei suteikiamos pareigybės puslapio skirtuke **Atsakomybės**.
+  - Nuėmus tipą, per jį gauta atsakomybė iš pareigybės pašalinama, nebent ji suteikta ir tiesiogiai.
 
 ::: warning Kas gali priskirti tipą
-Tipą pareigybei gali priskirti tik tas administratorius, kurio paties rolė turi teisę tą tipą priskirti, arba super administratorius. Pavyzdžiui, Komunikacijos koordinatorius gali priskirti tipus *Koordinatoriai*, *Kuratoriai*, *Pirmininkas*, o Studentų atstovų koordinatorius – *Studentų atstovai*.
+Tipą priskirti ar pašalinti gali jį deleguoti įgaliotas narys arba atsakomybes valdantis administratorius, turintis teisę redaguoti konkrečią pareigybę. Pavyzdžiui, Komunikacijos koordinatorius gali priskirti tipus *Koordinatoriai*, *Kuratoriai*, *Pirmininkas*, o Studentų atstovų koordinatorius – *Studentų atstovai*. Delegavimas kyla tik iš šiuo metu einamų pareigų. Esami tipai, kurių keisti negalima, formoje rodomi atskirai ir išsaugomi keičiant kitus laukus.
 :::
 
 ### Vietų skaičius ir užimtumas {#uzimtumas}
@@ -256,7 +257,7 @@ suskirstytas į skirtukus:
 3. **Atsakomybės**:
    - Padaliniai, institucijų tipai ar konkretūs organai, kuriuos ši pareigybė koordinuoja.
    - Mygtukas **Pridėti atsakomybę** leidžia priskirti naują koordinavimo sritį.
-   - Greta rodomos pareigybės rolės – jos lemia, ką pareigybė gali daryti platformoje.
+   - Rodomos ir per tipą ar instituciją gautos atsakomybės; jų teisės lemia, ką pareigybė gali daryti platformoje.
 4. **Failai** (rodoma, jei pareigybė turi SharePoint aplanką ar kategoriją):
    - Su pareigybe susieti dokumentai ir ataskaitos.
 
@@ -313,7 +314,7 @@ viršuje (`/mano/duties/create`):
 - **Institucinis el. paštas** – dažniausiai `@vusa.lt` dėžutė. Šis el. paštas naudojamas ir prisijungimui
   prie Office 365.
 - **Vietų skaičius** – numatytas narių skaičius (pagal nutylėjimą 1).
-- **Tipai ir rolės** – pažymimi tinkami tipai ir, jei reikia, specifinės administratoriaus rolės.
+- **Tipai** – pažymimi tinkami tipai. Atsakomybės suteikiamos pareigybės puslapyje.
 - **Kontaktų rikiavimas** – kaip pareigybės nariai išrikiuojami viešuose kontaktuose. Visi institucijos
   kontaktai rodomi viename sąraše, o pareigybė nurodoma žmogaus kortelėje. „Pagal padalinį“ narius
   rikiuoja pagal atstovaujamą padalinį ir nurodo jį šalia pareigybės (pvz., „Parlamento narė · VU SA MIF“),
@@ -346,9 +347,9 @@ ir „Atstovė taryboje“, arba dublikatas dėl rašybos klaidos), Superadminis
    - Visi narių laikotarpiai iš sujungiamų pareigybių perkeliami į pagrindinę.
    - Jei tas pats žmogus abiejose pareigybėse turėjo persidengiančius laikotarpius, jie sujungiami
      į vieną ištisinį laikotarpį. Ex officio laikotarpiai lieka atskiri – jie seka pareigybę, iš kurios kyla.
-   - Tipai, rolės, tiesiogiai suteiktos teisės, atsakomybės, padalinių kvotos, ankstesni pavadinimai,
+   - Tipai, atsakomybės, tiesiogiai suteiktos teisės, padalinių kvotos, ankstesni pavadinimai,
      pirmtakių ryšiai, tikslai, komentarai, failai ir užduotys perkeliami į pagrindinę pareigybę (be dubliavimo).
-   - Pagrindinės pareigybės nariai iškart gauna perkeltų rolių prieigą.
+   - Pagrindinės pareigybės nariai iškart gauna perkeltų atsakomybių prieigą.
    - Sujungtos pareigybės **ištrinamos visam laikui** – į šiukšlinę jos nepatenka, o sujungimas
      įrašomas pagrindinės pareigybės pakeitimų istorijoje.
 
@@ -381,7 +382,7 @@ ir **Centrinio biuro studentų atstovų koordinatorius**. Apimtis ribojama admin
 
 ::: warning Savęs užsirakinimo apsauga
 Jei administratorius bando iš savo paties pareigybės pašalinti administracines teises suteikiančią
-rolę arba užbaigti savo paties narystę, sistema operaciją sustabdo ir parodo įspėjimą
+atsakomybę arba užbaigti savo paties narystę, sistema operaciją sustabdo ir parodo įspėjimą
 apie prieigos pokytį. Tai apsaugo administratorių nuo netyčinio prieigos praradimo. Pakeitimas
 įrašomas tik tada, kai vartotojas aiškiai patvirtina veiksmą.
 :::
@@ -390,10 +391,10 @@ apie prieigos pokytį. Tai apsaugo administratorių nuo netyčinio prieigos prar
 
 | Kada | Kas nutinka | Kas gauna |
 |---|---|---|
-| Sukuriamas nario laikotarpis su pradžios data šiandien | Iškart suteikiamos pareigybės teisės ir rolės | Paskirtas narys |
+| Sukuriamas nario laikotarpis su pradžios data šiandien | Iškart suteikiamos pareigybės atsakomybių teisės | Paskirtas narys |
 | Baigiasi paskutinė pareigybės laikotarpio diena | Prieiga iš šio laikotarpio nustoja galioti | Buvęs narys |
 | Paskirtas narys būsimai datai (ateityje) | Sukuriamas būsimas laikotarpis; dabartinių narių sąraše jis atsiras pradžios dieną | Būsimas narys |
-| Pareigybei priskiriamas tipas su susietomis rolėmis (pvz., „Studentų atstovai“) | Pareigybei automatiškai suteikiamos su tipu susietos rolės | Pareigybės nariai |
+| Pareigybei priskiriamas tipas su atsakomybėmis (pvz., „Studentų atstovai“) | Pareigybei automatiškai suteikiamos tipo atsakomybės | Pareigybės nariai |
 | Pareigybei priskiriama atsakomybė | Asmuo pradedamas laikyti srities koordinatoriumi | Koordinatorius |
 | Sukuriama nauja studentų atstovų registracija | Pranešimą gauna pareigybė, turinti to organo atsakomybę | Koordinatorius |
 
@@ -410,7 +411,7 @@ laikotarpyje gali turėti nurodytą papildomą kontaktinį el. paštą ar asmeni
 
 ## Techninė informacija {#technine-informacija}
 
-Šis skyrius skirtas tiems, kurie tvarko roles ar tikrina sistemos elgseną.
+Šis skyrius skirtas tiems, kurie tvarko atsakomybes ar tikrina sistemos elgseną.
 
 ### Teisės
 
@@ -428,14 +429,13 @@ laikotarpyje gali turėti nurodytą papildomą kontaktinį el. paštą ar asmeni
 
 ### Kaip tai įgyvendinta
 
-- Pareigybės modelis `Duty` naudoja `HasRoles` (Spatie), `HasTranslations` (daugiakalbystei),
+- Pareigybės modelis `Duty` naudoja `HasRoles` (Spatie; `assignRole()` rašo tiesioginius atsakomybių suteikimus), `HasTranslations` (daugiakalbystei),
   `LogsModelActivity`, `LogsRelationshipChanges` ir `SoftDeletes`.
 - Narių priskyrimo ryšys yra polimorfinis `dutiables` (`Dutiable` pivotas), palaikantis `start_date`,
   `end_date`, `study_program_id`, `additional_email`, `additional_photo`.
-- Tipų susiejimą stebi `TypeableObserver`: kai `Typeable` įrašas išsaugomas, `GetAttachableTypesForDuty`
-  patikrina, ar veikiantis naudotojas turi teisę priskirti šį tipą (`role_can_attach_types`), ir
-  automatiškai priskiria su tipu susietas roles (`$typeable->typeable->roles()->syncWithoutDetaching($roles)`),
-  pavyzdžiui, `Studentų atstovas` tipui `studentu-atstovai` arba `Problemų redaktorius` tipui `koordinatoriai`.
+- Kokius tipus naudotojas gali priskirti, nustato `GetAttachableTypesForDuty` (`role_can_attach_duty_types`).
+  Tipui suteiktos atsakomybės (`responsibility_grants`, `grantee_type = duty_type`) pareigybėms
+  projektuojamos per `DutyDutyType` įvykius ir `ProjectDutyResponsibilities`.
 - Pavadinimų unikalumą ir normalizavimą užtikrina `DutyNameNormalizer` (sulygina vyr./mot. galūnes,
   skliaustus `(-ė)` ir linksnius); `DutySimilarityFinder` tikrina ir `duty_names`, ir neaktyvias pareigybes.
 - `duties.is_active` slepia pareigybę iš vedlio ir paieškos (`is_active:!=false`); ankstesni pavadinimai

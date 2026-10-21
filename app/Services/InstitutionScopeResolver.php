@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\InstitutionScope;
 use App\Models\Institution;
 use App\Models\InstitutionType;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -92,6 +93,46 @@ class InstitutionScopeResolver
             ->filter(fn (?string $value) => $value !== null && InstitutionScope::from($value)->isInternal())
             ->keys()
             ->all();
+    }
+
+    /**
+     * InstitutionType ids that resolve to exactly this scope.
+     *
+     * @return array<int, int>
+     */
+    public function typeIdsResolving(InstitutionScope $scope): array
+    {
+        return collect($this->map())
+            ->filter(fn (?string $value) => $value === $scope->value)
+            ->keys()
+            ->all();
+    }
+
+    /**
+     * Keep the institutions whose forInstitution() scope is one of `$scopes`, in SQL. An
+     * institution carrying two different external scopes is kept when either is allowed.
+     *
+     * @param  Builder<Institution>  $institutions
+     * @param  list<InstitutionScope>  $scopes
+     * @return Builder<Institution>
+     */
+    public function constrainToScopes(Builder $institutions, array $scopes): Builder
+    {
+        $external = $this->typeIdsResolvingExternal();
+        $scoped = [...$external, ...$this->typeIdsResolvingInternal()];
+        $allowedExternal = collect($scopes)
+            ->filter(fn (InstitutionScope $scope) => $scope->isExternal())
+            ->flatMap(fn (InstitutionScope $scope) => $this->typeIdsResolving($scope))
+            ->all();
+        $internalAllowed = collect($scopes)->contains(fn (InstitutionScope $scope) => $scope->isInternal());
+
+        return $institutions->where(fn (Builder $query) => $query
+            ->whereHas('types', fn (Builder $types) => $types->whereIn('institution_types.id', $allowedExternal))
+            ->when($internalAllowed, fn (Builder $query) => $query->orWhere(fn (Builder $internal) => $internal
+                ->whereHas('types', fn (Builder $types) => $types->whereIn('institution_types.id', $this->typeIdsResolvingInternal()))
+                ->whereDoesntHave('types', fn (Builder $types) => $types->whereIn('institution_types.id', $external))))
+            ->when(in_array(self::DEFAULT, $scopes, true), fn (Builder $query) => $query
+                ->orWhereDoesntHave('types', fn (Builder $types) => $types->whereIn('institution_types.id', $scoped))));
     }
 
     /**

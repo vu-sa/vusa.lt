@@ -42,9 +42,9 @@
 </template>
 
 <script setup lang="ts">
-import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import SmartLink from '@/Components/Public/SmartLink.vue';
 import { EyebrowLabel, SectionBand } from '@/Components/Public/Base';
 import { RuledGrid } from '@/Components/Brand';

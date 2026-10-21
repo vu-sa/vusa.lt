@@ -67,6 +67,7 @@ use Laravel\Scout\Searchable;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PublicMeeting withoutTrashed()
  *

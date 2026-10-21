@@ -5,15 +5,15 @@ use App\Actions\ActivityRequests\SendInstitutionActivityRequests;
 use App\Actions\RecordMeeting;
 use App\Enums\ActivityRequestSkipReason;
 use App\Enums\InstitutionActivityCampaign;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Cadence;
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionSecretary;
 use App\Models\Pivots\AgendaItem;
+use App\Models\ResponsibilityGrant;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -31,9 +31,8 @@ pest()->use(RefreshDatabase::class);
 /** A current student representative of $institution. */
 function activityRequestRep(Institution $institution, ?User $user = null): User
 {
-    $repType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-        ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-    $duty = Duty::factory()->for($institution)->hasAttached($repType, [], 'types')->create();
+    $duty = Duty::factory()->for($institution)->create();
+    grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
     $user ??= User::factory()->create();
     $user->duties()->attach($duty, ['start_date' => now()->subYear(), 'end_date' => null]);
@@ -50,8 +49,8 @@ beforeEach(function (): void {
 
     $this->coordinator = makeUser($this->tenant);
     $duty = $this->coordinator->duties()->firstOrFail();
-    DutyResponsibility::factory()->for($duty)->forInstitution($this->institution)->create();
-    DutyResponsibility::factory()->for($duty)->forInstitution($this->otherInstitution)->create();
+    ResponsibilityGrant::factory()->forDuty($duty)->forInstitution($this->institution)->create();
+    ResponsibilityGrant::factory()->forDuty($duty)->forInstitution($this->otherInstitution)->create();
 
     $this->rep = activityRequestRep($this->institution);
 });
@@ -139,11 +138,10 @@ test('on staging the email reaches only the coordinator who sent it, never the r
 });
 
 describe('who is asked about what', function (): void {
-    test('distinguishes missing representative duty types from missing current holders', function (bool $typed): void {
-        $type = DutyType::query()->where('slug', 'studentu-atstovai')->firstOrFail();
+    test('distinguishes missing representative duties from missing current holders', function (bool $typed): void {
         $duty = Duty::factory()->for($this->otherInstitution)->create();
         if ($typed) {
-            $duty->types()->attach($type);
+            grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
         } else {
             $this->rep->duties()->attach($duty, ['start_date' => today()->subMonth(), 'end_date' => null]);
         }
@@ -159,7 +157,7 @@ describe('who is asked about what', function (): void {
 
     test('the preview names the recipients and why an institution is left out', function (): void {
         $covered = Institution::factory()->for($this->tenant)->create();
-        DutyResponsibility::factory()->for($this->coordinator->duties()->firstOrFail())->forInstitution($covered)->create();
+        ResponsibilityGrant::factory()->forDuty($this->coordinator->duties()->firstOrFail())->forInstitution($covered)->create();
         activityRequestRep($covered);
         InstitutionCheckIn::factory()->for($covered)->create(['start_date' => today()->subYears(2), 'end_date' => today()->addWeek()]);
 
@@ -303,9 +301,8 @@ test('a coordinator may ask again within a month, while an automatic task waits'
     $sender = app(SendInstitutionActivityRequests::class);
 
     $sender->forTasks([['task' => Task::factory()->create(), 'institution' => $this->institution, 'recipients' => collect([$this->rep])]]);
-    expect(InstitutionActivityRequest::query()->count())->toBe(1);
-
-    expect($sender->send([$this->institution], $this->coordinator)['queued_requests'])->toBe(1);
+    expect(InstitutionActivityRequest::query()->count())->toBe(1)
+        ->and($sender->send([$this->institution], $this->coordinator)['queued_requests'])->toBe(1);
 });
 
 test('an automatic task asks whether a meeting happened when no records are missing', function (): void {
@@ -452,7 +449,7 @@ describe('picking people', function (): void {
 });
 
 test('manual activity preview and creation require the meeting interval to be exceeded', function (int $days, ?string $reason): void {
-    $this->travelTo('2026-10-18 12:00:00');
+    $this->travelTo('2026-11-18 12:00:00');
     $this->institution->update(['meeting_periodicity_days' => 30]);
     app(RecordMeeting::class)->execute($this->institution, now()->subDays($days));
     $payload = ['campaign_type' => 'activity_confirmation', 'institution_ids' => [$this->institution->id]];
@@ -486,8 +483,8 @@ test('manual activity questions can be sent during check-in grace while automati
     expect($sender->plan([$this->institution], null)[0]->skipReason)->toBe(ActivityRequestSkipReason::RecentActivity);
     asUser($this->coordinator)->post(route('institutions.activity-requests.store'), $payload)->assertRedirect();
     Notification::assertSentTo($this->rep, InstitutionActivityNotification::class);
-    expect(InstitutionActivityRequest::query()->sole()->requested_by_id)->toBe($this->coordinator->id);
-    expect($sender->send([$this->institution], $this->coordinator)['queued_requests'])->toBe(0);
+    expect(InstitutionActivityRequest::query()->sole()->requested_by_id)->toBe($this->coordinator->id)
+        ->and($sender->send([$this->institution], $this->coordinator)['queued_requests'])->toBe(0);
 });
 
 test('activity requests exclude upcoming meetings and inactive institutions', function (string $condition, string $reason): void {
@@ -549,8 +546,8 @@ test('an active check-in blocks activity questions but allows completing older r
     app(RecordMeeting::class)->execute($this->institution, now()->subDays(2));
     InstitutionCheckIn::factory()->for($this->institution)->create(['start_date' => today()->subDay(), 'end_date' => today()->addWeek()]);
     $sender = app(SendInstitutionActivityRequests::class);
-    expect($sender->send([$this->institution], $this->coordinator)['plan'][0]->skipReason)->toBe(ActivityRequestSkipReason::CheckInActive);
-    expect($sender->send([$this->institution], $this->coordinator, campaign: InstitutionActivityCampaign::MissingMeetings)['queued_requests'])->toBe(1)
+    expect($sender->send([$this->institution], $this->coordinator)['plan'][0]->skipReason)->toBe(ActivityRequestSkipReason::CheckInActive)
+        ->and($sender->send([$this->institution], $this->coordinator, campaign: InstitutionActivityCampaign::MissingMeetings)['queued_requests'])->toBe(1)
         ->and(InstitutionActivityRequest::query()->sole()->campaign_type)->toBe(InstitutionActivityCampaign::MissingMeetings);
     Notification::assertSentToTimes($this->rep, InstitutionActivityNotification::class, 1);
 });

@@ -11,6 +11,8 @@ use App\Models\Page;
 use App\Models\StudyProgram;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\SystemDutyTypes;
+use App\Settings\DutyTypeSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -224,6 +226,10 @@ test('padalinys institution page renders duty type tabs', function (): void {
     $type = DutyType::factory()->create(['slug' => 'koordinatoriai', 'title' => ['lt' => 'Koordinatoriai', 'en' => 'Coordinators']]);
     $duty = Duty::factory()->create(['institution_id' => $institution->id]);
     $duty->types()->attach($type);
+    $settings = app(DutyTypeSettings::class);
+    $settings->coordinator_type_id = $type->id;
+    $settings->save();
+    app(SystemDutyTypes::class)->flush();
 
     $this->get(route('contacts.institution', ['subdomain' => 'www', 'lang' => 'lt', 'institution' => $institution->id]))
         ->assertInertia(fn (Assert $page) => $page

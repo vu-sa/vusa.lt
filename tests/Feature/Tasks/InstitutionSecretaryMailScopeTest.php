@@ -1,10 +1,10 @@
 <?php
 
 use App\Enums\AgendaItemType;
+use App\Enums\ResponsibilityPurpose;
 use App\Events\MeetingFullyCreated;
 use App\Models\Cadence;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionSecretary;
 use App\Models\Meeting;
@@ -41,10 +41,8 @@ beforeEach(function (): void {
         'end_date' => now()->addMonths(6)->toDateString(),
     ]);
 
-    $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-        ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-    $duty = Duty::factory()->for($this->institution)->hasAttached($studentRepType, [], 'types')->create();
+    $duty = Duty::factory()->for($this->institution)->create();
+    grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
     // Three people who hold a seat right now, and would all be mailed without a nomination.
     $this->members = User::factory()->count(3)->create();

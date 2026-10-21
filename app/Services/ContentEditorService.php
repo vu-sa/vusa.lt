@@ -22,7 +22,7 @@ class ContentEditorService
     public const NEWS_FIELDS = ['title', 'permalink', 'lang', 'draft', 'publish_time', 'short', 'show_breadcrumbs', 'highlights'];
 
     /** @var array<string, array{key: string, collection: string}> */
-    private const IMAGE = [
+    private const array IMAGE = [
         'pages' => ['key' => 'featured_image_media', 'collection' => 'featured_image'],
         'news' => ['key' => 'image_media', 'collection' => 'image'],
     ];

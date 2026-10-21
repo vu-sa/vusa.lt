@@ -85,7 +85,7 @@ return [
         'gender' => 'f',
     ],
     'role' => [
-        'model' => '{1} role|[2,*] roles',
+        'model' => '{1} responsibility|[2,*] responsibilities',
         'gender' => 'f',
     ],
     'permission' => [

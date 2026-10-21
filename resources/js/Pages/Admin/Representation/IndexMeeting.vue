@@ -25,7 +25,8 @@
     <template #row="{ item, pinned }">
       <div v-if="isTrash" class="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center">
         <div class="min-w-0 flex-1">
-          <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches" :title="item.title" :sub="item.institution_name_lt || item.institution_name_en" />
+          <CollectionPrimaryCell :match="item._searchMatch" :title-matches="item._searchTitleMatches"
+            :title="item.title" :sub="item.institution_name_lt || item.institution_name_en" />
           <p class="mt-2 text-xs tabular-nums text-muted-foreground">
             {{ formatDate(new Date((item.start_time ?? 0) * 1000)) }}
           </p>
@@ -81,7 +82,7 @@
 <script setup lang="ts">
 import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { ArrowUpRight, Plus } from '@lucide/vue';
+import { ArrowUpRight, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed } from 'vue';
 
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
@@ -119,7 +120,6 @@ const page = usePage();
 const actionWindow = useActionWindow();
 const isTrash = isTrashView();
 const canCreate = computed(() => Boolean(page.props.auth?.can?.create?.meeting));
-const canForceDelete = computed(() => Boolean(page.props.auth?.can?.forceDelete?.meeting));
 
 const eyebrow = computed(() => `${$t('shell.workspaces.atstovavimas.title')} · ${$t('shell.sections.posedziai')}`);
 
@@ -143,11 +143,16 @@ const source: CollectionSource<MeetingSearchResult> = liveSource ?? useTrashColl
 
 const actions = useCollectionRecordActions({
   routePrefix: 'meetings',
-  canRestore: () => canCreate.value,
-  canForceDelete: () => canForceDelete.value,
+  canRestore: () => false,
+  canForceDelete: () => false,
 });
-const actionsFor = (meeting: MeetingSearchResult) => isTrash
-  ? actions.rowActions(meeting, meeting.title, true)
+type MeetingRow = MeetingSearchResult & { abilities?: { restore: boolean; forceDelete: boolean } };
+
+const actionsFor = (meeting: MeetingRow) => isTrash
+  ? [
+      ...(meeting.abilities?.restore ? [{ key: `restore:${meeting.id}`, label: $t('Atkurti'), icon: RotateCcw, labelled: true }] : []),
+      ...(meeting.abilities?.forceDelete ? [{ key: `forceDelete:${meeting.id}:${meeting.title}`, label: $t('Ištrinti visam laikui'), icon: Trash2, destructive: true }] : []),
+    ]
   : [{ key: 'open', label: $t('Atidaryti'), icon: ArrowUpRight, href: route('meetings.show', meeting.id), labelled: true }];
 
 const meetingKey = (meeting: MeetingSearchResult) => String(meeting.id);

@@ -59,7 +59,6 @@ const stubs = {
   },
   CollectionSelectDialog: { template: '<div><slot name="trigger" /></div>' },
   // Props are declared so tests can read what the form hands each picker.
-  TransferList: { name: 'TransferList', props: ['modelValue', 'options', 'lockedOptions'], template: '<div />' },
   Accordion: { template: '<div><slot /></div>' },
   AccordionItem: { template: '<div><slot /></div>' },
   AccordionContent: { template: '<div><slot /></div>' },
@@ -423,55 +422,29 @@ describe('DutyForm.vue — picking which tenants may assign representatives', ()
     expect(programOption.attributes('aria-pressed')).toBe('true');
   });
 
-  it('passes mapped type objects to the duty types MultiSelect, not raw IDs', async () => {
-    const dutyType1 = { id: 1, title: 'Valdyba' };
-    const dutyType2 = { id: 2, title: 'Kuratorius' };
+  it('binds the duty types picker to type ids and offers the types as a tree', async () => {
+    const parent = { id: 1, title: 'Koordinatorius', parent_id: null };
+    const child = { id: 2, title: 'Administratorius', parent_id: 1 };
     wrapper = mountForm(
       emptyDuty({
         id: 'duty-1',
-        types: [dutyType1],
+        types: [parent],
       }),
       {
-        dutyTypes: [dutyType1, dutyType2],
+        dutyTypes: [child, parent],
       },
     );
 
-    const typePicker = wrapper.findAllComponents({ name: 'MultiSelect' }).find(c => c.props('id') === 'duty-types');
-    expect(typePicker).toBeDefined();
-    expect(typePicker!.props('modelValue')).toEqual([dutyType1]);
+    const typePicker = wrapper.findComponent({ name: 'TypeTreeMultiSelect' });
+    expect(typePicker.props('modelValue')).toEqual([1]);
+    expect(typePicker.findComponent({ name: 'MultiSelect' }).props('options').map((node: { path: string }) => node.path))
+      .toEqual(['Koordinatorius', 'Koordinatorius › Administratorius']);
 
-    typePicker!.vm.$emit('update:modelValue', [dutyType1, dutyType2]);
+    typePicker.vm.$emit('update:modelValue', [1, 2]);
     await nextTick();
 
     const { form } = wrapper.vm as unknown as { form: { types: number[] } };
     expect(form.types).toEqual([1, 2]);
-  });
-
-  it('passes mapped role objects to the administrative roles MultiSelect, not raw IDs', async () => {
-    const role1 = { id: '01gxtwdayy2t13j51wg035f8n0', name: 'Komunikacijos koordinatorius' };
-    const role2 = { id: '01h6hzfefycaz9bnqpkanp6bn4', name: 'Išteklių administratorius' };
-    wrapper = mountForm(
-      emptyDuty({
-        id: 'duty-1',
-        roles: [role1],
-      }),
-      {
-        roles: [role1, role2],
-      },
-    );
-
-    const rolePicker = wrapper.findAllComponents({ name: 'MultiSelect' }).find(c => c.props('id') === 'admin_role');
-    expect(rolePicker).toBeDefined();
-    expect(rolePicker!.props('modelValue')).toEqual([{ label: role1.name, value: role1.id }]);
-
-    rolePicker!.vm.$emit('update:modelValue', [
-      { label: role1.name, value: role1.id },
-      { label: role2.name, value: role2.id },
-    ]);
-    await nextTick();
-
-    const { form } = wrapper.vm as unknown as { form: { roles: string[] } };
-    expect(form.roles).toEqual([role1.id, role2.id]);
   });
 });
 
@@ -526,5 +499,29 @@ describe('DutyForm.vue — institution picker', () => {
     await nextTick();
 
     expect((wrapper.emitted('submit:form')!.at(-1)![0] as Record<string, unknown>).institution_id).toBe('inst-2');
+  });
+});
+
+describe('DutyForm.vue — delegated types', () => {
+  it('keeps undelegated existing types as read-only when editable selections change', async () => {
+    const fixed = { id: 7, title: 'Esamas tipas' };
+    const editable = { id: 8, title: 'Deleguotas tipas' };
+    const wrapper = mountForm(emptyDuty({ id: 'duty-1', types: [fixed] }), { dutyTypes: [editable] });
+    expect(wrapper.get('[data-testid="duty-readonly-types"]').text()).toContain('Esamas tipas');
+    const picker = wrapper.findComponent({ name: 'TypeTreeMultiSelect' });
+    expect(picker.props('types')).toEqual([editable]);
+
+    picker.vm.$emit('update:modelValue', [8]);
+    wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    await nextTick();
+    expect((wrapper.emitted('submit:form')!.at(-1)![0] as Record<string, unknown>).types).toEqual([7, 8]);
+    wrapper.unmount();
+  });
+
+  it('shows existing types even when none can be assigned', () => {
+    const wrapper = mountForm(emptyDuty({ id: 'duty-1', types: [{ id: 7, title: 'Esamas tipas' }] }));
+    expect(wrapper.get('[data-testid="duty-readonly-types"]').text()).toContain('Esamas tipas');
+    expect(wrapper.find('#duty-types').exists()).toBe(false);
+    wrapper.unmount();
   });
 });

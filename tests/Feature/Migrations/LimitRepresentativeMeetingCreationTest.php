@@ -24,7 +24,7 @@ test('narrows meeting creation to the representative\'s own institutions', funct
 
     expect($role->hasPermissionTo('meetings.create.own'))->toBeTrue()
         ->and($role->permissions->contains('name', 'meetings.create.padalinys'))->toBeFalse()
-        ->and($role->hasAllPermissions(['meetings.read.own', 'meetings.update.own']))->toBeTrue();
+        ->and($role->hasPermissionTo('meetings.update.own'))->toBeTrue();
 });
 
 test('rolling back restores tenant-wide creation', function (): void {

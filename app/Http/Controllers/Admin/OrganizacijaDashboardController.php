@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\GetRecentlyEditedRecords;
-use App\Enums\Responsibility;
+use App\Enums\ResponsibilityPurpose;
 use App\Http\Controllers\AdminController;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
@@ -52,7 +52,7 @@ class OrganizacijaDashboardController extends AdminController
             'endingTerms' => $canSeeDuties ? $this->serializeEnding($ending) : [],
             // A padalinys nobody coordinates silently drops its reps' notifications; name it.
             'coordinatorGaps' => $canSeeDuties
-                ? app(ResponsibilityResolver::class)->gaps(Responsibility::StudentRepCoordination)
+                ? app(ResponsibilityResolver::class)->gaps(ResponsibilityPurpose::StudentRepCoordination)
                     ->whereIn('id', $tenantIds)
                     ->map(fn ($tenant) => ['id' => $tenant->id, 'shortname' => (string) __($tenant->shortname)])
                     ->values()

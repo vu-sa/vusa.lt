@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Cache;
  *
  * This service consolidates institution access logic that was previously scattered across:
  * - MeetingPolicy::hasAuthorizedRelationshipAccess()
- * - TypesenseScopedKeyService::getInstitutionIdsForOwnPermission()
+ * - Typesense scoped search keys
  * - AtstovavimasDashboardController::atstovavimas() related institutions logic
  *
  * Access Types:

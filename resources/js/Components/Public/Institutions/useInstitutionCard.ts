@@ -29,7 +29,7 @@ export interface InstitutionCardData {
   types?: Array<{ id?: number; slug?: string; title?: string }>;
 }
 
-const ENTITIES: Record<string, string> = { nbsp: ' ', amp: '&', quot: '"', apos: '\'', lt: '<', gt: '>', '#39': '\'' };
+const ENTITIES: Record<string, string> = { 'nbsp': ' ', 'amp': '&', 'quot': '"', 'apos': '\'', 'lt': '<', 'gt': '>', '#39': '\'' };
 
 /** Rich descriptions arrive as HTML from entities; cards show them as one plain paragraph. */
 export function toPlainText(value: unknown): string | null {

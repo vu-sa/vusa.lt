@@ -18,12 +18,14 @@ import {
   Hand,
   Handshake,
   Inbox,
-  Info,
+  ListX,
   LoaderCircle,
+  MessagesSquare,
   PackageOpen,
   RefreshCw,
   RotateCcw,
   Search,
+  Split,
   ThumbsDown,
   ThumbsUp,
   TriangleAlert,
@@ -56,7 +58,7 @@ export type TaskStatus = 'completed' | 'open' | 'due_soon' | 'overdue';
 export type ContentStatus = 'published' | 'scheduled' | 'draft';
 export type ProblemStatus = 'open' | 'in_progress' | 'resolved';
 export type MissingVoteStatus = 'not_recorded';
-/** Derived by getAgendaItemStatus() from the item's type and main vote. */
+/** Derived by getAgendaItemStatus() from the item's type and outcome votes. */
 export type AgendaItemStatus
   = | 'consensus'
     | 'student_aligned'
@@ -64,10 +66,12 @@ export type AgendaItemStatus
     | 'decision_positive'
     | 'decision_negative'
     | 'neutral_decided'
+    | 'mixed'
     | 'no_vote'
     | 'deferred'
     | 'informational'
     | 'break'
+    | 'withdrawn'
     | 'unset';
 export type UnknownBenefitStatus = 'unknown';
 
@@ -109,10 +113,12 @@ export const agendaItemStatuses: Record<AgendaItemStatus, StatusPresentation> = 
   decision_positive: status('Priimtas', 'success', CircleCheck),
   decision_negative: status('Atmestas', 'danger', CircleX),
   neutral_decided: status('Neutralus sprendimas', 'neutral', CircleMinus),
+  mixed: status('Skirtingi rezultatai', 'info', Split),
   no_vote: status('Neaptartas', 'attention', CircleDashed),
   deferred: status('Atidėtas', 'neutral', Clock3),
-  informational: status('Informacinis', 'info', Info),
+  informational: status('Aptarimas', 'info', MessagesSquare),
   break: status('Pertrauka', 'neutral', Coffee),
+  withdrawn: status('Išbrauktas', 'neutral', ListX),
   unset: status('Nepažymėtas', 'attention', CircleHelp),
 };
 

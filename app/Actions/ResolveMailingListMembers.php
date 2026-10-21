@@ -245,9 +245,7 @@ class ResolveMailingListMembers
     {
         $existing = $this->addresses[$recipient->email] ?? null;
 
-        $this->addresses[$recipient->email] = $existing === null
-            ? $recipient
-            : $existing->withReasons($recipient->reasons);
+        $this->addresses[$recipient->email] = $existing?->withReasons($recipient->reasons) ?? $recipient;
     }
 
     /**
@@ -265,6 +263,10 @@ class ResolveMailingListMembers
             ),
             MailingListSourceType::Institution => $this->filterDutyTypes(
                 $query->where('institution_id', $source->source_id),
+                $source,
+            ),
+            MailingListSourceType::Responsibility => $this->scopeToTenants(
+                $query->whereHas('roles', fn (Builder $roles) => $roles->whereKey($source->source_id)),
                 $source,
             ),
             MailingListSourceType::InstitutionType => $this->filterDutyTypes(
@@ -288,7 +290,7 @@ class ResolveMailingListMembers
         $typeIds = [(int) $source->source_id];
         $typeIds = $includeSubtypes ? TypeTree::withDescendants($this->institutionTypeParents(), $typeIds) : $typeIds;
 
-        $excludedTypeIds = array_map('intval', (array) $source->filter('exclude_institution_type_ids', []));
+        $excludedTypeIds = array_map(intval(...), (array) $source->filter('exclude_institution_type_ids', []));
         $excludedTypeIds = $excludedTypeIds === [] ? [] : TypeTree::withDescendants($this->institutionTypeParents(), $excludedTypeIds);
 
         $query = Institution::query()
@@ -314,7 +316,7 @@ class ResolveMailingListMembers
      */
     private function filterDutyTypes(Builder $query, MailingListSource $source): Builder
     {
-        $dutyTypeIds = array_map('intval', (array) $source->filter('duty_type_ids', []));
+        $dutyTypeIds = array_map(intval(...), (array) $source->filter('duty_type_ids', []));
 
         if ($dutyTypeIds === []) {
             return $query;
@@ -366,7 +368,7 @@ class ResolveMailingListMembers
             MailingListTenantScope::All => null,
             MailingListTenantScope::Main => array_filter([Tenant::main()?->id]),
             MailingListTenantScope::Padaliniai => Tenant::query()->where('type', TenantType::Padalinys)->pluck('id')->all(),
-            MailingListTenantScope::Selected => array_map('intval', (array) $source->filter('tenant_ids', [])),
+            MailingListTenantScope::Selected => array_map(intval(...), (array) $source->filter('tenant_ids', [])),
         };
     }
 

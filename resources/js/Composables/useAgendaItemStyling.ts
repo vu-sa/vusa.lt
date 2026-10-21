@@ -10,7 +10,7 @@ export type { AgendaItemStatus };
 // ============================================================================
 
 export type VoteValue = 'positive' | 'negative' | 'neutral' | string | null | undefined;
-export type AgendaItemType = 'voting' | 'informational' | 'deferred' | string | null | undefined;
+export type AgendaItemType = 'voting' | 'informational' | 'deferred' | 'break' | 'withdrawn' | string | null | undefined;
 
 export interface Vote {
   id?: string | number;
@@ -45,8 +45,8 @@ export interface AgendaItemStatusMeta {
 }
 
 /**
- * Calculate the status of an agenda item based on its type and main vote
- * This is the primary function for determining agenda item display state.
+ * Calculate the status of an agenda item from its type and outcome votes: the shared status of
+ * those votes, or 'mixed' when they disagree.
  *
  * @param item - The agenda item (can include votes array or main_vote directly)
  * @param requiresStudentPerspective - False for VU SA's own bodies: there is no
@@ -72,41 +72,51 @@ export function getAgendaItemStatus(item: AgendaItem, requiresStudentPerspective
     return 'break';
   }
 
-  // Voting type - check main vote
-  const mainVote = getMainVote(item);
+  if (item.type === 'withdrawn') {
+    return 'withdrawn';
+  }
 
-  // No vote recorded yet
-  if (!mainVote?.decision) {
+  const outcomeVotes = getOutcomeVotes(item);
+  if (outcomeVotes.length === 0) {
     return 'no_vote';
   }
 
-  // Check if consensus vote (takes priority over other statuses)
-  if (mainVote.is_consensus) {
+  const statuses = new Set(outcomeVotes.map(vote => getVoteStatus(vote, requiresStudentPerspective)));
+  if (statuses.has('no_vote')) {
+    return 'no_vote';
+  }
+
+  return statuses.size === 1 ? [...statuses][0]! : 'mixed';
+}
+
+/** The outcome a single vote records; an item's status combines these (see getAgendaItemStatus). */
+export function getVoteStatus(vote: Vote, requiresStudentPerspective = true): AgendaItemStatus {
+  if (!vote.decision) {
+    return 'no_vote';
+  }
+
+  // Consensus takes priority over the other statuses
+  if (vote.is_consensus) {
     return 'consensus';
   }
 
   // An internal body's vote has only an outcome: the decision is the whole story
   if (!requiresStudentPerspective) {
-    if (mainVote.decision === 'positive') {
+    if (vote.decision === 'positive') {
       return 'decision_positive';
     }
-    if (mainVote.decision === 'negative') {
+    if (vote.decision === 'negative') {
       return 'decision_negative';
     }
     return 'neutral_decided';
   }
 
-  // Neutral decision
-  if (mainVote.decision === 'neutral') {
+  if (vote.decision === 'neutral') {
     return 'neutral_decided';
   }
 
-  // Check student vote alignment
-  if (mainVote.student_vote) {
-    if (mainVote.student_vote === mainVote.decision) {
-      return 'student_aligned';
-    }
-    return 'student_misaligned';
+  if (vote.student_vote) {
+    return vote.student_vote === vote.decision ? 'student_aligned' : 'student_misaligned';
   }
 
   // Has decision but no student vote recorded - treat as incomplete
@@ -158,10 +168,12 @@ export interface MeetingStatusSummary {
   decisionPositive: number;
   decisionNegative: number;
   neutralDecided: number;
+  mixed: number;
   noVote: number;
   deferred: number;
   informational: number;
   break: number;
+  withdrawn: number;
   unset: number;
   /** Overall status for coloring: 'complete' | 'incomplete' | 'empty' */
   overallStatus: 'complete' | 'incomplete' | 'empty';
@@ -187,10 +199,12 @@ export function getMeetingStatusSummary(items: AgendaItem[], requiresStudentPers
     decisionPositive: 0,
     decisionNegative: 0,
     neutralDecided: 0,
+    mixed: 0,
     noVote: 0,
     deferred: 0,
     informational: 0,
     break: 0,
+    withdrawn: 0,
     unset: 0,
     overallStatus: 'empty',
     voteAlignmentStatus: 'unknown',
@@ -223,6 +237,9 @@ export function getMeetingStatusSummary(items: AgendaItem[], requiresStudentPers
       case 'neutral_decided':
         summary.neutralDecided++;
         break;
+      case 'mixed':
+        summary.mixed++;
+        break;
       case 'no_vote':
         summary.noVote++;
         break;
@@ -235,6 +252,9 @@ export function getMeetingStatusSummary(items: AgendaItem[], requiresStudentPers
       case 'break':
         summary.break++;
         break;
+      case 'withdrawn':
+        summary.withdrawn++;
+        break;
       case 'unset':
         summary.unset++;
         break;
@@ -243,7 +263,7 @@ export function getMeetingStatusSummary(items: AgendaItem[], requiresStudentPers
 
   // Calculate completion rate (for voting items only)
   const votingItems = summary.consensus + summary.aligned + summary.misaligned
-    + summary.decisionPositive + summary.decisionNegative + summary.neutralDecided + summary.noVote;
+    + summary.decisionPositive + summary.decisionNegative + summary.neutralDecided + summary.mixed + summary.noVote;
   const completedVotingItems = votingItems - summary.noVote;
 
   if (votingItems > 0) {
@@ -298,6 +318,23 @@ export function getMainVote(item: AgendaItem): Vote | undefined {
   }
   // Fall back to finding in votes array
   return item.votes?.find(v => v.is_main);
+}
+
+/**
+ * The votes that decide the item's outcome: the main vote when one is marked, otherwise all of
+ * them. Mirrors AgendaItem::outcomeVotes().
+ */
+export function getOutcomeVotes(item: AgendaItem): Vote[] {
+  const mainVote = getMainVote(item);
+
+  return mainVote ? [mainVote] : (item.votes ?? []);
+}
+
+/** The one vote whose fields stand for the item, or undefined when several votes share the outcome. */
+export function getOutcomeVote(item: AgendaItem): Vote | undefined {
+  const outcomeVotes = getOutcomeVotes(item);
+
+  return outcomeVotes.length === 1 ? outcomeVotes[0] : undefined;
 }
 
 /**
@@ -387,14 +424,9 @@ export function getStudentBenefitLabel(value: VoteValue): string {
   }
 }
 
-/**
- * Check if an agenda item has any decision data to display
- * Returns true if main_vote has student_vote, decision, or student_benefit set
- */
+/** Whether any outcome vote has a student vote, decision or student benefit to display. */
 export function hasDecisionData(item: AgendaItem): boolean {
-  const mainVote = getMainVote(item);
-  if (!mainVote) return false;
-  return mainVote.student_vote !== null || mainVote.decision !== null || mainVote.student_benefit !== null;
+  return getOutcomeVotes(item).some(vote => vote.student_vote != null || vote.decision != null || vote.student_benefit != null);
 }
 
 // ============================================================================
@@ -405,7 +437,7 @@ export function hasDecisionData(item: AgendaItem): boolean {
  * Check if an agenda item has both student vote and decision for comparison
  */
 export function canCompareVotes(item: AgendaItem): boolean {
-  const mainVote = getMainVote(item);
+  const mainVote = getOutcomeVote(item);
   return !!(mainVote?.student_vote && mainVote?.decision);
 }
 
@@ -413,7 +445,7 @@ export function canCompareVotes(item: AgendaItem): boolean {
  * Check if student vote matches the decision for an agenda item
  */
 export function isVoteAligned(item: AgendaItem): boolean {
-  const mainVote = getMainVote(item);
+  const mainVote = getOutcomeVote(item);
   if (!mainVote?.student_vote || !mainVote?.decision) return false;
   return mainVote.student_vote === mainVote.decision;
 }

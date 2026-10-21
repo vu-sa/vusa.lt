@@ -4,10 +4,10 @@ use App\Actions\GetInstitutionCoordinators;
 use App\Actions\GetUserCoordinators;
 use App\Enums\InstitutionScope;
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
+use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
@@ -24,7 +24,7 @@ beforeEach(function (): void {
         'name' => ['lt' => 'Koordinatorius', 'en' => 'Coordinator'],
         'email' => 'koordinatorius@vusa.lt',
     ]);
-    DutyResponsibility::factory()->for($this->managerDuty)->forTenant($this->tenant)->create();
+    ResponsibilityGrant::factory()->forDuty($this->managerDuty)->forTenant($this->tenant)->create();
     $this->coordinator = User::factory()->create(['name' => 'Ona Koordinatorė', 'email' => 'ona@gmail.com']);
     $this->coordinator->duties()->attach($this->managerDuty, ['start_date' => now()->subMonth(), 'end_date' => null]);
 });
@@ -75,7 +75,7 @@ describe('GetInstitutionCoordinators', function (): void {
         $senate = InstitutionType::factory()->withGovernanceScope()->create();
         $this->institution->types()->attach($senate);
         $centralDuty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create(['name' => ['lt' => 'CB koordinatorius', 'en' => 'CB coordinator']]);
-        DutyResponsibility::factory()->for($centralDuty)->forType($senate)->create();
+        ResponsibilityGrant::factory()->forDuty($centralDuty)->forType($senate)->create();
         User::factory()->create(['name' => 'Jonas Centras'])->duties()->attach($centralDuty, ['start_date' => now()->subMonth()]);
 
         expect(coordinatorCardFor($this->institution->fresh()))->toMatchArray(['name' => 'Jonas Centras', 'duty' => 'CB koordinatorius']);
@@ -98,7 +98,7 @@ describe('GetUserCoordinators', function (): void {
         $otherTenant = Tenant::factory()->create();
         $otherInstitution = Institution::factory()->for($otherTenant)->create();
         $otherDuty = Duty::factory()->for($otherInstitution)->create();
-        DutyResponsibility::factory()->for($otherDuty)->forTenant($otherTenant)->create();
+        ResponsibilityGrant::factory()->forDuty($otherDuty)->forTenant($otherTenant)->create();
         User::factory()->create(['name' => 'Petras Koordinatorius'])
             ->duties()->attach($otherDuty, ['start_date' => now()->subMonth(), 'end_date' => null]);
 
@@ -158,7 +158,7 @@ describe('GetUserCoordinators', function (): void {
     });
 
     test('names nobody while the padalinys has no coordinator', function (): void {
-        $this->managerDuty->responsibilities()->each(fn (DutyResponsibility $assignment) => $assignment->delete());
+        $this->managerDuty->responsibilityGrants()->get()->each->delete();
         ($this->seatIn)($this->institution);
 
         expect(GetUserCoordinators::execute($this->rep->fresh()))->toBeEmpty();

@@ -3,9 +3,9 @@
 use App\Enums\NotificationType;
 use App\Mail\NotificationDigest;
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
+use App\Models\ResponsibilityGrant;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -41,7 +41,7 @@ function renderNotificationMail(BaseNotification $notification, User $user): arr
 function coordinatorFor(Institution $institution, string $email): User
 {
     $duty = Duty::factory()->for($institution)->create(['email' => $email]);
-    DutyResponsibility::factory()->for($duty)->forTenant($institution->tenant)->create();
+    ResponsibilityGrant::factory()->forDuty($duty)->forTenant($institution->tenant)->create();
 
     $coordinator = User::factory()->create(['name' => 'Ona Koordinatorė']);
     $coordinator->duties()->attach($duty, ['start_date' => now()->subMonth(), 'end_date' => null]);
@@ -206,12 +206,12 @@ test('activity mail keeps both choices and the reporting period in HTML and text
 
     foreach (['html', 'text'] as $part) {
         $content = html_entity_decode($rendered[$part]);
-        expect($content)->toContain('2026-09-01', '2026-09-30', 'Please reply by Friday.', $notification->primaryAction()['url'], $notification->secondaryAction()['url']);
-        expect(substr_count($content, 'Please reply by Friday.'))->toBe(1);
-        expect(substr_count($content, '2026-09-01'))->toBe(1);
+        expect($content)->toContain('2026-09-01', '2026-09-30', 'Please reply by Friday.', $notification->primaryAction()['url'], $notification->secondaryAction()['url'])
+            ->and(substr_count($content, 'Please reply by Friday.'))->toBe(1)
+            ->and(substr_count($content, '2026-09-01'))->toBe(1);
     }
-    expect($rendered['html'])->toContain('button-neutral')->not->toContain('table-layout:fixed', '#bd1737');
-    expect($rendered['subject'])->not->toStartWith('VU SA ·');
+    expect($rendered['html'])->toContain('button-neutral')->not->toContain('table-layout:fixed', '#bd1737')
+        ->and($rendered['subject'])->not->toStartWith('VU SA ·');
 })->with(['lt', 'en'])->with(['activity_confirmation', 'missing_meetings']);
 
 test('notification emails greet the recipient by first name in their locale', function (string $locale, string $name, string $greeting): void {
@@ -246,10 +246,10 @@ test('activity emails keep the platform description and link in the footer', fun
     $footer = $xpath->query('//table[contains(concat(" ", normalize-space(@class), " "), " footer ")]')->item(0);
 
     expect($rendered['html'])->toContain('Labas, Agne!', 'kaip studentų atstovo (-ės)', 'įjungta')
-        ->not->toContain('įjungei', 'Posėdžius ir darbotvarkes rasi');
-    expect($footer->textContent)->toContain(__('mail.platform_description'), __('mail.open_platform'));
-    expect($xpath->query('.//a', $footer)->item(0)->getAttribute('href'))->toBe(route('dashboard'));
-    expect($rendered['text'])->toContain('Labas, Agne!', __('mail.platform_description'), route('dashboard'));
+        ->not->toContain('įjungei', 'Posėdžius ir darbotvarkes rasi')
+        ->and($footer->textContent)->toContain(__('mail.platform_description'), __('mail.open_platform'))
+        ->and($xpath->query('.//a', $footer)->item(0)->getAttribute('href'))->toBe(route('dashboard'))
+        ->and($rendered['text'])->toContain('Labas, Agne!', __('mail.platform_description'), route('dashboard'));
 });
 
 test('digest greetings also use the Lithuanian first-name ending', function (): void {

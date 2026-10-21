@@ -65,6 +65,13 @@ class DeploymentRun extends Command
             'args' => ['--force' => true],
             'critical' => true,
         ],
+        // Right after the schema: a release that changes PermissionCatalog adds and removes its
+        // permission rows here instead of in a migration. Idempotent, and a few queries.
+        'permissions' => [
+            'name' => 'Sync permissions with the catalog',
+            'command' => 'permissions:sync',
+            'critical' => true,
+        ],
         'clear-caches' => [
             'name' => 'Clear stale framework caches',
             'command' => 'optimize:clear',

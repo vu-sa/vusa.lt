@@ -70,28 +70,27 @@ class TypesenseCollectionConfig
      * Admin collections configuration
      * These require scoped API keys with tenant filtering (unless skip_tenant_filter is true)
      *
-     * own_permission: When set, users with only .own permission (not .padalinys) can access
-     * records where their duties have a direct relationship to the model via institution.
-     * This requires the searchable array to include 'institution_ids' field.
+     * baseline_own: every member gets their own and related institutions without a permission
+     * and the meetings and agenda items they can already read through those institutions.
      *
      * public_rows: every admin gets a key whose filter also admits the rows anyone may read —
      * `meeting_types` (a public institution type, per current MeetingSettings) or `active`.
      * Built from indexed facts when the key is made, so a settings change needs no reindex.
      *
-     * @var array<string, array{model: class-string, permission: string|null, description: string, skip_tenant_filter?: bool, own_permission?: string, public_rows?: 'meeting_types'|'active'}>
+     * @var array<string, array{model: class-string, permission: string|null, description: string, skip_tenant_filter?: bool, baseline_own?: true, public_rows?: 'meeting_types'|'active'}>
      */
     protected const ADMIN_COLLECTIONS = [
         'meetings' => [
             'model' => Meeting::class,
             'permission' => 'meetings.read.padalinys',
-            'own_permission' => 'meetings.read.own',
+            'baseline_own' => true,
             'public_rows' => 'meeting_types',
             'description' => 'Meeting records: public ones for everyone, plus tenant/institution-based access',
         ],
         'agenda_items' => [
             'model' => AgendaItem::class,
-            'permission' => 'meetings.read.padalinys', // Same as meetings - they're connected
-            'own_permission' => 'meetings.read.own',
+            'permission' => 'agendaItems.read.padalinys',
+            'baseline_own' => true,
             'public_rows' => 'meeting_types',
             'description' => 'Agenda items: public meetings\' for everyone, plus tenant/institution-based access',
         ],
@@ -116,7 +115,7 @@ class TypesenseCollectionConfig
         'institutions' => [
             'model' => Institution::class,
             'permission' => 'institutions.read.padalinys',
-            'own_permission' => 'institutions.read.own',
+            'baseline_own' => true,
             'public_rows' => 'active',
             'description' => 'Institutions: active ones for everyone, plus tenant-based or self-referential access',
         ],
@@ -212,17 +211,9 @@ class TypesenseCollectionConfig
     }
 
     /**
-     * Get the own permission for a collection (for .own scope filtering by institution)
-     */
-    public static function getOwnPermissionForCollection(string $collection): ?string
-    {
-        return self::ADMIN_COLLECTIONS[$collection]['own_permission'] ?? null;
-    }
-
-    /**
      * Get full admin collection config
      *
-     * @return array<string, array{model: class-string, permission: string|null, description: string, skip_tenant_filter?: bool, own_permission?: string, public_rows?: 'meeting_types'|'active'}>
+     * @return array<string, array{model: class-string, permission: string|null, description: string, skip_tenant_filter?: bool, baseline_own?: true, public_rows?: 'meeting_types'|'active'}>
      */
     public static function getAdminCollections(): array
     {

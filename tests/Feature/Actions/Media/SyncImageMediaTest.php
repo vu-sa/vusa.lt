@@ -83,9 +83,8 @@ test('an image of a record the actor cannot see is not copied', function (): voi
     $foreign = app(AddImageMedia::class)->execute($otherBanner, UploadedFile::fake()->image('x.png'), 'image');
 
     expect(fn () => app(SyncImageMedia::class)->execute($this->banner, 'image', ['id' => $foreign->id], $this->admin))
-        ->toThrow(ValidationException::class);
-
-    expect($otherBanner->getMedia('image'))->toHaveCount(1);
+        ->toThrow(ValidationException::class)
+        ->and($otherBanner->getMedia('image'))->toHaveCount(1);
 });
 
 test('an image of a record the actor can see is copied, not moved', function (): void {
@@ -155,8 +154,8 @@ test('saving an unchanged bare news image imports it instead of removing it', fu
         $media = $news->refresh()->getFirstMedia('image');
         expect($media)->not->toBeNull()
             ->and($media->getCustomProperty('legacy_source'))->toBe($filename)
-            ->and($media->getCustomProperty('author'))->toBe('Jonas');
-        expect(ImageData::fromLegacy(LegacyImageUrl::PLACEHOLDER))->toBeNull();
+            ->and($media->getCustomProperty('author'))->toBe('Jonas')
+            ->and(ImageData::fromLegacy(LegacyImageUrl::PLACEHOLDER))->toBeNull();
     } finally {
         File::deleteDirectory($uploads);
     }
@@ -224,14 +223,14 @@ describe('after legacy image columns are dropped', function (): void {
 
         $sync->execute($owner, $collection, ['id' => $first->id, 'author' => 'Jonas'], $this->admin);
 
-        expect($owner->fresh()->imageData($collection)['id'])->toBe($first->id);
-        expect($owner->fresh()->imageData($collection)['author'])->toBe('Jonas');
+        expect($owner->fresh()->imageData($collection)['id'])->toBe($first->id)
+            ->and($owner->fresh()->imageData($collection)['author'])->toBe('Jonas');
         Storage::disk('spatieMediaLibrary')->assertExists($first->fresh()->getPathRelativeToRoot());
 
         $sync->execute($owner, $collection, ['id' => null, 'author' => 'Ona', 'focal_point' => '40% 60%'], $this->admin);
 
-        expect($owner->fresh()->imageData($collection)['author'])->toBe('Ona');
-        expect($owner->fresh()->imageData($collection)['focal_point'])->toBe('40% 60%');
+        expect($owner->fresh()->imageData($collection)['author'])->toBe('Ona')
+            ->and($owner->fresh()->imageData($collection)['focal_point'])->toBe('40% 60%');
 
         $second = stageImage($this->admin, 'replacement.png');
         $sync->execute($owner, $collection, ['id' => $second->id], $this->admin);

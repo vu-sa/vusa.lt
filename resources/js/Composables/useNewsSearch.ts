@@ -1,9 +1,8 @@
-import { imageFromSearch } from '@/Types/media';
-
 import { ref, computed, watch, onMounted, onUnmounted, getCurrentInstance } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 
+import { imageFromSearch } from '@/Types/media';
 import { provideFacetSearch } from '@/Shared/Search/facets';
 import { SearchClientFactory, type TypesenseClient } from '@/Shared/Search/services/SearchClientFactory';
 import type { NewsItem } from '@/Types/contentParts';

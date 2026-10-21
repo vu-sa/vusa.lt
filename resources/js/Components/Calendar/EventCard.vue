@@ -79,7 +79,9 @@
       <!-- Title -->
       <h3 class="text-pretty text-lg font-bold leading-snug text-foreground transition-colors group-hover:text-brand">
         <component :is="useInertia ? Link : 'a'" :href="eventHref">
-          <SearchMatch v-if="titleMatch" :match="titleMatch" /><template v-else>{{ eventTitle }}</template>
+          <SearchMatch v-if="titleMatch" :match="titleMatch" /><template v-else>
+            {{ eventTitle }}
+          </template>
         </component>
       </h3>
 

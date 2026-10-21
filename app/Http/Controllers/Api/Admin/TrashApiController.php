@@ -10,6 +10,7 @@ use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\News;
 use App\Models\Page;
+use App\Services\MeetingAccessService;
 use App\Services\ModelAuthorizer;
 use App\Services\TanstackTableService;
 use Carbon\CarbonInterface;
@@ -74,12 +75,24 @@ class TrashApiController extends ApiController
         $this->authorizeApi('viewAny', $config['model']);
 
         return match ($collection) {
-            'institutions' => $this->respond(Institution::onlyTrashed(), $request, $config),
-            'meetings' => $this->respond(Meeting::onlyTrashed(), $request, $config),
-            'news' => $this->respond(News::onlyTrashed(), $request, $config),
-            'pages' => $this->respond(Page::onlyTrashed(), $request, $config),
+            'institutions' => $this->respond($this->tenantScoped(Institution::onlyTrashed(), $config), $request, $config),
+            'meetings' => $this->respond(app(MeetingAccessService::class)->trashedMeetings(Meeting::onlyTrashed(), $request->user()), $request, $config),
+            'news' => $this->respond($this->tenantScoped(News::onlyTrashed(), $config), $request, $config),
+            'pages' => $this->respond($this->tenantScoped(Page::onlyTrashed(), $config), $request, $config),
             default => abort(404),
         };
+    }
+
+    /**
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @param  array{tenantRelation: string, permission: string}  $config
+     * @return Builder<TModel>
+     */
+    private function tenantScoped(Builder $query, array $config): Builder
+    {
+        return $this->tableService->applyPermissionFiltering($query, $config['tenantRelation'], $config['permission'], $this->authorizer);
     }
 
     /**
@@ -91,7 +104,7 @@ class TrashApiController extends ApiController
     private function respond(Builder $trashed, IndexTrashRequest $request, array $config): JsonResponse
     {
         $query = $this->applyTanstackFilters(
-            $this->tableService->applyPermissionFiltering($trashed, $config['tenantRelation'], $config['permission'], $this->authorizer),
+            $trashed,
             $request,
             $this->tableService,
             $config['search'],
@@ -119,11 +132,20 @@ class TrashApiController extends ApiController
     {
         $deletedAt = $record->getAttribute('deleted_at');
 
-        return [
+        $row = [
             ...(method_exists($record, 'toSearchableArray') ? $record->toSearchableArray() : []),
             'id' => (string) $record->getKey(),
             'deleted_at' => $deletedAt instanceof CarbonInterface ? $deletedAt->toIso8601String() : null,
             'force_delete_blocked_reason' => $record instanceof GuardsForceDelete ? $record->forceDeleteBlockedReason() : null,
         ];
+
+        if ($record instanceof Meeting) {
+            $row['abilities'] = [
+                'restore' => request()->user()->can('restore', $record),
+                'forceDelete' => request()->user()->can('forceDelete', $record),
+            ];
+        }
+
+        return $row;
     }
 }

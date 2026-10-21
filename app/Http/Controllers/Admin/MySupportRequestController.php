@@ -103,7 +103,7 @@ class MySupportRequestController extends AdminController
             ->get()
             ->map(fn (Role $role): array => [
                 'id' => $role->id,
-                'name' => $role->name,
+                'name' => $role->displayTitle(),
                 'users' => $role->users
                     ->concat($role->currentUsersThroughDuties)
                     ->unique('id')

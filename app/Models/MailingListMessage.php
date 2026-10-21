@@ -19,7 +19,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $sender_email
  * @property Carbon|null $sent_at
  * @property string|null $body_text
- * @property list<array{name: string, size: int|null, url: string|null}>|null $attachments
+ * @property array<array-key, mixed>|null $attachments
  * @property string|null $url
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at

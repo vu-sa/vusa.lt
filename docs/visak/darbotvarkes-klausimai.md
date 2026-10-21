@@ -3,8 +3,10 @@ doc_status: reviewed
 title: Darbotvarkės klausimai
 area: agendaItems
 models: [AgendaItem, Vote]
-last_reviewed: 2026-10-19
+last_reviewed: 2026-10-21
 tests:
+  - tests/Feature/Permissions/MeetingPermissionsTest.php
+  - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
   - tests/Browser/AgendaItemPrivacyTest.php
   - resources/js/Components/Public/__tests__/PublicAgendaItemRow.component.test.ts
   - tests/Feature/Meetings/AgendaItemPrivacyTest.php
@@ -17,6 +19,8 @@ tests:
   - tests/Feature/VoteControllerTest.php
   - tests/Feature/Meetings/AgendaItemVotesTest.php
   - tests/Feature/Meetings/AgendaItemBreakTest.php
+  - tests/Feature/Meetings/AgendaItemWithdrawnTest.php
+  - resources/js/Components/AgendaItems/__tests__/AgendaItemTypeDialog.component.test.ts
   - tests/Feature/Meetings/AgendaItemTimetableTest.php
   - tests/Feature/Meetings/MeetingStudentPerspectiveTest.php
   - tests/Feature/Meetings/MeetingTranslationsTest.php
@@ -107,23 +111,42 @@ Redagavimo lange rodomas prieigos paaiškinimas ir viešos eilutės peržiūra.
 
 Kiekvienam klausimui pažymimas tipas. Kol jis nepažymėtas, klausimas laikomas nepilnu. Tipas
 matomas klausimo būsenoje; pasirenkamas ar keičiamas mygtuku **Pasirinkti tipą** / **Keisti tipą**,
-kuris atveria atskirą langą su keturiais variantais. Jį galima pakeisti ir lange **Redaguoti punktą**.
+kuris atveria atskirą langą su penkiais variantais. Jį galima pakeisti ir lange **Redaguoti punktą**.
+Lango klausimas prisitaiko prie posėdžio: įvykusiam klausiama, kaip klausimas *buvo* svarstomas,
+būsimam – kaip *bus*, o sprendimui el. paštu – kaip jis sprendžiamas el. paštu.
 
 | Tipas | Kada | Reikia balsavimo? |
 |---|---|---|
-| **Balsavimas** | Dėl klausimo priimamas sprendimas | Taip |
-| **Informacinis** | Klausimas tik pristatomas | Ne |
-| **Atidėtas** | Klausimas perkeltas į kitą posėdį | Ne |
+| **Balsavimas** | Dėl klausimo sprendžiama balsuojant ar bendru sutarimu | Taip |
+| **Aptarimas** | Klausimas pristatomas ar aptariamas, bet dėl jo nebalsuojama | Ne |
+| **Atidėtas** | Svarstymas perkeliamas į vėlesnį posėdį | Ne |
+| **Išbrauktas** | Klausimas išbrauktas iš darbotvarkės ar atsiimtas ir nesvarstomas | Ne |
 | **Pertrauka** | Pertrauka tarp klausimų | Ne |
 
-Pasirinkus **Balsavimas**, automatiškai pridedamas pagrindinis balsavimas.
+Pasirinkus **Balsavimas**, automatiškai pridedamas pirmas balsavimas.
+
+<ChangelogNote version="v3.11" date="2026-10-20" title="Aptarimas ir Išbrauktas">
+
+Tipas **Informacinis** pervadintas į **Aptarimas** – jis tinka ir pristatymui, ir aptarimui be
+balsavimo. Naujas tipas **Išbrauktas** skirtas klausimams, kurie išbraukti iš darbotvarkės ar
+atsiimti, o ne atidėti.
+
+</ChangelogNote>
 
 ### Balsavimai {#balsavimai}
 
-Klausimas gali turėti kelis balsavimus (pvz., dėl atskirų pataisų). Vienas jų yra **pagrindinis** –
-pagal jį nustatoma klausimo būsena. Pirmas balsavimas tampa pagrindiniu automatiškai; ištrynus
-pagrindinį, pagrindiniu tampa kitas. Balsavimų tvarka, pavadinimai ir pagrindinis keičiami lange
-**Tvarkyti balsavimus**.
+Klausimas gali turėti kelis balsavimus (pvz., dėl atskirų pataisų). Vieną jų galima pažymėti
+**pagrindiniu** – tada klausimo būsena nustatoma tik pagal jį. Jei pagrindinio nėra, būsena
+nustatoma pagal visus balsavimus: kai jų rezultatas vienodas, rodomas tas rezultatas, o kai
+skiriasi – **Skirtingi rezultatai**. Pagrindinis nebūtinas ir pats neparenkamas. Balsavimų tvarka,
+pavadinimai ir pagrindinis (paspaudus dar kartą – atžymimas) keičiami lange **Tvarkyti balsavimus**.
+
+<ChangelogNote version="v3.11" date="2026-10-20" title="Pagrindinis balsavimas nebūtinas">
+
+Anksčiau vienas balsavimas visada buvo pagrindinis: pirmas pažymimas automatiškai, o ištrynus
+pagrindinį juo tapdavo kitas.
+
+</ChangelogNote>
 
 Kiekviename balsavime žymimi trys laukai:
 
@@ -149,10 +172,11 @@ organizacija, todėl žymimas **tik sprendimas**. Jei posėdis bendras VU SA dar
 Klausimas **užpildytas**, kai:
 
 - pažymėtas jo tipas **ir**
-- tipas nereikalauja balsavimo (Informacinis, Atidėtas, Pertrauka) **arba** pagrindiniame
-  balsavime užpildyti visi reikiami laukai (VU SA dariniuose – tik sprendimas).
+- tipas nereikalauja balsavimo (Aptarimas, Atidėtas, Išbrauktas, Pertrauka) **arba** pagrindiniame
+  balsavime užpildyti visi reikiami laukai (VU SA dariniuose – tik sprendimas). Jei pagrindinio
+  nėra, laukai turi būti užpildyti visuose balsavimuose.
 
-Papildomi balsavimai užpildymui įtakos neturi. Ta pati taisyklė taikoma posėdžio
+Kai pagrindinis pažymėtas, kiti balsavimai užpildymui įtakos neturi. Ta pati taisyklė taikoma posėdžio
 [būsenai](/visak/posedziai#busena), užpildymo užduočiai ir sąrašo filtrui **Užpildymo būsena**.
 
 <ChangelogNote version="v3.0" date="2026-10-02" title="Viena užpildymo taisyklė">
@@ -166,8 +190,9 @@ vien sprendimu laikė nepilnais, o posėdžio būsena klausimą be tipo galėjo 
 
 Klausimo būsena rodo **rezultatą**, pvz., **Studentų pozicija priimta** (studentų balsas sutampa
 su sprendimu), **Studentų pozicija nesutampa**, **Pritarta bendru sutarimu**, **Neaptartas** (dar
-nėra sprendimo, o išoriniame organe – ir studentų balso), **Informacinis**, **Atidėtas**,
-**Pertrauka** ar **Nepažymėtas** (nėra tipo). VU SA darinyje rodomas pats sprendimas: **Priimtas**,
+nėra sprendimo, o išoriniame organe – ir studentų balso), **Aptarimas**, **Atidėtas**,
+**Išbrauktas**, **Pertrauka**, **Skirtingi rezultatai** (keli balsavimai be pagrindinio, jų rezultatai skiriasi) ar
+**Nepažymėtas** (nėra tipo). VU SA darinyje rodomas pats sprendimas: **Priimtas**,
 **Atmestas** arba **Neutralus sprendimas**.
 
 Būsena gali būti „Studentų pozicija priimta“, nors dar nepažymėta nauda studentams. Ar klausimui
@@ -221,16 +246,32 @@ metai**, **Užpildymo būsena**, **Studentų balsas**, **Sprendimas**, **Palanku
 
 ## Kas ką gali {#teises}
 
+Posėdį redaguojantis narys gali tvarkyti ir jo darbotvarkę. Atsakomybė su atskira klausimų
+kūrimo teise taip pat leidžia pridėti klausimų prie matomų posėdžių jos padaliniuose, nors
+paties posėdžio redaguoti negalima. Ši teisė neleidžia perrikiuoti, redaguoti ar trinti esamų
+klausimų ir nesuteikia prieigos prie neviešo jų turinio. Vien posėdžio peržiūros teisės
+neviešiems klausimams neužtenka – jų peržiūra tikrinama atskirai.
+
+
 | Veiksmas | Bet kuris narys | Institucijos narys posėdžio metu | Studentų atstovas | Studentų atstovų / Komunikacijos koordinatorius | Centrinio biuro studentų atstovų koordinatorius |
 |---|---|---|---|---|---|
 | Matyti viešo posėdžio klausimus (be pastabų) | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Matyti klausimą su pastabomis | – | ✓, tik skaityti | ✓, savo institucijų | ✓, savo padalinio | ✓ |
-| Pridėti klausimų | – | – | ✓, savo institucijų | ✓, savo padalinio | ✓ |
+| Matyti klausimą su pastabomis | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓ |
+| Pridėti klausimų | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓ |
 | Keisti tvarką | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓ |
-| Žymėti rezultatą, redaguoti, ištrinti | – | – | ✓, savo institucijų | ✓, savo padalinio | ✓ |
-| Susieti ir atsieti problemas | – | – | ✓, savo institucijų | ✓, savo padalinio | ✓ |
+| Žymėti rezultatą, redaguoti, ištrinti | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓ |
+| Susieti ir atsieti problemas | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓ |
 
-Institucijos narys be rolės klausimo redaguoti negali, nors gali keisti patį posėdį.
+Institucijos narys posėdžio metu – žmogus, kuris posėdžio dieną ėjo pareigas jo institucijoje, net
+jei jo pareigos jau baigėsi. Jis klausimus pildo taip pat, kaip ir patį posėdį; jo pakeitimai matomi
+posėdžio istorijoje.
+
+<ChangelogNote version="v3.11" date="2026-10-20" title="Darbotvarkę pildo ir buvę nariai">
+
+Anksčiau institucijos narys be atsakomybės klausimų redaguoti negalėjo, nors galėjo keisti patį
+posėdį.
+
+</ChangelogNote>
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 
@@ -250,15 +291,17 @@ Plačiau – [Posėdžiai](/visak/posedziai#pranesimai) ir [Užduotys](/mano/uzd
 
 ### Teisės
 
-- Klausimų teises sprendžia `AgendaItemPolicy`. `view` – narys posėdžio metu, ryšiu susijusios
-  institucijos arba `agendaItems.read.{*|own|padalinys}`; `viewSummary` – posėdis viešas arba
-  `view`. `update` ir `delete` – tik `agendaItems.{update|delete}.{*|own|padalinys}`.
-- Kurti: `agendaItems.create.padalinys` **ir** posėdžio `update`. Perrikiuoti: posėdžio `update`.
+- Klausimų teises sprendžia `AgendaItemPolicy`. Bazinė peržiūra remiasi `MeetingAccessService`,
+  papildoma peržiūra – `agendaItems.read.{*|padalinys}`. Viešas posėdis suteikia `viewSummary`,
+  bet neviešas klausimas be `view` pateikiamas uždengtas.
+- Kurti: posėdžio `update` **arba** `agendaItems.create.{padalinys|*}` pagal konkretaus posėdžio
+  padalinius kartu su posėdžio `viewSummary`. Perrikiuoti: posėdžio `update`.
+- Redaguoti ir trinti: posėdžio `update` arba atitinkama `agendaItems.{update|delete}.{padalinys|*}`.
 - Balsavimai autorizuojami per klausimo `update` (`StoreVoteRequest`).
-- Rolės: Studentų atstovas – `agendaItems.create.padalinys`, `read|update|delete.own`; Studentų
-  atstovų ir Komunikacijos koordinatoriai – visos `.padalinys`; Centrinio biuro studentų atstovų
-  koordinatorius – visos `*`.
-- Sąrašo eilutes riboja Typesense raktas pagal `meetings.read.*` teises (ne `agendaItems.*`).
+- Studentų atstovams darbotvarkės tvarkymą suteikia `meetings.update.own`; atskiros klausimų
+  `.own` teisės nesiūlomos. Koordinatorių atsakomybės turi ir atskiras klausimų teises.
+- Paieška remiasi bazine prieiga ir `agendaItems.read.{padalinys|*}`, neviešiems klausimams
+  papildomai taiko gyvą `view` patikrą. `meetings.read` nesuteikia neviešų klausimų peržiūros.
 
 ### Kaip tai įgyvendinta
 
@@ -267,8 +310,9 @@ Plačiau – [Posėdžiai](/visak/posedziai#pranesimai) ir [Užduotys](/mano/uzd
 - Užpildymas: `MeetingCompletionService::itemIsComplete()`; jį naudoja posėdžio būsena,
   `AgendaCompletionTaskHandler` ir paieškos indekso `is_complete`.
 - VU SA išimtis: `Meeting::requiresStudentPerspective()`.
-- Vienas pagrindinis balsavimas: `AgendaItemController::ensureSingleMainVote()`,
-  `VoteController::destroy()`.
+- Rezultatą lemiantys balsavimai: `AgendaItem::outcomeVotes()` (serveris) ir `getOutcomeVotes()` /
+  `getAgendaItemStatus()` (`useAgendaItemStyling.ts`) – pagrindinis, jei pažymėtas, kitaip visi.
+- Daugiausia vienas pagrindinis: `AgendaItemController::ensureSingleMainVote()`.
 - Reikšmių pavadinimai: `VoteValue` (serveris), `useAgendaItemStyling.ts` ir sąrašo filtrų
   `FACET_VALUE_LABELS` – visur tie patys.
 - Senas redagavimo adresas `/mano/agendaItems/{id}/edit` nukreipia į klausimo puslapį.

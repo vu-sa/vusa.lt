@@ -1,7 +1,10 @@
 <?php
 
+use App\Models\Cadence;
 use App\Models\Duty;
 use App\Models\Institution;
+use App\Models\InstitutionLink;
+use App\Models\InstitutionSecretary;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
@@ -9,6 +12,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
 use App\Services\InstitutionAccessService;
+use App\Services\MeetingAccessService;
 use App\Services\ModelAuthorizer;
 use App\Services\Typesense\TypesenseScopedKeyService;
 use App\Settings\MeetingSettings;
@@ -145,6 +149,101 @@ test('institutions in the list are exactly the ones the member may open', functi
     expect(parityAdmittedIds(Institution::class, parityKeyFilter($this->member, 'institutions'), $institutions))
         ->toBe(parityAllowedIds($this->member, $institutions))
         ->toHaveCount(1);
+});
+
+test('a role-free member finds their current institutions meetings from any term', function (): void {
+    $institution = $this->member->duties()->first()->institution;
+    $meetings = collect([parityMeetingOf($institution), parityMeetingOf($institution, Institution::factory()->for($this->otherTenant)->create())]);
+    $items = AgendaItem::whereIn('meeting_id', $meetings->pluck('id'))->get();
+
+    expect(parityAdmittedIds(Meeting::class, parityKeyFilter($this->member, 'meetings'), $meetings))
+        ->toBe(parityAllowedIds($this->member, $meetings))->toHaveCount(2)
+        ->and(parityAdmittedIds(AgendaItem::class, parityKeyFilter($this->member, 'agenda_items'), $items))
+        ->toBe(parityAllowedIds($this->member, $items))->toHaveCount(2);
+});
+
+test('historical search and navigation preserve each duty interval and its inclusive boundaries', function (): void {
+    $duty = $this->member->duties()->first();
+    $duty->pivot->update(['start_date' => '2025-03-01', 'end_date' => '2025-03-31']);
+    $otherDuty = Duty::factory()->for($duty->institution)->create();
+    $this->member->duties()->attach($otherDuty, ['start_date' => '2025-10-01', 'end_date' => '2025-10-31']);
+
+    $meetings = collect(['2025-02-28 23:59:59', '2025-03-01 00:00:00', '2025-03-31 23:59:59', '2025-04-01 00:00:00', '2025-10-15 12:00:00', '2025-11-01 00:00:00'])
+        ->map(function (string $date) use ($duty): Meeting {
+            $meeting = parityMeetingOf($duty->institution);
+            $meeting->update(['start_time' => $date]);
+            $meeting->refresh()->searchable();
+            $meeting->agendaItems()->searchable();
+
+            return $meeting;
+        });
+    $items = AgendaItem::whereIn('meeting_id', $meetings->pluck('id'))->get();
+
+    expect(parityAdmittedIds(Meeting::class, parityKeyFilter($this->member, 'meetings'), $meetings))
+        ->toBe(parityAllowedIds($this->member, $meetings))->toHaveCount(3)
+        ->and(app(MeetingAccessService::class)->visibleMeetings(Meeting::query()->whereKey($meetings->pluck('id')), $this->member)->get())
+        ->toHaveCount(3)
+        ->and(parityAdmittedIds(AgendaItem::class, parityKeyFilter($this->member, 'agenda_items'), $items))
+        ->toBe(parityAllowedIds($this->member, $items))->toHaveCount(3);
+});
+
+test('agenda search uses its own tenant read grant and keeps private items out of a meeting-only readers results', function (): void {
+    $tenant = $this->member->duties()->first()->institution->tenant;
+    $meeting = parityMeetingOf(Institution::factory()->for($tenant)->create());
+    $private = $meeting->agendaItems->first();
+    $private->update(['is_private' => true]);
+    $this->member->givePermissionTo('meetings.read.padalinys');
+
+    expect(parityAdmittedIds(Meeting::class, parityKeyFilter($this->member, 'meetings'), [$meeting]))->toHaveCount(1)
+        ->and(parityAdmittedIds(AgendaItem::class, parityKeyFilter($this->member, 'agenda_items'), [$private]))->toBeEmpty();
+
+    $this->member->givePermissionTo('agendaItems.read.padalinys');
+    app(ModelAuthorizer::class)->resetCache($this->member);
+    TypesenseScopedKeyService::invalidateForUser($this->member->id);
+
+    expect(parityAdmittedIds(AgendaItem::class, parityKeyFilter($this->member, 'agenda_items'), [$private]))
+        ->toBe([(string) $private->id]);
+});
+
+test('authorized institution relationships are searchable without an own read grant', function (): void {
+    $source = $this->member->duties()->first()->institution;
+    $target = Institution::factory()->for($this->otherTenant)->create();
+    InstitutionLink::factory()->create(['source_institution_id' => $source->id, 'target_institution_id' => $target->id]);
+    $meeting = parityMeetingOf($target);
+
+    expect(parityAdmittedIds(Meeting::class, parityKeyFilter($this->member, 'meetings'), [$meeting]))
+        ->toBe(parityAllowedIds($this->member, [$meeting]))->toHaveCount(1)
+        ->and($this->member->can('update', $meeting))->toBeFalse();
+});
+
+test('a secretary finds the nominated institution without receiving editing rights', function (): void {
+    $institution = Institution::factory()->for($this->otherTenant)->create(['is_active' => 0]);
+    $cadence = Cadence::factory()->for($institution)->create();
+    InstitutionSecretary::create(['institution_id' => $institution->id, 'cadence_id' => $cadence->id, 'user_id' => $this->member->id]);
+    $meeting = parityMeetingOf($institution);
+    $items = $meeting->agendaItems;
+
+    expect(parityAdmittedIds(Institution::class, parityKeyFilter($this->member, 'institutions'), [$institution]))
+        ->toBe(parityAllowedIds($this->member, [$institution]))->toHaveCount(1)
+        ->and(parityAdmittedIds(Meeting::class, parityKeyFilter($this->member, 'meetings'), [$meeting]))
+        ->toBe(parityAllowedIds($this->member, [$meeting]))->toHaveCount(1)
+        ->and(parityAdmittedIds(AgendaItem::class, parityKeyFilter($this->member, 'agenda_items'), $items))
+        ->toBe(parityAllowedIds($this->member, $items))->toHaveCount(1)
+        ->and($this->member->can('view', $institution))->toBeTrue()
+        ->and($this->member->can('update', $meeting))->toBeFalse();
+});
+
+test('global meeting and agenda readers can search other tenants without becoming editors', function (): void {
+    $this->member->givePermissionTo(['meetings.read.*', 'agendaItems.read.*']);
+    $meeting = parityMeetingOf(Institution::factory()->for($this->otherTenant)->create());
+    $item = $meeting->agendaItems->first();
+    $item->update(['is_private' => true]);
+
+    expect(parityAdmittedIds(Meeting::class, parityKeyFilter($this->member, 'meetings'), [$meeting]))
+        ->toBe(parityAllowedIds($this->member, [$meeting]))->toHaveCount(1)
+        ->and(parityAdmittedIds(AgendaItem::class, parityKeyFilter($this->member, 'agenda_items'), [$item]))
+        ->toBe([(string) $item->id])
+        ->and($this->member->can('update', $meeting))->toBeFalse();
 });
 
 test('real scoped keys conceal private items and the transport key cannot bypass them', function (): void {

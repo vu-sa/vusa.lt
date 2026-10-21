@@ -259,23 +259,16 @@ describe('observer-triggered cache invalidation', function (): void {
         expect(Cache::has("auth:duties:{$user->id}"))->toBeFalse();
     });
 
-    test('role assignment and removal require explicit cache reset', function (): void {
+    test('granting a responsibility to a duty takes effect without a manual reset', function (): void {
         $user = makeUser($this->tenant);
         $duty = $user->duties()->first();
 
         expect($this->authorizer->allows($user, 'users.update.padalinys'))->toBeFalse();
 
-        // assignRole/removeRole don't trigger Eloquent model events
-        // They fire Spatie events (RoleAttached/RoleDetached) which are not listened to
-        // So explicit resetCache is needed after role changes on duties
+        // The grant re-projects the duty's roles, which forgets its holders' cached access.
         $duty->assignRole($this->coordinatorRole);
 
-        // Cache still has stale "false" result
-        expect($this->authorizer->allows($user, 'users.update.padalinys'))->toBeFalse();
-
-        PermissionFacade::resetCache($user);
-        $user->refresh();
-        expect($this->authorizer->allows($user, 'users.update.padalinys'))->toBeTrue();
+        expect(app(ModelAuthorizer::class)->allows($user->refresh(), 'users.update.padalinys'))->toBeTrue();
     });
 });
 

@@ -266,6 +266,7 @@ export default defineConfig(({ command, isSsrBuild }) => {
     server: {
       watch: {
         ignored: [
+          '**/.worktrees/**',
           '**/tests/**',
           '**/__tests__/**',
           '**/*.{test,spec}.{js,jsx,ts,tsx}',

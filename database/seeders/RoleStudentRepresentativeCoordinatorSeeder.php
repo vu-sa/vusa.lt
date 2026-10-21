@@ -41,8 +41,6 @@ class RoleStudentRepresentativeCoordinatorSeeder extends Seeder
             'duties.update.padalinys',
             'duties.delete.padalinys',
             'tasks.create.padalinys',
-            'tasks.read.own',
-            'tasks.update.own',
             'problems.create.padalinys',
             'problems.update.padalinys',
             'problems.delete.padalinys',

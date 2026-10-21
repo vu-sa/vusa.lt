@@ -83,12 +83,12 @@
 </template>
 
 <script setup lang="ts">
-import { imageFromSearch } from '@/Types/media';
 import InstitutionCardArrow from './InstitutionCardArrow.vue';
 import InstitutionCardDescription from './InstitutionCardDescription.vue';
 import InstitutionCardHeading from './InstitutionCardHeading.vue';
 import { type InstitutionCardData, useInstitutionCard } from './useInstitutionCard';
 
+import { imageFromSearch } from '@/Types/media';
 import MediaFrame from '@/Components/Public/Base/MediaFrame.vue';
 import IFluentBuilding24Regular from '~icons/fluent/building-24-regular';
 import IFluentMail16Regular from '~icons/fluent/mail-16-regular';

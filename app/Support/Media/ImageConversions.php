@@ -46,13 +46,13 @@ final class ImageConversions
 
         if (str_starts_with($contents, "\x89PNG")) {
             // IHDR colour type 4/6 carries alpha; a tRNS chunk makes a palette transparent.
-            return in_array(ord($contents[25] ?? "\0"), [4, 6], true) || str_contains(substr($contents, 0, 65536), 'tRNS');
+            return in_array(ord(($contents[25] ?? "\0")[0]), [4, 6], true) || str_contains(substr($contents, 0, 65536), 'tRNS');
         }
 
         if (str_starts_with($contents, 'RIFF') && substr($contents, 8, 4) === 'WEBP') {
             $chunk = substr($contents, 12, 4);
 
-            return $chunk === 'VP8L' || ($chunk === 'VP8X' && (ord($contents[20] ?? "\0") & 0x10) !== 0);
+            return $chunk === 'VP8L' || ($chunk === 'VP8X' && (ord(($contents[20] ?? "\0")[0]) & 0x10) !== 0);
         }
 
         return false;

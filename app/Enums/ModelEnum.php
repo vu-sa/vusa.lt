@@ -100,12 +100,12 @@ enum ModelEnum: string
             'studySets' => ['padalinys', '*'],
             'quickLinks' => ['padalinys', '*'],
             'problems' => ['padalinys', '*'],
-            'goals' => ['padalinys', '*'],
+            // `own` is reserved for a member's personal goals; no policy reads it yet.
+            'goals' => ['own', 'padalinys', '*'],
             'mailingLists' => ['padalinys', '*'],
 
-            // Special case: institutions allow "own" scope only for read operations
-            // This is handled in the InstitutionPolicy and a special case in the seeder
-            'institutions' => ['own', 'padalinys', '*'],
+            // Members already read their own institutions (InstitutionPolicy::view), so `own` grants nothing.
+            'institutions' => ['padalinys', '*'],
 
             // Add more restrictions as needed
         ];

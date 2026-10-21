@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Actions\ProjectDutyResponsibilities;
 use App\Contracts\Commentable;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
+use App\Enums\ResponsibilityPurpose;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
@@ -18,13 +20,16 @@ use App\Services\ContactSearchIndexSynchronizer;
 use App\Services\Typesense\SearchText;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\Unguarded;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\Access\Authorizable;
@@ -77,7 +82,7 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read Collection<int, User> $previous_users
  * @property-read Collection<int, Reservation> $reservations
  * @property-read Collection<int, \App\Models\Resource> $resources
- * @property-read Collection<int, DutyResponsibility> $responsibilities
+ * @property-read Collection<int, ResponsibilityGrant> $responsibilityGrants
  * @property-read Collection<int, Role> $roles
  * @property-read Collection<int, Comment> $rootComments
  * @property-read Collection<int, Duty> $successors
@@ -95,22 +100,24 @@ use Staudenmeir\EloquentHasManyDeep\HasRelationships;
  * @property-read int|null $resources_count
  *
  * @method static \Database\Factories\DutyFactory factory($count = null, $state = [])
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty permission($permissions, bool $without = false)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty role($roles, ?string $guard = null, bool $without = false)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty team($teams, bool $without = false)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereLocale(string $column, string $locale)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty whereLocales(string $column, array $locales)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutPermission($permissions)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutRole($roles, ?string $guard = null)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutTeam($teams)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Duty withoutTrashed()
+ * @method static Builder<static>|Duty holdingPurpose(\App\Enums\ResponsibilityPurpose $purpose)
+ * @method static Builder<static>|Duty newModelQuery()
+ * @method static Builder<static>|Duty newQuery()
+ * @method static Builder<static>|Duty onlyTrashed()
+ * @method static Builder<static>|Duty permission($permissions, bool $without = false)
+ * @method static Builder<static>|Duty query()
+ * @method static Builder<static>|Duty role($roles, ?string $guard = null, bool $without = false)
+ * @method static Builder<static>|Duty team($teams, bool $without = false)
+ * @method static Builder<static>|Duty whereJsonContainsLocale(string $column, string $locale, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Duty whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
+ * @method static Builder<static>|Duty whereLocale(string $column, string $locale)
+ * @method static Builder<static>|Duty whereLocales(string $column, array $locales)
+ * @method static Builder<static>|Duty whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
+ * @method static Builder<static>|Duty withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Duty withoutPermission($permissions)
+ * @method static Builder<static>|Duty withoutRole($roles, ?string $guard = null)
+ * @method static Builder<static>|Duty withoutTeam($teams)
+ * @method static Builder<static>|Duty withoutTrashed()
  *
  * @mixin \Eloquent
  */
@@ -283,15 +290,75 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
     }
 
     /**
-     * What this duty must handle, as opposed to what its roles allow it to do.
+     * Responsibilities given to this duty itself; `roles()` also holds those it gets through its
+     * types and institution.
      *
-     * @return HasMany<DutyResponsibility, $this>
+     * @return MorphMany<ResponsibilityGrant, $this>
      */
-    public function responsibilities(): HasMany
+    public function responsibilityGrants(): MorphMany
     {
-        return $this->hasMany(DutyResponsibility::class);
+        return $this->morphMany(ResponsibilityGrant::class, 'grantee');
     }
 
+    /**
+     * Spatie's role API on a duty writes direct grants; the projection, not this call, writes
+     * `model_has_roles`, so a role given here survives the next re-projection.
+     *
+     * @param  string|int|array<int, mixed>|Role|\Illuminate\Support\Collection<int, mixed>|\BackedEnum  ...$roles
+     */
+    public function assignRole(...$roles): static
+    {
+        throw_unless($this->exists, \LogicException::class, 'Save the duty before granting it responsibilities.');
+
+        foreach ($this->collectRoles($roles) as $roleId) {
+            $this->responsibilityGrants()->firstOrCreate(['role_id' => $roleId, 'scope_type' => null, 'scope_id' => null]);
+        }
+
+        return $this->afterGrantsChanged();
+    }
+
+    /**
+     * @param  string|int|array<int, mixed>|Role|\Illuminate\Support\Collection<int, mixed>|\BackedEnum  ...$role
+     */
+    public function removeRole(...$role): static
+    {
+        $this->responsibilityGrants()->whereIn('role_id', $this->collectRoles($role))->get()->each->delete();
+
+        return $this->afterGrantsChanged();
+    }
+
+    /**
+     * @param  string|int|array<int, mixed>|Role|\Illuminate\Support\Collection<int, mixed>|\BackedEnum  ...$roles
+     */
+    public function syncRoles(...$roles): static
+    {
+        $roleIds = $this->collectRoles($roles);
+
+        $this->responsibilityGrants()->whereNotIn('role_id', $roleIds)->get()->each->delete();
+
+        return $this->assignRole($roleIds);
+    }
+
+    /**
+     * Duties holding the responsibility that carries the purpose, however it was granted.
+     *
+     * @param  Builder<self>  $query
+     */
+    #[Scope]
+    protected function holdingPurpose(Builder $query, ResponsibilityPurpose $purpose): void
+    {
+        $query->whereHas('roles', fn (Builder $roles) => $roles->where('purpose', $purpose));
+    }
+
+    private function afterGrantsChanged(): static
+    {
+        $this->unsetRelation('roles');
+        $this->forgetWildcardPermissionIndex();
+
+        return $this;
+    }
+
+    /** @return BelongsToMany<DutyType, $this, DutyDutyType> */
     public function types(): BelongsToMany
     {
         return $this->belongsToMany(DutyType::class)->using(DutyDutyType::class);
@@ -423,11 +490,22 @@ class Duty extends Model implements AuthorizableContract, Commentable, GuardsFor
             }
         });
 
-        static::deleted(fn (Duty $duty) => $duty->reindexRelatedSearchDocuments());
-        static::restored(fn (Duty $duty) => $duty->reindexRelatedSearchDocuments());
+        static::deleted(function (Duty $duty): void {
+            $duty->reindexRelatedSearchDocuments();
+            ProjectDutyResponsibilities::forDuties([$duty->id]);
+        });
+        static::restored(function (Duty $duty): void {
+            $duty->reindexRelatedSearchDocuments();
+            ProjectDutyResponsibilities::forDuties([$duty->id]);
+        });
         static::saved(function (Duty $duty): void {
             if ($duty->wasChanged(['name', 'institution_id', 'order'])) {
                 app(ContactSearchIndexSynchronizer::class)->dutyChanged($duty);
+            }
+
+            // Institution grants follow the duty to its new institution.
+            if ($duty->wasRecentlyCreated || $duty->wasChanged('institution_id')) {
+                ProjectDutyResponsibilities::forDuties([$duty->id]);
             }
         });
     }

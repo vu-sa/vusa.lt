@@ -4,16 +4,16 @@ use App\Actions\GetInstitutionFollowersToNotify;
 use App\Actions\GetMeetingOverseers;
 use App\Enums\AgendaItemType;
 use App\Enums\InstitutionScope;
+use App\Enums\ResponsibilityPurpose;
 use App\Events\MeetingFullyCreated;
 use App\Models\Cadence;
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionSecretary;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Models\ResponsibilityGrant;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -49,15 +49,8 @@ describe('MeetingTaskSubscriber', function (): void {
                 ->for($tenant)
                 ->create();
 
-            // Create student rep type
-            $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-                ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-            // Create a duty with student rep type
-            $duty = Duty::factory()
-                ->for($institution)
-                ->hasAttached($studentRepType, [], 'types')
-                ->create();
+            $duty = Duty::factory()->for($institution)->create();
+            grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
             // Create user assigned to duty (active now)
             $user = User::factory()->create();
@@ -305,7 +298,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Create an admin who coordinates the padalinys
             $duty = Duty::factory()->for($institution)->create();
-            DutyResponsibility::factory()->for($duty)->forTenant($duty->institution->tenant)->create();
+            ResponsibilityGrant::factory()->forDuty($duty)->forTenant($duty->institution->tenant)->create();
 
             $admin = User::factory()->create();
             $admin->duties()->attach($duty, [
@@ -332,7 +325,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Create a coordinator of the padalinys
             $coordinatorDuty = Duty::factory()->for($institution)->create();
-            DutyResponsibility::factory()->for($coordinatorDuty)->forTenant($coordinatorDuty->institution->tenant)->create();
+            ResponsibilityGrant::factory()->forDuty($coordinatorDuty)->forTenant($coordinatorDuty->institution->tenant)->create();
 
             $coordinator = User::factory()->create();
             $coordinator->duties()->attach($coordinatorDuty, [
@@ -340,14 +333,8 @@ describe('MeetingTaskSubscriber', function (): void {
                 'end_date' => null,
             ]);
 
-            // Create student rep type and duty
-            $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-                ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-            $repDuty = Duty::factory()
-                ->for($institution)
-                ->hasAttached($studentRepType, [], 'types')
-                ->create();
+            $repDuty = Duty::factory()->for($institution)->create();
+            grantPurpose($repDuty, ResponsibilityPurpose::StudentRepresentation);
 
             $rep = User::factory()->create();
             $rep->duties()->attach($repDuty, [
@@ -394,10 +381,10 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Create a user who coordinates the padalinys of both institutions
             $duty1 = Duty::factory()->for($institution1)->create();
-            DutyResponsibility::factory()->for($duty1)->forTenant($duty1->institution->tenant)->create();
+            ResponsibilityGrant::factory()->forDuty($duty1)->forTenant($duty1->institution->tenant)->create();
 
             $duty2 = Duty::factory()->for($institution2)->create();
-            DutyResponsibility::factory()->for($duty2)->forTenant($duty2->institution->tenant)->create();
+            ResponsibilityGrant::factory()->forDuty($duty2)->forTenant($duty2->institution->tenant)->create();
 
             $admin = User::factory()->create();
             $admin->duties()->attach([$duty1->id, $duty2->id], [
@@ -446,8 +433,8 @@ describe('MeetingTaskSubscriber', function (): void {
 
         test('whoever created the meeting is not told about it', function (): void {
             $institution = Institution::factory()->for(Tenant::query()->first())->create();
-            $studentRepType = DutyType::query()->firstOrCreate(['slug' => 'studentu-atstovai'], ['name' => ['lt' => 'Studentų atstovai', 'en' => 'Student representatives']]);
-            $duty = Duty::factory()->for($institution)->hasAttached($studentRepType, [], 'types')->create();
+            $duty = Duty::factory()->for($institution)->create();
+            grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
             $creator = User::factory()->create();
             $colleague = User::factory()->create();
             $creator->duties()->attach($duty, ['start_date' => now()->subMonth(), 'end_date' => null]);
@@ -564,7 +551,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Create a duty coordinating the padalinys
             $duty = Duty::factory()->for($institution)->create();
-            DutyResponsibility::factory()->for($duty)->forTenant($duty->institution->tenant)->create();
+            ResponsibilityGrant::factory()->forDuty($duty)->forTenant($duty->institution->tenant)->create();
 
             $manager = User::factory()->create();
             $manager->duties()->attach($duty, [
@@ -717,7 +704,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Create manager for first institution
             $duty1 = Duty::factory()->for($institution1)->create();
-            DutyResponsibility::factory()->for($duty1)->forTenant($duty1->institution->tenant)->create();
+            ResponsibilityGrant::factory()->forDuty($duty1)->forTenant($duty1->institution->tenant)->create();
             $manager1 = User::factory()->create();
             $manager1->duties()->attach($duty1, [
                 'start_date' => now()->subMonth(),
@@ -726,7 +713,7 @@ describe('MeetingTaskSubscriber', function (): void {
 
             // Create manager for second institution
             $duty2 = Duty::factory()->for($institution2)->create();
-            DutyResponsibility::factory()->for($duty2)->forTenant($duty2->institution->tenant)->create();
+            ResponsibilityGrant::factory()->forDuty($duty2)->forTenant($duty2->institution->tenant)->create();
             $manager2 = User::factory()->create();
             $manager2->duties()->attach($duty2, [
                 'start_date' => now()->subMonth(),

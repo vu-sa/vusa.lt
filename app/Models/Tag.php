@@ -42,6 +42,7 @@ use Illuminate\Support\Str;
  * @method static Builder<static>|Tag whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static Builder<static>|Tag whereLocale(string $column, string $locale)
  * @method static Builder<static>|Tag whereLocales(string $column, array $locales)
+ * @method static Builder<static>|Tag whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
  * @method static Builder<static>|Tag withTrashed(bool $withTrashed = true)
  * @method static Builder<static>|Tag withoutTrashed()
  *

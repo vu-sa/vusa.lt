@@ -8,8 +8,8 @@ use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * What a duty responsibility covers. Backing values are the morph aliases stored in
- * `duty_responsibilities.scope_type`; the most specific scope wins when resolving.
+ * What a responsibility grant covers. Backing values are the morph aliases stored in
+ * `responsibility_grants.scope_type`; the most specific scope wins when resolving.
  */
 enum ResponsibilityScope: string
 {

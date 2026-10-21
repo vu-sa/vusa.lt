@@ -62,6 +62,7 @@ class AuthServiceProvider extends ServiceProvider
 
         // Define gate for settings management access
         Gate::define('manage-settings', fn (User $user) => app(SettingsSettings::class)->canUserManageSettings($user));
+        Gate::define('view-settings', fn (User $user) => app(SettingsSettings::class)->canUserViewSettings($user));
 
         // Define gate for administration page access
         // User can access if they have viewAny permission on any administrative model

@@ -10,7 +10,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * @mixin Comment
  *
  * Threaded comment shape consumed by the discussion frontend. Permission flags
- * are computed cheaply: `update` is author-only and `delete` adds a single
+ * are computed cheaply: `update` is author-only and time-boxed (Comment::EDIT_WINDOW_MINUTES) and `delete` adds a single
  * per-request moderation flag (Gate::allows('update', $parent) evaluated once
  * in the controller and stashed on the request) rather than evaluating the
  * policy for every comment in a thread.
@@ -25,6 +25,7 @@ class CommentResource extends JsonResource
     {
         $userId = $request->user()?->id;
         $isAuthor = $userId !== null && $this->user_id === $userId;
+        $user = $request->user();
         $canModerate = (bool) $request->attributes->get('comment_can_moderate', false);
         $isErased = $this->isErased();
 
@@ -58,7 +59,7 @@ class CommentResource extends JsonResource
                 fn () => self::collection($this->replies),
             ),
             'can' => [
-                'update' => ! $isErased && $isAuthor,
+                'update' => ! $isErased && $user !== null && $this->isEditableBy($user),
                 'delete' => ! $isErased && ($isAuthor || $canModerate),
                 // Reaching this endpoint already required `view` on the parent,
                 // and resolve follows the view audience.

@@ -64,7 +64,7 @@ describe('MergeRecordsDialog.vue', () => {
     );
   });
 
-    it('prevents submitting while merge details are loading', async () => {
+  it('prevents submitting while merge details are loading', async () => {
     const wrapper = mountDialog({ submitDisabled: true });
     await recordButton(wrapper, 'jonas@gmail.com').trigger('click');
 

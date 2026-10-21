@@ -23,15 +23,17 @@ return [
     'status_aligned_admin_help' => 'Galutinis sprendimas atitinka studentų atstovų balsą. Pažymėk, kai organas pritarė tam, už ką balsavo studentai.',
     'status_misaligned_admin_help' => 'Galutinis sprendimas skiriasi nuo studentų atstovų balso. Pažymėk, kai organas nusprendė kitaip nei balsavo studentai.',
     'status_neutral_admin_help' => 'Studentai susilaikė arba sprendimas neturėjo aiškios naudos ar žalos studentams.',
+    'status_mixed_admin_help' => 'Klausimas turi kelis balsavimus be pagrindinio, ir jų rezultatai skiriasi. Jei vienas balsavimas lemia klausimo rezultatą, pažymėk jį pagrindiniu.',
     'status_no_vote_admin_help' => 'Balsavimo klausimas, tačiau balsavimo duomenys dar neįvesti. Nepamiršk užpildyti!',
-    'status_deferred_admin_help' => 'Klausimo svarstymas atidėtas kitam posėdžiui. Pasirink tipą "Atidėtas".',
-    'status_informational_admin_help' => 'Informacinio pobūdžio klausimas, kuriame nėra balsavimo. Pasirink tipą "Informacinis".',
+    'status_deferred_admin_help' => 'Klausimo svarstymas perkeltas į vėlesnį posėdį. Pasirink tipą "Atidėtas".',
+    'status_informational_admin_help' => 'Klausimas pristatytas ar aptartas, dėl jo nebalsuota. Pasirink tipą "Aptarimas".',
+    'status_withdrawn_admin_help' => 'Klausimas išbrauktas iš darbotvarkės ar atsiimtas ir nesvarstytas. Pasirink tipą "Išbrauktas".',
     'status_unset_admin_help' => 'Klausimo tipas dar nenurodytas. Būtinai pasirink atitinkamą tipą!',
 
     // Agenda item type tooltips
     'type_voting_tooltip' => 'Klausimas, dėl kurio buvo balsuojama. Reikia užpildyti balsavimo rezultatus (sprendimą, studentų balsą ir palankumą studentams).',
     'type_deferred_tooltip' => 'Klausimo svarstymas atidėtas kitam posėdžiui. Balsavimo duomenų pildyti nereikia.',
-    'type_informational_tooltip' => 'Informacinio pobūdžio klausimas be balsavimo. Balsavimo duomenų pildyti nereikia.',
+    'type_informational_tooltip' => 'Klausimas pristatytas ar aptartas be balsavimo. Balsavimo duomenų pildyti nereikia.',
     'main_vote_required_tooltip' => 'Pagrindinis balsavimas yra privalomas balsavimo tipo klausimams. Jo pašalinti negalima.',
     'validation' => [
         'agenda_item_required' => 'Darbotvarkės punktas yra privalomas.',

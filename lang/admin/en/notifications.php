@@ -117,9 +117,10 @@ return [
     'meeting_agenda_completed_body' => 'All :count agenda items for :institution meeting have been completed',
     'meeting_agenda_completed_body_with_user' => ':user completed all :count agenda items for :institution meeting',
     'meeting_agenda_type_voting' => ':count voting',
-    'meeting_agenda_type_informational' => ':count informational',
+    'meeting_agenda_type_informational' => ':count discussion',
     'meeting_agenda_type_deferred' => ':count deferred',
     'meeting_agenda_type_break' => ':count break',
+    'meeting_agenda_type_withdrawn' => ':count withdrawn',
     'meeting_agenda_additional_votes_note' => 'If there were additional votes, don\'t forget to add them.',
 
     // Duty notifications
@@ -153,7 +154,7 @@ return [
     'action_review_reservation_draft' => 'Review reservation',
     'action_view_meeting' => 'View Meeting',
     'action_view_duty' => 'View Duty',
-    'action_view_access' => 'View my roles',
+    'action_view_access' => 'View my responsibilities',
     'action_explore_dashboard' => 'Explore Dashboard',
     'action_view' => 'View',
     'action_review' => 'Review',
@@ -364,7 +365,7 @@ return [
         'how_followed' => 'Followed-institution notices reach you only when your duties do not already bring you the same news. Unfollow the institution to stop receiving these notices.',
         'how_reservations' => 'Resource managers get only the approval request. The requester hears about the decision once — when the reservation\'s status changes.',
         'how_self' => 'You are never notified about your own action (an approval, closing a task, a status change).',
-        'how_list' => 'You only see the notifications your duties and roles can bring you.',
+        'how_list' => 'You only see the notifications your duties and responsibilities can bring you.',
     ],
 
     // Legacy compatibility

@@ -70,13 +70,12 @@ class MeetingCompletionService
                 continue;
             }
 
-            $mainVote = $item->votes->firstWhere('is_main', true);
-            $vote = $mainVote ?? $item->votes->first();
+            $outcomeVotes = $item->outcomeVotes();
             $requiredFields = $requiresStudentPerspective
                 ? ['decision', 'student_vote', 'student_benefit']
                 : ['decision'];
             $missingFields = collect($requiredFields)
-                ->filter(fn (string $field): bool => $vote === null || empty($vote->{$field}))
+                ->filter(fn (string $field): bool => $outcomeVotes->isEmpty() || $outcomeVotes->contains(fn (Vote $vote): bool => empty($vote->{$field})))
                 ->values()
                 ->all();
 
@@ -118,7 +117,8 @@ class MeetingCompletionService
 
     /**
      * The one rule for a filled-in agenda item, shared by the meeting status, the completion task
-     * and the agenda item search index: a set type, and for voting items a complete main vote.
+     * and the agenda item search index: a set type, and for voting items every outcome vote
+     * ({@see AgendaItem::outcomeVotes()}) complete.
      */
     public function itemIsComplete(AgendaItem $item, bool $requiresStudentPerspective): bool
     {
@@ -132,9 +132,10 @@ class MeetingCompletionService
             return true;
         }
 
-        $mainVote = $item->votes->firstWhere('is_main', true);
+        $outcomeVotes = $item->outcomeVotes();
 
-        return $mainVote instanceof Vote && $this->voteIsComplete($mainVote, $requiresStudentPerspective);
+        return $outcomeVotes->isNotEmpty()
+            && $outcomeVotes->every(fn (Vote $vote): bool => $this->voteIsComplete($vote, $requiresStudentPerspective));
     }
 
     /**

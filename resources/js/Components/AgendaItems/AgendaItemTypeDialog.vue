@@ -12,7 +12,7 @@
           {{ $t('meetings.item.type') }}
         </component>
       </VisuallyHidden>
-      <ActionWindowScreen :title="$t('meetings.item.type')" :subtitle="$t('meetings.item.type_question')">
+      <ActionWindowScreen :title="$t('meetings.item.type')" :subtitle="agendaItemTypeQuestion(meeting)">
         <ActionChoiceList>
           <ActionChoiceButton
             v-for="option in options"
@@ -36,7 +36,13 @@ import type { InertiaForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { VisuallyHidden } from 'reka-ui';
 
-import { agendaItemTypeOptions, applyAgendaItemType, type AgendaItemType } from './agendaItemTypes';
+import {
+  agendaItemTypeOptions,
+  agendaItemTypeQuestion,
+  applyAgendaItemType,
+  type AgendaItemType,
+  type AgendaItemTypeMeeting,
+} from './agendaItemTypes';
 
 import ActionChoiceButton from '@/Components/ActionWindow/ActionChoiceButton.vue';
 import ActionChoiceList from '@/Components/ActionWindow/ActionChoiceList.vue';
@@ -50,6 +56,8 @@ const props = defineProps<{
   open: boolean;
   /** The live, autosaving form: a choice is the whole answer, so it saves and closes. */
   form: InertiaForm<AgendaItemFormData>;
+  /** Words the question for an email or in-person meeting, past or upcoming; undated when absent. */
+  meeting?: AgendaItemTypeMeeting | null;
 }>();
 
 const emit = defineEmits<{

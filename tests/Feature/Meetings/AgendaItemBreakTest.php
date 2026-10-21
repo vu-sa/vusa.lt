@@ -71,7 +71,7 @@ test('the collection does not list a break-only meeting as incomplete', function
 
 test('the vote-free types are exactly the non-voting ones', function (): void {
     expect(AgendaItemType::voteFreeValues())
-        ->toBe(['informational', 'deferred', 'break'])
+        ->toBe(['informational', 'deferred', 'break', 'withdrawn'])
         ->and(AgendaItemType::Voting->requiresVote())->toBeTrue()
         ->and(AgendaItemType::Break->requiresVote())->toBeFalse();
 });

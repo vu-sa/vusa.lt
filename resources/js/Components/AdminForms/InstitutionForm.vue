@@ -157,10 +157,10 @@
 
       <FormPanel :title="$t('Tipas ir valdymas')" :icon="Layers" title-class="text-brand">
         <FormFieldWrapper id="institution-types" :label="$t('Institucijos tipas')" :error="form.errors.types">
-          <MultiSelect
+          <TypeTreeMultiSelect
             id="institution-types"
-            v-model="selectedTypes"
-            :options="institutionTypeOptions"
+            v-model="form.types"
+            :types="institutionTypes"
             :placeholder="$t('Pasirink tipus')"
           />
           <div v-if="resolvedScope" class="flex flex-wrap items-center gap-2 pt-1">
@@ -282,7 +282,7 @@ import { Button } from '@/Components/ui/button';
 import { Alert, AlertDescription } from '@/Components/ui/alert';
 import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
-import { MultiSelect } from '@/Components/ui/multi-select';
+import { TypeTreeMultiSelect } from '@/Components/AdminForms/TypeTree';
 import { Textarea } from '@/Components/ui/textarea';
 import { ImageUpload } from '@/Components/ui/upload';
 import type { ImageData } from '@/Types/media';
@@ -419,19 +419,6 @@ const institutionStatus = computed<StatusPresentation>(() => ({
   role: isActive.value ? 'success' : 'neutral',
   icon: isActive.value ? CircleCheck : CircleSlash,
 }));
-
-const institutionTypeOptions = computed(() =>
-  props.institutionTypes.map(type => ({ label: type.title, value: type.id })),
-);
-
-const selectedTypes = computed({
-  get: () => form.types
-    .map(id => institutionTypeOptions.value.find(option => option.value === id))
-    .filter((option): option is { label: string; value: number } => Boolean(option)),
-  set: (items: { label: string; value: number }[]) => {
-    form.types = items.map(item => item.value);
-  },
-});
 
 /**
  * Mirrors InstitutionScopeResolver: the nearest type in the parent chain that declares a

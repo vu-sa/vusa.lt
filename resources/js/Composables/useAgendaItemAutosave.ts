@@ -41,11 +41,11 @@ export interface EditableVote {
   order?: number;
 }
 
-/** A blank vote; the first one on an item is its main (outcome) vote. */
-export function createVote(isMain: boolean): EditableVote {
+/** A blank vote; marking one as main is the editor's choice (see getOutcomeVotes()). */
+export function createVote(): EditableVote {
   return {
     id: null,
-    is_main: isMain,
+    is_main: false,
     is_consensus: false,
     title: { lt: '', en: '' },
     note: { lt: '', en: '' },
@@ -57,7 +57,7 @@ export function createVote(isMain: boolean): EditableVote {
 
 export interface AgendaItemFormData {
   title: TranslatedField;
-  type: 'voting' | 'informational' | 'deferred' | 'break' | null;
+  type: 'voting' | 'informational' | 'deferred' | 'break' | 'withdrawn' | null;
   is_private: boolean;
   public_title: TranslatedField;
   brought_by_students: boolean;

@@ -128,7 +128,6 @@
 </template>
 
 <script setup lang="ts">
-import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { computed, markRaw } from 'vue';
 import { Icon } from '@iconify/vue';
 
@@ -137,6 +136,7 @@ import SmartLink from '../SmartLink.vue';
 import type { NavItem, NavLink, NavLinkType } from './types';
 import { resolveColSpan, resolveCols, resolveImageBlur, resolveImageGradient, resolveImageOverlay } from './navLinkStyles';
 
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import {
   NavigationMenuContent,
   NavigationMenuLink,

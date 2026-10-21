@@ -1,11 +1,11 @@
 <?php
 
 use App\Actions\ActivityRequests\SendInstitutionActivityRequests;
+use App\Enums\ResponsibilityPurpose;
 use App\Events\CommentPosted;
 use App\Events\TaskCreated;
 use App\Models\Comment;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\Meeting;
@@ -102,8 +102,10 @@ describe('task notifications', function (): void {
 
         // Periodicity tasks are only ever assigned to the body's current holders, and the
         // notification audience checks that (see ResolveTaskAudience).
+        $duty = Duty::factory()->for($institution)->create();
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
         $user->duties()->attach(
-            Duty::factory()->for($institution)->hasAttached(DutyType::query()->firstOrCreate(['slug' => 'studentu-atstovai'], ['name' => ['lt' => 'Studentų atstovai', 'en' => 'Student representatives']]), [], 'types')->create(),
+            $duty,
             ['start_date' => now()->subYear(), 'end_date' => null],
         );
 

@@ -505,15 +505,15 @@ describe('recursive search', function (): void {
 describe('rate limiting', function (): void {
     afterEach(function (): void {
         // A listing fires one thumbnail request per visible image, so these routes need a
-        // higher cap than the shared `api` limiter; the tests below shrink the limiters to
+        // higher cap than the shared `admin` limiter; the tests below shrink the limiters to
         // prove the wiring cheaply, then restore harmless values for tests sharing this process.
         $restore = fn (Request $request) => Limit::perMinute(100000)->by($request->user()?->id ?: $request->ip());
-        RateLimiter::for('api', $restore);
+        RateLimiter::for('admin', $restore);
         RateLimiter::for('fileManager', $restore);
     });
 
-    test('file routes are exempt from the shared api limiter', function (): void {
-        RateLimiter::for('api', fn () => Limit::perMinute(2));
+    test('file routes are exempt from the shared admin limiter', function (): void {
+        RateLimiter::for('admin', fn () => Limit::perMinute(2));
 
         for ($i = 0; $i < 5; $i++) {
             asUser($this->fileManager)

@@ -1,10 +1,14 @@
 <?php
 
+use App\Enums\ResponsibilityPurpose;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
+use App\Models\DutyType;
 use App\Models\Institution;
+use App\Models\ResponsibilityGrant;
+use App\Models\Role;
 use App\Models\Tenant;
+use Database\Factories\RoleFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -13,95 +17,117 @@ pest()->use(RefreshDatabase::class);
 beforeEach(function (): void {
     $this->tenant = Tenant::query()->firstOrFail();
     $this->otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->firstOrFail();
-    $this->manager = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
+    $this->coordination = RoleFactory::forPurpose(ResponsibilityPurpose::StudentRepCoordination);
+
+    Role::factory()->create(['name' => 'Atsakomybių valdytojas'])
+        ->givePermissionTo(['duties.update.padalinys', 'duties.read.padalinys', 'roles.update.*', 'roles.read.*']);
+    $this->manager = makeTenantUserWithRole('Atsakomybių valdytojas', $this->tenant);
+    $this->editor = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
     $this->member = makeUser($this->tenant);
     $this->duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
 });
 
-function responsibilityPayload(Tenant $tenant): array
+function coordinationFor(Role $role, Tenant $tenant): array
 {
-    return [
-        'responsibility' => 'student_rep_coordination',
-        'scope_type' => 'tenant',
-        'scope_id' => (string) $tenant->id,
-    ];
+    return ['role_id' => $role->id, 'scope_type' => 'tenant', 'scope_id' => (string) $tenant->id];
 }
 
-test('an authorized manager adds and removes a responsibility with activity records', function (): void {
+test('a responsibility manager grants and removes a scoped responsibility with activity records', function (): void {
     asUser($this->manager)
-        ->post(route('duties.responsibilities.store', $this->duty), responsibilityPayload($this->tenant))
+        ->post(route('duties.responsibilities.store', $this->duty), coordinationFor($this->coordination, $this->tenant))
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $grant = $this->duty->responsibilityGrants()->firstOrFail();
+
+    expect($grant->scope_id)->toBe((string) $this->tenant->id)
+        ->and($this->duty->roles()->pluck('roles.id')->all())->toContain($this->coordination->id);
+    $this->assertDatabaseHas('activity_log', ['subject_type' => 'responsibility_grant', 'subject_id' => $grant->id, 'event' => 'created']);
+
+    asUser($this->manager)
+        ->delete(route('duties.responsibilities.destroy', [$this->duty, $grant->id]))
         ->assertRedirect();
 
-    $assignment = $this->duty->responsibilities()->firstOrFail();
+    expect($this->duty->responsibilityGrants()->exists())->toBeFalse()
+        ->and($this->duty->roles()->exists())->toBeFalse();
+    $this->assertDatabaseHas('activity_log', ['subject_type' => 'responsibility_grant', 'subject_id' => $grant->id, 'event' => 'deleted']);
+});
 
-    $this->assertDatabaseHas('activity_log', [
-        'subject_type' => 'duty_responsibility',
-        'subject_id' => $assignment->id,
-        'event' => 'created',
-    ]);
+test('a duty editor may pass on a responsibility they hold, but nothing beyond it', function (): void {
+    $theirs = Role::query()->where('name', 'Komunikacijos koordinatorius')->firstOrFail();
+    $wider = Role::factory()->create();
+    $widerGrant = ResponsibilityGrant::factory()->forDuty($this->duty)->of($wider)->create();
 
-    asUser($this->manager)
-        ->delete(route('duties.responsibilities.destroy', [$this->duty, $assignment->id]))
-        ->assertRedirect();
+    asUser($this->editor)
+        ->post(route('duties.responsibilities.store', $this->duty), ['role_id' => $theirs->id])
+        ->assertSessionHasNoErrors();
 
-    expect($this->duty->responsibilities()->exists())->toBeFalse();
+    asUser($this->editor)
+        ->post(route('duties.responsibilities.store', $this->duty), ['role_id' => $this->coordination->id, 'scope_type' => 'tenant', 'scope_id' => (string) $this->tenant->id])
+        ->assertSessionHasErrors('role_id');
 
-    $this->assertDatabaseHas('activity_log', [
-        'subject_type' => 'duty_responsibility',
-        'subject_id' => $assignment->id,
-        'event' => 'deleted',
-    ]);
+    asUser($this->editor)
+        ->delete(route('duties.responsibilities.destroy', [$this->duty, $widerGrant->id]))
+        ->assertForbidden();
+
+    expect($this->duty->responsibilityGrants()->pluck('role_id')->all())->toEqualCanonicalizing([$theirs->id, $wider->id]);
+});
+
+test('the super admin role can never be granted to a duty', function (): void {
+    $superAdmin = Role::findByName(config('permission.super_admin_role_name'));
+
+    asUser(makeAdminUser($this->tenant))
+        ->post(route('duties.responsibilities.store', $this->duty), ['role_id' => $superAdmin->id])
+        ->assertSessionHasErrors('role_id');
 });
 
 test('a member without duty update permission cannot add or remove responsibilities', function (): void {
-    $assignment = DutyResponsibility::factory()->for($this->duty)->forTenant($this->tenant)->create();
+    $grant = ResponsibilityGrant::factory()->forDuty($this->duty)->forTenant($this->tenant)->create();
 
     asUser($this->member)
-        ->post(route('duties.responsibilities.store', $this->duty), responsibilityPayload($this->tenant))
+        ->post(route('duties.responsibilities.store', $this->duty), coordinationFor($this->coordination, $this->tenant))
         ->assertForbidden();
 
     asUser($this->member)
-        ->delete(route('duties.responsibilities.destroy', [$this->duty, $assignment->id]))
+        ->delete(route('duties.responsibilities.destroy', [$this->duty, $grant->id]))
         ->assertForbidden();
 
-    expect($assignment->fresh())->not->toBeNull();
+    expect($grant->fresh())->not->toBeNull();
 });
 
-test('a manager cannot assign a target in another padalinys or an unknown scope', function (): void {
+test('a scope must fit the purpose and stay within the manager\'s padaliniai', function (): void {
     asUser($this->manager)
-        ->post(route('duties.responsibilities.store', $this->duty), responsibilityPayload($this->otherTenant))
+        ->post(route('duties.responsibilities.store', $this->duty), coordinationFor($this->coordination, $this->otherTenant))
         ->assertSessionHasErrors('scope_id');
 
     asUser($this->manager)
-        ->post(route('duties.responsibilities.store', $this->duty), [
-            ...responsibilityPayload($this->tenant),
-            'scope_id' => $this->tenant->id.'invalid',
-        ])
-        ->assertSessionHasErrors('scope_id');
-
-    asUser($this->manager)
-        ->post(route('duties.responsibilities.store', $this->duty), [
-            ...responsibilityPayload($this->tenant),
-            'scope_type' => 'role',
-        ])
+        ->post(route('duties.responsibilities.store', $this->duty), [...coordinationFor($this->coordination, $this->tenant), 'scope_type' => 'role'])
         ->assertSessionHasErrors('scope_type');
 
-    expect($this->duty->responsibilities()->exists())->toBeFalse();
+    asUser($this->manager)
+        ->post(route('duties.responsibilities.store', $this->duty), coordinationFor(Role::factory()->create(), $this->tenant))
+        ->assertSessionHasErrors(['scope_type', 'scope_id']);
+
+    expect($this->duty->responsibilityGrants()->exists())->toBeFalse();
 });
 
-test('a responsibility id under another duty returns 404', function (): void {
+test('a grant id under another duty returns 404', function (): void {
     $otherDuty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
-    $assignment = DutyResponsibility::factory()->for($otherDuty)->forTenant($this->tenant)->create();
+    $grant = ResponsibilityGrant::factory()->forDuty($otherDuty)->forTenant($this->tenant)->create();
 
     asUser($this->manager)
-        ->delete(route('duties.responsibilities.destroy', [$this->duty, $assignment->id]))
+        ->delete(route('duties.responsibilities.destroy', [$this->duty, $grant->id]))
         ->assertNotFound();
 
-    expect($assignment->fresh())->not->toBeNull();
+    expect($grant->fresh())->not->toBeNull();
 });
 
-test('the duty page defers responsibilities and protects its optional picker', function (): void {
-    DutyResponsibility::factory()->for($this->duty)->forTenant($this->tenant)->create();
+test('the duty page defers its responsibilities, labelling those it gets through its type', function (): void {
+    $type = DutyType::factory()->create();
+    $this->duty->types()->attach($type);
+    $typeRole = Role::factory()->create();
+    ResponsibilityGrant::factory()->forDutyType($type)->of($typeRole)->create();
+    ResponsibilityGrant::factory()->forDuty($this->duty)->forTenant($this->tenant)->create();
 
     asUser($this->manager)
         ->get(route('duties.show', $this->duty))
@@ -109,8 +135,10 @@ test('the duty page defers responsibilities and protects its optional picker', f
             ->missing('responsibilities')
             ->missing('responsibilityOptions')
             ->loadDeferredProps('dutyPanels', fn (Assert $deferred) => $deferred
-                ->has('responsibilities.items', 1)
-                ->has('responsibilities.roles')));
+                ->has('responsibilities.items', 2)
+                ->where('responsibilities.items.0.purpose', 'student_rep_coordination')
+                ->where('responsibilities.items.1.source', 'duty_type')
+                ->where('responsibilities.items.1.role_id', $typeRole->id)));
 
     asUser($this->member)
         ->withHeaders([

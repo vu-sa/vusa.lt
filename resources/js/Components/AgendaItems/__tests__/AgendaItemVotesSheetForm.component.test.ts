@@ -58,13 +58,22 @@ describe('AgendaItemVotesSheetForm', () => {
     expect(wrapper.emitted('update:open')).toEqual([[false]]);
   });
 
-  it('promotes the next vote when the main one is removed', async () => {
+  it('promotes no other vote when the main one is removed', async () => {
     const { wrapper, form } = factory();
 
     await wrapper.findAll('[aria-label="meetings.item.remove_vote"]')[0]!.trigger('click');
     await wrapper.find('form').trigger('submit');
 
     expect(form.votes).toHaveLength(1);
-    expect(form.votes[0]).toMatchObject({ id: 'b', is_main: true });
+    expect(form.votes[0]).toMatchObject({ id: 'b', is_main: false });
+  });
+
+  it('clears the main vote when it is pressed again', async () => {
+    const { wrapper, form } = factory();
+
+    await wrapper.findAll('[data-testid="manage-vote-main"]')[0]!.trigger('click');
+    await wrapper.find('form').trigger('submit');
+
+    expect(form.votes.map(vote => vote.is_main)).toEqual([false, false]);
   });
 });

@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Searchable;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * PublicNews - Extends News for public search indexing.
@@ -24,8 +26,6 @@ use Laravel\Scout\Searchable;
  * @property string $lang
  * @property int|null $other_lang_id
  * @property int $content_id
- * @property string|null $image
- * @property string|null $image_author
  * @property int $important
  * @property int $tenant_id
  * @property Carbon|null $publish_time
@@ -40,6 +40,7 @@ use Laravel\Scout\Searchable;
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Content $content
+ * @property-read MediaCollection<int, Media> $media
  * @property-read News|null $other_language_news
  * @property-read Collection<int, PublicUrl> $publicUrls
  * @property-read Taggable|null $pivot

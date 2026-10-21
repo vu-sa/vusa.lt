@@ -4,7 +4,7 @@ import { useForm } from '@inertiajs/vue3';
 import { nextTick, reactive, ref } from 'vue';
 
 import DutyResponsibilitiesSection from '@/Features/Admin/Responsibilities/DutyResponsibilitiesSection.vue';
-import type { DutyResponsibilityOptions } from '@/Features/Admin/Responsibilities/types';
+import type { DutyResponsibilityItem, DutyResponsibilityOptions } from '@/Features/Admin/Responsibilities/types';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('@/Composables/useFeatureSpotlight', () => ({
@@ -12,9 +12,12 @@ vi.mock('@/Composables/useFeatureSpotlight', () => ({
 }));
 
 const options: DutyResponsibilityOptions = {
-  responsibilities: [{ value: 'student_rep_coordination', label: 'Studentų atstovų koordinavimas', description: '', scopes: ['tenant', 'institution_type', 'institution'] }],
+  responsibilities: [
+    { id: 'role-coordination', title: 'Studentų atstovų koordinavimas', description: null, purpose_label: 'Studentų atstovų koordinavimas', scopes: ['tenant', 'institution_type', 'institution'] },
+    { id: 'role-communication', title: 'Komunikacija', description: null, purpose_label: null, scopes: [] },
+  ],
   tenants: [{ id: 1, shortname: 'MIF' }],
-  types: [{ id: '2', title: 'VU Senatas' }],
+  types: [{ id: '2', title: 'VU Senatas', parent_id: null }],
   institutions: [{ id: 'inst-1', name: 'Taryba' }],
 };
 
@@ -33,25 +36,40 @@ const stubs = {
     template: '<button v-for="option in options" :key="option.value" :data-testid="`scope-${option.value}`" @click="$emit(\'update:modelValue\', option.value)">{{ option.label }}</button>',
   },
   SingleSelect: true,
-  Select: true,
-  SelectTrigger: true,
-  SelectValue: true,
-  SelectContent: true,
-  SelectItem: true,
+  NativeSelect: true,
+  Link: { props: ['href'], template: '<a :href="href"><slot /></a>' },
 };
 
-const item = {
-  id: 'assignment-1',
-  responsibility: 'student_rep_coordination',
-  label: 'Studentų atstovų koordinavimas',
-  scope_type: 'tenant' as const,
-  scope_id: '1',
+const direct: DutyResponsibilityItem = {
+  id: 'grant-1',
+  role_id: 'role-coordination',
+  title: 'Studentų atstovų koordinavimas',
+  purpose: 'student_rep_coordination',
+  purpose_label: 'Studentų atstovų koordinavimas',
+  source: 'duty',
+  source_name: null,
+  scope_type: 'tenant',
   scope_name: 'MIF',
+  missing_permissions: ['meetings.update.padalinys'],
 };
 
-function mountSection(items = [item], canUpdate = true) {
+const viaType: DutyResponsibilityItem = {
+  ...direct,
+  id: 'grant-2',
+  role_id: 'role-problems',
+  title: 'Problemų redagavimas',
+  purpose: null,
+  purpose_label: null,
+  source: 'duty_type',
+  source_name: 'Koordinatoriai',
+  scope_type: null,
+  scope_name: null,
+  missing_permissions: [],
+};
+
+function mountSection(items = [direct, viaType], canUpdate = true) {
   return mount(DutyResponsibilitiesSection, {
-    props: { dutyId: 'duty-1', tenantId: 1, items, roles: [{ id: 'role-1', name: 'Redaktorius' }], canUpdate, options },
+    props: { dutyId: 'duty-1', tenantId: 1, items, canUpdate, options },
     global: { stubs },
   });
 }
@@ -60,7 +78,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.stubGlobal('route', (name: string) => `/mocked/${name}`);
   vi.mocked(useForm).mockReturnValue(reactive({
-    responsibility: 'student_rep_coordination',
+    role_id: 'role-coordination',
     scope_type: 'tenant',
     scope_id: '1',
     errors: {},
@@ -74,13 +92,21 @@ beforeEach(() => {
 });
 
 describe('DutyResponsibilitiesSection', () => {
-  it('renders assigned responsibilities and roles', () => {
+  it('lists direct and inherited responsibilities, with the gap a purpose leaves', () => {
     const wrapper = mountSection();
+    const rows = wrapper.findAll('[data-testid="responsibility-row"]');
 
-    expect(wrapper.findAll('[data-testid="responsibility-row"]')).toHaveLength(1);
-    expect(wrapper.text()).toContain('Studentų atstovų koordinavimas');
-    expect(wrapper.text()).toContain('MIF');
-    expect(wrapper.findAll('[data-testid="duty-role-row"]')).toHaveLength(1);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]!.text()).toContain('MIF');
+    expect(rows[0]!.find('[data-testid="responsibility-gap"]').exists()).toBe(true);
+    expect(rows[1]!.find('[data-testid="responsibility-source"]').text()).toContain('responsibilities.duty.via_duty_type');
+  });
+
+  it('offers removal only for responsibilities given to the duty itself', () => {
+    const rows = mountSection().findAll('[data-testid="responsibility-row"]');
+
+    expect(rows[0]!.find('[data-testid="responsibility-remove"]').exists()).toBe(true);
+    expect(rows[1]!.find('[data-testid="responsibility-remove"]').exists()).toBe(false);
   });
 
   it('shows a compact empty line', () => {
@@ -91,7 +117,7 @@ describe('DutyResponsibilitiesSection', () => {
   });
 
   it('hides add and remove actions without update permission', () => {
-    const wrapper = mountSection([item], false);
+    const wrapper = mountSection([direct], false);
 
     expect(wrapper.find('[data-testid="responsibility-add"]').exists()).toBe(false);
     expect(wrapper.find('[data-testid="responsibility-remove"]').exists()).toBe(false);

@@ -1,20 +1,21 @@
 <?php
 
 use App\Actions\GetRepOutcomeMetrics;
+use App\Enums\ResponsibilityPurpose;
 use App\Enums\VoteValue;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
+use App\Models\RepMetricSnapshot;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vote;
 use App\Tasks\Enums\ActionType;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
-use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
@@ -24,9 +25,8 @@ beforeEach(function (): void {
     $tenant = Tenant::query()->first();
     $this->institution = Institution::factory()->for($tenant)->create();
 
-    $repType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-        ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-    $duty = Duty::factory()->for($this->institution)->hasAttached($repType, [], 'types')->create();
+    $duty = Duty::factory()->for($this->institution)->create();
+    grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
     $this->rep = User::factory()->create(['last_action' => now()->subDay()]);
     $this->rep->duties()->attach($duty, ['start_date' => '2026-01-01', 'end_date' => null]);
@@ -58,8 +58,8 @@ describe('GetRepOutcomeMetrics', function (): void {
 
         $report = GetRepOutcomeMetrics::execute(3);
 
-        expect($report['meetings']['2026-09'])->toMatchArray(['total' => 3, 'withinWeek' => 2])
-            ->and($report['now']['recorded_within_week'])->toBe(66.7)
+        expect($report['meetings']['2026-09'])->toMatchArray(['total' => 2, 'withinWeek' => 2])
+            ->and($report['now']['recorded_within_week'])->toBe(100.0)
             ->and($report['months'])->toBe(['2026-07', '2026-08', '2026-09']);
     });
 
@@ -97,7 +97,7 @@ describe('GetRepOutcomeMetrics', function (): void {
     });
 
     test('tasks are measured per type: completion, median days and the month they belong to', function (): void {
-        $gap = fn (string $createdAt, ?string $completedAt) => Task::factory()->create([
+        $gap = fn (string $createdAt, ?string $completedAt) => Task::factory()->for($this->institution, 'taskable')->create([
             'action_type' => ActionType::PeriodicityGap,
             'created_at' => $createdAt,
             'completed_at' => $completedAt,
@@ -105,7 +105,7 @@ describe('GetRepOutcomeMetrics', function (): void {
         $gap('2026-09-01 08:00:00', '2026-09-05 08:00:00');
         $gap('2026-09-02 08:00:00', '2026-09-04 08:00:00');
         $gap('2026-09-03 08:00:00', null);
-        Task::factory()->create(['action_type' => ActionType::AgendaCompletion, 'created_at' => '2026-08-15 08:00:00']);
+        Task::factory()->for($this->institution, 'taskable')->create(['action_type' => ActionType::AgendaCompletion, 'created_at' => '2026-08-15 08:00:00']);
 
         $report = GetRepOutcomeMetrics::execute(2);
 
@@ -117,7 +117,7 @@ describe('GetRepOutcomeMetrics', function (): void {
     });
 
     test('a task that predates the window is left out', function (): void {
-        Task::factory()->create(['action_type' => ActionType::Manual, 'created_at' => '2025-01-01 08:00:00']);
+        Task::factory()->for($this->institution, 'taskable')->create(['action_type' => ActionType::Manual, 'created_at' => '2025-01-01 08:00:00']);
 
         expect(GetRepOutcomeMetrics::execute(2)['tasks'])->toBeEmpty();
     });
@@ -140,63 +140,59 @@ describe('GetRepOutcomeMetrics', function (): void {
 });
 
 describe('metrics:reps', function (): void {
-    test('prints each metric against its baseline and target', function (): void {
+    test('prints the cadency report used by the dashboard', function (): void {
         pastMeeting($this->institution, '2026-09-10 10:00:00', 2);
 
-        expect(Artisan::call('metrics:reps', ['--months' => 2]))->toBe(0)
-            ->and(Artisan::output())->toContain('recorded_within_week', '91.9 %', '95 %', '2026-09');
+        expect(Artisan::call('metrics:reps'))->toBe(0)
+            ->and(Artisan::output())->toContain('recorded_within_week', 'Current cadency', 'Comparison cadency');
     });
 });
 
-describe('the Sistema page', function (): void {
-    test('a super admin opens it and the report arrives deferred', function (): void {
-        asUser(makeAdminUser())
-            ->get(route('repMetrics'))
-            ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page
-                ->component('Admin/ShowRepMetrics')
-                ->missing('report')
-                ->loadDeferredProps('secondary', fn (Assert $page) => $page
-                    ->has('report.months', 12)
-                    ->where('report.metrics', fn ($metrics) => collect($metrics)->pluck('key')->all() === [
-                        'recorded_within_week', 'vote_information', 'task_completion', 'periodicity_gap', 'active_reps', 'own_recording',
-                    ])
-                    ->where('report.metrics.4.trend', null)
-                )
-            );
+describe('metrics:reps:snapshot', function (): void {
+    test('stores today\'s numbers over the last 30 days with the counts behind them', function (): void {
+        pastMeeting($this->institution, '2026-09-10 10:00:00', 2);
+        pastMeeting($this->institution, '2026-09-12 10:00:00', 20);
+        pastMeeting($this->institution, '2026-08-01 10:00:00', 1);
+
+        expect(Artisan::call('metrics:reps:snapshot'))->toBe(0);
+
+        $snapshot = RepMetricSnapshot::query()->whereDate('taken_on', '2026-09-20')->where('scope_key', 'global')->where('definition_version', 2)->sole();
+
+        expect($snapshot->window_days)->toBe(30)
+            ->and($snapshot->is_baseline)->toBeFalse()
+            ->and($snapshot->metrics['recorded_within_week'])->toBe(['value' => 100, 'part' => 1, 'whole' => 1])
+            ->and($snapshot->metrics['active_reps'])->toBe(['value' => 50, 'part' => 1, 'whole' => 2]);
     });
 
-    test('active reps have no trend because last_action keeps no history', function (): void {
-        asUser(makeAdminUser())
-            ->get(route('repMetrics'))
-            ->assertInertia(fn (Assert $page) => $page->loadDeferredProps('secondary', fn (Assert $page) => $page
-                ->where('report.metrics.4.key', 'active_reps')
-                ->where('report.metrics.4.trend', null)
-            ));
+    test('running it again the same day preserves that day\'s numbers', function (): void {
+        Artisan::call('metrics:reps:snapshot');
+        pastMeeting($this->institution, '2026-09-10 10:00:00', 2);
+        Artisan::call('metrics:reps:snapshot');
+
+        expect(RepMetricSnapshot::query()->whereDate('taken_on', '2026-09-20')->where('scope_key', 'global')->where('definition_version', 2)->sole()->value('recorded_within_week'))->toBeNull();
     });
 
-    test('someone without the system permission is refused', function (): void {
-        asUser(makeUser(Tenant::query()->first()))->get(route('repMetrics'))->assertForbidden();
+    test('a back-filled day leaves out active reps, which keep no history', function (): void {
+        pastMeeting($this->institution, '2026-08-20 10:00:00', 2);
+
+        Artisan::call('metrics:reps:snapshot', ['--date' => '2026-09-01']);
+
+        $snapshot = RepMetricSnapshot::query()->whereDate('taken_on', '2026-09-01')->where('scope_key', 'global')->where('definition_version', 2)->sole();
+
+        expect($snapshot->metrics)->not->toHaveKey('active_reps')
+            ->and($snapshot->value('recorded_within_week'))->toBe(100.0);
     });
 
-    test('guests are sent to login', function (): void {
-        $this->get(route('repMetrics'))->assertRedirect();
+    test('a future day is refused', function (): void {
+        expect(Artisan::call('metrics:reps:snapshot', ['--date' => '2026-09-21']))->toBe(1)
+            ->and(RepMetricSnapshot::query()->whereDate('taken_on', '2026-09-21')->exists())->toBeFalse();
     });
-});
 
-test('a non-super-admin reader receives own-recording rates without a baseline or target', function (): void {
-    $reader = makeUser(Tenant::query()->first());
-    $reader->givePermissionTo('roles.read.*');
-    pastMeeting($this->institution, '2026-09-10 10:00:00', 1, $this->rep);
-    pastMeeting($this->institution, '2026-09-11 10:00:00', 1, User::factory()->create());
-    pastMeeting($this->institution, '2026-09-12 10:00:00', 1);
+    test('runs every day on the scheduler', function (): void {
+        $event = collect(app(Schedule::class)->events())
+            ->first(fn ($event) => str_contains((string) $event->command, 'metrics:reps:snapshot'));
 
-    asUser($reader)->get(route('repMetrics'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page
-            ->missing('report')
-            ->loadDeferredProps('secondary', fn (Assert $deferred) => $deferred
-                ->where('report.metrics.5.key', 'own_recording')
-                ->where('report.metrics.5.now', 50)
-                ->where('report.metrics.5.baseline', null)
-                ->where('report.metrics.5.target', null)));
+        expect($event)->not->toBeNull()
+            ->and($event->expression)->toBe('50 3 * * *');
+    });
 });

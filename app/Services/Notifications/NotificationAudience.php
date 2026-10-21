@@ -4,14 +4,13 @@ namespace App\Services\Notifications;
 
 use App\Actions\GetResourceManagers;
 use App\Enums\NotificationType;
-use App\Enums\Responsibility;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\InstitutionCheckIn;
 use App\Models\InstitutionSecretary;
 use App\Models\SupportRequest;
 use App\Models\User;
 use App\Services\ResponsibilityResolver;
 use App\Settings\AtstovavimasSettings;
-use App\Settings\FormSettings;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -51,7 +50,7 @@ class NotificationAudience
             NotificationType::MeetingCreated => $this->hasCurrentDuty($user) || $this->isMeetingOverseer($user),
             NotificationType::MeetingAgendaCompleted => $this->isMeetingOverseer($user),
             NotificationType::ApprovalRequested => $this->isResourceManager($user),
-            NotificationType::MemberRegistration => $this->holdsRole($user, app(FormSettings::class)->member_registration_notification_recipient_role_id),
+            NotificationType::MemberRegistration => app(ResponsibilityResolver::class)->holdsAnywhere($user, ResponsibilityPurpose::MemberRegistration),
             NotificationType::StudentRepRegistration => $this->coordinates($user),
             // Whoever may send "Ar vyko posėdis?" hears back when it reached the wrong person.
             NotificationType::InstitutionActivityNotMine => $user->can('viewAny', InstitutionCheckIn::class),
@@ -65,17 +64,6 @@ class NotificationAudience
         return $user->current_duties()->exists();
     }
 
-    private function holdsRole(User $user, int|string|null $roleId): bool
-    {
-        if ($roleId === null || $roleId === '') {
-            return false;
-        }
-
-        return $user->current_duties()
-            ->whereHas('roles', fn (Builder $query) => $query->where('id', $roleId))
-            ->exists();
-    }
-
     private function isResourceManager(User $user): bool
     {
         return $user->current_duties()
@@ -85,7 +73,7 @@ class NotificationAudience
 
     private function coordinates(User $user): bool
     {
-        return app(ResponsibilityResolver::class)->holdsAnywhere($user, Responsibility::StudentRepCoordination);
+        return app(ResponsibilityResolver::class)->holdsAnywhere($user, ResponsibilityPurpose::StudentRepCoordination);
     }
 
     private function isMeetingOverseer(User $user): bool

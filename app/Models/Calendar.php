@@ -64,8 +64,8 @@ use Spatie\SchemaOrg\Place;
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read EventType|null $eventType
  * @property-read array $translatable_columns_from
+ * @property-read array|null $main_image_media
  * @property-read mixed $main_image_url
- * @property-read array<string, mixed>|null $main_image_media
  * @property-read MediaCollection<int, Media> $media
  * @property-read Meeting|null $meeting
  * @property-read Collection<int, PublicUrl> $publicUrls
@@ -86,6 +86,7 @@ use Spatie\SchemaOrg\Place;
  * @method static Builder<static>|Calendar whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static Builder<static>|Calendar whereLocale(string $column, string $locale)
  * @method static Builder<static>|Calendar whereLocales(string $column, array $locales)
+ * @method static Builder<static>|Calendar whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
  * @method static Builder<static>|Calendar withTrashed(bool $withTrashed = true)
  * @method static Builder<static>|Calendar withoutTrashed()
  *

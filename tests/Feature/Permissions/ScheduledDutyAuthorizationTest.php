@@ -1,10 +1,9 @@
 <?php
 
-use App\Enums\Responsibility;
+use App\Enums\ResponsibilityPurpose;
 use App\Events\DutiableChanged;
 use App\Listeners\HandleDutiableChange;
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\Meeting;
 use App\Models\Permission;
@@ -16,7 +15,6 @@ use App\Services\InstitutionAccessService;
 use App\Services\ModelAuthorizer;
 use App\Services\Permissions\CapabilitySnapshot;
 use App\Services\ResponsibilityResolver;
-use App\Settings\FormSettings;
 use App\Settings\SettingsSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -83,18 +81,13 @@ test('ending the only scheduled duty revokes access and clears every per-user ac
         ->and(Cache::get('typesense_scoped_keys:'.$this->actor->id))->toBeNull();
 });
 
-test('scheduled duty roles work in internal role-based access checks', function (): void {
-    DutyResponsibility::factory()->for($this->duty)->forTenant($this->tenant)->create();
-    $formSettings = app(FormSettings::class);
-    $formSettings->member_registration_notification_recipient_role_id = (string) $this->role->id;
-    $formSettings->save();
+test('scheduled duty responsibilities work in internal access checks', function (): void {
+    grantPurpose($this->duty, ResponsibilityPurpose::MemberRegistration, $this->tenant);
+    $this->role->givePermissionTo('settings.update.*');
+    $resolver = app(ResponsibilityResolver::class);
 
-    $settings = app(SettingsSettings::class);
-    $settings->settings_manager_role_id = (string) $this->role->id;
-    $settings->save();
-
-    expect($formSettings->userIsMemberRegistrationRecipient($this->actor))->toBeTrue()
-        ->and($formSettings->getMemberRegistrationTenantIds($this->actor))->toContain($this->tenant->id)
-        ->and(app(ResponsibilityResolver::class)->holdsAnywhere($this->actor, Responsibility::StudentRepCoordination))->toBeFalse()
-        ->and($settings->canUserManageSettings($this->actor))->toBeTrue();
+    expect($resolver->tenantIdsFor($this->actor, ResponsibilityPurpose::MemberRegistration, includeScheduled: true))->toContain($this->tenant->id)
+        ->and($resolver->holdsAnywhere($this->actor, ResponsibilityPurpose::MemberRegistration))->toBeFalse()
+        ->and($resolver->holdsAnywhere($this->actor, ResponsibilityPurpose::StudentRepCoordination))->toBeFalse()
+        ->and(app(SettingsSettings::class)->canUserManageSettings($this->actor))->toBeTrue();
 });

@@ -14,11 +14,12 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Scout\Searchable;
+use Spatie\MediaLibrary\MediaCollections\Models\Collections\MediaCollection;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * @property int $id
  * @property string $title
- * @property string|null $image_url
  * @property string $link_url
  * @property string $lang
  * @property int $order
@@ -28,6 +29,7 @@ use Laravel\Scout\Searchable;
  * @property Carbon $updated_at
  * @property Carbon|null $deleted_at
  * @property-read Collection<int, Activity> $activitiesAsSubject
+ * @property-read MediaCollection<int, Media> $media
  * @property-read Tenant $tenant
  *
  * @method static \Database\Factories\BannerFactory factory($count = null, $state = [])

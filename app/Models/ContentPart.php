@@ -40,6 +40,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property-read Content $content
  * @property-read mixed $content_summary
  * @property-read mixed $html
+ * @property-read array $image_srcsets
  * @property-read Collection<int, TextBoxSubmission> $textBoxSubmissions
  *
  * @method static \Database\Factories\ContentPartFactory factory($count = null, $state = [])

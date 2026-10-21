@@ -41,6 +41,7 @@ Before planning or editing, find the row whose globs match the file's path and r
 | app/Notifications/**, app/Enums/NotificationType.php, app/Services/Notifications/**, app/Listeners/HandleTaskCreated.php, app/Listeners/QueueNotificationForDigest.php, app/Tasks/Subscribers/**, app/Actions/Schedulable/TaskNotifier.php, app/Console/Commands/Send*.php, resources/js/Pages/Admin/ShowNotificationSettings.vue | .ai/rules/notifications.md |
 | resources/css/components/turtle-loader.css, resources/views/turtle-loader.blade.php, resources/js/admin.ts, resources/js/public.ts | .ai/rules/page-loader.md |
 | resources/js/Components/AdminForms/**, resources/js/Components/RichContent/**, resources/js/Features/Admin/AdminSearch/**, resources/js/Components/ui/single-select/**, resources/js/Pages/Admin/**, resources/js/Components/**/Forms/** | .ai/rules/pickers.md |
+| app/Support/Permissions/**, app/Policies/**, app/Enums/ModelEnum.php, app/Actions/Permissions/**, app/Console/Commands/*Permissions.php, database/seeders/ModelPermissionSeeder.php, resources/js/Features/Admin/PermissionMatrix/** | .ai/rules/permissions.md |
 | app/Providers/** | .ai/rules/providers.md |
 | app/Http/Controllers/Public/**, app/Http/Controllers/PublicController.php, app/Providers/AppServiceProvider.php | .ai/rules/public-head.md |
 | resources/js/**/Public/** | .ai/rules/public.md |

@@ -11,6 +11,7 @@ use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\MailingList;
+use App\Models\ResponsibilityGrant;
 use App\Models\User;
 use App\Services\Mailman\MailmanClient;
 use Illuminate\Database\Eloquent\Model;
@@ -35,9 +36,18 @@ class QueueMailingListSync
             $model instanceof Institution => ['is_active', 'tenant_id'],
             $model instanceof User => ['email', 'name'],
             $model instanceof DutyType, $model instanceof InstitutionType => ['parent_id'],
+            $model instanceof ResponsibilityGrant => ['role_id', 'scope_type', 'scope_id'],
             default => [],
         };
         if ($model->wasChanged($fields)) {
+            self::queueSync();
+        }
+    }
+
+    /** A new grant can add holders to a list that takes people by responsibility. */
+    public function created(Model $model): void
+    {
+        if ($model instanceof ResponsibilityGrant) {
             self::queueSync();
         }
     }

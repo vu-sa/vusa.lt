@@ -34,6 +34,7 @@ class MergeDuties
         'model_has_permissions' => ['model', ['permission_id']],
         'model_has_roles' => ['model', ['role_id']],
         'notifications' => ['notifiable', null],
+        'responsibility_grants' => ['grantee', ['role_id', 'scope_type', 'scope_id']],
         'tasks' => ['taskable', null],
     ];
 
@@ -70,12 +71,14 @@ class MergeDuties
             foreach ($sources as $source) {
                 $moved = self::moveRows($kept, $source);
                 $summary['moved_types'] += $moved['duty_duty_type'];
-                $summary['moved_roles'] += $moved['model_has_roles'];
+                $summary['moved_roles'] += $moved['responsibility_grants'];
                 $summary['moved_former_names'] += $moved['duty_names'];
 
                 $merged[] = ['id' => $source->id, 'name' => $source->getTranslations('name')];
                 $source->forceDelete();
             }
+
+            ProjectDutyResponsibilities::forDuties([$kept->id]);
 
             activity()
                 ->performedOn($kept)

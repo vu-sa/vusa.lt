@@ -140,7 +140,9 @@
         </Link>
         <template v-else-if="column.key === 'category'">
           <SearchMatch v-if="item.category_name" :match="item._searchFieldMatches?.category_name" :title="item.category_name" />
-          <template v-else>—</template>
+          <template v-else>
+            —
+          </template>
         </template>
         <template v-else-if="column.key === 'tenant'">
           {{ item.tenant_shortname ?? '—' }}

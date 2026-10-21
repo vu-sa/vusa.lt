@@ -70,6 +70,7 @@ class MailingListSourceController extends AdminController
     {
         $allowed = match ($type) {
             MailingListSourceType::DutyType => ['tenant_scope', 'tenant_ids', 'include_subtypes'],
+            MailingListSourceType::Responsibility => ['tenant_scope', 'tenant_ids'],
             MailingListSourceType::Institution => ['duty_type_ids', 'include_subtypes'],
             MailingListSourceType::InstitutionType => ['tenant_scope', 'tenant_ids', 'include_subtypes', 'exclude_institution_type_ids', 'duty_type_ids'],
             default => [],

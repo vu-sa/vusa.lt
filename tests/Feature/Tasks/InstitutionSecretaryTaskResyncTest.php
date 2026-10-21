@@ -1,9 +1,9 @@
 <?php
 
+use App\Enums\ResponsibilityPurpose;
 use App\Events\MeetingFullyCreated;
 use App\Models\Cadence;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionSecretary;
 use App\Models\Meeting;
@@ -27,10 +27,8 @@ beforeEach(function (): void {
     $this->institution = Institution::factory()->for($this->tenant)->create();
     $this->cadence = Cadence::factory()->forYear(2025)->create(['institution_id' => $this->institution->id]);
 
-    $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-        ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-    $duty = Duty::factory()->for($this->institution)->hasAttached($studentRepType, [], 'types')->create();
+    $duty = Duty::factory()->for($this->institution)->create();
+    grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
     $this->member = User::factory()->create();
     $this->member->duties()->attach($duty, ['start_date' => '2019-01-01', 'end_date' => null]);

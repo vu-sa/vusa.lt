@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
+use App\Enums\SystemDutyType;
 use App\Enums\TenantType;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
@@ -60,11 +60,10 @@ class ContactPresentationService
             return $duties->sortBy('order')->values();
         }
 
-        $rootTypes = DutyType::query()->whereIn('slug', ['koordinatoriai', 'kuratoriai', 'mentors'])->get();
-        $coordinatorRoot = $rootTypes->firstWhere('slug', 'koordinatoriai');
-        $coordinatorIds = $coordinatorRoot?->getDescendantsAndSelf()->pluck('id') ?? collect();
-        $curatorIds = $rootTypes->whereIn('slug', ['kuratoriai', 'mentors'])
-            ->flatMap(fn (DutyType $type) => $type->getDescendantsAndSelf()->pluck('id'));
+        $systemTypes = app(SystemDutyTypes::class);
+        $coordinatorRoot = $systemTypes->type(SystemDutyType::Coordinator);
+        $coordinatorIds = collect($systemTypes->idsWithDescendants(SystemDutyType::Coordinator));
+        $curatorIds = collect($systemTypes->idsWithDescendants(SystemDutyType::Curator, SystemDutyType::Mentor));
 
         $rank = function (Duty $duty) use ($coordinatorRoot, $coordinatorIds, $curatorIds): int {
             $typeIds = $duty->types->pluck('id');

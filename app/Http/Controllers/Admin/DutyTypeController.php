@@ -2,17 +2,20 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Responsibilities\AssignableDutyTypes;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\DutyTypeRequest;
 use App\Http\Requests\IndexTypeRequest;
 use App\Http\Requests\SyncTypeModelsRequest;
-use App\Http\Requests\SyncTypeRolesRequest;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
 use App\Models\DutyType;
+use App\Models\ResponsibilityGrant;
 use App\Models\Role;
+use App\Services\ModelAuthorizer;
 use App\Services\ResourceServices\SharepointFileService;
+use App\Support\MorphMap;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -44,7 +47,7 @@ class DutyTypeController extends AdminController
 
         return $this->inertiaResponse('Admin/ModelMeta/CreateType', [
             'typeKind' => 'dutyType',
-            'contentTypes' => DutyType::select('id', 'title')->get(),
+            'contentTypes' => DutyType::select('id', 'title', 'parent_id')->get(),
         ]);
     }
 
@@ -64,19 +67,53 @@ class DutyTypeController extends AdminController
 
         $type->load([
             'parent:id,title',
-            'roles:id,name',
             'duties' => fn ($query) => $query->select('id', 'name'),
         ]);
 
+        // A type's duties also receive what its ancestors are given.
+        $grants = ResponsibilityGrant::query()
+            ->where('grantee_type', MorphMap::alias(DutyType::class))
+            ->whereIn('grantee_id', array_map(strval(...), DutyType::withAncestorIds([$type->id]) ?: [$type->id]))
+            ->with(['role', 'scope', 'grantee'])
+            ->get()
+            ->sortBy(fn (ResponsibilityGrant $grant): string => ((string) $grant->grantee_id === (string) $type->id ? '0' : '1').$grant->role->displayTitle());
+
+        $actor = request()->user();
+        $canManageAssignments = $actor->can('update', $type)
+            && AssignableDutyTypes::allowsChanges($actor, [], [$type->id])
+            && collect(['duties.update.*', 'duties.update.padalinys', 'duties.update.own'])
+                ->contains(fn (string $permission): bool => app(ModelAuthorizer::class)->allows($actor, $permission));
+
         return $this->inertiaResponse('Admin/ModelMeta/ShowType', [
             'typeKind' => 'dutyType',
-            'contentType' => $type->toFullArray(),
+            'contentType' => [
+                ...$type->withoutRelations()->toFullArray(),
+                'parent' => $type->parent?->toFullArray(),
+            ],
+            'responsibilityGrants' => $grants->map(fn (ResponsibilityGrant $grant): array => [
+                'id' => $grant->id,
+                'inherited_from' => (string) $grant->grantee_id === (string) $type->id || ! $grant->grantee instanceof DutyType ? null : [
+                    'title' => (string) $grant->grantee->getTranslation('title', app()->getLocale()),
+                    'href' => route('dutyTypes.show', $grant->grantee),
+                ],
+                'title' => $grant->role->displayTitle(),
+                'href' => $actor->can('view', $grant->role) ? route('responsibilities.show', $grant->role) : null,
+                ...$grant->scopePayload(),
+                'needs_scope' => $grant->needsScope(),
+            ])->values(),
             'attachedModels' => $type->duties->map(fn ($model): array => [
                 'id' => $model->getKey(),
                 'name' => $model->getAttribute('name'),
             ])->values(),
-            'modelOptions' => Inertia::optional(fn () => Duty::query()->select(['id', 'name'])->with('tenants')->orderBy('name')->get()),
-            'roleOptions' => Inertia::optional(fn () => Role::query()->orderBy('name')->get(['id', 'name'])),
+            'modelOptions' => Inertia::optional(fn () => $canManageAssignments
+                ? Duty::query()->with('tenants')->get()
+                    ->map(fn (Duty $duty): array => [
+                        'id' => $duty->id, 'name' => (string) $duty->getTranslation('name', app()->getLocale()),
+                        'can_change' => $actor->can('update', $duty),
+                    ])
+                    ->filter(fn (array $duty): bool => $duty['can_change'] || $type->duties->contains('id', $duty['id']))
+                    ->sortBy('name')->values()
+                : []),
             'responsibleDuties' => [],
             'sharepointPath' => SharepointFileService::pathOrNull($type),
             'sharepointFolderUrl' => SharepointFileService::folderUrlOrNull($type),
@@ -84,6 +121,8 @@ class DutyTypeController extends AdminController
             'can' => [
                 'update' => auth()->user()?->can('update', $type) ?? false,
                 'delete' => auth()->user()?->can('delete', $type) ?? false,
+                'manageAssignments' => $canManageAssignments,
+                'manageResponsibilities' => $actor->can('viewAny', Role::class),
             ],
         ]);
     }
@@ -95,7 +134,7 @@ class DutyTypeController extends AdminController
         return $this->inertiaResponse('Admin/ModelMeta/EditType', [
             'typeKind' => 'dutyType',
             'contentType' => $type->toFullArray(),
-            'contentTypes' => DutyType::select('id', 'title')->get(),
+            'contentTypes' => DutyType::select('id', 'title', 'parent_id')->get(),
         ]);
     }
 
@@ -108,14 +147,10 @@ class DutyTypeController extends AdminController
 
     public function syncModels(SyncTypeModelsRequest $request, DutyType $type): RedirectResponse
     {
-        $type->duties()->sync($request->validated('models'));
-
-        return back()->with('success', $this->entityMessage('updated', 'dutyType'));
-    }
-
-    public function syncRoles(SyncTypeRolesRequest $request, DutyType $type): RedirectResponse
-    {
-        $type->roles()->sync($request->validated('roles'));
+        $type->duties()->sync([
+            ...$request->validated('models'),
+            ...$type->duties()->onlyTrashed()->pluck('duties.id')->all(),
+        ]);
 
         return back()->with('success', $this->entityMessage('updated', 'dutyType'));
     }
@@ -123,6 +158,10 @@ class DutyTypeController extends AdminController
     public function destroy(DutyType $type): RedirectResponse
     {
         $this->handleAuthorization('delete', $type);
+
+        if ($reason = $type->deleteBlockedReason()) {
+            return back()->with('error', $reason);
+        }
 
         $type->delete();
 

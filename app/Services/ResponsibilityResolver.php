@@ -2,30 +2,34 @@
 
 namespace App\Services;
 
-use App\Enums\Responsibility;
+use App\Enums\ResponsibilityPurpose;
 use App\Enums\ResponsibilityScope;
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
 use App\Models\Institution;
 use App\Models\InstitutionType;
+use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\TypeTree;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Support\Facades\DB;
 
 /**
- * The one answer to "who is responsible for this institution?".
+ * The one answer to "who is responsible for this institution?" for a purpose.
  *
- * The most specific assignment wins: the institution itself, then its types (own types before
- * their ancestors), then its padalinys. Every duty assigned at the winning level counts. Scoped
- * per request, like ModelAuthorizer, so the memo never outlives an assignment change.
+ * The most specific grant wins: the institution itself, then its types (own types before their
+ * ancestors), then its padalinys. Every duty granted at the winning level counts. Scoped per
+ * request, like ModelAuthorizer, so the memo never outlives a grant change.
  */
 class ResponsibilityResolver
 {
     /** @var array<string, array{scope: ResponsibilityScope|null, duties: Collection<int, Duty>}> */
     private array $memo = [];
+
+    /** @var array<string, SupportCollection<int, array{scope_type: string|null, scope_id: string|null, duty_ids: list<string>}>> */
+    private array $assignments = [];
 
     /** @var array<int, int|null>|null */
     private ?array $typeParents = null;
@@ -33,23 +37,24 @@ class ResponsibilityResolver
     public function flush(): void
     {
         $this->memo = [];
+        $this->assignments = [];
         $this->typeParents = null;
     }
 
     /**
      * @return Collection<int, Duty>
      */
-    public function dutiesFor(Responsibility $responsibility, Institution $institution): Collection
+    public function dutiesFor(ResponsibilityPurpose $purpose, Institution $institution): Collection
     {
-        return $this->resolve($responsibility, $institution)['duties'];
+        return $this->resolve($purpose, $institution)['duties'];
     }
 
     /**
-     * The level the winning assignment sits on, or null when nobody is responsible.
+     * The level the winning grant sits on, or null when nobody is responsible.
      */
-    public function sourceFor(Responsibility $responsibility, Institution $institution): ?ResponsibilityScope
+    public function sourceFor(ResponsibilityPurpose $purpose, Institution $institution): ?ResponsibilityScope
     {
-        return $this->resolve($responsibility, $institution)['scope'];
+        return $this->resolve($purpose, $institution)['scope'];
     }
 
     /**
@@ -57,93 +62,92 @@ class ResponsibilityResolver
      *
      * @return SupportCollection<int, User>
      */
-    public function usersFor(Responsibility $responsibility, Institution $institution): SupportCollection
+    public function usersFor(ResponsibilityPurpose $purpose, Institution $institution): SupportCollection
     {
-        return $this->dutiesFor($responsibility, $institution)
+        return $this->dutiesFor($purpose, $institution)
             ->loadMissing('current_users')
             ->flatMap(fn (Duty $duty) => $duty->current_users)
             ->unique('id')
             ->values();
     }
 
-    public function isResponsibleFor(User $user, Responsibility $responsibility, Institution $institution): bool
+    public function isResponsibleFor(User $user, ResponsibilityPurpose $purpose, Institution $institution): bool
     {
-        return $this->usersFor($responsibility, $institution)->contains('id', $user->id);
+        return $this->usersFor($purpose, $institution)->contains('id', $user->id);
     }
 
     /**
-     * Whether any of the user's current duties carries the responsibility, for any scope.
+     * Whether any of the user's current duties carries the purpose, for any scope.
      */
-    public function holdsAnywhere(User $user, Responsibility $responsibility): bool
+    public function holdsAnywhere(User $user, ResponsibilityPurpose $purpose): bool
     {
-        return DutyResponsibility::query()
-            ->where('responsibility', $responsibility)
-            ->whereIn('duty_id', $user->current_duties()->pluck('duties.id'))
-            ->exists();
+        return $this->assignmentsReaching($user, $purpose)->isNotEmpty();
     }
 
     /**
-     * Institutions the user is actually responsible for: their assignments' reach, minus what a
-     * more specific assignment gives to someone else.
+     * Padaliniai the user's duties are granted the purpose for as a whole. Access checks pass
+     * `$includeScheduled`, so a term that has not started yet opens what its permissions already do.
+     *
+     * @return SupportCollection<int, int>
+     */
+    public function tenantIdsFor(User $user, ResponsibilityPurpose $purpose, bool $includeScheduled = false): SupportCollection
+    {
+        return $this->assignmentsReaching($user, $purpose, $includeScheduled)
+            ->where('scope_type', ResponsibilityScope::Tenant->value)
+            ->pluck('scope_id')
+            ->map(fn (string $id): int => (int) $id)
+            ->unique()
+            ->values();
+    }
+
+    /**
+     * Duties granted the purpose for the whole padalinys, in contact order.
+     *
+     * @return Collection<int, Duty>
+     */
+    public function dutiesForTenant(ResponsibilityPurpose $purpose, Tenant $tenant): Collection
+    {
+        return Duty::query()
+            ->whereIn('id', $this->dutyIdsAt($purpose, ResponsibilityScope::Tenant, [$tenant->id]))
+            ->orderBy('order')
+            ->get();
+    }
+
+    /**
+     * Institutions the user is actually responsible for: their grants' reach, minus what a more
+     * specific grant gives to someone else.
      *
      * @return SupportCollection<int, string>
      */
-    public function institutionIdsFor(User $user, Responsibility $responsibility): SupportCollection
+    public function institutionIdsFor(User $user, ResponsibilityPurpose $purpose): SupportCollection
     {
-        $dutyIds = $user->current_duties()->pluck('duties.id')->map(fn ($id) => (string) $id);
+        $own = $this->assignmentsReaching($user, $purpose);
 
-        $assignments = DutyResponsibility::query()
-            ->where('responsibility', $responsibility)
-            ->whereIn('duty_id', $dutyIds)
-            ->get();
-
-        if ($assignments->isEmpty()) {
+        if ($own->isEmpty()) {
             return collect();
         }
 
-        $byScope = $assignments->groupBy('scope_type');
-        $idsOf = fn (ResponsibilityScope $scope) => $byScope->get($scope->value, collect())->pluck('scope_id')->all();
-
+        $dutyIds = $this->currentDutyIds($user);
+        $idsOf = fn (ResponsibilityScope $scope) => $own->where('scope_type', $scope->value)->pluck('scope_id')->all();
         $typeIds = $this->withDescendants(array_map(intval(...), $idsOf(ResponsibilityScope::InstitutionType)));
 
-        $candidates = Institution::query()
+        return Institution::query()
             ->where(fn (Builder $query) => $query
                 ->whereIn('id', $idsOf(ResponsibilityScope::Institution))
                 ->orWhereIn('tenant_id', $idsOf(ResponsibilityScope::Tenant))
                 ->orWhereHas('types', fn (Builder $types) => $types->whereIn('institution_types.id', $typeIds)))
             ->with('types')
-            ->get();
-
-        $candidateAssignments = DutyResponsibility::query()
-            ->where('responsibility', $responsibility)
-            ->whereHas('duty')
-            ->where(fn (Builder $query) => $query
-                ->where(fn (Builder $scope) => $scope
-                    ->where('scope_type', ResponsibilityScope::Institution)
-                    ->whereIn('scope_id', $candidates->pluck('id')->map(strval(...))))
-                ->orWhere(fn (Builder $scope) => $scope
-                    ->where('scope_type', ResponsibilityScope::Tenant)
-                    ->whereIn('scope_id', $candidates->pluck('tenant_id')->filter()->map(strval(...))))
-                ->orWhere(fn (Builder $scope) => $scope
-                    ->where('scope_type', ResponsibilityScope::InstitutionType)
-                    ->whereIn('scope_id', array_map(strval(...), array_keys($this->typeParents())))))
-            ->get(['duty_id', 'scope_type', 'scope_id'])
-            ->groupBy(fn (DutyResponsibility $assignment) => $assignment->scope_type.':'.$assignment->scope_id);
-
-        return $candidates
-            ->filter(function (Institution $institution) use ($responsibility, $candidateAssignments, $dutyIds): bool {
-                if (! $responsibility->appliesTo($institution)) {
+            ->get()
+            ->filter(function (Institution $institution) use ($purpose, $dutyIds): bool {
+                if (! $purpose->appliesTo($institution)) {
                     return false;
                 }
 
                 foreach ($this->levels($institution) as [$scope, $ids]) {
-                    $winningDuties = collect($ids)
-                        ->flatMap(fn (int|string $id) => $candidateAssignments
-                            ->get($scope->value.':'.$id, collect())
-                            ->pluck('duty_id'));
+                    $winning = $this->dutyIdsAt($purpose, $scope, $ids);
 
-                    if ($winningDuties->isNotEmpty()) {
-                        return $winningDuties->map(strval(...))->intersect($dutyIds)->isNotEmpty();
+                    if ($winning !== []) {
+                        return array_intersect($winning, $dutyIds) !== [];
                     }
                 }
 
@@ -155,22 +159,28 @@ class ResponsibilityResolver
     }
 
     /**
-     * Representational padaliniai where nobody currently holds the responsibility for the whole
-     * padalinys.
+     * Representational padaliniai where nobody currently holds the purpose for the whole padalinys.
      *
      * @return Collection<int, Tenant>
      */
-    public function gaps(Responsibility $responsibility): Collection
+    public function gaps(ResponsibilityPurpose $purpose): Collection
     {
-        $covered = DutyResponsibility::query()
-            ->where('responsibility', $responsibility)
-            ->where('scope_type', ResponsibilityScope::Tenant)
-            ->whereHas('duty', fn (Builder $duty) => $duty->whereHas('current_users'))
-            ->pluck('scope_id');
+        $staffed = Duty::query()
+            ->whereIn('id', $this->assignments($purpose)->pluck('duty_ids')->flatten()->all())
+            ->whereHas('current_users')
+            ->pluck('id')
+            ->map(strval(...))
+            ->all();
+
+        $covered = $this->assignments($purpose)
+            ->where('scope_type', ResponsibilityScope::Tenant->value)
+            ->filter(fn (array $assignment): bool => array_intersect($assignment['duty_ids'], $staffed) !== [])
+            ->pluck('scope_id')
+            ->map(fn (string $id): int => (int) $id);
 
         return Tenant::query()
             ->representational()
-            ->whereNotIn('id', $covered->map(fn ($id) => (int) $id))
+            ->whereNotIn('id', $covered)
             ->orderBy('shortname')
             ->get();
     }
@@ -178,9 +188,9 @@ class ResponsibilityResolver
     /**
      * @return array{scope: ResponsibilityScope|null, duties: Collection<int, Duty>}
      */
-    private function resolve(Responsibility $responsibility, Institution $institution): array
+    private function resolve(ResponsibilityPurpose $purpose, Institution $institution): array
     {
-        $key = $responsibility->value.':'.$institution->id;
+        $key = $purpose->value.':'.$institution->id;
 
         if (isset($this->memo[$key])) {
             return $this->memo[$key];
@@ -188,29 +198,105 @@ class ResponsibilityResolver
 
         $none = ['scope' => null, 'duties' => new Collection];
 
-        if (! $responsibility->appliesTo($institution)) {
+        if (! $purpose->appliesTo($institution)) {
             return $this->memo[$key] = $none;
         }
 
         foreach ($this->levels($institution) as [$scope, $ids]) {
-            if ($ids === []) {
-                continue;
-            }
+            $dutyIds = $this->dutyIdsAt($purpose, $scope, $ids);
 
-            $duties = Duty::query()
-                ->whereHas('responsibilities', fn (Builder $query) => $query
-                    ->where('responsibility', $responsibility)
-                    ->where('scope_type', $scope)
-                    ->whereIn('scope_id', array_map(strval(...), $ids)))
-                ->orderBy('order')
-                ->get();
-
-            if ($duties->isNotEmpty()) {
-                return $this->memo[$key] = ['scope' => $scope, 'duties' => $duties];
+            if ($dutyIds !== []) {
+                return $this->memo[$key] = [
+                    'scope' => $scope,
+                    'duties' => Duty::query()->whereIn('id', $dutyIds)->orderBy('order')->get(),
+                ];
             }
         }
 
         return $this->memo[$key] = $none;
+    }
+
+    /**
+     * @param  list<int|string>  $scopeIds
+     * @return list<string>
+     */
+    private function dutyIdsAt(ResponsibilityPurpose $purpose, ResponsibilityScope $scope, array $scopeIds): array
+    {
+        $scopeIds = array_map(strval(...), $scopeIds);
+
+        return $this->assignments($purpose)
+            ->where('scope_type', $scope->value)
+            ->filter(fn (array $assignment): bool => in_array($assignment['scope_id'], $scopeIds, true))
+            ->pluck('duty_ids')
+            ->flatten()
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return SupportCollection<int, array{scope_type: string|null, scope_id: string|null, duty_ids: list<string>}>
+     */
+    private function assignmentsReaching(User $user, ResponsibilityPurpose $purpose, bool $includeScheduled = false): SupportCollection
+    {
+        $dutyIds = $includeScheduled
+            ? $user->authorization_duties()->pluck('duties.id')->map(strval(...))->all()
+            : $this->currentDutyIds($user);
+
+        return $this->assignments($purpose)
+            ->filter(fn (array $assignment): bool => array_intersect($assignment['duty_ids'], $dutyIds) !== [])
+            ->values();
+    }
+
+    /**
+     * Each grant of the purpose's responsibility with the duties it reaches.
+     *
+     * @return SupportCollection<int, array{scope_type: string|null, scope_id: string|null, duty_ids: list<string>}>
+     */
+    private function assignments(ResponsibilityPurpose $purpose): SupportCollection
+    {
+        return $this->assignments[$purpose->value] ??= ResponsibilityGrant::query()
+            ->whereHas('role', fn (Builder $role) => $role->where('purpose', $purpose))
+            ->get()
+            ->flatMap(function (ResponsibilityGrant $grant): array {
+                $dutyIds = ResponsibilityGrant::dutyIdsQuery(ResponsibilityGrant::query()->whereKey($grant->id))
+                    ->pluck('duty_id')
+                    ->map(strval(...))
+                    ->all();
+
+                if (! $grant->coversOwnTenant()) {
+                    return [['scope_type' => $grant->scope_type, 'scope_id' => $grant->scope_id, 'duty_ids' => $dutyIds]];
+                }
+
+                return $this->dutyIdsByTenant($dutyIds)
+                    ->map(fn (array $ids, string $tenantId): array => ['scope_type' => ResponsibilityScope::Tenant->value, 'scope_id' => $tenantId, 'duty_ids' => $ids])
+                    ->values()
+                    ->all();
+            })
+            ->values();
+    }
+
+    /**
+     * @param  list<string>  $dutyIds
+     * @return SupportCollection<int|string, list<string>>
+     */
+    private function dutyIdsByTenant(array $dutyIds): SupportCollection
+    {
+        return DB::table('duties')
+            ->join('institutions', 'institutions.id', '=', 'duties.institution_id')
+            ->whereIn('duties.id', $dutyIds)
+            ->whereNotNull('institutions.tenant_id')
+            ->get(['duties.id', 'institutions.tenant_id'])
+            ->groupBy(fn (object $row): string => (string) $row->tenant_id)
+            ->map(fn (SupportCollection $rows): array => array_values($rows->pluck('id')->map(strval(...))->all()));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function currentDutyIds(User $user): array
+    {
+        return $user->current_duties()->pluck('duties.id')->map(strval(...))->all();
     }
 
     /**
@@ -254,7 +340,6 @@ class ResponsibilityResolver
     private function typeParents(): array
     {
         return $this->typeParents ??= InstitutionType::query()
-
             ->pluck('parent_id', 'id')
             ->mapWithKeys(fn ($parent, $id) => [(int) $id => $parent === null ? null : (int) $parent])
             ->all();

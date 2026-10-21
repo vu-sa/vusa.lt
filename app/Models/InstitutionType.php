@@ -6,6 +6,7 @@ use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Enums\InstitutionScope;
 use App\Events\FileableNameUpdated;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Pivots\InstitutionInstitutionType;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasSharepointFiles;
@@ -60,6 +61,7 @@ use Illuminate\Support\Facades\Cache;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionType whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionType whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionType whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionType whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionType withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InstitutionType withoutTrashed()
  *
@@ -92,7 +94,7 @@ class InstitutionType extends Model implements GuardsForceDelete, SharepointFile
 
         $flush = function (): void {
             app(InstitutionScopeResolver::class)->flush();
-            Cache::forget('all-institution-types-for-inertia');
+            Cache::forget(HandleInertiaRequests::INSTITUTION_TYPES_CACHE_KEY);
         };
 
         static::saved($flush);

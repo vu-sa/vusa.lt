@@ -117,9 +117,10 @@ return [
     'meeting_agenda_completed_body' => 'Visi :count :institution posėdžio darbotvarkės klausimai užpildyti',
     'meeting_agenda_completed_body_with_user' => ':user užpildė visus :count :institution posėdžio darbotvarkės klausimus',
     'meeting_agenda_type_voting' => ':count balsavimu',
-    'meeting_agenda_type_informational' => ':count informaciniu',
+    'meeting_agenda_type_informational' => ':count aptarimu',
     'meeting_agenda_type_deferred' => ':count atidėtu',
     'meeting_agenda_type_break' => ':count pertrauka',
+    'meeting_agenda_type_withdrawn' => ':count išbrauktu',
     'meeting_agenda_additional_votes_note' => 'Jei buvo papildomų balsavimų, nepamiršk jų įtraukti.',
 
     // Duty notifications
@@ -153,7 +154,7 @@ return [
     'action_review_reservation_draft' => 'Peržiūrėti rezervaciją',
     'action_view_meeting' => 'Peržiūrėti posėdį',
     'action_view_duty' => 'Peržiūrėti pareigas',
-    'action_view_access' => 'Peržiūrėti mano roles',
+    'action_view_access' => 'Peržiūrėti mano atsakomybes',
     'action_explore_dashboard' => 'Atidaryti Mano VU SA',
     'action_view' => 'Peržiūrėti',
     'action_review' => 'Peržiūrėti',
@@ -364,7 +365,7 @@ return [
         'how_followed' => 'Sekamų institucijų pranešimus gauni tik tada, kai tų pačių žinių negauni dėl pareigų. Nebenori jų gauti – nebesek institucijos.',
         'how_reservations' => 'Išteklių administratoriai gauna tik prašymą patvirtinti. Rezervavęs apie sprendimą sužino vieną kartą – kai pasikeičia rezervacijos būsena.',
         'how_self' => 'Apie savo paties veiksmą (patvirtinimą, užduoties uždarymą, būsenos pakeitimą) pranešimo negauni.',
-        'how_list' => 'Čia matai tik tuos pranešimus, kuriuos gali gauti pagal savo pareigas ir roles.',
+        'how_list' => 'Čia matai tik tuos pranešimus, kuriuos gali gauti pagal savo pareigas ir atsakomybes.',
     ],
 
     // Legacy compatibility

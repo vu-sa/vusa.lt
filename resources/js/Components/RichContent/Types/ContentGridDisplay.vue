@@ -180,7 +180,6 @@
 </template>
 
 <script setup lang="ts">
-import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { computed, defineAsyncComponent } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 
@@ -189,6 +188,7 @@ import RCFeatureCard from '../RCFeatureCard.vue';
 import RCSection from '../RCSection.vue';
 import type { BandResolution } from '../bandLayout';
 
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
 import type { DecorationConfig } from '@/Types/contentParts';
 

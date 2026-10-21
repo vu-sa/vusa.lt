@@ -12,9 +12,11 @@
 */
 
 use App\Actions\Media\AddImageMedia;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\PendingUpload;
+use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Providers\TestingServiceProvider;
@@ -650,6 +652,16 @@ function makeTenantUser(?string $role = null, ?Tenant $tenant = null): User
 function makeTenantUserWithRole(string $role, ?Tenant $tenant = null): User
 {
     return makeTenantUser($role, $tenant);
+}
+
+/**
+ * Gives the duty the responsibility carrying the purpose, scoped to its padalinys when the purpose has scopes.
+ */
+function grantPurpose(Duty $duty, ResponsibilityPurpose $purpose, ?Tenant $tenant = null): ResponsibilityGrant
+{
+    $grant = ResponsibilityGrant::factory()->forDuty($duty)->purpose($purpose);
+
+    return ($purpose->isScoped() ? $grant->forTenant($tenant ?? $duty->institution->tenant) : $grant)->create();
 }
 
 function makeAdminUser(?Tenant $tenant = null): User

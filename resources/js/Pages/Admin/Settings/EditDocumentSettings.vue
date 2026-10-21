@@ -1,5 +1,6 @@
 <template>
   <FormPage
+    :mode="canEdit ? 'edit' : 'view'"
     :title="$t('settings.pages.documents.title')"
     :back-href="route('settings.index')"
     :back-label="$t('settings.title')"
@@ -147,6 +148,7 @@ interface Recommendation {
 }
 
 const props = defineProps<{
+  canEdit: boolean;
   selected_content_types: string[];
   available_content_types: string[];
   recommendations: Recommendation[];

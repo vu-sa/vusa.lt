@@ -25,7 +25,6 @@ class RoleResourceManagerSeeder extends Seeder
             'resources.create.padalinys',
             'resources.update.padalinys',
             'resources.delete.padalinys',
-            'reservations.create.padalinys',
             'reservations.read.padalinys',
             'reservations.update.padalinys',
             'reservations.delete.padalinys',

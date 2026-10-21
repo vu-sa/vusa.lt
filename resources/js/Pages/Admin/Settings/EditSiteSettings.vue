@@ -1,5 +1,6 @@
 <template>
   <FormPage
+    :mode="canEdit ? 'edit' : 'view'"
     :title="$t('settings.pages.site.title')"
     :back-href="route('settings.index')"
     :back-label="$t('settings.title')"
@@ -69,6 +70,7 @@ interface SelectedPage {
 type LocaleCode = 'lt' | 'en';
 
 const props = defineProps<{
+  canEdit: boolean;
   selectedPages: { lt: SelectedPage | null; en: SelectedPage | null };
 }>();
 

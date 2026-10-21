@@ -3,10 +3,8 @@ import { mount } from '@vue/test-utils';
 
 import IndexSettings from '@/Pages/Admin/Settings/IndexSettings.vue';
 
-function createWrapper(props: { isSuperAdmin?: boolean } = {}) {
-  return mount(IndexSettings, {
-    props: { isSuperAdmin: props.isSuperAdmin ?? false },
-  });
+function createWrapper() {
+  return mount(IndexSettings);
 }
 
 const tileHrefs = (wrapper: ReturnType<typeof mount>, category: string) =>
@@ -22,6 +20,7 @@ describe('IndexSettings', () => {
       '/mocked-route/settings.atstovavimas.edit',
       '/mocked-route/settings.documents.edit',
       '/mocked-route/settings.cadences.index',
+      '/mocked-route/settings.purposes.edit',
       '/mocked-route/settings.site.edit',
     ]);
   });
@@ -33,19 +32,5 @@ describe('IndexSettings', () => {
       expect(tile.find('[data-tile-label]').text()).toContain('.title');
       expect(tile.find('[data-tile-description]').text()).toContain('.description');
     }
-  });
-
-  it('hides the authorization section for non-super-admins', () => {
-    const wrapper = createWrapper({ isSuperAdmin: false });
-
-    expect(wrapper.text()).not.toContain('settings.categories.authorization');
-    expect(wrapper.find('[data-category="authorization"]').exists()).toBe(false);
-  });
-
-  it('shows the authorization tile for super admins', () => {
-    const wrapper = createWrapper({ isSuperAdmin: true });
-
-    expect(wrapper.text()).toContain('settings.categories.authorization');
-    expect(tileHrefs(wrapper, 'authorization')).toEqual(['/mocked-route/settings.authorization.edit']);
   });
 });

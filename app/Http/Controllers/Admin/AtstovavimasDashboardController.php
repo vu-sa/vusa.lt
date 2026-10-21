@@ -7,6 +7,7 @@ use App\Actions\GetFollowedInstitutions;
 use App\Actions\GetTypeFiles;
 use App\Actions\GetUpcomingMeetingsForUser;
 use App\Actions\GetUserCoordinators;
+use App\Enums\InstitutionScope;
 use App\Enums\TenantType;
 use App\Http\Controllers\AdminController;
 use App\Models\Institution;
@@ -21,6 +22,7 @@ use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\ResourceServices\DutyService;
 use App\Settings\AtstovavimasSettings;
+use App\Settings\RepMetricSettings;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -188,6 +190,10 @@ class AtstovavimasDashboardController extends AdminController
             'defaultGanttTenantIds' => $this->defaultGanttTenantIds($user, $statsTenants, $ganttTenants),
             'canViewTenantTasks' => $user->can('viewAny', Task::class),
             'canAskAboutActivity' => $user->can('viewAny', InstitutionCheckIn::class),
+            'countedScopes' => array_map(
+                fn (InstitutionScope $scope): string => $scope->label(app()->getLocale()),
+                app(RepMetricSettings::class)->countedInstitutionScopes(),
+            ),
         ]);
     }
 

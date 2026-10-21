@@ -248,11 +248,11 @@
 </template>
 
 <script setup lang="ts">
-import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { computed, ref } from 'vue';
 import { Head, usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { Button } from '@/Components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/Components/ui/collapsible';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/Components/ui/tooltip';

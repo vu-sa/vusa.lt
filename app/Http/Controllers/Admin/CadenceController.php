@@ -88,12 +88,13 @@ class CadenceController extends AdminController
     public function index(CadenceSettings $cadenceSettings, SettingsSettings $settingsSettings): InertiaResponse
     {
         abort_if(
-            ! $settingsSettings->canUserManageSettings(request()->user()),
+            ! $settingsSettings->canUserViewSettings(request()->user()),
             403,
             __('settings.messages.unauthorized'),
         );
 
         return $this->inertiaResponse('Admin/Settings/EditCadenceSettings', [
+            'canEdit' => $settingsSettings->canUserManageSettings(request()->user()),
             'cadences' => self::payload(),
             'settings' => [
                 'default_start_month_day' => $cadenceSettings->default_start_month_day,

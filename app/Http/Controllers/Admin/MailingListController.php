@@ -23,6 +23,7 @@ use App\Models\InstitutionType;
 use App\Models\MailingList;
 use App\Models\MailingListMessage;
 use App\Models\MailingListSource;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Mailman\MailmanClient;
@@ -255,7 +256,7 @@ class MailingListController extends AdminController
 
         try {
             $diff = $sync->verify($mailingList, $previewToken, $user, $activate);
-        } catch (ValidationException $exception) {
+        } catch (ValidationException) {
             return back()->with('error', __('mailing_lists.messages.stale_preview'));
         } catch (Throwable $exception) {
             report($exception);
@@ -349,9 +350,10 @@ class MailingListController extends AdminController
         $lists = MailingList::query()->whereIn('id', $ids(MailingListSourceType::MailingList))->get(['id', 'address'])->keyBy('id');
         $institutionTypes = InstitutionType::query()->whereIn('id', [...$ids(MailingListSourceType::InstitutionType), ...$filterIds('exclude_institution_type_ids')])->get(['id', 'title'])->keyBy('id');
         $dutyTypes = DutyType::query()->whereIn('id', [...$ids(MailingListSourceType::DutyType), ...$filterIds('duty_type_ids')])->get(['id', 'title'])->keyBy('id');
+        $responsibilities = Role::query()->whereIn('id', $ids(MailingListSourceType::Responsibility))->get()->keyBy('id');
         $tenants = Tenant::query()->whereIn('id', $filterIds('tenant_ids'))->pluck('shortname', 'id');
 
-        return $sources->map(function (MailingListSource $source) use ($duties, $institutions, $lists, $institutionTypes, $dutyTypes, $tenants): array {
+        return $sources->map(function (MailingListSource $source) use ($duties, $institutions, $lists, $institutionTypes, $dutyTypes, $responsibilities, $tenants): array {
             $label = match ($source->type) {
                 MailingListSourceType::Duty => ($duty = $duties->get($source->source_id))
                     ? trim(($duty->institution?->name ? $duty->institution->name.' · ' : '').$duty->name)
@@ -359,6 +361,7 @@ class MailingListController extends AdminController
                 MailingListSourceType::Institution => $institutions->get($source->source_id)?->name,
                 MailingListSourceType::InstitutionType => $institutionTypes->get((int) $source->source_id)?->title,
                 MailingListSourceType::DutyType => $dutyTypes->get((int) $source->source_id)?->title,
+                MailingListSourceType::Responsibility => $responsibilities->get($source->source_id)?->displayTitle(),
                 MailingListSourceType::MailingList => $lists->get($source->source_id)?->address,
                 MailingListSourceType::Email => $source->display_name ? "{$source->display_name} <{$source->email}>" : $source->email,
             };
@@ -400,6 +403,10 @@ class MailingListController extends AdminController
                 ->map(fn (Institution $institution) => ['id' => $institution->id, 'name' => trim(($institution->tenant?->shortname ? $institution->tenant->shortname.' · ' : '').$institution->name)]),
             'mailingLists' => MailingList::query()->whereIn('tenant_id', $tenantIds)->whereKeyNot($mailingList->id)->orderBy('address')->get(['id', 'address'])
                 ->map->only(['id', 'address']),
+            'responsibilities' => Role::query()->exceptSuperAdmin()->get()
+                ->map(fn (Role $role) => ['id' => $role->id, 'title' => $role->displayTitle(), 'purpose' => $role->purpose?->value])
+                ->sortBy('title')
+                ->values(),
         ];
     }
 }

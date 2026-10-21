@@ -118,12 +118,12 @@ return [
     ],
 
     'role' => [
-        'not_editable' => 'This role cannot be edited.',
-        'not_deletable' => 'This role cannot be deleted.',
+        'not_editable' => 'This responsibility cannot be edited.',
+        'not_deletable' => 'This responsibility cannot be deleted.',
         'permissions_updated' => 'Role permissions updated.',
         'attachables_updated' => 'Role attachables updated.',
         'duties_updated' => 'Role duties updated.',
-        'not_assignable_to_duty' => 'This role cannot be assigned to duties! Please try again.',
+        'not_assignable_to_duty' => 'This responsibility cannot be given to duties.',
     ],
 
     'study_program' => [

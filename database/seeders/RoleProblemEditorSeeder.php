@@ -26,8 +26,8 @@ class RoleProblemEditorSeeder extends Seeder
             'problems.update.padalinys',
         ]);
 
-        // Through DutyType::roles() so RoleTypeObserver also hands the role to the existing coordinator duties.
+        // A type grant reaches the existing coordinator duties through the projection.
         DutyType::query()->where('slug', 'koordinatoriai')->firstOrFail()
-            ->roles()->syncWithoutDetaching([$role->id]);
+            ->responsibilityGrants()->firstOrCreate(['role_id' => $role->id, 'scope_type' => null, 'scope_id' => null]);
     }
 }

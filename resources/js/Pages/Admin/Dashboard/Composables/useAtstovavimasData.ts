@@ -4,11 +4,14 @@ import type {
   AtstovavimasUser,
   AtstovavimasInstitution,
   AtstovavimasMeeting,
+  AtstovavimasVote,
   InstitutionInsights,
   GanttMeeting,
   GanttAgendaItem,
   AtstovavimasGap,
 } from '../types';
+
+import { getOutcomeVotes } from '@/Composables/useAgendaItemStyling';
 
 export function useAtstovavimasData(
   userGetter: MaybeRefOrGetter<AtstovavimasUser>,
@@ -55,20 +58,12 @@ export function useAtstovavimasData(
     return institutions.value.map((inst: AtstovavimasInstitution) => {
       return (inst.meetings ?? []).map((m) => {
         // Extract agenda items for tooltip (limit to first 4)
-        // Vote data comes from: main_vote relationship, or vote with is_main flag, or first vote
-        const agendaItems = (m.agenda_items ?? []).slice(0, 4).map((item) => {
-          const mainVote = item.main_vote
-            ?? item.votes?.find(vote => vote.is_main)
-            ?? item.votes?.[0]
-            ?? null;
-          return {
-            id: String(item.id),
-            title: String(item.title ?? ''),
-            type: (item.type ?? null) as GanttAgendaItem['type'],
-            student_vote: mainVote?.student_vote ?? null,
-            decision: mainVote?.decision ?? null,
-          };
-        });
+        const agendaItems = (m.agenda_items ?? []).slice(0, 4).map(item => ({
+          id: String(item.id),
+          title: String(item.title ?? ''),
+          type: (item.type ?? null) as GanttAgendaItem['type'],
+          votes: getOutcomeVotes(item) as AtstovavimasVote[],
+        }));
         const totalAgendaCount = (m.agenda_items ?? []).length;
 
         return {

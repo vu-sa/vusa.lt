@@ -10,29 +10,17 @@ use App\Http\Requests\Api\Admin\AtstovavimasStatusHistoryRequest;
 use App\Http\Requests\Api\Admin\AtstovavimasTenantRequest;
 use App\Models\User;
 use App\Services\AtstovavimasDashboardService;
+use App\Services\InstitutionRelationService;
+use App\Services\RepMetricReportService;
+use App\Services\RepStatisticsCache;
 use App\Settings\AtstovavimasSettings;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 
 class AtstovavimasApiController extends ApiController
 {
-    /**
-     * Tenant timeline data is identical for every user authorized to see the same
-     * tenant set, so it is cached briefly; mutations bypass via ?refresh=1.
-     */
-    private const int CACHE_TTL_SECONDS = 600;
-
-    /**
-     * Status history has no explicit refresh trigger anywhere in the frontend
-     * (unlike timeline/meetings, which get ?refresh=1'd after creating a meeting
-     * or check-in) and is expensive to recompute, so it can be cached far longer —
-     * only "today"'s bucket can meaningfully change within the window.
-     */
-    private const int STATUS_HISTORY_CACHE_TTL_SECONDS = 3600;
-
     public function __construct(
         private readonly AtstovavimasDashboardService $dashboardService,
         private readonly AtstovavimasSettings $settings,
@@ -44,7 +32,7 @@ class AtstovavimasApiController extends ApiController
         $tenantIds = $this->authorizedTenantIds($request->validated('tenant_ids'), $user);
 
         return $this->jsonSuccess(
-            $this->rememberVisak('timeline', $tenantIds->sort()->implode(','), $request->boolean('refresh'), fn () => $this->dashboardService->tenantTimeline($tenantIds->all()), 'activity-status-v2')
+            $this->rememberVisak('timeline', $tenantIds->sort()->implode(','), $request->boolean('refresh'), fn () => $this->dashboardService->tenantTimeline($tenantIds->all()), 'activity-status-v4', $tenantIds->all())
         );
     }
 
@@ -53,10 +41,10 @@ class AtstovavimasApiController extends ApiController
      */
     public function gantt(AtstovavimasTenantRequest $request): JsonResponse
     {
-        $access = $this->dashboardService->ganttInstitutionAccess($this->requireAuth($request), $request->tenantIds());
+        $access = $this->ganttAccess($this->requireAuth($request), $request);
 
         return $this->jsonSuccess(
-            $this->rememberVisak('gantt', $this->accessScope($access), $request->boolean('refresh'), fn () => $this->dashboardService->ganttInstitutions($access), 'activity-dates-v3')
+            $this->rememberVisak('gantt', $this->accessScope($access), $request->boolean('refresh'), fn () => $this->dashboardService->ganttInstitutions($access), 'activity-dates-v3', $request->tenantIds())
         );
     }
 
@@ -66,7 +54,7 @@ class AtstovavimasApiController extends ApiController
     public function activityRequests(AtstovavimasTenantRequest $request, GetOpenActivityRequestSpans $spans): JsonResponse
     {
         $user = $this->requireAuth($request);
-        $access = $this->dashboardService->ganttInstitutionAccess($user, $request->tenantIds());
+        $access = $this->ganttAccess($user, $request);
 
         return $this->jsonSuccess($spans->execute($user, $access->keys()));
     }
@@ -77,31 +65,42 @@ class AtstovavimasApiController extends ApiController
         $tenantIds = $this->authorizedTenantIds($request->validated('tenant_ids'), $user);
         $days = (int) $request->validated('days', 90);
 
+        return $this->jsonSuccess($this->dashboardService->tenantStatusHistory($tenantIds->sort()->values()->all(), $days, $request->boolean('refresh')));
+    }
+
+    public function repMetrics(AtstovavimasTenantRequest $request): JsonResponse
+    {
+        $user = $this->requireAuth($request);
+        $tenantIds = $this->authorizedTenantIds($request->validated('tenant_ids'), $user);
+
         return $this->jsonSuccess(
             $this->rememberVisak(
-                'status_history',
+                'rep_metrics',
                 $tenantIds->sort()->implode(','),
                 $request->boolean('refresh'),
-                fn () => $this->dashboardService->tenantStatusHistory($tenantIds->all(), $days),
-                $days.':activity-status-v2',
-                self::STATUS_HISTORY_CACHE_TTL_SECONDS,
+                fn () => $this->repMetricsFor($tenantIds->map(fn ($id): int => (int) $id)->values()->all()),
+                'cadence-outcomes-v3',
+                $tenantIds->all(),
             )
         );
     }
 
     public function meetings(AtstovavimasMeetingsRequest $request): JsonResponse
     {
-        $access = $this->dashboardService->ganttInstitutionAccess($this->requireAuth($request), $request->tenantIds());
+        $user = $this->requireAuth($request);
+        $access = $this->ganttAccess($user, $request);
         $from = Carbon::parse($request->validated('from'))->startOfDay();
         $until = Carbon::parse($request->validated('until'))->endOfDay();
 
         return $this->jsonSuccess(
             $this->rememberVisak(
                 'meetings',
-                $this->accessScope($access),
+                // Private agenda items are redacted per reader (past members, scoped permissions), which the access map does not capture.
+                $this->accessScope($access).'|user:'.$user->id,
                 $request->boolean('refresh'),
                 fn () => $this->dashboardService->ganttMeetings($access, $from, $until),
                 $from->toDateString().':'.$until->toDateString(),
+                $request->tenantIds(),
             )
         );
     }
@@ -121,31 +120,35 @@ class AtstovavimasApiController extends ApiController
     }
 
     /**
-     * @param  string  $scope  what the payload depends on: a tenant set, or a Gantt access map
+     * Resolved for every Gantt request (rows, requests, each meetings window), so it is kept briefly per user.
+     *
+     * @return Collection<string, string>
      */
-    private function rememberVisak(string $kind, string $scope, bool $bypassCache, Closure $callback, string $suffix = '', ?int $ttlSeconds = null): mixed
+    private function ganttAccess(User $user, AtstovavimasTenantRequest|AtstovavimasMeetingsRequest $request): Collection
     {
-        $key = 'visak:'.$kind.':'.md5($scope.':'.$suffix);
+        $tenantIds = $request->tenantIds();
 
-        if ($bypassCache) {
-            Cache::forget($key);
-        }
+        return RepStatisticsCache::remember(
+            'gantt-access:'.$user->id.':'.InstitutionRelationService::version().':'.implode(',', collect($tenantIds)->sort()->all()),
+            fn () => $this->dashboardService->ganttInstitutionAccess($user, $tenantIds),
+            refresh: $request->boolean('refresh'),
+            tenantIds: $tenantIds,
+            ttl: 120,
+        );
+    }
 
-        $cached = Cache::get($key);
-        if ($cached !== null) {
-            return $cached;
-        }
+    private function repMetricsFor(array $tenantIds): array
+    {
+        return app(RepMetricReportService::class)->report($tenantIds);
+    }
 
-        $value = $callback();
-
-        // An empty result is usually a transient state (e.g. no meetings yet in a
-        // freshly-created window) — not worth pinning for the full TTL, since it
-        // would otherwise mask genuinely new data for that long.
-        if ($value !== [] && $value !== null) {
-            Cache::put($key, $value, $ttlSeconds ?? self::CACHE_TTL_SECONDS);
-        }
-
-        return $value;
+    /**
+     * @param  string  $scope  what the payload depends on: a tenant set, or a Gantt access map
+     * @param  list<int|string>  $tenantIds  the padaliniai whose changes invalidate the entry
+     */
+    private function rememberVisak(string $kind, string $scope, bool $bypassCache, Closure $callback, string $suffix, array $tenantIds): mixed
+    {
+        return RepStatisticsCache::remember($kind.':'.$scope.':'.$suffix, $callback, refresh: $bypassCache, tenantIds: $tenantIds);
     }
 
     /**

@@ -377,18 +377,17 @@ class AdminNavigationCatalog
             labelKey: 'shell.workspaces.sistema.title',
             descriptionKey: 'shell.workspaces.sistema.description',
             sections: [
-                new Section('roles', 'shell.sections.roles', 'roles.index', [], 'role', Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.roles'),
+                new Section('roles', 'shell.sections.roles', 'responsibilities.index', [], 'role', Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.roles'),
                 new Section('leidimai', 'shell.sections.leidimai', 'permissions.index', [], 'permission', Visibility::can('viewAny', Permission::class), descriptionKey: 'shell.section_descriptions.leidimai'),
                 new Section('tipai', 'shell.sections.tipai', 'types.index', [], null, Visibility::callback(fn (User $user): bool => $this->taxonomyDestinations($user) !== []), matches: ['types.index'], descriptionKey: 'shell.section_descriptions.tipai'),
                 new Section('instituciju_tipai', 'shell.sections.instituciju_tipai', 'institutionTypes.index', [], 'institution_type', Visibility::can('viewAny', InstitutionType::class), descriptionKey: 'shell.section_descriptions.instituciju_tipai', taxonomy: true),
                 new Section('pareigybiu_tipai', 'shell.sections.pareigybiu_tipai', 'dutyTypes.index', [], 'duty_type', Visibility::can('viewAny', DutyType::class), descriptionKey: 'shell.section_descriptions.pareigybiu_tipai', taxonomy: true),
-                new Section('nustatymai', 'shell.sections.nustatymai', 'settings.index', [], null, Visibility::gate('manage-settings'), descriptionKey: 'shell.section_descriptions.nustatymai'),
+                new Section('nustatymai', 'shell.sections.nustatymai', 'settings.index', [], null, Visibility::gate('view-settings'), descriptionKey: 'shell.section_descriptions.nustatymai'),
                 // Both gate on `viewAny(Role)` in the controller (SystemStatusController,
                 // MailQueueController) — not a distinct "super-admin" gate as the phase-0
                 // inventory's shorthand suggested.
                 new Section('sistemos_busena', 'shell.sections.sistemos_busena', 'systemStatus', [], null, Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.sistemos_busena'),
                 new Section('laisku_eile', 'shell.sections.laisku_eile', 'mailQueue', [], null, Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.laisku_eile'),
-                new Section('rep_metrics', 'shell.sections.rep_metrics', 'repMetrics', [], null, Visibility::can('viewAny', Role::class), descriptionKey: 'shell.section_descriptions.rep_metrics'),
                 new Section('pagalbos_uzklausos', 'shell.sections.pagalbos_uzklausos', 'supportRequests.index', [], null, Visibility::can('viewAny', SupportRequest::class), descriptionKey: 'shell.section_descriptions.pagalbos_uzklausos'),
             ],
             overview: new Section('apzvalga', 'shell.sections.apzvalga', 'dashboard.sistema', [], null, Visibility::always()),

@@ -146,7 +146,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
     }
 
     /**
-     * @return array{voting: int, informational: int, deferred: int, break: int, unset: int}
+     * @return array{voting: int, informational: int, deferred: int, break: int, withdrawn: int, unset: int}
      */
     public function getAgendaItemTypeCounts(Meeting $meeting): array
     {
@@ -157,6 +157,7 @@ class AgendaCompletionTaskHandler extends BaseTaskHandler
             'informational' => $agendaItems->where('type', AgendaItemType::Informational)->count(),
             'deferred' => $agendaItems->where('type', AgendaItemType::Deferred)->count(),
             'break' => $agendaItems->where('type', AgendaItemType::Break)->count(),
+            'withdrawn' => $agendaItems->where('type', AgendaItemType::Withdrawn)->count(),
             'unset' => $agendaItems->whereNull('type')->count(),
         ];
     }

@@ -248,8 +248,6 @@
           {{ form.errors.is_active }}
         </p>
 
-
-
         <!-- Places to occupy -->
         <FormFieldWrapper
           id="places_to_occupy"
@@ -277,26 +275,33 @@
           />
         </FormFieldWrapper>
 
-        <!-- Categories / Types -->
         <FormFieldWrapper
           v-if="dutyTypes && dutyTypes.length > 0"
           id="duty-types"
           :label="$t('forms.fields.duty_type')"
           :error="form.errors.types"
         >
-          <MultiSelect
+          <TypeTreeMultiSelect
             id="duty-types"
-            v-model="selectedTypes"
-            :options="dutyTypes"
-            label-field="title"
-            value-field="id"
+            v-model="selectedTypeIds"
+            :types="dutyTypes"
             :placeholder="$t('forms.placeholders.select_category')"
           />
         </FormFieldWrapper>
+        <div v-if="readonlyTypes.length" class="space-y-2 text-sm" data-testid="duty-readonly-types">
+          <p class="text-xs font-semibold text-muted-foreground uppercase">
+            {{ $t('forms.fields.duty_type') }}
+          </p>
+          <p v-for="type in readonlyTypes" :key="type.id">
+            {{ type.title }}
+          </p>
+          <p class="text-xs text-muted-foreground">
+            {{ $t('types.assignment_readonly') }}
+          </p>
+        </div>
       </FormPanel>
 
-
-      <!-- Advanced Settings: Ex-officio and Roles -->
+      <!-- Advanced Settings: Ex-officio -->
       <FormPanel
         v-if="$page.props.auth?.user?.isSuperAdmin || (assignableDuties && assignableDuties.length > 0)"
         :title="$t('Papildomi nustatymai')"
@@ -347,22 +352,6 @@
             </template>
           </CollectionSelectDialog>
         </FormFieldWrapper>
-
-        <!-- Administrative Roles (Superadmin only) -->
-        <FormFieldWrapper
-          v-if="$page.props.auth?.user?.isSuperAdmin"
-          id="admin_role"
-          :label="`${$t('forms.fields.admin_role')} (superadmin)`"
-        >
-          <MultiSelect
-            id="admin_role"
-            v-model="selectedRoles"
-            :options="rolesOptions"
-            label-field="label"
-            value-field="value"
-            :placeholder="$t('forms.placeholders.no_role')"
-          />
-        </FormFieldWrapper>
       </FormPanel>
     </template>
 
@@ -407,6 +396,7 @@ import { Button } from '@/Components/ui/button';
 import { NumberField } from '@/Components/ui/number-field';
 import FormSegmentedControl, { type FormSegmentOption } from '@/Components/Patterns/FormSegmentedControl.vue';
 import { MultiSelect } from '@/Components/ui/multi-select';
+import { TypeTreeMultiSelect } from '@/Components/AdminForms/TypeTree';
 import InstitutionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/InstitutionSelectDialog.vue';
 import CollectionSelectDialog from '@/Features/Admin/AdminSearch/Components/Select/CollectionSelectDialog.vue';
 import TiptapEditor from '@/Components/TipTap/TiptapEditor.vue';
@@ -441,7 +431,6 @@ interface DutyPropType {
   is_active?: boolean;
   former_names?: Array<{ name: { lt?: string; en?: string }; used_until: string }>;
   types?: Array<{ id: number; title?: string }>;
-  roles?: Array<{ id: string | number; name?: string }>;
   ex_officio_target_duties?: Array<{ id: string; name?: string }>;
   assignable_tenants?: Array<{ id: number; shortname?: string; pivot?: { quota?: number | null } }>;
   created_at?: string | null;
@@ -453,7 +442,6 @@ const props = withDefaults(defineProps<{
   duty?: DutyPropType;
   dutyTypes?: App.Entities.DutyType[];
   assignableInstitutions?: App.Entities.Institution[];
-  roles?: App.Entities.Role[];
   assignableTenants?: { id: number; shortname: string; type?: string }[];
   assignableDuties?: Array<{ id: string; name: string; institution?: App.Entities.Institution | Record<string, unknown> }>;
   assignableTenantUsers?: Record<number, string[]>;
@@ -478,13 +466,11 @@ const props = withDefaults(defineProps<{
     places_to_occupy: 1,
     contacts_grouping: 'none',
     types: [],
-    roles: [],
     ex_officio_target_duties: [],
     assignable_tenants: [],
   }),
   dutyTypes: () => [],
   assignableInstitutions: () => [],
-  roles: () => [],
   assignableTenants: () => [],
   assignableDuties: () => [],
   assignableTenantUsers: () => ({}),
@@ -539,7 +525,6 @@ const form = useForm({
     en: (typeof props.duty?.description === 'object' ? props.duty?.description?.en : '') ?? '',
   },
   types: (props.duty?.types?.map((t: { id: number }) => t.id) ?? []) as number[],
-  roles: (props.duty?.roles?.map((r: { id: string | number }) => String(r.id)) ?? []) as string[],
   ex_officio_target_duty_ids: (props.duty?.ex_officio_target_duties?.map((d: { id: string }) => d.id) ?? []) as string[],
   assignable_tenants: (props.duty?.assignable_tenants?.map((t: { id: number; pivot?: { quota?: number | null } }) => ({
     tenant_id: t.id,
@@ -626,52 +611,17 @@ const contactsGroupingOptions = computed<FormSegmentOption<string>[]>(() => [
   { value: 'tenant', label: $t('Pagal padalinį') },
 ]);
 
-// Categories / Types
-const selectedTypes = computed({
-  get: () => {
-    const ids = new Set((form.types ?? []).map(Number));
-    const allTypes = [...(props.dutyTypes ?? []), ...((props.duty?.types ?? []) as App.Entities.DutyType[])];
-    const seen = new Set<number>();
-    return allTypes.filter((t) => {
-      const id = Number(t.id);
-      if (ids.has(id) && !seen.has(id)) {
-        seen.add(id);
-        return true;
-      }
-      return false;
-    });
-  },
-  set: (items: App.Entities.DutyType[]) => {
-    form.types = (items ?? []).map(t =>
-      typeof t === 'object' && t !== null ? Number(t.id) : Number(t),
-    );
-  },
-});
+const readonlyTypes = computed(() => (props.duty?.types ?? []).filter(type =>
+  !(props.dutyTypes ?? []).some(option => Number(option.id) === Number(type.id)),
+));
 
-// Roles (Superadmin only)
-const rolesOptions = computed(() => {
-  const allRoles = [...(props.roles ?? []), ...((props.duty?.roles ?? []) as App.Entities.Role[])];
-  const seen = new Set<string>();
-  const result: Array<{ label: string; value: string }> = [];
-  for (const role of allRoles) {
-    const id = String(role.id);
-    if (id && !seen.has(id)) {
-      seen.add(id);
-      result.push({ label: role.name, value: id });
-    }
-  }
-  return result;
-});
-
-const selectedRoles = computed({
-  get: () => {
-    const ids = new Set((form.roles ?? []).map(String));
-    return rolesOptions.value.filter(option => ids.has(String(option.value)));
-  },
-  set: (items: Array<{ label: string; value: string } | string>) => {
-    form.roles = (items ?? []).map(item =>
-      typeof item === 'object' && item !== null ? String(item.value) : String(item),
-    );
+const selectedTypeIds = computed({
+  get: () => (form.types ?? []).map(Number),
+  set: (ids: Array<number | string>) => {
+    form.types = [...new Set([
+      ...readonlyTypes.value.map(type => Number(type.id)),
+      ...ids.map(Number),
+    ])];
   },
 });
 

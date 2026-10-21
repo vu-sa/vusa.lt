@@ -2,7 +2,7 @@
 
 namespace App\Actions\ActivityRequests;
 
-use App\Enums\Responsibility;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Institution;
 use App\Models\User;
 use App\Services\ModelAuthorizer;
@@ -23,7 +23,7 @@ class ResolveAskableInstitutions
     public function query(User $user): Builder
     {
         $scope = $this->authorizer->scope($user, 'institutions.update.padalinys');
-        $coordinatedIds = $this->responsibilities->institutionIdsFor($user, Responsibility::StudentRepCoordination);
+        $coordinatedIds = $this->responsibilities->institutionIdsFor($user, ResponsibilityPurpose::StudentRepCoordination);
 
         return Institution::query()
             ->when(! $scope->isAllScope, fn (Builder $query) => $query->where(fn (Builder $inner) => $inner

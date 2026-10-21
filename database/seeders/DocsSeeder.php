@@ -6,6 +6,8 @@ use App\Actions\PairTranslatedRecord;
 use App\Enums\AgendaItemType;
 use App\Enums\InstitutionActivityCampaign;
 use App\Enums\MeetingType;
+use App\Enums\ResponsibilityPurpose;
+use App\Enums\ResponsibilityScope;
 use App\Events\MeetingFullyCreated;
 use App\Models\Cadence;
 use App\Models\Content;
@@ -27,6 +29,7 @@ use App\Models\ProblemCategory;
 use App\Models\Registration;
 use App\Models\Reservation;
 use App\Models\Resource;
+use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Support\MeetingTitle;
@@ -98,7 +101,6 @@ class DocsSeeder extends Seeder
             ]);
             $representative->duties()->attach($duty, ['start_date' => now()->subYear()]);
             $duty->types()->attach($representativeType);
-            $duty->assignRole('Studentų atstovas');
         }
 
         // Tasks come from the app's own subscribers, so each frame shows what a rep really gets:
@@ -320,6 +322,10 @@ class DocsSeeder extends Seeder
     private function coordinators(Tenant $tenant): void
     {
         $board = $this->institution($tenant, 'VU SA padalinio valdyba', 'VU SR unit board', 'Valdyba');
+        $coordinationRole = Role::firstOrCreate(
+            ['purpose' => ResponsibilityPurpose::StudentRepCoordination],
+            ['name' => 'studentu-atstovu-koordinavimas', 'title' => ['lt' => 'Studentų atstovų koordinavimas', 'en' => 'Student representative coordination'], 'guard_name' => 'web'],
+        );
 
         foreach ([
             [self::COORDINATOR_EMAIL, 'Greta Urbonaitė', 'Studentų atstovų koordinatorė', 'Student representative coordinator', 'Studentų atstovų koordinatorius'],
@@ -330,6 +336,14 @@ class DocsSeeder extends Seeder
                 'description' => ['lt' => '', 'en' => ''],
             ]);
             $duty->assignRole($role);
+
+            if ($email === self::COORDINATOR_EMAIL) {
+                $duty->responsibilityGrants()->firstOrCreate([
+                    'role_id' => $coordinationRole->id,
+                    'scope_type' => ResponsibilityScope::Tenant->value,
+                    'scope_id' => (string) $tenant->id,
+                ]);
+            }
 
             User::factory()->create(['name' => $name, 'email' => $email])
                 ->duties()->attach($duty, ['start_date' => now()->subYear()]);

@@ -1,6 +1,5 @@
 <?php
 
-use App\Actions\UpdateDuty;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -39,40 +38,34 @@ beforeEach(function (): void {
     expect(nextRequestAuthorizer()->allows($this->user->fresh(), 'news.update.padalinys'))->toBeTrue();
 });
 
-test('revoking a permission from a role', function (): void {
+test('revoking a permission from a responsibility', function (): void {
     asUser($this->admin)
-        ->patch(route('roles.syncPermissionGroup', [$this->role, 'news']), ['update' => null])
+        ->put(route('responsibilities.permissions.update', $this->role), ['permissions' => []])
         ->assertRedirect()
         ->assertSessionHasNoErrors();
 
     expect(nextRequestAuthorizer()->allows($this->user->fresh(), 'news.update.padalinys'))->toBeFalse();
 });
 
-test('detaching a duty from a role', function (): void {
+test('taking a responsibility away from a duty', function (): void {
     asUser($this->admin)
-        ->put(route('roles.syncDuties', $this->role), ['duties' => []])
+        ->delete(route('responsibilities.grants.destroy', [$this->role, $this->duty->responsibilityGrants()->firstOrFail()]))
         ->assertRedirect()
         ->assertSessionHasNoErrors();
 
     expect(nextRequestAuthorizer()->allows($this->user->fresh(), 'news.update.padalinys'))->toBeFalse();
 });
 
-test('deleting a role', function (): void {
+test('deleting a responsibility', function (): void {
     asUser($this->admin)
-        ->delete(route('roles.destroy', $this->role))
+        ->delete(route('responsibilities.destroy', $this->role))
         ->assertRedirect();
 
     expect(nextRequestAuthorizer()->allows($this->user->fresh(), 'news.update.padalinys'))->toBeFalse();
 });
 
-test('removing a role in the duty form', function (): void {
-    app(UpdateDuty::class)->execute($this->duty->fresh(), [
-        'name' => $this->duty->getTranslations('name'),
-        'institution_id' => $this->duty->institution_id,
-        'places_to_occupy' => $this->duty->places_to_occupy,
-        'contacts_grouping' => $this->duty->contacts_grouping,
-        'roles' => [],
-    ]);
+test('removing a responsibility from the duty', function (): void {
+    $this->duty->responsibilityGrants()->where('role_id', $this->role->id)->get()->each->delete();
 
     expect(nextRequestAuthorizer()->allows($this->user->fresh(), 'news.update.padalinys'))->toBeFalse();
 });

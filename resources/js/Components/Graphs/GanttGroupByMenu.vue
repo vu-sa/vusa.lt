@@ -27,7 +27,7 @@
       <DropdownMenuContent align="end" class="w-56">
         <DropdownMenuLabel>{{ $t('visak.gantt.group_by') }}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuRadioGroup :model-value="modelValue" @update:model-value="value => emit('update:modelValue', value as GanttGroupBy)">
+        <DropdownMenuRadioGroup :model-value @update:model-value="value => emit('update:modelValue', value as GanttGroupBy)">
           <DropdownMenuRadioItem v-for="option in GANTT_GROUP_BY_OPTIONS" :key="option" :value="option">
             {{ $t(`visak.gantt.group_by_options.${option}`) }}
           </DropdownMenuRadioItem>

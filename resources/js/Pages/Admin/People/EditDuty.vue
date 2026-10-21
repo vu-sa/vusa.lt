@@ -4,7 +4,6 @@
       :duty
       :duty-types
       :assignable-institutions
-      :roles
       :assignable-tenants
       :assignable-duties
       :assignable-tenant-users
@@ -45,7 +44,6 @@ const props = defineProps<{
     tenant_id: number | null;
     source_duty_name?: string | null;
   }>;
-  roles: App.Entities.Role[];
   assignableInstitutions: App.Entities.Institution[];
   assignableUsers?: App.Entities.User[];
   dutyTypes: App.Entities.DutyType[];

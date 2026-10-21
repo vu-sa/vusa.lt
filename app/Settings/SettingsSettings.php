@@ -2,70 +2,28 @@
 
 namespace App\Settings;
 
-use App\Models\Role;
 use App\Models\User;
+use App\Services\ModelAuthorizer;
 use Spatie\LaravelSettings\Settings;
 
+/**
+ * Who may open the app's settings (`settings.read.*`) and who may change them (`settings.update.*`):
+ * super admins and holders of those permissions, which a responsibility carries like any other.
+ */
 class SettingsSettings extends Settings
 {
-    /**
-     * The role ID that can manage settings.
-     * When null, only Super Admins can manage settings.
-     */
-    public ?string $settings_manager_role_id = null;
-
     public static function group(): string
     {
         return 'settings';
     }
 
-    /**
-     * Get the role that can manage settings, or null if only Super Admin.
-     */
-    public function getSettingsManagerRole(): ?Role
-    {
-        if ($this->settings_manager_role_id === null) {
-            return null;
-        }
-
-        return Role::find($this->settings_manager_role_id);
-    }
-
-    /**
-     * Check if a user can manage settings.
-     * Returns true if user is super admin or has the settings manager role.
-     */
     public function canUserManageSettings(User $user): bool
     {
-        // Super admins can always manage settings
-        if ($user->isSuperAdmin()) {
-            return true;
-        }
+        return $user->isSuperAdmin() || app(ModelAuthorizer::class)->allows($user, 'settings.update.*');
+    }
 
-        // If no role is set, only super admins can manage
-        if ($this->settings_manager_role_id === null) {
-            return false;
-        }
-
-        // Check if user has the settings manager role (directly or through duties)
-        $role = $this->getSettingsManagerRole();
-
-        if ($role === null) {
-            return false;
-        }
-
-        // Check direct user role
-        if ($user->hasRole($role->name)) {
-            return true;
-        }
-
-        // Check roles through non-ended duties
-        foreach ($user->authorization_duties as $duty) {
-            if ($duty->hasRole($role->name)) {
-                return true;
-            }
-        }
-
-        return false;
+    public function canUserViewSettings(User $user): bool
+    {
+        return $this->canUserManageSettings($user) || app(ModelAuthorizer::class)->allows($user, 'settings.read.*');
     }
 }

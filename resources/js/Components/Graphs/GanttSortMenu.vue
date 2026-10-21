@@ -18,7 +18,7 @@
     <DropdownMenuContent align="end" class="w-56">
       <DropdownMenuLabel>{{ $t('visak.gantt.sort_by') }}</DropdownMenuLabel>
       <DropdownMenuSeparator />
-      <DropdownMenuRadioGroup :model-value="modelValue" @update:model-value="value => emit('update:modelValue', value as GanttSortBy)">
+      <DropdownMenuRadioGroup :model-value @update:model-value="value => emit('update:modelValue', value as GanttSortBy)">
         <DropdownMenuRadioItem v-for="option in GANTT_SORT_OPTIONS" :key="option" :value="option">
           {{ $t(`visak.gantt.sort_by_options.${option}`) }}
         </DropdownMenuRadioItem>

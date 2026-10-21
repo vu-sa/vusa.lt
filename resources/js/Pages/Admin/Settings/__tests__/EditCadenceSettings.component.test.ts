@@ -13,9 +13,10 @@ const SheetFormStub = {
   template: '<div v-if="open" data-testid="defaults-sheet"><slot /><button data-testid="save-defaults" @click="$emit(\'submit\')">save</button></div>',
 };
 
-function createWrapper() {
+function createWrapper(canEdit = true) {
   return mount(EditCadenceSettings, {
     props: {
+      canEdit,
       cadences: [],
       settings: { default_start_month_day: '07-01', default_end_month_day: '06-30' },
     },
@@ -45,6 +46,13 @@ describe('EditCadenceSettings.vue — cadence defaults', () => {
 
     expect(wrapper.find('[data-testid="cadence-defaults"]').text()).toContain(`${year}-07-01 → ${year + 1}-06-30`);
     expect(wrapper.find('[data-testid="defaults-sheet"]').exists()).toBe(false);
+  });
+
+  it('offers no way to change the defaults to someone who may only view settings', () => {
+    wrapper = createWrapper(false);
+
+    expect(wrapper.find('[data-testid="cadence-defaults"]').text()).toContain('07-01');
+    expect(wrapper.find('[data-testid="cadence-defaults"] button').exists()).toBe(false);
   });
 
   it('edits the defaults in a sheet and closes it once saved', async () => {

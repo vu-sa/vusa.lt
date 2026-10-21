@@ -8,7 +8,6 @@ return [
     // Settings categories
     'categories' => [
         'general' => 'Bendri nustatymai',
-        'authorization' => 'Autorizacijos nustatymai',
     ],
 
     // Settings pages
@@ -27,7 +26,7 @@ return [
         ],
         'atstovavimas' => [
             'title' => 'Atstovavimo nustatymai',
-            'description' => 'Konfigūruok, kurios rolės suteikia prieigą prie padalinio institucijų atstovavimo skydelyje.',
+            'description' => 'Konfigūruok, kurie institucijų tipai laikomi studentų atstovų organais.',
         ],
         'cadences' => [
             'title' => 'Kadencijos',
@@ -37,28 +36,23 @@ return [
             'title' => 'Svetainės nustatymai',
             'description' => 'Nurodyk svetainės puslapius, į kuriuos nukreipia sistema, pvz., privatumo politiką.',
         ],
-        'authorization' => [
-            'title' => 'Nustatymų autorizacija',
-            'description' => 'Konfigūruok, kuri rolė gali valdyti sistemos nustatymus.',
+        'purposes' => [
+            'title' => 'Sistemos paskirtys',
+            'description' => 'Nurodyk, kuri atsakomybė ir kurie pareigybių tipai atlieka sistemos numatytas paskirtis.',
         ],
-    ],
-
-    // Form labels and descriptions
-    'authorization_form' => [
-        'role_label' => 'Nustatymų valdymo rolė',
-        'role_description' => 'Pasirink, kuri rolė gali valdyti nustatymus. Jei nepasirinkta, tik Super Administratoriai gali valdyti nustatymus.',
-        'role_placeholder' => 'Tik Super Administratoriai (numatytasis)',
-        'super_admin_note' => 'Pastaba: Super Administratoriai visada gali valdyti nustatymus, nepaisant šio nustatymo.',
     ],
 
     // Form settings page
     'form_settings' => [
         'registration_form_title' => 'Narių registracijos forma',
-        'registration_form_description' => 'Pasirinkti, kuri registracijos forma iš duombazės bus naudojama narių registracijai. Jeigu registracijos forma turi padalinio laukelį, automatiškai bus siunčiami laiškai užsiregistravusiems ir taip pat žmonėms, kurie turi numatytą rolę.',
+        'registration_form_description' => 'Pasirinkti, kuri registracijos forma iš duombazės bus naudojama narių registracijai. Jeigu registracijos forma turi padalinio laukelį, automatiškai bus siunčiami laiškai užsiregistravusiems ir narių registracijos atsakomybę turintiems padalinio nariams.',
         'form_label' => 'Forma',
         'form_placeholder' => 'Pasirinkti formą',
-        'role_label' => 'Pranešimo rolė',
-        'role_placeholder' => 'Pasirinkti rolę',
+        'recipients_title' => 'Kas gauna registracijas',
+        'recipients_description' => 'Registracijas gauna ir mato atsakomybės „Narių registracija“ turėtojai savo padalinyje.',
+        'recipients_link' => 'Atverti atsakomybę',
+        'recipients_missing' => 'Narių registracijos paskirčiai dar nepriskirta jokia atsakomybė. Ją nurodai skiltyje „Sistemos paskirtys“.',
+        'recipients_gaps' => 'Registracijų niekas negauna šiuose padaliniuose: :tenants.',
         'student_rep_title' => 'Studentų atstovų registracijos forma',
         'student_rep_description' => 'Pasirinkti, kuri forma bus naudojama studentų atstovų registracijai. Kai institucija neturi aktyvių atstovų, bus rodomas mygtukas užsiregistruoti.',
         'student_rep_form_label' => 'Studentų atstovų forma',
@@ -77,19 +71,32 @@ return [
         'types_placeholder' => 'Pasirinkti institucijų tipus',
         'no_types_found' => 'Institucijų tipų nerasta.',
         'excluded_types_title' => 'Institucijų tipai be posėdžių',
-        'excluded_types_description' => 'Pasirink institucijų tipus, kurie neturėtų būti rodomi atstovavimo skydelyje. Šių tipų institucijos (pvz., padalinys, PKP) neturi formalių posėdžių ir neturėtų būti stebimos.',
+        'excluded_types_description' => 'Pasirink institucijų tipus, kurių institucijos neskaičiuojamos atstovavimo rodikliuose. Šių tipų institucijos (pvz., padalinys, PKP) neturi formalių posėdžių, bet posėdžių grafike vis tiek rodomos.',
         'excluded_types_label' => 'Išskirti institucijų tipai',
         'excluded_types_placeholder' => 'Pasirinkti institucijų tipus išskyrimui',
     ],
 
     // Atstovavimas settings page
     'atstovavimas_settings' => [
+        'baseline_title' => 'Atstovų rodiklių palyginimas',
+        'baseline_label' => 'Palyginimo kadencija',
+        'baseline_hint' => 'Rodikliai lyginami bendrų organizacijos kadencijų datomis. Pasirinkta kadencija skaičiuojama visa; dabartinė – iki šiandien. Institucijų kadencijų išimtys šio palyginimo nekeičia.',
+        'baseline_automatic' => 'Automatiškai – ankstesnė baigta kadencija',
         'student_rep_type_title' => 'Studentų atstovų organų šakninis tipas',
         'student_rep_type_description' => 'Pasirink šakninį institucijos tipą, kuris (ir visi jo potipiai) laikomas studentų atstovų organu. Šio tipo institucijoms viešame kontaktų puslapyje bus rodoma studentų atstovų kortelė vietoje standartinės institucijos kortelės.',
         'student_rep_type_label' => 'Šakninis tipas',
         'student_rep_type_placeholder' => 'Pagal nutylėjimą: Studentų atstovų organas',
         'student_rep_type_default' => 'Pagal nutylėjimą (studentu-atstovu-organas)',
         'student_rep_type_note' => 'Pagal nutylėjimą naudojamas tipas su unikaliu kodu "studentu-atstovu-organas".',
+        'counted_scopes_title' => 'Kurie organai skaičiuojami rodikliuose',
+        'counted_scopes_description' => 'Padalinių statistika (atstovai, posėdžių registravimas, institucijų būklė) skaičiuojama tik pažymėtų organų institucijoms. Posėdžių grafike vis tiek matysi visas institucijas.',
+        'counted_scopes_label' => 'Skaičiuojami organai',
+        'counted_scopes' => [
+            'vusa' => 'Parlamentas, Taryba, padalinių valdybos ir kiti VU SA organai.',
+            'vu' => 'VU Senatas, Taryba, fakultetų tarybos, komitetai ir kiti VU organai, į kuriuos deleguojami studentų atstovai.',
+            'national' => 'Lietuvos organai, pvz., LSS ar ministerijų darbo grupės.',
+            'international' => 'Tarptautiniai organai, pvz., ESU.',
+        ],
     ],
 
     // Document settings page
@@ -114,10 +121,39 @@ return [
         'phrases_required' => 'Įrašyk bent vieną frazę arba pažymėk „Rodyti ir tuščioje paieškoje“.',
     ],
 
+    // System purposes page
+    'purposes' => [
+        'intro' => 'Kai kurias atsakomybes ir pareigybių tipus sistema naudoja ne tik teisėms ar rodymui: pagal juos ji randa žmones ir grupuoja viešus kontaktus.',
+        'responsibilities_title' => 'Atsakomybių paskirtys',
+        'responsibilities_description' => 'Pagal šias atsakomybes sistema randa žmones. Kitos atsakomybės tik suteikia teises.',
+        'responsibility_label' => 'Atsakomybė',
+        'responsibility_none' => 'Nepriskirta',
+        'duty_types_title' => 'Viešieji kontaktai',
+        'duty_types_description' => 'Pagal šiuos pareigybių tipus grupuojami padalinių kontaktų puslapiai. Nuorodos nesikeičia.',
+        'duty_type_label' => 'Pareigybių tipas',
+        'fallback' => 'Nepasirinkta – naudojamas tipas su nuoroda „:slug“',
+        'duty_types' => [
+            'coordinator' => [
+                'label' => 'Koordinatoriai',
+                'drives' => 'Puslapis /kontaktai/koordinatoriai ir koordinatorių vieta padalinio kontaktų sąraše.',
+            ],
+            'curator' => [
+                'label' => 'Kuratoriai',
+                'drives' => 'Puslapis /kontaktai/kuratoriai ir studijų programos laukelis, kai priskiri narį kuratoriaus pareigybei.',
+            ],
+            'mentor' => [
+                'label' => 'Mentoriai',
+                'drives' => 'Angliškas puslapis /contacts/mentors ir studijų programos laukelis, kai priskiri narį mentoriaus pareigybei.',
+            ],
+            'delete_blocked' => 'Šio tipo ištrinti negalima: jis naudojamas kaip :parts (Nustatymai → Sistemos paskirtys).',
+        ],
+        'one_each' => 'Viena atsakomybė gali atlikti tik vieną paskirtį.',
+        'curator_not_mentor' => 'Kuratoriams ir mentoriams pasirink skirtingus tipus.',
+    ],
+
     // Messages
     'messages' => [
         'updated' => 'Nustatymai atnaujinti sėkmingai.',
-        'authorization_updated' => 'Nustatymų autorizacija atnaujinta sėkmingai.',
         'unauthorized' => 'Tu neturi teisių valdyti nustatymus.',
     ],
 
@@ -128,7 +164,7 @@ return [
         'meetings' => 'Posėdžių nustatymai',
         'documents' => 'Dokumentų nustatymai',
         'atstovavimas' => 'Atstovavimo nustatymai',
-        'authorization' => 'Autorizacija',
+        'purposes' => 'Sistemos paskirtys',
     ],
 
     'site_settings' => [

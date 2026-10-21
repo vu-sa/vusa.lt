@@ -125,7 +125,7 @@ describe('InstitutionActivityStatusService', function (): void {
             ->and($expired->status)->toBe(InstitutionActivityStatus::RecentCheckIn)
             ->and($expired->lastActivityType)->toBe('check_in')
             ->and($expired->lastActivityAt?->toDateString())->toBe('2025-10-31')
-            ->and($expired->effectiveDaysSinceActivity)->toBe(14);
+            ->and($expired->effectiveDaysSinceActivity)->toBe(15);
     });
 
     test('a check-in ending before summer vacation prevents a false approaching warning', function (): void {
@@ -160,7 +160,7 @@ describe('InstitutionActivityStatusService', function (): void {
 
     test('completed check-ins have a half-interval grace period', function (int $periodicity, int $days, InstitutionActivityStatus $expected): void {
         $at = CarbonImmutable::parse('2026-11-20 12:00:00');
-        $end = $at->subDays($days + 1)->toDateString();
+        $end = $at->subDays($days)->toDateString();
         $status = app(InstitutionActivityStatusService::class)->resolve(
             institutionForActivityStatus([], [['2026-09-01', $end]], $periodicity),
             $at,
@@ -173,7 +173,7 @@ describe('InstitutionActivityStatusService', function (): void {
             ->and($status->progressPercentage)->toBe((int) round($days / ceil($periodicity / 2) * 100))
             ->and($status->status->requiresAction())->toBe($expected === InstitutionActivityStatus::Overdue);
     })->with([
-        'first uncovered day' => [30, 0, InstitutionActivityStatus::RecentCheckIn],
+        'first uncovered day' => [30, 1, InstitutionActivityStatus::RecentCheckIn],
         'last grace day' => [30, 15, InstitutionActivityStatus::RecentCheckIn],
         'first overdue day' => [30, 16, InstitutionActivityStatus::Overdue],
         'odd interval rounds up' => [31, 16, InstitutionActivityStatus::RecentCheckIn],
@@ -193,7 +193,7 @@ describe('InstitutionActivityStatusService', function (): void {
 
         expect($status->status)->toBe($expected)
             ->and($status->lastActivityType)->toBe($meetingAge <= 30 ? 'meeting' : 'check_in')
-            ->and($status->effectiveDaysSinceActivity)->toBe($meetingAge <= 30 ? $meetingAge : 1);
+            ->and($status->effectiveDaysSinceActivity)->toBe($meetingAge <= 30 ? $meetingAge : 2);
     })->with([
         'healthy meeting' => [10, InstitutionActivityStatus::Healthy],
         'approaching meeting' => [24, InstitutionActivityStatus::Approaching],

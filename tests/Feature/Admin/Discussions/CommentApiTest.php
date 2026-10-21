@@ -6,6 +6,7 @@ use App\Http\Resources\CommentResource;
 use App\Models\Duty;
 use App\Models\Form;
 use App\Models\Institution;
+use App\Models\InstitutionLink;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Reservation;
@@ -36,7 +37,10 @@ beforeEach(function (): void {
     $this->agendaItem = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id]);
 
     // View-only meeting participant (duty in the institution, no role).
-    $duty = Duty::factory()->for($this->institution)->create();
+    // Sees the meeting through a linked institution; members of the meeting's own institution edit it.
+    $linkedInstitution = Institution::factory()->for($this->tenant)->create();
+    InstitutionLink::factory()->create(['source_institution_id' => $linkedInstitution->id, 'target_institution_id' => $this->institution->id]);
+    $duty = Duty::factory()->for($linkedInstitution)->create();
     $this->viewer = User::factory()->create();
     $this->viewer->duties()->attach($duty, ['start_date' => now()->subDay(), 'end_date' => null]);
 
@@ -163,6 +167,20 @@ describe('update & delete', function (): void {
             ->assertOk()->assertJsonPath('data.body', '<p>Edited</p>');
 
         expect($comment->fresh()->edited_at)->not->toBeNull();
+    });
+
+    test('the author can edit within 15 minutes but not after, and can still delete', function (): void {
+        $this->actingAs($this->viewer);
+        $comment = $this->agendaItem->comment('<p>Original</p>');
+
+        $this->travel(14)->minutes();
+        asUser($this->viewer)->patchJson(route('api.v1.admin.comments.update', $comment), ['body' => '<p>Typo fixed</p>'])->assertOk();
+
+        $this->travel(2)->minutes();
+        asUser($this->viewer)->patchJson(route('api.v1.admin.comments.update', $comment), ['body' => '<p>Too late</p>'])->assertForbidden();
+        asUser($this->viewer)->getJson($this->indexUrl)->assertJsonPath('data.0.can.update', false)->assertJsonPath('data.0.can.delete', true);
+
+        asUser($this->viewer)->deleteJson(route('api.v1.admin.comments.destroy', $comment))->assertSuccessful();
     });
 
     test('a non-author cannot edit (403)', function (): void {

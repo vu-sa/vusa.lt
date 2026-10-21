@@ -3,9 +3,9 @@
 namespace Tests\Feature\Tasks;
 
 use App\Enums\InstitutionScope;
+use App\Enums\ResponsibilityPurpose;
 use App\Events\MeetingFullyCreated;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Meeting;
@@ -33,14 +33,8 @@ trait MeetingTaskTestHelpers
 
         $institution = Institution::factory()->for($tenant)->create();
 
-        // Create student rep type and duty
-        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-        $duty = Duty::factory()
-            ->for($institution)
-            ->hasAttached($studentRepType, [], 'types')
-            ->create();
+        $duty = Duty::factory()->for($institution)->create();
+        \grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
         $user = User::factory()->create();
         $user->duties()->attach($duty, [
@@ -83,14 +77,8 @@ trait MeetingTaskTestHelpers
             $institution->types()->attach(InstitutionType::factory()->withGovernanceScope($scope)->create());
         }
 
-        // Create student rep type and duty
-        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-        $duty = Duty::factory()
-            ->for($institution)
-            ->hasAttached($studentRepType, [], 'types')
-            ->create();
+        $duty = Duty::factory()->for($institution)->create();
+        \grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
         $user = User::factory()->create();
         $user->duties()->attach($duty, [

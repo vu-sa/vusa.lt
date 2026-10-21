@@ -2,7 +2,7 @@
 
 namespace App\Actions;
 
-use App\Enums\Responsibility;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\User;
@@ -29,7 +29,7 @@ class GetInstitutionCoordinators
         foreach ($institutions as $institution) {
             $institutionName = (string) $institution->getTranslation('name', app()->getLocale());
 
-            $duties = $resolver->dutiesFor(Responsibility::StudentRepCoordination, $institution)->loadMissing('current_users');
+            $duties = $resolver->dutiesFor(ResponsibilityPurpose::StudentRepCoordination, $institution)->loadMissing('current_users');
 
             foreach ($duties as $duty) {
                 /** @var User $user */

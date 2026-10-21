@@ -18,4 +18,4 @@ Controllers never hold user-facing sentences. CRUD flashes come from `$this->ent
 - Glossary (retired words in brackets): posėdis [susitikimas]; renginys [įvykis]; narys for a person record [vartotojas, except in Sistema/auth contexts where an account is meant]; išteklius [resursas]; sekretorius = `InstitutionSecretary`, the per-term nominee who records; koordinatorius = `Institution::managers()`, who reps ask for help.
 - ViSAK names the representation workspace, never the product. The product is **Mano VU SA**.
 - Email-type meetings read "sprendimas el. paštu", not posėdis.
-- Role names are data referenced by string in seeders and tests, so renaming one needs a migration plus a grep, not just a lang edit.
+- Atsakomybė (responsibility) is what the UI calls a Spatie role; "rolė" is retired in the interface. A responsibility's `name` is its stable key, referenced by string in seeders and tests; people see its translatable `title`, which can be renamed freely (`Role::displayTitle()`).

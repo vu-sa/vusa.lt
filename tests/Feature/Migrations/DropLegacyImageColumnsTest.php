@@ -54,8 +54,8 @@ test('unfinished media upgrades block the schema change', function (): void {
     $media = app(AddImageMedia::class)->execute($news, UploadedFile::fake()->image('cover.jpg'), 'image');
     $media->forgetCustomProperty('image_policy')->save();
 
-    expect(fn () => dropLegacyImageColumnsMigration()->up())->toThrow(RuntimeException::class);
-    expect(Schema::hasColumn('news', 'image'))->toBeTrue();
+    expect(fn () => dropLegacyImageColumnsMigration()->up())->toThrow(RuntimeException::class)
+        ->and(Schema::hasColumn('news', 'image'))->toBeTrue();
     Storage::disk('spatieMediaLibrary')->assertExists($media->getPathRelativeToRoot());
 });
 
@@ -65,8 +65,8 @@ test('superseded media files must be cleaned up before the schema change', funct
     $media->generated_conversions = array_fill_keys(array_keys(ImageConversions::WIDTHS), true);
     $media->setCustomProperty('superseded_file', 'old.jpg')->save();
 
-    expect(fn () => dropLegacyImageColumnsMigration()->up())->toThrow(RuntimeException::class);
-    expect(Schema::hasColumn('news', 'image'))->toBeTrue();
+    expect(fn () => dropLegacyImageColumnsMigration()->up())->toThrow(RuntimeException::class)
+        ->and(Schema::hasColumn('news', 'image'))->toBeTrue();
 });
 
 test('completed migration drops retired columns and retains avatar and logo caches', function (): void {
@@ -79,9 +79,9 @@ test('completed migration drops retired columns and retains avatar and logo cach
             expect(Schema::hasColumn($table, $column))->toBeFalse();
         }
     }
-    expect(Schema::hasColumn('institutions', 'logo_url'))->toBeTrue();
-    expect(Schema::hasColumns('users', ['profile_photo_path', 'profile_photo_focal_point']))->toBeTrue();
-    expect(Schema::hasColumns('dutiables', ['additional_photo', 'additional_photo_focal_point']))->toBeTrue();
+    expect(Schema::hasColumn('institutions', 'logo_url'))->toBeTrue()
+        ->and(Schema::hasColumns('users', ['profile_photo_path', 'profile_photo_focal_point']))->toBeTrue()
+        ->and(Schema::hasColumns('dutiables', ['additional_photo', 'additional_photo_focal_point']))->toBeTrue();
     $this->assertModelExists($news);
 });
 
@@ -90,15 +90,15 @@ test('rollback restores text banner URLs and the news author default', function 
     $banner = Banner::factory()->create(['image_url' => $url]);
     $news = News::factory()->for(Tenant::query()->first())->create();
 
-    expect(Schema::getColumnType('banners', 'image_url'))->toBe('text');
-    expect($banner->fresh()->image_url)->toBe($url);
-    expect($news->fresh()->image_author)->toBe('VU SA archyvo nuotrauka');
+    expect(Schema::getColumnType('banners', 'image_url'))->toBe('text')
+        ->and($banner->fresh()->image_url)->toBe($url)
+        ->and($news->fresh()->image_author)->toBe('VU SA archyvo nuotrauka');
 
     if (Schema::getConnection()->getDriverName() === 'mysql') {
-        expect(Schema::getColumnType('news', 'image', true))->toBe('varchar(200)');
-        expect(Schema::getColumnType('news', 'image_author', true))->toBe('varchar(200)');
-        expect(Schema::getColumnType('institutions', 'image_url', true))->toBe('varchar(255)');
-        expect(Schema::getColumnType('institutions', 'image_focal_point', true))->toBe('varchar(20)');
-        expect(Schema::getColumnType('pages', 'featured_image', true))->toBe('varchar(255)');
+        expect(Schema::getColumnType('news', 'image', true))->toBe('varchar(200)')
+            ->and(Schema::getColumnType('news', 'image_author', true))->toBe('varchar(200)')
+            ->and(Schema::getColumnType('institutions', 'image_url', true))->toBe('varchar(255)')
+            ->and(Schema::getColumnType('institutions', 'image_focal_point', true))->toBe('varchar(20)')
+            ->and(Schema::getColumnType('pages', 'featured_image', true))->toBe('varchar(255)');
     }
 });

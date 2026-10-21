@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesDutyTypeAssignments;
 use App\Models\Duty;
 use App\Models\Pivots\Dutiable;
 use App\Models\User;
@@ -14,12 +15,21 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateDutyRequest extends FormRequest
 {
+    use ValidatesDutyTypeAssignments;
+
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
         return $this->user()->can('update', $this->route('duty'));
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if (! $this->exists('types')) {
+            $this->merge(['types' => $this->route('duty')->types()->pluck('duty_types.id')->all()]);
+        }
     }
 
     /**
@@ -39,7 +49,6 @@ class UpdateDutyRequest extends FormRequest
             'description' => 'nullable',
             'email' => 'nullable|email',
             'current_users' => 'nullable|array',
-            'roles' => 'nullable|array',
             'institution_id' => 'required',
             'places_to_occupy' => 'required|numeric',
             'contacts_grouping' => 'required|in:none,study_program,tenant',
@@ -87,6 +96,8 @@ class UpdateDutyRequest extends FormRequest
         $validator->after(function (Validator $v): void {
             /** @var Duty $duty */
             $duty = $this->route('duty');
+
+            $this->authorizeDutyTypeChanges($v, $duty->types()->pluck('duty_types.id')->all());
 
             // Retiring a duty must not quietly strand the people still holding it.
             if ($this->has('is_active') && ! $this->boolean('is_active') && $duty->current_users()->exists()) {

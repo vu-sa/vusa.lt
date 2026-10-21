@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 
 import ShowAtstovavimasPadaliniai from '@/Pages/Admin/Dashboard/ShowAtstovavimasPadaliniai.vue';
 import { commonStubs } from '@/tests/stubs';
@@ -57,6 +57,26 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useGanttSettings', () => ({
   provideGanttSettings: vi.fn(),
 }));
 
+const viewport = vi.hoisted(() => ({ wide: { value: true }, observers: [] as Array<(entries: Array<{ isIntersecting: boolean }>) => void> }));
+
+vi.mock('@vueuse/core', async (importOriginal) => {
+  const { ref: vueRef } = await import('vue');
+  viewport.wide = vueRef(true);
+
+  return {
+    ...(await importOriginal<typeof import('@vueuse/core')>()),
+    useMediaQuery: () => viewport.wide,
+    useIntersectionObserver: (_target: unknown, callback: (entries: Array<{ isIntersecting: boolean }>) => void) => {
+      viewport.observers.push(callback);
+    },
+  };
+});
+
+const showEverything = async () => {
+  viewport.observers.forEach(callback => callback([{ isIntersecting: true }]));
+  await nextTick();
+};
+
 const ganttRowsLoad = vi.fn();
 
 vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantTimelineData', () => ({
@@ -96,14 +116,38 @@ vi.mock('@/Pages/Admin/Dashboard/Composables/useTenantStatusHistory', () => ({
     ]),
     isFetching: ref(false),
     loaded: ref(true),
+    error: ref(null),
+    pending: ref(false),
+    missingDates: ref([]),
+    baselineDate: ref(null),
     load: vi.fn(),
   }),
 }));
 
 const tenantOpenTasks = ref<{ total: number } | null>({ total: 4 });
 
+const repMetrics = ref<unknown>({
+  currentPeriod: null,
+  baselinePeriod: null,
+  metrics: [{ key: 'recorded_within_week', now: 96, part: 24, whole: 25, baseline: 91.9, baselinePart: 23, baselineWhole: 25 }],
+});
+
 vi.mock('@/Composables/useApi', () => ({
-  useApi: () => ({ data: tenantOpenTasks, execute: vi.fn() }),
+  useApi: (url: unknown) => {
+    const target = typeof url === 'string' ? url : (url as { value: string }).value;
+
+    return {
+      data: target.includes('visak.repMetrics') ? repMetrics : tenantOpenTasks,
+      isFetching: ref(false),
+      execute: vi.fn(),
+      abort: vi.fn(),
+      error: ref(null),
+    };
+  },
+}));
+
+vi.mock('@/Composables/useFeatureSpotlight', () => ({
+  useFeatureSpotlight: () => ({ isDismissed: ref(true), dismiss: vi.fn() }),
 }));
 
 vi.mock('@/Composables/useActionWindow', () => ({
@@ -114,7 +158,7 @@ const marker = (name: string) => ({ name, template: `<div data-testid="${name}" 
 
 const stubs = {
   ...commonStubs,
-  InstitutionsNeedingAttention: { name: 'InstitutionsNeedingAttention', props: ['institutions', 'limit', 'title'], template: '<div data-testid="attention" />' },
+  InstitutionsNeedingAttention: { name: 'InstitutionsNeedingAttention', props: { institutions: Array, limit: Number, title: String }, template: '<div data-testid="attention" />' },
   RepresentativeActivitySection: marker('representatives'),
   TenantTimelineSection: marker('tenant-timeline'),
   TimelineGanttSkeleton: marker('timeline-skeleton'),
@@ -142,6 +186,9 @@ function createWrapper(canViewTenantTasks = true, statsTenants = managed) {
 let wrapper: ReturnType<typeof mount>;
 
 beforeEach(() => {
+  viewport.wide.value = true;
+  viewport.observers.length = 0;
+  ganttRowsLoad.mockClear();
   tenantLoaded.value = true;
   selectedTenants.value = ['1'];
   vi.stubGlobal('route', (name: string) => `/mano/${name}`);
@@ -157,21 +204,16 @@ describe('numbers', () => {
     wrapper = createWrapper();
 
     const links = wrapper.findAll('[data-slot="overview-numbers"] a');
-    expect(links.map(link => link.find('span').text())).toEqual(['2', '1', '0', '0', '4']);
+    expect(links.map(link => link.find('span').text())).toEqual(['2', '1', '0', '0']);
   });
 
-  it('counts the open tasks of the selected padaliniai and links to their task list', () => {
+  it('is one row above the attention list and the chart, without a task number', () => {
     wrapper = createWrapper();
 
-    const tasks = wrapper.get('[data-slot="overview-numbers"] a[data-number="open_tasks"]');
-    expect(tasks.find('span').text()).toBe('4');
-    expect(tasks.attributes('href')).toBe('/mano/tasks.summary');
-  });
-
-  it('leaves the task number out for someone who cannot read padalinys tasks', () => {
-    wrapper = createWrapper(false);
-
+    const html = wrapper.html();
+    expect(html.indexOf('data-slot="overview-numbers"')).toBeLessThan(html.indexOf('atstovavimas-tenant-primary-section'));
     expect(wrapper.find('[data-slot="overview-numbers"] a[data-number="open_tasks"]').exists()).toBe(false);
+    expect(wrapper.find('[role=tab]').exists()).toBe(false);
   });
 
   it('shows a placeholder, not a wrong zero, while the tenant summary loads', () => {
@@ -179,8 +221,7 @@ describe('numbers', () => {
     wrapper = createWrapper();
 
     expect(wrapper.find('[data-slot="overview-numbers"]').exists()).toBe(false);
-    expect(wrapper.findAll('[data-slot="overview-numbers-skeleton"] li')).toHaveLength(5);
-    expect(wrapper.findAll('[data-slot="institution-attention-skeleton"] li')).toHaveLength(3);
+    expect(wrapper.findAll('[data-slot="overview-numbers-skeleton"] li')).toHaveLength(4);
     expect(wrapper.find('[data-testid="attention"]').exists()).toBe(false);
   });
 
@@ -201,18 +242,18 @@ describe('section tiles', () => {
 });
 
 describe('attention list', () => {
-  it('passes every counted institution needing attention, highest priority first, capped at five', () => {
+  it('passes every counted institution needing attention, highest priority first, capped at four', async () => {
     wrapper = createWrapper();
 
     const list = wrapper.getComponent({ name: 'InstitutionsNeedingAttention' });
     const institutions = list.props('institutions') as Array<{ id: string; tenant_name: string | null }>;
 
-    expect(list.props('limit')).toBe(5);
+    expect(list.props('limit')).toBe(4);
     expect(institutions.map(institution => institution.id)).toEqual(['7', '6', '5', '4', '3', '2', '1']);
     expect(institutions[0]!.tenant_name).toBeNull();
   });
 
-  it('names the padalinys on each row when several are selected', () => {
+  it('names the padalinys on each row when several are selected', async () => {
     selectedTenants.value = ['1', '2'];
     wrapper = createWrapper();
 
@@ -222,21 +263,25 @@ describe('attention list', () => {
   });
 });
 
-describe('aside tabs', () => {
-  it('open on the trend chart beside the attention list, with a text summary', () => {
+describe('upper section', () => {
+  it('show a permanent trend beside the attention list with equal width', () => {
     wrapper = createWrapper();
 
-    const aside = wrapper.get('[data-slot="atstovavimas-tenant-primary-section"] aside');
-    expect(aside.find('[data-testid="trend-chart"]').exists()).toBe(true);
-    // 4 overdue at the start of the window, 2 at the end: the caption picks the "fell" sentence.
-    expect(wrapper.get('[data-testid="chart-summary"]').text()).toBe('visak.overview.trend.down');
+    const section = wrapper.get('[data-slot="atstovavimas-tenant-primary-section"]');
+    expect(section.find('[data-testid="trend-chart"]').exists()).toBe(true);
+    expect(section.classes()).toContain('lg:grid-cols-2');
+    expect(wrapper.find('[data-testid=chart-summary]').exists()).toBe(false);
   });
 
-  it('offer the representatives as the second tab', () => {
+  it('places outcome metrics outside the upper section and below the timeline', () => {
     wrapper = createWrapper();
-
-    const triggers = wrapper.findAll('[data-slot="tenant-insights-tabs"] [role="tab"]');
-    expect(triggers.map(trigger => trigger.text())).toEqual(['visak.overview.trend.title', 'visak.tenant_overview.representatives']);
+    const section = wrapper.get('[data-slot="atstovavimas-tenant-primary-section"]');
+    expect(section.find('[data-slot="tenant-rep-metrics"]').exists()).toBe(false);
+    expect(wrapper.find('[data-slot="atstovavimas-rep-metrics"] [data-slot="tenant-rep-metrics"]').exists()).toBe(true);
+    expect(wrapper.get('[data-slot=atstovavimas-tenant-secondary-section]').find('[data-slot=atstovavimas-representatives]').exists()).toBe(true);
+    expect(wrapper.text()).not.toContain('metrics.spotlight.action');
+    const html = wrapper.html();
+    expect(html.indexOf('atstovavimas-rep-metrics')).toBeGreaterThan(html.indexOf('atstovavimas-tenant-primary-section'));
   });
 });
 
@@ -249,8 +294,9 @@ describe('scopes', () => {
     expect(selector.props('label')).toBe('visak.tenant_scope.stats_label');
   });
 
-  it('gives a viewer who manages no padalinys only the timeline', () => {
+  it('gives a viewer who manages no padalinys only the timeline', async () => {
     wrapper = createWrapper(true, []);
+    await showEverything();
 
     expect(wrapper.find('[data-testid="tenant-scope-selector"]').exists()).toBe(false);
     expect(wrapper.find('[data-slot="overview-numbers"]').exists()).toBe(false);
@@ -258,5 +304,25 @@ describe('scopes', () => {
     expect(wrapper.find('[data-testid="section-tiles"]').exists()).toBe(false);
     expect(wrapper.text()).toContain('visak.tenant_overview.lead_public');
     expect(ganttRowsLoad).toHaveBeenCalledWith(['1']);
+  });
+});
+
+describe('timeline loading', () => {
+  it('holds the Gantt requests until the timeline is near the viewport', async () => {
+    wrapper = createWrapper();
+    expect(ganttRowsLoad).not.toHaveBeenCalled();
+
+    await showEverything();
+
+    expect(ganttRowsLoad).toHaveBeenCalledWith(['1']);
+  });
+
+  it('never requests the Gantt on a phone, where it is not drawn', async () => {
+    viewport.wide.value = false;
+    wrapper = createWrapper();
+
+    await showEverything();
+
+    expect(ganttRowsLoad).not.toHaveBeenCalled();
   });
 });

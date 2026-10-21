@@ -3,10 +3,14 @@ doc_status: reviewed
 title: Posėdžiai
 area: meetings
 models: [Meeting]
-last_reviewed: 2026-10-18
+last_reviewed: 2026-10-21
 tests:
+  - tests/Feature/Permissions/MeetingPermissionsTest.php
+  - tests/Feature/Admin/Search/SearchVisibilityParityTest.php
+  - resources/js/Pages/Admin/Representation/__tests__/IndexMeeting.component.test.ts
   - tests/Feature/Meetings/AgendaItemPrivacyTest.php
   - tests/Feature/Admin/Calendar/MeetingControllerTest.php
+  - tests/Feature/Admin/Calendar/AgendaItemControllerTest.php
   - tests/Feature/Admin/Management/InstitutionCheckInTest.php
   - tests/Feature/Meetings/MeetingCalendarEventTest.php
   - tests/Feature/Meetings/MeetingDocumentTest.php
@@ -192,7 +196,21 @@ jo numeris ir nebūtinas viešas pavadinimas; matomumo žyma nerodoma. [Klausimo
 ## Kas ką gali {#teises}
 
 **Institucijos narys posėdžio metu** – žmogus, kuris posėdžio dieną ėjo pareigas bent vienoje jo
-institucijoje. Buvęs narys mato savo kadencijos posėdžius, bet ne vėlesnius.
+institucijoje. Buvęs narys mato ir gali pildyti savo kadencijos posėdžius, bet ne vėlesnius. Jo
+pakeitimai matomi posėdžio istorijoje.
+
+Einamų pareigybių institucijų posėdžius galima matyti ir iš kitų laikotarpių, tačiau tai savaime
+neleidžia jų redaguoti. Atsakomybės redagavimo apimtis **Savo institucijų, visų kadencijų** leidžia keisti visus
+teisę suteikiančių pareigybių institucijų posėdžius, nepriklausomai nuo posėdžio datos.
+Posėdžių kūrimas ir perkėlimas į šiukšlinę reikalauja atskirų teisių.
+
+<ChangelogNote version="v3.12" date="2026-10-21" title="Paieška rodo ir pareigų laikotarpio posėdžius">
+
+Automatiškai prieinami posėdžiai randami sąraše ir paieškoje be papildomos atsakomybės, taip pat
+ir pasibaigus pareigoms. Kiti institucijos posėdžiai ir ankstesnės darbotvarkės siūlomi tik tada,
+kai narys gali juos matyti. Turintiems teisę atkurti posėdį jis rodomas šiukšlinėje; kūrimo teisės tam nereikia.
+
+</ChangelogNote>
 
 | Veiksmas | Bet kuris narys | Institucijos narys posėdžio metu | Studentų atstovas | Studentų atstovų koordinatorius | Komunikacijos koordinatorius | Centrinio biuro studentų atstovų koordinatorius |
 |---|---|---|---|---|---|---|
@@ -200,12 +218,20 @@ institucijoje. Buvęs narys mato savo kadencijos posėdžius, bet ne vėlesnius.
 | Matyti visą posėdžio puslapį | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓, savo padalinio | ✓ |
 | Fiksuoti posėdį | – | – | ✓, savo institucijų | ✓, savo padalinio | ✓, savo padalinio | ✓ |
 | Keisti posėdį, perrikiuoti punktus | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓, savo padalinio | ✓ |
-| Pildyti darbotvarkės punktus | – | – | ✓, savo institucijų | ✓, savo padalinio | ✓, savo padalinio | ✓ |
+| Pildyti darbotvarkės punktus ir balsavimus | – | ✓ | ✓, savo institucijų | ✓, savo padalinio | ✓, savo padalinio | ✓ |
 | Ištrinti ir atkurti | – | – | ✓, savo institucijų | ✓, savo institucijų | ✓, savo padalinio | ✓ |
 
 Institucija, susieta su tavo institucija [ryšiu](/sistema/rysiai), leidžia matyti ir jos
-posėdžius (vienpusis ryšys – tik kryptimi nuo tavo institucijos). Galutinai ištrinti posėdį gali
-tik super administratorius.
+posėdžius (vienpusis ryšys – tik kryptimi nuo tavo institucijos). Paskirtas sekretorius taip pat
+mato prižiūrimos institucijos posėdžius; tai savaime nesuteikia redagavimo teisės. Negrįžtamam
+trynimui reikia atskiros teisės; įprastos atstovų ir koordinatorių atsakomybės jos neturi.
+
+<ChangelogNote version="v3.11" date="2026-10-20" title="Darbotvarkę pildo ir buvę nariai">
+
+Anksčiau darbotvarkės punktus ir balsavimus galėjo pildyti tik tie, kurie pareigas ėjo pildymo
+dieną. Dabar juos pildo ir posėdžio metu buvę institucijos nariai.
+
+</ChangelogNote>
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 
@@ -242,10 +268,14 @@ esminėmis narių mintimis. Jei protokolas neatsiunčiamas, ataskaita jį atstoj
 
 - Posėdžių teises sprendžia `MeetingPolicy`. `viewSummary` – posėdis viešas arba leidžiamas `view`.
   `view` ir `update` leidžiami ir **nariui posėdžio metu** (`Meeting::hadMemberAtTheTime()`), kitaip
-  tikrinama `meetings.{read|update}.{*|own|padalinys}`; `delete` ir `restore` – tik
+  peržiūra tikrinama pagal `meetings.read.{*|padalinys}`, redagavimas – pagal
+  `meetings.update.{*|own|padalinys}`; `delete` ir `restore` – tik
   `meetings.delete.{*|own|padalinys}` (narystė posėdžio metu čia nepadeda).
-- `.own` – visi pareigybės institucijų posėdžiai (`Duty::meetings()`).
-- Rolės: Studentų atstovas – `meetings.create|read|update|delete.own`; Studentų atstovų
+- `.own` – visi teisę suteikiančios pareigybės institucijos posėdžiai. Atkūrimas instituciją tikrina
+  tiesiogiai, nes `Duty::meetings()` neįtraukia ištrintų posėdžių. `MeetingAccessService` suderina
+  bazinę prieigą, paieškos filtrus, kitų posėdžių nuorodas ir šiukšlinės užklausą.
+- `meetings.read.own` atsisakyta: bazinė peržiūra galioja be šio leidimo, taip pat paieškoje.
+- Rolės: Studentų atstovas – `meetings.create|update|delete.own`; Studentų atstovų
   koordinatorius – `create|read|update.padalinys`, `delete.own`; Komunikacijos koordinatorius – visos
   `.padalinys`; Centrinio biuro studentų atstovų koordinatorius – visos `*`. `meetings.forceDelete`
   neturi nė viena rolė.

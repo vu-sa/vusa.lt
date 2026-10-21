@@ -26,7 +26,7 @@ return [
         'numbers' => [
             'open_requests' => 'Unresolved requests',
             'queued_mail' => 'Emails in the queue',
-            'roles' => 'Roles',
+            'roles' => 'Responsibilities',
             'users' => 'Users',
             'future_duty_holders' => 'People with upcoming duties',
         ],

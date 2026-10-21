@@ -32,7 +32,7 @@ return [
         ],
         'sistema' => [
             'title' => 'Sistema',
-            'description' => 'Rolės, leidimai, nustatymai',
+            'description' => 'Atsakomybės, leidimai, nustatymai',
         ],
     ],
 
@@ -69,7 +69,7 @@ return [
     'account' => [
         'appearance' => 'Išvaizda', 'light' => 'Šviesi tema', 'dark' => 'Tamsi tema', 'language' => 'Kalba: :language',
         'help' => 'Pagalba', 'docs' => 'Dokumentacija', 'tour' => 'Parodyk, kaip veikia', 'report_problem' => 'Pranešti apie problemą',
-        'my_requests' => 'Mano užklausos', 'roles' => 'Mano rolės ir pareigybės', 'notifications' => 'Pranešimų nustatymai', 'whats_new' => 'Atnaujinimai', 'start_fm' => 'Klausyti START FM', 'about' => 'Apie',
+        'my_requests' => 'Mano užklausos', 'roles' => 'Mano atsakomybės ir pareigybės', 'notifications' => 'Pranešimų nustatymai', 'whats_new' => 'Atnaujinimai', 'start_fm' => 'Klausyti START FM', 'about' => 'Apie',
         'listen' => 'Klausyti', 'pause' => 'Pristabdyti', 'close' => 'Uždaryti',
     ],
 
@@ -126,7 +126,7 @@ return [
         'registracija_nariai' => 'Narių registracija',
         'registracija_atstovai' => 'Studentų atstovų registracija',
         'formos' => 'Formos',
-        'roles' => 'Rolės',
+        'roles' => 'Atsakomybės',
         'leidimai' => 'Leidimai',
         'tipai' => 'Tipai ir kategorijos',
         'instituciju_tipai' => 'Institucijų tipai',
@@ -174,11 +174,11 @@ return [
         'registracija_nariai' => 'Naujų narių prašymai',
         'registracija_atstovai' => 'Naujų studentų atstovų prašymai',
         'formos' => 'Anketos ir jų atsakymai',
-        'roles' => 'Teisių rinkiniai pareigybėms',
+        'roles' => 'Ką pareigybės daro ir kokias teises tam turi',
         'leidimai' => 'Atskiri sistemos leidimai',
         'tipai' => 'Pasirink tipų ar kategorijų sąrašą',
         'instituciju_tipai' => 'Institucijų grupavimas, atstovavimas ir ryšiai',
-        'pareigybiu_tipai' => 'Pareigybių grupavimas ir suteikiamos rolės',
+        'pareigybiu_tipai' => 'Pareigybių grupavimas ir suteikiamos atsakomybės',
         'nustatymai' => 'Sistemos ir formų nustatymai',
         'sistemos_busena' => 'Serverio, eilių ir paieškos būklė',
         'laisku_eile' => 'Siunčiami ir įstrigę laiškai',
@@ -188,7 +188,7 @@ return [
 
     'actions' => [
         'new_institution_type' => ['title' => 'Naujas institucijos tipas', 'description' => 'Institucijų grupavimas, atstovavimas ir ryšiai'],
-        'new_duty_type' => ['title' => 'Naujas pareigybės tipas', 'description' => 'Pareigybių grupavimas ir suteikiamos rolės'],
+        'new_duty_type' => ['title' => 'Naujas pareigybės tipas', 'description' => 'Pareigybių grupavimas ir suteikiamos atsakomybės'],
         'merge' => [
             'title' => 'Sujungti įrašus',
         ],

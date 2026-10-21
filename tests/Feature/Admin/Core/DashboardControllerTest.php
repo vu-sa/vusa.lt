@@ -1,10 +1,9 @@
 <?php
 
 use App\Actions\Media\AddImageMedia;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Calendar;
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
-use App\Models\DutyType;
 use App\Models\Form;
 use App\Models\Institution;
 use App\Models\InstitutionCheckIn;
@@ -15,7 +14,7 @@ use App\Models\QuickLink;
 use App\Models\ReservationDraft;
 use App\Models\ReservationDraftItem;
 use App\Models\Resource;
-use App\Models\Role;
+use App\Models\ResponsibilityGrant;
 use App\Models\Task;
 use App\Models\Tenant;
 use App\Models\User;
@@ -502,13 +501,8 @@ describe('institutions needing attention', function (): void {
             'alias' => 'attention-test-'.uniqid(),
         ]);
 
-        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-        $duty = Duty::factory()
-            ->for($institution)
-            ->hasAttached($studentRepType, [], 'types')
-            ->create();
+        $duty = Duty::factory()->for($institution)->create();
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
         $user = User::factory()->create();
         $user->duties()->attach($duty, [
@@ -645,7 +639,7 @@ describe('Pradžia secondary panels', function (): void {
         $duty = $manager->duties()->first();
         $duty->pivot->end_date = null;
         $duty->pivot->save();
-        DutyResponsibility::factory()->for($duty)->forTenant($this->tenant)->create();
+        ResponsibilityGrant::factory()->forDuty($duty)->forTenant($this->tenant)->create();
 
         $rep = makeUser($this->tenant);
         $rep->duties()->first()->pivot->update(['end_date' => null]);
@@ -695,17 +689,14 @@ describe('Pradžia secondary panels', function (): void {
 describe('Sparčioji prieiga registration forms', function (): void {
     beforeEach(function (): void {
         $this->memberForm = Form::factory()->for($this->tenant)->create();
-        $this->recipientRole = Role::factory()->create(['name' => 'Member Registration Recipient']);
-
         $formSettings = app(FormSettings::class);
         $formSettings->member_registration_form_id = $this->memberForm->id;
-        $formSettings->member_registration_notification_recipient_role_id = $this->recipientRole->id;
         $formSettings->save();
     });
 
     test('a registration recipient gets a link to the member registration form', function (): void {
         $recipient = makeUser($this->tenant);
-        $recipient->assignRole($this->recipientRole->name);
+        grantPurpose($recipient->duties()->first(), ResponsibilityPurpose::MemberRegistration, $this->tenant);
 
         asUser($recipient)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
             ->where('registrationForms', [['key' => 'member', 'href' => route('forms.show', $this->memberForm)]])

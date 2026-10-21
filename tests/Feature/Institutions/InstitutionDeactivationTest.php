@@ -89,8 +89,8 @@ test('the transactional action rechecks blockers added after form validation', f
     expect(app(InstitutionDeactivationService::class)->summary($institution)['blockers'])->toBeEmpty();
     Dutiable::factory()->forDuty($duty)->active()->create(['start_date' => '2026-11-01']);
 
-    expect(fn () => closeInstitutionMemberships($institution))->toThrow(ValidationException::class);
-    expect($institution->fresh()->is_active)->toBe(1);
+    expect(fn () => closeInstitutionMemberships($institution))->toThrow(ValidationException::class)
+        ->and($institution->fresh()->is_active)->toBe(1);
 });
 
 test('unauthorized deactivation leaves assignments current', function (): void {
@@ -184,8 +184,8 @@ test('inactive institutions permit historical records but reject new current or 
     if ($allowed) {
         expect($create()->exists)->toBeTrue();
     } else {
-        expect($create)->toThrow(ValidationException::class);
-        expect($duty->dutiables()->exists())->toBeFalse();
+        expect($create)->toThrow(ValidationException::class)
+            ->and($duty->dutiables()->exists())->toBeFalse();
     }
 })->with([
     'historical' => ['2026-01-01', '2026-10-15', true],
@@ -203,12 +203,12 @@ test('stale models and timeline edits cannot reopen a closed period after reacti
     app(UpdateInstitution::class)->execute($institution, ['is_active' => true], $actor);
 
     $stale->update(['additional_email' => 'updated@example.com']);
-    expect($stale->fresh()->end_date->toDateString())->toBe('2026-10-15');
-    expect(fn () => $term->fresh()->update(['end_date' => null]))->toThrow(ValidationException::class);
+    expect($stale->fresh()->end_date->toDateString())->toBe('2026-10-15')
+        ->and(fn () => $term->fresh()->update(['end_date' => null]))->toThrow(ValidationException::class);
 
     $newTerm = Dutiable::factory()->forDuty($duty)->forUser($term->user)->active()->create(['start_date' => '2026-10-16']);
-    expect(MergeDutiables::isMergeable(Dutiable::whereKey([$term->id, $newTerm->id])->get()))->toBeFalse();
-    expect(fn () => CollapseOverlappingDutiables::foldInto($term->fresh(), $newTerm))->toThrow(ValidationException::class);
+    expect(MergeDutiables::isMergeable(Dutiable::whereKey([$term->id, $newTerm->id])->get()))->toBeFalse()
+        ->and(fn () => CollapseOverlappingDutiables::foldInto($term->fresh(), $newTerm))->toThrow(ValidationException::class);
 });
 
 test('a failure after terms close rolls back the institution and assignments together', function (): void {
@@ -218,9 +218,8 @@ test('a failure after terms close rolls back the institution and assignments tog
     $actor = makeTenantUserWithRole('Komunikacijos koordinatorius', $institution->tenant);
 
     expect(fn () => app(UpdateInstitution::class)->execute($institution, ['is_active' => false, 'types' => [999999]], $actor))
-        ->toThrow(QueryException::class);
-
-    expect($institution->fresh()->is_active)->toBe(1)
+        ->toThrow(QueryException::class)
+        ->and($institution->fresh()->is_active)->toBe(1)
         ->and($term->fresh()->end_date)->toBeNull()
         ->and($term->fresh()->ended_by_institution_deactivation)->toBeFalse();
 });
@@ -265,8 +264,8 @@ test('moving an occupied duty into an inactive institution is rejected', functio
     $inactive = Institution::factory()->create(['is_active' => false]);
     $originalId = $duty->institution_id;
 
-    expect(fn () => $duty->update(['institution_id' => $inactive->id]))->toThrow(ValidationException::class);
-    expect($duty->fresh()->institution_id)->toBe($originalId);
+    expect(fn () => $duty->update(['institution_id' => $inactive->id]))->toThrow(ValidationException::class)
+        ->and($duty->fresh()->institution_id)->toBe($originalId);
 });
 
 test('merging duties cannot move current assignments into an inactive institution', function (): void {
@@ -275,8 +274,8 @@ test('merging duties cannot move current assignments into an inactive institutio
     $inactive = Institution::factory()->create(['is_active' => false]);
     $target = Duty::factory()->for($inactive)->create();
 
-    expect(fn () => MergeDuties::execute($target, collect([$source])))->toThrow(ValidationException::class);
-    expect($term->fresh()->duty_id)->toBe($source->id)
+    expect(fn () => MergeDuties::execute($target, collect([$source])))->toThrow(ValidationException::class)
+        ->and($term->fresh()->duty_id)->toBe($source->id)
         ->and($source->fresh()->trashed())->toBeFalse();
 });
 

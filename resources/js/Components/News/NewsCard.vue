@@ -40,7 +40,9 @@
         size === 'lg' ? 'mt-3 text-2xl leading-tight sm:text-[1.7rem]' :
         size === 'compact' ? 'text-sm leading-snug' : 'mt-2 text-lg leading-snug',
       ]">
-        <SearchMatch v-if="titleMatch" :match="titleMatch" /><template v-else>{{ news.title }}</template>
+        <SearchMatch v-if="titleMatch" :match="titleMatch" /><template v-else>
+          {{ news.title }}
+        </template>
       </h3>
       <!-- A search excerpt takes the short's place, so cards keep their height while typing. -->
       <div v-if="showExcerpt && news.short && excerptMatch" :class="excerptClass">

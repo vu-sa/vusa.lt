@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\AdminNavigation\AdminNavigationCatalog;
 use App\Services\DeviceMetricService;
 use App\Services\Permissions\PermissionMapBuilder;
+use App\Services\SystemDutyTypes;
 use App\Services\Typesense\TypesenseManager;
 use App\Settings\SiteSettings;
 use App\Support\AuthorityCacheExpiry;
@@ -32,7 +33,7 @@ class HandleInertiaRequests extends Middleware
 
     public const TAGS_CACHE_KEY = 'all-tags-for-inertia';
 
-    public const INSTITUTION_TYPES_CACHE_KEY = 'all-institution-types-for-inertia';
+    public const INSTITUTION_TYPES_CACHE_KEY = 'all-institution-types-for-inertia:v2';
 
     public const NOTIFICATION_PREVIEW_LIMIT = 20;
 
@@ -180,6 +181,7 @@ class HandleInertiaRequests extends Middleware
             // identical "not worth a search endpoint" rationale for topics.
             'eventTypes' => fn () => $onAdmin ? $this->getEventTypesForInertia() : [],
             'tags' => fn () => $onAdmin ? $this->getTagsForInertia() : [],
+            'curatorDutyTypeSlugs' => fn () => $onAdmin ? app(SystemDutyTypes::class)->curatorSlugs() : [],
             'institutionTypes' => $this->getInstitutionTypesForInertia(...),
             'typesenseConfig' => TypesenseManager::getFrontendConfig(...),
             // CARTO now requires an API key on basemap tile requests (PadalinysMap, EventLocationMap).
@@ -267,7 +269,7 @@ class HandleInertiaRequests extends Middleware
     private function getInstitutionTypesForInertia(): Collection
     {
         return Cache::rememberForever(self::INSTITUTION_TYPES_CACHE_KEY,
-            fn () => InstitutionType::query()->get(['id', 'title', 'slug'])
+            fn () => InstitutionType::query()->get(['id', 'title', 'slug', 'parent_id'])
         );
     }
 

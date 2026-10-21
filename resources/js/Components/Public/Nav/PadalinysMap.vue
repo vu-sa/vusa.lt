@@ -11,7 +11,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { useDark } from '@vueuse/core';
-
 import type * as Leaflet from 'leaflet';
 import type { Layer, Map as LeafletMap, MarkerClusterGroup, TileLayer } from 'leaflet';
 

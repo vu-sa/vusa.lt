@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LecturerReview whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LecturerReview whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LecturerReview whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LecturerReview whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
  *
  * @mixin \Eloquent
  */

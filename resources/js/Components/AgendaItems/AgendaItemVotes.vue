@@ -294,6 +294,6 @@ const setConsensus = (vote: EditableVote, value: boolean) => {
 };
 
 const addVote = () => {
-  props.form.votes.push(createVote(props.form.votes.length === 0));
+  props.form.votes.push(createVote());
 };
 </script>

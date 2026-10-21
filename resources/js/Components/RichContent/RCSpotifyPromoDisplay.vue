@@ -135,7 +135,6 @@
 </template>
 
 <script setup lang="ts">
-import MediaImage from '@/Components/Brand/MediaImage.vue';
 /**
  * `spotify-embed`'s `promo` variant (v0: `podcast-section.tsx`). Unlike the original mockup's
  * fake play button + static waveform, the right-hand panel embeds the real Spotify/Mixcloud
@@ -158,6 +157,7 @@ import RCAddPlaceholder from './Editor/Fullscreen/RCAddPlaceholder.vue';
 import { isMixcloudUrl, toMixcloudEmbedUrl, toSpotifyEmbedUrl } from './embedUrl';
 import type { BandResolution } from './bandLayout';
 
+import MediaImage from '@/Components/Brand/MediaImage.vue';
 import { EyebrowLabel } from '@/Components/Public/Base';
 import IconHeadphones from '~icons/fluent/headphones24-regular';
 import SpotifyIcon from '~icons/simple-icons/spotify';

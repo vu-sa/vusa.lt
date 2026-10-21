@@ -2,21 +2,26 @@
 
 namespace App\Models;
 
+use App\Actions\ProjectDutyResponsibilities;
 use App\Contracts\GuardsForceDelete;
 use App\Contracts\SharepointFileableContract;
 use App\Events\FileableNameUpdated;
 use App\Models\Pivots\DutyDutyType;
-use App\Models\Pivots\DutyTypeRole;
 use App\Models\Traits\GuardsForceDeleteWhenReferenced;
 use App\Models\Traits\HasSharepointFiles;
 use App\Models\Traits\HasTranslations;
 use App\Models\Traits\HasTypeHierarchy;
 use App\Models\Traits\LogsModelActivity;
+use App\Services\ResponsibilityResolver;
+use App\Services\SystemDutyTypes;
+use App\Support\TypeTree;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +39,7 @@ use Illuminate\Support\Facades\DB;
  * @property-read Collection<int, Activity> $activitiesAsSubject
  * @property-read Collection<int, FileableFile> $availableFiles
  * @property-read Collection<int, DutyType> $descendants
- * @property-read DutyTypeRole|DutyDutyType|null $pivot
+ * @property-read DutyDutyType|null $pivot
  * @property-read Collection<int, Duty> $duties
  * @property-read Collection<int, FileableFile> $fileableFiles
  * @property-read string|null $force_delete_blocked_reason
@@ -44,6 +49,7 @@ use Illuminate\Support\Facades\DB;
  * @property-read DutyType|null $parent
  * @property-read Collection<int, DutyType> $recursiveDescendants
  * @property-read DutyType|null $recursiveParent
+ * @property-read Collection<int, ResponsibilityGrant> $responsibilityGrants
  * @property-read Collection<int, Role> $roles
  * @property-read mixed $translations
  *
@@ -56,6 +62,7 @@ use Illuminate\Support\Facades\DB;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyType whereJsonContainsLocales(string $column, array $locales, ?mixed $value, string $operand = '=')
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyType whereLocale(string $column, string $locale)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyType whereLocales(string $column, array $locales)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyType whereTranslationLike(array|string $columns, string $search, ?array $locales = null)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyType withTrashed(bool $withTrashed = true)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|DutyType withoutTrashed()
  *
@@ -85,6 +92,79 @@ class DutyType extends Model implements GuardsForceDelete, SharepointFileableCon
                 FileableNameUpdated::dispatch($type);
             }
         });
+
+        // The contact pages fall back to slugs and skip trashed types, so any of these can move them.
+        static::saved(fn () => app(SystemDutyTypes::class)->flush());
+        static::deleted(fn () => app(SystemDutyTypes::class)->flush());
+        static::restored(fn () => app(SystemDutyTypes::class)->flush());
+
+        // Subtypes inherit their ancestors' responsibility grants, so a move or trash changes theirs.
+        static::saved(function (self $type): void {
+            if ($type->wasChanged('parent_id')) {
+                $type->reprojectSubtree();
+            }
+        });
+        static::deleted(fn (self $type) => $type->reprojectSubtree());
+        static::restored(fn (self $type) => $type->reprojectSubtree());
+    }
+
+    /**
+     * The given types plus every live descendant: the types a grant on them reaches.
+     *
+     * @param  list<int|string>  $typeIds
+     * @param  array<int, int|null>|null  $parents  reuse one liveParentMap() across many calls
+     * @return list<int>
+     */
+    public static function withDescendantIds(array $typeIds, ?array $parents = null): array
+    {
+        if ($typeIds === []) {
+            return [];
+        }
+
+        $parents ??= self::liveParentMap();
+        $live = array_values(array_filter(array_map(intval(...), $typeIds), fn (int $id): bool => array_key_exists($id, $parents)));
+
+        return TypeTree::withDescendants($parents, $live);
+    }
+
+    /**
+     * The given types plus every live ancestor: the types whose grants reach a duty of them.
+     *
+     * @param  list<int|string>  $typeIds
+     * @return list<int>
+     */
+    public static function withAncestorIds(array $typeIds): array
+    {
+        $parents = self::liveParentMap();
+        $result = [];
+
+        foreach (array_map(intval(...), $typeIds) as $id) {
+            while ($id !== null && array_key_exists($id, $parents) && ! in_array($id, $result, true)) {
+                $result[] = $id;
+                $id = $parents[$id];
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return array<int, int|null>
+     */
+    public static function liveParentMap(): array
+    {
+        return DB::table('duty_types')->whereNull('deleted_at')->pluck('parent_id', 'id')
+            ->mapWithKeys(fn ($parent, $id): array => [(int) $id => $parent === null ? null : (int) $parent])
+            ->all();
+    }
+
+    private function reprojectSubtree(): void
+    {
+        app(ResponsibilityResolver::class)->flush();
+
+        ProjectDutyResponsibilities::forDuties(DB::table('duty_duty_type')
+            ->whereIn('duty_type_id', $this->getDescendantsAndSelf(withTrashed: true)->pluck('id'))
+            ->pluck('duty_id'));
     }
 
     /** @return BelongsToMany<Duty, $this, DutyDutyType> */
@@ -93,14 +173,35 @@ class DutyType extends Model implements GuardsForceDelete, SharepointFileableCon
         return $this->belongsToMany(Duty::class)->using(DutyDutyType::class);
     }
 
-    public function roles(): BelongsToMany
+    /**
+     * Responsibilities every duty of this type and of its subtypes receives.
+     */
+    public function roles(): MorphToMany
     {
-        return $this->belongsToMany(Role::class)->using(DutyTypeRole::class);
+        return $this->morphToMany(Role::class, 'grantee', 'responsibility_grants', 'grantee_id', 'role_id');
+    }
+
+    /** @return MorphMany<ResponsibilityGrant, $this> */
+    public function responsibilityGrants(): MorphMany
+    {
+        return $this->morphMany(ResponsibilityGrant::class, 'grantee');
+    }
+
+    /**
+     * Why the type must stay: a public contact page groups by it.
+     */
+    public function deleteBlockedReason(): ?string
+    {
+        $parts = app(SystemDutyTypes::class)->partsOf($this);
+
+        return $parts === [] ? null : (string) __('settings.purposes.duty_types.delete_blocked', [
+            'parts' => implode(', ', array_map(fn ($part): string => (string) __($part->labelKey()), $parts)),
+        ]);
     }
 
     public function forceDeleteBlockedReason(): ?string
     {
-        return $this->forceDeleteReasonFor([
+        return $this->deleteBlockedReason() ?? $this->forceDeleteReasonFor([
             'trash.blockers.type_assignments' => $this->duties()->withTrashed()->count(),
             'entities.role.model' => $this->roles()->count() + DB::table('role_can_attach_duty_types')->where('duty_type_id', $this->id)->count(),
             'entities.dutyType.model' => $this->descendants()->withTrashed()->count(),

@@ -83,6 +83,7 @@ export interface MailingListSourceOptions {
   dutyTypes: TypeOption[];
   institutions: { id: string; name: string }[];
   mailingLists: { id: string; address: string }[];
+  responsibilities: { id: string; title: string; purpose: string | null }[];
 }
 
 export interface MailingListArchivePage {

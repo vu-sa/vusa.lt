@@ -461,6 +461,7 @@ describe('read-only public meeting record', function (): void {
 
     test('a member with meeting access gets the full record', function (): void {
         asUser(makeAdminUser($this->tenant))->get(route('meetings.show', $this->publicMeeting))
+            ->assertOk()
             ->assertInertia(fn ($page) => $page->where('readOnly', false));
     });
 
@@ -849,7 +850,7 @@ describe('Posėdžiai collection', function (): void {
             );
     });
 
-    test('a student representative holding only meetings.read.own can open it', function (): void {
+    test('a student representative can open the collection without an own read grant', function (): void {
         $rep = makeTenantUserWithRole('Studentų atstovas', $this->tenant);
 
         asUser($rep)
@@ -962,7 +963,7 @@ describe('editing a meeting', function (): void {
         expect($this->meeting->fresh()->title)->toBe('2026 kovo 05 d. posėdis');
     });
 
-    test('a member at the time of the meeting edits it without a role, but not its agenda items', function (): void {
+    test('a member at the time of the meeting edits it and its agenda items without a role', function (): void {
         $member = makeUser($this->tenant);
         $duty = $member->duties()->first();
         $meeting = Meeting::factory()->hasAttached($duty->institution)->create(['start_time' => now()->setTime(10, 0)]);
@@ -977,7 +978,9 @@ describe('editing a meeting', function (): void {
 
         asUser($member)
             ->patch(route('agendaItems.update', $item), ['title' => ['lt' => 'Pakeista']])
-            ->assertForbidden();
+            ->assertSessionHasNoErrors();
+
+        expect($item->fresh()->title)->toBe('Pakeista');
     });
 
     test('deleting moves the meeting to the trash and restoring brings it back', function (): void {

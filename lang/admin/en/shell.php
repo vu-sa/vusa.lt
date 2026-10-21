@@ -69,7 +69,7 @@ return [
     'account' => [
         'appearance' => 'Appearance', 'light' => 'Light theme', 'dark' => 'Dark theme', 'language' => 'Language: :language',
         'help' => 'Help', 'docs' => 'Documentation', 'tour' => 'Show me how it works', 'report_problem' => 'Report a problem',
-        'roles' => 'My roles and duties', 'notifications' => 'Notification settings', 'my_requests' => 'My requests', 'whats_new' => 'Updates', 'start_fm' => 'Listen to START FM', 'about' => 'About',
+        'roles' => 'My responsibilities and duties', 'notifications' => 'Notification settings', 'my_requests' => 'My requests', 'whats_new' => 'Updates', 'start_fm' => 'Listen to START FM', 'about' => 'About',
         'listen' => 'Listen', 'pause' => 'Pause', 'close' => 'Close',
     ],
 
@@ -126,7 +126,7 @@ return [
         'registracija_nariai' => 'Member registration',
         'registracija_atstovai' => 'Student rep registration',
         'formos' => 'Forms',
-        'roles' => 'Roles',
+        'roles' => 'Responsibilities',
         'leidimai' => 'Permissions',
         'tipai' => 'Types and categories',
         'instituciju_tipai' => 'Institution types',
@@ -174,11 +174,11 @@ return [
         'registracija_nariai' => 'New member applications',
         'registracija_atstovai' => 'New student rep applications',
         'formos' => 'Forms and their responses',
-        'roles' => 'Permission sets for duties',
+        'roles' => 'What duties do and the permissions that work needs',
         'leidimai' => 'Individual system permissions',
         'tipai' => 'Choose a type or category list',
         'instituciju_tipai' => 'Institution grouping, representation and relationships',
-        'pareigybiu_tipai' => 'Duty grouping and granted roles',
+        'pareigybiu_tipai' => 'Duty grouping and granted responsibilities',
         'nustatymai' => 'System and form settings',
         'sistemos_busena' => 'Server, queue and search health',
         'laisku_eile' => 'Outgoing and stuck emails',
@@ -188,7 +188,7 @@ return [
 
     'actions' => [
         'new_institution_type' => ['title' => 'New institution type', 'description' => 'Institution grouping, representation and relationships'],
-        'new_duty_type' => ['title' => 'New duty type', 'description' => 'Duty grouping and granted roles'],
+        'new_duty_type' => ['title' => 'New duty type', 'description' => 'Duty grouping and granted responsibilities'],
         'merge' => [
             'title' => 'Merge records',
         ],

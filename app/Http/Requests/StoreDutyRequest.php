@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesDutyTypeAssignments;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Rules\SoftDeleteRules;
@@ -12,6 +13,8 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreDutyRequest extends FormRequest
 {
+    use ValidatesDutyTypeAssignments;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -38,7 +41,6 @@ class StoreDutyRequest extends FormRequest
             'contacts_grouping' => 'required|in:none,study_program,tenant',
             'types' => 'nullable|array',
             'types.*' => ['integer', 'distinct', SoftDeleteRules::existsLive('duty_types')],
-            'roles' => 'nullable|array',
             'current_users' => 'nullable|array',
             'ex_officio_target_duty_ids' => 'nullable|array',
             'ex_officio_target_duty_ids.*' => ['ulid', 'distinct', SoftDeleteRules::existsLive('duties')],
@@ -53,6 +55,8 @@ class StoreDutyRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $v): void {
+            $this->authorizeDutyTypeChanges($v);
+
             $authorizer = app(ModelAuthorizer::class);
             $hasGlobalDutyScope = $authorizer->allows($this->user(), 'duties.create.*');
 

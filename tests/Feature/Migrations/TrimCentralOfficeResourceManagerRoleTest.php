@@ -21,7 +21,7 @@ test('keeps only the resource and reservation permissions', function (): void {
     trimCentralOfficeRoleMigration()->up();
 
     expect($this->role->fresh()->permissions->pluck('name')->sort()->values()->all())->toBe([
-        'reservations.create.*', 'reservations.delete.*', 'reservations.read.*', 'reservations.update.*',
+        'reservations.delete.*', 'reservations.read.*', 'reservations.update.*',
         'resources.create.*', 'resources.delete.*', 'resources.update.*',
     ]);
 });

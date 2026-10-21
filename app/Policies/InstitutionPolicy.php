@@ -6,6 +6,7 @@ use App\Enums\CRUDEnum;
 use App\Enums\ModelEnum;
 use App\Models\Institution;
 use App\Models\User;
+use App\Services\InstitutionAccessService;
 use App\Services\ModelAuthorizer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -18,7 +19,7 @@ class InstitutionPolicy extends ModelPolicy
     #[\Override]
     protected bool $hasManyTenants = false;
 
-    public function __construct(ModelAuthorizer $authorizer)
+    public function __construct(ModelAuthorizer $authorizer, private InstitutionAccessService $institutions)
     {
         parent::__construct($authorizer);
         $this->pluralModelName = Str::plural(ModelEnum::INSTITUTION->label());
@@ -62,9 +63,9 @@ class InstitutionPolicy extends ModelPolicy
     #[\Override]
     public function view(User $user, Model $institution): bool
     {
-        // Baseline: a member reads their own institution in full, role or not — from election on,
-        // matching the non-ended duties ModelAuthorizer grants through.
-        return $user->authorization_duties()->where('duties.institution_id', $institution->getKey())->exists()
+        // Baseline: a member reads their own, related and secretaried institutions in full, role
+        // or not — from election on, matching the non-ended duties ModelAuthorizer grants through.
+        return $this->institutions->canAccessInstitution($user, $institution)
             || $this->commonChecker($user, $institution, CRUDEnum::READ->label(), $this->pluralModelName, false);
     }
 

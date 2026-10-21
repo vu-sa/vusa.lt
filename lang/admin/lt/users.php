@@ -11,7 +11,7 @@ return [
     ],
     'name_locked' => 'Vardą ir pavardę gali keisti tik sistemos administratoriai.',
     'identity_locked_tenants' => 'El. pašto keisti negali: šis asmuo priklauso ir kitiems padaliniams (:tenants). Kreipkis į vusa.lt pagalbą.',
-    'identity_locked_protected' => 'El. pašto keisti negali: šios paskyros rolė priskirta tiesiogiai. Kreipkis į centrinio biuro administratorius.',
+    'identity_locked_protected' => 'El. pašto keisti negali: šios paskyros atsakomybė priskirta tiesiogiai. Kreipkis į centrinio biuro administratorius.',
     'identity_locked_hint' => 'El. paštas naudojamas prisijungimui, todėl jį gali keisti tik administratoriai, kuriems priklauso visi šio asmens padaliniai.',
     'duty_outside_tenant' => 'Negali priskirti ar pašalinti pareigybių, kurios priklauso kitiems padaliniams: :duties.',
     'cannot_delete_self' => 'Savo paskyros ištrinti negali.',
@@ -31,7 +31,7 @@ return [
 
         'login_email_locked' => 'Šios paskyros prisijungimo el. pašto keisti negali. Sujungus liks dabartinis adresas.',
         'name_mismatch' => 'Sujungti galima tik to paties asmens įrašus, o :name vardas ir pavardė nesutampa.',
-        'direct_roles' => ':name rolė priskirta tiesiogiai. Prieš sujungdamas ją pašalink.',
+        'direct_roles' => ':name atsakomybė priskirta tiesiogiai. Prieš sujungdamas ją pašalink.',
         'outside_scope' => 'Sujungti gali administratoriai, kuriems priklauso visi abiejų įrašų padaliniai.',
         'action' => 'Sujungti',
         'login_email' => 'Prisijungimo el. paštas',

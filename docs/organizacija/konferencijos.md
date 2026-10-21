@@ -70,11 +70,15 @@ o neaktyvios pareigybės ir institucijos praleidžiamos.
 | **Pareigybės tipas** | Visos to tipo pareigybės, pvz., visi pirmininkai | Kuris adresas, padaliniai, potipiai |
 | **Institucija** | Visų institucijos pareigybių užimantieji | Kuris adresas, tik tam tikri pareigybių tipai |
 | **Institucijos tipas** | Visų to tipo aktyvių institucijų nariai | Kuris adresas, padaliniai, potipiai, išskiriami tipai, pareigybių tipai |
+| **Atsakomybė** | Visos pareigybės, turinčios [atsakomybę](/pagrindai/atsakomybes) – tiesiogiai, per tipą ar instituciją, pvz., visi studentų atstovų koordinatoriai | Kuris adresas, padaliniai |
 | **Kita konferencija** | Kitos konferencijos gavėjai (pvz., `bt` = biuras + taryba) | – |
 | **El. paštas** | Vienas adresas rankiniu būdu | Vardas, pastaba, galiojimo data |
 
 Pavyzdžiui, konferenciją `centriniai` sudaro institucijos tipas *Studentų atstovų organas* su
-potipiais, tik centriniame padalinyje, išskyrus tipą *VU SA darinys*.
+potipiais, tik centriniame padalinyje, išskyrus tipą *VU SA darinys*. Konferenciją visiems padalinių
+koordinatoriams patogiausia sudaryti iš atsakomybės *Studentų atstovų koordinavimas* šaltinio.
+
+Atsakomybės, pagal kurią sudaroma konferencija, ištrinti negalima.
 
 <DocScreenshot name="mailing-list-sources" alt="Konferencijos gavėjų šaltiniai ir išimtys" caption="Gavėjų šaltiniai ir išimtys tvarkomi konferencijos puslapyje." />
 

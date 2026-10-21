@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { computed, ref } from 'vue';
 
 import { useGanttLayout, type GanttInstitutionMeta } from '../useGanttLayout';
+
 import type { GanttGroupBy } from '@/Pages/Admin/Dashboard/Composables/useGanttSettings';
 
 const institutions: GanttInstitutionMeta[] = [

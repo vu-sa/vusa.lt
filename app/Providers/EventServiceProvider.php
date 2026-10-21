@@ -14,6 +14,8 @@ use App\Listeners\BlockExternalNotificationsOnStaging;
 use App\Listeners\DiagnoseHealth;
 use App\Listeners\HandleDutiableChange;
 use App\Listeners\HandleTaskCreated;
+use App\Listeners\InvalidateRepStatisticsRelation;
+use App\Listeners\InvalidateRepStatisticsSettings;
 use App\Listeners\NotifyUsersOfComment;
 use App\Listeners\PruneRejectedPushSubscription;
 use App\Listeners\QueueMailingListSync;
@@ -30,16 +32,29 @@ use App\Listeners\SyncExOfficioDutiables;
 use App\Listeners\SyncInstitutionActivityIndex;
 use App\Listeners\SyncRelationSearchIndex;
 use App\Listeners\UpdateSharepointFolder;
+use App\Models\Cadence;
+use App\Models\Calendar;
 use App\Models\Document;
 use App\Models\Duty;
 use App\Models\DutyType;
+use App\Models\FileableFile;
 use App\Models\Institution;
+use App\Models\InstitutionActivityRequest;
+use App\Models\InstitutionCheckIn;
+use App\Models\InstitutionSecretary;
 use App\Models\InstitutionType;
+use App\Models\Meeting;
+use App\Models\Pivots\AgendaItem;
+use App\Models\Pivots\Dutiable;
+use App\Models\ResponsibilityGrant;
 use App\Models\Role;
 use App\Models\RoleType;
+use App\Models\Task;
 use App\Models\User;
+use App\Models\Vote;
 use App\Notifications\Subscribers\ApprovalNotificationSubscriber;
 use App\Observers\DocumentObserver;
+use App\Observers\RepStatisticsObserver;
 use App\Observers\RoleTypeObserver;
 use App\Observers\UserPermissionObserver;
 use App\Tasks\Subscribers\ApprovalTaskSubscriber;
@@ -53,6 +68,7 @@ use Illuminate\Notifications\Events\NotificationSending;
 use NotificationChannels\WebPush\Events\NotificationFailed;
 use SocialiteProviders\Manager\SocialiteWasCalled;
 use SocialiteProviders\Microsoft\MicrosoftExtendSocialite;
+use Spatie\LaravelSettings\Events\SettingsSaved;
 use Spatie\MediaLibrary\Conversions\Events\ConversionHasBeenCompletedEvent;
 use Spatie\ModelStates\Events\StateChanged;
 use Spatie\Permission\Models\Permission;
@@ -66,7 +82,8 @@ class EventServiceProvider extends ServiceProvider
      */
     #[\Override]
     protected $listen = [
-        SearchRelationChanged::class => [QueueMailingListSync::class],
+        SettingsSaved::class => [InvalidateRepStatisticsSettings::class],
+        SearchRelationChanged::class => [QueueMailingListSync::class, InvalidateRepStatisticsRelation::class],
         SocialiteWasCalled::class => [
             MicrosoftExtendSocialite::class.'@handle',
         ],
@@ -146,7 +163,10 @@ class EventServiceProvider extends ServiceProvider
     #[\Override]
     public function boot()
     {
-        foreach ([Duty::class, User::class, Institution::class, DutyType::class, InstitutionType::class] as $model) {
+        foreach ([Cadence::class, Institution::class, InstitutionType::class, Duty::class, Role::class, ResponsibilityGrant::class, Meeting::class, InstitutionCheckIn::class, InstitutionActivityRequest::class, Task::class, AgendaItem::class, Vote::class, Dutiable::class, InstitutionSecretary::class, Calendar::class, FileableFile::class] as $model) {
+            $model::observe(RepStatisticsObserver::class);
+        }
+        foreach ([Duty::class, User::class, Institution::class, DutyType::class, InstitutionType::class, ResponsibilityGrant::class] as $model) {
             $model::observe(QueueMailingListSync::class);
         }
         Document::observe(DocumentObserver::class);

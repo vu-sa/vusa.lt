@@ -6,8 +6,10 @@ use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
 use App\Models\Vote;
+use App\Support\MorphMap;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Activitylog\Models\Activity;
 
 pest()->use(RefreshDatabase::class);
 
@@ -129,21 +131,21 @@ describe('vote controller', function (): void {
         expect(Vote::find($vote->id))->toBeNull();
     });
 
-    test('the first vote becomes the main one without asking', function (): void {
+    test('a new vote is not main unless asked', function (): void {
         asUser($this->admin)
             ->post(route('votes.store'), ['agenda_item_id' => $this->agendaItem->id, 'decision' => 'positive'])
             ->assertSessionHasNoErrors();
 
-        expect($this->agendaItem->votes()->sole()->is_main)->toBeTrue();
+        expect($this->agendaItem->votes()->sole()->is_main)->toBeFalse();
     });
 
-    test('deleting the main vote promotes the next one', function (): void {
+    test('deleting the main vote promotes no other', function (): void {
         $main = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create();
         $additional = Vote::factory()->additional()->for($this->agendaItem, 'agendaItem')->create();
 
         asUser($this->admin)->delete(route('votes.destroy', $main))->assertRedirect();
 
-        expect($additional->fresh()->is_main)->toBeTrue();
+        expect($additional->fresh()->is_main)->toBeFalse();
     });
 
     test('a vote note is limited to 2000 characters', function (): void {
@@ -229,6 +231,22 @@ describe('vote controller', function (): void {
 
         $existingVote->refresh();
         expect($existingVote->title)->toBe('Updated Vote Title');
+    });
+
+    test('a vote removed through the agenda item is logged', function (): void {
+        $kept = Vote::factory()->main()->for($this->agendaItem, 'agendaItem')->create();
+        $removed = Vote::factory()->for($this->agendaItem, 'agendaItem')->create();
+
+        asUser($this->admin)
+            ->patch(route('agendaItems.update', $this->agendaItem), ['votes' => [['id' => $kept->id, 'is_main' => true]]])
+            ->assertSessionHasNoErrors();
+
+        expect(Vote::find($removed->id))->toBeNull()
+            ->and(Activity::query()
+                ->where('subject_type', MorphMap::alias(Vote::class))
+                ->where('subject_id', $removed->id)
+                ->where('event', 'deleted')
+                ->exists())->toBeTrue();
     });
 
     test('vote alignment is tracked correctly on agenda items with multiple votes', function (): void {

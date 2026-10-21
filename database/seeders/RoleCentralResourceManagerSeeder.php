@@ -24,7 +24,6 @@ class RoleCentralResourceManagerSeeder extends Seeder
             'resources.create.*',
             'resources.update.*',
             'resources.delete.*',
-            'reservations.create.*',
             'reservations.read.*',
             'reservations.update.*',
             'reservations.delete.*',

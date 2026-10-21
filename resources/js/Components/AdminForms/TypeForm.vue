@@ -46,19 +46,14 @@
     <template #aside>
       <FormPanel :title="$t('forms.sections.type_parameters')" :icon="SlidersHorizontal" title-class="text-brand">
         <FormFieldWrapper id="parent_id" :label="$t('forms.fields.parent_type')" :error="form.errors.parent_id">
-          <Select v-model="parentIdString">
-            <SelectTrigger id="parent_id">
-              <SelectValue placeholder="Studentų atstovybė" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">
-                {{ $t('Nėra') }}
-              </SelectItem>
-              <SelectItem v-for="opt in parentTypeOptions" :key="opt.id" :value="String(opt.id)">
-                {{ getTranslatedValue(opt.title) }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+          <TypeTreeSelect
+            id="parent_id"
+            v-model="form.parent_id"
+            :types="contentTypes"
+            :exclude="form.id ? [form.id] : undefined"
+            :placeholder="$t('Nėra')"
+            placeholder-selectable
+          />
         </FormFieldWrapper>
       </FormPanel>
 
@@ -125,6 +120,7 @@ import { fieldSurfaceClass } from '@/Components/ui/control';
 import { Input } from '@/Components/ui/input';
 import { NumberField } from '@/Components/ui/number-field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { InstitutionScope, ModelEnum } from '@/Types/enums';
 
@@ -133,7 +129,7 @@ defineEmits<(event: 'submit:form', form: unknown) => void>();
 const props = defineProps<{
   typeKind: 'institutionType' | 'dutyType';
   type: (App.Entities.InstitutionType | App.Entities.DutyType);
-  contentTypes: Array<{ id: number; title: string | { lt?: string; en?: string } | null }>;
+  contentTypes: Array<{ id: number; parent_id?: number | null; title: string | { lt?: string; en?: string } | null }>;
   rememberKey?: string;
 }>();
 
@@ -176,11 +172,6 @@ const initialData = {
 
 const form = props.rememberKey ? useForm(props.rememberKey, initialData) : useForm(initialData);
 
-const parentIdString = computed({
-  get: () => form.parent_id != null ? String(form.parent_id) : 'none',
-  set: (val: string) => { form.parent_id = val && val !== 'none' ? Number(val) : null; },
-});
-
 /** `__inherit__` stands in for a null scope: the type takes its parent's. */
 const INHERIT = '__inherit__';
 
@@ -221,10 +212,4 @@ const missingLocaleCounts = computed(() => ({
   lt: [form.title?.lt].filter(value => !value).length,
   en: [form.title?.en].filter(value => !value).length,
 }));
-
-const parentTypeOptions = computed(() => {
-  return props.contentTypes.filter(
-    type => form.id !== type.id,
-  );
-});
 </script>

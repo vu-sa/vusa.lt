@@ -1,6 +1,6 @@
 <template>
-  <div class="grid gap-10 xl:grid-cols-2 xl:gap-16" data-slot="duty-responsibilities">
-    <OverviewSection variant="home" :title="$t('responsibilities.duty.title')" :icon="Compass">
+  <div class="max-w-4xl" data-slot="duty-responsibilities">
+    <OverviewSection variant="home" :title="$t('responsibilities.duty.title')" :icon="Compass" :count="items.length">
       <template v-if="canUpdate" #actions>
         <SpotlightPopover
           :title="$t('responsibilities.spotlight.title')"
@@ -19,19 +19,31 @@
         {{ $t('responsibilities.duty.description') }}
       </p>
       <ul v-if="items.length" class="divide-y divide-border">
-        <li v-for="item in items" :key="item.id" class="flex min-h-11 items-center justify-between gap-3 py-2" data-testid="responsibility-row">
+        <li v-for="item in items" :key="item.id" class="flex min-h-12 items-start justify-between gap-3 py-2.5" data-testid="responsibility-row">
           <span class="min-w-0">
-            <span class="block text-sm font-medium text-foreground">{{ item.label }}</span>
-            <span class="block text-xs text-muted-foreground">
-              {{ $t(`responsibilities.scopes.${item.scope_type}`) }}<template v-if="item.scope_name"> · {{ item.scope_name }}</template>
+            <Link :href="route('responsibilities.show', item.role_id)" class="text-sm font-medium text-foreground hover:underline">
+              {{ item.title }}
+            </Link>
+            <span class="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+              <PurposeChip :label="item.purpose_label" />
+              <span v-if="item.source !== 'duty'" data-testid="responsibility-source">
+                {{ $t(`responsibilities.duty.via_${item.source}`, { name: item.source_name ?? '' }) }}
+              </span>
+              <span v-if="item.scope_type">
+                {{ $t(`responsibilities.scopes.${item.scope_type}`) }}<template v-if="item.scope_name"> · {{ item.scope_name }}</template>
+              </span>
+            </span>
+            <span v-if="item.missing_permissions.length" class="mt-1 flex items-start gap-1.5 text-xs text-status-attention" data-testid="responsibility-gap">
+              <TriangleAlert class="mt-px size-3.5 shrink-0" aria-hidden="true" />
+              {{ $t('responsibilities.grants.missing', { permissions: item.missing_permissions.map(permissionLabel).join(', ') }) }}
             </span>
           </span>
           <Button
-            v-if="canUpdate"
+            v-if="canUpdate && item.source === 'duty'"
             variant="ghost"
             size="sm"
             voice="sentence"
-            class="pointer-coarse:h-11"
+            class="shrink-0 pointer-coarse:h-11"
             data-testid="responsibility-remove"
             @click="removeTarget = item"
           >
@@ -44,27 +56,13 @@
       </p>
     </OverviewSection>
 
-    <OverviewSection variant="home" :title="$t('responsibilities.duty.roles_title')" :icon="ShieldCheck">
-      <p class="text-xs text-muted-foreground">
-        {{ $t('responsibilities.duty.roles_description') }}
-      </p>
-      <ul v-if="roles.length" class="divide-y divide-border">
-        <li v-for="role in roles" :key="role.id" class="py-2.5 text-sm font-medium text-foreground" data-testid="duty-role-row">
-          {{ role.name }}
-        </li>
-      </ul>
-      <p v-else class="text-sm text-muted-foreground">
-        {{ $t('responsibilities.duty.roles_empty') }}
-      </p>
-    </OverviewSection>
-
     <SheetForm
       v-model:open="sheetOpen"
       :title="$t('responsibilities.sheet.title')"
       :description="$t('responsibilities.sheet.description')"
       :save-label="$t('responsibilities.sheet.submit')"
       :processing="form.processing"
-      :disabled="!options || !form.scope_id"
+      :disabled="!options || !form.role_id || (scopes.length > 0 && !form.scope_id)"
       :dirty="form.isDirty"
       @submit="submit"
     >
@@ -73,154 +71,152 @@
       </p>
       <div v-else class="space-y-6">
         <FormFieldWrapper
-          v-if="options.responsibilities.length > 1"
           id="responsibility"
           :label="$t('responsibilities.sheet.responsibility')"
-          :error="form.errors.responsibility"
-        >
-          <Select v-model="form.responsibility">
-            <SelectTrigger id="responsibility">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem v-for="option in options.responsibilities" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </FormFieldWrapper>
-        <div v-else class="text-sm">
-          <p class="font-medium text-foreground">
-            {{ selectedResponsibility?.label }}
-          </p>
-          <p class="text-muted-foreground">
-            {{ selectedResponsibility?.description }}
-          </p>
-        </div>
-
-        <FormFieldWrapper id="scope_type" :label="$t('responsibilities.sheet.scope')" :error="form.errors.scope_type">
-          <FormSegmentedControl
-            v-model="form.scope_type"
-            :options="scopeOptions"
-            :aria-label="$t('responsibilities.sheet.scope')"
-            test-id-prefix="responsibility-scope"
-          />
-        </FormFieldWrapper>
-
-        <FormFieldWrapper
-          v-if="form.scope_type === 'tenant'"
-          id="scope_tenant"
-          :label="$t('responsibilities.sheet.tenant')"
-          :error="form.errors.scope_id"
-        >
-          <select id="scope_tenant" v-model="form.scope_id" :class="nativeSelectClass" data-testid="responsibility-tenant">
-            <option v-for="tenant in options.tenants" :key="tenant.id" :value="String(tenant.id)">
-              {{ tenant.shortname }}
-            </option>
-          </select>
-        </FormFieldWrapper>
-
-        <FormFieldWrapper
-          v-else-if="form.scope_type === 'institution_type'"
-          id="scope_type_target"
-          :label="$t('responsibilities.sheet.type')"
-          :error="form.errors.scope_id"
+          :hint="selected?.description ?? $t('responsibilities.sheet.only_yours')"
+          :error="form.errors.role_id"
+          required
         >
           <SingleSelect
-            v-model="selectedType"
-            :options="options.types"
+            v-if="options.responsibilities.length > 16"
+            v-model="selectedOption"
+            :options="options.responsibilities"
             label-field="title"
             value-field="id"
-            :placeholder="$t('responsibilities.sheet.type_placeholder')"
+            :placeholder="$t('mailing_lists.sheet.pick')"
+          />
+          <NativeSelect
+            v-else
+            id="responsibility"
+            v-model="form.role_id"
+            :options="options.responsibilities.map(option => ({ value: option.id, label: option.purpose_label ? `${option.title} · ${option.purpose_label}` : option.title }))"
+            :placeholder="$t('mailing_lists.sheet.pick')"
           />
         </FormFieldWrapper>
 
-        <FormFieldWrapper
-          v-else
-          id="scope_institution"
-          :label="$t('responsibilities.sheet.institution')"
-          :error="form.errors.scope_id"
-        >
-          <SingleSelect
-            v-model="selectedInstitution"
-            :options="options.institutions"
-            label-field="name"
-            value-field="id"
-            :placeholder="$t('responsibilities.sheet.institution_pick')"
-          />
-        </FormFieldWrapper>
+        <template v-if="scopes.length">
+          <FormFieldWrapper id="scope_type" :label="$t('responsibilities.sheet.scope')" :error="form.errors.scope_type">
+            <FormSegmentedControl
+              v-model="form.scope_type"
+              :options="scopeOptions"
+              :aria-label="$t('responsibilities.sheet.scope')"
+              test-id-prefix="responsibility-scope"
+            />
+          </FormFieldWrapper>
+
+          <FormFieldWrapper v-if="form.scope_type === 'tenant'" id="scope_tenant" :label="$t('responsibilities.sheet.tenant')" :error="form.errors.scope_id">
+            <NativeSelect
+              id="scope_tenant"
+              v-model="form.scope_id"
+              :options="options.tenants.map(tenant => ({ value: String(tenant.id), label: tenant.shortname }))"
+              data-testid="responsibility-tenant"
+            />
+          </FormFieldWrapper>
+          <FormFieldWrapper v-else-if="form.scope_type === 'institution_type'" id="scope_type_target" :label="$t('responsibilities.sheet.type')" :error="form.errors.scope_id">
+            <TypeTreeSelect
+              id="scope_type_target"
+              v-model="form.scope_id"
+              :types="options.types"
+              as-string
+              :placeholder="$t('responsibilities.sheet.type_placeholder')"
+            />
+          </FormFieldWrapper>
+          <FormFieldWrapper v-else id="scope_institution" :label="$t('responsibilities.sheet.institution')" :error="form.errors.scope_id">
+            <SingleSelect
+              v-model="selectedInstitution"
+              :options="options.institutions"
+              label-field="name"
+              value-field="id"
+              :placeholder="$t('responsibilities.sheet.institution_pick')"
+            />
+          </FormFieldWrapper>
+        </template>
       </div>
     </SheetForm>
 
     <ConfirmDialog
       :open="removeTarget !== null"
-      :title="$t('responsibilities.duty.remove_confirm', { name: removeTarget?.label ?? '' })"
+      :title="$t('responsibilities.duty.remove_confirm', { name: removeTarget?.title ?? '' })"
       :confirm-label="$t('responsibilities.duty.remove')"
       destructive
       @update:open="!$event && (removeTarget = null)"
       @confirm="remove"
+    />
+
+    <AccessChangeWarningDialog
+      :open="accessWarningOpen"
+      :report="accessWarningReport"
+      @update:open="accessWarningOpen = $event"
+      @confirm="accessWarningConfirm"
+      @cancel="accessWarningCancel"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { router, useForm } from '@inertiajs/vue3';
+import { Link, router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Compass, Plus, ShieldCheck } from '@lucide/vue';
+import { Compass, Plus, TriangleAlert } from '@lucide/vue';
 
+import PurposeChip from './PurposeChip.vue';
 import type { DutyResponsibilityItem, DutyResponsibilityOptions, ResponsibilityScopeValue } from './types';
 
+import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { ConfirmDialog, FormSegmentedControl, OverviewSection, SheetForm, type FormSegmentOption } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import { NativeSelect } from '@/Components/ui/native-select';
 import { SingleSelect } from '@/Components/ui/single-select';
+import { TypeTreeSelect } from '@/Components/AdminForms/TypeTree';
+import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
+import { permissionLabel } from '@/Features/Admin/PermissionMatrix/permissionLabels';
 
 const props = defineProps<{
   dutyId: string;
-  /** Duty's own padalinys, the default target. */
+  /** Duty's own padalinys, the default scope. */
   tenantId?: number | null;
   items: DutyResponsibilityItem[];
-  roles: { id: string; name: string }[];
   canUpdate: boolean;
   /** Optional prop: loaded when the sheet opens. */
   options?: DutyResponsibilityOptions;
 }>();
 
-const nativeSelectClass = 'h-11 w-full border border-input bg-background px-3 text-sm';
-
-const spotlight = useFeatureSpotlight('duty-responsibilities-v1');
+// v2: responsibilities now carry permissions; returning users learn roles moved here.
+const spotlight = useFeatureSpotlight('duty-responsibilities-v2');
+const { report: accessWarningReport, open: accessWarningOpen, guardedSubmit, confirm: accessWarningConfirm, cancel: accessWarningCancel } = useAccessChangeGuard();
 const sheetOpen = ref(false);
 const removeTarget = ref<DutyResponsibilityItem | null>(null);
 
 const form = useForm({
-  responsibility: 'student_rep_coordination',
+  role_id: '',
   scope_type: 'tenant' as ResponsibilityScopeValue,
   scope_id: props.tenantId ? String(props.tenantId) : '',
 });
 
-const selectedResponsibility = computed(() =>
-  props.options?.responsibilities.find(option => option.value === form.responsibility));
+const selected = computed(() => props.options?.responsibilities.find(option => option.id === form.role_id));
+const scopes = computed(() => selected.value?.scopes ?? []);
 
 const scopeOptions = computed<FormSegmentOption<ResponsibilityScopeValue>[]>(() =>
-  (selectedResponsibility.value?.scopes ?? ['tenant', 'institution_type', 'institution']).map(scope => ({
-    value: scope,
-    label: $t(`responsibilities.scopes.${scope}`),
-  })));
+  scopes.value.map(scope => ({ value: scope, label: $t(`responsibilities.scopes.${scope}`) })));
 
 // SingleSelect works on whole objects; the form stores the id.
-const selectedType = computed({
-  get: () => props.options?.types.find(type => type.id === form.scope_id) ?? null,
-  set: (type: { id: string } | null) => { form.scope_id = type?.id ?? ''; },
+const selectedOption = computed({
+  get: () => selected.value ?? null,
+  set: (option: { id: string } | null) => { form.role_id = option?.id ?? ''; },
 });
 const selectedInstitution = computed({
   get: () => props.options?.institutions.find(institution => institution.id === form.scope_id) ?? null,
   set: (institution: { id: string } | null) => { form.scope_id = institution?.id ?? ''; },
 });
 
+watch(scopes, (allowed) => {
+  if (allowed.length && !allowed.includes(form.scope_type)) {
+    form.scope_type = allowed[0]!;
+  }
+});
 watch(() => form.scope_type, (scope) => {
   form.scope_id = scope === 'tenant' && props.tenantId ? String(props.tenantId) : '';
 });
@@ -234,23 +230,28 @@ function openSheet(): void {
 }
 
 function submit(): void {
-  form.post(route('duties.responsibilities.store', props.dutyId), {
-    preserveScroll: true,
-    onSuccess: () => {
-      form.defaults();
-      sheetOpen.value = false;
-    },
-  });
+  form
+    .transform(data => (scopes.value.length ? data : { role_id: data.role_id }))
+    .post(route('duties.responsibilities.store', props.dutyId), {
+      preserveScroll: true,
+      onSuccess: () => {
+        form.defaults();
+        sheetOpen.value = false;
+      },
+    });
 }
 
 function remove(): void {
   const target = removeTarget.value;
   removeTarget.value = null;
 
-  if (!target) {
-    return;
+  if (target) {
+    guardedSubmit((acknowledge) => {
+      router.delete(route('duties.responsibilities.destroy', { duty: props.dutyId, grant: target.id }), {
+        data: { acknowledge_access_change: acknowledge },
+        preserveScroll: true,
+      });
+    });
   }
-
-  router.delete(route('duties.responsibilities.destroy', { duty: props.dutyId, responsibility: target.id }), { preserveScroll: true });
 }
 </script>

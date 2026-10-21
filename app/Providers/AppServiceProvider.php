@@ -8,6 +8,7 @@ use App\Services\InstitutionScopeResolver;
 use App\Services\ModelAuthorizer;
 use App\Services\PermissionService;
 use App\Services\ResponsibilityResolver;
+use App\Services\SystemDutyTypes;
 use App\Services\Typesense\MeetingSearchLock;
 use App\Support\LocalizedRouteSlugs;
 use App\Support\MorphMap;
@@ -44,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
         // Singleton so the institution-type scope map is built at most once per request.
         $this->app->singleton(InstitutionScopeResolver::class);
         $this->app->scoped(ResponsibilityResolver::class);
+        $this->app->scoped(SystemDutyTypes::class);
         $this->app->scoped(MeetingSearchLock::class);
         $this->app->scoped(InstitutionRelationService::class);
 
@@ -114,11 +116,11 @@ class AppServiceProvider extends ServiceProvider
      */
     private function configureRateLimiting(): void
     {
-        // Authenticated admin traffic is bursty (dashboards polling several widgets at once),
-        // while anonymous consumers stay tightly capped per IP.
-        RateLimiter::for('api', fn (Request $request) => $request->user()
-            ? Limit::perMinute(300)->by($request->user()->id)
-            : Limit::perMinute(60)->by($request->ip()));
+        // `throttle:api` runs before the session starts, so it never sees a user: anonymous, per IP.
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
+
+        // Mano VU SA's API applies this after `auth`, so bursty dashboards are capped per person, not per shared IP.
+        RateLimiter::for('admin', fn (Request $request) => Limit::perMinute(300)->by($request->user()?->id ?: $request->ip()));
 
         // The file manager fires one thumbnail request per visible image, so its routes
         // exclude throttle:api and carry this cap instead (see routes/api.php).

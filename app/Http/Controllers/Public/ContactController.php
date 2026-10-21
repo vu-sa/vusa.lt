@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Public;
 
 use App\Actions\GetPublicMeetingDocuments;
+use App\Enums\SystemDutyType;
 use App\Enums\TenantType;
 use App\Http\Controllers\PublicController;
 use App\Models\DutyType;
@@ -14,6 +15,7 @@ use App\Models\Tenant;
 use App\Services\AgendaItemPresenter;
 use App\Services\ContactPresentationService;
 use App\Services\PublicAssetService;
+use App\Services\SystemDutyTypes;
 use App\Settings\AtstovavimasSettings;
 use App\Settings\FormSettings;
 use App\Support\MeetingTitle;
@@ -104,20 +106,22 @@ class ContactController extends PublicController
         );
     }
 
-    public function institutionDutyTypeContacts($subdomain, $lang, $contactsString, DutyType $type)
+    public function institutionDutyTypeContacts($subdomain, $lang, $contactsString, string $type)
     {
-        $this->getTenantLinks();
+        $part = SystemDutyType::fromPublicSegment($type);
+        $dutyType = $part === null ? null : app(SystemDutyTypes::class)->type($part);
 
-        // Handle language-specific filtering for mentors/kuratoriai
-        $otherLangTypeSlug = $this->getOtherLanguageTypeSlug($type->slug, $lang);
+        abort_if($dutyType === null, 404);
+
+        $this->getTenantLinks();
 
         Inertia::share('otherLangURL', route('contacts.dutyType', [
             'subdomain' => $this->subdomain,
             'lang' => $this->getOtherLang(),
-            'type' => $otherLangTypeSlug,
+            'type' => $part->forLocale($this->getOtherLang())->publicSegment(),
         ]));
 
-        $types = $type->getDescendantsAndSelf();
+        $types = $dutyType->getDescendantsAndSelf();
 
         if ($this->tenant->isMain()) {
             $institution = Institution::where('alias', '=', 'centrinis-biuras')->firstOrFail();
@@ -136,8 +140,8 @@ class ContactController extends PublicController
         return $this->renderInstitutionPage(
             $institution,
             $this->presentationService->contactsFor($institution, $duties),
-            $institution->name.' | '.ucfirst($type->slug),
-            activeDutyTypeTab: $type->slug,
+            $institution->name.' | '.($part === SystemDutyType::Coordinator ? __('Koordinatoriai') : __('Kuratoriai')),
+            activeDutyTypeTab: $part->publicSegment(),
         );
     }
 
@@ -198,12 +202,14 @@ class ContactController extends PublicController
         $isPadalinys = $institution->tenant?->type === TenantType::Padalinys;
 
         if ($isPadalinys) {
-            $availableTypeSlugs = ['koordinatoriai', app()->getLocale() === 'en' ? 'mentors' : 'kuratoriai'];
-            $typesWithDuties = DutyType::whereIn('slug', $availableTypeSlugs)
-                ->whereHas('duties', fn ($q) => $q->where('institution_id', $institution->id))
-                ->get();
+            $systemTypes = app(SystemDutyTypes::class);
+            $parts = collect([SystemDutyType::Coordinator, SystemDutyType::Curator->forLocale(app()->getLocale())])
+                ->filter(fn (SystemDutyType $part): bool => DutyType::query()->whereIn('id', $systemTypes->idsWithDescendants($part))
+                    ->whereHas('duties', fn ($q) => $q->where('institution_id', $institution->id))
+                    ->exists())
+                ->values();
 
-            if ($typesWithDuties->isNotEmpty()) {
+            if ($parts->isNotEmpty()) {
                 $dutyTypeTabs = [
                     [
                         'label' => __('Visi'),
@@ -216,18 +222,14 @@ class ContactController extends PublicController
                     ],
                 ];
 
-                foreach ($typesWithDuties as $t) {
+                foreach ($parts as $part) {
                     $dutyTypeTabs[] = [
-                        'label' => match ($t->slug) {
-                            'koordinatoriai' => __('Koordinatoriai'),
-                            'kuratoriai', 'mentors' => __('Kuratoriai'),
-                            default => $t->getTranslation('title', app()->getLocale()) ?: ucfirst($t->slug),
-                        },
-                        'slug' => $t->slug,
+                        'label' => $part === SystemDutyType::Coordinator ? __('Koordinatoriai') : __('Kuratoriai'),
+                        'slug' => $part->publicSegment(),
                         'href' => route('contacts.dutyType', [
                             'subdomain' => $this->subdomain,
                             'lang' => app()->getLocale(),
-                            'type' => $t->slug,
+                            'type' => $part->publicSegment(),
                         ]),
                     ];
                 }
@@ -272,7 +274,7 @@ class ContactController extends PublicController
             'agendaItems' => function ($query): void {
                 $query->orderBy('order')->orderBy('start_time');
             },
-            'agendaItems.mainVote',
+            'agendaItems.votes',
             'institutions.types',
             'calendarEvent',
         ]);
@@ -419,24 +421,6 @@ class ContactController extends PublicController
     }
 
     /**
-     * Get the appropriate type slug for the other language
-     */
-    private function getOtherLanguageTypeSlug(string $currentSlug, string $currentLang): string
-    {
-        // Handle mentor/kuratoriai language switching
-        if ($currentSlug === 'kuratoriai' && $currentLang === 'lt') {
-            return 'mentors'; // Switch to English mentors
-        }
-
-        if ($currentSlug === 'mentors' && $currentLang === 'en') {
-            return 'kuratoriai'; // Switch to Lithuanian kuratoriai
-        }
-
-        // For all other types, keep the same slug
-        return $currentSlug;
-    }
-
-    /**
      * Get all meetings for an institution (for grouping by academic year)
      */
     protected function getAllMeetingsForInstitution(Institution $institution): Collection
@@ -450,7 +434,7 @@ class ContactController extends PublicController
                 'agendaItems' => function ($query): void {
                     $query->orderBy('order');
                 },
-                'agendaItems.mainVote',
+                'agendaItems.votes',
                 // Keeps requires_student_perspective appendable without a query per meeting
                 'institutions.types',
             ])

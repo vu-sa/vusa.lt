@@ -33,6 +33,8 @@ Small, non-searchable lookup lists (e.g. `EventType`, ~7 rows total, no `tenant_
 
 For multi-tagging and topic assignment, use `TagMultiSelect.vue` with polymorphic `taggables`.
 
+Institution and duty types are a `parent_id` tree, so every type picker uses `Components/AdminForms/TypeTree`: `TypeTreeSelect` (native and indented up to 16 options, searchable `SingleSelect` with the parent path above), `TypeTreeMultiSelect`, `TypeTreeChecklist`. They bind ids, not objects; send `parent_id` with the options. `exclude` drops a subtree (parent pickers), `omit` hides single types and keeps their children.
+
 ## Pickers: native where the OS is better, one picker per data kind
 Extends the picker rules above.
 - Dates, times and ranges use the shared pickers. They go native (`<input type="date|time">`) on coarse pointers via `useCoarsePointer`; on desktop, typing always works alongside the calendar. A moment (date + time: publish time, reservation start/end) is one `DateTimePicker` with `variant="popover"` — calendar, time and „Dabar“ in one trigger, as in `ContentPublishPanel`; a date alone uses `DatePicker`, a time alone `TimePicker`. Calendars start on Monday (the `ui/calendar` and `ui/range-calendar` default).

@@ -32,8 +32,8 @@ it('imports new manual lists and refreshes metadata without replacing managed so
         ]]),
     ]);
 
-    expect(app(ImportMailingLists::class)->execute())->toBe(['created' => 1, 'updated' => 1]);
-    expect($managed->fresh()->tenant_id)->toBe($tenant->id)
+    expect(app(ImportMailingLists::class)->execute())->toBe(['created' => 1, 'updated' => 1])
+        ->and($managed->fresh()->tenant_id)->toBe($tenant->id)
         ->and($managed->fresh()->isManaged())->toBeTrue()
         ->and($managed->fresh()->display_name)->toBe('Remote name')
         ->and($source->fresh())->not->toBeNull();

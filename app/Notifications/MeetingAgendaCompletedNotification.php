@@ -79,17 +79,10 @@ class MeetingAgendaCompletedNotification extends BaseNotification
     {
         $parts = [];
 
-        if ($typeCounts['voting'] > 0) {
-            $parts[] = __('notifications.meeting_agenda_type_voting', ['count' => $typeCounts['voting']]);
-        }
-        if ($typeCounts['informational'] > 0) {
-            $parts[] = __('notifications.meeting_agenda_type_informational', ['count' => $typeCounts['informational']]);
-        }
-        if ($typeCounts['deferred'] > 0) {
-            $parts[] = __('notifications.meeting_agenda_type_deferred', ['count' => $typeCounts['deferred']]);
-        }
-        if ($typeCounts['break'] > 0) {
-            $parts[] = __('notifications.meeting_agenda_type_break', ['count' => $typeCounts['break']]);
+        foreach (Arr::except($typeCounts, 'unset') as $type => $count) {
+            if ($count > 0) {
+                $parts[] = __("notifications.meeting_agenda_type_{$type}", ['count' => $count]);
+            }
         }
 
         if (empty($parts)) {

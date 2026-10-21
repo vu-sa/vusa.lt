@@ -224,6 +224,19 @@ describe('InstitutionsNeedingAttention', () => {
     expect(dialogList().findAll('li')).toHaveLength(1);
   });
 
+  it('puts the ask button first and the show-all button second, both below the list and without a border', () => {
+    const institutions = Array.from({ length: 7 }, (_, i) => ({ ...institution, id: `i${i}` }));
+    const wrapper = mount(InstitutionsNeedingAttention, {
+      props: { institutions, limit: 5, askable: true },
+      global: { stubs: { ...commonStubs, SpotlightPopover: { template: '<div><slot /></div>' } } },
+    });
+
+    const buttons = wrapper.get('[data-slot="institutions-needing-attention-actions"]').findAll('button');
+    expect(buttons.map(button => button.attributes('data-slot'))).toEqual(['institutions-needing-attention-ask', 'institutions-needing-attention-more']);
+    expect(buttons.every(button => !button.classes().includes('border'))).toBe(true);
+    wrapper.unmount();
+  });
+
   it('closes the dialog before recording a meeting from it', async () => {
     const institutions = Array.from({ length: 7 }, (_, i) => ({ ...institution, id: `i${i}` }));
     const wrapper = mount(InstitutionsNeedingAttention, { props: { institutions, limit: 5 }, global: { stubs: commonStubs } });

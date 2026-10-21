@@ -1,12 +1,13 @@
 <?php
 
-use App\Models\DutyResponsibility;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\FieldResponse;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Registration;
+use App\Models\ResponsibilityGrant;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
@@ -41,14 +42,23 @@ beforeEach(function (): void {
         'options_model' => Institution::class,
     ]);
 
-    $this->recipientRole = Role::factory()->create(['name' => 'Member Registration Recipient']);
-
     $formSettings = app(FormSettings::class);
     $formSettings->member_registration_form_id = $this->memberForm->id;
-    $formSettings->member_registration_notification_recipient_role_id = $this->recipientRole->id;
     $formSettings->student_rep_registration_form_id = $this->studentRepForm->id;
     $formSettings->save();
 });
+
+/** A user whose current duty receives the padalinys' member registrations. */
+function makeRegistrationRecipient(Tenant $tenant): User
+{
+    $user = makeUser($tenant);
+    $duty = $user->duties()->first();
+    $duty->pivot->end_date = null;
+    $duty->pivot->save();
+    grantPurpose($duty, ResponsibilityPurpose::MemberRegistration, $tenant);
+
+    return $user;
+}
 
 /**
  * A user whose duty carries the given role — the way roles are actually assigned in this app.
@@ -71,7 +81,7 @@ function makeCoordinator(Tenant $tenant): User
     $duty = $user->duties()->first();
     $duty->pivot->end_date = null;
     $duty->pivot->save();
-    DutyResponsibility::factory()->for($duty)->forTenant($tenant)->create();
+    ResponsibilityGrant::factory()->forDuty($duty)->forTenant($tenant)->create();
 
     return $user;
 }
@@ -89,17 +99,8 @@ function createInstitutionRegistration(Form $form, FormField $field, Institution
 }
 
 describe('member registration form access', function (): void {
-    test('the configured recipient role can view it through a duty', function (): void {
-        $user = makeUserWithDutyRole($this->tenant, $this->recipientRole);
-
-        asUser($user)
-            ->get(route('forms.show', $this->memberForm))
-            ->assertStatus(200);
-    });
-
-    test('the configured recipient role can view it when assigned directly', function (): void {
-        $user = makeUser($this->tenant);
-        $user->assignRole($this->recipientRole->name);
+    test('a holder of the member registration responsibility can view it', function (): void {
+        $user = makeRegistrationRecipient($this->tenant);
 
         asUser($user)
             ->get(route('forms.show', $this->memberForm))
@@ -124,7 +125,7 @@ describe('member registration form access', function (): void {
     });
 
     test('the configured recipient can open the forms index without form permissions', function (): void {
-        $user = makeUserWithDutyRole($this->tenant, $this->recipientRole);
+        $user = makeRegistrationRecipient($this->tenant);
         Form::factory()->for($this->centralTenant)->create();
         Form::factory()->for($this->tenant)->create();
 
@@ -258,7 +259,7 @@ describe('student rep registration form access', function (): void {
         $senate = Institution::factory()->for($this->tenant)->create();
         $senateType = InstitutionType::factory()->withGovernanceScope()->create();
         $senate->types()->attach($senateType);
-        DutyResponsibility::factory()->forType($senateType)->create();
+        ResponsibilityGrant::factory()->forType($senateType)->create();
 
         $visible = createInstitutionRegistration($this->studentRepForm, $this->studentInstitutionField, $ownInstitution);
         createInstitutionRegistration($this->studentRepForm, $this->studentInstitutionField, $senate);
@@ -309,7 +310,7 @@ describe('student rep registration form access', function (): void {
 
 describe('catalog registration sections', function (): void {
     test('carries only the forms the user may open', function (): void {
-        $user = makeUserWithDutyRole($this->tenant, $this->recipientRole);
+        $user = makeRegistrationRecipient($this->tenant);
 
         asUser($user)
             ->get(route('forms.show', $this->memberForm))
@@ -328,8 +329,8 @@ describe('catalog registration sections', function (): void {
     });
 
     test('carries both forms for a coordinator who also handles member registrations', function (): void {
-        $user = makeUserWithDutyRole($this->tenant, $this->recipientRole);
-        DutyResponsibility::factory()->for($user->duties()->first())->forTenant($this->tenant)->create();
+        $user = makeRegistrationRecipient($this->tenant);
+        ResponsibilityGrant::factory()->forDuty($user->duties()->first())->forTenant($this->tenant)->create();
 
         asUser($user)
             ->get(route('forms.show', $this->memberForm))

@@ -1,6 +1,9 @@
 <?php
 
+use App\Models\InstitutionStatusSnapshot;
+use App\Models\Tenant;
 use App\Models\User;
+use App\Services\RepStatisticsScope;
 use Database\Seeders\DocsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -28,12 +31,15 @@ function expectNoRawVisakKeys($page): void
 /** The page fits the viewport at a phone and a desktop width. */
 function expectVisakPageFits($page, string $slot): void
 {
-    foreach ([390, 1440] as $width) {
-        $page->resize($width, 900);
-
-        expect($page->script('document.documentElement.scrollWidth'))->toBeLessThanOrEqual($width)
-            ->and($page->script("document.querySelector('[data-slot={$slot}]').getBoundingClientRect().width <= window.innerWidth"))->toBeTrue();
+    foreach (['light', 'dark'] as $theme) {
+        $page->script("document.documentElement.classList.toggle('dark', '".$theme."' === 'dark')");
+        foreach ([390, 820, 1180, 1440] as $width) {
+            $page->resize($width, 900);
+            expect($page->script('document.documentElement.scrollWidth'))->toBeLessThanOrEqual($width)
+                ->and($page->script("document.querySelector('[data-slot={$slot}]').getBoundingClientRect().width <= window.innerWidth"))->toBeTrue();
+        }
     }
+    $page->script("document.documentElement.classList.remove('dark')");
 }
 
 it('shows a representative their institutions and upcoming meetings on the ViSAK overview', function (): void {
@@ -53,6 +59,17 @@ it('shows a representative their institutions and upcoming meetings on the ViSAK
 });
 
 it('shows a padalinys coordinator the statistics of their padalinys', function (): void {
+    $tenant = Tenant::query()->firstOrFail();
+    $institutions = RepStatisticsScope::institutions([$tenant->id])->pluck('id');
+    foreach (range(1, 14) as $daysAgo) {
+        InstitutionStatusSnapshot::factory()->for($tenant)->create([
+            'taken_on' => today()->subDays($daysAgo)->toDateString(),
+            'all' => $institutions->count(), 'needs_attention' => $institutions->count(), 'overdue' => $institutions->count(),
+            'approaching' => 0, 'no_activity' => 0, 'recent_check_in' => 0, 'current' => 0,
+            'left_attention' => 1, 'entered_attention' => 1,
+            'institution_statuses' => $institutions->mapWithKeys(fn ($id) => [$id => 'overdue'])->all(),
+        ]);
+    }
     $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::COORDINATOR_EMAIL));
     $page->navigate('/mano/dashboard/atstovavimas/padaliniai');
     waitForInertiaRender($page, '[data-slot=atstovavimas-tenant-primary-section]');
@@ -61,9 +78,31 @@ it('shows a padalinys coordinator the statistics of their padalinys', function (
 
     expectVisakPageFits($page, 'atstovavimas-tenant-primary-section');
 
+    foreach ([30, 90, 180] as $range) {
+        $page->click("[data-testid=trend-range-{$range}]");
+        waitForInertiaRender($page, '[data-slot=institution-trend-plot][aria-busy=false]');
+        $page->resize(390, 900);
+        $page->script('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))))');
+        expect($page->script("(() => {
+            const bars = [...document.querySelectorAll('[data-testid=trend-chart-svg] rect[data-direction]')].filter(bar => bar.dataset.direction === '1').map(bar => bar.getBoundingClientRect());
+            return bars.length > 1 && bars.every((bar, index) => index === 0 || bars[index - 1].right < bar.left);
+        })()"))->toBeTrue();
+    }
+    $page->click('[data-testid=trend-range-90]');
+    waitForInertiaRender($page, '[data-slot=institution-trend-plot][aria-busy=false]');
     $page->resize(1440, 1200);
+    $page->script("new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => { document.querySelector('[data-testid=trend-inspector]').focus({ preventScroll: true }); resolve(true); })))");
+    waitForInertiaRender($page, '[data-slot=trend-tooltip]');
+    expect($page->script("(() => { const box = document.querySelector('[data-slot=trend-tooltip]').getBoundingClientRect(); return box.left >= 0 && box.top >= 0 && box.right <= innerWidth && box.bottom <= innerHeight; })()"))->toBeTrue();
+    $page->script("document.querySelector('[data-testid=trend-inspector]').blur()");
+    waitForInertiaRender($page, '[data-slot=institutions-needing-attention-ask]');
     docsScreenshot($page, 'visak-padaliniai');
     docsScreenshot($page, 'v3-ask-representatives', highlights: ['[data-slot=institutions-needing-attention-ask]']);
+
+    $page->script("document.querySelector('[data-slot=atstovavimas-rep-metrics]').scrollIntoView()");
+    waitForInertiaRender($page, '[data-testid=tenant-rep-metrics-table]');
+    expectVisakPageFits($page, 'atstovavimas-rep-metrics');
+    docsScreenshot($page, 'visak-atstovu-rodikliai');
 
     $page->assertNoJavaScriptErrors();
 });

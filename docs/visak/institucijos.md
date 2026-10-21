@@ -503,6 +503,10 @@ pranešimus „Posėdžio nebuvo“ tvarko ir atstovų apie posėdžius klausia 
 - Veiklos būklė sąrašui perskaičiuojama kas naktį, o užregistravus posėdį ar pranešimą –
   iš karto.
 
+### Periodiškumas po pranešimo
+
+Pranešimas apie tai, kad posėdžio nebus, suteikia atskirą pusės periodiškumo papildomą laikotarpį. Tik akademinės atostogos stabdo laiką. Datos pavyzdys ir bendros taisyklės pateiktos [Apžvalgoje](/visak/apzvalga#periodiskumo-ir-pranesimo-pavyzdys).
+
 ## Techninė informacija {#technine-informacija}
 
 ### Teisės

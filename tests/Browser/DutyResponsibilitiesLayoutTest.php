@@ -1,8 +1,8 @@
 <?php
 
 use App\Models\Duty;
-use App\Models\DutyResponsibility;
 use App\Models\Institution;
+use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -21,13 +21,14 @@ it('keeps the duty responsibilities readable across admin widths and themes', fu
 
     $tenant = Tenant::query()->firstOrFail();
     $duty = Duty::factory()->for(Institution::factory()->for($tenant))->create();
-    DutyResponsibility::factory()->for($duty)->forTenant($tenant)->create();
+    ResponsibilityGrant::factory()->forDuty($duty)->forTenant($tenant)->create();
     // The docs frame contrasts responsibilities with roles; an empty roles column hides that.
     $duty->assignRole('Studentų atstovų koordinatorius');
 
     $page = loginAsAdmin(makeAdminUser($tenant));
     $page->navigate('/mano/duties/'.$duty->id);
     waitForInertiaRender($page);
+    $page->click('button[role="tab"]:has-text("Atsakomybės")');
     $page->assertPresent('[data-slot="duty-responsibilities"]');
 
     foreach ([false, true] as $dark) {
@@ -35,10 +36,6 @@ it('keeps the duty responsibilities readable across admin widths and themes', fu
 
         foreach ([390, 820, 1180, 1440] as $width) {
             $page->resize($width, 844);
-
-            if ($width === 820) {
-                $page->click('button[role="tab"]:has-text("Atsakomybės")');
-            }
 
             $bounds = $page->script(<<<'JS'
                 (() => {

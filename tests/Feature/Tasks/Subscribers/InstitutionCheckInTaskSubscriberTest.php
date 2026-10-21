@@ -7,8 +7,8 @@
  */
 
 use App\Actions\GetInstitutionRepresentatives;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\Duty;
-use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionActivityRequest;
 use App\Models\InstitutionCheckIn;
@@ -36,14 +36,8 @@ describe('InstitutionCheckInTaskSubscriber', function (): void {
             ->for($tenant)
             ->create(['is_active' => true]);
 
-        // Create student rep type and duty
-        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
-        $duty = Duty::factory()
-            ->for($institution)
-            ->hasAttached($studentRepType, [], 'types')
-            ->create();
+        $duty = Duty::factory()->for($institution)->create();
+        grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
         $user = User::factory()->create();
         $user->duties()->attach($duty, [
@@ -119,15 +113,9 @@ describe('InstitutionCheckInTaskSubscriber', function (): void {
         $institution1 = Institution::factory()->for($tenant)->create(['is_active' => true]);
         $institution2 = Institution::factory()->for($tenant)->create(['is_active' => true]);
 
-        // Create student rep type and duties for both institutions
-        $studentRepType = DutyType::query()->where('slug', 'studentu-atstovai')->first()
-            ?? DutyType::factory()->create(['slug' => 'studentu-atstovai']);
-
         foreach ([$institution1, $institution2] as $institution) {
-            $duty = Duty::factory()
-                ->for($institution)
-                ->hasAttached($studentRepType, [], 'types')
-                ->create();
+            $duty = Duty::factory()->for($institution)->create();
+            grantPurpose($duty, ResponsibilityPurpose::StudentRepresentation);
 
             $user = User::factory()->create();
             $user->duties()->attach($duty, [

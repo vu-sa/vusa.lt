@@ -426,6 +426,23 @@ describe('auth: reservation manager', function (): void {
     test('can\'t delete reservation', function (): void {
         asUser($this->reservationManager)->delete(route('reservations.destroy', $this->reservation))->assertRedirectToRoute('dashboard');
     });
+
+    test('a participant withdraws a reservation nobody has approved', function (): void {
+        asUser($this->reservationManager)->delete(route('reservations.destroy', $this->reservation));
+
+        expect(Reservation::query()->find($this->reservation->id))->toBeNull();
+    });
+
+    test('a participant cannot delete a reservation once one of its resources is approved', function (): void {
+        $this->reservation->resources()->attach(
+            Resource::factory()->create(['tenant_id' => $this->tenant->id])->id,
+            ['quantity' => 1, 'state' => 'reserved'],
+        );
+
+        asUser($this->reservationManager)->delete(route('reservations.destroy', $this->reservation))->assertForbidden();
+
+        expect(Reservation::query()->find($this->reservation->id))->not->toBeNull();
+    });
 });
 
 describe('reservationResources.store', function (): void {

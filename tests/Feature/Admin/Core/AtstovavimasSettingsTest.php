@@ -1,11 +1,13 @@
 <?php
 
+use App\Enums\InstitutionScope;
 use App\Models\Institution;
 use App\Models\InstitutionType;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Settings\AtstovavimasSettings;
+use App\Settings\RepMetricSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -43,6 +45,25 @@ describe('student representative root type', function (): void {
             'student_rep_root_type_id' => 999999,
         ])->assertSessionHasErrors('student_rep_root_type_id');
     });
+});
+
+describe('counted institution scopes', function (): void {
+    test('a settings manager saves which bodies the metrics count', function (): void {
+        asUser($this->admin)->post(route('settings.atstovavimas.update'), ['counted_institution_scopes' => ['vu', 'national']])
+            ->assertSessionHasNoErrors();
+
+        app()->forgetInstance(RepMetricSettings::class);
+
+        expect(app(RepMetricSettings::class)->countedInstitutionScopes())->toBe([InstitutionScope::University, InstitutionScope::National]);
+    });
+
+    test('at least one known scope is required', function (array $scopes, string $error): void {
+        asUser($this->admin)->post(route('settings.atstovavimas.update'), ['counted_institution_scopes' => $scopes])
+            ->assertSessionHasErrors($error);
+    })->with([
+        'empty' => [[], 'counted_institution_scopes'],
+        'unknown' => [['vu', 'galaxy'], 'counted_institution_scopes.1'],
+    ]);
 });
 
 describe('atstovavimas settings page access', function (): void {

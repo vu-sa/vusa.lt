@@ -31,7 +31,7 @@ class LegacyImageBackfill
 
             foreach (array_chunk($ids, self::CHUNK) as $chunk) {
                 $processed = true;
-                (new BackfillLegacyImagesJob($target, $chunk))->handle(app(LegacyImageImporter::class), $progress === null ? null : function ($id, $value, $outcome) use ($progress, $target, $total, &$checked): void {
+                new BackfillLegacyImagesJob($target, $chunk)->handle(app(LegacyImageImporter::class), $progress === null ? null : function ($id, $value, $outcome) use ($progress, $target, $total, &$checked): void {
                     $progress($target, ++$checked, $total, $id, $value, $outcome);
                 });
             }

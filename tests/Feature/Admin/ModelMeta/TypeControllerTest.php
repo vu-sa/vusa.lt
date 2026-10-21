@@ -5,6 +5,7 @@ use App\Models\Duty;
 use App\Models\DutyType;
 use App\Models\Institution;
 use App\Models\InstitutionType;
+use App\Models\ResponsibilityGrant;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer;
@@ -81,12 +82,12 @@ test('role links backfill duties and newly assigned duties inherit roles', funct
     $duty = Duty::factory()->create();
     $type->duties()->attach($duty);
     $role = Role::query()->first();
-    $type->roles()->attach($role);
+    ResponsibilityGrant::factory()->forDutyType($type)->of($role)->create();
     expect($duty->fresh()->hasRole($role))->toBeTrue();
     $other = Duty::factory()->create();
     $other->types()->attach($type);
     expect($other->fresh()->hasRole($role))->toBeTrue();
-    $type->roles()->detach($role);
+    $type->responsibilityGrants()->where('role_id', $role->id)->get()->each->delete();
     expect($duty->fresh()->hasRole($role))->toBeFalse()->and($other->fresh()->hasRole($role))->toBeFalse();
 });
 
@@ -184,7 +185,7 @@ test('permanent deletion refuses child types', function (string $resource, strin
 test('permanent deletion refuses a duty type with roles', function (): void {
     $type = DutyType::factory()->create();
     $role = Role::query()->where('name', 'Studentų atstovų koordinatorius')->firstOrFail();
-    $type->roles()->attach($role);
+    ResponsibilityGrant::factory()->forDutyType($type)->of($role)->create();
     $type->delete();
 
     asUser($this->admin)->delete(route('dutyTypes.forceDelete', $type))->assertRedirect()->assertSessionHas('error');
@@ -208,7 +209,7 @@ test('permanent deletion removes a trashed type without dependencies', function 
 test('removing a duty type assignment removes its roles and invalidates warmed access maps', function (): void {
     $type = DutyType::factory()->create();
     $role = Role::query()->where('name', 'Studentų atstovų koordinatorius')->firstOrFail();
-    $type->roles()->attach($role);
+    ResponsibilityGrant::factory()->forDutyType($type)->of($role)->create();
     $duty = $this->user->duties()->first();
     $duty->types()->attach($type);
     $authorizer = app(ModelAuthorizer::class);

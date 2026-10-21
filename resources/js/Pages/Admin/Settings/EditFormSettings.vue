@@ -1,5 +1,6 @@
 <template>
   <FormPage
+    :mode="canEdit ? 'edit' : 'view'"
     :title="$t('settings.pages.forms.title')"
     :back-href="route('settings.index')"
     :back-label="$t('settings.title')"
@@ -30,22 +31,25 @@
         </Select>
       </FormFieldWrapper>
 
-      <FormFieldWrapper
-        id="member_registration_notification_recipient_role_id"
-        :label="$t('settings.form_settings.role_label')"
-        :error="form.errors.member_registration_notification_recipient_role_id"
-      >
-        <Select v-model="form.member_registration_notification_recipient_role_id">
-          <SelectTrigger id="member_registration_notification_recipient_role_id">
-            <SelectValue :placeholder="$t('settings.form_settings.role_placeholder')" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem v-for="role in roles" :key="role.id" :value="role.id">
-              {{ role.name }}
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </FormFieldWrapper>
+      <div class="space-y-1 border-t border-border pt-4 text-sm" data-testid="registration-recipients">
+        <p class="font-medium text-foreground">
+          {{ $t('settings.form_settings.recipients_title') }}
+        </p>
+        <template v-if="memberRegistration.responsibility">
+          <p class="text-muted-foreground">
+            {{ $t('settings.form_settings.recipients_description') }}
+            <Link :href="route('responsibilities.show', memberRegistration.responsibility.id)" class="underline underline-offset-4">
+              {{ $t('settings.form_settings.recipients_link') }}
+            </Link>
+          </p>
+          <p v-if="memberRegistration.gaps.length" class="text-status-attention">
+            {{ $t('settings.form_settings.recipients_gaps', { tenants: memberRegistration.gaps.join(', ') }) }}
+          </p>
+        </template>
+        <p v-else class="text-status-attention">
+          {{ $t('settings.form_settings.recipients_missing') }}
+        </p>
+      </div>
     </FormSection>
 
     <FormSection
@@ -78,11 +82,9 @@
         :hint="$t('settings.form_settings.student_rep_types_description')"
         :error="form.errors.student_rep_institution_type_ids"
       >
-        <MultiSelect
-          v-model="selectedTypes"
-          :options="props.institution_types"
-          label-field="title"
-          value-field="id"
+        <TypeTreeMultiSelect
+          v-model="form.student_rep_institution_type_ids"
+          :types="props.institution_types"
           :placeholder="$t('settings.form_settings.student_rep_types_placeholder')"
           :empty-text="$t('settings.form_settings.no_types_found')"
         />
@@ -92,13 +94,12 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { Link, useForm } from '@inertiajs/vue3';
 
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
 import FormPage from '@/Components/Layouts/FormPage.vue';
 import FormSection from '@/Components/Patterns/FormSection.vue';
-import { MultiSelect } from '@/Components/ui/multi-select';
+import { TypeTreeMultiSelect } from '@/Components/AdminForms/TypeTree';
 import {
   Select,
   SelectContent,
@@ -111,34 +112,24 @@ interface InstitutionType {
   id: number;
   title: string;
   slug: string;
+  parent_id: number | null;
 }
 
 const props = defineProps<{
+  canEdit: boolean;
   member_registration_form_id: string | null;
-  member_registration_notification_recipient_role_id: string | null;
   student_rep_registration_form_id: string | null;
   student_rep_institution_type_ids: number[];
   forms: App.Entities.Form[];
-  roles: App.Entities.Role[];
+  memberRegistration: { responsibility: { id: string; title: string } | null; gaps: string[] };
   institution_types: InstitutionType[];
 }>();
 
-// Initialize selected types from props
-const selectedTypes = ref<InstitutionType[]>(
-  props.institution_types.filter(type => props.student_rep_institution_type_ids.includes(type.id)),
-);
-
 const form = useForm({
   member_registration_form_id: props.member_registration_form_id,
-  member_registration_notification_recipient_role_id: props.member_registration_notification_recipient_role_id,
   student_rep_registration_form_id: props.student_rep_registration_form_id,
   student_rep_institution_type_ids: props.student_rep_institution_type_ids ?? [],
 });
-
-// Sync selected types to form
-watch(selectedTypes, (newTypes) => {
-  form.student_rep_institution_type_ids = newTypes.map(type => type.id);
-}, { deep: false });
 
 const handleFormSubmit = () => {
   form.post(route('settings.forms.update'));
