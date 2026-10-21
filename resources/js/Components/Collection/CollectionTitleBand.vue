@@ -10,9 +10,11 @@
         <h1 class="u-display text-balance text-3xl leading-[0.95] text-foreground sm:text-4xl lg:text-5xl">
           {{ title }}
         </h1>
-        <p v-if="lead" class="mt-3 max-w-xl text-pretty leading-relaxed text-muted-foreground">
-          {{ lead }}
-        </p>
+        <div v-if="lead || $slots.lead" class="mt-3 max-w-xl text-pretty leading-relaxed text-muted-foreground">
+          <slot name="lead">
+            <p>{{ lead }}</p>
+          </slot>
+        </div>
       </div>
 
       <div v-if="$slots.actions" class="flex shrink-0 flex-wrap items-center gap-2">

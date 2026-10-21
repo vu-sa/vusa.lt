@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'internal_support' => [
+        'guidance' => 'For internal support requests, go to',
+        'link' => '“vusa.lt support”.',
+    ],
     'categories' => [
         'in_use' => '{1} The category is used by :count problem and cannot be deleted.|[2,*] The category is used by :count problems and cannot be deleted.',
     ],

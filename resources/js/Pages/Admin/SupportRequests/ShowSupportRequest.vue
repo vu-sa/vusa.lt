@@ -1,5 +1,15 @@
 <template>
-  <RecordPage v-model:section="section" :title="supportRequest.title" entity-type="support_request" :facts :sections :primary-action :overflow-actions actions-beside-title @action="handleAction">
+  <RecordPage
+    section-layout="stacked"
+    :title="supportRequest.title"
+    entity-type="support_request"
+    :facts
+    :sections
+    :primary-action
+    :overflow-actions
+    actions-beside-title
+    @action="handleAction"
+  >
     <template #alert>
       <div
         v-if="permissions.can_update_status || permissions.can_assign || permissions.can_manage_involved"
@@ -44,7 +54,7 @@
           <img :src="file.thumb_url || file.original_url" :alt="file.name" class="mb-3 h-32 w-full object-cover">
           <p class="truncate text-sm font-medium">{{ file.file_name }}</p>
         </a>
-        <p v-if="!supportRequest.media?.length" class="bg-card p-6 text-sm text-muted-foreground">
+        <p v-if="!supportRequest.media?.length" class="col-span-full bg-card p-6 text-sm text-muted-foreground">
           {{ $t('Prisegtų failų nėra.') }}
         </p>
       </div>
@@ -89,7 +99,6 @@ const props = defineProps<{
   assignees: SupportRequestUser[];
   permissions: { can_update: boolean; can_update_status: boolean; can_assign: boolean; can_manage_involved: boolean; can_delete: boolean; can_restore: boolean };
 }>();
-const section = ref('description');
 const deleteOpen = ref(false);
 const statusValue = computed(() => typeof props.supportRequest.status === 'object' ? props.supportRequest.status.value : props.supportRequest.status);
 const statusPresentation = computed(() => supportRequestStatuses[statusValue.value as SupportRequestStatus]);

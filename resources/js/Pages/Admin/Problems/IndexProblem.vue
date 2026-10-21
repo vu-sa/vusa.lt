@@ -15,6 +15,16 @@
     :search-placeholder="$t('Ieškoti problemų…')"
     @quick-filter="toggleQuickFilter"
   >
+    <template #lead>
+      <p>{{ $t('Registruok studentų problemas, sek sprendimo eigą ir koordinuok veiksmus su institucijomis.') }}</p>
+      <p class="mt-3 text-sm">
+        {{ $t('problems.internal_support.guidance') }}
+        <Link :href="route('mySupportRequests.index')" class="text-brand underline underline-offset-4">
+          {{ $t('problems.internal_support.link') }}
+        </Link>
+      </p>
+    </template>
+
     <template #actions>
       <Button v-if="canCreate && !isDeleted" as-child variant="brand" size="lg">
         <Link :href="route('problems.create')">

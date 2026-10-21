@@ -224,14 +224,17 @@
 
       <div :class="$slots.aside ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-10' : undefined">
         <div class="min-w-0">
-          <div class="mt-8 space-y-10 md:space-y-0">
+          <div :class="['mt-8 space-y-10', sectionLayout !== 'stacked' && 'md:space-y-0']">
             <section
               v-for="section in sections"
               :key="section.value"
-              :class="section.value === currentSection ? 'md:block' : 'md:hidden'"
+              :class="sectionLayout === 'stacked' ? undefined : section.value === currentSection ? 'md:block' : 'md:hidden'"
               :aria-labelledby="`record-section-${section.value}`"
             >
-              <h2 :id="`record-section-${section.value}`" class="mb-4 flex items-center gap-2 text-xl font-semibold text-foreground md:hidden">
+              <h2
+                :id="`record-section-${section.value}`"
+                :class="['mb-4 flex items-center gap-2 text-xl font-semibold text-foreground', sectionLayout !== 'stacked' && 'md:hidden']"
+              >
                 <component :is="section.icon" v-if="section.icon" class="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
                 {{ section.label }}
               </h2>
@@ -341,6 +344,7 @@ const props = withDefaults(defineProps<{
   status?: StatusPresentation;
   facts?: RecordFact[];
   sections?: RecordPageSection[];
+  sectionLayout?: 'auto' | 'stacked';
   primaryAction?: RecordAction;
   overflowActions?: RecordAction[];
   navigation?: RecordNavigationContext;
@@ -355,6 +359,7 @@ const props = withDefaults(defineProps<{
   eyebrowSuffix: undefined,
   facts: () => [],
   sections: () => [],
+  sectionLayout: 'auto',
   primaryAction: undefined,
   overflowActions: () => [],
   navigation: undefined,
@@ -367,7 +372,7 @@ const emit = defineEmits<{
 }>();
 
 const currentSection = defineModel<string>('section', { default: '' });
-const hasTabs = computed(() => props.sections.length >= 3);
+const hasTabs = computed(() => props.sectionLayout !== 'stacked' && props.sections.length >= 3);
 
 if (!currentSection.value && props.sections.length) {
   currentSection.value = props.sections[0]!.value;

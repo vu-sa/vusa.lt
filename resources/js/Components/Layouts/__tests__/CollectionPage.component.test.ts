@@ -94,6 +94,18 @@ beforeEach(() => {
   sessionStorage.clear();
 });
 
+it('renders a custom lead with a navigation link instead of the plain lead', () => {
+  const { source } = makeSource();
+  const wrapper = mountPage(source, { lead: 'Plain lead' }, {
+    lead: '<p>Internal support: <a href="/support">Open support</a></p>',
+  });
+
+  const titleBand = wrapper.get('[data-slot="collection-title-band"]');
+  expect(titleBand.text()).not.toContain('Plain lead');
+  expect(titleBand.get('a[href="/support"]').text()).toBe('Open support');
+  wrapper.unmount();
+});
+
 describe('CollectionPage', () => {
   it('states where the person is and draws the entity identity tile', () => {
     const { source } = makeSource();

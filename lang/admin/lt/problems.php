@@ -1,6 +1,10 @@
 <?php
 
 return [
+    'internal_support' => [
+        'guidance' => 'Dėl vidinės pagalbos kreipkis į',
+        'link' => '„vusa.lt pagalba“.',
+    ],
     'categories' => [
         'in_use' => '{1} Kategorija priskirta :count problemai – jos ištrinti negalima.|[2,9] Kategorija priskirta :count problemoms – jos ištrinti negalima.|[10,*] Kategorija priskirta :count problemų – jos ištrinti negalima.',
     ],

@@ -91,6 +91,14 @@ describe('ProblemForm.vue — mobile field spacing', () => {
 });
 
 describe('ProblemForm.vue — field requirements', () => {
+  it('links internal support requests to the support request list', () => {
+    const wrapper = mountForm();
+    const supportLink = wrapper.findAll('a').find(link => link.text() === 'problems.internal_support.link');
+
+    expect(supportLink?.attributes('href')).toBe(route('mySupportRequests.index'));
+    expect(wrapper.text()).toContain('problems.internal_support.guidance');
+  });
+
   it('explains the asterisk once and leaves optional field names unmarked', () => {
     const wrapper = mountForm();
     const optionalFieldIds = [

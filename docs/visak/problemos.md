@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Problemos
 area: problems
 models: [Problem, ProblemCategory]
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-21
 tests:
   - tests/Feature/Admin/Problems/ProblemControllerTest.php
   - tests/Feature/Admin/Problems/AgendaItemProblemControllerTest.php
@@ -15,6 +15,7 @@ tests:
   - tests/Feature/Seeders/RoleSeedersTest.php
   - tests/Feature/System/AdminNavigationCatalogTest.php
   - resources/js/Components/AdminForms/__tests__/ProblemForm.component.test.ts
+  - resources/js/Pages/Admin/Problems/__tests__/IndexProblem.component.test.ts
   - resources/js/Components/Problems/__tests__/ProblemSummaryList.component.test.ts
   - resources/js/Components/Problems/__tests__/ProblemLinkSheet.component.test.ts
   - resources/js/Features/Admin/ProblemCategories/__tests__/ProblemCategorySheetForm.component.test.ts
@@ -29,6 +30,10 @@ padaliniai mato, kas jau spręsta ir kaip, o ta pati problema nesprendžiama du 
 
 Problemų sąrašas pasiekiamas adresu `/mano/problems`, o kiekviena problema turi savo puslapį
 `/mano/problems/{id}`.
+
+Vidinės pagalbos prašymai dėl vusa.lt platformos pateikiami skiltyje
+**[vusa.lt pagalba](app:/mano/my-support-requests)**. Nuoroda į ją rodoma problemų sąrašo
+įžangoje ir problemos formos pradžioje. Studentų atstovavimo problemos registruojamos čia.
 
 <DocScreenshot name="problem-record" alt="Problemos puslapis: būsena, kategorijos, institucija, įvykio data, trukmė, atsakingas asmuo ir skirtukai Aprašymas, Atlikti žingsniai, Sprendimas, Svarstyta posėdžiuose" caption="Vykdoma problema, kurią atstovė kėlė fakulteto tarybos posėdyje." />
 

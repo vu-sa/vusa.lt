@@ -32,6 +32,21 @@ const createWrapper = () => mount(RecordPage, {
 });
 
 describe('RecordPage', () => {
+  it('stacks every section with persistent headings when requested', async () => {
+    const wrapper = createWrapper();
+    await wrapper.setProps({ sectionLayout: 'stacked', section: 'files' });
+
+    expect(wrapper.findAll('[role="tab"]')).toHaveLength(0);
+    for (const key of ['agenda', 'files', 'tasks']) {
+      const section = wrapper.get(`[aria-labelledby="record-section-${key}"]`);
+      expect(section.classes()).not.toContain('md:hidden');
+      expect(section.get('h2').classes()).not.toContain('md:hidden');
+      expect(section.get(`[data-testid="${key}"]`).exists()).toBe(true);
+    }
+    expect(wrapper.get('[data-slot="record-activity"]').classes()).not.toContain('md:hidden');
+    expect(wrapper.get('[aria-labelledby="record-section-agenda"]').element.parentElement?.classList.contains('md:space-y-0')).toBe(false);
+  });
+
   it('renders rich title content inside the existing heading and keeps the plain browser title', () => {
     const wrapper = mount(RecordPage, {
       props: { title: 'Koordinatorius', entityType: 'duty' },

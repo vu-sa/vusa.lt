@@ -26,6 +26,12 @@
     </template>
 
     <div class="space-y-4">
+      <p class="max-w-prose text-sm leading-relaxed text-muted-foreground">
+        {{ $t('problems.internal_support.guidance') }}
+        <Link :href="route('mySupportRequests.index')" class="text-brand underline underline-offset-4">
+          {{ $t('problems.internal_support.link') }}
+        </Link>
+      </p>
       <p class="max-w-prose border-l border-border pl-3 text-sm leading-relaxed text-muted-foreground" data-testid="problem-required-note">
         {{ $t('problems.form.instructions') }}
       </p>
@@ -273,7 +279,7 @@
 </template>
 
 <script setup lang="ts">
-import { useForm } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { ChevronsUpDown, CircleDot, Layers, Trash2, X } from '@lucide/vue';

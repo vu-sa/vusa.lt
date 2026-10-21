@@ -3,6 +3,9 @@
     <Head :title />
 
     <CollectionTitleBand :eyebrow :title :lead :entity-type>
+      <template v-if="$slots.lead" #lead>
+        <slot name="lead" />
+      </template>
       <template v-if="$slots.actions" #actions>
         <slot name="actions" />
       </template>
@@ -178,6 +181,7 @@ const emit = defineEmits<{
 }>();
 
 defineSlots<{
+  'lead'?: () => unknown;
   'actions': () => unknown;
   /** Replaces the chips row, e.g. to wrap it in a spotlight; render `CollectionQuickFilters` inside. */
   'quick-filters'?: (props: { filters: CollectionQuickFilter[]; toggle: (id: string) => void }) => unknown;

@@ -3,12 +3,13 @@ doc_status: reviewed
 title: Pagalbos užklausos
 area: supportRequests
 models: [SupportRequest, SupportRequestArea, SupportRequestType]
-last_reviewed: 2026-10-06
+last_reviewed: 2026-10-21
 tests:
   - tests/Feature/Admin/SupportRequests/SupportRequestControllerTest.php
   - tests/Feature/Admin/SupportRequests/MySupportRequestControllerTest.php
   - tests/Feature/Admin/Discussions/CommentApiTest.php
   - resources/js/Pages/Admin/Dashboard/__tests__/ShowSupportRequests.component.test.ts
+  - resources/js/Pages/Admin/SupportRequests/__tests__/ShowSupportRequest.component.test.ts
 ---
 
 # Pagalbos užklausos
@@ -80,6 +81,10 @@ Vien priskyrimas atsakingu asmeniu privačios užklausos į tavo sąrašą neįt
 per tiesioginę nuorodą gali atverti.
 
 ### Užklausos peržiūra ir valdymas (`/mano/support-requests/{id}`)
+
+Aprašymas, susijusio puslapio nuoroda ir pažymėtas tekstas, prisegti failai bei diskusija
+rodomi viename puslapyje, vienas po kito. Skirtukų perjungti nereikia; jei failų nėra,
+skiltyje **Failai** rodoma „Prisegtų failų nėra.“
 
 Užklausos puslapyje:
 - **Būsenos keitimas**: administratorius išskleidžiamajame meniu pasirenka naują būseną.
