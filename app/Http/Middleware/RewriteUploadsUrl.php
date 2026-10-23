@@ -24,7 +24,7 @@ class RewriteUploadsUrl
         ! str_starts_with(request()->path(), 'uploads/files')) {
             $upload_path = '/uploads/files'.substr(request()->getPathInfo(), 8);
 
-            return redirect($upload_path)->send();
+            return redirect($upload_path);
         }
 
         return $next($request);
