@@ -38,7 +38,7 @@
         {{ $t('Keisti tvarką') }}
       </Button>
       <Button v-if="canCreate && !isTrash" as-child variant="brand" size="lg" data-testid="inline-create-button">
-        <Link :href="route('quickLinks.create')">
+        <Link :href="createHref">
           <Plus aria-hidden="true" />
           {{ $t('Nauja nuoroda') }}
         </Link>
@@ -77,7 +77,7 @@
         :title="$t('Dar nėra greitųjų nuorodų')"
         :description="$t('Nuorodos ir mygtukai, rodomi pradiniame svetainės puslapyje.')"
         :action-label="canCreate ? $t('Sukurti pirmą nuorodą') : undefined"
-        :action-href="canCreate ? route('quickLinks.create') : undefined"
+        :action-href="canCreate ? createHref : undefined"
       />
     </template>
   </CollectionPage>
@@ -195,6 +195,8 @@ const languageFilters = computed<CollectionQuickFilter[]>(() => [
   { id: 'lt', label: 'LT', active: props.currentLang === 'lt' },
   { id: 'en', label: 'EN', active: props.currentLang === 'en' },
 ]);
+
+const createHref = computed(() => route('quickLinks.create', { tenant: props.tenant?.id, lang: props.currentLang }));
 
 function changeScope(scope: { tenant?: number; lang?: string }): void {
   router.get(route('quickLinks.index'), {

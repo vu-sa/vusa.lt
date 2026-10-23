@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesTenantScope;
 use App\Models\QuickLink;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -9,6 +10,8 @@ use Illuminate\Validation\Rule;
 
 class StoreQuickLinkRequest extends FormRequest
 {
+    use ValidatesTenantScope;
+
     public function authorize(): bool
     {
         return $this->user()->can('create', QuickLink::class);
@@ -25,6 +28,7 @@ class StoreQuickLinkRequest extends FormRequest
             'lang' => ['nullable', 'string', Rule::in(config('app.locales'))],
             'icon' => 'nullable|string|max:125',
             'is_important' => 'boolean',
+            'tenant_id' => ['required', 'integer', 'exists:tenants,id', $this->tenantIdInAuthorizedScope('quickLinks.create.padalinys')],
         ];
     }
 }

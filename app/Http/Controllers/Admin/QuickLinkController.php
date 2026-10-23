@@ -17,6 +17,7 @@ use App\Models\Tenant;
 use App\Services\ModelAuthorizer as Authorizer;
 use App\Services\PostCreateRedirect;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class QuickLinkController extends AdminController
@@ -72,13 +73,21 @@ class QuickLinkController extends AdminController
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $this->handleAuthorization('create', QuickLink::class);
 
+        $tenantOptions = GetTenantsForUpserts::execute('quickLinks.create.padalinys', $this->authorizer);
+
+        // Prefill from the index's tenant/language scope, so a link started from the EN list is an EN link.
+        $requestedTenantId = $request->integer('tenant');
+        $requestedLang = $request->query('lang');
+
         return $this->inertiaResponse('Admin/Content/CreateQuickLink', [
             'topicOptions' => $this->getTopicOptions(),
-            'tenantOptions' => GetTenantsForUpserts::execute('quickLinks.create.padalinys', $this->authorizer),
+            'tenantOptions' => $tenantOptions,
+            'defaultTenantId' => $tenantOptions->contains('id', $requestedTenantId) ? $requestedTenantId : null,
+            'defaultLang' => in_array($requestedLang, config('app.locales'), true) ? $requestedLang : null,
         ]);
     }
 
@@ -89,17 +98,10 @@ class QuickLinkController extends AdminController
     {
         $this->handleAuthorization('create', QuickLink::class);
 
-        if (request()->user()->isSuperAdmin()) {
-            $tenant_id = Tenant::main()?->id;
-        } else {
-            $tenant_id = $this->authorizer->duties(request()->user(), 'quickLinks.create.padalinys')
-                ->first()?->tenants->first()?->id;
-        }
-
-        $quickLink = DB::transaction(function () use ($request, $tenant_id): QuickLink {
+        $quickLink = DB::transaction(function () use ($request): QuickLink {
             $quickLink = new QuickLink;
             $quickLink->fill($request->safe()->only('text', 'link', 'lang', 'icon', 'is_important'));
-            $quickLink->tenant()->associate($tenant_id);
+            $quickLink->tenant()->associate($request->validated('tenant_id'));
             $quickLink->save();
 
             return $quickLink;
@@ -131,7 +133,7 @@ class QuickLinkController extends AdminController
         $this->handleAuthorization('update', $quickLink);
 
         DB::transaction(function () use ($request, $quickLink): void {
-            $quickLink->update($request->safe()->only('text', 'link', 'lang', 'icon', 'is_important'));
+            $quickLink->update($request->safe()->only('text', 'link', 'lang', 'icon', 'is_important', 'tenant_id'));
         });
 
         return back()->with('success', $this->entityMessage('updated', 'quickLink'));

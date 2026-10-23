@@ -136,7 +136,7 @@ describe('IndexQuickLink.vue', () => {
     it('offers the create action outside the trash', () => {
       wrapper = createWrapper();
 
-      expect(wrapper.find('[data-testid="inline-create-button"]').attributes('href')).toBe('/mocked-route/quickLinks.create');
+      expect(wrapper.find('[data-testid="inline-create-button"]').attributes('href')).toBe('/mocked-route/quickLinks.create?tenant=10&lang=lt');
     });
 
     it('hides create and reorder in the trash', () => {

@@ -83,7 +83,7 @@ class NewsCollection extends Collection
 
         $news = $query->orderByDesc('publish_time')
             ->take($limit)
-            ->get(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'image', 'other_lang_id', 'tenant_id']);
+            ->get(['id', 'title', 'lang', 'short', 'publish_time', 'permalink', 'other_lang_id', 'tenant_id']);
 
         return new self($news->all());
     }

@@ -182,7 +182,8 @@ column (`#advanced` "Papildomi nustatymai", `#danger-zone`). It owns three behav
 submits and **Esc** cancels (listeners on the `<form>`, so a portaled Select never cancels it), and on a failed
 submit the error summary is scrolled into view and focused, each message focusing its field. Pass
 `mode="create"` for a new record (the bar never claims "all saved"), `field-ids` when an error key is not the
-field's id (`name.lt` → `duty-name`), and `:available-locales="[]"` for a single-language record. Field labels
+field's id (`name.lt` → `duty-name`), and `:available-locales="['lt', 'en']"` + `v-model:locale` only for a form that switches
+fields by language (the switch is hidden by default). Field labels
 and hints come from `FormFieldWrapper` (uppercase micro-label, hint under the field — never a tooltip).
 Relations with their own lifecycle do **not** belong in it.
 

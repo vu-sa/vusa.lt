@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Greitosios nuorodos
 area: quickLinks
 models: [QuickLink]
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-23
 tests:
   - tests/Feature/Admin/Content/QuickLinkControllerTest.php
   - tests/Browser/PublicInitialRenderTest.php
@@ -60,20 +60,27 @@ Sąrašo puslapyje (`/mano/quickLinks`):
 - **Padalinio ir kalbos pasirinkimas:** viršuje pasirink, kurio padalinio ir kurios kalbos (LT ar EN) nuorodas nori peržiūrėti.
 - **Eiliškumo keitimas:** nutempk nuorodų korteles pele ar lietimu į norimą vietą ir spausk **Išsaugoti tvarką**. Nauja tvarka iškart taikoma viešoje svetainėje.
 
-### Naujos nuorodos kūrimas
+### Naujos nuorodos kūrimas {#naujos-nuorodos-kurimas}
 
-Puslapio viršuje spausk **Nauja greitoji nuoroda** (arba eik adresu `/mano/quickLinks/create`):
+Puslapio viršuje spausk **Nauja nuoroda** (arba eik adresu `/mano/quickLinks/create`). Forma atsiveria su tuo padaliniu ir kalba, kuriuos buvai pasirinkęs sąraše – pvz., iš EN sąrašo kuriama angliška nuoroda.
+
+<ChangelogNote version="v3.13" date="2026-10-23" title="Padalinys pasirenkamas formoje">
+
+Nauja nuoroda išsaugoma tam padaliniui, kuris pasirinktas formoje, ir kurti ją galima ir angliškai svetainės versijai.
+
+</ChangelogNote>
 
 1. **Tekstas** – įrašyk trumpą mygtuko pavadinimą (pvz., „Kuratoriai“, „DUK“, „Stipendijos“).
 2. **Nuoroda** – įvesk vidinio puslapio kelią (pvz., `/lt/kuratoriai`) arba visą išorinį adresą (pvz., `https://vilnius.lt`).
 3. **Kalba** – pasirink, kuriai kalbos versijai (lietuvių ar anglų) skirta ši nuoroda.
 4. **Piktograma** – išskleidžiamajame piktogramų sąraše parink labiausiai tinkančią piktogramą.
-5. **Svarbi nuoroda** – pažymėk varnelę, jei nori pabrėžti šią nuorodą.
-6. Spausk **Išsaugoti**.
+5. **Padalinys** – kurio padalinio puslapyje rodyti nuorodą; gali rinktis tik tuos, kuriuose turi teisę kurti.
+6. **Svarbi nuoroda** – pažymėk varnelę, jei nori pabrėžti šią nuorodą.
+7. Spausk **Išsaugoti**.
 
 ### Redagavimas
 
-Paspausk nuorodos pavadinimo sąraše arba veiksmų meniu pasirink **Redaguoti**. Gali pakeisti tekstą, adresą, priskirtą piktogramą ar svarbumo būseną.
+Paspausk nuorodos pavadinimo sąraše arba veiksmų meniu pasirink **Redaguoti**. Gali pakeisti tekstą, adresą, kalbą, padalinį, priskirtą piktogramą ar svarbumo būseną.
 
 ### Šalinimas ir atkūrimas
 

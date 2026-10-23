@@ -96,6 +96,15 @@ describe('FormPage.vue', () => {
     expect(wrapper.emitted('update:locale')).toEqual([['en']]);
   });
 
+  it('shows no language switch unless the form opts in', () => {
+    const wrapper = mount(FormPage, {
+      props: { title: 'Test Form' },
+      global: { stubs },
+    });
+
+    expect(wrapper.find('[role="group"][aria-label="Kalba"]').exists()).toBe(false);
+  });
+
   it('keeps the missing-translation notice in place across languages, so the form never shifts', async () => {
     const wrapper = mount(FormPage, {
       props: { title: 'Išteklius', locale: 'lt', availableLocales: ['lt', 'en'], missingLocaleCounts: { lt: 0, en: 2 } },

@@ -97,14 +97,24 @@ describe('authorized access', function (): void {
             );
     });
 
+    test('create page prefills the tenant and language the index was scoped to', function (): void {
+        asUser($this->admin)
+            ->get(route('quickLinks.create', ['tenant' => $this->tenant->id, 'lang' => 'en']))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('defaultTenantId', $this->tenant->id)
+                ->where('defaultLang', 'en')
+            );
+    });
+
     test('can store quick link with valid data', function (): void {
         $response = asUser($this->admin)
             ->post(route('quickLinks.store'), [
                 'text' => 'New Quick Link',
                 'link' => 'https://new.example.com',
-                'lang' => 'lt',
+                'lang' => 'en',
                 'icon' => 'home',
                 'is_important' => true,
+                'tenant_id' => $this->tenant->id,
             ])
             ->assertStatus(302)
             ->assertSessionHasNoErrors()
@@ -113,7 +123,8 @@ describe('authorized access', function (): void {
         $this->assertDatabaseHas('quick_links', [
             'text' => 'New Quick Link',
             'link' => 'https://new.example.com',
-            'lang' => 'lt',
+            'lang' => 'en',
+            'tenant_id' => $this->tenant->id,
         ]);
 
         $created = QuickLink::where('text', 'New Quick Link')->sole();
@@ -128,7 +139,7 @@ describe('authorized access', function (): void {
                 'link' => '',
             ])
             ->assertStatus(302)
-            ->assertSessionHasErrors(['text', 'link']);
+            ->assertSessionHasErrors(['text', 'link', 'tenant_id']);
     });
 
     test('can access edit page', function (): void {
@@ -151,6 +162,7 @@ describe('authorized access', function (): void {
                 'lang' => 'en',
                 'icon' => 'star',
                 'is_important' => false,
+                'tenant_id' => $this->tenant->id,
             ])
             ->assertStatus(302)
             ->assertSessionHas('success');
@@ -303,6 +315,38 @@ describe('tenant isolation', function (): void {
                 'link' => 'https://evil.com',
             ])
             ->assertStatus(403);
+    });
+
+    test('create page does not prefill a tenant outside the user\'s scope', function (): void {
+        asUser($this->admin)
+            ->get(route('quickLinks.create', ['tenant' => $this->otherTenant->id]))
+            ->assertInertia(fn (Assert $page) => $page->where('defaultTenantId', null));
+    });
+
+    test('cannot store quick link into another tenant', function (): void {
+        asUser($this->admin)
+            ->post(route('quickLinks.store'), [
+                'text' => 'Foreign',
+                'link' => 'https://example.com',
+                'lang' => 'lt',
+                'tenant_id' => $this->otherTenant->id,
+            ])
+            ->assertSessionHasErrors('tenant_id');
+
+        $this->assertDatabaseMissing('quick_links', ['text' => 'Foreign']);
+    });
+
+    test('cannot move own quick link into another tenant', function (): void {
+        asUser($this->admin)
+            ->patch(route('quickLinks.update', $this->quickLink), [
+                'text' => 'Moved',
+                'link' => 'https://example.com',
+                'lang' => 'lt',
+                'tenant_id' => $this->otherTenant->id,
+            ])
+            ->assertSessionHasErrors('tenant_id');
+
+        expect($this->quickLink->fresh()->tenant_id)->toBe($this->tenant->id);
     });
 
     test('reordering a batch that includes another tenant quick link changes nothing', function (): void {

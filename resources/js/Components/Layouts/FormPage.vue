@@ -287,6 +287,7 @@ const props = withDefaults(defineProps<{
   /** `create` says "Kuri naują" and never claims anything is already saved. */
   mode?: 'create' | 'edit' | 'view';
   locale?: 'lt' | 'en';
+  /** Opt-in: the switch only emits `update:locale`, so it is dead unless the form binds `v-model:locale`. */
   availableLocales?: Array<'lt' | 'en'>;
   missingLocaleCounts?: Record<string, number>;
   /** Width of a single-column form; a form with an `#aside` is always `6xl`. */
@@ -310,7 +311,7 @@ const props = withDefaults(defineProps<{
   fieldIds: () => ({}),
   mode: 'edit',
   locale: 'lt',
-  availableLocales: () => ['lt', 'en'],
+  availableLocales: () => [],
   missingLocaleCounts: () => ({}),
   maxWidth: '2xl',
   publicUrl: undefined,
