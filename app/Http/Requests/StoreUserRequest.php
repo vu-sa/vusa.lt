@@ -38,10 +38,6 @@ class StoreUserRequest extends FormRequest
             'pronouns.lt' => ['nullable', 'string', 'max:50'],
             'pronouns.en' => ['nullable', 'string', 'max:50'],
             'show_pronouns' => ['nullable', 'boolean'],
-            // Only a super admin has these applied (see UserController::store), but they
-            // must still be validated: the controller syncs them straight onto the model.
-            'roles' => ['nullable', 'array'],
-            'roles.*' => ['exists:roles,id'],
             'current_duties' => ['required', 'array', 'min:1'],
             'current_duties.*' => ['string', SoftDeleteRules::existsLive('duties')],
         ];

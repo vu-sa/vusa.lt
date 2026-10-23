@@ -60,6 +60,20 @@ describe('RecordPage', () => {
     wrapper.unmount();
   });
 
+  it('keeps the lead under the title, out of the column the actions sit in', () => {
+    const wrapper = mount(RecordPage, {
+      props: { title: 'Komunikacija', entityType: 'role', actionsBesideTitle: true, primaryAction: { key: 'edit', label: 'Redaguoti' } },
+      slots: { lead: '<p data-testid="lead">Tvarko naujienas.</p>' },
+      global: { stubs: commonStubs },
+    });
+
+    const lead = wrapper.get('[data-slot="record-lead"]');
+    expect(lead.get('[data-testid="lead"]').text()).toBe('Tvarko naujienas.');
+    expect(lead.classes()).toContain('lg:col-start-1');
+    expect(lead.element.previousElementSibling?.getAttribute('data-slot')).toBe('record-title');
+    wrapper.unmount();
+  });
+
   it('renders the canonical record anatomy', () => {
     const wrapper = createWrapper();
 

@@ -6,6 +6,7 @@ use App\Actions\ForgetUserAccess;
 use App\Enums\MailingListSourceType;
 use App\Enums\ResponsibilityScope;
 use App\Http\Controllers\AdminController;
+use App\Http\Requests\DestroyRoleUserRequest;
 use App\Http\Requests\IndexRoleRequest;
 use App\Http\Requests\StoreRoleGrantRequest;
 use App\Http\Requests\StoreRoleRequest;
@@ -26,6 +27,7 @@ use App\Services\PostCreateRedirect;
 use App\Support\MorphMap;
 use App\Support\Permissions\PermissionCatalog;
 use App\Support\Permissions\TypeGrantablePermissions;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -47,7 +49,7 @@ class ResponsibilityController extends AdminController
 
         // A short list sent whole: the collection searches, sorts and filters it in the browser.
         return $this->inertiaResponse('Admin/Permissions/IndexResponsibility', [
-            'responsibilities' => Role::query()->exceptSuperAdmin()->withCount(['permissions', 'duties'])->get()
+            'responsibilities' => Role::query()->withCount(['permissions', 'duties'])->get()
                 ->map(fn (Role $role): array => [
                     'id' => $role->id,
                     'title' => $role->displayTitle(),
@@ -122,6 +124,7 @@ class ResponsibilityController extends AdminController
                 'update' => request()->user()->can('update', $role) && ! $role->isSuperAdmin(),
                 'delete' => request()->user()->can('delete', $role) && $this->deleteBlockedReason($role) === null,
                 'manageSettings' => Gate::allows('manage-settings'),
+                'removeUsers' => request()->user()->isSuperAdmin(),
             ],
         ]);
     }
@@ -230,6 +233,22 @@ class ResponsibilityController extends AdminController
         return back()->with('success', __('responsibilities.messages.removed'));
     }
 
+    /**
+     * Take a role a person holds directly, outside any duty, away from them.
+     */
+    public function destroyUser(DestroyRoleUserRequest $request, Role $role, User $user): RedirectResponse
+    {
+        abort_unless($role->users()->whereKey($user->getKey())->exists(), 404);
+
+        if ($warning = $this->guardSelfLockout($request->user(), $user->is($request->user()), $request, fn () => $user->removeRole($role))) {
+            return $warning;
+        }
+
+        ForgetUserAccess::execute([$user->getKey()]);
+
+        return back()->with('success', __('responsibilities.messages.removed'));
+    }
+
     public function syncAttachableTypes(SyncRoleAttachableTypesRequest $request, Role $role): RedirectResponse
     {
         $role->attachable_types()->sync($request->validated('attachable_types'));
@@ -250,6 +269,7 @@ class ResponsibilityController extends AdminController
             'direct' => $grants->where('grantee_type', MorphMap::alias(Duty::class))->count(),
             'via_types' => $grants->where('grantee_type', MorphMap::alias(DutyType::class))->count(),
             'via_institutions' => $grants->where('grantee_type', MorphMap::alias(Institution::class))->count(),
+            'users' => $role->users()->count(),
             'people' => $role->currentUsersThroughDuties()->distinct()->count('users.id'),
             'gaps' => count(app(ResponsibilityPermissionGaps::class)->forRole($role)),
         ];
@@ -328,7 +348,35 @@ class ResponsibilityController extends AdminController
                 })
                 ->values()
                 ->all(),
+            'users' => $this->directUsers($role),
         ];
+    }
+
+    /**
+     * People holding the role directly rather than through a duty. Such a role applies in every
+     * padalinys they hold a duty in, so those padaliniai are listed with them.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function directUsers(Role $role): array
+    {
+        return User::query()
+            ->whereHas('roles', fn (Builder $roles) => $roles->whereKey($role->getKey()))
+            ->with('current_duties:id,institution_id', 'current_duties.institution:id,tenant_id', 'current_duties.institution.tenant:id,shortname')
+            ->orderBy('name')
+            ->get(['id', 'name', 'profile_photo_path'])
+            ->map(fn (User $user): array => [
+                ...$user->only(['id', 'name', 'profile_photo_path']),
+                'tenants' => $role->isSuperAdmin() ? [] : $user->current_duties
+                    ->pluck('institution.tenant.shortname')
+                    ->filter()
+                    ->unique()
+                    ->sort()
+                    ->map(fn (string $shortname): string => (string) __($shortname))
+                    ->values()
+                    ->all(),
+            ])
+            ->all();
     }
 
     /**

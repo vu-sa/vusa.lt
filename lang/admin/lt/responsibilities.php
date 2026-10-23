@@ -144,6 +144,11 @@ return [
         'scope_hint' => 'Kam ši pareigybė atsakinga: konkretesnis suteikimas nusveria bendresnį.',
         'own_tenant_hint' => 'Kiekviena pareigybė atsakinga už savo institucijos padalinį.',
         'institution_tenant_hint' => 'Institucijos pareigybės atsakingos už jos padalinį.',
+        'users' => 'Naudotojai',
+        'users_hint' => 'Senas būdas: atsakomybė suteikta pačiam naudotojui, ne pareigybei. Ji galioja visuose padaliniuose, kuriuose naudotojas eina pareigas, todėl verčiau suteik ją pareigybei ir čia atimk.',
+        'users_super_admin_hint' => 'Super administratoriumi narį padaro jo puslapio skiltis „Prieiga“.',
+        'applies_in' => 'Galioja:',
+        'no_current_duties' => 'Šiuo metu pareigų neturi',
         'submit' => 'Suteikti',
     ],
 

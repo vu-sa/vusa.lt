@@ -31,4 +31,12 @@ describe('CollectionPrimaryCell', () => {
     expect(wrapper.findAll('p')).toHaveLength(1);
     expect(wrapper.text()).toBe('Guide');
   });
+
+  it('keeps the sub-line to one line unless it is a description, which wraps to three', () => {
+    const line = (props: Record<string, unknown>) => mount(CollectionPrimaryCell, { props: { title: 'Komunikacija', sub: 'Tvarko naujienas.', ...props } }).findAll('p')[1];
+
+    expect(line({}).classes()).toContain('truncate');
+    expect(line({ subLines: 3 }).classes()).toContain('line-clamp-3');
+    expect(line({ subLines: 3 }).classes()).not.toContain('truncate');
+  });
 });

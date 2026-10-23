@@ -63,7 +63,7 @@ test('contact manager can\'t create user without duty', function (): void {
 
     $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
         ->component('Admin/People/CreateUser')
-        ->has('roles')
+        ->missing('roles')
         ->has('tenantsWithDuties')
     );
 
@@ -95,7 +95,7 @@ test('contact manager can create user with duty', function (): void {
 
     $response->assertStatus(200)->assertInertia(fn (Assert $page) => $page
         ->component('Admin/People/CreateUser')
-        ->has('roles')
+        ->missing('roles')
         ->has('tenantsWithDuties')
     );
 

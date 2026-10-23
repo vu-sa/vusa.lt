@@ -1,10 +1,47 @@
 <template>
   <div class="space-y-10" data-slot="responsibility-grants">
-    <p class="max-w-3xl text-sm text-muted-foreground">
+    <p v-if="!isSuperAdmin" class="max-w-3xl text-sm text-muted-foreground">
       {{ $t('responsibilities.grants.intro') }}
     </p>
 
-    <OverviewSection variant="home" :title="$t('responsibilities.grants.duties')" :icon="Briefcase" :count="grants.duties.length">
+    <OverviewSection
+      v-if="isSuperAdmin || grants.users.length"
+      variant="home"
+      :title="$t('responsibilities.grants.users')"
+      :icon="UserRound"
+      :count="grants.users.length"
+      data-testid="grant-users"
+    >
+      <p class="text-xs text-muted-foreground">
+        {{ $t(isSuperAdmin ? 'responsibilities.grants.users_super_admin_hint' : 'responsibilities.grants.users_hint') }}
+      </p>
+      <ul v-if="grants.users.length" class="divide-y divide-border">
+        <li v-for="holder in grants.users" :key="holder.id" class="flex min-h-14 items-center justify-between gap-3 py-2.5" data-testid="grant-user">
+          <span class="flex min-w-0 items-center gap-3">
+            <UserAvatar :user="(holder as unknown as App.Entities.User)" :size="32" />
+            <span class="min-w-0">
+              <Link :href="route('users.show', holder.id)" class="block text-sm font-medium text-foreground hover:underline">{{ holder.name }}</Link>
+              <span v-if="!isSuperAdmin" class="block text-xs text-muted-foreground">
+                <template v-if="holder.tenants.length">{{ $t('responsibilities.grants.applies_in') }} {{ holder.tenants.join(', ') }}</template>
+                <template v-else>{{ $t('responsibilities.grants.no_current_duties') }}</template>
+              </span>
+            </span>
+          </span>
+          <Button
+            v-if="canRemoveUsers && !isSuperAdmin"
+            variant="ghost"
+            size="sm"
+            voice="sentence"
+            class="shrink-0 pointer-coarse:h-11"
+            @click="removeTarget = { kind: 'user', id: holder.id, label: holder.name }"
+          >
+            {{ $t('responsibilities.grants.remove') }}
+          </Button>
+        </li>
+      </ul>
+    </OverviewSection>
+
+    <OverviewSection v-if="!isSuperAdmin" variant="home" :title="$t('responsibilities.grants.duties')" :icon="Briefcase" :count="grants.duties.length">
       <template v-if="canUpdate" #actions>
         <Button size="sm" variant="outline" voice="sentence" class="u-touch" data-testid="grant-add" @click="openSheet(DUTY)">
           <Plus class="size-4" aria-hidden="true" />
@@ -29,7 +66,7 @@
               {{ $t('responsibilities.grants.missing', { permissions: grant.missing_permissions.map(permissionLabel).join(', ') }) }}
             </span>
           </span>
-          <Button v-if="canUpdate" variant="ghost" size="sm" voice="sentence" class="shrink-0 pointer-coarse:h-11" @click="removeTarget = { id: grant.id, label: grant.duty.name }">
+          <Button v-if="canUpdate" variant="ghost" size="sm" voice="sentence" class="shrink-0 pointer-coarse:h-11" @click="removeTarget = { kind: 'grant', id: grant.id, label: grant.duty.name }">
             {{ $t('responsibilities.grants.remove') }}
           </Button>
         </li>
@@ -39,7 +76,7 @@
       </p>
     </OverviewSection>
 
-    <OverviewSection variant="home" :title="$t('responsibilities.grants.duty_types')" :icon="Tags" :count="grants.dutyTypes.length">
+    <OverviewSection v-if="!isSuperAdmin" variant="home" :title="$t('responsibilities.grants.duty_types')" :icon="Tags" :count="grants.dutyTypes.length">
       <template v-if="canUpdate" #actions>
         <Button size="sm" variant="outline" voice="sentence" class="u-touch" @click="openSheet(DUTY_TYPE)">
           <Plus class="size-4" aria-hidden="true" />
@@ -60,7 +97,7 @@
               {{ $t('types.grant_needs_scope') }}
             </span>
           </span>
-          <Button v-if="canUpdate" variant="ghost" size="sm" voice="sentence" class="shrink-0 pointer-coarse:h-11" @click="removeTarget = { id: grant.id, label: grant.type.title }">
+          <Button v-if="canUpdate" variant="ghost" size="sm" voice="sentence" class="shrink-0 pointer-coarse:h-11" @click="removeTarget = { kind: 'grant', id: grant.id, label: grant.type.title }">
             {{ $t('responsibilities.grants.remove') }}
           </Button>
         </li>
@@ -71,7 +108,7 @@
     </OverviewSection>
 
     <OverviewSection
-      v-if="grants.institutions.length || canUpdate"
+      v-if="!isSuperAdmin && (grants.institutions.length || canUpdate)"
       variant="home"
       :title="$t('responsibilities.grants.institutions')"
       :icon="Landmark"
@@ -94,7 +131,7 @@
               {{ $tChoice('responsibilities.grants.reaches', grant.duties_count, { count: grant.duties_count }) }}<template v-if="scopeLabel(grant)"> · {{ scopeLabel(grant) }}</template>
             </span>
           </span>
-          <Button v-if="canUpdate" variant="ghost" size="sm" voice="sentence" class="shrink-0 pointer-coarse:h-11" @click="removeTarget = { id: grant.id, label: grant.institution.name }">
+          <Button v-if="canUpdate" variant="ghost" size="sm" voice="sentence" class="shrink-0 pointer-coarse:h-11" @click="removeTarget = { kind: 'grant', id: grant.id, label: grant.institution.name }">
             {{ $t('responsibilities.grants.remove') }}
           </Button>
         </li>
@@ -222,12 +259,13 @@
 import { computed, ref, watch } from 'vue';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Briefcase, Landmark, Plus, Tags, TriangleAlert } from '@lucide/vue';
+import { Briefcase, Landmark, Plus, Tags, TriangleAlert, UserRound } from '@lucide/vue';
 
 import type { GrantScopeValue, ResponsibilityGrantOptions, ResponsibilityGrantsPayload, ResponsibilityScopeValue } from './types';
 
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
+import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { ConfirmDialog, FormSegmentedControl, OverviewSection, SheetForm, type FormSegmentOption } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
@@ -249,6 +287,9 @@ const props = withDefaults(defineProps<{
   /** Levels the responsibility's purpose may cover; empty for most responsibilities. */
   scopes: ResponsibilityScopeValue[];
   canUpdate: boolean;
+  /** Only a super admin may take away a responsibility someone holds directly. */
+  canRemoveUsers?: boolean;
+  isSuperAdmin?: boolean;
   dutyTypeOptions: { id: number; title: string; parent_id: number | null }[];
   /** Permissions that keep this responsibility from being given to a duty type. */
   typeGrantBlockedBy?: string[];
@@ -261,7 +302,7 @@ const props = withDefaults(defineProps<{
 
 const { report: accessWarningReport, open: accessWarningOpen, guardedSubmit, confirm: accessWarningConfirm, cancel: accessWarningCancel } = useAccessChangeGuard();
 const sheetOpen = ref(false);
-const removeTarget = ref<{ id: string; label: string } | null>(null);
+const removeTarget = ref<{ kind: 'grant' | 'user'; id: string; label: string } | null>(null);
 let dutyHit: DutyHit | null = null;
 
 const form = useForm({
@@ -365,7 +406,11 @@ function remove(): void {
 
   if (target) {
     guardedSubmit((acknowledge) => {
-      router.delete(route('responsibilities.grants.destroy', { role: props.roleId, grant: target.id }), {
+      const url = target.kind === 'user'
+        ? route('responsibilities.users.destroy', { role: props.roleId, user: target.id })
+        : route('responsibilities.grants.destroy', { role: props.roleId, grant: target.id });
+
+      router.delete(url, {
         data: { acknowledge_access_change: acknowledge },
         preserveScroll: true,
       });

@@ -49,6 +49,8 @@ export interface ResponsibilityGrantsPayload {
     needs_scope?: boolean;
   }[];
   institutions: { id: string; institution: { id: string; name: string }; scope_type: GrantScopeValue | null; scope_name: string | null; duties_count: number }[];
+  /** People holding the responsibility directly, outside any duty, with the padaliniai it reaches. */
+  users: { id: string; name: string; profile_photo_path: string | null; tenants: string[] }[];
 }
 
 export interface ResponsibilityGrantOptions {

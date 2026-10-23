@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Nariai
 area: users
 models: [User]
-last_reviewed: 2026-10-18
+last_reviewed: 2026-10-23
 tests:
   - resources/js/Components/Public/__tests__/ContactWithPhoto.component.test.ts
   - resources/js/Utils/__tests__/String.test.ts
@@ -79,8 +79,8 @@ išsaugomo laikotarpio nuotrauka, o jei jos nebuvo – prijungiamo laikotarpio n
 
 1. **Prieiga suteikiama per pareigybes.** Naudotojas pats savaime dažniausiai neturi jokių administravimo
    teisių (bazinė nario prieiga leidžia matyti savo užduotis, pranešimus ir teikti rezervacijas).
-   Papildomos teisės paprastai gaunamos per [pareigybes](/organizacija/pareigybes) ir joms priskirtas roles;
-   superadministratorius gali priskirti rolę tiesiogiai paskyrai.
+   Papildomos teisės gaunamos per [pareigybes](/organizacija/pareigybes) ir joms suteiktas
+   [atsakomybes](/pagrindai/atsakomybes). Tiesiogiai paskyrai suteikiamos tik superadministratoriaus teisės.
 2. **Padalinys nustatomas iš pareigybių.** Platformoje narys nepriklauso padaliniui tiesioginiu lauku – nario padaliniai
    nustatomi pagal jo einamas pareigybes (`User::tenants()`).
 3. **Nariai be pareigų istorijos.** Nariai, kurie niekada neturėjo pareigybės laikotarpio, sąraše žymimi
@@ -157,8 +157,9 @@ Profilis suskirstytas į skirtukus:
    - *Būsimos pareigos* – pareigos, kurios prasidės ateityje.
    - *Buvusios pareigos* – visa istorinė asmens veikla VU SA.
    - Mygtukas **Pridėti pareigybę** atidaro šoninį pareigybės priskyrimo langą (pasirenkama pareigybė, kadencijos datos ir studijų programa).
-2. **Rolės**:
-   - Rodomos tiesiogiai paskyrai priskirtos rolės (jei tokių yra). Kasdieniame darbe rolės gaunamos per pareigybes, todėl čia paprastai rodoma „Rolių nėra – prieiga suteikiama per pareigybes“. Tiesiogines roles keisti gali tik Superadministratorius.
+2. **Prieiga** (matoma superadministratoriui arba kai narys pats yra superadministratorius):
+   - Jungiklis **Super administratorius** suteikia arba atima visą prieigą prie platformos. Jį perjungti gali tik Superadministratorius; prieš išsaugant prašoma patvirtinti.
+   - Kitas teises narys gauna per savo pareigybių atsakomybes. Anksčiau tiesiogiai paskyrai suteiktos atsakomybės matomos ir atimamos [atsakomybės skirtuke „Kam suteikta“](/sistema/roles-ir-leidimai#atsakomybes-suteikimas).
 3. **Užduotys**:
    - Visi nariui priskirti darbai, jų terminai ir atlikimo būsenos (`TaskManager`).
 Pareigybių pavadinimai visose trijose grupėse pritaikomi pagal nario įvardžius, o jų nesant –
@@ -278,7 +279,7 @@ Sujungus:
 | Keisti nario vardą ir pavardę | – | – | – | – | ✓ |
 | Priskirti padalinio pareigybes | – | ✓ | ✓ | ✓ | ✓ |
 | Sujungti to paties asmens įrašus | – | ✓, tik savo padaliniui priklausančius | ✓, tik savo padaliniui priklausančius | ✓ | ✓ |
-| Keisti tiesiogines roles | – | – | – | – | ✓ |
+| Suteikti ar atimti superadministratoriaus teises | – | – | – | – | ✓ |
 | Generuoti / trinti slaptažodį | – | – | – | – | ✓ |
 | Ištrinti narį į šiukšlinę | – | ✓, tik savo padaliniui priklausantį narį | ✓, tik savo padaliniui priklausantį narį | ✓ | ✓ |
 | Ištrinti narį visam laikui (jei nėra blokatorių) | – | – | – | – | ✓ |

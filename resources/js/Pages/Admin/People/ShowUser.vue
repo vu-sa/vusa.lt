@@ -98,25 +98,20 @@
       />
     </template>
 
-    <template #roles>
-      <OverviewSection variant="home" :title="$t('Rolės')" :icon="Shield" :count="roles.length">
-        <template v-if="can?.updateRoles" #actions>
-          <Button type="button" variant="outline" size="sm" class="pointer-coarse:h-11" @click="rolesOpen = true">
-            <Shield class="size-4" aria-hidden="true" />
-            {{ $t('Keisti roles') }}
-          </Button>
-        </template>
-        <ul v-if="roles.length" class="flex flex-wrap gap-2">
-          <li
-            v-for="role in roles"
-            :key="role.id"
-            class="border border-border bg-secondary px-2 py-1 text-sm"
-          >
-            {{ $t(role.name) }}
-          </li>
-        </ul>
-        <p v-else class="text-sm text-muted-foreground">
-          {{ $t('Roles nėra — prieiga kyla iš pareigybių.') }}
+    <template #access>
+      <OverviewSection variant="home" :title="$t('users.access.title')" :icon="Shield" class="max-w-2xl">
+        <div class="border-y border-border">
+          <FormToggleRow
+            :model-value="isSuperAdmin"
+            :label="$t('Super Admin')"
+            :hint="$t('users.access.super_admin_hint')"
+            :disabled="!can?.updateSuperAdmin"
+            data-testid="super-admin-toggle"
+            @update:model-value="superAdminTarget = $event"
+          />
+        </div>
+        <p class="text-sm text-muted-foreground">
+          {{ $t('users.access.from_duties') }}
         </p>
       </OverviewSection>
     </template>
@@ -139,25 +134,23 @@
     :study-programs="assignment?.studyPrograms ?? []"
   />
 
-  <SheetForm
-    v-model:open="rolesOpen"
-    :title="$t('Keisti roles')"
-    :description="$t('Rolės suteikia prieigą nepriklausomai nuo pareigybių. Jas keisti gali tik superadministratorius.')"
-    :processing="rolesForm.processing"
-    :dirty="rolesForm.isDirty"
-    @submit="saveRoles"
-  >
-    <MultiSelect
-      v-model="selectedRoles"
-      :options="roleOptions"
-      label-field="label"
-      value-field="value"
-      :placeholder="$t('Be rolės...')"
-    />
-    <p v-if="rolesForm.errors.roles" class="text-xs text-destructive">
-      {{ rolesForm.errors.roles }}
-    </p>
-  </SheetForm>
+  <ConfirmDialog
+    :open="superAdminTarget !== null"
+    :title="$t(superAdminTarget ? 'users.access.grant_title' : 'users.access.revoke_title')"
+    :description="$t(superAdminTarget ? 'users.access.grant_description' : 'users.access.revoke_description', { name: user.name })"
+    :confirm-label="$t(superAdminTarget ? 'users.access.grant' : 'users.access.revoke')"
+    :destructive="superAdminTarget === false"
+    @update:open="!$event && (superAdminTarget = null)"
+    @confirm="saveSuperAdmin"
+  />
+
+  <AccessChangeWarningDialog
+    :open="accessWarningOpen"
+    :report="accessWarningReport"
+    @update:open="accessWarningOpen = $event"
+    @confirm="accessWarningConfirm"
+    @cancel="accessWarningCancel"
+  />
 
   <ConfirmDialog
     v-model:open="generateOpen"
@@ -196,7 +189,7 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from 'vue';
-import { router, useForm, usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 import { useClipboard } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Briefcase, CalendarClock, CalendarRange, Copy, Edit3, History, KeyRound, Plus, Shield, Trash2 } from '@lucide/vue';
@@ -204,11 +197,11 @@ import { Briefcase, CalendarClock, CalendarRange, Copy, Edit3, History, KeyRound
 import UserAvatar from '@/Components/Avatars/UserAvatar.vue';
 import RecordPage, { type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue';
-import { ConfirmDialog, EmptyState, OverviewSection } from '@/Components/Patterns';
-import SheetForm from '@/Components/Patterns/SheetForm.vue';
+import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
+import { ConfirmDialog, EmptyState, FormToggleRow, OverviewSection } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import { MultiSelect } from '@/Components/ui/multi-select';
+import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
 import { useTaskActionDialogs } from '@/Composables/useTaskActionDialogs';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
@@ -229,7 +222,6 @@ const props = defineProps<{
     current_duties: UserDuty[];
     upcoming_duties: UserDuty[];
     previous_duties: UserDuty[];
-    roles: Array<{ id: string; name: string }>;
     has_password: boolean;
   };
   tasks: Array<{
@@ -253,9 +245,10 @@ const props = defineProps<{
   }>;
   taskStats: { total: number; completed: number; pending: number; overdue: number; autoCompleting: number };
   /** From the controller, not `auth.can`: the flat map holds index/create/forceDelete only. */
-  can?: { update: boolean; delete?: boolean; updateRoles?: boolean; managePasswords?: boolean };
-  /** Deferred (`userPanels`): the sheets' options, sent only to someone who may act on them. */
-  assignment?: { studyPrograms: (App.Entities.StudyProgram & { tenant_id?: number | null })[]; roles: Array<{ id: number; name: string }> } | null;
+  can?: { update: boolean; delete?: boolean; updateSuperAdmin?: boolean; managePasswords?: boolean };
+  isSuperAdmin?: boolean;
+  /** Deferred (`userPanels`): the Priskirti sheet's options, sent only to someone who may act on it. */
+  assignment?: { studyPrograms: (App.Entities.StudyProgram & { tenant_id?: number | null })[] } | null;
 }>();
 
 // --- Sections and key facts -------------------------------------------------------------------
@@ -298,12 +291,11 @@ const dutyColumns = computed(() => [
 
 const currentDuties = computed(() => dutyGroups.value.find(group => group.key === 'current')?.duties ?? []);
 const yearSpan = computed(() => termYearSpan(allTerms.value.map(duty => duty.pivot ?? {}), $t('dabar')));
-const roles = computed(() => props.user.roles ?? []);
-const showRolesSection = computed(() => roles.value.length > 0 || Boolean(props.can?.updateRoles));
+const showAccessSection = computed(() => Boolean(props.isSuperAdmin || props.can?.updateSuperAdmin));
 
 const tabs = computed<RecordPageSection[]>(() => [
   { value: 'duties', label: $t('Pareigos'), count: allDuties.value.length },
-  ...(showRolesSection.value ? [{ value: 'roles', label: $t('Rolės'), count: roles.value.length }] : []),
+  ...(showAccessSection.value ? [{ value: 'access', label: $t('users.access.title') }] : []),
   // `pending`, not `total`: a finished task is not something the reader still has to act on.
   { value: 'tasks', label: $t('Užduotys'), count: props.taskStats.pending },
 ]);
@@ -456,27 +448,22 @@ const openTermSheet = (duty: UserDuty) => {
   assignSheetOpen.value = true;
 };
 
-// --- Roles (super admin) ----------------------------------------------------------------------
+// --- Super Admin (super admin only) -----------------------------------------------------------
 
-const rolesOpen = ref(false);
-const rolesForm = useForm({ roles: (props.user.roles ?? []).map(role => Number(role.id)) });
+// The switch shows the saved state; flipping it asks first, since it grants or ends full access.
+const superAdminTarget = ref<boolean | null>(null);
+const { report: accessWarningReport, open: accessWarningOpen, guardedSubmit, confirm: accessWarningConfirm, cancel: accessWarningCancel } = useAccessChangeGuard();
 
-const roleOptions = computed(() => (props.assignment?.roles ?? []).map(role => ({ label: $t(role.name), value: role.id })));
+const saveSuperAdmin = () => {
+  const target = superAdminTarget.value;
+  superAdminTarget.value = null;
 
-const selectedRoles = computed({
-  get: () => roleOptions.value.filter(option => rolesForm.roles.includes(Number(option.value))),
-  set: (items: { label: string; value: number }[]) => {
-    rolesForm.roles = items.map(item => Number(item.value));
-  },
-});
+  if (target === null) {
+    return;
+  }
 
-const saveRoles = () => {
-  rolesForm.put(route('users.roles.update', props.user.id), {
-    preserveScroll: true,
-    onSuccess: () => {
-      rolesForm.defaults();
-      rolesOpen.value = false;
-    },
+  guardedSubmit((acknowledge) => {
+    router.put(route('users.superAdmin.update', props.user.id), { is_super_admin: target, acknowledge_access_change: acknowledge }, { preserveScroll: true });
   });
 };
 

@@ -28,7 +28,7 @@ const stubs = {
         <slot name="subtitle" />
         <slot name="alert" />
         <slot name="duties" />
-        <slot name="roles" />
+        <slot name="access" />
       </div>
     `,
   },
@@ -42,8 +42,7 @@ const stubs = {
     props: ['open', 'duty', 'dutiable', 'user'],
     template: '<div data-testid="assign-sheet" :data-open="open" :data-duty="duty?.id" :data-user="user?.id" />',
   },
-  SheetForm: { props: ['open', 'title'], template: '<div v-if="open" data-testid="roles-sheet"><slot /></div>' },
-  MultiSelect: true,
+  AccessChangeWarningDialog: true,
   ConfirmDialog: {
     props: ['open', 'title'],
     emits: ['confirm'],
@@ -72,13 +71,12 @@ const baseUser = {
   pronouns: 'ji/jos',
   show_pronouns: true,
   has_password: true,
-  roles: [],
   current_duties: [makeDuty()],
   upcoming_duties: [],
   previous_duties: [makeDuty({ id: 'd2', name: 'Kuratorius', pivot: { id: 'p2', start_date: '2022-09-01', end_date: '2023-06-01' } })],
 };
 
-const fullCan = { update: true, delete: true, updateRoles: false, managePasswords: false };
+const fullCan = { update: true, delete: true, updateSuperAdmin: false, managePasswords: false };
 
 const createWrapper = (overrides: Record<string, unknown> = {}, can: Record<string, boolean> = fullCan, extra: Record<string, unknown> = {}) =>
   mount(ShowUser, {
@@ -284,19 +282,30 @@ describe('ShowUser.vue', () => {
     });
   });
 
-  describe('roles', () => {
-    it('shows the roles section to someone who may change roles, even when the person has none', () => {
-      expect(tabs(createWrapper())).not.toContain('roles');
-      expect(tabs(createWrapper({}, { ...fullCan, updateRoles: true }))).toContain('roles:0');
-      expect(tabs(createWrapper({ roles: [{ id: '1', name: 'Editor' }] }))).toContain('roles:1');
+  describe('super admin', () => {
+    it('shows the access section to a super admin, or when the person is one', () => {
+      expect(tabs(createWrapper())).not.toContain('access');
+      expect(tabs(createWrapper({}, { ...fullCan, updateSuperAdmin: true }))).toContain('access');
+      expect(tabs(createWrapper({}, fullCan, { isSuperAdmin: true }))).toContain('access');
     });
 
-    it('lets only a super admin open the role editor', () => {
-      const wrapper = createWrapper({ roles: [{ id: '1', name: 'Editor' }] });
-      expect(wrapper.text()).not.toContain('Keisti roles');
+    it('lets only a super admin flip the switch', () => {
+      const toggle = (wrapper: ReturnType<typeof mount>) => wrapper.findComponent({ name: 'FormToggleRow' });
 
-      const admin = createWrapper({ roles: [{ id: '1', name: 'Editor' }] }, { ...fullCan, updateRoles: true }, { assignment: { studyPrograms: [], roles: [{ id: 1, name: 'Editor' }] } });
-      expect(admin.text()).toContain('Keisti roles');
+      expect(toggle(createWrapper({}, fullCan, { isSuperAdmin: true })).props('disabled')).toBe(true);
+      expect(toggle(createWrapper({}, { ...fullCan, updateSuperAdmin: true })).props('disabled')).toBe(false);
+    });
+
+    it('asks before making the person a super admin, then saves', async () => {
+      vi.mocked(router.put).mockClear();
+      const wrapper = createWrapper({}, { ...fullCan, updateSuperAdmin: true });
+
+      await wrapper.findComponent({ name: 'FormToggleRow' }).vm.$emit('update:modelValue', true);
+      expect(router.put).not.toHaveBeenCalled();
+
+      await wrapper.find('[data-testid="confirm-yes"]').trigger('click');
+
+      expect(router.put).toHaveBeenCalledWith('/mocked/users.superAdmin.update', { is_super_admin: true, acknowledge_access_change: false }, { preserveScroll: true });
     });
   });
 });

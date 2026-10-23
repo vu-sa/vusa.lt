@@ -2,7 +2,6 @@
   <UserForm
     remember-key="CreateUser"
     :user
-    :roles
     :tenants-with-duties
     :permissable-tenants
     @submit:form="(form) => (form as InertiaForm<Record<string, unknown>>).post(route('users.store'))"
@@ -15,7 +14,6 @@ import type { InertiaForm } from '@inertiajs/vue3';
 import UserForm from '@/Components/AdminForms/UserForm.vue';
 
 defineProps<{
-  roles: App.Entities.Role[];
   tenantsWithDuties: App.Entities.Tenant[];
   permissableTenants: App.Entities.Tenant[];
 }>();

@@ -174,8 +174,8 @@ describe('authorized access', function (): void {
             );
     });
 
-    // Duties and roles are associations with their own lifecycle: they are managed on the record
-    // (the Priskirti sheet, the Rolės section), so the form is sent none of the picker payloads.
+    // Duties are an association with their own lifecycle: they are managed on the record (the
+    // Priskirti sheet), so the form is sent none of the picker payloads.
     test('the edit form carries the person, not the duty tree or the role list', function (): void {
         $user = makeUser($this->tenant);
 
@@ -449,18 +449,7 @@ describe('create-form field coverage', function (): void {
             ->and($created->show_pronouns)->toBeTrue();
     });
 
-    test('a non-existent role id on create is rejected rather than synced', function (): void {
-        asUser($this->admin)->post(route('users.store'), [
-            'name' => 'Bogus Role',
-            'email' => 'bogus.role@stud.vu.lt',
-            'roles' => [999999],
-            'current_duties' => [$this->duty->id],
-        ])->assertSessionHasErrors('roles.0');
-
-        $this->assertDatabaseMissing('users', ['email' => 'bogus.role@stud.vu.lt']);
-    });
-
-    test('a super admin can still assign a real role on create', function (): void {
+    test('roles sent on create are not given to the person', function (): void {
         $role = Role::firstOrCreate(['name' => 'Create Path Role', 'guard_name' => 'web']);
 
         asUser($this->admin)->post(route('users.store'), [
@@ -470,7 +459,7 @@ describe('create-form field coverage', function (): void {
             'current_duties' => [$this->duty->id],
         ])->assertRedirect()->assertSessionHasNoErrors();
 
-        expect(User::query()->where('email', 'real.role@stud.vu.lt')->firstOrFail()->hasRole($role))->toBeTrue();
+        expect(User::query()->where('email', 'real.role@stud.vu.lt')->firstOrFail()->roles)->toBeEmpty();
     });
 });
 
@@ -480,7 +469,7 @@ describe('editing the person leaves their associations alone', function (): void
         $this->person = makeUser($this->tenant);
     });
 
-    test('saving the form without duties or roles keeps both', function (): void {
+    test('saving the form keeps the duties and the roles held directly', function (): void {
         $role = Role::firstOrCreate(['name' => 'Keeps Its Role', 'guard_name' => 'web']);
         $this->person->roles()->sync([$role->id]);
         $dutyIds = $this->person->current_duties()->pluck('duties.id')->all();
@@ -489,6 +478,7 @@ describe('editing the person leaves their associations alone', function (): void
             'name' => $this->person->name,
             'email' => $this->person->email,
             'phone' => '+37060000000',
+            'roles' => [],
         ])->assertRedirect();
 
         $fresh = $this->person->fresh();
@@ -499,71 +489,80 @@ describe('editing the person leaves their associations alone', function (): void
     });
 });
 
-describe('roles are edited on the record', function (): void {
+describe('super admin is a switch on the record', function (): void {
     beforeEach(function (): void {
         $this->admin = makeAdminUser($this->tenant);
         $this->person = makeUser($this->tenant);
-        $this->role = Role::firstOrCreate(['name' => 'Edited On The Record', 'guard_name' => 'web']);
+        $this->superAdminRole = config('permission.super_admin_role_name');
     });
 
-    test('a super admin replaces the roles', function (): void {
-        asUser($this->admin)->put(route('users.roles.update', $this->person), ['roles' => [$this->role->id]])
+    test('a super admin grants and takes away super admin, leaving other roles alone', function (): void {
+        $legacyRole = Role::firstOrCreate(['name' => 'Held Directly', 'guard_name' => 'web']);
+        $this->person->assignRole($legacyRole);
+
+        asUser($this->admin)->put(route('users.superAdmin.update', $this->person), ['is_super_admin' => true])
             ->assertRedirect();
 
-        expect($this->person->fresh()->hasRole($this->role))->toBeTrue();
+        expect($this->person->fresh()->isSuperAdmin())->toBeTrue();
 
-        asUser($this->admin)->put(route('users.roles.update', $this->person), ['roles' => []])->assertRedirect();
+        asUser($this->admin)->put(route('users.superAdmin.update', $this->person), ['is_super_admin' => false])
+            ->assertRedirect();
 
-        expect($this->person->fresh()->roles)->toBeEmpty();
+        expect($this->person->fresh()->isSuperAdmin())->toBeFalse()
+            ->and($this->person->fresh()->hasRole($legacyRole))->toBeTrue();
+    });
+
+    test('the new super admin has full access on their next request', function (): void {
+        expect(app(ModelAuthorizer::class)->allows($this->person, 'news.create.*'))->toBeFalse();
+
+        asUser($this->admin)->put(route('users.superAdmin.update', $this->person), ['is_super_admin' => true]);
+
+        expect(app(ModelAuthorizer::class)->allows($this->person->fresh(), 'news.create.*'))->toBeTrue();
     });
 
     test('anyone else is refused, even with permission to edit the person', function (): void {
         $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
 
-        asUser($coordinator)->put(route('users.roles.update', $this->person), ['roles' => [$this->role->id]])
+        asUser($coordinator)->put(route('users.superAdmin.update', $this->person), ['is_super_admin' => true])
             ->assertForbidden();
 
-        expect($this->person->fresh()->hasRole($this->role))->toBeFalse();
+        expect($this->person->fresh()->isSuperAdmin())->toBeFalse();
     });
 
-    test('an unknown role id is rejected rather than synced', function (): void {
-        asUser($this->admin)->put(route('users.roles.update', $this->person), ['roles' => [999999]])
-            ->assertSessionHasErrors('roles.0');
-    });
+    test('a bare request changes nothing', function (): void {
+        $this->person->assignRole($this->superAdminRole);
 
-    test('the roles key must be sent, so a bare request cannot strip every role', function (): void {
-        $this->person->roles()->sync([$this->role->id]);
+        asUser($this->admin)->put(route('users.superAdmin.update', $this->person), [])
+            ->assertSessionHasErrors('is_super_admin');
 
-        asUser($this->admin)->put(route('users.roles.update', $this->person), [])
-            ->assertSessionHasErrors('roles');
-
-        expect($this->person->fresh()->hasRole($this->role))->toBeTrue();
+        expect($this->person->fresh()->isSuperAdmin())->toBeTrue();
     });
 });
 
 describe('the record hands the assignment sheets their options', function (): void {
-    test('only to someone who may update the person, deferred, and roles only to a super admin', function (): void {
+    test('only to someone who may update the person, deferred, and never a role list', function (): void {
         $admin = makeAdminUser($this->tenant);
         $person = makeUser($this->tenant);
 
         asUser($admin)->get(route('users.show', $person))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->where('can.updateRoles', true)
+                ->where('can.updateSuperAdmin', true)
+                ->where('isSuperAdmin', false)
                 ->missing('assignment')
                 ->loadDeferredProps('userPanels', fn ($panels) => $panels
                     ->has('assignment.studyPrograms')
-                    ->has('assignment.roles')));
+                    ->missing('assignment.roles')));
     });
 
-    test('a coordinator gets the programmes but no role list', function (): void {
+    test('a coordinator gets the programmes but cannot switch super admin', function (): void {
         $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $person = makeUser($this->tenant);
 
         asUser($coordinator)->get(route('users.show', $person))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->where('can.updateRoles', false)
-                ->loadDeferredProps('userPanels', fn ($panels) => $panels->where('assignment.roles', [])));
+                ->where('can.updateSuperAdmin', false)
+                ->loadDeferredProps('userPanels', fn ($panels) => $panels->has('assignment.studyPrograms')));
     });
 });

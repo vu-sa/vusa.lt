@@ -29,7 +29,7 @@ describe('collection', function (): void {
         asUser($this->user)->get(route('responsibilities.index'))->assertForbidden();
     });
 
-    test('lists responsibilities with their purpose and counts, never the super admin', function (): void {
+    test('lists responsibilities with their purpose and counts, the super admin included', function (): void {
         $this->role->givePermissionTo('news.update.padalinys');
         ResponsibilityGrant::factory()->forDuty($this->user->duties()->first())->of($this->role)->create();
         RoleFactory::forPurpose(ResponsibilityPurpose::StudentRepCoordination);
@@ -38,7 +38,7 @@ describe('collection', function (): void {
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Permissions/IndexResponsibility')
-                ->where('responsibilities', fn ($rows) => collect($rows)->doesntContain('title', config('permission.super_admin_role_name'))
+                ->where('responsibilities', fn ($rows) => collect($rows)->contains('id', Role::findByName(config('permission.super_admin_role_name'))->id)
                     && collect($rows)->firstWhere('id', $this->role->id)['people_count'] === 1
                     && collect($rows)->firstWhere('id', $this->role->id)['permissions_count'] === 1
                     && collect($rows)->firstWhere('purpose', 'student_rep_coordination') !== null));
@@ -236,6 +236,60 @@ describe('grants', function (): void {
             ->assertSessionHasNoErrors();
 
         expect($this->role->attachable_types()->pluck('duty_types.id')->all())->toBe([$type->id]);
+    });
+});
+
+describe('people holding a responsibility directly', function (): void {
+    beforeEach(function (): void {
+        $this->otherTenant = Tenant::query()->whereKeyNot($this->tenant->id)->first();
+        $this->holder = makeUser($this->tenant);
+        $this->holder->duties()->attach(Duty::factory()->for(Institution::factory()->for($this->otherTenant))->create(), ['start_date' => now()->subDay()]);
+        $this->holder->assignRole($this->role);
+    });
+
+    test('are listed under Kam suteikta with every padalinys the role reaches through their duties', function (): void {
+        asUser($this->admin)->get(route('responsibilities.show', $this->role))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('facts.users', 1)
+                ->where('can.removeUsers', true)
+                ->loadDeferredProps('grants', fn (Assert $deferred) => $deferred
+                    ->where('grants.users.0.id', $this->holder->id)
+                    ->where('grants.users.0.tenants', fn ($tenants) => collect($tenants)->sort()->values()->all() === collect([__($this->tenant->shortname), __($this->otherTenant->shortname)])->sort()->values()->all())));
+    });
+
+    test('the super admin responsibility lists the super admins', function (): void {
+        asUser($this->admin)->get(route('responsibilities.show', Role::findByName(config('permission.super_admin_role_name'))))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('responsibility.is_super_admin', true)
+                ->loadDeferredProps('grants', fn (Assert $deferred) => $deferred
+                    ->where('grants.users', fn ($users) => collect($users)->contains('id', $this->admin->id))));
+    });
+
+    test('a super admin takes it away', function (): void {
+        asUser($this->admin)->delete(route('responsibilities.users.destroy', [$this->role, $this->holder]))
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        expect($this->holder->fresh()->hasRole($this->role))->toBeFalse();
+    });
+
+    test('a responsibility manager who is not a super admin may not', function (): void {
+        $managing = Role::factory()->create();
+        $managing->givePermissionTo(['roles.read.*', 'roles.update.*']);
+        $manager = makeUser($this->tenant);
+        $manager->duties()->first()->assignRole($managing);
+
+        asUser($manager)->get(route('responsibilities.show', $this->role))
+            ->assertInertia(fn (Assert $page) => $page->where('can.removeUsers', false));
+
+        asUser($manager)->delete(route('responsibilities.users.destroy', [$this->role, $this->holder]))->assertForbidden();
+
+        expect($this->holder->fresh()->hasRole($this->role))->toBeTrue();
+    });
+
+    test('someone who does not hold it returns 404', function (): void {
+        asUser($this->admin)->delete(route('responsibilities.users.destroy', [$this->role, $this->user]))->assertNotFound();
     });
 });
 

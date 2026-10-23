@@ -50,6 +50,10 @@
             >
               {{ titleExpanded ? $t('Rodyti mažiau') : $t('Rodyti daugiau') }}
             </button>
+            <!-- Under the title even when the actions sit beside it, so a sentence never squeezes into their column. -->
+            <div v-if="$slots.lead" :class="['mt-2 max-w-3xl text-sm text-muted-foreground', actionsBesideTitle && 'lg:col-start-1 lg:row-start-4']" data-slot="record-lead">
+              <slot name="lead" />
+            </div>
             <div :class="['mt-4 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between', actionsBesideTitle && 'lg:col-start-2 lg:row-start-2 lg:mt-3']">
               <div v-if="status || $slots.subtitle" class="flex flex-wrap items-center gap-3">
                 <StatusBadge v-if="status" :status />

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import { useForm } from '@inertiajs/vue3';
+import { router, useForm } from '@inertiajs/vue3';
 import { nextTick } from 'vue';
 
 import { createMockForm, type MockForm } from '@/tests/helpers/createMockForm';
@@ -32,21 +32,23 @@ const grants: ResponsibilityGrantsPayload = {
   duties: [],
   dutyTypes: [{ id: 'grant-1', type: { id: 3, title: 'ŽI koordinatorius' }, scope_type: 'own_tenant', scope_name: null, duties_count: 2 }],
   institutions: [],
+  users: [],
 };
 
 let form: MockForm;
 
-function mountGrants() {
+function mountGrants(props: Record<string, unknown> = {}, extraStubs: Record<string, unknown> = {}) {
   return mount(ResponsibilityGrants, {
     props: {
       roleId: 'role-1',
       grants,
+      ...props,
       scopes: ['tenant'],
       canUpdate: true,
       dutyTypeOptions: [{ id: 3, title: 'ŽI koordinatorius', parent_id: null }],
       options: { institutions: [], tenants: [{ id: '1', shortname: 'MIF' }], institutionTypes: [] },
     },
-    global: { stubs },
+    global: { stubs: { ...stubs, ...extraStubs } },
   });
 }
 
@@ -91,5 +93,33 @@ describe('ResponsibilityGrants', () => {
 
     expect(wrapper.find('[data-testid="grant-scope-own_tenant"]').exists()).toBe(false);
     expect(form.scope_type).toBe('tenant');
+  });
+
+  describe('people holding it directly', () => {
+    const withHolder = { ...grants, users: [{ id: 'u1', name: 'Justas', profile_photo_path: null, tenants: ['VU SA', 'VU SA FilF'] }] };
+    const confirmingDialog = { ConfirmDialog: { props: ['open'], emits: ['confirm'], template: '<button v-if="open" data-testid="confirm-yes" @click="$emit(\'confirm\')" />' } };
+
+    it('lists every padalinys the role reaches through them', () => {
+      expect(mountGrants({ grants: withHolder }).get('[data-testid="grant-user"]').text()).toContain('VU SA, VU SA FilF');
+    });
+
+    it('lets only a super admin take it away, through its own route', async () => {
+      expect(mountGrants({ grants: withHolder }).get('[data-testid="grant-user"]').find('button').exists()).toBe(false);
+
+      vi.mocked(router.delete).mockClear();
+      const wrapper = mountGrants({ grants: withHolder, canRemoveUsers: true }, confirmingDialog);
+      await wrapper.get('[data-testid="grant-user"] button').trigger('click');
+      await wrapper.get('[data-testid="confirm-yes"]').trigger('click');
+
+      expect(router.delete).toHaveBeenCalledWith('/mocked/responsibilities.users.destroy', expect.objectContaining({ data: { acknowledge_access_change: false } }));
+    });
+
+    it('shows only the people on the super admin responsibility, which is switched on their pages', () => {
+      const wrapper = mountGrants({ grants: withHolder, isSuperAdmin: true, canRemoveUsers: true });
+
+      expect(wrapper.find('[data-testid="grant-duty-type"]').exists()).toBe(false);
+      expect(wrapper.get('[data-testid="grant-user"]').find('button').exists()).toBe(false);
+      expect(wrapper.get('[data-testid="grant-users"]').text()).toContain('responsibilities.grants.users_super_admin_hint');
+    });
   });
 });

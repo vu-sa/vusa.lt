@@ -12,8 +12,8 @@
     actions-beside-title
     @action="handleAction"
   >
-    <template #subtitle>
-      <p v-if="description" class="mt-2 max-w-3xl text-sm text-muted-foreground" data-testid="responsibility-description">
+    <template v-if="description" #lead>
+      <p data-testid="responsibility-description">
         {{ description }}
       </p>
     </template>
@@ -94,6 +94,8 @@
           :grants="grants!"
           :scopes="purposeScopes"
           :can-update="can.update"
+          :can-remove-users="can.removeUsers"
+          :is-super-admin="responsibility.is_super_admin"
           :duty-type-options
           :type-grant-blocked-by
           :options="grantOptions"
@@ -179,7 +181,7 @@ const props = defineProps<{
     is_super_admin: boolean;
     updated_at: string | null;
   };
-  facts: { permissions: number; duties: number; direct: number; via_types: number; via_institutions: number; people: number; gaps: number };
+  facts: { permissions: number; duties: number; direct: number; via_types: number; via_institutions: number; users: number; people: number; gaps: number };
   catalog: PermissionCatalog;
   grantedPermissions: string[];
   legacyPermissions: string[];
@@ -189,7 +191,7 @@ const props = defineProps<{
   grants?: ResponsibilityGrantsPayload;
   people?: ResponsibilityPerson[];
   grantOptions?: ResponsibilityGrantOptions;
-  can: { update: boolean; delete: boolean; manageSettings: boolean };
+  can: { update: boolean; delete: boolean; manageSettings: boolean; removeUsers: boolean };
 }>();
 
 const section = ref('permissions');
@@ -222,7 +224,7 @@ const grantSourcesDetail = computed(() => [
 
 const sections = computed<RecordPageSection[]>(() => [
   { value: 'permissions', label: $t('responsibilities.tabs.permissions'), count: props.facts.permissions },
-  { value: 'grants', label: $t('responsibilities.tabs.grants'), count: props.facts.direct + props.facts.via_types + props.facts.via_institutions },
+  { value: 'grants', label: $t('responsibilities.tabs.grants'), count: props.facts.direct + props.facts.via_types + props.facts.via_institutions + props.facts.users },
   { value: 'people', label: $t('responsibilities.tabs.people'), count: props.facts.people },
   { value: 'delegation', label: $t('responsibilities.tabs.delegation'), count: props.attachableTypes.length },
 ]);

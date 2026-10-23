@@ -145,21 +145,6 @@
             :placeholder="$t('Pasirink pareigybes…')"
           />
         </FormFieldWrapper>
-
-        <FormFieldWrapper
-          v-if="isSuperAdmin"
-          id="user-roles"
-          :label="`${$t('forms.fields.admin_role')} (superadmin)`"
-        >
-          <MultiSelect
-            id="user-roles"
-            v-model="selectedRoles"
-            :options="rolesOptions"
-            label-field="label"
-            value-field="value"
-            :placeholder="$t('Be rolės...')"
-          />
-        </FormFieldWrapper>
       </FormPanel>
 
       <FormPanel
@@ -244,8 +229,6 @@ import { formatStaticTime } from '@/Utils/IntlTime';
 
 const props = withDefaults(defineProps<{
   user: App.Entities.User;
-  /** Create only: a super admin may give the new person roles. */
-  roles?: App.Entities.Role[];
   /** Create only: the duties a new person can start with. */
   tenantsWithDuties?: App.Entities.Tenant[];
   permissableTenants?: App.Entities.Tenant[];
@@ -257,7 +240,6 @@ const props = withDefaults(defineProps<{
   existingDuplicates?: DuplicateUserMatch[];
 }>(), {
   existingDuplicates: () => [],
-  roles: () => [],
   tenantsWithDuties: () => [],
   permissableTenants: () => [],
   canUpdateIdentity: true,
@@ -273,7 +255,7 @@ const isSuperAdmin = computed(() => usePage().props.auth?.user?.isSuperAdmin ?? 
 
 const userTitle = computed(() => form.name || props.user.name);
 
-// Existing duties and roles are managed on the record.
+// Existing duties are managed on the record.
 const initial = () => ({
   name: props.user.name ?? '',
   email: props.user.email ?? '',
@@ -284,7 +266,7 @@ const initial = () => ({
     ? { lt: '', en: '' }
     : { lt: '', en: '', ...(props.user.pronouns as Record<string, string>) }) as Record<'lt' | 'en', string>,
   show_pronouns: Boolean(props.user.show_pronouns),
-  ...(isCreating.value ? { current_duties: [] as string[], roles: [] as number[] } : {}),
+  ...(isCreating.value ? { current_duties: [] as string[] } : {}),
 });
 
 const form = props.rememberKey ? useForm(props.rememberKey, initial()) : useForm(initial());
@@ -296,21 +278,11 @@ const fieldIds = {
   phone: 'user-phone',
   facebook_url: 'user-facebook',
   current_duties: 'user-duties',
-  roles: 'user-roles',
 };
 
 const hasPronouns = computed(() => Boolean(form.pronouns?.lt || form.pronouns?.en));
 
-// --- Create only: the first duties and, for a super admin, roles -------------------------------
-
-const rolesOptions = computed(() => props.roles.map(role => ({ label: role.name, value: role.id })));
-
-const selectedRoles = computed({
-  get: () => rolesOptions.value.filter(option => (form as unknown as { roles: number[] }).roles?.includes(option.value)),
-  set: (items: { label: string; value: number }[]) => {
-    (form as unknown as { roles: number[] }).roles = items.map(item => item.value);
-  },
-});
+// --- Create only: the first duties ------------------------------------------------------------
 
 /** Only the tenants the actor may create people in, flattened so a duty is named with its institution. */
 const dutyOptions = computed(() => props.tenantsWithDuties

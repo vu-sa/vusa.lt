@@ -22,7 +22,7 @@
 
     <template #row="{ item }">
       <article class="flex flex-col gap-2 px-4 py-4">
-        <CollectionPrimaryCell :title="item.title" :href="route('responsibilities.show', item.id)" :sub="item.description" />
+        <CollectionPrimaryCell :title="item.title" :href="route('responsibilities.show', item.id)" :sub="item.description" :sub-lines="3" />
         <p class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
           <PurposeChip :label="item.purpose_label" show-access />
           <span>{{ counts(item) }}</span>
@@ -32,7 +32,7 @@
 
     <template #cell="{ item, column }">
       <div v-if="column.key === 'title'" class="min-w-0 space-y-1">
-        <CollectionPrimaryCell :title="item.title" :href="route('responsibilities.show', item.id)" :sub="item.description" />
+        <CollectionPrimaryCell :title="item.title" :href="route('responsibilities.show', item.id)" :sub="item.description" :sub-lines="3" />
       </div>
       <PurposeChip v-else-if="column.key === 'purpose'" :label="item.purpose_label" />
       <span v-else-if="column.key === 'permissions'" class="tabular-nums text-muted-foreground">{{ item.permissions_count }}</span>

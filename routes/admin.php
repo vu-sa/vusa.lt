@@ -133,7 +133,7 @@ Route::get('users/merge', fn () => to_route('users.index')->with('info', __('she
 Route::post('users/merge', [UserController::class, 'mergeUsers'])->name('users.mergeUsers');
 Route::resource('users', UserController::class);
 
-Route::put('users/{user}/roles', [UserController::class, 'updateRoles'])->name('users.roles.update');
+Route::put('users/{user}/super-admin', [UserController::class, 'updateSuperAdmin'])->name('users.superAdmin.update');
 Route::post('users/{user}/generate-password', [UserController::class, 'generatePassword'])->name('users.generatePassword');
 Route::delete('users/{user}/delete-password', [UserController::class, 'deletePassword'])->name('users.deletePassword');
 Route::resource('users.comments', CommentController::class)->only(['store', 'update', 'destroy']);
@@ -317,6 +317,7 @@ Route::resource('responsibilities', ResponsibilityController::class)->parameters
 Route::put('responsibilities/{role}/permissions', [ResponsibilityController::class, 'updatePermissions'])->name('responsibilities.permissions.update');
 Route::post('responsibilities/{role}/grants', [ResponsibilityController::class, 'storeGrant'])->name('responsibilities.grants.store');
 Route::delete('responsibilities/{role}/grants/{grant}', [ResponsibilityController::class, 'destroyGrant'])->name('responsibilities.grants.destroy');
+Route::delete('responsibilities/{role}/users/{user}', [ResponsibilityController::class, 'destroyUser'])->name('responsibilities.users.destroy');
 Route::put('responsibilities/{role}/attachableTypes', [ResponsibilityController::class, 'syncAttachableTypes'])->name('responsibilities.attachableTypes.update');
 Route::permanentRedirect('roles', '/mano/responsibilities');
 Route::get('roles/{path}', fn (string $path) => redirect("/mano/responsibilities/{$path}", 301))->where('path', '.*');

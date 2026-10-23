@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Atsakomybės ir leidimai
 area: roles
 models: [Role, Permission, ResponsibilityGrant]
-last_reviewed: 2026-10-21
+last_reviewed: 2026-10-23
 tests:
   - tests/Feature/Permissions/MeetingPermissionsTest.php
   - tests/Feature/Console/SyncPermissionsTest.php
@@ -70,7 +70,8 @@ redaguoti tik savo padalinio naujienas, o Centrinio biuro – visų padalinių.
 ### Atsakomybių sąrašas (`/mano/responsibilities`)
 
 Sąraše matyti kiekvienos atsakomybės aprašymas, sistemos paskirtis, teisių, pareigybių ir dabar ją
-turinčių žmonių skaičius. Pagal nutylėjimą pirmiau rodomos atsakomybės su paskirtimi.
+turinčių žmonių skaičius. Pagal nutylėjimą pirmiau rodomos atsakomybės su paskirtimi. Sąraše yra ir
+**Super Admin** – jį galima atverti ir pamatyti, kas yra superadministratoriai, bet ne keisti.
 
 ### Naujos atsakomybės kūrimas
 
@@ -123,6 +124,13 @@ atskirai. Atsakomybei, kurią jau gauna tipai, šių leidimų pridėti taip pat 
 Atsakomybę galima suteikti ir pareigybės puslapio skirtuke **Atsakomybės**. Ten matyti ir tos,
 kurias pareigybė gauna per tipą ar instituciją.
 
+Atsakomybės suteikiamos tik pareigybėms, tipams ir institucijoms. Tiesiogiai žmogui suteikta
+atsakomybė galiotų **visuose** padaliniuose, kuriuose jis eina bet kokias pareigas – pvz., FilF
+komunikacijos koordinatorius, kartu esantis Parlamento nariu, gautų ir VU SA komunikacijos teises –
+todėl tokie suteikimai pašalinti. Jei tokių vis dėlto atsirastų, jie rodomi grupėje **Naudotojai** su
+padaliniais, kuriuose galioja, ir superadministratorius gali juos **Atimti**. Super Admin atsakomybėje
+šioje grupėje matyti visi superadministratoriai.
+
 ### Žmonės ir delegavimas
 
 - **Žmonės** rodo, kas dabar eina pareigybes su šia atsakomybe.
@@ -155,6 +163,7 @@ Skiltis informacinė: leidimai generuojami sistemos kode ir rankiniu būdu nekur
 | Keisti atsakomybės teises | – | ✓ | ✓ |
 | Suteikti atsakomybę pareigybei, tipui ar institucijai | Tik turimas pats, savo padalinio pareigybei | ✓ | ✓ |
 | Nustatyti sistemos paskirtis | – | Jei gali keisti nustatymus | ✓ |
+| Atimti tiesiogiai naudotojui suteiktą atsakomybę | – | – | ✓ |
 
 Pareigybę redaguojantis koordinatorius (pvz., „Komunikacijos koordinatorius“) pareigybės puslapyje
 gali suteikti tik tas atsakomybes, kurias turi pats. Taip niekas negali suteikti daugiau teisių,
@@ -162,7 +171,8 @@ nei turi.
 
 ::: warning Superadministratoriaus apsauga
 **Super Admin** keisti, trinti ar suteikti pareigybei negalima. Superadministratorius turi visą
-prieigą nepriklausomai nuo teisių tinklelio.
+prieigą nepriklausomai nuo teisių tinklelio. Superadministratoriumi narį padaro kitas
+superadministratorius – [nario puslapio](/organizacija/nariai) skiltyje **Prieiga**.
 :::
 
 ## Pranešimai ir automatizavimas {#pranesimai}
@@ -189,7 +199,9 @@ prieigą nepriklausomai nuo teisių tinklelio.
   o `permissions:sync` (leidžiamas kiekvieno diegimo metu) sukuria trūkstamus ir pašalina nebenaudojamus,
   išsaugodamas esamų leidimų ID ir turėtojus. Taisyklės: `.ai/rules/permissions.md`.
 - Maršrutai: `responsibilities.*`, `responsibilities.permissions.update`,
-  `responsibilities.grants.store|destroy`, `responsibilities.attachableTypes.update`,
+  `responsibilities.grants.store|destroy`, `responsibilities.users.destroy` (tiesioginis naudotojo
+  suteikimas, tik superadministratoriui), `responsibilities.attachableTypes.update`,
+  `users.superAdmin.update`,
   `duties.responsibilities.store|destroy`. Seni `/mano/roles…` adresai nukreipiami.
 - Suteikti gali `GrantableResponsibilities` (turintys `roles.update.*` – bet kurią, kiti – tik
   turimas). Tipui leidžiamas teises tikrina `TypeGrantablePermissions` (jokių `*` ir `forceDelete`);

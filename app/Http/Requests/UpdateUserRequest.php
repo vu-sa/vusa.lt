@@ -43,8 +43,6 @@ class UpdateUserRequest extends FormRequest
             'pronouns.lt' => ['nullable', 'string', 'max:50'],
             'pronouns.en' => ['nullable', 'string', 'max:50'],
             'show_pronouns' => ['nullable', 'boolean'],
-            'roles' => ['nullable', 'array'],
-            'roles.*' => ['exists:roles,id'],
             'current_duties' => ['nullable', 'array'],
             'current_duties.*' => [SoftDeleteRules::existsLive('duties')],
         ];

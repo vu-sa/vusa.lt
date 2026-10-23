@@ -42,7 +42,7 @@ returned undo in `onError`; the overlay outlives later searches. Draft ⇄ publi
 (`IndexPages`, `IndexNews`) goes through `useCollectionPublishing` + `CollectionPublishActions`,
 backed by `<prefix>.bulkStatus` / `<prefix>.bulkDestroy` and `Requests/Content/BulkContentRequest`.
 
-**Shared cells**: `CollectionPrimaryCell` (bold title + one quiet sub-line), `CollectionStatusMenu`
+**Shared cells**: `CollectionPrimaryCell` (bold title + one quiet sub-line; `:sub-lines="3"` when the sub-line is a description, as on Atsakomybės), `CollectionStatusMenu`
 (a `StatusBadge` that opens a status picker when `editable`), `CollectionRowActions`
 (square bordered icon actions, one labelled), `StatusBadge`. Row actions for edit / delete /
 duplicate / restore / permanent delete come from `useCollectionRecordActions` with

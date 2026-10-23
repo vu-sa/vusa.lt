@@ -65,12 +65,7 @@ test('super admin removing own super admin role is warned', function (): void {
     $superAdmin->assignRole(config('permission.super_admin_role_name'));
 
     asUserWithInertia($superAdmin)
-        ->patch(route('users.update', $superAdmin), [
-            'name' => $superAdmin->name,
-            'email' => $superAdmin->email,
-            'current_duties' => $superAdmin->current_duties->pluck('id')->all(),
-            'roles' => [],
-        ])
+        ->put(route('users.superAdmin.update', $superAdmin), ['is_super_admin' => false])
         ->assertSessionHas('access_change_warning');
 
     expect($superAdmin->fresh()->isSuperAdmin())->toBeTrue();
@@ -81,14 +76,11 @@ test('super admin removing only a duty (not the super admin role) is not warned'
     $superAdmin->assignRole(config('permission.super_admin_role_name'));
     $superAdmin->duties()->first()->assignRole('Komunikacijos koordinatorius');
 
-    $superRoleId = Role::where('name', config('permission.super_admin_role_name'))->value('id');
-
     asUserWithInertia($superAdmin)
         ->patch(route('users.update', $superAdmin), [
             'name' => $superAdmin->name,
             'email' => $superAdmin->email,
             'current_duties' => [],
-            'roles' => [$superRoleId],
         ])
         ->assertSessionMissing('access_change_warning');
 

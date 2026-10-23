@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\BuildUserIndexQuery;
 use App\Actions\DeleteUserPassword;
 use App\Actions\FindMergeableUserDuplicates;
+use App\Actions\ForgetUserAccess;
 use App\Actions\GenerateUserPassword;
 use App\Actions\Media\SyncImageMedia;
 use App\Actions\MergeUsers;
@@ -14,13 +15,12 @@ use App\Http\Requests\IndexUserRequest;
 use App\Http\Requests\MergeUsersRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
-use App\Http\Requests\UpdateUserRolesRequest;
+use App\Http\Requests\UpdateUserSuperAdminRequest;
 use App\Http\Resources\TaskResource;
 use App\Http\Resources\UserRowResource;
 use App\Http\Traits\HandlesSoftDeletes;
 use App\Http\Traits\HasTanstackTables;
 use App\Models\Duty;
-use App\Models\Role;
 use App\Models\StudyProgram;
 use App\Models\User;
 use App\Services\ModelAuthorizer as Authorizer;
@@ -103,7 +103,6 @@ class UserController extends AdminController
         $this->handleAuthorization('create', User::class);
 
         return $this->inertiaResponse('Admin/People/CreateUser', [
-            'roles' => Role::all(),
             'tenantsWithDuties' => UserDutyService::getTenantsWithDutiesForForm($this->authorizer),
             'permissableTenants' => UserDutyService::getPermissableTenants($this->authorizer, 'users.create.padalinys'),
         ]);
@@ -118,7 +117,7 @@ class UserController extends AdminController
             $user = new User;
 
             $validatedData = $request->safe();
-            $user->fill(collect($validatedData)->except(['current_duties', 'roles', 'profile_photo_media'])->toArray());
+            $user->fill(collect($validatedData)->except(['current_duties', 'profile_photo_media'])->toArray());
 
             $user->save();
 
@@ -133,11 +132,6 @@ class UserController extends AdminController
                 $this->authorizer,
                 'users.create.padalinys'
             );
-
-            // only a super admin may assign roles
-            if (User::find(Auth::id())->isSuperAdmin()) {
-                $user->roles()->sync($request->validated('roles') ?? []);
-            }
 
             return $user;
         });
@@ -160,7 +154,6 @@ class UserController extends AdminController
                 'upcoming_duties.institution.tenant',
                 'previous_duties.institution.tenant',
                 'previous_duties.formerNames',
-                'roles',
                 'tasks.taskable',
                 'tasks.users:id,name,email,profile_photo_path',
                 'tasks.tenants',
@@ -188,20 +181,20 @@ class UserController extends AdminController
 
         return $this->inertiaResponse('Admin/People/ShowUser', [
             'user' => fn () => $loadUser()->toFullArray(),
+            'isSuperAdmin' => fn () => $user->isSuperAdmin(),
             'tasks' => fn () => TaskResource::collection($tasks())->resolve(),
             'taskStats' => fn () => $taskStats(),
             // Per-record, not from `auth.can`, which carries no flat permission names.
             'can' => fn () => [
                 'update' => (bool) $actor()->can('update', $user),
                 'delete' => (bool) $actor()->can('delete', $user),
-                'updateRoles' => (bool) $actor()->isSuperAdmin(),
+                'updateSuperAdmin' => (bool) $actor()->isSuperAdmin(),
                 'managePasswords' => (bool) ($actor()->isSuperAdmin() && $actor()->can('update', $user)),
             ],
-            // The Priskirti sheet's programme picker and the roles sheet's options: only someone
-            // who may act on them needs them, and neither belongs on the first paint.
+            // The Priskirti sheet's programme picker: only someone who may act on it needs it, and it
+            // does not belong on the first paint.
             'assignment' => Inertia::defer(fn () => $actor()->can('update', $user) ? [
                 'studyPrograms' => StudyProgram::query()->get(['id', 'name', 'degree', 'tenant_id']),
-                'roles' => $actor()->isSuperAdmin() ? Role::all(['id', 'name']) : [],
             ] : null, 'userPanels'),
         ]);
     }
@@ -234,7 +227,6 @@ class UserController extends AdminController
         $this->handleAuthorization('update', $user);
 
         $actor = $request->user();
-        $actorIsSuperAdmin = $actor->isSuperAdmin();
         $currentDutyIds = $user->current_duties->pluck('id');
 
         // UpdateUserRequest already rejects an identity change the actor may not make;
@@ -250,9 +242,9 @@ class UserController extends AdminController
             $fields[] = 'email';
         }
 
-        $mutation = function () use ($request, $user, $currentDutyIds, $actorIsSuperAdmin, $fields): void {
-            // Duties and roles are managed on the record (Priskirti sheet, Rolės section), so the
-            // form no longer posts them — and absent must mean "leave alone", never "remove all".
+        $mutation = function () use ($request, $user, $currentDutyIds, $fields): void {
+            // Duties are managed on the record (Priskirti sheet), so the form no longer posts
+            // them — and absent must mean "leave alone", never "remove all".
             if ($request->has('current_duties')) {
                 UserDutyService::syncDutiesForUser(
                     new SupportCollection($request->current_duties ?? []),
@@ -263,20 +255,13 @@ class UserController extends AdminController
                 );
             }
 
-            DB::transaction(function () use ($request, $user, $actorIsSuperAdmin, $fields): void {
+            DB::transaction(function () use ($request, $user, $fields): void {
                 $user->update($request->safe()->only($fields));
                 app(SyncImageMedia::class)->fromValidated($user, 'profile_photo', $request->validated(), 'profile_photo_media', $request->user());
-
-                // only a super admin may change roles
-                if ($actorIsSuperAdmin && $request->has('roles')) {
-                    $user->roles()->sync($request->roles ?? []);
-                }
             });
         };
 
-        // Editing your own profile can drop the duties/roles that grant your
-        // access. (A super admin can only self-lock by removing the Super Admin
-        // role, but the analyzer detects that case too.)
+        // Editing your own profile can drop the duties that grant your access.
         $couldAffectSelf = $user->is($actor);
 
         if ($warning = $this->guardSelfLockout($actor, $couldAffectSelf, $request, $mutation)) {
@@ -287,19 +272,25 @@ class UserController extends AdminController
     }
 
     /**
-     * Replace a person's roles (super admin only). Roles are an association with a lifecycle of
-     * their own, so they are edited on the record rather than in the form.
+     * Make a person a super admin or take it away. Other roles reach people only through their
+     * duties' responsibilities, which scope them to a padalinys; a role held by the person
+     * directly would apply in every padalinys they hold any duty in.
      */
-    public function updateRoles(UpdateUserRolesRequest $request, User $user)
+    public function updateSuperAdmin(UpdateUserSuperAdminRequest $request, User $user)
     {
         $actor = $request->user();
+        $superAdminRole = config('permission.super_admin_role_name');
 
-        $mutation = fn () => $user->roles()->sync($request->validated('roles') ?? []);
+        $mutation = fn () => $request->boolean('is_super_admin')
+            ? $user->assignRole($superAdminRole)
+            : $user->removeRole($superAdminRole);
 
         // Removing your own Super Admin role locks you out, so it goes through the same guard as every access change.
         if ($warning = $this->guardSelfLockout($actor, $user->is($actor), $request, $mutation)) {
             return $warning;
         }
+
+        ForgetUserAccess::execute([$user->getKey()]);
 
         return back()->with('success', $this->entityMessage('updated', 'user'));
     }

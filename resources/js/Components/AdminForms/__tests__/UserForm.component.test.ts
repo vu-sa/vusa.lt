@@ -201,7 +201,6 @@ describe('UserForm.vue', () => {
       rememberKey: 'CreateUser',
       tenantsWithDuties,
       permissableTenants: [{ id: 1, shortname: 'VU SA MIF' }],
-      roles: [{ id: 1, name: 'Editor' }],
     });
 
     it('creates in create mode and asks for the first duties', () => {
@@ -223,14 +222,10 @@ describe('UserForm.vue', () => {
       ]);
     });
 
-    it('offers roles to a super admin only', () => {
-      wrapper = mountForm(createProps());
-      expect(wrapper.find('[data-testid="user-roles"]').exists()).toBe(false);
-      wrapper.unmount();
-
+    it('offers no roles, not even to a super admin', () => {
       vi.mocked(usePage).mockReturnValue(createMockPage({ auth: { user: { isSuperAdmin: true } } }) as never);
       wrapper = mountForm(createProps());
-      expect(wrapper.find('[data-testid="user-roles"]').exists()).toBe(true);
+      expect(wrapper.find('#user-roles').exists()).toBe(false);
     });
   });
 

@@ -144,6 +144,11 @@ return [
         'scope_hint' => 'What the duty is responsible for: a more specific grant overrides a broader one.',
         'own_tenant_hint' => "Each duty is responsible for its own institution's padalinys.",
         'institution_tenant_hint' => "The institution's duties are responsible for its padalinys.",
+        'users' => 'Users',
+        'users_hint' => 'The old way: the responsibility is given to the user themselves, not to a duty. It applies in every padalinys they hold a duty in, so give it to a duty instead and take it away here.',
+        'users_super_admin_hint' => 'A member is made a super admin in the “Access” section of their page.',
+        'applies_in' => 'Applies in:',
+        'no_current_duties' => 'No current duties',
         'submit' => 'Give',
     ],
 

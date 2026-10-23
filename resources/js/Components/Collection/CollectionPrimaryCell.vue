@@ -33,7 +33,7 @@
     <!-- A search excerpt stands in for the sub-line, so matching never makes a row taller. -->
     <p
       v-if="sub || $slots.sub"
-      :class="['mt-0.5 truncate text-xs text-muted-foreground', mono && !subMatch && 'font-mono']"
+      :class="['mt-0.5 text-xs text-muted-foreground', subLines === 3 ? 'line-clamp-3 text-pretty' : 'truncate', mono && !subMatch && 'font-mono']"
     >
       <SearchMatch v-if="subMatch" :match="subMatch" />
       <slot v-else name="sub">
@@ -67,6 +67,8 @@ const props = withDefaults(defineProps<{
   sub?: string | null;
   /** Set when the sub-line is a path, slug or code. */
   mono?: boolean;
+  /** A description rather than a distinguishing detail: wraps up to three lines. */
+  subLines?: 1 | 3;
 }>(), {
   title: undefined,
   titleLines: 1,
@@ -74,6 +76,7 @@ const props = withDefaults(defineProps<{
   clickable: false,
   sub: undefined,
   mono: false,
+  subLines: 1,
 });
 
 const titleMatch = computed(() => matchTitle(props.title ?? '', props.titleMatches));
