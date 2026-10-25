@@ -486,7 +486,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
      */
     public function isDiscardable(): bool
     {
-        return $this->created_at?->isAfter(now()->subDay()) === true
+        return $this->created_at->isAfter(now()->subDay()) === true
             && ! $this->agendaItems()->exists()
             && ! $this->fileableFiles()->exists()
             && ! $this->documents()->exists()
