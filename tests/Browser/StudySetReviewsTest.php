@@ -24,8 +24,7 @@ test('the review form preserves an existing review when saving an edit', functio
     $course = StudySetCourse::factory()->for($studySet)->create();
     $review = LecturerReview::factory()->create(['study_set_course_id' => $course->id]);
 
-    $page = loginAsAdmin($user);
-    $page->navigate("/mano/studySets/{$studySet->id}/edit");
+    $page = loginAsAdmin($user, "/mano/studySets/{$studySet->id}/edit");
     waitForInertiaRender($page, '#review-lecturer-0');
     $page->fill('#review-lecturer-0', 'Pakeistas dėstytojas');
 
@@ -50,8 +49,7 @@ test('the review form preserves an existing review when saving an edit', functio
 
 test('a new study set explains when reviews can be added', function (): void {
     $user = makeTenantUserWithRole('Komunikacijos koordinatorius', Tenant::query()->firstOrFail());
-    $page = loginAsAdmin($user);
-    $page->navigate('/mano/studySets/create');
+    $page = loginAsAdmin($user, '/mano/studySets/create');
     waitForInertiaRender($page, '[data-slot=form-page]');
     $page->assertSee('Pirmiausia išsaugok dalykus')
         ->assertDontSee('Pridėti atsiliepimą')

@@ -60,7 +60,7 @@ describe('experiment switch', function (): void {
         $duty = Duty::factory()->for(Institution::factory()->for($this->tenant))->create();
         $user->duties()->attach($duty, ['start_date' => today()->subDay()]);
 
-        asUser($user)->get(route('goals.index'))
+        asUserWithInertia($user)->get(route('goals.index'))
             ->assertInertia(fn (Assert $page) => $page->where('canCreate', false));
         asUser($user)->get(route('goals.create'))->assertForbidden();
     });
@@ -100,7 +100,7 @@ describe('experiment switch', function (): void {
         $admin = makeAdminUser($this->otherTenant);
 
         asUser($admin)->get(route('goals.index'))->assertOk();
-        asUser($admin)->get(route('goals.create'))
+        asUserWithInertia($admin)->get(route('goals.create'))
             ->assertInertia(fn (Assert $page) => $page->has('tenants', 1)->where('tenants.0.id', $this->tenant->id));
         asUser($admin)->post(route('goals.store'), [
             'title' => ['lt' => 'Tikslas', 'en' => 'Goal'],
@@ -122,12 +122,12 @@ describe('experiment switch', function (): void {
     test('the list hides disabled tenants and includes other enabled tenants', function (): void {
         $goal = Goal::factory()->create(['tenant_id' => $this->otherTenant->id]);
 
-        asUser($this->editor)->get(route('goals.index'))
+        asUserWithInertia($this->editor)->get(route('goals.index'))
             ->assertInertia(fn (Assert $page) => $page->has('goals', 1)->where('goals.0.id', $this->goal->id));
 
         $this->otherTenant->update(['goals_enabled' => true]);
 
-        asUser($this->editor)->get(route('goals.index'))
+        asUserWithInertia($this->editor)->get(route('goals.index'))
             ->assertInertia(fn (Assert $page) => $page->has('goals', 2));
         asUser($this->editor)->get(route('goals.show', $goal))->assertOk();
     });
@@ -139,7 +139,7 @@ describe('experiment switch', function (): void {
         foreach ([true, false, true] as $enabled) {
             Tenant::query()->whereKey($this->tenant->id)->update(['goals_enabled' => $enabled]);
 
-            asUser($admin)->get(route('problems.show', $problem))
+            asUserWithInertia($admin)->get(route('problems.show', $problem))
                 ->assertInertia(fn (Assert $page) => $page->where('adminNavigation.workspaces', fn ($workspaces): bool => collect($workspaces)->flatMap(fn ($workspace) => $workspace['sections'])->pluck('key')->contains('tikslai') === $enabled
                     && collect($workspaces)->flatMap(fn ($workspace) => $workspace['createActions'])->pluck('key')->contains('new_goal') === $enabled));
         }
@@ -157,14 +157,14 @@ describe('experiment switch', function (): void {
         $outsider = makeTenantUserWithRole('Tikslų bandytojas', $this->otherTenant);
 
         asUser($outsider)->get(route('goals.index'))->assertNotFound();
-        asUser($this->editor)->get(route('goals.index'))->assertOk()
+        asUserWithInertia($this->editor)->get(route('goals.index'))->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component('Admin/Goals/IndexGoal')->has('goals', 1));
     });
 
     test('the problem page offers goal links only inside the pilot', function (): void {
         $problem = Problem::factory()->create(['tenant_id' => $this->tenant->id]);
 
-        asUser($this->editor)->get(route('problems.show', $problem))
+        asUserWithInertia($this->editor)->get(route('problems.show', $problem))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('goalsExperiment', true)
                 ->missing('goalLinks')
@@ -172,7 +172,7 @@ describe('experiment switch', function (): void {
 
         $this->tenant->update(['goals_enabled' => false]);
 
-        asUser($this->editor)->get(route('problems.show', $problem))
+        asUserWithInertia($this->editor)->get(route('problems.show', $problem))
             ->assertInertia(fn (Assert $page) => $page->missing('goalsExperiment')->missing('goalLinks'));
     });
 
@@ -180,7 +180,7 @@ describe('experiment switch', function (): void {
         $problem = Problem::factory()->create(['tenant_id' => $this->otherTenant->id]);
         $this->goal->problems()->attach($problem);
 
-        asUser($this->editor)->get(route('problems.show', $problem))
+        asUserWithInertia($this->editor)->get(route('problems.show', $problem))
             ->assertInertia(fn (Assert $page) => $page->missing('goalsExperiment')->missing('goalLinks'));
         asUser(makeAdminUser($this->tenant))->post(route('problems.steps.store', $problem), [])->assertNotFound();
     });
@@ -193,7 +193,7 @@ describe('goals', function (): void {
         $this->goal->update(['is_public' => true]);
         Step::factory()->create(['goal_id' => $this->goal->id, 'problem_id' => $problem->id]);
 
-        asUser($this->editor)->get(route('goals.show', $this->goal))
+        asUserWithInertia($this->editor)->get(route('goals.show', $this->goal))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Goals/ShowGoal')
@@ -203,7 +203,7 @@ describe('goals', function (): void {
                 ->where('can.update', true)
                 ->missing('problemOptions'));
 
-        asUser($this->editor)->get(route('goals.create'))
+        asUserWithInertia($this->editor)->get(route('goals.create'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component('Admin/Goals/CreateGoal')->where('tenants.0.id', $this->tenant->id)->has('statuses', 5));
     });
@@ -265,7 +265,7 @@ describe('steps and problems', function (): void {
         $step = Step::factory()->create(['goal_id' => $goal->id, 'problem_id' => $problem->id]);
         $admin = makeAdminUser($this->tenant);
 
-        asUser($admin)->get(route('problems.show', $problem))
+        asUserWithInertia($admin)->get(route('problems.show', $problem))
             ->assertInertia(fn (Assert $page) => $page->loadDeferredProps(fn (Assert $reload) => $reload
                 ->has('goalLinks.goals', 0)->has('goalLinks.steps', 0)));
         asUser($admin)->post(route('problems.steps.store', $problem), [
@@ -277,7 +277,7 @@ describe('steps and problems', function (): void {
         asUser($admin)->delete(route('problems.steps.destroy', ['problem' => $problem, 'step' => $step]))->assertNotFound();
 
         $this->otherTenant->update(['goals_enabled' => true]);
-        asUser($admin)->get(route('problems.show', $problem))
+        asUserWithInertia($admin)->get(route('problems.show', $problem))
             ->assertInertia(fn (Assert $page) => $page->loadDeferredProps(fn (Assert $reload) => $reload
                 ->where('goalLinks.goals.0.id', $goal->id)->where('goalLinks.steps.0.id', $step->id)));
     });
@@ -351,7 +351,7 @@ describe('step details', function (): void {
             ->and($steps['Kolega susitiko su dekanu']->created_by)->toBe($this->editor->id)
             ->and($steps['Kolega susitiko su dekanu']->url)->toBe('https://example.com/protokolas');
 
-        asUser($this->editor)->get(route('goals.show', $this->goal))
+        asUserWithInertia($this->editor)->get(route('goals.show', $this->goal))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('steps.0.recorder.id', $this->editor->id)
                 ->where('steps.0.performers.0.id', $colleague->id));
@@ -385,7 +385,7 @@ describe('agenda items', function (): void {
         $step = Step::factory()->create(['goal_id' => $goal->id, 'agenda_item_id' => $this->agendaItem->id]);
         $admin = makeAdminUser($this->tenant);
 
-        asUser($admin)->get(route('agendaItems.show', $this->agendaItem))
+        asUserWithInertia($admin)->get(route('agendaItems.show', $this->agendaItem))
             ->assertInertia(fn (Assert $page) => $page->loadDeferredProps(fn (Assert $reload) => $reload
                 ->has('goalLinks.goals', 0)->has('goalLinks.options', 1)->where('goalLinks.options.0.id', $this->goal->id)));
         asUser($admin)->post(route('agendaItems.goals.store', $this->agendaItem), ['goal_id' => $goal->id])->assertForbidden();
@@ -403,7 +403,7 @@ describe('agenda items', function (): void {
         expect($step->agenda_item_id)->toBe($this->agendaItem->id)
             ->and($step->happened_on->toDateString())->toBe('2026-09-15');
 
-        asUser($this->editor)->get(route('agendaItems.show', $this->agendaItem))
+        asUserWithInertia($this->editor)->get(route('agendaItems.show', $this->agendaItem))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('goalsExperiment', true)
                 ->missing('goalLinks')

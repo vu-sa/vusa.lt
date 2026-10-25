@@ -35,13 +35,13 @@ describe('authorized access', function (): void {
     });
 
     test('agenda items have a collection page', function (): void {
-        asUser(makeAdminUser($this->tenant))
+        asUserWithInertia(makeAdminUser($this->tenant))
             ->get(route('agendaItems.index'))
             ->assertInertia(fn (Assert $page) => $page->component('Admin/Representation/IndexAgendaItem'));
     });
 
     test('agenda item collection opens without meeting permissions and starts on the user\'s padalinys', function (): void {
-        asUser(makeUser($this->tenant))
+        asUserWithInertia(makeUser($this->tenant))
             ->get(route('agendaItems.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->where('defaultTenantShortnames', [$this->tenant->shortname]));

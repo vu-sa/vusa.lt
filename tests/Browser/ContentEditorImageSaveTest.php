@@ -24,8 +24,7 @@ it('confirms an uploaded image save and permits saving again', function (string 
     // A small WebP skips the compressor's external worker, keeping this save test offline.
     $upload = UploadedFile::fake()->image('editor-cover.webp', 800, 400);
     $uploadPath = $upload->storeAs('browser-fixtures', 'editor-cover.webp', 'local');
-    $page = loginAsAdmin($user);
-    $page->navigate("/mano/{$kind}/{$record->id}/edit");
+    $page = loginAsAdmin($user, "/mano/{$kind}/{$record->id}/edit");
     waitForInertiaRender($page, '[data-slot=upload] input[type=file]');
 
     $page->attach('[data-slot=upload] input[type=file]', Storage::disk('local')->path($uploadPath));
@@ -51,8 +50,7 @@ it('renders pending upload feedback in the built editor on phone and desktop in 
     $record = News::factory()->for($tenant)->create(['lang' => 'lt']);
     $uploadPath = UploadedFile::fake()->image('upload-feedback.webp', 800, 400)
         ->storeAs('browser-fixtures', 'upload-feedback.webp', 'local');
-    $page = loginAsAdmin($user);
-    $page->navigate("/mano/news/{$record->id}/edit");
+    $page = loginAsAdmin($user, "/mano/news/{$record->id}/edit");
     waitForInertiaRender($page, '[data-slot=upload] input[type=file]');
     $page->script('(() => {
         const fetch = window.fetch.bind(window);

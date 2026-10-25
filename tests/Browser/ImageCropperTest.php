@@ -9,8 +9,7 @@ it('changes crop proportions and fits phone and tablet screens', function (): vo
     $user = makeUser(Tenant::query()->first());
     $user->update(['profile_photo_path' => '/images/placeholders/foto1.jpg']);
 
-    $page = loginAsAdmin($user);
-    $page->navigate('/mano/profile');
+    $page = loginAsAdmin($user, '/mano/profile');
     waitForInertiaRender($page);
     $page->click('button:has-text("Apkirpti")');
     $page->assertVisible('[data-slot="image-cropper"]');

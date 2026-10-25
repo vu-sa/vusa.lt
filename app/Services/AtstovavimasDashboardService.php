@@ -356,9 +356,9 @@ class AtstovavimasDashboardService
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
                     ->orWhereHas('current_duties', function (Builder $dutyQuery) use ($search): void {
-                        $dutyQuery->where('name', 'like', "%{$search}%")
+                        $dutyQuery->whereTranslationLike('name', $search)
                             ->orWhereHas('institution', fn (Builder $institutionQuery) => $institutionQuery
-                                ->where('name', 'like', "%{$search}%"));
+                                ->whereTranslationLike('name', $search));
                     });
             });
         }

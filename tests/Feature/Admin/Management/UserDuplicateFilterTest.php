@@ -25,7 +25,7 @@ test('initial page and API list the same visible duplicates without exposing oth
     $hidden = duplicateFilterUser(Tenant::query()->whereKeyNot($this->tenant->id)->first(), 'Ciurlionis Jonas');
     duplicateFilterUser($this->tenant, 'Petras Petraitis');
 
-    asUser($this->admin)->get(route('users.index', ['duplicates' => 'possible']))
+    asUserWithInertia($this->admin)->get(route('users.index', ['duplicates' => 'possible']))
         ->assertOk()->assertInertia(fn ($page) => $page
         ->has('users.data', 1)
         ->where('users.data.0.id', $visible->id)
@@ -93,7 +93,7 @@ test('a deleted counterpart does not count as a duplicate and trash ignores the 
     asUser($this->admin)->getJson(route('api.v1.admin.users.index', ['duplicates' => 'possible']))
         ->assertOk()->assertJsonPath('data.total', 0);
 
-    asUser($this->admin)->get(route('users.index', ['duplicates' => 'possible']))
+    asUserWithInertia($this->admin)->get(route('users.index', ['duplicates' => 'possible']))
         ->assertOk()->assertInertia(fn ($page) => $page->where('deletedCount', 1));
 
     asUser($this->admin)->getJson(route('api.v1.admin.users.index', [

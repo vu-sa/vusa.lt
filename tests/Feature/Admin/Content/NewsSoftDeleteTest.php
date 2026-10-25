@@ -54,7 +54,7 @@ describe('trashed index view', function (): void {
     });
 
     test('the index page ships no rows of its own', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('news.index', ['showDeleted' => 'true']))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -64,7 +64,7 @@ describe('trashed index view', function (): void {
     });
 
     test('index exposes the deleted record count', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('news.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page->where('deletedCount', 1));
@@ -84,7 +84,7 @@ describe('trashed index view', function (): void {
         $foreign = News::factory()->for($this->otherTenant)->create();
         $foreign->delete();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('news.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page->where('deletedCount', 1));

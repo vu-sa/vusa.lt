@@ -78,7 +78,7 @@ createInertiaApp({
           };
         },
       })
-      .use(ZiggyVue);
+      .use(ZiggyVue, globalThis.Ziggy);
 
     await mountTranslatedApp(application, el, locale);
 

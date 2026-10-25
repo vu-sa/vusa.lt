@@ -20,8 +20,7 @@ it('keeps a populated mail queue within phone and desktop viewports', function (
         'data' => ['title' => 'Nauja užduotis', 'body' => 'Užpildyk darbotvarkės klausimų informaciją', 'url' => '/mano'],
     ]);
 
-    $page = loginAsAdmin($admin);
-    $page->navigate('/mano/mail-queue');
+    $page = loginAsAdmin($admin, '/mano/mail-queue');
     waitForInertiaRender($page, '[data-slot="collection-page"]');
 
     foreach (['light', 'dark'] as $theme) {

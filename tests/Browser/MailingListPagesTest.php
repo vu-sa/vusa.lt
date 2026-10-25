@@ -22,8 +22,7 @@ it('saves a mailing list source on a phone and keeps its record readable across 
         'display_name' => 'VU SA Taryba',
     ]);
     $list->exclusions()->create(['email' => 'neitraukti@vusa.lt']);
-    $page = loginAsAdmin($editor);
-    $page->resize(390, 844)->navigate('/mano/mailingLists/'.$list->id);
+    $page = loginAsAdmin($editor, '/mano/mailingLists/'.$list->id, 390, 844);
     waitForInertiaRender($page, '[data-slot=mailing-list-sources]');
     $page->click('[data-testid=source-add]');
     $page->select('#source_type', 'email');
@@ -42,7 +41,8 @@ it('saves a mailing list source on a phone and keeps its record readable across 
         }
     }
 
-    $page->resize(1440, 1000)->navigate('/mano/mailingLists/'.$list->id);
+    $page->resize(1440, 1000);
+    navigateTo($page, '/mano/mailingLists/'.$list->id);
     waitForInertiaRender($page, '[data-slot=record-title]');
     $page->click('button[role=tab]:has-text("Šaltiniai")');
     $page->script('document.documentElement.classList.remove("dark")');
@@ -61,15 +61,14 @@ it('loads older archived messages through the built Inertia pagination and opens
         'subject' => 'Laiškas '.$sequence->index,
         'sent_at' => '2026-10-16 12:00:00',
     ])->create();
-    $page = loginAsAdmin(makeTenantUserWithRole('Studentų atstovų koordinatorius', $tenant));
-    $page->resize(1440, 900)->navigate('/mano/mailingLists/'.$list->id);
+    $page = loginAsAdmin(makeTenantUserWithRole('Studentų atstovų koordinatorius', $tenant), '/mano/mailingLists/'.$list->id, 1440, 900);
     waitForInertiaRender($page, '[data-slot=record-title]');
     $page->click('button[role=tab]:has-text("Archyvas")');
     $page->assertSee('Laiškas 50')->assertDontSee('Laiškas 0');
     $page->click('button:has-text("Rodyti daugiau")');
     $page->assertSee('Laiškas 0');
 
-    $page->navigate('/mano/mailingLists');
+    navigateTo($page, '/mano/mailingLists');
     waitForInertiaRender($page, '[data-slot=collection-page]');
     foreach ([390, 1440] as $width) {
         $page->resize($width, 900);

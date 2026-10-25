@@ -6,8 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 it('keeps the related-record picker usable across admin viewports and themes', function (): void {
-    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()));
-    $page->navigate('/mano/settings/site');
+    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()), '/mano/settings/site');
     waitForInertiaRender($page);
     $page->resize(390, 844);
     $page->click('#privacy_page_id_lt');

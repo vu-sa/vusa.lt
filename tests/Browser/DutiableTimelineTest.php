@@ -82,9 +82,7 @@ function dragSubjectBar(string $rowId, int $dx): string
 }
 
 it('moves a bar by whole months and keeps the day of month', function (): void {
-    $page = loginAsAdmin($this->admin);
-
-    $page->navigate(route('duties.show', $this->duty, absolute: false));
+    $page = loginAsAdmin($this->admin, route('duties.show', $this->duty, absolute: false));
     waitForInertiaRender($page, '[data-testid=record-overflow-trigger]');
 
     $page->click('[data-testid=record-overflow-trigger]');
@@ -127,7 +125,7 @@ it('fits the page to the screen and scrolls long charts inside it', function ():
     $page->resize(1180, 800);
 
     $timeline = route('dutiables.timeline', ['institution' => $this->duty->institution_id], absolute: false);
-    $page->navigate($timeline);
+    navigateTo($page, $timeline);
     waitForInertiaRender($page, '[data-slot="dutiable-gantt"] svg');
 
     $measure = <<<'JS'
@@ -168,7 +166,7 @@ it('fits the page to the screen and scrolls long charts inside it', function ():
         ]);
     }
 
-    $page->navigate($timeline);
+    navigateTo($page, $timeline);
     waitForInertiaRender($page, '[data-slot="dutiable-gantt"] svg');
 
     $tall = $page->script($measure);
@@ -193,7 +191,7 @@ it('takes the chart full screen over the shell and keeps its popovers on top', f
 
     // Zoomed out so the docs frame shows all three terms rather than the current months only.
     $page->script('localStorage.setItem("dutiable-timeline-view", JSON.stringify({ monthWidthPx: 28, includeEnded: true }))');
-    $page->navigate(route('dutiables.timeline', ['institution' => $parliament->id], absolute: false));
+    navigateTo($page, route('dutiables.timeline', ['institution' => $parliament->id], absolute: false));
     waitForInertiaRender($page, '[data-slot="dutiable-gantt"] svg');
 
     docsScreenshot($page, 'dutiable-timeline');
@@ -247,9 +245,7 @@ it('edits a duty period in a side sheet on desktop and a bottom sheet on a phone
 
     $chair = Duty::query()->where('name->lt', 'Pirmininkas (-ė)')->firstOrFail();
 
-    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()));
-    $page->resize(1440, 900);
-    $page->navigate(route('duties.show', $chair, absolute: false));
+    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()), route('duties.show', $chair, absolute: false), 1440, 900);
     waitForInertiaRender($page, '[data-testid="member-term-edit"]');
 
     $page->click('[data-testid="member-term-edit"] >> nth=0');

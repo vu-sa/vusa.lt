@@ -50,7 +50,7 @@ describe('overview counts', function (): void {
         $foreign = Reservation::factory()->create(['name' => 'Uses only a foreign resource']);
         attachResource($foreign, $this->foreignResource, 'created');
 
-        asUser($this->manager)->get(route('dashboard.reservations'))
+        asUserWithInertia($this->manager)->get(route('dashboard.reservations'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowReservations')
@@ -71,7 +71,7 @@ describe('overview counts', function (): void {
         $done = Reservation::factory()->create();
         attachResource($done, $this->myResource, 'returned', ['end_time' => now()->subDay()]);
 
-        asUser($this->manager)->get(route('dashboard.reservations'))
+        asUserWithInertia($this->manager)->get(route('dashboard.reservations'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('counts.lentOut', 2)
                 ->where('counts.overdue', 1)
@@ -88,7 +88,7 @@ describe('overview counts', function (): void {
         $someoneElses = Reservation::factory()->create();
         attachResource($someoneElses, $this->myResource, 'created');
 
-        asUser($this->manager)->get(route('dashboard.reservations'))
+        asUserWithInertia($this->manager)->get(route('dashboard.reservations'))
             ->assertInertia(fn (Assert $page) => $page->where('counts.mine', 1));
     });
 
@@ -99,7 +99,7 @@ describe('overview counts', function (): void {
         $own = Reservation::factory()->hasAttached($this->manager)->create();
         attachResource($own, $this->myResource, 'created');
 
-        asUser($this->manager)->get(route('dashboard.reservations'))
+        asUserWithInertia($this->manager)->get(route('dashboard.reservations'))
             ->assertInertia(fn (Assert $page) => $page
                 ->missing('waitingForMe')
                 ->missing('myUpcoming')
@@ -119,7 +119,7 @@ describe('table payload flags', function (): void {
         attachResource($mixed, $this->myResource, 'created');
         attachResource($mixed, $this->foreignResource, 'created');
 
-        asUser($this->manager)->get(route('reservations.index'))
+        asUserWithInertia($this->manager)->get(route('reservations.index'))
             ->assertInertia(function (Assert $page): void {
                 $resources = collect($page->toArray()['props']['reservations']['data'][0]['resources'])
                     ->keyBy('id');
@@ -133,7 +133,7 @@ describe('table payload flags', function (): void {
         $lent = Reservation::factory()->hasAttached($this->manager)->create();
         attachResource($lent, $this->myResource, 'lent');
 
-        asUser($this->manager)->get(route('reservations.index'))
+        asUserWithInertia($this->manager)->get(route('reservations.index'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('reservations.data.0.resources.0.pivot.cancellable', false)
                 ->where('reservations.data.0.resources.0.pivot.state', 'lent')
@@ -144,7 +144,7 @@ describe('table payload flags', function (): void {
         $pending = Reservation::factory()->hasAttached($this->manager)->create();
         attachResource($pending, $this->myResource, 'created');
 
-        asUser($this->manager)->get(route('reservations.index'))
+        asUserWithInertia($this->manager)->get(route('reservations.index'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('reservations.data.0.resources.0.pivot.cancellable', true)
             );
@@ -155,7 +155,7 @@ describe('table payload flags', function (): void {
         attachResource($mixed, $this->myResource, 'created');
         attachResource($mixed, $this->foreignResource, 'created');
 
-        asUser($this->manager)->get(route('reservations.show', $mixed))
+        asUserWithInertia($this->manager)->get(route('reservations.show', $mixed))
             ->assertOk()
             ->assertInertia(function (Assert $page): void {
                 $resources = collect($page->toArray()['props']['decisionTarget']['resources'])->keyBy('id');
@@ -189,14 +189,14 @@ describe('table payload flags', function (): void {
             'decision' => ApprovalDecision::Approved,
         ]);
 
-        asUser($this->manager)->get(route('reservations.index'))
+        asUserWithInertia($this->manager)->get(route('reservations.index'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('reservations.data.0.resources.0.pivot.backtrackable', true)
             );
 
         $approval->update(['reverted_at' => now(), 'reverted_by_id' => $this->manager->id]);
 
-        asUser($this->manager)->get(route('reservations.index'))
+        asUserWithInertia($this->manager)->get(route('reservations.index'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('reservations.data.0.resources.0.pivot.backtrackable', false)
             );
@@ -205,7 +205,7 @@ describe('table payload flags', function (): void {
 
 describe('non-manager access', function (): void {
     test('a role without resource managership can open the overview and administers nothing', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard.reservations'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -221,7 +221,7 @@ describe('non-manager access', function (): void {
         $reservation = Reservation::factory()->create();
         attachResource($reservation, $this->myResource, 'created');
 
-        asUser($plain)->get(route('dashboard.reservations'))
+        asUserWithInertia($plain)->get(route('dashboard.reservations'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->where('managesResources', false)
@@ -255,7 +255,7 @@ describe('index filters', function (): void {
     });
 
     test('the page URL form state=a,b is accepted', function (): void {
-        asUser($this->manager)->get(route('reservations.index', ['state' => 'created,lent']))
+        asUserWithInertia($this->manager)->get(route('reservations.index', ['state' => 'created,lent']))
             ->assertInertia(fn (Assert $page) => $page->has('reservations.data', 3));
     });
 
@@ -290,13 +290,13 @@ describe('index filters', function (): void {
 
 describe('unfinished reservation', function (): void {
     test('the overview shows the user\'s reservation cart, and nothing without one', function (): void {
-        asUser($this->admin)->get(route('dashboard.reservations'))
+        asUserWithInertia($this->admin)->get(route('dashboard.reservations'))
             ->assertInertia(fn (Assert $page) => $page->where('reservationCart', null));
 
         $draft = ReservationDraft::factory()->for($this->admin)->create(['name' => 'Renginys']);
         ReservationDraftItem::factory()->for($draft, 'draft')->for($this->myResource)->create();
 
-        asUser($this->admin)->get(route('dashboard.reservations'))
+        asUserWithInertia($this->admin)->get(route('dashboard.reservations'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('reservationCart.name', 'Renginys')
                 ->where('reservationCart.count', 1)

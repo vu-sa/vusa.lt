@@ -12,10 +12,6 @@ use Illuminate\Support\Facades\Queue;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
-    // The index action serves data straight from Typesense (Document::search()),
-    // which the suite's default NullEngine would leave empty.
-    usesTypesense();
-
     $this->tenant = Tenant::query()->first();
     $this->regularUser = makeUser($this->tenant);
     $this->documentManager = makeUser($this->tenant);
@@ -25,7 +21,7 @@ beforeEach(function (): void {
 
 describe('unauthorized access', function (): void {
     test('browses documents without management abilities', function (): void {
-        asUser($this->regularUser)->get(route('documents.index'))
+        asUserWithInertia($this->regularUser)->get(route('documents.index'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Files/IndexDocument')
@@ -90,7 +86,7 @@ describe('authorized access', function (): void {
     });
 
     test('the archive learns which padaliniai\' rows the manager may change', function (): void {
-        asUser($this->documentManager)->get(route('documents.index'))
+        asUserWithInertia($this->documentManager)->get(route('documents.index'))
             ->assertInertia(fn ($page) => $page->where('abilities.updateTenantShortnames', [$this->tenant->shortname]));
     });
 

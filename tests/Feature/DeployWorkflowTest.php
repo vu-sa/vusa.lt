@@ -187,9 +187,18 @@ describe('the deploy workflows', function () use ($shared, $source): void {
         $comment = collect($ci['jobs']['php-tests']['steps'])
             ->firstWhere('name', 'Comment documentation coverage on the PR');
 
-        expect($comment['if'])->toBe('always()')
+        expect($comment['if'])->toBe('always() && matrix.shard == 1')
             ->and($comment['run'])->toContain('commits/$GITHUB_SHA/pulls')
             ->and($comment['run'])->toContain('gh pr comment "$PR_NUMBER"');
+    });
+
+    it('runs the full PHP suite in four shards on pull requests and pushes alike', function () use ($source): void {
+        $job = Yaml::parse($source('.github/workflows/ci.yml'))['jobs']['php-tests'];
+        $run = collect($job['steps'])->firstWhere('name', 'Execute tests with coverage')['run'];
+
+        expect($job['strategy']['matrix']['shard'])->toBe([1, 2, 3, 4])
+            ->and($run)->toContain('--ci --shard=${{ matrix.shard }}/4')
+            ->not->toContain('--tia');
     });
 
     it('only starts automatic deployments after push CI succeeds', function () use ($source): void {

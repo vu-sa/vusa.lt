@@ -66,7 +66,7 @@ describe('active flag', function (): void {
         $this->duty->update(['is_active' => false]);
         $active = Duty::factory()->for($this->institution)->create();
 
-        asUser($this->admin)->get(route('duties.updateUsersWizard'))
+        asUserWithInertia($this->admin)->get(route('duties.updateUsersWizard'))
             ->assertInertia(fn (Assert $page) => $page->where('institutions', function ($institutions) use ($active): bool {
                 $dutyIds = collect($institutions)->flatMap(fn ($institution) => collect($institution['duties'] ?? [])->pluck('id'));
 
@@ -128,7 +128,7 @@ describe('predecessors', function (): void {
         asUser($this->admin)->post(route('duties.predecessors.store', $this->duty), ['predecessor_id' => $this->combined->id])
             ->assertSessionHasNoErrors();
 
-        asUser($this->admin)->get(route('duties.show', $this->duty))
+        asUserWithInertia($this->admin)->get(route('duties.show', $this->duty))
             ->assertInertia(fn (Assert $page) => $page
                 ->missing('lineage')
                 ->loadDeferredProps('dutyPanels', fn (Assert $reload) => $reload

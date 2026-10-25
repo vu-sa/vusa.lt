@@ -17,15 +17,8 @@ beforeEach(function (): void {
 /** No `$t()` call fell through to its raw key. Rendered text only (not the page-data script), lower-cased since CSS uppercases headings. */
 function expectNoRawReservationKeys($page): void
 {
-    // admin.ts mounts before the translation JSON arrives, so a slow runner can read keys that are about to swap out.
     $script = 'document.body.innerText.toLowerCase().includes("reservations.")';
-    $deadline = microtime(true) + 5;
-
-    while ($page->script($script) && microtime(true) < $deadline) {
-        usleep(100_000);
-    }
-
-    expect($page->script($script))->toBeFalse();
+    $page->assertScript($script, false);
 }
 
 /** The page fits the viewport at a phone and a desktop width. */
@@ -40,8 +33,7 @@ function expectReservationPageFits($page, string $slot): void
 }
 
 it('shows a resource manager the requests waiting for them on the overview', function (): void {
-    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::RESOURCE_MANAGER_EMAIL));
-    $page->navigate('/mano/dashboard/reservations');
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::RESOURCE_MANAGER_EMAIL), '/mano/dashboard/reservations');
     waitForInertiaRender($page, '[data-slot=reservations-overview-columns]');
 
     $page->assertSee('Pirmakursių stovyklos įranga');
@@ -56,8 +48,7 @@ it('shows a resource manager the requests waiting for them on the overview', fun
 });
 
 it('opens the checkout with the representative\'s saved cart', function (): void {
-    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL));
-    $page->navigate('/mano/reservations/create');
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL), '/mano/reservations/create');
     waitForInertiaRender($page, '[data-slot=form-page]');
 
     $page->assertSee('Renginių palapinė 3×3 m')
@@ -80,7 +71,7 @@ it('opens the checkout with the representative\'s saved cart', function (): void
 it('offers the manager the next step for each item on the reservation page', function (): void {
     $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::RESOURCE_MANAGER_EMAIL));
     $reservation = Reservation::query()->where('name', DocsSeeder::MIXED_RESERVATION_NAME)->firstOrFail();
-    $page->navigate("/mano/reservations/{$reservation->id}");
+    navigateTo($page, "/mano/reservations/{$reservation->id}");
     waitForInertiaRender($page, '[data-slot=record-title]');
 
     // Waiting → approve, reserved → hand over, lent → mark returned.
@@ -100,8 +91,7 @@ it('lists every padalinys\' resources as cards with what is free', function (): 
     usesTypesenseInBrowser();
     Resource::query()->get()->searchable();
 
-    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL));
-    $page->navigate('/mano/resources');
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL), '/mano/resources');
     waitForInertiaRender($page, '[data-slot=resource-collection-card]');
 
     $page->assertSee('Garso kolonėlė JBL PartyBox')
@@ -116,8 +106,7 @@ it('lists every padalinys\' resources as cards with what is free', function (): 
 });
 
 it('shows the reservation collection with status filters and quick filters', function (): void {
-    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::RESOURCE_MANAGER_EMAIL));
-    $page->navigate('/mano/reservations');
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::RESOURCE_MANAGER_EMAIL), '/mano/reservations');
     waitForInertiaRender($page, '[data-slot=collection-page]');
 
     $page->assertSee(DocsSeeder::MIXED_RESERVATION_NAME);
@@ -136,8 +125,7 @@ it('lists the resource categories for their manager', function (): void {
         ResourceCategory::query()->create(['name' => ['lt' => $name, 'en' => $name], 'description' => ['lt' => $description, 'en' => $description]]);
     }
 
-    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::RESOURCE_MANAGER_EMAIL));
-    $page->navigate('/mano/resourceCategories');
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::RESOURCE_MANAGER_EMAIL), '/mano/resourceCategories');
     waitForInertiaRender($page, '[data-slot=collection-page]');
 
     $page->assertSee('Garso technika');

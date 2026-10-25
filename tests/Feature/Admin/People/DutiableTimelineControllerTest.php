@@ -176,7 +176,7 @@ describe('the standalone page', function (): void {
 
         // Plain GET, not asUserWithInertia(): the stub Inertia version header makes the
         // middleware answer 409 on a page request rather than rendering it.
-        asUser($this->manager)
+        asUserWithInertia($this->manager)
             ->get(route('dutiables.timeline', ['institution' => $institution->id]))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
@@ -191,7 +191,7 @@ describe('the standalone page', function (): void {
     });
 
     test('with no query string the page opens on the institution the actor sits in', function (): void {
-        asUser($this->manager)
+        asUserWithInertia($this->manager)
             ->get(route('dutiables.timeline'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
@@ -209,7 +209,7 @@ describe('the standalone page', function (): void {
             ['start_date' => now()->subDay()],
         );
 
-        asUser($this->manager)
+        asUserWithInertia($this->manager)
             ->get(route('dutiables.timeline'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
@@ -226,7 +226,7 @@ describe('the standalone page', function (): void {
             ['start_date' => now()->subDay()],
         );
 
-        asUser($this->manager)
+        asUserWithInertia($this->manager)
             ->get(route('dutiables.timeline'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
@@ -241,7 +241,7 @@ describe('the standalone page', function (): void {
             'end_date' => now()->subYear(),
         ]);
 
-        asUser($this->manager)
+        asUserWithInertia($this->manager)
             ->get(route('dutiables.timeline'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page

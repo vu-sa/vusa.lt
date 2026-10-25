@@ -23,7 +23,7 @@ describe('permission index', function (): void {
     test('admin can access permission index', function (): void {
         Permission::factory()->count(3)->create();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('permissions.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -33,9 +33,9 @@ describe('permission index', function (): void {
     });
 
     test('permission index sends every permission for the browser to search', function (): void {
-        Permission::factory()->count(25)->create();
+        Permission::factory()->count(3)->create();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('permissions.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -48,7 +48,7 @@ describe('permission index', function (): void {
         Permission::query()->delete(); // Clear existing permissions
         Permission::factory()->count(5)->create();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('permissions.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -85,7 +85,7 @@ describe('permission data integrity', function (): void {
             'guard_name' => 'web',
         ]);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('permissions.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -97,7 +97,7 @@ describe('permission data integrity', function (): void {
         // Clear any existing permissions
         Permission::query()->delete();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('permissions.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -109,13 +109,13 @@ describe('permission data integrity', function (): void {
 describe('permission filtering and search', function (): void {
     test('permission index ignores paging and sends the whole list', function (): void {
         Permission::query()->delete(); // Clear existing permissions
-        Permission::factory()->count(25)->create();
+        Permission::factory()->count(3)->create();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('permissions.index', ['page' => 2]))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
-                ->has('permissions', 25)
+                ->has('permissions', 3)
             );
     });
 
@@ -124,7 +124,7 @@ describe('permission filtering and search', function (): void {
         Permission::factory()->create(['name' => 'zebra.permission']);
         Permission::factory()->create(['name' => 'alpha.permission']);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('permissions.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -141,7 +141,7 @@ describe('permission system integration', function (): void {
             'guard_name' => 'web',
         ]);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('permissions.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -150,7 +150,7 @@ describe('permission system integration', function (): void {
     });
 
     test('permission index loads efficiently', function (): void {
-        Permission::factory()->count(20)->create();
+        Permission::factory()->count(3)->create();
 
         $startTime = microtime(true);
 

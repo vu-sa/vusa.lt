@@ -22,15 +22,8 @@ beforeEach(function (): void {
 /** No `$t()` call fell through to its raw key; lower-cased since CSS uppercases headings. */
 function expectNoRawRecordKeys($page): void
 {
-    // admin.ts mounts before the translation JSON arrives, so a slow runner can read keys that are about to swap out.
     $script = '/\b(institutions|meetings|agenda_items|visak|shell)\.[a-z_]+/.test(document.body.innerText.toLowerCase())';
-    $deadline = microtime(true) + 5;
-
-    while ($page->script($script) && microtime(true) < $deadline) {
-        usleep(100_000);
-    }
-
-    expect($page->script($script))->toBeFalse();
+    $page->assertScript($script, false);
 }
 
 /** The record fits the viewport at a phone and a desktop width. */
@@ -45,8 +38,7 @@ function expectRecordFits($page): void
 }
 
 it('opens a representative\'s institution with its status and meetings', function (): void {
-    $page = loginAsAdmin($this->representative);
-    $page->navigate("/mano/institutions/{$this->council->id}");
+    $page = loginAsAdmin($this->representative, "/mano/institutions/{$this->council->id}");
     waitForInertiaRender($page, '[data-slot=record-title]');
 
     $page->assertSee(DocsSeeder::COUNCIL_INSTITUTION);
@@ -65,8 +57,7 @@ it('fits an ended check-in status and date at working widths in both themes', fu
     InstitutionCheckIn::factory()->for($institution)->create(['start_date' => today()->subMonth(), 'end_date' => today()->subDays(3)]);
     $duty = Duty::factory()->for($institution)->create();
     $this->representative->duties()->attach($duty, ['start_date' => today()->subMonth()]);
-    $page = loginAsAdmin($this->representative);
-    $page->navigate("/mano/institutions/{$institution->id}");
+    $page = loginAsAdmin($this->representative, "/mano/institutions/{$institution->id}");
     waitForInertiaRender($page, '[data-slot=record-facts]');
 
     foreach (['light', 'dark'] as $theme) {
@@ -82,8 +73,7 @@ it('fits an ended check-in status and date at working widths in both themes', fu
 });
 
 it('opens a past meeting with its agenda and what is still missing', function (): void {
-    $page = loginAsAdmin($this->representative);
-    $page->navigate("/mano/meetings/{$this->unfinishedItem->meeting_id}");
+    $page = loginAsAdmin($this->representative, "/mano/meetings/{$this->unfinishedItem->meeting_id}");
     waitForInertiaRender($page, '[data-slot=record-title]');
 
     $page->assertSee(DocsSeeder::UNFINISHED_AGENDA_ITEM);
@@ -98,8 +88,7 @@ it('opens a past meeting with its agenda and what is still missing', function ()
 });
 
 it('opens an agenda item with its vote to finish', function (): void {
-    $page = loginAsAdmin($this->representative);
-    $page->navigate("/mano/agendaItems/{$this->unfinishedItem->id}");
+    $page = loginAsAdmin($this->representative, "/mano/agendaItems/{$this->unfinishedItem->id}");
     waitForInertiaRender($page, '[data-slot=record-title]');
 
     $page->assertSee(DocsSeeder::UNFINISHED_AGENDA_ITEM);

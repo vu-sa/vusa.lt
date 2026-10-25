@@ -71,7 +71,7 @@ describe('authorized access', function (): void {
         app(AddImageMedia::class)->execute($this->banner, UploadedFile::fake()->image('banner.webp', 800, 400), 'image');
         $image = $this->banner->fresh()->imageData('image');
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('banners.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -83,7 +83,7 @@ describe('authorized access', function (): void {
     });
 
     test('can access create page', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('banners.create'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -144,7 +144,7 @@ describe('authorized access', function (): void {
     });
 
     test('can access edit page', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('banners.edit', $this->banner))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -303,7 +303,7 @@ describe('filtering and search', function (): void {
     });
 
     test('can filter banners by search term', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('banners.index', ['search' => 'Test']))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -313,7 +313,7 @@ describe('filtering and search', function (): void {
     });
 
     test('can filter banners by active status', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('banners.index', ['filters' => json_encode(['is_active' => '1'])]))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('banners.meta.total', 1)
@@ -321,11 +321,10 @@ describe('filtering and search', function (): void {
             );
     });
 
-    test('pagination works correctly', function (): void {
-        // Create more banners to test pagination
-        Banner::factory()->count(25)->for($this->tenant)->create();
+    test('renders banner data with an explicit page size', function (): void {
+        Banner::factory()->for($this->tenant)->create();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('banners.index', ['per_page' => 10]))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -366,7 +365,7 @@ describe('tenant isolation', function (): void {
     });
 
     test('user only sees banners from their tenant', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('banners.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page

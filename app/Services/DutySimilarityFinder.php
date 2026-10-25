@@ -8,27 +8,7 @@ use App\Models\Institution;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
-/**
- * Finds existing duties that look like the one an admin is about to create.
- *
- * The dominant cause of duplicate duties in this app is not that admins fail to
- * search — it's that they don't know duty names are inflected automatically per
- * holder's pronouns (see resources/js/Utils/String.ts::changeDutyNameEndings), so
- * they create a second, feminine duty instead of assigning the existing one.
- * `DutyNameNormalizer` collapses exactly that class of variant.
- *
- * Three match tiers, surfaced very differently:
- * - Same institution: a near-certain duplicate. Loud.
- * - Same tenant, other institution: worth a look, so each is named with a link.
- * - Other tenants: expected and common ("Studentų atstovas" legitimately
- *   exists in 50+ institutions) — informational, capped, never alarming.
- *
- * Inactive duties and a duty's former names are matched too: reviving a retired
- * duty keeps its history on one track, where a new one would split it.
- *
- * Advisory only, mirroring UserSimilarityFinder: these are warnings an admin can
- * ignore, never a block.
- */
+/** Duplicate suggestions are advisory: matching never blocks creating a duty. */
 class DutySimilarityFinder
 {
     /** How many other-institution matches to name individually. */
@@ -78,9 +58,6 @@ class DutySimilarityFinder
     }
 
     /**
-     * A tenant holds a few hundred duties at most, so like the institution tier it is
-     * compared in PHP, former names included.
-     *
      * @return Collection<int, array{duty: Duty, reason: string}>
      */
     private function findWithinTenant(string $normalized, ?int $tenantId, ?string $institutionId, ?string $excludeDutyId): Collection
@@ -96,7 +73,7 @@ class DutySimilarityFinder
             ->with(['institution:id,name,tenant_id', 'institution.tenant:id,shortname', 'current_users:id,name', 'formerNames'])
             ->get()
             ->map(function (Duty $duty) use ($normalized) {
-                if (DutyNameNormalizer::normalize(self::dutyName($duty)) === $normalized) {
+                if ($this->matchesCurrentName($duty, $normalized)) {
                     return ['duty' => $duty, 'reason' => 'same_tenant'];
                 }
 
@@ -119,10 +96,24 @@ class DutySimilarityFinder
     }
 
     /**
-     * An institution has, at most, a few dozen duties (33 is the current max in
-     * production) — cheap to load in full and compare in PHP rather than push the
-     * translatable-JSON comparison into SQL.
-     *
+     * @return Collection<int, non-empty-string>
+     */
+    private function currentNames(Duty $duty): Collection
+    {
+        return collect($duty->getTranslations('name', config('app.locales')))
+            ->map(fn ($name) => trim((string) $name))
+            ->filter(fn (string $name) => $name !== '')
+            ->unique()
+            ->values();
+    }
+
+    private function matchesCurrentName(Duty $duty, string $normalized): bool
+    {
+        return $this->currentNames($duty)
+            ->contains(fn (string $name) => DutyNameNormalizer::normalize($name) === $normalized);
+    }
+
+    /**
      * @return Collection<int, array{duty: Duty, reason: string}>
      */
     private function findWithinInstitution(string $name, string $normalized, ?string $institutionId, ?string $excludeDutyId): Collection
@@ -137,13 +128,11 @@ class DutySimilarityFinder
             ->with(['institution:id,name', 'institution.tenant:id,shortname', 'current_users:id,name', 'formerNames'])
             ->get()
             ->map(function (Duty $duty) use ($name, $normalized) {
-                $dutyName = self::dutyName($duty);
-
-                if ($dutyName !== '' && mb_strtolower($dutyName) === mb_strtolower($name)) {
+                if ($this->currentNames($duty)->contains(fn (string $currentName) => mb_strtolower($currentName) === mb_strtolower($name))) {
                     return ['duty' => $duty, 'reason' => 'same_institution_exact'];
                 }
 
-                if ($dutyName !== '' && DutyNameNormalizer::normalize($dutyName) === $normalized) {
+                if ($this->matchesCurrentName($duty, $normalized)) {
                     return ['duty' => $duty, 'reason' => 'same_institution_variant'];
                 }
 
@@ -159,11 +148,6 @@ class DutySimilarityFinder
     }
 
     /**
-     * Narrows candidates in SQL before normalising in PHP, the same shape as
-     * UserSimilarityFinder::candidates() — a LIKE on the longest word of the typed
-     * name, applied to the translatable `name` column via the same driver-aware
-     * JSON search TanstackTableService uses for translatable columns.
-     *
      * @return array{other_institution: Collection<int, array{duty: Duty, reason: string}>, other_institution_count: int}
      */
     private function findAcrossOtherInstitutions(string $name, string $normalized, ?string $institutionId, ?int $tenantId, ?string $excludeDutyId): array
@@ -184,10 +168,9 @@ class DutySimilarityFinder
             ->when($excludeDutyId, fn ($q) => $q->where('id', '!=', $excludeDutyId))
             ->with(['institution:id,name', 'institution.tenant:id,shortname']);
 
-        $this->applyTranslatableLike($query, 'name', $longestWord);
-
-        $matches = $query->limit(self::CANDIDATE_SCAN_LIMIT)->get()
-            ->filter(fn (Duty $duty) => DutyNameNormalizer::normalize(self::dutyName($duty)) === $normalized);
+        $matches = $query->whereTranslationLike('name', $longestWord)
+            ->limit(self::CANDIDATE_SCAN_LIMIT)->get()
+            ->filter(fn (Duty $duty) => $this->matchesCurrentName($duty, $normalized));
 
         $otherInstitution = $matches->take(self::OTHER_INSTITUTION_LIMIT)
             ->map(fn (Duty $duty) => ['duty' => $duty, 'reason' => 'other_institution'])
@@ -200,24 +183,7 @@ class DutySimilarityFinder
         ];
     }
 
-    /**
-     * Case-insensitive LIKE against a translatable JSON column's `lt` locale,
-     * mirroring TanstackTableService::applyJsonSearch (same SQLite/MySQL split —
-     * SQLite's json_extract has no JSON_UNQUOTE).
-     */
-    private function applyTranslatableLike(Builder $query, string $column, string $word): void
-    {
-        $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $word);
-        $pattern = "%{$escaped}%";
-
-        if (config('database.default') === 'sqlite') {
-            $query->whereRaw("LOWER(json_extract({$column}, '$.lt')) LIKE LOWER(?)", [$pattern]);
-        } else {
-            $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT({$column}, '$.lt'))) LIKE LOWER(?)", [$pattern]);
-        }
-    }
-
-    /** The name duplicates are compared by: Lithuanian, else English. */
+    /** The duplicate-grouping service uses a single canonical name. */
     public static function dutyName(Duty $duty): string
     {
         $name = $duty->getTranslation('name', 'lt') ?: $duty->getTranslation('name', 'en');

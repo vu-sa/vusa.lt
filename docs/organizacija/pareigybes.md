@@ -209,6 +209,15 @@ Kad duomenų bazėje nesidaugintų dubliuotos pareigybės:
 - Panašios pareigybės kitose to paties padalinio institucijose išvardijamos su nuoroda į jų puslapį;
   kitų padalinių atitikmenys tik suskaičiuojami.
 
+<ChangelogNote version="v3.12" date="2026-10-20" title="Dublikatų patikra abiem kalbomis">
+
+Kuriant ar redaguojant pareigybę, tikrinami abu jos pavadinimai – lietuviškas ir angliškas.
+Įvedus anglišką pavadinimą, atitikmuo randamas ir tada, kai pareigybė turi kitokį lietuvišką
+pavadinimą. Tai taikoma savo institucijai, kitoms to paties padalinio institucijoms ir kitiems
+padaliniams. Perspėjimas netrukdo išsaugoti pareigybės.
+
+</ChangelogNote>
+
 ## Veiksmai
 
 ### Pareigybių sąrašas ir filtrai {#sarasas}

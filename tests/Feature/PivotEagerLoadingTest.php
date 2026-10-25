@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\LoadReservationResourceApprovals;
 use App\Models\Approval;
 use App\Models\Comment;
 use App\Models\Duty;
@@ -107,20 +108,76 @@ describe('reservation resource query loading', function (): void {
         }
     })->with([1, 2]);
 
+    test('loads approval histories onto existing resource pivots in one query', function (int $count): void {
+        $reservation = $this->reservation->fresh();
+        $reservation->load(['resources' => fn ($query) => $query->limit($count)]);
+
+        $this->expectsDatabaseQueryCount(1);
+
+        LoadReservationResourceApprovals::execute([$reservation], ['approvals']);
+
+        expect($reservation->resources)->toHaveCount($count);
+        foreach ($reservation->resources as $resource) {
+            expect($resource->pivot->approvals)->toHaveCount(1)
+                ->and($resource->pivot->approvals->first()->approvable_id)->toBe((string) $resource->pivot->id);
+        }
+    })->with([1, 2]);
+
+    test('keeps separate approval histories when reservations share a resource', function (): void {
+        $firstPivot = $this->pivots->first();
+        $otherReservation = Reservation::factory()->create();
+        $otherReservation->resources()->attach($firstPivot->resource_id, [
+            'quantity' => 1,
+            'state' => 'created',
+        ]);
+        $otherPivot = ReservationResource::query()->where('reservation_id', $otherReservation->id)->firstOrFail();
+        $otherApproval = Approval::factory()->for($otherPivot, 'approvable')->for($this->user)->rejected()->create();
+        $reservations = Reservation::query()->whereKey([$this->reservation->id, $otherReservation->id])
+            ->with('resources')->get()->keyBy('id');
+
+        $this->expectsDatabaseQueryCount(1);
+
+        LoadReservationResourceApprovals::execute($reservations, ['approvals']);
+
+        $firstResource = $reservations[$this->reservation->id]->resources->firstWhere('id', $firstPivot->resource_id);
+        $otherResource = $reservations[$otherReservation->id]->resources->first();
+        expect($firstResource->pivot->approvals)->toHaveCount(1)
+            ->and($firstResource->pivot->approvals->first()->approvable_id)->toBe((string) $firstPivot->id);
+        expect($otherResource->pivot->approvals)->toHaveCount(1)
+            ->and($otherResource->pivot->approvals->first()->id)->toBe($otherApproval->id);
+    });
+
+    test('loads no approval queries for empty reservation batches or reservations without resources', function (): void {
+        $reservation = Reservation::factory()->create()->load('resources');
+
+        $this->expectsDatabaseQueryCount(0);
+
+        LoadReservationResourceApprovals::execute([], ['approvals']);
+        LoadReservationResourceApprovals::execute([$reservation], ['approvals']);
+    });
+
     test('the reservation detail includes approval authors and reversion authors', function (): void {
         $pivot = $this->pivots->first();
         $approval = $pivot->approvals()->firstOrFail();
-        $approval->update(['reverted_at' => now(), 'reverted_by_id' => $this->user->id]);
+        $reverter = User::factory()->create();
+        $approval->update([
+            'notes' => 'Approved before the schedule changed',
+            'reverted_at' => now(),
+            'reverted_by_id' => $reverter->id,
+            'reversion_notes' => 'The schedule changed',
+        ]);
 
         asUser($this->user)->get(route('reservations.show', $this->reservation))
             ->assertOk()
-            ->assertInertia(function (Assert $page) use ($pivot, $approval): void {
+            ->assertInertia(function (Assert $page) use ($pivot, $approval, $reverter): void {
                 $resources = collect($page->toArray()['props']['reservation']['resources']);
                 $resource = $resources->firstWhere('pivot.id', $pivot->id);
                 $history = collect($resource['pivot']['approvals'])->firstWhere('id', $approval->id);
 
                 expect($history['user']['id'])->toBe($this->user->id)
-                    ->and($history['reverted_by']['id'])->toBe($this->user->id);
+                    ->and($history['reverted_by']['id'])->toBe($reverter->id)
+                    ->and($history['notes'])->toBe('Approved before the schedule changed')
+                    ->and($history['reversion_notes'])->toBe('The schedule changed');
             });
     });
 });

@@ -116,7 +116,7 @@ describe('site settings page authorization', function (): void {
             ->create(['lang' => 'en', 'title' => 'Privacy policy', 'is_active' => true])->id;
         $settings->save();
 
-        asUser($this->admin)->get(route('settings.site.edit'))
+        asUserWithInertia($this->admin)->get(route('settings.site.edit'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Settings/EditSiteSettings')
@@ -131,7 +131,7 @@ describe('site settings page authorization', function (): void {
             ->create(['lang' => 'lt', 'is_active' => false])->id;
         $settings->save();
 
-        asUser($this->admin)->get(route('settings.site.edit'))
+        asUserWithInertia($this->admin)->get(route('settings.site.edit'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('selectedPages.lt', null)

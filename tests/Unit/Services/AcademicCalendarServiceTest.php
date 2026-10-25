@@ -2,6 +2,7 @@
 
 use App\Services\AcademicCalendarService;
 use Carbon\CarbonImmutable;
+use Tests\Feature\Admin\Core\LegacyAcademicCalendarService;
 
 beforeEach(function (): void {
     $this->calendar = new AcademicCalendarService;
@@ -41,6 +42,51 @@ describe('isVacationDate', function (): void {
 });
 
 describe('effectiveDaysBetween', function (): void {
+    test('benchmarks thirty-six thousand calendar intervals against the legacy algorithm', function (): void {
+        $moments = [];
+        for ($index = 0; $index < 360; $index++) {
+            $moments[] = CarbonImmutable::parse('2026-04-23')->addHours($index * 12);
+        }
+        $starts = [];
+        for ($index = 0; $index < 100; $index++) {
+            $starts[] = CarbonImmutable::parse('2025-01-01')->addDays($index * 4);
+        }
+        $totals = [];
+        foreach (['legacy' => new LegacyAcademicCalendarService, 'optimized' => $this->calendar] as $name => $calendar) {
+            $start = hrtime(true);
+            $total = 0;
+            foreach ($starts as $from) {
+                foreach ($moments as $to) {
+                    $total += $calendar->effectiveDaysBetween($from, $to);
+                }
+            }
+            $totals[$name] = $total;
+            fwrite(STDOUT, json_encode(['implementation' => $name, 'intervals' => 36000, 'ms' => round((hrtime(true) - $start) / 1_000_000, 1)]).PHP_EOL);
+        }
+        expect($totals['optimized'])->toBe($totals['legacy']);
+    })->skip(fn () => ! getenv('RUN_PERF_BENCHMARKS'), 'Run explicitly with RUN_PERF_BENCHMARKS=1');
+
+    test('matches interval counting across vacation boundaries leap years and DST', function (): void {
+        $legacy = new LegacyAcademicCalendarService;
+        $dates = ['2023-12-23', '2024-01-01', '2024-02-29', '2024-03-31', '2024-07-01', '2024-08-31', '2024-09-01', '2024-10-27', '2025-01-02', '2026-02-04', '2026-04-07'];
+        foreach ($dates as $from) {
+            foreach ($dates as $to) {
+                $start = CarbonImmutable::parse($from)->setTime(23, 59, 59);
+                $end = CarbonImmutable::parse($to)->setTime(8, 30);
+                expect($this->calendar->effectiveDaysBetween($start, $end))->toBe($legacy->effectiveDaysBetween($start, $end));
+            }
+        }
+    });
+
+    test('preserves interval counting for other and mixed timezones', function (): void {
+        $legacy = new LegacyAcademicCalendarService;
+        foreach (['UTC', 'America/New_York', 'Europe/Vilnius'] as $timezone) {
+            $from = CarbonImmutable::parse('2025-12-23', $timezone);
+            $to = CarbonImmutable::parse('2026-02-05', 'Europe/Vilnius');
+            expect($this->calendar->effectiveDaysBetween($from, $to))->toBe($legacy->effectiveDaysBetween($from, $to));
+        }
+    });
+
     test('equals the calendar difference outside vacations', function (): void {
         $days = $this->calendar->effectiveDaysBetween(
             CarbonImmutable::parse('2025-10-01'),

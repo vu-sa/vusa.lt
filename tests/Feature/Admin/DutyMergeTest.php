@@ -324,7 +324,7 @@ describe('after merging', function (): void {
 
 describe('merge link from the duplicate warning', function (): void {
     test('opens the duties list with both duties, the kept one first', function (): void {
-        asUser($this->admin)->get(route('duties.index', ['merge' => 1, 'source' => $this->source->id, 'target' => $this->target->id]))
+        asUserWithInertia($this->admin)->get(route('duties.index', ['merge' => 1, 'source' => $this->source->id, 'target' => $this->target->id]))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('mergePreset.target_id', $this->target->id)
                 ->where('mergePreset.duties.0.id', $this->target->id)
@@ -332,7 +332,7 @@ describe('merge link from the duplicate warning', function (): void {
     });
 
     test('offers nothing to someone who may not merge', function (): void {
-        asUser($this->dutyManager)->get(route('duties.index', ['merge' => 1, 'source' => $this->source->id, 'target' => $this->target->id]))
+        asUserWithInertia($this->dutyManager)->get(route('duties.index', ['merge' => 1, 'source' => $this->source->id, 'target' => $this->target->id]))
             ->assertInertia(fn (Assert $page) => $page->where('mergePreset', null));
     });
 });

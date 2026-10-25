@@ -7,8 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 it('applies reader preferences from the admin appearance menu', function (): void {
-    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()));
-    $page->navigate('/mano/institutions');
+    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()), '/mano/institutions');
     waitForInertiaRender($page);
 
     $initialSize = (float) $page->script('getComputedStyle(document.documentElement).fontSize');
@@ -36,8 +35,7 @@ it('applies reader preferences from the admin appearance menu', function (): voi
 });
 
 it('returns keyboard focus to the profile settings button when the dialog closes', function (): void {
-    $page = loginAsAdmin(makeUser(Tenant::query()->first()));
-    $page->navigate('/mano/profile');
+    $page = loginAsAdmin(makeUser(Tenant::query()->first()), '/mano/profile');
     waitForInertiaRender($page, '[data-slot="profile-accessibility-trigger"]');
 
     $page->page()->locator('[data-slot="profile-accessibility-trigger"]')->press('Enter');

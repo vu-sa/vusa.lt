@@ -26,7 +26,7 @@ describe('access-change band (U14)', function (): void {
     test('a term that began today is announced', function (): void {
         $user = userWithFirstTermStarting($this->tenant, now()->toDateString());
 
-        asUser($user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
+        asUserWithInertia($user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
             ->has('accessChanges', 1)
             ->where('accessChanges.0.kind', 'started')
         );
@@ -36,7 +36,7 @@ describe('access-change band (U14)', function (): void {
         $user = userWithFirstTermStarting($this->tenant, now()->subYear()->toDateString());
         $user->dutiables()->update(['end_date' => now()->subDay()->toDateString()]);
 
-        asUser($user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
+        asUserWithInertia($user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
             ->has('accessChanges', 1)
             ->where('accessChanges.0.kind', 'ended')
         );
@@ -45,7 +45,7 @@ describe('access-change band (U14)', function (): void {
     test('an old change is history, not a band', function (): void {
         $user = userWithFirstTermStarting($this->tenant, now()->subMonths(3)->toDateString());
 
-        asUser($user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page->has('accessChanges', 0));
+        asUserWithInertia($user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page->has('accessChanges', 0));
     });
 });
 
@@ -57,7 +57,7 @@ describe('launching the action window from the URL (U21)', function (): void {
     });
 
     test('a reminder link opens the flow with the institution filled in', function (string $window): void {
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard', ['window' => $window, 'institution' => $this->institution->id]))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('actionWindowLaunch.flow', $window)
@@ -67,7 +67,7 @@ describe('launching the action window from the URL (U21)', function (): void {
     })->with(['meeting.create', 'check-in']);
 
     test('anything it cannot honour is ignored rather than an error', function (array $query): void {
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard', $query))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->where('actionWindowLaunch', null));
@@ -80,7 +80,7 @@ describe('launching the action window from the URL (U21)', function (): void {
     test('an institution the user may not view opens nothing', function (): void {
         $foreign = Institution::factory()->for(Tenant::factory()->create())->create();
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard', ['window' => 'meeting.create', 'institution' => $foreign->id]))
             ->assertInertia(fn (Assert $page) => $page->where('actionWindowLaunch', null));
     });

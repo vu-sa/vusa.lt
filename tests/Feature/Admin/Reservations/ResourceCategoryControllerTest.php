@@ -18,7 +18,7 @@ beforeEach(function (): void {
 
 describe('the collection replaces the standalone pages', function (): void {
     test('the index page carries the first page of categories for the collection', function (): void {
-        asUser($this->resourceManager)->get(route('resourceCategories.index'))
+        asUserWithInertia($this->resourceManager)->get(route('resourceCategories.index'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Reservations/IndexResourceCategory')

@@ -17,6 +17,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Sleep;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
@@ -45,7 +46,7 @@ describe('access', function (): void {
         $this->list->exclusions()->create(['email' => 'excluded@vusa.lt', 'note' => 'Private exclusion note']);
         MailingListMessage::factory()->for($this->list)->create(['subject' => 'Mokymai']);
 
-        asUser($user)->get(route('mailingLists.show', $this->list))
+        asUserWithInertia($user)->get(route('mailingLists.show', $this->list))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('can.view', false)
@@ -66,7 +67,7 @@ describe('access', function (): void {
     });
 
     test('an editor sees only their own tenant\'s lists', function (): void {
-        asUser($this->editor)->get(route('mailingLists.index'))
+        asUserWithInertia($this->editor)->get(route('mailingLists.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/MailingLists/IndexMailingList')
@@ -79,7 +80,7 @@ describe('access', function (): void {
     test('the roster and archive load after the page', function (): void {
         $this->list->members()->create(['email' => 'rep@stud.vu.lt', 'reasons' => ['VU Senatas · Senatorius']]);
 
-        asUser($this->editor)->get(route('mailingLists.show', $this->list))
+        asUserWithInertia($this->editor)->get(route('mailingLists.show', $this->list))
             ->assertInertia(fn (Assert $page) => $page
                 ->missing('roster')
                 ->missing('messages')
@@ -203,7 +204,7 @@ test('source options contain only authorized institutions, lists and tenants', f
     $own = Institution::factory()->for($this->tenant)->create();
     Institution::factory()->for($this->otherTenant)->create();
 
-    asUser($this->editor)->get(route('mailingLists.show', $this->list))
+    asUserWithInertia($this->editor)->get(route('mailingLists.show', $this->list))
         ->assertInertia(fn (Assert $page) => $page
             ->missing('sourceOptions')
             ->reloadOnly('sourceOptions', fn (Assert $reload) => $reload
@@ -259,7 +260,7 @@ test('a boolean reviewed flag cannot approve managed activation', function (): v
 test('archives paginate older messages with deterministic ordering and hide incomplete yearly counts', function (): void {
     MailingListMessage::factory()->count(51)->for($this->list)->create(['sent_at' => '2026-10-16 12:00:00']);
     $oldest = $this->list->messages()->reorder()->oldest('id')->first();
-    asUser($this->editor)->get(route('mailingLists.show', $this->list, absolute: false).'?messages_page=2')
+    asUserWithInertia($this->editor)->get(route('mailingLists.show', $this->list, absolute: false).'?messages_page=2')
         ->assertInertia(fn (Assert $page) => $page
             ->where('mailingList.posts_last_year', null)
             ->loadDeferredProps('archive', fn (Assert $reload) => $reload
@@ -346,6 +347,8 @@ test('edits return a flash error instead of 500 while a sync lock is held', func
 
     $lock = cache()->lock('mailing-list:'.$this->list->id, 900);
     $lock->get();
+    // Each request would otherwise really wait out the lock's 2s block().
+    Sleep::fake(syncWithCarbon: true);
 
     try {
         asUser($this->editor)->post(route('mailingLists.sources.store', $this->list), [

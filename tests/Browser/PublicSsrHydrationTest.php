@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Events\RouteMatched;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Uri;
 use Inertia\Ssr\SsrState;
 
@@ -43,6 +44,7 @@ it('hydrates an anonymous public page without losing its published content', fun
         config(['inertia.ssr.enabled' => $event->route->getName() === 'page']);
     });
     config(['inertia.ssr.throw_on_error' => true]);
+    Http::allowStrayRequests([config('inertia.ssr.url').'/render']);
     $page = visitPublicSubdomain('www', '/lt/ssr-hydration-page');
     waitForInertiaRender($page);
     $page->assertSee('Published SSR content')

@@ -13,6 +13,7 @@
 
 use App\Actions\Media\AddImageMedia;
 use App\Enums\ResponsibilityPurpose;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\PendingUpload;
@@ -20,11 +21,18 @@ use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Providers\TestingServiceProvider;
+use Illuminate\Foundation\Http\Events\RequestHandled;
 use Illuminate\Foundation\Vite;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 use Pest\Browser\Api\AwaitableWebpage;
 use Pest\Browser\Api\PendingAwaitablePage;
 use Pest\Browser\Playwright\Page as PlaywrightPage;
+use Pest\Browser\Support\ComputeUrl;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Tests\TestCase;
 use Typesense\Client;
@@ -44,8 +52,8 @@ pest()->browser()->timeout(15_000);
 |--------------------------------------------------------------------------
 |
 | Tia reruns only the tests affected by your changes and replays cached results for the rest.
-| `locally()` enables it for local runs; ci.yml opts pull requests in explicitly with `--ci --tia`.
-| Pushes to main stay a full run, and tia-baseline.yml records the shared baseline from there.
+| `locally()` enables it for local runs only; ci.yml passes `--ci`, so every CI run is a full,
+| sharded run. tia-baseline.yml records the shared baseline from main for local runs to fetch.
 |
 | Escape hatches: `--no-tia` (one full run), `--fresh` (discard the graph and re-record).
 |
@@ -193,39 +201,55 @@ function visitPublicSubdomain(string $subdomain, string $path): PendingAwaitable
 }
 
 /**
- * Log in through the real form and land on an admin page.
+ * Sign a user into the Chromium session and land on an admin page, already mounted.
  *
- * Admin routes are not domain-routed (bootstrap/app.php registers routes/admin.php under a
- * plain `mano` prefix), so none of visitPublicSubdomain()'s host/asset-origin plumbing is
- * needed here — but the Vite hot-file override is: without it a developer running
- * `sail npm run dev` tests the dev server while CI tests `public/build`, which is exactly
- * how a CORS bug once passed locally and failed in CI three times running.
+ * `actingAs()` is not enough: it authenticates this PHP process's test client, not Chromium's
+ * cookie jar. A test-only route logs in and redirects, skipping the login page and the dashboard
+ * — each a full page load through the plugin's single-threaded server. loginThroughForm() keeps
+ * the real form covered. Pass the page under test as `$path`, and a viewport the page must mount
+ * in, rather than navigating afterwards.
  *
- * `actingAs()` is deliberately not used: it authenticates this PHP process's test client,
- * not the Chromium session, which carries its own cookie jar. The login form is the only
- * path that puts a session cookie in that jar. The email/password form itself sits behind
- * a toggle — Microsoft SSO is the default — hence the extra click.
- *
- * The user must have been created with the default factory password ('password').
+ * The hot-file override renders against `public/build`, as CI does: a developer's running
+ * `sail npm run dev` once let a CORS bug pass locally.
  */
-function loginAsAdmin(User $user, string $password = 'password'): PendingAwaitablePage
+function loginAsAdmin(User $user, string $path = '/mano', ?int $width = null, ?int $height = null): PendingAwaitablePage
 {
-    // Public subdomains persist across tests; loopback keeps secure browser APIs available.
-    pest()->browser()->withHost(null);
-    app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));
+    if (! str_starts_with($path, '/mano')) {
+        throw new InvalidArgumentException("loginAsAdmin() takes a relative /mano path, got [{$path}]; pass route(…, absolute: false).");
+    }
 
-    // An auto-started tour overlays the page and swallows clicks (and would land in docs frames).
-    $user->forceFill(['tutorial_progress' => array_fill_keys(productTourIds(), now()->toISOString())])->save();
+    $page = startAdminBrowserSession($user);
 
-    // `/up` creates the browser context without loading admin.ts, so its next document gets the
-    // service-worker stub before the login app can attempt a registration.
-    // Intl and toLocale* formatting as a Lithuanian user sees it. Native date inputs still follow
-    // the pre-launched Chromium's own language, which the plugin offers no way to set.
-    $page = visit('/up')->withLocale('lt-LT');
-    disableServiceWorker($page);
-    ignoreResizeObserverLoopErrors($page);
+    if ($width !== null) {
+        $page->resize($width, $height ?? 900);
+    }
 
-    $page->navigate('/login');
+    // Under /mano because SetLocale prefixes any other path with a locale. Exists only in this
+    // test's application instance, which the plugin's in-process server answers from.
+    Route::middleware('web')->get('/mano/_test/login', function (Request $request) use ($user, $path) {
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect($path);
+    });
+
+    navigateTo($page, '/mano/_test/login');
+    waitForInertiaRender($page, '[data-slot="admin-shell"]');
+
+    return $page;
+}
+
+/**
+ * Log in through the real login form and land on the dashboard.
+ *
+ * The email/password form sits behind a toggle — Microsoft SSO is the default. The user must
+ * have been created with the default factory password ('password').
+ */
+function loginThroughForm(User $user, string $password = 'password'): PendingAwaitablePage
+{
+    $page = startAdminBrowserSession($user);
+
+    navigateTo($page, '/login');
     waitForInertiaRender($page);
 
     $page->click('button:has-text("Prisijungti el. paštu")');
@@ -239,6 +263,59 @@ function loginAsAdmin(User $user, string $password = 'password'): PendingAwaitab
     waitForInertiaRender($page, '[data-slot="admin-shell"]');
 
     return $page;
+}
+
+/**
+ * Navigate once, allowing the page the full timeout to fire `load`.
+ *
+ * `$page->navigate()` runs through the plugin's assertion retry (AwaitableWebpage::__call), which
+ * re-issues goto() with a 1s timeout: every load slower than that is aborted mid-chunk.
+ */
+function navigateTo(PendingAwaitablePage|AwaitableWebpage $page, string $url, int $timeoutMs = 15_000): void
+{
+    $page->page()->goto(ComputeUrl::from($url), ['timeout' => $timeoutMs]);
+}
+
+/**
+ * Open a browser context on a static file, ready for an admin login.
+ *
+ * `/robots.txt` is served from public/ without booting Laravel (`/up` ran every health probe
+ * per login) and loads no admin.ts, so the service-worker stub lands before any registration.
+ */
+function startAdminBrowserSession(User $user): PendingAwaitablePage
+{
+    // Public subdomains persist across tests; loopback keeps secure browser APIs available.
+    pest()->browser()->withHost(null);
+    app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));
+    logSlowBrowserRequests();
+
+    // An auto-started tour overlays the page and swallows clicks (and would land in docs frames).
+    $user->forceFill(['tutorial_progress' => array_fill_keys(productTourIds(), now()->toISOString())])->save();
+
+    // Intl and toLocale* formatting as a Lithuanian user sees it. Native date inputs still follow
+    // the pre-launched Chromium's own language, which the plugin offers no way to set.
+    $page = visit('/robots.txt')->withLocale('lt-LT');
+    disableServiceWorker($page);
+    ignoreResizeObserverLoopErrors($page);
+
+    return $page;
+}
+
+/**
+ * Log requests slower than a second, so a page that never mounts names what blocked it.
+ *
+ * The plugin serves every request, chunks included, one at a time in this process: one slow
+ * Laravel request stalls every pending chunk behind it. CI uploads storage/logs on failure.
+ */
+function logSlowBrowserRequests(): void
+{
+    Event::listen(RequestHandled::class, function (RequestHandled $event): void {
+        $milliseconds = (microtime(true) - (float) $event->request->server('REQUEST_TIME_FLOAT')) * 1000;
+
+        if ($milliseconds > 1000) {
+            Log::warning(sprintf('Slow browser-test request: %s %s took %dms', $event->request->method(), $event->request->getRequestUri(), $milliseconds));
+        }
+    });
 }
 
 /**
@@ -480,7 +557,7 @@ function ignoreResizeObserverLoopErrors(PendingAwaitablePage|AwaitableWebpage $p
  * trip that suspends this fiber, so the in-process HTTP server keeps serving.
  *
  * Do NOT reach for `waitForFunction()`, `waitForURL()`, or `waitForLoadState()` as alternatives —
- * in pestphp/pest-plugin-browser 5.0.1 all three build a `Client::execute()` Generator and never
+ * in pestphp/pest-plugin-browser 5.1.2 all three build a `Client::execute()` Generator and never
  * iterate it (`vendor/pestphp/pest-plugin-browser/src/Playwright/Page.php:237,253,272`), so they
  * send nothing and return instantly. `waitForSelector()` is the only one that actually waits.
  *
@@ -500,7 +577,7 @@ function waitForInertiaRender(
         );
     } catch (Throwable $e) {
         throw new RuntimeException(
-            sprintf("Timed out after %dms waiting for [%s].\n\n%s", $timeoutMs, $selector, captureBrowserDiagnostics($page)),
+            sprintf("Waiting %dms for [%s] failed: %s\n\n%s", $timeoutMs, $selector, $e->getMessage(), captureBrowserDiagnostics($page)),
             previous: $e,
         );
     }
@@ -613,14 +690,14 @@ function makeUser(Tenant $tenant): User
 
 function asUser(User $user): TestCase
 {
-    return test()->actingAs($user);
+    return test()->actingAs($user)->withoutHeader('X-Inertia')->withoutHeader('X-Inertia-Version');
 }
 
 function asUserWithInertia(User $user): TestCase
 {
     return test()->actingAs($user)->withHeaders([
         'X-Inertia' => 'true',
-        'X-Inertia-Version' => 'test-version',
+        'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(request()) ?? '',
     ]);
 }
 

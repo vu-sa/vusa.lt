@@ -20,8 +20,7 @@ beforeEach(function (): void {
 it('opens a news item in its editor within the viewport', function (): void {
     $news = News::query()->where('title', DocsSeeder::NEWS_TITLE)->firstOrFail();
 
-    $page = loginAsAdmin($this->coordinator);
-    $page->navigate("/mano/news/{$news->id}/edit");
+    $page = loginAsAdmin($this->coordinator, "/mano/news/{$news->id}/edit");
     waitForInertiaRender($page, '[data-slot=form-page] .tiptap');
 
     foreach ([390, 1440] as $width) {
@@ -43,9 +42,7 @@ it('opens a news item in its editor within the viewport', function (): void {
 it('compares both language versions of a page side by side on a desktop', function (): void {
     $lithuanian = Page::query()->where('title', DocsSeeder::PAGE_TITLE)->firstOrFail();
 
-    $page = loginAsAdmin($this->coordinator);
-    $page->resize(1440, 1000);
-    $page->navigate("/mano/pages/{$lithuanian->id}/edit");
+    $page = loginAsAdmin($this->coordinator, "/mano/pages/{$lithuanian->id}/edit", 1440, 1000);
     waitForInertiaRender($page, 'button:has-text("Palyginti ir redaguoti")');
     $page->click('button:has-text("Palyginti ir redaguoti")');
     waitForInertiaRender($page, '[data-testid=translation-pane-en] .tiptap[contenteditable=true]');
@@ -86,9 +83,7 @@ it('offers to restore unsaved page changes kept on the server', function (): voi
         'revision' => 1,
     ]);
 
-    $page = loginAsAdmin($this->coordinator);
-    $page->resize(1440, 900);
-    $page->navigate("/mano/pages/{$lithuanian->id}/edit");
+    $page = loginAsAdmin($this->coordinator, "/mano/pages/{$lithuanian->id}/edit", 1440, 900);
     waitForInertiaRender($page, '[data-testid=content-recovery] button:has-text("Atkurti kopiją")');
 
     $page->assertSee('Kaip tapti studentų atstovu: rinkimai 2026');

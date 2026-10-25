@@ -17,8 +17,7 @@ it('edits event type and status in the table and offers meeting creation in the 
         'is_draft' => true,
     ]);
 
-    $page = loginAsAdmin($user);
-    $page->navigate('/mano/calendar');
+    $page = loginAsAdmin($user, '/mano/calendar');
     waitForInertiaRender($page, '[data-slot=collection-table]');
 
     $page->select('[data-slot=collection-table] select[aria-label="Renginio tipas"]', 'Seminaras');
@@ -31,7 +30,7 @@ it('edits event type and status in the table and offers meeting creation in the 
     $page->assertPresent('[data-slot=collection-status-menu][aria-label="Keisti būseną: Paskelbta"]');
     $this->assertDatabaseHas('calendar', ['id' => $event->id, 'is_draft' => 0]);
 
-    $page->navigate('/mano/calendar/'.$event->id.'/edit');
+    navigateTo($page, '/mano/calendar/'.$event->id.'/edit');
     waitForInertiaRender($page, '[data-slot=form-page]');
     $page->assertSee('Sukurti posėdį iš renginio');
     $page->script('window.__pestBrowser.jsErrors = window.__pestBrowser.jsErrors.filter(error => !error.message.startsWith("ResizeObserver loop completed"))');

@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Duty;
+use App\Models\Institution;
 use App\Models\News;
 use App\Models\Tenant;
 use App\Services\ModelAuthorizer;
@@ -162,6 +164,67 @@ describe('filter key validation', function (): void {
 });
 
 describe('applyGlobalSearch', function (): void {
+    test('searches translated names in both configured locales regardless of the interface language', function (string $locale, string $term): void {
+        app()->setLocale($locale);
+        $duty = Duty::factory()->create(['name' => ['lt' => 'Stipendijos', 'en' => 'Scholarships']]);
+
+        $result = $this->service->applyGlobalSearch(Duty::query(), $term, ['name']);
+
+        expect($result->pluck('id')->all())->toBe([$duty->id]);
+    })->with([
+        'English name from Lithuanian UI' => ['lt', 'SCHOLAR'],
+        'Lithuanian name from English UI' => ['en', 'stipend'],
+    ]);
+
+    test('searches translated values rather than JSON keys or encoding', function (array $names, string $term, bool $matches): void {
+        $duty = Duty::factory()->create(['name' => $names]);
+
+        $result = $this->service->applyGlobalSearch(Duty::query(), $term, ['name']);
+
+        expect($result->pluck('id')->all())->toBe($matches ? [$duty->id] : []);
+    })->with([
+        'locale key lt' => [['lt' => 'Vadovas', 'en' => 'Chair'], 'lt', false],
+        'locale key en' => [['lt' => 'Vadovas', 'en' => 'Chair'], 'en', false],
+        'quote in translated text' => [['lt' => 'Klubas "ABC"', 'en' => 'Club "ABC"'], '"ABC"', true],
+        'only English translation' => [['en' => 'Scholarships'], 'scholar', true],
+        'no translations' => [[], 'scholar', false],
+        'LIKE wildcard' => [['lt' => 'Vadovas', 'en' => 'Chair'], 'Ch_ir', true],
+    ]);
+
+    test('keeps translated and plain column alternatives inside the scoped trash search', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create();
+        $byName = Duty::factory()->for($institution)->create([
+            'name' => ['lt' => 'Vadovas', 'en' => 'Scholarships'],
+            'email' => 'a@example.test',
+        ]);
+        $byEmail = Duty::factory()->for($institution)->create([
+            'name' => ['lt' => 'Vadovas', 'en' => 'Chair'],
+            'email' => 'scholar@example.test',
+        ]);
+        Duty::factory()->for($institution)->create(['name' => ['lt' => 'Stipendijos', 'en' => 'Scholarships']]);
+        $outside = Duty::factory()->create(['name' => ['lt' => 'Stipendijos', 'en' => 'Scholarships']]);
+        $byName->delete();
+        $byEmail->delete();
+        $outside->delete();
+
+        $query = Duty::onlyTrashed()->whereBelongsTo($institution);
+        $result = $this->service->applyGlobalSearch($query, 'scholar', ['email', 'name']);
+
+        expect($result->pluck('id')->sort()->values()->all())->toBe(collect([$byName->id, $byEmail->id])->sort()->values()->all());
+    });
+
+    test('searches related translated names while retaining the parent restriction', function (): void {
+        $institution = Institution::factory()->for($this->tenant)->create([
+            'name' => ['lt' => 'Taryba', 'en' => 'Scholarships Board'],
+        ]);
+        $duty = Duty::factory()->for($institution)->create();
+        Duty::factory()->for($institution)->create();
+
+        $result = $this->service->applyGlobalSearch(Duty::query()->whereKey($duty->id), 'scholar', ['name', 'institution.name']);
+
+        expect($result->pluck('id')->all())->toBe([$duty->id]);
+    });
+
     test('returns query unchanged when search text is empty', function (): void {
         $query = News::query();
         $result = $this->service->applyGlobalSearch($query, '', ['title']);

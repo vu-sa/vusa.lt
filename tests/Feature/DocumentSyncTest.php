@@ -239,12 +239,12 @@ describe('Document Sync Command', function (): void {
     });
 
     test('sync command respects limit parameter', function (): void {
-        Document::factory()->count(30)->create([
+        Document::factory()->count(3)->create([
             'checked_at' => now()->subDays(2),
         ]);
 
-        $this->artisan('sharepoint:sync-documents --all --limit=25 --dry-run')
-            ->expectsOutputToContain('(limit: 25)')
+        $this->artisan('sharepoint:sync-documents --all --limit=2 --dry-run')
+            ->expectsOutputToContain('(limit: 2)')
             ->assertExitCode(0);
     });
 

@@ -9,7 +9,6 @@
     "license": "MIT",
     "require": {
         "php": "^8.5",
-        "ajcastro/eager-load-pivot-relations": "^0.3.0",
         "guzzlehttp/guzzle": "^7.2",
         "hashids/hashids": "^5.0",
         "inertiajs/inertia-laravel": "^3.0",

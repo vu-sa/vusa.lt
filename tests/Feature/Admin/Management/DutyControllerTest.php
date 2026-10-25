@@ -689,7 +689,7 @@ describe('assignable users is_recent flag', function (): void {
             'updated_at' => now()->subMonths(20),
         ]);
 
-        asUser($this->dutyManager)->get(route('duties.create'))
+        asUserWithInertia($this->dutyManager)->get(route('duties.create'))
             ->assertStatus(200)
             ->assertInertia(fn ($page) => $page->where('assignableUsers', function ($users) use (
                 $currentDutyUser, $recentPastDutyUser, $newlyCreatedUser, $recentlyActiveUser, $staleUser
@@ -767,7 +767,7 @@ describe('data quality filters', function (): void {
         $user = makeUser($this->tenant);
         $occupiedDuty->attachAudited('users', $user->id, ['start_date' => now()->subDay()]);
 
-        asUser($this->dutyManager)
+        asUserWithInertia($this->dutyManager)
             ->get(route('duties.index', ['filters' => json_encode(['data_quality' => 'vacant'])]))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
@@ -786,7 +786,7 @@ describe('data quality filters', function (): void {
             'name' => ['lt' => 'Pilnas pavadinimas', 'en' => 'Full name'],
         ]);
 
-        asUser($this->dutyManager)
+        asUserWithInertia($this->dutyManager)
             ->get(route('duties.index', ['filters' => json_encode(['data_quality' => 'missing_en_name'])]))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
@@ -805,7 +805,7 @@ describe('data quality filters', function (): void {
             'name' => ['lt' => 'Pilnas pavadinimas', 'en' => 'Full name'],
         ]);
 
-        asUser($this->dutyManager)
+        asUserWithInertia($this->dutyManager)
             ->get(route('duties.index', ['filters' => json_encode(['data_quality' => 'missing_lt_name'])]))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
@@ -849,7 +849,7 @@ describe('data quality filters', function (): void {
             ],
         ]);
 
-        asUser($this->dutyManager)
+        asUserWithInertia($this->dutyManager)
             ->get(route('duties.index', ['filters' => json_encode(['data_quality' => 'duplicate_holders'])]))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
@@ -864,7 +864,7 @@ describe('data quality filters', function (): void {
         $first = Duty::factory()->for($institution)->create(['name' => ['lt' => 'Pirma', 'en' => 'First']]);
         $second = Duty::factory()->for($institution)->create(['name' => ['lt' => 'Antra', 'en' => 'Second']]);
 
-        asUser($this->dutyManager)
+        asUserWithInertia($this->dutyManager)
             ->get(route('duties.index', ['filters' => json_encode(['data_quality' => 'all'])]))
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
@@ -905,7 +905,7 @@ describe('show page', function (): void {
      * because the permission is tenant-scoped.
      */
     test('the capability prop reflects the policy for this duty', function (): void {
-        asUser($this->dutyManager)->get(route('duties.show', $this->dutyManagerDuty))
+        asUserWithInertia($this->dutyManager)->get(route('duties.show', $this->dutyManagerDuty))
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('can.update', true)
                 ->where('can.managePeople', true)
@@ -919,7 +919,7 @@ describe('show page', function (): void {
         $reader = makeUser($this->tenant);
         $reader->duties()->first()->assignRole($readerRole);
 
-        asUser($reader)->get(route('duties.show', $this->dutyManagerDuty))
+        asUserWithInertia($reader)->get(route('duties.show', $this->dutyManagerDuty))
             ->assertStatus(200)
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('can.update', false)

@@ -39,7 +39,7 @@ beforeEach(function (): void {
 
 describe('index', function (): void {
     test('does not return activeReservations on full visit', function (): void {
-        asUser($this->admin)->get(route('reservations.index'))
+        asUserWithInertia($this->admin)->get(route('reservations.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Reservations/IndexReservation')
@@ -108,7 +108,7 @@ describe('auth: simple user', function (): void {
         $own = Reservation::factory()->hasAttached($this->resources->first())->create();
         $own->users()->attach($this->user->id);
 
-        asUser($this->user)->get(route('reservations.index'))
+        asUserWithInertia($this->user)->get(route('reservations.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Reservations/IndexReservation')
@@ -123,7 +123,7 @@ describe('auth: simple user', function (): void {
     });
 
     test('can store reservation', function (): void {
-        asUser($this->user)->get(route('reservations.create'))->assertInertia(fn (Assert $page) => $page
+        asUserWithInertia($this->user)->get(route('reservations.create'))->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Reservations/CreateReservation')
             ->has('defaultDateTimeRange')
         );
@@ -220,7 +220,7 @@ describe('auth: reservation manager', function (): void {
     test('sees their own reservation in the list, and no one else\'s', function (): void {
         Reservation::factory()->hasAttached($this->resources->first())->create();
 
-        asUser($this->reservationManager)->get(route('reservations.index'))
+        asUserWithInertia($this->reservationManager)->get(route('reservations.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->has('reservations.data', 1)
@@ -233,7 +233,7 @@ describe('auth: reservation manager', function (): void {
     });
 
     test('can store reservation', function (): void {
-        asUser($this->reservationManager)->get(route('reservations.create'))->assertInertia(fn (Assert $page) => $page
+        asUserWithInertia($this->reservationManager)->get(route('reservations.create'))->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Reservations/CreateReservation')
             ->has('defaultDateTimeRange')
         );

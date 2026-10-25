@@ -76,7 +76,7 @@ describe('unauthorized access', function (): void {
 
 describe('authorized access', function (): void {
     test('can access index', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('quickLinks.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -88,7 +88,7 @@ describe('authorized access', function (): void {
     });
 
     test('can access create page', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('quickLinks.create'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -143,7 +143,7 @@ describe('authorized access', function (): void {
     });
 
     test('can access edit page', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('quickLinks.edit', $this->quickLink))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -228,7 +228,7 @@ describe('authorized access', function (): void {
         $deletedOtherTenantQuickLink = QuickLink::factory()->for($otherTenant)->create(['lang' => 'lt']);
         $deletedOtherTenantQuickLink->delete();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('quickLinks.index', [
                 'tenant' => $this->tenant->id,
                 'lang' => 'lt',
@@ -292,7 +292,7 @@ describe('tenant isolation', function (): void {
     });
 
     test('index filters quick links by tenant', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('quickLinks.index', ['tenant' => $this->tenant->id, 'lang' => 'lt']))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page

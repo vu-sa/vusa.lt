@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Actions\ApplyReservationIndexFilters;
 use App\Actions\EnsureReservationCapacity;
+use App\Actions\LoadReservationResourceApprovals;
 use App\Actions\NotifyAffectedReservationDrafts;
 use App\Actions\SerializeReservationCart;
 use App\Actions\SerializeReservationsForTable;
@@ -155,7 +156,8 @@ class ReservationController extends AdminController
 
         $user = request()->user();
 
-        $reservation->load('users', 'resources.media', 'resources.pivot.approvals.user', 'resources.pivot.approvals.revertedBy', 'resources.tenant');
+        $reservation->load('users', 'resources.media', 'resources.tenant');
+        LoadReservationResourceApprovals::execute([$reservation], ['approvals.user', 'approvals.revertedBy']);
 
         return $this->inertiaResponse('Admin/Reservations/ShowReservation', [
             'reservation' => [

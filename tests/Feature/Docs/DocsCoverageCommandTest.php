@@ -1,7 +1,26 @@
 <?php
 
 use App\Support\Docs\ChangedTestAnalyzer;
+use App\Support\Docs\TestSurface;
+use App\Support\Docs\TestSurfaceScanner;
 use Illuminate\Support\Facades\Artisan;
+
+/**
+ * Parsing all of tests/ costs ~1.7s and cannot change mid-run, so each process
+ * scans it once instead of once per command call.
+ */
+beforeEach(function (): void {
+    $this->app->instance(TestSurfaceScanner::class, new class extends TestSurfaceScanner
+    {
+        /** @var array<string, TestSurface> */
+        private static array $surfaces = [];
+
+        public function scan(string $directory): TestSurface
+        {
+            return self::$surfaces[$directory] ??= parent::scan($directory);
+        }
+    });
+});
 
 /**
  * Builds a throwaway docs directory so the command can be exercised without

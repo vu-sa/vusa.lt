@@ -58,8 +58,7 @@ it('edits ordinary text in the rich-content canvas and fits both themes at suppo
         'type' => 'tiptap', 'order' => 0,
         'json_content' => ['type' => 'doc', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'Original text']]]]],
     ]);
-    $page = loginAsAdmin($this->admin);
-    $page->navigate("/mano/pages/{$this->page->id}/edit");
+    $page = loginAsAdmin($this->admin, "/mano/pages/{$this->page->id}/edit");
     waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
     $page->click('button:has-text("Redaguoti turinį")');
     $page->page()->waitForSelector('[data-rc-fullscreen-scroll] .tiptap[contenteditable=true]');
@@ -80,9 +79,7 @@ it('edits ordinary text in the rich-content canvas and fits both themes at suppo
 });
 
 it('edits a hero button through its hotspot popover and the change survives a save', function (): void {
-    $page = loginAsAdmin($this->admin);
-
-    $page->navigate("/mano/pages/{$this->page->id}/edit");
+    $page = loginAsAdmin($this->admin, "/mano/pages/{$this->page->id}/edit");
     waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
 
     $page->click('button:has-text("Redaguoti turinį")');
@@ -124,8 +121,7 @@ it('opening a second hotspot visually closes the first', function (): void {
         ],
     ]);
 
-    $page = loginAsAdmin($this->admin);
-    $page->navigate("/mano/pages/{$this->page->id}/edit");
+    $page = loginAsAdmin($this->admin, "/mano/pages/{$this->page->id}/edit");
     waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
     $page->click('button:has-text("Redaguoti turinį")');
     waitForInertiaRender($page, 'button:has-text("Registruotis")');
@@ -148,10 +144,8 @@ it('keeps a centered hero title uppercase and centered before, during, and after
         'options' => ['variant' => 'centered', 'textLeft' => true],
     ]);
 
-    $page = loginAsAdmin($this->admin);
+    $page = loginAsAdmin($this->admin, "/mano/pages/{$this->page->id}/edit");
     expect($page->script('navigator.serviceWorker.getRegistrations().then((rs) => rs.length)'))->toBe(0);
-
-    $page->navigate("/mano/pages/{$this->page->id}/edit");
     waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
     $page->click('button:has-text("Redaguoti turinį")');
     waitForInertiaRender($page, '[role="heading"] button');
@@ -168,10 +162,8 @@ it('keeps a centered hero title uppercase and centered before, during, and after
 });
 
 it('keeps the first split hero left-aligned and its settings trigger below the editor navbar', function (): void {
-    $page = loginAsAdmin($this->admin);
+    $page = loginAsAdmin($this->admin, "/mano/pages/{$this->page->id}/edit");
     expect($page->script('navigator.serviceWorker.getRegistrations().then((rs) => rs.length)'))->toBe(0);
-
-    $page->navigate("/mano/pages/{$this->page->id}/edit");
     waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
     $page->click('button:has-text("Redaguoti turinį")');
     waitForInertiaRender($page, '[role="heading"] button');
@@ -193,8 +185,7 @@ it('keeps split hero image spotlights beside the image surface', function (): vo
         ],
     ]);
 
-    $page = loginAsAdmin($this->admin);
-    $page->navigate("/mano/pages/{$this->page->id}/edit");
+    $page = loginAsAdmin($this->admin, "/mano/pages/{$this->page->id}/edit");
     waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
     $page->click('button:has-text("Redaguoti turinį")');
     waitForInertiaRender($page, '[data-testid="hero-image-spotlight-rail"]');
@@ -209,8 +200,7 @@ it('keeps split hero image spotlights beside the image surface', function (): vo
 });
 
 it('shows the published hero without editing affordances in full-screen preview mode', function (): void {
-    $page = loginAsAdmin($this->admin);
-    $page->navigate("/mano/pages/{$this->page->id}/edit");
+    $page = loginAsAdmin($this->admin, "/mano/pages/{$this->page->id}/edit");
     waitForInertiaRender($page, 'button:has-text("Redaguoti turinį")');
     $page->click('button:has-text("Redaguoti turinį")');
     waitForInertiaRender($page, '[data-rc-interactive]');
@@ -236,8 +226,7 @@ it('restores a private server copy and saves it only after an explicit save', fu
         'user_id' => $this->admin->id, 'kind' => 'pages', 'identity' => 'record-'.$this->page->id,
         'snapshot' => $snapshot, 'revision' => 1,
     ]);
-    $page = loginAsAdmin($this->admin);
-    $page->navigate("/mano/pages/{$this->page->id}/edit");
+    $page = loginAsAdmin($this->admin, "/mano/pages/{$this->page->id}/edit");
     waitForInertiaRender($page, '[data-testid=content-recovery] button:has-text("Atkurti kopiją")');
     foreach ([390, 1440] as $width) {
         $page->resize($width, 900);
@@ -269,8 +258,7 @@ it('edits paired languages independently in the comparison workspace', function 
         'json_content' => ['type' => 'doc', 'content' => [['type' => 'paragraph', 'content' => [['type' => 'text', 'text' => 'EN original']]]]],
     ]);
     PairTranslatedRecord::execute($this->page, $other->id);
-    $page = loginAsAdmin($this->admin);
-    $page->navigate("/mano/pages/{$this->page->id}/edit");
+    $page = loginAsAdmin($this->admin, "/mano/pages/{$this->page->id}/edit");
     waitForInertiaRender($page, 'button:has-text("Palyginti ir redaguoti")');
     $page->click('button:has-text("Palyginti ir redaguoti")');
     waitForInertiaRender($page, '[data-testid=translation-pane-en] .tiptap[contenteditable=true]');
@@ -293,8 +281,7 @@ it('edits paired languages independently in the comparison workspace', function 
 });
 
 it('creates an unpublished language copy from current edits without losing the source changes', function (): void {
-    $page = loginAsAdmin($this->admin);
-    $page->navigate("/mano/pages/{$this->page->id}/edit");
+    $page = loginAsAdmin($this->admin, "/mano/pages/{$this->page->id}/edit");
     waitForInertiaRender($page, 'button:has-text("Sukurti versiją kita kalba")');
     $page->page()->locator('input#title')->fill('Unfinished source title');
     $page->click('button:has-text("Sukurti versiją kita kalba")');
@@ -317,8 +304,7 @@ it('creates an unpublished language copy from current edits without losing the s
 });
 
 it('starts a new language version blank and copies the source only on request', function (): void {
-    $page = loginAsAdmin($this->admin);
-    $page->navigate("/mano/pages/{$this->page->id}/edit");
+    $page = loginAsAdmin($this->admin, "/mano/pages/{$this->page->id}/edit");
     waitForInertiaRender($page, 'button:has-text("Sukurti versiją kita kalba")');
     $page->click('button:has-text("Sukurti versiją kita kalba")');
     waitForInertiaRender($page, '[data-testid=translation-pane-en] .tiptap[contenteditable=true]');

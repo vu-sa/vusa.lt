@@ -30,7 +30,7 @@ it('starts the admin app in light mode even when the system prefers dark', funct
     $user = makeUser(Tenant::query()->first());
     $page = loginAsAdmin($user);
     $page->script('localStorage.removeItem("vueuse-color-scheme")');
-    $page->navigate('/mano');
+    navigateTo($page, '/mano');
     waitForInertiaRender($page);
 
     expect($page->script('localStorage.getItem("vueuse-color-scheme")'))->toBe('light')
@@ -51,7 +51,7 @@ it('keeps a saved dark choice', function (): void {
     $page = visitPublicSubdomain('www', '/lt/naujienos');
     $page->script('localStorage.setItem("vueuse-color-scheme", "dark")');
     // The full URL: a relative navigate() resolves against the plugin's 127.0.0.1 origin, whose assets are CORS-blocked.
-    $page->navigate($page->script('location.href'));
+    navigateTo($page, $page->script('location.href'));
     waitForInertiaRender($page);
 
     expect($page->script('localStorage.getItem("vueuse-color-scheme")'))->toBe('dark')

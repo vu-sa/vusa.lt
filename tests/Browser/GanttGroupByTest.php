@@ -10,17 +10,11 @@ pest()->use(RefreshDatabase::class);
  * opened nothing. A real pointer is the only way to prove what lies on top.
  */
 it('opens the grouping menu from the timeline toolbar and switches the grouping', function (): void {
-    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()));
-    $page->resize(1180, 800);
-    $page->navigate('/mano/dashboard/atstovavimas');
+    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()), '/mano/dashboard/atstovavimas', 1180, 800);
     waitForInertiaRender($page, '[data-tour=visak-timeline]');
 
     // The chart renders only once scrolled into view (see GanttDateStackingTest).
-    $deadline = microtime(true) + 15;
-
-    while (! $page->script('(() => { document.querySelector("[data-tour=visak-timeline]").scrollIntoView(); return !! document.querySelector("[data-slot=gantt-group-by]"); })()') && microtime(true) < $deadline) {
-        usleep(250_000);
-    }
+    $page->assertScript('(() => { document.querySelector("[data-tour=visak-timeline]").scrollIntoView(); return !! document.querySelector("[data-slot=gantt-group-by]"); })()', true);
 
     $page->click('[data-slot="gantt-group-by"]');
     $page->page()->waitForSelector('[role="menu"] [role="menuitemradio"] >> nth=1', ['timeout' => 2_000]);

@@ -25,7 +25,7 @@ beforeEach(function (): void {
 
 describe('svetaine dashboard', function (): void {
     test('admin can access svetaine dashboard', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard.svetaine'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -42,7 +42,7 @@ describe('svetaine dashboard', function (): void {
     });
 
     test('svetaine dashboard includes tenant data', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard.svetaine', ['tenant_id' => $this->tenant->id]))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -60,7 +60,7 @@ describe('svetaine dashboard', function (): void {
      * dashboard view for nothing.
      */
     test('svetaine dashboard does not ship unused content collections', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard.svetaine', ['tenant_id' => $this->tenant->id]))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -80,7 +80,7 @@ describe('svetaine counts', function (): void {
         Calendar::factory()->for($this->tenant)->create(['is_draft' => true]);
         News::factory()->for(Tenant::query()->where('id', '!=', $this->tenant->id)->first())->create(['draft' => true]);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard.svetaine', ['tenant_id' => $this->tenant->id]))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('counts.newsDrafts', 2)
@@ -97,7 +97,7 @@ describe('svetaine tenant isolation', function (): void {
     });
 
     test('user cannot access other tenant svetaine data directly', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard.svetaine', ['tenant_id' => $this->otherTenant->id]))
             ->assertStatus(200) // They can access but should see filtered data
             ->assertInertia(fn (Assert $page) => $page

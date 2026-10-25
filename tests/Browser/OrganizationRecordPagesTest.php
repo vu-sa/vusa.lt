@@ -29,8 +29,7 @@ function expectOrganizationRecordFits($page): void
 it('opens a duty with its current and past members', function (): void {
     $duty = Duty::query()->where('name->lt', 'Parlamento narys (-ė)')->firstOrFail();
 
-    $page = loginAsAdmin($this->coordinator);
-    $page->navigate("/mano/duties/{$duty->id}");
+    $page = loginAsAdmin($this->coordinator, "/mano/duties/{$duty->id}");
     waitForInertiaRender($page, '[data-testid="member-term-edit"]');
 
     expectOrganizationRecordFits($page);
@@ -44,8 +43,7 @@ it('opens a duty with its current and past members', function (): void {
 it('opens a member with the duties they hold and held', function (): void {
     $member = User::query()->where('name', 'Mantas Jonaitis')->firstOrFail();
 
-    $page = loginAsAdmin($this->coordinator);
-    $page->navigate("/mano/users/{$member->id}");
+    $page = loginAsAdmin($this->coordinator, "/mano/users/{$member->id}");
     waitForInertiaRender($page, '[data-slot=record-title]');
 
     $page->assertSee('Mantas Jonaitis');
@@ -60,8 +58,7 @@ it('opens a member with the duties they hold and held', function (): void {
 it('opens a form with its registrations', function (): void {
     $form = Form::query()->where('name->lt', DocsSeeder::REGISTRATION_FORM)->firstOrFail();
 
-    $page = loginAsAdmin($this->coordinator);
-    $page->navigate("/mano/forms/{$form->id}");
+    $page = loginAsAdmin($this->coordinator, "/mano/forms/{$form->id}");
     waitForInertiaRender($page, '[data-slot=record-title]');
 
     $page->assertSee('Karolina Jankauskaitė');
@@ -74,8 +71,7 @@ it('opens a form with its registrations', function (): void {
 });
 
 it('shows a representative their duties, roles and reachable sections', function (): void {
-    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL));
-    $page->navigate('/mano/profile/roles');
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL), '/mano/profile/roles');
     waitForInertiaRender($page, '[data-testid="current-duties"]');
 
     foreach ([390, 1440] as $width) {

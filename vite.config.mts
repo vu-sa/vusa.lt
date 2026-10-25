@@ -61,6 +61,12 @@ export default defineConfig(({ command, isSsrBuild }) => {
     ziggy({
       sail: true,
     }),
+    ...(command === 'serve' ? [ziggy({
+      sail: true,
+      path: 'resources/js/ziggy.js',
+      types: false,
+      typesOnly: false,
+    })] : []),
   ];
 
   // Dev-only plugins - disabled for Storybook and builds

@@ -53,7 +53,7 @@ describe('unauthorized access', function (): void {
 
 describe('authorized access', function (): void {
     test('can access index page', function (): void {
-        asUser($this->globalCoordinator)
+        asUserWithInertia($this->globalCoordinator)
             ->get(route('eventTypes.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page

@@ -27,11 +27,14 @@ class PermissionMapBuilder
      * @var list<string>
      */
     private const array CACHE_KEY_PREFIXES = [
+        self::ALL_CACHE_PREFIX,
         self::INDEX_CACHE_PREFIX,
         self::CREATE_CACHE_PREFIX,
         self::FORCE_DELETE_CACHE_PREFIX,
         AdminNavigationCatalog::CACHE_PREFIX,
     ];
+
+    public const ALL_CACHE_PREFIX = 'permission-maps:v1:';
 
     public const INDEX_CACHE_PREFIX = 'index-permissions-';
 

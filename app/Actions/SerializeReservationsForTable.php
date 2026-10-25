@@ -10,17 +10,12 @@ use App\Models\User;
 use App\Services\ModelAuthorizer;
 use Illuminate\Support\Collection;
 
-/**
- * Shared reservation table payload for collection pages, API pages and overviews.
- * Per-resource action flags mirror server authorization; explicit pivot fields
- * keep the list payload compact.
- */
+/** Shared reservation rows and action flags for collections, API pages and overviews. */
 class SerializeReservationsForTable
 {
     /** Eager loads the payload reads; callers add them to their query. */
     public const array EAGER_LOADS = [
         'resources.tenant:id,shortname',
-        'resources.pivot.approvals:id,approvable_type,approvable_id,decision,reverted_at',
         'users:id,name,email,profile_photo_path',
     ];
 
@@ -30,13 +25,17 @@ class SerializeReservationsForTable
      */
     public static function execute(iterable $reservations, User $user, ModelAuthorizer $authorizer): array
     {
-        // Resolved once: canBeApprovedBy() applies the same rule per pivot, which would re-resolve
-        // the authorizer — and query the reservation's users — for every row.
+        $reservations = collect($reservations);
+        LoadReservationResourceApprovals::execute($reservations, [
+            'approvals:id,approvable_type,approvable_id,decision,reverted_at',
+        ]);
+
+        // Resolve once instead of repeating authorization queries for every pivot.
         $managedTenantIds = $authorizer
             ->tenants($user, config('permission.resource_managership_indicating_permission'))
             ->pluck('id');
 
-        return collect($reservations)->map(function (Reservation $reservation) use ($managedTenantIds, $user): array {
+        return $reservations->map(function (Reservation $reservation) use ($managedTenantIds, $user): array {
             $isParticipant = $reservation->users->contains('id', $user->id);
 
             return [

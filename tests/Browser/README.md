@@ -52,6 +52,15 @@ prove (SPA navigation, computed layout and overflow, pointer/keyboard interactio
 round-trip, "mounts with no JS errors"). Structure and copy assertions go in Vitest. Select by
 `data-testid` / `data-slot` / scoped role, not by copy that may render twice (desktop and phone bars).
 
+## Logging in
+
+`loginAsAdmin($user, '/mano/…')` signs the user in through a test-only route (registered at
+runtime inside the test, never in the app) and lands straight on the page under test, already
+mounted. Pass the path, and `$width`/`$height` when the page must mount at a phone or tablet size,
+instead of navigating afterwards: each extra admin page load costs seconds, because the plugin
+serves every request one at a time from the test's own PHP process. The real login form keeps one
+test of its own through `loginThroughForm()` (`AdminHomeLayoutTest`).
+
 ## The subdomain/SmartLink gotcha
 
 This app's public routes are registered under `Route::domain('{subdomain}.vusa.test')` groups
@@ -118,13 +127,16 @@ running `sail npm run dev` tests a completely different code path from CI — wh
 CORS bug above passed locally and failed in CI three times running.
 
 When a wait does fail, read the `Requests:` line first: a resource at `-> 0` was blocked, not slow.
+If the list just stops, either a slow request held up the single-threaded server (`storage/logs`,
+uploaded by CI on failure, names every request over a second as `Slow browser-test request`) or the
+page was navigated away mid-load — see the `navigate()` warning below.
 Rule: `visitPublicSubdomain()` already blocks until `#app` has rendered, so the initial load is
 covered for free. **After any click that triggers an Inertia (SPA) navigation, call
 `waitForInertiaRender($page, '<selector unique to the destination>')` before asserting** — see
 `PublicNavigationHeadTest.php` for the pattern (it waits on the destination article's own
 `<h1>` after clicking a card).
 
-Hard warning: in `pestphp/pest-plugin-browser` 5.0.1, `Page::waitForFunction()`,
+Hard warning: in `pestphp/pest-plugin-browser` 5.1.2, `Page::waitForFunction()`,
 `Page::waitForURL()`, and `Page::waitForLoadState()` never send anything to Playwright — they
 build a `Client::execute()` `Generator` and drop it without iterating
 (`vendor/pestphp/pest-plugin-browser/src/Playwright/Page.php:237,253,272`), so they return
@@ -132,6 +144,15 @@ instantly having waited for nothing. Only `waitForSelector()` genuinely waits (i
 `waitForInertiaRender()` uses). Don't "fix" a flake with one of the other three. Also don't wait
 on the URL for an Inertia navigation even once that bug is fixed upstream — Inertia pushes the
 new URL before the destination component resolves, so a URL-based wait proves nothing.
+
+Hard warning: **never call `$page->navigate()`; use `navigateTo($page, $url)`** (`tests/Pest.php`).
+`AwaitableWebpage::__call()` runs every method off its short exempt list (click, press, …) through
+`Execution::waitForExpectation()`, which retries it under a 1-second Playwright timeout. For
+`navigate()` that means `goto()` is re-issued every second until the page fires `load`. A heavy admin
+page on a CI runner takes longer than that, so each retry aborts the load in progress: `#app` stays
+empty, the `Requests:` list stops at a random chunk, or Playwright reports
+`Navigation to X is interrupted by another navigation to Y`. `navigateTo()` navigates once with the
+full timeout.
 
 ## Screenshots
 

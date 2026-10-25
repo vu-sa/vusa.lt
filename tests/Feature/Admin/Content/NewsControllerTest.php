@@ -148,7 +148,7 @@ describe('auth: news manager', function (): void {
     });
 
     test('can access news create page', function (): void {
-        asUser($this->newsManager)->get(route('news.create'))->assertStatus(200)
+        asUserWithInertia($this->newsManager)->get(route('news.create'))->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Content/CreateNews')
                 ->has('assignableTenants', 1)
@@ -164,7 +164,7 @@ describe('auth: news manager', function (): void {
             ->create();
         $duty->assignRole('Komunikacijos koordinatorius');
 
-        asUser($orphanManager)->get(route('news.create'))->assertStatus(200)
+        asUserWithInertia($orphanManager)->get(route('news.create'))->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Content/CreateNews')
                 ->has('assignableTenants', 0)
@@ -644,7 +644,7 @@ describe('auth: super admin', function (): void {
         $superAdmin = User::factory()->create();
         $superAdmin->assignRole(config('permission.super_admin_role_name'));
 
-        asUser($superAdmin)->get(route('news.create'))->assertStatus(200)
+        asUserWithInertia($superAdmin)->get(route('news.create'))->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Content/CreateNews')
                 ->has('assignableTenants', Tenant::count())

@@ -17,7 +17,7 @@ beforeEach(function (): void {
 
 describe('user tasks', function (): void {
     test('both doors render the same task collection, each in its own scope', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('tasks.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
@@ -27,7 +27,7 @@ describe('user tasks', function (): void {
                 ->has('taskCounts')
             );
 
-        asUser(makeAdminUser($this->tenant))
+        asUserWithInertia(makeAdminUser($this->tenant))
             ->get(route('tasks.summary'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
@@ -42,7 +42,7 @@ describe('user tasks', function (): void {
         $theirs = Task::factory()->create();
         $theirs->users()->attach($this->admin);
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('tasks.index'))
             ->assertInertia(fn (Assert $page) => $page
                 ->has('data', 1)
@@ -51,11 +51,11 @@ describe('user tasks', function (): void {
     });
 
     test('offers the way to all tasks only to a user who may read them', function (): void {
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('tasks.index'))
             ->assertInertia(fn (Assert $page) => $page->where('canViewAllTasks', false));
 
-        asUser(makeAdminUser($this->tenant))
+        asUserWithInertia(makeAdminUser($this->tenant))
             ->get(route('tasks.index'))
             ->assertInertia(fn (Assert $page) => $page->where('canViewAllTasks', true));
     });
@@ -68,7 +68,7 @@ describe('user tasks', function (): void {
         $theirs = Task::factory()->create();
         $theirs->users()->attach($this->admin);
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('tasks.index', ['item' => $theirs->id]))
             ->assertInertia(fn (Assert $page) => $page->where('linkedTask', null));
     });
@@ -135,7 +135,7 @@ describe('task collection API', function (): void {
             ->assertJsonPath('data.total', 1)
             ->assertJsonPath('data.items.0.id', $automatic->id);
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('tasks.index'))
             ->assertInertia(fn (Assert $page) => $page->where('taskCounts.auto', 1));
     });

@@ -11,11 +11,14 @@ use App\Models\Pivots\AgendaItem;
 use App\Models\Tenant;
 use App\Settings\MeetingSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    Http::fake(['nominatim.openstreetmap.org/search*' => Http::response([])]);
+
     $this->tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
 
     $this->vusaType = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create();

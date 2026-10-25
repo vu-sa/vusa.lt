@@ -34,7 +34,7 @@ describe('collection', function (): void {
         ResponsibilityGrant::factory()->forDuty($this->user->duties()->first())->of($this->role)->create();
         RoleFactory::forPurpose(ResponsibilityPurpose::StudentRepCoordination);
 
-        asUser($this->admin)->get(route('responsibilities.index'))
+        asUserWithInertia($this->admin)->get(route('responsibilities.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Permissions/IndexResponsibility')
@@ -55,7 +55,7 @@ describe('record', function (): void {
         $legacy = Permission::create(['name' => 'saziningaiExams.read.padalinys', 'guard_name' => 'web']);
         $this->role->givePermissionTo(['mailingLists.read.padalinys', $legacy]);
 
-        asUser($this->admin)->get(route('responsibilities.show', $this->role))
+        asUserWithInertia($this->admin)->get(route('responsibilities.show', $this->role))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Permissions/ShowResponsibility')

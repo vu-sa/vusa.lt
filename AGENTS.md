@@ -87,9 +87,9 @@ Note: `npm run typecheck` (`vue-tsc --noEmit`) is available and runs in CI, but 
 
 ### Running backend tests — always `--parallel`
 
-Anything wider than a single file runs with `--parallel` (~22s parallel vs ~130s serial — a serial
-full run is a mistake, not a preference). Test Impact Analysis (TIA) reruns only tests affected by
-your change locally and on PRs; pushes to `main` run the full suite as a safety net. `--parallel`
+Anything wider than a single file runs with `--parallel` (the full suite takes ~50s on 16 processes
+and several times that serially — a serial full run is a mistake, not a preference). Test Impact Analysis (TIA) reruns only tests affected by
+your change locally; CI (pull requests and `main`) runs the full suite, sharded across four runners. `--parallel`
 takes exactly one path — passing two files/directories fails with paratest's
 `Too many arguments, expected arguments "path"`; narrow to a common path or use `--filter` instead
 of falling back to a serial run. Full command reference, the TIA baseline/CI mechanics, and the

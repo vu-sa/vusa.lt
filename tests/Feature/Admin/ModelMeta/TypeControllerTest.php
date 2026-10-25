@@ -25,13 +25,13 @@ test('directory hides every dictionary the user cannot read', function (): void 
     asUser($this->user)->get(route('types.index'))->assertForbidden();
     $this->user->givePermissionTo('institutionTypes.read.*');
     app(ModelAuthorizer::class)->resetCache($this->user);
-    asUser($this->user)->get(route('types.index'))->assertOk()
+    asUserWithInertia($this->user)->get(route('types.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('Admin/ModelMeta/IndexTypes')
             ->has('destinations', 1)->where('destinations.0.key', 'instituciju_tipai'));
 });
 
 test('administrator directory links to all five collections', function (): void {
-    asUser($this->admin)->get(route('types.index'))->assertOk()
+    asUserWithInertia($this->admin)->get(route('types.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->has('destinations', 5));
 });
 
@@ -95,7 +95,7 @@ test('record exposes assigned owners and deferred files', function (): void {
     $type = InstitutionType::factory()->create();
     $institution = Institution::factory()->create();
     $type->institutions()->attach($institution);
-    asUser($this->admin)->get(route('institutionTypes.show', $type))->assertOk()
+    asUserWithInertia($this->admin)->get(route('institutionTypes.show', $type))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('Admin/ModelMeta/ShowType')
             ->where('attachedModels.0.id', $institution->id)->missing('files')
             ->loadDeferredProps('files', fn (Assert $deferred) => $deferred->has('files')));
@@ -215,7 +215,7 @@ test('removing a duty type assignment removes its roles and invalidates warmed a
     $authorizer = app(ModelAuthorizer::class);
     expect($authorizer->allows($this->user, 'institutions.update.padalinys'))->toBeTrue();
     $navigationKey = HandleInertiaRequests::adminNavigationCacheKey($this->user->id);
-    $mapKey = PermissionMapBuilder::INDEX_CACHE_PREFIX.$this->user->id;
+    $mapKey = PermissionMapBuilder::ALL_CACHE_PREFIX.$this->user->id;
     Cache::put($navigationKey, ['stale'], 300);
     Cache::put($mapKey, ['stale'], 300);
 

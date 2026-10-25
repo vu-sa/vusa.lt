@@ -17,7 +17,7 @@ it('renders the signed-in English menu in English from its first browser render'
     $page->resize(1440, 900);
     app('url')->forceRootUrl($page->script('location.origin'));
     disableServiceWorker($page);
-    $page->navigate($page->script('new URL("/login", location.href).href'));
+    navigateTo($page, $page->script('new URL("/login", location.href).href'));
     waitForInertiaRender($page);
     $page->click('button:has-text("Prisijungti el. paštu")')
         ->fill('#email', $user->email)
@@ -40,7 +40,7 @@ it('renders the signed-in English menu in English from its first browser render'
         }).observe(document, { childList: true, subtree: true, characterData: true });
         JS);
 
-    $page->navigate($page->script('new URL("/en", location.href).href'));
+    navigateTo($page, $page->script('new URL("/en", location.href).href'));
     waitForInertiaRender($page, '[data-slot="header-wordmark"]');
 
     expect($page->script('window.publicMenuRenders[0]'))

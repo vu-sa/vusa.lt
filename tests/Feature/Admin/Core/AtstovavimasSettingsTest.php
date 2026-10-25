@@ -68,7 +68,7 @@ describe('counted institution scopes', function (): void {
 
 describe('atstovavimas settings page access', function (): void {
     test('super admin can access atstovavimas settings page', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('settings.atstovavimas.edit'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -93,7 +93,7 @@ describe('permission-based tenant visibility', function (): void {
         $role->givePermissionTo($permission);
         $duty->assignRole($role);
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -115,7 +115,7 @@ describe('permission-based tenant visibility', function (): void {
         // Regular user's assigned institution
         $userInstitutionId = $this->user->current_duties->first()->institution_id;
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -143,7 +143,7 @@ describe('permission-based tenant visibility', function (): void {
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
         $otherInstitution = Institution::factory()->for($otherTenant)->create();
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page

@@ -32,10 +32,10 @@ test('linking a problem also links the meeting\'s institution and shows on both 
     expect($this->agendaItem->problems()->pluck('problems.id')->all())->toBe([$this->problem->id])
         ->and($this->problem->institutions()->pluck('institutions.id')->all())->toBe([$this->institution->id]);
 
-    asUser($this->coordinator)->get(route('agendaItems.show', $this->agendaItem))
+    asUserWithInertia($this->coordinator)->get(route('agendaItems.show', $this->agendaItem))
         ->assertInertia(fn (Assert $page) => $page->where('problems.0.id', $this->problem->id));
 
-    asUser($this->coordinator)->get(route('problems.show', $this->problem))
+    asUserWithInertia($this->coordinator)->get(route('problems.show', $this->problem))
         ->assertInertia(fn (Assert $page) => $page->where('agendaItems.0.id', $this->agendaItem->id));
 });
 
@@ -73,7 +73,7 @@ test('only someone who may edit the agenda item links or unlinks', function (): 
 test('a problem reader does not see agenda items of meetings they cannot open', function (): void {
     $this->agendaItem->problems()->attach($this->problem);
 
-    asUser(makeUser($this->otherTenant))->get(route('problems.show', $this->problem))
+    asUserWithInertia(makeUser($this->otherTenant))->get(route('problems.show', $this->problem))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('agendaItems', []));
 });

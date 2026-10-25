@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\ParallelTesting;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Scout\EngineManager;
 use Laravel\Scout\Engines\NullEngine;
+use Spatie\GoogleFonts\Fonts;
+use Spatie\GoogleFonts\GoogleFonts;
 use Throwable;
 use Typesense\Client;
 
@@ -68,6 +70,21 @@ class TestingServiceProvider extends ServiceProvider
         // The array driver keeps the state per process, and MaintenanceModeManager is a
         // singleton, so the middleware and the up/down commands observe the same state.
         config(['app.maintenance.driver' => 'array']);
+
+        // @googlefonts caches its download on the `public` disk, which tests fake (and CI starts
+        // empty), so every full-page render re-fetched the fonts from Google: ~1.6s, 19 requests.
+        $this->app->singleton(GoogleFonts::class, fn (): GoogleFonts => new class(config('google-fonts.fonts')) extends GoogleFonts
+        {
+            /** @param  array<string, string>  $urls */
+            public function __construct(private readonly array $urls) {}
+
+            public function load(string|array $options = [], bool $forceDownload = false): Fonts
+            {
+                ['font' => $font, 'nonce' => $nonce] = $this->parseOptions($options);
+
+                return new Fonts(googleFontsUrl: $this->urls[$font], nonce: $nonce);
+            }
+        });
     }
 
     /**

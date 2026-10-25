@@ -86,6 +86,7 @@ class AppServiceProvider extends ServiceProvider
         Translatable::fallback(
             fallbackLocale: 'lt'
         );
+        Translatable::locales(config('app.locales'));
 
         // Polymorphic columns store short aliases instead of class names — see App\Support\MorphMap.
         // requireMorphMap() stays off on purpose: a model only needs an alias once it is a

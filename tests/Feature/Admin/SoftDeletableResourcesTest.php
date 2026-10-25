@@ -269,7 +269,7 @@ describe('soft deletable admin resources', function (): void {
         $trashed = createSoftDeleteResource($resource, $tenant);
         $trashed->delete();
 
-        asUser($admin)
+        asUserWithInertia($admin)
             ->get(softDeleteIndexRoute($resource, $tenant))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page->where('deletedCount', 1));

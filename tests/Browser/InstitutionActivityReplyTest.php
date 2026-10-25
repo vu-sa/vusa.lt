@@ -22,7 +22,7 @@ pest()->use(RefreshDatabase::class);
 it('renders compact email actions for each institution without overflow on narrow and wide screens', function (): void {
     $first = InstitutionActivityRequest::factory()->create(['period_end' => today()]);
     $second = InstitutionActivityRequest::factory()->create(['recipient_id' => $first->recipient_id, 'period_end' => today()]);
-    $page = visit('/up');
+    $page = visit('/robots.txt');
     foreach (['activity_confirmation', 'missing_meetings', 'digest'] as $campaign) {
         if ($campaign === 'missing_meetings') {
             foreach ([$first, $second] as $request) {
@@ -43,9 +43,9 @@ it('renders compact email actions for each institution without overflow on narro
 
 it('submits several meetings through the signed form and renders without overflow in either theme', function (): void {
     app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));
-    $page = visit('/up');
+    $page = visit('/robots.txt');
     $request = InstitutionActivityRequest::factory()->create(['campaign_type' => 'missing_meetings', 'period_end' => today(), 'locale' => 'lt']);
-    $page->navigate($request->answerUrl(InstitutionActivityAnswer::Met));
+    navigateTo($page, $request->answerUrl(InstitutionActivityAnswer::Met));
     $page->page()->waitForSelector('#activity-reply form', ['timeout' => 15000]);
     foreach ([390, 820, 1180, 1440] as $width) {
         $page->resize($width, 900);
@@ -76,8 +76,7 @@ it('submits several meetings through the signed form and renders without overflo
 it('opens request history from an institution record against the built bundle', function (): void {
     $user = makeAdminUser(Tenant::query()->first());
     $request = InstitutionActivityRequest::factory()->create(['requested_by_id' => $user->id, 'period_end' => today()]);
-    $page = loginAsAdmin($user);
-    $page->navigate(route('institutions.show', $request->institution));
+    $page = loginAsAdmin($user, route('institutions.show', $request->institution, absolute: false));
     waitForInertiaRender($page, '[data-slot=admin-shell]');
     $page->click('[role=tab]:has-text("Užklausos atstovams")');
     $page->assertSee($request->recipient->name)->assertNoJavaScriptErrors();
@@ -100,8 +99,7 @@ it('reviews incomplete records for the sending representative without overflow i
     $duty->types()->attach($type);
     $user->duties()->attach($duty, ['start_date' => today()->subMonth()]);
     app(RecordMeeting::class)->execute($institution, now()->subWeek());
-    $page = loginAsAdmin($user);
-    $page->navigate(route('institutions.show', $institution));
+    $page = loginAsAdmin($user, route('institutions.show', $institution, absolute: false));
     waitForInertiaRender($page, '[data-slot=admin-shell]');
     $page->click('[data-testid=record-overflow-trigger]');
     $page->click('[role=menuitem]:has-text("Paklausti, ar vyko posėdžiai")');
@@ -131,8 +129,7 @@ it('captures documentation reference frames for activity requests', function ():
     $request->delete();
 
     // 1. Action window review screen
-    $page = loginAsAdmin($coordinator);
-    $page->navigate(route('institutions.show', $committee));
+    $page = loginAsAdmin($coordinator, route('institutions.show', $committee, absolute: false));
     waitForInertiaRender($page, '[data-slot=admin-shell]');
     $page->click('[data-testid=record-overflow-trigger]');
     $page->click('[role=menuitem]:has-text("Paklausti, ar vyko posėdžiai")');
@@ -170,7 +167,7 @@ it('captures documentation reference frames for activity requests', function ():
         'note' => null,
         'created_at' => now()->subMonths(2),
     ]);
-    $page->navigate(route('institutions.show', $committee));
+    navigateTo($page, route('institutions.show', $committee));
     waitForInertiaRender($page, '[data-slot=admin-shell]');
     $page->click('[role=tab]:has-text("Užklausos atstovams")');
     waitForInertiaRender($page, '[data-slot=activity-request-history]');
@@ -185,13 +182,13 @@ it('captures documentation reference frames for activity requests', function ():
     $mail = $notification->toMail($representative);
     $page->resize(640, 950);
     // setContent over the admin shell never reaches "load"; start from a bare page.
-    $page->navigate('/up');
+    navigateTo($page, '/robots.txt');
     $page->page()->setContent((string) $mail->render());
     docsScreenshot($page, 'activity-request-email');
 
     // 4. Public non-login answer page
     app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));
-    $page->navigate($request->answerUrl(InstitutionActivityAnswer::Met));
+    navigateTo($page, $request->answerUrl(InstitutionActivityAnswer::Met));
     $page->page()->waitForSelector('#activity-reply form', ['timeout' => 15000]);
     $page->resize(820, 900);
     docsScreenshot($page, 'activity-request-reply', selector: 'main');

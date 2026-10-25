@@ -30,7 +30,7 @@ describe('access', function (): void {
     });
 
     test('a super admin opens it', function (): void {
-        asUser($this->admin)->get(route('dashboard.sistema'))
+        asUserWithInertia($this->admin)->get(route('dashboard.sistema'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowSistema')
@@ -91,10 +91,10 @@ describe('what it counts', function (): void {
             'end_date' => now()->addMonth()->toDateString(),
         ]);
 
-        asUser($this->admin)->get(route('dashboard.sistema'))
+        asUserWithInertia($this->admin)->get(route('dashboard.sistema'))
             ->assertInertia(fn (Assert $page) => $page->where('counts.futureDutyHolders', 1));
 
-        asUser($this->admin)->get(route('users.index', ['future_duty' => 'scheduled']))
+        asUserWithInertia($this->admin)->get(route('users.index', ['future_duty' => 'scheduled']))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('users.meta.total', 1)
                 ->where('users.data.0.id', $scheduled->id)
@@ -111,7 +111,7 @@ describe('what it counts', function (): void {
             ->assertJsonPath('data.items.0.id', $scheduled->id)
             ->assertJsonPath('data.facets.future_duty.scheduled', 1);
 
-        asUser($this->admin)->get(route('users.show', $scheduled))
+        asUserWithInertia($this->admin)->get(route('users.show', $scheduled))
             ->assertInertia(fn (Assert $page) => $page->where('user.upcoming_duties.0.id', $firstDuty->id));
     });
 
@@ -120,7 +120,7 @@ describe('what it counts', function (): void {
         SupportRequest::factory()->create(['status' => SupportRequestStatus::Done]);
         SupportRequest::factory()->create(['status' => SupportRequestStatus::Declined]);
 
-        asUser($this->admin)->get(route('dashboard.sistema'))
+        asUserWithInertia($this->admin)->get(route('dashboard.sistema'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('counts.openRequests', fn ($open) => $open >= 1)
                 ->has('newRequests', 1)
@@ -129,7 +129,7 @@ describe('what it counts', function (): void {
     });
 
     test('the system check is deferred so the monitor never blocks the first paint', function (): void {
-        asUser($this->admin)->get(route('dashboard.sistema'))
+        asUserWithInertia($this->admin)->get(route('dashboard.sistema'))
             ->assertInertia(fn (Assert $page) => $page
                 ->missing('problems')
                 ->loadDeferredProps('secondary', fn (Assert $deferred) => $deferred->has('problems'))

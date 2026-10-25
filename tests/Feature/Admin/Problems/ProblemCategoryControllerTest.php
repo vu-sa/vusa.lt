@@ -29,7 +29,7 @@ test('a central coordinator lists categories with how many problems use them', f
     $category = ProblemCategory::factory()->create();
     Problem::factory()->create(['tenant_id' => $this->tenant->id])->categories()->attach($category);
 
-    asUser($this->central)->get(route('problemCategories.index'))
+    asUserWithInertia($this->central)->get(route('problemCategories.index'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Problems/IndexProblemCategory')

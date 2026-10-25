@@ -118,19 +118,22 @@ jobs:
     needs: [changes, setup]
     if: ${{ needs.changes.outputs.php == 'true' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    name: PHP Tests
-    # actions: read lets Pest's TIA baseline sync pull the pest-tia-baseline artifact via `gh`.
+    name: PHP Tests (${{ matrix.shard }}/4)
+    # Split across four runners: one 4-vCPU runner took 5-12 minutes. Pull requests shard too, because
+    # TIA never paid off here: under --coverage Pest skips it whenever the baseline graph is missing or
+    # drifted, and the one PR run it did narrow (to 440 files) took 712s, longer than a full run.
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     permissions:
       contents: read
-      actions: read
       pull-requests: write
     steps:
     - uses: actions/checkout@v7
       with:
         ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
-        # fetch-depth: 0 — TIA anchors the graph to a commit and resolves changes with
-        # `git merge-base --is-ancestor` / `git diff <sha>..HEAD`; a shallow clone breaks reachability
-        # and silently degrades every PR back to a full run.
+        # docs:coverage --changed diffs against the PR base.
         fetch-depth: 0
 
     - name: Download build artifacts
@@ -166,12 +169,7 @@ jobs:
         cp .env.example .env
         php artisan key:generate --force
 
-    # Pull requests run Test Impact Analysis against the baseline recorded by tia-baseline.yml,
-    # replaying unaffected tests. Pushes to main deliberately stay a full run — that is the safety
-    # net for anything a stale graph lets slip through on a PR.
-    #
-    # Flag order is load-bearing: `--tia` MUST precede `--parallel`, otherwise ParaTest's option
-    # validation rejects it with `The "--tia" option does not exist.`
+    # --ci keeps Pest's local-only TIA (tests/Pest.php) off: every CI run is a full run.
     - name: Execute tests with coverage
       env:
         SCOUT_DRIVER: database
@@ -179,15 +177,14 @@ jobs:
         TYPESENSE_PORT: 8108
         TYPESENSE_API_KEY: xyz
         TYPESENSE_PROTOCOL: http
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: php artisan test --ci ${{ github.event_name == 'pull_request' && '--tia' || '' }} --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
+      run: php artisan test --ci --shard=${{ matrix.shard }}/4 --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
 
     # Advisory report (feature areas documented, routes tested, the writing
     # backlog, pages that may have drifted) lands in the job summary so nobody
     # has to remember to run it. --strict is the only gate, and only for the one
     # unambiguous breakage: a doc page citing a test file that no longer exists.
     - name: Report and gate documentation coverage
-      if: always()
+      if: always() && matrix.shard == 1
       run: php artisan docs:coverage --strict --summary
 
     # A judgement call is never a gate, so the reviewer gets it where they will
@@ -197,7 +194,7 @@ jobs:
     # step's summary). Push runs look up the open PR, because the dev PR run
     # only mirrors the push run and never reaches this job.
     - name: Comment documentation coverage on the PR
-      if: always()
+      if: always() && matrix.shard == 1
       continue-on-error: true
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -261,8 +258,8 @@ jobs:
     - name: Install npm dependencies
       run: npm ci
 
-    # Same contract as Pest TIA on php-tests: pull requests run only the specs whose dependency
-    # graph reaches a changed file, pushes to main run everything. `forceRerunTriggers` in
+    # Pull requests run only the specs whose dependency graph reaches a changed file, pushes to
+    # main run everything. `forceRerunTriggers` in
     # vitest.config.ts escalates back to a full run when a shared file (tests/setup.ts,
     # resources/js/mocks/**, package.json) changes.
     - name: Execute tests with coverage
@@ -349,11 +346,17 @@ jobs:
 
   # Real-browser tests (Playwright via pestphp/pest-plugin-browser). Separate from php-tests
   # because it needs Node + Playwright browser binaries, which that job doesn't otherwise use.
+  # Sharded: the plugin serves every page and chunk from one PHP process per worker, so wall time
+  # scales with runners, not with cores. browser-docs-screenshots merges the shards' frames.
   browser-tests:
     needs: [changes, setup]
     if: ${{ needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    name: Browser Tests
+    name: Browser Tests (${{ matrix.shard }}/3)
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
     - uses: actions/checkout@v7
 
@@ -432,7 +435,7 @@ jobs:
 
     # DOCS_SCREENSHOTS also saves the docs' reference frames (tests/Browser/README.md "Docs screenshots").
     - name: Run browser tests
-      run: vendor/bin/pest tests/Browser --parallel --compact
+      run: vendor/bin/pest tests/Browser --parallel --compact --shard=${{ matrix.shard }}/3 --log-junit storage/logs/browser-junit.xml
       env:
         DOCS_SCREENSHOTS: '1'
 
@@ -440,9 +443,19 @@ jobs:
       if: ${{ !cancelled() }}
       uses: actions/upload-artifact@v7
       with:
-        name: docs-screenshots
+        name: docs-screenshots-${{ matrix.shard }}
         path: tests/Browser/Screenshots/docs
-        retention-days: 30
+        retention-days: 1
+        if-no-files-found: ignore
+
+    # Per-test durations: where the browser suite's minutes go, and how evenly the shards split.
+    - name: Upload browser test timings
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: browser-test-timings-${{ matrix.shard }}
+        path: storage/logs/browser-junit.xml
+        retention-days: 7
         if-no-files-found: ignore
 
     # A bare Playwright timeout says nothing about *why* the page never rendered. The screenshot
@@ -452,12 +465,26 @@ jobs:
       if: failure()
       uses: actions/upload-artifact@v7
       with:
-        name: browser-test-diagnostics
+        name: browser-test-diagnostics-${{ matrix.shard }}
         path: |
           tests/Browser/Screenshots
           storage/logs
         retention-days: 7
         if-no-files-found: ignore
+
+  # deploy-common.yml fetches one `docs-screenshots` artifact per branch.
+  browser-docs-screenshots:
+    needs: [changes, browser-tests]
+    if: ${{ !cancelled() && needs.browser-tests.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    name: Merge docs screenshots
+    steps:
+    - uses: actions/upload-artifact/merge@v7
+      with:
+        name: docs-screenshots
+        pattern: docs-screenshots-*
+        retention-days: 30
+        delete-merged: true
 
   # JS Quality - TypeScript typecheck and ESLint (non-blocking)
   js-quality:

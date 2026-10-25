@@ -89,7 +89,7 @@ describe('auth: admin user with permissions', function (): void {
     });
 
     test('can index tags', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('tags.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -113,7 +113,7 @@ describe('auth: admin user with permissions', function (): void {
     });
 
     test('can access tag create page', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('tags.create'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -156,7 +156,7 @@ describe('auth: admin user with permissions', function (): void {
     });
 
     test('can edit existing tag', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('tags.edit', $this->tag))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page

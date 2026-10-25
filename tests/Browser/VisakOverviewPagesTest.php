@@ -17,15 +17,8 @@ beforeEach(function (): void {
 /** No `$t()` call fell through to its raw key; lower-cased since CSS uppercases headings. */
 function expectNoRawVisakKeys($page): void
 {
-    // admin.ts mounts before the translation JSON arrives, so a slow runner can read keys that are about to swap out.
     $script = '/\b(visak|tasks|atstovavimas)\.[a-z_]+\.[a-z_]/.test(document.body.innerText.toLowerCase())';
-    $deadline = microtime(true) + 5;
-
-    while ($page->script($script) && microtime(true) < $deadline) {
-        usleep(100_000);
-    }
-
-    expect($page->script($script))->toBeFalse();
+    $page->assertScript($script, false);
 }
 
 /** The page fits the viewport at a phone and a desktop width. */
@@ -43,8 +36,7 @@ function expectVisakPageFits($page, string $slot): void
 }
 
 it('shows a representative their institutions and upcoming meetings on the ViSAK overview', function (): void {
-    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL));
-    $page->navigate('/mano/dashboard/atstovavimas');
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL), '/mano/dashboard/atstovavimas');
     waitForInertiaRender($page, '[data-slot=atstovavimas-primary-section]');
 
     $page->assertSee('Chemijos ir geomokslų fakulteto taryba');
@@ -70,8 +62,7 @@ it('shows a padalinys coordinator the statistics of their padalinys', function (
             'institution_statuses' => $institutions->mapWithKeys(fn ($id) => [$id => 'overdue'])->all(),
         ]);
     }
-    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::COORDINATOR_EMAIL));
-    $page->navigate('/mano/dashboard/atstovavimas/padaliniai');
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::COORDINATOR_EMAIL), '/mano/dashboard/atstovavimas/padaliniai');
     waitForInertiaRender($page, '[data-slot=atstovavimas-tenant-primary-section]');
 
     expectNoRawVisakKeys($page);
@@ -108,8 +99,7 @@ it('shows a padalinys coordinator the statistics of their padalinys', function (
 });
 
 it('lists the padaliniai tasks for the central coordinator', function (): void {
-    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::CENTRAL_COORDINATOR_EMAIL));
-    $page->navigate('/mano/tasks/summary');
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::CENTRAL_COORDINATOR_EMAIL), '/mano/tasks/summary');
     waitForInertiaRender($page, '[data-slot=collection-page]');
 
     // The representative's agenda task, raised by the seeded meeting through its subscriber.
@@ -125,8 +115,7 @@ it('lists the padaliniai tasks for the central coordinator', function (): void {
 });
 
 it('lists a representative\'s own tasks', function (): void {
-    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL));
-    $page->navigate('/mano/tasks');
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL), '/mano/tasks');
     waitForInertiaRender($page, '[data-slot=collection-page]');
 
     expectNoRawVisakKeys($page);

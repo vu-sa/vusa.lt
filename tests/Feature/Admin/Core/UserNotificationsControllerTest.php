@@ -19,7 +19,7 @@ beforeEach(function (): void {
 
 describe('notifications index', function (): void {
     test('user can view notifications page', function (): void {
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('notifications.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -33,7 +33,7 @@ describe('notifications index', function (): void {
         $this->user->notify(new WelcomeNotification);
         $this->user->notify(new AccessChangedNotification([], now()->toDateString()));
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('notifications.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page

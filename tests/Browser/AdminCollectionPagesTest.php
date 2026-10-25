@@ -23,8 +23,7 @@ function openAdminPage(string $path, int $width, int $height = 900, ?Closure $ar
         $arrange($user);
     }
 
-    $page = loginAsAdmin($user);
-    $page->resize($width, $height)->navigate($path);
+    $page = loginAsAdmin($user, $path, $width, $height);
     waitForInertiaRender($page, '[data-slot=admin-shell] main');
 
     return $page;
@@ -91,7 +90,7 @@ it('keeps collection actions reachable across widths and themes', function (): v
         $page->script('document.documentElement.classList.remove("dark")');
     }
 
-    $page->navigate('/mano/tenants');
+    navigateTo($page, '/mano/tenants');
     waitForInertiaRender($page, '[data-slot=collection-row-actions]');
     $page->assertPresent('[data-slot=collection-row-actions] button[aria-label="Ištrinti"]');
     $page->assertNoJavaScriptErrors();
@@ -145,7 +144,7 @@ it('mounts every admin page without JavaScript errors and fits a phone without s
         $page->resize($width, $width === 390 ? 844 : 900);
 
         foreach (ADMIN_PAGES as $path) {
-            $page->navigate($path);
+            navigateTo($page, $path);
             waitForInertiaRender($page, '[data-slot=admin-shell] main');
 
             foreach ($page->page()->javaScriptErrors() as $error) {
@@ -176,7 +175,7 @@ describe('Puslapiai', function (): void {
             ->assertPresent('[data-slot=collection-filter-bar] button[aria-pressed="false"]')
             ->assertNoJavaScriptErrors();
 
-        $page->navigate('/mano/pages?showDeleted=true');
+        navigateTo($page, '/mano/pages?showDeleted=true');
         waitForInertiaRender($page, '[data-slot=collection-table]');
         $page->assertNoJavaScriptErrors();
 
@@ -192,7 +191,7 @@ describe('Puslapiai', function (): void {
         $page->assertPresent('[data-slot=collection-table]');
         expect($page->script(NO_SIDEWAYS_SCROLL))->toBeTrue();
 
-        $page->navigate('/mano/pages?showDeleted=true&view=preview');
+        navigateTo($page, '/mano/pages?showDeleted=true&view=preview');
         waitForInertiaRender($page, '[data-slot=collection-rows]');
         $page->assertPresent('[data-slot=collection-preview] [data-slot=collection-row-actions]');
         expect($page->script('document.querySelector("[data-slot=collection-rows] [data-slot=collection-row-actions]")'))->toBeNull()

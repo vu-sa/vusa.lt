@@ -81,7 +81,7 @@ describe('unauthorized access', function (): void {
 
 describe('authorized access', function (): void {
     test('can access index', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('studySets.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -92,7 +92,7 @@ describe('authorized access', function (): void {
     });
 
     test('can access create page', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('studySets.create'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -156,7 +156,7 @@ describe('authorized access', function (): void {
         $course = StudySetCourse::factory()->for($this->studySet)->create();
         LecturerReview::factory()->create(['study_set_course_id' => $course->id]);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('studySets.edit', $this->studySet))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -270,7 +270,7 @@ describe('tenant isolation', function (): void {
     });
 
     test('index filters by tenant', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('studySets.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -410,7 +410,7 @@ describe('review ownership', function (): void {
     test('existing reviews are included in the edit form payload', function (): void {
         $course = StudySetCourse::factory()->for($this->studySet)->create();
         $review = LecturerReview::factory()->create(['study_set_course_id' => $course->id]);
-        asUser($this->admin)->get(route('studySets.edit', $this->studySet))->assertInertia(fn (Assert $page) => $page
+        asUserWithInertia($this->admin)->get(route('studySets.edit', $this->studySet))->assertInertia(fn (Assert $page) => $page
             ->has('studySet.reviews', 1)->where('studySet.reviews.0.id', $review->id));
     });
 

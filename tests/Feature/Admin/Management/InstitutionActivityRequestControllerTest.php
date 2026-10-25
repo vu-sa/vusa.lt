@@ -314,7 +314,7 @@ test('an automatic task asks whether a meeting happened when no records are miss
 
 test('history is deferred and contains no signed answer links', function (): void {
     InstitutionActivityRequest::factory()->create(['institution_id' => $this->institution->id, 'recipient_id' => $this->rep->id]);
-    asUser($this->coordinator)->get(route('institutions.show', $this->institution))
+    asUserWithInertia($this->coordinator)->get(route('institutions.show', $this->institution))
         ->assertInertia(fn (AssertableInertia $page) => $page->where('canViewActivityRequests', true)->missing('activityRequests')
             ->loadDeferredProps('activityRequests', fn ($reload) => $reload->has('activityRequests.data', 1)));
     $history = app(GetInstitutionActivityRequestHistory::class)->execute($this->institution, $this->coordinator);

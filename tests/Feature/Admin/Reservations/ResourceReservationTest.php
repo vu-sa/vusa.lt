@@ -55,7 +55,7 @@ beforeEach(function (): void {
 
 describe('auth: simple user', function (): void {
     test('can view available resources for reservation', function (): void {
-        asUser($this->user)->get(route('resources.index'))
+        asUserWithInertia($this->user)->get(route('resources.index'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('Admin/Reservations/IndexResource'));
     });
@@ -221,7 +221,7 @@ describe('auth: resource manager', function (): void {
         }
 
         // Resource manager should be able to see all reservations
-        asUser($this->resourceManager)->get(route('reservations.index'))
+        asUserWithInertia($this->resourceManager)->get(route('reservations.index'))
             ->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Reservations/IndexReservation')

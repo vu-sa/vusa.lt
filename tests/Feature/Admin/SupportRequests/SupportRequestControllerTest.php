@@ -81,7 +81,7 @@ describe('authorized manager access', function (): void {
     });
 
     test('can view support request show page', function (): void {
-        asUser($this->admin)->get(route('supportRequests.show', $this->supportRequest->id))
+        asUserWithInertia($this->admin)->get(route('supportRequests.show', $this->supportRequest->id))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/SupportRequests/ShowSupportRequest')
@@ -115,7 +115,7 @@ describe('authorized manager access', function (): void {
         $this->supportRequest->update(['visibility' => SupportRequestVisibility::Roles]);
         $this->supportRequest->roles()->sync([$role->id]);
 
-        asUser($this->admin)->get(route('supportRequests.show', $this->supportRequest->id))
+        asUserWithInertia($this->admin)->get(route('supportRequests.show', $this->supportRequest->id))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->where('supportRequest.role_users', function ($users) use ($currentUser, $pastUser) {
@@ -255,7 +255,7 @@ describe('involved people', function (): void {
         $this->supportRequest->update(['assigned_to' => $this->admin->id]);
         $this->supportRequest->involvedUsers()->attach($involved);
 
-        asUser($this->admin)->get(route('supportRequests.show', $this->supportRequest->id))
+        asUserWithInertia($this->admin)->get(route('supportRequests.show', $this->supportRequest->id))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('supportRequest.assignedTo.id', $this->admin->id)
                 ->where('supportRequest.involved_users.0.id', $involved->id)

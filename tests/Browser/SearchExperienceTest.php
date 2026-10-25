@@ -71,7 +71,7 @@ it('renders document prefix search across widths and themes without JavaScript e
         }
     }
     $page->assertNoJavaScriptErrors();
-    $page->navigate('/lt/dokumentai');
+    navigateTo($page, '/lt/dokumentai');
     $page->assertVisible('[data-slot="recommended-documents"]');
     $page->click('button[aria-label="Rikiuoti"]');
     $page->assertVisible('button[role="radio"][aria-checked="true"]:has-text("Naujausi pirmi")');
@@ -82,8 +82,7 @@ it('renders document prefix search across widths and themes without JavaScript e
 it('saves a selected document recommendation through the settings form', function (): void {
     seedSearchExperience();
     Document::factory()->create(['title' => 'VU SA Įstatai', 'language' => 'Lietuvių', 'status' => DocumentStatus::Published]);
-    $page = loginAsAdmin(makeAdminUser());
-    $page->navigate('/mano/settings/documents');
+    $page = loginAsAdmin(makeAdminUser(), '/mano/settings/documents');
     $page->click('[data-testid="add-document-recommendation"]');
     $page->fill('[data-slot="dialog-content"] input[type="text"]', 'įstatai');
     $page->click('[data-slot="search-hit-row"]');
@@ -91,7 +90,7 @@ it('saves a selected document recommendation through the settings form', functio
     $page->fill('#recommendation-phrases-0', 'įstatai, VU SA įstatai');
     $page->click('[data-testid="form-page-save"]');
     $page->assertDontSee('Pasirinkta recommendations');
-    $page->navigate('/mano/settings/documents');
+    navigateTo($page, '/mano/settings/documents');
     $page->assertValue('#recommendation-phrases-0', 'įstatai, VU SA įstatai');
     foreach ([390, 820, 1440] as $width) {
         $page->resize($width, 844);
@@ -122,8 +121,7 @@ it('renders searchable public filters and body excerpts across widths and themes
 
 it('renders admin body excerpts and filters without overflow across widths and themes', function (): void {
     seedSearchExperience();
-    $page = loginAsAdmin(makeAdminUser());
-    $page->navigate('/mano/news?q=unikalusturinys');
+    $page = loginAsAdmin(makeAdminUser(), '/mano/news?q=unikalusturinys');
     $page->assertVisible('[data-slot="search-match"]');
     foreach ([false, true] as $dark) {
         $page->script('document.documentElement.classList.toggle("dark", '.($dark ? 'true' : 'false').')');
@@ -144,8 +142,7 @@ it('keeps the most relevant record first in the command palette across workspace
     $duty->users()->attach($user, ['start_date' => now()->subDay()]);
     $duty->refresh()->searchable();
     $user->refresh()->searchable();
-    $page = loginAsAdmin(makeAdminUser());
-    $page->navigate($path);
+    $page = loginAsAdmin(makeAdminUser(), $path);
     waitForInertiaRender($page);
     $page->click('[data-tour="command-palette"]:visible');
     $page->fill('[data-slot="dialog-content"] input[type="text"]', $query);
