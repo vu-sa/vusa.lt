@@ -141,7 +141,7 @@
 </head>
 
 {{-- TODO: something injects margin-bottom of 8px --}}
-<body class="antialiased font-public bg-background text-foreground" style="margin-bottom: 0px; padding-bottom: env(safe-area-inset-bottom, 0px);">
+<body class="antialiased font-public bg-background text-foreground" style="margin-bottom: 0px;">
     @inertia
 
     @include('turtle-loader')

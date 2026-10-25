@@ -1,51 +1,34 @@
 <template>
   <Transition
-    enter-active-class="transition duration-300 ease-out"
-    enter-from-class="translate-y-full opacity-0"
-    enter-to-class="translate-y-0 opacity-100"
-    leave-active-class="transition duration-200 ease-in"
-    leave-from-class="translate-y-0 opacity-100"
-    leave-to-class="translate-y-full opacity-0"
+    enter-active-class="transition-[opacity,translate] duration-300 ease-out motion-reduce:transition-none"
+    enter-from-class="translate-y-4 opacity-0"
+    leave-active-class="transition-[opacity,translate] duration-200 ease-in motion-reduce:transition-none"
+    leave-to-class="translate-y-4 opacity-0"
   >
     <div
       v-if="shouldShow"
-      class="fixed bottom-4 left-4 right-4 z-50 mx-auto max-w-md border bg-background p-4 shadow-none md:hidden"
+      data-slot="pwa-install-banner"
+      :class="[
+        'fixed inset-x-4 z-50 mx-auto max-w-md border border-border bg-background p-4 text-foreground md:hidden',
+        'bottom-[calc(3.5rem_+_env(safe-area-inset-bottom,0px)_+_0.75rem)]',
+      ]"
     >
       <div class="flex items-start gap-3">
-        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-vusa-red/10">
-          <IFluentArrowDownload24Regular class="h-5 w-5 text-vusa-red" />
-        </div>
+        <Download class="mt-0.5 size-5 shrink-0 text-brand" aria-hidden="true" />
         <div class="flex-1 space-y-1">
-          <h3 class="font-semibold text-foreground">
+          <p class="font-semibold">
             {{ $t('pwa.install_title') }}
-          </h3>
+          </p>
           <p class="text-sm text-muted-foreground">
             {{ $t('pwa.install_description') }}
           </p>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          class="shrink-0 -mt-1 -mr-1"
-          @click="dismiss"
-        >
-          <IFluentDismiss24Regular class="h-4 w-4" />
-        </Button>
       </div>
-      <div class="mt-3 flex gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          class="flex-1"
-          @click="dismiss"
-        >
+      <div class="mt-3 flex justify-end gap-2">
+        <Button variant="ghost" size="sm" @click="dismiss">
           {{ $t('Vėliau') }}
         </Button>
-        <Button
-          size="sm"
-          class="flex-1 bg-vusa-red hover:bg-vusa-red/90"
-          @click="install"
-        >
+        <Button variant="brand" voice="sentence" size="sm" @click="install">
           {{ $t('Įdiegti') }}
         </Button>
       </div>
@@ -54,47 +37,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { useStorage } from '@vueuse/core';
+import { useStorage, useTimeoutFn } from '@vueuse/core';
+import { Download } from '@lucide/vue';
+import { computed, onMounted, ref } from 'vue';
 
 import { Button } from '@/Components/ui/button';
 import { usePWA } from '@/Composables/usePWA';
-import IFluentArrowDownload24Regular from '~icons/fluent/arrow-download-24-regular';
-import IFluentDismiss24Regular from '~icons/fluent/dismiss-24-regular';
 
-const STORAGE_KEY = 'pwa_install_prompt';
 const MIN_VISITS = 3;
-const MIN_SESSION_SECONDS = 120; // 2 minutes
+const MIN_SESSION_SECONDS = 120;
 
 const { canInstall, promptInstall, isPWA } = usePWA();
 
-const promptDismissed = useStorage<string | null>(STORAGE_KEY, null);
+const promptDismissed = useStorage<string | null>('pwa_install_prompt', null);
 const visitCount = useStorage<number>('pwa_visit_count', 0);
 const sessionDismissed = ref(false);
-const sessionStartTime = ref(Date.now());
+const sessionLongEnough = ref(false);
 
-const isDismissed = computed(() => sessionDismissed.value || promptDismissed.value === 'dismissed');
+useTimeoutFn(() => {
+  sessionLongEnough.value = true;
+}, MIN_SESSION_SECONDS * 1000);
 
-// Check if we should show the banner
-const shouldShow = computed(() => {
-  // Never show if already installed, can't install, or dismissed
-  if (isPWA.value || !canInstall.value || isDismissed.value) {
-    return false;
-  }
-
-  // Check minimum visit count
-  if (visitCount.value < MIN_VISITS) {
-    return false;
-  }
-
-  // Check minimum session duration
-  const sessionDuration = (Date.now() - sessionStartTime.value) / 1000;
-  if (sessionDuration < MIN_SESSION_SECONDS) {
-    return false;
-  }
-
-  return true;
-});
+const shouldShow = computed(() => !isPWA.value
+  && canInstall.value
+  && !sessionDismissed.value
+  && promptDismissed.value !== 'dismissed'
+  && visitCount.value >= MIN_VISITS
+  && sessionLongEnough.value);
 
 const dismiss = () => {
   sessionDismissed.value = true;
@@ -111,10 +80,5 @@ const install = async () => {
 
 onMounted(() => {
   visitCount.value = (Number.isFinite(visitCount.value) ? visitCount.value : 0) + 1;
-
-  // Start session timer to trigger reactivity after MIN_SESSION_SECONDS
-  setTimeout(() => {
-    sessionStartTime.value = Date.now();
-  }, MIN_SESSION_SECONDS * 1000);
 });
 </script>

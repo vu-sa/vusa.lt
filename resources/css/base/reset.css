@@ -13,6 +13,10 @@
 
 @layer base {
 
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
   /* Only essential typography - no margins, let components control spacing */
   h1 {
     @apply text-2xl md:text-4xl font-black text-foreground leading-tight tracking-tight;

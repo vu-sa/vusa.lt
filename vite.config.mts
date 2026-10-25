@@ -89,24 +89,22 @@ export default defineConfig(({ command, isSsrBuild }) => {
       ]
     : [];
 
-  // PWA plugin configuration
-  //
-  // TODO: Track additional PWA enhancements (icons, OAuth popup flow, extended sessions,
-  // offline form queue, notification handling, offline content strategy, etc.).
-  // Refer to the PWA roadmap in project documentation or the associated GitHub issues
-  // for the full list of ideas and implementation details.
-  //    delivers. Add logic to deduplicate notifications shown via both channels.
-  //
-  // 6. REMAINING NOTIFICATIONS: Add toWebPush() method to remaining notification classes:
-  //    - MeetingNotFinishedNotification.php
-  //    - MemberRegistered.php
-  //    - ReminderToLoginNotification.php
-  //    - StudentRepRegistered.php
-  //    - TaskCreatedNotification.php
-  //    - TaskReminderNotification.php
-  //
+  // The worker is built into public/build but served from /sw.js (ServiceWorkerController):
+  // a worker at /build/sw.js could only ever control /build/, never the /mano pages.
   const pwaPlugin = VitePWA({
     registerType: 'prompt',
+    buildBase: '/',
+    scope: '/mano',
+    integration: {
+      // The plugin adds the web manifest after `modifyURLPrefix` runs; from /sw.js it would 404 and fail the install.
+      beforeBuildServiceWorker(options) {
+        options.workbox.additionalManifestEntries = options.workbox.additionalManifestEntries?.map(entry =>
+          typeof entry !== 'string' && entry.url === options.manifestFilename
+            ? { ...entry, url: `/build/${entry.url}` }
+            : entry,
+        );
+      },
+    },
     includeAssets: ['images/icons/favicons/favicon.ico', 'logos/vusa.lin.hor.svg'],
     manifest: {
       name: 'VU SA - Mano',
@@ -158,23 +156,11 @@ export default defineConfig(({ command, isSsrBuild }) => {
     workbox: {
       // Import custom push notification handler
       importScripts: ['/sw-push.js'],
-      // Network-first for Inertia/API requests
+      // No rule for /mano pages: one URL answers both HTML and Inertia JSON, and pages are per-user.
       runtimeCaching: [
         {
-          urlPattern: /^https?:\/\/[^/]+\/mano.*/i,
-          handler: 'NetworkFirst',
-          options: {
-            cacheName: 'admin-pages',
-            expiration: {
-              maxEntries: 50,
-              maxAgeSeconds: 60 * 60 * 24, // 1 day
-            },
-            networkTimeoutSeconds: 10,
-          },
-        },
-        {
           urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
-          handler: 'CacheFirst',
+          handler: 'StaleWhileRevalidate',
           options: {
             cacheName: 'images',
             expiration: {
@@ -216,10 +202,11 @@ export default defineConfig(({ command, isSsrBuild }) => {
         'assets/php_admin_lt-*.js',
         'assets/php_admin_en-*.js',
       ],
-      // Enable navigation preload for faster NetworkFirst responses
-      navigationPreload: true,
       // Disable navigateFallback - Laravel handles routing, not the service worker
       navigateFallback: null,
+      // sw.js is served from the root, so it must carry the runtime and absolute precache URLs.
+      inlineWorkboxRuntime: true,
+      modifyURLPrefix: { '': '/build/' },
     },
     // PWA dev mode is disabled because Laravel Sail architecture doesn't support it:
     // - Laravel serves the app at https://www.vusa.test (or similar)

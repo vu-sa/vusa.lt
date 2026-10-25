@@ -23,6 +23,8 @@ use Laravel\Socialite\Facades\Socialite;
 */
 Route::feeds();
 
+Route::get('sw.js', ServiceWorkerController::class)->name('serviceWorker');
+
 Route::get('/auth/redirect', function () {
     // Store popup flag in session for callback handling, validating as boolean
     if (request()->has('popup') && request()->boolean('popup')) {

@@ -86,14 +86,12 @@ the page under test resolves a tenant from the subdomain.
 ## The PWA service worker gotcha
 
 `resources/js/admin.ts` registers the PWA service worker (workbox, `scope: '/mano'`) on every
-admin page boot — including `/login`. Its install precaches ~40 assets through the plugin's
+admin page boot — including `/login`. Its install precaches ~20 assets through the plugin's
 in-process test server, which is slow enough that on a CI runner the *activation* can land in
 the middle of a later `navigate()`. Chromium then restarts the navigation so the now-active
 worker can handle it, and Playwright's `goto` fails with `Navigation to "…" is interrupted by
 another navigation to "…"` — to the very same URL, which makes it look nonsensical. Locally the
 install always finishes before the next `goto`, so this failure mode **only reproduces in CI**.
-The worker's NetworkFirst cache of `/mano*` documents is a second hazard: stale pages served
-across `RefreshDatabase` test boundaries.
 
 `loginAsAdmin()` (in `tests/Pest.php`) therefore calls `disableServiceWorker()`, which stubs
 `navigator.serviceWorker.register` in the live document *and* as a context init script for every
