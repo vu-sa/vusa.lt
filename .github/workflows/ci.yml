@@ -118,25 +118,22 @@ jobs:
     needs: [changes, setup]
     if: ${{ needs.changes.outputs.php == 'true' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    name: PHP Tests${{ github.event_name != 'pull_request' && format(' ({0}/4)', matrix.shard) || '' }}
-    # Full runs split across four runners (one 4-vCPU runner took ~10 minutes). Pull requests stay one
-    # job: --shard narrows the run with --filter, and Pest's TIA switches itself off for filtered runs.
+    name: PHP Tests (${{ matrix.shard }}/4)
+    # Split across four runners: one 4-vCPU runner took 5-12 minutes. Pull requests shard too, because
+    # TIA never paid off here: under --coverage Pest skips it whenever the baseline graph is missing or
+    # drifted, and the one PR run it did narrow (to 440 files) took 712s, longer than a full run.
     strategy:
       fail-fast: false
       matrix:
-        shard: ${{ fromJSON(github.event_name == 'pull_request' && '[1]' || '[1, 2, 3, 4]') }}
-    # actions: read lets Pest's TIA baseline sync pull the pest-tia-baseline artifact via `gh`.
+        shard: [1, 2, 3, 4]
     permissions:
       contents: read
-      actions: read
       pull-requests: write
     steps:
     - uses: actions/checkout@v7
       with:
         ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
-        # fetch-depth: 0 — TIA anchors the graph to a commit and resolves changes with
-        # `git merge-base --is-ancestor` / `git diff <sha>..HEAD`; a shallow clone breaks reachability
-        # and silently degrades every PR back to a full run.
+        # docs:coverage --changed diffs against the PR base.
         fetch-depth: 0
 
     - name: Download build artifacts
@@ -172,12 +169,7 @@ jobs:
         cp .env.example .env
         php artisan key:generate --force
 
-    # Pull requests run Test Impact Analysis against the baseline recorded by tia-baseline.yml,
-    # replaying unaffected tests. Pushes to main deliberately stay a full run — that is the safety
-    # net for anything a stale graph lets slip through on a PR.
-    #
-    # Flag order is load-bearing: `--tia` MUST precede `--parallel`, otherwise ParaTest's option
-    # validation rejects it with `The "--tia" option does not exist.`
+    # --ci keeps Pest's local-only TIA (tests/Pest.php) off: every CI run is a full run.
     - name: Execute tests with coverage
       env:
         SCOUT_DRIVER: database
@@ -185,8 +177,7 @@ jobs:
         TYPESENSE_PORT: 8108
         TYPESENSE_API_KEY: xyz
         TYPESENSE_PROTOCOL: http
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: php artisan test --ci ${{ github.event_name == 'pull_request' && '--tia' || format('--shard={0}/4', matrix.shard) }} --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
+      run: php artisan test --ci --shard=${{ matrix.shard }}/4 --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
 
     # Advisory report (feature areas documented, routes tested, the writing
     # backlog, pages that may have drifted) lands in the job summary so nobody
@@ -267,8 +258,8 @@ jobs:
     - name: Install npm dependencies
       run: npm ci
 
-    # Same contract as Pest TIA on php-tests: pull requests run only the specs whose dependency
-    # graph reaches a changed file, pushes to main run everything. `forceRerunTriggers` in
+    # Pull requests run only the specs whose dependency graph reaches a changed file, pushes to
+    # main run everything. `forceRerunTriggers` in
     # vitest.config.ts escalates back to a full run when a shared file (tests/setup.ts,
     # resources/js/mocks/**, package.json) changes.
     - name: Execute tests with coverage

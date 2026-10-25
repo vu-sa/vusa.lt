@@ -125,7 +125,7 @@ it('fits the page to the screen and scrolls long charts inside it', function ():
     $page->resize(1180, 800);
 
     $timeline = route('dutiables.timeline', ['institution' => $this->duty->institution_id], absolute: false);
-    $page->navigate($timeline);
+    navigateTo($page, $timeline);
     waitForInertiaRender($page, '[data-slot="dutiable-gantt"] svg');
 
     $measure = <<<'JS'
@@ -166,7 +166,7 @@ it('fits the page to the screen and scrolls long charts inside it', function ():
         ]);
     }
 
-    $page->navigate($timeline);
+    navigateTo($page, $timeline);
     waitForInertiaRender($page, '[data-slot="dutiable-gantt"] svg');
 
     $tall = $page->script($measure);
@@ -191,7 +191,7 @@ it('takes the chart full screen over the shell and keeps its popovers on top', f
 
     // Zoomed out so the docs frame shows all three terms rather than the current months only.
     $page->script('localStorage.setItem("dutiable-timeline-view", JSON.stringify({ monthWidthPx: 28, includeEnded: true }))');
-    $page->navigate(route('dutiables.timeline', ['institution' => $parliament->id], absolute: false));
+    navigateTo($page, route('dutiables.timeline', ['institution' => $parliament->id], absolute: false));
     waitForInertiaRender($page, '[data-slot="dutiable-gantt"] svg');
 
     docsScreenshot($page, 'dutiable-timeline');

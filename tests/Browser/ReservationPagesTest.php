@@ -71,7 +71,7 @@ it('opens the checkout with the representative\'s saved cart', function (): void
 it('offers the manager the next step for each item on the reservation page', function (): void {
     $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::RESOURCE_MANAGER_EMAIL));
     $reservation = Reservation::query()->where('name', DocsSeeder::MIXED_RESERVATION_NAME)->firstOrFail();
-    $page->navigate("/mano/reservations/{$reservation->id}");
+    navigateTo($page, "/mano/reservations/{$reservation->id}");
     waitForInertiaRender($page, '[data-slot=record-title]');
 
     // Waiting → approve, reserved → hand over, lent → mark returned.

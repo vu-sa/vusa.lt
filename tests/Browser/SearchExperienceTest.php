@@ -71,7 +71,7 @@ it('renders document prefix search across widths and themes without JavaScript e
         }
     }
     $page->assertNoJavaScriptErrors();
-    $page->navigate('/lt/dokumentai');
+    navigateTo($page, '/lt/dokumentai');
     $page->assertVisible('[data-slot="recommended-documents"]');
     $page->click('button[aria-label="Rikiuoti"]');
     $page->assertVisible('button[role="radio"][aria-checked="true"]:has-text("Naujausi pirmi")');
@@ -90,7 +90,7 @@ it('saves a selected document recommendation through the settings form', functio
     $page->fill('#recommendation-phrases-0', 'įstatai, VU SA įstatai');
     $page->click('[data-testid="form-page-save"]');
     $page->assertDontSee('Pasirinkta recommendations');
-    $page->navigate('/mano/settings/documents');
+    navigateTo($page, '/mano/settings/documents');
     $page->assertValue('#recommendation-phrases-0', 'įstatai, VU SA įstatai');
     foreach ([390, 820, 1440] as $width) {
         $page->resize($width, 844);

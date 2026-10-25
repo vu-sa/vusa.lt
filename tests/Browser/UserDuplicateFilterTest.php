@@ -55,7 +55,7 @@ it('filters duplicate members and keeps trash reachable across desktop and phone
         }
     }
 
-    $page->navigate('/mano/users?duplicates=possible');
+    navigateTo($page, '/mano/users?duplicates=possible');
     waitForInertiaRender($page, '[data-slot=collection-page]');
     $page->click('[data-slot=collection-filters-toggle]');
     $page->click('button:has-text("Ištrinti"):has(svg)');

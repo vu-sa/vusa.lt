@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Route;
 use Pest\Browser\Api\AwaitableWebpage;
 use Pest\Browser\Api\PendingAwaitablePage;
 use Pest\Browser\Playwright\Page as PlaywrightPage;
+use Pest\Browser\Support\ComputeUrl;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Tests\TestCase;
 use Typesense\Client;
@@ -51,8 +52,8 @@ pest()->browser()->timeout(15_000);
 |--------------------------------------------------------------------------
 |
 | Tia reruns only the tests affected by your changes and replays cached results for the rest.
-| `locally()` enables it for local runs; ci.yml opts pull requests in explicitly with `--ci --tia`.
-| Pushes to main stay a full run, and tia-baseline.yml records the shared baseline from there.
+| `locally()` enables it for local runs only; ci.yml passes `--ci`, so every CI run is a full,
+| sharded run. tia-baseline.yml records the shared baseline from main for local runs to fetch.
 |
 | Escape hatches: `--no-tia` (one full run), `--fresh` (discard the graph and re-record).
 |
@@ -232,7 +233,7 @@ function loginAsAdmin(User $user, string $path = '/mano', ?int $width = null, ?i
         return redirect($path);
     });
 
-    $page->navigate('/mano/_test/login');
+    navigateTo($page, '/mano/_test/login');
     waitForInertiaRender($page, '[data-slot="admin-shell"]');
 
     return $page;
@@ -248,7 +249,7 @@ function loginThroughForm(User $user, string $password = 'password'): PendingAwa
 {
     $page = startAdminBrowserSession($user);
 
-    $page->navigate('/login');
+    navigateTo($page, '/login');
     waitForInertiaRender($page);
 
     $page->click('button:has-text("Prisijungti el. paštu")');
@@ -262,6 +263,17 @@ function loginThroughForm(User $user, string $password = 'password'): PendingAwa
     waitForInertiaRender($page, '[data-slot="admin-shell"]');
 
     return $page;
+}
+
+/**
+ * Navigate once, allowing the page the full timeout to fire `load`.
+ *
+ * `$page->navigate()` runs through the plugin's assertion retry (AwaitableWebpage::__call), which
+ * re-issues goto() with a 1s timeout: every load slower than that is aborted mid-chunk.
+ */
+function navigateTo(PendingAwaitablePage|AwaitableWebpage $page, string $url, int $timeoutMs = 15_000): void
+{
+    $page->page()->goto(ComputeUrl::from($url), ['timeout' => $timeoutMs]);
 }
 
 /**
@@ -545,7 +557,7 @@ function ignoreResizeObserverLoopErrors(PendingAwaitablePage|AwaitableWebpage $p
  * trip that suspends this fiber, so the in-process HTTP server keeps serving.
  *
  * Do NOT reach for `waitForFunction()`, `waitForURL()`, or `waitForLoadState()` as alternatives —
- * in pestphp/pest-plugin-browser 5.0.1 all three build a `Client::execute()` Generator and never
+ * in pestphp/pest-plugin-browser 5.1.2 all three build a `Client::execute()` Generator and never
  * iterate it (`vendor/pestphp/pest-plugin-browser/src/Playwright/Page.php:237,253,272`), so they
  * send nothing and return instantly. `waitForSelector()` is the only one that actually waits.
  *
@@ -565,7 +577,7 @@ function waitForInertiaRender(
         );
     } catch (Throwable $e) {
         throw new RuntimeException(
-            sprintf("Timed out after %dms waiting for [%s].\n\n%s", $timeoutMs, $selector, captureBrowserDiagnostics($page)),
+            sprintf("Waiting %dms for [%s] failed: %s\n\n%s", $timeoutMs, $selector, $e->getMessage(), captureBrowserDiagnostics($page)),
             previous: $e,
         );
     }

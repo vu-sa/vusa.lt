@@ -40,7 +40,7 @@ it('mounts duty headings and personalized contact names without overflow or Java
             $page->click('[data-slot="cookie-consent"] button');
             $page->script('document.querySelector("[data-slot=public-contact-card]").scrollIntoView({block: "center"})');
         } else {
-            $page->navigate($path);
+            navigateTo($page, $path);
             waitForInertiaRender($page, $screen === 'form' ? '[data-slot="form-page"] h1' : '[data-slot="record-title"]');
         }
 

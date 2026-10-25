@@ -157,8 +157,8 @@ Frontend conventions (stubs, mock forms, fake timers) are documented in [resourc
 
 ## Running backend tests
 
-Anything wider than a single file runs with `--parallel`. The full suite is ~22s parallel against
-~130s serial, so a serial full run is a mistake, not a preference.
+Anything wider than a single file runs with `--parallel`. The full suite (~5,900 tests) takes ~50s
+on 16 processes and several times that serially, so a serial full run is a mistake, not a preference.
 
 | Scope | Command |
 |---|---|
@@ -185,14 +185,16 @@ thought to name.
 | Context | Behaviour |
 |---|---|
 | Local / Sail | TIA on, against the baseline fetched from `main`. |
-| Pull requests | TIA on (`--ci --tia` in `ci.yml`), against the same baseline. |
-| Pushes to `main` | **Full run.** The safety net for anything a stale graph missed on a PR. |
+| CI (pull requests and `main`) | **Full run**, `--ci --shard=N/4`. `--ci` switches `locally()` TIA off. |
+
+CI dropped TIA on pull requests: with `--coverage`, Pest skips TIA whenever the downloaded graph is
+missing or its fingerprint drifted (`composer.lock`, `package-lock.json`, `vite.config.*`), which
+was most PRs, and the one run it did narrow (440 files) took 712s against ~300s for a full run.
 
 `.github/workflows/tia-baseline.yml` records the shared baseline on every push to `main` (plus
-nightly) and uploads it as the `pest-tia-baseline` artifact, so neither a fresh clone nor a PR pays
-the record cost. Baseline fetching shells out to `gh`, which is why the `php-tests` job needs
-`actions: read`, a `GH_TOKEN`, and `fetch-depth: 0` — without any of those TIA silently degrades to a
-full run, or hard-fails on a 403/404.
+nightly) and uploads it as the `pest-tia-baseline` artifact, so a fresh clone does not pay the
+record cost. Baseline fetching shells out to `gh`; without an authenticated `gh` (Sail, cloud
+sessions) TIA records its own graph instead.
 
 | Command | When |
 |---|---|
@@ -200,8 +202,8 @@ full run, or hard-fails on a 403/404.
 | `sail bin pest --parallel --no-tia` | Full run, no replay — when you distrust the graph. |
 | `sail bin pest --parallel --tia --fresh` | Discard the graph and re-record (after a large refactor). |
 
-The escape hatches are Pest options: `artisan test` rejects them (`The "--no-tia" option does not
-exist`), so call Pest directly for these two.
+The escape hatches are Pest options. `artisan test` accepts them only *before* `--parallel`; after it,
+ParaTest rejects them (`The "--no-tia" option does not exist`). `sail bin pest` takes any order.
 
 Use `--filter=testName` when iterating on one failing test, not as the default.
 

@@ -82,9 +82,10 @@ test('cannot update resource in invalid state', function () {
 ./vendor/bin/sail artisan test --parallel
 
 # Test Impact Analysis (Tia) is on by default locally — reruns only affected
-# tests and replays the rest. Force a full run or rebuild the graph when needed:
-./vendor/bin/sail artisan test --no-tia
-./vendor/bin/sail artisan test --fresh
+# tests and replays the rest. Force a full run or rebuild the graph when needed
+# (TIA flags go before --parallel, or ParaTest rejects them):
+./vendor/bin/sail artisan test --no-tia --parallel
+./vendor/bin/sail artisan test --fresh --parallel
 ```
 
 ## Test Environment
@@ -125,8 +126,8 @@ They are skipped in the default SQLite suite, which cannot exercise MySQL row lo
 - **Configuration testing**: Validates Typesense config without a connection.
 
 ### Search Architecture in Production
-- **Public frontend**: Typesense for fast, typo-tolerant search
-- **Admin operations**: Database driver (prevents circular dependencies)
+- **Public search and admin collections**: Typesense, queried from the browser with scoped keys
+- **Trash views and models without a Typesense override**: Database driver
 
 ## Test Organization
 

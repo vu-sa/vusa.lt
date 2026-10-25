@@ -16,7 +16,7 @@ pest()->use(RefreshDatabase::class);
 it('opens an activity answer and home news and events outside the admin Inertia app', function (): void {
     $tenant = Tenant::main();
     $user = makeTenantUserWithRole('Komunikacijos koordinatorius', $tenant);
-    $user->update(['tutorial_progress' => array_fill_keys(productTourIds(), now()->toISOString())]);
+    $user->forceFill(['tutorial_progress' => array_fill_keys(productTourIds(), now()->toISOString())])->save();
     $request = InstitutionActivityRequest::factory()->create([
         'institution_id' => Institution::factory()->for($tenant)->create()->id,
         'recipient_id' => $user->id,
@@ -63,7 +63,7 @@ it('opens an activity answer and home news and events outside the admin Inertia 
     expect($request->fresh()->answer)->toBeNull()
         ->and($notification->fresh()->read_at)->not->toBeNull();
 
-    $page->navigate('/mano');
+    navigateTo($page, '/mano');
     waitForInertiaRender($page, '[data-slot=site-content] [data-slot=news-card]');
     $page->script('window.adminLinkProbe = true');
     $page->click('[data-slot=site-content] [data-slot=news-card]');
@@ -72,7 +72,7 @@ it('opens an activity answer and home news and events outside the admin Inertia 
     $page->assertSee($news->title)->assertNoJavaScriptErrors();
     expect($page->script('window.adminLinkProbe === undefined'))->toBeTrue();
 
-    $page->navigate('/lt/naujienos');
+    navigateTo($page, '/lt/naujienos');
     waitForInertiaRender($page, '[data-slot=news-card]');
     $page->script('window.publicLinkProbe = true');
     $page->click('a[href*="'.$news->permalink.'"]');
@@ -81,7 +81,7 @@ it('opens an activity answer and home news and events outside the admin Inertia 
     $page->assertNoJavaScriptErrors();
     expect($page->script('window.publicLinkProbe'))->toBeTrue();
 
-    $page->navigate('/mano');
+    navigateTo($page, '/mano');
     waitForInertiaRender($page, '[data-slot=site-content] [data-slot=event-card] a');
     $page->script('window.adminLinkProbe = true');
     $page->click('[data-slot=site-content] [data-slot=event-card] a');

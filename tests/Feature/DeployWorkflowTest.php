@@ -192,12 +192,13 @@ describe('the deploy workflows', function () use ($shared, $source): void {
             ->and($comment['run'])->toContain('gh pr comment "$PR_NUMBER"');
     });
 
-    it('shards only full test runs, since --shard switches off test impact analysis', function () use ($source): void {
+    it('runs the full PHP suite in four shards on pull requests and pushes alike', function () use ($source): void {
         $job = Yaml::parse($source('.github/workflows/ci.yml'))['jobs']['php-tests'];
         $run = collect($job['steps'])->firstWhere('name', 'Execute tests with coverage')['run'];
 
-        expect($job['strategy']['matrix']['shard'])->toContain("github.event_name == 'pull_request' && '[1]'")
-            ->and($run)->toContain("github.event_name == 'pull_request' && '--tia' || format('--shard={0}/4', matrix.shard)");
+        expect($job['strategy']['matrix']['shard'])->toBe([1, 2, 3, 4])
+            ->and($run)->toContain('--ci --shard=${{ matrix.shard }}/4')
+            ->not->toContain('--tia');
     });
 
     it('only starts automatic deployments after push CI succeeds', function () use ($source): void {

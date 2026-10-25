@@ -41,7 +41,8 @@ it('saves a mailing list source on a phone and keeps its record readable across 
         }
     }
 
-    $page->resize(1440, 1000)->navigate('/mano/mailingLists/'.$list->id);
+    $page->resize(1440, 1000);
+    navigateTo($page, '/mano/mailingLists/'.$list->id);
     waitForInertiaRender($page, '[data-slot=record-title]');
     $page->click('button[role=tab]:has-text("Šaltiniai")');
     $page->script('document.documentElement.classList.remove("dark")');
@@ -67,7 +68,7 @@ it('loads older archived messages through the built Inertia pagination and opens
     $page->click('button:has-text("Rodyti daugiau")');
     $page->assertSee('Laiškas 0');
 
-    $page->navigate('/mano/mailingLists');
+    navigateTo($page, '/mano/mailingLists');
     waitForInertiaRender($page, '[data-slot=collection-page]');
     foreach ([390, 1440] as $width) {
         $page->resize($width, 900);

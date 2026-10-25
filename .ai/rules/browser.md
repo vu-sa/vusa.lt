@@ -6,12 +6,13 @@ paths:
 # Browser
 
 ## A browser test must prove something only a real browser can
-Each test pays for Chromium, a real login and code-split chunk loads (seconds, not milliseconds), and it breaks on copy and layout churn. Write one only for: client-side (Inertia) navigation and `<head>` swaps, computed layout (no sideways scroll at 390px, sticky/overlap geometry, CSS cascade results), pointer/drag/keyboard interaction, a real save round-trip through the UI, or "mounts against the built bundle without JS errors".
+Each test pays for Chromium, a login and code-split chunk loads (seconds, not milliseconds), and it breaks on copy and layout churn. Write one only for: client-side (Inertia) navigation and `<head>` swaps, computed layout (no sideways scroll at 390px, sticky/overlap geometry, CSS cascade results), pointer/drag/keyboard interaction, a real save round-trip through the UI, or "mounts against the built bundle without JS errors".
 Not for: an element, `data-slot` or text being present, a tab being active, a badge colour role, props wiring. Those go in a Vitest component test (`resources/js/**/__tests__`) or a feature test on Inertia props. Before adding one, check that no Vitest or feature test already covers it.
 
 ## Keep the suite small and green
 - One test per behaviour; check several viewports inside one test (`$page->resize()`) rather than one login per width.
-- Land on the page under test with `loginAsAdmin($user, $path, $width, $height)`; never log in and then `navigate()`. Every page load goes through one single-threaded PHP server per worker, so a wasted load costs seconds and can stall chunks behind it.
+- Navigate with `navigateTo($page, $url)`, never `$page->navigate()`: the plugin retries `navigate()` with a 1s `goto()`, aborting any page slower than that mid-load (blank `#app`, a cut-short `Requests:` list, or "interrupted by another navigation"). Details: tests/Browser/README.md.
+- Land on the page under test with `loginAsAdmin($user, $path, $width, $height)`; never log in and then navigate. Every page load goes through one single-threaded PHP server per worker, so a wasted load costs seconds and can stall chunks behind it.
 - Never commit a debugging/`->group('tmp')` test — reproduce, fix, then keep a Vitest regression test instead.
 - A browser test that fails because the UI intentionally changed is updated or deleted in the same change. Don't leave it red — CI runs this suite and a red suite gets ignored.
 

@@ -45,7 +45,7 @@ it('submits several meetings through the signed form and renders without overflo
     app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));
     $page = visit('/robots.txt');
     $request = InstitutionActivityRequest::factory()->create(['campaign_type' => 'missing_meetings', 'period_end' => today(), 'locale' => 'lt']);
-    $page->navigate($request->answerUrl(InstitutionActivityAnswer::Met));
+    navigateTo($page, $request->answerUrl(InstitutionActivityAnswer::Met));
     $page->page()->waitForSelector('#activity-reply form', ['timeout' => 15000]);
     foreach ([390, 820, 1180, 1440] as $width) {
         $page->resize($width, 900);
@@ -167,7 +167,7 @@ it('captures documentation reference frames for activity requests', function ():
         'note' => null,
         'created_at' => now()->subMonths(2),
     ]);
-    $page->navigate(route('institutions.show', $committee));
+    navigateTo($page, route('institutions.show', $committee));
     waitForInertiaRender($page, '[data-slot=admin-shell]');
     $page->click('[role=tab]:has-text("Užklausos atstovams")');
     waitForInertiaRender($page, '[data-slot=activity-request-history]');
@@ -182,13 +182,13 @@ it('captures documentation reference frames for activity requests', function ():
     $mail = $notification->toMail($representative);
     $page->resize(640, 950);
     // setContent over the admin shell never reaches "load"; start from a bare page.
-    $page->navigate('/robots.txt');
+    navigateTo($page, '/robots.txt');
     $page->page()->setContent((string) $mail->render());
     docsScreenshot($page, 'activity-request-email');
 
     // 4. Public non-login answer page
     app(Vite::class)->useHotFile(storage_path('framework/testing/vite-hot-disabled'));
-    $page->navigate($request->answerUrl(InstitutionActivityAnswer::Met));
+    navigateTo($page, $request->answerUrl(InstitutionActivityAnswer::Met));
     $page->page()->waitForSelector('#activity-reply form', ['timeout' => 15000]);
     $page->resize(820, 900);
     docsScreenshot($page, 'activity-request-reply', selector: 'main');

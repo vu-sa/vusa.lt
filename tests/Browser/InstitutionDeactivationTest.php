@@ -30,7 +30,7 @@ it('explains closure before saving and preserves the ended assignment after the 
 
     foreach (['lt', 'en'] as $locale) {
         if ($locale === 'en') {
-            $page->navigate("/mano/institutions/{$institution->id}/edit?lang=en");
+            navigateTo($page, "/mano/institutions/{$institution->id}/edit?lang=en");
             waitForInertiaRender($page, '[data-slot=form-toggle-row]');
             $page->click('[data-slot=form-toggle-row] [role=switch]');
         }

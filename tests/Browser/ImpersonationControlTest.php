@@ -22,7 +22,7 @@ it('keeps the impersonation launcher visible across widths and dismissible until
     $page->click('[data-slot=impersonation-bar-close]');
     expect($page->script('document.querySelector("[data-slot=impersonation-launcher]") === null'))->toBeTrue();
 
-    $page->navigate('/mano');
+    navigateTo($page, '/mano');
     waitForInertiaRender($page);
     $page->assertPresent('[data-slot=impersonation-launcher]');
 

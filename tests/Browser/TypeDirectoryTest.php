@@ -23,7 +23,7 @@ it('opens concrete type collections and their forms without browser errors', fun
     $page->click('[data-slot=collection-title-band] a[href$="/institutionTypes/create"]');
     waitForInertiaRender($page, '[data-slot=form-page]');
     $page->assertPathIs('/mano/institutionTypes/create')->assertNoJavaScriptErrors();
-    $page->navigate('/mano/dutyTypes');
+    navigateTo($page, '/mano/dutyTypes');
     waitForInertiaRender($page, '[data-slot=collection-table]');
     $page->click('[data-slot=collection-title-band] a[href$="/dutyTypes/create"]');
     waitForInertiaRender($page, '[data-slot=form-page]');
@@ -31,7 +31,7 @@ it('opens concrete type collections and their forms without browser errors', fun
     $page->resize(390, 844);
     $page->script('document.documentElement.classList.add("dark")');
     expect($page->script('document.documentElement.scrollWidth <= window.innerWidth'))->toBeTrue();
-    $page->navigate('/mano/institutionTypes/create');
+    navigateTo($page, '/mano/institutionTypes/create');
     waitForInertiaRender($page, '[data-slot=form-page]');
     $page->assertNoJavaScriptErrors();
 });

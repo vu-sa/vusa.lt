@@ -16,7 +16,7 @@ it('opens the created duty after saving on desktop and phone', function (): void
     foreach ([1440, 390] as $width) {
         $name = "Nauja pareigybė {$width}";
         $page->resize($width, 900);
-        $page->navigate('/mano/duties/create?institution_id='.$institution->id);
+        navigateTo($page, '/mano/duties/create?institution_id='.$institution->id);
         waitForInertiaRender($page, '#duty-name');
         $page->fill('#duty-name', $name);
         $page->click($width === 390 ? '[data-testid=form-page-mobile-save] button' : '[data-testid=form-page-save]');
