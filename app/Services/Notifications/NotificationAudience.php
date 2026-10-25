@@ -2,7 +2,6 @@
 
 namespace App\Services\Notifications;
 
-use App\Actions\GetResourceManagers;
 use App\Enums\NotificationType;
 use App\Enums\ResponsibilityPurpose;
 use App\Models\InstitutionCheckIn;
@@ -66,9 +65,7 @@ class NotificationAudience
 
     private function isResourceManager(User $user): bool
     {
-        return $user->current_duties()
-            ->whereHas('roles.permissions', fn (Builder $query) => $query->whereIn('name', GetResourceManagers::permissionNames()))
-            ->exists();
+        return app(ResponsibilityResolver::class)->holdsAnywhere($user, ResponsibilityPurpose::ReservationHandling);
     }
 
     private function coordinates(User $user): bool

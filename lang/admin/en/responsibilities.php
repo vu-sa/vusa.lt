@@ -9,6 +9,10 @@ return [
     ],
 
     'purposes' => [
+        'reservation_handling' => [
+            'label' => 'Reservation handling',
+            'drives' => 'Who receives reservation approval requests and outstanding review tasks, and appears as the current resource contact. Decisions require separate permissions.',
+        ],
         'student_representation' => [
             'label' => 'Student representation',
             'drives' => 'Its holders count as student representatives: they are listed in meetings, receive tasks when the institution has no secretary, get activity requests and count in the representative metrics.',

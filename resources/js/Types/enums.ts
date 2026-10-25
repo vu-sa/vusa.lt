@@ -278,6 +278,7 @@ export enum ResponsibilityPurpose {
     StudentRepresentation = 'student_representation',
     StudentRepCoordination = 'student_rep_coordination',
     MemberRegistration = 'member_registration',
+    ReservationHandling = 'reservation_handling',
 }
 export enum ResponsibilityScope {
     Institution = 'institution',

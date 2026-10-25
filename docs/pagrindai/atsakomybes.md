@@ -3,8 +3,9 @@ doc_status: reviewed
 title: Atsakomybės
 area: duties
 models: [Duty, Role, ResponsibilityGrant]
-last_reviewed: 2026-10-21
+last_reviewed: 2026-10-25
 tests:
+  - tests/Feature/Responsibilities/ReservationHandlingTest.php
   - tests/Feature/Responsibilities/ResponsibilityResolverTest.php
   - tests/Feature/Responsibilities/ProjectDutyResponsibilitiesTest.php
   - tests/Feature/Admin/People/DutyResponsibilityControllerTest.php
@@ -65,6 +66,7 @@ Kelios atsakomybės dar nurodo sistemai, ką rasti:
 | Studentų atstovavimas | Kas laikomas studentų atstovu: rodomas posėdžiuose, gauna užduotis, kai institucija neturi sekretoriaus, ir veiklos užklausas. |
 | Studentų atstovų koordinavimas | Į ką kreipiasi VU organų studentų atstovai, kas gauna jų registracijas ir posėdžių pranešimus. |
 | Narių registracija | Kas gauna ir mato naujų narių registracijas savo padalinyje. |
+| Rezervacijų administravimas | Kas rodomas kaip dabartinis išteklių kontaktas ir gauna padalinio rezervacijų peržiūras bei jų priminimus. |
 
 Kuri atsakomybė atlieka kurią paskirtį, nustatoma
 [Sistemos paskirtyse](/sistema/nustatymai#sistemos-paskirtys). Plati prieiga (pvz., „Organizacijos
@@ -84,9 +86,14 @@ parodo padalinius, kuriuose niekas šiuo metu neina visam padaliniui koordinuoti
 
 ### Teisių trūkumai
 
-Paskirtis pati teisių nesuteikia. Jei koordinavimo atsakomybę turinčiai pareigybei per jos
+Paskirties pasirinkimas papildomų teisių neįrašo. Tačiau narių registracijos paskirtis leidžia
+skaityti nurodytų padalinių registracijas, o koordinavimo paskirtis – priskirtų institucijų atstovų
+registracijas ir tvarkyti jų veiklos žymas. Formų redagavimui reikia atskirų teisių.
+Rezervacijų administravimo paskirtis parenka kontaktus ir darbų gavėjus; sprendimų teisės lieka
+atskiros. Jei koordinavimo atsakomybę turinčiai pareigybei per jos
 atsakomybes trūksta teisių matyti ir redaguoti padalinio institucijas, posėdžius ar narius,
-pareigybės ir atsakomybės puslapiuose rodomas įspėjimas.
+pareigybės ir atsakomybės puslapiuose rodomas įspėjimas. Taip pat įspėjama, jei rezervacijų
+administravimo pareigybei trūksta rezervacijų peržiūros ar išteklių administravimo teisių.
 
 ## Veiksmai
 

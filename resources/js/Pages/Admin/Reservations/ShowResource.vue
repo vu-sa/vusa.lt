@@ -22,15 +22,7 @@
       </template>
 
       <template #fact-managers>
-        <span v-if="managers.length === 0" class="text-muted-foreground">{{ $t('reservations.resource.no_managers') }}</span>
-        <span v-else class="flex flex-col">
-          <a
-            v-for="manager in managers"
-            :key="manager.id"
-            :href="`mailto:${manager.email}`"
-            class="truncate underline underline-offset-4"
-          >{{ manager.name }}</a>
-        </span>
+        <ResourceManagers :managers hide-label />
       </template>
 
       <template #alert>
@@ -173,6 +165,7 @@ import MediaImage from '@/Components/Brand/MediaImage.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { ConfirmDialog, OverviewSection, OverviewStatusList } from '@/Components/Patterns';
 import ReservationCartBar from '@/Components/Reservations/ReservationCartBar.vue';
+import ResourceManagers from '@/Components/Reservations/ResourceManagers.vue';
 import ReservationCartSheet from '@/Components/Reservations/ReservationCartSheet.vue';
 import { formatReservationPeriod } from '@/Components/Reservations/reservationPeriod';
 import ResourceBookingRow, { type ResourceBooking } from '@/Components/Reservations/ResourceBookingRow.vue';
@@ -200,7 +193,7 @@ interface ShowResourcePayload {
 interface ResourceManager {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   profile_photo_path: string | null;
 }
 

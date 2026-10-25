@@ -200,12 +200,12 @@
     <!-- Resource managers -->
     <DetailAsyncSection
       v-if="showManagers"
-      :title="$t('Atsakingi asmenys')"
+      :title="$t('reservations.resource.managers')"
       :is-fetching
       :has-content="data?.managers?.length > 0"
-      :empty-message="$t('Nėra atsakingų asmenų')"
+      :empty-message="$t('reservations.resource.no_managers')"
     >
-      <UsersAvatarGroup :users="data!.managers" :max="10" :size="32" clickable />
+      <ResourceManagers :managers="data?.managers ?? []" hide-label />
     </DetailAsyncSection>
   </DetailLayout>
 </template>
@@ -225,10 +225,10 @@ import DetailRow from './DetailRow.vue';
 import DetailSection from './DetailSection.vue';
 import DetailAsyncSection from './DetailAsyncSection.vue';
 
+import ResourceManagers from '@/Components/Reservations/ResourceManagers.vue';
 import { ResourceIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
-import UsersAvatarGroup from '@/Components/Avatars/UsersAvatarGroup.vue';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import ReservationResourceStateTag from '@/Components/Tag/ReservationResourceStateTag.vue';
 import { useApi } from '@/Composables/useApi';

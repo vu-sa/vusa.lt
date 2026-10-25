@@ -116,6 +116,7 @@ return [
         'backtrack_skipped' => '{1} :count resource was skipped.|[2,*] :count resources were skipped.',
     ],
     'show' => [
+        'participants' => 'Reservation participants',
         'no_resources_for_tenant' => 'No resources match the selected unit.',
     ],
     'status_mixed' => 'Mixed',
@@ -214,8 +215,8 @@ return [
         'tenant' => 'Unit',
         'location' => 'Location',
         'identifier' => 'Identifier',
-        'managers' => 'Managers',
-        'no_managers' => 'no managers',
+        'managers' => 'Current administrators',
+        'no_managers' => 'No administrator assigned',
         'sections' => [
             'availability' => 'Availability',
             'about' => 'About',

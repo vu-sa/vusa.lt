@@ -20,6 +20,7 @@ use App\Listeners\NotifyUsersOfComment;
 use App\Listeners\PruneRejectedPushSubscription;
 use App\Listeners\QueueMailingListSync;
 use App\Listeners\QueueNotificationForDigest;
+use App\Listeners\QueueReservationReviewSync;
 use App\Listeners\RecordDeviceLogin;
 use App\Listeners\RefreshImageCacheAfterConversion;
 use App\Listeners\ReservationResource\HandleReservationResourceCreated;
@@ -46,6 +47,8 @@ use App\Models\InstitutionType;
 use App\Models\Meeting;
 use App\Models\Pivots\AgendaItem;
 use App\Models\Pivots\Dutiable;
+use App\Models\Pivots\DutyDutyType;
+use App\Models\Resource;
 use App\Models\ResponsibilityGrant;
 use App\Models\Role;
 use App\Models\RoleType;
@@ -83,7 +86,7 @@ class EventServiceProvider extends ServiceProvider
     #[\Override]
     protected $listen = [
         SettingsSaved::class => [InvalidateRepStatisticsSettings::class],
-        SearchRelationChanged::class => [QueueMailingListSync::class, InvalidateRepStatisticsRelation::class],
+        SearchRelationChanged::class => [QueueMailingListSync::class, InvalidateRepStatisticsRelation::class, QueueReservationReviewSync::class],
         SocialiteWasCalled::class => [
             MicrosoftExtendSocialite::class.'@handle',
         ],
@@ -98,6 +101,7 @@ class EventServiceProvider extends ServiceProvider
             HandleReservationResourceStateChanged::class,
         ],
         DutiableChanged::class => [
+            QueueReservationReviewSync::class,
             HandleDutiableChange::class,
             SyncExOfficioDutiables::class,
             SyncContactSearchIndexes::class,
@@ -170,6 +174,9 @@ class EventServiceProvider extends ServiceProvider
             $model::observe(QueueMailingListSync::class);
         }
         Document::observe(DocumentObserver::class);
+        foreach ([Duty::class, User::class, Institution::class, DutyType::class, ResponsibilityGrant::class, Role::class, Resource::class, DutyDutyType::class] as $model) {
+            $model::observe(QueueReservationReviewSync::class);
+        }
         RoleType::observe(RoleTypeObserver::class);
         // Permission cache invalidation for users, roles, duties
         // Clears permission cache, Atstovavimas cache, and Typesense scoped keys

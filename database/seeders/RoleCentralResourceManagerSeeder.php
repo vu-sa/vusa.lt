@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 
 /**
  * The central office's resource administrator: the padalinys role's abilities in every padalinys.
- * Its `resources.update.*` counts as resource managership too (GetResourceManagers::permissionNames()).
+ * Notification recipients are selected separately by the reservation-handling purpose.
  */
 class RoleCentralResourceManagerSeeder extends Seeder
 {

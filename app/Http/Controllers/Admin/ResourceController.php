@@ -6,6 +6,7 @@ use App\Actions\GetTenantsForUpserts;
 use App\Actions\Media\AddImageMedia;
 use App\Actions\SerializeReservationCart;
 use App\Actions\SerializeResourceAvailability;
+use App\Actions\SerializeResourceManagers;
 use App\Http\Controllers\AdminController;
 use App\Http\Requests\StoreResourceRequest;
 use App\Http\Requests\UpdateResourceRequest;
@@ -114,12 +115,7 @@ class ResourceController extends AdminController
             'availableNow' => max(0, SerializeResourceAvailability::available($resource, $now, $now->copy()->addMinute())),
             'currentLoans' => $active->filter(fn (Reservation $reservation) => $reservation->pivot->start_time?->lte($now))->map($row)->values(),
             'upcoming' => $active->filter(fn (Reservation $reservation) => $reservation->pivot->start_time?->gt($now))->take(10)->map($row)->values(),
-            'managers' => $resource->managers()->map(fn ($manager) => [
-                'id' => (string) $manager->id,
-                'name' => $manager->name,
-                'email' => $manager->email,
-                'profile_photo_path' => $manager->profile_photo_path,
-            ])->values(),
+            'managers' => SerializeResourceManagers::execute($resource),
             'history' => Inertia::defer(fn () => $resource->reservations()
                 ->wherePivotIn('state', ['returned', 'rejected', 'cancelled'])
                 ->orderByPivot('end_time', 'desc')

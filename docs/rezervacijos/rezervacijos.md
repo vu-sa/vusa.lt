@@ -3,8 +3,10 @@ doc_status: reviewed
 title: Rezervacijos
 area: reservations
 models: [Reservation, ReservationResource, ReservationDraft, Approval]
-last_reviewed: 2026-10-08
+last_reviewed: 2026-10-25
 tests:
+  - tests/Feature/Responsibilities/ReservationHandlingTest.php
+  - tests/Feature/Tasks/Subscribers/ApprovalTaskSubscriberTest.php
   - tests/Feature/Admin/Reservations/ReservationControllerTest.php
   - tests/Feature/Admin/Reservations/ReservationCartTest.php
   - tests/Feature/Admin/Reservations/ResourceReservationTest.php
@@ -228,19 +230,37 @@ yra MIF daiktas, bet tos pačios rezervacijos FSF daikto tvirtinti negali. Sąra
 :::
 
 ::: info Niekas negauna pranešimų?
-Pranešimus ir užduotis gauna visi, kas **šiuo metu** eina padalinio pareigybę su išteklių
-administratoriaus role. Jei niekas jų negauna, verta patikrinti, ar pareigybė turi rolę ir ar pareigas
-einantis žmogus pridėtas prie pareigybės. **Centrinio biuro išteklių administratorius** gauna
-pranešimus ir užduotis apie CB daiktus, o kitų padalinių užklausas mato apžvalgoje (žr.
-[Centrinio biuro išteklių administratorius](/rezervacijos/#centrinio-biuro)).
+Pranešimus ir peržiūros užduotis gauna dabartiniai pareigybių nariai, kurių atsakomybė atlieka
+**Rezervacijų administravimo** paskirtį tam padaliniui. Vien plačių administravimo teisių tam
+neužtenka. Patikrink paskirtį [Sistemos paskirtyse](/sistema/nustatymai#sistemos-paskirtys),
+atsakomybės apimtį ir pareigas einančių žmonių datas. Sprendimams vis tiek reikia išteklių
+administravimo teisių.
 :::
+
+### Dabartiniai kontaktai ir istorija {#kontaktai-ir-istorija}
+
+Išteklio puslapyje ir prie kiekvieno rezervacijos daikto rodomi **Dabartiniai administratoriai**.
+Jie parenkami pagal dabartinę atsakomybę, todėl kontaktai atsinaujina ir senose rezervacijose.
+**Rezervacijos dalyviai** yra užsakymą pateikę ar prie jo pridėti žmonės.
+
+**Sprendimų istorija** prie daikto išlaiko, kas ir kada priėmė sprendimą, net jei tas žmogus jau
+nebeadministruoja išteklių. Pasikeitus pareigoms, nebaigtos peržiūros ir jų priminimai tenka
+naujiems atsakingiems žmonėms; atliktų užduočių ir sprendimų autoriai nekeičiami. Jei atsakingo
+žmogaus nėra, peržiūra lieka laukti, kol pareigybė bus užpildyta.
+
+<ChangelogNote version="v3.17" date="2026-10-25" title="Rezervacijų administravimo atsakomybė">
+
+Dabartiniai kontaktai, peržiūros užduotys ir pranešimai remiasi viena paskirtimi. Sprendimų istorija
+lieka susieta su žmonėmis, kurie tuos sprendimus priėmė.
+
+</ChangelogNote>
 
 
 ## Pranešimai ir automatizavimas {#pranesimai}
 
 | Kada | Kas gauna | Ką |
 |---|---|---|
-| Pateikiama rezervacija arba pridedamas išteklius | Išteklio valdytojai | Pranešimą „laukia patvirtinimo“ ir **tvirtinimo užduotį** |
+| Pateikiama rezervacija arba pridedamas išteklius | Rezervacijų administravimo paskirtį tam padaliniui turintys žmonės | Pranešimą „laukia patvirtinimo“ ir **tvirtinimo užduotį** |
 | Pasikeičia išteklio būsena | Visi teikėjai, išskyrus pakeitusįjį | Pranešimą su nauja būsena |
 | Išteklius tampa „rezervuota“ | Teikėjai | Užduotį **„Atsiimti rezervacijos išteklius“**, kurios terminas yra vėliausias atsiėmimo laikas |
 | Išteklius tampa „paskolinta“ | Teikėjai | Užduotį **„Grąžinti rezervacijos išteklius“**, kurios terminas yra vėliausias grąžinimo laikas |
@@ -285,9 +305,12 @@ atlyginti nuostolius.
   atmetamas `ReservationResource::isDecisionAllowed()`.
 - Pateikiant kiekis tikrinamas užrakinus eilutes (`EnsureReservationCapacity`).
 - Krepšelio galiojimas – `config('vusa.reservation_draft_ttl_days')` (14 d.).
-- Užduotis ir pranešimus apie naujas užklausas gauna `GetResourceManagers` grąžinami žmonės:
-  dabartiniai išteklio padalinio pareigybių nariai, kurių rolė turi `resources.update.padalinys`
-  arba `resources.update.*`.
+- Dabartinius kontaktus ir pranešimų gavėjus parenka `GetResourceManagers` per
+  `ResponsibilityResolver` ir `reservation_handling` paskirtį. Teisę spręsti toliau tikrina
+  `resources.update.padalinys` arba `resources.update.*`.
+- `ReservationReviewTaskSynchronizer` susieja nebaigtą peržiūrą su daiktu ir žingsniu per užduoties
+  `metadata`, po pareigų pakeitimų ir prieš priminimus atnaujina jos gavėjus. Datų ribos papildomai
+  tikrinamos kasdien 00:05 Vilniaus laiku. Užbaigtų užduočių gavėjai nekeičiami.
 - Rezervacijos neturi minkštojo ištrynimo (`SoftDeletes`): ištrynus įrašą per `reservations.destroy`,
   jis pašalinamas iškart ir visam laikui, o `Reservation::booted()` trynimo kabliukas automatiškai
   atjungia išteklius (`reservation_resource`), naudotojus ir ištrina polimorfinius komentarus.

@@ -108,6 +108,7 @@ class ResponsibilityResolver
     public function dutiesForTenant(ResponsibilityPurpose $purpose, Tenant $tenant): Collection
     {
         return Duty::query()
+            ->whereHas('institution')
             ->whereIn('id', $this->dutyIdsAt($purpose, ResponsibilityScope::Tenant, [$tenant->id]))
             ->orderBy('order')
             ->get();

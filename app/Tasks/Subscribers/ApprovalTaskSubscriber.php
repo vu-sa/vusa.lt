@@ -5,8 +5,10 @@ namespace App\Tasks\Subscribers;
 use App\Contracts\Approvable;
 use App\Events\ApprovalDecisionMade;
 use App\Events\ApprovalRequested;
+use App\Models\Pivots\ReservationResource;
 use App\Tasks\DTOs\CreateTaskData;
 use App\Tasks\Handlers\ApprovalTaskHandler;
+use App\Tasks\Synchronizers\ReservationReviewTaskSynchronizer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Events\Dispatcher;
 
@@ -34,6 +36,12 @@ class ApprovalTaskSubscriber
         $approvable = $event->approvable;
         $step = $event->step;
 
+        if ($approvable instanceof ReservationResource) {
+            app(ReservationReviewTaskSynchronizer::class)->requested($approvable, $step);
+
+            return;
+        }
+
         /** @var Approvable&Model $approvable */
         $approvers = $approvable->getApproversForStep($step);
 
@@ -60,6 +68,12 @@ class ApprovalTaskSubscriber
         $approvable = $event->approvable;
         $reason = __('Approval decision was made');
         $decider = $event->approval->user;
+
+        if ($approvable instanceof ReservationResource) {
+            app(ReservationReviewTaskSynchronizer::class)->decided($approvable, $event->approval->step, $event->approval->decision, $decider);
+
+            return;
+        }
 
         $this->approvalHandler->completeForModel($approvable, $reason, $decider);
 

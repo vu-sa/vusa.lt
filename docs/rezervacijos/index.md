@@ -1,6 +1,6 @@
 ---
 doc_status: reviewed
-last_reviewed: 2026-09-30
+last_reviewed: 2026-10-25
 title: Rezervacijos
 coverage: ignore
 ---
@@ -44,7 +44,7 @@ administratorius tvarko MIF daiktus, bet ne FSF.
 Išteklių administratorius:
 
 - **kuria ir redaguoja** savo padalinio išteklius ir kategorijas;
-- **gauna užduotį ir pranešimą**, kai kas nors rezervuoja jo padalinio daiktą;
+- **gauna peržiūrą ir pranešimą**, jei jo pareigybė turi rezervacijų administravimo paskirtį tam padaliniui;
 - **tvirtina, atmeta, išduoda** ir pažymi **grąžintus** savo padalinio daiktus;
 - **mato** visas rezervacijas, kuriose yra jo padalinio daiktų, net jei jas sukūrė kitų padalinių nariai;
 - kaip ir visi, gali pats **rezervuoti** bet kurio padalinio daiktus.
@@ -52,14 +52,15 @@ Išteklių administratorius:
 ### Centrinio biuro išteklių administratorius {#centrinio-biuro}
 
 Centrinio biuro išteklių administratorius (VU SA CB) gali tas pačias teises naudoti **visuose**
-padaliniuose, bet pranešimai jį pasiekia tik apie paties CB daiktus. Taip jis gali padėti bet
+padaliniuose. Pranešimų apimtį atskirai nustato rezervacijų administravimo paskirtis;
+įprastai ji apima paties CB daiktus. Taip jis gali padėti bet
 kuriam padaliniui, bet nėra užverčiamas visos organizacijos užklausomis.
 
 | | Išteklių administratorius | Centrinio biuro išteklių administratorius |
 |---|---|---|
 | Kuria ir redaguoja išteklius | Savo padalinio | Visų padalinių |
 | Tvirtina, išduoda, pažymi grąžintus | Savo padalinio daiktus | Bet kurio padalinio daiktus |
-| Gauna užduotį ir pranešimą apie naują užklausą | Apie savo padalinio daiktus | Apie CB daiktus |
+| Gauna peržiūrą ir pranešimą | Pagal rezervacijų administravimo paskirties apimtį | Pagal paskirties apimtį, įprastai apie CB daiktus |
 | Mato apžvalgoje „Laukia tavo sprendimo“ | Savo padalinio daiktus | Visų padalinių daiktus |
 
 ::: tip Kada kreiptis į CB
@@ -68,9 +69,9 @@ administratorius gali ją patvirtinti ar atmesti vietoje jo.
 :::
 
 ::: tip Kaip paskirti išteklių administratorių
-Rolė skiriama **pareigybei**, ne žmogui: **Organizacija → Pareigybės →** pareigybė **→ Redaguoti →
-Rolės**. Taip naujas administratorius ją gauna automatiškai, vos pradėjęs eiti pareigas, o buvęs
-ją praranda. Savo roles kiekvienas mato puslapyje „Mano rolės ir pareigybės“.
+Pareigybės skirtuke **Atsakomybės** suteik išteklių administravimo teises ir atsakomybę, kuri
+atlieka **Rezervacijų administravimo** paskirtį. Nurodyk jos padalinio apimtį. Pasikeitus žmogui,
+atsakomybė lieka pareigybei, o nebaigtos peržiūros perduodamos dabartiniams jos nariams.
 :::
 
 ::: info Rezervacijos teikėjas

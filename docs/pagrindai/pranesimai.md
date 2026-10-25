@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Pranešimai
 coverage: ignore
-last_reviewed: 2026-10-19
+last_reviewed: 2026-10-25
 tests:
   - tests/Feature/Notifications/NotificationFiringTest.php
   - tests/Feature/Tasks/Subscribers/MeetingTaskSubscriberTest.php
@@ -20,6 +20,10 @@ Platforma praneša apie įvykius, reikalaujančius tavo dėmesio, sprendimo ar a
 artėjančius posėdžius, patvirtinimo laukiančias rezervacijas, komentarus ir paminėjimus.
 
 Pranešimų nustatymuose galima pasirinkti, apie ką ir kokiu būdu norima būti informuojamam.
+
+Rezervacijų peržiūrų gavėjus nustato **Rezervacijų administravimo** paskirtis. Pasikeitus
+atsakingiems žmonėms, nebaigtų peržiūrų priminimai tenka dabartiniams nariams. Rezervacijos
+dalyviai atskirai gauna būsenų pasikeitimus. Žr. [Kontaktai ir istorija](/rezervacijos/rezervacijos#kontaktai-ir-istorija).
 
 ## Pranešimų kanalai {#kanalai}
 

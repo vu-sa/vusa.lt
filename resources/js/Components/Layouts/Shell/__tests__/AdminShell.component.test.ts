@@ -69,6 +69,8 @@ describe('AdminShell focus mode', () => {
     const scrollTo = vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
 
     expect(wrapper.find('.sticky').classes()).toContain('[view-transition-name:admin-chrome]');
+    expect(wrapper.get('[data-slot="shell-chrome"]').classes()).toContain('backdrop-blur-sm');
+    expect(wrapper.get('[data-slot="shell-chrome"]').classes()).toContain('[.a11y-contrast_&]:backdrop-blur-none');
 
     Object.defineProperty(window, 'scrollY', { value: 34, configurable: true });
     document.dispatchEvent(new FocusEvent('focusout'));

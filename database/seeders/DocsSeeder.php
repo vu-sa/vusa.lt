@@ -395,6 +395,12 @@ class DocsSeeder extends Seeder
             'description' => ['lt' => '', 'en' => ''],
         ]);
         $managerDuty->assignRole(RoleResourceManagerSeeder::NAME);
+        (new RoleReservationHandlerSeeder)->run();
+        $managerDuty->responsibilityGrants()->firstOrCreate([
+            'role_id' => Role::forPurpose(ResponsibilityPurpose::ReservationHandling)->id,
+            'scope_type' => 'tenant',
+            'scope_id' => (string) $tenant->id,
+        ]);
 
         $manager = User::factory()->create(['name' => 'Tomas Kazlauskas', 'email' => self::RESOURCE_MANAGER_EMAIL]);
         $manager->duties()->attach($managerDuty, ['start_date' => now()->subYear()]);

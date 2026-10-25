@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Užduotys
 area: tasks
 models: [Task]
-last_reviewed: 2026-10-19
+last_reviewed: 2026-10-25
 tests:
   - tests/Browser/VisakOverviewPagesTest.php
   - tests/Feature/Admin/Dashboard/UserTasksTest.php
@@ -56,7 +56,7 @@ būdu negalima.
 | **Sukurti posėdžio darbotvarkės klausimus** | Užregistravus posėdį be darbotvarkės | Institucijos atstovams | 3 d. po posėdžio | Sukūrus pirmą darbotvarkės klausimą |
 | **Užpildyti darbotvarkės klausimų informaciją** | Užregistravus posėdį su darbotvarke | Institucijos atstovams | Posėdžio diena | Užpildžius visus klausimus. Eiga rodoma, pvz., „2 iš 3“ |
 | **Pranešti apie veiklą: …** | Kasdien 10.00, kai institucijai artėja arba jau praėjo posėdžių [periodiškumo](/visak/apzvalga#busenos) terminas | Institucijos atstovams | Savaitė po to, kai institucija pradeda vėluoti; atostogų dienos neskaičiuojamos | Užregistravus posėdį arba pranešus apie veiklą |
-| **Rezervacijos tvirtinimas** | Pateikus rezervaciją | Išteklio padalinio valdytojams | Jei tvirtinimo eigoje nustatytas | Priėmus sprendimą. Plačiau – [Rezervacijos](/rezervacijos/rezervacijos#pranesimai) |
+| **Rezervacijos tvirtinimas** | Pateikus rezervaciją | Rezervacijų administravimo paskirties turėtojams; nebaigta peržiūra perduodama dabartiniams nariams | Jei tvirtinimo eigoje nustatytas | Priėmus sprendimą. Plačiau – [Rezervacijos](/rezervacijos/rezervacijos#pranesimai) |
 | **Atsiimti / Grąžinti rezervacijos išteklius** | Patvirtinus / išdavus išteklių | Rezervacijos teikėjams | Atsiėmimo / grąžinimo laikas | Atsiėmus / grąžinus visus išteklius |
 
 Jei institucijos kadencijai paskirti sekretoriai, posėdžio ir periodiškumo užduotys skiriamos

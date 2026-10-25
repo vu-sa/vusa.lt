@@ -2,6 +2,7 @@
 
 use App\Enums\EmailDelivery;
 use App\Enums\NotificationType;
+use App\Enums\ResponsibilityPurpose;
 use App\Models\ResponsibilityGrant;
 use App\Models\Tenant;
 use App\Models\User;
@@ -31,6 +32,7 @@ describe('which notifications a user sees', function (): void {
 
     test('a resource manager also sees approval requests', function (): void {
         $manager = makeTenantUserWithRole('Išteklių administratorius');
+        grantPurpose($manager->current_duties()->first(), ResponsibilityPurpose::ReservationHandling);
 
         expect(settingsTypesFor($manager))->toContain('approval_requested');
     });

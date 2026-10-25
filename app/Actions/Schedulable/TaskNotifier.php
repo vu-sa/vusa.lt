@@ -6,6 +6,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Notifications\TaskReminderNotification;
 use App\Tasks\Enums\ActionType;
+use App\Tasks\Synchronizers\ReservationReviewTaskSynchronizer;
 use Illuminate\Support\Facades\Notification;
 
 class TaskNotifier
@@ -16,6 +17,8 @@ class TaskNotifier
      */
     public static function notifyDaysLeft(int $daysLeft): void
     {
+        app(ReservationReviewTaskSynchronizer::class)->reconcileAll();
+
         $tasks = Task::with('users', 'taskable')->whereDate('due_date', '=', now()->addDays($daysLeft))->where('completed_at', null)
             ->where(fn ($query) => $query->whereNull('action_type')->orWhere('action_type', '!=', ActionType::PeriodicityGap))
             ->get();

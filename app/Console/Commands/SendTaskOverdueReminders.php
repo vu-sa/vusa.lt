@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Task;
 use App\Models\User;
 use App\Notifications\TaskOverdueNotification;
+use App\Tasks\Synchronizers\ReservationReviewTaskSynchronizer;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -22,6 +23,8 @@ class SendTaskOverdueReminders extends Command
 {
     public function handle(): int
     {
+        app(ReservationReviewTaskSynchronizer::class)->reconcileAll();
+
         // Get all overdue tasks grouped by user
         $overdueTasks = Task::query()
             ->with('users', 'taskable')

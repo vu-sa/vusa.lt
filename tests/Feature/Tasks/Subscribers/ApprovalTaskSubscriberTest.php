@@ -7,6 +7,7 @@
  */
 
 use App\Enums\ApprovalDecision;
+use App\Enums\ResponsibilityPurpose;
 use App\Events\ApprovalDecisionMade;
 use App\Events\ApprovalRequested;
 use App\Models\Approval;
@@ -20,7 +21,6 @@ use App\Models\User;
 use App\Notifications\ApprovalRequestedNotification;
 use App\Notifications\TaskAssignedNotification;
 use App\Notifications\TaskAutoCompletedNotification;
-use App\States\ReservationResource\Created;
 use App\Support\MorphMap;
 use App\Tasks\Enums\ActionType;
 use App\Tasks\Subscribers\ApprovalTaskSubscriber;
@@ -37,7 +37,7 @@ beforeEach(function (): void {
 
 describe('ApprovalTaskSubscriber', function (): void {
     describe('approval task creation', function (): void {
-        test('does not create task when no approvers exist', function (): void {
+        test('keeps an unassigned task when no handlers exist', function (): void {
             $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
@@ -74,8 +74,8 @@ describe('ApprovalTaskSubscriber', function (): void {
                 ->where('action_type', ActionType::Approval)
                 ->count();
 
-            // Task should not be created because no approvers exist
-            expect($approvalTaskCount)->toBe(0);
+            expect($approvalTaskCount)->toBe(1);
+            expect($reservation->tasks()->first()->users)->toBeEmpty();
         });
     });
 
@@ -83,6 +83,7 @@ describe('ApprovalTaskSubscriber', function (): void {
         test('approvers are asked once: the approval request, not a task notice as well', function (): void {
             $tenant = Tenant::query()->first();
             $approver = makeTenantUserWithRole('Išteklių administratorius', $tenant);
+            grantPurpose($approver->current_duties()->first(), ResponsibilityPurpose::ReservationHandling);
             $resource = Resource::factory()->create(['tenant_id' => $tenant->id, 'resource_category_id' => ResourceCategory::factory()->create()->id]);
 
             $reservation = Reservation::factory()->create(['start_time' => now()->addDays(3), 'end_time' => now()->addDays(5)]);
@@ -104,6 +105,7 @@ describe('ApprovalTaskSubscriber', function (): void {
         test('a central office manager holding only the global permission is asked about its own padalinys\' items only', function (): void {
             $centralOffice = Tenant::query()->first();
             $centralManager = makeTenantUserWithRole(RoleCentralResourceManagerSeeder::NAME, $centralOffice);
+            grantPurpose($centralManager->current_duties()->first(), ResponsibilityPurpose::ReservationHandling);
 
             $requestFor = function (Tenant $tenant): ReservationResource {
                 $resource = Resource::factory()->create(['tenant_id' => $tenant->id, 'resource_category_id' => ResourceCategory::factory()->create()->id]);
@@ -128,8 +130,10 @@ describe('ApprovalTaskSubscriber', function (): void {
         });
 
         test('the approver who decided is not told their own task completed', function (): void {
-            $decider = User::factory()->create();
-            $colleague = User::factory()->create();
+            $decider = makeUser(Tenant::query()->first());
+            $colleague = makeUser(Tenant::query()->first());
+            grantPurpose($decider->current_duties()->first(), ResponsibilityPurpose::ReservationHandling);
+            grantPurpose($colleague->current_duties()->first(), ResponsibilityPurpose::ReservationHandling);
             $resource = Resource::factory()->create(['tenant_id' => Tenant::query()->first()->id, 'resource_category_id' => ResourceCategory::factory()->create()->id]);
             $reservation = Reservation::factory()->create(['start_time' => now()->addDays(3), 'end_time' => now()->addDays(5)]);
             $reservation->resources()->attach($resource->id, [
@@ -144,6 +148,7 @@ describe('ApprovalTaskSubscriber', function (): void {
                 'taskable_type' => MorphMap::alias(Reservation::class),
                 'taskable_id' => $reservation->id,
                 'action_type' => ActionType::Approval,
+                'metadata' => ['reservation_resource_id' => $reservationResource->id, 'approval_step' => 1],
             ]);
             $task->users()->sync([$decider->id, $colleague->id]);
 
@@ -197,6 +202,7 @@ describe('ApprovalTaskSubscriber', function (): void {
                 'taskable_type' => MorphMap::alias(Reservation::class),
                 'taskable_id' => $reservation->id,
                 'action_type' => ActionType::Approval,
+                'metadata' => ['reservation_resource_id' => $reservationResource->id, 'approval_step' => 1],
                 'completed_at' => null,
             ]);
 
@@ -218,7 +224,7 @@ describe('ApprovalTaskSubscriber', function (): void {
             expect($approvalTask->completed_at)->not->toBeNull();
         });
 
-        test('completes multiple approval tasks for same reservation', function (): void {
+        test('completes matching duplicate review tasks for the same item and step', function (): void {
             $tenant = Tenant::query()->first()
                 ?? Tenant::factory()->create();
 
@@ -252,6 +258,7 @@ describe('ApprovalTaskSubscriber', function (): void {
                 'taskable_type' => MorphMap::alias(Reservation::class),
                 'taskable_id' => $reservation->id,
                 'action_type' => ActionType::Approval,
+                'metadata' => ['reservation_resource_id' => $reservationResource->id, 'approval_step' => 1],
                 'completed_at' => null,
             ]);
 
@@ -259,6 +266,7 @@ describe('ApprovalTaskSubscriber', function (): void {
                 'taskable_type' => MorphMap::alias(Reservation::class),
                 'taskable_id' => $reservation->id,
                 'action_type' => ActionType::Approval,
+                'metadata' => ['reservation_resource_id' => $reservationResource->id, 'approval_step' => 1],
                 'completed_at' => null,
             ]);
 

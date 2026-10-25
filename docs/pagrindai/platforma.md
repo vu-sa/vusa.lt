@@ -76,6 +76,9 @@ matomą apvadą.
 
 Darbo srities pasirinkimas viršutinėje juostoje yra tokio pat aukščio kaip paieškos laukas. Jutikliniame ekrane mygtukas lieka didesnis, kad būtų patogu paspausti.
 
+Slenkant puslapį, turinys po viršutine juosta suliejamas, kad navigacija ir formos veiksmai liktų aiškiai matomi.
+Didelio kontrasto režimu juostos fonas yra nepermatomas.
+
 Sąrašuose įrašo veiksmai matomi tiek eilutėse, tiek lentelėje. Vien piktograma pažymėti mygtukai
 turi aiškų pavadinimą ekrano skaitytuvui, o telefone jų paspaudimo vieta yra bent 44 × 44 taškai.
 Įrašų rūšys, turinčios šiukšlinę, leidžia atkurti įrašą arba, turint teisę ir nesant susiejimų apribojimų, ištrinti jį visam laikui.

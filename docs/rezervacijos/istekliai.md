@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Ištekliai
 area: resources
 models: [Resource]
-last_reviewed: 2026-10-17
+last_reviewed: 2026-10-25
 tests:
   - tests/Feature/Admin/Reservations/ResourceControllerTest.php
   - tests/Feature/Api/Admin/ResourceAvailabilityApiControllerTest.php
@@ -63,7 +63,7 @@ Išteklio puslapyje matyti:
 - kiek vienetų laisva **dabar**;
 - kas daiktą turi šiuo metu (dabartinės paskolos);
 - artimiausios (iki 10) rezervacijos;
-- išteklio **valdytojai** su kontaktais;
+- išteklio **dabartiniai administratoriai** su kontaktais;
 - istorija: paskutinės 50 grąžintų, atmestų ar atšauktų rezervacijų.
 
 ::: info Privatumas
@@ -80,7 +80,7 @@ skydelyje (stalčiuje) iškart pateikiama pasirinkto daikto informacija:
 - daikto nuotraukos (su padidinimo peržiūra);
 - laisvas kiekis pasirinktam rezervacijos laikotarpiui;
 - artimiausios rezervacijos ir dabartinės paskolos;
-- išteklio valdytojų kontaktai;
+- išteklio dabartinių administratorių kontaktai;
 - veiksmai: įdėti į krepšelį arba atverti pilną išteklio puslapį.
 
 ## Veiksmai
@@ -101,11 +101,12 @@ skydelyje (stalčiuje) iškart pateikiama pasirinkto daikto informacija:
 | Sukurti išteklių | – | ✓, savo padaliniui |
 | Redaguoti, ištrinti, atkurti | – | ✓, savo padalinio |
 
-::: warning Redaguoti = tvarkyti rezervacijas
-Išteklio redagavimo teisė ir padaro žmogų
-[išteklių administratoriumi](/rezervacijos/#istekliu-administratorius): jis gauna tvirtinimo
-užduotis ir sprendžia padalinio daiktų rezervacijas. Skirk rolę tik tiems, kas iš tikrųjų tvarko
-daiktus.
+::: info Sprendimų teisės ir kontaktai
+[Išteklių administravimo teisės](/rezervacijos/#istekliu-administratorius) leidžia priimti
+sprendimus dėl padalinio daiktų. Kas rodomas kaip dabartinis kontaktas ir gauna peržiūros užduotis,
+nustato **Rezervacijų administravimo** paskirtis. Vien redagavimo teisių tam neužtenka.
+Kontaktai atsinaujina keičiantis pareigas einantiems žmonėms, o sprendimų autoriai lieka
+[rezervacijos istorijoje](/rezervacijos/rezervacijos#kontaktai-ir-istorija).
 :::
 
 ## Techninė informacija {#technine-informacija}

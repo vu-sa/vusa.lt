@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 /**
  * Which of a purpose's minimum permissions a duty lacks, counting every responsibility it holds.
- * Reported only: a purpose never grants anything.
+ * Reported only: checking a purpose never adds permissions.
  */
 class ResponsibilityPermissionGaps
 {

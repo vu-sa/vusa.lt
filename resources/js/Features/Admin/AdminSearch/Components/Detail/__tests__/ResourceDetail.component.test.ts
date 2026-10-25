@@ -209,7 +209,7 @@ describe('ResourceDetail', () => {
 
     const wrapper = mountDetail({ showManagers: true });
 
-    expect(wrapper.text()).toContain('Atsakingi asmenys');
-    expect(wrapper.text()).toContain('JJ');
+    expect(wrapper.text()).toContain('reservations.resource.managers');
+    expect(wrapper.get('a[href="mailto:jonas@example.com"]').text()).toBe('Jonas Jonaitis');
   });
 });

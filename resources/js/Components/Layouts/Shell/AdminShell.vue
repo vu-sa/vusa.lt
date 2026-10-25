@@ -33,8 +33,12 @@
         '--shell-scroll-height': `${scrollAreaHeight}px`,
       } : undefined"
     >
-      <!-- Named so a page visit's view transition leaves the chrome out of the root cross-fade. -->
-      <div ref="shellChrome" class="sticky top-0 z-40 shrink-0 [view-transition-name:admin-chrome]">
+      <!-- A view-transition name creates a backdrop root, so the chrome itself owns the blur. -->
+      <div
+        ref="shellChrome"
+        data-slot="shell-chrome"
+        class="sticky top-0 z-40 shrink-0 backdrop-blur-sm [view-transition-name:admin-chrome] [.a11y-contrast_&]:backdrop-blur-none"
+      >
         <ShellTopBar
           :workspaces
           :active-workspace

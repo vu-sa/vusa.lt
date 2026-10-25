@@ -3,7 +3,7 @@
     v-if="workspace && workspace.sections.length > 1"
     data-slot="section-tabs"
     :aria-label="$t('shell.chrome.sections_nav')"
-    class="shrink-0 border-b border-(--border-opaque) bg-secondary/50 backdrop-blur-sm [.a11y-contrast_&]:bg-background [.a11y-contrast_&]:backdrop-blur-none"
+    class="shrink-0 border-b border-(--border-opaque) bg-secondary/50 [.a11y-contrast_&]:bg-background"
   >
     <div class="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto_auto] px-2 sm:px-4 lg:px-6">
       <!-- Tabs that do not fit stay in the flow (so the measurement is stable) but hidden; the
