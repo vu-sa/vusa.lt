@@ -82,9 +82,18 @@ it('shows a padalinys coordinator the statistics of their padalinys', function (
     $page->click('[data-testid=trend-range-90]');
     waitForInertiaRender($page, '[data-slot=institution-trend-plot][aria-busy=false]');
     $page->resize(1440, 1200);
-    $page->script("new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => { document.querySelector('[data-testid=trend-inspector]').focus({ preventScroll: true }); resolve(true); })))");
-    waitForInertiaRender($page, '[data-slot=trend-tooltip]');
-    expect($page->script("(() => { const box = document.querySelector('[data-slot=trend-tooltip]').getBoundingClientRect(); return box.left >= 0 && box.top >= 0 && box.right <= innerWidth && box.bottom <= innerHeight; })()"))->toBeTrue();
+    // A pending resize redraw replaces the inspector and dismisses its tooltip; retry both together.
+    $page->assertScript(<<<'JS'
+        (async () => {
+            const inspector = document.querySelector('[data-testid=trend-inspector]');
+            if (!inspector) return false;
+            inspector.blur();
+            inspector.focus({ preventScroll: true });
+            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            const box = document.querySelector('[data-slot=trend-tooltip]')?.getBoundingClientRect();
+            return !!box && box.left >= 0 && box.top >= 0 && box.right <= innerWidth && box.bottom <= innerHeight;
+        })()
+        JS);
     $page->script("document.querySelector('[data-testid=trend-inspector]').blur()");
     waitForInertiaRender($page, '[data-slot=institutions-needing-attention-ask]');
     docsScreenshot($page, 'visak-padaliniai');
