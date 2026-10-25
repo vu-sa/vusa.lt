@@ -10,8 +10,7 @@ test('meeting scopes can be changed and saved with explanations at working width
     $admin = makeAdminUser(Tenant::query()->firstOrFail());
     $role = Role::factory()->create();
     $role->givePermissionTo(['meetings.read.padalinys', 'meetings.create.own', 'meetings.update.own', 'meetings.delete.own']);
-    $page = loginAsAdmin($admin);
-    $page->navigate("/mano/responsibilities/{$role->id}");
+    $page = loginAsAdmin($admin, "/mano/responsibilities/{$role->id}");
     waitForInertiaRender($page, '[data-slot=permission-matrix]');
     $page->fill('[data-testid=matrix-search]', 'meetings');
 

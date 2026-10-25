@@ -25,8 +25,7 @@ it('keeps the duty responsibilities readable across admin widths and themes', fu
     // The docs frame contrasts responsibilities with roles; an empty roles column hides that.
     $duty->assignRole('Studentų atstovų koordinatorius');
 
-    $page = loginAsAdmin(makeAdminUser($tenant));
-    $page->navigate('/mano/duties/'.$duty->id);
+    $page = loginAsAdmin(makeAdminUser($tenant), '/mano/duties/'.$duty->id);
     waitForInertiaRender($page);
     $page->click('button[role="tab"]:has-text("Atsakomybės")');
     $page->assertPresent('[data-slot="duty-responsibilities"]');

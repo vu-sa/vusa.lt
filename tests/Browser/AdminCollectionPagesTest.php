@@ -23,8 +23,7 @@ function openAdminPage(string $path, int $width, int $height = 900, ?Closure $ar
         $arrange($user);
     }
 
-    $page = loginAsAdmin($user);
-    $page->resize($width, $height)->navigate($path);
+    $page = loginAsAdmin($user, $path, $width, $height);
     waitForInertiaRender($page, '[data-slot=admin-shell] main');
 
     return $page;

@@ -355,11 +355,17 @@ jobs:
 
   # Real-browser tests (Playwright via pestphp/pest-plugin-browser). Separate from php-tests
   # because it needs Node + Playwright browser binaries, which that job doesn't otherwise use.
+  # Sharded: the plugin serves every page and chunk from one PHP process per worker, so wall time
+  # scales with runners, not with cores. browser-docs-screenshots merges the shards' frames.
   browser-tests:
     needs: [changes, setup]
     if: ${{ needs.changes.outputs.php == 'true' || needs.changes.outputs.js == 'true' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    name: Browser Tests
+    name: Browser Tests (${{ matrix.shard }}/3)
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
     - uses: actions/checkout@v7
 
@@ -438,7 +444,7 @@ jobs:
 
     # DOCS_SCREENSHOTS also saves the docs' reference frames (tests/Browser/README.md "Docs screenshots").
     - name: Run browser tests
-      run: vendor/bin/pest tests/Browser --parallel --compact
+      run: vendor/bin/pest tests/Browser --parallel --compact --shard=${{ matrix.shard }}/3 --log-junit storage/logs/browser-junit.xml
       env:
         DOCS_SCREENSHOTS: '1'
 
@@ -446,9 +452,19 @@ jobs:
       if: ${{ !cancelled() }}
       uses: actions/upload-artifact@v7
       with:
-        name: docs-screenshots
+        name: docs-screenshots-${{ matrix.shard }}
         path: tests/Browser/Screenshots/docs
-        retention-days: 30
+        retention-days: 1
+        if-no-files-found: ignore
+
+    # Per-test durations: where the browser suite's minutes go, and how evenly the shards split.
+    - name: Upload browser test timings
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v7
+      with:
+        name: browser-test-timings-${{ matrix.shard }}
+        path: storage/logs/browser-junit.xml
+        retention-days: 7
         if-no-files-found: ignore
 
     # A bare Playwright timeout says nothing about *why* the page never rendered. The screenshot
@@ -458,12 +474,26 @@ jobs:
       if: failure()
       uses: actions/upload-artifact@v7
       with:
-        name: browser-test-diagnostics
+        name: browser-test-diagnostics-${{ matrix.shard }}
         path: |
           tests/Browser/Screenshots
           storage/logs
         retention-days: 7
         if-no-files-found: ignore
+
+  # deploy-common.yml fetches one `docs-screenshots` artifact per branch.
+  browser-docs-screenshots:
+    needs: [changes, browser-tests]
+    if: ${{ !cancelled() && needs.browser-tests.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    name: Merge docs screenshots
+    steps:
+    - uses: actions/upload-artifact/merge@v7
+      with:
+        name: docs-screenshots
+        pattern: docs-screenshots-*
+        retention-days: 30
+        delete-merged: true
 
   # JS Quality - TypeScript typecheck and ESLint (non-blocking)
   js-quality:

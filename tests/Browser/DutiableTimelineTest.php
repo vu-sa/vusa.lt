@@ -82,9 +82,7 @@ function dragSubjectBar(string $rowId, int $dx): string
 }
 
 it('moves a bar by whole months and keeps the day of month', function (): void {
-    $page = loginAsAdmin($this->admin);
-
-    $page->navigate(route('duties.show', $this->duty, absolute: false));
+    $page = loginAsAdmin($this->admin, route('duties.show', $this->duty, absolute: false));
     waitForInertiaRender($page, '[data-testid=record-overflow-trigger]');
 
     $page->click('[data-testid=record-overflow-trigger]');
@@ -247,9 +245,7 @@ it('edits a duty period in a side sheet on desktop and a bottom sheet on a phone
 
     $chair = Duty::query()->where('name->lt', 'Pirmininkas (-ė)')->firstOrFail();
 
-    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()));
-    $page->resize(1440, 900);
-    $page->navigate(route('duties.show', $chair, absolute: false));
+    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()), route('duties.show', $chair, absolute: false), 1440, 900);
     waitForInertiaRender($page, '[data-testid="member-term-edit"]');
 
     $page->click('[data-testid="member-term-edit"] >> nth=0');

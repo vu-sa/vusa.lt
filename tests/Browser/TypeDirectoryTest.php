@@ -10,8 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 it('opens concrete type collections and their forms without browser errors', function (): void {
-    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()));
-    $page->navigate('/mano/types');
+    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()), '/mano/types');
     waitForInertiaRender($page, '[data-slot=navigation-tiles]');
     $page->assertPresent('[data-tile=instituciju_tipai]')->assertPresent('[data-tile=pareigybiu_tipai]');
     foreach ([390, 820, 1180, 1440] as $width) {
@@ -43,8 +42,7 @@ it('opens scoped responsibility grants from a type across widths and themes', fu
     $coordination = RoleFactory::forPurpose(ResponsibilityPurpose::StudentRepCoordination);
     ResponsibilityGrant::factory()->forDutyType($type)->of($coordination)->forTenant($tenant)->create();
     ResponsibilityGrant::factory()->forDutyType($type)->of($coordination)->create();
-    $page = loginAsAdmin(makeAdminUser($tenant));
-    $page->navigate('/mano/dutyTypes/'.$type->id);
+    $page = loginAsAdmin(makeAdminUser($tenant), '/mano/dutyTypes/'.$type->id);
     waitForInertiaRender($page);
 
     foreach ([false, true] as $dark) {

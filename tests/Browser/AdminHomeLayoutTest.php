@@ -9,8 +9,8 @@ pest()->use(RefreshDatabase::class);
 it('keeps the home layout within the viewport at the redesign widths', function (): void {
     // A representative with real meetings and tasks: an empty home would hide overflow bugs.
     $this->seed(DocsSeeder::class);
-    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL));
-    $page->navigate('/mano');
+    // Through the real form: the one browser test of signing in and landing on Pradžia.
+    $page = loginThroughForm(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL));
     waitForInertiaRender($page, '[data-slot=overview-page]');
 
     foreach ([390, 820, 1180, 1440] as $width) {

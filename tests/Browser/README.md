@@ -52,6 +52,15 @@ prove (SPA navigation, computed layout and overflow, pointer/keyboard interactio
 round-trip, "mounts with no JS errors"). Structure and copy assertions go in Vitest. Select by
 `data-testid` / `data-slot` / scoped role, not by copy that may render twice (desktop and phone bars).
 
+## Logging in
+
+`loginAsAdmin($user, '/mano/…')` signs the user in through a test-only route (registered at
+runtime inside the test, never in the app) and lands straight on the page under test, already
+mounted. Pass the path, and `$width`/`$height` when the page must mount at a phone or tablet size,
+instead of navigating afterwards: each extra admin page load costs seconds, because the plugin
+serves every request one at a time from the test's own PHP process. The real login form keeps one
+test of its own through `loginThroughForm()` (`AdminHomeLayoutTest`).
+
 ## The subdomain/SmartLink gotcha
 
 This app's public routes are registered under `Route::domain('{subdomain}.vusa.test')` groups
@@ -118,6 +127,8 @@ running `sail npm run dev` tests a completely different code path from CI — wh
 CORS bug above passed locally and failed in CI three times running.
 
 When a wait does fail, read the `Requests:` line first: a resource at `-> 0` was blocked, not slow.
+If the list just stops, a slow request held up the single-threaded server: `storage/logs` (uploaded
+by CI on failure) names every request over a second (`Slow browser-test request`).
 Rule: `visitPublicSubdomain()` already blocks until `#app` has rendered, so the initial load is
 covered for free. **After any click that triggers an Inertia (SPA) navigation, call
 `waitForInertiaRender($page, '<selector unique to the destination>')` before asserting** — see

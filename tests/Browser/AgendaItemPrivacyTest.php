@@ -15,8 +15,7 @@ test('privacy can be saved from the responsive editor and public pages show only
     app(MeetingSettings::class)->fill([
         'public_meeting_institution_type_ids' => $item->meeting->institutions->flatMap(fn ($institution) => $institution->types->pluck('id'))->all(),
     ])->save();
-    $page = loginAsAdmin($user);
-    $page->navigate("/mano/agendaItems/{$item->id}");
+    $page = loginAsAdmin($user, "/mano/agendaItems/{$item->id}");
     waitForInertiaRender($page, '[data-slot=record-title]');
     $page->click('[data-testid=agenda-item-edit-visibility]');
     $page->resize(390, 900);

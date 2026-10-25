@@ -6,9 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 pest()->use(RefreshDatabase::class);
 
 it('keeps the floating Gantt date below the shell topbar', function (): void {
-    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()));
-    $page->resize(1180, 500);
-    $page->navigate('/mano/dashboard/atstovavimas');
+    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()), '/mano/dashboard/atstovavimas', 1180, 500);
     waitForInertiaRender($page, '[data-tour=visak-timeline]');
     // The timeline renders only once in view, and deferred panels landing above it can push it back out on a slow runner.
     // An IIFE, not `scrollIntoView() ?? …`: Chromium's scrollIntoView() returns a value, which ended the loop at once.
@@ -46,9 +44,7 @@ it('keeps the floating Gantt date below the shell topbar', function (): void {
  * section itself pinned over the shell, so a dialog opened from it must end up on top.
  */
 it('keeps dialogs opened from the full-screen timeline above it', function (): void {
-    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()));
-    $page->resize(1180, 800);
-    $page->navigate('/mano/dashboard/atstovavimas');
+    $page = loginAsAdmin(makeAdminUser(Tenant::query()->first()), '/mano/dashboard/atstovavimas', 1180, 800);
     waitForInertiaRender($page, '[data-tour=visak-timeline]');
 
     // The chart renders only once scrolled into view, as in the test above.

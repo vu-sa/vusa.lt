@@ -18,8 +18,7 @@ it('filters duplicate members and keeps trash reachable across desktop and phone
     $deleted->update(['name' => 'Ištrintas Narys']);
     $deleted->delete();
 
-    $page = loginAsAdmin($admin);
-    $page->navigate('/mano/users');
+    $page = loginAsAdmin($admin, '/mano/users');
     waitForInertiaRender($page, '[data-filter-id=duplicates]');
 
     $page->page()->locator('[data-filter-id=duplicates]')->press('Enter');

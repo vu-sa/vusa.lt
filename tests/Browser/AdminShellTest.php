@@ -13,8 +13,7 @@ function openShell(int $width, int $height, string $path = '/mano/institutions')
 {
     $user = makeAdminUser(Tenant::query()->first());
 
-    $page = loginAsAdmin($user);
-    $page->resize($width, $height)->navigate($path);
+    $page = loginAsAdmin($user, $path, $width, $height);
     waitForInertiaRender($page);
 
     return $page;

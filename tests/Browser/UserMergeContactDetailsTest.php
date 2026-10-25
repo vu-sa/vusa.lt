@@ -24,8 +24,7 @@ it('merges through the dialog with a selected duty email and automatic photo pre
     ]);
     app(AddImageMedia::class)->execute($source, UploadedFile::fake()->image('source.jpg'), 'profile_photo', properties: ['focal_point' => '20% 30%']);
 
-    $page = loginAsAdmin($actor);
-    $page->navigate("/mano/users/{$kept->id}/edit");
+    $page = loginAsAdmin($actor, "/mano/users/{$kept->id}/edit");
     waitForInertiaRender($page, '[data-testid=existing-duplicates]');
     $page->click('[data-testid=existing-duplicates] button');
     $page->click('[data-merge-target="'.$kept->id.'"]');

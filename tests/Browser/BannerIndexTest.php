@@ -26,8 +26,7 @@ it('previews the banner image and changes its status in the collection', functio
     Route::get('/'.Uri::of($media->getUrl())->path(), fn () => response()->file($media->getPath()));
     Banner::factory()->for($tenant)->create(['title' => 'Paslėptas baneris', 'is_active' => 0]);
 
-    $page = loginAsAdmin($user);
-    $page->navigate('/mano/banners');
+    $page = loginAsAdmin($user, '/mano/banners');
     waitForInertiaRender($page, '[data-slot=collection-table]');
 
     $page->page()->locator('button[aria-label*="Banerio vizualas"]')->hover();

@@ -17,8 +17,7 @@ it('edits event type and status in the table and offers meeting creation in the 
         'is_draft' => true,
     ]);
 
-    $page = loginAsAdmin($user);
-    $page->navigate('/mano/calendar');
+    $page = loginAsAdmin($user, '/mano/calendar');
     waitForInertiaRender($page, '[data-slot=collection-table]');
 
     $page->select('[data-slot=collection-table] select[aria-label="Renginio tipas"]', 'Seminaras');

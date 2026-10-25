@@ -12,13 +12,8 @@ pest()->use(RefreshDatabase::class);
 it('resolves the admin token scope in the browser', function (): void {
     $user = makeUser(Tenant::query()->first());
 
+    // loginAsAdmin() lands with a hard load, which is when app.blade.php stamps `<html data-surface>`.
     $page = loginAsAdmin($user);
-
-    // `<html data-surface>` is stamped by app.blade.php on the *document* request; the post-login
-    // redirect is an Inertia visit that never touches <html>, so force a hard navigation rather
-    // than asserting on whatever the login page left behind.
-    $page->navigate('/mano');
-    waitForInertiaRender($page);
 
     expect($page->script('document.documentElement.getAttribute("data-surface")'))
         ->toBe('admin');
@@ -58,8 +53,7 @@ it('resolves the admin token scope in the browser', function (): void {
 });
 
 it('shows a focus outline on admin links', function (): void {
-    $page = loginAsAdmin(makeUser(Tenant::query()->first()));
-    $page->navigate('/mano');
+    $page = loginAsAdmin(makeUser(Tenant::query()->first()), '/mano');
     waitForInertiaRender($page);
 
     $focus = $page->script(<<<'JS'

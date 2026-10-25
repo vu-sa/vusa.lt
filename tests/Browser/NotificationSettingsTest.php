@@ -9,8 +9,7 @@ pest()->use(RefreshDatabase::class);
 it('shows a representative the delivery options for every notification type within the viewport', function (): void {
     $this->seed(DocsSeeder::class);
 
-    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL));
-    $page->navigate('/mano/profile/notifications');
+    $page = loginAsAdmin(User::query()->firstWhere('email', DocsSeeder::REPRESENTATIVE_EMAIL), '/mano/profile/notifications');
     waitForInertiaRender($page, '[data-slot=form-page]');
 
     // Labels resolve once the translations arrive; a raw key here means a label was read too early.

@@ -42,8 +42,7 @@ it('renders partner banners in a ruled grid across viewports and themes without 
 
 it('renders quick-access navigation tiles without horizontal overflow', function (): void {
     $user = makeAdminUser(Tenant::query()->first());
-    $page = loginAsAdmin($user);
-    $page->navigate('/mano');
+    $page = loginAsAdmin($user, '/mano');
     waitForInertiaRender($page, '[data-slot="navigation-tiles"]');
 
     foreach ([390, 820, 1180, 1440] as $width) {

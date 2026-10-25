@@ -11,6 +11,7 @@ Not for: an element, `data-slot` or text being present, a tab being active, a ba
 
 ## Keep the suite small and green
 - One test per behaviour; check several viewports inside one test (`$page->resize()`) rather than one login per width.
+- Land on the page under test with `loginAsAdmin($user, $path, $width, $height)`; never log in and then `navigate()`. Every page load goes through one single-threaded PHP server per worker, so a wasted load costs seconds and can stall chunks behind it.
 - Never commit a debugging/`->group('tmp')` test — reproduce, fix, then keep a Vitest regression test instead.
 - A browser test that fails because the UI intentionally changed is updated or deleted in the same change. Don't leave it red — CI runs this suite and a red suite gets ignored.
 
