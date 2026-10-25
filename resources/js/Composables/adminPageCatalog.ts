@@ -1,25 +1,9 @@
 /**
- * @deprecated Legacy admin destination catalog superseded by AdminNavigationCatalog
- * (app/Services/AdminNavigation/AdminNavigationCatalog.php) and useAdminNavigation (PR 3.1 & 3.2).
- * Kept only for the palette's icon lookup and recent-page titles; remove once those read the catalog.
- *
- * adminPageCatalog - Curated catalog of admin destinations.
- *
- * Single source of truth for "all the admin pages a user can navigate to".
- * Consumed by:
- *  - useCommandActions (command palette navigation/create actions)
- *  - the global visit tracker (only catalog pages get recorded, so recent
- *    history always has clean labels + icons)
- *  - RecentlyVisitedSection / command palette "Neseniai" list (label + icon
- *    resolution for stored route names)
- *
- * Labels are i18n keys (the flat JSON convention uses the Lithuanian string
- * as the key) and are resolved with `$t()` at the consumer so they stay
- * reactive to locale changes.
+ * @deprecated Use AdminNavigationCatalog / useAdminNavigation for destinations.
+ * Retained for recent-page labels and palette icons until those consumers migrate.
  */
 
-import { computed, type Component } from 'vue';
-import { usePage } from '@inertiajs/vue3';
+import type { Component } from 'vue';
 import {
   CalendarRange,
   Home,
@@ -79,7 +63,7 @@ export interface AdminPageEntry {
 /**
  * @deprecated Superseded by AdminNavigationCatalog.
  *
- * The full catalog. Add new admin destinations here.
+ * Compatibility entries for stored recent-page labels and palette icons.
  */
 export const ADMIN_PAGE_CATALOG: AdminPageEntry[] = [
   // ===== Navigation =====
@@ -294,25 +278,6 @@ export function resolveCatalogEntryByRoute(routeName: string | undefined): Admin
   }
 
   return undefined;
-}
-
-/**
- * @deprecated Superseded by useAdminNavigation().
- *
- * Returns the permission-filtered catalog for the current user.
- */
-export function useAdminPageCatalog() {
-  const page = usePage();
-
-  const can = computed<AuthCan>(() => {
-    return (page.props.auth as { can?: AuthCan })?.can || {};
-  });
-
-  const catalog = computed<AdminPageEntry[]>(() => {
-    return ADMIN_PAGE_CATALOG.filter(entry => !entry.can || entry.can(can.value));
-  });
-
-  return { catalog };
 }
 
 /**

@@ -1,15 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { defineComponent } from 'vue';
-import { mount } from '@vue/test-utils';
-import { usePage } from '@inertiajs/vue3';
+import { describe, it, expect } from 'vitest';
 import { LayoutDashboard } from '@lucide/vue';
 
-import { createMockPage } from '@/tests/helpers/createMockPage';
 import {
   ADMIN_PAGE_CATALOG,
   resolveCatalogEntryByRoute,
   resolvePageIcon,
-  useAdminPageCatalog,
 } from '@/Composables/adminPageCatalog';
 import {
   InstitutionIcon,
@@ -18,8 +13,6 @@ import {
   PageIcon,
   UserIcon,
 } from '@/Components/icons';
-
-vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 
 describe('resolveCatalogEntryByRoute', () => {
   it('resolves a known catalog route', () => {
@@ -63,36 +56,5 @@ describe('resolvePageIcon', () => {
     expect(resolvePageIcon('page', '/mano/unknownthing')).toBe(PageIcon);
     expect(resolvePageIcon('whatever.random')).toBe(PageIcon);
     expect(resolvePageIcon(undefined)).toBe(PageIcon);
-  });
-});
-
-describe('useAdminPageCatalog permission filtering', () => {
-  beforeEach(() => {
-    vi.mocked(usePage).mockReturnValue(
-      createMockPage({ auth: { can: { index: { meeting: true }, create: { meeting: false } } } }) as any,
-    );
-  });
-
-  it('includes always-available pages and permitted ones, excludes the rest', () => {
-    const Harness = defineComponent({
-      setup() {
-        const { catalog } = useAdminPageCatalog();
-        return { catalog };
-      },
-      template: '<div />',
-    });
-
-    const wrapper = mount(Harness);
-    const ids = (wrapper.vm as any).catalog.map((e: any) => e.id);
-
-    // No `can` predicate → always present
-    expect(ids).toContain('nav-dashboard');
-    expect(ids).toContain('nav-profile');
-    // index.meeting === true
-    expect(ids).toContain('nav-meetings');
-    // index.institution undefined → filtered out
-    expect(ids).not.toContain('nav-institutions');
-    // create.meeting falsy → filtered out
-    expect(ids).not.toContain('create-meeting');
   });
 });
