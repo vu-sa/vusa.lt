@@ -78,46 +78,11 @@
     </template>
 
     <template #preview="{ item }">
-      <section class="flex flex-col gap-5 p-5">
-        <div>
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {{ $t('Rezervacija') }}
-          </p>
-          <Link :href="route('reservations.show', item.id)" class="mt-1 block text-lg font-semibold hover:text-brand">
-            {{ item.name }}
-          </Link>
-          <p v-if="item.description" class="mt-2 text-sm text-muted-foreground">
-            {{ item.description }}
-          </p>
-        </div>
-        <dl class="grid gap-3 border-y border-border py-4 text-sm">
-          <div>
-            <dt class="text-xs text-muted-foreground">
-              {{ $t('Būsena') }}
-            </dt>
-            <dd class="mt-1">
-              <ReservationStateSummary :states="statesOf(item)" :unresolved="isUnresolved(item)" />
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs text-muted-foreground">
-              {{ $t('Laikas') }}
-            </dt>
-            <dd class="mt-1 tabular-nums">
-              {{ reservationPeriod(item) }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs text-muted-foreground">
-              {{ $t('Ištekliai') }}
-            </dt>
-            <dd class="mt-1">
-              <ReservationResourceChips :resources="item.resources" :muted-foreign="isAdministrator(item)" :max="12" />
-            </dd>
-          </div>
-        </dl>
-        <ReservationRowActions :reservation="item" class="flex-wrap" @decide="openDecision" />
-      </section>
+      <ReservationPreview :key="item.id" :reservation="item">
+        <template #actions>
+          <ReservationRowActions :reservation="item" class="flex-wrap" @decide="openDecision" />
+        </template>
+      </ReservationPreview>
     </template>
 
     <template #empty>
@@ -172,6 +137,7 @@ import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Colle
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState } from '@/Components/Patterns';
 import ReservationDecisionDialog from '@/Components/Reservations/ReservationDecisionDialog.vue';
+import ReservationPreview from '@/Components/Reservations/ReservationPreview.vue';
 import ReservationResourceChips from '@/Components/Reservations/ReservationResourceChips.vue';
 import ReservationRowActions from '@/Components/Reservations/ReservationRowActions.vue';
 import type { ReservationDecision } from '@/Components/Reservations/types';

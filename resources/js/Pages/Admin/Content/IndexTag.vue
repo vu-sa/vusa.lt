@@ -41,42 +41,28 @@
     </template>
 
     <template #preview="{ item }">
-      <section class="flex flex-col gap-4 p-5">
-        <div>
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {{ $t('Žyma') }}
-          </p>
-          <h2 class="mt-1 text-lg font-semibold">
-            {{ title(item) }}
-          </h2>
-          <p v-if="item.alias" class="mt-1 text-sm text-muted-foreground">
-            {{ item.alias }}
-          </p>
-        </div>
-        <p v-if="description(item)" class="border-y border-border py-4 text-sm text-muted-foreground">
-          {{ description(item) }}
-        </p>
-        <template v-if="isDeleted">
-          <div class="flex flex-col gap-2 pt-2">
-            <Button v-if="canDelete" variant="outline" @click="restoreTag(item)">
-              <RotateCcw aria-hidden="true" class="size-4" />
+      <TagPreview :key="item.id" :tag="item">
+        <template #actions>
+          <template v-if="isDeleted">
+            <Button v-if="canDelete" variant="outline" size="sm" @click="restoreTag(item)">
+              <RotateCcw aria-hidden="true" />
               {{ $t('Atkurti') }}
             </Button>
-            <Button v-if="canForceDelete" variant="ghost" class="text-destructive hover:text-destructive" @click="targetTagToForceDelete = item">
-              <Trash2 aria-hidden="true" class="size-4" />
+            <Button v-if="canForceDelete" variant="ghost" size="sm" class="text-destructive hover:text-destructive" @click="targetTagToForceDelete = item">
+              <Trash2 aria-hidden="true" />
               {{ $t('Ištrinti visam laikui') }}
             </Button>
-          </div>
+          </template>
+          <template v-else>
+            <Button v-if="canUpdate" variant="brand" size="sm" @click="openSheet(item)">
+              {{ $t('Redaguoti') }}
+            </Button>
+            <Button v-if="canDelete" variant="ghost" size="sm" @click="remove(item)">
+              {{ $t('Ištrinti') }}
+            </Button>
+          </template>
         </template>
-        <template v-else>
-          <Button v-if="canUpdate" variant="brand" @click="openSheet(item)">
-            {{ $t('Redaguoti') }}
-          </Button>
-          <Button v-if="canDelete" variant="ghost" @click="remove(item)">
-            {{ $t('Ištrinti') }}
-          </Button>
-        </template>
-      </section>
+      </TagPreview>
     </template>
 
     <template #bulk-actions="{ selected }">
@@ -134,6 +120,7 @@ import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import MergeRecordsDialog, { type MergeRecord } from '@/Components/Merge/MergeRecordsDialog.vue';
+import TagPreview from '@/Features/Admin/Tags/TagPreview.vue';
 import TagSheetForm from '@/Features/Admin/Tags/TagSheetForm.vue';
 import { TagIcon } from '@/Components/icons';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
@@ -209,7 +196,6 @@ const columns = computed<CollectionColumn[]>(() => [
 
 const tagKey = (tag: Tag) => String(tag.id);
 const title = (tag: Tag) => tag.name.lt || tag.name.en || '—';
-const description = (tag: Tag) => tag.description?.lt || tag.description?.en || '';
 const toMergeRecords = (tags: Tag[]): MergeRecord[] =>
   tags.map(tag => ({ id: tag.id, label: title(tag), context: tag.alias ?? undefined }));
 

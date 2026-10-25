@@ -72,26 +72,8 @@
     </template>
 
     <template #preview="{ item }">
-      <section class="flex flex-col gap-5 p-5">
-        <div>
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {{ getTaskActionLabel(item.action_type) }}
-          </p>
-          <h2 class="mt-1.5 text-lg font-semibold leading-snug" :class="item.completed_at && 'line-through text-muted-foreground'">
-            {{ item.name }}
-          </h2>
-          <Link
-            v-if="getTaskableUrl(item)"
-            :href="getTaskableUrl(item)!"
-            class="mt-1 inline-block text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-          >
-            {{ subjectLabel(item) }}
-          </Link>
-        </div>
-
-        <TaskDetails :task="item" hide-actions />
-
-        <div class="mt-auto flex flex-col gap-2 border-t border-border pt-4">
+      <TaskPreview :key="item.id" :task="item">
+        <template #actions>
           <Button
             v-for="action in getTaskActions(item)"
             :key="action.key"
@@ -110,8 +92,8 @@
               {{ action.label }}
             </template>
           </Button>
-        </div>
-      </section>
+        </template>
+      </TaskPreview>
     </template>
 
     <template #empty>
@@ -165,14 +147,13 @@ import {
   canCompleteByHand,
   formatTaskDueDate,
   getDueDateUrgencyClasses,
-  getTaskActionLabel,
   getTaskableUrl,
   isOrphanedTask,
   type TaskDisplayData,
 } from '@/Composables/useTaskPresentation';
 import { getTaskActions, getTaskRowActions, type TaskActionKey } from '@/Features/Admin/TaskManager/taskActions';
 import TaskCompletionControl from '@/Features/Admin/TaskManager/TaskCompletionControl.vue';
-import TaskDetails from '@/Features/Admin/TaskManager/TaskDetails.vue';
+import TaskPreview from '@/Features/Admin/TaskManager/TaskPreview.vue';
 import TaskRow from '@/Features/Admin/TaskManager/TaskRow.vue';
 
 const TaskDetailDialog = defineAsyncComponent(() => import('@/Features/Admin/TaskManager/TaskDetailDialog.vue'));
