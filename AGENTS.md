@@ -87,6 +87,12 @@ Note: `composer phpmd` has no baseline, so it lists every existing finding; CI r
 
 Note: `npm run typecheck` (`vue-tsc --noEmit`) is available and runs in CI, but is currently **non-blocking** (advisory only). Don't run ESLint fixes or chase typecheck findings unless explicitly asked — verify frontend changes with Vitest instead.
 
+### Working in a Git worktree
+
+- Run builds, tests and other file-writing commands as `sail`, never container root. When using the main checkout's running container, pass both the user and worktree directory explicitly: `./vendor/bin/sail exec -u sail -w /var/www/html/.worktrees/<name> laravel.test <command>`. Plain `sail exec` can run as root, leaving generated files owned by `nobody` on the host and preventing worktree removal.
+- Before removing a worktree, check its status and preserve uncommitted work. Fix any container-created ownership problems within that worktree before running `git worktree remove <path>`; do not use `--force` to bypass permission errors or discard work.
+- Verify removal in both `git worktree list` and the filesystem. Missing Git metadata does not prove cleanup succeeded: permission errors can leave a partially deleted folder. Remove confirmed leftovers through the container with sufficient permissions, scoped to that folder; never follow shared `.env`, `node_modules` or other symlinks.
+
 ### Running backend tests — always `--parallel`
 
 Anything wider than a single file runs with `--parallel` (the full suite takes ~50s on 16 processes
