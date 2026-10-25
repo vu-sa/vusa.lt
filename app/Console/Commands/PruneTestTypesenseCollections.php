@@ -8,12 +8,7 @@ use Illuminate\Console\Command;
 use Typesense\Client;
 
 /**
- * Drops the Typesense collections the test suite leaves behind.
- *
- * `TestingServiceProvider` clears the prefixes a run is about to use, but only
- * those — a run with fewer parallel processes than the previous one strands the
- * higher tokens' collections, and one-off prefixes set inside a test file are
- * never reclaimed. This prunes all of them.
+ * Fewer parallel workers leave higher tokens' collections behind; test-specific prefixes also need cleanup.
  */
 #[Description('Delete Typesense collections left behind by the test suite')]
 #[Signature('typesense:prune-test-collections {--dry-run : List the collections that would be deleted without deleting them}')]
@@ -26,12 +21,7 @@ class PruneTestTypesenseCollections extends Command
      */
     private const array TEST_PREFIXES = ['testing_', 'test_'];
 
-    public function __construct(private readonly Client $client)
-    {
-        parent::__construct();
-    }
-
-    public function handle(): int
+    public function handle(Client $client): int
     {
         if (app()->isProduction()) {
             $this->error('Refusing to run in production.');
@@ -40,7 +30,7 @@ class PruneTestTypesenseCollections extends Command
         }
 
         try {
-            $collections = $this->client->collections->retrieve();
+            $collections = $client->collections->retrieve();
         } catch (\Throwable $e) {
             $this->error('Could not reach Typesense: '.$e->getMessage());
 
@@ -74,7 +64,7 @@ class PruneTestTypesenseCollections extends Command
 
         foreach ($stale as $collection) {
             try {
-                $this->client->collections[$collection['name']]->delete();
+                $client->collections[$collection['name']]->delete();
             } catch (\Throwable $e) {
                 $failed++;
                 $this->error("❌ Failed to delete {$collection['name']}: ".$e->getMessage());

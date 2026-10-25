@@ -103,6 +103,25 @@ describe('the state the server is in before artisan boots', function () use ($sh
 });
 
 describe('the deploy workflows', function () use ($shared, $source): void {
+    it('builds client and SSR assets without backend Reverb credentials', function () use ($shared, $source): void {
+        $workflow = Yaml::parse($source($shared));
+        $build = collect($workflow['jobs']['deploy']['steps'])->firstWhere('name', 'Build frontend assets');
+
+        expect($build['env']['BROADCAST_CONNECTION'])->toBe('log');
+        expect($build['run'])->toContain('npm run build')->toContain('npm run build:ssr');
+
+        foreach ([
+            'VITE_SHAREPOINT_CLIENT_ID' => '${{ secrets.SHAREPOINT_CLIENT_ID }}',
+            'VITE_SHAREPOINT_TENANT_ID' => '${{ secrets.SHAREPOINT_TENANT_ID }}',
+            'VITE_REVERB_APP_KEY' => '${{ secrets.REVERB_APP_KEY }}',
+            'VITE_REVERB_HOST' => '${{ vars.REVERB_HOST }}',
+            'VITE_REVERB_PORT' => '${{ vars.REVERB_PORT }}',
+            'VITE_REVERB_SCHEME' => '${{ vars.REVERB_SCHEME }}',
+        ] as $key => $value) {
+            expect($build['env'][$key])->toBe($value);
+        }
+    });
+
     // PublicAssetService reads the icon catalogue from bootstrap/icons; left out of the archive, the
     // public menu silently falls back to fetching every icon from a third-party API.
     it('ships the server-side build directories with the client assets', function () use ($shared, $source): void {
@@ -322,9 +341,10 @@ describe('environment template hygiene', function (): void {
     });
 
     it('injects only VITE_ variables the frontend reads', function (): void {
-        preg_match_all('/(VITE_[A-Z0-9_]+)=\$\{\{/', file_get_contents(base_path('.github/workflows/deploy-common.yml')), $matches);
+        $workflow = Yaml::parseFile(base_path('.github/workflows/deploy-common.yml'));
+        $build = collect($workflow['jobs']['deploy']['steps'])->firstWhere('name', 'Build frontend assets');
 
-        $injected = array_values(array_unique($matches[1]));
+        $injected = array_values(array_filter(array_keys($build['env']), fn (string $key): bool => str_starts_with($key, 'VITE_')));
         expect($injected)->not->toBeEmpty();
 
         $frontend = frontendSource();

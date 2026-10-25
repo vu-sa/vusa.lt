@@ -87,13 +87,15 @@ jobs:
       - name: Build frontend assets
         env:
           APP_URL: ${{ vars.APP_URL || format('https://{0}', vars.REVERB_HOST) }}
+          # Ziggy boots Laravel during both builds; the runner has no backend Reverb credentials.
+          BROADCAST_CONNECTION: log
+          VITE_SHAREPOINT_CLIENT_ID: ${{ secrets.SHAREPOINT_CLIENT_ID }}
+          VITE_SHAREPOINT_TENANT_ID: ${{ secrets.SHAREPOINT_TENANT_ID }}
+          VITE_REVERB_APP_KEY: ${{ secrets.REVERB_APP_KEY }}
+          VITE_REVERB_HOST: ${{ vars.REVERB_HOST }}
+          VITE_REVERB_PORT: ${{ vars.REVERB_PORT }}
+          VITE_REVERB_SCHEME: ${{ vars.REVERB_SCHEME }}
         run: |
-          VITE_SHAREPOINT_CLIENT_ID=${{ secrets.SHAREPOINT_CLIENT_ID }} \
-          VITE_SHAREPOINT_TENANT_ID=${{ secrets.SHAREPOINT_TENANT_ID }} \
-          VITE_REVERB_APP_KEY=${{ secrets.REVERB_APP_KEY }} \
-          VITE_REVERB_HOST=${{ vars.REVERB_HOST }} \
-          VITE_REVERB_PORT=${{ vars.REVERB_PORT }} \
-          VITE_REVERB_SCHEME=${{ vars.REVERB_SCHEME }} \
           npm run build
           npm run build:ssr
 

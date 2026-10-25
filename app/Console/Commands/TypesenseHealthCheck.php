@@ -18,16 +18,15 @@ use Typesense\Client;
                             {--check-stopwords : Check configured stop words}')]
 class TypesenseHealthCheck extends Command
 {
-    public function __construct(protected Client $client)
-    {
-        parent::__construct();
-    }
+    protected Client $client;
 
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(Client $client)
     {
+        $this->client = $client;
+
         $this->info('🔍 Typesense Health Check');
         $this->newLine();
 
