@@ -2,6 +2,9 @@ import { defineAsyncComponent, type Component } from 'vue';
 
 import type { NormalizedSearchHit, SearchCollectionKey } from '../Utils/searchHitMappers';
 
+import { calendarEventPreviewFromSearch } from '@/Components/Calendar/calendarEventPreview';
+import { dutyPreviewFromSearch } from '@/Components/Duties/dutyPreview';
+import { userPreviewFromSearch } from '@/Components/Users/userPreview';
 import type {
   AgendaItemSearchResult,
   CalendarSearchResult,
@@ -52,23 +55,23 @@ export const previewRegistry: Record<SearchCollectionKey, PreviewEntry> = {
     props: hit => ({ document: hit.raw as DocumentSearchResult }),
   },
   duties: {
-    component: defineAsyncComponent(() => import('../Components/Detail/DutyDetailPreview.vue')),
-    props: hit => ({ duty: hit.raw as DutySearchResult, isExternal: hit.isExternal }),
+    component: defineAsyncComponent(() => import('@/Components/Duties/DutyPreview.vue')),
+    props: hit => ({ duty: dutyPreviewFromSearch(hit.raw as DutySearchResult), isExternal: hit.isExternal }),
   },
   news: {
-    component: defineAsyncComponent(() => import('../Components/Detail/NewsDetailPreview.vue')),
+    component: defineAsyncComponent(() => import('@/Components/News/NewsPreview.vue')),
     props: hit => ({ news: hit.raw as NewsSearchResult }),
   },
   pages: {
-    component: defineAsyncComponent(() => import('../Components/Detail/PageDetailPreview.vue')),
+    component: defineAsyncComponent(() => import('@/Components/Pages/PagePreview.vue')),
     props: hit => ({ page: hit.raw as PageSearchResult }),
   },
   calendar: {
-    component: defineAsyncComponent(() => import('../Components/Detail/CalendarDetailPreview.vue')),
-    props: hit => ({ event: hit.raw as CalendarSearchResult }),
+    component: defineAsyncComponent(() => import('@/Components/Calendar/CalendarEventPreview.vue')),
+    props: hit => ({ event: calendarEventPreviewFromSearch(hit.raw as CalendarSearchResult) }),
   },
   users: {
-    component: defineAsyncComponent(() => import('../Components/Detail/UserDetailPreview.vue')),
-    props: hit => ({ user: hit.raw as UserSearchResult }),
+    component: defineAsyncComponent(() => import('@/Components/Users/UserPreview.vue')),
+    props: hit => ({ user: userPreviewFromSearch(hit.raw as UserSearchResult) }),
   },
 };

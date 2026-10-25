@@ -1,7 +1,8 @@
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-import DutyDetailPreview from '../DutyDetailPreview.vue';
+import DutyPreview from '../DutyPreview.vue';
+import { dutyPreviewFromRecord, dutyPreviewFromSearch } from '../dutyPreview';
 
 import { commonStubs } from '@/tests/stubs';
 
@@ -18,12 +19,12 @@ const baseDuty = {
 };
 
 const mountPreview = (props: Record<string, unknown>) =>
-  mount(DutyDetailPreview, {
-    props: { duty: baseDuty, ...props },
+  mount(DutyPreview, {
+    props: { duty: dutyPreviewFromSearch(baseDuty), ...props },
     global: { stubs: { ...commonStubs } },
   });
 
-describe('DutyDetailPreview', () => {
+describe('DutyPreview', () => {
   it('renders current and previous member names', () => {
     const wrapper = mountPreview({});
     const text = wrapper.text();
@@ -43,5 +44,22 @@ describe('DutyDetailPreview', () => {
     const wrapper = mountPreview({ isExternal: false });
 
     expect(wrapper.text()).not.toContain('Ši pareigybė priklauso kitam padaliniui');
+  });
+
+  it('shows a database row\'s member count and flags an empty duty', () => {
+    const wrapper = mountPreview({
+      duty: dutyPreviewFromRecord({
+        id: 7,
+        name: { lt: 'Koordinatorius' },
+        email: null,
+        dutiables_count: 0,
+        institution: { id: 3, name: { lt: 'VU SA' }, short_name: { lt: 'VU SA' }, is_active: true },
+      }),
+    });
+
+    const members = wrapper.findAll('[data-slot="preview-fact"]').find(fact => fact.text().startsWith('Nariai'));
+    expect(members?.find('dd').text()).toBe('Neužimta');
+    expect(members?.find('dd').classes()).toContain('text-status-attention');
+    expect(wrapper.text()).toContain('VU SA');
   });
 });

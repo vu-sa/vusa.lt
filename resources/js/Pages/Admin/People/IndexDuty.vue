@@ -79,64 +79,40 @@
     </template>
 
     <template #preview="{ item }">
-      <section class="flex flex-col gap-4 p-5">
-        <CollectionActivityStatus
-          entity="duties"
-          :record-id="item.id"
-          :active="item.is_active ?? true"
-          :editable="!isDeleted && Boolean(item.can_update)"
-          :spotlight="String(item.id) === String(source.items.value[0]?.id)"
-          @updated="active => statusUpdated(item, active)"
-        />
-        <div>
-          <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {{ $t('Pareigybė') }}
-          </p>
-          <Link :href="route('duties.show', item.id)" class="mt-1 block text-lg font-semibold hover:text-brand">
-            <InflectedDutyName :name="title(item)" />
-          </Link>
-          <p v-if="institutionTitle(item)" class="mt-1 text-sm text-muted-foreground">
-            {{ institutionTitle(item) }}
-            <InactiveInstitutionBadge :active="item.institution?.is_active" />
-          </p>
-        </div>
-        <dl class="grid gap-3 border-y border-border py-4 text-sm">
-          <div>
-            <dt class="text-xs text-muted-foreground">
-              {{ $t('El. paštas') }}
-            </dt><dd class="mt-1">
-              {{ item.email || '—' }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs text-muted-foreground">
-              {{ $t('Nariai') }}
-            </dt><dd class="mt-1" :class="item.dutiables_count === 0 ? 'text-status-attention' : ''">
-              {{ item.dutiables_count || $t('Neužimta') }}
-            </dd>
-          </div>
-        </dl>
-        <template v-if="isDeleted">
-          <Button variant="outline" @click="restore(item)">
-            <RotateCcw aria-hidden="true" />{{ $t('Atkurti') }}
-          </Button>
-          <Button v-if="canForceDelete" variant="ghost" class="text-destructive hover:text-destructive" @click="forceDeleteTarget = item">
-            <Trash2 aria-hidden="true" />{{ $t('Ištrinti visam laikui') }}
-          </Button>
+      <DutyPreview :key="item.id" :duty="dutyPreviewFromRecord(item)">
+        <template #status>
+          <CollectionActivityStatus
+            entity="duties"
+            :record-id="item.id"
+            :active="item.is_active ?? true"
+            :editable="!isDeleted && Boolean(item.can_update)"
+            :spotlight="String(item.id) === String(source.items.value[0]?.id)"
+            @updated="active => statusUpdated(item, active)"
+          />
         </template>
-        <template v-else>
-          <Button as-child variant="brand">
-            <Link :href="route('duties.show', item.id)">
-              {{ $t('Atidaryti') }}
-            </Link>
-          </Button>
-          <Button v-if="canUpdate" as-child variant="outline">
-            <Link :href="route('duties.edit', item.id)">
-              {{ $t('Redaguoti') }}
-            </Link>
-          </Button>
+        <template #actions>
+          <template v-if="isDeleted">
+            <Button variant="outline" size="sm" @click="restore(item)">
+              <RotateCcw aria-hidden="true" />{{ $t('Atkurti') }}
+            </Button>
+            <Button v-if="canForceDelete" variant="ghost" size="sm" class="text-destructive hover:text-destructive" @click="forceDeleteTarget = item">
+              <Trash2 aria-hidden="true" />{{ $t('Ištrinti visam laikui') }}
+            </Button>
+          </template>
+          <template v-else>
+            <Button as-child variant="brand" size="sm">
+              <Link :href="route('duties.show', item.id)">
+                {{ $t('Atidaryti') }}
+              </Link>
+            </Button>
+            <Button v-if="canUpdate" as-child variant="outline" size="sm">
+              <Link :href="route('duties.edit', item.id)">
+                {{ $t('Redaguoti') }}
+              </Link>
+            </Button>
+          </template>
         </template>
-      </section>
+      </DutyPreview>
     </template>
 
     <template #bulk-actions="{ selected }">
@@ -167,6 +143,8 @@ import CollectionRowActions, { type CollectionRowAction } from '@/Components/Col
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
 import { DutyIcon } from '@/Components/icons';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
+import DutyPreview from '@/Components/Duties/DutyPreview.vue';
+import { dutyPreviewFromRecord } from '@/Components/Duties/dutyPreview';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import MergeRecordsDialog, { type MergeRecord } from '@/Components/Merge/MergeRecordsDialog.vue';

@@ -2,27 +2,29 @@ import { mount } from '@vue/test-utils';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { usePage } from '@inertiajs/vue3';
 
-import NewsDetailPreview from '../NewsDetailPreview.vue';
+import PagePreview from '../PagePreview.vue';
 
 import { commonStubs } from '@/tests/stubs';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 
-const baseNews = {
-  id: 'n1',
-  title: 'Naujiena',
-  permalink: 'mano-naujiena',
+const basePage = {
+  id: 'p1',
+  title: 'Puslapis',
+  permalink: 'apie-mus',
   lang: 'lt',
   tenant_id: 5,
 };
 
-const mountPreview = (news: Record<string, unknown> = {}) =>
-  mount(NewsDetailPreview, {
-    props: { news: { ...baseNews, ...news } },
+const DRAFT = { is_active: false };
+
+const mountPreview = (page: Record<string, unknown> = {}) =>
+  mount(PagePreview, {
+    props: { page: { ...basePage, ...page } },
     global: { stubs: { ...commonStubs } },
   });
 
 const publicLink = (wrapper: ReturnType<typeof mount>) =>
-  wrapper.find('a[href*="/mocked-route/news?"]');
+  wrapper.find('a[href*="/mocked-route/page?"]');
 
 beforeEach(() => {
   vi.mocked(usePage).mockReturnValue(
@@ -30,21 +32,14 @@ beforeEach(() => {
   );
 });
 
-describe('NewsDetailPreview', () => {
-  it('builds the public news URL via route() with the tenant subdomain', () => {
+describe('PagePreview', () => {
+  it('builds the public page URL via route() with the tenant subdomain', () => {
     const href = publicLink(mountPreview()).attributes('href');
 
     expect(href).toBeDefined();
     expect(href).toContain('subdomain=mif');
-    expect(href).toContain('newsString=naujiena');
-    expect(href).toContain('news=mano-naujiena');
-  });
-
-  it('uses the English news slug for en pages', () => {
-    const href = publicLink(mountPreview({ lang: 'en' })).attributes('href');
-
-    expect(href).toContain('lang=en');
-    expect(href).toContain('newsString=news');
+    expect(href).toContain('lang=lt');
+    expect(href).toContain('permalink=apie-mus');
   });
 
   it('maps the main tenant alias (vusa) to www', () => {
@@ -59,6 +54,10 @@ describe('NewsDetailPreview', () => {
     vi.mocked(usePage).mockReturnValue(createMockPage({ tenants: [] }));
 
     expect(publicLink(mountPreview()).attributes('href')).toContain('subdomain=www');
+  });
+
+  it('offers no public link for an unpublished draft', () => {
+    expect(publicLink(mountPreview(DRAFT)).exists()).toBe(false);
   });
 
   it('hides the public link when there is no permalink', () => {

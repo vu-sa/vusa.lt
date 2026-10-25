@@ -77,6 +77,33 @@
       />
     </template>
 
+    <template #preview="{ item }">
+      <NewsPreview
+        :key="item.id"
+        :news="item"
+        :trashed="isTrash"
+        :date="dateOf(item)"
+        :date-label="isTrash ? $t('Ištrinta') : $t('Paskelbta')"
+      >
+        <template v-if="!isTrash" #status>
+          <CollectionStatusMenu
+            :status="newsStatus(item)"
+            :model-value="publishing.statusValue(item)"
+            :options="publishing.statusOptions"
+            :editable="canBulkEdit"
+            @update:model-value="value => publishing.setPublished([String(item.id)], value === 'published')"
+          />
+        </template>
+        <template #actions>
+          <CollectionRowActions
+            :actions="actionsFor(item)"
+            class="flex-wrap"
+            @select="key => actions.select(key, item.force_delete_blocked_reason)"
+          />
+        </template>
+      </NewsPreview>
+    </template>
+
     <template #bulk-actions="{ selected, clear }">
       <CollectionPublishActions
         :can-publish="publishing.bulkChoices(selected).publish"
@@ -109,8 +136,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Plus } from '@lucide/vue';
 import { computed } from 'vue';
 
-import { newsStatus } from './newsStatus';
-
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionPublishActions from '@/Components/Collection/CollectionPublishActions.vue';
@@ -119,6 +144,8 @@ import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.v
 import type { CollectionColumn } from '@/Components/Collection/types';
 import { NewsIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import NewsPreview from '@/Components/News/NewsPreview.vue';
+import { newsStatus } from '@/Components/News/newsStatus';
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useCollectionPublishing } from '@/Composables/useCollectionPublishing';

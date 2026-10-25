@@ -75,6 +75,24 @@
       />
     </template>
 
+    <template #preview="{ item }">
+      <UserPreview :key="item.id" :user="userPreviewFromRecord(item, isTrash)">
+        <template #media>
+          <UserAvatar :user="item" :size="56" />
+        </template>
+        <template v-if="isTrash" #actions>
+          <CollectionRowActions :actions="actionsFor(item)" @select="key => actions.select(key, item.force_delete_blocked_reason)" />
+        </template>
+        <PreviewSection v-if="!isTrash && !noUnit(item)" :title="$t('Pareigos')">
+          <MemberTermsSummary
+            :duties="item.duties ?? []"
+            :current-count="Number(item.current_duties_count ?? 0)"
+            :total-count="Number(item.duties_count ?? 0)"
+          />
+        </PreviewSection>
+      </UserPreview>
+    </template>
+
     <template #bulk-actions="{ selected }">
       <Button variant="brand" size="sm" :disabled="selected.length < 2" @click="mergeRecords = toMergeRecords(selected)">
         <Merge aria-hidden="true" />
@@ -134,7 +152,9 @@ import { UserIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import MergeRecordsDialog, { type MergeRecord } from '@/Components/Merge/MergeRecordsDialog.vue';
 import UserMergeDetails from '@/Components/Merge/UserMergeDetails.vue';
-import { EmptyState, StatusBadge } from '@/Components/Patterns';
+import { EmptyState, PreviewSection, StatusBadge } from '@/Components/Patterns';
+import UserPreview from '@/Components/Users/UserPreview.vue';
+import { userPreviewFromRecord } from '@/Components/Users/userPreview';
 import { Button } from '@/Components/ui/button';
 import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';

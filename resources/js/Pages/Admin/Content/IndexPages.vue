@@ -74,66 +74,30 @@
     </template>
 
     <template #preview="{ item }">
-      <section class="flex flex-col gap-5 p-5">
-        <div>
-          <div class="flex items-center justify-between gap-3">
-            <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              {{ $t('Puslapis') }}
-            </p>
-            <CollectionStatusMenu
-              :status="pageStatus(item)"
-              :model-value="publishing.statusValue(item)"
-              :options="publishing.statusOptions"
-              :editable="canBulkEdit"
-              @update:model-value="value => publishing.setPublished([String(item.id)], value === 'published')"
-            />
-          </div>
-          <Link
-            v-if="!isTrash"
-            :href="route('pages.edit', item.id)"
-            class="mt-1.5 block text-lg font-semibold leading-snug hover:text-brand"
-          >
-            {{ item.title }}
-          </Link>
-          <h2 v-else class="mt-1.5 text-lg font-semibold leading-snug">
-            {{ item.title }}
-          </h2>
-          <p v-if="item.meta_description" class="mt-3 text-sm text-muted-foreground">
-            {{ item.meta_description }}
-          </p>
-        </div>
-        <dl class="grid gap-3 border-t border-border pt-4 text-sm">
-          <div>
-            <dt class="text-xs text-muted-foreground">
-              {{ $t('Padalinys') }}
-            </dt>
-            <dd class="mt-1">
-              {{ item.tenant_shortname ?? '—' }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs text-muted-foreground">
-              {{ $t('Kalba') }}
-            </dt>
-            <dd class="mt-1">
-              {{ languageLabel(item.lang) }}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs text-muted-foreground">
-              {{ isTrash ? $t('Ištrinta') : $t('Sukurta') }}
-            </dt>
-            <dd class="mt-1 tabular-nums">
-              {{ dateOf(item) }}
-            </dd>
-          </div>
-        </dl>
-        <CollectionRowActions
-          :actions="previewActionsFor(item)"
-          class="flex-wrap border-t border-border pt-4"
-          @select="key => actions.select(key, item.force_delete_blocked_reason)"
-        />
-      </section>
+      <PagePreview
+        :key="item.id"
+        :page="item"
+        :trashed="isTrash"
+        :date="dateOf(item)"
+        :date-label="isTrash ? $t('Ištrinta') : $t('Sukurta')"
+      >
+        <template #status>
+          <CollectionStatusMenu
+            :status="pageStatus(item)"
+            :model-value="publishing.statusValue(item)"
+            :options="publishing.statusOptions"
+            :editable="canBulkEdit"
+            @update:model-value="value => publishing.setPublished([String(item.id)], value === 'published')"
+          />
+        </template>
+        <template #actions>
+          <CollectionRowActions
+            :actions="previewActionsFor(item)"
+            class="flex-wrap"
+            @select="key => actions.select(key, item.force_delete_blocked_reason)"
+          />
+        </template>
+      </PagePreview>
     </template>
 
     <template #cell="{ item, column }">
@@ -194,8 +158,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { Eye, House, Plus } from '@lucide/vue';
 import { computed } from 'vue';
 
-import { pageStatus } from './pageStatus';
-
 import CollectionConfirmAction from '@/Components/Collection/CollectionConfirmAction.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
@@ -205,6 +167,8 @@ import CollectionStatusMenu from '@/Components/Collection/CollectionStatusMenu.v
 import type { CollectionColumn } from '@/Components/Collection/types';
 import { PageIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
+import PagePreview from '@/Components/Pages/PagePreview.vue';
+import { pageStatus } from '@/Components/Pages/pageStatus';
 import { EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import {

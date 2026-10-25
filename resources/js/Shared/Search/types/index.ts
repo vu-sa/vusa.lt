@@ -265,6 +265,7 @@ export interface NewsSearchResult {
   lang: string;
   tenant_id?: number;
   tenant_name?: string;
+  tenant_shortname?: string;
   /** Only present in the admin `news` index — the public index drops it. */
   draft?: boolean;
 }
