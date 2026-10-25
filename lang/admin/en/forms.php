@@ -13,6 +13,9 @@ return [
     ],
     'required_note' => 'Fields marked with an asterisk (*) are required; you can skip the others.',
     'fields' => [
+        'add_duty_seats' => 'Add seat count',
+        'duty_seats_spotlight_title' => 'Seat count has moved',
+        'duty_seats_spotlight_body' => 'You can add or clear the informational seat count in advanced settings.',
         'name_and_surname' => 'Name and surname',
         'title' => 'Title',
         'name' => 'Name',

@@ -5,6 +5,8 @@ area: duties
 models: [Duty, Role, Tenant, Type, Institution, ResponsibilityGrant]
 last_reviewed: 2026-10-25
 tests:
+  - resources/js/Components/AdminForms/__tests__/DutyForm.component.test.ts
+  - resources/js/Pages/Admin/People/__tests__/ShowDuty.component.test.ts
   - tests/Feature/Permissions/DutyTypeAssignmentTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexDuty.component.test.ts
   - tests/Feature/Admin/DutyMergeTest.php
@@ -113,8 +115,10 @@ Tipą priskirti ar pašalinti gali jį deleguoti įgaliotas narys arba atsakomyb
 ### Vietų skaičius ir užimtumas {#uzimtumas}
 
 **Vietų skaičius** – neprivalomas, ranka įrašomas informacinis skaičius, pavyzdžiui,
-Parlamento ar komisijos vietų skaičius. Jį galima įrašyti arba išvalyti pareigybės formos
-**Nustatymuose**. Kai skaičius įrašytas, pareigybės puslapyje jis rodomas atskirai nuo dabartinių narių skaičiaus.
+Parlamento ar komisijos vietų skaičius. Jis pildomas pareigybės formos
+**Papildomuose nustatymuose**. Kai skaičius nenustatytas, rodomas mygtukas **Pridėti vietų skaičių**:
+jį paspaudus atsiveria laukas su pradine reikšme **1**. Mygtukas **Išvalyti** pašalina skaičių ir vėl paslepia lauką.
+Pakeitimai įrašomi išsaugojus formą. Kai skaičius įrašytas, pareigybės puslapyje jis rodomas atskirai nuo dabartinių narių skaičiaus.
 
 Šis skaičius neriboja narių priskyrimo ir nenustato, ar pareigybė pilnai užimta.
 Institucijos puslapyje rodomi dabartiniai nariai, nesumuojant pareigybių vietų.
@@ -122,6 +126,7 @@ Bendrų pareigybių [padalinių kvotos](#bendros-pareigybes) tikrinamos atskirai
 
 - Aktyvi pareigybė be dabartinių narių laikoma **neužimta**. Sąrašuose ji žymima perspėjimo
   ženklu, o pareigybės puslapyje rodomas **Pareigos neužimtos**.
+  Puslapio faktuose rodoma tik **Neužimta**, nekartojant narių skaičiaus **0**.
 - [Neaktyvi](#istorija) pareigybė neužimta nelaikoma – jos niekas ir nebeturi eiti.
 
 <ChangelogNote version="v3.15" date="2026-10-25" title="Vietų skaičius – tik informacijai">

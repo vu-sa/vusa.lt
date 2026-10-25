@@ -248,20 +248,6 @@
           {{ form.errors.is_active }}
         </p>
 
-        <!-- Places to occupy -->
-        <FormFieldWrapper
-          id="places_to_occupy"
-          :label="$t('Vietų skaičius')"
-          :hint="$t('Informacinis skaičius, pvz., Parlamento vietos. Narių priskyrimo neriboja.')"
-          :error="form.errors.places_to_occupy"
-        >
-          <NumberField
-            id="places_to_occupy"
-            v-model="form.places_to_occupy"
-            :min="1"
-          />
-        </FormFieldWrapper>
-
         <!-- Contacts grouping -->
         <FormFieldWrapper
           id="contacts_grouping"
@@ -302,9 +288,8 @@
         </div>
       </FormPanel>
 
-      <!-- Advanced Settings: Ex-officio -->
       <FormPanel
-        v-if="$page.props.auth?.user?.isSuperAdmin || (assignableDuties && assignableDuties.length > 0)"
+        v-if="canEditDuty || $page.props.auth?.user?.isSuperAdmin || (assignableDuties && assignableDuties.length > 0)"
         :title="$t('Papildomi nustatymai')"
         :icon="SlidersHorizontal"
         title-class="text-brand"
@@ -353,6 +338,51 @@
             </template>
           </CollectionSelectDialog>
         </FormFieldWrapper>
+
+        <div v-if="canEditDuty" ref="seatCountControls">
+          <FormFieldWrapper
+            v-if="seatCountExpanded || form.places_to_occupy != null || form.errors.places_to_occupy"
+            id="places_to_occupy"
+            :label="$t('Vietų skaičius')"
+            :hint="$t('Informacinis skaičius, pvz., Parlamento vietos. Narių priskyrimo neriboja.')"
+            :error="form.errors.places_to_occupy"
+          >
+            <NumberField
+              id="places_to_occupy"
+              v-model="form.places_to_occupy"
+              :min="1"
+              @update:model-value="seatCountSpotlight.dismiss()"
+            />
+            <Button
+              type="button"
+              variant="link"
+              voice="sentence"
+              class="justify-start px-0 text-xs text-muted-foreground"
+              data-testid="duty-seats-clear"
+              @click="clearSeatCount"
+            >
+              {{ $t('Išvalyti') }}
+            </Button>
+          </FormFieldWrapper>
+          <SpotlightPopover
+            v-else
+            :title="$t('forms.fields.duty_seats_spotlight_title')"
+            :description="$t('forms.fields.duty_seats_spotlight_body')"
+            :is-dismissed="seatCountSpotlight.isDismissed.value"
+            @dismiss="seatCountSpotlight.dismiss()"
+          >
+            <Button
+              type="button"
+              variant="outline"
+              voice="sentence"
+              data-testid="duty-seats-add"
+              @click="addSeatCount"
+            >
+              <Plus class="size-4" aria-hidden="true" />
+              {{ $t('forms.fields.add_duty_seats') }}
+            </Button>
+          </SpotlightPopover>
+        </div>
       </FormPanel>
     </template>
 
@@ -381,7 +411,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Building2, ChevronsUpDown, Plus, SlidersHorizontal, Trash2, Users } from '@lucide/vue';
@@ -408,6 +438,8 @@ import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { ModelEnum } from '@/Types/enums';
 import { normalizeHit, type NormalizedSearchHit } from '@/Features/Admin/AdminSearch/Utils/searchHitMappers';
 import { formatDate, todayIso } from '@/Utils/dateTime';
+import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
+import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
 
 interface AssignableTenantRow {
   tenant_id: number;
@@ -532,6 +564,27 @@ const form = useForm({
     quota: t.pivot?.quota ?? null,
   })) ?? []) as AssignableTenantRow[],
 });
+
+const seatCountExpanded = ref(form.places_to_occupy != null);
+const seatCountControls = ref<HTMLElement | null>(null);
+const seatCountSpotlight = useFeatureSpotlight('duty-seat-count-v1');
+
+async function addSeatCount() {
+  seatCountExpanded.value = true;
+  form.places_to_occupy = 1;
+  void seatCountSpotlight.dismiss();
+  await nextTick();
+  seatCountControls.value?.querySelector<HTMLInputElement>('input')?.focus();
+}
+
+async function clearSeatCount() {
+  form.places_to_occupy = null;
+  form.clearErrors('places_to_occupy');
+  seatCountExpanded.value = false;
+  void seatCountSpotlight.dismiss();
+  await nextTick();
+  seatCountControls.value?.querySelector<HTMLButtonElement>('[data-testid="duty-seats-add"]')?.focus();
+}
 
 const barTitle = computed(() => isEditing.value
   ? getTranslatedValue(props.duty.name, undefined, $t('Pareigybė'))

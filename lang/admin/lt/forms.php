@@ -13,6 +13,9 @@ return [
     ],
     'required_note' => 'Žvaigždute (*) pažymėti laukai yra privalomi; kitus gali praleisti.',
     'fields' => [
+        'add_duty_seats' => 'Pridėti vietų skaičių',
+        'duty_seats_spotlight_title' => 'Vietų skaičius perkeltas',
+        'duty_seats_spotlight_body' => 'Informacinį vietų skaičių gali pridėti arba išvalyti papildomuose nustatymuose.',
         'name_and_surname' => 'Vardas ir pavardė',
         'title' => 'Pavadinimas',
         'name' => 'Pavadinimas',

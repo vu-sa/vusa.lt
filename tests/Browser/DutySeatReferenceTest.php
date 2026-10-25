@@ -14,27 +14,34 @@ it('saves and clears a duty reference through the built form on desktop and phon
     $path = '/mano/duties/'.$duty->id;
     $page = loginAsAdmin($actor, $path.'/edit', 1440, 900);
 
+    $page->assertMissing('#places_to_occupy')->click('[data-testid=duty-seats-add]');
     $page->fill('#places_to_occupy', '38');
     $page->click('[data-testid=form-page-save]')->assertSee('Visi pakeitimai išsaugoti');
     expect($duty->fresh()->places_to_occupy)->toBe(38);
 
     navigateTo($page, $path);
     $page->assertPresent('[data-slot=record-facts]')->assertSee('Vietų skaičius');
+    navigateTo($page, $path.'/edit');
+    $page->assertPresent('#places_to_occupy');
     foreach ([false, true] as $dark) {
         $page->script('document.documentElement.classList.toggle("dark", '.($dark ? 'true' : 'false').')');
         foreach ([390, 820, 1180, 1440] as $width) {
             $page->resize($width, 900);
+            $page->script('document.querySelector("#places_to_occupy").scrollIntoView({block: "center"})');
             $page->screenshot(fullPage: false, filename: 'duty-reference-'.$width.($dark ? '-dark' : '-light'));
         }
     }
 
     $page->resize(390, 900);
     navigateTo($page, $path.'/edit');
-    $page->assertPresent('#places_to_occupy')->fill('#places_to_occupy', '');
+    $page->assertPresent('#places_to_occupy')->click('[data-testid=duty-seats-clear]');
+    $page->assertMissing('#places_to_occupy')->assertPresent('[data-testid=duty-seats-add]');
     $page->click('[data-testid=form-page-mobile-save] button')->assertSee('Visi pakeitimai išsaugoti');
     expect($duty->fresh()->places_to_occupy)->toBeNull();
+    $page->script('document.querySelector("[data-testid=duty-seats-add]").scrollIntoView({block: "center"})');
     $page->screenshot(fullPage: false, filename: 'duty-reference-cleared-phone');
 
     navigateTo($page, $path);
     $page->assertPresent('[data-slot=record-facts]')->assertDontSee('Vietų skaičius')->assertNoJavaScriptErrors();
+    $page->screenshot(fullPage: false, filename: 'duty-vacant-record-phone');
 });

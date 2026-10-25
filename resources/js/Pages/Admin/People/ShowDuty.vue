@@ -497,7 +497,7 @@ const recordFacts = computed<RecordFact[]>(() => {
   const members = String(currentHolders.value.length);
 
   facts.push(dutyStatus.value
-    ? { key: 'members', label: $t('Nariai'), status: dutyStatus.value, detail: members }
+    ? { key: 'members', label: $t('Nariai'), status: dutyStatus.value, detail: isVacant.value ? undefined : members }
     : { key: 'members', label: $t('Nariai'), value: members });
 
   if (props.duty.places_to_occupy != null) {

@@ -51,6 +51,10 @@ Jei pareigybės nėra, ją galima sukurti turint kūrimo teisę.
 - Patikrinama naujų laikotarpių pradžia ir pabaiga. Jei reikia, pasirenkama studijų programa.
 - Bendroje pareigybėje galima skirti savo padalinio narius pagal jam nustatytą kvotą.
 
+Vedlio viršuje **Vietų skaičius** rodomas tik tada, kai jis įrašytas pareigybės formoje.
+Nenustatytas skaičius nerodomas; dabartinių narių skaičius lieka narių skiltyje.
+Padalinio kvota rodoma ir tikrinama atskirai nuo informacinio vietų skaičiaus.
+
 **Pradžios ir pabaigos dienos įskaitomos.** Užbaigiant siūloma šiandienos data:
 narys šiandien dar eina pareigas. Plačiau – [Laikotarpio datos](/organizacija/pareigybes#laikotarpio-datos).
 

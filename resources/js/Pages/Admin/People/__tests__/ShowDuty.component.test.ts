@@ -136,6 +136,7 @@ describe('ShowDuty.vue', () => {
     const wrapper = mountPage({ duty: { ...baseDuty, users: [] } });
 
     expect(wrapper.find('[data-testid="fact-members"]').attributes('data-status')).toBe('Neužimta');
+    expect(wrapper.find('[data-testid="fact-members"]').text()).toBe('');
     expect(wrapper.find('[data-testid="duty-vacancy-alert"]').exists()).toBe(true);
   });
 
@@ -143,6 +144,7 @@ describe('ShowDuty.vue', () => {
     const wrapper = mountPage({ duty: { ...baseDuty, users: [], is_active: false } });
 
     expect(wrapper.find('[data-testid="fact-members"]').attributes('data-status')).toBe('Neaktyvi');
+    expect(wrapper.find('[data-testid="fact-members"]').text()).toBe('0');
     expect(wrapper.find('[data-testid="duty-vacancy-alert"]').exists()).toBe(false);
   });
 
@@ -219,6 +221,7 @@ describe('ShowDuty.vue', () => {
     });
 
     expect(wrapper.find('[data-testid="fact-members"]').attributes('data-status')).toBe('Neužimta');
+    expect(wrapper.find('[data-testid="fact-members"]').text()).toBe('');
   });
 
   it('names the institution and its padalinys as facts, with the actions beside the title', () => {

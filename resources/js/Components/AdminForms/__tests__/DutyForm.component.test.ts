@@ -1,11 +1,16 @@
 import type * as Inertia from '@inertiajs/vue3';
 import { mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { nextTick, ref } from 'vue';
+import { nextTick, ref, type Component } from 'vue';
 
 import DutyForm from '@/Components/AdminForms/DutyForm.vue';
 import type { DutySimilarityMatches } from '@/Components/AdminForms/DuplicateDutyWarning.vue';
 import { commonStubs } from '@/tests/stubs';
+
+const dismissSeatSpotlight = vi.fn();
+vi.mock('@/Composables/useFeatureSpotlight', () => ({
+  useFeatureSpotlight: () => ({ isDismissed: ref(true), dismiss: dismissSeatSpotlight }),
+}));
 
 // Use the real Inertia useForm (reactive) rather than the global plain-object mock —
 // the reactive headline must react to typing, which only a reactive form gives us.
@@ -42,6 +47,7 @@ vi.mock('@/Composables/useDuplicateDutyCheck', () => ({
 
 const stubs = {
   ...commonStubs,
+  SpotlightPopover: { template: '<div data-slot="spotlight-popover"><slot /></div>' },
   Head: true,
   AdminContentPage: { template: '<div><slot /></div>' },
   AdminForm: { template: '<form @submit.prevent><slot name="status-header" /><slot /></form>' },
@@ -91,7 +97,7 @@ beforeEach(() => {
   duplicateMatches.value = { same_institution: [], other_institution: [], other_institution_count: 0 };
 });
 
-const mountForm = (duty = emptyDuty(), extraProps: Record<string, unknown> = {}) =>
+const mountForm = (duty = emptyDuty(), extraProps: Record<string, unknown> = {}, extraStubs: Record<string, Component> = {}) =>
   mount(DutyForm, {
     props: {
       duty,
@@ -104,7 +110,7 @@ const mountForm = (duty = emptyDuty(), extraProps: Record<string, unknown> = {})
       ...extraProps,
     },
     global: {
-      stubs,
+      stubs: { ...stubs, ...extraStubs },
       mocks: {
         $page: {
           props: {
@@ -526,11 +532,28 @@ describe('DutyForm.vue — delegated types', () => {
 });
 
 describe('DutyForm informational seat count', () => {
-  it('starts blank and lets an entered reference be cleared', async () => {
+  it.each([null, undefined])('offers an add button for an unset reference of %s', async (places) => {
+    const wrapper = mountForm(emptyDuty({ places_to_occupy: places }));
+    expect(wrapper.find('input#places_to_occupy').exists()).toBe(false);
+    const add = wrapper.get('[data-testid="duty-seats-add"]');
+    const spotlight = wrapper.get('[data-slot="spotlight-popover"]');
+    expect(spotlight.element.firstElementChild).toBe(add.element);
+    expect(spotlight.classes()).not.toContain('w-full');
+    expect(add.element.closest('[data-slot="form-panel"]')?.textContent).toContain('Papildomi nustatymai');
+    await add.trigger('click');
+    expect(wrapper.find('[data-slot="spotlight-popover"]').exists()).toBe(false);
+    expect((wrapper.get('input#places_to_occupy').element as HTMLInputElement).value).toBe('1');
+    expect(dismissSeatSpotlight).toHaveBeenCalled();
+    wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    await nextTick();
+    expect((wrapper.emitted('submit:form')!.at(-1)![0] as Record<string, unknown>).places_to_occupy).toBe(1);
+  });
+
+  it('lets an entered reference be cleared manually', async () => {
     const wrapper = mountForm();
+    await wrapper.get('[data-testid="duty-seats-add"]').trigger('click');
     const input = wrapper.find('input#places_to_occupy');
 
-    expect((input.element as HTMLInputElement).value).toBe('');
     await input.setValue('38');
     wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
     await nextTick();
@@ -540,5 +563,44 @@ describe('DutyForm informational seat count', () => {
     wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
     await nextTick();
     expect((wrapper.emitted('submit:form')!.at(-1)![0] as Record<string, unknown>).places_to_occupy).toBeNull();
+    expect(wrapper.find('input#places_to_occupy').exists()).toBe(true);
+  });
+
+  it('shows an existing value and clears it back to the add button', async () => {
+    const wrapper = mountForm(emptyDuty({ id: 'duty-1', places_to_occupy: 38 }));
+    expect((wrapper.get('input#places_to_occupy').element as HTMLInputElement).value).toBe('38');
+    expect(wrapper.find('[data-testid="duty-seats-add"]').exists()).toBe(false);
+    await wrapper.get('[data-testid="duty-seats-clear"]').trigger('click');
+    expect(wrapper.find('input#places_to_occupy').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="duty-seats-add"]').exists()).toBe(true);
+    wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    await nextTick();
+    expect((wrapper.emitted('submit:form')!.at(-1)![0] as Record<string, unknown>).places_to_occupy).toBeNull();
+    await wrapper.get('[data-testid="duty-seats-add"]').trigger('click');
+    expect((wrapper.get('input#places_to_occupy').element as HTMLInputElement).value).toBe('1');
+  });
+
+  it('hides seat editing controls from delegated editors', () => {
+    const wrapper = mountForm(emptyDuty({ places_to_occupy: 38 }), { canEditDuty: false });
+    expect(wrapper.find('input#places_to_occupy').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="duty-seats-add"]').exists()).toBe(false);
+    expect(wrapper.find('[data-testid="duty-seats-clear"]').exists()).toBe(false);
+  });
+
+  it('reveals an unset input with a validation error and clears the error when removed', async () => {
+    const wrapper = mountForm(emptyDuty(), {}, {
+      FormPage: { name: 'FormPage', emits: ['submit'], template: '<div><slot /><slot name="aside" /></div>' },
+    });
+    wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    const form = wrapper.emitted('submit:form')!.at(-1)![0] as {
+      errors: { places_to_occupy?: string };
+      setError: (field: string, message: string) => void;
+    };
+    form.setError('places_to_occupy', 'Invalid count');
+    await nextTick();
+    expect(wrapper.find('input#places_to_occupy').exists()).toBe(true);
+    await wrapper.get('[data-testid="duty-seats-clear"]').trigger('click');
+    expect(form.errors.places_to_occupy).toBeUndefined();
+    expect(wrapper.find('[data-testid="duty-seats-add"]').exists()).toBe(true);
   });
 });
