@@ -40,7 +40,7 @@ beforeEach(function (): void {
 
 describe('atstovavimas dashboard', function (): void {
     test('admin can access atstovavimas dashboard', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -59,7 +59,7 @@ describe('atstovavimas dashboard', function (): void {
         $this->admin->followedInstitutions()->attach($followed);
         Meeting::factory()->hasAttached($followed)->create(['start_time' => now()->addDay()]);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard.atstovavimas'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('upcomingMeetings.total', 1)
@@ -77,7 +77,7 @@ describe('atstovavimas dashboard', function (): void {
         InstitutionActivityRequest::factory()->for($institution)->create(['recipient_id' => $this->user->id]);
         InstitutionActivityRequest::factory()->for($institution)->create();
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertInertia(fn (Assert $page) => $page
                 ->missing('activityRequests')
@@ -97,7 +97,7 @@ describe('atstovavimas dashboard', function (): void {
         Meeting::factory()->hasAttached($institution)->create(['start_time' => '2026-03-09 10:00:00']);
         Meeting::factory()->hasAttached($institution)->create(['start_time' => '2026-05-11 10:00:00']);
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('upcomingMeetings.total', 2)
@@ -113,7 +113,7 @@ describe('atstovavimas dashboard', function (): void {
             ->sequence(fn ($sequence) => ['start_time' => now()->addDays($sequence->index + 1)])
             ->create();
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('upcomingMeetings.total', 21)
@@ -128,7 +128,7 @@ describe('atstovavimas dashboard', function (): void {
             ->sequence(fn ($sequence) => ['file_date' => now()->subDays(9 - $sequence->index)])
             ->create(['fileable_type' => MorphMap::alias(DutyType::class), 'fileable_id' => $dutyType->id]);
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertInertia(fn (Assert $page) => $page
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
@@ -153,7 +153,7 @@ describe('atstovavimas dashboard', function (): void {
         $fileOn($unrelatedType);
         $fileOn($dutyType, ['deleted_externally_at' => now()]);
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertInertia(fn (Assert $page) => $page
                 ->missing('referenceDocuments')
@@ -171,13 +171,13 @@ describe('atstovavimas dashboard', function (): void {
         $this->user->tasks()->attach([$open->id, $done->id]);
         $this->admin->tasks()->attach($someoneElses->id);
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertInertia(fn (Assert $page) => $page->where('openTasksCount', 1));
     });
 
     test('regular user can access atstovavimas dashboard', function (): void {
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -189,7 +189,7 @@ describe('atstovavimas dashboard', function (): void {
     });
 
     test('atstovavimas filters PKP tenants', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -199,11 +199,11 @@ describe('atstovavimas dashboard', function (): void {
     });
 
     test('the padaliniai task number counts padalinys tasks, not the viewer\'s own', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertInertia(fn (Assert $page) => $page->missing('openTasksCount'));
 
-        asUser(makeAdminUser($this->tenant))
+        asUserWithInertia(makeAdminUser($this->tenant))
             ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertInertia(fn (Assert $page) => $page->where('canViewTenantTasks', true));
     });
@@ -211,7 +211,7 @@ describe('atstovavimas dashboard', function (): void {
     test('a padalinys communication coordinator gets statistics and the Gantt for their own padalinys, without the task number', function (): void {
         $ownTenantId = $this->admin->current_duties()->first()->institution->tenant_id;
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('statsTenants', fn ($tenants) => collect($tenants)->pluck('id')->all() === [$ownTenantId])
@@ -224,7 +224,7 @@ describe('atstovavimas dashboard', function (): void {
         $coordinator = makeTenantUserWithRole('Centrinio biuro studentų atstovų koordinatorius', $this->tenant);
         $representationalCount = Tenant::query()->representational()->count();
 
-        asUser($coordinator)
+        asUserWithInertia($coordinator)
             ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertInertia(fn (Assert $page) => $page
                 ->has('statsTenants', $representationalCount)
@@ -266,7 +266,7 @@ describe('atstovavimas dashboard authorization', function (): void {
         // Regular user without coordinator role should only see their own institution
         $userInstitutionId = $this->user->current_duties->first()->institution_id;
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -290,7 +290,7 @@ describe('atstovavimas dashboard authorization', function (): void {
         $cadence = Cadence::factory()->create(['institution_id' => $secretariedInstitution->id]);
         $this->user->secretariedInstitutions()->attach($secretariedInstitution, ['cadence_id' => $cadence->id]);
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('userInstitutions', fn ($institutions) => collect($institutions)
@@ -304,7 +304,7 @@ describe('atstovavimas dashboard authorization', function (): void {
         $pkpTenant = Tenant::factory()->create(['type' => 'pkp']);
         $ownTenantId = $this->user->current_duties->first()->institution->tenant_id;
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
@@ -342,7 +342,7 @@ describe('atstovavimas dashboard authorization', function (): void {
 
         $globalUser = makeTenantUserWithRole($globalRole->name, $mainTenant);
 
-        asUser($globalUser)
+        asUserWithInertia($globalUser)
             ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -367,7 +367,7 @@ describe('atstovavimas dashboard authorization', function (): void {
         }
 
         // The admin should have available tenants for the tenant tab
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -389,7 +389,7 @@ describe('atstovavimas dashboard authorization', function (): void {
         $otherInstitution = Institution::factory()->for($otherTenant)->create();
 
         // Verify super admin has access to all tenants via statsTenants
-        asUser($superAdmin)
+        asUserWithInertia($superAdmin)
             ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -426,7 +426,7 @@ describe('atstovavimas dashboard periodicity', function (): void {
             'end_date' => null,
         ]);
 
-        asUser($testUser)
+        asUserWithInertia($testUser)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -473,7 +473,7 @@ describe('atstovavimas dashboard periodicity', function (): void {
             'end_date' => null,
         ]);
 
-        asUser($testUser)
+        asUserWithInertia($testUser)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -503,7 +503,7 @@ describe('atstovavimas tenant isolation', function (): void {
     });
 
     test('user sees institutions and tenants based on their permissions', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard.atstovavimas.padaliniai'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -529,7 +529,7 @@ describe('atstovavimas related institutions', function (): void {
     });
 
     test('atstovavimas returns mayHaveRelatedInstitutions flag', function (): void {
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -543,7 +543,7 @@ describe('atstovavimas related institutions', function (): void {
         InstitutionLink::factory()->create(['source_institution_id' => $this->userInstitution->id, 'target_institution_id' => $this->relatedInstitution->id]);
 
         // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -578,7 +578,7 @@ describe('atstovavimas related institutions', function (): void {
         InstitutionLink::factory()->create(['source_institution_id' => $this->relatedInstitution->id, 'target_institution_id' => $this->userInstitution->id]);
 
         // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -612,7 +612,7 @@ describe('atstovavimas related institutions', function (): void {
         InstitutionLink::factory()->create(['source_institution_id' => $this->relatedInstitution->id, 'target_institution_id' => $this->userInstitution->id, 'mutual' => true]);
 
         // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -653,7 +653,7 @@ describe('atstovavimas related institutions', function (): void {
         ]);
 
         // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -698,7 +698,7 @@ describe('atstovavimas related institutions', function (): void {
         ]);
 
         // Use reloadOnly to test the lazy-loaded relatedInstitutions prop
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard.atstovavimas'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page

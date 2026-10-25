@@ -72,7 +72,7 @@ describe('unauthorized access', function (): void {
     });
 
     test('browses institutions — active ones are public — starting on their padalinys', function (): void {
-        asUser($this->user)->get(route('institutions.index'))
+        asUserWithInertia($this->user)->get(route('institutions.index'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/IndexInstitution')
@@ -84,7 +84,7 @@ describe('unauthorized access', function (): void {
         $institution = Institution::factory()->for(Tenant::factory())->create(['is_active' => 1]);
         $institution->tasks()->create(['name' => 'Internal task']);
 
-        asUser($this->user)->get(route('institutions.show', $institution))
+        asUserWithInertia($this->user)->get(route('institutions.show', $institution))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/ShowInstitution')
@@ -105,7 +105,7 @@ describe('unauthorized access', function (): void {
         $institution = Institution::factory()->for(Tenant::factory())->create(['is_active' => 1]);
         Meeting::factory()->hasAttached($institution)->create();
 
-        asUser($this->user)->get(route('institutions.show', $institution))
+        asUserWithInertia($this->user)->get(route('institutions.show', $institution))
             ->assertInertia(fn ($page) => $page
                 ->where('overview.meetings_hidden', true)
                 ->where('overview.recentMeetings', [])
@@ -169,7 +169,7 @@ describe('authorized access', function (): void {
     test('the record carries per-record permissions and defers the management group', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
-        asUser($this->admin)->get(route('institutions.show', $institution))
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/ShowInstitution')
@@ -189,7 +189,7 @@ describe('authorized access', function (): void {
         $viewer->duties()->first()->assignRole('Studentų atstovas');
         $viewer->duties()->first()->update(['institution_id' => $institution->id]);
 
-        asUser($viewer)->get(route('institutions.show', $institution))
+        asUserWithInertia($viewer)->get(route('institutions.show', $institution))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->where('can.update', false)
@@ -205,7 +205,7 @@ describe('authorized access', function (): void {
         Problem::factory()->create(['tenant_id' => $this->tenant->id]);
         $institution->problems()->attach([$resolved->id, $open->id]);
 
-        asUser($this->admin)->get(route('institutions.show', $institution))
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->where('institution.problems_count', 2)
@@ -219,7 +219,7 @@ describe('authorized access', function (): void {
     test('the record no longer sends the retired administrators alias', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
-        asUser($this->admin)->get(route('institutions.show', $institution))
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
             ->assertInertia(fn ($page) => $page->has('institution.secretaries')->missing('institution.administrators'));
     });
 
@@ -328,7 +328,7 @@ describe('authorized access', function (): void {
     test('the live index carries no rows, only the trash count', function (): void {
         Institution::factory()->create(['tenant_id' => $this->tenant->id])->delete();
 
-        asUser($this->admin)->get(route('institutions.index'))
+        asUserWithInertia($this->admin)->get(route('institutions.index'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/IndexInstitution')
@@ -340,7 +340,7 @@ describe('authorized access', function (): void {
         $followed = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
         $this->admin->followedInstitutions()->attach($followed);
 
-        asUser($this->admin)->get(route('institutions.index'))
+        asUserWithInertia($this->admin)->get(route('institutions.index'))
             ->assertInertia(fn ($page) => $page->where('followedInstitutionIds', [$followed->id]));
     });
 
@@ -348,7 +348,7 @@ describe('authorized access', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
         $institution->delete();
 
-        asUser($this->admin)->get(route('institutions.index', ['showDeleted' => 'true']))
+        asUserWithInertia($this->admin)->get(route('institutions.index', ['showDeleted' => 'true']))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/IndexInstitution')
@@ -768,7 +768,7 @@ describe('meeting_periodicity_days', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
         $institution->types()->attach($type);
 
-        asUser($this->admin)->get(route('institutions.show', $institution))
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
             ->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/ShowInstitution')
@@ -779,7 +779,7 @@ describe('meeting_periodicity_days', function (): void {
     test('an untyped body still states a scope, so the badge is never blank', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
 
-        asUser($this->admin)->get(route('institutions.show', $institution))
+        asUserWithInertia($this->admin)->get(route('institutions.show', $institution))
             ->assertStatus(200)
             ->assertInertia(fn ($page) => $page
                 ->where('institution.governance_scope', 'vu')
@@ -929,7 +929,7 @@ describe('alias', function (): void {
         expect($institution->refresh()->alias)->toBe('naujas-pavadinimas')
             ->and($institution->publicUrls()->pluck('url')->all())->each->toEndWith('/senas-pavadinimas');
 
-        asUser($this->admin)->get(route('institutions.edit', $institution))
+        asUserWithInertia($this->admin)->get(route('institutions.edit', $institution))
             ->assertInertia(fn ($page) => $page->has('institution.public_urls', 2)->where('institution.alias_pinned', false));
     });
 

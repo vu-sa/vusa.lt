@@ -3,6 +3,10 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "routes:generate": "php artisan ziggy:generate resources/js/ziggy.js",
+    "predev": "npm run routes:generate",
+    "prebuild": "npm run routes:generate",
+    "prebuild:ssr": "npm run routes:generate",
     "dev": "vite",
     "build": "vite build",
     "build:ssr": "vite build --ssr",

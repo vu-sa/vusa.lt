@@ -171,7 +171,7 @@ describe('study program', function (): void {
 
         $this->dutiable->update(['study_program_id' => $otherTenantProgram->id]);
 
-        asUser($this->dutyManager)->get(route('duties.show', $this->dutiable->duty_id))
+        asUserWithInertia($this->dutyManager)->get(route('duties.show', $this->dutiable->duty_id))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/ShowDuty')
@@ -188,7 +188,7 @@ describe('study program', function (): void {
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
         $otherTenantProgram = StudyProgram::factory()->forTenant($otherTenant)->create();
 
-        asUser($this->dutyManager)->get(route('duties.show', $this->dutiable->duty_id))
+        asUserWithInertia($this->dutyManager)->get(route('duties.show', $this->dutiable->duty_id))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->loadDeferredProps('dutyPanels', fn ($panels) => $panels

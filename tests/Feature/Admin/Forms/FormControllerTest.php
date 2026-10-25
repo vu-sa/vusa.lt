@@ -88,7 +88,7 @@ describe('authorized access', function (): void {
 
         $forms = Form::factory()->count(3)->for($this->tenant)->create();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('forms.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -118,7 +118,7 @@ describe('authorized access', function (): void {
         // Use Super Admin user for cross-tenant access
         $superAdmin = makeAdminUser();
 
-        asUser($superAdmin)
+        asUserWithInertia($superAdmin)
             ->get(route('forms.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -135,7 +135,7 @@ describe('authorized access', function (): void {
         Form::factory()->for($this->tenant)->create(['name' => ['lt' => 'Important Form', 'en' => 'Important Form']]);
         Form::factory()->for($this->tenant)->create(['name' => ['lt' => 'Regular Form', 'en' => 'Regular Form']]);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('forms.index', ['search' => 'Important']))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -147,7 +147,7 @@ describe('authorized access', function (): void {
     test('can view form', function (): void {
         $form = Form::factory()->for($this->tenant)->create();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('forms.show', $form))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -169,7 +169,7 @@ describe('authorized access', function (): void {
     });
 
     test('can access create page', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('forms.create'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -180,7 +180,7 @@ describe('authorized access', function (): void {
     test('can access edit page', function (): void {
         $form = Form::factory()->for($this->tenant)->create();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('forms.edit', $form))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -302,7 +302,7 @@ describe('index sorting and scoping', function (): void {
         $stale->forceFill(['updated_at' => now()->subWeek()])->saveQuietly();
         $fresh->forceFill(['updated_at' => now()])->saveQuietly();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('forms.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -321,7 +321,7 @@ describe('index sorting and scoping', function (): void {
         Form::factory()->for($this->tenant)->create(['name' => ['lt' => 'Mine', 'en' => 'Mine']]);
         Form::factory()->for($otherTenant)->create(['name' => ['lt' => 'Theirs', 'en' => 'Theirs']]);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('forms.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -339,7 +339,7 @@ describe('index sorting and scoping', function (): void {
         $registration = Registration::factory()->for($form)->create();
         FieldResponse::factory()->for($registration)->for($field, 'formField')->create();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('forms.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page

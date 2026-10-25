@@ -44,7 +44,7 @@ beforeEach(function (): void {
 });
 
 test('a coordinator opens the agenda item page with the outcome controls live', function (): void {
-    asUser($this->coordinator)
+    asUserWithInertia($this->coordinator)
         ->get(route('agendaItems.show', $this->agendaItem))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
@@ -61,7 +61,7 @@ test('a public agenda item links to its meeting on the institution subdomain', f
         'public_meeting_institution_type_ids' => [$type->id],
     ])->save();
 
-    asUser($this->coordinator)
+    asUserWithInertia($this->coordinator)
         ->get(route('agendaItems.show', $this->agendaItem))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
@@ -75,7 +75,7 @@ test('a public agenda item links to its meeting on the institution subdomain', f
 });
 
 test('a view-only participant opens the page read-only', function (): void {
-    asUser($this->viewer)
+    asUserWithInertia($this->viewer)
         ->get(route('agendaItems.show', $this->agendaItem))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page

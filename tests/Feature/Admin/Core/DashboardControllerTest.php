@@ -41,7 +41,7 @@ beforeEach(function (): void {
 describe('dashboard access', function (): void {
     test('any authenticated user can access dashboard', function (): void {
         // Dashboard is accessible to any authenticated user
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -65,7 +65,7 @@ describe('dashboard access', function (): void {
     });
 
     test('admin can access dashboard', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -92,7 +92,7 @@ describe('dashboard access', function (): void {
 
 describe('dashboard data structure', function (): void {
     test('task statistics are correctly structured', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -105,7 +105,7 @@ describe('dashboard data structure', function (): void {
     });
 
     test('upcoming data is included', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -127,7 +127,7 @@ describe('followed institutions', function (): void {
         Meeting::factory()->hasAttached(Institution::factory()->for($this->tenant))->create(['start_time' => now()->addDays(3)]);
         $this->user->followedInstitutions()->attach($followed);
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('upcomingMeetingsTotal', 2)
@@ -141,7 +141,7 @@ describe('followed institutions', function (): void {
         $institutions = Institution::factory()->for($this->tenant)->count(7)->create();
         $this->user->followedInstitutions()->attach($institutions);
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
@@ -162,7 +162,7 @@ describe('dashboard performance', function (): void {
 
     test('dashboard task statistics work with no tasks', function (): void {
         // Test when user has no tasks
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -189,7 +189,7 @@ describe('dashboard tasks with due dates', function (): void {
             $task->users()->attach($this->admin->id);
         }
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('upcomingTasks.0.name', 'Later')
@@ -207,7 +207,7 @@ describe('dashboard tasks with due dates', function (): void {
         ]);
         $task->users()->attach($this->admin->id);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -230,7 +230,7 @@ describe('dashboard tasks with due dates', function (): void {
         ]);
         $task->users()->attach($this->admin->id);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('upcomingTasks.0.taskable.name', 'Senato posėdis')
@@ -247,7 +247,7 @@ describe('dashboard tasks with due dates', function (): void {
         ]);
         $task->users()->attach($this->admin->id);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -265,7 +265,7 @@ describe('dashboard tasks with due dates', function (): void {
         ]);
         $task->users()->attach($this->admin->id);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -283,7 +283,7 @@ describe('dashboard tasks with due dates', function (): void {
         ]);
         $task->users()->attach($this->admin->id);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -302,7 +302,7 @@ describe('dashboard calendar and news', function (): void {
             'is_draft' => false,
         ]);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -322,7 +322,7 @@ describe('dashboard calendar and news', function (): void {
             'is_draft' => true,
         ]);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -342,7 +342,7 @@ describe('dashboard calendar and news', function (): void {
             'is_draft' => false,
         ]);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -360,7 +360,7 @@ describe('dashboard calendar and news', function (): void {
             'draft' => null,
         ]);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -381,7 +381,7 @@ describe('dashboard calendar and news', function (): void {
             'draft' => 1,
         ]);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -402,7 +402,7 @@ describe('dashboard calendar and news', function (): void {
             'draft' => null,
         ]);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -423,7 +423,7 @@ describe('dashboard calendar and news', function (): void {
             'draft' => false,
         ]);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -449,7 +449,7 @@ describe('dashboard calendar and news', function (): void {
         ]);
         app(AddImageMedia::class)->execute($news, UploadedFile::fake()->image('news.jpg'), 'image');
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -470,7 +470,7 @@ describe('hero image', function (): void {
         $media->setCustomProperty('focal_point', '40% 30%')->save();
         $this->tenant->update(['primary_institution_id' => $institution->id]);
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('heroImage.url', $institution->fresh()->imageData('image')['url'])
@@ -482,7 +482,7 @@ describe('hero image', function (): void {
     test('uses the community fallback when the duty tenant has no primary institution image', function (): void {
         $this->tenant->update(['primary_institution_id' => null]);
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page->where('heroImage', null));
     });
@@ -522,7 +522,7 @@ describe('institutions needing attention', function (): void {
 
         [$user, $institution] = institutionForUserWithMeeting('2025-10-01 10:00:00');
 
-        asUser($user)
+        asUserWithInertia($user)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -545,7 +545,7 @@ describe('institutions needing attention', function (): void {
 
         [$user, $institution] = institutionForUserWithMeeting('2025-06-20 10:00:00');
 
-        asUser($user)
+        asUserWithInertia($user)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -571,7 +571,7 @@ describe('institutions needing attention', function (): void {
             'end_date' => '2025-11-10',
         ]);
 
-        asUser($user)
+        asUserWithInertia($user)
             ->get(route('dashboard'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -584,7 +584,7 @@ describe('institutions needing attention', function (): void {
 
 describe('Pradžia secondary panels', function (): void {
     test('the queue is served first and the secondary group is held back', function (): void {
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->has('upcomingTasks')
@@ -607,7 +607,7 @@ describe('Pradžia secondary panels', function (): void {
         $this->travel(1)->minute();
         activity()->performedOn($mine)->causedBy($this->user)->log('updated');
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
@@ -625,7 +625,7 @@ describe('Pradžia secondary panels', function (): void {
             activity()->performedOn($meeting)->causedBy($this->user)->log('updated');
         }
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
@@ -644,7 +644,7 @@ describe('Pradžia secondary panels', function (): void {
         $rep = makeUser($this->tenant);
         $rep->duties()->first()->pivot->update(['end_date' => null]);
 
-        asUser($rep)
+        asUserWithInertia($rep)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
@@ -653,7 +653,7 @@ describe('Pradžia secondary panels', function (): void {
             );
 
         // A manager is not their own coordinator.
-        asUser($manager)
+        asUserWithInertia($manager)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page->where('coordinator', null))
@@ -661,7 +661,7 @@ describe('Pradžia secondary panels', function (): void {
     });
 
     test('the coordinator is absent when nobody coordinates the padalinys', function (): void {
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page->where('coordinator', null))
@@ -675,7 +675,7 @@ describe('Pradžia secondary panels', function (): void {
             'draft' => false,
         ]);
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->loadDeferredProps('secondary', fn (Assert $page) => $page
@@ -698,13 +698,13 @@ describe('Sparčioji prieiga registration forms', function (): void {
         $recipient = makeUser($this->tenant);
         grantPurpose($recipient->duties()->first(), ResponsibilityPurpose::MemberRegistration, $this->tenant);
 
-        asUser($recipient)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
+        asUserWithInertia($recipient)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
             ->where('registrationForms', [['key' => 'member', 'href' => route('forms.show', $this->memberForm)]])
         );
     });
 
     test('a user who cannot view the form gets no link', function (): void {
-        asUser($this->user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
+        asUserWithInertia($this->user)->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
             ->where('registrationForms', [])
         );
     });
@@ -712,7 +712,7 @@ describe('Sparčioji prieiga registration forms', function (): void {
 
 describe('institution graph', function (): void {
     test('authenticated user can access institution graph', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('institutionGraph'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -723,7 +723,7 @@ describe('institution graph', function (): void {
     });
 
     test('institution graph includes user counts', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('institutionGraph'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -735,13 +735,13 @@ describe('institution graph', function (): void {
 
 describe('unfinished reservation', function (): void {
     test('home points back to a started reservation', function (): void {
-        asUser($this->user)->get(route('dashboard'))
+        asUserWithInertia($this->user)->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page->where('reservationDraft', null));
 
         $draft = ReservationDraft::factory()->for($this->user)->withPeriod()->create();
         ReservationDraftItem::factory()->for($draft, 'draft')->for($this->resource)->create();
 
-        asUser($this->user)->get(route('dashboard'))
+        asUserWithInertia($this->user)->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('reservationDraft.count', 1)
                 ->where('reservationDraft.name', null)
@@ -752,7 +752,7 @@ describe('unfinished reservation', function (): void {
     test('a named draft with nothing picked yet still shows', function (): void {
         ReservationDraft::factory()->for($this->user)->create(['name' => 'Stovykla']);
 
-        asUser($this->user)->get(route('dashboard'))
+        asUserWithInertia($this->user)->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('reservationDraft.name', 'Stovykla')
                 ->where('reservationDraft.count', 0)

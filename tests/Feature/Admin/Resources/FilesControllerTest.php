@@ -1251,7 +1251,7 @@ describe('Files Controller - Listing details', function (): void {
         Storage::makeDirectory($this->allowedPath.'/full');
         Storage::put($this->allowedPath.'/full/a.pdf', 'pdf');
 
-        asUser($this->fileManager)->get(route('files.index', ['path' => $this->allowedPath]))
+        asUserWithInertia($this->fileManager)->get(route('files.index', ['path' => $this->allowedPath]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('abilities', [
@@ -1269,7 +1269,7 @@ describe('Files Controller - Listing details', function (): void {
     });
 
     test('a read-only actor is told it can change nothing', function (): void {
-        asUser(makeFileReader($this->institution))->get(route('files.index', ['path' => $this->allowedPath]))
+        asUserWithInertia(makeFileReader($this->institution))->get(route('files.index', ['path' => $this->allowedPath]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('abilities.upload', false)

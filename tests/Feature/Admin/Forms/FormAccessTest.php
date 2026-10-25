@@ -129,7 +129,7 @@ describe('member registration form access', function (): void {
         Form::factory()->for($this->centralTenant)->create();
         Form::factory()->for($this->tenant)->create();
 
-        asUser($user)
+        asUserWithInertia($user)
             ->get(route('forms.index'))
             ->assertSuccessful()
             ->assertInertia(fn (Assert $page) => $page
@@ -150,7 +150,7 @@ describe('member registration form access', function (): void {
         $otherTenant = Tenant::factory()->create(['type' => 'padalinys']);
         Form::factory()->for($otherTenant)->create();
 
-        asUser($user)
+        asUserWithInertia($user)
             ->get(route('forms.index'))
             ->assertSuccessful()
             ->assertInertia(fn (Assert $page) => $page
@@ -188,7 +188,7 @@ describe('student rep registration form access', function (): void {
         Form::factory()->for($this->centralTenant)->create();
         Form::factory()->for($this->tenant)->create();
 
-        asUser($user)
+        asUserWithInertia($user)
             ->get(route('forms.index'))
             ->assertSuccessful()
             ->assertInertia(fn (Assert $page) => $page
@@ -222,7 +222,7 @@ describe('student rep registration form access', function (): void {
             $otherInstitution,
         );
 
-        asUser($user)
+        asUserWithInertia($user)
             ->get(route('forms.show', $this->studentRepForm))
             ->assertSuccessful()
             ->assertInertia(fn (Assert $page) => $page
@@ -245,7 +245,7 @@ describe('student rep registration form access', function (): void {
                 ->where('exportUrl', null)
             );
 
-        asUser($user)
+        asUserWithInertia($user)
             ->get(route('forms.index'))
             ->assertSuccessful()
             ->assertInertia(fn (Assert $page) => $page
@@ -264,7 +264,7 @@ describe('student rep registration form access', function (): void {
         $visible = createInstitutionRegistration($this->studentRepForm, $this->studentInstitutionField, $ownInstitution);
         createInstitutionRegistration($this->studentRepForm, $this->studentInstitutionField, $senate);
 
-        asUser($user)
+        asUserWithInertia($user)
             ->get(route('forms.show', $this->studentRepForm))
             ->assertInertia(fn (Assert $page) => $page
                 ->has('registrations', 1)
@@ -297,7 +297,7 @@ describe('student rep registration form access', function (): void {
             $otherInstitution,
         );
 
-        asUser(makeAdminUser())
+        asUserWithInertia(makeAdminUser())
             ->get(route('forms.show', $this->studentRepForm))
             ->assertSuccessful()
             ->assertInertia(fn (Assert $page) => $page
@@ -312,7 +312,7 @@ describe('catalog registration sections', function (): void {
     test('carries only the forms the user may open', function (): void {
         $user = makeRegistrationRecipient($this->tenant);
 
-        asUser($user)
+        asUserWithInertia($user)
             ->get(route('forms.show', $this->memberForm))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('adminNavigation.workspaces', function ($workspaces): bool {
@@ -332,7 +332,7 @@ describe('catalog registration sections', function (): void {
         $user = makeRegistrationRecipient($this->tenant);
         ResponsibilityGrant::factory()->forDuty($user->duties()->first())->forTenant($this->tenant)->create();
 
-        asUser($user)
+        asUserWithInertia($user)
             ->get(route('forms.show', $this->memberForm))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('adminNavigation.workspaces', function ($workspaces): bool {
@@ -351,7 +351,7 @@ describe('catalog registration sections', function (): void {
     test('is empty for a user with no relevant role', function (): void {
         $user = makeUser($this->tenant);
 
-        asUser($user)
+        asUserWithInertia($user)
             ->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('adminNavigation.workspaces', function ($workspaces): bool {

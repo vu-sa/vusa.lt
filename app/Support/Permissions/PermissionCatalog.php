@@ -92,9 +92,24 @@ final class PermissionCatalog
     private const array OWN_CREATE = ['meetings'];
 
     /**
+     * Built from code alone, so once per process: `isGrantable()` runs per stored permission.
+     *
+     * @var array<string, array<string, list<string>>>|null
+     */
+    private static ?array $abilities = null;
+
+    /**
      * @return array<string, array<string, list<string>>> resource => ability => grantable scopes
      */
     public static function abilities(): array
+    {
+        return self::$abilities ??= self::buildAbilities();
+    }
+
+    /**
+     * @return array<string, array<string, list<string>>>
+     */
+    private static function buildAbilities(): array
     {
         $catalog = [];
 

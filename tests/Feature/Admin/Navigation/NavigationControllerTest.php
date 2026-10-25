@@ -121,7 +121,7 @@ describe('tenant isolation', function (): void {
 
 describe('authorized access', function (): void {
     test('can access index page', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('navigation.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -145,7 +145,7 @@ describe('authorized access', function (): void {
     });
 
     test('index defaults the builder language to the current app locale', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('navigation.index'))
             ->assertInertia(fn (Assert $page) => $page->where('lang', app()->getLocale()));
     });
@@ -155,7 +155,7 @@ describe('authorized access', function (): void {
         $trashedEnglish = Navigation::factory()->create(['lang' => 'en']);
         $trashedEnglish->delete();
 
-        $response = asUser($this->admin)
+        $response = asUserWithInertia($this->admin)
             ->get(route('navigation.index', ['lang' => 'en']))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -169,13 +169,13 @@ describe('authorized access', function (): void {
     });
 
     test('an invalid lang value falls back to the app locale', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('navigation.index', ['lang' => 'fr']))
             ->assertInertia(fn (Assert $page) => $page->where('lang', app()->getLocale()));
     });
 
     test('can access create page', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('navigation.create'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -188,7 +188,7 @@ describe('authorized access', function (): void {
     });
 
     test('can access create page with parent_id', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('navigation.create', ['parent_id' => $this->navigation->id]))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -284,7 +284,7 @@ describe('authorized access', function (): void {
     });
 
     test('can access edit page', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('navigation.edit', $this->navigation))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -455,7 +455,7 @@ describe('authorized access', function (): void {
         $deletedEnglishNavigation = Navigation::factory()->create(['lang' => 'en']);
         $deletedEnglishNavigation->delete();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('navigation.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page->where('deletedCount', 1));
@@ -658,7 +658,7 @@ describe('footer navigation', function (): void {
             'extra_attributes' => ['location' => 'footer', 'type' => 'category-link'],
         ]);
 
-        $response = asUser($this->admin)
+        $response = asUserWithInertia($this->admin)
             ->get(route('navigation.create', ['parent_id' => $footerRoot->id]))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page->where('location', 'footer'));

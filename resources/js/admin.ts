@@ -85,7 +85,7 @@ createInertiaApp({
           };
         },
       })
-      .use(ZiggyVue);
+      .use(ZiggyVue, globalThis.Ziggy);
 
     application.mount(el);
 

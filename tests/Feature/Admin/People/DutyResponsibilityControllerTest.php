@@ -129,7 +129,7 @@ test('the duty page defers its responsibilities, labelling those it gets through
     ResponsibilityGrant::factory()->forDutyType($type)->of($typeRole)->create();
     ResponsibilityGrant::factory()->forDuty($this->duty)->forTenant($this->tenant)->create();
 
-    asUser($this->manager)
+    asUserWithInertia($this->manager)
         ->get(route('duties.show', $this->duty))
         ->assertInertia(fn (Assert $page) => $page
             ->missing('responsibilities')

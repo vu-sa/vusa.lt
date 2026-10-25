@@ -108,7 +108,7 @@ describe('authorized access', function (): void {
         $gone = makeUser($this->tenant);
         $gone->delete();
 
-        asUser($this->admin)->get(route('users.index', ['showDeleted' => 'true']))
+        asUserWithInertia($this->admin)->get(route('users.index', ['showDeleted' => 'true']))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/IndexUser')
@@ -179,7 +179,7 @@ describe('authorized access', function (): void {
     test('the edit form carries the person, not the duty tree or the role list', function (): void {
         $user = makeUser($this->tenant);
 
-        asUser($this->admin)->get(route('users.edit', $user))
+        asUserWithInertia($this->admin)->get(route('users.edit', $user))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/People/EditUser')
@@ -544,7 +544,7 @@ describe('the record hands the assignment sheets their options', function (): vo
         $admin = makeAdminUser($this->tenant);
         $person = makeUser($this->tenant);
 
-        asUser($admin)->get(route('users.show', $person))
+        asUserWithInertia($admin)->get(route('users.show', $person))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->where('can.updateSuperAdmin', true)
@@ -559,7 +559,7 @@ describe('the record hands the assignment sheets their options', function (): vo
         $coordinator = makeTenantUserWithRole('Komunikacijos koordinatorius', $this->tenant);
         $person = makeUser($this->tenant);
 
-        asUser($coordinator)->get(route('users.show', $person))
+        asUserWithInertia($coordinator)->get(route('users.show', $person))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->where('can.updateSuperAdmin', false)

@@ -19,6 +19,7 @@ use App\Services\AgendaItemPresenter;
 use App\Services\MeetingCompletionService;
 use App\Settings\MeetingSettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia as Assert;
 use Laravel\Scout\EngineManager;
@@ -27,6 +28,8 @@ use Laravel\Scout\Engines\NullEngine;
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    Http::fake(['nominatim.openstreetmap.org/search*' => Http::response([])]);
+
     $this->tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
     $type = InstitutionType::factory()->withGovernanceScope()->create();
     $this->institution = Institution::factory()->for($this->tenant)->create();

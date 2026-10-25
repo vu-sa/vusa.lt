@@ -13,6 +13,7 @@
 
 use App\Actions\Media\AddImageMedia;
 use App\Enums\ResponsibilityPurpose;
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Duty;
 use App\Models\Institution;
 use App\Models\PendingUpload;
@@ -613,14 +614,14 @@ function makeUser(Tenant $tenant): User
 
 function asUser(User $user): TestCase
 {
-    return test()->actingAs($user);
+    return test()->actingAs($user)->withoutHeader('X-Inertia')->withoutHeader('X-Inertia-Version');
 }
 
 function asUserWithInertia(User $user): TestCase
 {
     return test()->actingAs($user)->withHeaders([
         'X-Inertia' => 'true',
-        'X-Inertia-Version' => 'test-version',
+        'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(request()) ?? '',
     ]);
 }
 

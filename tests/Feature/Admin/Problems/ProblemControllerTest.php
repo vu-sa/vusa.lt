@@ -28,7 +28,7 @@ beforeEach(function (): void {
 describe('member without a role', function (): void {
     // Problems are a shared knowledge base (BaselineAccess): reading needs no role.
     test('browses every padalinys\' problems', function (): void {
-        asUser($this->user)->get(route('problems.index'))
+        asUserWithInertia($this->user)->get(route('problems.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('data', fn ($data) => collect($data)->pluck('id')->contains($this->otherTenantProblem->id)));
@@ -41,7 +41,7 @@ describe('member without a role', function (): void {
 
 describe('authorized access', function (): void {
     test('can access problem index', function (): void {
-        asUser($this->coordinator)->get(route('problems.index'))->assertStatus(200)
+        asUserWithInertia($this->coordinator)->get(route('problems.index'))->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Problems/IndexProblem')
                 ->has('data')
@@ -56,7 +56,7 @@ describe('authorized access', function (): void {
         // the show page -- assert it stays out of the Inertia payload.
         $this->problem->update(['status' => 'resolved']);
 
-        asUser($this->coordinator)
+        asUserWithInertia($this->coordinator)
             ->get(route('problems.show', $this->problem))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -70,13 +70,13 @@ describe('authorized access', function (): void {
         Institution::factory()->create(['tenant_id' => $this->tenant->id]);
         $this->problem->institutions()->attach($selected);
 
-        asUser($this->coordinator)->get(route('problems.create'))
+        asUserWithInertia($this->coordinator)->get(route('problems.create'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Problems/CreateProblem')
                 ->where('institutions', []));
 
-        asUser($this->coordinator)->get(route('problems.edit', $this->problem))
+        asUserWithInertia($this->coordinator)->get(route('problems.edit', $this->problem))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Problems/EditProblem')
@@ -85,7 +85,7 @@ describe('authorized access', function (): void {
     });
 
     test('can filter problems by tenant', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('problems.index', ['filters' => json_encode(['tenant.id' => [$this->tenant->id]])]))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -96,7 +96,7 @@ describe('authorized access', function (): void {
     });
 
     test('can filter problems by creator', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('problems.index', ['filters' => json_encode(['created_by' => [$this->coordinator->id]])]))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -138,7 +138,7 @@ test('problem activity loads its discussion and accepts comments', function (): 
 
 describe('tenant isolation', function (): void {
     test('a coordinator reads other padaliniai problems but narrows them with the padalinys filter', function (): void {
-        asUser($this->coordinator)
+        asUserWithInertia($this->coordinator)
             ->get(route('problems.index', ['filters' => json_encode(['tenant.id' => [$this->otherTenant->id]])]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
@@ -244,7 +244,7 @@ describe('editing from the list', function (): void {
     test('offers edit only on problems the reader may edit', function (): void {
         $canUpdate = fn ($items) => collect($items)->mapWithKeys(fn ($item) => [$item['id'] => $item['can_update']]);
 
-        asUser($this->coordinator)->get(route('problems.index'))
+        asUserWithInertia($this->coordinator)->get(route('problems.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->where('data', fn ($data) => $canUpdate($data)[$this->problem->id] === true
                 && $canUpdate($data)[$this->otherTenantProblem->id] === false));
@@ -258,7 +258,7 @@ describe('editing from the list', function (): void {
     test('narrows the list to problems assigned to a person', function (): void {
         $this->problem->update(['responsible_user_id' => $this->coordinator->id]);
 
-        asUser($this->coordinator)
+        asUserWithInertia($this->coordinator)
             ->get(route('problems.index', ['filters' => json_encode(['responsible_user_id' => [$this->coordinator->id]])]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
@@ -350,7 +350,7 @@ describe('creating', function (): void {
         $institution = Institution::factory()->create(['tenant_id' => $this->tenant->id]);
         $foreign = Institution::factory()->create(['tenant_id' => $this->otherTenant->id]);
 
-        asUser($this->coordinator)->get(route('problems.create', ['institution' => $institution->id]))
+        asUserWithInertia($this->coordinator)->get(route('problems.create', ['institution' => $institution->id]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('problem.tenant_id', $this->tenant->id)
@@ -358,7 +358,7 @@ describe('creating', function (): void {
                 ->where('institutions.0.id', $institution->id));
 
         // An institution the user may not write problems for prefills nothing.
-        asUser($this->coordinator)->get(route('problems.create', ['institution' => $foreign->id]))
+        asUserWithInertia($this->coordinator)->get(route('problems.create', ['institution' => $foreign->id]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->where('problem', null)->where('institutions', []));
     });

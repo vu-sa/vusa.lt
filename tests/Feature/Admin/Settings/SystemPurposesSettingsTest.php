@@ -41,7 +41,7 @@ test('managing settings is the settings permission, not a role id', function ():
     $settingsManager->givePermissionTo('settings.update.*');
     $member->duties()->first()->assignRole($settingsManager);
 
-    asUser($member->fresh())->get(route('settings.purposes.edit'))
+    asUserWithInertia($member->fresh())->get(route('settings.purposes.edit'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Admin/Settings/EditSystemPurposesSettings')
@@ -105,11 +105,11 @@ test('viewing settings is its own permission: the pages open without the save co
     $member->duties()->first()->assignRole($viewer);
     $member = $member->fresh();
 
-    asUser($member)->get(route('settings.index'))
+    asUserWithInertia($member)->get(route('settings.index'))
         ->assertOk()->assertInertia(fn (Assert $page) => $page->where('canEdit', false));
-    asUser($member)->get(route('settings.meetings.edit'))
+    asUserWithInertia($member)->get(route('settings.meetings.edit'))
         ->assertOk()->assertInertia(fn (Assert $page) => $page->where('canEdit', false));
-    asUser($member)->get(route('settings.cadences.index'))
+    asUserWithInertia($member)->get(route('settings.cadences.index'))
         ->assertOk()->assertInertia(fn (Assert $page) => $page->where('canEdit', false));
 
     asUser($member)->post(route('settings.meetings.update'), ['type_ids' => []])->assertForbidden();
@@ -118,6 +118,6 @@ test('viewing settings is its own permission: the pages open without the save co
 });
 
 test('whoever may update settings is told they can edit', function (): void {
-    asUser($this->admin)->get(route('settings.index'))
+    asUserWithInertia($this->admin)->get(route('settings.index'))
         ->assertOk()->assertInertia(fn (Assert $page) => $page->where('canEdit', true));
 });

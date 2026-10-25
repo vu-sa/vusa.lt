@@ -2,8 +2,10 @@
 
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Tenant;
+use App\Services\Permissions\PermissionMapBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -91,4 +93,49 @@ test('admin pages share both pronoun translations for personalized labels', func
         ->assertInertia(fn (Assert $page) => $page
             ->where('auth.user.pronouns', ['en' => 'she / her'])
         );
+});
+
+test('JSON visits support Inertia assertions and ordinary visits clear their headers', function (): void {
+    asUserWithInertia($this->user)->get(route('dashboard'))->assertOk()
+        ->assertHeader('X-Inertia', 'true')->assertJsonPath('component', 'Admin/ShowAdminHome')
+        ->assertInertia(fn (Assert $page) => $page->where('auth.user.id', $this->user->id));
+
+    asUser($this->user)->get(route('dashboard'))->assertOk()->assertHeaderMissing('X-Inertia');
+});
+
+test('once configuration is omitted on subsequent visits while locale data stays fresh', function (): void {
+    config(['services.carto.api_key' => 'test-map-key']);
+    $first = asUserWithInertia($this->user)->get(route('dashboard'))->assertOk();
+    $first->assertJsonPath('props.map.cartoApiKey', 'test-map-key');
+    $this->withHeader('X-Inertia-Except-Once-Props', 'map')->get(route('dashboard'))->assertOk()
+        ->assertJsonMissingPath('props.map')->assertJsonStructure(['props' => ['organization', 'tenants', 'typesenseConfig', 'ziggyContext']]);
+});
+
+test('permission map invalidation refreshes the combined payload', function (): void {
+    asUserWithInertia($this->user)->get(route('dashboard'))->assertOk();
+    $key = PermissionMapBuilder::ALL_CACHE_PREFIX.$this->user->id;
+    expect(Cache::get($key))->toHaveKeys(['index', 'create', 'forceDelete']);
+
+    PermissionMapBuilder::forgetCachedMaps($this->user->id);
+    expect(Cache::has($key))->toBeFalse();
+    asUserWithInertia($this->user)->get(route('dashboard'))->assertOk()
+        ->assertJsonPath('props.auth.can.index.news', true);
+});
+
+test('the combined permission cache expires when the last active duty day ends', function (): void {
+    $this->travelTo('2026-10-20 23:59:00');
+    $this->user->duties()->updateExistingPivot($this->user->duties()->first()->id, ['end_date' => today()->toDateString()]);
+    asUserWithInertia($this->user)->get(route('dashboard'))->assertOk();
+    $key = PermissionMapBuilder::ALL_CACHE_PREFIX.$this->user->id;
+    expect(Cache::has($key))->toBeTrue();
+
+    $this->travel(2)->minutes();
+    expect(Cache::has($key))->toBeFalse();
+});
+
+test('route context follows locale defaults without serializing the route table', function (): void {
+    $url = route('home', ['subdomain' => 'www', 'lang' => 'en']);
+    asUserWithInertia($this->user)->get($url)->assertOk()
+        ->assertJsonPath('props.ziggyContext.defaults.newsString', 'news')
+        ->assertJsonMissingPath('props.ziggyContext.routes');
 });

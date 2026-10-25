@@ -57,7 +57,7 @@ describe('authorization tests', function (): void {
         });
 
         test('browses the meetings index without permission — the search key limits it to public ones', function (): void {
-            asUser($this->user)
+            asUserWithInertia($this->user)
                 ->get(route('meetings.index'))
                 ->assertOk()
                 ->assertInertia(fn ($page) => $page->has('defaultTenantShortnames'));
@@ -70,7 +70,7 @@ describe('authorization tests', function (): void {
         });
 
         test('can access meetings index with permission', function (): void {
-            asUser($this->admin)
+            asUserWithInertia($this->admin)
                 ->get(route('meetings.index'))
                 ->assertOk()
                 ->assertInertia(fn ($page) => $page->component('Admin/Representation/IndexMeeting'));
@@ -381,7 +381,7 @@ describe('meeting show payload', function (): void {
         $meeting = Meeting::latest('id')->firstOrFail();
         $response->assertRedirect(route('meetings.show', $meeting));
 
-        asUser($admin)->get(route('meetings.show', $meeting))
+        asUserWithInertia($admin)->get(route('meetings.show', $meeting))
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Representation/ShowMeeting')
                 ->where('publicUrl', route('publicMeetings.show', [
@@ -434,7 +434,7 @@ describe('read-only public meeting record', function (): void {
     });
 
     test('a member without meeting access reads the agenda of a public meeting only', function (): void {
-        asUser($this->user)->get(route('meetings.show', $this->publicMeeting))
+        asUserWithInertia($this->user)->get(route('meetings.show', $this->publicMeeting))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Representation/ShowMeeting')
@@ -460,15 +460,14 @@ describe('read-only public meeting record', function (): void {
     });
 
     test('a member with meeting access gets the full record', function (): void {
-        asUser(makeAdminUser($this->tenant))->get(route('meetings.show', $this->publicMeeting))
-            ->assertOk()
+        asUserWithInertia(makeAdminUser($this->tenant))->get(route('meetings.show', $this->publicMeeting))
             ->assertInertia(fn ($page) => $page->where('readOnly', false));
     });
 
     test('a public agenda item opens read-only, without its notes', function (): void {
         $this->agendaItem->note()->create(['notes_html' => '<p>Private</p>']);
 
-        asUser($this->user)->get(route('agendaItems.show', $this->agendaItem))
+        asUserWithInertia($this->user)->get(route('agendaItems.show', $this->agendaItem))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('Admin/Representation/ShowAgendaItem')
@@ -839,7 +838,7 @@ describe('Posėdžiai collection', function (): void {
     test('serves a shell without rows, since the list is read from the search index', function (): void {
         Meeting::factory()->hasAttached($this->institution)->create();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('meetings.index'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
@@ -853,7 +852,7 @@ describe('Posėdžiai collection', function (): void {
     test('a student representative can open the collection without an own read grant', function (): void {
         $rep = makeTenantUserWithRole('Studentų atstovas', $this->tenant);
 
-        asUser($rep)
+        asUserWithInertia($rep)
             ->get(route('meetings.index'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('Admin/Representation/IndexMeeting'));
@@ -863,7 +862,7 @@ describe('Posėdžiai collection', function (): void {
         $trashed = Meeting::factory()->hasAttached($this->institution)->create();
         $trashed->delete();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('meetings.index', ['showDeleted' => 'true']))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
@@ -880,7 +879,7 @@ describe('Posėdžiai collection', function (): void {
     test('counts the trash so the collection can offer it', function (): void {
         Meeting::factory()->hasAttached($this->institution)->create()->delete();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('meetings.index'))
             ->assertInertia(fn ($page) => $page->where('deletedCount', 1));
     });
@@ -895,7 +894,7 @@ describe('Posėdžiai collection', function (): void {
         activity()->performedOn($mine)->causedBy($this->admin)->log('updated');
         activity()->performedOn($notMine)->causedBy($this->user)->log('updated');
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('meetings.index'))
             ->assertInertia(fn ($page) => $page
                 ->has('recentlyChanged', 1)
@@ -912,7 +911,7 @@ describe('institution meeting navigation', function (): void {
             ->map(fn (string $date) => Meeting::factory()->hasAttached($this->institution)->create(['start_time' => $date.' 10:00']))
             ->all();
 
-        asUser($this->admin)->get(route('meetings.show', $middle))
+        asUserWithInertia($this->admin)->get(route('meetings.show', $middle))
             ->assertInertia(fn ($page) => $page
                 ->where('recordNavigation.position', 2)
                 ->where('recordNavigation.total', 3)
@@ -929,7 +928,7 @@ describe('institution meeting navigation', function (): void {
     test('offers no navigation for an institution\'s only meeting', function (): void {
         $only = Meeting::factory()->hasAttached($this->institution)->create();
 
-        asUser($this->admin)->get(route('meetings.show', $only))
+        asUserWithInertia($this->admin)->get(route('meetings.show', $only))
             ->assertInertia(fn ($page) => $page->where('recordNavigation', null));
     });
 });

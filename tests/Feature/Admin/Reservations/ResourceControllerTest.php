@@ -181,7 +181,7 @@ describe('index', function (): void {
     // The collection reads from Typesense (its scoped key carries the authorization), so the page
     // needs no rows — and, unlike the old redirect to the search tab, it renders here.
     test('renders the resources collection instead of redirecting to the search tab', function (): void {
-        asUser($this->resourceManager)->get(route('resources.index'))
+        asUserWithInertia($this->resourceManager)->get(route('resources.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component('Admin/Reservations/IndexResource'));
     });
@@ -200,7 +200,7 @@ describe('destroy', function (): void {
 
         $expectedMessage = __('messages.deleted.m', ['model' => trans_choice('entities.resource.model', 1)]);
 
-        asUser($this->resourceManager)->get(route('resources.index'))
+        asUserWithInertia($this->resourceManager)->get(route('resources.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Reservations/IndexResource')
@@ -224,7 +224,7 @@ describe('store', function (): void {
             ->assertRedirectToRoute('resources.show', Resource::query()->latest('id')->firstOrFail())
             ->assertSessionHas('success');
 
-        asUser($this->resourceManager)->get(route('resources.show', Resource::query()->where('name->lt', 'Naujas')->sole()))
+        asUserWithInertia($this->resourceManager)->get(route('resources.show', Resource::query()->where('name->lt', 'Naujas')->sole()))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Reservations/ShowResource')
@@ -298,7 +298,7 @@ describe('show', function (): void {
         bookResource($this->resource, $this->member, now()->subDay(), now()->addDay(), 'lent', 2);
         bookResource($this->resource, $this->member, now()->addWeek(), now()->addWeek()->addDay());
 
-        asUser($this->member)->get(route('resources.show', $this->resource))
+        asUserWithInertia($this->member)->get(route('resources.show', $this->resource))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Reservations/ShowResource')
@@ -317,7 +317,7 @@ describe('show', function (): void {
     test('an unreturned item past its end time is flagged overdue', function (): void {
         bookResource($this->resource, $this->member, now()->subDays(3), now()->subDay(), 'lent');
 
-        asUser($this->member)->get(route('resources.show', $this->resource))
+        asUserWithInertia($this->member)->get(route('resources.show', $this->resource))
             ->assertInertia(fn (Assert $page) => $page
                 ->has('currentLoans', 1)
                 ->where('currentLoans.0.overdue', true)
@@ -327,7 +327,7 @@ describe('show', function (): void {
     test('someone else\'s reservation is shown without its name or link', function (): void {
         bookResource($this->resource, User::factory()->create(), now()->addWeek(), now()->addWeek()->addDay());
 
-        asUser($this->member)->get(route('resources.show', $this->resource))
+        asUserWithInertia($this->member)->get(route('resources.show', $this->resource))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('upcoming.0.name', null)
                 ->where('upcoming.0.href', null)
@@ -338,7 +338,7 @@ describe('show', function (): void {
     test('a resource manager sees the reservation behind it and may edit', function (): void {
         $reservation = bookResource($this->resource, User::factory()->create(), now()->addWeek(), now()->addWeek()->addDay());
 
-        asUser($this->resourceManager)->get(route('resources.show', $this->resource))
+        asUserWithInertia($this->resourceManager)->get(route('resources.show', $this->resource))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('upcoming.0.name', $reservation->name)
                 ->where('upcoming.0.href', route('reservations.show', $reservation->id))
@@ -349,7 +349,7 @@ describe('show', function (): void {
     test('a finished reservation appears in the deferred history', function (): void {
         bookResource($this->resource, $this->member, now()->subWeek(), now()->subDays(5), 'returned');
 
-        asUser($this->member)->get(route('resources.show', $this->resource))
+        asUserWithInertia($this->member)->get(route('resources.show', $this->resource))
             ->assertInertia(fn (Assert $page) => $page
                 ->has('currentLoans', 0)
                 ->loadDeferredProps(fn (Assert $reload) => $reload->has('history', 1))
@@ -372,7 +372,7 @@ describe('edit', function (): void {
             ]);
         }
 
-        asUser($this->resourceManager)->get(route('resources.edit', $this->resource))
+        asUserWithInertia($this->resourceManager)->get(route('resources.edit', $this->resource))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Reservations/EditResource')

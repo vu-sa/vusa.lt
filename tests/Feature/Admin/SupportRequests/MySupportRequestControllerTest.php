@@ -80,7 +80,7 @@ describe('authenticated user index', function (): void {
             'visibility' => SupportRequestVisibility::Public,
         ]);
 
-        asUser($this->user)->get(route('mySupportRequests.index'))
+        asUserWithInertia($this->user)->get(route('mySupportRequests.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowSupportRequests')
@@ -92,7 +92,7 @@ describe('authenticated user index', function (): void {
                     && ! collect($requests)->pluck('id')->contains($otherPrivate->id))
             );
 
-        asUser($this->user)->get(route('mySupportRequests.index', ['tab' => 'mine']))
+        asUserWithInertia($this->user)->get(route('mySupportRequests.index', ['tab' => 'mine']))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->where('currentTab', 'mine')
@@ -110,7 +110,7 @@ describe('authenticated user index', function (): void {
         ]);
         $sharedRequest->roles()->attach($role->id);
 
-        asUser($this->user)->get(route('mySupportRequests.index'))
+        asUserWithInertia($this->user)->get(route('mySupportRequests.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->where('tabCounts.all', 1)
@@ -133,7 +133,7 @@ describe('involved people on the dashboard', function (): void {
             'visibility' => SupportRequestVisibility::Private,
         ]);
 
-        asUser($this->user)->get(route('mySupportRequests.index', ['tab' => 'mine']))
+        asUserWithInertia($this->user)->get(route('mySupportRequests.index', ['tab' => 'mine']))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('tabCounts.all', 1)
                 ->where('tabCounts.mine', 1)
@@ -147,7 +147,7 @@ describe('involved people on the dashboard', function (): void {
             'assigned_to' => $this->user->id,
         ]);
 
-        asUser(makeAdminUser($this->tenant))->get(route('mySupportRequests.index'))
+        asUserWithInertia(makeAdminUser($this->tenant))->get(route('mySupportRequests.index'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('requests.data.0.id', $assignedRequest->id)
                 ->where('requests.data.0.assigned_to', $this->user->id)
@@ -159,7 +159,7 @@ describe('involved people on the dashboard', function (): void {
 describe('creating and storing support requests', function (): void {
     test('can access create page with taxonomies and roles localized by language', function (): void {
         app()->setLocale('lt');
-        asUser($this->user)->get(route('mySupportRequests.create'))
+        asUserWithInertia($this->user)->get(route('mySupportRequests.create'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/SupportRequests/CreateSupportRequest')
@@ -171,7 +171,7 @@ describe('creating and storing support requests', function (): void {
             );
 
         app()->setLocale('en');
-        asUser($this->user)->get(route('mySupportRequests.create'))
+        asUserWithInertia($this->user)->get(route('mySupportRequests.create'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->where('types', fn ($types) => collect($types)->contains('name', $this->type->getTranslation('name', 'en')))
@@ -201,7 +201,7 @@ describe('creating and storing support requests', function (): void {
             'end_date' => now()->addMonth(),
         ]);
 
-        asUser($this->user)->get(route('mySupportRequests.create'))
+        asUserWithInertia($this->user)->get(route('mySupportRequests.create'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->where('roles', function ($roles) use ($role, $currentUser, $pastUser) {
@@ -218,7 +218,7 @@ describe('creating and storing support requests', function (): void {
     test('user cannot select roles they do not have', function (): void {
         $otherRole = Role::create(['name' => 'Foreign Role', 'guard_name' => 'web']);
 
-        asUser($this->user)->get(route('mySupportRequests.create'))
+        asUserWithInertia($this->user)->get(route('mySupportRequests.create'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->where('roles', fn ($roles) => collect($roles)->firstWhere('id', $otherRole->id) === null)
@@ -359,7 +359,7 @@ describe('creator editing permissions', function (): void {
             'support_request_area_id' => $this->area->id,
         ]);
 
-        asUser($this->user)->get(route('supportRequests.edit', $request->id))
+        asUserWithInertia($this->user)->get(route('supportRequests.edit', $request->id))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/SupportRequests/EditSupportRequest')
@@ -420,7 +420,7 @@ test('assignment permits private viewing without granting management or dashboar
         'status' => SupportRequestStatus::New,
     ]);
 
-    asUser($this->user)->get(route('supportRequests.show', $request))
+    asUserWithInertia($this->user)->get(route('supportRequests.show', $request))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('supportRequest.id', $request->id)

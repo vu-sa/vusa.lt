@@ -14,12 +14,15 @@ use App\Models\Vote;
 use App\Settings\MeetingSettings;
 use App\Support\LocalizedRouteSlugs;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    Http::fake(['nominatim.openstreetmap.org/search*' => Http::response([])]);
+
     $this->tenant = Tenant::query()->where('alias', 'vusa')->firstOrFail();
 
     $this->vusaType = InstitutionType::factory()->withGovernanceScope(InstitutionScope::Vusa)->create();

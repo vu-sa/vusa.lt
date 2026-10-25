@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Uri;
 use Inertia\Inertia;
 use Inertia\Middleware;
 use Tighten\Ziggy\Ziggy;
@@ -65,7 +66,7 @@ class HandleInertiaRequests extends Middleware
 
         Inertia::disableSsr(! $ssrEligible);
 
-        // Only full page loads are server-rendered; XHR visits already have the client's @routes.
+        // The renderer receives its public route list; browser visits use the built route artifact.
         if ($ssrEligible && ! $request->header('X-Inertia')) {
             Inertia::share('ziggy', fn () => [
                 ...(new Ziggy)->filter(collect(Route::getRoutes())->filter(
@@ -92,6 +93,12 @@ class HandleInertiaRequests extends Middleware
     public function version(Request $request)
     {
         return parent::version($request);
+    }
+
+    #[\Override]
+    public function shareOnce(Request $request): array
+    {
+        return ['map' => fn () => ['cartoApiKey' => config('services.carto.api_key')]];
     }
 
     /**
@@ -122,6 +129,11 @@ class HandleInertiaRequests extends Middleware
                 'path' => $request->path(...),
                 'url' => fn () => config('app.url'),
             ],
+            'ziggyContext' => fn () => [
+                'url' => url('/'),
+                'port' => Uri::of(url('/'))->port(),
+                'defaults' => app('url')->getDefaultParameters(),
+            ],
             // Organisation-level facts (contact addresses, social profiles, registry details)
             // so the footer, error pages and navigation buttons stop hardcoding their own
             // copies. See config/vusa.php.
@@ -134,11 +146,7 @@ class HandleInertiaRequests extends Middleware
                 'privacyPageUrl' => SiteSettings::cachedPrivacyPageUrl(app()->getLocale()),
             ],
             'auth' => is_null($user) ? null : [
-                'can' => fn () => [
-                    'index' => fn () => $onAdmin ? $this->getIndexPermissions($user) : [],
-                    'create' => fn () => $onAdmin ? $this->getCreatePermissions($user) : [],
-                    'forceDelete' => fn () => $onAdmin ? $this->getForceDeletePermissions($user) : [],
-                ],
+                'can' => fn () => $onAdmin ? $this->getAllPermissionsMap($user) : ['index' => [], 'create' => [], 'forceDelete' => []],
                 'user' => fn () => [
                     // Relations loaded on the request user by policies or controllers are not shared.
                     ...$user->withoutRelations()->toArray(),
@@ -184,10 +192,6 @@ class HandleInertiaRequests extends Middleware
             'curatorDutyTypeSlugs' => fn () => $onAdmin ? app(SystemDutyTypes::class)->curatorSlugs() : [],
             'institutionTypes' => $this->getInstitutionTypesForInertia(...),
             'typesenseConfig' => TypesenseManager::getFrontendConfig(...),
-            // CARTO now requires an API key on basemap tile requests (PadalinysMap, EventLocationMap).
-            'map' => [
-                'cartoApiKey' => fn () => config('services.carto.api_key'),
-            ],
             'pwa' => [
                 'vapidPublicKey' => fn () => config('webpush.vapid.public_key'),
                 'hasPushSubscription' => fn () => $onAdmin && $getPushEndpoints() !== [],
@@ -289,34 +293,14 @@ class HandleInertiaRequests extends Middleware
         return $impersonator ? ['impersonator_name' => $impersonator->name] : null;
     }
 
-    /**
-     * @return array<string, bool>
-     */
-    private function getIndexPermissions(User $user): array
+    /** @return array{index: array<string, bool>, create: array<string, bool>, forceDelete: array<string, bool>} */
+    private function getAllPermissionsMap(User $user): array
     {
-        return Cache::remember(PermissionMapBuilder::INDEX_CACHE_PREFIX.$user->id, fn () => AuthorityCacheExpiry::for($user, 1800),
-            fn () => app(PermissionMapBuilder::class)->indexMap($user)
-        );
-    }
+        return Cache::remember(PermissionMapBuilder::ALL_CACHE_PREFIX.$user->id, fn () => AuthorityCacheExpiry::for($user, 1800), function () use ($user): array {
+            $builder = app(PermissionMapBuilder::class);
 
-    /**
-     * @return array<string, bool>
-     */
-    private function getCreatePermissions(User $user): array
-    {
-        return Cache::remember(PermissionMapBuilder::CREATE_CACHE_PREFIX.$user->id, fn () => AuthorityCacheExpiry::for($user, 1800),
-            fn () => app(PermissionMapBuilder::class)->createMap($user)
-        );
-    }
-
-    /**
-     * @return array<string, bool>
-     */
-    private function getForceDeletePermissions(User $user): array
-    {
-        return Cache::remember(PermissionMapBuilder::FORCE_DELETE_CACHE_PREFIX.$user->id, fn () => AuthorityCacheExpiry::for($user, 1800),
-            fn () => app(PermissionMapBuilder::class)->forceDeleteMap($user)
-        );
+            return ['index' => $builder->indexMap($user), 'create' => $builder->createMap($user), 'forceDelete' => $builder->forceDeleteMap($user)];
+        });
     }
 
     public static function adminNavigationCacheKey(string $userId): string

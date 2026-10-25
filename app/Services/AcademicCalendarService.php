@@ -21,6 +21,9 @@ class AcademicCalendarService
     /** @var array<int, list<VacationPeriod>> */
     private array $periodsByYear = [];
 
+    /** @var array<int, list<int>> */
+    private array $vacationPrefixes = [];
+
     /**
      * Vacation periods beginning in the given year. Period bounds are inclusive.
      *
@@ -75,11 +78,21 @@ class AcademicCalendarService
      */
     public function effectiveDaysBetween(CarbonInterface $from, CarbonInterface $to): int
     {
+        if ($from->timezoneName === date_default_timezone_get() && $to->timezoneName === date_default_timezone_get()) {
+            return $from->toDateString() <= $to->toDateString()
+                ? $this->indexedEffectiveDays($from, $to)
+                : $this->indexedEffectiveDays($to, $from);
+        }
+
         [$start, $end] = $this->orderedDays($from, $to);
+
+        if ($start->equalTo($end)) {
+            return 0;
+        }
 
         $totalDays = (int) $start->diffInDays($end);
 
-        return max(0, $totalDays - $this->vacationDaysBetween($start, $end));
+        return max(0, $totalDays - $this->vacationIntervalDays($start, $end));
     }
 
     /**
@@ -159,12 +172,48 @@ class AcademicCalendarService
         ];
     }
 
-    /**
-     * Number of vacation days in the half-open range [$start, $end), matching how
-     * effectiveDaysBetween() counts total days. Overlapping periods are merged so
-     * shared days are not subtracted twice.
-     */
-    private function vacationDaysBetween(CarbonImmutable $start, CarbonImmutable $end): int
+    /** Effective days in the half-open range [$start, $end), in the application timezone. */
+    private function indexedEffectiveDays(CarbonInterface $start, CarbonInterface $end): int
+    {
+        $days = 0;
+        $startYear = $start->year;
+        $endYear = $end->year;
+        for ($year = $startYear; $year <= $endYear; $year++) {
+            $prefix = $this->vacationPrefix($year);
+            $first = $year === $startYear ? $start->dayOfYear - 1 : 0;
+            $last = $year === $endYear ? $end->dayOfYear - 1 : count($prefix) - 1;
+            $days += $last - $first - ($prefix[$last] - $prefix[$first]);
+        }
+
+        return $days;
+    }
+
+    /** @return list<int> Vacation days before each day of the year, plus the year-end total. */
+    private function vacationPrefix(int $year): array
+    {
+        if (isset($this->vacationPrefixes[$year])) {
+            return $this->vacationPrefixes[$year];
+        }
+
+        $first = CarbonImmutable::create($year, 1, 1)->startOfDay();
+        $until = $first->addYear();
+        $vacations = array_fill(0, $first->daysInYear, 0);
+        foreach ($this->vacationPeriods($first, $until) as $period) {
+            $from = $period['start']->max($first);
+            $end = $period['end']->addDay()->min($until);
+            for ($day = $from; $day->lt($end); $day = $day->addDay()) {
+                $vacations[$day->dayOfYear - 1] = 1;
+            }
+        }
+        $prefix = [0];
+        foreach ($vacations as $index => $vacation) {
+            $prefix[] = $prefix[$index] + $vacation;
+        }
+
+        return $this->vacationPrefixes[$year] = $prefix;
+    }
+
+    private function vacationIntervalDays(CarbonImmutable $start, CarbonImmutable $end): int
     {
         /** @var list<array{0: CarbonImmutable, 1: CarbonImmutable}> $intervals */
         $intervals = [];

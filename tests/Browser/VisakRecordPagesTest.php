@@ -22,15 +22,8 @@ beforeEach(function (): void {
 /** No `$t()` call fell through to its raw key; lower-cased since CSS uppercases headings. */
 function expectNoRawRecordKeys($page): void
 {
-    // admin.ts mounts before the translation JSON arrives, so a slow runner can read keys that are about to swap out.
     $script = '/\b(institutions|meetings|agenda_items|visak|shell)\.[a-z_]+/.test(document.body.innerText.toLowerCase())';
-    $deadline = microtime(true) + 5;
-
-    while ($page->script($script) && microtime(true) < $deadline) {
-        usleep(100_000);
-    }
-
-    expect($page->script($script))->toBeFalse();
+    $page->assertScript($script, false);
 }
 
 /** The record fits the viewport at a phone and a desktop width. */

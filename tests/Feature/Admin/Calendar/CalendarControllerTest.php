@@ -265,7 +265,7 @@ describe('authorized access', function (): void {
             ->get(route('calendar.view', $calendar))
             ->assertRedirect(route('calendar.edit', $calendar));
 
-        asUser($this->calendarReader)
+        asUserWithInertia($this->calendarReader)
             ->get(route('calendar.edit', $calendar))
             ->assertOk()
             ->assertInertia(fn ($page) => $page

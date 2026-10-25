@@ -15,13 +15,7 @@ it('shows a representative the delivery options for every notification type with
 
     // Labels resolve once the translations arrive; a raw key here means a label was read too early.
     $rawKey = 'document.body.innerText.includes("notifications.preferences.")';
-    $deadline = microtime(true) + 5;
-
-    while ($page->script($rawKey) && microtime(true) < $deadline) {
-        usleep(100_000);
-    }
-
-    expect($page->script($rawKey))->toBeFalse();
+    $page->assertScript($rawKey, false);
 
     foreach ([390, 1440] as $width) {
         $page->resize($width, 900);

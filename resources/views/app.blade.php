@@ -124,9 +124,6 @@
         {{ \App\Support\PageStylesheets::for($designSurface, $page['component']) }}
     @endif
 
-    {{-- Ziggy Routes --}}
-    @routes
-
     {{-- Umami analytics: cookieless, public pages only. Absent when unconfigured (staging, CI). --}}
     {{-- data-performance opts into Web Vitals (TTFB/FCP/LCP/CLS); it is off by default and --}}
     {{-- the figures cannot be backfilled, so it is collected from the start. --}}

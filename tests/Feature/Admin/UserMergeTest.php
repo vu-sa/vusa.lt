@@ -589,7 +589,7 @@ describe('duplicates on the edit form', function (): void {
         $duplicate = makeNamedUser($this->tenant);
         makeNamedUser($this->tenant, 'Petras Petraitis');
 
-        asUser($this->admin)->get(route('users.edit', $user))
+        asUserWithInertia($this->admin)->get(route('users.edit', $user))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->missing('duplicates')
@@ -605,7 +605,7 @@ describe('duplicates on the edit form', function (): void {
         $user = makeNamedUser($this->tenant);
         $duplicate = makeNamedUser(Tenant::query()->whereKeyNot($this->tenant->id)->first());
 
-        asUser($this->admin)->get(route('users.edit', $user))
+        asUserWithInertia($this->admin)->get(route('users.edit', $user))
             ->assertInertia(fn ($page) => $page
                 ->loadDeferredProps(fn ($page) => $page
                     ->where('duplicates.0.keepable_ids', [])

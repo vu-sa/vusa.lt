@@ -137,7 +137,7 @@ describe('the history on Mano rolės', function (): void {
         giveTerm($this->user, $this->tenant, '2026-09-01');
         giveTerm($this->user, $this->tenant, '2025-10-01', '2026-03-31');
 
-        asUser($this->user)
+        asUserWithInertia($this->user)
             ->get(route('profile.roles'))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/ShowMyRoles')
@@ -152,7 +152,7 @@ describe('the history on Mano rolės', function (): void {
     test('is empty when nothing changed in the past year', function (): void {
         giveTerm($this->user, $this->tenant, '2020-01-01');
 
-        asUser($this->user)->get(route('profile.roles'))->assertInertia(fn (Assert $page) => $page->has('access.history', 0));
+        asUserWithInertia($this->user)->get(route('profile.roles'))->assertInertia(fn (Assert $page) => $page->has('access.history', 0));
     });
 });
 

@@ -20,7 +20,7 @@ test('settings managers save recommendations and receive their selected document
     $rule = ['document_id' => (string) $document->id, 'phrases' => [' įstatai ', 'įstatai', 'VU SA įstatai'], 'enabled' => true, 'show_without_query' => false];
     asUser($this->admin)->post(route('settings.documents.update'), ['important_content_types' => ['Įstatai'], 'recommendations' => [$rule]])->assertRedirect()->assertSessionHasNoErrors();
     expect(app(DocumentSettings::class)->recommendations)->toBe([[...$rule, 'phrases' => ['įstatai', 'VU SA įstatai']]]);
-    asUser($this->admin)->get(route('settings.documents.edit'))->assertOk()->assertInertia(fn (Assert $page) => $page
+    asUserWithInertia($this->admin)->get(route('settings.documents.edit'))->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('Admin/Settings/EditDocumentSettings')->where('selected_documents.0.title', 'VU SA Įstatai')->where('recommendations.0.document_id', (string) $document->id));
 });
 

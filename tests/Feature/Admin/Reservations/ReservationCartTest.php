@@ -108,15 +108,15 @@ describe('cart items', function (): void {
 
 describe('an empty draft', function (): void {
     test('still counts as a started reservation on the resource list, but stays off Pradžia', function (): void {
-        asUser($this->user)->get(route('resources.index'))
+        asUserWithInertia($this->user)->get(route('resources.index'))
             ->assertInertia(fn (Assert $page) => $page->where('reservationCart', null));
 
         asUser($this->user)->put(route('reservationCart.update'), ['name' => null, 'description' => null])->assertRedirect();
 
-        asUser($this->user)->get(route('resources.index'))
+        asUserWithInertia($this->user)->get(route('resources.index'))
             ->assertInertia(fn (Assert $page) => $page->where('reservationCart.count', 0));
 
-        asUser($this->user)->get(route('dashboard'))
+        asUserWithInertia($this->user)->get(route('dashboard'))
             ->assertInertia(fn (Assert $page) => $page->where('reservationDraft', null));
     });
 });
@@ -134,7 +134,7 @@ describe('cart period and availability', function (): void {
 
         expect($draft->items()->count())->toBe(1);
 
-        asUser($this->user)->get(route('resources.index'))
+        asUserWithInertia($this->user)->get(route('resources.index'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('reservationCart.count', 1)
                 ->where('reservationCart.problemCount', 1)
@@ -202,7 +202,7 @@ describe('checkout', function (): void {
         $draft = ReservationDraft::factory()->for($this->user)->withPeriod($this->start, $this->end)->create(['name' => 'Juodraštis']);
         ReservationDraftItem::factory()->for($draft, 'draft')->for($this->resource)->create();
 
-        asUser($this->user)->get(route('reservations.create'))
+        asUserWithInertia($this->user)->get(route('reservations.create'))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Reservations/CreateReservation')
                 ->where('reservationCart.name', 'Juodraštis')

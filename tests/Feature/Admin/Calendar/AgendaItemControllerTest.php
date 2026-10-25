@@ -338,7 +338,7 @@ describe('agenda items controller', function (): void {
         $untyped = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 1, 'type' => null]);
         $informational = AgendaItem::factory()->create(['meeting_id' => $this->meeting->id, 'order' => 2, 'type' => 'informational']);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('agendaItems.show', $untyped->id))
             ->assertInertia(fn ($page) => $page
                 ->where('siblingAgendaItems.0.missing.type', 'agenda_item_type_missing')
@@ -376,7 +376,7 @@ describe('agenda items controller', function (): void {
         $blank->note()->create(['yjs_state' => base64_encode('state'), 'notes_html' => '<p></p>']);
         $written->note()->create(['yjs_state' => base64_encode('state'), 'notes_html' => '<p>Pastaba</p>']);
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('agendaItems.show', $blank->id))
             ->assertStatus(200)
             ->assertInertia(fn ($page) => $page

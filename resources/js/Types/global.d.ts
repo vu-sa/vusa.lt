@@ -1,5 +1,5 @@
 import type { PageProps as InertiaPageProps } from '@inertiajs/core';
-import type { route as ziggyRoute } from 'ziggy-js';
+import type { route as ziggyRoute, Config as ZiggyConfig } from 'ziggy-js';
 import type { DriveItem } from '@microsoft/microsoft-graph-types';
 
 import type { PageProps as AppPageProps } from './';
@@ -7,6 +7,7 @@ import type { PageProps as AppPageProps } from './';
 declare global {
 
   var route: typeof ziggyRoute;
+  var Ziggy: ZiggyConfig;
 
   interface PaginatedModels<T> {
     current_page: number;

@@ -21,7 +21,7 @@ test('the shell badges get the pending and overdue task counts of the signed-in 
         $task->users()->attach($this->user->id);
     }
 
-    asUser($this->user)
+    asUserWithInertia($this->user)
         ->get(route('dashboard'))
         ->assertInertia(fn (Assert $page) => $page
             ->where('auth.user.tasks_count', 2)

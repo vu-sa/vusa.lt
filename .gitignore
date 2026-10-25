@@ -107,3 +107,5 @@ docs/public/screenshots
 # The PDF guide and release notes are built at deploy time (docs/pdf/build.ts, build-release.ts)
 docs/pdf/.build
 docs/public/vusa-lt-*.pdf
+
+/resources/js/ziggy.js

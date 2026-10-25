@@ -36,7 +36,7 @@ describe('access', function (): void {
     });
 
     test('a coordinator opens it', function (): void {
-        asUser($this->coordinator)->get(route('dashboard.organizacija'))
+        asUserWithInertia($this->coordinator)->get(route('dashboard.organizacija'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Dashboard/ShowOrganizacija')
@@ -53,7 +53,7 @@ describe('access', function (): void {
         $holder->duties()->attach($duty, ['start_date' => now()->subMonth()->toDateString()]);
         ResponsibilityGrant::factory()->forDuty($duty)->forTenant($this->tenant)->create();
 
-        asUser($this->coordinator)->get(route('dashboard.organizacija'))
+        asUserWithInertia($this->coordinator)->get(route('dashboard.organizacija'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('coordinatorGaps', fn ($gaps) => collect($gaps)->pluck('id')
                     ->doesntContain($this->tenant->id)
@@ -61,7 +61,7 @@ describe('access', function (): void {
 
         $duty->current_users()->detach($holder);
 
-        asUser($this->coordinator)->get(route('dashboard.organizacija'))
+        asUserWithInertia($this->coordinator)->get(route('dashboard.organizacija'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('coordinatorGaps', fn ($gaps) => collect($gaps)->pluck('id')->contains($this->tenant->id)));
     });
@@ -78,7 +78,7 @@ describe('what it counts', function (): void {
         seatIn($this->tenant);
         seatIn($this->otherTenant);
 
-        asUser($this->coordinator)->get(route('dashboard.organizacija'))
+        asUserWithInertia($this->coordinator)->get(route('dashboard.organizacija'))
             ->assertInertia(fn (Assert $page) => $page->where('counts.duties', $before + 1));
     });
 
@@ -87,7 +87,7 @@ describe('what it counts', function (): void {
 
         seatIn($this->tenant);
 
-        asUser($this->coordinator)->get(route('dashboard.organizacija'))
+        asUserWithInertia($this->coordinator)->get(route('dashboard.organizacija'))
             ->assertInertia(fn (Assert $page) => $page->where('counts.emptyDuties', $empty + 1));
     });
 
@@ -97,7 +97,7 @@ describe('what it counts', function (): void {
         seatIn($this->tenant, now()->addDays(90)->toDateString());
         seatIn($this->otherTenant, now()->addDays(3)->toDateString());
 
-        asUser($this->coordinator)->get(route('dashboard.organizacija'))
+        asUserWithInertia($this->coordinator)->get(route('dashboard.organizacija'))
             ->assertInertia(fn (Assert $page) => $page
                 ->where('counts.endingSoon', 2)
                 ->has('endingTerms', 2)
@@ -106,7 +106,7 @@ describe('what it counts', function (): void {
     });
 
     test('the recently edited list is deferred', function (): void {
-        asUser($this->coordinator)->get(route('dashboard.organizacija'))
+        asUserWithInertia($this->coordinator)->get(route('dashboard.organizacija'))
             ->assertInertia(fn (Assert $page) => $page
                 ->loadDeferredProps('secondary', fn (Assert $deferred) => $deferred->has('recentlyEdited'))
             );

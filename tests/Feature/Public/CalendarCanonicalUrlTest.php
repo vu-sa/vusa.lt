@@ -4,11 +4,14 @@ use App\Models\Calendar;
 use App\Models\PublicUrl;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia as Assert;
 
 pest()->use(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    Http::fake(['nominatim.openstreetmap.org/search*' => Http::response([])]);
+
     $this->tenant = Tenant::firstOrCreate(
         ['alias' => 'vusa'],
         [

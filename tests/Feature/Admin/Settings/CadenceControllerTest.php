@@ -51,7 +51,7 @@ describe('authorized access', function (): void {
         Cadence::factory()->forYear(2025)->create();
         Cadence::factory()->forYear(2025)->create(['institution_id' => $institution->id]);
 
-        asUser($this->admin)->get(route('settings.cadences.index'))
+        asUserWithInertia($this->admin)->get(route('settings.cadences.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Admin/Settings/EditCadenceSettings')

@@ -169,7 +169,7 @@ describe('the coordinator is one tap away on rep screens (R-g)', function (): vo
     test('the ViSAK overview carries it, deferred', function (): void {
         $rep = makeTenantUserWithRole('Studentų atstovas', $this->tenant);
 
-        asUser($rep)->get(route('dashboard.atstovavimas'))->assertInertia(fn (Assert $page) => $page
+        asUserWithInertia($rep)->get(route('dashboard.atstovavimas'))->assertInertia(fn (Assert $page) => $page
             ->missing('coordinators')
             ->loadDeferredProps('secondary', fn (Assert $page) => $page->where('coordinators.0.name', 'Ona Koordinatorė'))
         );
@@ -178,7 +178,7 @@ describe('the coordinator is one tap away on rep screens (R-g)', function (): vo
     test('the meeting record leaves the coordinators out, even among its deferred panels', function (): void {
         $meeting = Meeting::factory()->hasAttached($this->institution)->create();
 
-        asUser(makeAdminUser())->get(route('meetings.show', $meeting))->assertInertia(fn (Assert $page) => $page
+        asUserWithInertia(makeAdminUser())->get(route('meetings.show', $meeting))->assertInertia(fn (Assert $page) => $page
             ->missing('coordinators')
             ->loadDeferredProps('meetingPanels', fn (Assert $page) => $page->missing('coordinators'))
         );

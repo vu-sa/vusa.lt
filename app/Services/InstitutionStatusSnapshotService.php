@@ -37,8 +37,10 @@ class InstitutionStatusSnapshotService
         }
 
         $tenantIds = Tenant::query()->representational()->pluck('id')->all();
-        $existing = InstitutionStatusSnapshot::query()->whereBetween('taken_on', [$first->toDateString(), $last->toDateString()])
-            ->whereIn('tenant_id', $tenantIds)->get()->groupBy(fn ($row) => $row->taken_on->toDateString());
+        /** @var Collection<string, Collection<int, InstitutionStatusSnapshot>> $existing */
+        $existing = InstitutionStatusSnapshot::query()->whereBetween('taken_on', [$first->subDay()->toDateString(), $last->toDateString()])
+            ->whereIn('tenant_id', $tenantIds)->get()->groupBy(fn ($row) => $row->taken_on->toDateString())
+            ->map(fn ($rows) => $rows->keyBy('tenant_id'));
         $days = [];
         for ($day = $first; $day->lte($last); $day = $day->addDay()) {
             $rows = $existing->get($day->toDateString(), collect());
@@ -62,7 +64,7 @@ class InstitutionStatusSnapshotService
         $written = 0;
 
         foreach ($days as $day) {
-            $written += $this->storeDay($day, $tenantIds, $summaries, $reconstructed, $repair);
+            $written += $this->storeDay($day, $tenantIds, $summaries, $existing, $reconstructed, $repair);
             if ($progress !== null) {
                 $progress();
             }
@@ -75,28 +77,54 @@ class InstitutionStatusSnapshotService
         return $written;
     }
 
-    private function storeDay(CarbonImmutable $day, array $tenantIds, array $summaries, bool $reconstructed, bool $repair): int
+    /** @param Collection<string, Collection<int, InstitutionStatusSnapshot>> $existing */
+    private function storeDay(CarbonImmutable $day, array $tenantIds, array $summaries, Collection $existing, bool $reconstructed, bool $repair): int
     {
-        return DB::transaction(function () use ($day, $tenantIds, $summaries, $reconstructed, $repair): int {
+        $date = $day->toDateString();
+        $rows = $existing->get($date, collect());
+        $previous = $existing->get($day->subDay()->toDateString(), collect());
+        [$count, $stored] = DB::transaction(function () use ($day, $date, $tenantIds, $summaries, $rows, $previous, $reconstructed, $repair): array {
             $count = 0;
+            $records = [];
+            $stored = [];
             foreach ($tenantIds as $tenantId) {
-                $row = InstitutionStatusSnapshot::query()->firstOrNew(['taken_on' => $day->toDateString(), 'tenant_id' => $tenantId]);
-                if ($row->exists && (! $repair || ! $row->is_reconstructed)) {
+                $original = $rows->get($tenantId);
+                if ($original !== null && (! $repair || ! $original->is_reconstructed)) {
                     continue;
                 }
-                $summary = $summaries[$tenantId][$day->toDateString()];
-                $previous = InstitutionStatusSnapshot::query()->where('tenant_id', $tenantId)->whereDate('taken_on', $day->subDay())->first();
-                if ($previous?->institution_statuses !== null) {
-                    $before = array_map(InstitutionActivityStatus::from(...), $previous->institution_statuses);
-                    $after = array_map(InstitutionActivityStatus::from(...), $summary['institution_statuses']);
-                    $summary = [...$summary, ...$this->transitions($before, $after)];
+                $row = $original === null
+                    ? new InstitutionStatusSnapshot(['taken_on' => $date, 'tenant_id' => $tenantId])
+                    : clone $original;
+                $summary = $summaries[$tenantId][$date];
+                $before = $previous->get($tenantId)?->institution_statuses;
+                if ($before !== null) {
+                    $summary = [...$summary, ...$this->transitions(
+                        array_map(InstitutionActivityStatus::from(...), $before),
+                        array_map(InstitutionActivityStatus::from(...), $summary['institution_statuses']),
+                    )];
                 }
-                $row->fill([...$summary, 'is_reconstructed' => $reconstructed || ! $day->isYesterday()])->save();
+                $row->fill([...$summary, 'is_reconstructed' => $reconstructed || ! $day->isYesterday()]);
+                if (! $row->exists || $row->isDirty()) {
+                    $row->updateTimestamps();
+                    $attributes = $row->getAttributes();
+                    unset($attributes['id']);
+                    $records[] = $attributes;
+                }
+                $stored[$tenantId] = $row;
                 $count++;
             }
+            foreach (array_chunk($records, 250) as $batch) {
+                InstitutionStatusSnapshot::query()->upsert($batch, ['taken_on', 'tenant_id'], [
+                    ...InstitutionStatusSnapshot::SUMMED_COLUMNS, 'institution_statuses', 'meeting_ids',
+                    'is_reconstructed', 'updated_at',
+                ]);
+            }
 
-            return $count;
+            return [$count, $stored];
         });
+        $existing->put($date, $rows->replace($stored));
+
+        return $count;
     }
 
     /**
@@ -117,12 +145,14 @@ class InstitutionStatusSnapshotService
         }
         $statusesByMoment = $this->replay->replay($institutions, $moments);
 
+        $flows = $this->flowBuckets($institutions, $days);
         $summaries = [];
 
         foreach ($days as $index => $day) {
             $summaries[$day->toDateString()] = [
                 ...InstitutionStatusTally::fromStatuses($statusesByMoment[$index * 2 + 1]),
-                ...$this->flow($institutions, $day, $statusesByMoment[$index * 2], $statusesByMoment[$index * 2 + 1]),
+                ...$flows[$day->toDateString()],
+                ...$this->transitions($statusesByMoment[$index * 2], $statusesByMoment[$index * 2 + 1]),
                 'institution_statuses' => array_map(fn (InstitutionActivityStatus $status): string => $status->value, $statusesByMoment[$index * 2 + 1]),
             ];
         }
@@ -130,42 +160,49 @@ class InstitutionStatusSnapshotService
         return $summaries;
     }
 
-    /**
-     * @param  Collection<int, Institution>  $institutions
-     * @param  array<int|string, InstitutionActivityStatus>  $before  statuses at the end of the previous day
-     * @param  array<int|string, InstitutionActivityStatus>  $after  statuses at the end of $day
-     * @return array{meetings_held: int, meetings_registered: int, check_ins_registered: int, entered_attention: int, left_attention: int, meeting_ids: array{held: list<string>, registered: list<string>}, population_added: int, population_removed: int}
-     */
-    private function flow(Collection $institutions, CarbonImmutable $day, array $before, array $after): array
+    /** @param Collection<int, Institution> $institutions */
+    private function flowBuckets(Collection $institutions, array $days): array
     {
-        $end = $day->endOfDay()->min(now()->toImmutable());
-        $held = $registered = [];
-        $checkIns = 0;
-
+        $ends = [];
+        foreach ($days as $day) {
+            $ends[$day->toDateString()] = $day->endOfDay()->min(now()->toImmutable());
+        }
+        $held = $registered = $checkIns = [];
         foreach ($institutions as $institution) {
             foreach ($institution->meetings as $meeting) {
                 /** @var Meeting $meeting */
-                $knownAtEnd = $meeting->created_at->lte($end) && ($meeting->deleted_at === null || $meeting->deleted_at->gt($end));
-
-                if ($knownAtEnd && $meeting->start_time->isSameDay($day) && $meeting->start_time->lte($end)) {
-                    $held[(string) $meeting->id] = true;
+                $heldOn = $meeting->start_time->toDateString();
+                $end = $ends[$heldOn] ?? null;
+                if ($end !== null && $meeting->start_time->lte($end) && $meeting->created_at->lte($end)
+                    && ($meeting->deleted_at === null || $meeting->deleted_at->gt($end))) {
+                    $held[$heldOn][(string) $meeting->id] = true;
                 }
-
-                if ($meeting->created_at->isSameDay($day) && $meeting->created_at->lte($end)) {
-                    $registered[(string) $meeting->id] = true;
+                $registeredOn = $meeting->created_at->toDateString();
+                $end = $ends[$registeredOn] ?? null;
+                if ($end !== null && $meeting->created_at->lte($end)) {
+                    $registered[$registeredOn][(string) $meeting->id] = true;
                 }
             }
-
-            $checkIns += $institution->checkIns->filter(fn ($checkIn) => $checkIn->created_at->isSameDay($day) && $checkIn->created_at->lte($end))->count();
+            foreach ($institution->checkIns as $checkIn) {
+                $date = $checkIn->created_at->toDateString();
+                $end = $ends[$date] ?? null;
+                if ($end !== null && $checkIn->created_at->lte($end)) {
+                    $checkIns[$date] = ($checkIns[$date] ?? 0) + 1;
+                }
+            }
+        }
+        $buckets = [];
+        foreach ($days as $day) {
+            $date = $day->toDateString();
+            $buckets[$date] = [
+                'meetings_held' => count($held[$date] ?? []),
+                'meetings_registered' => count($registered[$date] ?? []),
+                'meeting_ids' => ['held' => array_keys($held[$date] ?? []), 'registered' => array_keys($registered[$date] ?? [])],
+                'check_ins_registered' => $checkIns[$date] ?? 0,
+            ];
         }
 
-        return [
-            'meetings_held' => count($held),
-            'meetings_registered' => count($registered),
-            'meeting_ids' => ['held' => array_keys($held), 'registered' => array_keys($registered)],
-            'check_ins_registered' => $checkIns,
-            ...$this->transitions($before, $after),
-        ];
+        return $buckets;
     }
 
     public function transitions(array $before, array $after): array

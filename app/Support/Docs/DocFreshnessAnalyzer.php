@@ -25,6 +25,7 @@ class DocFreshnessAnalyzer
     public function analyze(DocClaims $claims): array
     {
         $freshness = [];
+        $commitDates = $this->lastCommitDates(array_values(array_unique(array_merge(...array_values($claims->claims)))));
 
         foreach ($claims->claims as $page => $testFiles) {
             $reviewedAt = $claims->reviewedAt($page);
@@ -32,7 +33,7 @@ class DocFreshnessAnalyzer
             $changedSince = [];
 
             foreach ($testFiles as $file) {
-                $committedAt = $this->lastCommitDate($file);
+                $committedAt = $commitDates[$file] ?? null;
 
                 if ($committedAt === null) {
                     continue;
@@ -64,23 +65,51 @@ class DocFreshnessAnalyzer
     }
 
     /**
-     * Date of the last commit that touched a file, as `YYYY-MM-DD`. Comparing
-     * dates rather than timestamps keeps it aligned with `last_reviewed`, which
-     * a person writes as a plain date.
+     * Date of the last commit that touched each file, as `YYYY-MM-DD` (dates, to match the
+     * hand-written `last_reviewed`). One newest-first `git log` stopped once every path is
+     * dated: a process per path cost ~1.5s per run.
+     *
+     * @param  list<string>  $paths
+     * @return array<string, string>
      */
-    private function lastCommitDate(string $path): ?string
+    private function lastCommitDates(array $paths): array
     {
-        $process = new Process(['git', 'log', '-1', '--format=%cs', '--', $path], $this->workingDir ?? base_path());
-        $process->run();
-
-        if (! $process->isSuccessful()) {
-            $this->warnings[] = "git log failed for {$path}: ".trim($process->getErrorOutput());
-
-            return null;
+        if ($paths === []) {
+            return [];
         }
 
-        $date = trim($process->getOutput());
+        $process = new Process(['git', 'log', '--format=%x00%cs', '--name-only', '--diff-merges=combined', '--', ...$paths], $this->workingDir ?? base_path());
+        $process->start();
 
-        return $date === '' ? null : $date;
+        $wanted = array_flip($paths);
+        $dates = [];
+        $commitDate = null;
+        $buffer = '';
+
+        foreach ($process->getIterator($process::ITER_SKIP_ERR) as $chunk) {
+            $buffer .= $chunk;
+            $lines = explode("\n", $buffer);
+            $buffer = array_pop($lines);
+
+            foreach ($lines as $line) {
+                if (str_starts_with($line, "\0")) {
+                    $commitDate = substr($line, 1);
+                } elseif ($line !== '' && isset($wanted[$line]) && ! isset($dates[$line])) {
+                    $dates[$line] = $commitDate;
+                }
+            }
+
+            if (count($dates) === count($wanted)) {
+                $process->stop();
+
+                return $dates;
+            }
+        }
+
+        if (! $process->isSuccessful()) {
+            $this->warnings[] = 'git log failed: '.trim($process->getErrorOutput());
+        }
+
+        return $dates;
     }
 }

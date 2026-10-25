@@ -88,7 +88,7 @@ describe('unauthorized access', function (): void {
 
 describe('authorized access', function (): void {
     test('can access index page', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('pages.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -100,7 +100,7 @@ describe('authorized access', function (): void {
     });
 
     test('can access create page', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('pages.create'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -148,7 +148,7 @@ describe('authorized access', function (): void {
     });
 
     test('can access edit page', function (): void {
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('pages.edit', $this->page))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page
@@ -726,7 +726,7 @@ describe('tenant isolation', function (): void {
         $this->otherPage->delete();
         $this->page->delete();
 
-        asUser($this->admin)
+        asUserWithInertia($this->admin)
             ->get(route('pages.index'))
             ->assertStatus(200)
             ->assertInertia(fn (Assert $page) => $page->where('deletedCount', 1));

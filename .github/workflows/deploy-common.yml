@@ -85,6 +85,8 @@ jobs:
         run: npm ci
 
       - name: Build frontend assets
+        env:
+          APP_URL: ${{ vars.APP_URL || format('https://{0}', vars.REVERB_HOST) }}
         run: |
           VITE_SHAREPOINT_CLIENT_ID=${{ secrets.SHAREPOINT_CLIENT_ID }} \
           VITE_SHAREPOINT_TENANT_ID=${{ secrets.SHAREPOINT_TENANT_ID }} \

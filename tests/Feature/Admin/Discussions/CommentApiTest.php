@@ -244,7 +244,7 @@ describe('update & delete', function (): void {
         $this->agendaItem->comment('<p>Lieka</p>');
         $this->agendaItem->comment('<p>Ištrintas</p>')->erase();
 
-        asUser($this->coordinator)->get(route('agendaItems.show', $this->agendaItem))
+        asUserWithInertia($this->coordinator)->get(route('agendaItems.show', $this->agendaItem))
             ->assertInertia(fn ($page) => $page->where('siblingAgendaItems', fn ($siblings) => collect($siblings)->firstWhere('id', $this->agendaItem->id)['comments_count'] === 1));
     });
 

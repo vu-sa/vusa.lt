@@ -108,7 +108,7 @@ describe('authorized access', function (): void {
     test('the index shows how many files wait in each view', function (): void {
         Document::factory()->pending()->removedFromSharepoint()->create(['institution_id' => $this->institution->id]);
 
-        asUser($this->manager)->get(route('documents.index'))
+        asUserWithInertia($this->manager)->get(route('documents.index'))
             ->assertInertia(fn ($page) => $page
                 ->where('discovery.counts', ['pending' => 1, 'removed' => 1])
             );
@@ -281,17 +281,17 @@ describe('folder view', function (): void {
     });
 
     test('a large folder is listed page by page, each file once', function (): void {
-        Document::factory()->count(100)->sequence(fn ($sequence) => ['name' => sprintf('z-%03d.pdf', $sequence->index)])
+        Document::factory()->count(3)->sequence(fn ($sequence) => ['name' => sprintf('z-%03d.pdf', $sequence->index)])
             ->create(['institution_id' => $this->institution->id, 'sharepoint_path' => $this->base.'/Protokolai']);
-        $folder = ['path' => $this->base.'/Protokolai'];
+        $folder = ['path' => $this->base.'/Protokolai', 'limit' => 3];
 
         $first = asUser($this->manager)->getJson(route('api.v1.admin.documents.folder', $folder))->assertOk();
         $second = asUser($this->manager)->getJson(route('api.v1.admin.documents.folder', [...$folder, 'offset' => $first->json('data.next_offset')]))->assertOk();
 
-        expect($first->json('data.files'))->toHaveCount(100)
-            ->and($first->json('data.next_offset'))->toBe(100)
+        expect($first->json('data.files'))->toHaveCount(3)
+            ->and($first->json('data.next_offset'))->toBe(3)
             ->and($second->json('data.next_offset'))->toBeNull()
-            ->and(collect([...$first->json('data.files'), ...$second->json('data.files')])->pluck('id')->unique())->toHaveCount(102);
+            ->and(collect([...$first->json('data.files'), ...$second->json('data.files')])->pluck('id')->unique())->toHaveCount(5);
     });
 
     test('a row says whether the user may change it', function (): void {
@@ -354,10 +354,10 @@ describe('folder view', function (): void {
     });
 
     test('the page gives the database view to managers only', function (): void {
-        asUser($this->manager)->get(route('documents.index'))
+        asUserWithInertia($this->manager)->get(route('documents.index'))
             ->assertInertia(fn ($page) => $page->whereNot('discovery', null));
 
-        asUser($this->regularUser)->get(route('documents.index', ['browse' => 'folders']))
+        asUserWithInertia($this->regularUser)->get(route('documents.index', ['browse' => 'folders']))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->where('discovery', null));
     });

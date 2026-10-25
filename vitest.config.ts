@@ -19,6 +19,7 @@ generateI18nTranslationFiles(__dirname);
 
 const alias = {
   '@': path.resolve(__dirname, 'resources/js'),
+  'ziggy-js': path.resolve(__dirname, 'vendor/tightenco/ziggy/dist'),
 };
 
 /**

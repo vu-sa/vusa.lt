@@ -118,7 +118,13 @@ jobs:
     needs: [changes, setup]
     if: ${{ needs.changes.outputs.php == 'true' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    name: PHP Tests
+    name: PHP Tests${{ github.event_name != 'pull_request' && format(' ({0}/4)', matrix.shard) || '' }}
+    # Full runs split across four runners (one 4-vCPU runner took ~10 minutes). Pull requests stay one
+    # job: --shard narrows the run with --filter, and Pest's TIA switches itself off for filtered runs.
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(github.event_name == 'pull_request' && '[1]' || '[1, 2, 3, 4]') }}
     # actions: read lets Pest's TIA baseline sync pull the pest-tia-baseline artifact via `gh`.
     permissions:
       contents: read
@@ -180,14 +186,14 @@ jobs:
         TYPESENSE_API_KEY: xyz
         TYPESENSE_PROTOCOL: http
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: php artisan test --ci ${{ github.event_name == 'pull_request' && '--tia' || '' }} --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
+      run: php artisan test --ci ${{ github.event_name == 'pull_request' && '--tia' || format('--shard={0}/4', matrix.shard) }} --parallel --coverage --coverage-clover ./coverage.xml --log-junit ./test-results.xml
 
     # Advisory report (feature areas documented, routes tested, the writing
     # backlog, pages that may have drifted) lands in the job summary so nobody
     # has to remember to run it. --strict is the only gate, and only for the one
     # unambiguous breakage: a doc page citing a test file that no longer exists.
     - name: Report and gate documentation coverage
-      if: always()
+      if: always() && matrix.shard == 1
       run: php artisan docs:coverage --strict --summary
 
     # A judgement call is never a gate, so the reviewer gets it where they will
@@ -197,7 +203,7 @@ jobs:
     # step's summary). Push runs look up the open PR, because the dev PR run
     # only mirrors the push run and never reaches this job.
     - name: Comment documentation coverage on the PR
-      if: always()
+      if: always() && matrix.shard == 1
       continue-on-error: true
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

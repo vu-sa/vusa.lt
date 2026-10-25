@@ -28,7 +28,7 @@ test('a guest is sent to login', function (): void {
 test('the page lists the acting user\'s current duty with its institution', function (): void {
     $duty = $this->user->current_duties()->first();
 
-    asUser($this->user)
+    asUserWithInertia($this->user)
         ->get(route('profile.roles'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
@@ -49,7 +49,7 @@ test('terms are split into current, upcoming and ended by their dates', function
         'end_date' => now()->subDays(10)->toDateString(),
     ]);
 
-    asUser($this->user)
+    asUserWithInertia($this->user)
         ->get(route('profile.roles'))
         ->assertInertia(fn (Assert $page) => $page
             ->has('access.current', 1)
@@ -64,7 +64,7 @@ test('a term that ends today is still current', function (): void {
         'end_date' => now()->toDateString(),
     ]);
 
-    asUser($this->user)
+    asUserWithInertia($this->user)
         ->get(route('profile.roles'))
         ->assertInertia(fn (Assert $page) => $page->has('access.current', 2)->has('access.ended', 0));
 });
@@ -73,7 +73,7 @@ test('roles come from the duty and from direct assignment', function (): void {
     $this->user->assignRole('Komunikacijos koordinatorius');
     $this->user->current_duties()->first()->assignRole('Išteklių administratorius');
 
-    asUser($this->user)
+    asUserWithInertia($this->user)
         ->get(route('profile.roles'))
         ->assertInertia(fn (Assert $page) => $page
             ->where('access.directRoles', ['Komunikacijos koordinatorius'])
@@ -94,7 +94,7 @@ test('a derived ex-officio seat and a cross-tenant representative are marked', f
         'tenant_id' => $otherTenant->id,
     ]);
 
-    asUser($this->user)
+    asUserWithInertia($this->user)
         ->get(route('profile.roles'))
         ->assertInertia(fn (Assert $page) => $page
             ->where('access.current', fn ($terms) => collect($terms)->contains('isExOfficio', true)
@@ -106,7 +106,7 @@ test('another user\'s duties never appear', function (): void {
     $stranger = makeUser($this->tenant);
     attachTerm($stranger, $this->tenant, ['start_date' => now()->subDay()->toDateString()]);
 
-    asUser($this->user)
+    asUserWithInertia($this->user)
         ->get(route('profile.roles'))
         ->assertInertia(fn (Assert $page) => $page->has('access.current', 1));
 });
@@ -114,13 +114,13 @@ test('another user\'s duties never appear', function (): void {
 test('a super admin is told so', function (): void {
     $admin = makeAdminUser($this->tenant);
 
-    asUser($admin)
+    asUserWithInertia($admin)
         ->get(route('profile.roles'))
         ->assertInertia(fn (Assert $page) => $page->where('access.isSuperAdmin', true));
 });
 
 test('links a member to their own duty and institution even without a role', function (): void {
-    asUser($this->user)
+    asUserWithInertia($this->user)
         ->get(route('profile.roles'))
         ->assertInertia(fn (Assert $page) => $page
             ->where('access.current.0.dutyHref', fn (?string $href): bool => $href !== null)
