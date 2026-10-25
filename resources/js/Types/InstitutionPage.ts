@@ -35,6 +35,7 @@ export interface InstitutionPageMeeting {
   agenda_items_count?: number;
   has_protocol?: boolean;
   has_report?: boolean;
+  can_discard?: boolean;
 }
 
 export interface InstitutionPageTask {

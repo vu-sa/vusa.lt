@@ -262,6 +262,7 @@ class MeetingController extends AdminController
             'abilities' => fn () => [
                 'update' => $canUpdate(),
                 'delete' => ! $readOnly() && Gate::allows('delete', $meeting),
+                'discard' => ! $readOnly() && Gate::allows('delete', $meeting) && $meeting->isDiscardable(),
                 'createAgendaItems' => $canCreateAgendaItems(),
                 'reorderAgendaItems' => $canUpdate(),
                 'attachInstitution' => $canUpdate(),
@@ -444,6 +445,13 @@ class MeetingController extends AdminController
         $this->handleAuthorization('delete', $meeting);
 
         $redirect_url = request()->redirect_to ?? back()->getTargetUrl();
+
+        // `delete` suffices for a discardable meeting: it holds nothing but what its creator just typed.
+        if ($meeting->isDiscardable()) {
+            DB::transaction(fn () => $meeting->forceDelete());
+
+            return redirect($redirect_url)->with('success', __('messages.meeting.discarded'));
+        }
 
         $meeting->delete();
 

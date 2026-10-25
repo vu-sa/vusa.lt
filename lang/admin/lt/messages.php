@@ -48,6 +48,7 @@ return [
         'create_failed' => 'Nepavyko sukurti posėdžio.',
         'updated' => 'Posėdis sėkmingai atnaujintas.',
         'deleted' => 'Posėdis ištrintas sėkmingai!',
+        'discarded' => 'Posėdis ištrintas visam laikui.',
         'restored' => 'Posėdis sėkmingai atkurtas.',
         'institution_attached' => 'Institucija sėkmingai pridėta prie posėdžio.',
         'calendar_event_created' => 'Sukurtas kalendoriaus įrašo juodraštis. Paskelbk jį, kad posėdis taptų matomas viešai.',

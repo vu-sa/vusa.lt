@@ -209,7 +209,7 @@
   <ConfirmDialog
     v-model:open="deleteMeetingOpen"
     :title="$t('Ištrinti posėdį?')"
-    :description="$t('Posėdis bus perkeltas į šiukšlinę.')"
+    :description="meetingToDelete?.can_discard ? $t('Posėdis tuščias ir ką tik sukurtas, todėl bus ištrintas visam laikui.') : $t('Posėdis bus perkeltas į šiukšlinę.')"
     :confirm-label="$t('Ištrinti')"
     destructive
     @confirm="deleteMeeting"

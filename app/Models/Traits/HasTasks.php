@@ -13,8 +13,8 @@ trait HasTasks
     /**
      * A task exists to get something done about this record, so it goes when the record does —
      * including on a soft delete, where an orphaned task would otherwise keep nagging assignees
-     * about something they can no longer open. Restoring the record does not bring the tasks
-     * back; `tasks:repopulate` recreates the automatic ones.
+     * about something they can no longer open. A restored meeting gets its open agenda task back
+     * (MeetingTaskSubscriber); for other records `tasks:repopulate` recreates the automatic ones.
      */
     protected static function bootHasTasks(): void
     {

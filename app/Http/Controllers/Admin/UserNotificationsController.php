@@ -6,7 +6,9 @@ use App\Http\Controllers\AdminController;
 use App\Models\NotificationDigestQueue;
 use App\Models\User;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class UserNotificationsController extends AdminController
@@ -22,7 +24,10 @@ class UserNotificationsController extends AdminController
         ]);
     }
 
-    public function markAsRead($id)
+    /**
+     * A JSON caller marks the read beside the link it is opening, so it gets no redirect to follow.
+     */
+    public function markAsRead(Request $request, string $id): RedirectResponse|Response
     {
         $user = User::query()->findOrFail(Auth::id());
         $notification = $user->notifications()->where('id', $id)->first();
@@ -34,7 +39,7 @@ class UserNotificationsController extends AdminController
         $notification->markAsRead();
         NotificationDigestQueue::query()->where('user_id', $user->id)->where('notification_id', $notification->id)->delete();
 
-        return back();
+        return $request->wantsJson() ? response()->noContent() : back();
     }
 
     public function markAllAsRead()

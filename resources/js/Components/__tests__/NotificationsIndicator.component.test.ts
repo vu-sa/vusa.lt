@@ -6,9 +6,11 @@ import { computed, nextTick } from 'vue';
 import NotificationsIndicator from '@/Components/NotificationsIndicator.vue';
 import { createMockPage } from '@/tests/helpers/createMockPage';
 import { useRealtimeNotifications } from '@/Composables/useRealtimeNotifications';
+import { markNotificationRead } from '@/Composables/markNotificationRead';
 
 vi.mock('@inertiajs/vue3', () => import('@/mocks/inertia.mock'));
 vi.mock('@/Composables/useRealtimeNotifications');
+vi.mock('@/Composables/markNotificationRead');
 
 const popoverStubs = {
   Popover: {
@@ -212,7 +214,9 @@ describe('NotificationsIndicator', () => {
 
     expect(action.attributes('href')).toBe('/mano/tasks');
     expect(action.findComponent(Link).exists()).toBe(true);
-    expect(router.post).toHaveBeenCalledWith('/routes/notifications.markAsRead/notif-action', {}, expect.any(Object));
+    // A second Inertia visit would cancel the link's own, so the read is marked outside the router.
+    expect(markNotificationRead).toHaveBeenCalledWith('notif-action');
+    expect(router.post).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -246,7 +250,7 @@ describe('NotificationsIndicator', () => {
     await action.trigger('click');
 
     expect(router.visit).not.toHaveBeenCalled();
-    expect(router.post).toHaveBeenCalledWith('/routes/notifications.markAsRead/notif-answer', {}, expect.any(Object));
+    expect(markNotificationRead).toHaveBeenCalledWith('notif-answer');
     expect(wrapper.findComponent(popoverStubs.Popover).props('open')).toBe(false);
   });
 

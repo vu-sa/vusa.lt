@@ -105,6 +105,19 @@ describe('IndexTask', () => {
     expect(wrapper.find('[data-testid="row"] .line-through').exists()).toBe(true);
   });
 
+  it('deletes a task in place and reloads the flash with the counts, so the toast shows', async () => {
+    const wrapper = mountPage({ data: [task({ can_delete: true })] });
+
+    wrapper.findComponent({ name: 'TaskRow' }).vm.$emit('action', 'delete');
+    await wrapper.vm.$nextTick();
+    wrapper.findComponent({ name: 'ConfirmDialog' }).vm.$emit('confirm');
+
+    expect(router.delete).toHaveBeenCalledWith(
+      expect.stringContaining('tasks.destroy'),
+      expect.objectContaining({ only: ['taskCounts', 'flash'] }),
+    );
+  });
+
   it('leaves the actions to the preview pane beside it', () => {
     const task = { taskable_type: 'institution', action_type: 'periodicity_gap', can_be_manually_completed: false, can_delete: true };
     const rowActions = (view: string) => mount(IndexTask, {

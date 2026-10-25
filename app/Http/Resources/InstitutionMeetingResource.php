@@ -42,6 +42,7 @@ class InstitutionMeetingResource extends JsonResource
             'incomplete_vote_data' => $statistics['incomplete_vote_data'],
             'has_protocol' => $this->has_protocol,
             'has_report' => $this->has_report,
+            'can_discard' => $this->isDiscardable(),
         ];
     }
 }

@@ -252,24 +252,11 @@
         </DialogHeader>
 
         <div class="space-y-4">
-          <p class="text-sm text-muted-foreground">
-            {{ $t("Ar tikrai nori ištrinti šį posėdį? Šis veiksmas negrįžtamas ir bus pašalinti visi su posėdžiu susiję duomenys, įskaitant darbotvarkės punktus.") }}
+          <p data-testid="meeting-delete-description" class="text-sm text-muted-foreground">
+            {{ abilities?.discard
+              ? $t('Posėdis tuščias ir ką tik sukurtas, todėl bus ištrintas visam laikui.')
+              : $t('Posėdis bus perkeltas į šiukšlinę, o jo užduotys pašalintos. Atkūrus posėdį, neužbaigta užduotis grįš.') }}
           </p>
-
-          <div class="border border-[var(--status-danger-border)] bg-[var(--status-danger-surface)] p-3 text-[var(--status-danger)]">
-            <p class="text-sm font-medium">
-              {{ $t("Bus ištrinta:") }}
-            </p>
-            <ul class="mt-1 space-y-1 text-xs">
-              <li>• {{ meeting.agenda_items?.length ?? 0 }} {{ $t("darbotvarkės punktai") }}</li>
-              <li v-if="tasks?.length">
-                • {{ tasks.length }} {{ $t("užduotys") }}
-              </li>
-              <li v-if="meeting.files && meeting.files.length">
-                • {{ meeting.files.length }} {{ $t("failai") }}
-              </li>
-            </ul>
-          </div>
 
           <div class="flex justify-end gap-3">
             <Button variant="outline" @click="showDeleteDialog = false">
@@ -343,6 +330,7 @@ import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
 interface MeetingAbilities {
   update: boolean;
   delete: boolean;
+  discard?: boolean;
   createAgendaItems: boolean;
   reorderAgendaItems: boolean;
   attachInstitution: boolean;

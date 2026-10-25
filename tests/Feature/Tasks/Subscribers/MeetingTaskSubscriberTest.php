@@ -1137,3 +1137,47 @@ function publishInstitutionMeetings(Institution $institution): void
     $settings->fill(['public_meeting_institution_type_ids' => [...$settings->public_meeting_institution_type_ids, $type->id]])->save();
     $institution->types()->attach($type);
 }
+
+describe('restoring a trashed meeting', function (): void {
+    $agendaTasks = fn (Meeting $meeting) => Task::query()
+        ->where('taskable_type', MorphMap::alias(Meeting::class))
+        ->where('taskable_id', $meeting->id)
+        ->whereIn('action_type', [ActionType::AgendaCreation, ActionType::AgendaCompletion]);
+
+    test('brings back the agenda creation task of a meeting without an agenda', function () use ($agendaTasks): void {
+        [$meeting] = $this->createMeetingWithCreationTask();
+
+        $meeting->delete();
+        expect($agendaTasks($meeting)->count())->toBe(0);
+
+        $meeting->restore();
+
+        expect($agendaTasks($meeting)->sole())
+            ->action_type->toBe(ActionType::AgendaCreation)
+            ->completed_at->toBeNull();
+    });
+
+    test('brings back the completion task with the agenda progress', function () use ($agendaTasks): void {
+        [$meeting] = $this->createMeetingWithCompletionTask(2);
+
+        $meeting->delete();
+        $meeting->restore();
+
+        expect($agendaTasks($meeting)->sole())
+            ->action_type->toBe(ActionType::AgendaCompletion)
+            ->completed_at->toBeNull()
+            ->and($agendaTasks($meeting)->sole()->metadata['items_total'])->toBe(2);
+    });
+
+    test('recreates nothing, and mails nobody, for a meeting whose agenda is filled in', function () use ($agendaTasks): void {
+        [$meeting] = $this->createMeetingWithCompletionTask(2);
+        $meeting->agendaItems->each->update(['type' => AgendaItemType::Informational]);
+
+        $meeting->delete();
+        Notification::fake();
+        $meeting->restore();
+
+        expect($agendaTasks($meeting)->count())->toBe(0);
+        Notification::assertNothingSent();
+    });
+});

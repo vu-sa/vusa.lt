@@ -1429,5 +1429,8 @@
   "Mažosios raidės, skaičiai ir brūkšneliai. Palik tuščią – sukursime iš pavadinimo.": "Lowercase letters, numbers and hyphens. Leave empty to build it from the name.",
   "Ankstesni vieši adresai": "Previous public addresses",
   "Naršymo kelias": "Breadcrumb",
-  "Išskleisti": "Expand"
+  "Išskleisti": "Expand",
+  "Posėdis bus perkeltas į šiukšlinę.": "The meeting will be moved to the trash.",
+  "Posėdis tuščias ir ką tik sukurtas, todėl bus ištrintas visam laikui.": "The meeting is empty and was just created, so it will be deleted permanently.",
+  "Posėdis bus perkeltas į šiukšlinę, o jo užduotys pašalintos. Atkūrus posėdį, neužbaigta užduotis grįš.": "The meeting will be moved to the trash and its tasks removed. If you restore the meeting, its unfinished task comes back."
 }

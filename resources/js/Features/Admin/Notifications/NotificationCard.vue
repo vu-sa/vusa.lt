@@ -176,6 +176,7 @@ import {
 } from '@/Composables/useNotificationFormatting';
 import { Button } from '@/Components/ui/button';
 import NotificationLink from '@/Components/Notifications/NotificationLink.vue';
+import { markNotificationRead } from '@/Composables/markNotificationRead';
 
 const props = defineProps<{
   notification: Notification;
@@ -199,7 +200,7 @@ const formattedTime = computed(() => formatNotificationTime(props.notification))
 
 const markRead = () => {
   if (!props.notification.read_at) {
-    emit('markAsRead', props.notification.id);
+    markNotificationRead(props.notification.id);
   }
 };
 </script>

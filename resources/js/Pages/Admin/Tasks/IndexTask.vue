@@ -392,7 +392,7 @@ function deleteTask(): void {
   const undo = source.hideItems([String(task.id)]);
 
   router.delete(route('tasks.destroy', task.id), {
-    only: ['taskCounts'],
+    only: ['taskCounts', 'flash'],
     preserveScroll: true,
     preserveState: true,
     onError: () => undo(),

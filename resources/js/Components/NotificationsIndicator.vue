@@ -224,6 +224,7 @@ import {
 } from '@/Components/ui/popover';
 import { Button } from '@/Components/ui/button';
 import NotificationLink from '@/Components/Notifications/NotificationLink.vue';
+import { markNotificationRead } from '@/Composables/markNotificationRead';
 
 const isOpen = ref(false);
 
@@ -240,7 +241,7 @@ const unreadNotificationsCount = useUnreadNotificationCount();
 
 const openNotification = (notification: Notification) => {
   if (!notification.read_at) {
-    markAsRead(notification.id);
+    markNotificationRead(notification.id);
   }
   isOpen.value = false;
 };

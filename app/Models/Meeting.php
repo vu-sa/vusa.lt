@@ -481,6 +481,20 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
     }
 
     /**
+     * A meeting created by mistake moments ago is deleted outright instead of filling the trash.
+     * Anything someone has put into it — agenda, files, documents, comments, a calendar entry — keeps it restorable.
+     */
+    public function isDiscardable(): bool
+    {
+        return $this->created_at?->isAfter(now()->subDay()) === true
+            && ! $this->agendaItems()->exists()
+            && ! $this->fileableFiles()->exists()
+            && ! $this->documents()->exists()
+            && ! $this->comments()->exists()
+            && ! $this->calendarEvent()->exists();
+    }
+
+    /**
      * Re-evaluate this meeting's place in the public search index.
      *
      * Public here, not private: publishing a linked Calendar event changes the answer without
