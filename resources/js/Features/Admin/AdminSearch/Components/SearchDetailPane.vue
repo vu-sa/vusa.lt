@@ -1,122 +1,39 @@
 <template>
-  <div class="h-full">
-    <p v-if="hit && excerpt" class="line-clamp-2 px-4 pt-3 text-sm text-muted-foreground">
-      <SearchMatch :match="excerpt" />
-    </p>
-    <!-- Empty state -->
-    <div v-if="!hit" class="flex h-full flex-col items-center justify-center px-6 text-center">
-      <div class="mb-4 flex size-12 items-center justify-center rounded-full bg-muted/50">
-        <MousePointerClick class="size-6 text-muted-foreground/50" />
-      </div>
-      <p class="text-sm font-medium text-foreground">
-        {{ $t('Pasirink rezultatą') }}
-      </p>
-      <p class="mt-1 text-xs text-muted-foreground">
-        {{ $t('Peržiūra bus rodoma čia') }}
-      </p>
-    </div>
-
-    <!-- Rich previews -->
-    <MeetingDetailPreview
-      v-else-if="hit.collection === 'meetings'"
-      :key="hit.id"
-      :meeting="hit.raw as MeetingSearchResult"
-    />
-    <AgendaItemDetailPreview
-      v-else-if="hit.collection === 'agendaItems'"
-      :key="hit.id"
-      :item="hit.raw as AgendaItemSearchResult"
-    />
-    <InstitutionDetailPreview
-      v-else-if="hit.collection === 'institutions'"
-      :key="hit.id"
-      :institution="hit.raw as InstitutionSearchResult"
-    />
-    <ResourceDetail
-      v-else-if="hit.collection === 'resources'"
-      :key="hit.id"
-      :resource="hit.raw as ResourceSearchResult"
-      show-upcoming-reservations
-      show-previous-reservations
-      show-managers
-      allow-image-lightbox
-      show-actions
-    />
-    <DutyDetailPreview
-      v-else-if="hit.collection === 'duties'"
-      :key="hit.id"
-      :duty="hit.raw as DutySearchResult"
-      :is-external="hit.isExternal"
-    />
-    <DocumentDetailPreview
-      v-else-if="hit.collection === 'documents'"
-      :key="hit.id"
-      :document="hit.raw as DocumentSearchResult"
-    />
-    <NewsDetailPreview
-      v-else-if="hit.collection === 'news'"
-      :key="hit.id"
-      :news="hit.raw as NewsSearchResult"
-    />
-    <PageDetailPreview
-      v-else-if="hit.collection === 'pages'"
-      :key="hit.id"
-      :page="hit.raw as PageSearchResult"
-    />
-    <CalendarDetailPreview
-      v-else-if="hit.collection === 'calendar'"
-      :key="hit.id"
-      :event="hit.raw as CalendarSearchResult"
-    />
-    <UserDetailPreview
-      v-else-if="hit.collection === 'users'"
-      :key="hit.id"
-      :user="hit.raw as UserSearchResult"
+  <div class="flex h-full flex-col" data-slot="search-detail-pane">
+    <EmptyState
+      v-if="!hit || !entry"
+      mode="empty"
+      :icon="MousePointerClick"
+      :title="$t('Pasirink rezultatą')"
+      :description="$t('Peržiūra bus rodoma čia')"
+      class="m-auto"
     />
 
-    <!-- Fallback for collections without a dedicated pane -->
-    <GenericDetailPreview v-else :key="hit.id" :hit />
+    <template v-else>
+      <p v-if="excerpt" class="line-clamp-2 border-b border-border px-5 py-3 text-sm text-muted-foreground">
+        <SearchMatch :match="excerpt" />
+      </p>
+      <component :is="entry.component" :key="hit.id" v-bind="entry.props(hit)" class="min-h-0 flex-1" />
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-
-import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 import { MousePointerClick } from '@lucide/vue';
+import { computed } from 'vue';
 
+import { previewRegistry } from '../Config/previewRegistry';
 import type { NormalizedSearchHit } from '../Utils/searchHitMappers';
 
-import MeetingDetailPreview from './Detail/MeetingDetailPreview.vue';
-import AgendaItemDetailPreview from './Detail/AgendaItemDetailPreview.vue';
-import InstitutionDetailPreview from './Detail/InstitutionDetailPreview.vue';
-import ResourceDetail from './Detail/ResourceDetail.vue';
-import DutyDetailPreview from './Detail/DutyDetailPreview.vue';
-import DocumentDetailPreview from './Detail/DocumentDetailPreview.vue';
-import NewsDetailPreview from './Detail/NewsDetailPreview.vue';
-import PageDetailPreview from './Detail/PageDetailPreview.vue';
-import CalendarDetailPreview from './Detail/CalendarDetailPreview.vue';
-import UserDetailPreview from './Detail/UserDetailPreview.vue';
-import GenericDetailPreview from './Detail/GenericDetailPreview.vue';
-
-import type { SearchMatchDocument } from '@/Shared/Search/matches';
+import { EmptyState } from '@/Components/Patterns';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
-import type {
-  AgendaItemSearchResult,
-  CalendarSearchResult,
-  DocumentSearchResult,
-  DutySearchResult,
-  InstitutionSearchResult,
-  MeetingSearchResult,
-  NewsSearchResult,
-  PageSearchResult,
-  ResourceSearchResult,
-  UserSearchResult,
-} from '@/Shared/Search/types';
+import type { SearchMatchDocument } from '@/Shared/Search/matches';
 
 const props = defineProps<{
   hit: NormalizedSearchHit | null;
 }>();
 
+const entry = computed(() => (props.hit ? previewRegistry[props.hit.collection] : null));
 const excerpt = computed(() => (props.hit?.raw as SearchMatchDocument | undefined)?._searchMatch);
 </script>

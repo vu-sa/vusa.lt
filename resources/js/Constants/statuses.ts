@@ -222,3 +222,8 @@ export const activityRequestStatuses: Record<ActivityRequestStatus, StatusPresen
 function status(label: string, role: StatusRole, icon: LucideIcon, uppercase = false): StatusPresentation {
   return uppercase ? { label, role, icon, uppercase } : { label, role, icon };
 }
+
+/** A value from an untyped source (a search document, a facet) mapped to its status, or none when unnamed. */
+export function statusFor<K extends string>(map: Record<K, StatusPresentation>, value: string | null | undefined): StatusPresentation | null {
+  return value && Object.hasOwn(map, value) ? map[value as K] : null;
+}

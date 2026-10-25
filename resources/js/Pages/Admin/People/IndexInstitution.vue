@@ -94,27 +94,18 @@
     </template>
 
     <template v-if="!isTrash" #preview="{ item }">
-      <div class="flex flex-col gap-4 p-5">
-        <CollectionActivityStatus
-          entity="institutions"
-          :record-id="item.id"
-          :active="item.is_active ?? true"
-          :editable="canUpdateStatus(item)"
-          :spotlight="String(item.id) === String(source.items.value[0]?.id)"
-          @updated="active => statusUpdated(item, active)"
-        />
-        <h2 class="text-lg font-semibold">
-          {{ nameOf(item) }}
-        </h2>
-        <p v-if="item.tenant_shortname" class="text-sm text-muted-foreground">
-          {{ item.tenant_shortname }}
-        </p>
-        <Button as-child variant="outline" voice="sentence">
-          <Link :href="route('institutions.show', item.id)">
-            {{ $t('Atidaryti') }}
-          </Link>
-        </Button>
-      </div>
+      <InstitutionPreview :key="item.id" :institution="item">
+        <template #status>
+          <CollectionActivityStatus
+            entity="institutions"
+            :record-id="item.id"
+            :active="item.is_active ?? true"
+            :editable="canUpdateStatus(item)"
+            :spotlight="String(item.id) === String(source.items.value[0]?.id)"
+            @updated="active => statusUpdated(item, active)"
+          />
+        </template>
+      </InstitutionPreview>
     </template>
 
     <template #bulk-actions="{ selected, clear }">
@@ -179,6 +170,7 @@ import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Colle
 import { InstitutionIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState } from '@/Components/Patterns';
+import InstitutionPreview from '@/Components/Institutions/InstitutionPreview.vue';
 import { Button } from '@/Components/ui/button';
 import { useCollectionRecordActions } from '@/Composables/useCollectionRecordActions';
 import { useInstitutionSubscription } from '@/Composables/useInstitutionSubscription';

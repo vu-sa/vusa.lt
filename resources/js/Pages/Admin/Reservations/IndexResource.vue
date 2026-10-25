@@ -157,31 +157,31 @@
       </template>
 
       <template #preview="{ item }">
-        <div class="flex flex-col gap-4 p-5">
-          <ResourceDetail
-            :resource="item"
-            :availability="availability.get(String(item.id))"
-            show-availability-box
-            show-upcoming-reservations
-            show-managers
-            allow-image-lightbox
-          />
-          <div class="flex flex-wrap gap-2">
+        <ResourcePreview
+          :key="item.id"
+          :resource="item"
+          :availability="availability.get(String(item.id))"
+          show-availability-box
+          show-upcoming-reservations
+          show-managers
+          allow-image-lightbox
+        >
+          <template #actions>
             <AddToReservationButton
               v-if="item.is_reservable && canReserve"
               :resource-id="String(item.id)"
-              size="default"
+              size="sm"
               variant="brand"
               without-draft="reserve"
               :label="$t('reservations.cart.add_to_reservation')"
             />
-            <Button as-child variant="outline" voice="sentence" class="u-touch">
+            <Button as-child variant="outline" size="sm">
               <Link :href="route('resources.show', item.id)">
                 {{ $t('Atidaryti') }}
               </Link>
             </Button>
-          </div>
-        </div>
+          </template>
+        </ResourcePreview>
       </template>
 
       <template #empty>
@@ -215,6 +215,7 @@ import { ResourceIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState, StatusBadge } from '@/Components/Patterns';
 import AddToReservationButton from '@/Components/Reservations/AddToReservationButton.vue';
+import ResourcePreview from '@/Components/Reservations/ResourcePreview.vue';
 import ReservationCartBar from '@/Components/Reservations/ReservationCartBar.vue';
 import ReservationCartSheet from '@/Components/Reservations/ReservationCartSheet.vue';
 import { formatReservationPeriod } from '@/Components/Reservations/reservationPeriod';
@@ -223,7 +224,6 @@ import { useReservationCart } from '@/Components/Reservations/useReservationCart
 import { Button } from '@/Components/ui/button';
 import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
 import type { StatusPresentation } from '@/Constants/statuses';
-import ResourceDetail from '@/Features/Admin/AdminSearch/Components/Detail/ResourceDetail.vue';
 import { useResourceAvailability } from '@/Features/Admin/AdminSearch/Composables/useResourceAvailability';
 import type { ResourceSearchResult } from '@/Shared/Search/types';
 

@@ -61,7 +61,7 @@
     </template>
 
     <template v-if="!isTrash" #preview="{ item }">
-      <MeetingDetailPreview :key="item.id" :meeting="item" />
+      <MeetingPreview :key="item.id" :meeting="item" />
     </template>
 
     <template #empty>
@@ -93,6 +93,7 @@ import { MeetingIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import MeetingCollectionRow from '@/Components/Meetings/MeetingCollectionRow.vue';
 import { EmptyState, StatusBadge } from '@/Components/Patterns';
+import MeetingPreview from '@/Components/Meetings/MeetingPreview.vue';
 import { Button } from '@/Components/ui/button';
 import { meetingCompletionStatuses, type MeetingCompletionStatus } from '@/Constants/statuses';
 import { useActionWindow } from '@/Composables/useActionWindow';
@@ -103,7 +104,6 @@ import {
   useTypesenseCollectionSource,
   type CollectionSource,
 } from '@/Composables/useCollectionSource';
-import MeetingDetailPreview from '@/Features/Admin/AdminSearch/Components/Detail/MeetingDetailPreview.vue';
 import type { MeetingSearchResult } from '@/Shared/Search/types';
 import { formatDate } from '@/Utils/dateTime';
 

@@ -326,6 +326,7 @@ export interface InstitutionSearchResult {
   current_user_names?: string[];
   duty_names?: string[];
   type_ids?: number[];
+  is_active?: boolean;
 }
 
 /**

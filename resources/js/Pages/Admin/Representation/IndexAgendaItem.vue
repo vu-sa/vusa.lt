@@ -31,22 +31,7 @@
     </template>
 
     <template #preview="{ item }">
-      <div class="flex flex-col gap-4 p-5">
-        <h2 class="text-lg font-semibold">
-          {{ item.title || $t('Be pavadinimo') }}
-        </h2>
-        <p v-if="item.meeting_title" class="text-sm text-muted-foreground">
-          {{ item.meeting_title }}
-        </p>
-        <p v-if="item.description" class="whitespace-pre-line text-sm text-muted-foreground">
-          {{ item.description }}
-        </p>
-        <Button as-child variant="outline" voice="sentence">
-          <Link :href="route('agendaItems.edit', item.id)">
-            {{ $t('Atidaryti') }}
-          </Link>
-        </Button>
-      </div>
+      <AgendaItemPreview :key="item.id" :item />
     </template>
 
     <template #empty>
@@ -56,17 +41,16 @@
 </template>
 
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { ArrowUpRight } from '@lucide/vue';
 
+import AgendaItemPreview from '@/Components/AgendaItems/AgendaItemPreview.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRowActions from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn } from '@/Components/Collection/types';
 import { AgendaItemIcon } from '@/Components/icons';
 import CollectionPage from '@/Components/Layouts/CollectionPage.vue';
 import { EmptyState } from '@/Components/Patterns';
-import { Button } from '@/Components/ui/button';
 import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
 import type { AgendaItemSearchResult } from '@/Shared/Search/types';
 

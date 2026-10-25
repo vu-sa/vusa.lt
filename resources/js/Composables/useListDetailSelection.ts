@@ -21,6 +21,7 @@ interface ListDetailSelectionOptions<T> {
 }
 
 const FIELD_TAGS = ['INPUT', 'TEXTAREA', 'SELECT'];
+const CONTROLS = 'button, a, [role="button"], [role="checkbox"], [role="combobox"], [role="menuitem"]';
 
 /**
  * The list + detail contract shared by the collection preview view and the search split view:
@@ -49,50 +50,59 @@ export function useListDetailSelection<T>(options: ListDetailSelectionOptions<T>
     { immediate: true },
   );
 
-  useEventListener('keydown', (event: KeyboardEvent) => {
-    if (!isEnabled() || !['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key) || event.defaultPrevented) {
-      return;
+  /** Keys belong to the list unless they come from outside it or from a control of their own. */
+  function ownsEvent(event: KeyboardEvent, target: HTMLElement | null): boolean {
+    if (!isEnabled() || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) {
+      return false;
     }
-    if (event.altKey || event.ctrlKey || event.metaKey) {
-      return;
-    }
-
-    const target = event.target as HTMLElement | null;
     const root = toValue(options.root);
     if (root && target && target !== document.body && !root.contains(target)) {
-      return;
+      return false;
     }
     const isRow = Boolean(options.rowSelector && target?.closest(options.rowSelector));
-    if (!isRow && target?.closest('button, a, [role="button"], [role="checkbox"], [role="combobox"], [role="menuitem"]')) {
-      return;
-    }
 
-    const isField = Boolean(target && (target.isContentEditable || FIELD_TAGS.includes(target.tagName)));
-    const items = toValue(options.items);
+    return isRow || !target?.closest(CONTROLS);
+  }
+
+  function open(event: KeyboardEvent, isField: boolean): void {
     const selected = toValue(options.selectedKey);
-
-    if (event.key === 'Enter') {
-      const item = items.find(candidate => options.itemKey(candidate) === selected);
-      if (isField || !item || !options.onEnter) {
-        return;
-      }
-      event.preventDefault();
-      options.onEnter(item);
+    const item = toValue(options.items).find(candidate => options.itemKey(candidate) === selected);
+    if (isField || !item || !options.onEnter) {
       return;
     }
-
-    if ((isField && !(options.arrowsFromInput && target?.tagName === 'INPUT')) || items.length === 0) {
-      return;
-    }
-
     event.preventDefault();
+    options.onEnter(item);
+  }
+
+  function move(event: KeyboardEvent, delta: number): void {
+    const items = toValue(options.items);
+    if (items.length === 0) {
+      return;
+    }
+    event.preventDefault();
+
+    const selected = toValue(options.selectedKey);
     const currentIndex = items.findIndex(item => options.itemKey(item) === selected);
-    const delta = event.key === 'ArrowDown' ? 1 : -1;
     const nextKey = options.itemKey(items[Math.min(items.length - 1, Math.max(0, currentIndex + delta))]);
 
     if (nextKey !== selected) {
       options.select(nextKey);
       options.onNavigate?.(nextKey);
+    }
+  }
+
+  useEventListener('keydown', (event: KeyboardEvent) => {
+    const target = event.target as HTMLElement | null;
+    if (!['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key) || !ownsEvent(event, target)) {
+      return;
+    }
+
+    const isField = Boolean(target && (target.isContentEditable || FIELD_TAGS.includes(target.tagName)));
+    if (event.key === 'Enter') {
+      open(event, isField);
+    }
+    else if (!isField || (options.arrowsFromInput && target?.tagName === 'INPUT')) {
+      move(event, event.key === 'ArrowDown' ? 1 : -1);
     }
   });
 }

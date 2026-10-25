@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { ref } from 'vue';
 
-import ResourceDetail from '../ResourceDetail.vue';
+import ResourcePreview from '../ResourcePreview.vue';
 
 import ReservationResourceStateTag from '@/Components/Tag/ReservationResourceStateTag.vue';
 import { commonStubs } from '@/tests/stubs';
@@ -42,30 +42,24 @@ interface ResourcePreviewData {
 
 const mockController = {
   data: ref<ResourcePreviewData | null>(null),
-  isFetching: ref(false),
-  error: ref<string | null>(null),
-  isFinished: ref(false),
-  isSuccess: ref(false),
-  execute: vi.fn(),
-  abort: vi.fn(),
+  isLoading: ref(false),
 };
+const usePreviewApi = vi.hoisted(() => vi.fn());
 
-vi.mock('@/Composables/useApi', () => ({
-  useApi: vi.fn(() => mockController),
-  useApiMutation: vi.fn(),
-}));
+vi.mock('@/Composables/usePreviewApi', () => ({ usePreviewApi }));
 
-const mountDetail = (props: Record<string, unknown> = {}) =>
-  mount(ResourceDetail, {
+const mountDetail = (props: Record<string, unknown> = {}, slots: Record<string, string> = {}) =>
+  mount(ResourcePreview, {
     props: { resource: baseResource, ...props },
+    slots,
     global: { stubs: commonStubs },
   });
 
-describe('ResourceDetail', () => {
+describe('ResourcePreview', () => {
   beforeEach(() => {
     mockController.data.value = null;
-    mockController.isFetching.value = false;
-    mockController.execute.mockClear();
+    mockController.isLoading.value = false;
+    usePreviewApi.mockReset().mockReturnValue(mockController);
   });
 
   it('renders resource facts', () => {
@@ -127,21 +121,22 @@ describe('ResourceDetail', () => {
     expect(wrapper.text()).toContain('reservations.discrepancy.available_from_ended_reservations');
   });
 
-  it('shows edit action in preview mode', () => {
-    const wrapper = mountDetail({ showActions: true });
+  it('opens the resource unless the page supplies its own actions', () => {
+    expect(mountDetail().find('[data-slot="preview-actions"] a').attributes('href')).toMatch(/^\/mocked-route\/resources\.show/);
 
-    expect(wrapper.text()).toContain('Redaguoti');
-    expect(wrapper.find('a[href*="resources.edit"]').exists()).toBe(true);
+    const custom = mountDetail({}, { actions: '<button class="reserve">Rezervuoti</button>' });
+    expect(custom.find('[data-slot="preview-actions"] .reserve').exists()).toBe(true);
+    expect(custom.find('[data-slot="preview-actions"] a').exists()).toBe(false);
   });
 
   it('does not fetch preview data in select mode', () => {
     mountDetail({ showAvailabilityBox: true });
 
-    expect(mockController.execute).not.toHaveBeenCalled();
+    expect(usePreviewApi).toHaveBeenCalledWith(expect.any(String), false);
   });
 
   it('shows skeleton loaders for active reservations while fetching', () => {
-    mockController.isFetching.value = true;
+    mockController.isLoading.value = true;
     const wrapper = mountDetail({ showUpcomingReservations: true });
 
     expect(wrapper.findAll('.animate-pulse').length).toBeGreaterThan(0);

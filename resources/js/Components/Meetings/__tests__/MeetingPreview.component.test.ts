@@ -2,28 +2,27 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { ref } from 'vue';
 
-import MeetingDetailPreview from '../MeetingDetailPreview.vue';
+import MeetingPreview from '../MeetingPreview.vue';
 
 import { commonStubs } from '@/tests/stubs';
 
-vi.mock('@/Composables/useApi', () => ({
-  useApi: () => ({
+vi.mock('@/Composables/usePreviewApi', () => ({
+  usePreviewApi: () => ({
     data: ref({
-      institutions: [],
       representatives: [],
       agenda_items: [{ id: 'a1', title: 'Biudžetas', decision: 'positive', student_benefit: null }],
     }),
-    isFetching: ref(false),
+    isLoading: ref(false),
   }),
 }));
 
 const mountPreview = (meeting: Record<string, unknown> = {}) =>
-  mount(MeetingDetailPreview, {
+  mount(MeetingPreview, {
     props: { meeting: { id: 'm1', title: 'Senato posėdis', institution_name_lt: 'VU Senatas', completion_status: 'incomplete', ...meeting } as never },
     global: { stubs: { ...commonStubs } },
   });
 
-describe('MeetingDetailPreview', () => {
+describe('MeetingPreview', () => {
   it('names a meeting\'s completion the way the collection row does (U10)', () => {
     const badge = mountPreview().get('[data-slot="status-badge"]');
 
@@ -35,6 +34,10 @@ describe('MeetingDetailPreview', () => {
     const badges = mountPreview({ completion_status: 'partial' }).findAll('[data-slot="status-badge"]');
 
     expect(badges.map(badge => badge.text())).not.toContain('partial');
+  });
+
+  it('opens the meeting\'s record page', () => {
+    expect(mountPreview().find('h2 a').attributes('href')).toMatch(/^\/mocked-route\/meetings\.show/);
   });
 
   it('shows an agenda item\'s decision as a vote status, with its word', () => {
