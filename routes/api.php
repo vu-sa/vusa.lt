@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Admin\ActionWindowApiController;
 use App\Http\Controllers\Api\Admin\ActivityLogApiController;
 use App\Http\Controllers\Api\Admin\AgendaItemNoteApiController;
 use App\Http\Controllers\Api\Admin\AnalyticsApiController;
+use App\Http\Controllers\Api\Admin\ApprovalApiController;
 use App\Http\Controllers\Api\Admin\AtstovavimasApiController;
 use App\Http\Controllers\Api\Admin\BannerApiController;
 use App\Http\Controllers\Api\Admin\CalendarApiController;
@@ -33,6 +34,7 @@ use App\Http\Controllers\Api\Admin\NavigationLinkApiController;
 use App\Http\Controllers\Api\Admin\PendingUploadApiController;
 use App\Http\Controllers\Api\Admin\PermalinkPreviewApiController;
 use App\Http\Controllers\Api\Admin\ProblemApiController;
+use App\Http\Controllers\Api\Admin\PushSubscriptionApiController;
 use App\Http\Controllers\Api\Admin\ReservationApiController;
 use App\Http\Controllers\Api\Admin\ResourceApiController;
 use App\Http\Controllers\Api\Admin\ResourceAvailabilityApiController;
@@ -131,6 +133,8 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         Route::get('tags', [TagApiController::class, 'index'])->name('tags.index');
         Route::get('resourceCategories', [ResourceCategoryApiController::class, 'index'])->name('resourceCategories.index');
         Route::get('duties', [DutyApiController::class, 'index'])->name('duties.index');
+        Route::post('duties', [DutyApiController::class, 'store'])->name('duties.store');
+        Route::post('institutions', [InstitutionApiController::class, 'store'])->name('institutions.store');
         Route::get('problems', [ProblemApiController::class, 'index'])->name('problems.index');
         Route::get('forms', [FormApiController::class, 'index'])->name('forms.index');
         Route::get('banners', [BannerApiController::class, 'index'])->name('banners.index');
@@ -150,6 +154,18 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
         Route::get('tasks', [TaskApiController::class, 'index'])->name('tasks.index');
         Route::get('mail-queue', [MailQueueApiController::class, 'index'])->name('mailQueue.index');
         Route::get('support-requests', [SupportRequestCollectionApiController::class, 'index'])->name('supportRequests.index');
+
+        // Push notification device subscriptions
+        Route::prefix('push-subscriptions')->name('pushSubscriptions.')->group(function (): void {
+            Route::get('/', [PushSubscriptionApiController::class, 'index'])->name('index');
+            Route::post('/', [PushSubscriptionApiController::class, 'store'])->name('store');
+            Route::delete('/', [PushSubscriptionApiController::class, 'destroy'])->name('destroy');
+            Route::delete('{id}', [PushSubscriptionApiController::class, 'destroyById'])->name('destroyById');
+            Route::post('test', [PushSubscriptionApiController::class, 'sendTest'])->name('test');
+        });
+
+        // Approvals
+        Route::get('approvals/history', [ApprovalApiController::class, 'history'])->name('approvals.history');
 
         // Tenant-scoped page-view statistics (Umami) for the Svetainė dashboard
         Route::get('analytics/overview', [AnalyticsApiController::class, 'overview'])->name('analytics.overview');

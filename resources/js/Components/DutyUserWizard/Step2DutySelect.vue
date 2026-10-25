@@ -415,11 +415,11 @@ const cancelCreate = () => {
 const createDuty = () => {
   if (!wizard.state.institution?.id) return;
 
-  http.post(route('duties.store'), {
-    onSuccess: (response: any) => {
-      if (response?.duty) {
-        const newDutyData = response.duty as App.Entities.Duty;
-
+  http.post(route('api.v1.admin.duties.store'), {
+    onSuccess: (response: unknown) => {
+      const res = response as { data?: { duty?: App.Entities.Duty }; duty?: App.Entities.Duty } | undefined;
+      const newDutyData = res?.data?.duty ?? res?.duty;
+      if (newDutyData) {
         if (wizard.state.institution) {
           const updatedInstitution = {
             ...wizard.state.institution,

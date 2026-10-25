@@ -3,8 +3,11 @@
 namespace App\Contracts;
 
 use App\Enums\ApprovalDecision;
+use App\Models\Approval;
 use App\Models\ApprovalFlow;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Collection;
 
 /**
@@ -15,6 +18,13 @@ use Illuminate\Support\Collection;
  */
 interface Approvable
 {
+    /**
+     * Get all approvals for this model.
+     *
+     * @return MorphMany<Approval, $this&Model>
+     */
+    public function approvals(): MorphMany;
+
     /**
      * Called when an approval decision is made that completes a step or flow.
      *

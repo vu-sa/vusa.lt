@@ -267,7 +267,7 @@ const handleRemoveDevice = async (device: PushSubscriptionDevice) => {
 const handleSendTestNotification = async () => {
   isSendingTest.value = true;
   try {
-    const { execute } = useApiMutation(route('push-subscription.test'));
+    const { execute } = useApiMutation(route('api.v1.admin.pushSubscriptions.test'));
     await execute();
     await loadDevices();
   }

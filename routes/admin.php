@@ -144,13 +144,6 @@ Route::post('notification/mark-all-as-read', [UserNotificationsController::class
 Route::delete('notification/{id}', [UserNotificationsController::class, 'destroy'])->name('notifications.destroy');
 Route::delete('notifications', [UserNotificationsController::class, 'destroyAll'])->name('notifications.destroy-all');
 
-// Push notification subscriptions
-Route::get('push-subscription', [PushSubscriptionController::class, 'index'])->name('push-subscription.index');
-Route::post('push-subscription', [PushSubscriptionController::class, 'store'])->name('push-subscription.store');
-Route::delete('push-subscription', [PushSubscriptionController::class, 'destroy'])->name('push-subscription.destroy');
-Route::delete('push-subscription/{id}', [PushSubscriptionController::class, 'destroyById'])->name('push-subscription.destroyById');
-Route::post('push-subscription/test', [PushSubscriptionController::class, 'sendTest'])->name('push-subscription.test');
-
 Route::resource('eventTypes', EventTypeController::class)->only(['index', 'store', 'update', 'destroy']);
 Route::resource('calendar', CalendarController::class)
     ->names(['show' => 'calendar.view'])
@@ -219,7 +212,6 @@ Route::post('approvals', [ApprovalController::class, 'store'])->name('approvals.
 Route::post('approvals/bulk', [ApprovalController::class, 'bulkStore'])->name('approvals.bulkStore');
 Route::post('approvals/resolve', [ApprovalController::class, 'resolve'])->name('approvals.resolve');
 Route::post('approvals/backtrack', [ApprovalController::class, 'backtrack'])->name('approvals.backtrack');
-Route::get('approvals/history', [ApprovalController::class, 'history'])->name('approvals.history');
 
 // File management routes
 // GET endpoints moved to API: route('api.v1.admin.files.index'), route('api.v1.admin.files.allowedTypes')
