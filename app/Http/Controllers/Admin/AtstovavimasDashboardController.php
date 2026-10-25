@@ -59,7 +59,7 @@ class AtstovavimasDashboardController extends AdminController
 
         // Get only user's directly assigned institutions (lightweight, always loaded)
         $userInstitutions = fn () => once(function () {
-            $institutions = DutyService::getUserInstitutionsForDashboard();
+            $institutions = DutyService::getUserInstitutionsForDashboard(activeOnly: true);
 
             $institutions->each(function ($institution): void {
                 $institution->meetings?->each->append(['completion_status', 'has_report', 'has_protocol', 'has_calendar_event']);
@@ -109,7 +109,7 @@ class AtstovavimasDashboardController extends AdminController
             'relatedInstitutions' => Inertia::optional(function () use ($userInstitutions) {
                 /** @var Collection<int, Institution> $institutionCollection */
                 $institutionCollection = new Collection($userInstitutions()->values()->all());
-                $relatedInstitutions = app(InstitutionRelationService::class)->forMultiple($institutionCollection);
+                $relatedInstitutions = app(InstitutionRelationService::class)->forMultiple($institutionCollection, activeOnly: true);
 
                 // Append computed attributes to related institution meetings
                 // Note: For unauthorized institutions, we skip completion_status as it triggers N+1 agendaItems load

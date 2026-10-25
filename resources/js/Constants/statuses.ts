@@ -145,6 +145,13 @@ export const contentStatuses: Record<ContentStatus, StatusPresentation> = {
   draft: status('Juodraštis', 'neutral', FilePenLine, true),
 };
 
+export const activityStatuses = {
+  active: status('Aktyvi', 'success', CircleCheck, true),
+  inactive: status('Neaktyvi', 'neutral', CircleSlash, true),
+} satisfies Record<string, StatusPresentation>;
+
+export const inactiveInstitutionStatus: StatusPresentation = status('Neaktyvi institucija', 'neutral', CircleSlash);
+
 export const bannerStatuses = {
   active: status('Aktyvus', 'success', Eye, true),
   inactive: status('Neaktyvus', 'neutral', CircleSlash, true),

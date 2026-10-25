@@ -27,7 +27,9 @@ class UpdateInstitution
                 $institution->fill(Arr::only($data, ['tenant_id']));
             }
             $institution->save();
-            $institution->syncAudited('types', $data['types'] ?? []);
+            if (array_key_exists('types', $data)) {
+                $institution->syncAudited('types', $data['types'] ?? []);
+            }
             $this->syncImage->fromValidated($institution, 'image', $data, 'image_media', $actor);
             $this->syncImage->fromValidated($institution, 'logo', $data, 'logo_media', $actor);
 

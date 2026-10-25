@@ -82,13 +82,14 @@ class InstitutionRelationService
     public function summaryFor(Institution $institution): array
     {
         $related = $this->relatedTo($institution->id);
-        $names = Institution::query()->whereIn('id', $related->pluck('institution_id'))->get(['id', 'name'])->keyBy('id');
+        $names = Institution::query()->whereIn('id', $related->pluck('institution_id'))->get(['id', 'name', 'is_active'])->keyBy('id');
 
         return $related
             ->filter(fn (array $entry) => $names->has($entry['institution_id']))
             ->map(fn (array $entry) => [
                 'id' => $entry['institution_id'],
                 'name' => $names[$entry['institution_id']]->name,
+                'is_active' => (bool) $names[$entry['institution_id']]->is_active,
                 'direction' => $entry['direction'],
                 'via' => $entry['via'],
                 'kind' => $entry['kind'],
@@ -110,7 +111,7 @@ class InstitutionRelationService
         return InstitutionLink::query()
             ->where('source_institution_id', $institution->id)
             ->orWhere('target_institution_id', $institution->id)
-            ->with(['source:id,name', 'target:id,name'])
+            ->with(['source:id,name,is_active', 'target:id,name,is_active'])
             ->orderBy('id')
             ->get()
             ->map(function (InstitutionLink $link) use ($institution): ?array {
@@ -119,7 +120,7 @@ class InstitutionRelationService
 
                 return $other === null ? null : [
                     'id' => $link->id,
-                    'other' => ['id' => $other->id, 'name' => $other->name],
+                    'other' => ['id' => $other->id, 'name' => $other->name, 'is_active' => (bool) $other->is_active],
                     'direction' => $outgoing ? 'outgoing' : 'incoming',
                     'kind' => $link->kind->value,
                     'kind_label' => $link->kind->label(),
@@ -172,7 +173,7 @@ class InstitutionRelationService
      * @param  EloquentCollection<int, Institution>  $institutions
      * @return EloquentCollection<int, Institution>
      */
-    public function forMultiple(EloquentCollection $institutions): EloquentCollection
+    public function forMultiple(EloquentCollection $institutions, bool $activeOnly = false): EloquentCollection
     {
         $ownIds = $institutions->modelKeys();
         $picked = [];
@@ -199,11 +200,11 @@ class InstitutionRelationService
         $authorizedIds = array_keys(array_filter($picked, fn (array $entry) => $entry['authorized']));
         $restrictedIds = array_keys(array_filter($picked, fn (array $entry) => ! $entry['authorized']));
 
-        $loaded = Institution::query()->whereIn('id', $authorizedIds)->with([
+        $loaded = Institution::query()->when($activeOnly, fn ($query) => $query->active())->whereIn('id', $authorizedIds)->with([
             ...$base,
             'meetings.agendaItems:id,meeting_id,title,type,brought_by_students,order,is_private,public_title',
             'meetings.agendaItems.votes:id,agenda_item_id,title,decision,student_vote,student_benefit,is_main,is_consensus',
-        ])->get()->merge(Institution::query()->whereIn('id', $restrictedIds)->with($base)->get());
+        ])->get()->merge(Institution::query()->when($activeOnly, fn ($query) => $query->active())->whereIn('id', $restrictedIds)->with($base)->get());
 
         return $loaded->each(function (Institution $institution) use ($picked): void {
             $entry = $picked[$institution->id];

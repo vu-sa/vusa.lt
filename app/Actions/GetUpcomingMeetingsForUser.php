@@ -33,7 +33,7 @@ class GetUpcomingMeetingsForUser
         $total = (clone $query)->count();
 
         $items = $query->orderBy('start_time')
-            ->with(['institutions:id,name,tenant_id'])
+            ->with(['institutions:id,name,tenant_id,is_active'])
             ->take($limit)
             ->get()
             ->map(function (Meeting $meeting) use ($dutyInstitutionIds, $followedInstitutionIds): array {
@@ -47,6 +47,7 @@ class GetUpcomingMeetingsForUser
                     'title' => (string) $meeting->title,
                     'start_time' => $meeting->start_time->toISOString(),
                     'institution_name' => $institution?->name,
+                    'institution_is_active' => $institution === null ? null : (bool) $institution->is_active,
                     'institution_id' => $institution === null ? null : (string) $institution->id,
                     'tenant_id' => $institution?->tenant_id,
                     'is_followed' => $dutyInstitution === null,

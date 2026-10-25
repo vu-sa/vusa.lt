@@ -6,6 +6,7 @@
     :subtitle="institutionName"
   >
     <template #badges>
+      <InactiveInstitutionBadge v-if="meeting.inactive_institution_ids?.length" :active="false" />
       <StatusBadge v-if="completionStatus" :status="completionStatus" />
       <StatusBadge v-if="alignmentStatus" :status="alignmentStatus" />
     </template>
@@ -94,6 +95,7 @@ import { getFacetValueLabel } from '../../Config/collectionFacetConfig';
 import DetailRow from './DetailRow.vue';
 import DetailLayout from './DetailLayout.vue';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { MeetingIcon } from '@/Components/icons';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';

@@ -102,6 +102,7 @@
           >
             {{ truncate(node.name) }}
           </text>
+          <text v-if="node.is_active === false" x="0" dy="1.8em" :text-anchor="node.labelAnchor" class="text-xs fill-status-neutral">{{ $t('Neaktyvi institucija') }}</text>
         </g>
       </g>
     </svg>
@@ -144,6 +145,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { DIRECTION_STYLES, directionStyle, EDGE_TYPE_STYLES, edgeCategory, type RelationshipDirection } from '@/Components/Graphs/relationshipColors';
 
 interface RelatedInstitution {
+  is_active?: boolean;
   id: string;
   name: string;
   direction: string;

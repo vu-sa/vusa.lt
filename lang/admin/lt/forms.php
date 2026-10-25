@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'activity_status' => [
+        'spotlight_title' => 'Keisk aktyvumą sąraše',
+        'spotlight_description' => 'Pasirink būseną, kad aktyvuotum arba pažymėtum įrašą neaktyviu.',
+        'deactivate_title' => 'Pažymėti instituciją neaktyvia?',
+        'deactivate' => 'Pažymėti neaktyvia',
+    ],
     'duty_type_filter' => [
         'label' => 'Pareigybės tipas',
         'spotlight' => 'Filtruose pasirink pareigybės tipą arba „Be tipo“, kad rastum nepriskirtas pareigybes.',

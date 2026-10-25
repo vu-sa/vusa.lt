@@ -114,7 +114,7 @@
             :href="route('institutions.show', inst.id)"
             class="flex min-h-11 items-center justify-between gap-3 px-2 py-2 transition-colors hover:bg-accent"
           >
-            <span class="text-sm font-medium">{{ inst.name }}</span>
+            <span class="text-sm font-medium">{{ inst.name }} <InactiveInstitutionBadge :active="inst.is_active" /></span>
             <ChevronRight class="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           </Link>
         </div>
@@ -190,6 +190,7 @@ import {
 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import RecordPage, { type RecordAction, type RecordFact, type RecordPageSection } from '@/Components/Layouts/RecordPage.vue';
 import { ConfirmDialog, EmptyState } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';

@@ -2,23 +2,34 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
+use App\Actions\UpdateInstitution;
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\Api\Admin\UpdateRecordActivityRequest;
 use App\Http\Requests\StoreInstitutionRequest;
 use App\Models\Institution;
+use App\Services\InstitutionDeactivationService;
 use App\Services\InstitutionRelationService;
 use Illuminate\Http\JsonResponse;
 
 class InstitutionApiController extends ApiController
 {
-    /**
-     * Lightweight institution detail used by the admin search preview pane.
-     * Returns the institution types, recent meetings and current
-     * representatives that are not carried in the Typesense search document.
-     *
-     * @route GET /api/v1/admin/institutions/{institution}/preview
-     *
-     * @routeName api.v1.admin.institutions.preview
-     */
+    public function status(Institution $institution, InstitutionDeactivationService $deactivation): JsonResponse
+    {
+        $this->authorizeApi('update', $institution);
+
+        return $this->jsonSuccess([
+            'is_active' => (bool) $institution->is_active,
+            'deactivation' => $deactivation->summary($institution),
+        ]);
+    }
+
+    public function updateStatus(UpdateRecordActivityRequest $request, Institution $institution, UpdateInstitution $update): JsonResponse
+    {
+        $update->execute($institution, $request->validated(), $request->user());
+
+        return $this->jsonSuccess(['is_active' => (bool) $institution->fresh()->is_active], $this->entityMessage('updated', 'institution'));
+    }
+
     public function preview(Institution $institution): JsonResponse
     {
         $this->authorizeApi('view', $institution);

@@ -192,6 +192,7 @@
                     <div class="flex-1 min-w-0">
                       <p class="font-semibold text-sm sm:text-base text-foreground group-hover:text-brand transition-colors truncate">
                         {{ institution.name }}
+                        <InactiveInstitutionBadge :active="institution.is_active" />
                       </p>
                       <div class="flex items-center gap-2 mt-1 flex-wrap">
                         <Badge v-if="institution.tenant?.shortname" variant="outline" class="text-[11px]">
@@ -241,6 +242,7 @@
                     <div class="flex-1 min-w-0">
                       <p class="font-semibold text-sm sm:text-base text-foreground group-hover:text-brand transition-colors truncate">
                         {{ institution.name }}
+                        <InactiveInstitutionBadge :active="institution.is_active" />
                       </p>
                       <div class="flex items-center gap-2 mt-1 flex-wrap">
                         <Badge v-if="institution.tenant?.shortname" variant="outline" class="text-[11px]">
@@ -304,6 +306,7 @@ import {
   Loader2,
 } from '@lucide/vue';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { Input } from '@/Components/ui/input';
 import { Button } from '@/Components/ui/button';
 import { Badge } from '@/Components/ui/badge';
@@ -324,7 +327,7 @@ const institutionTypes = inject<App.Entities.InstitutionType[]>('institutionType
 const addInstitution = inject<(institution: App.Entities.Institution) => void>('addInstitution');
 
 const page = usePage();
-const auth = page.props.auth as any;
+const auth = page.props.auth;
 
 // Search state
 const searchQuery = ref('');
@@ -381,7 +384,7 @@ const getLongStayingUsersCount = (institution: App.Entities.Institution): number
   let count = 0;
   for (const duty of duties) {
     for (const user of duty.current_users || []) {
-      const { pivot } = user as any;
+      const { pivot } = user;
       if (pivot?.start_date) {
         const startDate = new Date(pivot.start_date);
         if (startDate < twoYearsAgo) {

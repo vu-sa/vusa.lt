@@ -105,6 +105,7 @@ class ActionWindowApiController extends ApiController
             ->map(fn (Institution $institution) => [
                 'id' => (string) $institution->id,
                 'name' => $this->localized($institution->name),
+                'is_active' => (bool) $institution->is_active,
                 'tenant_shortname' => $institution->tenant?->shortname,
                 // Decides whether the window may offer to announce the meeting publicly.
                 'is_internal' => $institution->governance_scope->isInternal(),

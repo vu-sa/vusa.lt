@@ -66,6 +66,7 @@ export interface InstitutionPageTask {
 }
 
 export interface InstitutionPageRelatedInstitution {
+  is_active?: boolean;
   id: string | number;
   name: string;
   direction?: 'outgoing' | 'incoming' | 'mutual';
@@ -81,6 +82,7 @@ interface InstitutionPageType extends Omit<App.Entities.InstitutionType, 'title'
 }
 
 export interface InstitutionPageData {
+  is_active: boolean;
   id: string | number;
   name: string;
   short_name?: string | null;

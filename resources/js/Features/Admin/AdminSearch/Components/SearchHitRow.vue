@@ -36,6 +36,8 @@
           {{ hit.contextBadge }}
         </Badge>
 
+        <InactiveInstitutionBadge v-if="hit.inactiveInstitution" :active="false" />
+
         <!-- Status badge -->
         <Badge v-if="hit.statusBadge" :class="['shrink-0 text-xs', toneClass(hit.statusBadge.tone)]">
           <component :is="toneIcon(hit.statusBadge.tone)" class="size-3.5" aria-hidden="true" />
@@ -101,6 +103,7 @@ import { computed } from 'vue';
 import { toneClass, toneIcon } from '../Utils/searchBadges';
 import type { NormalizedSearchHit, SearchCollectionKey } from '../Utils/searchHitMappers';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { highlightText, matchTitle, type SearchMatchDocument } from '@/Shared/Search/matches';

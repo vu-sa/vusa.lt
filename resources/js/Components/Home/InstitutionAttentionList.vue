@@ -30,7 +30,8 @@
         </span>
       </span>
       <span class="flex items-center gap-3">
-        <StatusBadge :status="institutionActivityStatuses[institution.status as InstitutionActivityStatus]" />
+        <InactiveInstitutionBadge v-if="institution.is_active === false" :active="false" />
+        <StatusBadge v-else :status="institutionActivityStatuses[institution.status as InstitutionActivityStatus]" />
         <Button variant="outline" size="sm" class="pointer-coarse:h-11" @click="emit('record', institution)">
           {{ $t('Fiksuoti veiklą') }}
         </Button>
@@ -46,6 +47,7 @@ import { NotebookPen } from '@lucide/vue';
 
 import type { InstitutionActivityInsight } from './types';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { institutionActivityStatuses } from '@/Constants/statuses';

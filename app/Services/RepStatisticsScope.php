@@ -15,17 +15,12 @@ use Illuminate\Database\Eloquent\Builder;
 
 class RepStatisticsScope
 {
-    /**
-     * Institutions the representation statistics count: representational tenants, the scopes
-     * RepMetricSettings counts, minus the excluded types. The gantt draws every institution.
-     *
-     * @return Builder<Institution>
-     */
+    /** @return Builder<Institution> */
     public static function institutions(?array $tenantIds = null): Builder
     {
         $excluded = app(MeetingSettings::class)->getExcludedInstitutionTypeIds();
 
-        $query = Institution::query()
+        $query = Institution::query()->active()
             ->when($tenantIds !== null, fn ($query) => $query->whereIn('tenant_id', $tenantIds))
             ->whereHas('tenant', fn ($query) => $query->whereIn('type', TenantType::representationalValues()))
             ->when($excluded->isNotEmpty(), fn ($query) => $query->whereDoesntHave('types', fn ($types) => $types->whereIn('institution_types.id', $excluded)));
@@ -38,6 +33,10 @@ class RepStatisticsScope
      */
     public static function counts(Institution $institution): bool
     {
+        if (! $institution->is_active) {
+            return false;
+        }
+
         $excluded = app(MeetingSettings::class)->getExcludedInstitutionTypeIds();
         $institution->loadMissing('types');
 
@@ -51,6 +50,7 @@ class RepStatisticsScope
         return User::query()->whereHas('dutiables', fn ($terms) => $terms
             ->activeOn($at->toDateString())
             ->whereHas('duty', fn ($duties) => $duties
+                ->where('is_active', true)
                 ->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)
                 ->whereIn('institution_id', self::institutions($tenantIds)->select('institutions.id'))));
     }

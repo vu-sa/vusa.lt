@@ -31,7 +31,7 @@ class InstitutionStatusReplayService
     {
         return $this->prepare(
             RepStatisticsScope::institutions($tenantIds)
-                ->get(['id', 'tenant_id', 'meeting_periodicity_days'])
+                ->get(['id', 'tenant_id', 'is_active', 'meeting_periodicity_days'])
         );
     }
 

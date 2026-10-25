@@ -66,7 +66,7 @@ class DutyController extends AdminController
             'duties' => [
                 'data' => $duties->getCollection()->map(function ($duty) {
                     /** @var Duty $duty */
-                    return $duty->append('force_delete_blocked_reason')->toFullArray();
+                    return [...$duty->append('force_delete_blocked_reason')->toFullArray(), 'can_update' => request()->user()->can('update', $duty)];
                 })->values(),
                 'meta' => [
                     'total' => $duties->total(),

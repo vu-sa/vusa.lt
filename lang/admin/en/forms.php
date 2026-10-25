@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'activity_status' => [
+        'spotlight_title' => 'Change activity in the list',
+        'spotlight_description' => 'Choose a status to activate or deactivate a record.',
+        'deactivate_title' => 'Deactivate this institution?',
+        'deactivate' => 'Deactivate',
+    ],
     'duty_type_filter' => [
         'label' => 'Duty type',
         'spotlight' => 'Choose a duty type in Filters, or “No type” to find duties without a type.',

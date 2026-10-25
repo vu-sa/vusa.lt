@@ -5,7 +5,8 @@
     :title="institution.name_lt || institution.name_en || $t('Be pavadinimo')"
     :subtitle="institution.short_name_lt || institution.short_name_en"
   >
-    <template v-if="institution.tenant_shortname" #badges>
+    <template #badges>
+      <InactiveInstitutionBadge :active="institution.is_active" />
       <Badge variant="outline">
         {{ institution.tenant_shortname }}
       </Badge>
@@ -107,6 +108,7 @@ import DetailLayout from './DetailLayout.vue';
 import DetailRow from './DetailRow.vue';
 import InstitutionRelationGraph from './InstitutionRelationGraph.vue';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { interactiveCardClass } from '@/Utils/interactiveCard';
 import { InstitutionIcon } from '@/Components/icons';
 import { Badge } from '@/Components/ui/badge';

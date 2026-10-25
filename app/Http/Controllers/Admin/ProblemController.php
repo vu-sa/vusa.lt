@@ -75,7 +75,7 @@ class ProblemController extends AdminController
             'showDeleted' => $request->getShowDeleted(),
             'deletedCount' => $deletedCount,
             'categories' => ProblemCategory::orderBy('slug')->get()->map(fn ($category) => $category->toArray()),
-            'institutions' => Institution::select('id', 'name')->orderBy('name')->get()->map(fn ($institution) => $institution->toArray()),
+            'institutions' => Institution::select('id', 'name', 'is_active')->orderBy('name')->get()->map(fn ($institution) => $institution->toArray()),
         ]);
     }
 
@@ -100,7 +100,7 @@ class ProblemController extends AdminController
             'tenants' => $tenants,
             'categories' => ProblemCategory::orderBy('slug')->get()->map(fn ($category) => $category->toArray()),
             'problem' => $prefill ? ['tenant_id' => $prefill->tenant_id, 'institutions' => [$prefill->id]] : null,
-            'institutions' => $prefill ? [$prefill->only(['id', 'name', 'tenant_id'])] : [],
+            'institutions' => $prefill ? [$prefill->only(['id', 'name', 'tenant_id', 'is_active'])] : [],
         ]);
     }
 
@@ -230,7 +230,7 @@ class ProblemController extends AdminController
                 ? ['id' => $problem->responsibleUser->id, 'name' => $problem->responsibleUser->name]
                 : null,
             'institutions' => $problem->institutions
-                ->map(fn (Institution $institution) => $institution->only(['id', 'name', 'tenant_id'])),
+                ->map(fn (Institution $institution) => $institution->only(['id', 'name', 'tenant_id', 'is_active'])),
         ]);
     }
 

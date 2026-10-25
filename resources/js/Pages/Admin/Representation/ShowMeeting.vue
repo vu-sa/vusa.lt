@@ -24,6 +24,7 @@
           <Link v-else :href="route('institutions.show', institution.id)" class="text-brand underline decoration-brand/40 underline-offset-4 hover:decoration-brand">
             {{ institution.name }}
           </Link>
+          <InactiveInstitutionBadge :active="institution.is_active" />
         </template>
       </div>
       <span v-else>{{ $t('Be institucijos') }}</span>
@@ -295,6 +296,7 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { AlertTriangle, CalendarPlus, CalendarX, CircleCheck, CircleDashed, Copy, Edit, Globe, Link2, Plus, Trash2 } from '@lucide/vue';
 import { DialogDescription } from 'reka-ui';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { preferredScrollBehavior } from '@/Composables/useAccessibilityPreferences';
 import { useToasts } from '@/Composables/useToasts';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
@@ -344,7 +346,7 @@ interface MeetingCompletion {
 const props = withDefaults(defineProps<{
   meeting: App.Entities.Meeting;
   representatives: App.Entities.User[];
-  availableInstitutionsForAttach?: { id: string; name: string; tenant_shortname?: string | null }[] | null;
+  availableInstitutionsForAttach?: { id: string; name: string; is_active?: boolean; tenant_shortname?: string | null }[] | null;
   governanceScope?: string;
   abilities?: MeetingAbilities;
   completion?: MeetingCompletion;

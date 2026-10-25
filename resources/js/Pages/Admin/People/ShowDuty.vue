@@ -11,6 +11,11 @@
     actions-beside-title
     @action="handleRecordAction"
   >
+    <template #fact-institution>
+      <Link v-if="duty.institution" :href="route('institutions.show', duty.institution.id)" class="font-medium hover:underline">{{ duty.institution.name }}</Link>
+      <InactiveInstitutionBadge :active="duty.institution?.is_active" />
+    </template>
+
     <template #title>
       <InflectedDutyName :name="dutyTitle" />
     </template>
@@ -326,7 +331,6 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { Deferred, Link, router, useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import {
-  Archive,
   Briefcase,
   CalendarClock,
   CalendarRange,
@@ -343,6 +347,7 @@ import {
   X,
 } from '@lucide/vue';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import AccessChangeWarningDialog from '@/Components/AdminForms/AccessChangeWarningDialog.vue';
 import SpotlightPopover from '@/Components/Onboarding/SpotlightPopover.vue';
 import { useFeatureSpotlight } from '@/Composables/useFeatureSpotlight';
@@ -353,7 +358,7 @@ import type { ActionDescriptor } from '@/Components/Layouts/RecordPageAction.vue
 import { ConfirmDialog, OverviewSection, SheetForm, StatusBadge } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
 import { useAccessChangeGuard } from '@/Composables/useAccessChangeGuard';
-import type { StatusPresentation } from '@/Constants/statuses';
+import { activityStatuses, type StatusPresentation } from '@/Constants/statuses';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { DutiableTimelineDialog } from '@/Features/Admin/DutiableTimeline';
 import { AssignDutyUserSheet, DutySearchField, MemberTermRow, dutyNameOn, termStatus, type DutyHit, type FormerDutyName } from '@/Features/Admin/Occupancy';
@@ -459,7 +464,7 @@ const formerNameDuring = (term?: { start_date?: string | null } | null) => {
 const dutyTitle = computed(() => getTranslatedValue(props.duty.name));
 
 // The healthy state (occupied) gets no badge — only what needs attention is painted.
-const inactiveStatus: StatusPresentation = { label: $t('Neaktyvi'), role: 'neutral', icon: Archive };
+const inactiveStatus = activityStatuses.inactive;
 const dutyStatus = computed<StatusPresentation | undefined>(() => {
   if (!isActive.value) {
     return inactiveStatus;

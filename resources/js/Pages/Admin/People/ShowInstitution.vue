@@ -11,6 +11,10 @@
     actions-beside-title
     @action="handleRecordAction"
   >
+    <template v-if="institution.is_active === false" #subtitle>
+      <InactiveInstitutionBadge :active="institution.is_active" />
+    </template>
+
     <template #fact-members>
       <UsersFactList :users="overview.current_users" :inline-limit="2" class="mt-1" />
     </template>
@@ -232,6 +236,7 @@ import {
   UserCheck,
 } from '@lucide/vue';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import InstitutionActivityRequestHistory, { type ActivityRequestHistory } from '@/Components/Institutions/InstitutionActivityRequestHistory.vue';
 import { CadenceSection } from '@/Components/Cadences';
 import InstitutionDutiesSection from '@/Components/Institutions/InstitutionDutiesSection.vue';
@@ -252,7 +257,7 @@ import { resolveTenantSubdomain } from '@/Composables/useTenantSubdomain';
 import { enterInstitution } from '@/Composables/useRecordTrail';
 import { getSuggestedCheckInRange, type TaskDisplayData } from '@/Composables/useTaskPresentation';
 import { countIncompleteTasks } from '@/Composables/useTaskUrgency';
-import { institutionActivityStatuses, type StatusPresentation } from '@/Constants/statuses';
+import { inactiveInstitutionStatus, institutionActivityStatuses, type StatusPresentation } from '@/Constants/statuses';
 import RecordActivity from '@/Features/Admin/ActivityLogViewer/RecordActivity.vue';
 import { AssignDutyUserSheet } from '@/Features/Admin/Occupancy';
 import { FileableFilesPanel, type FileableFileItem } from '@/Components/Files';
@@ -365,9 +370,11 @@ const primaryType = computed(() => {
 });
 
 // Withheld with the meetings when they are not public and the reader has no access.
-const activityStatus = computed<StatusPresentation>(() => props.overview.activity_status
-  ? institutionActivityStatuses[props.overview.activity_status.status as InstitutionActivityStatus]
-  : { label: 'Nerodoma', role: 'neutral', icon: EyeOff });
+const activityStatus = computed<StatusPresentation>(() => props.institution.is_active === false
+  ? inactiveInstitutionStatus
+  : props.overview.activity_status
+    ? institutionActivityStatuses[props.overview.activity_status.status as InstitutionActivityStatus]
+    : { label: 'Nerodoma', role: 'neutral', icon: EyeOff });
 
 const filledPositions = computed(() => props.overview.current_users.length);
 

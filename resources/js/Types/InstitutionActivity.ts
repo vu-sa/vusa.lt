@@ -23,6 +23,7 @@ export interface InstitutionActivityStatus {
 }
 
 export interface InstitutionActivityInsight extends InstitutionActivityStatus {
+  is_active?: boolean;
   id: string;
   name: string;
   /** Named only where several padaliniai share one list. */

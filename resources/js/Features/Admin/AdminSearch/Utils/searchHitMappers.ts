@@ -113,6 +113,7 @@ export interface NormalizedSearchHit {
   editHref?: string;
   /** Contextual colored status badge shown on the list row. */
   statusBadge?: { label: string; tone: BadgeTone };
+  inactiveInstitution?: boolean;
   /** Context shown as a neutral chip rather than a status. */
   contextBadge?: string;
   /** Duties only: the row belongs to a tenant outside the user's own scope. */
@@ -274,6 +275,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     statusBadge: m.completion_status
       ? { label: getFacetValueLabel('completion_status', m.completion_status), tone: completionTone(m.completion_status) }
       : undefined,
+    inactiveInstitution: Boolean(m.inactive_institution_ids?.length),
     isRelated: computeIsRelated(m.institution_ids, ctx?.directInstitutionIds),
   }),
   agendaItems: (a: AgendaItemSearchResult, ctx?: MapperContext) => ({
@@ -288,6 +290,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     statusBadge: a.decision
       ? { label: getFacetValueLabel('decision', a.decision), tone: voteTone(a.decision) }
       : undefined,
+    inactiveInstitution: Boolean(a.inactive_institution_ids?.length),
     isRelated: computeIsRelated(a.institution_ids, ctx?.directInstitutionIds),
   }),
   institutions: (i: InstitutionSearchResult) => ({
@@ -298,6 +301,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
     href: route('institutions.show', i.id),
     viewHref: route('institutions.show', i.id),
     editHref: route('institutions.edit', i.id),
+    inactiveInstitution: i.is_active === false,
   }),
   resources: (r: ResourceSearchResult) => ({
     recordId: String(r.id),
@@ -327,6 +331,7 @@ const MAPPERS: { [K in SearchCollectionKey]: Mapper<any> } = {
       viewHref: route('duties.show', d.id),
       editHref: route('duties.edit', d.id),
       isExternal: external,
+      inactiveInstitution: d.institution_is_active === false,
       contextBadge: external ? d.tenant_shortname : undefined,
     };
   },

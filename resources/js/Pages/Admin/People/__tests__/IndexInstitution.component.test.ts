@@ -56,6 +56,17 @@ describe('IndexInstitution following', () => {
     window.history.replaceState({}, '', '/mano/institutions');
   });
 
+  it('keeps untitled institutions identifiable by their searchable alias or record id', () => {
+    typesense.rows = [
+      { id: 'i1', name_lt: '', name_en: '', alias: 'institucija-legacy', tenant_id: 1 },
+      { id: 'i2', name_lt: '   ', name_en: null, tenant_id: 1 },
+    ];
+    const wrapper = mountPage([]);
+    expect(wrapper.text()).toContain('Be pavadinimo · institucija-legacy');
+    expect(wrapper.text()).toContain('Be pavadinimo · i2');
+    expect(wrapper.findAllComponents({ name: 'CollectionPrimaryCell' }).map(cell => cell.props('titleLines'))).toEqual([2, 2]);
+  });
+
   it('marks followed rows and counts them on the quick filter', () => {
     const wrapper = mountPage(['i1']);
 

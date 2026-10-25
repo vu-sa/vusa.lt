@@ -21,6 +21,10 @@
     @update:locale="activeLocale = $event"
     @submit="emit('submit:form', form)"
   >
+    <template v-if="isEditing" #title-status>
+      <StatusBadge :status="activityStatuses[form.is_active ? 'active' : 'inactive']" />
+    </template>
+
     <template #title>
       <InflectedDutyName :name="dutyTitle" :locale="activeLocale" />
     </template>
@@ -94,6 +98,7 @@
                 {{ selectedInstitution?.name ?? $t('Pasirinkti instituciją…') }}
               </span>
               <span class="flex shrink-0 items-center gap-2">
+                <InactiveInstitutionBadge :active="selectedInstitution?.is_active" />
                 <span
                   v-if="selectedInstitution?.tenant?.shortname"
                   class="border border-border bg-secondary px-1.5 py-0.5 text-xs font-medium text-muted-foreground"
@@ -237,16 +242,14 @@
     <!-- Aside Slot -->
     <template #aside>
       <FormPanel :title="$t('Nustatymai')" :icon="Building2" title-class="text-brand">
-        <FormToggleRow
+        <ActivityStatusField
           v-if="isEditing && canEditDuty"
+          id="duty-active"
           v-model="form.is_active"
-          :label="$t('Aktyvi pareigybė')"
+          :error="form.errors.is_active"
           :hint="$t('Neaktyvi pareigybė lieka su istorija, bet nebesiūloma priskiriant narius.')"
           data-testid="toggle-duty-active"
         />
-        <p v-if="form.errors.is_active" class="text-xs text-destructive">
-          {{ form.errors.is_active }}
-        </p>
 
         <!-- Contacts grouping -->
         <FormFieldWrapper
@@ -416,8 +419,14 @@ import { useForm } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { Building2, ChevronsUpDown, Plus, SlidersHorizontal, Trash2, Users } from '@lucide/vue';
 
+import ActivityStatusField from './ActivityStatusField.vue';
+
+import { activityStatuses } from '@/Constants/statuses';
+import StatusBadge from '@/Components/Patterns/StatusBadge.vue';
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
+
 import FormPage from '@/Components/Layouts/FormPage.vue';
-import { ConfirmDialog, FormPanel, FormSection, FormToggleRow } from '@/Components/Patterns';
+import { ConfirmDialog, FormPanel, FormSection } from '@/Components/Patterns';
 import { Checkbox } from '@/Components/ui/checkbox';
 import { DatePicker } from '@/Components/ui/date-picker';
 import FormFieldWrapper from '@/Components/AdminForms/FormFieldWrapper.vue';
@@ -649,6 +658,7 @@ const institutionInitialHits = computed<NormalizedSearchHit[]>(() => {
     id: String(inst.id),
     name_lt: inst.name,
     tenant_shortname: inst.tenant?.shortname,
+    is_active: inst.is_active === undefined ? true : Boolean(inst.is_active),
   })];
 });
 
@@ -697,6 +707,7 @@ const exOfficioInitialHits = computed<NormalizedSearchHit[]>(() =>
     id: String(d.id),
     name_lt: d.name,
     institution_name_lt: d.institution?.name,
+    institution_is_active: d.institution?.is_active === undefined ? undefined : Boolean(d.institution.is_active),
   })),
 );
 

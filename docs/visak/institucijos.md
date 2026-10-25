@@ -5,6 +5,7 @@ area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
 last_reviewed: 2026-10-25
 tests:
+  - tests/Feature/Api/Admin/RecordActivityStatusTest.php
   - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
   - tests/Feature/Admin/Management/InstitutionControllerTest.php
   - tests/Feature/Admin/Management/InstitutionCheckInTest.php
@@ -124,9 +125,24 @@ Rūšis lemia, ką rodo ir ko reikalauja kiti puslapiai:
 
 ### Aktyvi institucija
 
-Jungiklis **Aktyvi institucija** nurodo, ar iš institucijos dar tikimasi posėdžių. Neaktyvi
+Formos lauke **Būsena** pasirenkama **AKTYVI** arba **NEAKTYVI** – tai nurodo, ar iš institucijos dar tikimasi posėdžių. Neaktyvi
 institucija nerodoma viešame sąraše, jai nekuriamos užduotys dėl posėdžių periodiškumo, o nariai
 be teisės ją matyti jos puslapio neatidaro.
+
+Institucijų sąraše būseną galima keisti tiesiogiai stulpelyje **Būsena** arba prie įrašo eilutėje.
+Keitimas rodomas tik turint teisę redaguoti konkrečią instituciją. Prieš pažymint ją neaktyvia,
+patvirtinimo lange rodomas užbaigiamų pareigybių laikotarpių skaičius, pabaigos data ir trukdantys laikotarpiai.
+
+Neaktyvios institucijos nepatenka į asmeninę ir padalinių Gantt diagramas bei dabartinę statistiką.
+Jau užfiksuoti istoriniai rodikliai nesikeičia. Administravimo sąrašuose, ryšiuose, paieškoje ir pasirinkimo
+laukuose jos lieka matomos pagal turimas teises, su žyma **Neaktyvi institucija**. Ši žyma rodoma ir įrašo puslapyje.
+
+<ChangelogNote version="v3.18" date="2026-10-25" title="Institucijų aktyvumo būsena">
+
+Aktyvumo būsena keičiama sąraše arba formoje. Neaktyvios institucijos neįtraukiamos į dabartines Gantt diagramas ir statistiką,
+o administravimo vietose pažymimos atskira žyma.
+
+</ChangelogNote>
 
 ### Posėdžių periodiškumas ir būklė {#periodiskumas}
 
@@ -466,7 +482,7 @@ vieną instituciją. Dabar adresai sudaryti iš pavadinimų, o seni adresai nukr
 </ChangelogNote>
 - **Ištrinta** institucija patenka į [šiukšlinę](/pagrindai/platforma#siuksline), o jos
   pareigybės ir posėdžiai lieka. Institucijos, kurioje einamos pareigos, ištrinti negalima.
-- Iš šiukšlinės instituciją galima **atkurti**. **Galutinai ištrinti** negalima, kol ji turi
+- Šiukšlinės veiksmas **Atkurti ir atidaryti** atkuria instituciją ir iškart atidaro jos įrašą. Įrašai be pavadinimo sąraše ir įrašo puslapyje rodomi kaip **Be pavadinimo · nuorodos kodas**, kad juos būtų galima atskirti ir rasti pagal kodą. **Galutinai ištrinti** negalima, kol ji turi
   posėdžių, pareigybių ar pranešimų apie veiklą arba yra padalinio pagrindinė institucija.
 
 ## Kas ką gali {#teises}

@@ -7,6 +7,7 @@ last_reviewed: 2026-10-25
 tests:
   - resources/js/Components/AdminForms/__tests__/DutyForm.component.test.ts
   - resources/js/Pages/Admin/People/__tests__/ShowDuty.component.test.ts
+  - tests/Feature/Api/Admin/RecordActivityStatusTest.php
   - tests/Feature/Permissions/DutyTypeAssignmentTest.php
   - resources/js/Pages/Admin/People/__tests__/IndexDuty.component.test.ts
   - tests/Feature/Admin/DutyMergeTest.php
@@ -170,6 +171,13 @@ pirmininkas pagal pareigas yra ir padalinio tarybos narys.
   pareigų datas.
 
 ### Neaktyvios pareigybės, ankstesni pavadinimai ir pirmtakės {#istorija}
+
+Pareigybių sąrašo stulpelyje **Būsena** ir prie įrašo eilutėje rodoma **AKTYVI** arba **NEAKTYVI**.
+Turint teisę redaguoti konkrečią pareigybę, šiame meniu galima pakeisti jos būseną. Formoje naudojami tie patys
+žali ir pilki būsenų pasirinkimai; formos pakeitimas įsigalioja paspaudus **Išsaugoti**.
+Jei pareigybę dar eina narys, pirmiau reikia užbaigti jo pareigybių laikotarpį.
+Institucijos neaktyvumas rodomas atskira žyma **Neaktyvi institucija** ir nekeičia pačios pareigybės aktyvumo.
+
 
 Pareigybės istorija neturėtų trūkinėti, net jei pareigybė keitėsi:
 

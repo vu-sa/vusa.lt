@@ -9,6 +9,7 @@ use App\Models\PublicNews;
 use App\Models\PublicPage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 pest()->use(RefreshDatabase::class);
@@ -164,4 +165,16 @@ test('public institution index follows parent institution soft delete lifecycle'
 
     $institution->forceDelete();
     expectTypesenseSearchMissing(PublicInstitution::class, $query, $institution);
+});
+
+test('an untitled legacy institution returns to admin search after restoration', function (): void {
+    $institution = Institution::factory()->create();
+    $institution->delete();
+    DB::table('institutions')->where('id', $institution->id)->update(['name' => null, 'short_name' => null]);
+    $institution = $institution->fresh();
+    $institution->restore();
+
+    expect($institution->fresh()->getRawOriginal('name'))->toBeNull();
+    expectTypesenseSearchContains(Institution::class, '*', $institution);
+    expectTypesenseSearchContains(Institution::class, $institution->alias, $institution);
 });

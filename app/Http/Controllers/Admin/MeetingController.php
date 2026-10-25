@@ -533,6 +533,7 @@ class MeetingController extends AdminController
             ->map(fn (Institution $i) => [
                 'id' => $i->id,
                 'name' => $i->name,
+                'is_active' => (bool) $i->is_active,
                 'tenant_shortname' => $i->tenant?->shortname,
             ]);
     }

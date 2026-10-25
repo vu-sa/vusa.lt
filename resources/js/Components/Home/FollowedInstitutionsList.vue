@@ -16,7 +16,8 @@
         >
           {{ institution.name }}
         </Link>
-        <StatusBadge :status="institutionActivityStatuses[institution.activity_status as InstitutionActivityStatus]" />
+        <InactiveInstitutionBadge v-if="institution.is_active === false" :active="false" />
+        <StatusBadge v-else :status="institutionActivityStatuses[institution.activity_status as InstitutionActivityStatus]" />
       </li>
     </ul>
   </OverviewSection>
@@ -29,6 +30,7 @@ import { Eye } from '@lucide/vue';
 
 import type { HomeFollowedInstitutions } from './types';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { StatusBadge } from '@/Components/Patterns';
 import OverviewSection from '@/Components/Patterns/OverviewSection.vue';
 import { institutionActivityStatuses } from '@/Constants/statuses';

@@ -2,8 +2,9 @@
 doc_status: reviewed
 title: Padaliniai
 area: visak
-last_reviewed: 2026-10-21
+last_reviewed: 2026-10-25
 tests:
+  - tests/Feature/Api/Admin/RecordActivityStatusTest.php
   - tests/Feature/Admin/Dashboard/AtstovavimasDashboardTest.php
   - tests/Feature/Admin/Core/AtstovavimasApiTest.php
   - tests/Feature/Api/Admin/RepStatisticsTest.php
@@ -64,6 +65,11 @@ Institucijų būsenos skaičiuojamos taip pat kaip [Apžvalgoje](/visak/apzvalga
 
 ### Kurios institucijos skaičiuojamos {#skaiciuojamos-institucijos}
 
+Dabartiniuose rodikliuose skaičiuojamos tik **aktyvios institucijos**. Neaktyvių institucijų posėdžiai,
+užduotys ir atstovai neprisideda prie dabartinių rodiklių, jei nesusiję ir su kita skaičiuojama institucija.
+Jau užfiksuoti ankstesnių dienų rodikliai išsaugomi.
+
+
 <ChangelogNote version="v3.11" date="2026-10-20" title="Rodikliai skaičiuojami VU organams">
 
 Rodikliai pagal nutylėjimą skaičiuojami tik VU organų institucijoms ir jų atstovams; VU SA organai rodomi posėdžių laiko juostoje.
@@ -77,11 +83,14 @@ skaičiuojami tik tų organų institucijoms, kurie pažymėti
 tarptautinis organas, nustato jos [tipas](/sistema/tipai). Atstovas skaičiuojamas, jei eina
 studento atstovo pareigas tokioje institucijoje. Po skaičiais rodoma, kurie organai skaičiuojami.
 
-Posėdžių laiko juostoje rodomos visos institucijos, ir VU SA organai. Institucijos, kurių tipas
+Posėdžių laiko juostoje rodomos visos aktyvios institucijos, ir VU SA organai. Institucijos, kurių tipas
 [posėdžių nustatymuose](/sistema/nustatymai#posedziai) neįtraukiamas į rodiklius, taip pat rodomos
 laiko juostoje, bet neskaičiuojamos.
 
 ### Kurias institucijas matai laiko juostoje {#laiko-juosta}
+
+Neaktyvios institucijos laiko juostoje nerodomos, įskaitant susijusias institucijas.
+
 
 | Institucija | Kaip rodoma |
 |---|---|

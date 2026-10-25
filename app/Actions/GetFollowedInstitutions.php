@@ -35,6 +35,7 @@ class GetFollowedInstitutions
             ->map(fn (Institution $institution): array => [
                 'id' => (string) $institution->id,
                 'name' => $institution->name,
+                'is_active' => (bool) $institution->is_active,
                 'activity_status' => $activityStatusService->resolve($institution)->status->value,
             ])
             ->values()

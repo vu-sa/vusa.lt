@@ -128,6 +128,7 @@ const { isReducedMotion } = useAccessibilityPreferences();
 type GraphMode = 'institutions' | 'types';
 
 interface GraphNode extends SimulationNodeDatum {
+  inactive?: boolean;
   id: string;
   label: string;
   userCount: number;
@@ -143,6 +144,7 @@ interface GraphEdge extends SimulationLinkDatum<GraphNode> {
 }
 
 interface GraphNodeData {
+  is_active?: boolean | number;
   id: string | number;
   name: unknown;
   users_count?: number | null;
@@ -218,6 +220,7 @@ function buildNodes(): GraphNode[] {
   return activeNodesRaw.value.map(item => ({
     id: String(item.id),
     label: resolveName(item.name),
+    inactive: mode.value === 'institutions' && (item.is_active === false || item.is_active === 0),
     userCount: Number(item.users_count ?? item.institutions_count ?? 0),
   }));
 }
@@ -477,6 +480,13 @@ function render() {
     .attr('stroke-width', 3)
     .attr('class', 'text-[13px] font-semibold fill-zinc-800 stroke-zinc-50 dark:fill-zinc-100 dark:stroke-zinc-900')
     .text(d => d.label);
+
+  nodeSelection.filter(d => Boolean(d.inactive))
+    .append('text')
+    .attr('x', d => nodeRadius(d) + 4)
+    .attr('y', '1.7em')
+    .attr('class', 'text-xs fill-status-neutral')
+    .text($t('Neaktyvi institucija'));
 
   nodeSelection
     .on('mouseenter', (_event: MouseEvent, d) => {

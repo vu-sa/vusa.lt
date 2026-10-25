@@ -10,7 +10,7 @@ export interface RelationKindOption {
 /** One link as seen from the record it is shown on. */
 export interface RelationshipLinkRow {
   id: number;
-  other: { id: string; name: string };
+  other: { id: string; name: string; is_active?: boolean };
   direction: 'outgoing' | 'incoming';
   kind: string;
   kind_label: string;

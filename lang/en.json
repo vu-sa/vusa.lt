@@ -1,4 +1,5 @@
 {
+    "Atkurti ir atidaryti": "Restore and open",
   "Bandomoji aplinka": "Staging environment",
   "Bandomosios aplinkos duomenys gali skirtis nuo tikrosios": "Test environment data may differ from production",
   "Pakeitimai nebus išsaugoti – rytoj duomenys bus atnaujinti": "Changes won't be saved — data is refreshed tomorrow",

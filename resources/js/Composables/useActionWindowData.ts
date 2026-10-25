@@ -17,6 +17,7 @@ import { useApi } from '@/Composables/useApi';
 import type { InstitutionActivityStatus } from '@/Types/InstitutionActivity';
 
 export interface ActionWindowInstitution {
+  is_active?: boolean;
   id: string;
   name: string;
   tenant_shortname: string | null;

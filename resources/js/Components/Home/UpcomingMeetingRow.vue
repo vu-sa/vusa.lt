@@ -20,6 +20,7 @@
           <span aria-hidden="true" class="text-border">·</span>
         </span>
         <span class="truncate">{{ meeting.institution_name }}</span>
+        <InactiveInstitutionBadge :active="meeting.institution_is_active ?? undefined" />
       </span>
     </span>
     <span class="shrink-0 text-xs text-muted-foreground">{{ formatNearDate(meeting.start_time, { thresholdDays: 365 }) }}</span>
@@ -33,6 +34,7 @@ import { Eye } from '@lucide/vue';
 
 import type { HomeMeeting } from './types';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import { useDateFormatter } from '@/Composables/useDateFormatter';
 import { formatMonthShort } from '@/Utils/IntlTime';
 

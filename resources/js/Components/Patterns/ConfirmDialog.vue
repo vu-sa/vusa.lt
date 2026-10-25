@@ -7,6 +7,7 @@
           {{ description }}
         </AlertDialogDescription>
       </AlertDialogHeader>
+      <slot />
       <AlertDialogFooter>
         <AlertDialogCancel class="u-touch">
           {{ cancelLabel ?? $t('Atšaukti') }}
@@ -15,6 +16,7 @@
              clear their target on close (`@update:open`) saw nothing left to confirm. -->
         <button
           type="button"
+          :disabled="confirmDisabled"
           data-slot="confirm-dialog-action"
           :class="cn(buttonVariants({ voice: 'brand' }), [
             'u-touch',
@@ -53,6 +55,7 @@ withDefaults(defineProps<{
   confirmLabel: string;
   cancelLabel?: string;
   destructive?: boolean;
+  confirmDisabled?: boolean;
 }>(), {
   description: undefined,
   cancelLabel: undefined,

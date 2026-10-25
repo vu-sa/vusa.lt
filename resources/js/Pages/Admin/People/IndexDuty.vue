@@ -27,24 +27,34 @@
     </template>
 
     <template #row="{ item }">
-      <article class="flex min-h-16 items-start gap-3 px-4 py-4">
+      <article class="flex min-h-16 flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center" data-slot="duty-collection-row">
         <div class="min-w-0 flex-1">
-          <div class="flex items-start justify-between gap-3">
-            <CollectionPrimaryCell :title="title(item)" :href="isDeleted ? undefined : route('duties.show', item.id)">
-              <InflectedDutyName :name="title(item)" />
-            </CollectionPrimaryCell>
-            <span v-if="item.is_active === false" class="shrink-0 text-xs text-muted-foreground" data-testid="duty-inactive">{{ $t('Neaktyvi') }}</span>
-            <span v-else-if="item.dutiables_count === 0" class="inline-flex shrink-0 items-center gap-1 text-xs text-status-attention"><CircleAlert class="size-3" aria-hidden="true" />{{ $t('Neužimta') }}</span>
-          </div>
-          <p v-if="institutionTitle(item)" class="mt-1 text-sm text-muted-foreground">
+          <CollectionPrimaryCell :title="title(item)" :href="isDeleted ? undefined : route('duties.show', item.id)">
+            <InflectedDutyName :name="title(item)" />
+          </CollectionPrimaryCell>
+          <p v-if="institutionTitle(item)" class="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             {{ institutionTitle(item) }}
+            <InactiveInstitutionBadge :active="item.institution?.is_active" />
           </p>
           <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             <span v-if="item.email" class="truncate">{{ item.email }}</span>
             <span v-if="item.types?.length">{{ item.types.map(type => titleOf(type.title)).join(', ') }}</span>
           </div>
         </div>
-        <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
+        <div class="flex w-full flex-wrap items-center gap-3 sm:w-auto sm:justify-end">
+          <CollectionActivityStatus
+            entity="duties"
+            :record-id="item.id"
+            :active="item.is_active ?? true"
+            :editable="!isDeleted && Boolean(item.can_update)"
+            :spotlight="String(item.id) === String(source.items.value[0]?.id)"
+            @updated="active => statusUpdated(item, active)"
+          />
+          <span v-if="item.is_active !== false && item.dutiables_count === 0" class="inline-flex shrink-0 items-center gap-1 text-xs text-status-attention">
+            <CircleAlert class="size-3" aria-hidden="true" />{{ $t('Neužimta') }}
+          </span>
+          <CollectionRowActions :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
+        </div>
       </article>
     </template>
 
@@ -52,7 +62,17 @@
       <CollectionPrimaryCell v-if="column.key === 'name'" :title="title(item)" :href="isDeleted ? undefined : route('duties.show', item.id)">
         <InflectedDutyName :name="title(item)" />
       </CollectionPrimaryCell>
-      <span v-else-if="column.key === 'institution'" class="text-muted-foreground">{{ institutionTitle(item) || '—' }}</span>
+      <template v-else-if="column.key === 'status'">
+        <CollectionActivityStatus
+          entity="duties"
+          :record-id="item.id"
+          :active="item.is_active ?? true"
+          :editable="!isDeleted && Boolean(item.can_update)"
+          :spotlight="String(item.id) === String(source.items.value[0]?.id)"
+          @updated="active => statusUpdated(item, active)"
+        />
+      </template>
+      <span v-else-if="column.key === 'institution'" class="text-muted-foreground">{{ institutionTitle(item) || '—' }} <InactiveInstitutionBadge :active="item.institution?.is_active" /></span>
       <span v-else-if="column.key === 'email'" class="text-muted-foreground">{{ item.email || '—' }}</span>
       <span v-else-if="column.key === 'occupancy'" :class="item.dutiables_count === 0 ? 'text-status-attention' : 'text-muted-foreground'">{{ item.dutiables_count === 0 ? $t('Neužimta') : $tChoice('Narys|Nariai|Narių', item.dutiables_count, { count: item.dutiables_count }) }}</span>
       <CollectionRowActions v-else-if="column.key === 'actions'" :actions="rowActions(item)" @select="key => selectRowAction(key, item)" />
@@ -60,6 +80,14 @@
 
     <template #preview="{ item }">
       <section class="flex flex-col gap-4 p-5">
+        <CollectionActivityStatus
+          entity="duties"
+          :record-id="item.id"
+          :active="item.is_active ?? true"
+          :editable="!isDeleted && Boolean(item.can_update)"
+          :spotlight="String(item.id) === String(source.items.value[0]?.id)"
+          @updated="active => statusUpdated(item, active)"
+        />
         <div>
           <p class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             {{ $t('Pareigybė') }}
@@ -69,6 +97,7 @@
           </Link>
           <p v-if="institutionTitle(item)" class="mt-1 text-sm text-muted-foreground">
             {{ institutionTitle(item) }}
+            <InactiveInstitutionBadge :active="item.institution?.is_active" />
           </p>
         </div>
         <dl class="grid gap-3 border-y border-border py-4 text-sm">
@@ -131,6 +160,8 @@ import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 import { ArrowRight, CircleAlert, Merge, Pencil, Plus, RotateCcw, Trash2 } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
+import CollectionActivityStatus from '@/Components/Collection/CollectionActivityStatus.vue';
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import CollectionPrimaryCell from '@/Components/Collection/CollectionPrimaryCell.vue';
 import CollectionRowActions, { type CollectionRowAction } from '@/Components/Collection/CollectionRowActions.vue';
 import type { CollectionColumn, CollectionQuickFilter } from '@/Components/Collection/types';
@@ -145,7 +176,7 @@ import { useAdminNavigation } from '@/Composables/useAdminNavigation';
 import { useDatabaseCollectionSource } from '@/Composables/useCollectionSource';
 
 interface Translation { lt?: string; en?: string }
-type Duty = App.Entities.Duty & { name: Translation; email?: string | null; dutiables_count: number; is_active?: boolean; institution?: { id: string | number; name?: Translation; short_name?: Translation | null } | null; types?: { id: string | number; title: Translation }[] };
+type Duty = App.Entities.Duty & { name: Translation; email?: string | null; dutiables_count: number; can_update?: boolean; is_active?: boolean; institution?: { id: string | number; name?: Translation; is_active?: boolean; short_name?: Translation | null } | null; types?: { id: string | number; title: Translation }[] };
 
 const props = defineProps<{
   duties: { data: Duty[]; meta: { total: number; per_page: number; current_page: number; last_page: number } };
@@ -201,8 +232,14 @@ const source = useDatabaseCollectionSource<Duty>({
     ],
   }],
 });
+function statusUpdated(item: Duty, active: boolean): void {
+  source.patchItems([String(item.id)], { is_active: active });
+  source.refresh();
+}
+
 const columns = computed<CollectionColumn[]>(() => [
   { key: 'name', label: $t('Pareigybė'), sortField: 'name' },
+  { key: 'status', label: $t('Būsena'), class: 'w-40' },
   { key: 'institution', label: $t('Institucija') },
   { key: 'email', label: $t('El. paštas') },
   { key: 'occupancy', label: $t('Nariai'), class: 'w-32' },

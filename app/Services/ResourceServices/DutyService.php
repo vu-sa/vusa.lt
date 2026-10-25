@@ -41,7 +41,7 @@ class DutyService
             ? collect()
             : $authorizer->tenants($user, 'duties.create.padalinys')->pluck('id');
 
-        return Institution::select('id', 'name', 'alias', 'tenant_id')
+        return Institution::select('id', 'name', 'alias', 'tenant_id', 'is_active')
             ->when(! $hasGlobalAccess, function ($query) use ($tenantIds): void {
                 // Only show institutions from tenants where user has permission
                 $query->whereIn('tenant_id', $tenantIds);
@@ -68,8 +68,8 @@ class DutyService
     {
         $user = request()->user();
 
-        $query = Duty::select('id', 'name', 'institution_id')
-            ->with(['institution:id,name,short_name,tenant_id', 'institution.tenant:id,shortname'])
+        $query = Duty::select('id', 'name', 'institution_id', 'is_active')
+            ->with(['institution:id,name,short_name,tenant_id,is_active', 'institution.tenant:id,shortname'])
             ->orderBy('name');
 
         if ($duty) {
@@ -112,7 +112,7 @@ class DutyService
             ->filter()
             ->unique();
 
-        return Institution::select('id', 'name', 'alias', 'tenant_id')
+        return Institution::select('id', 'name', 'alias', 'tenant_id', 'is_active')->active()
             ->when($visibleTenantIds->isNotEmpty(), function ($query) use ($visibleTenantIds, $userInstitutionIds): void {
                 $query->where(function ($q) use ($visibleTenantIds, $userInstitutionIds): void {
                     $q->whereIn('tenant_id', $visibleTenantIds);
@@ -158,7 +158,7 @@ class DutyService
      *
      * @see getInstitutionsForDashboard() for full access including coordinator tenants
      */
-    public static function getUserInstitutionsForDashboard()
+    public static function getUserInstitutionsForDashboard(bool $activeOnly = false)
     {
         $user = request()->user();
 
@@ -179,6 +179,7 @@ class DutyService
         }
 
         $institutions = self::buildInstitutionQuery()
+            ->when($activeOnly, fn ($query) => $query->active())
             ->whereIn('id', $userInstitutionIds)
             ->get();
 
@@ -222,7 +223,7 @@ class DutyService
             return collect();
         }
 
-        return self::buildInstitutionQuery()
+        return self::buildInstitutionQuery()->active()
             ->whereIn('tenant_id', $accessibleTenantIds)
             ->get();
     }
@@ -258,7 +259,7 @@ class DutyService
             return collect();
         }
 
-        return self::timelineInstitutionsQuery()
+        return self::timelineInstitutionsQuery()->active()
             ->whereIn('tenant_id', $accessibleTenantIds)
             ->get();
     }
@@ -276,7 +277,7 @@ class DutyService
             return new EloquentCollection;
         }
 
-        return self::timelineInstitutionsQuery()
+        return self::timelineInstitutionsQuery()->active()
             ->whereIn('institutions.id', $institutionIds)
             ->get();
     }
@@ -286,7 +287,7 @@ class DutyService
      */
     private static function timelineInstitutionsQuery()
     {
-        return Institution::select('id', 'name', 'alias', 'tenant_id', 'meeting_periodicity_days')
+        return Institution::select('id', 'name', 'alias', 'tenant_id', 'is_active', 'meeting_periodicity_days')
             ->whereHas('tenant', function ($query): void {
                 $query->whereIn('type', TenantType::representationalValues());
             })
@@ -312,7 +313,7 @@ class DutyService
      */
     private static function buildInstitutionQuery()
     {
-        return Institution::select('id', 'name', 'alias', 'tenant_id', 'meeting_periodicity_days')
+        return Institution::select('id', 'name', 'alias', 'tenant_id', 'is_active', 'meeting_periodicity_days')
             ->whereHas('tenant', function ($query): void {
                 $query->whereIn('type', TenantType::representationalValues());
             })

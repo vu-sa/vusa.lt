@@ -205,7 +205,7 @@ class AtstovavimasDashboardService
      */
     public function ganttInstitutionAccess(User $user, array $tenantIds): SupportCollection
     {
-        $inSelection = fn () => Institution::query()
+        $inSelection = fn () => Institution::query()->active()
             ->whereIn('tenant_id', $tenantIds)
             ->whereHas('tenant', fn (Builder $query) => $query->whereIn('type', TenantType::representationalValues()));
 
@@ -232,7 +232,7 @@ class AtstovavimasDashboardService
             $grant($inSelection()->whereIn('tenant_id', $managedTenantIds)->pluck('institutions.id'), self::PROJECTION_FULL);
         }
 
-        $ownInstitutions = Institution::query()
+        $ownInstitutions = Institution::query()->active()
             ->whereIn('id', $user->authorization_duties()->pluck('institution_id')
                 ->merge($user->secretariedInstitutions()->pluck('institutions.id'))
                 ->filter()
@@ -310,7 +310,7 @@ class AtstovavimasDashboardService
             return [];
         }
 
-        $institutions = Institution::query()
+        $institutions = Institution::query()->active()
             ->select(['institutions.id', 'institutions.name'])
             ->whereIn('institutions.id', $access->keys())
             ->with([
@@ -441,6 +441,7 @@ class AtstovavimasDashboardService
         return [
             'id' => (string) $institution->id,
             'name' => $institution->name,
+            'is_active' => (bool) $institution->is_active,
             'tenant_id' => $institution->tenant_id,
             'tenant' => $institution->tenant ? [
                 'id' => $institution->tenant->id,
@@ -634,6 +635,7 @@ class AtstovavimasDashboardService
     {
         return User::query()
             ->whereHas('current_duties', fn (Builder $query) => $query
+                ->where('duties.is_active', true)
                 ->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)
                 ->whereIn('institution_id', RepStatisticsScope::institutions($tenantIds)->select('institutions.id')));
     }
@@ -646,6 +648,7 @@ class AtstovavimasDashboardService
     {
         return [
             'current_duties' => fn ($query) => $query->select('duties.id', 'duties.name', 'duties.institution_id')
+                ->where('duties.is_active', true)
                 ->holdingPurpose(ResponsibilityPurpose::StudentRepresentation)
                 ->whereIn('institution_id', RepStatisticsScope::institutions($tenantIds)->select('institutions.id'))
                 ->with('institution:id,name,tenant_id'),

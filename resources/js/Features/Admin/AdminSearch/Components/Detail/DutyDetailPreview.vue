@@ -10,6 +10,7 @@
     </template>
 
     <template #badges>
+      <InactiveInstitutionBadge :active="duty.institution_is_active" />
       <Badge v-if="duty.tenant_shortname" :variant="isExternal ? 'default' : 'outline'">
         {{ duty.tenant_shortname }}
       </Badge>
@@ -130,6 +131,7 @@ import { Building2, Eye, Pencil } from '@lucide/vue';
 import DetailLayout from './DetailLayout.vue';
 import DetailRow from './DetailRow.vue';
 
+import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
 import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 import { getTranslatedValue } from '@/Composables/useTranslatedTitle';
 import { DutyIcon } from '@/Components/icons';

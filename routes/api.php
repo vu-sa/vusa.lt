@@ -269,6 +269,8 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
 
         // Institution follow management
         Route::prefix('institutions')->name('institutions.')->group(function (): void {
+            Route::get('{institution}/status', [InstitutionApiController::class, 'status'])->name('status');
+            Route::patch('{institution}/status', [InstitutionApiController::class, 'updateStatus'])->name('status.update');
             Route::post('follows', [InstitutionSubscriptionApiController::class, 'followMany'])->name('follows.store');
             Route::delete('follows', [InstitutionSubscriptionApiController::class, 'unfollowMany'])->name('follows.destroy');
             Route::get('{institution}/subscription-status', [InstitutionSubscriptionApiController::class, 'status'])->name('subscription.status');
@@ -282,6 +284,7 @@ Route::prefix('v1')->name('v1.')->group(function (): void {
 
         // The member list's database twin (page 2+ and every filter change of the collection page).
         Route::get('users', [UserApiController::class, 'index'])->name('users.index');
+        Route::patch('duties/{duty}/status', [DutyApiController::class, 'updateStatus'])->name('duties.status.update');
         Route::post('users/merge-preview', UserMergePreviewApiController::class)->name('users.mergePreview');
 
         // User search for forms (e.g. responsible user in problems)

@@ -264,6 +264,7 @@ class Meeting extends Model implements Commentable, SharepointFileableContract
             'institution_name_en' => $this->institutions->first()?->getTranslation('name', 'en'),
 
             'institution_ids' => $this->institutions->pluck('id')->toArray(),
+            'inactive_institution_ids' => $this->institutions->filter(fn (Institution $institution) => ! $institution->is_active)->pluck('id')->values()->all(),
             'institution_names' => $this->institutions->map(fn ($i) => $i->getTranslation('name', 'lt'))->toArray(),
 
             'institution_type_id' => $this->institutions->first()?->types->first()?->id,
