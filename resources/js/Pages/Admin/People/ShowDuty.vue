@@ -273,7 +273,6 @@
     :user="selectedUserForSheet"
     :study-programs="studyPrograms ?? []"
     :existing-terms
-    :occupied-places="currentHolders.length"
   />
 
   <SheetForm
@@ -495,12 +494,15 @@ const recordFacts = computed<RecordFact[]>(() => {
     facts.push({ key: 'tenant', label: $t('Padalinys'), value: props.duty.institution.tenant.shortname });
   }
 
-  const places = `${currentHolders.value.length} / ${props.duty.places_to_occupy || '—'}`;
+  const members = String(currentHolders.value.length);
 
-  // Vacancy rides on the places fact, as an institution's status does on its own.
   facts.push(dutyStatus.value
-    ? { key: 'places', label: $t('Vietos'), status: dutyStatus.value, detail: places }
-    : { key: 'places', label: $t('Vietos'), value: places });
+    ? { key: 'members', label: $t('Nariai'), status: dutyStatus.value, detail: members }
+    : { key: 'members', label: $t('Nariai'), value: members });
+
+  if (props.duty.places_to_occupy != null) {
+    facts.push({ key: 'places', label: $t('Vietų skaičius'), value: props.duty.places_to_occupy });
+  }
 
   facts.push({
     key: 'email',

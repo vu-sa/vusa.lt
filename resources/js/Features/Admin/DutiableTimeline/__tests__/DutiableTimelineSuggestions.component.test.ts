@@ -135,16 +135,12 @@ describe('DutiableTimelineSuggestions', () => {
     expect(mountPanel([overlap]).text()).toContain('dutiables.timeline.diagnostics.detail.end_move');
   });
 
-  it('reports how many places are actually filled', () => {
+  it('explains why derived term dates need attention', () => {
     const wrapper = mountPanel([{
-      code: 'understaffed',
-      severity: 'info',
-      row_ids: [],
-      duty_id: 'duty-1',
-      detail: { active: 2, places_to_occupy: 3 },
+      code: 'ex_officio_drift', severity: 'warning', row_ids: ['row-1'],
     }]);
 
-    expect(wrapper.text()).toContain('dutiables.timeline.diagnostics.detail.understaffed');
+    expect(wrapper.text()).toContain('dutiables.timeline.diagnostics.detail.ex_officio_drift');
   });
 
   it('pre-checks errors and applies them as one batch', async () => {

@@ -40,7 +40,6 @@ class AnalyzeDutiableTimeline
             ...self::exOfficioDrift($rows, $periods),
             ...self::offCadence($rows, $periods, $cadences),
             ...self::spansCadences($rows, $periods, $cadences),
-            ...self::understaffed($rows, $periods),
             ...self::orphanDerivedSuspects($rows),
         ];
 
@@ -321,46 +320,6 @@ class AnalyzeDutiableTimeline
                     'suggested_end' => $covered->last()->end_date->toDateString(),
                 ],
             );
-        }
-
-        return $findings;
-    }
-
-    /**
-     * Seats standing empty today. Informational only — a duty is often deliberately
-     * under-filled between terms.
-     *
-     * @param  Collection<int, Dutiable>  $rows
-     * @param  array<string, array{start: string, end: string|null}>  $periods
-     * @return list<DutiableDiagnostic>
-     */
-    private static function understaffed(Collection $rows, array $periods): array
-    {
-        $today = now()->toDateString();
-        $findings = [];
-
-        foreach ($rows->groupBy('duty_id') as $dutyId => $group) {
-            $places = $group->first()->duty?->places_to_occupy;
-
-            if ($places === null || $places < 1) {
-                continue;
-            }
-
-            $active = $group->filter(function (Dutiable $row) use ($periods, $today) {
-                $period = $periods[$row->id];
-
-                return $period['start'] <= $today && ($period['end'] === null || $period['end'] >= $today);
-            })->count();
-
-            if ($active < $places) {
-                $findings[] = new DutiableDiagnostic(
-                    'understaffed',
-                    DutiableDiagnostic::SEVERITY_INFO,
-                    [],
-                    (string) $dutyId,
-                    ['active' => $active, 'places_to_occupy' => $places],
-                );
-            }
         }
 
         return $findings;

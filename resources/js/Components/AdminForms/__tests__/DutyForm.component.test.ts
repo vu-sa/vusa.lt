@@ -50,7 +50,6 @@ const stubs = {
   Alert: { template: '<div><slot /></div>' },
   MultiSelect: { name: 'MultiSelect', props: ['modelValue', 'options', 'id'], template: '<div :id="id" />' },
   SingleSelect: { template: '<div />' },
-  NumberField: { template: '<input type="number" />' },
   InstitutionSelectDialog: {
     name: 'InstitutionSelectDialog',
     props: ['initialHits'],
@@ -76,7 +75,7 @@ const emptyDuty = (overrides: Record<string, unknown> = {}) => ({
   name: { lt: '', en: '' },
   email: null,
   institution_id: null,
-  places_to_occupy: 1,
+  places_to_occupy: null,
   contacts_grouping: 'none',
   description: { lt: '', en: '' },
   current_users: [],
@@ -265,7 +264,7 @@ describe('DutyForm.vue — duplicate duty warning wiring', () => {
         institution_name: 'VU SA MIF',
         tenant_shortname: 'VU SA MIF',
         current_holder_names: [],
-        places_to_occupy: 1,
+        places_to_occupy: null,
         can_manage: true,
       }],
       other_institution: [],
@@ -523,5 +522,23 @@ describe('DutyForm.vue — delegated types', () => {
     expect(wrapper.get('[data-testid="duty-readonly-types"]').text()).toContain('Esamas tipas');
     expect(wrapper.find('#duty-types').exists()).toBe(false);
     wrapper.unmount();
+  });
+});
+
+describe('DutyForm informational seat count', () => {
+  it('starts blank and lets an entered reference be cleared', async () => {
+    const wrapper = mountForm();
+    const input = wrapper.find('input#places_to_occupy');
+
+    expect((input.element as HTMLInputElement).value).toBe('');
+    await input.setValue('38');
+    wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    await nextTick();
+    expect((wrapper.emitted('submit:form')!.at(-1)![0] as Record<string, unknown>).places_to_occupy).toBe(38);
+
+    await input.setValue('');
+    wrapper.findComponent({ name: 'FormPage' }).vm.$emit('submit');
+    await nextTick();
+    expect((wrapper.emitted('submit:form')!.at(-1)![0] as Record<string, unknown>).places_to_occupy).toBeNull();
   });
 });

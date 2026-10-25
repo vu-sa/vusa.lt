@@ -48,20 +48,6 @@
           <DuplicateDutyWarning :matches="duplicateMatches" />
         </div>
 
-        <!-- Places to Occupy -->
-        <div class="space-y-1.5">
-          <Label class="text-xs font-semibold">{{ $t('Kiek vietų') }}</Label>
-          <Input
-            v-model.number="http.places_to_occupy"
-            type="number"
-            min="1"
-            :placeholder="$t('1')"
-          />
-          <p class="text-xs text-muted-foreground">
-            {{ $t('Kiek žmonių gali užimti šią pareigybę') }}
-          </p>
-        </div>
-
         <!-- Contacts Grouping -->
         <div class="space-y-1.5">
           <Label class="text-xs font-semibold">{{ $t('Kontaktų rikiavimas') }} *</Label>
@@ -214,13 +200,9 @@
             <div class="flex items-start gap-3.5">
               <!-- Icon plate -->
               <div
-                class="size-10 flex items-center justify-center border shrink-0 transition-colors"
+                class="size-10 flex items-center justify-center border border-border bg-muted text-muted-foreground shrink-0 transition-colors"
                 :class="{
-                  'border-border bg-muted text-muted-foreground': getDutyStatus(duty).type === 'unknown',
-                  'border-status-attention-border bg-status-attention-surface text-status-attention': getDutyStatus(duty).type === 'empty',
-                  'border-border bg-muted text-foreground': getDutyStatus(duty).type === 'partial',
-                  'border-status-success-border bg-status-success-surface text-status-success': getDutyStatus(duty).type === 'full',
-                  'border-destructive/30 bg-destructive/10 text-destructive': getDutyStatus(duty).type === 'over'
+                  'border-status-attention-border bg-status-attention-surface text-status-attention': isEmptyDuty(duty),
                 }"
               >
                 <DutyIcon class="size-5" />
@@ -233,16 +215,10 @@
                     <InflectedDutyName :name="duty.name" />
                   </p>
                   <span
-                    class="shrink-0 text-[11px] font-bold px-2 py-0.5 border"
-                    :class="{
-                      'border-border bg-muted text-muted-foreground': getDutyStatus(duty).type === 'unknown',
-                      'border-status-attention-border bg-status-attention-surface text-status-attention': getDutyStatus(duty).type === 'empty',
-                      'border-border bg-muted text-foreground': getDutyStatus(duty).type === 'partial',
-                      'border-status-success-border bg-status-success-surface text-status-success': getDutyStatus(duty).type === 'full',
-                      'border-destructive/30 bg-destructive/10 text-destructive': getDutyStatus(duty).type === 'over'
-                    }"
+                    v-if="isEmptyDuty(duty)"
+                    class="shrink-0 border border-status-attention-border bg-status-attention-surface px-2 py-0.5 text-xs font-medium text-status-attention"
                   >
-                    {{ getDutyStatus(duty).label }}
+                    {{ $t('Neužimta') }}
                   </span>
                 </div>
 
@@ -251,33 +227,12 @@
                   {{ duty.email }}
                 </p>
 
-                <!-- Capacity indicator -->
                 <div class="flex items-center gap-3 mt-2">
                   <div class="flex items-center gap-1.5 text-xs">
                     <Users class="size-3.5 text-muted-foreground" />
                     <span class="font-semibold text-foreground">
                       {{ duty.current_users?.length || 0 }}
-                      <span class="text-muted-foreground font-normal">/ {{ duty.places_to_occupy || '?' }}</span>
                     </span>
-                  </div>
-
-                  <!-- Capacity bar -->
-                  <div class="flex-1 h-1.5 bg-muted border border-border/50 overflow-hidden max-w-28">
-                    <div
-                      class="h-full transition-all"
-                      :class="{
-                        'bg-muted-foreground': getDutyStatus(duty).type === 'unknown',
-                        'bg-status-attention': getDutyStatus(duty).type === 'empty',
-                        'bg-foreground/70': getDutyStatus(duty).type === 'partial',
-                        'bg-status-success': getDutyStatus(duty).type === 'full',
-                        'bg-destructive': getDutyStatus(duty).type === 'over'
-                      }"
-                      :style="{
-                        width: duty.places_to_occupy
-                          ? `${Math.min(100, ((duty.current_users?.length || 0) / duty.places_to_occupy) * 100)}%`
-                          : '0%'
-                      }"
-                    />
                   </div>
 
                   <!-- Current users preview -->
@@ -365,7 +320,7 @@ const dutyTypes = computed(() =>
 );
 
 const page = usePage();
-const auth = page.props.auth as any;
+const auth = page.props.auth as { can?: { create?: { duty?: boolean } } };
 const canCreateDuty = computed(() => Boolean(auth?.can?.create?.duty) && !(wizard.state.institution as { is_external?: boolean } | undefined)?.is_external);
 
 const isDutyTypesLoading = computed(() => !dutyTypes.value || dutyTypes.value.length === 0);
@@ -384,7 +339,6 @@ const http = useHttp({
   description: { lt: '', en: '' },
   email: '',
   institution_id: '',
-  places_to_occupy: 1,
   contacts_grouping: 'none',
   types: [] as string[],
 });
@@ -453,33 +407,17 @@ const filteredDuties = computed(() => {
   );
 });
 
-const getDutyStatus = (duty: any) => {
-  const currentCount = duty.current_users?.length || 0;
-  const maxCount = duty.places_to_occupy || 0;
-
-  if (maxCount === 0) return { type: 'unknown', label: $t('Nenurodyta') };
-  if (currentCount === 0) return { type: 'empty', label: $t('Neužimta') };
-  if (currentCount < maxCount) return { type: 'partial', label: $t('Dalinai užimta') };
-  if (currentCount === maxCount) return { type: 'full', label: $t('Pilnai užimta') };
-  return { type: 'over', label: $t('Viršija limitą') };
-};
+const isEmptyDuty = (duty: App.Entities.Duty) => duty.is_active !== false && !duty.current_users?.length;
 
 const sortedDuties = computed(() => {
   return [...filteredDuties.value].sort((a, b) => {
-    const aStatus = getDutyStatus(a);
-    const bStatus = getDutyStatus(b);
+    const emptyFirst = Number(isEmptyDuty(b)) - Number(isEmptyDuty(a));
 
-    const priority: Record<string, number> = { empty: 0, partial: 1, unknown: 2, full: 3, over: 4 };
-    const aPriority = priority[aStatus.type] ?? 5;
-    const bPriority = priority[bStatus.type] ?? 5;
-
-    if (aPriority !== bPriority) return aPriority - bPriority;
-
-    return (a.name?.toString() || '').localeCompare(b.name?.toString() || '');
+    return emptyFirst || (a.name?.toString() || '').localeCompare(b.name?.toString() || '');
   });
 });
 
-const selectDuty = (duty: any) => {
+const selectDuty = (duty: App.Entities.Duty) => {
   wizard.setDuty(duty as App.Entities.Duty);
   wizard.nextStep();
 };

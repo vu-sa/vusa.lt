@@ -164,7 +164,6 @@ class InstitutionController extends AdminController
                 'id' => $duty->id,
                 'name' => $duty->name,
                 'order' => $duty->order,
-                'places_to_occupy' => $duty->places_to_occupy,
                 'current_users' => $duty->current_users,
             ])
             ->values());

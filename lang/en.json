@@ -1432,5 +1432,8 @@
   "Išskleisti": "Expand",
   "Posėdis bus perkeltas į šiukšlinę.": "The meeting will be moved to the trash.",
   "Posėdis tuščias ir ką tik sukurtas, todėl bus ištrintas visam laikui.": "The meeting is empty and was just created, so it will be deleted permanently.",
-  "Posėdis bus perkeltas į šiukšlinę, o jo užduotys pašalintos. Atkūrus posėdį, neužbaigta užduotis grįš.": "The meeting will be moved to the trash and its tasks removed. If you restore the meeting, its unfinished task comes back."
+  "Posėdis bus perkeltas į šiukšlinę, o jo užduotys pašalintos. Atkūrus posėdį, neužbaigta užduotis grįš.": "The meeting will be moved to the trash and its tasks removed. If you restore the meeting, its unfinished task comes back.",
+  "Informacinis skaičius, pvz., Parlamento vietos. Narių priskyrimo neriboja.": "A reference number, e.g. Parliament seats. It does not limit member assignments.",
+  "Narių po pakeitimų:": "Members after changes:",
+  "Vietų skaičius": "Seat count"
 }

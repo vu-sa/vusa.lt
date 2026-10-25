@@ -251,7 +251,8 @@
         <!-- Places to occupy -->
         <FormFieldWrapper
           id="places_to_occupy"
-          :label="$t('Kiek vietų')"
+          :label="$t('Vietų skaičius')"
+          :hint="$t('Informacinis skaičius, pvz., Parlamento vietos. Narių priskyrimo neriboja.')"
           :error="form.errors.places_to_occupy"
         >
           <NumberField
@@ -426,7 +427,7 @@ interface DutyPropType {
   description?: { lt?: string; en?: string } | string;
   email?: string | null;
   institution_id?: string | null;
-  places_to_occupy?: number;
+  places_to_occupy?: number | null;
   contacts_grouping?: string;
   is_active?: boolean;
   former_names?: Array<{ name: { lt?: string; en?: string }; used_until: string }>;
@@ -463,7 +464,7 @@ const props = withDefaults(defineProps<{
     description: { lt: '', en: '' },
     email: null,
     institution_id: null,
-    places_to_occupy: 1,
+    places_to_occupy: null,
     contacts_grouping: 'none',
     types: [],
     ex_officio_target_duties: [],
@@ -513,7 +514,7 @@ const form = useForm({
   },
   email: props.duty?.email ?? '',
   institution_id: props.duty?.institution_id ?? null,
-  places_to_occupy: props.duty?.places_to_occupy ?? 1,
+  places_to_occupy: props.duty?.places_to_occupy ?? null,
   contacts_grouping: props.duty?.contacts_grouping ?? 'none',
   is_active: props.duty?.is_active ?? true,
   former_names: (props.duty?.former_names ?? []).map(former => ({

@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Institucijos
 area: institutions
 models: [Institution, InstitutionCheckIn, InstitutionSecretary]
-last_reviewed: 2026-10-19
+last_reviewed: 2026-10-25
 tests:
   - resources/js/Pages/Admin/People/__tests__/CreateRecordNavigation.component.test.ts
   - tests/Feature/Admin/Management/InstitutionControllerTest.php
@@ -149,7 +149,7 @@ viešumas**. Kalendoriuje paskelbtas posėdis pats savaime viešu netampa.
 
 Narių ir sekretorių nuotraukos rodomos mažos, kad sąrašuose ir kortelėse daugiau vietos liktų vardams bei pareigoms.
 
-Viršuje – veiklos būklė, rūšis ir tipas, padalinys, nariai (užimtos ir visos vietos), posėdžių
+Viršuje – veiklos būklė, rūšis ir tipas, padalinys, dabartinių narių skaičius, posėdžių
 viešumas ir koordinatoriai. Skirtukai:
 
 | Skirtukas | Kas jame |

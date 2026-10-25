@@ -186,7 +186,6 @@
     :user="sheetUser"
     :study-programs="management?.studyPrograms ?? []"
     :taken-ids
-    :occupied-places
   />
 
   <AddCheckInDialog
@@ -371,7 +370,6 @@ const activityStatus = computed<StatusPresentation>(() => props.overview.activit
   : { label: 'Nerodoma', role: 'neutral', icon: EyeOff });
 
 const filledPositions = computed(() => props.overview.current_users.length);
-const totalPositions = computed(() => props.overview.duties.reduce((sum, duty) => sum + Number(duty.places_to_occupy ?? 0), 0));
 
 const recordFacts = computed<RecordFact[]>(() => {
   // The meeting status leads, toned in its colour, with what it rests on — the same line the
@@ -408,10 +406,7 @@ const recordFacts = computed<RecordFact[]>(() => {
 
   facts.push({
     key: 'members',
-    // The fill rate rides in the label, so the value can be the people themselves.
-    label: totalPositions.value > 0
-      ? `${$t('Nariai')} · ${filledPositions.value} / ${totalPositions.value}`
-      : $t('Nariai'),
+    label: `${$t('Nariai')} · ${filledPositions.value}`,
   });
 
   facts.push({
@@ -601,7 +596,6 @@ const sheetUser = ref<App.Entities.User | null>(null);
 /** Who already holds the duty right now cannot be assigned to it again. */
 const holdsNow = (duty: DutyWithUsers | null) => (duty?.current_users ?? []);
 const takenIds = computed(() => holdsNow(sheetDuty.value as DutyWithUsers | null).map(user => String(user.id)));
-const occupiedPlaces = computed(() => holdsNow(sheetDuty.value as DutyWithUsers | null).length);
 
 const openAssignSheet = (duty: DutyWithUsers) => {
   sheetDuty.value = duty as unknown as App.Entities.Duty & Record<string, unknown>;

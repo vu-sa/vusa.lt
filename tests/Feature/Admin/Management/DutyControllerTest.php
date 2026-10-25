@@ -923,3 +923,54 @@ describe('show page', function (): void {
             );
     });
 });
+
+describe('informational seat count', function (): void {
+    test('creation accepts an omitted blank or manually entered reference', function (array $reference, ?int $expected): void {
+        asUser($this->dutyManager)->post(route('duties.store'), [
+            'name' => ['lt' => 'Informacinė pareigybė', 'en' => 'Reference duty'],
+            'institution_id' => $this->dutyManagerDuty->institution_id,
+            'contacts_grouping' => 'none',
+            ...$reference,
+        ])->assertSessionHasNoErrors()->assertRedirect();
+
+        expect(Duty::where('name->lt', 'Informacinė pareigybė')->sole()->places_to_occupy)->toBe($expected);
+    })->with([
+        'omitted' => [[], null],
+        'blank' => [['places_to_occupy' => null], null],
+        'manual' => [['places_to_occupy' => 38], 38],
+    ]);
+
+    test('updates preserve omitted references and allow setting or clearing them', function (array $reference, ?int $expected): void {
+        $duty = Duty::factory()->for($this->dutyManagerDuty->institution)->create(['places_to_occupy' => 38]);
+
+        asUser($this->dutyManager)->patch(route('duties.update', $duty), [
+            'name' => ['lt' => 'Pareigybė', 'en' => 'Duty'],
+            'institution_id' => $duty->institution_id,
+            'contacts_grouping' => 'none',
+            ...$reference,
+        ])->assertSessionHasNoErrors()->assertRedirect();
+
+        expect($duty->fresh()->places_to_occupy)->toBe($expected);
+    })->with([
+        'omitted' => [[], 38],
+        'cleared' => [['places_to_occupy' => null], null],
+        'empty input' => [['places_to_occupy' => ''], null],
+        'manual' => [['places_to_occupy' => 40], 40],
+    ]);
+
+    test('creation and updates reject invalid reference counts', function (mixed $value): void {
+        $duty = Duty::factory()->for($this->dutyManagerDuty->institution)->create(['places_to_occupy' => 38]);
+        $payload = [
+            'name' => ['lt' => 'Netinkamas skaičius', 'en' => 'Invalid count'],
+            'institution_id' => $duty->institution_id,
+            'contacts_grouping' => 'none',
+            'places_to_occupy' => $value,
+        ];
+
+        asUser($this->dutyManager)->post(route('duties.store'), $payload)->assertSessionHasErrors('places_to_occupy');
+        asUser($this->dutyManager)->patch(route('duties.update', $duty), $payload)->assertSessionHasErrors('places_to_occupy');
+
+        expect($duty->fresh()->places_to_occupy)->toBe(38);
+        expect(Duty::where('name->lt', 'Netinkamas skaičius')->exists())->toBeFalse();
+    })->with(['zero' => 0, 'negative' => -1, 'fraction' => 1.5, 'text' => 'invalid']);
+});

@@ -19,7 +19,6 @@ export interface InstitutionPageDuty {
   name: string;
   email?: string | null;
   order?: number | null;
-  places_to_occupy?: number | null;
   current_users?: App.Entities.User[];
 }
 

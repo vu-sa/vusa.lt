@@ -3,7 +3,7 @@ doc_status: reviewed
 title: Laikotarpių tvarkyklė
 area: dutiableTimeline
 models: [Dutiable, Cadence]
-last_reviewed: 2026-10-20
+last_reviewed: 2026-10-25
 tests:
   - tests/Feature/Admin/People/DutiableTimelineControllerTest.php
   - tests/Feature/Admin/People/DutiableDiagnosticsTest.php
@@ -208,7 +208,6 @@ pataisymus galima pažymėti ranka ir paspausti **Taikyti pažymėtus**. Paspaud
 | Data nesutampa su kadencijos riba | Data nuo ribos nutolusi ne daugiau kaip 45 dienas. | Lygiuojama su kadencija. |
 | Neterminuota nuo ankstesnės kadencijos | Neterminuotas laikotarpis prasidėjo jau pasibaigusioje kadencijoje. Dažniausiai tai **perrinktas narys**, todėl pasiūlymai suskleisti į vieną eilutę. | Jei žmogus pareigų nebeeina – užbaigti tos kadencijos pabaiga. |
 | Perrinkta kelioms kadencijoms | Laikotarpis apima kelias kadencijas. Tai ne klaida, rodoma tik informacijai, suskleista. | Nėra. |
-| Užimta mažiau vietų, nei numatyta | Pareigybėje yra laisvų vietų. | Nėra – tai sprendimas apie žmones. |
 | Įtartinas *ex officio* įrašas be šaltinio | Žmogus turi pareigas pagal kitas pareigas (*ex officio*), bet pačių šaltinio pareigų nebeeina, o ryšys nutrūkęs. | Nėra – šie įrašai suteikia realias teises, todėl automatiškai neliesti; paleidžiama komanda `duties:audit-ex-officio`. |
 
 ### Peržiūra ir išsaugojimas

@@ -27,19 +27,6 @@
         </div>
       </div>
 
-      <div
-        v-if="isFull && !isEditing && rangeIsCurrent"
-        class="border border-[var(--status-attention-border)] bg-[var(--status-attention-surface)] p-3 text-xs text-[var(--status-attention)]"
-        data-testid="assign-sheet-full-notice"
-      >
-        <p class="font-semibold">
-          {{ $t('Visos vietos užimtos (:taken / :total)', { taken: String(occupiedPlaces), total: String(dutyContext?.places_to_occupy ?? '') }) }}
-        </p>
-        <p class="mt-0.5">
-          {{ $t('Narį vis tiek gali priskirti; vietų skaičių pakeisi pareigybės nustatymuose.') }}
-        </p>
-      </div>
-
       <DutySearchField
         v-if="pickDuty"
         v-model="chosenDuty"
@@ -424,7 +411,6 @@ const props = withDefaults(defineProps<{
   takenIds?: string[];
   /** Every term on the duty, so only people holding it during the chosen dates are blocked. */
   existingTerms?: ExistingTerm[] | null;
-  occupiedPlaces?: number;
 }>(), {
   duty: null,
   dutiable: null,
@@ -432,7 +418,6 @@ const props = withDefaults(defineProps<{
   studyPrograms: () => [],
   takenIds: () => [],
   existingTerms: null,
-  occupiedPlaces: 0,
 });
 
 const emit = defineEmits<{
@@ -448,11 +433,6 @@ const pickMember = computed(() => !isEditing.value && !(pickDuty.value && props.
 const chosenDuty = ref<DutyHit | null>(null);
 const isExOfficio = computed(() => !!props.dutiable?.via_dutiable_id);
 const dutyContext = computed(() => props.duty ?? props.dutiable?.duty ?? null);
-const isFull = computed(() => {
-  const places = Number(dutyContext.value?.places_to_occupy ?? 0);
-
-  return places > 0 && props.occupiedPlaces >= places;
-});
 const canEndTerm = computed(() => !!props.dutiable && termStatus(props.dutiable as { start_date?: string; end_date?: string | null }) === 'current');
 
 const sheetTitle = computed(() => {
@@ -668,8 +648,6 @@ const cadenceHint = computed(() => {
     ? $t('Nuo šiandien iki kadencijos pabaigos.')
     : $t('Visa kadencija: :start – :end.', { start: cadence.start_date, end: cadence.end_date });
 });
-
-const rangeIsCurrent = computed(() => termStatus({ start_date: form.start_date, end_date: form.end_date }) === 'current');
 
 /** Someone already holding the duty during these dates cannot get a second, overlapping term. */
 const takenInRange = computed(() => {

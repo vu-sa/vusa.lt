@@ -155,7 +155,7 @@ class DutyController extends AdminController
                     ->where('id', '!=', $duty->id)
                     ->orderBy('order')
                     ->with('current_users:id,name,profile_photo_path')
-                    ->get(['id', 'name', 'institution_id', 'places_to_occupy', 'order'])
+                    ->get(['id', 'name', 'institution_id', 'order'])
                     ->map(fn (Duty $sibling) => $sibling->toArray())
                     ->values()
                     ->all()
@@ -625,10 +625,6 @@ class DutyController extends AdminController
 
                         $this->assignments->endDateDutiables($removeQuery, $change['end_date'] ?? now());
                     }
-                }
-
-                if (isset($validated['places_to_occupy'])) {
-                    $duty->update(['places_to_occupy' => $validated['places_to_occupy']]);
                 }
             });
         };

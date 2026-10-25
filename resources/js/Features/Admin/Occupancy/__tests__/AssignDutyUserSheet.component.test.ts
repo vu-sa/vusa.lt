@@ -273,12 +273,10 @@ describe('AssignDutyUserSheet.vue', () => {
       expect(transform({ description, study_program_note: { lt: '1 kursas', en: '' } }).study_program_note).toEqual({ lt: '1 kursas', en: '' });
     });
 
-    it('warns, without blocking, when every place is taken', () => {
-      const full = mountSheet({ occupiedPlaces: 1 });
-      const free = mountSheet({ occupiedPlaces: 0 });
+    it.each([null, 1, 38])('does not warn about an informational seat count of %s', (places) => {
+      const wrapper = mountSheet({ duty: { ...duty, places_to_occupy: places }, takenIds: ['current-holder'] });
 
-      expect(full.find('[data-testid="assign-sheet-full-notice"]').exists()).toBe(true);
-      expect(free.find('[data-testid="assign-sheet-full-notice"]').exists()).toBe(false);
+      expect(wrapper.find('[data-testid="assign-sheet-full-notice"]').exists()).toBe(false);
     });
 
     it('hides the danger zone', () => {

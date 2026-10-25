@@ -19,10 +19,7 @@
             <InflectedDutyName :name="duty.name" />
           </p>
           <p class="text-xs text-muted-foreground">
-            {{ (duty.current_users?.length ?? 0) }}<template v-if="duty.places_to_occupy">
-              / {{ duty.places_to_occupy }}
-            </template>
-            {{ $t('užimta') }}
+            {{ duty.current_users?.length ?? 0 }} {{ $t('narių') }}
           </p>
         </div>
         <UsersAvatarGroup
@@ -51,7 +48,6 @@ import InflectedDutyName from '@/Components/Duties/InflectedDutyName.vue';
 export interface OtherDuty {
   id: string | number;
   name: string;
-  places_to_occupy?: number | null;
   current_users?: App.Entities.User[];
 }
 

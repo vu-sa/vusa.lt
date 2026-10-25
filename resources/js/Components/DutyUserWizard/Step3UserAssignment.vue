@@ -39,7 +39,7 @@
               {{ $t('Vietų skaičius') }}
             </p>
             <p class="font-bold text-sm text-foreground">
-              {{ currentUsers.length }} / {{ wizard.state.duty?.places_to_occupy || '?' }}
+              {{ currentUsers.length }}
             </p>
             <p v-if="isExternalDuty" class="text-[11px] text-muted-foreground">
               {{ $t('forms.fields.tenant_quota') }}: {{ tenantQuota ?? '∞' }}
@@ -418,11 +418,8 @@
           </span>
           <Separator orientation="vertical" class="h-4" />
           <span class="text-muted-foreground font-normal">
-            {{ $t('Naujas vietų skaičius:') }}
+            {{ $t('Narių po pakeitimų:') }}
             <strong class="text-foreground ml-1">{{ wizard.projectedUserCount.value }}</strong>
-            <span v-if="wizard.capacityMismatch.value" class="text-status-attention ml-1.5 inline-flex items-center">
-              <AlertTriangle class="size-3.5 inline" />
-            </span>
           </span>
         </div>
       </div>

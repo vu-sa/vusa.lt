@@ -164,13 +164,11 @@ test('a start far outside the cadence is deliberate, not drift', function (): vo
     expect(codes(analyze()))->not->toContain('off_cadence');
 });
 
-test('an unfilled seat is reported against places_to_occupy', function (): void {
+test('an informational seat count does not produce an understaffing finding', function (): void {
     $this->duty->update(['places_to_occupy' => 3]);
     makeRow(['start_date' => now()->subMonth()->toDateString(), 'end_date' => now()->addMonth()->toDateString()]);
 
-    $finding = collect(analyze())->firstWhere('code', 'understaffed');
-
-    expect($finding['detail'])->toBe(['active' => 1, 'places_to_occupy' => 3]);
+    expect(codes(analyze()))->not->toContain('understaffed');
 });
 
 test('projected state is analysed instead of stored state, which is what the diff delta needs', function (): void {

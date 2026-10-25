@@ -50,7 +50,7 @@ class UpdateDutyRequest extends FormRequest
             'email' => 'nullable|email',
             'current_users' => 'nullable|array',
             'institution_id' => 'required',
-            'places_to_occupy' => 'required|numeric',
+            'places_to_occupy' => 'sometimes|nullable|integer|min:1',
             'contacts_grouping' => 'required|in:none,study_program,tenant',
             'is_active' => 'sometimes|boolean',
             'former_names' => 'sometimes|array',

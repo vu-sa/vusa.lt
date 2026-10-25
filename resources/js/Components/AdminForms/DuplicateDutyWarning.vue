@@ -104,7 +104,6 @@ export interface DutyMatch {
   institution_name: string | null;
   tenant_shortname: string | null;
   current_holder_names: string[];
-  places_to_occupy: number | null;
   is_active?: boolean;
   can_view?: boolean;
   can_manage: boolean;

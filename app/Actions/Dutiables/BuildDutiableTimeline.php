@@ -84,7 +84,7 @@ class BuildDutiableTimeline
         $query = Dutiable::query()
             ->where('dutiable_type', MorphMap::alias(User::class))
             ->with([
-                'duty:id,name,institution_id,places_to_occupy,order',
+                'duty:id,name,institution_id,order',
                 'duty.institution:id,name,alias,tenant_id',
                 'user:id,name,profile_photo_path,pronouns',
                 'tenant:id,shortname',
@@ -173,7 +173,6 @@ class BuildDutiableTimeline
                         'kind' => 'duty',
                         'label' => $first->duty?->name ?? '—', // @phpstan-ignore nullsafe.neverNull (soft-deleted duty)
                         'sublabel' => $first->duty?->institution?->name,
-                        'places_to_occupy' => $first->duty?->places_to_occupy,
                         'cadence_id' => $cadenceByDuty[$first->duty_id]?->id,
                     ];
             });

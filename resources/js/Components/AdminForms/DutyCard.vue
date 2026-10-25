@@ -5,8 +5,8 @@
         <InflectedDutyName :name="duty.name" />
       </Link>
       <span class="flex items-center gap-3 text-xs text-muted-foreground">
-        <span v-if="duty.places_to_occupy" class="tabular-nums">
-          {{ (duty.current_users?.length ?? 0) }} / {{ duty.places_to_occupy }}
+        <span class="tabular-nums">
+          {{ duty.current_users?.length ?? 0 }} {{ $t('narių') }}
         </span>
         <Button
           v-if="canManage"

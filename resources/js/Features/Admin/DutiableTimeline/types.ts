@@ -14,7 +14,6 @@ export interface TimelineGroup {
   label: string;
   sublabel?: string | null;
   photo?: string | null;
-  places_to_occupy?: number | null;
   cadence_id?: string | null;
 }
 
