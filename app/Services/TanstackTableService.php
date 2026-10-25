@@ -165,33 +165,12 @@ class TanstackTableService
     {
         $model = $query->getModel();
 
-        // Check if this is a translatable field
         if (method_exists($model, 'isTranslatableAttribute') && $model->isTranslatableAttribute($column)) {
-            // Handle translatable (JSON) columns - search both lt and en
             $query->where(function (Builder $q) use ($column, $searchText): void {
-                $this->applyJsonSearch($q, $column, $searchText, 'lt');
-                $this->applyJsonSearch($q, $column, $searchText, 'en', 'or');
+                $q->whereTranslationLike($column, $searchText);
             }, null, null, $boolean);
         } else {
-            // Handle regular columns - case-insensitive search
             $query->whereLike($column, "%{$searchText}%", false, $boolean);
-        }
-    }
-
-    /**
-     * Apply JSON search with database-specific syntax
-     */
-    protected function applyJsonSearch(Builder $query, string $column, string $searchText, string $locale, string $boolean = 'and'): void
-    {
-        $connection = $query->getConnection();
-        $driver = config('database.default') === 'sqlite' ? 'sqlite' : 'mysql';
-
-        if ($driver === 'sqlite') {
-            // SQLite uses json_extract without JSON_UNQUOTE
-            $query->whereRaw("LOWER(json_extract({$column}, '$.{$locale}')) LIKE LOWER(?)", ["%{$searchText}%"], $boolean);
-        } else {
-            // MySQL/MariaDB use JSON_UNQUOTE and JSON_EXTRACT
-            $query->whereRaw("LOWER(JSON_UNQUOTE(JSON_EXTRACT({$column}, '$.{$locale}'))) LIKE LOWER(?)", ["%{$searchText}%"], $boolean);
         }
     }
 

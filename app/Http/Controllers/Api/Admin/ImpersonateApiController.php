@@ -30,7 +30,8 @@ class ImpersonateApiController extends ApiController
         $user = $this->requireAuth($request);
         $this->guardSuperAdmin($user);
 
-        $term = '%'.$request->validated('search').'%';
+        $search = $request->validated('search');
+        $term = '%'.$search.'%';
         $locale = app()->getLocale();
 
         $users = User::query()
@@ -38,11 +39,8 @@ class ImpersonateApiController extends ApiController
             ->where(fn (Builder $query) => $query
                 ->where('name', 'like', $term)
                 ->orWhere('email', 'like', $term)
-                // JSON paths, so a term like "en" does not match the locale keys of every duty.
                 ->orWhereHas('current_duties', fn (Builder $duties) => $duties
-                    ->where(fn (Builder $names) => $names
-                        ->where('duties.name->lt', 'like', $term)
-                        ->orWhere('duties.name->en', 'like', $term))))
+                    ->whereTranslationLike('duties.name', $search)))
             ->with(['current_duties' => fn ($duties) => $duties
                 ->select(['duties.id', 'duties.name', 'duties.institution_id'])
                 ->with('institution:id,short_name')])

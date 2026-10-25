@@ -90,3 +90,19 @@ test('search matches active duty names and returns each user\'s current duties',
         ->assertOk()
         ->assertJsonCount(0, 'data');
 });
+
+test('impersonation search reads translated text without matching locale keys', function (string $term, bool $matches): void {
+    $actor = User::factory()->create(['name' => 'Ona', 'email' => 'ona@example.test']);
+    $actor->assignRole(config('permission.super_admin_role_name'));
+    $target = User::factory()->create(['name' => 'Ieva', 'email' => 'ieva@example.test']);
+    $duty = Duty::factory()->create(['name' => ['lt' => 'Klubo "ABC" vadovas', 'en' => 'Chair']]);
+    $target->duties()->attach($duty, ['start_date' => now()->subMonth()]);
+
+    asUser($actor)->getJson(route('api.v1.admin.impersonate.search', ['search' => $term]))
+        ->assertOk()->assertJsonCount($matches ? 1 : 0, 'data');
+})->with([
+    'English case-insensitive text' => ['CHAIR', true],
+    'quote in Lithuanian text' => ['"ABC"', true],
+    'Lithuanian locale key' => ['lt', false],
+    'English locale key' => ['en', false],
+]);

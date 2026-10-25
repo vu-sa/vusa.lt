@@ -160,6 +160,9 @@ Rodiklių lentelė ir atstovų aktyvumas pateikiami po laiko juosta. Palyginimo 
 Keturi skaičiai rodomi taip pat kaip institucijų skaičiai viršuje: kiek atstovų prisijungė **šiandien**, **per 7 d.**, **per 30 d.** iš visų dabartinių atstovų ir kiek **niekada** neprisijungė. Žemiau pateikiami trys pastaruoju metu aktyviausi atstovai.
 Mygtukas **Visi atstovai** atveria sąrašą, kuriame galima ieškoti atstovų ir atsirinkti aktyvius
 arba neaktyvius (niekada neprisijungusius arba neprisijungusius daugiau nei 30 d.).
+Ieškoma pagal vardą, el. paštą ir dabartinės pareigybės ar jos institucijos pavadinimą.
+Pareigybių ir institucijų pavadinimai tikrinami lietuvių ir anglų kalbomis, nepriklausomai
+nuo pasirinktos sąsajos kalbos. Paieška neapima buvusių pareigų ir neplečia pasirinktų padalinių sąrašo.
 
 ### Posėdžių laiko juosta
 

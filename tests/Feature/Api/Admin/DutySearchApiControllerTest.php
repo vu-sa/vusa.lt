@@ -27,6 +27,85 @@ beforeEach(function (): void {
 });
 
 describe('similar', function (): void {
+    test('matches an English name in the same institution before considering variants or former names', function (): void {
+        $existing = Duty::factory()->for($this->institution)->create([
+            'name' => ['lt' => 'Komunikacijos koordinatorius', 'en' => 'Communications Coordinator'],
+        ]);
+        DutyName::factory()->for($existing)->create([
+            'name' => ['lt' => 'Senas pavadinimas', 'en' => 'Communications Coordinator'],
+        ]);
+
+        asUser($this->dutyManager)->getJson(route('api.v1.admin.duties.similar', [
+            'name' => 'communications coordinator',
+            'institution_id' => $this->institution->id,
+        ]))->assertOk()
+            ->assertJsonCount(1, 'data.same_institution')
+            ->assertJsonPath('data.same_institution.0.id', $existing->id)
+            ->assertJsonPath('data.same_institution.0.reason', 'same_institution_exact');
+    });
+
+    test('matches an English current name in every institution tier', function (string $tier): void {
+        $tenant = $tier === 'same_tenant'
+            ? $this->tenant
+            : Tenant::query()->whereKeyNot($this->tenant->id)->first();
+        $existing = Duty::factory()->for(Institution::factory()->for($tenant))->create([
+            'name' => ['lt' => 'Komunikacijos koordinatorius', 'en' => 'Communications Coordinator'],
+        ]);
+
+        asUser($this->dutyManager)->getJson(route('api.v1.admin.duties.similar', [
+            'name' => 'Communications Coordinator',
+            'institution_id' => $this->institution->id,
+        ]))->assertOk()
+            ->assertJsonCount(1, "data.{$tier}")
+            ->assertJsonPath("data.{$tier}.0.id", $existing->id)
+            ->assertJsonPath("data.{$tier}.0.reason", $tier);
+    })->with(['same_tenant', 'other_institution']);
+
+    test('does not return a duty twice when both translations match', function (): void {
+        $existing = Duty::factory()->for($this->institution)->create([
+            'name' => ['lt' => 'Coordinator', 'en' => 'Coordinator'],
+        ]);
+
+        asUser($this->dutyManager)->getJson(route('api.v1.admin.duties.similar', [
+            'name' => 'Coordinator',
+            'institution_id' => $this->institution->id,
+        ]))->assertOk()
+            ->assertJsonCount(1, 'data.same_institution')
+            ->assertJsonPath('data.same_institution.0.id', $existing->id);
+    });
+
+    test('still finds an English former name when neither current translation matches', function (bool $sameInstitution): void {
+        $institution = $sameInstitution ? $this->institution : Institution::factory()->for($this->tenant)->create();
+        $existing = Duty::factory()->for($institution)->create([
+            'name' => ['lt' => 'Pirmininkas', 'en' => 'Chair'],
+        ]);
+        DutyName::factory()->for($existing)->create([
+            'name' => ['lt' => 'Komunikacijos koordinatorius', 'en' => 'Communications Coordinator'],
+        ]);
+        $tier = $sameInstitution ? 'same_institution' : 'same_tenant';
+
+        asUser($this->dutyManager)->getJson(route('api.v1.admin.duties.similar', [
+            'name' => 'Communications Coordinator',
+            'institution_id' => $this->institution->id,
+        ]))->assertOk()
+            ->assertJsonCount(1, "data.{$tier}")
+            ->assertJsonPath("data.{$tier}.0.id", $existing->id)
+            ->assertJsonPath("data.{$tier}.0.reason", 'former_name');
+    })->with(['same institution' => true, 'same tenant' => false]);
+
+    test('LIKE metacharacters cannot make an unrelated duty a duplicate', function (string $name): void {
+        Duty::factory()->for(Institution::factory()->for(Tenant::query()->whereKeyNot($this->tenant->id)->first()))->create([
+            'name' => ['lt' => 'Koordinatorius', 'en' => 'Coordinator'],
+        ]);
+
+        asUser($this->dutyManager)->getJson(route('api.v1.admin.duties.similar', [
+            'name' => $name,
+            'institution_id' => $this->institution->id,
+        ]))->assertOk()
+            ->assertJsonCount(0, 'data.other_institution')
+            ->assertJsonPath('data.other_institution_count', 0);
+    })->with(['Coo%ator', 'Coo_dinator']);
+
     test('an exact name in the same institution is the loudest match', function (): void {
         $existing = Duty::factory()->create([
             'name' => ['lt' => 'Komunikacijos koordinatorius', 'en' => 'Communications Coordinator'],

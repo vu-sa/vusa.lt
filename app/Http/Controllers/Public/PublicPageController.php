@@ -465,11 +465,7 @@ class PublicPageController extends PublicController
 
         $search = $request->validated('search');
         if ($search !== null && $search !== '') {
-            $query->where(function ($q) use ($search): void {
-                $q->where('title', 'like', '%'.$search.'%')
-                    ->orWhere('description', 'like', '%'.$search.'%')
-                    ->orWhere('location', 'like', '%'.$search.'%');
-            });
+            $query->whereTranslationLike(['title', 'description', 'location'], $search, [app()->getLocale()]);
         }
 
         return $query;

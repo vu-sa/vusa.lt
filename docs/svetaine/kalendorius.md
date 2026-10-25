@@ -3,8 +3,9 @@ doc_status: reviewed
 title: Kalendorius
 area: calendar
 models: [Calendar]
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-20
 tests:
+  - tests/Feature/Public/CalendarEventListTest.php
   - tests/Feature/Admin/Calendar/CalendarControllerTest.php
   - tests/Feature/Public/CalendarCanonicalUrlTest.php
   - tests/Feature/Public/CalendarEventPageTest.php
@@ -39,6 +40,11 @@ Atskiroje formoje sukūrus renginį, atveriama jo redagavimo forma. Renginio kū
 - **Svetainės kalendorius:** visi paskelbti renginiai pasiekiami adresu `/lt/kalendorius` (arba anglų k. `/en/calendar`), o padalinio lankytojams – atitinkamame padalinio polapyje (pvz., `mif.vusa.lt/lt/kalendorius`). Kiekvienas renginys turi kanoninį puslapį su nuoroda pavidalu `/kalendorius/{metai}/{permalink}`.
 - **iCal kalendoriaus prenumerata:** adresu `/kalendorius/ics` veikia atviras iCal srautas. Studentai ir organizatoriai gali įsikelti šią nuorodą į savo asmeninius kalendorius („Google Calendar“, „Apple Calendar“, „Outlook“), ir renginiai sinchronizuosis automatiškai.
 - **Pradinis puslapis:** artimiausi renginiai automatiškai atrenkami ir pateikiami pradinio puslapio bloke.
+
+Atveriant kalendorių su `search` parametru nuorodoje, pirminis renginių sąrašas atrenkamas
+pagal pavadinimą, aprašymą ir vietą puslapio kalba. Lietuviškame puslapyje ieškoma lietuviškų
+tekstų, angliškame – angliškų; trūkstamas vertimas paieškoje nepakeičiamas kitos kalbos tekstu.
+Interaktyvi paieška kalendoriaus puslapyje ir toliau ieško abiejų kalbų pavadinimų.
 
 ### Renginio duomenys ir ryšiai
 
