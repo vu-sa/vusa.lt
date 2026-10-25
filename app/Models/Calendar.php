@@ -461,7 +461,7 @@ class Calendar extends Model implements ImageMediaOwner
             ->organizer(
                 (new Organization)
                     ->name($this->tenant->shortname ?? 'VU SA')
-                    ->url(route('home', ['subdomain' => $this->tenant?->subdomain() ?? 'www', 'lang' => $locale]))
+                    ->url(route('home', ['subdomain' => $this->tenant->subdomain(), 'lang' => $locale]))
             );
 
         if ($url = $this->publicUrl($locale)) {

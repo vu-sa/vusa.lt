@@ -198,7 +198,7 @@ class NewsController extends PublicController
         );
     }
 
-    /** @return Collection<int, array<string, mixed>> */
+    /** @return Collection<int, covariant array<string, mixed>> */
     private function relatedArticles(News $news): Collection
     {
         return News::where('tenant_id', $news->tenant_id)

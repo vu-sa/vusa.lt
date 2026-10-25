@@ -247,7 +247,7 @@ class ContactController extends PublicController
             title: $title,
             description: [
                 $institution->description,
-                __('seo.institution_description', ['institution' => $institution->name, 'tenant' => $siteTenant?->shortname ?? $this->tenant->shortname]),
+                __('seo.institution_description', ['institution' => $institution->name, 'tenant' => $siteTenant->shortname ?? $this->tenant->shortname]),
             ],
             image: $institution->imageData('image')['url'] ?? null,
             canonicalUrl: $canonicalUrl,
