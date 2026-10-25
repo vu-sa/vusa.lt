@@ -29,6 +29,7 @@ import {
   ThumbsDown,
   ThumbsUp,
   TriangleAlert,
+  UserX,
 } from '@lucide/vue';
 
 import { DocumentStatus, GoalStatus, InstitutionActivityStatus, MailingListMode, MailingListSyncStatus, SupportRequestStatus, VoteValue } from '@/Types/enums';
@@ -151,6 +152,8 @@ export const activityStatuses = {
 } satisfies Record<string, StatusPresentation>;
 
 export const inactiveInstitutionStatus: StatusPresentation = status('Neaktyvi institucija', 'neutral', CircleSlash);
+export const notReservableStatus: StatusPresentation = status('Nerezervuojamas', 'neutral', Ban);
+export const deletedMemberStatus: StatusPresentation = status('Ištrintas', 'neutral', UserX);
 
 export const bannerStatuses = {
   active: status('Aktyvus', 'success', Eye, true),

@@ -36,7 +36,7 @@
     </div>
 
     <!-- Results -->
-    <div v-else class="min-h-0 flex-1 overflow-y-auto p-2">
+    <div v-else class="min-h-0 flex-1 divide-y divide-border/60 overflow-y-auto">
       <SearchResultListItem
         v-for="hit in hits"
         :key="hit.id"
@@ -50,7 +50,7 @@
         @toggle="$emit('toggle', hit)"
       />
 
-      <div v-if="hasMore" class="mt-2 px-1 pb-1">
+      <div v-if="hasMore" class="p-2">
         <Button variant="outline" voice="sentence" size="sm" class="w-full" :disabled="isLoadingMore" @click="$emit('loadMore')">
           <Loader2 v-if="isLoadingMore" class="mr-2 size-4 animate-spin" />
           {{ $t('Rodyti daugiau') }}

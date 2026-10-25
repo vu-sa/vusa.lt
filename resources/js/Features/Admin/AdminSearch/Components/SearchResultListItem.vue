@@ -9,7 +9,7 @@
     :class="[
       'group flex min-h-11 w-full cursor-pointer items-center gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-ring',
       disabled && 'opacity-50',
-      selected ? 'bg-accent border-l-2 border-brand' : 'hover:bg-accent/60',
+      selected ? 'bg-secondary' : 'hover:bg-secondary/40',
     ]"
     @click="onRowClick"
     @keydown.enter.prevent="!disabled && $emit('toggle')"
@@ -38,13 +38,13 @@
     <SearchHitRow :hit :selected />
   </div>
 
-  <!-- Default (navigation) mode — unchanged. -->
+  <!-- Navigation mode -->
   <button
     v-else
     type="button"
     :class="[
       'group flex min-h-11 w-full items-center gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-ring',
-      selected ? 'bg-accent border-l-2 border-brand' : 'hover:bg-accent/60',
+      selected ? 'bg-secondary' : 'hover:bg-secondary/40',
     ]"
     @click="$emit('select')"
   >

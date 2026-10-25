@@ -7,7 +7,7 @@
     :subtitle="user.email ?? undefined"
   >
     <template v-if="user.isDeleted" #badges>
-      <StatusBadge :status="DELETED" />
+      <StatusBadge :status="deletedMemberStatus" />
     </template>
 
     <template v-if="$slots.media" #media>
@@ -50,17 +50,15 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { UserX } from '@lucide/vue';
 import { computed } from 'vue';
 
 import type { UserPreviewModel } from './userPreview';
 
 import { PreviewChipList, PreviewFact, PreviewFacts, PreviewPane, PreviewSection, StatusBadge, type PreviewChipItem } from '@/Components/Patterns';
 import { Button } from '@/Components/ui/button';
-import type { StatusPresentation } from '@/Constants/statuses';
+import { deletedMemberStatus } from '@/Constants/statuses';
 
 const DUTY_LIMIT = 8;
-const DELETED: StatusPresentation = { label: 'Ištrintas', role: 'neutral', icon: UserX };
 
 const props = defineProps<{
   user: UserPreviewModel;

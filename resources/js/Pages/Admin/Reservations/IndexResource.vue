@@ -72,7 +72,7 @@
             </p>
 
             <div class="mt-auto flex flex-wrap items-center justify-between gap-2 pt-3">
-              <StatusBadge v-if="!item.is_reservable" :status="notReservable" />
+              <StatusBadge v-if="!item.is_reservable" :status="notReservableStatus" />
               <template v-else>
                 <span
                   class="text-sm tabular-nums"
@@ -122,7 +122,7 @@
               </span>
             </span>
           </Link>
-          <StatusBadge v-if="!item.is_reservable" :status="notReservable" class="shrink-0" />
+          <StatusBadge v-if="!item.is_reservable" :status="notReservableStatus" class="shrink-0" />
           <div v-else-if="canReserve" class="shrink-0">
             <AddToReservationButton :resource-id="String(item.id)" />
           </div>
@@ -151,7 +151,7 @@
           {{ item.is_reservable ? availabilityLabel(item) : (item.capacity ?? '—') }}
         </span>
         <template v-else-if="column.key === 'status'">
-          <StatusBadge v-if="!item.is_reservable" :status="notReservable" />
+          <StatusBadge v-if="!item.is_reservable" :status="notReservableStatus" />
           <AddToReservationButton v-else-if="canReserve" :resource-id="String(item.id)" />
         </template>
       </template>
@@ -204,7 +204,7 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
-import { Ban, CalendarClock, Plus } from '@lucide/vue';
+import { CalendarClock, Plus } from '@lucide/vue';
 import { capitalize, computed, onMounted, watch } from 'vue';
 
 import { matchTitle } from '@/Shared/Search/matches';
@@ -223,7 +223,7 @@ import type { ReservationCart } from '@/Components/Reservations/types';
 import { useReservationCart } from '@/Components/Reservations/useReservationCart';
 import { Button } from '@/Components/ui/button';
 import { useTypesenseCollectionSource } from '@/Composables/useCollectionSource';
-import type { StatusPresentation } from '@/Constants/statuses';
+import { notReservableStatus } from '@/Constants/statuses';
 import { useResourceAvailability } from '@/Features/Admin/AdminSearch/Composables/useResourceAvailability';
 import type { ResourceSearchResult } from '@/Shared/Search/types';
 
@@ -246,7 +246,6 @@ const source = useTypesenseCollectionSource<ResourceSearchResult>({
 });
 
 /** Only the exception is painted: a reservable resource is the healthy default. */
-const notReservable: StatusPresentation = { label: 'Nerezervuojamas', role: 'neutral', icon: Ban };
 
 const resourceKey = (resource: ResourceSearchResult) => String(resource.id);
 const nameOf = (resource: ResourceSearchResult) => resource.name_lt || resource.name_en || $t('Be pavadinimo');

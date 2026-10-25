@@ -14,7 +14,7 @@
     <!-- Content -->
     <div class="flex-1 min-w-0">
       <div class="flex items-center gap-2 min-w-0">
-        <span class="min-w-0 flex-1 truncate font-medium text-sm">
+        <span class="min-w-0 flex-1 truncate text-sm font-bold">
           <InflectedDutyName v-if="hit.collection === 'duties'" :name="hit.title" :matches="matches._searchTitleMatches" />
           <SearchMatch v-else :match="titleMatch" :title="hit.title" />
         </span>
@@ -38,11 +38,7 @@
 
         <InactiveInstitutionBadge v-if="hit.inactiveInstitution" :active="false" />
 
-        <!-- Status badge -->
-        <Badge v-if="hit.statusBadge" :class="['shrink-0 text-xs', toneClass(hit.statusBadge.tone)]">
-          <component :is="toneIcon(hit.statusBadge.tone)" class="size-3.5" aria-hidden="true" />
-          {{ hit.statusBadge.label }}
-        </Badge>
+        <StatusBadge v-if="hit.statusBadge" :status="hit.statusBadge" class="shrink-0" />
       </div>
       <!-- One context line: the match explains the row in place of its subtitle, never as an extra line. -->
       <div class="mt-0.5 flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
@@ -100,7 +96,6 @@ import { trans as $t } from 'laravel-vue-i18n';
 import { ChevronRight, Link as LinkIcon, Clock, Eye, Pencil } from '@lucide/vue';
 import { computed } from 'vue';
 
-import { toneClass, toneIcon } from '../Utils/searchBadges';
 import type { NormalizedSearchHit, SearchCollectionKey } from '../Utils/searchHitMappers';
 
 import InactiveInstitutionBadge from '@/Components/Institutions/InactiveInstitutionBadge.vue';
@@ -109,6 +104,7 @@ import SearchMatch from '@/Components/ui/SearchMatch.vue';
 import { highlightText, matchTitle, type SearchMatchDocument } from '@/Shared/Search/matches';
 import { getEntityTypeDefinition } from '@/Constants/entityTypes';
 import EntityTypeMark from '@/Components/EntityTypeMark.vue';
+import { StatusBadge } from '@/Components/Patterns';
 import { Badge } from '@/Components/ui/badge';
 
 const props = defineProps<{

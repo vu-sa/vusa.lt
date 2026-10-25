@@ -2,7 +2,7 @@
 doc_status: reviewed
 title: Platforma
 area: actionWindow
-last_reviewed: 2026-10-15
+last_reviewed: 2026-10-25
 tests:
   - tests/Browser/PostCreateNavigationTest.php
   - tests/Feature/Admin/Content/PageControllerTest.php
@@ -23,6 +23,9 @@ tests:
   - resources/js/Features/Admin/AdminSearch/Components/Select/__tests__/SearchSelectDialog.component.test.ts
   - resources/js/Features/Admin/AdminSearch/Components/__tests__/SearchHitRow.component.test.ts
   - resources/js/Features/Admin/AdminSearch/Components/__tests__/SearchSplitView.component.test.ts
+  - resources/js/Composables/__tests__/useListDetailSelection.test.ts
+  - resources/js/Components/Layouts/__tests__/CollectionPage.component.test.ts
+  - resources/js/Components/Patterns/__tests__/Preview.component.test.ts
   - tests/Browser/ActionWindowTest.php
   - resources/js/Components/AdminForms/__tests__/InstitutionForm.component.test.ts
   - resources/js/Components/AdminForms/__tests__/ResourceForm.component.test.ts
@@ -111,6 +114,18 @@ praverčia, jei tikėtinas įrašas nerodomas. Prieš kartojant kūrimą verta p
 Filtro parinkties skaičius rodo įrašus, atitinkančius paiešką ir **kitus filtrus**, neįskaitant to filtro pasirinkimo. Pavyzdžiui, pasirinkus vieną padalinį vis dar rodomi kitų padalinių skaičiai pagal pasirinktą kalbą ir paieškos tekstą. Kelios vieno filtro reikšmės praplečia rezultatus, o skirtingi filtrai taikomi kartu. Įrašai gali patekti į kelias parinktis, todėl šie skaičiai nesumuojami. Brūkšnys reiškia, kad skaičius nežinomas.
 
 Ilgesniame parinkčių sąraše ieškomą reikšmę galima įrašyti į filtro paieškos laukelį. Ji ieško ir tarp iš pradžių nematomų parinkčių; pasirinkimai lieka matomi ir juos galima pašalinti. Ši laikina paieška nekeičia pagrindinės frazės, filtrų ar puslapio adreso. Tie patys susitarimai galioja svetainės archyvuose ir susijusių įrašų pasirinkimo languose.
+
+### Peržiūra šalia sąrašo {#perziura}
+
+<ChangelogNote version="v3.19" date="2026-10-25" title="Vienoda įrašų peržiūra">
+
+Sąrašai ir paieška naudoja tą pačią įrašo peržiūrą. Peržiūra atsirado narių, naujienų ir renginių sąrašuose, o rodyklių klavišais galima pereiti prie kito įrašo.
+
+</ChangelogNote>
+
+Plačiame ekrane sąrašą galima rodyti kaip **Peržiūrą**: kairėje lieka įrašai, dešinėje – pasirinkto įrašo pagrindiniai duomenys, būsena ir veiksmai. Ši parinktis siūloma tik tuose sąrašuose, kurie turi peržiūrą. Pasirinktas įrašas įrašomas į puslapio adresą, todėl nuoroda atveria tą patį įrašą.
+
+Peržiūroje klavišais **↑** ir **↓** pereinama prie kito įrašo, o **Enter** atveria jo puslapį. Kol rašoma lauke, klavišai lieka laukui. Tokia pati peržiūra rodoma ir susijusių įrašų pasirinkimo languose; ten rodyklėmis galima judėti ir iš paieškos laukelio. Joje matoma tik santrauka: ilgi sąrašai, pvz., institucijos ryšiai, sutrumpinami, o visi duomenys ir jų tvarkymas lieka įrašo puslapyje.
 
 ### Pasirinkti susijusį įrašą
 

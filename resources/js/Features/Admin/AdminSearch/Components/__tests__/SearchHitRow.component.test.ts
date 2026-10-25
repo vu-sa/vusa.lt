@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import SearchHitRow from '../SearchHitRow.vue';
 import type { NormalizedSearchHit } from '../../Utils/searchHitMappers';
 
+import { deletedMemberStatus } from '@/Constants/statuses';
 import { documentWithMatch } from '@/Shared/Search/matches';
 
 const hit = {
@@ -14,7 +15,7 @@ const hit = {
   raw: {},
   title: 'Jonas Jonaitis',
   contextBadge: 'MIF',
-  statusBadge: { label: 'Ištrintas', tone: 'danger' },
+  statusBadge: deletedMemberStatus,
   viewHref: '/mano/users/1',
   editHref: '/mano/users/1/edit',
 } as NormalizedSearchHit;

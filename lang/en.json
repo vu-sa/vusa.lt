@@ -1436,5 +1436,15 @@
   "Posėdis bus perkeltas į šiukšlinę, o jo užduotys pašalintos. Atkūrus posėdį, neužbaigta užduotis grįš.": "The meeting will be moved to the trash and its tasks removed. If you restore the meeting, its unfinished task comes back.",
   "Informacinis skaičius, pvz., Parlamento vietos. Narių priskyrimo neriboja.": "A reference number, e.g. Parliament seats. It does not limit member assignments.",
   "Narių po pakeitimų:": "Members after changes:",
-  "Vietų skaičius": "Seat count"
+  "Vietų skaičius": "Seat count",
+  "Atidaryti dokumentą": "Open document",
+  "Atidaryti failą": "Open file",
+  "Atidaryti išteklių": "Open resource",
+  "Atidaryti narį": "Open member",
+  "Atidaryti pareigybę": "Open duty",
+  "Atidaryti punktą": "Open agenda item",
+  "Atidaryti rezervaciją": "Open reservation",
+  "Redaguoti naujieną": "Edit news",
+  "Redaguoti puslapį": "Edit page",
+  "Redaguoti renginį": "Edit event"
 }

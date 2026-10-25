@@ -7,7 +7,7 @@
     :subtitle="resource.category_name"
   >
     <template v-if="!resource.is_reservable" #badges>
-      <StatusBadge :status="NOT_RESERVABLE" />
+      <StatusBadge :status="notReservableStatus" />
     </template>
 
     <template v-if="resource.image_url" #media>
@@ -142,7 +142,7 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
-import { AlertTriangle, Ban, Expand } from '@lucide/vue';
+import { AlertTriangle, Expand } from '@lucide/vue';
 import { computed } from 'vue';
 
 import ResourceManagers, { type ResourceManagerContact } from '@/Components/Reservations/ResourceManagers.vue';
@@ -151,7 +151,7 @@ import ReservationResourceStateTag from '@/Components/Tag/ReservationResourceSta
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/Components/ui/dialog';
 import { usePreviewApi } from '@/Composables/usePreviewApi';
-import type { StatusPresentation } from '@/Constants/statuses';
+import { notReservableStatus } from '@/Constants/statuses';
 import type { ResourceAvailability } from '@/Features/Admin/AdminSearch/Composables/useResourceAvailability';
 import type { ResourceSearchResult } from '@/Shared/Search/types';
 import { formatDateTime } from '@/Utils/dateTime';
@@ -170,8 +170,6 @@ interface ResourcePreviewData {
   previous_reservations: ReservationRow[];
   managers: ResourceManagerContact[];
 }
-
-const NOT_RESERVABLE: StatusPresentation = { label: 'Nerezervuojamas', role: 'neutral', icon: Ban };
 
 const props = defineProps<{
   resource: ResourceSearchResult;
