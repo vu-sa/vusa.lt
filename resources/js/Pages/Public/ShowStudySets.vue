@@ -1,10 +1,5 @@
 <template>
   <div class="study-sets-page">
-    <Head>
-      <title>{{ $t('studySets.page_title') }}</title>
-      <meta name="description" :content="$t('studySets.page_description')">
-    </Head>
-
     <!-- Page Title Band per v0 redesign -->
     <PageTitleBand
       :eyebrow="$t('Studijos')"
@@ -269,7 +264,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { Head, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { trans as $t, transChoice as $tChoice } from 'laravel-vue-i18n';
 
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';

@@ -1,10 +1,5 @@
 <template>
   <div class="meetings-page">
-    <Head>
-      <title>{{ $t('search.meeting_page_title') }}</title>
-      <meta name="description" :content="$t('search.meeting_page_description')">
-    </Head>
-
     <!-- Page Title Band per v0 redesign -->
     <PageTitleBand
       :eyebrow="pageEyebrow"
@@ -338,7 +333,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import { usePage, Head } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 import { useDebounceFn, useStorage } from '@vueuse/core';
 

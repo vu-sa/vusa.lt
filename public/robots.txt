@@ -1,6 +1,7 @@
 User-agent: *
-Disallow: /uploads
-
-# Disable /docs
-User-agent: *
+# Media-library images (og:image, news, events) must stay crawlable; other uploads stay out.
+Allow: /uploads/media/
+Disallow: /uploads/
 Disallow: /docs
+
+Sitemap: https://www.vusa.lt/sitemap.xml

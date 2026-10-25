@@ -1,10 +1,5 @@
 <template>
   <div class="documents-page">
-    <Head>
-      <title>{{ $t('search.document_page_title') }}</title>
-      <meta name="description" :content="$t('search.document_page_description')">
-    </Head>
-
     <!-- Page Title Band per v0 redesign -->
     <PageTitleBand
       :eyebrow="pageEyebrow"
@@ -404,7 +399,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onMounted } from 'vue';
-import { usePage, Head } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { useStorage, useDebounceFn } from '@vueuse/core';
 import { trans as $t } from 'laravel-vue-i18n';
 

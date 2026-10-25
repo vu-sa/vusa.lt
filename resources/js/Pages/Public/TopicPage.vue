@@ -1,10 +1,5 @@
 <template>
   <div class="topic-page">
-    <Head>
-      <title>{{ topic.name }}</title>
-      <meta v-if="topic.description" name="description" :content="topic.description">
-    </Head>
-
     <PageTitleBand
       :title="topic.name"
       :lead="topic.description || undefined"
@@ -76,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { Head, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
 

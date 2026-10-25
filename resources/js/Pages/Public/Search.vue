@@ -1,10 +1,5 @@
 <template>
   <div>
-    <Head>
-      <title>{{ $t('search.all_page_title') }}</title>
-      <meta name="description" :content="$t('search.all_page_description')">
-    </Head>
-
     <PageTitleBand
       :eyebrow="pageEyebrow"
       :title="$t('search.all_search_title')"
@@ -150,7 +145,7 @@
 
 <script setup lang="ts">
 import { onMounted, computed, type Component } from 'vue';
-import { Head, usePage } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import IFluentSearch16Regular from '~icons/fluent/search16-regular';

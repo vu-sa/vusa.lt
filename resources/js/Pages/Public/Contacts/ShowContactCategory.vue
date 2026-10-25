@@ -1,10 +1,5 @@
 <template>
   <div class="contacts-category-page">
-    <Head>
-      <title>{{ `${$t('Kontaktai')}: ${typeTitle}` }}</title>
-      <meta v-if="typeDescription" name="description" :content="typeDescription">
-    </Head>
-
     <PageTitleBand
       :eyebrow="pageEyebrow"
       :title="typeTitle"
@@ -53,9 +48,9 @@
         class="mt-6 border border-border bg-card p-12 text-center"
       >
         <div class="mx-auto max-w-md space-y-3">
-          <h3 class="text-base font-bold text-foreground">
+          <h2 class="text-base font-bold text-foreground">
             {{ $t('No contacts available') }}
-          </h3>
+          </h2>
           <p class="text-sm text-muted-foreground">
             {{ $t('There are currently no contacts available for this category.') }}
           </p>
@@ -78,7 +73,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { usePage, Head } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
 import { trans as $t } from 'laravel-vue-i18n';
 
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';

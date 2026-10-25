@@ -7,7 +7,6 @@ use App\Http\Controllers\PublicController;
 use App\Models\Goal;
 use App\Models\Step;
 use App\Support\Experiments\GoalsExperiment;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -65,7 +64,7 @@ class GoalController extends PublicController
         $this->applyPageHead(
             contentTenant: $this->tenant,
             title: (string) $goal->title,
-            description: Str::limit(strip_tags((string) ($goal->expected_result ?: $goal->description)), 160),
+            description: [$goal->expected_result, $goal->description, __('seo.goal_description', ['goal' => (string) $goal->title, 'tenant' => $this->tenant->shortname])],
             modifiedTime: $goal->updated_at,
         );
 

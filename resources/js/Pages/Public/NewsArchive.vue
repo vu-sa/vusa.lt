@@ -4,7 +4,7 @@
     <PageTitleBand
       :eyebrow="pageEyebrow"
       :title="$t('Naujienos')"
-      :lead="$t('Kas vyksta Studentų atstovybėje ir universitete – rinkimai, renginiai, gidai ir sprendimai, liečiantys tavo studijas.')"
+      :lead="$t('seo.news_archive_description')"
     >
       <template #breadcrumbs>
         <PublicBreadcrumbs variant="inline" />
@@ -13,8 +13,8 @@
 
     <!-- Main Content -->
     <section class="mx-auto max-w-7xl px-5 py-8 sm:px-6 sm:py-12 lg:px-8">
-      <!-- Search + Filter Controls -->
-      <div class="space-y-4">
+      <!-- Search + Filter Controls; nosnippet keeps "Filtrai · Rikiuoti" out of Google's snippet. -->
+      <div class="space-y-4" data-nosnippet>
         <!-- Search Bar and Filters Button in the same row on desktop -->
         <div class="flex flex-col gap-2.5 sm:flex-row sm:items-center">
           <!-- Search Input -->
@@ -24,6 +24,7 @@
               v-model="query"
               type="text"
               :placeholder="$t('news.archive.search_placeholder')"
+              :aria-label="$t('news.archive.search_placeholder')"
               :class="[
                 'h-11 w-full border border-border bg-background pl-10 pr-9 text-sm text-foreground',
                 'placeholder:text-muted-foreground/70 transition-colors focus:border-brand focus:outline-none',
@@ -268,9 +269,9 @@
           <div class="mx-auto flex size-12 items-center justify-center border border-border bg-secondary text-muted-foreground">
             <IFluentNews24Regular class="size-6" />
           </div>
-          <h3 class="mt-4 text-base font-bold text-foreground">
+          <h2 class="mt-4 text-base font-bold text-foreground">
             {{ $t('news.archive.no_news') }}
-          </h3>
+          </h2>
           <p class="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
             {{ $t('news.archive.no_news_description') }}
           </p>
@@ -293,6 +294,7 @@
             <NewsCard
               :news="featuredArticle"
               size="featured"
+              heading-tag="h2"
               eager
               show-excerpt
             />
@@ -305,6 +307,7 @@
               :key="item.id"
               :news="item"
               size="sm"
+              heading-tag="h2"
               show-excerpt
             />
           </div>

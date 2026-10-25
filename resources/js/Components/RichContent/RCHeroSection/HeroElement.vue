@@ -14,7 +14,7 @@
               </EyebrowLabel>
             </slot>
             <slot name="title" :title="element.json_content.title">
-              <div role="heading" aria-level="1" :class="[titleClass, titleAlignmentClass]">
+              <div role="heading" :aria-level="headingLevel" :class="[titleClass, titleAlignmentClass]">
                 <span v-html="element.json_content.title" />
               </div>
             </slot>
@@ -59,7 +59,7 @@
         </EyebrowLabel>
       </slot>
       <slot name="title" :title="element.json_content.title">
-        <div role="heading" aria-level="1" :class="[titleClass, titleAlignmentClass]">
+        <div role="heading" :aria-level="headingLevel" :class="[titleClass, titleAlignmentClass]">
           <span v-html="element.json_content.title" />
         </div>
       </slot>
@@ -113,7 +113,7 @@
             </EyebrowLabel>
           </slot>
           <slot name="title" :title="element.json_content.title">
-            <div role="heading" aria-level="1" :class="[titleClass, titleAlignmentClass]">
+            <div role="heading" :aria-level="headingLevel" :class="[titleClass, titleAlignmentClass]">
               <span v-html="element.json_content.title" />
             </div>
           </slot>
@@ -151,6 +151,7 @@ import { heroButtonsClass, heroDescriptionClass, heroTitleAlignmentClass, heroTi
 import MediaImage from '@/Components/Brand/MediaImage.vue';
 import ImageWithDecorations from '@/Components/RichContent/ImageWithDecorations.vue';
 import { EyebrowLabel } from '@/Components/Public/Base';
+import { useBlockHeadingLevel } from '@/Composables/usePageHeading';
 import type { Hero } from '@/Types/contentParts';
 import { hasHtmlText } from '@/Utils/String';
 
@@ -167,6 +168,8 @@ const props = defineProps<{
    *  so it never receives a chrome resolution and keeps its own fixed gradient-panel look. */
   band?: BandResolution;
 }>();
+
+const headingLevel = useBlockHeadingLevel();
 
 const variant = computed(() => props.element.options?.variant ?? 'split');
 const anchorElementId = computed(() => (props.anchorId ? `rc-${props.anchorId}` : undefined));

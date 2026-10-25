@@ -140,7 +140,7 @@ describe('Public/NewsArchive.vue', () => {
     const wrapper = mountPage();
     expect(wrapper.text()).toContain('Naujienos');
     expect(wrapper.text()).toContain('VU SA');
-    expect(wrapper.text()).toContain('Kas vyksta Studentų atstovybėje ir universitete');
+    expect(wrapper.text()).toContain('seo.news_archive_description');
   });
 
   it('initially scopes results to the current tenant', () => {
@@ -180,6 +180,8 @@ describe('Public/NewsArchive.vue', () => {
     expect(searchInput.exists()).toBe(true);
     expect(wrapper.text()).toContain('Filtrai');
     expect(wrapper.text()).toContain('Rikiuoti');
+    expect(searchInput.attributes('aria-label')).toBe('news.archive.search_placeholder');
+    expect(searchInput.element.closest('div[data-nosnippet]')).not.toBeNull();
   });
 
   it('always renders first article as featured and remaining articles in grid without duplicate heading', () => {
@@ -190,6 +192,9 @@ describe('Public/NewsArchive.vue', () => {
     expect(wrapper.text()).toContain('Antrasis įvykis bendruomenėje');
     // "Visos naujienos" heading should not be present
     expect(wrapper.text()).not.toContain('Visos naujienos');
+    expect(wrapper.findAll('h1')).toHaveLength(1);
+    expect(wrapper.findAll('[data-slot="news-card"] h2')).toHaveLength(2);
+    expect(wrapper.find('h3').exists()).toBe(false);
   });
 
   it('renders empty state when news is empty', () => {

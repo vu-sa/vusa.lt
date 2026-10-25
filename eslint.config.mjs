@@ -453,17 +453,19 @@ export default tseslint.config(
     },
   },
 
-  // Public surfaces must use Fluent; Lucide is for Admin only.
+  // Public surfaces must use Fluent; Lucide is for Admin only. Head metadata is server-owned:
+  // a client <Head> overrides it after hydration, and that is what Google indexes.
   {
     files: [
       'resources/js/Pages/Public/**/*.{vue,ts}',
       'resources/js/Components/Public/**/*.{vue,ts}',
     ],
     rules: {
-      'no-restricted-imports': ['warn', {
+      'no-restricted-imports': ['error', {
         paths: [
           ...lodashImportPaths,
           { name: '@lucide/vue', message: 'Public uses Fluent (~icons/fluent/*) for a more stylized look. Lucide is reserved for Admin surfaces.' },
+          { name: '@inertiajs/vue3', importNames: ['Head'], message: 'Public <head> comes from PublicController::applyPageHead() (.ai/rules/seo.md).' },
         ],
         patterns: [...lodashImportPatterns, ...removedIconPatterns],
       }],

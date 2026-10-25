@@ -2,7 +2,7 @@
 
 return [
     'page_title' => 'Individual Study Sets',
-    'page_description' => 'Individual study sets of VU students by faculties',
+    'page_description' => 'Individual study sets of Vilnius University students, grouped by faculty and unit.',
     'no_sets' => 'There are no individual study sets at this time.',
     'no_sets_description' => 'Try selecting a different faculty or check back later.',
     'course_name' => 'Course name',

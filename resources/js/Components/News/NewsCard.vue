@@ -34,7 +34,7 @@
       <span v-if="news.publish_time" class="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
         {{ longDate(news.publish_time) }}
       </span>
-      <h3 :class="[
+      <component :is="headingTag" :class="[
         'text-pretty font-bold text-foreground transition-colors group-hover:text-brand',
         size === 'featured' ? 'mt-3 text-3xl leading-tight sm:text-4xl' :
         size === 'lg' ? 'mt-3 text-2xl leading-tight sm:text-[1.7rem]' :
@@ -43,7 +43,7 @@
         <SearchMatch v-if="titleMatch" :match="titleMatch" /><template v-else>
           {{ news.title }}
         </template>
-      </h3>
+      </component>
       <!-- A search excerpt takes the short's place, so cards keep their height while typing. -->
       <div v-if="showExcerpt && news.short && excerptMatch" :class="excerptClass">
         <SearchMatch :match="excerptMatch" />
@@ -90,8 +90,11 @@ const props = withDefaults(defineProps<{
   showExcerpt?: boolean;
   eager?: boolean;
   inertia?: boolean;
+  /** h2 where the card sits directly under the page's h1 (no section heading between). */
+  headingTag?: 'h2' | 'h3';
 }>(), {
   size: 'sm',
+  headingTag: 'h3',
   // eslint-disable-next-line vue/no-boolean-default
   inertia: true,
 });

@@ -138,8 +138,8 @@ return [
     // Document search specific
     'document_search_title' => 'Dokumentai',
     'document_search_description' => 'Ieškokite VU SA dokumentų archyve – raskite protokolus, nutarimus ir kitus dokumentus.',
-    'document_page_title' => 'Dokumentai - VU SR',
-    'document_page_description' => 'Ieškokite VU SA dokumentų archyve',
+    'document_page_title' => 'Dokumentai',
+    'document_page_description' => 'VU SA dokumentų archyvas – nuostatai, tvarkų aprašai, protokolai ir kiti dokumentai. Ieškok pagal pavadinimą, tipą ar padalinį.',
     'offline_message' => 'Nėra interneto ryšio - paieška nepasiekiama',
     'showing_results' => 'Rodomi',
     'found_results' => 'Surasta rezultatų:',
@@ -231,8 +231,8 @@ return [
     'date_to_format' => 'Iki :date',
 
     // Meeting search specific
-    'meeting_page_title' => 'Posėdžiai - VU SR',
-    'meeting_page_description' => 'Ieškokite VU SA posėdžių ir peržiūrėkite atstovavimo rezultatus',
+    'meeting_page_title' => 'Posėdžiai',
+    'meeting_page_description' => 'Studentų atstovų posėdžiai Vilniaus universiteto institucijose – darbotvarkės, sprendimai ir atstovavimo rezultatai.',
     'meeting_search_title' => 'Posėdžiai',
     'meeting_search_description' => 'Ieškokite VU SA posėdžių ir peržiūrėkite studentų atstovavimo veiklos rezultatus.',
     'search_meetings_placeholder' => 'Ieškoti posėdžių pagal pavadinimą...',
@@ -255,8 +255,8 @@ return [
     'meeting_plural' => 'posėdžiai',
 
     // Institution/contacts search specific
-    'institution_page_title' => 'Kontaktų paieška - VU SR',
-    'institution_page_description' => 'Ieškokite VU SA institucijų ir kontaktų',
+    'institution_page_title' => 'Kontaktų paieška',
+    'institution_page_description' => 'Ieškok VU SA institucijų ir kontaktų – studentų atstovai, koordinatoriai, kuratoriai ir padaliniai vienoje vietoje.',
     'institution_search_title' => 'Kontaktų paieška',
     'institution_search_description' => 'Ieškokite VU SA institucijų ir suraskite visus reikalingus kontaktus vienoje vietoje.',
     'search_institutions_placeholder' => 'Ieškoti institucijų pagal pavadinimą...',
@@ -283,7 +283,7 @@ return [
     'go_to_search' => 'Eiti į bendrąją paiešką',
 
     // Unified search page
-    'all_page_title' => 'Paieška - VU SR',
+    'all_page_title' => 'Paieška',
     'all_page_description' => 'Ieškokite VU SA naujienų, puslapių, dokumentų, renginių, institucijų ir posėdžių vienoje vietoje.',
     'all_search_title' => 'Paieška',
     'all_search_description' => 'Ieškokite visame VU SA turinyje – naujienose, puslapiuose, dokumentuose, renginiuose, institucijose ir posėdžiuose.',

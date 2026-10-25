@@ -7,36 +7,43 @@
        `overflow-x-clip` absorbs the half-scrollbar overhang of rich-content `.rc-viewport`
        bands; `clip`, not `hidden`, so sticky descendants keep working. -->
   <div class="@container min-h-screen flex flex-col overflow-x-clip bg-background text-foreground font-public">
-    <!-- Skip to main content link - positioned first for keyboard navigation -->
-    <a
-      href="#main-content"
-      :class="[
-        'sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999]',
-        'focus:bg-background focus:text-foreground focus:px-4 focus:py-2 focus:border-2 focus:border-brand',
-      ]"
-    >
-      {{ $t('accessibility.skip_to_main_content') }}
-    </a>
+    <!-- data-nosnippet (honoured on div/span/section only) keeps site chrome out of Google's
+         snippets, which are built from rendered text in DOM order. See .ai/rules/seo.md. -->
+    <div data-nosnippet>
+      <!-- Skip to main content link - positioned first for keyboard navigation -->
+      <a
+        href="#main-content"
+        :class="[
+          'sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[9999]',
+          'focus:bg-background focus:text-foreground focus:px-4 focus:py-2 focus:border-2 focus:border-brand',
+        ]"
+      >
+        {{ $t('accessibility.skip_to_main_content') }}
+      </a>
 
-    <MainNavigation :is-theme-dark="isDark" />
+      <MainNavigation :is-theme-dark="isDark" />
+    </div>
 
     <div class="flex-1 flex flex-col antialiased">
       <main id="main-content" class="pb-8" :class="mainContentMarginClass">
         <div>
           <slot />
-          <PartnersBanner
-            v-if="$page.props.tenant?.banners && $page.props.tenant.banners.length > 0"
-            :banners="$page.props.tenant.banners"
-          />
+          <div v-if="$page.props.tenant?.banners && $page.props.tenant.banners.length > 0" data-nosnippet>
+            <PartnersBanner :banners="$page.props.tenant.banners" />
+          </div>
         </div>
       </main>
 
-      <FadeTransition appear>
-        <ConsentCard v-if="mounted && !cookieConsentDecided" />
-      </FadeTransition>
+      <div data-nosnippet>
+        <FadeTransition appear>
+          <ConsentCard v-if="mounted && !cookieConsentDecided" />
+        </FadeTransition>
+      </div>
     </div>
 
-    <SiteFooter class="mt-auto" />
+    <div data-nosnippet class="mt-auto">
+      <SiteFooter />
+    </div>
     <StagingWatermark />
   </div>
 

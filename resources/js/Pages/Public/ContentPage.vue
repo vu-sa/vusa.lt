@@ -37,6 +37,9 @@
       />
     </div>
   </header>
+  <h1 v-else class="sr-only">
+    {{ page.title }}
+  </h1>
 
   <!-- Default layout: content canvas + sticky sidebar for the ToC.
        `.rc-shell` keeps the sidebar from clipping full-width blocks down to a second,
@@ -97,10 +100,10 @@ import { extractAnchorLinks, type AnchorablePart } from '@/Components/RichConten
 import TableOfContents from '@/Components/Public/TableOfContents.vue';
 import { HairlineList, HairlineRow, MediaFrame } from '@/Components/Public/Base';
 import { usePageBreadcrumbs, BreadcrumbHelpers } from '@/Composables/useBreadcrumbsUnified';
+import { providePageHeading } from '@/Composables/usePageHeading';
+import type { ImageData } from '@/Types/media';
 
 type PageContentPart = AnchorablePart & { [key: string]: unknown };
-
-import type { ImageData } from '@/Types/media';
 
 interface Page {
   featured_image_media?: ImageData | null;
@@ -151,6 +154,7 @@ const hasToc = computed(() =>
 // An author can hide the page's own title — e.g. when the page opens directly on a
 // hero/section block that already carries one. The whole masthead goes with it.
 const showTitle = computed(() => props.page.show_title !== false);
+providePageHeading();
 
 // An author can hide the breadcrumb trail (Advanced Settings in PageForm).
 const showBreadcrumbs = computed(() => props.page.show_breadcrumbs !== false);

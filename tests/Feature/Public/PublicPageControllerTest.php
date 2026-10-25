@@ -520,7 +520,6 @@ test('the homepage news block shows an article published after the page was cach
     $home()->assertInertia(fn (Assert $page) => $page
         ->component('Public/HomePage')
         ->where("resolvedParts.{$newsPart->id}.items", [])
-        ->where('firstNewsImageUrl', null)
         ->missing('news')
         ->missing('calendarEvents')
     );

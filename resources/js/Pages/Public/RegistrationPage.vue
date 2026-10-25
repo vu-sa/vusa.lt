@@ -1,9 +1,5 @@
 <template>
   <div class="registration-page">
-    <Head>
-      <title>{{ $t(form.name) }}</title>
-    </Head>
-
     <PageTitleBand
       :eyebrow="$t('Registracija')"
       :title="$t(form.name)"
@@ -35,7 +31,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { trans as $t } from 'laravel-vue-i18n';
-import { Head, router } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 
 import PageTitleBand from '@/Components/Public/Base/PageTitleBand.vue';
 import PublicBreadcrumbs from '@/Components/Public/PublicBreadcrumbs.vue';
