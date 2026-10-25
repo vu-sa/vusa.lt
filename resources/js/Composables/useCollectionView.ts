@@ -15,6 +15,8 @@ interface UseCollectionViewOptions {
    * cards only where a collection opts in (browsing things to pick, e.g. resources).
    */
   views?: CollectionViewMode[];
+  /** Without a preview to show, the preview view is never offered (an empty pane helps no one). */
+  hasPreview?: boolean;
 }
 
 function isViewMode(value: unknown): value is CollectionViewMode {
@@ -53,7 +55,7 @@ export function useCollectionView(options: UseCollectionViewOptions) {
       return [...cards, 'rows'];
     }
 
-    const byViewport: CollectionViewMode[] = isAtLeastXl.value ? ['rows', 'table', 'preview'] : ['rows', 'table'];
+    const byViewport: CollectionViewMode[] = isAtLeastXl.value && options.hasPreview !== false ? ['rows', 'table', 'preview'] : ['rows', 'table'];
 
     return [...cards, ...byViewport.filter(mode => mode === 'rows' || !options.views || options.views.includes(mode))];
   });
